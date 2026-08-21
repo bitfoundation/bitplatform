@@ -39,63 +39,16 @@ public class McpResources(HtmlRenderer htmlRenderer)
 
     [McpServerResource(UriTemplate = "brouter://api", Name = "brouter-api", Title = "Bit.Brouter public API", MimeType = "text/markdown")]
     [Description("Every public Bit.Brouter type with its kind and summary.")]
-    public static string ApiList()
-    {
-        var lines = BrouterApiCatalog.Types.Select(type => $"- **{type.Name}** ({type.Kind}) - {type.Summary}");
-
-        return $"# Bit.Brouter public API\n\n{string.Join('\n', lines)}";
-    }
+    public static string ApiList() => BrouterApiCatalog.RenderIndex();
 
     [McpServerResource(UriTemplate = "brouter://api/{typeName}", Name = "brouter-api-type", Title = "Type reference", MimeType = "text/markdown")]
     [Description("The full reference of one Bit.Brouter type, e.g. brouter://api/BrouterOptions.")]
     public static string ApiType(string typeName)
-    {
-        var details = BrouterApiCatalog.GetTypeDetails(typeName);
-        if (details is null) return $"Bit.Brouter has no public type called '{typeName}'.";
-
-        var builder = new StringBuilder();
-
-        builder.AppendLine($"# {details.Name} ({details.Kind})").AppendLine();
-        if (details.Summary is not null) builder.AppendLine(details.Summary).AppendLine();
-        if (details.Remarks is not null) builder.AppendLine(details.Remarks).AppendLine();
-
-        foreach (var group in details.Members.GroupBy(m => m.Kind))
-        {
-            builder.AppendLine($"## {group.Key}").AppendLine();
-
-            foreach (var member in group)
-            {
-                builder.Append($"- **{member.Name}**{member.Signature}");
-                if (member.Type is not null) builder.Append($" : `{member.Type}`");
-                if (member.Default is not null) builder.Append($" = `{member.Default}`");
-                if (member.Required) builder.Append(" **(required)**");
-                if (member.Summary is not null) builder.Append($" - {member.Summary}");
-                builder.AppendLine();
-            }
-
-            builder.AppendLine();
-        }
-
-        return builder.ToString();
-    }
+        => BrouterApiCatalog.RenderType(typeName) ?? $"Bit.Brouter has no public type called '{typeName}'.";
 
     [McpServerResource(UriTemplate = "brouter://constraints", Name = "brouter-constraints", Title = "Route constraints", MimeType = "text/markdown")]
     [Description("Every constraint usable inside a route template, with the rule it enforces and a passing and a failing example.")]
-    public static string Constraints()
-    {
-        var builder = new StringBuilder("# Bit.Brouter route constraints\n\n");
-
-        builder.AppendLine("| Constraint | Category | Rule | Passes | Fails |");
-        builder.AppendLine("| --- | --- | --- | --- | --- |");
-
-        foreach (var constraint in ConstraintCatalog.All)
-        {
-            builder.AppendLine($"| `{{value:{constraint.Token}}}` | {constraint.Category} | {constraint.Rule} " +
-                               $"| `{constraint.PassExample}` | `{constraint.FailExample}` |");
-        }
-
-        return builder.ToString();
-    }
+    public static string Constraints() => BrouterConstraintReference.Render();
 
     [McpServerResource(UriTemplate = "brouter://source/{path}", Name = "brouter-source", Title = "Demo source file", MimeType = "text/plain")]
     [Description("One source file of the demo or of the hosting samples, e.g. brouter://source/Demo%2FClient%2FAppRouter.razor.")]

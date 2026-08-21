@@ -23,7 +23,7 @@ URI that no longer resolves.
 | --- | --- |
 | Handshake, instructions, capabilities | `McpHandshakeTests` |
 | The published tool set, its annotations and schemas | `McpToolSurfaceTests` |
-| Every tool's answers, and its answers to bad input | `McpDocumentationToolTests`, `McpApiToolTests`, `McpSearchToolTests`, `McpTemplateToolTests`, `McpToolFailureTests` |
+| Every tool's answers - including the index each one gives when its key is left out - and its answers to bad input | `McpDocumentationToolTests`, `McpApiToolTests`, `McpSearchToolTests`, `McpTemplateToolTests`, `McpToolFailureTests` |
 | Resources, prompts and argument completion | `McpResourceTests`, `McpPromptTests`, `McpCompletionTests` |
 | The seams between the catalogs | `McpCatalogConsistencyTests` |
 | The `/api/mcp/...` HTTP mirror | `HttpMirrorTests` |
@@ -34,7 +34,7 @@ URI that no longer resolves.
 ## The two that matter most
 
 `RouterOracleTests` mounts a real `<Brouter>` (bUnit) and puts the server's two non-documentation
-claims to it: the templates `AnalyzeBrouterRouteTable` calls ambiguous are exactly the ones the
+claims to it: the templates `InspectBrouterRouteTemplates` calls ambiguous are exactly the ones the
 router refuses to register, and every constraint's documented passing and failing example really
 does pass and fail. No expected answers are written down there - the router is the expectation.
 

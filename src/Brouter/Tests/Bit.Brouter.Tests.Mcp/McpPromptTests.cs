@@ -128,7 +128,7 @@ public class McpPromptTests
 
         StringAssert.Contains(text, "GetBrouterSetupGuide");
         StringAssert.Contains(text, "DI containers");
-        StringAssert.Contains(text, "AnalyzeBrouterRouteTable", "The workflow never checks the route table it just changed.");
+        StringAssert.Contains(text, "InspectBrouterRouteTemplates", "The workflow never checks the route table it just changed.");
     }
 
     [TestMethod]
@@ -137,7 +137,7 @@ public class McpPromptTests
         var text = await GetTextAsync("implement-brouter-feature", new() { ["feature"] = "load data before the page renders" });
 
         StringAssert.Contains(text, "SearchBrouter");
-        StringAssert.Contains(text, "GetBrouterApiDetails");
+        StringAssert.Contains(text, "GetBrouterApi");
         StringAssert.Contains(text, "do not infer a parameter from another router library");
     }
 
@@ -158,7 +158,7 @@ public class McpPromptTests
 
         StringAssert.Contains(text, "the route matches but its parameter arrives null");
         StringAssert.Contains(text, "faq");
-        StringAssert.Contains(text, "InspectBrouterRouteTemplate");
+        StringAssert.Contains(text, "InspectBrouterRouteTemplates");
     }
 
     [TestMethod]

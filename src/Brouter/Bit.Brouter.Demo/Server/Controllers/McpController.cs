@@ -1,8 +1,7 @@
-using System.Text;
+﻿using System.Text;
 using ModelContextProtocol.Server;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using Bit.Brouter.Demo.Client;
 using Bit.Brouter.Demo.Server.Dtos;
 using Bit.Brouter.Demo.Server.Services;
 using Microsoft.AspNetCore.Components.Web;
@@ -20,14 +19,26 @@ namespace Bit.Brouter.Demo.Server.Controllers;
 /// endpoints under /api/mcp/..., which makes each of them inspectable from a browser.
 /// </para>
 /// <para>
+/// There are eight of them, and one rule holds across the reference ones: a tool takes the key of
+/// the thing you want and answers with that thing; leave the key out and it answers with the index
+/// of what there is. That is what a listing tool used to be - and a listing tool costs a name, a
+/// description and a schema in every request an agent makes, forever, to say what an optional
+/// argument says for nothing.
+/// </para>
+/// <para>
 /// Each tool carries the two annotations that mean something for a tool which only reads:
 /// <c>ReadOnly</c>, which is what lets a client run it without stopping to ask a person, and
 /// <c>OpenWorld = false</c>, which says the answers come from a closed, known body of material
 /// rather than from the internet. The protocol's other two hints - destructive and idempotent - are
-/// defined only for tools that do modify something, so stating them here would say nothing. Tools
-/// answering with a DTO rather than with prose additionally set <c>UseStructuredContent</c>: the
-/// client then receives the object under an output schema it can validate, instead of a wall of
-/// JSON it has to hope is shaped the way the description implied.
+/// defined only for tools that do modify something, so stating them here would say nothing.
+/// </para>
+/// <para>
+/// Only the two tools whose answer is machine-actionable - a ranked hit carrying its own follow-up
+/// call, a parse verdict - set <c>UseStructuredContent</c> and publish an output schema. The rest
+/// answer in Markdown, and deliberately: a structured answer goes over the wire twice, once as the
+/// object and once as the JSON text the spec asks for on its behalf, and the same reference read as
+/// Markdown is smaller than either half. A client pays that price where an object is worth having;
+/// it should not pay it to read documentation.
 /// </para>
 /// </summary>
 [ApiController]
@@ -44,72 +55,9 @@ public class McpController(HtmlRenderer htmlRenderer, IOptions<BrouterOptions> b
     // it, rather than spending the request on material nobody meant to send.
     private const int MaxAnalyzedTemplates = 200;
 
-    private static readonly string BrouterVersion = BrouterServerInstructions.BrouterVersion;
-
-    [HttpGet]
-    [McpServerTool(Name = nameof(GetBrouterOverview), Title = "Bit.Brouter overview", ReadOnly = true, OpenWorld = false)]
-    [Description("Start here. Explains what Bit.Brouter is, how to install and register it, shows a minimal working router, and lists which of the other Brouter tools to call for what.")]
-    public string GetBrouterOverview()
-    {
-        var builder = new StringBuilder();
-
-        var readme = BrouterSourceCatalog.Readme;
-        var firstSection = readme.IndexOf("\n## ", StringComparison.Ordinal);
-        builder.AppendLine(firstSection > 0 ? readme[..firstSection].Trim() : readme).AppendLine();
-
-        // Which build the answers come from: every tool below reflects THIS assembly, not a remembered version.
-        builder.AppendLine($"_These tools answer from Bit.Brouter {BrouterVersion}, loaded in this server._").AppendLine();
-
-        AppendGuideSection(builder, "Install");
-        AppendGuideSection(builder, "Quick start");
-        AppendGuideSection(builder, "Features");
-
-        builder.AppendLine("""
-            ---
-
-            ## Which tool to call
-
-            - `SearchBrouter` - **the default entry point.** One query across the guide, the docs pages, every public
-              type and member, the constraints and the demo's sources; each hit carries the exact follow-up call.
-              Reach for it whenever you do not already know the section, slug or type name you want.
-            - `GetBrouterSetupGuide` - the complete wiring for one Blazor render mode ('server', 'wasm', 'auto',
-              'standalone-wasm'), as the real files of a working project. Start here when adding Brouter to an app.
-            - `GetBrouterGuideSections` / `GetBrouterGuideSection` - the library's own reference guide, one topic at a
-              time, with copy-pasteable code. The fastest route to a working implementation of a specific feature
-              (guards, loaders, keep-alive, view transitions, typed routes, migration, ...).
-            - `GetBrouterDocsList` / `GetBrouterDocsPage` - the documentation site's pages: the same topics written as
-              narrative documentation, with the live routes that demonstrate them.
-            - `GetBrouterApiList` / `GetBrouterApiDetails` - the exact public API: every component parameter with its
-              type and default value, every service member, option and enum, straight out of the shipped assembly.
-              Call this before writing code against a member you are not sure about.
-            - `GetBrouterRouteConstraints` - every constraint usable in a route template, with a passing and a failing
-              example for each.
-            - `InspectBrouterRouteTemplate` / `AnalyzeBrouterRouteTable` - check a template, or a whole set of them,
-              with Brouter's own parser before you ship it: parameters, constraints, specificity ranking, ambiguous
-              pairs, and the exact error for an invalid template.
-            - `GetBrouterTypedRoutes` - what the optional source generator emits: compile-time-safe URL builders and
-              route-name constants, shown from a real project.
-            - `GetBrouterSourceFiles` / `GetBrouterSourceFile` - real, working source: the whole route table of this
-              site (`Demo/Client/AppRouter.razor`), every demo page behind it, and the minimal hosting samples for
-              each Blazor render mode (`Sample/Wasm/...`, `Sample/Server/...`, `Sample/Auto/...`).
-
-            ## Rules of thumb when writing Brouter code
-
-            - Register the services once per Blazor DI container with `AddBitBrouterServices` - in a Blazor Web App
-              that means both the server and the client project - and add `@using Bit.Brouter` to `_Imports.razor`.
-            - Route templates use the built-in Blazor router's grammar, so `@page` templates port over verbatim.
-            - Declared routes (`<Broute Path="...">`) and discovered `@page` components can be mixed: set
-              `AppAssembly`/`AdditionalAssemblies` on `<Brouter>` to enable discovery.
-            - A route renders either a `Component` or a `<Content>` fragment, never both.
-            - Nested routes need a `<BrouterOutlet />` in the parent's content, otherwise children have nowhere to go.
-            """);
-
-        return builder.ToString();
-    }
-
     [HttpGet]
     [McpServerTool(Name = nameof(SearchBrouter), Title = "Search everything about Bit.Brouter", ReadOnly = true, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Searches everything known about Bit.Brouter at once - the reference guide, the documentation pages, every public type and member, the route constraints and the demo's source files - and returns the best matches, each with the exact follow-up tool call that returns its full text. Use this first whenever you do not already know which section, page or type holds the answer. Example queries: 'block navigation unsaved changes', 'cache loader data', 'keep component alive', 'query string binding'.")]
+    [Description("Searches everything known about Bit.Brouter at once - the reference guide, the documentation pages, every public type and member, the route constraints and the demo's source files - and returns the best matches, each with the exact follow-up call that returns its full text. Call it first whenever you do not already know which section, page or type holds the answer, then call the hit's tool verbatim. Example queries: 'block navigation unsaved changes', 'cache loader data', 'keep component alive', 'query string binding'.")]
     public BrouterSearchResultDto SearchBrouter(
         [Description("What you are looking for, in the words you would use for it - a feature, a symptom, or a member name. A few words rank better than a whole sentence.")] string query,
         [Description("How many hits to return. Clamped to 1..50.")] int limit = 12)
@@ -119,7 +67,7 @@ public class McpController(HtmlRenderer htmlRenderer, IOptions<BrouterOptions> b
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBrouterSetupGuide), Title = "Setup guide for one render mode", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets the complete wiring needed to add Bit.Brouter to a Blazor app in one render mode, as the real files of a working project: 'server' (Blazor Web App, InteractiveServer), 'wasm' (InteractiveWebAssembly), 'auto' (InteractiveAuto) or 'standalone-wasm'. Call this before writing any setup code - which DI container registers the services and where the catch-all host page lives differ per render mode.")]
+    [Description("Gets the complete wiring needed to add Bit.Brouter to a Blazor app in one render mode, as the real files of a working project: 'server' (Blazor Web App, InteractiveServer), 'wasm' (InteractiveWebAssembly), 'auto' (InteractiveAuto) or 'standalone-wasm'. Call this before writing any setup code - which DI container registers the services and where the catch-all host page lives differ per render mode. It stands in for several shorter answers: do not also fetch the getting-started page for the same task.")]
     public string GetBrouterSetupGuide(
         // Declared rather than merely described: the four values then sit in the JSON schema itself,
         // where a model cannot pass a fifth past them, and a client offers them as completions
@@ -132,44 +80,36 @@ public class McpController(HtmlRenderer htmlRenderer, IOptions<BrouterOptions> b
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetBrouterTypedRoutes), Title = "Typed routes (source generator)", ReadOnly = true, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Explains the optional Bit.Brouter.Generators source generator and shows its real output: the compile-time-safe URL builders and route-name constants it emitted for this documentation site's own route table. Call it when asked for typed/compile-safe URLs or BrouterRoutes.")]
-    public BrouterTypedRoutesResultDto GetBrouterTypedRoutes()
+    [McpServerTool(Name = nameof(GetBrouterGuideSection), Title = "Read a reference-guide section", ReadOnly = true, OpenWorld = false)]
+    [Description("Gets one section of the Bit.Brouter reference guide (the library's README) as Markdown, with its code samples - e.g. 'Async guards', 'Data loader', 'Keep-alive routes', 'Typed routes (source generator)'. Sub-sections are included, and heading matching ignores case and punctuation. Omit the heading for the index of sections with their sizes. This is the finest-grained prose there is: for one feature it costs a fraction of the documentation page covering the same ground.")]
+    public string GetBrouterGuideSection(
+        [Description("The section's heading, e.g. 'Async guards'. Case and punctuation are ignored. Omit it for the index of sections.")] string? heading = null)
     {
-        var typedRoutes = BrouterTypedRoutesCatalog.TypedRoutes;
+        if (string.IsNullOrWhiteSpace(heading)) return BrouterSourceCatalog.RenderGuideIndex();
 
-        return new BrouterTypedRoutesResultDto
-        {
-            TypedRoutes = typedRoutes,
-            Message = typedRoutes is not null
-                ? null
-                : "The typed-route generator did not run for this build, so there is no generated output to show. " +
-                  "Call GetBrouterGuideSection(heading: \"Typed routes (source generator)\") for how it works."
-        };
-    }
+        var section = BrouterSourceCatalog.GetGuideSection(heading);
 
-    [HttpGet]
-    [McpServerTool(Name = nameof(GetBrouterDocsList), Title = "List the documentation pages", ReadOnly = true, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Lists the pages of the Bit.Brouter documentation site with their descriptions and search keywords. Use it to pick the slug to pass to GetBrouterDocsPage.")]
-    public BrouterDocsPageDto[] GetBrouterDocsList()
-    {
-        return [.. DocsCatalog.Sections.SelectMany(section => section.Pages.Select(page => new BrouterDocsPageDto
-        {
-            Section = section.Title,
-            Slug = page.Slug,
-            Url = page.Url,
-            Title = page.Title,
-            Description = page.Description,
-            Keywords = page.Keywords
-        }))];
+        if (section is not null) return Truncate(section);
+
+        var candidates = BrouterSourceCatalog.GuideSections
+            .Where(s => s.Heading.Contains(heading, StringComparison.OrdinalIgnoreCase))
+            .Select(s => $"'{s.Heading}'")
+            .Take(10)
+            .ToArray();
+
+        return candidates.Length > 0
+            ? $"The guide has no section called '{heading}'. Did you mean: {string.Join(", ", candidates)}?"
+            : $"The guide has no section called '{heading}'. Call GetBrouterGuideSection with no heading for the index of sections.";
     }
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBrouterDocsPage), Title = "Read a documentation page", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets one page of the Bit.Brouter documentation site as Markdown, including its code samples. Pass a slug from GetBrouterDocsList, e.g. 'guards', 'data-loading' or 'route-templates'. Omit it for the documentation overview.")]
+    [Description("Gets one page of the Bit.Brouter documentation site as Markdown, code samples included - the narrative behind the guide, and the only place some of the material exists at all: 'faq' (a symptom mapped to its cause), 'recipes' (worked solutions), 'navigation-pipeline' (what runs when, in order), 'migration', 'performance'. The other slugs: overview, getting-started, route-templates, constraints, route-parameters, nested-routes, page-discovery, navigation, guards, scroll-and-focus, data-loading, view-transitions, lifecycle, typed-routes, api, mcp. Omit the slug for the index of pages.")]
     public async Task<string> GetBrouterDocsPage(
-        [Description("The page's slug, e.g. 'guards'. Omit it, or pass 'overview', for the documentation overview.")] string? slug = null)
+        [Description("The page's slug, e.g. 'guards'. Pass 'overview' for the documentation overview; omit it for the index of pages.")] string? slug = null)
     {
+        if (string.IsNullOrWhiteSpace(slug)) return DocsPageRenderer.RenderIndex();
+
         var page = DocsPageRenderer.FindPage(slug);
 
         if (page is null) return DocsPageRenderer.NoSuchPage(slug);
@@ -186,99 +126,52 @@ public class McpController(HtmlRenderer htmlRenderer, IOptions<BrouterOptions> b
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetBrouterGuideSections), Title = "List the reference-guide sections", ReadOnly = true, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Lists every section of the Bit.Brouter reference guide (the library's README), with its heading and size. Use it to pick the heading to pass to GetBrouterGuideSection.")]
-    public BrouterGuideSectionDto[] GetBrouterGuideSections()
+    [McpServerTool(Name = nameof(GetBrouterApi), Title = "Public API reference", ReadOnly = true, OpenWorld = false)]
+    [Description("Gets the public API of Bit.Brouter as Markdown, read out of the shipped assembly: one type with every Blazor parameter, property, method, event or enum value it has - each with its C# type, its real default value and its documentation. Omit the type name for the index of every public type. Call it before using a member you are unsure about, e.g. 'Broute', 'Brouter', 'BrouterLink', 'IBrouter', 'BrouterOptions', 'BrouterNavigationContext'.")]
+    public string GetBrouterApi(
+        [Description("The type's name without its namespace, e.g. 'Broute' or 'BrouterOptions'. Omit it for the index of types.")] string? typeName = null)
     {
-        return BrouterSourceCatalog.GuideSections;
-    }
+        if (string.IsNullOrWhiteSpace(typeName)) return BrouterApiCatalog.RenderIndex();
 
-    [HttpGet]
-    [McpServerTool(Name = nameof(GetBrouterGuideSection), Title = "Read a reference-guide section", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets one section of the Bit.Brouter reference guide as Markdown, with its code samples - e.g. 'Async guards', 'Data loader', 'Keep-alive routes', 'Typed routes (source generator)'. Sub-sections are included. Heading matching ignores case and punctuation.")]
-    public string GetBrouterGuideSection(
-        [Description("The section's heading, as GetBrouterGuideSections lists it. Case and punctuation are ignored.")] string heading)
-    {
-        var section = BrouterSourceCatalog.GetGuideSection(heading);
+        var rendered = BrouterApiCatalog.RenderType(typeName);
 
-        if (section is null)
-        {
-            var headings = string.Join(", ", BrouterSourceCatalog.GuideSections.Select(s => $"'{s.Heading}'"));
-
-            return $"The guide has no section called '{heading}'. Available sections: {headings}.";
-        }
-
-        return Truncate(section);
-    }
-
-    [HttpGet]
-    [McpServerTool(Name = nameof(GetBrouterApiList), Title = "List the public API", ReadOnly = true, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Lists every public type of the Bit.Brouter library - components, services, options, enums and value types - with its kind and summary. Use it to pick the type to pass to GetBrouterApiDetails.")]
-    public BrouterApiTypeDto[] GetBrouterApiList()
-    {
-        return BrouterApiCatalog.Types;
-    }
-
-    [HttpGet]
-    [McpServerTool(Name = nameof(GetBrouterApiDetails), Title = "Reference for one type", ReadOnly = true, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Gets the full reference of one Bit.Brouter type: its Blazor parameters with types and default values, its properties, methods, events or enum values, each with its documentation. Call it before using a member you are unsure about, e.g. 'Broute', 'Brouter', 'BrouterLink', 'IBrouter', 'BrouterOptions', 'BrouterNavigationContext'.")]
-    public BrouterApiDetailsResultDto GetBrouterApiDetails(
-        [Description("The type's name without its namespace, e.g. 'Broute' or 'BrouterOptions'. From GetBrouterApiList.")] string typeName)
-    {
-        var details = BrouterApiCatalog.GetTypeDetails(typeName);
-
-        if (details is not null) return new BrouterApiDetailsResultDto { Details = details };
+        if (rendered is not null) return Truncate(rendered);
 
         var candidates = BrouterApiCatalog.Types
-            .Where(t => t.Name.Contains(typeName ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+            .Where(t => t.Name.Contains(typeName, StringComparison.OrdinalIgnoreCase))
             .Select(t => t.Name)
+            .Take(10)
             .ToArray();
 
-        return new BrouterApiDetailsResultDto
-        {
-            Message = candidates.Length > 0
-                ? $"Bit.Brouter has no public type called '{typeName}'. Did you mean: {string.Join(", ", candidates)}?"
-                : $"Bit.Brouter has no public type called '{typeName}'. Call GetBrouterApiList for the full list."
-        };
+        return candidates.Length > 0
+            ? $"Bit.Brouter has no public type called '{typeName}'. Did you mean: {string.Join(", ", candidates)}?"
+            : $"Bit.Brouter has no public type called '{typeName}'. Call GetBrouterApi with no type name for the index.";
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetBrouterRouteConstraints), Title = "List the route constraints", ReadOnly = true, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Lists every route constraint usable inside a Bit.Brouter route template - the built-in type and validation constraints, a custom one, and constraint chaining - each with the rule it enforces plus a passing and a failing example.")]
-    public BrouterConstraintDto[] GetBrouterRouteConstraints()
+    [McpServerTool(Name = nameof(GetBrouterRouteConstraints), Title = "List the route constraints", ReadOnly = true, OpenWorld = false)]
+    [Description("Lists every route constraint usable inside a Bit.Brouter route template - the built-in type and validation constraints, a custom one, and constraint chaining - each with the rule it enforces plus a passing and a failing example, as one Markdown table.")]
+    public string GetBrouterRouteConstraints()
     {
-        return [.. ConstraintCatalog.All.Select(constraint => new BrouterConstraintDto
-        {
-            Token = constraint.Token,
-            Category = constraint.Category,
-            Rule = constraint.Rule,
-            PassExample = constraint.PassExample,
-            FailExample = constraint.FailExample,
-            // The example is one path segment: escaped, so a value carrying a slash, a space or a
-            // '#' still produces the URL that exercises the constraint rather than a different one.
-            TryUrl = $"/c/{constraint.Kind}/{Uri.EscapeDataString(constraint.PassExample)}"
-        })];
+        return BrouterConstraintReference.Render();
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(InspectBrouterRouteTemplate), Title = "Inspect one route template", ReadOnly = true, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Parses a route template with Bit.Brouter's own parser and reports what it means: its segments, parameter names, constraints, default values, specificity, and notes about behavior that is easy to get wrong. An invalid template comes back with the exact error the router would throw. Example inputs: '/users/{id:int}', '/files/{name}.{ext?}', '/assets/{*path:nonfile}'.")]
-    public BrouterTemplateInspectionDto InspectBrouterRouteTemplate(
-        [Description("One route template, written exactly as it would be in @page or <Broute Path=\"...\">.")] string template)
-    {
-        // The app's own constraint registry, so custom constraints registered in
-        // AddBitBrouterServices (this demo registers "slug") resolve exactly as they do at runtime.
-        return BrouterTemplateInspector.Inspect(template, brouterOptions.Value.Constraints);
-    }
-
-    [HttpGet]
-    [McpServerTool(Name = nameof(AnalyzeBrouterRouteTable), Title = "Analyze a whole route table", ReadOnly = true, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Parses a whole set of route templates together and reports how they relate: the order in which the router prefers them when several match the same URL (by specificity), any templates that are indistinguishable - Brouter throws at registration for those - and the exact error for each invalid one. Pass one template per line. Use it after adding routes to an existing table. At most 200 templates are analyzed in one call; send more and the answer comes back with isPartial set, covering only the first 200 - never treat such an answer as an analysis of the whole table.")]
-    public BrouterRouteTableAnalysisDto AnalyzeBrouterRouteTable(
-        [Description("The route templates, one per line. A semicolon separates them too, and so does a top-level comma - but never a comma inside a constraint such as range(1,10).")] string templates)
+    [McpServerTool(Name = nameof(InspectBrouterRouteTemplates), Title = "Inspect route templates", ReadOnly = true, OpenWorld = false, UseStructuredContent = true)]
+    [Description("Parses route templates with Bit.Brouter's own parser and reports what they mean. One template comes back in full: its segments, parameter names, constraints, default values, specificity, and notes about behavior that is easy to get wrong. Several - one per line - come back as a ranked set instead: the order the router prefers them in when more than one matches a URL, the ones that are indistinguishable (Brouter throws at registration for those), and the exact error for each invalid one. Check a template with it before you ship it. At most 200 templates are analyzed in one call; send more and the answer comes back with isPartial set, covering only the first 200.")]
+    public BrouterRouteAnalysisDto InspectBrouterRouteTemplates(
+        [Description("One route template, written exactly as it would be in @page or <Broute Path=\"...\">, e.g. '/users/{id:int}' - or several, one per line. A semicolon separates them too, and so does a top-level comma, but never a comma inside a constraint such as range(1,10).")] string templates)
     {
         var analyzed = SplitTemplates(templates, out var submitted);
 
+        // Nothing but whitespace came in, and the empty template is a real one: it is what a child
+        // route declares to be its parent's index. So the answer is about that template rather than
+        // an empty list, which would read as "there is nothing to say about this" - and the note it
+        // carries also tells a caller who simply sent an empty argument what to send instead.
+        if (analyzed.Length == 0) analyzed = [string.Empty];
+
+        // The app's own constraint registry, so custom constraints registered in
+        // AddBitBrouterServices (this demo registers "slug") resolve exactly as they do at runtime.
         var analysis = BrouterTemplateInspector.Analyze(analyzed, brouterOptions.Value.Constraints);
 
         if (submitted <= analyzed.Length) return analysis;
@@ -303,32 +196,26 @@ public class McpController(HtmlRenderer htmlRenderer, IOptions<BrouterOptions> b
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetBrouterSourceFiles), Title = "List the available source files", ReadOnly = true, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Lists the working Bit.Brouter source files this server can hand out: the whole route table of the documentation site, every page it routes to, and the minimal hosting samples for each Blazor render mode. Use it to pick the path to pass to GetBrouterSourceFile.")]
-    public BrouterSourceFileDto[] GetBrouterSourceFiles()
-    {
-        return BrouterSourceCatalog.SourceFiles;
-    }
-
-    [HttpGet]
     [McpServerTool(Name = nameof(GetBrouterSourceFile), Title = "Read a source file", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets one source file listed by GetBrouterSourceFiles, verbatim - e.g. 'Demo/Client/AppRouter.razor' for a complete, working route table that exercises nearly every Bit.Brouter feature.")]
+    [Description("Gets one working Bit.Brouter source file verbatim - e.g. 'Demo/Client/AppRouter.razor', the complete route table of this documentation site, which exercises nearly every feature. Omit the path for the index of files: the demo's route table and the pages it routes to, and the minimal hosting samples for each Blazor render mode ('Sample/Wasm/...', 'Sample/Server/...', 'Sample/Auto/...'). These are worked examples - for what a parameter means, GetBrouterApi answers in a fraction of the characters.")]
     public string GetBrouterSourceFile(
-        [Description("The file's path as GetBrouterSourceFiles lists it, e.g. 'Demo/Client/AppRouter.razor'.")] string path)
+        [Description("The file's path as the index lists it, e.g. 'Demo/Client/AppRouter.razor'. Omit it for the index of files.")] string? path = null)
     {
+        if (string.IsNullOrWhiteSpace(path)) return BrouterSourceCatalog.RenderSourceIndex();
+
         var content = BrouterSourceCatalog.GetSourceFile(path);
 
         if (content is null)
         {
             var candidates = BrouterSourceCatalog.SourceFiles
-                .Where(f => f.Path.Contains(path ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                .Where(f => f.Path.Contains(path, StringComparison.OrdinalIgnoreCase))
                 .Select(f => f.Path)
                 .Take(10)
                 .ToArray();
 
             return candidates.Length > 0
                 ? $"No source file at '{path}'. Did you mean: {string.Join(", ", candidates)}?"
-                : $"No source file at '{path}'. Call GetBrouterSourceFiles for the full list.";
+                : $"No source file at '{path}'. Call GetBrouterSourceFile with no path for the index of files.";
         }
 
         return Truncate(content);
@@ -399,19 +286,7 @@ public class McpController(HtmlRenderer htmlRenderer, IOptions<BrouterOptions> b
         }
     }
 
-    /// <summary>
-    /// A renamed README heading must not silently leave a blank gap in the overview - the agent is
-    /// told where the text went instead.
-    /// </summary>
-    private static void AppendGuideSection(StringBuilder builder, string heading)
-    {
-        builder.AppendLine(BrouterSourceCatalog.GetGuideSection(heading)
-                           ?? $"_The guide's \"{heading}\" section was not found in this build. " +
-                              $"Call GetBrouterGuideSections for the sections it does have._")
-               .AppendLine();
-    }
-
-    private static string Truncate(string text)
+    internal static string Truncate(string text)
     {
         if (text.Length <= MaxDocumentLength) return text;
 

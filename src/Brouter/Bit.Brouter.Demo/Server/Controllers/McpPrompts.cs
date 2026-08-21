@@ -41,7 +41,7 @@ public static class McpPrompts
             4. Keep the app's existing `@page` components working by pointing `AppAssembly` (and
                `AdditionalAssemblies` for any razor class libraries) at their assemblies - templates are
                superset-compatible, so nothing about them has to change.
-            5. Before finishing, call `AnalyzeBrouterRouteTable` with every route template the app now declares, and
+            5. Before finishing, call `InspectBrouterRouteTemplates` with every route template the app now declares, and
                resolve anything it reports as ambiguous or invalid.
             6. Build the app and fix what the compiler says.
 
@@ -63,10 +63,10 @@ public static class McpPrompts
             1. Call `SearchBrouter` with the request above. It searches the guide, the docs pages, every public
                member and the demo's sources at once, and every hit tells you the exact follow-up call to make.
             2. Read the best hit in full with the call it hands you, before writing any code.
-            3. Call `GetBrouterApiDetails` for every Brouter type you are about to use, and match the parameter
+            3. Call `GetBrouterApi` for every Brouter type you are about to use, and match the parameter
                names, types and defaults exactly - do not infer a parameter from another router library.
-            4. If the work touches route templates, check them with `InspectBrouterRouteTemplate` (or
-               `AnalyzeBrouterRouteTable` for several) before you ship them.
+            4. If the work touches route templates, check them with `InspectBrouterRouteTemplates` - one template, or
+               several one per line - before you ship them.
             5. Prefer the framework's own mechanism over hand-rolling one: a route `Guard` / `LeaveGuard` over manual
                checks in OnInitialized, a route `Loader` over fetching in the component, `KeepAlive` over caching
                state yourself, `<BrouterOutlet />` over conditional rendering.
@@ -94,7 +94,7 @@ public static class McpPrompts
             4. Map the built-in Router's pieces rather than dropping them - `Found`/`RouteView`, `NotFound`,
                `Navigating`, `AuthorizeRouteView` and layouts all have documented equivalents; the guide's migration
                section states each one.
-            5. Call `AnalyzeBrouterRouteTable` with the full set of templates once discovery is on, since a
+            5. Call `InspectBrouterRouteTemplates` with the full set of templates once discovery is on, since a
                hand-declared route and a discovered `@page` can now collide.
             6. Build, then walk the app's routes - including deep links and the 404 path - and report what changed.
 
@@ -114,12 +114,12 @@ public static class McpPrompts
 
             1. Call `GetBrouterDocsPage` with slug "faq" - it lists the common symptoms with the reason behind each,
                and the cause is often there verbatim.
-            2. If a route template is involved, call `InspectBrouterRouteTemplate` on it. It parses with Brouter's
+            2. If a route template is involved, call `InspectBrouterRouteTemplates` on it. It parses with Brouter's
                own parser and reports the parameters, constraints and specificity - and the exact error if the
-               template is invalid. For a URL that picks the wrong route, call `AnalyzeBrouterRouteTable` with every
-               competing template: it ranks them the way the router does.
+               template is invalid. For a URL that picks the wrong route, send every competing template in one
+               call, one per line: it then ranks them the way the router does.
             3. Call `SearchBrouter` with the symptom for anything the FAQ did not cover.
-            4. Confirm the API you are relying on with `GetBrouterApiDetails` before concluding it is a bug - check
+            4. Confirm the API you are relying on with `GetBrouterApi` before concluding it is a bug - check
                the actual default value of the parameter involved.
             5. Check the setup itself against `GetBrouterSetupGuide` for this render mode: services registered in
                every DI container, the catch-all host page present, the built-in `<Router>` gone, `AppAssembly` set
