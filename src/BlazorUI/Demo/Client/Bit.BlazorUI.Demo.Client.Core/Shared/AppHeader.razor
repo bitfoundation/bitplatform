@@ -68,9 +68,11 @@
                href="https://github.com/bitfoundation/bitplatform"></a>
 
             @* The design system picker and the light/dark toggle are both this component's; all that is
-               left here is the two things it cannot know about - the theme to show before JS interop is
-               reachable (see OnInitAsync) and the native shell that follows the applied scheme. *@
+               left here is the three things it cannot know about - the design systems this site offers
+               (see _designSystems), the theme to show before JS interop is reachable (see OnInitAsync)
+               and the native shell that follows the applied scheme. *@
             <BitThemeSwitcher Class="theme-switcher"
+                              DesignSystems="_designSystems"
                               InitialTheme="@_initialTheme"
                               OnChange="WrapHandled<string>(OnThemeChanged)" />
         </div>

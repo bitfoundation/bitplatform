@@ -52,8 +52,14 @@
 @* bit-theme-persist / bit-theme-persist-cookie: the client keeps the chosen theme in localStorage AND
    in the cookie read above, which is what lets the server render the right theme in the first place.
    bit-theme-view-transition: theme toggles cross-fade via the View Transitions API (skipped
-   automatically on unsupported browsers / prefers-reduced-motion). *@
-<html lang="en" @attributes="rootThemeAttributes" bit-theme-persist bit-theme-persist-cookie bit-theme-view-transition>
+   automatically on unsupported browsers / prefers-reduced-motion).
+   bit-theme-light / bit-theme-dark: the site dresses in Fluent 2 by default, so the two names the
+   OS-following resolution (bit-theme-system, emitted above whenever nothing is persisted) picks
+   between are the Fluent 2 pair rather than the core light / dark Fluent ones. A visitor who has
+   already picked a design system in the header is painted from their cookie instead and never
+   reaches this. *@
+<html lang="en" @attributes="rootThemeAttributes" bit-theme-persist bit-theme-persist-cookie bit-theme-view-transition
+      bit-theme-light="@BitExtraThemePresets.Fluent2Light" bit-theme-dark="@BitExtraThemePresets.Fluent2Dark">
 
 <head>
     @* First thing in the document: re-resolves bit-theme from localStorage / the preference cookie

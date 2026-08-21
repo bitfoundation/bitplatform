@@ -27,39 +27,52 @@
            descend from - the page's own root markup is all components. *@
         <div class="icon-browser">
             <BitSearchBox Immediate
-                      DebounceTime="300"
-                      OnClear="HandleClear"
-                      OnChange="HandleChange"
-                      Placeholder="Search icons"
-                      IconName="@BitIconName.Search"
-                      Class="iconography-search-box" />
+                          DebounceTime="300"
+                          OnClear="HandleClear"
+                          OnChange="HandleChange"
+                          Placeholder="Search icons"
+                          IconName="@BitIconName.Search"
+                          Class="iconography-search-box" />
 
-        <BitScrollablePane Height="30rem" OverflowX="BitOverflow.Hidden" Modern Class="icon-scroller">
-            <BitStack Horizontal Wrap FitHeight Gap="0.5rem">
-                @if (filteredIcons.Count == 0)
-                {
-                    <BitText Element="p" Typography="BitTypography.Subtitle1">No icon matches that name.</BitText>
-                }
-                else
-                {
-                    foreach (var icon in filteredIcons)
+            @* The icon font carries well over two thousand glyphs, which is more markup than a phone
+               can lay out in one go - so the grid is windowed. BitVirtualize windows a *vertical*
+               list, so the unit of virtualization is a row of icons rather than an icon: the cells
+               are chunked into rows of columnCount (see OnIconGridResized, which recomputes it from
+               the measured width of the scroller), and only the rows in view get rendered.
+
+               The cell is plain markup rather than a BitButton hosting a BitIcon and a BitText,
+               because at this count the per-component cost is the cost: everything the components
+               would have contributed here is a handful of rules in the stylesheet. *@
+            <BitVirtualize Id="@GRID_ELEMENT_ID"
+                           Items="iconRows"
+                           ItemSize="ICON_ROW_HEIGHT"
+                           OverscanCount="4"
+                           AriaLabel="Icons"
+                           Class="icon-scroller"
+                           Style="@($"--icon-cols: {columnCount}")">
+                <ItemTemplate>
+                    <div class="icon-row">
+                        @foreach (var icon in context)
+                        {
+                            <button type="button"
+                                    title="@icon.Value"
+                                    @onclick="() => OpenIconPanel(icon)"
+                                    class="@($"icon-box {(selectedIcon?.Value == icon.Value ? "selected" : string.Empty)}")">
+                                <i aria-hidden="true" class="@($"bit-icon bit-icon--{icon.Value}")"></i>
+                                <span class="icon-name">@icon.Value</span>
+                            </button>
+                        }
+                    </div>
+                </ItemTemplate>
+                <EmptyTemplate>
+                    @* Empty also means "not measured yet", one frame before the observer first
+                       reports a width - and that frame must not claim the search found nothing. *@
+                    @if (filteredIcons.Count == 0)
                     {
-                        <BitButton Variant="BitVariant.Text"
-                                   Title="@icon.Value"
-                                   AriaLabel="@icon.Value"
-                                   OnClick="() => OpenIconPanel(icon)"
-                                   Class="@($"icon-box {(selectedIcon?.Value == icon.Value ? "selected" : string.Empty)}")">
-                            <BitStack Gap="0.375rem" Alignment="BitAlignment.Center">
-                                <BitIcon IconName="@icon.Value" Size="BitSize.Large" Color="BitColor.SecondaryForeground" />
-                                <BitText Class="icon-name" Typography="BitTypography.Caption2">
-                                    @icon.Value
-                                </BitText>
-                            </BitStack>
-                        </BitButton>
+                        <BitText Element="p" Typography="BitTypography.Subtitle1">No icon matches that name.</BitText>
                     }
-                }
-            </BitStack>
-            </BitScrollablePane>
+                </EmptyTemplate>
+            </BitVirtualize>
         </div>
     </DocSection>
 

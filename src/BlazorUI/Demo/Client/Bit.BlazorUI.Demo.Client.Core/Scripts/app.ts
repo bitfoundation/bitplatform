@@ -263,6 +263,39 @@ function unregisterWindowResizeListener(id: string) {
     delete windowResizeListeners[id];
 }
 
+const elementWidthObservers: { [key: string]: ResizeObserver } = {};
+
+// Reports the usable (padding-excluded) width of an element to .NET whenever it changes. The
+// iconography grid virtualizes by row, so it has to know how many cells fit across before it can
+// chunk the icons - and a window resize listener would not see the width change when it is the
+// side rail collapsing or a scrollbar appearing rather than the window that moved.
+function observeElementWidth(id: string, dotnetObj: any, methodName: string) {
+    unobserveElementWidth(id);
+
+    const element = document.getElementById(id);
+    if (element == null) return;
+
+    const report = () => {
+        const style = getComputedStyle(element);
+        const width = element.clientWidth - parseFloat(style.paddingInlineStart) - parseFloat(style.paddingInlineEnd);
+        dotnetObj.invokeMethodAsync(methodName, Math.max(0, width));
+    };
+
+    const observer = new ResizeObserver(report);
+    observer.observe(element);
+    elementWidthObservers[id] = observer;
+
+    report();
+}
+
+function unobserveElementWidth(id: string) {
+    const observer = elementWidthObservers[id];
+    if (observer == null) return;
+
+    observer.disconnect();
+    delete elementWidthObservers[id];
+}
+
 declare namespace BitBlazorUI {
     class Theme { static init(options: any): void; }
 }

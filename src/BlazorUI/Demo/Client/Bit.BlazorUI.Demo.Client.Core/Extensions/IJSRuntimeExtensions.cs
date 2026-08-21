@@ -58,6 +58,21 @@ public static class IJSRuntimeExtensions
     }
 
     /// <summary>
+    /// Watches the usable width of the element with the given id and reports it - immediately, then on
+    /// every change - to the named method. The iconography grid needs it to know how many icons fit on
+    /// a row, which is what lets it virtualize by row.
+    /// </summary>
+    public static async Task ObserveElementWidth<T>(this IJSRuntime jsRuntime, string id, DotNetObjectReference<T> dotnetObj, string methodName) where T : class
+    {
+        await jsRuntime.InvokeVoid("observeElementWidth", id, dotnetObj, methodName);
+    }
+
+    public static async Task UnobserveElementWidth(this IJSRuntime jsRuntime, string id)
+    {
+        await jsRuntime.InvokeVoid("unobserveElementWidth", id);
+    }
+
+    /// <summary>
     /// Claims Ctrl/Cmd+K (and a bare "/") for the search input inside the element with the given id.
     /// Registered from JS rather than through a Blazor key handler so the shortcut works no matter
     /// where the focus currently is - which is the whole point of a global shortcut.

@@ -29,11 +29,16 @@
     // examples still use the full column.
     --demo-header-height: #{$doc-header-height};
 
-    // The height of DemoPage's reduced-motion toggle bar. Two unrelated stylesheets need to agree
-    // on it: the bar sizes itself from this value, and every other sticky element on a demo page
-    // offsets its own top by it so they stack instead of overlapping. It stays 0 while the bar is
-    // hidden, which is every state except reduced motion.
+    // Where DemoPage's reduced-motion toggle bar pins itself, and how tall it is. Two unrelated
+    // stylesheets need to agree on both: the bar sizes and places itself from these values, and
+    // every other sticky element on a demo page stacks under them instead of overlapping. The
+    // height stays 0 while the bar is hidden, which is every state except reduced motion.
+    --demo-motion-bar-top: calc(var(--demo-header-height) + #{rem2(6px)});
     --demo-motion-bar-height: 0rem;
+    // Where the multi-API pages' sticky pivot bar pins itself: directly under the motion bar, with
+    // a hairline of air between them. Derived rather than written out, because the motion bar's
+    // height is a theme decision (see the reduced-motion block below).
+    --demo-pivot-sticky-top: calc(var(--demo-motion-bar-top) + var(--demo-motion-bar-height) + #{rem2(4px)});
     // How far an anchored heading has to stop short of the sticky chrome above it. The default
     // clears the app header; a page that pins a second bar (the multi-API pivot) raises it.
     --demo-section-scroll-margin: #{rem2(90px)};
@@ -62,8 +67,14 @@
         --bit-mot-easing-spinner: var(--bit-mot-easing-spinner-full, cubic-bezier(0.53, 0.21, 0.29, 0.67));
         --bit-mot-loop-factor: var(--bit-mot-loop-factor-full, 1);
 
-        // The bar's own height, which the sticky pivot bar under it offsets itself by.
-        --demo-motion-bar-height: #{rem2(32px)};
+        // The bar's own height, which the sticky pivot bar under it offsets itself by. It holds a
+        // single BitToggle on a doc surface, so it is that toggle's switch track plus the surface's
+        // vertical padding and its stroke on both edges. Derived rather than written out as one
+        // number, because the track is a design-system decision - Material draws it 32px and
+        // Cupertino 31px where Fluent draws it 20px - and a literal tuned to Fluent leaves the pivot
+        // bar pinned *inside* this one on the other two presets. The floor keeps the row tall enough
+        // for the label beside a switch a preset draws shorter than its own text.
+        --demo-motion-bar-height: calc(max(#{$bit-size-switch-h-md}, #{rem2(24px)}) + #{$doc-space-2xs} * 2 + #{rem2(2px)});
     }
 
     // A component demo page with its ForceAnimation toggle off: exactly the library's own reduced
@@ -443,18 +454,20 @@ code {
     padding: 0.25rem 0.5rem;
     box-shadow: $bit-box-shadow-callout;
     background-color: $bit-color-background-secondary;
-    top: calc(rem2(75px) + #{$bit-env-inset-top} + var(--demo-motion-bar-height));
+    top: calc(var(--demo-pivot-sticky-top) + #{$bit-env-inset-top});
 
     .bit-ios & {
-        top: calc(rem2(75px) + env(safe-area-inset-top) + var(--demo-motion-bar-height));
+        top: calc(var(--demo-pivot-sticky-top) + env(safe-area-inset-top));
     }
 }
 
 // A page hosting this bar has one more sticky layer over its examples, so DemoExample's anchored
-// section titles need more clearance than the default. Published as a variable on the page rather
-// than a selector into the pivot's markup, so it holds for any pivot that adopts the class.
+// section titles need more clearance than the default: everything the bar pins itself past, plus
+// the bar itself - a tab row and the padding around it - and a line of air under it. Published as a
+// variable on the page rather than a selector into the pivot's markup, so it holds for any pivot
+// that adopts the class.
 .doc-main:has(.pivot-sticky-header) {
-    --demo-section-scroll-margin: 11rem;
+    --demo-section-scroll-margin: calc(var(--demo-pivot-sticky-top) + #{$bit-size-tab} + #{rem2(8px)} + #{$doc-space-2xs});
 }
 
 // The Color sections of the Slider, Toggle, NavBar and Pivot demos put the *Background roles on a

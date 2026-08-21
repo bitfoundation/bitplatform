@@ -8,6 +8,11 @@ namespace Bit.BlazorUI.Tests.Components.Extras.AccentColorSwitcher;
 [TestClass]
 public class BitAccentColorHeadTests : BunitTestContext
 {
+    // The second of the DefaultAccents, standing in here for "a configured accent that is not the
+    // neutral one". Read off the preset rather than spelled out, so a retune of the preset cannot
+    // leave these tests asserting on a hex nothing offers any more.
+    private static readonly string PurpleToken = BitAccentColorPresets.Purple.TrimStart('#').ToLowerInvariant();
+
     [TestMethod]
     public void BitAccentColorHeadShouldEmitNothingByDefault()
     {
@@ -64,7 +69,7 @@ public class BitAccentColorHeadTests : BunitTestContext
         StringAssert.Contains(component.Markup, BitAccentColorSsr.InlineHeadScriptBody, StringComparison.Ordinal,
             "The inline script is what personalizes a cached response pre-paint; without it the component solves nothing.");
 
-        StringAssert.Contains(component.Find("style").TextContent, $"[{BitAccentColorNames.Attribute}=\"8764b8\"]", StringComparison.Ordinal,
+        StringAssert.Contains(component.Find("style").TextContent, $"[{BitAccentColorNames.Attribute}=\"{PurpleToken}\"]", StringComparison.Ordinal,
             "With no StylesheetHref, the all-accents stylesheet must be inlined so no endpoint is required.");
 
         Assert.AreEqual(0, component.FindAll("link").Count, "Inlined and linked stylesheets are alternatives, not companions.");
@@ -137,7 +142,7 @@ public class BitAccentColorHeadTests : BunitTestContext
             {
                 FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StoredCss,
             });
-            parameters.Add(p => p.PersistedAccent, "8764b8");
+            parameters.Add(p => p.PersistedAccent, PurpleToken);
             parameters.Add(p => p.Nonce, "abc123");
         });
 
@@ -168,7 +173,7 @@ public class BitAccentColorHeadTests : BunitTestContext
             {
                 FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StoredCss,
             });
-            parameters.Add(p => p.PersistedAccent, "8764b8");
+            parameters.Add(p => p.PersistedAccent, PurpleToken);
         });
 
         var style = component.Find($"style[id=\"{BitAccentColorNames.StyleElementId}\"]");
@@ -188,11 +193,11 @@ public class BitAccentColorHeadTests : BunitTestContext
                 FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StoredCss,
                 Persistence = BitAccentColorPersistence.All,
             });
-            parameters.Add(p => p.PersistedAccent, "#8764B8");
+            parameters.Add(p => p.PersistedAccent, BitAccentColorPresets.Purple);
         });
 
         var style = component.Find($"style[id=\"{BitAccentColorNames.StyleElementId}\"]");
-        Assert.AreEqual("8764b8", style.GetAttribute(BitAccentColorNames.StyleAccentAttribute),
+        Assert.AreEqual(PurpleToken, style.GetAttribute(BitAccentColorNames.StyleAccentAttribute),
             "The per-request style has to say which accent it was built for, or the guard cannot tell it from the visitor's own snapshot.");
 
         StringAssert.Contains(component.Markup, BitAccentColorSsr.PrerenderCssGuardScript, StringComparison.Ordinal,
@@ -211,7 +216,7 @@ public class BitAccentColorHeadTests : BunitTestContext
             {
                 FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StoredCss,
             });
-            parameters.Add(p => p.PersistedAccent, "8764b8");
+            parameters.Add(p => p.PersistedAccent, PurpleToken);
         });
 
         Assert.IsNotNull(component.Find($"style[id=\"{BitAccentColorNames.StyleElementId}\"]"));
@@ -277,7 +282,7 @@ public class BitAccentColorHeadTests : BunitTestContext
 
         var marker = component.FindAll("style").Last().TextContent;
         StringAssert.Contains(marker, $"[{BitAccentColorNames.SwatchAttribute}=\"dc143c\"]", StringComparison.Ordinal);
-        Assert.IsFalse(marker.Contains("8764b8", StringComparison.Ordinal),
+        Assert.IsFalse(marker.Contains(PurpleToken, StringComparison.Ordinal),
             "A custom accent list replaces the defaults here as everywhere else.");
     }
 
@@ -295,7 +300,7 @@ public class BitAccentColorHeadTests : BunitTestContext
 
         var css = component.Find("style").TextContent;
         StringAssert.Contains(css, $"[{BitAccentColorNames.Attribute}=\"dc143c\"]", StringComparison.Ordinal);
-        Assert.IsFalse(css.Contains("8764b8", StringComparison.Ordinal),
+        Assert.IsFalse(css.Contains(PurpleToken, StringComparison.Ordinal),
             "A custom accent list replaces the defaults; the default palettes must not leak in.");
     }
 }

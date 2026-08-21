@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Iconography;
 
-public partial class IconographyPage
+public partial class IconographyPage : IAsyncDisposable
 {
     private sealed record IconInfo(string FieldName, string Value)
     {
@@ -24,6 +24,17 @@ public partial class IconographyPage
 
     private const string COPY_KEY_NAME = "name";
 
+    private const string GRID_ELEMENT_ID = "iconography-grid";
+
+    // The geometry of one cell of the icon grid, in px, duplicating what the stylesheet lays out -
+    // and it has to stay a duplicate. The virtualizer places its rows at absolute pixel offsets, so
+    // the row height it is handed must be exactly the height a row occupies, and the column count
+    // derived from these must be exactly how many cells a row fits, or the rows drift apart or
+    // overlap. The matching $icon-cell-* values live in IconographyPage.razor.scss.
+    private const int ICON_CELL_WIDTH = 88;
+    private const int ICON_CELL_GAP = 8;
+    private const int ICON_ROW_HEIGHT = 76;
+
     private static readonly (string Label, BitColor Value)[] previewColors =
     [
         ("Primary", BitColor.Primary),
@@ -37,10 +48,13 @@ public partial class IconographyPage
 
     private List<IconInfo> allIcons = default!;
     private List<IconInfo> filteredIcons = default!;
+    private List<IconInfo[]> iconRows = [];
+    private int columnCount;
     private IconInfo? selectedIcon;
     private bool isIconPanelOpen;
     private Dictionary<string, string>? iconGlyphs;
     private string? copyFeedbackKey;
+    private DotNetObjectReference<IconographyPage>? dotnetObj;
 
 
 
@@ -66,12 +80,16 @@ public partial class IconographyPage
     /// <summary>
     /// The install snippets are constant, so one Prism pass on the first render is all they need.
     /// The panel's own snippets are highlighted when it opens (see <see cref="OpenIconPanel"/>).
+    /// The grid starts being watched here too - it only exists in the DOM once it has rendered.
     /// </summary>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             await _js.InvokeVoid("highlightSnippet");
+
+            dotnetObj = DotNetObjectReference.Create(this);
+            await _js.ObserveElementWidth(GRID_ELEMENT_ID, dotnetObj, nameof(OnIconGridResized));
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -79,19 +97,66 @@ public partial class IconographyPage
 
 
 
+    /// <summary>
+    /// The grid changed width, so the number of icons that fit across it may have changed. Rebuilding
+    /// the rows is only worth a render when it actually did - a scrollbar appearing, or any resize
+    /// smaller than a whole column, leaves the layout exactly as it was.
+    /// </summary>
+    [JSInvokable]
+    public Task OnIconGridResized(double width)
+    {
+        if (width <= 0) return Task.CompletedTask;
+
+        var columns = Math.Max(1, (int)((width + ICON_CELL_GAP) / (ICON_CELL_WIDTH + ICON_CELL_GAP)));
+
+        if (columns == columnCount) return Task.CompletedTask;
+
+        columnCount = columns;
+        BuildIconRows();
+
+        return InvokeAsync(StateHasChanged);
+    }
+
+
+
     private void HandleClear()
     {
         filteredIcons = allIcons;
+        BuildIconRows();
     }
 
     private void HandleChange(string text)
     {
-        HandleClear();
-        if (string.IsNullOrEmpty(text)) return;
+        filteredIcons = string.IsNullOrEmpty(text)
+            ? allIcons
+            : allIcons.FindAll(icon =>
+                icon.Value.Contains(text, StringComparison.InvariantCultureIgnoreCase) ||
+                icon.FieldName.Contains(text, StringComparison.InvariantCultureIgnoreCase));
 
-        filteredIcons = allIcons.FindAll(icon =>
-            icon.Value.Contains(text, StringComparison.InvariantCultureIgnoreCase) ||
-            icon.FieldName.Contains(text, StringComparison.InvariantCultureIgnoreCase));
+        BuildIconRows();
+    }
+
+    /// <summary>
+    /// Chunks the icons currently on show into the fixed-width rows the virtualizer renders one at a
+    /// time. Nothing to chunk until the grid has been measured, which is the columnCount 0 case; the
+    /// empty list it leaves behind is what the EmptyTemplate reads as "not measured yet".
+    /// </summary>
+    private void BuildIconRows()
+    {
+        if (columnCount == 0)
+        {
+            iconRows = [];
+            return;
+        }
+
+        var rows = new List<IconInfo[]>((filteredIcons.Count + columnCount - 1) / columnCount);
+
+        for (var i = 0; i < filteredIcons.Count; i += columnCount)
+        {
+            rows.Add([.. filteredIcons.GetRange(i, Math.Min(columnCount, filteredIcons.Count - i))]);
+        }
+
+        iconRows = rows;
     }
 
     private async Task OpenIconPanel(IconInfo icon)
@@ -173,5 +238,21 @@ public partial class IconographyPage
             copyFeedbackKey = null;
             StateHasChanged();
         }
+    }
+
+
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await _js.UnobserveElementWidth(GRID_ELEMENT_ID);
+        }
+        catch (JSDisconnectedException) { } // the circuit is already gone, nothing left to unobserve
+
+        dotnetObj?.Dispose();
+        dotnetObj = null;
+
+        GC.SuppressFinalize(this);
     }
 }

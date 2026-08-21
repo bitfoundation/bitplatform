@@ -11,6 +11,31 @@ public partial class AppHeader
     private string? _initialTheme;
 
     /// <summary>
+    /// The design systems the picker offers: the library's four, in the library's own order, differing from
+    /// <see cref="BitThemeSwitcher.DefaultDesignSystems"/> only in how Fluent's two schemes are spelled.
+    /// </summary>
+    /// <remarks>
+    /// The default list names Fluent's pair <c>light</c> / <c>dark</c>, which is the pair the switcher hands
+    /// to BitThemeManager.ToggleDarkLightAsync rather than setting outright, so that a host page stays in
+    /// charge of what those two names mean. This host points them at Fluent 2 (see App.razor), which is what
+    /// makes Fluent 2 the site's default - so left as they are, toggling the scheme while on Fluent would
+    /// switch design system. <c>fluent-light</c> / <c>fluent-dark</c> name the same two palettes outright,
+    /// leaving nothing to defer to.
+    /// <para>
+    /// Fluent stays first, and is therefore still the fallback for a theme none of the items claims: after
+    /// the respelling those are exactly the bare <c>light</c> / <c>dark</c> names, which a visitor from
+    /// before the Fluent 2 default may still have persisted - and they are core Fluent.
+    /// </para>
+    /// </remarks>
+    private static readonly BitThemeSwitcherItem[] _designSystems =
+    [
+        new() { Text = "Fluent", Value = BitThemePresets.Fluent, LightTheme = BitThemePresets.FluentLight, DarkTheme = BitThemePresets.FluentDark },
+        new() { Text = "Fluent 2", Value = BitExtraThemePresets.Fluent2, LightTheme = BitExtraThemePresets.Fluent2Light, DarkTheme = BitExtraThemePresets.Fluent2Dark },
+        new() { Text = "Material", Value = BitExtraThemePresets.Material, LightTheme = BitExtraThemePresets.MaterialLight, DarkTheme = BitExtraThemePresets.MaterialDark },
+        new() { Text = "Cupertino", Value = BitExtraThemePresets.Cupertino, LightTheme = BitExtraThemePresets.CupertinoLight, DarkTheme = BitExtraThemePresets.CupertinoDark },
+    ];
+
+    /// <summary>
     /// The current path, lower-cased and without the base URI, kept for the active-link check.
     /// </summary>
     private string _currentPath = "/";
@@ -51,8 +76,11 @@ public partial class AppHeader
 
         // Prerendering has no JS runtime to ask, so the server reads the persisted theme from its
         // cookie and cascades it here; the value is then persisted into the prerendered state so the
-        // interactive client comes up with the same selection instead of flashing "Fluent" first.
-        _initialTheme = await PrerenderStateService.GetValue("AppHeader.Theme", () => Task.FromResult(PersistedTheme));
+        // interactive client comes up with the same selection instead of flashing another one first.
+        // Nothing persisted (a first visit, or a visitor following the OS) means the site default,
+        // which is Fluent 2 - without it the picker would show the first offered item until hydration.
+        var persisted = await PrerenderStateService.GetValue("AppHeader.Theme", () => Task.FromResult(PersistedTheme));
+        _initialTheme = persisted.HasValue() && persisted != BitThemePresets.System ? persisted : BitExtraThemePresets.Fluent2;
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
