@@ -43,6 +43,12 @@
           Condition=" '$(PublishTrimmed)' == 'true' " />
   </ItemGroup>
 
+  <!-- The script that evaluates an assembled bundle (see ScriptBundling.cs). Next to the executable in
+       both runs: the trimmed publish checks the very bundle a trimmed consumer would ship. -->
+  <ItemGroup>
+    <None Update="verify-bundle.mjs" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../Bit.Butil/Bit.Butil.csproj" />
     <!-- The publish-time bundler, for running the exact same module computation the consumer targets run. -->

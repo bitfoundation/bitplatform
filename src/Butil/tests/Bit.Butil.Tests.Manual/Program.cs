@@ -160,6 +160,14 @@ internal static class Program
         }
         Console.WriteLine();
 
+        // The publish-time bundler under test in its own right - the parsing, resolution and writing a real
+        // consumer's build can reach but this repository's one assembly never exercises - and the artifacts
+        // it works from, down to running an assembled bundle.
+        Console.WriteLine("--- script bundling ---");
+        var (bundlingPassed, bundlingFailed) = ScriptBundling.Run(string.IsNullOrEmpty(assembly.Location) ? null : assembly.Location, failures);
+        Console.WriteLine($"  {bundlingPassed} checks passed, {bundlingFailed} failed");
+        Console.WriteLine();
+
         Console.WriteLine("--- lazy scripts ---");
         var (lazyPassed, lazyFailed) = await LazyScripts.Run(failures);
         Console.WriteLine($"  {lazyPassed} checks passed, {lazyFailed} failed");

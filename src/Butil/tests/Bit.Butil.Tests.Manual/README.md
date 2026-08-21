@@ -83,6 +83,46 @@ code against the very same trimmed assembly:
 It also reports the size story - full bundle, trimmed bundle (raw / gzip / brotli), and the total a lazy
 app would download for the same modules - which is the benchmark for the whole feature.
 
+**Script bundling** ([`ScriptBundling.cs`](ScriptBundling.cs), [`verify-bundle.mjs`](verify-bundle.mjs)).
+The check above runs the publish-time bundler once, over this project's one assembly, and asks whether the
+answer is the expected one. These go after the bundler *itself* - the parts a real consumer's build reaches
+and this repository never does, plus the artifacts the whole feature rests on:
+
+- **the identifier rule** (`TryGetModule`), which decides what counts as a call into a module. It runs over
+  every literal in the assembly, so a literal it misses is a module missing from a bundle the app needs, and
+  one it wrongly claims is a phantom module in a consumer's build warning;
+- **the manifest** (`ReadManifest`): comments, blank lines and stray separators read the way `build.mjs`
+  writes them, and every malformed shape - a module listed twice, a dependency that is not a module, a line
+  without a separator, a file that is not there - refused rather than half-read, since a line silently
+  skipped is a bundle missing JavaScript the app calls;
+- **resolution** (`Resolve`): dependencies come with their module, a dependency two modules share is included
+  once, the result follows the manifest's dependency-first order rather than the call order, modules nothing
+  calls are left out, an identifier naming no module is *reported* rather than dropped (the BUTIL001 warning
+  a consumer sees), and a manifest with a cycle in it resolves instead of hanging the publish;
+- **writing the bundle** (`WriteBundle`): the chunks concatenated in the order given, no BOM, and - the
+  reason it assembles in memory first - a missing chunk leaves the previous bundle intact and no temporary
+  file behind, because a consumer's incremental publish reads that file back on the next run;
+- **reading the assembly** (`UserStringHeap`): the modules a bundle is built from are exactly what the
+  assembly's literals name, and a file that is not a managed image - or one cut short - comes out as the
+  `BadImageFormatException` the MSBuild task catches, not as an index off the end of an array;
+- **the shipped artifacts**, which nothing enforces and everything assumes: the chunks assemble byte-for-byte
+  into the `bit-butil.js` the package ships, each `modules/<name>.js` is byte-for-byte the bundle its own
+  dependency closure assembles to, every chunk carries the guard that makes a second evaluation a no-op and
+  appears in the bundle exactly once, and the manifest lists every module after the modules it depends on;
+- **running the result** - the bundle a publish of *this* assembly would ship (trimmed: the 8-module,
+  9 KB one), the full bundle, and two overlapping lazy module files loaded one after the other. Each is
+  evaluated under Node in a browser-like sandbox and has to register exactly the expected `BitButil`
+  namespaces, none of them empty, and register nothing a second time (the sentinel each namespace is marked
+  with has to survive re-evaluation - a guard that stopped holding would reset a module's listener
+  bookkeeping in a real app). Byte comparisons cannot tell whether a bundle is a script that loads;
+- **the package layout**: the chunks, the manifest and the MSBuild task are packed (Bit.Butil.csproj) into
+  the folders the consumer-side targets read them from (`buildTransitive/Bit.Butil.targets`), and the two
+  targets files under both `buildTransitive/` and `build/`. Nothing else connects those two files, and every
+  project in this repository overrides both paths - so a consumer would be the first to find out.
+
+Node runs the last of those; it is already a build dependency of Bit.Butil (it compiles the TypeScript), so
+a checkout that can produce the artifacts under test can always run them.
+
 **Lazy scripts** ([`LazyScripts.cs`](LazyScripts.cs)). Against a recording `IJSRuntime`, with
 `BitButil.UseLazyScripts()` on: the first call into an API must `import()` that API's module - and only
 that one - before invoking it; later calls, and other services on the same runtime, must not import again;
@@ -137,6 +177,7 @@ read only partly would report `PASS` having verified less of it than the output 
 | JavaScript modules called | 63 of 65 | 6 of 65 (clipboard, cookie, events, geolocation, storage, window) |
 | `bit-butil.js` a publish would ship | 112,422 bytes, all 65 modules | 9,134 bytes, 8 modules (3,046 gzip / 2,695 brotli) - 8.1% |
 | lazy scripts would download | 147,730 bytes over 63 files | 11,940 bytes over 6 files |
+| script-bundling checks | 76 / 76 | 76 / 76 |
 | lazy-loader checks | 14 / 14 | 14 / 14 |
 
 The trimmed run keeps `DomEventsInterop` with all 11 `[JSInvokable]` methods and
@@ -188,5 +229,14 @@ assembly comes out at 30,720 bytes and 36 types.
   module that should be listed as dependency-only in `ScriptTrimming.DependencyOnlyModules`.
 - **`the manifest ... Bit.Butil's JavaScript build is stale`** - `Bit.Butil/obj/butil-js` does not match
   the TypeScript sources; rebuild Bit.Butil.
+- **`script bundling: ...`** - the publish-time bundler, Bit.Butil's JavaScript build outputs, or the
+  package layout. The message names the claim that broke; the ones worth knowing on sight are *byte-for-byte
+  the bit-butil.js the package ships* and *every lazy module file is exactly the bundle its own dependency
+  closure assembles to* (the chunks, the bundle and the lazy files have drifted apart - rebuild Bit.Butil,
+  and if that does not settle it, `build.mjs` no longer writes the three from one source), *registers exactly
+  the expected BitButil namespaces* (an assembled bundle is missing a module or carries one it should not -
+  what a consumer would see as `BitButil.x is undefined`), and *packed into the folder the consumer-side
+  targets read them from* (Bit.Butil.csproj and buildTransitive/Bit.Butil.targets disagree about where the
+  chunks, the manifest or the task live, which breaks every consumer's publish and no build in this repo).
 - **`lazy scripts: ...`** - the lazy loader imported the wrong module, imported twice, did not retry a
   failed import, or imported with lazy scripts off. See `LazyScripts.cs` for the exact expectation.

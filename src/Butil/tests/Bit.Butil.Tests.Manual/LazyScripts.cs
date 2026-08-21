@@ -172,7 +172,17 @@ internal static class LazyScripts
     /// </summary>
     private sealed class RecordingJSRuntime : IJSRuntime
     {
-        public List<string> Calls { get; } = [];
+        private readonly List<string> _calls = [];
+
+        /// <summary>
+        /// What has been invoked so far, in order. Recorded under a lock and handed out as a snapshot: the
+        /// concurrency scenarios above call in from several threads at once, and a plain list quietly loses
+        /// an entry when two of them add at the same time - which reads as "the loader skipped a call".
+        /// </summary>
+        public string[] Calls
+        {
+            get { lock (_calls) return [.. _calls]; }
+        }
 
         /// <summary>Makes the next import hand back a failed task.</summary>
         public bool FailNextImport { get; set; }
@@ -190,7 +200,7 @@ internal static class LazyScripts
         {
             if (identifier == "import")
             {
-                Calls.Add($"import {args?[0]}");
+                Record($"import {args?[0]}");
                 if (ThrowOnNextImport)
                 {
                     ThrowOnNextImport = false;
@@ -205,10 +215,15 @@ internal static class LazyScripts
             }
             else
             {
-                Calls.Add(identifier);
+                Record(identifier);
             }
 
             return new ValueTask<TValue>(default(TValue)!);
+        }
+
+        private void Record(string call)
+        {
+            lock (_calls) _calls.Add(call);
         }
 
         private static async ValueTask<TValue> Held<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TValue>(Task gate)

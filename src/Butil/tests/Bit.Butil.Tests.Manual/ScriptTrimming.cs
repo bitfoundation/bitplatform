@@ -201,7 +201,7 @@ internal static class ScriptTrimming
     }
 
     /// <summary>Walks up from the executable to the folder that holds Bit.Butil/Scripts.</summary>
-    private static string? LocateButilProject()
+    internal static string? LocateButilProject()
     {
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
         {
