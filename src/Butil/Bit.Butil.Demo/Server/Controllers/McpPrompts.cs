@@ -8,11 +8,16 @@ namespace Bit.Butil.Demo.Server.Controllers;
 /// to an app, build a feature with it, replace hand-written JS interop, and work out why a call
 /// that compiles does nothing.
 /// <para>
-/// Each prompt spends its words on the order to call the tools in and on the mistakes that are
-/// expensive to make - the ones that produce silence rather than a compiler error - because the
-/// failure mode of an agent with a dozen tools is not ignorance, it is calling them in a sequence
-/// that skips the check which would have caught the bug. With browser APIs that check is almost
-/// always the same one: what does this need from the page before it will work at all.
+/// Each prompt spends its words on the order to call the tools in, because the failure mode of an
+/// agent here is not ignorance, it is calling them in a sequence that skips the check which would
+/// have caught the bug. With browser APIs that check is almost always the same one: what does this
+/// need from the page before it will work at all.
+/// </para>
+/// <para>
+/// What none of them spends words on is the library's four standing rules - prerendering, the
+/// registrations, disposal, a refusal coming back as a value. Those are in the server's
+/// <c>instructions</c>, which the client has had in context since <c>initialize</c>; a prompt that
+/// repeated them would be paying a second time for a model that had already read them once.
 /// </para>
 /// </summary>
 [McpServerPromptType]
@@ -33,10 +38,9 @@ public static class McpPrompts
                .Client project, for WebAssemblyHostBuilder, or for AddMauiBlazorWebView - then continue with what
                you find.
             2. Call `GetButilSetupGuide` with that hosting model and follow it.
-            3. Get the two things that fail silently right, and say out loud that you did:
-               - the `bit-butil.js` script tag goes in the host page BEFORE the Blazor script;
-               - `AddBitButilServices()` is called in EVERY DI container that renders components - a Blazor Web App
-                 with an interactive client has two.
+            3. Get the two things that fail silently right - the `bit-butil.js` script tag before the Blazor script,
+               and `AddBitButilServices()` in every DI container that renders components - and say out loud that you
+               did. Rule 2 of this server's instructions is the long version.
             4. Verify it end to end with a round trip that cannot pass by accident: write a value with
                `LocalStorage.SetItem`, read it back with `GetItem` from `OnAfterRenderAsync`, and show the result.
             5. Build the app and fix what the compiler says.
@@ -65,12 +69,9 @@ public static class McpPrompts
                be disposed - before you have written code that assumes otherwise.
             3. Call `GetButilApiDetails` for every service you are about to use and match the member names,
                signatures and default arguments exactly. Do not infer a member from the JavaScript API's shape.
-            4. Write the code against these rules, which are what separates working Butil code from code that
-               compiles:
-               - touch the browser from `OnAfterRenderAsync` or an event handler, never `OnInitializedAsync`;
-               - start anything gated on a user gesture directly from the click handler;
-               - treat a `false`/`null` from a permission-gated call as a normal branch and show the user something;
-               - dispose every `ButilSubscription` and every handle, in `DisposeAsync`.
+            4. Write the code against this server's four standing rules and against whatever the plan in step 2 added
+               to them - a gesture-gated call started straight from the click handler, every subscription and handle
+               disposed in `DisposeAsync`.
             5. Say which tool call each non-obvious choice came from.
 
             The documentation site has one page per API, and each page IS a working example - fetch it with
@@ -94,7 +95,7 @@ public static class McpPrompts
                the wrapper that covers it. Butil wraps around sixty browser APIs; most bespoke interop in a Blazor
                app is one of them.
             3. Call `GetButilApiDetails` for each replacement before rewriting the call site, and
-               `InspectButilApi` for anything gated on a permission, a gesture or a secure context - the hand-written
+               `PlanButilFeature` for anything gated on a permission, a gesture or a secure context - the hand-written
                version may have been getting away with something the wrapper is explicit about.
             4. Rewrite the call sites, then delete the JavaScript that no longer has a caller. Keep the interop that
                Butil genuinely does not cover, and say which pieces those are and why.
@@ -119,7 +120,7 @@ public static class McpPrompts
 
             1. Call `GetButilDocsPage` with slug "troubleshooting" - it lists the symptoms people hit first with the
                reason behind each, and the cause is often there verbatim.
-            2. Call `InspectButilApi` for the service involved. A call that compiles and does nothing is almost
+            2. Call `PlanButilFeature` for the service involved. A call that compiles and does nothing is almost
                always one of four things, and this reports all four: it ran during prerendering (no JS runtime, so
                reads return safe defaults and voids are no-ops), the page is not a secure context, the call did not
                come from a user gesture, or the engine does not implement the API.

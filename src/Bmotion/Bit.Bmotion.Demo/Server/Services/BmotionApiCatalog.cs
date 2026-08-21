@@ -40,8 +40,66 @@ public static class BmotionApiCatalog
             Summary = BmotionXmlDocs.GetSummary(DocumentationId(type))
         })]);
 
-    /// <summary>Every public type of Bit.Bmotion, with its summary.</summary>
+    private static readonly Lazy<BmotionApiTypeDto[]> _typeSummaries = new(() =>
+        [.. _types.Value.Select(type => type with { Summary = FirstSentence(type.Summary) })]);
+
+    /// <summary>Every public type of Bit.Bmotion, with its full summary.</summary>
     public static BmotionApiTypeDto[] Types => _types.Value;
+
+    /// <summary>
+    /// Every public type with its summary cut to the first sentence.
+    /// <para>
+    /// The full summaries are what <see cref="GetTypeDetails"/> is for. Several of them run to a
+    /// paragraph and a worked code sample - which is the right answer to "how do I use BmVariants"
+    /// and the wrong one to "which type do I ask about next", the only question a list of 66 types
+    /// is called with. Handing over all of them cost more than reading the type itself afterwards.
+    /// </para>
+    /// </summary>
+    public static BmotionApiTypeDto[] TypeSummaries => _typeSummaries.Value;
+
+    /// <summary>
+    /// The endings that put a '.' before a space without ending a sentence. "motion.dev" is not among
+    /// them and does not need to be: its '.' has no space after it, so it never reads as a boundary in
+    /// the first place - and a summary that does end on "motion.dev." has ended.
+    /// </summary>
+    private static readonly string[] _abbreviations = ["e.g.", "i.e.", "etc.", "cf.", "vs."];
+
+    /// <summary>
+    /// The first sentence of a summary, for a listing. A summary that opens with a code sample has
+    /// no sentence to take - the text before the sample is kept whole rather than cut at the first
+    /// '.' inside the code, which would end the description mid-expression.
+    /// </summary>
+    internal static string? FirstSentence(string? summary)
+    {
+        if (string.IsNullOrWhiteSpace(summary)) return summary;
+
+        var text = summary.Trim();
+
+        // A summary is normalised to '\n\n' between paragraphs by BmotionXmlDocs, and the sample or
+        // caveat after the opening paragraph is never needed to pick a type out of a list.
+        var paragraph = text.IndexOf("\n\n", StringComparison.Ordinal);
+        if (paragraph > 0) text = text[..paragraph].TrimEnd();
+
+        for (var index = text.IndexOf(". ", StringComparison.Ordinal); index > 0;
+             index = text.IndexOf(". ", index + 1, StringComparison.Ordinal))
+        {
+            var candidate = text[..(index + 1)];
+
+            // Whether this '.' ends a sentence is a question about the word in front of it, not about
+            // how far into the text it falls: "coasts to a stop (e.g. momentum after a drag)" used to
+            // be cut to "coasts to a stop (e.g." the moment it ran past the 24th character, and a
+            // genuinely short first sentence was run on into the next one for finishing before it.
+            if (_abbreviations.Any(abbreviation => candidate.EndsWith(abbreviation, StringComparison.OrdinalIgnoreCase))) continue;
+
+            // A boundary that leaves a single word behind is an initial or a fragment rather than a
+            // sentence, and describes no type.
+            if (candidate.Contains(' ') is false) continue;
+
+            return candidate;
+        }
+
+        return text.EndsWith('.') || text.Length <= 240 ? text : $"{text[..237]}...";
+    }
 
     /// <summary>
     /// The full reference of one type - its Blazor parameters, properties, methods, events or enum

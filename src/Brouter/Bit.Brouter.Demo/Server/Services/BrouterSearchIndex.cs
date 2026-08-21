@@ -15,7 +15,7 @@ namespace Bit.Brouter.Demo.Server.Services;
 /// </summary>
 public static class BrouterSearchIndex
 {
-    private sealed record Entry(string Kind, string Title, string? Context, string Tool, string Body, string Boosted)
+    private sealed record Entry(string Kind, string Title, string? Context, string Tool, string Body, string Boosted, int Weight = ReferenceWeight)
     {
         /// <summary>
         /// The title split into words, camel-case humps included, so "KeepAliveMax" is found by
@@ -32,7 +32,40 @@ public static class BrouterSearchIndex
 
     private const int MaxSuggestions = 8;
 
+    /// <summary>The weight of an entry that answers a question: a guide section, a page, a member.</summary>
+    private const int ReferenceWeight = 10;
+
+    /// <summary>
+    /// The weight of a source file. They are examples, not answers, and their titles are paths
+    /// whose segments ("Client", "Pages", "Server") are common words carrying no topic - without
+    /// this, every question phrased with one of them is answered with a directory listing.
+    /// </summary>
+    private const int ExampleWeight = 4;
+
+    /// <summary>
+    /// The most an entry can earn from prose, however much of it there is. A long section mentions
+    /// everything, so without a ceiling the biggest document in the corpus is the top hit for every
+    /// query - and a name match, which is the far stronger signal, never gets ahead of it.
+    /// </summary>
+    private const int MaxBodyScore = 8;
+
     private static readonly Lazy<Entry[]> _entries = new(Build);
+
+    /// <summary>
+    /// The words every entry in this index carries because of what the index is about. They
+    /// separate nothing, and they do worse than nothing: a term that matches an entry counts
+    /// towards the "how many terms matched" multiplier, so left in, the longest documents win every
+    /// query on the strength of a word that is in all of them.
+    /// <para>
+    /// Unlike a stop word they are dropped only when the query says something else as well, since
+    /// "brouter" and "blazor router" are what a caller reaches for first and are made of nothing
+    /// but these.
+    /// </para>
+    /// </summary>
+    private static readonly HashSet<string> _ambientWords = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "brouter", "bit", "blazor", "router", "routing"
+    };
 
     private static readonly HashSet<string> _stopWords = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -53,12 +86,11 @@ public static class BrouterSearchIndex
             // returned as an empty list the agent would read as "Brouter cannot do this".
             return new BrouterSearchResultDto
             {
-                Query = query ?? string.Empty,
                 Terms = [],
                 Hits = [],
                 Message = "The query held no word longer than two letters that was not a filler word, so there was " +
                           "nothing to rank by. Search for the thing itself - 'guard', 'loader cache', 'query string' - " +
-                          "rather than for a sentence, or call GetBrouterOverview for what the library covers."
+                          "rather than for a sentence."
             };
         }
 
@@ -67,6 +99,10 @@ public static class BrouterSearchIndex
             .Where(hit => hit.Score > 0)
             .OrderByDescending(hit => hit.Score)
             .ThenBy(hit => hit.Entry.Title, StringComparer.OrdinalIgnoreCase)
+            // Two entries that would be read through the same call under the same name are one hit:
+            // a method with two overloads is two members and one place to read about them, and the
+            // second copy costs a hit out of the caller's budget to say nothing new.
+            .DistinctBy(hit => (hit.Entry.Title, hit.Entry.Tool))
             .ToArray();
 
         var take = Math.Clamp(limit, 1, MaxHits);
@@ -82,10 +118,11 @@ public static class BrouterSearchIndex
 
         if (hits.Length > 0)
         {
+            // No echo of the query and no list of the terms it was reduced to: the caller sent that
+            // query one message ago, and what it was tokenized into changes nothing about a hit it
+            // can read for itself. Both are worth saying only when there is nothing else to say.
             return new BrouterSearchResultDto
             {
-                Query = query ?? string.Empty,
-                Terms = terms,
                 Hits = hits,
                 HasMore = ranked.Length > hits.Length
             };
@@ -98,16 +135,15 @@ public static class BrouterSearchIndex
 
         return new BrouterSearchResultDto
         {
-            Query = query ?? string.Empty,
             Terms = terms,
             Hits = [],
             Message = nearby.Length > 0
                 ? $"Nothing matched {string.Join(" + ", terms)}. The closest names are listed in didYouMean - " +
                    "search for one of those, or for a single word out of this query."
-                : $"Nothing matched {string.Join(" + ", terms)}. Try one word rather than several, or list what " +
-                   "there is with GetBrouterGuideSections, GetBrouterDocsList or GetBrouterApiList. A concept " +
-                   "Brouter does not name is often the same idea under another word - 'middleware' is a guard, " +
-                   "'resolver' is a loader, 'child route' is a nested route.",
+                : $"Nothing matched {string.Join(" + ", terms)}. Try one word rather than several, or call " +
+                   "GetBrouterGuideSection, GetBrouterDocsPage or GetBrouterApi with no argument at all for the " +
+                   "index of what there is. A concept Brouter does not name is often the same idea under another " +
+                   "word - 'middleware' is a guard, 'resolver' is a loader, 'child route' is a nested route.",
             DidYouMean = nearby.Length > 0 ? nearby : null
         };
     }
@@ -147,11 +183,12 @@ public static class BrouterSearchIndex
 
             // A term in a name is worth far more than the same term buried in prose: someone asking
             // for "KeepAliveMax" wants the parameter, not the paragraphs that happen to mention it.
-            score += (isTitleWord ? 12 : 0) + inTitle * 3 + inBoosted * 5 + Math.Min(inBody, 6);
+            score += (isTitleWord ? 12 : 0) + inTitle * 3 + inBoosted * 5 + Math.Min(inBody, MaxBodyScore);
         }
 
-        // Every term matching is the strongest signal a hit is the right one.
-        return matched == 0 ? 0 : score * matched;
+        // Every term matching is the strongest signal a hit is the right one; the weight is what
+        // keeps a worked example from outranking the reference that answers the question.
+        return matched == 0 ? 0 : score * matched * entry.Weight;
     }
 
     /// <summary>
@@ -194,8 +231,11 @@ public static class BrouterSearchIndex
 
         if (index < 0) index = 0;
 
-        var start = Math.Max(0, index - 80);
-        var length = Math.Min(240, body.Length - start);
+        // A snippet is a reason to make the follow-up call, not a substitute for making it: enough
+        // of the surrounding text to tell the right hit from the wrong one, and no more. Every extra
+        // character here is paid for by every hit of every search, most of which are not the one.
+        var start = Math.Max(0, index - 60);
+        var length = Math.Min(180, body.Length - start);
         var snippet = body.Substring(start, length).Replace('\n', ' ').Replace('\r', ' ').Trim();
 
         return $"{(start > 0 ? "..." : null)}{snippet}{(start + length < body.Length ? "..." : null)}";
@@ -235,7 +275,7 @@ public static class BrouterSearchIndex
     {
         if (string.IsNullOrWhiteSpace(query)) return [];
 
-        return [.. query.Split(['.', ',', ';', ':', '?', '!', '"', '\'', '(', ')', '[', ']', '{', '}', '/', '\\', '<', '>', '-', '_', ' ', '\t', '\n', '\r'],
+        string[] terms = [.. query.Split(['.', ',', ';', ':', '?', '!', '"', '\'', '(', ')', '[', ']', '{', '}', '/', '\\', '<', '>', '-', '_', ' ', '\t', '\n', '\r'],
                               StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             // One- and two-letter words ("a", "in", "do") match everything and rank nothing - and
             // the words a question is phrased with do worse than nothing: "how do I redirect FROM a
@@ -245,6 +285,8 @@ public static class BrouterSearchIndex
             // Every term is counted in every entry's body, so the work is terms x corpus. No question
             // is phrased in more words than this, while a pasted file as a query would scan for hours.
             .Take(MaxTerms)];
+
+        return DropAmbientWords(terms);
     }
 
     private static Entry[] Build()
@@ -261,24 +303,33 @@ public static class BrouterSearchIndex
 
         foreach (var page in DocsCatalog.Sections.SelectMany(s => s.Pages.Select(p => (Section: s.Title, Page: p))))
         {
+            // The overview's own slug is the empty string, which is not a value anyone can type -
+            // the alias the tool accepts for it is what a hit hands the caller to call back with.
+            var slug = page.Page.Slug.Length == 0 ? "overview" : page.Page.Slug;
+
             entries.Add(new Entry("Docs page", page.Page.Title, page.Section,
-                $"GetBrouterDocsPage(slug: \"{page.Page.Slug}\")", page.Page.Description, page.Page.Keywords));
+                $"GetBrouterDocsPage(slug: \"{slug}\")", page.Page.Description, page.Page.Keywords));
         }
 
         foreach (var type in BrouterApiCatalog.Types)
         {
             entries.Add(new Entry($"API {type.Kind.ToLowerInvariant()}", type.Name, null,
-                $"GetBrouterApiDetails(typeName: \"{type.Name}\")", type.Summary ?? string.Empty, string.Empty));
+                $"GetBrouterApi(typeName: \"{type.Name}\")", type.Summary ?? string.Empty, string.Empty));
 
             var details = BrouterApiCatalog.GetTypeDetails(type.Name);
             if (details is null) continue;
 
-            foreach (var member in details.Members)
+            // One entry per member NAME, not per member: two overloads of NavigateAsync are two
+            // members and one thing to know about, and both are read by the same call anyway. Their
+            // documentation is searched as one body, so a term in either overload finds the member.
+            foreach (var overloads in details.Members.GroupBy(member => member.Name, StringComparer.Ordinal))
             {
+                var member = overloads.First();
+
                 entries.Add(new Entry($"API {member.Kind.ToLowerInvariant()}", $"{type.Name}.{member.Name}", type.Name,
-                    $"GetBrouterApiDetails(typeName: \"{type.Name}\")",
-                    $"{member.Summary} {member.Remarks}".Trim(),
-                    $"{member.Type} {member.Signature}".Trim()));
+                    $"GetBrouterApi(typeName: \"{type.Name}\")",
+                    string.Join(' ', overloads.Select(o => $"{o.Summary} {o.Remarks}".Trim())).Trim(),
+                    string.Join(' ', overloads.Select(o => $"{o.Type} {o.Signature}".Trim())).Trim()));
             }
         }
 
@@ -291,9 +342,20 @@ public static class BrouterSearchIndex
         foreach (var file in BrouterSourceCatalog.SourceFiles)
         {
             entries.Add(new Entry("Source file", file.Path, file.Kind,
-                $"GetBrouterSourceFile(path: \"{file.Path}\")", file.Description ?? string.Empty, string.Empty));
+                $"GetBrouterSourceFile(path: \"{file.Path}\")", file.Description ?? string.Empty, string.Empty, ExampleWeight));
         }
 
         return [.. entries];
+    }
+
+    /// <summary>
+    /// The query without the words that are true of everything here - unless that is all it said,
+    /// in which case they are all it can be searched by.
+    /// </summary>
+    private static string[] DropAmbientWords(string[] terms)
+    {
+        var meaningful = terms.Where(term => _ambientWords.Contains(term) is false).ToArray();
+
+        return meaningful.Length > 0 ? meaningful : terms;
     }
 }

@@ -125,8 +125,8 @@ public class McpResourceTests
         Assert.AreEqual(await McpCall.TextAsync("GetBrouterGuideSection", new() { ["heading"] = "Data loader" }),
                         await ReadAsync("brouter://guide/Data%20loader"));
 
-        Assert.AreEqual(await McpCall.TextAsync("GetBrouterSourceFile", new() { ["path"] = "Demo/Client/DocsCatalog.cs" }),
-                        await ReadAsync("brouter://source/Demo%2FClient%2FDocsCatalog.cs"));
+        Assert.AreEqual(await McpCall.TextAsync("GetBrouterSourceFile", new() { ["path"] = "Demo/Client/AppRouter.razor" }),
+                        await ReadAsync("brouter://source/Demo%2FClient%2FAppRouter.razor"));
     }
 
     [TestMethod]

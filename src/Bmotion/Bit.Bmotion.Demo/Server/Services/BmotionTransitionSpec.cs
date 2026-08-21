@@ -37,6 +37,12 @@ public static partial class BmotionTransitionSpec
     private static readonly string[] _springArguments =
         ["stiffness", "damping", "mass", "bounce", "duration", "visualduration", "velocity", "restspeed", "restdelta", "delay"];
 
+    /// <summary>
+    /// The spring arguments that describe the feel and let the engine derive the physics from it.
+    /// Spelled as they are written in C#, because these are the names the warning quotes back.
+    /// </summary>
+    private static readonly string[] _springFeelArguments = ["bounce", "duration", "visualDuration"];
+
     private static readonly string[] _tweenArguments = ["duration", "delay", "steps"];
 
     private static readonly string[] _inertiaArguments =
@@ -153,13 +159,24 @@ public static partial class BmotionTransitionSpec
 
         // Bounce and duration derive stiffness and damping, so a spec that sets both forms would
         // silently have half of it ignored by the engine. Say so rather than letting it look applied.
+        // Either of the two is enough to switch the spring over: the engine's test is
+        // "Duration.HasValue || Bounce.HasValue", and whichever was not given takes its default.
         var hasPhysics = named.ContainsKey("stiffness") || named.ContainsKey("damping");
-        var hasFeel = named.ContainsKey("bounce");
 
-        if (hasPhysics && hasFeel)
+        // 'visualDuration' is motion.dev's name for the same argument, and the switch below writes it
+        // to the very same spring.Duration - so it turns the derived model on exactly as 'duration'
+        // does, and has to be looked for here too or the warning misses the spec that needs it most.
+        var feel = _springFeelArguments.Where(named.ContainsKey).ToArray();
+
+        if (hasPhysics && feel.Length > 0)
         {
-            warnings.Add("Both 'bounce' and 'stiffness'/'damping' were given. Bounce wins: the engine derives " +
-                         "stiffness and damping from bounce and duration, so the explicit values are unused.");
+            var given = feel.Length == 1
+                ? $"'{feel[0]}'"
+                : $"{string.Join(", ", feel[..^1].Select(name => $"'{name}'"))} and '{feel[^1]}'";
+
+            warnings.Add($"Both {given} and 'stiffness'/'damping' were given. The derived model wins: the engine " +
+                         "computes stiffness and damping from bounce (default 0.25) and duration (default 0.5), " +
+                         "so the explicit values are unused.");
         }
 
         foreach (var (name, value) in named)
@@ -436,9 +453,16 @@ public static partial class BmotionTransitionSpec
 
         // A bezier argument carries its own commas inside its brackets, so the comma split has to
         // respect nesting; a spec written without commas at all is split on whitespace instead.
-        var parts = text.Contains(',')
-            ? SplitOutsideBrackets(text)
-            : text.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        // The whitespace inside a "name: value" pair is not a separator, though - splitting there
+        // would strand the name with no value and feed the value to the next positional slot, so
+        // "spring(damping: 30)" would come back measured as a spring with a stiffness of 30. The
+        // space after the separator is closed up first, which leaves only the gaps between
+        // arguments to split on.
+        var pairs = NameSeparatorSpaceRegex().Replace(text, "$1$2");
+
+        var parts = pairs.Contains(',')
+            ? SplitOutsideBrackets(pairs)
+            : pairs.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         return [.. parts.Where(part => part.Length > 0)];
     }
@@ -480,6 +504,14 @@ public static partial class BmotionTransitionSpec
     }
 
     private static string Number(double value) => value.ToString("0.####", CultureInfo.InvariantCulture);
+
+    /// <summary>
+    /// The whitespace around a named argument's separator: the ": " of "damping: 30", and the " = "
+    /// of "damping = 30". Closing it up leaves the pair as one token for the split that follows. A
+    /// name is a bare identifier, so this cannot match inside a bezier list or a quoted value.
+    /// </summary>
+    [GeneratedRegex(@"(\b[A-Za-z_][A-Za-z0-9_]*)\s*([:=])\s*")]
+    private static partial Regex NameSeparatorSpaceRegex();
 
     [GeneratedRegex(@"^\s*(Bm|Motion|BmTransition)\s*\.\s*", RegexOptions.IgnoreCase)]
     private static partial Regex QualifierRegex();

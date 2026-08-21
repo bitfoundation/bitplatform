@@ -48,8 +48,9 @@ public class DocsPageTests
     {
         var text = await _server.CallTextAsync("GetBswupDocsPage", new Dictionary<string, object?> { ["slug"] = slug });
 
-        // The cap is 40,000 characters. A page that reaches it is served truncated, which is a
-        // worse answer than a page split into sections - so it is worth knowing before a user hits it.
+        // A page that reaches the server's document cap is served truncated, with nothing naming
+        // the rest - a worse answer than a page split into sections, so it is worth knowing about
+        // here rather than when a user hits it.
         Assert.IsFalse(text.Contains("[truncated", StringComparison.Ordinal),
             $"'{title}' is over the document cap and is being served truncated");
     }

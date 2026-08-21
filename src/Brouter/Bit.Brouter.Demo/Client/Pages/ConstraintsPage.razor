@@ -29,7 +29,7 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Your test value</h3>
     <p>
         <input @bind="_value" @bind:event="oninput" placeholder="type a value to test…"
-               style="padding: .45rem .7rem; border: 1px solid var(--bb-border); border-radius: var(--bb-radius-sm); min-width: 260px; font-family: var(--bb-mono);" />
+               style="min-width: 260px; font-family: var(--bb-mono);" />
         <span style="color: var(--bb-text-muted); font-size: .85rem; margin-left: .5rem;">
             → navigates to <code>/c/&lt;kind&gt;/@(string.IsNullOrEmpty(_value) ? "…" : Uri.EscapeDataString(_value))</code>
         </span>

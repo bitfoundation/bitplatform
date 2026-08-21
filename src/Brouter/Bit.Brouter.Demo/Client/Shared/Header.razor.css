@@ -1,30 +1,30 @@
-/* The bar itself: translucent over whatever scrolls beneath it, separated from the page by a
-   single secondary hairline - no shadow, because the blur is already the depth cue. */
+/* The bar: translucent over whatever scrolls beneath it, separated from the page by a single
+   hairline - no shadow, because the blur is already the depth cue. */
 .bb-header {
     position: sticky;
     top: 0;
     z-index: 1000;
     width: 100%;
-    background: color-mix(in srgb, var(--bb-surface) 78%, transparent);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: color-mix(in srgb, var(--bb-surface) 80%, transparent);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
     border-bottom: 1px solid var(--bb-border);
-    /* Everything without a view-transition-name is captured into the root snapshot, so the
-       header would glide/fade along with the page on every navigation even though it lives
-       outside the router. Naming it gives it its own transition group: old and new header
-       snapshots are (near-)identical, so it stays visually pinned while only the page content
-       animates - the standard way to exclude persistent chrome from view transitions. */
+    /* Everything without a view-transition-name is captured into the root snapshot, so the header
+       would glide and fade along with the page on every navigation even though it lives outside
+       the router. Naming it gives it its own transition group: old and new header snapshots are
+       (near-)identical, so it stays visually pinned while only the page content animates - the
+       standard way to keep persistent chrome out of a view transition. */
     view-transition-name: bb-header;
 }
 
 /* Capped at the content width so the mark lines up with the page title underneath it. The bar's
-   own height is the published --bb-header-height, which every sticky offset on the site is
-   measured from, so the two can never drift apart. */
+   height is the published --bb-header-height, which every sticky offset on the site is measured
+   from, so the two can never drift apart. */
 .bb-header-inner {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
-    min-height: var(--bb-header-height);
+    gap: 1.25rem;
+    height: var(--bb-header-height);
     max-width: var(--bb-content-width);
     margin: 0 auto;
     padding: 0 1.25rem;
@@ -35,21 +35,21 @@
     align-items: center;
     /* The logo artwork runs edge to edge in its own box (see the aspect-ratio note below), so all
        of the breathing room between the mark and the wordmark has to come from here. */
-    gap: .625rem;
-    flex-shrink: 0;
+    gap: .5rem;
+    flex: none;
 }
 
-/* The bit mark, drawn per theme - the light and dark logos are different artwork, not the same
-   glyph recolored, so this is an image swap rather than a mask.
+/* The bit mark, drawn per theme - the light and dark logos are different artwork rather than the
+   same glyph recolored, so this is an image swap and not a mask.
 
    The source svg is 239x161, and `contain` fits it to whichever edge binds first. In a square box
-   that is the width, which paints the glyph right up to both vertical edges and leaves it with no
-   side gutter at all; giving the box the artwork's own ratio makes its width the glyph's true
-   width, so the gap above is the whole gap and means what it says. */
+   that is the width, which paints the glyph right up to both vertical edges and leaves it no side
+   gutter at all; giving the box the artwork's own ratio makes its width the glyph's true width,
+   so the gap above is the whole gap and means what it says. */
 /* stylelint-disable-next-line selector-pseudo-element-no-unknown */
 .bb-header-brand ::deep a.bb-logo {
-    flex-shrink: 0;
-    height: 34px;
+    flex: none;
+    height: 28px;
     aspect-ratio: 239 / 161;
     background-size: contain;
     background-position: center;
@@ -58,10 +58,11 @@
 
 /* stylelint-disable-next-line selector-pseudo-element-no-unknown */
 .bb-header-brand ::deep a.bb-wordmark {
-    flex-shrink: 0;
+    flex: none;
+    font-family: var(--bb-font-display);
     font-size: 1.0625rem;
     font-weight: 600;
-    letter-spacing: -.01em;
+    letter-spacing: -.015em;
     color: var(--bb-text);
     text-decoration: none;
 }
@@ -72,33 +73,45 @@
     text-decoration: none;
 }
 
+/* The published version, sitting on the wordmark the way a package badge does. It is a label
+   rather than a link: what it answers is "which version is this documenting?", and the answer is
+   the same wherever the reader is. */
+.bb-version {
+    flex: none;
+    font-family: var(--bb-mono);
+    font-size: .6875rem;
+    line-height: 1.2;
+    padding: .1875rem .375rem;
+    border-radius: var(--bb-radius);
+    color: var(--bb-text-soft);
+    background: var(--bb-surface-sunken);
+    border: 1px solid var(--bb-border);
+    white-space: nowrap;
+}
+
 /* Takes the slack, which is what pushes the tools to the end of the bar. */
 .bb-nav {
     display: flex;
     align-items: center;
     gap: .125rem;
     flex: 1;
-    /* Single-line header: the nav shrinks and scrolls horizontally instead of wrapping. */
     min-width: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
 }
 
-.bb-nav::-webkit-scrollbar {
-    display: none;
-}
-
-/* The nav anchors are rendered by <BrouterLink>, so they carry that component's scope - not
-   this file's. */
+/* The nav anchors are rendered by <BrouterLink>, so they carry that component's scope - not this
+   file's - and are reached through ::deep. */
 /* stylelint-disable-next-line selector-pseudo-element-no-unknown */
 .bb-nav ::deep a {
+    position: relative;
     display: flex;
     align-items: center;
-    line-height: 1.5;
-    font-size: .9375rem;
+    height: 32px;
+    line-height: 1.4;
+    font-size: .875rem;
+    font-weight: 500;
     white-space: nowrap;
     text-decoration: none;
-    padding: .5rem .75rem;
+    padding: 0 .625rem;
     border-radius: var(--bb-radius);
     color: var(--bb-text-muted);
     transition: color var(--bb-motion-duration-short) var(--bb-motion-easing),
@@ -112,31 +125,139 @@
     text-decoration: none;
 }
 
+/* The current section: Fluent's tab indicator - the label takes the brand color and a short
+   brand rule is drawn under it, inset from the label's own padding so it reads as an underline of
+   the word rather than of the button. */
 /* stylelint-disable-next-line selector-pseudo-element-no-unknown */
 .bb-nav ::deep a.active {
     font-weight: 600;
     color: var(--bb-primary);
-    background: transparent;
+}
+
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-nav ::deep a.active::after {
+    content: "";
+    position: absolute;
+    left: .625rem;
+    right: .625rem;
+    bottom: -.4375rem;
+    height: 2px;
+    border-radius: var(--bb-radius-pill);
+    background: var(--bb-primary);
 }
 
 .bb-header-end {
     display: flex;
     align-items: center;
-    gap: .5rem;
-    flex-shrink: 0;
+    gap: .375rem;
+    flex: none;
 }
 
 /* Sized to match the theme toggle next to it. The octocat circle only spans ~87% of the svg's
-   viewBox, so the mark is drawn oversized to put the VISIBLE glyph at 32px; anything past the
+   viewBox, so the mark is drawn oversized to put the VISIBLE glyph at 20px; anything past the
    ~13% built-in padding clips at the box edge, which is under half a pixel. */
 .bb-github-btn {
-    flex-shrink: 0;
+    flex: none;
     cursor: pointer;
     width: 32px;
     height: 32px;
-    background-color: var(--bb-primary);
-    -webkit-mask: url('images/github-mark.svg') center / 37px 37px no-repeat;
-    mask: url('images/github-mark.svg') center / 37px 37px no-repeat;
+    border-radius: var(--bb-radius);
+    background-color: var(--bb-text-muted);
+    -webkit-mask: url('images/github-mark.svg') center / 23px 23px no-repeat;
+    mask: url('images/github-mark.svg') center / 23px 23px no-repeat;
+    transition: background-color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.bb-github-btn:hover {
+    background-color: var(--bb-text);
+}
+
+/* The drawer's toggle. Hidden until the links move into the drawer, so on a wide screen there is
+   exactly one way to reach them. */
+.bb-menu-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    flex: none;
+    border: 1px solid transparent;
+    border-radius: var(--bb-radius);
+    background: transparent;
+    color: var(--bb-text-muted);
+    cursor: pointer;
+    transition: background var(--bb-motion-duration-short) var(--bb-motion-easing),
+                color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.bb-menu-btn:hover {
+    background: var(--bb-surface-hover);
+    color: var(--bb-text);
+}
+
+.bb-menu-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* The drawer itself, and the scrim that takes the next click to close it. Both are inside the
+   sticky header, so they travel with it and cannot be scrolled away from. */
+.bb-header-scrim {
+    position: fixed;
+    inset: var(--bb-header-height) 0 0;
+    background: var(--bb-scrim);
+    animation: bb-fade-in var(--bb-motion-duration) var(--bb-motion-easing) both;
+}
+
+.bb-header-drawer {
+    position: absolute;
+    top: 100%;
+    inset-inline: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: .5rem;
+    background: var(--bb-surface);
+    border-bottom: 1px solid var(--bb-border);
+    box-shadow: var(--bb-shadow-flyout);
+    animation: bb-drawer-in var(--bb-motion-duration) var(--bb-motion-enter) both;
+}
+
+.bb-header-drawer a,
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-header-drawer ::deep a {
+    display: block;
+    padding: .625rem .75rem;
+    border-radius: var(--bb-radius);
+    font-size: .9375rem;
+    font-weight: 500;
+    color: var(--bb-text);
+    text-decoration: none;
+}
+
+.bb-header-drawer a:hover,
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-header-drawer ::deep a:hover {
+    background: var(--bb-surface-hover);
+    text-decoration: none;
+}
+
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-header-drawer ::deep a.active {
+    color: var(--bb-primary);
+    background: var(--bb-primary-soft);
+    font-weight: 600;
+}
+
+@keyframes bb-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes bb-drawer-in {
+    from { opacity: 0; transform: translateY(-.5rem); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* The document's bit-theme attribute is the live theme state, kept current by theme.js, so the
@@ -152,62 +273,43 @@
     background-image: url('images/bit-logo-light.svg');
 }
 
-@media (max-width: 960px) {
-    .bb-header-inner {
-        gap: 1rem;
-        padding: 0 .75rem;
+/* Tablet and below: the links move into the drawer. The bar keeps its height, so every sticky
+   offset measured from --bb-header-height stays correct at every width. */
+@media (max-width: 900px) {
+    .bb-nav {
+        display: none;
+    }
+
+    .bb-menu-btn {
+        display: inline-flex;
+    }
+
+    .bb-header-end {
+        flex: 1;
+        justify-content: flex-end;
     }
 }
 
-/* Phones: three groups will not share one line without every one of them being squeezed, so the
-   nav takes a row of its own underneath. The bar grows by that row, and --bb-header-height grows
-   with it (app.css) so the sticky offsets and heading scroll-margins stay correct. */
-@media (max-width: 600px) {
+@media (max-width: 700px) {
     .bb-header-inner {
-        flex-wrap: wrap;
-        gap: .25rem .5rem;
-        padding: .5rem .75rem;
+        gap: .5rem;
+        padding: 0 .75rem;
     }
 
-    .bb-header-brand {
-        flex-shrink: 0;
-    }
-
-    /* Takes the rest of the first row - the nav, which does this job on wider screens, is on the
-       next row now. The search box inside it expands to fill (SearchBox.razor.css). */
-    .bb-header-end {
-        flex: 1;
-        min-width: 0;
-        justify-content: flex-end;
-    }
-
-    /* stylelint-disable-next-line selector-pseudo-element-no-unknown */
-    .bb-header-brand ::deep a.bb-logo {
-        height: 28px;
-    }
-
-    /* stylelint-disable-next-line selector-pseudo-element-no-unknown */
-    .bb-header-brand ::deep a.bb-wordmark {
-        font-size: 1rem;
-    }
-
-    .bb-nav {
-        order: 1;
-        flex: 0 0 100%;
-    }
-
-    /* stylelint-disable-next-line selector-pseudo-element-no-unknown */
-    .bb-nav ::deep a {
-        padding: .375rem .5rem;
-        font-size: .875rem;
+    .bb-version {
+        display: none;
     }
 }
 
 /* The narrowest phones: the wordmark is the one thing here that repeats what is already on
-   screen - the mark beside it links to the same place and the page title says the same word. */
-@media (max-width: 400px) {
+   screen - the mark beside it links to the same place, and the page title says the same word. */
+@media (max-width: 420px) {
     /* stylelint-disable-next-line selector-pseudo-element-no-unknown */
     .bb-header-brand ::deep a.bb-wordmark {
+        display: none;
+    }
+
+    .bb-github-btn {
         display: none;
     }
 }

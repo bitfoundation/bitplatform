@@ -1,4 +1,4 @@
-@page "/picture-in-picture"
+﻿@page "/picture-in-picture"
 @implements IAsyncDisposable
 @inject Bit.Butil.PictureInPicture pip
 @inject Bit.Butil.MediaDevices mediaDevices
@@ -57,7 +57,7 @@ await pip.Exit();
             <span>@_status</span>
         </div>
         <video @ref="_video" autoplay playsinline muted loop
-               style="margin-top:1rem;max-width:100%;border-radius:8px;background:#111;min-height:160px"></video>
+               class="demo-video" style="min-height:160px"></video>
         <DemoConsole @ref="pipOutput" Title="picture-in-picture output" />
     </DemoSection>
 

@@ -11,21 +11,31 @@
         @if (_previous is not null)
         {
             <a class="doc-pager-link prev" href="@_previous.Url">
-                <span class="doc-pager-dir">← Previous</span>
-                <span class="doc-pager-title">@_previous.Title</span>
+                <span class="doc-pager-arrow" aria-hidden="true">
+                    <Icon Name="chevron-left" Size="18" />
+                </span>
+                <span class="doc-pager-text">
+                    <span class="doc-pager-dir">Previous</span>
+                    <span class="doc-pager-title">@_previous.Title</span>
+                </span>
             </a>
         }
         else
         {
-            @* Holds the right-hand link against the right edge on the first page of the site. *@
+            @* Only present when there is no previous page, purely to keep "Next" on the right. *@
             <span class="doc-pager-spacer"></span>
         }
 
         @if (_next is not null)
         {
             <a class="doc-pager-link next" href="@_next.Url">
-                <span class="doc-pager-dir">Next →</span>
-                <span class="doc-pager-title">@_next.Title</span>
+                <span class="doc-pager-text">
+                    <span class="doc-pager-dir">Next</span>
+                    <span class="doc-pager-title">@_next.Title</span>
+                </span>
+                <span class="doc-pager-arrow" aria-hidden="true">
+                    <Icon Name="chevron-right" Size="18" />
+                </span>
             </a>
         }
     </nav>

@@ -344,19 +344,24 @@ also a plain HTTP GET under `/api/mcp/...` if you just want to look. It offers:
 - **Search** across everything at once (`SearchButil`) - this guide, the docs pages, every public
   member, the browser-support matrix and the demo's sources - with the exact follow-up call on each
   hit. The name a task suggests is rarely the name the web platform chose, which is what this is for.
-- **The exact API** (`GetButilApiList` / `GetButilApiDetails`), reflected out of the shipped
-  assembly: every service, every signature, every default argument, with the XML documentation.
-- **What an API needs before it works** (`InspectButilApi`, `PlanButilFeature`): the engines that
-  implement it, whether it wants HTTPS, a permission prompt or a user gesture, what has to be
-  disposed, and how it behaves under prerendering - the mistakes that compile and then do nothing.
+- **The exact API** (`GetButilApiDetails`), reflected out of the shipped assembly: every service,
+  every signature, every default argument, with the XML documentation.
+- **What an API needs before it works** (`PlanButilFeature`, for one API or the whole set a feature
+  uses): the engines that implement it, whether it wants HTTPS, a permission prompt or a user
+  gesture, what has to be disposed, and how it behaves under prerendering - the mistakes that
+  compile and then do nothing.
 - **Setup** per hosting model (`GetButilSetupGuide`), as the real files of a working project.
-- **The docs and this guide** as text, the full browser-support matrix, and every page of the demo
-  site as working source.
+- **The docs, this guide and the demo's source** as text (`GetButilDocsPage`,
+  `GetButilGuideSection`, `GetButilSourceFile`) - each of them returns the list of what it can hand
+  out when called with no argument, and the docs index doubles as the browser-support matrix.
 - **Resources** (`butil://guide/...`, `butil://api/...`, `butil://docs/...`, `butil://support`) and
   **prompts** for the four common jobs: adding Butil to an app, implementing a feature with it,
   replacing hand-written JS interop, and debugging a call that silently does nothing.
 
-Start with the `GetButilOverview` tool. See
+There are seven tools, and no more: a tool description is paid for in every request of every
+session, so a listing is not a tool of its own, a single-item lookup is not a tool when one that
+takes a set already resolves each member, and nothing restates the server's `instructions`, which
+the client has had in context since `initialize`. Start with `SearchButil`. See
 [McpController](Bit.Butil.Demo/Server/Controllers/McpController.cs).
 
 The site's own **`/mcp-server` page** is a working client for it: it handshakes with this server on

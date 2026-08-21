@@ -122,9 +122,9 @@ public static partial class ButilSetupGuide
         }
 
         builder.AppendLine("""
-            Then inject what you need. `GetButilApiList` lists every service, `InspectButilApi` says what one of them
-            needs from the page before it will work, and `GetButilSourceFile(path: "Demo/Client/Pages/StoragePage.razor")`
-            is a complete, working page using one.
+            Then inject what you need. `GetButilApiDetails` with no type name lists every service, `PlanButilFeature`
+            says what one of them - or the whole set a feature needs - has to have arranged before it will work, and
+            `GetButilSourceFile(path: "Demo/Client/Pages/StoragePage.razor")` is a complete, working page using one.
             """);
 
         return builder.ToString();

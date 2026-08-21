@@ -1,21 +1,25 @@
-﻿@* The shape of BitNavPanel as the Bit.BlazorUI demo configures it: a search box over grouped
-   links, reproduced in plain markup because this site takes no dependency on Bit.BlazorUI.
+﻿@* The documentation rail: a filter box over grouped links, in the shape of a
+   Fluent 2 NavDrawer - a rounded row per item, a subtle fill when selected, and
+   a pill indicator on the inline start edge.
 
-   Clicking any link also closes the mobile drawer; on desktop the class toggle is a no-op.
-   That is the delegated listener in demo.js matching the links themselves - no attribute on
-   the list, so a click on a group header or on the padding between items leaves the drawer
-   alone - and no inline onclick, so the site works under a strict Content-Security-Policy.
+   Clicking any link also closes the mobile drawer; on desktop the class toggle
+   is a no-op. That is the delegated listener in demo.js matching the links
+   themselves - no attribute on the list, so a click on a group header or on the
+   padding between items leaves the drawer alone - and no inline onclick, so the
+   site works under a strict Content-Security-Policy.
 
-   Each link sits in a .nav-item wrapper because the search filter in demo.js hides entries by
-   toggling a class on them: the wrapper's class is rendered once and never re-rendered, while
-   a class written straight onto a NavLink would be overwritten the next time NavLink
-   recomputes its own active state. *@
+   Each link sits in a .nav-item wrapper because the filter in demo.js hides
+   entries by toggling a class on them: the wrapper's class is rendered once and
+   never re-rendered, while a class written straight onto a NavLink would be
+   overwritten the next time NavLink recomputes its own active state. *@
+
 <nav class="nav-panel-inner">
     <div class="nav-search">
+        <Icon Name="search" Class="nav-search-icon" />
         <input type="search"
                class="nav-search-input"
-               placeholder="Search docs"
-               aria-label="Search docs"
+               placeholder="Filter pages"
+               aria-label="Filter the documentation pages by name"
                autocomplete="off"
                data-demo-nav-search />
     </div>

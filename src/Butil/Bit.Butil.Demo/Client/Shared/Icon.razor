@@ -1,0 +1,87 @@
+@* One inline SVG from the site's own icon family, drawn to Fluent 2's icon metrics: a 24x24 grid
+   with a 20x20 live area, a single 1.5px stroke weight, round caps and round joins, and no fill.
+   The strokes are `currentColor`, so an icon takes the color of the text it sits in and follows the
+   theme without a second asset - which is the whole reason the emoji this replaced had to go: a
+   glyph rendered by the OS font cannot be re-coloured, cannot be sized against the type ramp, and
+   is a different picture on every platform.
+
+   Every icon in the family is drawn to those metrics, so the `<svg>` carries them once here rather
+   than per path. A mark that cannot be drawn as a stroke - a filled brand logo, say - does not
+   belong in this dictionary: it would need its own `fill`, and there is no path for one.
+
+   The markup is a compile-time constant looked up by name, so rendering it as a MarkupString
+   inserts nothing a caller could influence. An unknown name renders nothing rather than throwing:
+   a missing icon should not be able to take a documentation page down with it.
+
+   HtmlToMarkdownService skips `svg` outright, so none of this reaches an MCP client - a decorative
+   icon is exactly the markup that conversion exists to strip. *@
+
+@if (_paths.TryGetValue(Name, out var path))
+{
+    <svg class="@Class"
+         width="@Size" height="@Size" viewBox="0 0 24 24"
+         fill="none" stroke="currentColor" stroke-width="1.5"
+         stroke-linecap="round" stroke-linejoin="round"
+         aria-hidden="true" focusable="false">@((MarkupString)path)</svg>
+}
+
+@code {
+    /// <summary>The icon's key in the family below. An unknown name renders nothing.</summary>
+    [Parameter] public string Name { get; set; } = "";
+
+    /// <summary>Edge length in CSS pixels. Fluent's icon sizes are 12, 16, 20, 24, 28, 32 and 48.</summary>
+    [Parameter] public int Size { get; set; } = 20;
+
+    [Parameter] public string? Class { get; set; }
+
+    /// <summary>Whether the family has an icon under this name - lets a caller lay out around its absence.</summary>
+    public static bool Exists(string? name) => name is not null && _paths.ContainsKey(name);
+
+    // Ordinal: the keys are identifiers written in this file and in DocsNav, never user text.
+    private static readonly Dictionary<string, string> _paths =
+        new(StringComparer.Ordinal)
+        {
+            // -- Chrome and controls ------------------------------------------------------------
+            ["search"] = """<circle cx="10.75" cy="10.75" r="6.75"/><path d="m15.6 15.6 4.4 4.4"/>""",
+            ["dismiss"] = """<path d="M6.4 6.4 17.6 17.6M17.6 6.4 6.4 17.6"/>""",
+            ["navigation"] = """<path d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5"/>""",
+            ["sun"] = """<circle cx="12" cy="12" r="4"/><path d="M12 2.75v1.5M12 19.75v1.5M2.75 12h1.5M19.75 12h1.5M5.46 5.46l1.06 1.06M17.48 17.48l1.06 1.06M18.54 5.46l-1.06 1.06M6.52 17.48l-1.06 1.06"/>""",
+            ["moon"] = """<path d="M20.5 13.4A8.9 8.9 0 1 1 10.6 3.5a7.1 7.1 0 0 0 9.9 9.9Z"/>""",
+            ["copy"] = """<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15.25 5.75A1.75 1.75 0 0 0 13.5 4h-7.75A1.75 1.75 0 0 0 4 5.75V13.5a1.75 1.75 0 0 0 1.75 1.75"/>""",
+            ["checkmark"] = """<path d="m4.75 12.75 4.5 4.5 10-11"/>""",
+            ["chevron-left"] = """<path d="M14.5 5 8 12l6.5 7"/>""",
+            ["chevron-right"] = """<path d="M9.5 5 16 12l-6.5 7"/>""",
+            ["chevron-down"] = """<path d="M5 9.5 12 16l7-6.5"/>""",
+            ["arrow-up"] = """<path d="M12 19.25V4.75M5.75 11 12 4.75 18.25 11"/>""",
+            ["arrow-left"] = """<path d="M19.25 12H4.75M11 5.75 4.75 12 11 18.25"/>""",
+            ["arrow-right"] = """<path d="M4.75 12h14.5M13 5.75 19.25 12 13 18.25"/>""",
+            ["open"] = """<path d="M14 4h6v6M20 4l-8.5 8.5"/><path d="M18 13.75v4.5A1.75 1.75 0 0 1 16.25 20h-10.5A1.75 1.75 0 0 1 4 18.25V7.75A1.75 1.75 0 0 1 5.75 6h4.5"/>""",
+            ["link"] = """<path d="M10.5 13.5a3.75 3.75 0 0 0 5.66.4l2.5-2.5a3.75 3.75 0 0 0-5.3-5.3l-1.44 1.43"/><path d="M13.5 10.5a3.75 3.75 0 0 0-5.66-.4l-2.5 2.5a3.75 3.75 0 0 0 5.3 5.3l1.43-1.43"/>""",
+            ["filter"] = """<path d="M4.25 6.25h15.5M7.25 12h9.5M10.25 17.75h3.5"/>""",
+            ["clipboard-task"] = """<path d="M9 4.75h6M9.75 3.5h4.5a1.25 1.25 0 0 1 1.25 1.25v.5h1.25A1.75 1.75 0 0 1 18.5 7v11.25A1.75 1.75 0 0 1 16.75 20h-9.5A1.75 1.75 0 0 1 5.5 18.25V7a1.75 1.75 0 0 1 1.75-1.75H8.5v-.5A1.25 1.25 0 0 1 9.75 3.5Z"/>""",
+
+            // -- Message intents ----------------------------------------------------------------
+            ["info"] = """<circle cx="12" cy="12" r="8.75"/><path d="M12 11.25v5"/><path d="M12 7.75h.01"/>""",
+            ["warning"] = """<path d="M10.63 4.6 2.9 17.75A1.6 1.6 0 0 0 4.28 20.2h15.44a1.6 1.6 0 0 0 1.38-2.45L13.37 4.6a1.6 1.6 0 0 0-2.74 0Z"/><path d="M12 9.75v4"/><path d="M12 17h.01"/>""",
+            ["success"] = """<circle cx="12" cy="12" r="8.75"/><path d="m8.25 12.25 2.6 2.6 4.9-5.4"/>""",
+            ["error"] = """<circle cx="12" cy="12" r="8.75"/><path d="m9.25 9.25 5.5 5.5M14.75 9.25l-5.5 5.5"/>""",
+
+            // -- Group marks --------------------------------------------------------------------
+            ["overview"] = """<path d="M12 6.9C10.4 5.3 7.8 4.6 3.9 4.6v12.9c3.9 0 6.5.7 8.1 2.3 1.6-1.6 4.2-2.3 8.1-2.3V4.6c-3.9 0-6.5.7-8.1 2.3Z"/><path d="M12 6.9v12.9"/>""",
+            ["window"] = """<rect x="3.25" y="4.75" width="17.5" height="14.5" rx="2.25"/><path d="M3.25 9.25h17.5"/><path d="M6.5 7h.01M9 7h.01"/>""",
+            ["diagnostics"] = """<path d="M4.6 17.5a8.75 8.75 0 1 1 14.8 0Z"/><path d="m12 14 3.5-3.9"/>""",
+            ["dom"] = """<path d="M12 3.5 21 8l-9 4.5L3 8Z"/><path d="m3 12.5 9 4.5 9-4.5"/><path d="m3 16.75 9 4.5 9-4.5"/>""",
+            ["storage"] = """<ellipse cx="12" cy="6.25" rx="7.75" ry="2.75"/><path d="M4.25 6.25v11.5c0 1.52 3.47 2.75 7.75 2.75s7.75-1.23 7.75-2.75V6.25"/><path d="M4.25 12c0 1.52 3.47 2.75 7.75 2.75s7.75-1.23 7.75-2.75"/>""",
+            ["files"] = """<path d="M3.5 7.75A2.25 2.25 0 0 1 5.75 5.5h3.13c.53 0 1.04.19 1.44.53l1.43 1.22h6.51a2.25 2.25 0 0 1 2.25 2.25v7.25a2.25 2.25 0 0 1-2.25 2.25H5.75a2.25 2.25 0 0 1-2.25-2.25Z"/>""",
+            ["network"] = """<circle cx="12" cy="12" r="8.75"/><path d="M3.6 9.25h16.8M3.6 14.75h16.8"/><ellipse cx="12" cy="12" rx="4" ry="8.75"/>""",
+            ["device"] = """<rect x="6.75" y="6.75" width="10.5" height="10.5" rx="2"/><rect x="10" y="10" width="4" height="4" rx="1"/><path d="M9.5 3.5v3.25M14.5 3.5v3.25M9.5 17.25v3.25M14.5 17.25v3.25M3.5 9.5h3.25M3.5 14.5h3.25M17.25 9.5h3.25M17.25 14.5h3.25"/>""",
+            ["identity"] = """<path d="M12 3.5 19.25 6.4v5.1c0 4.34-2.9 7.86-7.25 9.4-4.35-1.54-7.25-5.06-7.25-9.4V6.4Z"/><path d="m9.25 11.9 1.9 1.9 3.85-4.05"/>""",
+            ["media"] = """<path d="M4 10.5v3M8 7v10M12 4.25v15.5M16 7v10M20 10.5v3"/>""",
+
+            // -- Marks used by the home page and the header --------------------------------------
+            ["package"] = """<path d="m12 3.25 8.25 4.5v8.5L12 20.75l-8.25-4.5v-8.5Z"/><path d="m3.75 7.75 8.25 4.5 8.25-4.5"/><path d="M12 12.25v8.5"/>""",
+            ["code"] = """<path d="M8.75 7.5 4.25 12l4.5 4.5M15.25 7.5 19.75 12l-4.5 4.5"/>""",
+            ["bolt"] = """<path d="M13.25 3.25 5.5 13.5h5.25l-.5 7.25 7.75-10.25H12.75Z"/>""",
+            ["shield"] = """<path d="M12 3.5 19.25 6.4v5.1c0 4.34-2.9 7.86-7.25 9.4-4.35-1.54-7.25-5.06-7.25-9.4V6.4Z"/>""",
+        };
+}

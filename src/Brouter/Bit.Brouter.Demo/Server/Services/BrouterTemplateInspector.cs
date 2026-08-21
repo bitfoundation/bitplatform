@@ -102,37 +102,73 @@ public static class BrouterTemplateInspector
     };
 
     /// <summary>
-    /// Parses a whole set of templates and reports how they relate: which one the router prefers
-    /// when more than one matches, and which of them are indistinguishable.
+    /// Parses templates and reports what they are - and, once there is more than one of them, how
+    /// they relate: which one the router prefers when several match, and which are indistinguishable.
+    /// <para>
+    /// A single template keeps the whole of what the parser made of it, because that call is about
+    /// that template. A set keeps what a set is asked about - validity, rank and shape - and drops
+    /// the per-template detail: two hundred templates' segments answer a question nobody asked, in
+    /// an answer somebody has to read.
+    /// </para>
     /// </summary>
-    public static BrouterRouteTableAnalysisDto Analyze(IEnumerable<string> templates, BrouterConstraintRegistry? constraints)
+    public static BrouterRouteAnalysisDto Analyze(IEnumerable<string> templates, BrouterConstraintRegistry? constraints)
     {
-        var inspections = templates.Where(t => string.IsNullOrWhiteSpace(t) is false)
-                                   .Select(t => Inspect(t.Trim(), constraints))
-                                   .ToArray();
+        var submitted = templates as string[] ?? [.. templates];
 
-        var entries = inspections.Select(inspection => new BrouterRouteTableEntryDto
+        // A blank entry among several is a stray separator and drops out. On its own it is the
+        // index route - <Broute Path=""> under a parent - which is a template like any other and
+        // the only one that cannot be asked about if blanks are thrown away first.
+        var inspections = (submitted.Length == 1 ? submitted : [.. submitted.Where(t => string.IsNullOrWhiteSpace(t) is false)])
+            .Select(t => Inspect(t.Trim(), constraints))
+            .ToArray();
+
+        var notes = new List<string>();
+
+        if (inspections.Length == 1)
         {
-            Template = inspection.Template,
-            IsValid = inspection.IsValid,
-            Error = inspection.Error,
-            Specificity = inspection.Specificity,
-            Shape = inspection.Shape
-        }).ToArray();
+            // Nothing to rank against and nothing to collide with: the shape is the router's
+            // comparison key, and there is no second template here to compare with.
+            var single = inspections[0];
+
+            if (single.IsValid is false)
+            {
+                notes.Add("An invalid template throws while its <Broute> initializes, so the route never registers.");
+            }
+            else if (single.Template.Length == 0)
+            {
+                notes.Add("The empty template is the index route: a child <Broute Path=\"\"> renders where its parent " +
+                          "matches and nothing more of the URL is left. Send one template per line to compare several.");
+            }
+
+            return new BrouterRouteAnalysisDto
+            {
+                Routes = [single with { Shape = null }],
+                Ambiguous = [],
+                Notes = [.. notes]
+            };
+        }
 
         // Specificity is the router's tie-break between routes that all match a URL.
-        var ordered = entries.OrderByDescending(e => e.IsValid)
-                             .ThenByDescending(e => e.Specificity)
-                             .Select((entry, index) => entry with { MatchOrder = index + 1 })
-                             .ToArray();
+        var ordered = inspections
+            .OrderByDescending(inspection => inspection.IsValid)
+            .ThenByDescending(inspection => inspection.Specificity)
+            .Select((inspection, index) => inspection with
+            {
+                MatchOrder = index + 1,
+                // What a set is asked about is how its templates relate; the detail of each one is
+                // a further call away, on the template that turned out to be the interesting one.
+                NormalizedTemplate = null,
+                ParameterNames = null,
+                Segments = null,
+                Notes = null
+            })
+            .ToArray();
 
         var ambiguous = ordered.Where(e => e.Shape is not null)
                                .GroupBy(e => e.Shape!, StringComparer.Ordinal)
                                .Where(group => group.Count() > 1)
                                .Select(group => group.Select(e => e.Template).ToArray())
                                .ToArray();
-
-        var notes = new List<string>();
 
         if (ambiguous.Length > 0)
         {
@@ -149,7 +185,7 @@ public static class BrouterTemplateInspector
                   "This analysis treats the templates as a flat set - nesting depth and index routes ('' under a parent) add " +
                   "further tie-breaks that only exist once the routes sit in a tree.");
 
-        return new BrouterRouteTableAnalysisDto { Routes = ordered, Ambiguous = ambiguous, Notes = [.. notes] };
+        return new BrouterRouteAnalysisDto { Routes = ordered, Ambiguous = ambiguous, Notes = [.. notes] };
     }
 
     /// <summary>

@@ -89,8 +89,9 @@ builder.Services.AddMcpServer(options =>
 
     // The one piece of text a client is expected to put in front of the model before it has called
     // anything. Deliberately not a summary of the tools - the client already has every tool's
-    // description - but the things an agent gets wrong when nothing tells it otherwise: answering
-    // about Bswup from memory, and configuring only one of the two service-worker files.
+    // description, and paying for that list twice is exactly the waste this server is built to
+    // avoid - but the things an agent gets wrong when nothing tells it otherwise: answering about
+    // Bswup from memory, and configuring only one of the two service-worker files.
     options.ServerInstructions = @"This server answers about bit Bswup, the service-worker layer for Blazor WebAssembly apps
 (offline support, an install progress bar, controlled updates).
 
@@ -99,15 +100,19 @@ the standard Microsoft Blazor PWA template's but are not the same, and its defau
 between versions - BswupProgress.AutoReload flipped to false in v-10-6-0. Every tool here reads the
 shipped build, so it is right about the version in front of you where recalled knowledge is not.
 
-Start with SearchBswup unless you already know the setting, slug or event you want; each hit names
-the exact follow-up call.
+Start with SearchBswup unless you already know the setting, slug or event you want, and then call
+the follow-up each hit names, verbatim: those calls are narrowed to the hit, and the same tool
+called bare answers with the whole catalog.
 
-Two rules decide most Bswup bugs, and neither produces an error anyone sees until a user is offline:
-every self.* setting must be assigned BEFORE the importScripts line in service-worker.js, and
+Three rules decide most Bswup bugs, and none of them produces an error anyone sees until a user is
+offline: every self.* setting must be assigned BEFORE the importScripts line in service-worker.js;
 whatever goes in service-worker.js must go in service-worker.published.js too, because the published
-file is what deployed builds ship. After writing or changing either file, run it through
-InspectBswupServiceWorker and confirm what it caches with AnalyzeBswupAssetCaching before reporting
-the work as done.";
+file is what deployed builds ship; and service-worker.js itself must never be cached at the HTTP
+layer, or clients stay on the worker they already have. The Blazor entry script also needs
+autostart=""false"" - Bswup starts Blazor itself, once the install has finished.
+
+After writing or changing either service-worker file, run it through InspectBswupServiceWorker,
+passing the asset URLs the change is about as assetUrls, before reporting the work as done.";
 
     // Advertised explicitly: the SDK only derives completions from enum-valued schemas, and the
     // values worth completing here (docs slugs, guide headings, source paths) are catalog entries.

@@ -31,8 +31,8 @@ public class CodeReviewTests
             }
             """,
 
-        ["spring-duration-without-bounce"] = """
-            <Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Spring(duration: 0.5)">
+        ["spring-physics-overridden-by-duration"] = """
+            <Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Spring(stiffness: 300, duration: 0.5)">
                 <div class="box" />
             </Bmotion>
             """,
@@ -161,8 +161,11 @@ public class CodeReviewTests
                 </BmotionAnimatePresence>
                 """,
 
-            ["spring-duration-without-bounce"] = """
-                <Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Spring(bounce: 0.2, duration: 0.5)">
+            // Duration on its own is a complete spring - it derives stiffness and damping with
+            // bounce defaulting to 0.25 - and this rule used to fire on it, which is a warning
+            // about correct code.
+            ["spring-physics-overridden-by-duration"] = """
+                <Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Spring(duration: 0.5)">
                     <div class="box" />
                 </Bmotion>
                 """,
@@ -268,13 +271,13 @@ public class CodeReviewTests
     {
         var code = """
             <div class="wrapper">
-                <Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Spring(duration: 0.5)">
+                <Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Spring(stiffness: 300, duration: 0.5)">
                     <div class="box" />
                 </Bmotion>
             </div>
             """;
 
-        var finding = BmotionCodeReview.Review(code).Findings.Single(entry => entry.Rule == "spring-duration-without-bounce");
+        var finding = BmotionCodeReview.Review(code).Findings.Single(entry => entry.Rule == "spring-physics-overridden-by-duration");
 
         Assert.AreEqual(2, finding.Line);
     }
@@ -283,9 +286,9 @@ public class CodeReviewTests
     public void Review_TheMostSeriousFindingsComeFirst()
     {
         // One markup, three mistakes at three severities: a self-closed Bmotion (Error), a spring
-        // duration with no bounce (Warning) and a frame-loop-only property (Suggestion).
+        // configured in both forms at once (Warning) and a frame-loop-only property (Suggestion).
         var code = """
-            <Bmotion Animate="Bm.To(height: "0px")" Transition="Bm.Spring(duration: 0.5)" />
+            <Bmotion Animate="Bm.To(height: "0px")" Transition="Bm.Spring(stiffness: 300, duration: 0.5)" />
             """;
 
         var findings = BmotionCodeReview.Review(code).Findings;
@@ -309,7 +312,7 @@ public class CodeReviewTests
 
         // A Warning fails it too.
         var warning = BmotionCodeReview.Review("""
-            <Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Spring(duration: 0.5)">
+            <Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Spring(stiffness: 300, duration: 0.5)">
                 <div class="box" />
             </Bmotion>
             """);

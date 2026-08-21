@@ -1,4 +1,4 @@
-@implements IAsyncDisposable
+﻿@implements IAsyncDisposable
 @inject NavigationManager navManager
 @inject Bit.Butil.Keyboard keyboard
 @inject Bit.Butil.UserAgent userAgent
@@ -18,10 +18,7 @@
    on the Blazor handler: nothing about its default needs suppressing. *@
 
 <div class="header-search">
-    <svg class="header-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-         stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false">
-        <circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16" y2="16" />
-    </svg>
+    <Icon Name="search" Size="16" Class="header-search-icon" />
 
     @* The hint is the standard way to advertise the shortcut, and it doubles as the label for what
        the key does - so it is aria-hidden and the input's own label carries the wording for a
@@ -50,8 +47,10 @@
                     class="@(index == _activeIndex ? "active" : null)"
                     @key="hit.Link.Url"
                     @onmousedown="() => Go(hit.Link)" @onmousedown:preventDefault>
-                    <span class="header-search-result-icon" aria-hidden="true">@hit.Link.Icon</span>
-                    <span class="header-search-result-title">@hit.Link.Title</span>
+                    <span class="header-search-result-text">
+                        <span class="header-search-result-title">@hit.Link.Title</span>
+                        <span class="header-search-result-summary">@hit.Link.Summary</span>
+                    </span>
                     <span class="header-search-result-group">@hit.Group</span>
                 </li>
             }

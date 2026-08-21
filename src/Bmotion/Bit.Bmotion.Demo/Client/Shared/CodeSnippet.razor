@@ -1,32 +1,49 @@
-@inject IJSRuntime JS
+﻿@inject IJSRuntime JS
 
-@* CodeSnippet renders a toggle button that shows / hides the full source code of a sample,
-   plus a copy-to-clipboard button. *@
+@* The full, copy/paste-runnable source of a sample, behind a toggle.
 
-<div class="code-snippet">
+   One frame around the toolbar and the code rather than a button floating above a slab: the bar
+   is the code box's own header, so opening a snippet grows a panel instead of adding a second
+   thing to the page. The copy button is there whether or not the code is showing - a reader who
+   wants the snippet in their editor should not first have to read it here. *@
+
+<div class="code-snippet @(_show ? "open" : null)">
     <div class="code-snippet-bar">
-        <button type="button" class="code-toggle" @onclick="Toggle" aria-expanded="@_show.ToString().ToLowerInvariant()">
-            <span class="code-toggle-icon">@(_show ? "▾" : "▸")</span>
+        <button type="button" class="code-toggle" @onclick="Toggle"
+                aria-expanded="@(_show ? "true" : "false")" aria-controls="@_bodyId">
+            <span class="code-toggle-icon">
+                <Icon Path="@Icons.ChevronRight" />
+            </span>
             @(_show ? "Hide code" : "Show code")
         </button>
 
-        @if (_show)
-        {
-            <button type="button" class="code-copy" @onclick="CopyAsync">
-                @(_copied ? "✓ Copied" : "Copy")
-            </button>
-        }
+        <span class="code-lang">@Language</span>
+
+        <button type="button" class="code-copy @(_copied ? "copied" : null)" @onclick="CopyAsync"
+                aria-label="@(_copied ? "Code copied to the clipboard" : "Copy the code to the clipboard")">
+            <Icon Path="@(_copied ? Icons.Check : Icons.Copy)" />
+            @(_copied ? "Copied" : "Copy")
+        </button>
     </div>
 
     @if (_show)
     {
-        <pre class="code-block"><code>@((MarkupString)SyntaxHighlighter.Highlight(Code.Trim('\n')))</code></pre>
+        <pre class="code-block" id="@_bodyId"><code>@((MarkupString)SyntaxHighlighter.Highlight(Code.Trim('\n')))</code></pre>
     }
 </div>
 
 @code {
     /// <summary>The full, copy/paste-runnable source snippet to display for the sample.</summary>
     [Parameter, EditorRequired] public string Code { get; set; } = "";
+
+    /// <summary>The label printed on the bar. Every snippet on the site is Razor; the parameter is
+    /// here so a page that shows a shell command or a JSON file can say so.</summary>
+    [Parameter] public string Language { get; set; } = "Razor";
+
+    // The toggle points at the block it opens, so a screen reader following aria-controls lands on
+    // the code rather than on the next thing in the document. Generated per instance because a
+    // page carries a dozen of these.
+    private readonly string _bodyId = $"code-{Guid.NewGuid():N}";
 
     private bool _show;
     private bool _copied;
@@ -45,6 +62,8 @@
         }
         catch
         {
+            // A clipboard the browser refuses to hand over is not something the reader can act on,
+            // and the code is on the page either way; the button simply does not confirm.
             _copied = false;
         }
     }

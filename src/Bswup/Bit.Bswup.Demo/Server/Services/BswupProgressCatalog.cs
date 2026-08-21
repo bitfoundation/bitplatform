@@ -91,13 +91,10 @@ public static class BswupProgressCatalog
                 .Select(property => new BswupOptionDto
                 {
                     Name = property.Name,
-                    Kind = "Progress parameter",
-                    SetIn = "<BswupProgress ... /> in the host document (App.razor / index.html)",
                     Type = FriendlyName(property.PropertyType),
                     Default = Format(TryRead(property, instance)),
                     Summary = _descriptions.GetValueOrDefault(property.Name),
-                    VerifiedFromSource = true,
-                    Docs = "GetBswupDocsPage(slug: \"progress-ui\")"
+                    VerifiedFromSource = true
                 })
         ];
     }

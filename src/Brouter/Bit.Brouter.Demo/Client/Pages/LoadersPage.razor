@@ -51,6 +51,7 @@
             <tr><td>Broute.StaleTime / DefaultLoaderStaleTime</td><td>Per-route freshness window; option-level default (null = no caching).</td></tr>
             <tr><td>LoaderCacheGcTime / MaxLoaderCacheEntries</td><td>Cache-entry lifetime (30 min) and size cap (50, oldest evicted).</td></tr>
             <tr><td>brouter.RevalidateAsync()</td><td>Re-runs the current chain's loaders in place - not a navigation: URL unchanged, guards skipped, content stays visible, <code>IsRevalidation</code> set.</td></tr>
+            <tr><td>brouter.ReloadAsync()</td><td>The heavy sibling: evicts this URL's cached results, disposes the chain's components and matches again - so guards re-run and the loaders start from nothing, <code>IsReload</code> set. Use it when the components' own state is stale too, not just their data.</td></tr>
             <tr><td>brouter.ClearLoaderCache()</td><td>Drops every cached loader result (e.g. on sign-out).</td></tr>
             <tr><td>BrouterOptions.PersistLoaderState</td><td>Persists loader results across prerender→interactive so they don't run twice (AOT-safe via <code>LoaderStateTypeInfoResolver</code>).</td></tr>
         </tbody>

@@ -106,7 +106,7 @@ public class PromptTests : McpTestBase
             Assert.That(text, Does.Contain("IJSRuntime"));
             Assert.That(text, Does.Contain("SearchButil"));
             Assert.That(text, Does.Contain("GetButilApiDetails"));
-            Assert.That(text, Does.Contain("InspectButilApi"));
+            Assert.That(text, Does.Contain("PlanButilFeature"));
             Assert.That(text, Does.Contain("ButilSubscription"));
         });
     }
@@ -122,7 +122,7 @@ public class PromptTests : McpTestBase
         {
             Assert.That(text, Does.Contain(symptom));
             Assert.That(text, Does.Contain("troubleshooting"), "Step one is the troubleshooting page, where the cause is often verbatim.");
-            Assert.That(text, Does.Contain("InspectButilApi"));
+            Assert.That(text, Does.Contain("PlanButilFeature"));
             Assert.That(text, Does.Contain("prerender").IgnoreCase);
         });
     }

@@ -452,8 +452,18 @@
             <Content>
                 <div class="bb-error bb-error-404">
                     <h1>404</h1>
-                    <p>Sorry, there's nothing at this address.</p>
-                    <BrouterLink Href="/" class="btn btn-primary">Back to home</BrouterLink>
+                    <p>
+                        Nothing matched this address - no declared route, and no
+                        <code>&#64;page</code> component either.
+                    </p>
+                    <div class="bb-try bb-error-actions">
+                        <BrouterLink Href="/" class="btn btn-primary">Back to home</BrouterLink>
+                        <BrouterLink Href="/docs" class="btn btn-secondary">Documentation</BrouterLink>
+                        <BrouterLink Href="/playground" class="btn btn-secondary">Playground</BrouterLink>
+                    </div>
+                    <p class="bb-error-hint">
+                        Looking for something in particular? Press <kbd>Ctrl</kbd> <kbd>K</kbd> to search.
+                    </p>
                 </div>
             </Content>
         </Broute>
@@ -462,8 +472,11 @@
             <Content>
                 <div class="bb-error bb-error-403">
                     <h1>403</h1>
-                    <p>Oops! You can't go there yet.</p>
-                    <BrouterLink Href="/" class="btn btn-primary">Back to home</BrouterLink>
+                    <p>A guard turned this navigation away - the URL never committed.</p>
+                    <div class="bb-try bb-error-actions">
+                        <BrouterLink Href="/" class="btn btn-primary">Back to home</BrouterLink>
+                        <BrouterLink Href="/docs/guards" class="btn btn-secondary">How guards work</BrouterLink>
+                    </div>
                 </div>
             </Content>
         </Broute>
@@ -539,7 +552,8 @@
         @* Keep-alive: /sticky vs the /fleeting control shows singleton retention plus the
            route lifecycle (StickyNotePage derives from BrouterRouteBase and pauses its timer in
            OnDeactivated / resumes it in OnActivated); /notes/{id} shows per-parameter caching
-           (KeepAliveMax) with LRU eviction and IBrouter.ClearKeepAlive(). *@
+           (KeepAliveMax) with LRU eviction, plus the resets: IBrouter.ClearKeepAlive(),
+           ClearKeepAlive(includeActive: true) and ReloadAsync(). *@
 
         <Broute Path="/sticky" KeepAlive="true">
             <Content>

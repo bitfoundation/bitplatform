@@ -6,10 +6,25 @@
 
 <PageTitle>Error - Bit.Bmotion</PageTitle>
 
-<div class="page-hero">
-    <h1>500</h1>
+<div class="error-page">
+    <span class="error-code" aria-hidden="true">500</span>
+
+    <h1>Something went wrong</h1>
+
     <p role="alert">
-        An error occurred while processing your request. Head back to the
-        <a href="/">demos home</a> and try again.
+        An error occurred while processing your request. Reloading usually clears it; if it does
+        not, the repository is the place to tell us about it.
     </p>
+
+    <div class="hero-actions">
+        <a class="btn-primary" href="/">
+            Back to home
+            <Icon Path="@Icons.ArrowRight" />
+        </a>
+        <a class="btn-secondary" target="_blank" rel="noopener noreferrer"
+           href="https://github.com/bitfoundation/bitplatform/issues">
+            <span class="github-mark" aria-hidden="true"></span>
+            Report an issue
+        </a>
+    </div>
 </div>
