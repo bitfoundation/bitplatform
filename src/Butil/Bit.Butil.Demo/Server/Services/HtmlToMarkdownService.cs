@@ -24,14 +24,34 @@ public static partial class HtmlToMarkdownService
     };
 
     /// <summary>
-    /// Widgets that only say anything once a person has clicked something. A demo console renders
-    /// here as its title, a Clear button and the sentence it shows while it is empty - and it is
-    /// empty in every page this server renders, because nothing interacts with it. Four of them on
-    /// a page is a few hundred characters of an agent's context spent on an empty output pane.
+    /// Chrome that says nothing a reader of the Markdown does not already have.
+    /// <list type="bullet">
+    /// <item>
+    /// A demo console renders here as its title, a Clear button and the sentence it shows while it
+    /// is empty - and it is empty in every page this server renders, because nothing interacts with
+    /// it. Four of them on a page is a few hundred characters of an agent's context spent on an
+    /// empty output pane.
+    /// </item>
+    /// <item>
+    /// A code pane's title bar holds the language name and a copy button. The language is already
+    /// carried out to the client as the fenced block's info string (see <see cref="Language"/>),
+    /// so keeping the bar would put a stray "C#" line in front of every sample.
+    /// </item>
+    /// <item>
+    /// A page's breadcrumb is the trail back up the site's navigation. Its leaf is the group the
+    /// page belongs to, which every answer that hands out a page already carries in the index, and
+    /// its root is the word "Docs" - which is not a fact about the page at all.
+    /// </item>
+    /// <item>
+    /// A section's "Live sample" tag marks the one region of the page that really runs. Nothing
+    /// runs in a page rendered here, so the tag would be promising an agent something this answer
+    /// cannot contain.
+    /// </item>
+    /// </list>
     /// </summary>
     private static readonly HashSet<string> _skippedClasses = new(StringComparer.OrdinalIgnoreCase)
     {
-        "demo-console"
+        "demo-console", "code-bar", "breadcrumb", "demo-area-tag"
     };
 
     // Elements that start on their own line and are followed by a blank one.

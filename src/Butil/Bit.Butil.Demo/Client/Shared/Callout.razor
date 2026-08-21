@@ -1,5 +1,11 @@
-﻿<div class="callout @Type">
-    <span class="callout-icon">@Icon</span>
+﻿@* Fluent 2's MessageBar: an intent icon, a title and a body on a tinted surface bounded by the
+   intent's own border. The intent is carried by the icon and by the wording as well as by the
+   colour, so it survives a monochrome print and a reader who cannot separate the four hues. *@
+
+<div class="callout @Type" role="@Role">
+    <span class="callout-icon" aria-hidden="true">
+        <Icon Name="@Icon" Size="20" />
+    </span>
     <div class="callout-body">
         @if (!string.IsNullOrWhiteSpace(Title))
         {
@@ -10,7 +16,7 @@
 </div>
 
 @code {
-    /// <summary>One of: info, warning, success.</summary>
+    /// <summary>One of: info, warning, success, error.</summary>
     [Parameter] public string Type { get; set; } = "info";
 
     [Parameter] public string? Title { get; set; }
@@ -18,8 +24,18 @@
 
     private string Icon => Type switch
     {
-        "warning" => "⚠️",
-        "success" => "✅",
-        _ => "💡",
+        "warning" => "warning",
+        "success" => "success",
+        "error" => "error",
+        _ => "info",
+    };
+
+    // Only the two that report something going wrong are announced out of turn; an explanatory
+    // aside is part of the prose and belongs in the reading order like everything else.
+    private string? Role => Type switch
+    {
+        "error" => "alert",
+        "warning" => "status",
+        _ => null,
     };
 }
