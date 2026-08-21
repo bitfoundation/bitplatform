@@ -30,11 +30,11 @@ namespace BitBlazorUI {
          * isolated page (COEP: require-corp blocks no-cors subresources that carry no CORP
          * header), the source is rebuilt in CORS mode. OpenLayers reads crossOrigin when the
          * source is constructed, so the retry has to create a new one - it runs only after the
-         * shared crossOrigin flipped, so the rebuilt source never retries again.
+         * tile host was marked as CORS-only, so the rebuilt source never retries again.
          */
         private static _setTileSource(ol: any, layer: any, params: { url: string, maxZoom: number, attributions: string }) {
             const source = new ol.XYZ({
-                crossOrigin: BitMapHelpers.tileCrossOrigin,
+                crossOrigin: BitMapHelpers.tileCrossOrigin(params.url),
                 url: params.url,
                 maxZoom: params.maxZoom,
                 attributions: params.attributions,

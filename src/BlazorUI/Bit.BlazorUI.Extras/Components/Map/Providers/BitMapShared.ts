@@ -5,57 +5,70 @@ namespace BitBlazorUI {
 
     /** Helpers shared by every BitMap provider implementation. */
     export class BitMapHelpers {
-        private static _tileCrossOrigin: string | undefined = undefined;
+        /**
+         * Origins whose tiles failed in no-cors mode and are therefore requested in CORS mode from
+         * now on. Keyed per origin, not a single page-wide flag: one tile host switching to CORS
+         * says nothing about another, and a layer pointed at a host that sends CORP but no
+         * Access-Control-Allow-Origin would be broken - not fixed - by being dragged along.
+         */
+        private static _corsTileOrigins: { [origin: string]: true } = {};
+
+        /** Origin of a tile url template, or null when it does not parse. */
+        private static tileOrigin(urlTemplate: string): string | null {
+            try {
+                // {s} is Leaflet's subdomain placeholder and can sit in the host, so it has to be
+                // substituted before the URL parses; every other placeholder is in the path.
+                const url = (urlTemplate || '').replace('{s}', 'a');
+                return new URL(url, document.baseURI).origin;
+            } catch {
+                return null;
+            }
+        }
 
         /**
-         * crossOrigin value to create tile layers with, or undefined for the default no-cors mode.
+         * crossOrigin value to create a tile layer with, or undefined for the default no-cors mode.
          *
          * Tiles start out in no-cors mode so tile servers that send neither CORS nor CORP headers
          * keep working (requesting those in CORS mode would block them). When the page is
          * cross-origin isolated with Cross-Origin-Embedder-Policy: require-corp - the only COEP
          * value WebKit understands, and what the multi-threaded WebAssembly runtime needs there -
          * a cross-origin tile without a Cross-Origin-Resource-Policy header is blocked in no-cors
-         * mode instead, so the first tile layer that fails to load a single tile flips this to
-         * 'anonymous' and redraws itself in CORS mode (OSM, Carto, OpenTopoMap... all send
+         * mode instead, so the first layer on that host that fails to load a single tile marks the
+         * host and redraws itself in CORS mode (OSM, Carto, OpenTopoMap... all send
          * Access-Control-Allow-Origin: *). Mirrors the no-cors then CORS retry the Extras/Legacy
          * script and stylesheet loaders do.
          */
-        static get tileCrossOrigin(): string | undefined {
-            return BitMapHelpers._tileCrossOrigin;
-        }
-
-        /** True when the tile url template points at an origin other than the page's. */
-        static isCrossOriginTileUrl(urlTemplate: string): boolean {
-            try {
-                // {s} is Leaflet's subdomain placeholder and can sit in the host, so it has to be
-                // substituted before the URL parses; every other placeholder is in the path.
-                const url = (urlTemplate || '').replace('{s}', 'a');
-                return new URL(url, document.baseURI).origin !== location.origin;
-            } catch {
-                return false;
-            }
+        static tileCrossOrigin(urlTemplate: string): string | undefined {
+            const origin = BitMapHelpers.tileOrigin(urlTemplate);
+            return origin !== null && BitMapHelpers._corsTileOrigins[origin] ? 'anonymous' : undefined;
         }
 
         /**
          * Creates the tile-load listeners implementing the no-cors then CORS retry for a single
          * tile layer. `retry` is invoked at most once, and only when every tile of that layer
          * failed: a layer that loaded at least one tile is talking to a reachable server, so a
-         * later error is an ordinary missing/failing tile and must not switch the whole page to
-         * CORS mode (which would break tile servers that send no CORS headers).
+         * later error is an ordinary missing/failing tile and must not switch that host to CORS
+         * mode (which would break a tile server that sends no CORS headers).
          */
         static createTileCorsFallback(urlTemplate: string, retry: () => void) {
-            // A layer created once the page already switched to CORS mode has nothing to retry.
-            const enabled = !BitMapHelpers._tileCrossOrigin
-                && self.crossOriginIsolated
-                && BitMapHelpers.isCrossOriginTileUrl(urlTemplate);
+            const origin = BitMapHelpers.tileOrigin(urlTemplate);
+            // Compared against true explicitly: crossOriginIsolated is undefined on browsers that
+            // predate it (Safari < 15.2, Chrome < 87, Firefox < 79), and `x && undefined` yields
+            // undefined - which a `=== false` guard would wave through, flipping those browsers to
+            // CORS mode on the first ordinary tile error even though nothing there blocks no-cors
+            // tiles in the first place. lib.dom types it as boolean, so only the runtime knows.
+            const enabled = origin !== null
+                && origin !== location.origin
+                && self.crossOriginIsolated === true
+                && BitMapHelpers._corsTileOrigins[origin] !== true;
             let loaded = false;
             let retried = false;
             return {
                 onTileLoad: () => { loaded = true; },
                 onTileError: () => {
-                    if (enabled === false || loaded || retried) return;
+                    if (!enabled || loaded || retried) return;
                     retried = true;
-                    BitMapHelpers._tileCrossOrigin = 'anonymous';
+                    BitMapHelpers._corsTileOrigins[origin!] = true;
                     retry();
                 },
             };

@@ -62,7 +62,7 @@ public partial class BitMarkdownViewerLegacyDemo
 
 
 
-    private string advancedMarkdown = @"![Header](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/bitplatform-banner.png)
+    private string advancedMarkdown = @"![Header](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/bitplatform-banner.webp)
 
 <br/>
 
@@ -171,7 +171,7 @@ We welcome contributions! Many people all over the world have helped make this p
 </style>
 <BitMarkdownViewerLegacy Markdown=""@advancedMarkdown"" Class=""advanced"" />";
     private readonly string example2CsharpCode = @"
-private string advancedMarkdown = @""![Header](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/bitplatform-banner.png)
+private string advancedMarkdown = @""![Header](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/bitplatform-banner.webp)
 
 <br/>
 

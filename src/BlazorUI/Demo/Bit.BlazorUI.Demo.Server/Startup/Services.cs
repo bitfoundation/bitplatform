@@ -1,6 +1,7 @@
 ﻿using System.ClientModel.Primitives;
 using System.IO.Compression;
 using Bit.BlazorUI.Demo.Server.Services;
+using Bit.BlazorUI.Demo.Server.Controllers;
 using Microsoft.AspNetCore.Components.Web;
 using Bit.BlazorUI.Demo.Client.Core.Components;
 using Bit.BlazorUI.Demo.Client.Core.Services;
@@ -24,6 +25,9 @@ public static class Services
 
         services.AddHttpClient<TelegramBotApiClient>();
         services.AddScoped<TelegramBotService>();
+
+        // Upstream client for the same-origin CesiumJS passthrough (see CesiumController).
+        services.AddHttpClient(nameof(CesiumController), client => client.Timeout = TimeSpan.FromSeconds(30));
 
         services.AddExceptionHandler<ServerExceptionHandler>();
 

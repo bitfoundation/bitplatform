@@ -206,9 +206,9 @@ else
                     {
                         <BitStack Horizontal AutoHeight Class="video-container"
                                   HorizontalAlign="BitAlignment.Center">
-                            @* The demo pages are served with Cross-Origin-Embedder-Policy (require-corp on
-                               WebKit, see Middlewares.cs), so a cross-origin video host must send a
-                               Cross-Origin-Resource-Policy header or the video is blocked in Safari.
+                            @* The demo pages are served with Cross-Origin-Embedder-Policy: require-corp
+                               (see Middlewares.cs), so a cross-origin video host must send a
+                               Cross-Origin-Resource-Policy header or the video is blocked.
                                crossorigin="anonymous" is deliberately not set here: it would switch the
                                request to CORS mode and break hosts that send no Access-Control-Allow-Origin. *@
                             <video src="@IntroductionVideoUrl" controls />

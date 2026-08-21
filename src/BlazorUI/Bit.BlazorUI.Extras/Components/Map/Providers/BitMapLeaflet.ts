@@ -48,7 +48,7 @@ namespace BitBlazorUI {
          */
         private static _wireTileCorsFallback(layer: any, urlTemplate: string) {
             const fallback = BitMapHelpers.createTileCorsFallback(urlTemplate, () => {
-                layer.options.crossOrigin = BitMapHelpers.tileCrossOrigin;
+                layer.options.crossOrigin = 'anonymous';
                 layer.redraw();
             });
             layer.on('tileload', fallback.onTileLoad);
@@ -99,7 +99,7 @@ namespace BitBlazorUI {
                 tileOpacity: o.tileOpacity ?? 1,
             };
             const baseTileLayer = L.tileLayer(tileOptions.tileUrl, {
-                crossOrigin: BitMapHelpers.tileCrossOrigin,
+                crossOrigin: BitMapHelpers.tileCrossOrigin(tileOptions.tileUrl),
                 maxZoom: tileOptions.tileMaxZoom,
                 attribution: tileOptions.tileAttribution,
                 opacity: tileOptions.tileOpacity,
@@ -180,7 +180,7 @@ namespace BitBlazorUI {
             if (tileChanged) {
                 if (s.baseTileLayer) s.map.removeLayer(s.baseTileLayer);
                 s.baseTileLayer = L.tileLayer(next.tileUrl, {
-                    crossOrigin: BitMapHelpers.tileCrossOrigin,
+                    crossOrigin: BitMapHelpers.tileCrossOrigin(next.tileUrl),
                     maxZoom: next.tileMaxZoom,
                     attribution: next.tileAttribution,
                     opacity: next.tileOpacity,
@@ -446,7 +446,7 @@ namespace BitBlazorUI {
                 delete s.tileOverlays[opts.id];
             }
             const tl = L.tileLayer(opts.urlTemplate, {
-                crossOrigin: BitMapHelpers.tileCrossOrigin,
+                crossOrigin: BitMapHelpers.tileCrossOrigin(opts.urlTemplate),
                 opacity: opts.opacity ?? 1,
                 zIndex: opts.zIndex ?? 100,
                 maxZoom: opts.maxZoom ?? 19,

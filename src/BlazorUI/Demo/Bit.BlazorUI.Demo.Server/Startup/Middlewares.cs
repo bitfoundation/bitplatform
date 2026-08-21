@@ -20,32 +20,53 @@ public class Middlewares
         // (WasmEnableThreads in Bit.BlazorUI.Demo.Client.Web) to use SharedArrayBuffer.
         // Without these headers on the top-level document, crossOriginIsolated stays
         // false and the threaded runtime refuses to start ("SharedArrayBuffer is not
-        // enabled on this page"). COEP 'credentialless' is preferred over 'require-corp'
-        // because it lets cross-origin subresources (fonts, images, scripts) load without
-        // their own CORP/CORS headers. Safari (WebKit, i.e. every browser on iOS) does not
-        // understand 'credentialless' and treats it as 'unsafe-none', so it never becomes
-        // cross-origin isolated and the runtime fails to boot; for WebKit the stricter
-        // 'require-corp' is sent instead. Under 'require-corp' every cross-origin
-        // subresource must either carry a Cross-Origin-Resource-Policy header or be
-        // loaded in CORS mode (crossorigin="anonymous"), which is why the demo pages use
-        // local images and the Extras/Legacy script loaders request CORS mode.
+        // enabled on this page").
+        //
+        // The same value goes to every browser, deliberately. 'credentialless' is the more
+        // permissive choice - it lets cross-origin subresources load without their own
+        // CORP/CORS headers - but Safari (WebKit, i.e. every browser on iOS) does not
+        // understand it and treats it as 'unsafe-none', so a WebKit client sent
+        // 'credentialless' never becomes cross-origin isolated. Picking the value per
+        // User-Agent looks like the obvious fix and is a trap: this site sits behind a CDN
+        // that caches these responses (Cloudflare honours only 'Vary: Accept-Encoding', so
+        // 'Vary: User-Agent' does not fragment its cache), and COEP is read from every
+        // response that establishes an embedder policy - the top-level document *and* every
+        // dedicated worker script, which HTML's "check a global object's embedder policy"
+        // rejects when its value is not compatible with the owner document's. A single
+        // cached copy of '_framework/dotnet.native.worker.mjs' shared between browsers
+        // would therefore break whichever browser did not warm the edge, non-deterministically.
+        // A UA-independent 'require-corp' has no such failure mode.
+        //
+        // The cost is that under 'require-corp' every cross-origin subresource must carry a
+        // Cross-Origin-Resource-Policy header or be loaded in CORS mode
+        // (crossorigin="anonymous"). That is why the demo pages use local images, the
+        // Extras/Legacy script loaders retry in CORS mode, the map providers retry their
+        // tiles in CORS mode, and CesiumJS - which sends neither CORP nor CORS - is proxied
+        // same-origin through CesiumController.
+        //
+        // Set from OnStarting rather than before next.Invoke: UseExceptionHandler re-executes
+        // the pipeline from its own position after clearing the response headers, so a header
+        // written here on the way in would be missing from the error page it renders.
         app.Use(async (context, next) =>
         {
-            context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
-            context.Response.Headers["Cross-Origin-Embedder-Policy"] = IsWebKit(context.Request) ? "require-corp" : "credentialless";
             context.Response.OnStarting(() =>
             {
-                // The COEP value above is User-Agent dependent, and COEP is read from every response
-                // that establishes an embedder policy: the top-level document *and* the worker scripts
-                // the threaded runtime spawns from _framework (a worker whose script response declares
-                // a policy incompatible with its owner document is rejected). So "Vary: User-Agent" is
-                // appended to every response, not only to HTML: without it a shared cache/CDN could
-                // hand a Safari client a response cached from a Chromium request, whose 'credentialless'
-                // WebKit parses as 'unsafe-none', making the worker incompatible with the document's
-                // 'require-corp' and the threaded runtime fail to boot - the exact failure this
-                // middleware exists to prevent. The cost is a per-User-Agent cache fragmentation of the
-                // static assets, which is preferred over serving one browser the other's COEP value.
-                context.Response.Headers.Append("Vary", "User-Agent");
+                context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
+                context.Response.Headers["Cross-Origin-Embedder-Policy"] = "require-corp";
+
+                // Worker scripts are the one response whose COEP value is compared against
+                // another's - the owner document's - so a cached copy from before this site's COEP
+                // changed makes the runtime fail to boot until that copy expires. Both the CDN and
+                // the browser were holding '_framework/dotnet.native.worker.mjs' for a day
+                // (max-age=86400), so force a revalidation on it instead: it is a few KB fetched
+                // once per session, and it takes a whole class of "stale COEP" boot failures off
+                // the table for good, not just for the deploy that introduced require-corp.
+                if (context.Request.Path.StartsWithSegments("/_framework") &&
+                    context.Request.Path.Value?.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase) is true)
+                {
+                    context.Response.GetTypedHeaders().CacheControl = new() { NoCache = true };
+                }
+
                 return Task.CompletedTask;
             });
             await next.Invoke(context);
@@ -134,24 +155,6 @@ public class Middlewares
             .AddInteractiveWebAssemblyRenderMode()
 #endif
             .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Bit.BlazorUI.Demo") is true).Except([Assembly.GetExecutingAssembly()]).ToArray());
-    }
-
-    /// <summary>
-    /// Detects WebKit-based browsers: Safari on macOS and iOS/iPadOS, in-app WKWebViews (whose UA lacks the
-    /// "Safari" token) and every third-party browser on iOS (Chrome, Firefox, Edge... all report
-    /// "CriOS"/"FxiOS"/"EdgiOS" on top of AppleWebKit). Chromium-based browsers also carry "AppleWebKit" in
-    /// their UA, so they are excluded by the "Chrome"/"Chromium" token (desktop Edge/Opera/Brave/Samsung all
-    /// include "Chrome"); desktop Firefox does not contain "AppleWebKit" at all.
-    /// </summary>
-    private static bool IsWebKit(HttpRequest request)
-    {
-        var ua = request.Headers.UserAgent.ToString();
-
-        if (ua.Contains("AppleWebKit", StringComparison.OrdinalIgnoreCase) is false) return false;
-
-        return ua.Contains("Chrome", StringComparison.OrdinalIgnoreCase) is false
-            && ua.Contains("Chromium", StringComparison.OrdinalIgnoreCase) is false
-            && ua.Contains("Firefox", StringComparison.OrdinalIgnoreCase) is false;
     }
 
     /// <summary>
