@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
 
 public partial class _BitNavBarCustomDemo
 {
@@ -16,6 +16,40 @@ public partial class _BitNavBarCustomDemo
         new() { Title = "Products", ImageName = BitIconName.ProductVariant },
         new() { Title = "Academy", ImageName = BitIconName.LearningTools, Disabled = true },
         new() { Title = "Profile", ImageName = BitIconName.Contact },
+    ];
+
+    private static readonly List<MenuItem> exactMatchCustoms =
+    [
+        new() { Title = "NavBar", ImageName = BitIconName.GlobalNavButton, Link = "/components/navbar" },
+        new() { Title = "Nav", ImageName = BitIconName.BulletedList, Link = "/components/nav" },
+    ];
+
+    private static readonly List<MenuItem> prefixMatchCustoms =
+    [
+        new() { Title = "Components", ImageName = BitIconName.F12DevTools, Link = "/components" },
+        new() { Title = "Iconography", ImageName = BitIconName.AppIconDefault, Link = "/iconography" },
+    ];
+
+    // The URL of a Wildcard or a Regex item is a pattern rather than a route, so these items are disabled:
+    // they still light up on a match, but a click cannot navigate to a URL no page answers.
+    private static readonly List<MenuItem> patternMatchCustoms =
+    [
+        new() { Title = "/components/*", ImageName = BitIconName.F12DevTools, Link = "/components/*", Matching = BitNavMatch.Wildcard, Disabled = true },
+        new() { Title = "^/components/n", ImageName = BitIconName.Code, Link = "^/components/n", Matching = BitNavMatch.Regex, Disabled = true },
+    ];
+
+    private static readonly List<MenuItem> additionalUrlsCustoms =
+    [
+        new() { Title = "Navs", ImageName = BitIconName.GlobalNavButton, Link = "/components/nav", ExtraLinks = ["/components/navbar", "/components/breadcrumb"] },
+        new() { Title = "Buttons", ImageName = BitIconName.ButtonControl, Link = "/components/button", ExtraLinks = ["/components/togglebutton"] },
+    ];
+
+    private static readonly List<MenuItem> badgeNavBarCustoms =
+    [
+        new() { Title = "Home", ImageName = BitIconName.Home  },
+        new() { Title = "Inbox", ImageName = BitIconName.Mail, Counter = "12" },
+        new() { Title = "Alerts", ImageName = BitIconName.Ringer, Counter = "99+" },
+        new() { Title = "Profile", ImageName = BitIconName.Contact, Marker = true },
     ];
 
     private static readonly List<MenuItem> basicNavBarCustomsClassStyle =
@@ -50,5 +84,6 @@ public partial class _BitNavBarCustomDemo
     private MenuItem selectedItem = basicNavBarCustoms[0];
     private MenuItem twoWaySelectedItem = basicNavBarCustoms[0];
     private MenuItem? eventsClickedItem;
+    private MenuItem? eventsSelectedItem;
     private MenuItem advancedSelectedItem = basicNavBarCustoms[1];
 }

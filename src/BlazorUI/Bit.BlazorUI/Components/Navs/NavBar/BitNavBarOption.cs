@@ -3,12 +3,33 @@ namespace Bit.BlazorUI;
 public partial class BitNavBarOption : ComponentBase, IDisposable
 {
     private bool _disposed;
+    private string? _lastUrl;
+    private BitNavMatch? _lastMatch;
+    private IEnumerable<string>? _lastAdditionalUrls;
 
 
 
     [CascadingParameter] protected BitNavBar<BitNavBarOption> NavBar { get; set; } = default!;
 
 
+
+    /// <summary>
+    /// The value of the aria-current attribute of the navbar option when it is the selected one.
+    /// </summary>
+    [Parameter] public BitNavAriaCurrent AriaCurrent { get; set; } = BitNavAriaCurrent.Page;
+
+    /// <summary>
+    /// The accessible label of the navbar option, announced instead of its content.
+    /// When it is not provided and the text of the option is not rendered (in the IconOnly or the
+    /// HideUnselectedText modes), the text of the option is used, so an icon is never left unnamed.
+    /// </summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// The badge text to render on the icon of the navbar option, for a count or a short status.
+    /// Takes precedence over <see cref="Dot"/> when both are set.
+    /// </summary>
+    [Parameter] public string? Badge { get; set; }
 
     /// <summary>
     /// Custom CSS class for the navbar option.
@@ -19,6 +40,12 @@ public partial class BitNavBarOption : ComponentBase, IDisposable
     /// The custom data for the navbar option to provide additional state.
     /// </summary>
     [Parameter] public object? Data { get; set; }
+
+    /// <summary>
+    /// Renders a small dot on the icon of the navbar option, to mark it as needing attention without
+    /// showing a number. Ignored while <see cref="Badge"/> is set.
+    /// </summary>
+    [Parameter] public bool Dot { get; set; }
 
     /// <summary>
     /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
@@ -54,6 +81,12 @@ public partial class BitNavBarOption : ComponentBase, IDisposable
     /// A unique value to use as a key or id of the navbar option.
     /// </summary>
     [Parameter] public string? Key { get; set; }
+
+    /// <summary>
+    /// Modifies how the URL of the navbar option is matched against the current URL in the automatic mode.
+    /// Takes precedence over the Match of the navbar itself.
+    /// </summary>
+    [Parameter] public BitNavMatch? Match { get; set; }
 
     /// <summary>
     /// Custom CSS style for the navbar option.
@@ -104,6 +137,27 @@ public partial class BitNavBarOption : ComponentBase, IDisposable
         NavBar?.RegisterOption(this);
 
         await base.OnInitializedAsync();
+    }
+
+    // A URL (or the way it is matched) that changes after the option was registered points the option at
+    // another page, so the automatic mode has to look for its selected option again. Only an actual change
+    // flags it: flagging on every parameter set would have each recompute render, and each render flag
+    // another recompute.
+    protected override void OnParametersSet()
+    {
+        var additionalUrls = AdditionalUrls?.ToArray();
+
+        if (Url != _lastUrl || Match != _lastMatch ||
+            (additionalUrls ?? []).SequenceEqual(_lastAdditionalUrls ?? []) is false)
+        {
+            _lastUrl = Url;
+            _lastMatch = Match;
+            _lastAdditionalUrls = additionalUrls;
+
+            NavBar?.MarkSelectionDirty();
+        }
+
+        base.OnParametersSet();
     }
 
     // Renders the option's item in place, so the rendered order of the items always follows the

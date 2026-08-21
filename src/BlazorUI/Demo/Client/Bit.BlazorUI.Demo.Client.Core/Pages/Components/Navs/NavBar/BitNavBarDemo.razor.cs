@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
 
 public partial class BitNavBarDemo
 {
@@ -6,6 +6,13 @@ public partial class BitNavBarDemo
 
     private readonly List<ComponentParameter> componentParameters =
     [
+        new()
+        {
+            Name = "Accent",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The accent color that fills the hovered and the selected item of the navbar. While it is not set, the selection is conveyed by the Color of the item alone.",
+        },
         new()
         {
             Name = "ChildContent",
@@ -16,7 +23,7 @@ public partial class BitNavBarDemo
         new()
         {
             Name = "Classes",
-            Type = "BitNavClassStyles?",
+            Type = "BitNavBarClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS classes for different parts of the navbar.",
             LinkType = LinkType.Link,
@@ -27,7 +34,7 @@ public partial class BitNavBarDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the navbar.",
+            Description = "The general color of the navbar, used for the icon, the text and the indicator of the selected item.",
         },
         new()
         {
@@ -41,7 +48,7 @@ public partial class BitNavBarDemo
             Name = "FitWidth",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the nav bat in a width to only fit its content."
+            Description = "Renders the nav bar in a width to only fit its content."
         },
         new()
         {
@@ -52,10 +59,24 @@ public partial class BitNavBarDemo
         },
         new()
         {
+            Name = "HideUnselectedText",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Only renders the text of the selected item and leaves the rest of the items with their icon alone, which is how a navigation bar keeps its labels readable while holding more destinations. Ignored while IconOnly is enabled."
+        },
+        new()
+        {
             Name = "IconOnly",
             Type = "bool",
             DefaultValue = "false",
             Description = "Only renders the icon of each navbar item."
+        },
+        new()
+        {
+            Name = "InlineText",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the icon and the text of each item side by side instead of stacking the text under the icon."
         },
         new()
         {
@@ -75,6 +96,15 @@ public partial class BitNavBarDemo
         },
         new()
         {
+            Name = "Match",
+            Type = "BitNavMatch?",
+            DefaultValue = "null",
+            Description = "Modifies how the URL of an item is matched against the current URL in the automatic mode. The Match of an item takes precedence over this value, and the default is an exact match.",
+            LinkType = LinkType.Link,
+            Href = "#nav-match-enum",
+        },
+        new()
+        {
             Name = "Mode",
             Type = "BitNavMode",
             DefaultValue = "BitNavMode.Automatic",
@@ -85,7 +115,7 @@ public partial class BitNavBarDemo
         new()
         {
             Name = "NameSelectors",
-            Type = "BitNavNameSelectors<TItem>?",
+            Type = "BitNavBarNameSelectors<TItem>?",
             DefaultValue = "null",
             Description = "Names and selectors of the custom input type properties.",
             LinkType = LinkType.Link,
@@ -119,20 +149,66 @@ public partial class BitNavBarDemo
         },
         new()
         {
+            Name = "SafeArea",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reserves the safe area of the device (the home indicator of a phone, for instance) under the navbar, so a bar pinned to the bottom of the screen is not overlapped by it."
+        },
+        new()
+        {
             Name = "SelectedItem",
             Type = "TItem?",
             DefaultValue = "null",
-            Description = "Selected item to show in the navbar."
+            Description = "Selected item to show in the navbar. Supports two-way binding."
+        },
+        new()
+        {
+            Name = "SingleTabStop",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Takes the navbar out of the tab sequence as a single stop: only the selected item (or the first one, while nothing is selected) is tabbable and the arrow keys move between the items, exactly like a toolbar. By default every item is a tab stop of its own, the way the links of a navigation are."
+        },
+        new()
+        {
+            Name = "Size",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "The size of the navbar.",
+            LinkType = LinkType.Link,
+            Href = "#size-enum",
         },
         new()
         {
             Name = "Styles",
-            Type = "BitNavClassStyles?",
+            Type = "BitNavBarClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS styles for different parts of the navbar.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
+        },
+        new()
+        {
+            Name = "Vertical",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stacks the items of the navbar in a column, which turns it into a vertical navigation rail."
         }
+    ];
+
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "FocusItem",
+            Type = "Func<TItem, ValueTask>",
+            Description = "Moves the focus to an item of the navbar.",
+        },
+        new()
+        {
+            Name = "SelectItem",
+            Type = "Func<TItem?, Task>",
+            Description = "Selects an item programmatically, exactly like a click on that item would in the manual mode.",
+        },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -143,6 +219,36 @@ public partial class BitNavBarDemo
             Title = "BitNavBarItem",
             Parameters =
             [
+               new()
+               {
+                   Name = "AdditionalUrls",
+                   Type = "IEnumerable<string>?",
+                   DefaultValue = "null",
+                   Description = "Alternative URLs to be considered when auto mode tries to detect the selected navbar item by the current URL.",
+               },
+               new()
+               {
+                   Name = "AriaCurrent",
+                   Type = "BitNavAriaCurrent",
+                   DefaultValue = "BitNavAriaCurrent.Page",
+                   Description = "The value of the aria-current attribute of the navbar item when it is the selected one.",
+                   LinkType = LinkType.Link,
+                   Href = "#aria-current-enum",
+               },
+               new()
+               {
+                   Name = "AriaLabel",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The accessible label of the navbar item, announced instead of its content. When it is not provided and the text of the item is not rendered (in the IconOnly or the HideUnselectedText modes), the text of the item is used, so an icon is never left unnamed.",
+               },
+               new()
+               {
+                   Name = "Badge",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The badge text to render on the icon of the navbar item, for a count or a short status. Takes precedence over Dot when both are set.",
+               },
                new()
                {
                    Name = "Class",
@@ -156,6 +262,13 @@ public partial class BitNavBarDemo
                    Type = "object?",
                    DefaultValue = "null",
                    Description = "The custom data for the navbar item to provide additional state.",
+               },
+               new()
+               {
+                   Name = "Dot",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Renders a small dot on the icon of the navbar item, to mark it as needing attention without showing a number. Ignored while Badge is set.",
                },
                new()
                {
@@ -189,6 +302,15 @@ public partial class BitNavBarDemo
                },
                new()
                {
+                   Name = "Match",
+                   Type = "BitNavMatch?",
+                   DefaultValue = "null",
+                   Description = "Modifies how the URL of the navbar item is matched against the current URL in the automatic mode. Takes precedence over the Match of the navbar itself.",
+                   LinkType = LinkType.Link,
+                   Href = "#nav-match-enum",
+               },
+               new()
+               {
                    Name = "Style",
                    Type = "string?",
                    DefaultValue = "null",
@@ -211,8 +333,8 @@ public partial class BitNavBarDemo
                new()
                {
                    Name = "Text",
-                   Type = "string",
-                   DefaultValue = "string.Empty",
+                   Type = "string?",
+                   DefaultValue = "null",
                    Description = "Text to render for the navbar item.",
                },
                new()
@@ -228,13 +350,6 @@ public partial class BitNavBarDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "The navbar item's link URL.",
-               },
-               new()
-               {
-                   Name = "AdditionalUrls",
-                   Type = "IEnumerable<string>?",
-                   DefaultValue = "null",
-                   Description = "Alternative URLs to be considered when auto mode tries to detect the selected navbar item by the current URL.",
                }
             ]
         },
@@ -244,6 +359,36 @@ public partial class BitNavBarDemo
             Title = "BitNavBarOption",
             Parameters =
             [
+               new()
+               {
+                   Name = "AdditionalUrls",
+                   Type = "IEnumerable<string>?",
+                   DefaultValue = "null",
+                   Description = "Alternative URLs to be considered when auto mode tries to detect the selected navbar option by the current URL.",
+               },
+               new()
+               {
+                   Name = "AriaCurrent",
+                   Type = "BitNavAriaCurrent",
+                   DefaultValue = "BitNavAriaCurrent.Page",
+                   Description = "The value of the aria-current attribute of the navbar option when it is the selected one.",
+                   LinkType = LinkType.Link,
+                   Href = "#aria-current-enum",
+               },
+               new()
+               {
+                   Name = "AriaLabel",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The accessible label of the navbar option, announced instead of its content. When it is not provided and the text of the option is not rendered (in the IconOnly or the HideUnselectedText modes), the text of the option is used, so an icon is never left unnamed.",
+               },
+               new()
+               {
+                   Name = "Badge",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The badge text to render on the icon of the navbar option, for a count or a short status. Takes precedence over Dot when both are set.",
+               },
                new()
                {
                    Name = "Class",
@@ -257,6 +402,13 @@ public partial class BitNavBarDemo
                    Type = "object?",
                    DefaultValue = "null",
                    Description = "The custom data for the navbar option to provide additional state.",
+               },
+               new()
+               {
+                   Name = "Dot",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Renders a small dot on the icon of the navbar option, to mark it as needing attention without showing a number. Ignored while Badge is set.",
                },
                new()
                {
@@ -290,6 +442,15 @@ public partial class BitNavBarDemo
                },
                new()
                {
+                   Name = "Match",
+                   Type = "BitNavMatch?",
+                   DefaultValue = "null",
+                   Description = "Modifies how the URL of the navbar option is matched against the current URL in the automatic mode. Takes precedence over the Match of the navbar itself.",
+                   LinkType = LinkType.Link,
+                   Href = "#nav-match-enum",
+               },
+               new()
+               {
                    Name = "Style",
                    Type = "string?",
                    DefaultValue = "null",
@@ -312,8 +473,8 @@ public partial class BitNavBarDemo
                new()
                {
                    Name = "Text",
-                   Type = "string",
-                   DefaultValue = "string.Empty",
+                   Type = "string?",
+                   DefaultValue = "null",
                    Description = "Text to render for the navbar option.",
                },
                new()
@@ -329,13 +490,6 @@ public partial class BitNavBarDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "The navbar option's link URL.",
-               },
-               new()
-               {
-                   Name = "AdditionalUrls",
-                   Type = "IEnumerable<string>?",
-                   DefaultValue = "null",
-                   Description = "Alternative URLs to be considered when auto mode tries to detect the selected navbar option by the current URL.",
                }
             ]
         },
@@ -345,6 +499,34 @@ public partial class BitNavBarDemo
             Title = "BitNavBarNameSelectors<TItem>",
             Parameters =
             [
+               new()
+               {
+                   Name = "AdditionalUrls",
+                   Type = "BitNameSelectorPair<TItem, IEnumerable<string>?>",
+                   DefaultValue = "new(nameof(BitNavBarItem.AdditionalUrls))",
+                   Description = "The AdditionalUrls field name and selector of the custom input class."
+               },
+               new()
+               {
+                   Name = "AriaCurrent",
+                   Type = "BitNameSelectorPair<TItem, BitNavAriaCurrent?>",
+                   DefaultValue = "new(nameof(BitNavBarItem.AriaCurrent))",
+                   Description = "The AriaCurrent field name and selector of the custom input class."
+               },
+               new()
+               {
+                   Name = "AriaLabel",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitNavBarItem.AriaLabel))",
+                   Description = "The AriaLabel field name and selector of the custom input class."
+               },
+               new()
+               {
+                   Name = "Badge",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitNavBarItem.Badge))",
+                   Description = "The Badge field name and selector of the custom input class."
+               },
                new()
                {
                    Name = "Class",
@@ -358,6 +540,13 @@ public partial class BitNavBarDemo
                    Type = "BitNameSelectorPair<TItem, object?>",
                    DefaultValue = "new(nameof(BitNavBarItem.Data))",
                    Description = "The Data field name and selector of the custom input class."
+               },
+               new()
+               {
+                   Name = "Dot",
+                   Type = "BitNameSelectorPair<TItem, bool?>",
+                   DefaultValue = "new(nameof(BitNavBarItem.Dot))",
+                   Description = "The Dot field name and selector of the custom input class."
                },
                new()
                {
@@ -388,6 +577,15 @@ public partial class BitNavBarDemo
                    Type = "BitNameSelectorPair<TItem, string?>",
                    DefaultValue = "new(nameof(BitNavBarItem.Key))",
                    Description = "The Key field name and selector of the custom input class."
+               },
+               new()
+               {
+                   Name = "Match",
+                   Type = "BitNameSelectorPair<TItem, BitNavMatch?>",
+                   DefaultValue = "new(nameof(BitNavBarItem.Match))",
+                   Description = "The Match field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#nav-match-enum",
                },
                new()
                {
@@ -430,13 +628,6 @@ public partial class BitNavBarDemo
                    Type = "BitNameSelectorPair<TItem, string?>",
                    DefaultValue = "new(nameof(BitNavBarItem.Url))",
                    Description = "The Url field name and selector of the custom input class."
-               },
-               new()
-               {
-                   Name = "AdditionalUrls",
-                   Type = "BitNameSelectorPair<TItem, IEnumerable<string>?>",
-                   DefaultValue = "new(nameof(BitNavBarItem.AdditionalUrls))",
-                   Description = "The AdditionalUrls field name and selector of the custom input class."
                },
             ]
         },
@@ -498,10 +689,24 @@ public partial class BitNavBarDemo
                },
                new()
                {
+                   Name = "ItemBadge",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the badge (or the dot) of the item of the BitNavBar."
+               },
+               new()
+               {
                    Name = "ItemIcon",
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the item icon of the BitNavBar."
+               },
+               new()
+               {
+                   Name = "ItemIconContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the wrapper of the icon and the badge of the item of the BitNavBar."
                },
                new()
                {
@@ -543,5 +748,62 @@ public partial class BitNavBarDemo
                 }
             ]
         },
+        new()
+        {
+            Id = "nav-match-enum",
+            Name = "BitNavMatch",
+            Items =
+            [
+                new()
+                {
+                    Name = "Exact",
+                    Description = "Specifies that the item should be active when it matches exactly the current URL.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Prefix",
+                    Description = "Specifies that the item should be active when it matches any prefix of the current URL.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Regex",
+                    Description = "Specifies that the item should be active when its provided regex matches the current URL.",
+                    Value = "2",
+                },
+                new()
+                {
+                    Name = "Wildcard",
+                    Description = "Specifies that the item should be active when its provided wildcard matches the current URL.",
+                    Value = "3",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "aria-current-enum",
+            Name = "BitNavAriaCurrent",
+            Items =
+            [
+                new() { Name = "Page", Description = "Represents the current page within a set of pages.", Value = "0" },
+                new() { Name = "Step", Description = "Represents the current step within a process.", Value = "1" },
+                new() { Name = "Location", Description = "Represents the current location within an environment or context.", Value = "2" },
+                new() { Name = "Date", Description = "Represents the current date within a collection of dates.", Value = "3" },
+                new() { Name = "Time", Description = "Represents the current time within a set of times.", Value = "4" },
+                new() { Name = "True", Description = "Represents the current item within a set.", Value = "5" }
+            ]
+        },
+        new()
+        {
+            Id = "size-enum",
+            Name = "BitSize",
+            Items =
+            [
+                new() { Name = "Small", Description = "The small size.", Value = "0" },
+                new() { Name = "Medium", Description = "The medium size.", Value = "1" },
+                new() { Name = "Large", Description = "The large size.", Value = "2" }
+            ]
+        }
     ];
 }

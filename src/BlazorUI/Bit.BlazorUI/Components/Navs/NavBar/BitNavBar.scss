@@ -1,8 +1,14 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-nbr {
     font-weight: $tg-font-weight;
     font-family: $tg-font-family;
+
+    // The size tokens live on the root so a single class swaps the metrics of every part at once.
+    --bit-nbr-ico-fs: #{$tg-fs-md};
+    --bit-nbr-txt-fs: #{$tg-fs-sm};
+    --bit-nbr-gap: #{spacing(0.5)};
+    --bit-nbr-pad: #{spacing(1)};
 
     &.bit-dis {
         cursor: none;
@@ -10,6 +16,7 @@
 
         .bit-nbr-itm {
             color: var(--bit-nbr-clr-dis, var(--bit-nbr-clr, currentColor));
+            background-color: transparent;
         }
     }
 }
@@ -22,26 +29,42 @@
     width: 100%;
 }
 
+// The home indicator of a phone sits over the bottom edge of the screen, so a bar pinned there reserves
+// the space the device asks for. The fallback keeps it a no-op everywhere the inset is not reported.
+.bit-nbr-sfa {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 .bit-nbr-cnt {
     display: flex;
     justify-content: space-around;
 }
 
 .bit-nbr-itm {
+    // The items share the width of the bar evenly, and none of them is allowed to grow past its share:
+    // a long label is ellipsized inside its own item instead of pushing its neighbors out of the bar.
+    min-width: 0;
     display: flex;
     cursor: pointer;
-    gap: spacing(0.5);
+    text-align: center;
     color: $clr-fg-pri;
-    padding: spacing(1);
+    gap: var(--bit-nbr-gap);
+    font-family: inherit;
+    font-weight: inherit;
     align-items: center;
     text-decoration: none;
     flex-direction: column;
+    justify-content: center;
     background: transparent;
+    padding: var(--bit-nbr-pad);
+    border-radius: $shp-radius-control;
     letter-spacing: $tg-ctrl-letter-spacing;
+    transition: color $mot-duration-short linear 0s, background-color $mot-duration-short linear 0s;
 
-    @media (hover:hover) {
+    @media (hover: hover) {
         &:hover {
-            color: var(--bit-nbr-clr);
+            color: var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr));
+            background-color: var(--bit-nbr-clr-acc-hover, transparent);
         }
     }
 
@@ -50,12 +73,52 @@
     }
 }
 
+// The icon and its badge share a wrapper of their own, which is what the badge is positioned against: the
+// item itself grows with its label, and a badge pinned to it would drift away from the icon.
+.bit-nbr-icc {
+    display: inline-flex;
+    position: relative;
+    line-height: 1;
+}
+
 .bit-nbr-ico {
-    font-size: $tg-fs-md;
+    font-size: var(--bit-nbr-ico-fs);
 }
 
 .bit-nbr-txt {
-    font-size: $tg-fs-sm;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: var(--bit-nbr-txt-fs);
+}
+
+.bit-nbr-bdg {
+    top: 0;
+    display: flex;
+    color: $clr-err-text;
+    align-items: center;
+    box-sizing: border-box;
+    justify-content: center;
+    background-color: $clr-err;
+    font-size: $tg-fs-2xs;
+    font-weight: $tg-fw-semibold;
+    line-height: 1;
+    min-width: spacing(2);
+    height: spacing(2);
+    padding: 0 spacing(0.5);
+    border-radius: $shp-radius-full;
+    position: absolute;
+    inset-inline-start: 65%;
+    transform: translateY(-35%);
+}
+
+// The dot only marks the item as needing attention, so it carries no text and stays perfectly round.
+.bit-nbr-bdt {
+    padding: 0;
+    min-width: spacing(1);
+    width: spacing(1);
+    height: spacing(1);
 }
 
 .bit-nbr-ion {
@@ -64,24 +127,76 @@
     }
 }
 
+// Only the selected item keeps its label, which is how a bar with more destinations stays readable
+// without dropping the labels of every one of them.
+.bit-nbr-hut {
+    .bit-nbr-itm:not(.bit-nbr-sel) .bit-nbr-txt {
+        display: none;
+    }
+}
+
+.bit-nbr-inl {
+    .bit-nbr-itm {
+        flex-direction: row;
+    }
+}
+
+.bit-nbr-vrt {
+    .bit-nbr-cnt {
+        // A rail stacks its items from the top rather than spreading them over whatever height its
+        // container happens to have, which is what the horizontal bar's space-around would do here.
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+}
+
 .bit-nbr-sel {
-    color: var(--bit-nbr-clr);
+    color: var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr));
+    background-color: var(--bit-nbr-clr-acc-active, transparent);
 }
 
 .bit-nbr-dis {
     color: var(--bit-nbr-clr-dis, var(--bit-nbr-clr, currentColor));
     pointer-events: none;
+    background-color: transparent;
 }
 
-// forced-colors: selection is conveyed by text color alone, which High Contrast flattens to
-// CanvasText; use the system Highlight color so the selected item stays distinguishable.
+.bit-nbr-sm {
+    --bit-nbr-ico-fs: #{$tg-fs-sm};
+    --bit-nbr-txt-fs: #{$tg-fs-2xs};
+    --bit-nbr-gap: #{spacing(0.25)};
+    --bit-nbr-pad: #{spacing(0.75)};
+}
+
+.bit-nbr-md {
+    --bit-nbr-ico-fs: #{$tg-fs-md};
+    --bit-nbr-txt-fs: #{$tg-fs-sm};
+    --bit-nbr-gap: #{spacing(0.5)};
+    --bit-nbr-pad: #{spacing(1)};
+}
+
+.bit-nbr-lg {
+    --bit-nbr-ico-fs: #{$tg-fs-xl};
+    --bit-nbr-txt-fs: #{$tg-fs-md};
+    --bit-nbr-gap: #{spacing(0.75)};
+    --bit-nbr-pad: #{spacing(1.5)};
+}
+
+// forced-colors: selection is conveyed by text color and a background fill, both of which High Contrast
+// flattens; the system Highlight color puts the distinction back.
 @media (forced-colors: active) {
     .bit-nbr-sel {
         color: Highlight;
+        background-color: transparent;
     }
 
     .bit-nbr-dis {
         color: GrayText;
+    }
+
+    .bit-nbr-bdg {
+        color: Canvas;
+        background-color: CanvasText;
     }
 }
 
@@ -92,5 +207,27 @@
         --bit-nbr-clr: #{role($tokens, main)};
         --bit-nbr-clr-dis: #{role($tokens, dis-text)};
         --bit-nbr-clr-fcs: #{role($tokens, focus)};
+    }
+}
+
+
+// The accent fills the hovered and the selected item, so what is drawn on top of it moves to the accent's
+// own colors along with it. Without an accent none of these are defined and every var() above falls back
+// to the unfilled look: the Color role on a transparent background.
+@each $role, $tokens in $bit-color-roles {
+    .bit-nbr-a#{$role} {
+        --bit-nbr-clr-acc-hover: #{role($tokens, hover)};
+        --bit-nbr-clr-acc-active: #{role($tokens, active)};
+
+        @if role($tokens, kind) == semantic {
+            // A semantic accent covers the item with a vivid fill, which the Color role is not meant to
+            // sit on, so the whole content of the item moves to the accent's on-color.
+            --bit-nbr-clr-acc-text: #{role($tokens, on)};
+        }
+        @else {
+            // A surface accent only tints the item's background, so the content stays on the Color role,
+            // exactly as it is when the item is not selected.
+            --bit-nbr-clr-acc-text: var(--bit-nbr-clr);
+        }
     }
 }

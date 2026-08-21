@@ -1,10 +1,23 @@
 <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <div>
+        Each item of the navbar renders an icon over its text and becomes a link when it carries a <b>Url</b>.
+        By default the navbar runs in the <b>Automatic</b> mode, where it highlights the item whose URL points
+        at the current page all by itself. Every item is a tab stop of its own and the selected one reports
+        itself as the current page to a screen reader.
+    </div>
+    <br /><br />
     <div class="container">
         <BitNavBar Items="basicNavBarItems" />
     </div>
 </DemoExample>
 
 <DemoExample Title="Disabled" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2" PreventRenderForMcpClient>
+    <div>
+        <b>IsEnabled</b> turns the whole navbar off, and the <b>IsEnabled</b> of an item turns that one item
+        off. A disabled item is not only greyed out: it loses its link, its tab stop and its keyboard stop,
+        so it cannot be reached or followed at all.
+    </div>
+    <br /><br />
     <div>Disabled:</div><br />
     <div class="container">
         <BitNavBar Items="basicNavBarItems" IsEnabled="false" />
@@ -17,7 +30,11 @@
 </DemoExample>
 
 <DemoExample Title="Manual Mode" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3" PreventRenderForMcpClient>
-    <div>Defines the mode in which the selected item is handled manually, instead of automatically using the current url.</div>
+    <div>
+        In the <b>Manual</b> mode the selection is driven by clicks instead of by the current URL, which is
+        what a navbar that switches between panels of the same page needs. <b>DefaultSelectedItem</b> sets the
+        item to start on.
+    </div>
     <br /><br />
     <div class="container">
         <BitNavBar Mode="BitNavMode.Manual"
@@ -26,24 +43,153 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="IconOnly" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4" PreventRenderForMcpClient>
-    <div>Only renders the icon of each navbar item.</div>
+<DemoExample Title="URL Matching" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4" PreventRenderForMcpClient>
+    <div>
+        In the <b>Automatic</b> mode the navbar selects the item whose URL points at the current page.
+        <b>Match</b> sets how those URLs are compared for the whole navbar, and the <b>Match</b> of an item
+        overrides it: <b>Exact</b> asks for the same URL, <b>Prefix</b> also matches everything below it,
+        <b>Wildcard</b> reads the URL of the item as a pattern in which <b>?</b> stands for a single character
+        other than <b>/</b>, <b>*</b> for any number of them and <b>**</b> for any number of characters at all,
+        slashes included, and <b>Regex</b> reads it as a regular expression. The comparison ignores the query
+        string, and <b>Exact</b> and <b>Prefix</b> also ignore the letter case and a trailing slash.
+        <b>AdditionalUrls</b> gives an item other URLs to light up on. The navbars below are all matched
+        against the URL of this page.
+    </div>
+    <br /><br />
+    <div>Exact (the default):</div><br />
+    <div class="container">
+        <BitNavBar Items="exactMatchItems" />
+    </div>
+    <br /><br /><br /><br />
+    <div>Prefix:</div><br />
+    <div class="container">
+        <BitNavBar Items="prefixMatchItems" Match="BitNavMatch.Prefix" />
+    </div>
+    <br /><br /><br /><br />
+    <div>Wildcard &amp; Regex:</div><br />
+    <div class="container">
+        <BitNavBar Items="patternMatchItems" />
+    </div>
+    <br /><br /><br /><br />
+    <div>AdditionalUrls:</div><br />
+    <div class="container">
+        <BitNavBar Items="additionalUrlsItems" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
+    <div>
+        <b>IconOnly</b> drops the text of every item and keeps the icons alone. The text is still what names
+        the item for a screen reader, and it is moved onto the item as its label and its tooltip, so nothing
+        is lost by hiding it.
+    </div>
     <br /><br />
     <div class="container">
         <BitNavBar Items="basicNavBarItems" IconOnly />
     </div>
 </DemoExample>
 
-<DemoExample Title="FitWidth" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
-    <div>Enables fit-content width for the nav bar that sets the width of the component based on its content size.</div>
+<DemoExample Title="HideUnselectedText" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6" PreventRenderForMcpClient>
+    <div>
+        <b>HideUnselectedText</b> keeps the text of the selected item alone and leaves the rest with their
+        icon, which is how a bar holding more destinations stays readable without dropping every label.
+        Select an item to move the label along with the selection.
+    </div>
     <br /><br />
     <div class="container">
-        <BitNavBar Items="basicNavBarItems" FitWidth />
+        <BitNavBar HideUnselectedText
+                   Mode="BitNavMode.Manual"
+                   Items="basicNavBarItems"
+                   DefaultSelectedItem="basicNavBarItems[0]" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Templates" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-    <div>Explore BitNavBar's customization capabilities.</div>
+<DemoExample Title="Layout" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7" PreventRenderForMcpClient>
+    <div>
+        <b>InlineText</b> puts the text of an item beside its icon instead of under it, and <b>Vertical</b>
+        stacks the items in a column, which turns the navbar into a navigation rail. The two combine into a
+        classic side rail.
+    </div>
+    <br /><br />
+    <div>InlineText:</div><br />
+    <div class="container">
+        <BitNavBar Items="basicNavBarItems" InlineText />
+    </div>
+    <br /><br /><br /><br />
+    <div>Vertical:</div><br />
+    <div class="container">
+        <BitNavBar Items="basicNavBarItems" Vertical FitWidth />
+    </div>
+    <br /><br /><br /><br />
+    <div>Vertical &amp; InlineText:</div><br />
+    <div class="container">
+        <BitNavBar Items="basicNavBarItems" Vertical InlineText FitWidth />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Width" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8" PreventRenderForMcpClient>
+    <div>
+        <b>FitWidth</b> shrinks the navbar to the width of its own content, and <b>FullWidth</b> stretches it
+        over the full width of its container. Without either one the navbar takes the width its container
+        gives it.
+    </div>
+    <br /><br />
+    <div>FitWidth:</div><br />
+    <div class="container">
+        <BitNavBar Items="basicNavBarItems" FitWidth />
+    </div>
+    <br /><br /><br /><br />
+    <div>FullWidth:</div><br />
+    <div class="container">
+        <BitNavBar Items="basicNavBarItems" FullWidth />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Badge" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9" PreventRenderForMcpClient>
+    <div>
+        <b>Badge</b> puts a short count or status on the icon of an item, and <b>Dot</b> marks it as needing
+        attention without a number. Both are decorations of the name the item already carries, so neither is
+        announced twice by a screen reader.
+    </div>
+    <br /><br />
+    <div class="container">
+        <BitNavBar Items="badgeNavBarItems" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Accent" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10" PreventRenderForMcpClient>
+    <div>
+        <b>Accent</b> fills the hovered and the selected item with a color, which gives the selection an
+        indicator of its own instead of leaving it to the text color alone. A semantic accent moves the whole
+        content of the item onto its on-color, while a surface accent only tints the background.
+    </div>
+    <br /><br />
+    <div>Primary:</div><br />
+    <div class="container">
+        <BitNavBar Accent="BitColor.Primary" Items="basicNavBarItems" Mode="BitNavMode.Manual" DefaultSelectedItem="basicNavBarItems[0]" />
+    </div>
+    <br /><br /><br /><br />
+    <div>Success:</div><br />
+    <div class="container">
+        <BitNavBar Accent="BitColor.Success" Items="basicNavBarItems" Mode="BitNavMode.Manual" DefaultSelectedItem="basicNavBarItems[0]" />
+    </div>
+    <br /><br /><br /><br />
+    <div>Error:</div><br />
+    <div class="container">
+        <BitNavBar Accent="BitColor.Error" Items="basicNavBarItems" Mode="BitNavMode.Manual" DefaultSelectedItem="basicNavBarItems[0]" />
+    </div>
+    <br /><br /><br /><br />
+    <div>SecondaryBackground (with an Info color):</div><br />
+    <div class="container">
+        <BitNavBar Accent="BitColor.SecondaryBackground" Color="BitColor.Info" Items="basicNavBarItems" Mode="BitNavMode.Manual" DefaultSelectedItem="basicNavBarItems[0]" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Templates" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <div>
+        <b>ItemTemplate</b> replaces the content of every item of the navbar, and the <b>Template</b> of a
+        single item replaces that one item's content and wins over the navbar's template.
+    </div>
     <br /><br />
     <div>ItemTemplate:</div><br />
     <div class="container">
@@ -61,18 +207,30 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-    <div>Managing NavBar item click event (OnItemClick).</div>
+<DemoExample Title="Events" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <div>
+        <b>OnItemClick</b> is invoked when an item is clicked, and <b>OnSelectItem</b> when the selection
+        actually moves onto an item, whether that came from a click or from the URL in the <b>Automatic</b>
+        mode.
+    </div>
     <br /><br />
     <div class="container">
-        <BitNavBar Items="basicNavBarItems" OnItemClick="(BitNavBarItem item) => eventsClickedItem = item" />
+        <BitNavBar Items="basicNavBarItems"
+                   Mode="BitNavMode.Manual"
+                   OnItemClick="(BitNavBarItem item) => eventsClickedItem = item"
+                   OnSelectItem="(BitNavBarItem item) => eventsSelectedItem = item" />
     </div>
     <br /><br />
     Clicked item: @eventsClickedItem?.Text
+    <br />
+    Selected item: @eventsSelectedItem?.Text
 </DemoExample>
 
-<DemoExample Title="Binding" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-    <div>This example demonstrates different ways to handle item selection and changes within the component.</div>
+<DemoExample Title="Binding" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <div>
+        <b>DefaultSelectedItem</b> only sets the item to start on, while <b>SelectedItem</b> binds both ways,
+        so the selection can be read and written from outside the navbar at any time.
+    </div>
     <br /><br />
     <div>DefaultSelectedItem:</div><br />
     <div class="container">
@@ -94,8 +252,12 @@
     <BitChoiceGroup Horizontal Items="@choiceGroupItems" @bind-Value="@twoWaySelectedItem" />
 </DemoExample>
 
-<DemoExample Title="Reselectable" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-    <div>Enables the ability to trigger select event even when the same item is selected again.</div>
+<DemoExample Title="Reselectable" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+    <div>
+        The events of an item that is already selected are swallowed, so a second click on the current
+        destination changes nothing. <b>Reselectable</b> lets them through, which is what a bar that scrolls
+        its page back to the top on a repeated click needs.
+    </div>
     <br /><br />
     <BitToggle @bind-Value="reselectable" OnText="Enabled recalling" OffText="Disabled recalling" />
     <br />
@@ -109,8 +271,28 @@
     Item click count: @countClick
 </DemoExample>
 
-<DemoExample Title="Advanced" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-    <div>An illustrative example of integrating this component into a straightforward mobile application.</div>
+<DemoExample Title="SingleTabStop" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15" PreventRenderForMcpClient>
+    <div>
+        By default the navbar is a set of links that <b>Tab</b> reaches one by one, which is how a navigation
+        landmark behaves. <b>SingleTabStop</b> turns it into the roving tab index of a toolbar instead: the
+        whole bar is a single stop that lands on the selected item, and the rest are reached from there.
+        In both modes the arrow keys, <b>Home</b> and <b>End</b> move the focus along the bar.
+    </div>
+    <br /><br />
+    <div class="container">
+        <BitNavBar SingleTabStop
+                   Mode="BitNavMode.Manual"
+                   Items="basicNavBarItems"
+                   DefaultSelectedItem="basicNavBarItems[1]" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Advanced" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+    <div>
+        An illustrative example of integrating this component into a straightforward mobile application.
+        <b>SafeArea</b> reserves the space the device asks for under the bar, so the home indicator of a phone
+        never sits over it.
+    </div>
     <br /><br />
     <div class="mobile-frame">
         <div class="screen">
@@ -132,7 +314,10 @@
             </BitStack>
             <BitSticky Bottom="0">
                 <BitCard FullWidth Style="padding:2px">
-                    <BitNavBar Items="basicNavBarItems"
+                    <BitNavBar SafeArea
+                               FullWidth
+                               Accent="BitColor.Primary"
+                               Items="basicNavBarItems"
                                Mode="BitNavMode.Manual"
                                @bind-SelectedItem="advancedSelectedItem" />
                 </BitCard>
@@ -141,7 +326,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11" PreventRenderForMcpClient>
+<DemoExample Title="Color" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17" PreventRenderForMcpClient>
     <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
     <br /><br />
     <div>Primary:</div><br />
@@ -232,7 +417,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<DemoExample Title="External Icons" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
     <div>External icon libraries like FontAwesome can be used with the <b>Icon</b> parameter.</div>
 
     <br />
@@ -245,7 +430,26 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+<DemoExample Title="Size" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19" PreventRenderForMcpClient>
+    <div>The <b>Size</b> scales the icon, the text and the padding of every item of the navbar at once.</div>
+    <br /><br />
+    <div>Small:</div><br />
+    <div class="container">
+        <BitNavBar Size="BitSize.Small" Items="basicNavBarItems" Mode="BitNavMode.Manual" DefaultSelectedItem="basicNavBarItems[0]" />
+    </div>
+    <br /><br /><br /><br />
+    <div>Medium:</div><br />
+    <div class="container">
+        <BitNavBar Size="BitSize.Medium" Items="basicNavBarItems" Mode="BitNavMode.Manual" DefaultSelectedItem="basicNavBarItems[0]" />
+    </div>
+    <br /><br /><br /><br />
+    <div>Large:</div><br />
+    <div class="container">
+        <BitNavBar Size="BitSize.Large" Items="basicNavBarItems" Mode="BitNavMode.Manual" DefaultSelectedItem="basicNavBarItems[0]" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Style & Class" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br /><br />
     <div>Component's Style:</div><br />
@@ -267,7 +471,7 @@
     <br /><br /><br /><br />
     <div>Styles:</div><br />
     <div class="container">
-        <BitNavBar Items="basicNavBarItems" Styles="@(new() { ItemIcon = "color: aqua;", ItemText = "color: tomato;" })" />
+        <BitNavBar Items="badgeNavBarItems" Styles="@(new() { ItemIcon = "color: aqua;", ItemText = "color: tomato;", ItemBadge = "background: darkmagenta;" })" />
     </div>
     <br /><br />
     <div>Classes:</div><br />
@@ -276,7 +480,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21" PreventRenderForMcpClient>
     <div>Use BitNavBar in right-to-left (RTL).</div>
     <br /><br />
     <div dir="rtl" class="container">

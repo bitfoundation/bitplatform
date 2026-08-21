@@ -3,6 +3,21 @@ namespace Bit.BlazorUI;
 public class BitNavBarNameSelectors<TItem>
 {
     /// <summary>
+    /// The AriaCurrent field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitNavAriaCurrent?> AriaCurrent { get; set; } = new(nameof(BitNavBarItem.AriaCurrent));
+
+    /// <summary>
+    /// The AriaLabel field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> AriaLabel { get; set; } = new(nameof(BitNavBarItem.AriaLabel));
+
+    /// <summary>
+    /// The Badge field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> Badge { get; set; } = new(nameof(BitNavBarItem.Badge));
+
+    /// <summary>
     /// The Class field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Class { get; set; } = new(nameof(BitNavBarItem.Class));
@@ -11,6 +26,11 @@ public class BitNavBarNameSelectors<TItem>
     /// The Data field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, object?> Data { get; set; } = new(nameof(BitNavBarItem.Data));
+
+    /// <summary>
+    /// The Dot field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, bool?> Dot { get; set; } = new(nameof(BitNavBarItem.Dot));
 
     /// <summary>
     /// The Icon field name and selector of the custom input class.
@@ -33,6 +53,11 @@ public class BitNavBarNameSelectors<TItem>
     /// The Key field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Key { get; set; } = new(nameof(BitNavBarItem.Key));
+
+    /// <summary>
+    /// The Match field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitNavMatch?> Match { get; set; } = new(nameof(BitNavBarItem.Match));
 
     /// <summary>
     /// The Style field name and selector of the custom input class.

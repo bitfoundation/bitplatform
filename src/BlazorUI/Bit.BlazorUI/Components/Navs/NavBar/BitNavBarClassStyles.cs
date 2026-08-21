@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 public class BitNavBarClassStyles
 {
@@ -18,9 +18,19 @@ public class BitNavBarClassStyles
     public string? Item { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the badge (or the dot) of the item of the BitNavBar.
+    /// </summary>
+    public string? ItemBadge { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the item icon of the BitNavBar.
     /// </summary>
     public string? ItemIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the wrapper of the icon and the badge of the item of the BitNavBar.
+    /// </summary>
+    public string? ItemIconContainer { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the item text of the BitNavBar.

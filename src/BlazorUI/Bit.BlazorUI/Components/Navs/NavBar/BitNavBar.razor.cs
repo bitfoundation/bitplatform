@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI;
 
@@ -7,10 +7,12 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 {
-    internal TItem? _currentItem;
     internal List<TItem> _items = [];
+
     private bool _selectionDirty;
-    private IEnumerable<TItem>? _oldItems;
+    private TItem? _focusedItem;
+    private IList<TItem>? _oldItems;
+    private readonly Dictionary<TItem, ElementReference> _itemElements = [];
 
 
 
@@ -19,103 +21,14 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
 
     /// <summary>
-    /// Items to render as children.
+    /// Selects an item programmatically, exactly like a click on that item would in the manual mode.
     /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetParameters))]
-    public RenderFragment? ChildContent { get; set; }
+    public Task SelectItem(TItem? item) => SetSelectedItem(item);
 
     /// <summary>
-    /// Custom CSS classes for different parts of the navbar.
+    /// Moves the focus to an item of the navbar.
     /// </summary>
-    [Parameter] public BitNavBarClassStyles? Classes { get; set; }
-
-    /// <summary>
-    /// The general color of the navbar.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public BitColor? Color { get; set; }
-
-    /// <summary>
-    /// The initially selected item in manual mode.
-    /// </summary>
-    [Parameter] public TItem? DefaultSelectedItem { get; set; }
-
-    /// <summary>
-    /// Renders the nav bat in a width to only fit its content.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool FitWidth { get; set; }
-
-    /// <summary>
-    /// Renders the nav bar in full width of its container element.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool FullWidth { get; set; }
-
-    /// <summary>
-    /// Only renders the icon of each navbar item.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool IconOnly { get; set; }
-
-    /// <summary>
-    /// A collection of items to display in the navbar.
-    /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetParameters))]
-    public IList<TItem> Items { get; set; } = [];
-
-    /// <summary>
-    /// Used to customize how content inside the item is rendered.
-    /// </summary>
-    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
-
-    /// <summary>
-    /// Determines how the navigation will be handled.
-    /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetMode))]
-    public BitNavMode Mode { get; set; }
-
-    /// <summary>
-    /// Names and selectors of the custom input type properties.
-    /// </summary>
-    [Parameter] public BitNavBarNameSelectors<TItem>? NameSelectors { get; set; }
-
-    /// <summary>
-    /// Callback invoked when an item is clicked.
-    /// </summary>
-    [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
-
-    /// <summary>
-    /// Callback invoked when an item is selected.
-    /// </summary>
-    [Parameter] public EventCallback<TItem> OnSelectItem { get; set; }
-
-    /// <summary>
-    /// Alias of ChildContent.
-    /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetParameters))]
-    public RenderFragment? Options { get; set; }
-
-    /// <summary>
-    /// Enables recalling the select events when the same item is selected.
-    /// </summary>
-    [Parameter] public bool Reselectable { get; set; }
-
-    /// <summary>
-    /// Selected item to show in the navbar.
-    /// </summary>
-    [Parameter, TwoWayBound]
-    [CallOnSet(nameof(OnSetSelectedItem))]
-    public TItem? SelectedItem { get; set; }
-
-    /// <summary>
-    /// Custom CSS styles for different parts of the navbar.
-    /// </summary>
-    [Parameter] public BitNavBarClassStyles? Styles { get; set; }
+    public ValueTask FocusItem(TItem item) => FocusItemElement(item);
 
 
 
@@ -130,10 +43,64 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     {
         if (IsDisposed) return;
 
-        _items.Remove((option as TItem)!);
+        var item = (option as TItem)!;
+
+        _items.Remove(item);
+        _itemElements.Remove(item);
         _selectionDirty = true;
+
+        // The options render their own items and a re-render of the navbar does not reach them, so the ones
+        // that are left are pushed a render of their own: what the removed one used to hold (the roving tab
+        // stop, for instance) has to move onto one of them.
+        RefreshOptions();
         StateHasChanged();
     }
+
+    // Flags that the Automatic-mode selection needs to be recomputed. Called by the options as they
+    // register (and as their URL changes) instead of matching immediately, so a batch of registrations
+    // collapses into a single match pass in OnAfterRender rather than one O(n) pass per option.
+    internal void MarkSelectionDirty()
+    {
+        _selectionDirty = true;
+    }
+
+    internal void RegisterItemElement(TItem item, ElementReference element)
+    {
+        _itemElements[item] = element;
+    }
+
+    // The element is handed over as well, so a caller only drops its own registration: an item that is
+    // rendered by another child by now (a reordered collection re-keys the children onto other items)
+    // keeps the registration that child has just made.
+    internal void UnregisterItemElement(TItem item, ElementReference element)
+    {
+        if (IsDisposed) return;
+
+        if (_itemElements.TryGetValue(item, out var registered) && registered.Id != element.Id) return;
+
+        _itemElements.Remove(item);
+    }
+
+    internal void SetFocusedItem(TItem item)
+    {
+        if (AreEqual(_focusedItem, item)) return;
+
+        _focusedItem = item;
+
+        // The single stop of the roving tab index follows the focus, so Tab comes back to the item the
+        // reader left the bar on. Nothing else is driven by the focused item, so the re-render is only
+        // worth it in that mode.
+        if (SingleTabStop is false) return;
+
+        RefreshOptions();
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Whether an item is the selected one. The comparison goes through the default equality comparer of
+    /// the item type, so a record or any other value-equal item type highlights the selection correctly.
+    /// </summary>
+    internal bool IsSelected(TItem? item) => AreEqual(item, SelectedItem);
 
 
 
@@ -147,6 +114,18 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         ClassBuilder.Register(() => FullWidth ? "bit-nbr-flw" : string.Empty);
 
         ClassBuilder.Register(() => IconOnly ? "bit-nbr-ion" : string.Empty);
+        ClassBuilder.Register(() => (IconOnly is false && HideUnselectedText) ? "bit-nbr-hut" : string.Empty);
+        ClassBuilder.Register(() => InlineText ? "bit-nbr-inl" : string.Empty);
+        ClassBuilder.Register(() => Vertical ? "bit-nbr-vrt" : string.Empty);
+        ClassBuilder.Register(() => SafeArea ? "bit-nbr-sfa" : string.Empty);
+
+        ClassBuilder.Register(() => Size switch
+        {
+            BitSize.Small => "bit-nbr-sm",
+            BitSize.Medium => "bit-nbr-md",
+            BitSize.Large => "bit-nbr-lg",
+            _ => "bit-nbr-md"
+        });
 
         ClassBuilder.Register(() => Color switch
         {
@@ -169,6 +148,28 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
             BitColor.TertiaryBorder => "bit-nbr-tbr",
             _ => "bit-nbr-pri",
         });
+
+        ClassBuilder.Register(() => Accent switch
+        {
+            BitColor.Primary => "bit-nbr-apri",
+            BitColor.Secondary => "bit-nbr-asec",
+            BitColor.Tertiary => "bit-nbr-ater",
+            BitColor.Info => "bit-nbr-ainf",
+            BitColor.Success => "bit-nbr-asuc",
+            BitColor.Warning => "bit-nbr-awrn",
+            BitColor.SevereWarning => "bit-nbr-aswr",
+            BitColor.Error => "bit-nbr-aerr",
+            BitColor.PrimaryBackground => "bit-nbr-apbg",
+            BitColor.SecondaryBackground => "bit-nbr-asbg",
+            BitColor.TertiaryBackground => "bit-nbr-atbg",
+            BitColor.PrimaryForeground => "bit-nbr-apfg",
+            BitColor.SecondaryForeground => "bit-nbr-asfg",
+            BitColor.TertiaryForeground => "bit-nbr-atfg",
+            BitColor.PrimaryBorder => "bit-nbr-apbr",
+            BitColor.SecondaryBorder => "bit-nbr-asbr",
+            BitColor.TertiaryBorder => "bit-nbr-atbr",
+            _ => string.Empty,
+        });
     }
 
     protected override void RegisterCssStyles()
@@ -178,16 +179,16 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
     protected override async Task OnInitializedAsync()
     {
-        if (ChildContent is null && Options is null && Items.Any())
-        {
-            _items = [.. Items];
-            _oldItems = Items;
-        }
+        SyncItems();
+
+        // The subscription is not tied to the mode: the mode is a parameter that can flip after the
+        // component is initialized, and a navbar that switched to the automatic mode later on still has to
+        // follow the URL. The handler itself is the one that checks the mode.
+        _navigationManager.LocationChanged += OnLocationChanged;
 
         if (Mode == BitNavMode.Automatic)
         {
             SetSelectedItemByCurrentUrl();
-            _navigationManager.LocationChanged += OnLocationChanged;
         }
         else
         {
@@ -202,8 +203,13 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
     protected override void OnParametersSet()
     {
-        // Options render their items themselves and Blazor skips re-rendering them when only the
-        // navbar's own parameters (Styles, IconOnly, ItemTemplate, ...) change, so push a re-render to each one.
+        // The Items collection is re-read here rather than only when the parameter is assigned a new
+        // instance, so a collection that is mutated in place (an item appended to the same list) is
+        // picked up as well.
+        SyncItems();
+
+        // Options render their items themselves and Blazor skips re-rendering them when only the navbar's
+        // own parameters (Styles, IconOnly, ItemTemplate, ...) change, so push a re-render to each one.
         RefreshOptions();
 
         base.OnParametersSet();
@@ -216,14 +222,180 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         if (_selectionDirty)
         {
             _selectionDirty = false;
+
+            // A selection that actually moves pushes the render to the options it moved between itself, so
+            // a pass that changes nothing leaves the options (and the element references they hand over)
+            // exactly as they are.
             SetSelectedItemByCurrentUrl();
-            RefreshOptions();
         }
 
         base.OnAfterRender(firstRender);
     }
 
 
+
+    internal async Task HandleOnClick(TItem item)
+    {
+        if (IsEnabled is false) return;
+        if (GetIsEnabled(item) is false) return;
+
+        // The selection is read before the click is handled: the manual mode selects the clicked item right
+        // here, and asking afterwards would report every freshly clicked item as the already-selected one
+        // and swallow the click callback.
+        var wasSelected = IsSelected(item);
+
+        if (Mode == BitNavMode.Manual)
+        {
+            await SetSelectedItem(item);
+        }
+
+        if (wasSelected is false || Reselectable)
+        {
+            if (GetUrl(item).HasValue())
+            {
+                await Task.Yield(); // wait for the link to navigate first
+            }
+
+            await OnItemClick.InvokeAsync(item);
+        }
+    }
+
+    // The keyboard navigation is wired to the item's own element rather than to the root of the navbar, so
+    // a focusable element rendered by a template (an input, a checkbox, ...) keeps its own key handling
+    // instead of being read as a move along the bar.
+    // The arrow keys, Home and End scroll the page by default. That default is cancelled by the
+    // capture-phase guard installed in BitNavBar.ts, which (unlike @onkeydown:preventDefault, evaluated at
+    // render time) can decide on the key actually pressed instead of lagging a keystroke behind and
+    // swallowing the Tab that follows an arrow key.
+    internal async Task HandleOnKeyDown(TItem source, KeyboardEventArgs e)
+    {
+        if (IsEnabled is false) return;
+        if (e.CtrlKey || e.AltKey || e.MetaKey) return;
+
+        // The focus event of the item that received the key has already run, so the focused item is known;
+        // the item the event came from is only the fallback for a navbar that has never seen a focus event.
+        _focusedItem ??= source;
+
+        var items = GetFocusableItems();
+        if (items.Count == 0) return;
+
+        var index = _focusedItem is null ? -1 : items.FindIndex(i => AreEqual(i, _focusedItem));
+        var isRtl = (Dir ?? CascadingDir) == BitDir.Rtl;
+
+        // Both axes move along the bar, whichever way it is laid out: the pair that matches the orientation
+        // is the expected one, and the other pair is what a reader of a bar or a rail reaches for anyway.
+        switch (e.Key)
+        {
+            case "ArrowRight":
+                await FocusItemAt(items, index + (isRtl ? -1 : 1));
+                return;
+
+            case "ArrowLeft":
+                await FocusItemAt(items, index + (isRtl ? 1 : -1));
+                return;
+
+            case "ArrowDown":
+                await FocusItemAt(items, index + 1);
+                return;
+
+            case "ArrowUp":
+                await FocusItemAt(items, index - 1);
+                return;
+
+            case "Home":
+                await FocusItemAt(items, 0);
+                return;
+
+            case "End":
+                await FocusItemAt(items, items.Count - 1);
+                return;
+        }
+    }
+
+    // The tab index of an item. By default the navbar is a set of links that Tab reaches one by one, which
+    // is how a navigation landmark behaves; SingleTabStop turns it into the roving tab index of a toolbar,
+    // where the whole bar is a single stop and the arrow keys move inside it.
+    internal string? GetItemTabIndex(TItem item, bool isEnabled)
+    {
+        if (isEnabled is false) return "-1";
+
+        if (SingleTabStop is false) return null;
+
+        return IsTabStop(item) ? "0" : "-1";
+    }
+
+    internal string GetItemCssStyle(TItem item)
+    {
+        // The fragments are declarations, so they are joined with a semicolon: a space would run two of
+        // them together into a single malformed declaration.
+        return string.Join(';', new[] { Styles?.Item, GetStyle(item), IsSelected(item) ? Styles?.SelectedItem : null }
+                                    .Where(s => s.HasValue()));
+    }
+
+    internal string GetItemCssClass(TItem item, bool isEnabled)
+    {
+        return string.Join(' ', new[]
+        {
+            "bit-nbr-itm",
+            Classes?.Item,
+            GetClass(item),
+            IsSelected(item) ? "bit-nbr-sel" : null,
+            IsSelected(item) ? Classes?.SelectedItem : null,
+            isEnabled ? null : "bit-nbr-dis"
+        }.Where(c => c.HasValue()));
+    }
+
+
+
+    private static bool AreEqual(TItem? first, TItem? second) => EqualityComparer<TItem?>.Default.Equals(first, second);
+
+    // The items the keyboard moves between: the enabled ones, in the order they are rendered. A disabled
+    // item renders as a native disabled button (or as a link without an href), which takes no focus at all,
+    // so walking onto one would leave the focus where it was while the navbar believes it has moved.
+    private List<TItem> GetFocusableItems() => [.. _items.Where(GetIsEnabled)];
+
+    // The single stop of the roving tab index is the item the focus was last on, and the selected one
+    // before the bar has ever been focused, so Tab returns to where the reader left it either way. A navbar
+    // with neither (nothing matches the URL yet, for instance) still has to be reachable itself, so its
+    // first focusable item holds the stop instead.
+    private bool IsTabStop(TItem item)
+    {
+        // The focused item is only followed while it is still one of the items the navbar renders: an item
+        // that is gone (an option removed conditionally, for instance) would otherwise hold a stop no
+        // element carries, and take the whole bar out of the tab sequence with it.
+        var focusable = GetFocusableItems();
+
+        var current = _focusedItem is not null && focusable.Any(i => AreEqual(i, _focusedItem))
+                        ? _focusedItem
+                        : focusable.FirstOrDefault(IsSelected);
+
+        return AreEqual(current ?? focusable.FirstOrDefault(), item);
+    }
+
+    private async Task FocusItemAt(List<TItem> items, int index)
+    {
+        if (items.Count == 0) return;
+
+        // The navigation stops at both ends of the navbar instead of wrapping around, so a bar keeps a
+        // stable notion of a first and a last item.
+        index = Math.Clamp(index, 0, items.Count - 1);
+
+        await FocusItemElement(items[index]);
+    }
+
+    private async ValueTask FocusItemElement(TItem item)
+    {
+        SetFocusedItem(item);
+
+        if (_itemElements.TryGetValue(item, out var element) is false) return;
+
+        try
+        {
+            await element.FocusAsync();
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (InvalidOperationException) { } // the element is no longer in the DOM
+    }
 
     private void OnSetSelectedItem()
     {
@@ -243,6 +415,9 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
+        if (IsDisposed) return;
+        if (Mode is not BitNavMode.Automatic) return;
+
         SetSelectedItemByCurrentUrl();
 
         RefreshOptions();
@@ -251,35 +426,67 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
     private void SetSelectedItemByCurrentUrl()
     {
+        if (IsDisposed) return;
         if (Mode is not BitNavMode.Automatic) return;
 
-        var currentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
-        var currentItem = _items.FirstOrDefault(item => string.Equals(GetUrl(item), currentUrl, StringComparison.OrdinalIgnoreCase) ||
-                                                        (GetAdditionalUrls(item)?.Any(u => string.Equals(u, currentUrl, StringComparison.OrdinalIgnoreCase)) ?? false));
+        var (currentUrl, currentPath) = BitNavUrlMatcher.GetCurrentUrl(_navigationManager);
+        var baseUri = _navigationManager.BaseUri;
 
-        _ = AssignSelectedItem(currentItem);
+        var currentItem = _items.FirstOrDefault(item =>
+        {
+            var match = GetMatch(item) ?? Match ?? BitNavMatch.Exact;
+
+            if (IsMatch(GetUrl(item), match)) return true;
+
+            return GetAdditionalUrls(item)?.Any(u => IsMatch(u, match)) is true;
+        });
+
+        _ = SetSelectedItem(currentItem);
+
+        bool IsMatch(string? itemUrl, BitNavMatch match)
+        {
+            return BitNavUrlMatcher.IsMatch(itemUrl, match, currentUrl, currentPath, baseUri);
+        }
     }
 
-    private void OnSetParameters()
+    // Reads the Items collection into the list the navbar renders from. The content of the collection is
+    // compared rather than only its identity, so a list that is mutated in place is picked up too.
+    private void SyncItems()
     {
-        if (ChildContent is not null || Options is not null || Items == _oldItems) return;
+        if ((Options ?? ChildContent) is not null) return;
 
-        _items = Items?.ToList() ?? [];
-        _oldItems = Items;
+        var items = Items ?? [];
 
-        SetSelectedItemByCurrentUrl();
+        if (_oldItems is not null && _items.Count == items.Count && _items.SequenceEqual(items)) return;
+
+        _items = [.. items];
+        _oldItems = items;
+
+        // The elements of the items that are gone are dropped, so a navbar whose items are swapped
+        // repeatedly (a filtered list, a reloaded menu, ...) does not keep growing.
+        foreach (var item in _itemElements.Keys.Where(i => _items.Contains(i) is false).ToArray())
+        {
+            _itemElements.Remove(item);
+        }
+
+        // The match is deferred to the end of the render instead of running here, because the parameters of
+        // a single SetParametersAsync are assigned one by one: matching now would read a Mode (or a Match)
+        // that the same parameter set is still about to change.
+        MarkSelectionDirty();
     }
 
-    private void OnSetMode()
+    // Both the mode and the matching behavior can change after the navbar is rendered, and either one
+    // changes which item the current URL points at, so the match is re-run once the change is in.
+    private void OnUrlMatchingChanged()
     {
         if (Mode is not BitNavMode.Automatic) return;
 
-        SetSelectedItemByCurrentUrl();
+        MarkSelectionDirty();
     }
 
-    private async Task SetSelectedItem(TItem item)
+    private async Task SetSelectedItem(TItem? item)
     {
-        if (item == SelectedItem && Reselectable is false) return;
+        if (IsSelected(item) && Reselectable is false) return;
 
         if (await AssignSelectedItem(item) is false) return;
 
@@ -292,305 +499,6 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     private string GetItemKey(TItem item, string defaultKey)
     {
         return GetKey(item) ?? $"{UniqueId}-{defaultKey}";
-    }
-
-    internal async Task HandleOnClick(TItem item)
-    {
-        if (GetIsEnabled(item) is false) return;
-
-        if (SelectedItem != item || Reselectable)
-        {
-            await OnItemClick.InvokeAsync(item);
-        }
-
-        if (Mode == BitNavMode.Manual)
-        {
-            await SetSelectedItem(item);
-        }
-    }
-
-    internal string GetItemCssStyle(TItem item)
-    {
-        var itm = Styles?.Item;
-        var style = GetStyle(item);
-        var selected = SelectedItem == item ? Styles?.SelectedItem : string.Empty;
-        return $"{itm} {style} {selected}".Trim();
-    }
-
-    internal string GetItemCssClass(TItem item, bool isEnabled)
-    {
-        var itm = Classes?.Item;
-        var @class = GetClass(item);
-        var selected = SelectedItem == item ? $"bit-nbr-sel {Classes?.SelectedItem}" : string.Empty;
-        var disabled = isEnabled ? string.Empty : "bit-nbr-dis";
-
-        return $"bit-nbr-itm {itm} {@class} {selected} {disabled}".Trim();
-    }
-
-
-
-    private string? GetClass(TItem item)
-    {
-        if (item is BitNavBarItem navItem)
-        {
-            return navItem.Class;
-        }
-
-        if (item is BitNavBarOption navOption)
-        {
-            return navOption.Class;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.Class.Selector is not null)
-        {
-            return NameSelectors.Class.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.Class.Name);
-    }
-
-    internal BitIconInfo? GetIcon(TItem item)
-    {
-        if (item is BitNavBarItem navItem)
-        {
-            return navItem.Icon;
-        }
-
-        if (item is BitNavBarOption navOption)
-        {
-            return navOption.Icon;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.Icon.Selector is not null)
-        {
-            return NameSelectors.Icon.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<BitIconInfo?>(NameSelectors.Icon.Name);
-    }
-
-    internal string? GetIconName(TItem item)
-    {
-        if (item is BitNavBarItem navItem)
-        {
-            return navItem.IconName;
-        }
-
-        if (item is BitNavBarOption navOption)
-        {
-            return navOption.IconName;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.IconName.Selector is not null)
-        {
-            return NameSelectors.IconName.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
-    }
-
-    internal bool GetIsEnabled(TItem item)
-    {
-        if (item is BitNavBarItem navItem)
-        {
-            return navItem.IsEnabled;
-        }
-
-        if (item is BitNavBarOption navOption)
-        {
-            return navOption.IsEnabled;
-        }
-
-        if (NameSelectors is null) return true;
-
-        if (NameSelectors.IsEnabled.Selector is not null)
-        {
-            return NameSelectors.IsEnabled.Selector!(item) ?? true;
-        }
-
-        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
-    }
-
-    private string? GetKey(TItem item)
-    {
-        if (item is BitNavBarItem navItem)
-        {
-            return navItem.Key;
-        }
-
-        if (item is BitNavBarOption navOption)
-        {
-            return navOption.Key;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.Key.Selector is not null)
-        {
-            return NameSelectors.Key.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.Key.Name);
-    }
-
-    private string? GetStyle(TItem item)
-    {
-        if (item is BitNavBarItem navItem)
-        {
-            return navItem.Style;
-        }
-
-        if (item is BitNavBarOption navOption)
-        {
-            return navOption.Style;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.Style.Selector is not null)
-        {
-            return NameSelectors.Style.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
-    }
-
-    internal string? GetTarget(TItem item)
-    {
-        if (item is BitNavBarItem navItem)
-        {
-            return navItem.Target;
-        }
-
-        if (item is BitNavBarOption navOption)
-        {
-            return navOption.Target;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.Target.Selector is not null)
-        {
-            return NameSelectors.Target.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.Target.Name);
-    }
-
-    internal RenderFragment<TItem>? GetTemplate(TItem item)
-    {
-        if (item is BitNavBarItem navItem)
-        {
-            return navItem.Template as RenderFragment<TItem>;
-        }
-
-        if (item is BitNavBarOption navOption)
-        {
-            return navOption.Template as RenderFragment<TItem>;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.Template.Selector is not null)
-        {
-            return NameSelectors.Template.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.Template.Name);
-    }
-
-    internal string? GetText(TItem item)
-    {
-        if (item is BitNavBarItem navItem)
-        {
-            return navItem.Text;
-        }
-
-        if (item is BitNavBarOption navOption)
-        {
-            return navOption.Text;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.Text.Selector is not null)
-        {
-            return NameSelectors.Text.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
-    }
-
-    internal string? GetTitle(TItem item)
-    {
-        if (item is BitNavBarItem navItem)
-        {
-            return navItem.Title;
-        }
-
-        if (item is BitNavBarOption navOption)
-        {
-            return navOption.Title;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.Title.Selector is not null)
-        {
-            return NameSelectors.Title.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.Title.Name);
-    }
-
-    internal string? GetUrl(TItem item)
-    {
-        if (item is BitNavBarItem navItem)
-        {
-            return navItem.Url;
-        }
-
-        if (item is BitNavBarOption navOption)
-        {
-            return navOption.Url;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.Url.Selector is not null)
-        {
-            return NameSelectors.Url.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.Url.Name);
-    }
-
-    private IEnumerable<string>? GetAdditionalUrls(TItem item)
-    {
-        if (item is BitNavBarItem navItem)
-        {
-            return navItem.AdditionalUrls;
-        }
-
-        if (item is BitNavBarOption navOption)
-        {
-            return navOption.AdditionalUrls;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.AdditionalUrls.Selector is not null)
-        {
-            return NameSelectors.AdditionalUrls.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<IEnumerable<string>?>(NameSelectors.AdditionalUrls.Name);
     }
 
 

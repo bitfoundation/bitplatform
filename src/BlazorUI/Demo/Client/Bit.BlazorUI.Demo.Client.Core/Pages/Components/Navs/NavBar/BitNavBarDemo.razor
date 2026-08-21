@@ -3,19 +3,31 @@
 
 <PageOutlet Url="components/navbar"
             Title="NavBar"
-            Description="A tab panel that provides navigation links to the main areas of an app." />
+            Description="A bar of navigation links to the main areas of an app, with automatic selection by the current URL, badges, icon-only and rail layouts, and full keyboard support." />
 
 <div>
     <DemoPage Name="NavBar"
-              SecondaryNames="@(["NavMenu", "TabPanel"])"
-              Description="A tab panel that provides navigation links to the main areas of an app."
+              SecondaryNames="@(["NavMenu", "TabPanel", "BottomNavigation", "TabBar", "NavigationRail"])"
+              Description="A bar of navigation links to the main areas of an app, the way a mobile app puts its top-level destinations along the bottom of the screen."
               Parameters="componentParameters"
+              PublicMembers="componentPublicMembers"
               SubClasses="componentSubClasses"
               SubEnums="componentSubEnums"
               GitHubUrl="Navs/NavBar/BitNavBar.razor"
               GitHubDemoUrl="Navs/NavBar/BitNavBarDemo.razor">
         <NotesTemplate>
             <BitText>
+                Each item renders an icon over its text and becomes a link when it carries a URL. In the default
+                <BitTag Color="BitColor.SecondaryBackground">Automatic</BitTag> mode the navbar follows the browser
+                and selects the item whose URL points at the current page &mdash; matched exactly, by prefix, by a
+                wildcard or by a regular expression &mdash; while the
+                <BitTag Color="BitColor.SecondaryBackground">Manual</BitTag> mode leaves the selection to clicks
+                and to the two-way <BitTag Color="BitColor.SecondaryBackground">SelectedItem</BitTag> binding.
+                The selected item reports itself to assistive technology as the current page, every item is a tab
+                stop of its own (or one roving stop, with
+                <BitTag Color="BitColor.SecondaryBackground">SingleTabStop</BitTag>) and the arrow keys, Home and
+                End move the focus along the bar.
+                <br /><br />
                 The BitNavBar is a <BitTag Color="BitColor.SecondaryBackground">Multi-API</BitTag> component
                 which can accept the list of Items in 3 different ways:
                 <br />

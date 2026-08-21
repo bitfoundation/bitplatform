@@ -3,18 +3,39 @@
 
 @{
     var url = NavBar.GetUrl(Item);
+    var text = NavBar.GetText(Item);
+    var title = NavBar.GetTitle(Item);
+    var target = NavBar.GetTarget(Item);
     var template = NavBar.GetTemplate(Item);
-    var isEnabled = NavBar.GetIsEnabled(Item);
-    var href = (isEnabled && (NavBar.SelectedItem != Item || NavBar.Reselectable)) ? url : null;
+    // A disabled navbar disables everything it renders: greying the items out is not enough, since a link
+    // that keeps its href and its tab stop can still be followed with the keyboard.
+    var isEnabled = NavBar.IsEnabled && NavBar.GetIsEnabled(Item);
+    var isSelected = NavBar.IsSelected(Item);
+    var href = isEnabled ? url : null;
+    // The item stays the very same element whether it is selected or not: an anchor that turns into a
+    // button on selection loses the focus that was on it, and takes the context menu, the middle click and
+    // the "open in a new tab" of the current destination away with it.
+    var ariaCurrent = isSelected ? _AriaCurrentMap[NavBar.GetAriaCurrent(Item)] : null;
+    // The text is the accessible name of the item, so an item that does not render it has to carry it as a
+    // label instead, otherwise an icon-only bar announces nothing at all.
+    var isTextHidden = NavBar.IconOnly || (NavBar.HideUnselectedText && isSelected is false);
+    var ariaLabel = NavBar.GetAriaLabel(Item) ?? (isTextHidden ? text : null);
 }
 
-<_BitNavBarChild Href="@href"
-                 Title="@NavBar.GetTitle(Item)"
-                 Target="@NavBar.GetTarget(Item)"
-                 Style="@NavBar.GetItemCssStyle(Item)"
+<_BitNavBarChild @ref="_child"
+                 Href="@href"
+                 Target="@target"
+                 AriaLabel="@ariaLabel"
+                 AriaCurrent="@ariaCurrent"
+                 OnClick="HandleOnClick"
+                 OnFocusIn="HandleOnFocusIn"
+                 OnKeyDown="HandleOnKeyDown"
                  Disabled="@(isEnabled is false)"
-                 OnClick="() => NavBar.HandleOnClick(Item)"
-                 Class="@NavBar.GetItemCssClass(Item, isEnabled)">
+                 Style="@NavBar.GetItemCssStyle(Item)"
+                 Title="@(title ?? (isTextHidden ? text : null))"
+                 Class="@NavBar.GetItemCssClass(Item, isEnabled)"
+                 TabIndex="@NavBar.GetItemTabIndex(Item, isEnabled)"
+                 Rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url) is false ? "noopener noreferrer" : null)">
     @if (template is not null)
     {
         @template(Item)
@@ -25,19 +46,34 @@
     }
     else
     {
-        var icon = NavBar.GetIcon(Item);
-        var iconName = NavBar.GetIconName(Item);
+        var icon = BitIconInfo.From(NavBar.GetIcon(Item), NavBar.GetIconName(Item));
+        var badge = NavBar.GetBadge(Item);
+        var dot = badge.HasNoValue() && NavBar.GetDot(Item);
 
-        icon = BitIconInfo.From(icon, iconName);
-
-        @if (icon is not null)
+        @if (icon is not null || badge.HasValue() || dot)
         {
-            <i style="@NavBar.Styles?.ItemIcon" class="bit-nbr-ico @icon.GetCssClasses() @NavBar.Classes?.ItemIcon" />
+            @* The badge is positioned against the icon, so the two share a wrapper of their own rather
+               than being placed against the item, where it would drift away from the icon as the item
+               grows. Both are decorations of the name the item already carries, so neither is read out. *@
+            <span style="@NavBar.Styles?.ItemIconContainer" class="bit-nbr-icc @NavBar.Classes?.ItemIconContainer">
+                @if (icon is not null)
+                {
+                    <i aria-hidden="true" style="@NavBar.Styles?.ItemIcon" class="bit-nbr-ico @icon.GetCssClasses() @NavBar.Classes?.ItemIcon" />
+                }
+                @if (badge.HasValue())
+                {
+                    <span aria-hidden="true" style="@NavBar.Styles?.ItemBadge" class="bit-nbr-bdg @NavBar.Classes?.ItemBadge">@badge</span>
+                }
+                else if (dot)
+                {
+                    <span aria-hidden="true" style="@NavBar.Styles?.ItemBadge" class="bit-nbr-bdg bit-nbr-bdt @NavBar.Classes?.ItemBadge"></span>
+                }
+            </span>
         }
 
         @if (NavBar.IconOnly is false)
         {
-            <span style="@NavBar.Styles?.ItemText" class="bit-nbr-txt @NavBar.Classes?.ItemText">@NavBar.GetText(Item)</span>
+            <span style="@NavBar.Styles?.ItemText" class="bit-nbr-txt @NavBar.Classes?.ItemText">@text</span>
         }
     }
 </_BitNavBarChild>

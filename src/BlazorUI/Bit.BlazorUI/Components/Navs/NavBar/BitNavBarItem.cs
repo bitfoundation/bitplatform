@@ -3,6 +3,24 @@ namespace Bit.BlazorUI;
 public class BitNavBarItem
 {
     /// <summary>
+    /// The value of the aria-current attribute of the navbar item when it is the selected one.
+    /// </summary>
+    public BitNavAriaCurrent AriaCurrent { get; set; } = BitNavAriaCurrent.Page;
+
+    /// <summary>
+    /// The accessible label of the navbar item, announced instead of its content.
+    /// When it is not provided and the text of the item is not rendered (in the IconOnly or the
+    /// HideUnselectedText modes), the text of the item is used, so an icon is never left unnamed.
+    /// </summary>
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// The badge text to render on the icon of the navbar item, for a count or a short status.
+    /// Takes precedence over <see cref="Dot"/> when both are set.
+    /// </summary>
+    public string? Badge { get; set; }
+
+    /// <summary>
     /// Custom CSS class for the navbar item.
     /// </summary>
     public string? Class { get; set; }
@@ -11,6 +29,12 @@ public class BitNavBarItem
     /// The custom data for the navbar item to provide additional state.
     /// </summary>
     public object? Data { get; set; }
+
+    /// <summary>
+    /// Renders a small dot on the icon of the navbar item, to mark it as needing attention without
+    /// showing a number. Ignored while <see cref="Badge"/> is set.
+    /// </summary>
+    public bool Dot { get; set; }
 
     /// <summary>
     /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
@@ -46,6 +70,12 @@ public class BitNavBarItem
     /// A unique value to use as a key or id of the navbar item.
     /// </summary>
     public string? Key { get; set; }
+
+    /// <summary>
+    /// Modifies how the URL of the navbar item is matched against the current URL in the automatic mode.
+    /// Takes precedence over the Match of the navbar itself.
+    /// </summary>
+    public BitNavMatch? Match { get; set; }
 
     /// <summary>
     /// Custom CSS style for the navbar item.
