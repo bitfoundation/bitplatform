@@ -1,35 +1,45 @@
 ﻿@inject IJSRuntime JS
 
-@* The bit platform footer, matching the one on the Bit.BlazorUI docs site: who makes this, where
-   to go next, and how to reach the team. *@
+@* The bit platform footer: who makes this, where to go next, and how to reach the team. *@
 
-<div class="footer">
+<footer class="footer">
     <section>
         <div>
-            <div class="bit-logo"></div>
+            <div class="bit-logo" role="img" aria-label="bit platform"></div>
             <p class="blurb">
-                A platform that simplifies the development process for freelancers and software
-                companies through its clean project templates and easy-to-use one-click build and
-                deployment feature.
+                Bmotion is part of bit platform &mdash; a platform that simplifies the development
+                process for freelancers and software companies through its clean project templates
+                and easy-to-use one-click build and deployment feature.
             </p>
         </div>
 
         <div class="link-columns">
             <div class="link-column">
-                <h6>Explore</h6>
-                <a href="/basic">Docs</a>
+                <h6>Learn</h6>
+                <a href="/basic">Get started</a>
                 <a href="/springs">Springs</a>
                 <a href="/gestures">Gestures</a>
+                <a href="/accessibility">Accessibility</a>
             </div>
 
             <div class="link-column">
-                <h6>Quick links</h6>
-                <a href="https://github.com/bitfoundation" target="_blank" rel="noopener noreferrer">Github Org</a>
-                <a href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener noreferrer">Github Repo</a>
-                <a href="https://github.com/bitfoundation/bitplatform/issues" target="_blank" rel="noopener noreferrer">Github Issues</a>
+                <h6>Build</h6>
+                <a href="/programmatic">Programmatic API</a>
+                <a href="/layout">Layout animations</a>
+                <a href="/scroll">Scroll timelines</a>
+                <a href="/mcp-server">MCP server</a>
             </div>
 
-            <button type="button" class="go-to-top" @onclick="GoToTop">Go to top</button>
+            <div class="link-column">
+                <h6>Project</h6>
+                <a href="https://github.com/bitfoundation" target="_blank" rel="noopener noreferrer">GitHub org</a>
+                <a href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener noreferrer">Repository</a>
+                <a href="https://github.com/bitfoundation/bitplatform/issues" target="_blank" rel="noopener noreferrer">Issues</a>
+                <button type="button" class="go-to-top" @onclick="GoToTop">
+                    <Icon Path="@Icons.ArrowUp" />
+                    Back to top
+                </button>
+            </div>
         </div>
     </section>
 
@@ -39,6 +49,7 @@
             <div class="country">Netherlands</div>
             <a class="tel" href="tel:+31684207362">+31 6 84207362</a>
         </div>
+
         <div>
             <div class="social-link-group">
                 <a class="social-link twitter-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on X (Twitter)" href="https://twitter.com/bitplatformhq"></a>
@@ -46,10 +57,10 @@
                 <a class="social-link youtube-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on YouTube" href="https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog"></a>
                 <a class="social-link linkedin-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on LinkedIn" href="https://www.linkedin.com/company/bitplatformhq"></a>
             </div>
-            <div class="copy-right-txt">Copyright © 2026 bit platform | All Rights Reserved </div>
+            <div class="copy-right-txt">Copyright &copy; 2026 bit platform &middot; All rights reserved</div>
         </div>
     </section>
-</div>
+</footer>
 
 @code {
     private async Task GoToTop()

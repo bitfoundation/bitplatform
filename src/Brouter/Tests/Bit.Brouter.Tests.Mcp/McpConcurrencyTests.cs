@@ -22,12 +22,11 @@ public class McpConcurrencyTests
     {
         (string Tool, Dictionary<string, object?>? Arguments)[] calls =
         [
-            ("GetBrouterOverview", null),
             ("GetBrouterGuideSection", new() { ["heading"] = "Data loader" }),
-            ("GetBrouterApiDetails", new() { ["typeName"] = "BrouterOptions" }),
+            ("GetBrouterApi", new() { ["typeName"] = "BrouterOptions" }),
             ("GetBrouterDocsPage", new() { ["slug"] = "route-templates" }),
             ("SearchBrouter", new() { ["query"] = "loader cache", ["limit"] = 5 }),
-            ("InspectBrouterRouteTemplate", new() { ["template"] = "/users/{id:int}" }),
+            ("InspectBrouterRouteTemplates", new() { ["templates"] = "/users/{id:int}" }),
             ("GetBrouterSourceFile", new() { ["path"] = "Demo/Client/AppRouter.razor" }),
         ];
 
@@ -58,14 +57,14 @@ public class McpConcurrencyTests
 
         try
         {
-            var overviews = await Task.WhenAll(clients.Select(async client =>
+            var indexes = await Task.WhenAll(clients.Select(async client =>
             {
-                var result = await client.CallToolAsync("GetBrouterOverview");
+                var result = await client.CallToolAsync("GetBrouterApi");
 
                 return string.Join('\n', result.Content.OfType<ModelContextProtocol.Protocol.TextContentBlock>().Select(block => block.Text));
             }));
 
-            Assert.AreEqual(1, overviews.Distinct(StringComparer.Ordinal).Count(), "Two sessions were served different overviews.");
+            Assert.AreEqual(1, indexes.Distinct(StringComparer.Ordinal).Count(), "Two sessions were served different API indexes.");
 
             foreach (var client in clients)
             {

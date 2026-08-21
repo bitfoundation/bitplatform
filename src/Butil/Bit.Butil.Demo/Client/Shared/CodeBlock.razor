@@ -1,36 +1,47 @@
 @inject Bit.Butil.Clipboard clipboard
 
-@* The BlazorUI demo's code pane: the source on the secondary surface, with a round copy button
-   resting on it that confirms by growing into its label instead of snapping open. The language is
-   kept as a data attribute rather than a header strip - there is no highlighter on this site to
-   act on it, and a bar that only repeats "csharp" is a row of chrome per snippet. *@
+@* The code pane: a title bar naming the language, the source on the recessed surface below it, and
+   a copy button in the bar rather than floating over the first line of code. The bar is what a
+   reader's eye is already trained to reach for by every other developer site, and it takes the
+   button out of the text: resting on the code, the button covered the end of the opening line on
+   exactly the snippets - one-liners - where that line is the whole sample.
+
+   The language stays on the <pre> as a data attribute as well as in the bar, because that is where
+   Server/Services/HtmlToMarkdownService.cs reads it to label the fenced block it hands an MCP
+   client. *@
 
 <div class="code-holder">
-    @* aria-live so the outcome is announced: the button confirms by swapping its own content, and
-       a state change inside the control that was just activated is otherwise silent. The label
-       tracks the same three states, so it never contradicts what the button now reads. *@
-    <button class="copy-btn @(_failed ? "failed" : _copied ? "copied" : "")"
-            title="Copy to clipboard" aria-live="polite"
-            aria-label="@(_failed ? "Copy failed" : _copied ? "Copied to clipboard" : "Copy code to clipboard")"
-            @onclick="Copy">
-        @if (_failed)
-        {
-            <span>Copy failed</span>
-        }
-        else if (_copied)
-        {
-            <span>Copied!</span>
-        }
-        else
-        {
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="1.8" aria-hidden="true" focusable="false">
-                <rect x="9" y="9" width="11" height="11" rx="1.5" />
-                <path d="M15 5.5A1.5 1.5 0 0 0 13.5 4h-8A1.5 1.5 0 0 0 4 5.5v8A1.5 1.5 0 0 0 5.5 15" />
-            </svg>
-        }
-    </button>
-    <pre data-language="@Language"><code>@Code.Trim('\r', '\n')</code></pre>
+    <div class="code-bar">
+        <span class="code-lang">@Label</span>
+        @* aria-live so the outcome is announced: the button confirms by swapping its own content,
+           and a state change inside the control that was just activated is otherwise silent. The
+           label tracks the same three states, so it never contradicts what the button now reads. *@
+        <button class="copy-btn @(_failed ? "failed" : _copied ? "copied" : "")"
+                title="Copy to clipboard" aria-live="polite"
+                aria-label="@(_failed ? "Copy failed" : _copied ? "Copied to clipboard" : "Copy code to clipboard")"
+                @onclick="Copy">
+            @if (_failed)
+            {
+                <Icon Name="error" Size="16" />
+                <span>Failed</span>
+            }
+            else if (_copied)
+            {
+                <Icon Name="checkmark" Size="16" />
+                <span>Copied</span>
+            }
+            else
+            {
+                <Icon Name="copy" Size="16" />
+                <span>Copy</span>
+            }
+        </button>
+    </div>
+    @* Highlighted by Services/SyntaxHighlighter.cs - the spans are the only markup in here, and
+       every one of them wraps text that came out of Escape(), so the MarkupString carries nothing
+       a sample could have injected. The language- class on the <code> is the convention every
+       other docs site uses, and HtmlToMarkdownService falls back to reading it. *@
+    <pre data-language="@Language"><code class="language-@Language">@_highlighted</code></pre>
 </div>
 
 @code {
@@ -39,6 +50,30 @@
 
     private bool _copied;
     private bool _failed;
+
+    // Highlighting a sample costs a scan of it, and the copy button re-renders this component
+    // three times per click, so it is done when the code changes rather than when it is drawn.
+    private MarkupString _highlighted;
+
+    // What the bar shows. The slugs are what a Markdown fence wants; a human wants the name.
+    private string Label => Language switch
+    {
+        "csharp" => "C#",
+        "razor" => "Razor",
+        "html" => "HTML",
+        "json" => "JSON",
+        "shell" => "Shell",
+        "markdown" => "Markdown",
+        "http" => "HTTP",
+        "js" or "javascript" => "JavaScript",
+        "css" => "CSS",
+        "xml" => "XML",
+        "" or null => "Code",
+        _ => Language,
+    };
+
+    protected override void OnParametersSet() =>
+        _highlighted = (MarkupString)SyntaxHighlighter.Highlight(Code.Trim('\r', '\n'), Language);
 
     private async Task Copy()
     {

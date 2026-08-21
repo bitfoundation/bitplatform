@@ -1,4 +1,4 @@
-@page "/error"
+﻿@page "/error"
 
 @* Target of app.UseExceptionHandler("/error") in the host's Program.cs. It lives in the client
    project on purpose: Routes.razor binds the router to this assembly only, so a page placed in
@@ -10,7 +10,16 @@
             Description="Something went wrong while processing the request." />
 
 <div class="docs-not-found">
-    <h1>Error</h1>
-    <p role="alert">Sorry, something went wrong while processing your request.</p>
-    <a class="button-primary" href="/">Back to the docs</a>
+    <h1>Something went wrong</h1>
+    <p role="alert">Sorry, the request could not be processed. Trying again often clears it.</p>
+    <div class="hero-actions">
+        <a class="button-primary button-large" href="/">
+            <Icon Name="arrow-left" />
+            Back to the docs
+        </a>
+        <a class="button-secondary button-large" href="troubleshooting">
+            <Icon Name="wrench" />
+            Troubleshooting
+        </a>
+    </div>
 </div>

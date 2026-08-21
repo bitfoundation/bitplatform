@@ -60,7 +60,7 @@
 /// <see cref="IBrouter.SetConfirmExternalNavigationAsync"/> arm the browser's generic dialog.
 /// Permanent teardown
 /// still surfaces through normal component disposal (<c>IDisposable</c>): retained instances
-/// dropped by LRU eviction or <see cref="IBrouter.ClearKeepAlive"/> were already deactivated
+/// dropped by LRU eviction or <see cref="IBrouter.ClearKeepAlive()"/> were already deactivated
 /// (<c>Hidden</c>) when they were hidden, so disposal is their only remaining signal - a kept
 /// instance whose hosting subtree unmounts is likewise disposed after its earlier Hidden
 /// deactivation.</para>

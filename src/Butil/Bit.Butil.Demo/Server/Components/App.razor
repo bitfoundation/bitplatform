@@ -24,7 +24,8 @@
     @* Tints the browser's own chrome on mobile. Two of them, so the bar matches whichever theme
        the visitor's OS is set to rather than always the dark one. *@
     <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0F1318" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#292929" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
     <link rel="stylesheet" href="css/app.css" />
     @* Same render mode as the app itself, so <PageTitle> keeps working after hydration. *@
     <HeadOutlet @rendermode="InteractiveWebAssembly" />

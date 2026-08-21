@@ -1,26 +1,33 @@
 ﻿@inherits LayoutComponentBase
-@implements IDisposable
+@implements IAsyncDisposable
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
-@* The docs shell: sticky header, nav panel, content column with its "on this page" rail, footer.
-   The structure and the surfaces follow the Bit.BlazorUI docs site, but nothing here is built from
-   that library - this demo carries no dependency other than Bit.Bmotion itself. The styles live in
-   wwwroot/css/app.css and are written against the theme tokens in wwwroot/css/theme.css.
+@* The docs shell: the skip link, the sticky header, the command palette, the nav panel, the
+   reading column with its breadcrumb and its pager, the "on this page" rail, and the footer.
 
    The home page is deliberately outside all of that. It is a landing page rather than a document:
-   no nav panel, no rail, no content column - it lays out its own full-bleed sections, exactly as
-   the BlazorUI docs site does. Only the header and the footer are shared, and the header narrows
-   itself to the landing page's own width. *@
+   no nav panel, no rail, no reading column - it lays out its own full-bleed sections. Only the
+   header, the palette and the footer are shared.
+
+   The styles live in wwwroot/css/app.css and are written against the Fluent 2 tokens in
+   wwwroot/css/theme.css; nothing here is built from a component library, because the demo carries
+   no dependency other than Bit.Bmotion itself. *@
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
 
 <div class="app-shell">
     <AppHeader IsHomePage="_isHomePage" IsHydrating="@_isHydrating"
-               IsNavOpen="_isNavOpen" OnToggleNav="ToggleNav" />
+               IsNavOpen="_isNavOpen" OnToggleNav="ToggleNav"
+               OnOpenSearch="OpenPalette" ShortcutHint="@_shortcutHint" />
 
     <div class="layout-row">
         @if (_isHomePage)
         {
             <div class="site-content home">
-                @Body
+                <main id="main-content">
+                    @Body
+                </main>
 
                 <AppFooter />
             </div>
@@ -38,9 +45,13 @@
 
             <div class="site-content">
                 <div class="page-row">
-                    <div class="page-container">
+                    <main id="main-content" class="page-container">
+                        <DocBreadcrumb Current="_current" />
+
                         @Body
-                    </div>
+
+                        <DocPager Href="@_href" />
+                    </main>
 
                     <SideRail />
                 </div>
@@ -51,39 +62,106 @@
     </div>
 </div>
 
-@* Live engine debug overlay (plan item 3.5) - starts collapsed; click to expand. *@
+<CommandPalette IsOpen="_isPaletteOpen" OnClose="ClosePalette" />
+
+@* Live engine debug overlay - starts collapsed; click to expand. *@
 <BmotionInspector StartOpen="false" />
 
 @code {
     private bool _isNavOpen;
     private bool _isHomePage;
+    private bool _isPaletteOpen;
+    private bool _shortcutsRegistered;
+    private string _href = "";
+    private string _shortcutHint = "Ctrl K";
+    private NavItem? _current;
+    private DotNetObjectReference<MainLayout>? _selfRef;
 
     // The page is prerendered on the server and is inert until the WebAssembly runtime takes over.
     // The header says so while that is true, and the interactive chrome stays disabled so a click
     // that cannot do anything does not look broken.
     private bool _isHydrating => RendererInfo.IsInteractive is false;
 
+    protected override void OnInitialized()
+    {
+        UpdateRoute();
+        Nav.LocationChanged += OnLocationChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false || _isHydrating) return;
+
+        try
+        {
+            _selfRef ??= DotNetObjectReference.Create(this);
+
+            // The same physical key is Ctrl on Windows and Linux and Cmd on a Mac, so the keycap
+            // in the header is filled in from the browser rather than guessed. Registering the
+            // listener returns it, which keeps the two from ever describing different keys.
+            _shortcutHint = await JS.InvokeAsync<string>("bmRegisterShortcuts", _selfRef);
+            _shortcutsRegistered = true;
+            StateHasChanged();
+        }
+        catch
+        {
+            // The shortcut is an accelerator for something the header already offers as a button.
+            // Without the script the button still opens the palette and the keycap keeps the
+            // conservative default, which is right for every platform except one.
+        }
+    }
+
     private void ToggleNav() => _isNavOpen = !_isNavOpen;
 
     private void CloseNav() => _isNavOpen = false;
 
-    protected override void OnInitialized()
-    {
-        UpdateIsHomePage();
-        Nav.LocationChanged += OnLocationChanged;
-    }
+    private void OpenPalette() => _isPaletteOpen = true;
 
-    // Following a link inside the drawer closes it: on the widths where the drawer exists it covers
-    // the page the reader just asked for.
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    private void ClosePalette() => _isPaletteOpen = false;
+
+    /// <summary>Raised by the global key listener in js/demo.js for the shortcut that opens search.</summary>
+    [JSInvokable]
+    public void OnSearchShortcut()
     {
-        _isNavOpen = false;
-        UpdateIsHomePage();
+        if (_isPaletteOpen) return;
+
+        _isPaletteOpen = true;
         StateHasChanged();
     }
 
-    private void UpdateIsHomePage()
-        => _isHomePage = Nav.ToBaseRelativePath(Nav.Uri).TrimStart('/').Split('?', '#')[0].Length == 0;
+    // Following a link inside the drawer closes it: on the widths where the drawer exists it
+    // covers the page the reader just asked for.
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        _isNavOpen = false;
+        UpdateRoute();
+        StateHasChanged();
+    }
 
-    public void Dispose() => Nav.LocationChanged -= OnLocationChanged;
+    private void UpdateRoute()
+    {
+        _href = Nav.ToBaseRelativePath(Nav.Uri).TrimStart('/').Split('?', '#')[0];
+        _isHomePage = _href.Length == 0;
+        _current = NavItem.ByHref(_href);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        Nav.LocationChanged -= OnLocationChanged;
+
+        if (_shortcutsRegistered)
+        {
+            try
+            {
+                await JS.InvokeVoidAsync("bmUnregisterShortcuts");
+            }
+            catch
+            {
+                // Disposal races the page going away; the listener it would remove dies with the
+                // document either way.
+            }
+        }
+
+        _selfRef?.Dispose();
+    }
 }

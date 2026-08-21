@@ -15,6 +15,6 @@ internal static partial class ToolNames
 
     // Every tool on this server is named after what it does to Brouter, which is what makes them
     // findable in prose without also matching the type names the same prose is full of.
-    [GeneratedRegex(@"\b(?<name>(Get|Search|Inspect|Analyze)Brouter[A-Za-z]*)\b")]
+    [GeneratedRegex(@"\b(?<name>(Get|Search|Inspect)Brouter[A-Za-z]*)\b")]
     private static partial Regex ToolNameRegex();
 }

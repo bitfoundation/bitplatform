@@ -4,6 +4,11 @@ using Microsoft.JSInterop;
 
 namespace Bit.Butil;
 
+/// <summary>
+/// Reads from and writes to the system clipboard - text, and typed items such as images.
+/// <br/>
+/// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Clipboard">https://developer.mozilla.org/en-US/docs/Web/API/Clipboard</see>
+/// </summary>
 [ButilService(typeof(Clipboard))]
 public class Clipboard(IJSRuntime js)
 {

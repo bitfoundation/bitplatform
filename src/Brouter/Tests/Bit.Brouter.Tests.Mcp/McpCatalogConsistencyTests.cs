@@ -77,11 +77,12 @@ public partial class McpCatalogConsistencyTests
     [TestMethod]
     public async Task The_documentation_pages_are_the_same_set_however_a_client_asks_for_them()
     {
-        // Three separate code paths enumerate them: the tool, the resource listing in Program.cs and
-        // the completion table. A page added to one and not the others is invisible in the rest.
-        var listed = (await McpCall.StructuredAsync<BrouterDocsPageDto[]>("GetBrouterDocsList"))
-                     .Select(page => page.Slug.Length == 0 ? "overview" : page.Slug)
-                     .ToArray();
+        // Three separate code paths enumerate them: the tool's own index, the resource listing in
+        // Program.cs and the completion table. A page added to one and not the others is invisible
+        // in the rest.
+        var index = await McpCall.TextAsync("GetBrouterDocsPage");
+
+        var listed = SlugRegex().Matches(index).Select(match => match.Groups["slug"].Value).ToArray();
 
         var resources = (await McpTestHost.Client.ListResourcesAsync())
                         .Where(resource => resource.Uri.StartsWith("brouter://docs/", StringComparison.Ordinal))
@@ -96,17 +97,49 @@ public partial class McpCatalogConsistencyTests
     }
 
     [TestMethod]
-    public async Task Every_public_type_the_listing_names_has_a_reference_behind_it()
+    public async Task Every_slug_the_docs_tool_advertises_in_its_own_description_is_a_page()
     {
-        var types = await McpCall.StructuredAsync<BrouterApiTypeDto[]>("GetBrouterApiList");
+        // The description spells the slugs out so a model can pick one without spending a call on the
+        // index first - which only pays if they are all real, and if the ones worth naming are named.
+        var description = (await McpTestHost.Client.ListToolsAsync())
+                          .Single(tool => tool.Name == "GetBrouterDocsPage").Description!;
 
-        foreach (var type in types)
+        var known = DocsCatalog.AllPages.Select(page => page.Slug.Length == 0 ? "overview" : page.Slug).ToArray();
+
+        foreach (var slug in known)
         {
-            var result = await McpCall.StructuredAsync<BrouterApiDetailsResultDto>("GetBrouterApiDetails", new() { ["typeName"] = type.Name });
+            StringAssert.Contains(description, slug, $"'{slug}' is a documentation page the tool's description never names.");
+        }
 
-            Assert.IsNotNull(result.Details, $"'{type.Name}' is listed as a public type but has no reference: {result.Message}");
-            Assert.AreEqual(type.Name, result.Details.Name);
-            Assert.AreEqual(type.Kind, result.Details.Kind);
+        // And nothing it names is a page that has since been renamed away. Only the quoted words the
+        // description lists as slugs are read as slugs - a quoted word in ordinary prose is not one.
+        var advertised = QuotedSlugRegex().Matches(description).Select(match => match.Groups["slug"].Value).ToArray();
+
+        Assert.IsTrue(advertised.Length > 0, "The tool's description no longer lists any slug, so nothing here is being checked.");
+
+        foreach (var quoted in advertised)
+        {
+            CollectionAssert.Contains(known, quoted, $"The tool's description advertises the slug '{quoted}', which no page has.");
+        }
+    }
+
+    [TestMethod]
+    public async Task Every_public_type_the_index_names_has_a_reference_behind_it()
+    {
+        var index = await McpCall.TextAsync("GetBrouterApi");
+
+        var listed = IndexEntryRegex().Matches(index)
+                                      .Select(match => (Name: match.Groups["name"].Value, Kind: match.Groups["kind"].Value))
+                                      .ToArray();
+
+        Assert.IsTrue(listed.Length > 30, $"Only {listed.Length} types were found in the API index.");
+
+        foreach (var (name, kind) in listed)
+        {
+            var reference = await McpCall.TextAsync("GetBrouterApi", new() { ["typeName"] = name });
+
+            StringAssert.StartsWith(reference, $"# {name} ({kind})",
+                $"'{name}' is listed as a public type but its reference does not answer under that name and kind.");
         }
     }
 
@@ -115,12 +148,16 @@ public partial class McpCatalogConsistencyTests
     {
         // The catalog is hand-written; the parser is the router's. A constraint documented with a
         // token the parser does not accept would send an agent to a template that throws on render.
-        var constraints = await McpCall.StructuredAsync<BrouterConstraintDto[]>("GetBrouterRouteConstraints");
+        var table = await McpCall.TextAsync("GetBrouterRouteConstraints");
 
-        foreach (var constraint in constraints)
+        foreach (var constraint in ConstraintCatalog.All)
         {
-            var inspection = await McpCall.StructuredAsync<BrouterTemplateInspectionDto>(
-                "InspectBrouterRouteTemplate", new() { ["template"] = $"/c/{constraint.Token.Split('(')[0]}/{{value:{constraint.Token}}}" });
+            StringAssert.Contains(table, $"`{{value:{constraint.Token}}}`", $"'{constraint.Token}' is not in the documented table.");
+
+            var analysis = await McpCall.StructuredAsync<BrouterRouteAnalysisDto>(
+                "InspectBrouterRouteTemplates", new() { ["templates"] = $"/c/{constraint.Token.Split('(')[0]}/{{value:{constraint.Token}}}" });
+
+            var inspection = analysis.Routes.Single();
 
             Assert.IsTrue(inspection.IsValid, $"The documented constraint '{constraint.Token}' does not parse: {inspection.Error}");
         }
@@ -129,32 +166,32 @@ public partial class McpCatalogConsistencyTests
     [TestMethod]
     public async Task Every_constraint_the_server_documents_is_one_this_site_actually_demonstrates()
     {
-        // The TryUrl points at a live route of this documentation site. The site declares one route
-        // per catalog entry, so what has to hold is that the tool and the route table are still
-        // reading the same catalog - and that the URL the tool builds fits the route the site
-        // generates from it.
-        var constraints = await McpCall.StructuredAsync<BrouterConstraintDto[]>("GetBrouterRouteConstraints");
+        // The documented table and the site's constraint-tester routes come from one catalog, and
+        // that is the whole claim: a constraint cannot be documented here without the running site
+        // demonstrating it. What has to keep holding is that the route table still reads it.
+        var table = await McpCall.TextAsync("GetBrouterRouteConstraints");
         var routeTable = await McpCall.TextAsync("GetBrouterSourceFile", new() { ["path"] = "Demo/Client/AppRouter.razor" });
 
         StringAssert.Contains(routeTable, "ConstraintCatalog.All",
             "The demo no longer generates its constraint-tester routes from the catalog the tool answers from.");
         StringAssert.Contains(routeTable, "/c/{c.Kind}/",
-            "The demo's constraint-tester route no longer has the shape the tool's TryUrl is built for.");
+            "The demo's constraint-tester route no longer has the shape the catalog's entries are built for.");
 
-        var kinds = ConstraintCatalog.All.Select(constraint => constraint.Kind).ToArray();
-
-        foreach (var constraint in constraints)
+        foreach (var constraint in ConstraintCatalog.All)
         {
-            CollectionAssert.Contains(kinds, constraint.TryUrl.Split('/')[2],
-                $"'{constraint.Token}' advertises {constraint.TryUrl}, which is not one of the site's constraint routes.");
+            StringAssert.Contains(table, $"| `{{value:{constraint.Token}}}` | {constraint.Category} |",
+                $"'{constraint.Token}' is documented under a category the catalog does not give it.");
         }
     }
 
     [TestMethod]
     public async Task Every_source_file_the_setup_guides_quote_is_one_the_server_can_hand_out()
     {
-        var files = await McpCall.StructuredAsync<BrouterSourceFileDto[]>("GetBrouterSourceFiles");
-        var paths = files.Select(file => file.Path).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var index = await McpCall.TextAsync("GetBrouterSourceFile");
+
+        var paths = SourcePathRegex().Matches(index)
+                                     .Select(match => match.Groups["path"].Value)
+                                     .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         foreach (var renderMode in Bit.Brouter.Demo.Server.Services.BrouterSetupGuide.RenderModes)
         {
@@ -172,7 +209,7 @@ public partial class McpCatalogConsistencyTests
                 quotedPaths++;
 
                 Assert.IsTrue(paths.Contains(quoted),
-                    $"The '{renderMode}' guide quotes '{quoted}', which GetBrouterSourceFiles does not list.");
+                    $"The '{renderMode}' guide quotes '{quoted}', which the source index does not list.");
             }
 
             // A guide built from the catalog that suddenly quotes nothing has stopped finding its
@@ -211,4 +248,22 @@ public partial class McpCatalogConsistencyTests
     // The setup guide introduces each file it quotes as a "### `path`" heading.
     [GeneratedRegex(@"^### `(?<path>[^`]+)`\r?$", RegexOptions.Multiline)]
     private static partial Regex QuotedPathRegex();
+
+    // The docs index lists a page as "- `slug` - **Title**: description".
+    [GeneratedRegex(@"^- `(?<slug>[^`]+)` - \*\*", RegexOptions.Multiline)]
+    private static partial Regex SlugRegex();
+
+    // The API index lists a type as "- **Name** (Kind) - summary".
+    [GeneratedRegex(@"^- \*\*(?<name>[^*]+)\*\* \((?<kind>[^)]+)\)", RegexOptions.Multiline)]
+    private static partial Regex IndexEntryRegex();
+
+    // The docs tool's description quotes the slugs it advertises as a list: 'faq', 'recipes', ... Only
+    // a quoted word that continues such a list - one introduced by ':' or continued by ',' - is a slug;
+    // a quoted word anywhere else in the prose is prose.
+    [GeneratedRegex(@"(?<=[:,] )'(?<slug>[a-z][a-z-]+)'")]
+    private static partial Regex QuotedSlugRegex();
+
+    // The source index lists a file as "- `path` (n lines) - description".
+    [GeneratedRegex(@"^- `(?<path>[^`]+)` \(\d+ lines\)", RegexOptions.Multiline)]
+    private static partial Regex SourcePathRegex();
 }

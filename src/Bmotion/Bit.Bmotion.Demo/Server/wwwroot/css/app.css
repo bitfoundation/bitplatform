@@ -1,11 +1,21 @@
-/* Bit.Bmotion Demo - base + site chrome.
+/* Bit.Bmotion Demo - base and site chrome.
 
-   The shell (header, nav panel, content column, "on this page" rail, footer) mirrors the layout
-   of the Bit.BlazorUI docs site so the two read as one product. It is written by hand against the
-   tokens in theme.css rather than built from Bit.BlazorUI components, because this demo carries no
-   dependency other than Bit.Bmotion itself - the same promise the library makes.
+   The docs shell: the skip link, the header, the command palette, the navigation panel, the
+   reading column with its breadcrumb and pager, the "on this page" rail, the footer and the
+   landing page. Page-level styles - sections, cards, code boxes, the sample chrome - live in
+   motion-samples.css.
 
-   Page-level styles (sections, cards, code boxes, the sample chrome) live in motion-samples.css. */
+   Everything here is written by hand against the Fluent 2 tokens in theme.css rather than built
+   from a component library, because the demo carries no dependency other than Bit.Bmotion itself:
+   that is the promise the library makes, and a docs site that had to install a design system to
+   demonstrate it would be arguing against its own point.
+
+   Two rules hold the file together:
+
+     * No raw values. A colour, a radius, a duration or a step of spacing comes from a token, so
+       the whole site re-themes from one file and nothing can drift.
+     * Chrome only. Nothing in here reaches inside .demo-card. What happens on a stage belongs to
+       the animation being demonstrated, and the shell must never be the reason a sample moves. */
 
 /* ── Base ──────────────────────────────────────────────────────────────────── */
 
@@ -19,54 +29,148 @@
     -webkit-tap-highlight-color: transparent;
 }
 
-html, body {
+html {
     width: 100%;
     height: 100%;
     margin: 0;
     padding: 0;
     scroll-behavior: smooth;
+    /* Anything the browser scrolls to - a fragment link, a control receiving focus - has to land
+       below the sticky header rather than under it. WCAG 2.2 "Focus Not Obscured (Minimum)". */
+    scroll-padding-top: calc(var(--bm-layout-header) + var(--bm-layout-header-gap));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
 }
 
 body {
-    font-family: var(--demo-font-sans);
-    color: var(--bit-clr-fg-pri);
-    background-color: var(--bit-clr-bg-sec);
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: var(--bm-fnt-family-base);
+    font-size: var(--bm-fnt-size-400);
+    line-height: var(--bm-fnt-line-prose);
+    color: var(--bm-clr-fg-1);
+    background-color: var(--bm-clr-bg-3);
 }
 
 code, kbd, pre, samp {
-    font-family: var(--demo-font-mono);
+    font-family: var(--bm-fnt-family-mono);
 }
 
 h1, h2, h3, h4, h5, h6, p {
     margin: 0;
 }
 
+h1, h2, h3, h4 {
+    font-family: var(--bm-fnt-family-display);
+    /* Fluent 2 sets its display sizes tight and slightly negative-tracked; the ramp only reads as
+       a ramp if the headings keep that treatment while the prose below them does not. */
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+}
+
+a {
+    color: var(--bm-clr-brand-fg);
+    text-underline-offset: 0.125em;
+}
+
+a:hover {
+    color: var(--bm-clr-brand-fg-hover);
+}
+
+a:active {
+    color: var(--bm-clr-brand-fg-pressed);
+}
+
+code {
+    color: var(--bm-clr-fg-1);
+}
+
+img, svg {
+    max-width: 100%;
+}
+
+/* Icons. One set, stroked at Fluent's regular weight and drawn in the colour of whatever it sits
+   inside, so an icon never has to be re-coloured for a theme, a hover state or a surface. The
+   geometry is authored in Shared/Icons.cs and rendered by Shared/Icon.razor; every rule that sizes
+   an icon below sets only its width and height and leaves the paint here. */
+svg.icon {
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
 /* Scoped to the docs chrome on purpose: a scrollbar inside .demo-card belongs to the sample being
    demonstrated and should look like whatever that sample renders. */
-html, body, .site-content, .nav-panel, .side-rail, pre {
+html, body, .site-content, .nav-panel, .side-rail, .palette-results, pre {
     scrollbar-width: thin;
-    scrollbar-color: var(--bit-clr-brd-ter) transparent;
+    scrollbar-color: var(--bm-clr-stroke-1) transparent;
 }
 
 h1:focus, h2:focus {
     outline: none;
 }
 
-h1:focus-visible, h2:focus-visible {
-    outline: 0.125rem solid var(--bit-clr-pri);
-    outline-offset: 0.125rem;
+/* Fluent 2's focus indicator: a solid two-pixel stroke in the theme's highest-contrast neutral,
+   held one step off the control so it never sits on top of the control's own border. Declared
+   once, for every focusable thing in the chrome. A sample's own focus ring is left alone - inside
+   a stage the ring belongs to whatever is being demonstrated, and a second outline over it would
+   show readers something the sample does not actually render. */
+h1:focus-visible,
+h2:focus-visible,
+.skip-link:focus-visible,
+.app-header a:focus-visible,
+.app-header button:focus-visible,
+.nav-panel a:focus-visible,
+.nav-panel button:focus-visible,
+.nav-panel input:focus-visible,
+.side-rail a:focus-visible,
+.doc-breadcrumb a:focus-visible,
+.doc-pager a:focus-visible,
+.footer a:focus-visible,
+.footer button:focus-visible,
+.homepage a:focus-visible,
+.homepage button:focus-visible,
+.palette a:focus-visible,
+.palette button:focus-visible,
+.error-page a:focus-visible {
+    outline: var(--bm-strk-thick) solid var(--bm-clr-stroke-focus);
+    outline-offset: var(--bm-strk-thick);
+    border-radius: var(--bm-crn-medium);
 }
 
-a {
-    color: var(--bit-clr-pri);
+/* ── Skip link ─────────────────────────────────────────────────────────────── */
+
+/* The nav panel puts twenty-odd links between the top of the document and the first word of the
+   page. This is the way past them for anyone driving the site from the keyboard. */
+.skip-link {
+    position: fixed;
+    z-index: 2000;
+    top: var(--bm-sp-s);
+    inset-inline-start: var(--bm-sp-s);
+    padding: var(--bm-sp-s) var(--bm-sp-l);
+    font-size: var(--bm-fnt-size-300);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-300);
+    text-decoration: none;
+    color: var(--bm-clr-fg-1);
+    background-color: var(--bm-clr-bg-1);
+    border: var(--bm-strk-thin) solid var(--bm-clr-stroke-1);
+    border-radius: var(--bm-crn-medium);
+    box-shadow: var(--bm-shdw-16);
+    transform: translateY(-200%);
 }
 
-a:hover {
-    color: var(--bit-clr-pri-hover);
-}
-
-code {
-    color: var(--bit-clr-fg-pri);
+.skip-link:focus-visible {
+    transform: translateY(0);
 }
 
 /* ── Shell ─────────────────────────────────────────────────────────────────── */
@@ -91,91 +195,90 @@ code {
     min-width: 0;
     display: flex;
     flex-flow: column nowrap;
-    background-color: var(--bit-clr-bg-sec);
+    background-color: var(--bm-clr-bg-3);
 }
 
-/* The content column and the "on this page" rail sit side by side; min-width:0 is what lets a wide
+/* The reading column and the "on this page" rail sit side by side; min-width:0 is what lets a wide
    example or a long code line scroll inside the column instead of stretching it and pushing the
    rail off screen. */
 .page-row {
     width: 100%;
+    flex: 1 1 auto;
     display: flex;
     align-items: flex-start;
     justify-content: center;
+    gap: var(--bm-sp-xxl);
+    margin: 0 auto;
+    max-width: calc(var(--bm-layout-max) - var(--bm-layout-nav));
+    padding-inline: var(--bm-sp-xxxl);
 }
 
 .page-container {
     flex: 1 1 auto;
     min-width: 0;
     width: 100%;
-    margin: 0 auto;
-    max-width: var(--demo-content-width);
-    padding: 2.5rem 2rem 4rem;
+    max-width: var(--bm-layout-content);
+    padding: var(--bm-sp-4xl) 0 var(--bm-sp-6xl);
 }
 
 @media (max-width: 63.9375rem) {
+    .page-row {
+        padding-inline: var(--bm-sp-xxl);
+    }
+
     .page-container {
-        padding: 2rem 1.5rem 3rem;
+        padding: var(--bm-sp-xxxl) 0 var(--bm-sp-5xl);
     }
 }
 
 @media (max-width: 47.9375rem) {
+    .page-row {
+        padding-inline: var(--bm-sp-l);
+    }
+
     .page-container {
-        padding: 1.5rem 1rem 2.5rem;
+        padding: var(--bm-sp-xxl) 0 var(--bm-sp-4xl);
     }
 }
 
 /* ── Header ────────────────────────────────────────────────────────────────── */
 
-.header {
+/* Fluent's acrylic, near enough: the header is a translucent pane over whatever is scrolling
+   underneath it, and it grows a shadow the moment there is something underneath it to lift away
+   from (js/demo.js sets data-scrolled). */
+.app-header {
     top: 0;
     z-index: 1000;
     width: 100%;
     position: sticky;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    background-color: color-mix(in srgb, var(--bit-clr-bg-pri) 82%, transparent);
-    border-bottom: 0.0625rem solid var(--bit-clr-brd-ter);
+    backdrop-filter: blur(1.25rem) saturate(1.6);
+    -webkit-backdrop-filter: blur(1.25rem) saturate(1.6);
+    background-color: color-mix(in srgb, var(--bm-clr-bg-1) 85%, transparent);
+    border-bottom: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
+    transition: box-shadow var(--bm-dur-normal) var(--bm-crv-easy-ease);
 }
 
-/* Declared on the chrome rather than globally: inside a sample the focus ring belongs to whatever
-   is being demonstrated, and a second outline over it would show readers something the sample does
-   not actually render. */
-.header a:focus-visible,
-.header button:focus-visible,
-.footer a:focus-visible,
-.footer button:focus-visible,
-.nav-panel a:focus-visible,
-.nav-panel button:focus-visible,
-.nav-panel input:focus-visible,
-.side-rail a:focus-visible {
-    outline: 0.125rem solid var(--bit-clr-pri);
-    outline-offset: 0.125rem;
-    border-radius: var(--bit-shp-brd-radius);
+.app-header[data-scrolled="true"] {
+    box-shadow: var(--bm-shdw-4);
 }
 
-.header .container {
-    gap: 0.5rem;
+/* A browser without backdrop-filter would show the page scrolling through the bar. Paint it. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .app-header {
+        background-color: var(--bm-clr-bg-1);
+    }
+}
+
+.app-header-inner {
+    gap: var(--bm-sp-s);
     display: flex;
     flex-wrap: nowrap;
-    margin-left: auto;
-    margin-right: auto;
+    margin-inline: auto;
     align-items: center;
     justify-content: space-between;
-    min-height: var(--demo-header-height);
-    padding: 0 1.25rem;
-}
-
-/* On the landing page the bar lines up with that page's own column instead of running the full
-   width of the window, so the mark sits directly over the hero rather than out in the margin. */
-.header .container.home-page {
-    max-width: var(--demo-content-width);
-}
-
-@media (max-width: 63.9375rem) {
-    .header .container {
-        padding: 0 0.625rem;
-    }
+    height: var(--bm-layout-header);
+    max-width: var(--bm-layout-max);
+    padding-inline: var(--bm-sp-xl);
 }
 
 .header-start,
@@ -187,97 +290,245 @@ code {
 }
 
 .header-start {
-    gap: 0;
+    gap: var(--bm-sp-xs);
 }
 
 .header-end {
-    gap: 0.5rem;
+    gap: var(--bm-sp-xs);
     flex-shrink: 0;
 }
 
-.header .logo {
+/* The mark and the library's name, as one link. The name is set in the brand colour so the bar
+   states which of the bit sites this is - the mark alone is shared with all of them. */
+.header-brand {
+    gap: var(--bm-sp-mnudge);
+    display: flex;
     flex: none;
-    width: 3.125rem;
-    height: 3.125rem;
-    cursor: pointer;
-    margin-right: 1rem;
+    align-items: center;
+    text-decoration: none;
+    padding: var(--bm-sp-xs) var(--bm-sp-s);
+    margin-inline-end: var(--bm-sp-m);
+    border-radius: var(--bm-crn-medium);
+}
+
+.header-brand .logo {
+    flex: none;
+    width: 1.75rem;
+    height: 1.75rem;
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
 }
 
-/* The wordmark. The library's own name is set in the accent so the header states which of the bit
-   sites this is - the mark alone is shared with all of them. */
-.header .wordmark {
+.header-brand .wordmark {
     flex: none;
-    font-size: 1.125rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    margin-right: 1.5rem;
-    color: var(--bit-clr-fg-pri);
-    text-decoration: none;
+    font-family: var(--bm-fnt-family-display);
+    font-size: var(--bm-fnt-size-500);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-500);
+    letter-spacing: -0.02em;
+    color: var(--bm-clr-fg-1);
 }
 
-.header .link {
-    height: 100%;
+.header-brand:hover .wordmark {
+    color: var(--bm-clr-brand-fg);
+}
+
+/* The release the docs describe, next to the name that describes it. */
+.header-version {
+    flex: none;
+    font-size: var(--bm-fnt-size-200);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-200);
+    padding: var(--bm-sp-xxs) var(--bm-sp-snudge);
+    color: var(--bm-clr-brand-fg);
+    background-color: var(--bm-clr-brand-wash);
+    border-radius: var(--bm-crn-circular);
+}
+
+@media (max-width: 35.9375rem) {
+    .header-version {
+        display: none;
+    }
+}
+
+.header-links {
+    gap: var(--bm-sp-xxs);
+    display: flex;
+    align-items: center;
+}
+
+/* Fluent's tab treatment: the label carries the state, and a rounded indicator under the selected
+   one says where you are without a second colour or a box. */
+.header-links .link {
+    position: relative;
     display: flex;
     cursor: pointer;
-    line-height: 1.5;
     white-space: nowrap;
     align-items: center;
-    font-size: 0.9375rem;
     text-decoration: none;
-    padding: 0.5rem 0.75rem;
-    color: var(--bit-clr-fg-sec);
-    border-radius: var(--bit-shp-brd-radius);
-    transition: color var(--bit-mot-duration-short) var(--bit-mot-easing);
+    font-size: var(--bm-fnt-size-300);
+    font-weight: var(--bm-fnt-weight-medium);
+    line-height: var(--bm-fnt-line-300);
+    padding: var(--bm-sp-s) var(--bm-sp-m);
+    color: var(--bm-clr-fg-2);
+    border-radius: var(--bm-crn-medium);
+    transition: color var(--bm-dur-faster) var(--bm-crv-easy-ease),
+                background-color var(--bm-dur-faster) var(--bm-crv-easy-ease);
 }
 
-.header .link:hover {
-    color: var(--bit-clr-fg-pri);
-    background-color: var(--bit-clr-bg-sec);
+.header-links .link:hover {
+    color: var(--bm-clr-fg-1);
+    background-color: var(--bm-clr-bg-1-hover);
 }
 
-.header .link.active {
-    font-weight: 600;
-    color: var(--bit-clr-pri);
+.header-links .link:active {
+    background-color: var(--bm-clr-bg-1-pressed);
 }
 
-/* Sized to match the theme toggle next to it. The svg is a mask rather than a picture, so the mark
-   is painted with the theme's accent and follows it in both themes - a colored asset could not. */
-.github-btn {
-    flex: none;
+.header-links .link.active {
+    color: var(--bm-clr-fg-1);
+    font-weight: var(--bm-fnt-weight-semibold);
+}
+
+.header-links .link.active::after {
+    content: '';
+    left: var(--bm-sp-m);
+    right: var(--bm-sp-m);
+    bottom: calc(var(--bm-sp-s) * -1);
+    height: var(--bm-strk-thicker);
+    position: absolute;
+    background-color: var(--bm-clr-brand-stroke);
+    border-radius: var(--bm-crn-circular);
+}
+
+@media (max-width: 47.9375rem) {
+    .header-links {
+        display: none;
+    }
+}
+
+/* The command palette's handle. It states its own shortcut, because a shortcut nobody can see is
+   a shortcut nobody uses. */
+.header-search {
+    gap: var(--bm-sp-s);
+    display: flex;
+    flex: 0 1 15rem;
+    min-width: 0;
     cursor: pointer;
+    text-align: start;
+    align-items: center;
+    font-family: inherit;
+    font-size: var(--bm-fnt-size-300);
+    line-height: var(--bm-fnt-line-300);
+    height: 2rem;
+    padding: 0 var(--bm-sp-s) 0 var(--bm-sp-mnudge);
+    margin-inline-end: var(--bm-sp-s);
+    color: var(--bm-clr-fg-3);
+    background-color: var(--bm-clr-bg-1);
+    border: var(--bm-strk-thin) solid var(--bm-clr-stroke-1);
+    border-bottom-color: var(--bm-clr-stroke-accessible);
+    border-radius: var(--bm-crn-medium);
+    transition: border-color var(--bm-dur-faster) var(--bm-crv-easy-ease),
+                background-color var(--bm-dur-faster) var(--bm-crv-easy-ease);
+}
+
+.header-search:hover:not(:disabled) {
+    color: var(--bm-clr-fg-2);
+    border-color: var(--bm-clr-stroke-accessible);
+}
+
+.header-search:disabled {
+    cursor: default;
+    color: var(--bm-clr-fg-disabled);
+    background-color: var(--bm-clr-bg-disabled);
+}
+
+.header-search .search-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.header-search svg {
+    flex: none;
+    width: 1rem;
+    height: 1rem;
+}
+
+/* A keycap, Fluent-style: the neutral surface one step up from the control it sits in. */
+.kbd {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--bm-sp-xxs);
+    font-family: var(--bm-fnt-family-base);
+    font-size: var(--bm-fnt-size-200);
+    line-height: var(--bm-fnt-line-200);
+    padding: var(--bm-sp-xxs) var(--bm-sp-xs);
+    color: var(--bm-clr-fg-3);
+    background-color: var(--bm-clr-bg-4);
+    border: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
+    border-radius: var(--bm-crn-small);
+}
+
+@media (max-width: 63.9375rem) {
+    .header-search {
+        flex: none;
+        width: 2rem;
+        padding: 0;
+        justify-content: center;
+    }
+
+    .header-search .search-label,
+    .header-search .kbd {
+        display: none;
+    }
+}
+
+/* Fluent's subtle icon button: no border and no fill until it is pointed at. */
+.icon-btn {
+    padding: 0;
+    flex: none;
     width: 2rem;
     height: 2rem;
-    background-color: var(--bit-clr-pri);
-    -webkit-mask: url('../images/github-mark.svg') center / 2.3125rem 2.3125rem no-repeat;
-    mask: url('../images/github-mark.svg') center / 2.3125rem 2.3125rem no-repeat;
-}
-
-.toggle-theme-btn {
-    padding: 0;
-    border: none;
-    flex: none;
     cursor: pointer;
     display: flex;
-    height: 2rem;
-    width: 2rem;
+    border: none;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
-    color: var(--bit-clr-pri-text);
-    background-color: var(--bit-clr-pri);
+    background-color: transparent;
+    color: var(--bm-clr-fg-2);
+    border-radius: var(--bm-crn-medium);
+    transition: background-color var(--bm-dur-faster) var(--bm-crv-easy-ease),
+                color var(--bm-dur-faster) var(--bm-crv-easy-ease);
 }
 
-.toggle-theme-btn svg {
-    width: 1.0625rem;
-    height: 1.0625rem;
-    fill: currentColor;
+.icon-btn:hover {
+    color: var(--bm-clr-fg-1);
+    background-color: var(--bm-clr-bg-1-hover);
 }
 
-/* The two selectors are exact complements, so exactly one of the pair is visible in every possible
-   state - including the prerendered document, which carries no data-theme attribute yet. */
+.icon-btn:active {
+    background-color: var(--bm-clr-bg-1-pressed);
+}
+
+.icon-btn:disabled {
+    cursor: default;
+    color: var(--bm-clr-fg-disabled);
+    background-color: transparent;
+}
+
+.icon-btn svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* The two theme buttons are exact complements, so exactly one of the pair is visible in every
+   possible state - including the prerendered document, which carries no data-theme attribute
+   yet, and would otherwise show both or neither. */
 :root[data-theme$='dark'] .light-theme {
     display: none;
 }
@@ -286,12 +537,12 @@ code {
     display: none;
 }
 
-:root[data-theme$='dark'] .header .logo,
+:root[data-theme$='dark'] .logo,
 :root[data-theme$='dark'] .footer .bit-logo {
     background-image: url('../images/bit-logo-dark.svg');
 }
 
-:root:not([data-theme$='dark']) .header .logo,
+:root:not([data-theme$='dark']) .logo,
 :root:not([data-theme$='dark']) .footer .bit-logo {
     background-image: url('../images/bit-logo-light.svg');
 }
@@ -299,43 +550,26 @@ code {
 /* The nav drawer's handle. It only exists at the widths where the panel is a drawer. */
 .menu-btn {
     display: none;
-    padding: 0;
-    flex: none;
-    width: 2rem;
-    height: 2rem;
-    cursor: pointer;
-    border: none;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    color: var(--bit-clr-fg-pri);
-    border-radius: var(--bit-shp-brd-radius);
-}
-
-.menu-btn:hover {
-    background-color: var(--bit-clr-bg-sec);
-}
-
-.menu-btn svg {
-    width: 1.125rem;
-    height: 1.125rem;
-    fill: currentColor;
+    margin-inline-end: var(--bm-sp-xs);
 }
 
 @media (max-width: 63.9375rem) {
     .menu-btn {
         display: flex;
     }
+}
 
-    .header .logo {
-        margin: 0 0.625rem;
+@media (max-width: 29.9375rem) {
+    .app-header-inner {
+        padding-inline: var(--bm-sp-s);
     }
 }
 
-/* At the narrowest widths the bar has room for the mark, the two destinations and the controls,
-   but not for the wordmark as well. The mark carries the identity there. */
-@media (max-width: 29.9375rem) {
-    .header .wordmark {
+/* The narrowest phones have room for the mark, the search and the two controls, but not for the
+   name as well. The mark carries the identity there, and nowhere wider - a header that does not
+   say which site it is has given up the one job it cannot delegate. */
+@media (max-width: 22.5rem) {
+    .header-brand .wordmark {
         display: none;
     }
 }
@@ -345,18 +579,20 @@ code {
 .hydrating {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    font-size: 0.75rem;
+    gap: var(--bm-sp-snudge);
+    font-size: var(--bm-fnt-size-200);
+    line-height: var(--bm-fnt-line-200);
     white-space: nowrap;
-    color: var(--bit-clr-fg-ter);
+    padding-inline: var(--bm-sp-s);
+    color: var(--bm-clr-fg-3);
 }
 
 .hydrating i {
     width: 0.5rem;
     height: 0.5rem;
-    border-radius: 50%;
-    background-color: var(--bit-clr-pri);
-    animation: bm-hydrating-pulse 1s ease-in-out infinite;
+    border-radius: var(--bm-crn-circular);
+    background-color: var(--bm-clr-brand-bg);
+    animation: bm-hydrating-pulse 1s var(--bm-crv-easy-ease) infinite;
 }
 
 @keyframes bm-hydrating-pulse {
@@ -376,48 +612,277 @@ code {
     }
 }
 
+/* ── Command palette ───────────────────────────────────────────────────────── */
+
+/* Every page of the docs, one keystroke away. It is the same NavItem list the nav panel renders,
+   so a page is searchable here for having a nav entry rather than for being added to a second
+   index that could fall behind it. */
+.palette-backdrop {
+    inset: 0;
+    z-index: 1900;
+    position: fixed;
+    background-color: var(--bm-clr-bg-overlay);
+    animation: bm-fade-in var(--bm-dur-fast) var(--bm-crv-decelerate-mid);
+}
+
+.palette {
+    top: 12vh;
+    left: 50%;
+    z-index: 2000;
+    position: fixed;
+    width: min(40rem, calc(100vw - 2rem));
+    max-height: min(28rem, 70vh);
+    display: flex;
+    flex-flow: column nowrap;
+    overflow: hidden;
+    transform: translateX(-50%);
+    background-color: var(--bm-clr-bg-1);
+    border: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
+    border-radius: var(--bm-crn-xlarge);
+    box-shadow: var(--bm-shdw-64);
+    animation: bm-palette-in var(--bm-dur-normal) var(--bm-crv-decelerate-mid);
+}
+
+@keyframes bm-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes bm-palette-in {
+    from { opacity: 0; transform: translate(-50%, -0.75rem) scale(0.98); }
+    to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .palette-backdrop,
+    .palette {
+        animation: none;
+    }
+}
+
+.palette-field {
+    gap: var(--bm-sp-m);
+    display: flex;
+    flex: none;
+    align-items: center;
+    padding: var(--bm-sp-l) var(--bm-sp-xl);
+    border-bottom: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
+}
+
+.palette-field svg {
+    flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--bm-clr-fg-3);
+}
+
+.palette-field input {
+    flex: 1 1 auto;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: none;
+    font-family: inherit;
+    font-size: var(--bm-fnt-size-500);
+    line-height: var(--bm-fnt-line-500);
+    color: var(--bm-clr-fg-1);
+}
+
+.palette-field input::placeholder {
+    color: var(--bm-clr-fg-3);
+}
+
+.palette-results {
+    flex: 1 1 auto;
+    min-height: 0;
+    margin: 0;
+    padding: var(--bm-sp-s);
+    list-style: none;
+    overflow: hidden auto;
+}
+
+.palette-group {
+    gap: var(--bm-sp-s);
+    display: flex;
+    align-items: center;
+    font-size: var(--bm-fnt-size-200);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-200);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bm-clr-fg-3);
+    padding: var(--bm-sp-m) var(--bm-sp-m) var(--bm-sp-xs);
+}
+
+.palette-group svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.palette-item a {
+    display: block;
+    cursor: pointer;
+    text-decoration: none;
+    padding: var(--bm-sp-s) var(--bm-sp-m);
+    border-radius: var(--bm-crn-medium);
+    color: var(--bm-clr-fg-1);
+}
+
+.palette-item a:hover {
+    background-color: var(--bm-clr-bg-1-hover);
+}
+
+/* The keyboard's selection, which is a different thing from the pointer's hover: it has to be
+   visible without a pointer anywhere near it. */
+.palette-item.active a {
+    background-color: var(--bm-clr-brand-wash);
+    box-shadow: inset var(--bm-strk-thicker) 0 0 var(--bm-clr-brand-stroke);
+}
+
+.palette-item .palette-title {
+    display: block;
+    font-size: var(--bm-fnt-size-300);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-300);
+    color: var(--bm-clr-fg-1);
+}
+
+.palette-item .palette-desc {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: var(--bm-fnt-size-200);
+    line-height: var(--bm-fnt-line-300);
+    color: var(--bm-clr-fg-3);
+}
+
+.palette-empty {
+    padding: var(--bm-sp-4xl) var(--bm-sp-xl);
+    text-align: center;
+    font-size: var(--bm-fnt-size-300);
+    color: var(--bm-clr-fg-3);
+}
+
+.palette-footer {
+    gap: var(--bm-sp-l);
+    display: flex;
+    flex: none;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: var(--bm-sp-s) var(--bm-sp-xl);
+    font-size: var(--bm-fnt-size-200);
+    line-height: var(--bm-fnt-line-200);
+    color: var(--bm-clr-fg-3);
+    background-color: var(--bm-clr-bg-2);
+    border-top: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
+}
+
+.palette-footer span {
+    gap: var(--bm-sp-xs);
+    display: inline-flex;
+    align-items: center;
+}
+
+@media (max-width: 35.9375rem) {
+    .palette-footer {
+        display: none;
+    }
+}
+
 /* ── Nav panel ─────────────────────────────────────────────────────────────── */
 
 .nav-panel {
-    top: var(--demo-header-height);
+    top: var(--bm-layout-header);
     z-index: 900;
-    flex: 0 0 var(--demo-nav-width);
+    flex: 0 0 var(--bm-layout-nav);
     position: sticky;
     overflow: hidden auto;
-    padding: 0.75rem 0 1.5rem;
-    scrollbar-width: none;
-    background-color: var(--bit-clr-bg-pri);
-    height: calc(100vh - var(--demo-header-height));
-    border-inline-end: 0.0625rem solid var(--bit-clr-brd-ter);
+    overscroll-behavior: contain;
+    padding: var(--bm-sp-l) var(--bm-sp-m) var(--bm-sp-xxxl);
+    scrollbar-width: thin;
+    background-color: var(--bm-clr-bg-1);
+    height: calc(100vh - var(--bm-layout-header));
+    border-inline-end: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
 }
 
 .nav-panel-search {
-    padding: 0 0.5rem 0.75rem;
+    position: relative;
+    margin-bottom: var(--bm-sp-l);
 }
 
+.nav-panel-search svg {
+    top: 50%;
+    width: 1rem;
+    height: 1rem;
+    position: absolute;
+    pointer-events: none;
+    inset-inline-start: var(--bm-sp-s);
+    transform: translateY(-50%);
+    color: var(--bm-clr-fg-3);
+}
+
+/* Fluent's input: a hairline box whose bottom edge is drawn in the accessible neutral, so the
+   field reads as a field even at rest, and thickens into the brand colour on focus. */
 .nav-panel-search input {
     width: 100%;
     outline: none;
-    font-size: 0.875rem;
-    padding: 0.4375rem 0.625rem;
+    height: 2rem;
     font-family: inherit;
-    color: var(--bit-clr-fg-pri);
-    background-color: var(--bit-clr-bg-pri);
-    border-radius: var(--bit-shp-brd-radius);
-    border: 0.0625rem solid var(--bit-clr-brd-sec);
-    transition: border-color var(--bit-mot-duration-short) var(--bit-mot-easing);
+    font-size: var(--bm-fnt-size-300);
+    line-height: var(--bm-fnt-line-300);
+    padding: 0 var(--bm-sp-s) 0 var(--bm-sp-xxl);
+    color: var(--bm-clr-fg-1);
+    background-color: var(--bm-clr-bg-1);
+    border: var(--bm-strk-thin) solid var(--bm-clr-stroke-1);
+    border-bottom-color: var(--bm-clr-stroke-accessible);
+    border-radius: var(--bm-crn-medium);
+    transition: border-color var(--bm-dur-faster) var(--bm-crv-easy-ease);
 }
 
 .nav-panel-search input::placeholder {
-    color: var(--bit-clr-fg-ter);
+    color: var(--bm-clr-fg-3);
 }
 
 .nav-panel-search input:hover {
-    border-color: var(--bit-clr-brd-pri);
+    border-color: var(--bm-clr-stroke-accessible);
 }
 
 .nav-panel-search input:focus {
-    border-color: var(--bit-clr-pri);
+    border-color: var(--bm-clr-stroke-1);
+    border-bottom-color: var(--bm-clr-brand-stroke);
+    box-shadow: inset 0 -0.0625rem 0 var(--bm-clr-brand-stroke);
+}
+
+.nav-panel-search input:disabled {
+    cursor: default;
+    color: var(--bm-clr-fg-disabled);
+    background-color: var(--bm-clr-bg-disabled);
+}
+
+/* The index is grouped rather than flat: twenty entries in one run is a list to be read from the
+   top, and the reader almost always wants one of them for a reason - to make something spring, to
+   make something leave, to make something follow the pointer. The groups say which is which. */
+.nav-group {
+    margin-bottom: var(--bm-sp-l);
+}
+
+.nav-group-title {
+    gap: var(--bm-sp-s);
+    display: flex;
+    align-items: center;
+    font-size: var(--bm-fnt-size-200);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-200);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bm-clr-fg-3);
+    padding: var(--bm-sp-s) var(--bm-sp-m) var(--bm-sp-xs);
+}
+
+.nav-group-title svg {
+    width: 0.875rem;
+    height: 0.875rem;
 }
 
 .nav-panel-list {
@@ -427,59 +892,85 @@ code {
 }
 
 .nav-panel-list a {
-    gap: 0.5rem;
+    gap: var(--bm-sp-s);
     display: flex;
-    line-height: 1.5;
+    position: relative;
     align-items: center;
-    font-size: 0.875rem;
     text-decoration: none;
-    padding: 0.5rem 1rem;
-    color: var(--bit-clr-fg-pri);
-    border-inline-start: 0.125rem solid transparent;
-    transition: background-color var(--bit-mot-duration-short) var(--bit-mot-easing);
+    font-size: var(--bm-fnt-size-300);
+    line-height: var(--bm-fnt-line-300);
+    padding: var(--bm-sp-snudge) var(--bm-sp-m);
+    margin-bottom: var(--bm-strk-thick);
+    color: var(--bm-clr-fg-2);
+    border-radius: var(--bm-crn-medium);
+    transition: background-color var(--bm-dur-faster) var(--bm-crv-easy-ease),
+                color var(--bm-dur-faster) var(--bm-crv-easy-ease);
 }
 
 .nav-panel-list a:hover {
-    background-color: var(--bit-clr-bg-sec);
+    color: var(--bm-clr-fg-1);
+    background-color: var(--bm-clr-bg-1-hover);
 }
 
+.nav-panel-list a:active {
+    background-color: var(--bm-clr-bg-1-pressed);
+}
+
+/* Fluent's selected nav item: a tinted row with a short rounded indicator at the inline start,
+   inset from the row's own edges so it reads as a marker rather than as a border. */
 .nav-panel-list a.active {
-    font-weight: 600;
-    color: var(--bit-clr-pri);
-    border-inline-start-color: var(--bit-clr-pri);
-    background-color: var(--bit-clr-bg-sec);
+    font-weight: var(--bm-fnt-weight-semibold);
+    color: var(--bm-clr-fg-1);
+    background-color: var(--bm-clr-bg-1-hover);
+}
+
+.nav-panel-list a.active::before {
+    content: '';
+    top: 20%;
+    bottom: 20%;
+    position: absolute;
+    width: var(--bm-strk-thicker);
+    inset-inline-start: 0;
+    border-radius: var(--bm-crn-circular);
+    background-color: var(--bm-clr-brand-stroke);
 }
 
 .nav-panel-empty {
     display: block;
-    font-size: 0.8125rem;
-    padding: 0.75rem 1rem;
-    color: var(--bit-clr-fg-ter);
+    font-size: var(--bm-fnt-size-300);
+    line-height: var(--bm-fnt-line-prose);
+    padding: var(--bm-sp-m);
+    color: var(--bm-clr-fg-3);
 }
 
 /* Below the panel's breakpoint it becomes a drawer over the page, opened from the header's menu
-   button - the same move the "on this page" rail makes into its floating button. */
+   button - the same move the "on this page" rail makes into the reader's own scrollbar. */
 .nav-panel-overlay {
     display: none;
 }
 
 @media (max-width: 63.9375rem) {
     /* visibility, not just the off-screen transform: a translated drawer is still focusable, so
-       without it the closed panel's search box and every nav link stay in the tab order of the page
-       they are covering. Transitioning it keeps the panel painted for the whole slide out, because
-       visibility only flips to hidden once the transform has finished. */
+       without it the closed panel's search box and every nav link stay in the tab order of the
+       page they are covering. Transitioning it keeps the panel painted for the whole slide out,
+       because visibility only flips to hidden once the transform has finished. */
+    /* It opens below the header rather than over it, so the button that opened it is still on
+       screen and is also the button that closes it. A drawer that covers its own handle leaves
+       the reader guessing at the overlay. */
     .nav-panel {
-        top: 0;
         left: 0;
         z-index: 1200;
         position: fixed;
-        height: 100dvh;
-        width: 17rem;
+        top: var(--bm-layout-header);
+        height: calc(100dvh - var(--bm-layout-header));
+        width: min(20rem, 85vw);
         flex-basis: 0;
         visibility: hidden;
+        padding-top: var(--bm-sp-xxl);
         transform: translateX(-100%);
-        transition: transform var(--bit-mot-duration) var(--bit-mot-easing),
-                    visibility var(--bit-mot-duration);
+        box-shadow: var(--bm-shdw-64);
+        transition: transform var(--bm-dur-normal) var(--bm-crv-decelerate-mid),
+                    visibility var(--bm-dur-normal);
     }
 
     .nav-panel.open {
@@ -488,36 +979,147 @@ code {
     }
 
     .nav-panel-overlay {
-        inset: 0;
+        inset: var(--bm-layout-header) 0 0 0;
         z-index: 1100;
         display: block;
         border: none;
         padding: 0;
         position: fixed;
-        background-color: var(--bit-clr-bg-overlay);
+        background-color: var(--bm-clr-bg-overlay);
+    }
+}
+
+/* ── Breadcrumb ────────────────────────────────────────────────────────────── */
+
+/* Where in the docs this page sits. Worth the line only because the index is grouped: it names
+   the group, which is the piece the page's own title cannot say. */
+.doc-breadcrumb {
+    gap: var(--bm-sp-xs);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: var(--bm-sp-m);
+    font-size: var(--bm-fnt-size-200);
+    line-height: var(--bm-fnt-line-300);
+    color: var(--bm-clr-fg-3);
+}
+
+.doc-breadcrumb a {
+    text-decoration: none;
+    color: var(--bm-clr-fg-3);
+    padding: var(--bm-sp-xxs) var(--bm-sp-xs);
+    border-radius: var(--bm-crn-small);
+}
+
+.doc-breadcrumb a:hover {
+    color: var(--bm-clr-brand-fg);
+    text-decoration: underline;
+}
+
+.doc-breadcrumb svg {
+    flex: none;
+    width: 0.75rem;
+    height: 0.75rem;
+    color: var(--bm-clr-fg-4);
+}
+
+.doc-breadcrumb .current {
+    color: var(--bm-clr-fg-2);
+    padding: var(--bm-sp-xxs) var(--bm-sp-xs);
+}
+
+/* ── Pager ─────────────────────────────────────────────────────────────────── */
+
+/* The docs are written to be read in order, so the end of a page says what the next one is. It is
+   built from the same NavItem list the panel renders, so the two can never disagree. */
+.doc-pager {
+    gap: var(--bm-sp-l);
+    display: grid;
+    margin-top: var(--bm-sp-4xl);
+    padding-top: var(--bm-sp-xxl);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-top: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
+}
+
+.doc-pager a {
+    gap: var(--bm-sp-xxs);
+    display: flex;
+    flex-flow: column nowrap;
+    text-decoration: none;
+    padding: var(--bm-sp-m) var(--bm-sp-l);
+    background-color: var(--bm-clr-bg-1);
+    border: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
+    border-radius: var(--bm-crn-medium);
+    transition: border-color var(--bm-dur-faster) var(--bm-crv-easy-ease),
+                box-shadow var(--bm-dur-faster) var(--bm-crv-easy-ease);
+}
+
+.doc-pager a:hover {
+    border-color: var(--bm-clr-brand-stroke);
+    box-shadow: var(--bm-shdw-4);
+}
+
+.doc-pager a.next {
+    grid-column: 2;
+    text-align: end;
+}
+
+.doc-pager .pager-dir {
+    gap: var(--bm-sp-xs);
+    display: flex;
+    align-items: center;
+    font-size: var(--bm-fnt-size-200);
+    line-height: var(--bm-fnt-line-200);
+    color: var(--bm-clr-fg-3);
+}
+
+.doc-pager a.next .pager-dir {
+    justify-content: flex-end;
+}
+
+.doc-pager .pager-dir svg {
+    width: 0.75rem;
+    height: 0.75rem;
+}
+
+.doc-pager .pager-title {
+    font-size: var(--bm-fnt-size-400);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-400);
+    color: var(--bm-clr-brand-fg);
+}
+
+@media (max-width: 35.9375rem) {
+    .doc-pager {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .doc-pager a.next {
+        grid-column: 1;
     }
 }
 
 /* ── "On this page" rail ───────────────────────────────────────────────────── */
 
-/* Navigation, not content, so it only earns its space on wide screens. */
+/* Navigation, not content, so it only earns its space where there is space to spare. */
 .side-rail {
-    top: 5.625rem;
     overflow: auto;
     position: sticky;
     height: fit-content;
-    flex: 0 0 14.5rem;
-    padding: 0 1.5rem 2rem;
-    max-height: calc(100vh - 6.875rem);
+    flex: 0 0 var(--bm-layout-rail);
+    top: calc(var(--bm-layout-header) + var(--bm-sp-4xl));
+    padding-bottom: var(--bm-sp-xxxl);
+    max-height: calc(100vh - var(--bm-layout-header) - var(--bm-sp-6xl));
 }
 
 .side-rail-title {
-    font-size: 0.75rem;
-    font-weight: 400;
-    line-height: 2.66;
-    letter-spacing: 0.08333em;
+    font-size: var(--bm-fnt-size-200);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-200);
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--bit-clr-fg-ter);
+    padding: var(--bm-sp-xs) var(--bm-sp-m);
+    color: var(--bm-clr-fg-3);
 }
 
 /* The hairline is the rail's spine: it ties the entries together and, being the only rule in the
@@ -525,46 +1127,47 @@ code {
 .side-rail-list {
     padding: 0;
     list-style: none;
-    margin: 0.625rem 0 0;
-    border-inline-start: 0.125rem solid var(--bit-clr-brd-ter);
+    margin: var(--bm-sp-s) 0 0;
+    border-inline-start: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
 }
 
 .side-rail-list li {
     position: relative;
-    padding: 0.1875rem 0.75rem;
     overflow-wrap: anywhere;
 }
 
 .side-rail-list a {
     display: block;
     cursor: pointer;
-    font-size: 0.875rem;
-    line-height: 1.714;
     text-decoration: none;
-    color: var(--bit-clr-inf);
-    transition: color var(--bit-mot-duration-short) var(--bit-mot-easing);
+    font-size: var(--bm-fnt-size-300);
+    line-height: var(--bm-fnt-line-300);
+    padding: var(--bm-sp-snudge) var(--bm-sp-m);
+    color: var(--bm-clr-fg-3);
+    transition: color var(--bm-dur-faster) var(--bm-crv-easy-ease);
 }
 
 .side-rail-list a:hover {
-    color: var(--bit-clr-fg-pri);
+    color: var(--bm-clr-fg-1);
 }
 
-/* The current section: its entry takes the accent and some weight, and its stretch of the spine
-   lights up in the same color - drawn as an overlay on the list's own hairline so active and
-   inactive entries keep exactly the same geometry. */
+/* The current section: its entry takes the brand colour and some weight, and its stretch of the
+   spine lights up in the same colour - drawn as an overlay on the list's own hairline so active
+   and inactive entries keep exactly the same geometry. */
 .side-rail-list li.active::before {
     content: '';
     top: 0;
     bottom: 0;
-    width: 0.125rem;
     position: absolute;
-    inset-inline-start: -0.125rem;
-    background-color: var(--bit-clr-pri);
+    width: var(--bm-strk-thick);
+    inset-inline-start: calc(var(--bm-strk-thin) * -1);
+    border-radius: var(--bm-crn-circular);
+    background-color: var(--bm-clr-brand-stroke);
 }
 
 .side-rail-list li.active a {
-    font-weight: 600;
-    color: var(--bit-clr-pri);
+    font-weight: var(--bm-fnt-weight-semibold);
+    color: var(--bm-clr-brand-fg);
 }
 
 @media (max-width: 84.375rem) {
@@ -581,32 +1184,32 @@ code {
     align-items: center;
     flex-flow: column nowrap;
     justify-content: flex-start;
-    background-color: var(--bit-clr-bg-pri);
-    border-top: 0.0625rem solid var(--bit-clr-brd-ter);
+    background-color: var(--bm-clr-bg-1);
+    border-top: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
 }
 
 .footer section {
     width: 100%;
     position: relative;
-    max-width: var(--demo-content-width);
-    padding: 4rem 1rem;
+    max-width: var(--bm-layout-max);
+    padding: var(--bm-sp-6xl) var(--bm-sp-xxxl);
 }
 
 .footer section:first-child {
     display: grid;
-    gap: 2.5rem;
+    gap: var(--bm-sp-4xl);
     align-items: start;
-    grid-auto-columns: 1fr;
-    grid-template-columns: 1fr 1fr;
-    justify-content: space-between;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 2fr);
 }
 
 .footer section:last-child {
+    gap: var(--bm-sp-xxl);
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    padding: 2.5rem 1.25rem;
     justify-content: space-between;
-    border-top: 0.0625rem solid var(--bit-clr-brd-ter);
+    padding: var(--bm-sp-xxl) var(--bm-sp-xxxl);
+    border-top: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
 }
 
 .footer a {
@@ -614,93 +1217,110 @@ code {
 }
 
 .footer .blurb {
-    font-size: 0.875rem;
-    line-height: 1.714;
-    max-width: var(--demo-measure);
-    color: var(--bit-clr-fg-sec);
+    font-size: var(--bm-fnt-size-300);
+    line-height: var(--bm-fnt-line-prose);
+    max-width: var(--bm-layout-measure);
+    color: var(--bm-clr-fg-3);
 }
 
 .footer .bit-logo {
     width: 2rem;
     height: 1.6875rem;
-    margin-bottom: 1.25rem;
+    margin-bottom: var(--bm-sp-l);
     background-size: contain;
-    background-position: center;
+    background-position: left center;
     background-repeat: no-repeat;
 }
 
 .footer .link-columns {
-    gap: 1.25rem;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
+    gap: var(--bm-sp-xxl);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
 }
 
 .footer .link-column {
     display: flex;
+    gap: var(--bm-sp-xs);
     flex-flow: column nowrap;
+    align-items: flex-start;
 }
 
 .footer .link-column h6 {
-    font-size: 1.25rem;
-    font-weight: 500;
-    line-height: 1.4;
-    letter-spacing: 0.0075em;
-    margin-bottom: 0.35em;
-    color: var(--bit-clr-fg-pri);
+    font-size: var(--bm-fnt-size-300);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-300);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: var(--bm-sp-xs);
+    color: var(--bm-clr-fg-3);
 }
 
 .footer .link-column a {
-    line-height: 1.75rem;
-    font-size: 0.9375rem;
-    color: var(--bit-clr-pri);
+    font-size: var(--bm-fnt-size-300);
+    line-height: var(--bm-fnt-line-500);
+    color: var(--bm-clr-fg-2);
 }
 
 .footer .link-column a:hover {
-    color: var(--bit-clr-pri-hover);
+    color: var(--bm-clr-brand-fg);
     text-decoration: underline;
 }
 
 .footer .go-to-top {
-    bottom: 0;
+    gap: var(--bm-sp-s);
+    display: inline-flex;
     cursor: pointer;
-    right: 0.125rem;
-    position: absolute;
+    align-items: center;
     font-family: inherit;
-    font-size: 0.875rem;
-    padding: 0.5rem 0.75rem;
-    color: var(--bit-clr-fg-pri);
-    border: 0.0625rem solid var(--bit-clr-brd-ter);
-    background-color: var(--bit-clr-bg-sec);
+    font-size: var(--bm-fnt-size-300);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-300);
+    padding: var(--bm-sp-s) var(--bm-sp-m);
+    color: var(--bm-clr-fg-2);
+    background-color: var(--bm-clr-bg-1);
+    border: var(--bm-strk-thin) solid var(--bm-clr-stroke-1);
+    border-radius: var(--bm-crn-medium);
+    transition: background-color var(--bm-dur-faster) var(--bm-crv-easy-ease),
+                border-color var(--bm-dur-faster) var(--bm-crv-easy-ease);
 }
 
 .footer .go-to-top:hover {
-    background-color: var(--bit-clr-bg-sec-hover);
+    color: var(--bm-clr-fg-1);
+    border-color: var(--bm-clr-stroke-accessible);
+    background-color: var(--bm-clr-bg-1-hover);
+}
+
+.footer .go-to-top svg {
+    width: 0.875rem;
+    height: 0.875rem;
 }
 
 .footer .address-info {
     display: flex;
-    gap: 0.1875rem;
+    gap: var(--bm-sp-xxs);
     flex-flow: column nowrap;
-    font-size: 0.9375rem;
+    font-size: var(--bm-fnt-size-300);
+    line-height: var(--bm-fnt-line-500);
+    color: var(--bm-clr-fg-3);
 }
 
 .footer .address-info .address,
 .footer .address-info .tel,
 .footer .address-info .country {
-    padding-left: 1.25rem;
+    padding-inline-start: var(--bm-sp-xl);
     background-repeat: no-repeat;
-    background-position-y: 0.25rem;
+    background-position-y: 0.3125rem;
 }
 
 .footer .address-info .address,
 .footer .address-info .tel {
-    color: var(--bit-clr-pri);
+    color: var(--bm-clr-fg-2);
 }
 
 .footer .address-info .address:hover,
 .footer .address-info .tel:hover {
-    color: var(--bit-clr-pri-hover);
+    color: var(--bm-clr-brand-fg);
+    text-decoration: underline;
 }
 
 .footer .address-info .address {
@@ -712,74 +1332,86 @@ code {
 }
 
 .footer .social-link-group {
-    gap: 1.25rem;
+    gap: var(--bm-sp-m);
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
 }
 
 .footer .social-link {
     cursor: pointer;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    background-color: #888;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--bm-crn-circular);
+    background-color: var(--bm-clr-fg-4);
     background-size: 1.125rem;
     background-position: center;
     background-repeat: no-repeat;
+    transition: background-color var(--bm-dur-faster) var(--bm-crv-easy-ease),
+                transform var(--bm-dur-faster) var(--bm-crv-decelerate-mid);
+}
+
+.footer .social-link:hover {
+    transform: translateY(-0.125rem);
 }
 
 .footer .twitter-link { background-image: url('../images/footer/twitter-icon.svg'); }
 .footer .twitter-link:hover { background-color: #1DA1F2; }
 .footer .github-link { background-image: url('../images/footer/github-icon.svg'); }
-.footer .github-link:hover { background-color: #000; }
+.footer .github-link:hover { background-color: #24292F; }
 .footer .youtube-link { background-image: url('../images/footer/youtube-icon.svg'); }
 .footer .youtube-link:hover { background-color: #FF0000; }
 .footer .linkedin-link { background-image: url('../images/footer/linkedin-icon.svg'); }
 .footer .linkedin-link:hover { background-color: #0077B5; }
 
 .footer .copy-right-txt {
-    line-height: 1.5;
-    margin-top: 1rem;
-    font-size: 0.875rem;
-    color: var(--bit-clr-fg-sec);
+    line-height: var(--bm-fnt-line-300);
+    margin-top: var(--bm-sp-m);
+    font-size: var(--bm-fnt-size-200);
+    text-align: end;
+    color: var(--bm-clr-fg-3);
 }
 
 @media (max-width: 63.9375rem) {
-    .footer section {
-        padding: 3rem 1.875rem;
+    .footer section,
+    .footer section:last-child {
+        padding-inline: var(--bm-sp-xxl);
     }
 }
 
 @media (max-width: 47.9375rem) {
+    .footer section {
+        padding-block: var(--bm-sp-4xl);
+    }
+
     .footer section:first-child {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .footer section:last-child {
-        align-items: center;
+        align-items: flex-start;
         flex-flow: column nowrap;
         justify-content: flex-start;
     }
 
-    .footer .address-info {
-        margin-bottom: 1.875rem;
+    .footer .social-link-group {
+        justify-content: flex-start;
     }
 
-    .footer .social-link-group {
-        margin-bottom: 0.5rem;
+    .footer .copy-right-txt {
+        text-align: start;
     }
 }
 
-/* ── Home page ─────────────────────────────────────────────────────────────── */
+/* ── Landing page ──────────────────────────────────────────────────────────── */
 
 /* The landing page is not a document, so it does not get the docs' reading column: it owns the
-   full width and lays out its own sections, which alternate surfaces and are separated by the same
-   hairline the rest of the chrome uses instead of shadows. The layout renders it without the nav
-   panel and the rail entirely - see Layout/MainLayout.razor. */
+   full width and lays out its own sections, which alternate surfaces and are separated by the
+   same hairline the rest of the chrome uses instead of shadows. The layout renders it without the
+   nav panel and the rail entirely - see Layout/MainLayout.razor. */
 
 .site-content.home {
-    background-color: var(--bit-clr-bg-pri);
+    background-color: var(--bm-clr-bg-1);
 }
 
 .homepage {
@@ -797,125 +1429,204 @@ code {
 }
 
 .homepage-section.alt-section {
-    background-color: var(--bit-clr-bg-sec);
-    border-top: 0.0625rem solid var(--bit-clr-brd-ter);
-    border-bottom: 0.0625rem solid var(--bit-clr-brd-ter);
+    background-color: var(--bm-clr-bg-3);
+    border-top: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
+    border-bottom: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
 }
 
 .homepage-section-content {
     width: 100%;
     margin: 0 auto;
-    max-width: var(--demo-content-width);
-    padding: 5rem 1.25rem;
+    max-width: var(--bm-layout-max);
+    padding: var(--bm-sp-7xl) var(--bm-sp-xxxl);
+}
+
+.section-eyebrow {
+    display: block;
+    font-size: var(--bm-fnt-size-200);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-200);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: var(--bm-sp-m);
+    color: var(--bm-clr-brand-fg);
 }
 
 .homepage h2 {
-    font-weight: 400;
-    line-height: 1.412;
-    font-size: 2.125rem;
-    letter-spacing: 0.00735em;
-    margin-bottom: 0.75rem;
-    color: var(--bit-clr-fg-pri);
+    font-size: var(--bm-fnt-size-800);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-800);
+    margin-bottom: var(--bm-sp-m);
+    color: var(--bm-clr-fg-1);
 }
 
 .homepage .section-lead {
-    line-height: 1.5;
-    font-size: 1rem;
-    margin-bottom: 2.5rem;
-    max-width: var(--demo-measure);
-    color: var(--bit-clr-fg-sec);
+    line-height: var(--bm-fnt-line-prose);
+    font-size: var(--bm-fnt-size-400);
+    margin-bottom: var(--bm-sp-4xl);
+    max-width: var(--bm-layout-measure);
+    color: var(--bm-clr-fg-3);
 }
 
-.homepage a:focus-visible {
-    outline: 0.125rem solid var(--bit-clr-pri);
-    outline-offset: 0.125rem;
+/* A line of prose introducing the thing directly under it, rather than the section around it. */
+.homepage .section-note {
+    line-height: var(--bm-fnt-line-prose);
+    font-size: var(--bm-fnt-size-400);
+    margin: var(--bm-sp-4xl) 0 var(--bm-sp-l);
+    color: var(--bm-clr-fg-3);
 }
 
-/* The hero: what the library is on one side, what it does on the other. */
+/* ── Landing hero ─────────────────────────────────────────────────────────── */
+
+/* What the library is on one side, what it does on the other. */
+.hero-section {
+    position: relative;
+    overflow: hidden;
+}
+
+/* A single wash of the brand behind the headline. It is the one decorative thing on the page, and
+   it is there so the hero does not read as the first card of a stack of cards. */
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: -20rem;
+    inset-inline-start: 50%;
+    width: 75rem;
+    height: 45rem;
+    pointer-events: none;
+    transform: translateX(-70%);
+    background: radial-gradient(closest-side, var(--bm-clr-brand-wash), transparent);
+}
+
 .hero-section .homepage-section-content {
-    gap: 3rem;
+    gap: var(--bm-sp-6xl);
     display: grid;
+    position: relative;
     align-items: center;
-    padding-top: 4.5rem;
-    padding-bottom: 4.5rem;
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    padding-top: var(--bm-sp-6xl);
+    padding-bottom: var(--bm-sp-6xl);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.hero-eyebrow {
+    gap: var(--bm-sp-s);
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: var(--bm-sp-xl);
+    font-size: var(--bm-fnt-size-200);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-200);
+    padding: var(--bm-sp-xs) var(--bm-sp-m);
+    text-decoration: none;
+    color: var(--bm-clr-brand-fg);
+    background-color: var(--bm-clr-brand-wash);
+    border-radius: var(--bm-crn-circular);
+}
+
+.hero-eyebrow svg {
+    width: 0.875rem;
+    height: 0.875rem;
 }
 
 .hero-copy h1 {
-    font-weight: 300;
-    line-height: 1.167;
-    margin-bottom: 1rem;
-    letter-spacing: -0.01562em;
-    font-size: clamp(3rem, 6vw, 4.5rem);
-    background: linear-gradient(135deg, var(--bit-clr-fg-pri) 25%, var(--bit-clr-pri));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: 1.05;
+    margin-bottom: var(--bm-sp-xl);
+    letter-spacing: -0.03em;
+    font-size: clamp(2.75rem, 5.5vw, var(--bm-fnt-size-1000));
+    color: var(--bm-clr-fg-1);
 }
 
-/* A forced-colors palette drops the gradient but keeps the transparent fill, which would leave the
-   headline invisible. Hand the text back to the system colour instead. */
-@media (forced-colors: active) {
-    .hero-copy h1 {
-        background: none;
-        color: CanvasText;
-        -webkit-text-fill-color: currentColor;
-    }
+/* The one word of the headline that is the product's name takes the brand gradient; the rest of
+   the line stays in the text colour, so the headline is still a headline rather than an object. */
+/* Solid, not a gradient. Gradient text was tried and thrown out twice: any ramp from the brand
+   blue to the accent orange passes through a desaturated middle, and the middle of this headline
+   is where the words are. Fluent does not tint type anyway - it states things in one colour, and
+   the accent orange is already carrying the animated samples further down the page. */
+.hero-copy h1 .accent {
+    color: var(--bm-clr-brand-fg);
 }
 
 .hero-lead {
-    line-height: 1.5;
-    font-size: 1.125rem;
-    margin-bottom: 2rem;
+    line-height: var(--bm-fnt-line-prose);
+    font-size: var(--bm-fnt-size-500);
+    margin-bottom: var(--bm-sp-xxl);
     max-width: 34rem;
-    color: var(--bit-clr-fg-sec);
+    color: var(--bm-clr-fg-3);
 }
 
 .hero-actions {
-    gap: 1rem;
+    gap: var(--bm-sp-m);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: var(--bm-sp-xxl);
 }
 
-.hero-btn {
-    gap: 0.5rem;
+/* Fluent's primary button. */
+.btn-primary,
+.btn-secondary {
+    gap: var(--bm-sp-s);
     display: inline-flex;
     cursor: pointer;
-    font-weight: 600;
     align-items: center;
-    font-size: 0.9375rem;
+    justify-content: center;
+    font-family: inherit;
+    font-weight: var(--bm-fnt-weight-semibold);
+    font-size: var(--bm-fnt-size-400);
+    line-height: var(--bm-fnt-line-400);
     text-decoration: none;
-    padding: 0.6875rem 1.5rem;
-    color: var(--bit-clr-pri-text);
-    background-color: var(--bit-clr-pri);
-    border: 0.0625rem solid var(--bit-clr-pri);
-    border-radius: var(--bit-shp-brd-radius);
-    transition: background-color var(--bit-mot-duration-short) var(--bit-mot-easing),
-                color var(--bit-mot-duration-short) var(--bit-mot-easing);
+    /* 44px tall: the minimum a finger can reliably hit. */
+    min-height: 2.75rem;
+    padding: var(--bm-sp-m) var(--bm-sp-xxl);
+    border-radius: var(--bm-crn-medium);
+    transition: background-color var(--bm-dur-faster) var(--bm-crv-easy-ease),
+                border-color var(--bm-dur-faster) var(--bm-crv-easy-ease),
+                color var(--bm-dur-faster) var(--bm-crv-easy-ease);
 }
 
-.hero-btn:hover {
-    color: var(--bit-clr-pri-text);
-    background-color: var(--bit-clr-pri-hover);
-    border-color: var(--bit-clr-pri-hover);
+.btn-primary {
+    color: var(--bm-clr-brand-fg-on-bg);
+    background-color: var(--bm-clr-brand-bg);
+    border: var(--bm-strk-thin) solid transparent;
 }
 
-/* The outline twin. It fills with the accent on hover, which is why the mark inside it is a mask
-   painted with currentColor rather than a picture - a coloured asset could not follow that. */
-.hero-btn.ghost {
-    color: var(--bit-clr-pri);
-    background-color: transparent;
+.btn-primary:hover {
+    color: var(--bm-clr-brand-fg-on-bg);
+    background-color: var(--bm-clr-brand-bg-hover);
 }
 
-.hero-btn.ghost:hover {
-    color: var(--bit-clr-pri-text);
-    background-color: var(--bit-clr-pri-hover);
+.btn-primary:active {
+    background-color: var(--bm-clr-brand-bg-pressed);
 }
 
-.hero-btn .github-mark {
-    flex-shrink: 0;
+/* Fluent's secondary button: the neutral surface with a hairline, not an outlined copy of the
+   primary. Two buttons in the brand colour side by side would say neither is the main one. */
+.btn-secondary {
+    color: var(--bm-clr-fg-1);
+    background-color: var(--bm-clr-bg-1);
+    border: var(--bm-strk-thin) solid var(--bm-clr-stroke-1);
+}
+
+.btn-secondary:hover {
+    color: var(--bm-clr-fg-1);
+    border-color: var(--bm-clr-stroke-accessible);
+    background-color: var(--bm-clr-bg-1-hover);
+}
+
+.btn-secondary:active {
+    background-color: var(--bm-clr-bg-1-pressed);
+}
+
+.btn-primary svg,
+.btn-secondary svg {
+    flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.github-mark {
+    flex: none;
     width: 1.25rem;
     height: 1.25rem;
     background-color: currentColor;
@@ -923,138 +1634,347 @@ code {
     mask: url('../images/github-mark.svg') center / contain no-repeat;
 }
 
-/* The badge list is centred where the docs use it (the 404 and error heroes); here it runs under a
-   left-aligned column and follows it. */
-.hero-copy .badge-list {
-    justify-content: flex-start;
+/* The install line, as a thing to copy rather than a thing to read. */
+.install-line {
+    gap: var(--bm-sp-m);
+    display: flex;
+    max-width: 26rem;
+    align-items: center;
+    padding: var(--bm-sp-s) var(--bm-sp-s) var(--bm-sp-s) var(--bm-sp-l);
+    background-color: var(--bm-clr-bg-3);
+    border: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
+    border-radius: var(--bm-crn-medium);
+}
+
+.install-line code {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: auto hidden;
+    white-space: nowrap;
+    font-family: var(--bm-fnt-family-mono);
+    font-size: var(--bm-fnt-size-300);
+    line-height: var(--bm-fnt-line-300);
+    color: var(--bm-clr-fg-1);
+}
+
+.install-line code .prompt {
+    user-select: none;
+    color: var(--bm-clr-fg-4);
+}
+
+.install-copy {
+    gap: var(--bm-sp-xs);
+    display: inline-flex;
+    flex: none;
+    cursor: pointer;
+    align-items: center;
+    font-family: inherit;
+    font-size: var(--bm-fnt-size-200);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-200);
+    padding: var(--bm-sp-xs) var(--bm-sp-s);
+    color: var(--bm-clr-fg-2);
+    background-color: var(--bm-clr-bg-1);
+    border: var(--bm-strk-thin) solid var(--bm-clr-stroke-1);
+    border-radius: var(--bm-crn-small);
+    transition: color var(--bm-dur-faster) var(--bm-crv-easy-ease),
+                border-color var(--bm-dur-faster) var(--bm-crv-easy-ease);
+}
+
+.install-copy:hover {
+    color: var(--bm-clr-brand-fg);
+    border-color: var(--bm-clr-brand-stroke);
+}
+
+.install-copy svg {
+    width: 0.875rem;
+    height: 0.875rem;
 }
 
 /* The hero says what the library does; the stage shows it. Each tile plays its own entrance and
    answers the pointer, so the first thing on the page is the thing the page is about. */
 .hero-stage {
-    gap: 1rem;
+    gap: var(--bm-sp-l);
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .hero-tile {
-    gap: 0.375rem;
+    gap: var(--bm-sp-xs);
     display: flex;
     cursor: pointer;
-    padding: 1.5rem;
+    padding: var(--bm-sp-xxl);
     text-decoration: none;
     flex-flow: column nowrap;
-    background-color: var(--bit-clr-bg-sec);
-    border: 0.0625rem solid var(--bit-clr-brd-ter);
-    border-radius: var(--bit-shp-brd-radius);
+    background-color: var(--bm-clr-bg-1);
+    border: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
+    border-radius: var(--bm-crn-large);
+    box-shadow: var(--bm-shdw-4);
 }
 
-.hero-tile-mark {
-    width: 2rem;
-    height: 0.375rem;
-    margin-bottom: 0.5rem;
-    border-radius: 0.1875rem;
-    background: linear-gradient(90deg, var(--bit-clr-pri), var(--bit-clr-sec));
+.hero-tile-icon {
+    display: flex;
+    width: 2.5rem;
+    height: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--bm-sp-s);
+    color: var(--bm-clr-brand-fg);
+    background-color: var(--bm-clr-brand-wash);
+    border-radius: var(--bm-crn-medium);
+}
+
+.hero-tile-icon svg {
+    width: 1.25rem;
+    height: 1.25rem;
 }
 
 .hero-tile-title {
-    font-weight: 600;
-    font-size: 1.0625rem;
-    color: var(--bit-clr-fg-pri);
+    font-size: var(--bm-fnt-size-400);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-400);
+    color: var(--bm-clr-fg-1);
 }
 
 .hero-tile-desc {
-    line-height: 1.5;
-    font-size: 0.8125rem;
-    color: var(--bit-clr-fg-sec);
+    line-height: var(--bm-fnt-line-300);
+    font-size: var(--bm-fnt-size-200);
+    color: var(--bm-clr-fg-3);
+}
+
+/* The quick-start sample and the code under it. Held to the width of the prose above them: one
+   80-pixel box centred in a 1200-pixel stage reads as an empty page rather than as a sample. */
+.quick-start-body {
+    max-width: 46rem;
+}
+
+/* ── Landing sections ─────────────────────────────────────────────────────── */
+
+/* The numbers that make the pitch concrete, above the prose that explains it. */
+.stat-row {
+    gap: var(--bm-sp-l);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+}
+
+.stat {
+    padding: var(--bm-sp-xl);
+    background-color: var(--bm-clr-bg-1);
+    border: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
+    border-radius: var(--bm-crn-large);
+}
+
+.stat-value {
+    display: block;
+    font-family: var(--bm-fnt-family-display);
+    font-size: var(--bm-fnt-size-700);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-700);
+    letter-spacing: -0.02em;
+    color: var(--bm-clr-brand-fg);
+}
+
+.stat-label {
+    display: block;
+    margin-top: var(--bm-sp-xs);
+    font-size: var(--bm-fnt-size-300);
+    line-height: var(--bm-fnt-line-300);
+    color: var(--bm-clr-fg-3);
 }
 
 /* What is in the box: one card per capability, each a link into the demo that proves it. */
 .feature-grid {
-    gap: 1rem;
+    gap: var(--bm-sp-l);
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
 }
 
 .feature-card {
     display: block;
-    padding: 1.5rem;
+    padding: var(--bm-sp-xxl);
     text-decoration: none;
-    background-color: var(--bit-clr-bg-sec);
-    border: 0.0625rem solid var(--bit-clr-brd-ter);
-    border-radius: var(--bit-shp-brd-radius);
-    transition: border-color var(--bit-mot-duration-short) var(--bit-mot-easing);
+    background-color: var(--bm-clr-bg-1);
+    border: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
+    border-radius: var(--bm-crn-large);
+    transition: border-color var(--bm-dur-faster) var(--bm-crv-easy-ease),
+                box-shadow var(--bm-dur-faster) var(--bm-crv-easy-ease);
 }
 
 .feature-card:hover {
-    border-color: var(--bit-clr-pri);
+    border-color: var(--bm-clr-brand-stroke);
+    box-shadow: var(--bm-shdw-8);
+}
+
+.feature-card-icon {
+    display: flex;
+    width: 2.5rem;
+    height: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--bm-sp-m);
+    color: var(--bm-clr-brand-fg);
+    background-color: var(--bm-clr-brand-wash);
+    border-radius: var(--bm-crn-medium);
+}
+
+.feature-card-icon svg {
+    width: 1.25rem;
+    height: 1.25rem;
 }
 
 .feature-card h3 {
-    font-weight: 600;
-    line-height: 1.4;
-    font-size: 1.0625rem;
-    margin-bottom: 0.5rem;
-    color: var(--bit-clr-fg-pri);
+    font-size: var(--bm-fnt-size-500);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-500);
+    margin-bottom: var(--bm-sp-s);
+    color: var(--bm-clr-fg-1);
 }
 
 .feature-card p {
-    line-height: 1.6;
-    font-size: 0.875rem;
-    color: var(--bit-clr-fg-sec);
+    line-height: var(--bm-fnt-line-prose);
+    font-size: var(--bm-fnt-size-300);
+    color: var(--bm-clr-fg-3);
 }
 
-/* The landing page has no nav panel, so the full index of the docs lives here instead. */
+/* The full index of the docs, grouped the way the nav panel groups it - because the landing page
+   has no nav panel, and a reader who arrives at the root should be able to reach any page without
+   first having to find their way into the docs. */
+/* Columns rather than a grid: the groups are different lengths, and a grid would leave a band of
+   empty space under every short one. Multi-column flows them instead, so the block ends level. */
 .demo-index {
-    gap: 0.5rem;
+    columns: 16rem 4;
+    column-gap: var(--bm-sp-4xl);
+}
+
+.demo-index-group {
+    break-inside: avoid;
+    margin-bottom: var(--bm-sp-xxl);
+}
+
+.demo-index-group h3 {
+    gap: var(--bm-sp-s);
     display: flex;
-    flex-wrap: wrap;
+    align-items: center;
+    font-size: var(--bm-fnt-size-200);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-200);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding-bottom: var(--bm-sp-s);
+    margin-bottom: var(--bm-sp-s);
+    color: var(--bm-clr-fg-3);
+    border-bottom: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
+}
+
+.demo-index-group h3 svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    color: var(--bm-clr-brand-fg);
 }
 
 .demo-index-link {
-    display: inline-flex;
-    font-weight: 600;
-    align-items: center;
-    font-size: 0.875rem;
+    display: block;
     text-decoration: none;
-    padding: 0.5rem 1rem;
-    color: var(--bit-clr-fg-pri);
-    background-color: var(--bit-clr-bg-pri);
-    border: 0.0625rem solid var(--bit-clr-brd-ter);
-    border-radius: var(--bit-shp-brd-radius);
-    transition: color var(--bit-mot-duration-short) var(--bit-mot-easing),
-                border-color var(--bit-mot-duration-short) var(--bit-mot-easing);
+    font-size: var(--bm-fnt-size-300);
+    line-height: var(--bm-fnt-line-300);
+    padding: var(--bm-sp-snudge) var(--bm-sp-s);
+    margin-inline-start: calc(var(--bm-sp-s) * -1);
+    color: var(--bm-clr-fg-2);
+    border-radius: var(--bm-crn-medium);
+    transition: color var(--bm-dur-faster) var(--bm-crv-easy-ease),
+                background-color var(--bm-dur-faster) var(--bm-crv-easy-ease);
 }
 
 .demo-index-link:hover {
-    color: var(--bit-clr-pri);
-    border-color: var(--bit-clr-pri);
+    color: var(--bm-clr-brand-fg);
+    background-color: var(--bm-clr-bg-1-hover);
 }
 
-.cta-content .hero-actions {
+/* The closing call to action, on the brand rather than on a neutral: it is the last thing on the
+   page and the only place the site asks for something. */
+.cta-section .homepage-section-content {
+    text-align: center;
+}
+
+.cta-section .hero-actions {
     margin-bottom: 0;
+    justify-content: center;
+}
+
+.cta-section .section-lead {
+    margin-inline: auto;
 }
 
 @media (max-width: 63.9375rem) {
     .homepage-section-content {
-        padding: 3.75rem 1.875rem;
+        padding: var(--bm-sp-6xl) var(--bm-sp-xxl);
     }
 
     .hero-section .homepage-section-content {
-        gap: 2.5rem;
-        padding-top: 3rem;
+        gap: var(--bm-sp-4xl);
+        padding-top: var(--bm-sp-4xl);
         grid-template-columns: minmax(0, 1fr);
     }
 }
 
 @media (max-width: 47.9375rem) {
     .homepage-section-content {
-        padding: 2.5rem 1rem;
+        padding: var(--bm-sp-4xl) var(--bm-sp-l);
+    }
+
+    .homepage h2 {
+        font-size: var(--bm-fnt-size-700);
+        line-height: var(--bm-fnt-line-700);
     }
 
     .hero-stage {
         grid-template-columns: minmax(0, 1fr);
     }
+
+    .hero-actions .btn-primary,
+    .hero-actions .btn-secondary {
+        flex: 1 1 12rem;
+    }
+}
+
+/* ── Error and not-found pages ─────────────────────────────────────────────── */
+
+.error-page {
+    display: flex;
+    text-align: center;
+    align-items: center;
+    flex-flow: column nowrap;
+    padding: var(--bm-sp-7xl) 0 var(--bm-sp-6xl);
+}
+
+.error-page .error-code {
+    font-family: var(--bm-fnt-family-display);
+    font-size: var(--bm-fnt-size-1000);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--bm-clr-brand-fg);
+}
+
+.error-page h1 {
+    font-size: var(--bm-fnt-size-800);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-800);
+    margin: var(--bm-sp-l) 0 var(--bm-sp-m);
+    color: var(--bm-clr-fg-1);
+}
+
+.error-page p {
+    max-width: 34rem;
+    font-size: var(--bm-fnt-size-400);
+    line-height: var(--bm-fnt-line-prose);
+    margin-bottom: var(--bm-sp-xxl);
+    color: var(--bm-clr-fg-3);
+}
+
+.error-page .hero-actions {
+    justify-content: center;
+    margin-bottom: 0;
 }
 
 /* ── Blazor error UI ───────────────────────────────────────────────────────── */
@@ -1066,23 +1986,26 @@ code {
     display: none;
     position: fixed;
     z-index: 1500;
-    padding: 0.6rem 1.25rem 0.7rem;
-    color: var(--bit-clr-fg-pri);
-    background-color: var(--bit-clr-bg-ter);
-    border-top: 0.0625rem solid var(--bit-clr-brd-sec);
+    font-size: var(--bm-fnt-size-300);
+    padding: var(--bm-sp-m) var(--bm-sp-4xl) var(--bm-sp-m) var(--bm-sp-xl);
+    color: var(--bm-clr-fg-1);
+    background-color: var(--bm-clr-bg-5);
+    border-top: var(--bm-strk-thin) solid var(--bm-clr-stroke-1);
+    box-shadow: var(--bm-shdw-16);
 }
 
 #blazor-error-ui .dismiss {
     cursor: pointer;
     position: absolute;
-    right: 0.75rem;
-    top: 0.5rem;
+    right: var(--bm-sp-m);
+    top: var(--bm-sp-s);
 }
 
 .blazor-error-boundary {
-    padding: 1rem;
+    padding: var(--bm-sp-l);
     color: #FFFFFF;
-    background: #b32121;
+    background: #B32121;
+    border-radius: var(--bm-crn-medium);
 }
 
 .blazor-error-boundary::after {

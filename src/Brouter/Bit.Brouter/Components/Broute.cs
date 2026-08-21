@@ -427,18 +427,55 @@ public class Broute : ComponentBase, IDisposable
     // is a kept-but-hidden top-level/inline route, or hidden per-parameter siblings of the active
     // instance) and any kept children held by the outlets it hosts. The currently active instance is
     // left untouched. Backs IBrouter.ClearKeepAlive.
-    internal void ClearKeepAlive()
+    //
+    // With includeActive the live content goes too, so this route contributes nothing to the screen
+    // until the caller re-mounts the chain (Brouter.ClearKeepAlive does that once every route has
+    // dropped). Transient routes that aren't on screen are skipped: they hold no instance to drop.
+    internal void ClearKeepAlive(bool includeActive = false)
     {
-        if (_renderer is not null && KeepAlive && HasEverMatched)
+        if (includeActive && (KeepAlive || Matched))
+        {
+            DropAllContent();
+        }
+        else if (_renderer is not null && KeepAlive && HasEverMatched)
         {
             _renderer.DropKeptContent(Matched);
             StateHasChanged();
         }
 
-        foreach (var outlet in Outlets.Values)
+        // Snapshot: with includeActive these drops fire Disposing deactivations on LIVE content, so
+        // application code runs synchronously inside this loop and can unregister an outlet (a
+        // conditionally-rendered outlet disposing, a re-entrant ClearKeepAlive) - mutating the
+        // dictionary mid-iteration. Same reason DropAllContent/Dispose snapshot their walks.
+        foreach (var outlet in Outlets.Values.ToArray())
         {
-            outlet.ClearKeepAlive();
+            outlet.ClearKeepAlive(includeActive);
         }
+    }
+
+    /// <summary>
+    /// Reload teardown for this route (see <see cref="IBrouter.ReloadAsync"/>): deactivates every
+    /// live instance of its content - the visible one and any keep-alive retained ones - unmatches
+    /// the route and re-renders, which disposes those subtrees. The route itself stays registered,
+    /// so the reload's re-match rebuilds its content from scratch. The content owner is resolved
+    /// with the same walk the render path uses, and the inline renderer is notified either way
+    /// (it holds nothing for outlet-hosted content, so that call is a no-op there).
+    /// </summary>
+    internal void DropAllContent()
+    {
+        // Never matched: there is no instance, no retained entry and no rendered content to drop,
+        // so skip the renders entirely (ClearKeepAlive sweeps every registered route through here).
+        if (_disposed || _renderer is null || HasEverMatched is false || Brouter is not { } brouter) return;
+
+        var location = brouter.CurrentLocation;
+        _renderer.DropAllContent(location, ex => brouter.ReportLifecycleError(location, ex));
+
+        ForEachHostOutlet(static (outlet, route) => outlet.DropChild(route));
+
+        // Unmatching before the render is what actually takes the content off the screen: both the
+        // inline renderer and the outlets treat Matched as the authoritative "still selected" flag.
+        Matched = false;
+        Refresh();
     }
 
     /// <summary>
@@ -459,6 +496,28 @@ public class Broute : ComponentBase, IDisposable
             if (p.Group is false) return null; // non-group ancestor without outlets: content renders inline
         }
         return null;
+    }
+
+    /// <summary>
+    /// Runs <paramref name="action"/> against every outlet of the ancestor hosting this route's
+    /// rendered output - the one walk shared by the teardown paths (<see cref="DropAllContent"/>
+    /// and <see cref="Dispose"/>), which differ only in what they do to each outlet. A top-level or
+    /// inline-rendered route has no host, so the action never runs.
+    /// </summary>
+    /// <remarks>
+    /// Snapshot: the actions passed here run deactivation handlers synchronously, and that
+    /// application code can re-enter and mutate the host's outlet registrations mid-iteration.
+    /// The route is handed to the action as a parameter so call sites can pass a cached static
+    /// lambda instead of allocating a closure per teardown.
+    /// </remarks>
+    private void ForEachHostOutlet(Action<BrouterOutlet, Broute> action)
+    {
+        if (FindOutletHost() is not { } outletHost) return;
+
+        foreach (var outlet in outletHost.Outlets.Values.ToArray())
+        {
+            action(outlet, this);
+        }
     }
 
     /// <summary>
@@ -682,17 +741,9 @@ public class Broute : ComponentBase, IDisposable
         // Drop any kept-alive render entry the hosting outlets hold for this route, so a disposed
         // (conditionally removed) route can't linger as hidden content. The host is resolved with
         // the same walk the render path uses (group ancestors pass through to their parent's
-        // outlets), so pass-through-hosted entries are found too.
-        var outletHost = FindOutletHost();
-        if (outletHost is not null)
-        {
-            // Snapshot: ForgetChild runs deactivation handlers synchronously, which can re-enter
-            // and mutate the host's outlet registrations mid-iteration.
-            foreach (var outlet in outletHost.Outlets.Values.ToArray())
-            {
-                outlet.ForgetChild(this);
-            }
-        }
+        // outlets), so pass-through-hosted entries are found too. No re-render here, unlike
+        // DropAllContent: this route is going away with its subtree.
+        ForEachHostOutlet(static (outlet, route) => outlet.ForgetChild(route));
     }
 
     private bool _disposed;

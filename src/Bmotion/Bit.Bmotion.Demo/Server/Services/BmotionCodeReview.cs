@@ -8,8 +8,9 @@ namespace Bit.Bmotion.Demo.Server.Services;
 /// <para>
 /// Almost every way of getting Bmotion wrong is silent. An <c>Exit</c> without a presence component
 /// around it is valid Razor that never plays, because Blazor removed the element before the
-/// animation could start. <c>Bm.Spring(duration: 0.5)</c> is a valid call whose duration the engine
-/// ignores. A <c>&lt;Bmotion&gt;</c> in a <c>@foreach</c> without a <c>@key</c> animates the wrong
+/// animation could start. <c>Bm.Spring(stiffness: 300, duration: 0.5)</c> is a valid call whose
+/// stiffness the engine never uses. A <c>&lt;Bmotion&gt;</c> in a <c>@foreach</c> without a
+/// <c>@key</c> animates the wrong
 /// rows when the list changes. None of these produce a warning from the compiler, a message in the
 /// console, or an exception - the page simply does not move, or moves wrongly, and the usual next
 /// step is to add more animation code on top of the part that was never running.
@@ -26,7 +27,7 @@ public static partial class BmotionCodeReview
     public static readonly string[] Rules =
     [
         "exit-without-presence",
-        "spring-duration-without-bounce",
+        "spring-physics-overridden-by-duration",
         "animate-without-initial",
         "missing-key-in-loop",
         "nested-quotes-in-attribute",
@@ -113,8 +114,9 @@ public static partial class BmotionCodeReview
     }
 
     /// <summary>
-    /// A spring given a duration but no bounce. The duration is only used to derive stiffness and
-    /// damping when bounce is present, so on its own it is silently ignored.
+    /// A spring given both forms of configuration. Setting either <c>bounce</c> or <c>duration</c>
+    /// opts the spring into the derived model, where stiffness and damping are computed from the
+    /// two of them - so any explicit stiffness or damping on the same call is silently discarded.
     /// </summary>
     private static void CheckSpringDuration(string[] lines, List<BmotionReviewFindingDto> findings)
     {
@@ -124,21 +126,26 @@ public static partial class BmotionCodeReview
             {
                 var arguments = match.Groups["args"].Value;
 
-                if (arguments.Contains("duration", StringComparison.OrdinalIgnoreCase) is false) continue;
-                if (arguments.Contains("bounce", StringComparison.OrdinalIgnoreCase)) continue;
+                var feel = arguments.Contains("duration", StringComparison.OrdinalIgnoreCase)
+                        || arguments.Contains("bounce", StringComparison.OrdinalIgnoreCase);
+
+                var physics = arguments.Contains("stiffness", StringComparison.OrdinalIgnoreCase)
+                           || arguments.Contains("damping", StringComparison.OrdinalIgnoreCase);
+
+                if (feel is false || physics is false) continue;
 
                 findings.Add(new BmotionReviewFindingDto
                 {
                     Severity = "Warning",
-                    Rule = "spring-duration-without-bounce",
+                    Rule = "spring-physics-overridden-by-duration",
                     Line = i + 1,
-                    Message = "Bm.Spring(duration: ...) without a bounce does not set the spring's length. Duration " +
-                              "is only used to derive stiffness and damping when bounce is given as well; on its " +
-                              "own it is ignored, and the spring runs at its default stiffness of 100 and damping " +
-                              "of 10.",
-                    Fix = "Pass both - Bm.Spring(bounce: 0.2, duration: 0.5) - or configure the physics directly " +
-                          "with Bm.Spring(stiffness: ..., damping: ...). Use SimulateBmotionTransition to see how " +
-                          "long the result actually takes."
+                    Message = "This spring configures itself twice. Setting 'bounce' or 'duration' - either one is " +
+                              "enough - switches the spring to the derived model, where stiffness and damping are " +
+                              "computed from bounce (default 0.25) and duration (default 0.5). The stiffness and " +
+                              "damping written here are never used.",
+                    Fix = "Keep one form. Bm.Spring(bounce: 0.2, duration: 0.5) describes the feel, and " +
+                          "Bm.Spring(stiffness: 260, damping: 20) sets the physics; passing both only looks like " +
+                          "it does more. Use SimulateBmotionTransition to see how long either one actually takes."
                 });
             }
         }

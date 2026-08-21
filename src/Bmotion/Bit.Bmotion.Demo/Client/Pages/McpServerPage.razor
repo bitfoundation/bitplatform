@@ -1,6 +1,7 @@
-@page "/mcp-server"
+﻿@page "/mcp-server"
 @using System.Net.Http.Json
 @inject HttpClient Http
+@inject NavigationManager Nav
 
 @* The MCP server's own documentation page. Everything interactive on it calls the demo's real
    /api/mcp endpoints - the same methods the MCP server exposes as tools - so what a reader tries
@@ -91,7 +92,7 @@
         <div role="tabpanel" id="@PanelId(client.Name)" aria-labelledby="@TabId(client.Name)"
              hidden="@(_client != client.Name)">
             <p class="mcp-tab-note">@client.Note</p>
-            <CodeSnippet Code="@client.Config" />
+            <CodeSnippet Code="@client.Config(McpUrl)" />
         </div>
     }
 </div>
@@ -100,9 +101,10 @@
     <h2>The transition lab</h2>
     <p>
         <code>SimulateBmotionTransition</code> plays a transition on the real engine with no browser
-        involved, and reports what the motion does. A spring has no duration argument - how long it
-        takes and how far it overshoots fall out of the physics - so this is the only way to know
-        what one feels like before shipping it.
+        involved, and reports what the motion does. Nothing in a transition states its own settle
+        time - a spring's, and how far it overshoots, fall out of the physics - so this is the only
+        way to know what one feels like before shipping it. Pass several at once, separated by
+        semicolons, and it measures them side by side.
     </p>
     <p>
         The box below is not an approximation: it replays the exact per-frame values the server
@@ -130,12 +132,12 @@
         </div>
 
         <div class="mcp-lab-stage">
-            @if (_simulation is { Samples.Length: > 1 })
+            @if (_replayOf is { Samples.Length: > 1 })
             {
                 @* @key on the replay counter: changing it re-mounts the element, which is what makes
                    the keyframe animation play again rather than sit at its resting value. *@
                 <Bmotion Animate="Bm.To(x: _replayFrames)"
-                         Transition="Bm.Tween(_simulation.SettleSeconds, BmEase.Linear)"
+                         Transition="Bm.Tween(_replayOf.SettleSeconds, BmEase.Linear)"
                          @key="_replay">
                     <div class="box box-sm" />
                 </Bmotion>
@@ -151,22 +153,50 @@
     {
         <p class="mcp-error">@_error</p>
     }
-    else if (_simulation is not null)
+
+    @* One block per transition asked about, in the order asked, and one for every transition asked
+       about: a spec the server could not read, or would not measure because the list ran past the
+       tool's per-call limit, is one failed candidate rather than a failed measurement. The ones
+       beside it - the ones after it included - still report their numbers, which is the whole point
+       of asking for several, and no candidate goes missing without saying why. *@
+    @foreach (var simulation in _simulations)
     {
-        <div class="mcp-metrics">
-            <div><span>Settles in</span><strong>@_simulation.SettleSeconds.ToString("0.00")s</strong></div>
-            <div><span>Overshoot</span><strong>@_simulation.OvershootPercent.ToString("0.#")%</strong></div>
-            <div><span>Crossings</span><strong>@_simulation.TargetCrossings</strong></div>
-            <div><span>90% at</span><strong>@_simulation.TimeTo90Percent.ToString("0.00")s</strong></div>
+        <div class="mcp-result">
+            @if (_simulations.Length > 1)
+            {
+                <h3 class="mcp-result-title">
+                    @simulation.Transition
+                    @if (ReferenceEquals(simulation, _replayOf))
+                    {
+                        <span class="mcp-result-tag">replaying</span>
+                    }
+                </h3>
+            }
+
+            @if (simulation.Error is not null)
+            {
+                @* The server read the spec and could not make sense of it, and said why - which is a
+                   better message than anything this page could compose about it. *@
+                <p class="mcp-error">@simulation.Error</p>
+            }
+            else
+            {
+                <div class="mcp-metrics">
+                    <div><span>Settles in</span><strong>@simulation.SettleSeconds.ToString("0.00")s</strong></div>
+                    <div><span>Overshoot</span><strong>@simulation.OvershootPercent.ToString("0.#")%</strong></div>
+                    <div><span>Crossings</span><strong>@simulation.TargetCrossings</strong></div>
+                    <div><span>90% at</span><strong>@simulation.TimeTo90Percent.ToString("0.00")s</strong></div>
+                </div>
+
+                <pre class="mcp-sparkline">@simulation.Sparkline</pre>
+                <p class="mcp-reading">@simulation.Reading</p>
+
+                @foreach (var warning in simulation.Warnings ?? [])
+                {
+                    <p class="mcp-warning">@warning</p>
+                }
+            }
         </div>
-
-        <pre class="mcp-sparkline">@_simulation.Sparkline</pre>
-        <p class="mcp-reading">@_simulation.Reading</p>
-
-        @foreach (var warning in _simulation.Warnings ?? [])
-        {
-            <p class="mcp-warning">@warning</p>
-        }
     }
 </div>
 
@@ -460,15 +490,19 @@
 @code {
     private sealed record Problem(string Symptom, string Cause, string Tool);
 
-    private sealed record McpClient(string Name, string Note, string Config);
+    // The config is written against the address the page is being served from rather than a fixed
+    // one: read on localhost, on a tunnel or on a deployment, the snippet a reader copies points at
+    // the server they are looking at.
+    private sealed record McpClient(string Name, string Note, Func<string, string> Config);
 
     private sealed record CheckExample(string Properties, string Transition);
 
     // The response shapes of the endpoints this page calls. They mirror the server's DTOs rather
     // than sharing them: the client project does not reference the host, and these are the four
     // fields the page renders out of each - not the whole contract.
-    private sealed record Simulation(double SettleSeconds, double OvershootPercent, int TargetCrossings,
-        double TimeTo90Percent, Sample[]? Samples, string Sparkline, string Reading, string[]? Warnings, string? Error);
+    private sealed record Simulation(string Transition, double SettleSeconds, double OvershootPercent,
+        int TargetCrossings, double TimeTo90Percent, Sample[]? Samples, string Sparkline, string Reading,
+        string[]? Warnings, string? Error);
 
     private sealed record Sample(double Seconds, double Value);
 
@@ -504,40 +538,40 @@
     [
         new("Claude Code",
             "One command, from anywhere in your project.",
-            """
-            claude mcp add --transport http bmotion https://localhost:5071/mcp
+            url => $"""
+            claude mcp add --transport http bmotion {url}
             """),
         new("Claude Desktop",
             "Add it to claude_desktop_config.json, then restart the app.",
-            """
+            url => $$"""
             {
               "mcpServers": {
                 "bmotion": {
                   "type": "http",
-                  "url": "https://localhost:5071/mcp"
+                  "url": "{{url}}"
                 }
               }
             }
             """),
         new("VS Code",
             "Add it to .vscode/mcp.json in the workspace, and it is offered to Copilot in agent mode.",
-            """
+            url => $$"""
             {
               "servers": {
                 "bmotion": {
                   "type": "http",
-                  "url": "https://localhost:5071/mcp"
+                  "url": "{{url}}"
                 }
               }
             }
             """),
         new("Cursor",
             "Add it to .cursor/mcp.json for this project, or to ~/.cursor/mcp.json for all of them.",
-            """
+            url => $$"""
             {
               "mcpServers": {
                 "bmotion": {
-                  "url": "https://localhost:5071/mcp"
+                  "url": "{{url}}"
                 }
               }
             }
@@ -592,6 +626,13 @@
     private string _spec = "spring(stiffness: 260, damping: 12)";
     private string _client = "Claude Code";
 
+    /// <summary>
+    /// Where this build answers MCP over HTTP, resolved against the page's own base address rather
+    /// than written down: the demo is read on localhost, behind a tunnel and on a deployment, and a
+    /// snippet naming the wrong host is one a reader has to fix before it works.
+    /// </summary>
+    private string McpUrl => Nav.ToAbsoluteUri("mcp").ToString();
+
     /// <summary>The tab buttons by client name, so arrow-key navigation can move focus with the selection.</summary>
     private readonly Dictionary<string, ElementReference> _tabs = [];
 
@@ -604,7 +645,10 @@
     private bool _busy;
     private int _replay;
     private string? _error;
-    private Simulation? _simulation;
+    private Simulation[] _simulations = [];
+
+    /// <summary>The measured candidate the stage is replaying: the first one the server could read.</summary>
+    private Simulation? _replayOf;
     private double[] _replayFrames = [];
 
     private string _properties = "x, opacity";
@@ -700,30 +744,29 @@
 
         try
         {
-            var result = await GetAsync<Simulation>($"api/mcp/SimulateBmotionTransition?transition={Uri.EscapeDataString(spec)}");
+            // The tool measures however many transitions it is given and answers with one result per
+            // transition, in the order asked - and the box takes the same semicolon-separated list the
+            // tool documents, so what comes back is a comparison rather than a single answer. Samples
+            // are opt-in because most callers read the sparkline and the numbers - the replay below is
+            // the case that needs the curve.
+            var results = await GetAsync<Simulation[]>(
+                $"api/mcp/SimulateBmotionTransition?includeSamples=true&transition={Uri.EscapeDataString(spec)}");
 
-            if (result is null)
-            {
-                _error = Unreachable;
-                _simulation = null;
-            }
-            else if (result.Error is not null)
-            {
-                // The server read the spec and could not make sense of it, and said why - which is a
-                // better message than anything this page could compose about it.
-                _error = result.Error;
-                _simulation = null;
-            }
-            else
-            {
-                _simulation = result;
+            // Every candidate is kept, the ones with no numbers included: the server answers a spec it
+            // could not parse - or one past the number it measures in a single call - with a result of
+            // its own that says so, so the panel can show a block per candidate without knowing the
+            // limit itself. Showing only the first would hide the measurements of everything after a
+            // typo, which is the comparison the panel was asked for.
+            _simulations = results ?? [];
+            _error = results is null ? Unreachable : null;
 
-                // The samples are evenly spaced in time, so they are keyframes as they stand: replaying
-                // them with a linear tween of the measured settle time reproduces the motion the server
-                // measured, rather than a second animation that merely resembles it.
-                _replayFrames = [.. (result.Samples ?? []).Select(sample => sample.Value / 100 * 220)];
-                _replay++;
-            }
+            // The stage holds one box, so it replays the first candidate that measured. The samples are
+            // evenly spaced in time, so they are keyframes as they stand: replaying them with a linear
+            // tween of the measured settle time reproduces the motion the server measured, rather than a
+            // second animation that merely resembles it.
+            _replayOf = _simulations.FirstOrDefault(result => result.Error is null && result.Samples is { Length: > 1 });
+            _replayFrames = [.. (_replayOf?.Samples ?? []).Select(sample => sample.Value / 100 * 220)];
+            _replay++;
         }
         finally
         {
@@ -960,6 +1003,23 @@
         white-space: pre;
     }
 
+    .mcp-result + .mcp-result { margin-block-start: 1.5rem; border-block-start: 1px solid var(--bit-clr-brd-sec); }
+
+    .mcp-result-title {
+        margin-block: 1rem 0;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: .875rem;
+        font-weight: 600;
+        color: var(--bit-clr-fg-pri);
+    }
+
+    .mcp-result-tag {
+        margin-inline-start: .5rem;
+        font-size: .6875rem;
+        font-weight: 400;
+        color: var(--bit-clr-pri);
+    }
+
     .mcp-reading, .mcp-warning, .mcp-error { font-size: .875rem; color: var(--bit-clr-fg-sec); }
 
     .mcp-warning, .mcp-error { color: #d2691e; }
@@ -1083,13 +1143,18 @@
         opacity: .8;
     }
 
-    .mcp-resources { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+    /* minmax(0, 1fr) rather than the implicit auto track: an auto column is sized from its
+       contents, so one long resource name makes the row wider than the column it is in and the
+       whole page scrolls sideways on a phone. */
+    .mcp-resources { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: .5rem; }
 
-    .mcp-resources li { display: flex; flex-wrap: wrap; gap: .35rem .75rem; align-items: baseline; }
+    .mcp-resources li { display: flex; flex-wrap: wrap; gap: .35rem .75rem; align-items: baseline; min-width: 0; }
+
+    .mcp-resources code, .mcp-resources span { min-width: 0; overflow-wrap: anywhere; }
 
     .mcp-resources span { font-size: .8125rem; color: var(--bit-clr-fg-sec); }
 
-    .mcp-principles { margin: 1rem 0 1.25rem; padding-left: 1.25rem; display: grid; gap: .6rem; }
+    .mcp-principles { margin: 1rem 0 1.25rem; padding-left: 1.25rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: .6rem; }
 
     .mcp-principles li { color: var(--bit-clr-fg-sec); }
 

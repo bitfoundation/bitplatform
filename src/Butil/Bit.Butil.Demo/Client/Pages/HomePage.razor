@@ -1,102 +1,210 @@
-@page "/"
+﻿@page "/"
 @inject NavigationManager navManager
 
-<PageTitle>Bit.Butil - browser APIs for Blazor, without JavaScript</PageTitle>
+<PageTitle>bit Butil - browser APIs for Blazor, without JavaScript</PageTitle>
 
 @* The only page with no PageHeader to emit these for it. *@
 <HeadContent>
     <link rel="canonical" href="@navManager.BaseUri" />
     <meta name="description" content="@Description" />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Bit.Butil" />
-    <meta property="og:title" content="Bit.Butil - browser APIs for Blazor, without JavaScript" />
+    <meta property="og:site_name" content="bit Butil" />
+    <meta property="og:title" content="bit Butil - browser APIs for Blazor, without JavaScript" />
     <meta property="og:description" content="@Description" />
     <meta property="og:url" content="@navManager.BaseUri" />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Bit.Butil - browser APIs for Blazor, without JavaScript" />
+    <meta name="twitter:title" content="bit Butil - browser APIs for Blazor, without JavaScript" />
     <meta name="twitter:description" content="@Description" />
 </HeadContent>
 
-@* The BlazorUI demo's hero is a two-column split because it has something to put in the second
-   column: a live board of the components it is selling. Butil is not a component library - there
-   is nothing to show next to the pitch - so the hero is flat here, a full-bleed band across the
-   top of the page rather than a half-width column with dead space beside it. *@
+@* The hero is a two-column split, and the second column is the argument: a Blazor developer's
+   objection to reaching for a browser API is the interop it costs, so the page answers it with the
+   code rather than with an adjective. Below the lg breakpoint the pane moves under the pitch,
+   which is the right order - the claim, then the evidence. *@
 <section class="hero">
     <div class="hero-inner">
-        @* The break is deliberate: left to wrap on its own the line lands inside the accent
-           phrase, which then reads as two half-coloured lines instead of one claim. *@
-        <h1 class="hero-title">
-            Browser APIs for Blazor,<br />
-            <span class="hero-title-accent">without writing JavaScript</span>
-        </h1>
+        <div class="hero-copy">
+            <span class="hero-eyebrow">
+                <Icon Name="bolt" Size="14" />
+                Part of bit platform
+            </span>
 
-        <p class="hero-subtitle">
-            Bit.Butil wraps the entire browser platform - window, document, storage, crypto, media,
-            sensors and much more - in strongly-typed C# classes you simply inject and call. It works
-            in every interactive Blazor mode: WebAssembly, Server and Hybrid (MAUI).
-        </p>
+            @* The break is deliberate: left to wrap on its own the line lands inside the accent
+               phrase, which then reads as two half-coloured lines instead of one claim. *@
+            <h1 class="hero-title">
+                Browser APIs for Blazor,<br />
+                <span class="hero-title-accent">without writing JavaScript</span>
+            </h1>
 
-        <div class="hero-actions">
-            <a href="getting-started">Get started</a>
-            <a class="ghost" href="window">Explore the APIs</a>
+            <p class="hero-subtitle">
+                bit Butil wraps the entire browser platform - window, document, storage, crypto, media,
+                sensors and much more - in strongly-typed C# classes you simply inject and call. It works
+                in every interactive Blazor mode: WebAssembly, Server and Hybrid (MAUI).
+            </p>
+
+            <div class="hero-actions">
+                <a class="btn-primary" href="getting-started">
+                    <span>Get started</span>
+                    <Icon Name="arrow-right" Size="18" />
+                </a>
+                <a class="btn-ghost" href="window">Explore the APIs</a>
+            </div>
+
+            <div class="hero-install">
+                <CodeBlock Language="shell" Code="dotnet add package Bit.Butil" />
+            </div>
         </div>
 
-        <div class="hero-install">
-            <CodeBlock Language="shell" Code="dotnet add package Bit.Butil" />
-        </div>
-
-        <div class="hero-stats">
-            <div class="hero-stat">
-                <span class="hero-stat-value">@DocsNav.ApiLinks.Count()</span>
-                <span class="hero-stat-label">Documented APIs</span>
-            </div>
-            <div class="hero-stat">
-                <span class="hero-stat-value">100% C#</span>
-                <span class="hero-stat-label">No JS to write</span>
-            </div>
-            <div class="hero-stat">
-                <span class="hero-stat-value">1</span>
-                <span class="hero-stat-label">Script tag to add</span>
-            </div>
-            <div class="hero-stat">
-                <span class="hero-stat-value">.NET 8.0+</span>
-                <span class="hero-stat-label">Framework</span>
-            </div>
+        <div class="hero-pane">
+            <CodeBlock Language="razor" Code="@HeroSample" />
         </div>
     </div>
 </section>
 
-@* The one page with no nav panel, so it sets its own width cap - the same one the BlazorUI
-   demo's home page uses. *@
+@* The one page with no nav panel, so it sets its own width cap. *@
 <div class="home-container">
+    <div class="hero-stats">
+        <div class="hero-stat">
+            <span class="hero-stat-value">@DocsNav.ApiLinks.Count()</span>
+            <span class="hero-stat-label">Documented APIs</span>
+        </div>
+        <div class="hero-stat">
+            <span class="hero-stat-value">100% C#</span>
+            <span class="hero-stat-label">No JS to write</span>
+        </div>
+        <div class="hero-stat">
+            <span class="hero-stat-value">1</span>
+            <span class="hero-stat-label">Script tag to add</span>
+        </div>
+        <div class="hero-stat">
+            <span class="hero-stat-value">.NET 8.0+</span>
+            <span class="hero-stat-label">Framework</span>
+        </div>
+    </div>
+
+    @* Three claims a reader has to accept before the catalogue below is worth their time: that it
+       is really typed, that it really runs everywhere, and that the samples really run. *@
+    <div class="home-pillars">
+        <div class="pillar">
+            <span class="pillar-icon"><Icon Name="code" Size="20" /></span>
+            <h2>Typed, not stringly</h2>
+            <p>
+                Every API is a class with real parameters, real return types and XML documentation -
+                so IntelliSense, the compiler and refactoring all work on your browser code the way
+                they work on the rest of it.
+            </p>
+        </div>
+        <div class="pillar">
+            <span class="pillar-icon"><Icon Name="window" Size="20" /></span>
+            <h2>Every render mode</h2>
+            <p>
+                The same call compiles and runs under WebAssembly, Server and Hybrid, and returns a
+                safe default while a page is being prerendered instead of throwing.
+                <a href="render-modes">How that works</a>.
+            </p>
+        </div>
+        <div class="pillar">
+            <span class="pillar-icon"><Icon Name="shield" Size="20" /></span>
+            <h2>Honest about the platform</h2>
+            <p>
+                A wrapper cannot add a feature the engine has not shipped. Every page says what its
+                API needs, and the <a href="browser-support">support matrix</a> tests the browser
+                you are reading this in.
+            </p>
+        </div>
+    </div>
+
     <Callout Type="info" Title="Everything on this site is live">
         Every page pairs the documentation with interactive samples running against the real browser
         APIs - what you click is what the library does.
     </Callout>
 
-    @foreach (var group in DocsNav.Groups)
-    {
-        <div class="home-group">
-            <h2>@group.Title</h2>
-            <div class="card-grid">
-                @foreach (var link in group.Links)
-                {
-                    <a class="feature-card" href="@link.Url">
-                        <span class="ico">@link.Icon</span>
-                        <span class="name">@link.Title</span>
-                        <span class="desc">@link.Summary</span>
-                    </a>
-                }
-            </div>
+    @* The catalogue. One section per area of the platform, the group's mark as its landmark, and a
+       card per API carrying the two facts that decide whether it is the one you want: what it
+       covers, and how widely the engines implement it. *@
+    <div class="home-catalogue">
+        <div class="home-catalogue-head">
+            <h2>The catalogue</h2>
+            <p>
+                @DocsNav.ApiLinks.Count() browser APIs and @DocsNav.Groups.First().Links.Length guides,
+                every one of them with runnable samples. Press
+                <kbd class="kbd">Ctrl</kbd> <kbd class="kbd">K</kbd> to jump straight to one.
+            </p>
         </div>
-    }
+
+        @foreach (var group in DocsNav.Groups)
+        {
+            <section class="home-group" aria-labelledby="@GroupId(group)">
+                <h3 class="home-group-title" id="@GroupId(group)">
+                    <span class="home-group-icon"><Icon Name="@group.Icon" Size="18" /></span>
+                    <span>@group.Title</span>
+                    <span class="home-group-count">@group.Links.Length</span>
+                </h3>
+
+                <div class="card-grid">
+                    @foreach (var link in group.Links)
+                    {
+                        <a class="feature-card" href="@link.Url">
+                            <span class="name">
+                                @link.Title
+                                <Icon Name="arrow-right" Size="16" Class="feature-card-go" />
+                            </span>
+                            <span class="desc">@link.Summary</span>
+                            <span class="feature-card-foot">
+                                <span class="support-chip @link.Support.CssClass()">@link.Support.Label()</span>
+                                @if (link.Needs.HasFlag(ApiNeeds.Experimental))
+                                {
+                                    <span class="need-chip warn">experimental</span>
+                                }
+                                else if (link.Needs.HasFlag(ApiNeeds.Permission))
+                                {
+                                    <span class="need-chip">permission</span>
+                                }
+                                else if (link.Needs.HasFlag(ApiNeeds.SecureContext))
+                                {
+                                    <span class="need-chip">HTTPS</span>
+                                }
+                            </span>
+                        </a>
+                    }
+                </div>
+            </section>
+        }
+    </div>
 </div>
 
 @code {
     // One string, used as the description, the og:description and the twitter:description - the
     // three places that all want "what is this page, in a sentence" and must not disagree.
     private const string Description =
-        "Bit.Butil wraps the entire browser platform - window, document, storage, crypto, media, " +
+        "bit Butil wraps the entire browser platform - window, document, storage, crypto, media, " +
         "sensors and more - in strongly-typed C# classes for Blazor WebAssembly, Server and Hybrid. " +
         "No JavaScript to write.";
+
+    // Deliberately a whole component rather than three disconnected calls: what the hero is selling
+    // is that browser work looks like the rest of a Razor page, and only a page-shaped sample shows
+    // that. Every line of it is real - the injections, the lifecycle rule and the three signatures
+    // are the ones documented on the pages this links to.
+    private const string HeroSample = """
+        @inject Bit.Butil.Clipboard clipboard
+        @inject Bit.Butil.Geolocation geolocation
+        @inject Bit.Butil.LocalStorage localStorage
+
+        <button @onclick="Share">Share my position</button>
+
+        @code {
+            private async Task Share()
+            {
+                var pos = await geolocation.GetCurrentPosition();
+                var here = $"{pos.Coords.Latitude}, {pos.Coords.Longitude}";
+
+                await clipboard.WriteText(here);
+                await localStorage.SetItem("last-share", here);
+            }
+        }
+        """;
+
+    private static string GroupId(DocGroup group) =>
+        "group-" + string.Join('-', group.Title.ToLowerInvariant()
+            .Split(' ', '&', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
 }

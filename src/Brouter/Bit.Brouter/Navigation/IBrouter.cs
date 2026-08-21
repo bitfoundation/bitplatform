@@ -121,6 +121,45 @@ public interface IBrouter
             "Override the method on your custom implementation to enable revalidation.");
 
     /// <summary>
+    /// Rebuilds the current page: the matched route chain's components (the visible content and any
+    /// <see cref="Broute.KeepAlive"/> instances those routes were retaining) are disposed and
+    /// created again, and their loaders re-run - the same result as arriving at this URL for the
+    /// first time, without a full-page reload. Use it when something invalidated everything the
+    /// page derived rather than just its data: switching tenant, impersonating another user, or
+    /// changing a setting the page read once in <c>OnInitialized</c>. Re-navigating to the current
+    /// URL is NOT an alternative - Blazor reuses a component whose route and parameters didn't
+    /// change (the built-in router behaves the same way), so the stale instance simply stays.
+    /// <br/>
+    /// Not a navigation: the URL and history entry are untouched,
+    /// <see cref="OnNavigating"/>/<see cref="OnNavigated"/> do not fire, the scroll position is left
+    /// alone, and no leave guard can veto it (nothing is being left). Route guards and loaders do
+    /// run - the chain is being matched from nothing -
+    /// and can tell a reload apart via <see cref="BrouterNavigationContext.IsReload"/>. Retained
+    /// instances of routes that are NOT in the current chain are untouched; pair it with
+    /// <see cref="ClearKeepAlive()"/> to drop those too. Completes once the rebuilt chain is
+    /// committed (or the reload was superseded by a navigation). Prefer
+    /// <see cref="RevalidateAsync"/> when only loader data is stale: it keeps component state and
+    /// avoids the remount.
+    /// <br/>
+    /// If a route guard <em>cancels</em> the re-match, the page is put back rather than left blank -
+    /// a cancelled reload leaves the user where they were, just as a cancelled navigation does,
+    /// though with new component instances since the old ones are already gone. A guard that means
+    /// to send the user elsewhere should redirect instead. A reload requested while a navigation is
+    /// already in flight does nothing: that navigation is already rebuilding the page the user is
+    /// actually heading to. In flight counts from the moment the navigation starts - including while
+    /// its guards or hooks are still awaiting, before anything has committed. Nor does a reload with no route committed - a not-found fallback or an
+    /// error boundary on screen - do anything: there is no chain to rebuild.
+    /// </summary>
+    /// <remarks>
+    /// Default implementation throws <see cref="NotSupportedException"/>; the shipped
+    /// <see cref="IBrouter"/> service implements it. Override on custom test doubles if needed.
+    /// </remarks>
+    ValueTask ReloadAsync() =>
+        throw new NotSupportedException(
+            $"This {nameof(IBrouter)} implementation does not support {nameof(ReloadAsync)}. " +
+            "Override the method on your custom implementation to enable reloading.");
+
+    /// <summary>
     /// Navigates to the current path with a functionally-updated query string: <paramref name="mutate"/>
     /// receives a <see cref="BrouterQueryBuilder"/> seeded with the current query, and every parameter
     /// it doesn't touch is preserved - e.g. <c>brouter.NavigateWithQuery(q =&gt; q.Set("page", 2))</c>
@@ -173,12 +212,47 @@ public interface IBrouter
     /// to one of them recreates it fresh instead of restoring its state. Use it to reclaim memory
     /// held by kept pages - e.g. on sign-out, on a low-memory signal, or after invalidating the state
     /// those pages were holding. A no-op when nothing is being kept.
+    /// <br/>
+    /// The page on screen keeps its instance (and its state) - that is what
+    /// <see cref="ClearKeepAlive(bool)"/> with <c>includeActive: true</c> is for.
     /// </summary>
     /// <remarks>
     /// Default implementation throws <see cref="NotSupportedException"/>; the shipped
     /// <see cref="IBrouter"/> service implements it. Override on custom test doubles if needed.
     /// </remarks>
     void ClearKeepAlive() =>
+        throw new NotSupportedException(
+            $"This {nameof(IBrouter)} implementation does not support {nameof(ClearKeepAlive)}. " +
+            "Override the method on your custom implementation to enable keep-alive eviction.");
+
+    /// <summary>
+    /// <see cref="ClearKeepAlive()"/> with the option to drop the page on screen as well.
+    /// <paramref name="includeActive"/> = <see langword="false"/> is the plain overload's behavior.
+    /// <br/>
+    /// With <paramref name="includeActive"/> = <see langword="true"/> the currently matched routes'
+    /// live content is torn down too - deactivated (<see cref="BrouterRouteDeactivationReason.Disposing"/>),
+    /// unmounted, disposed - and immediately rebuilt, so the visible page comes back as a brand-new
+    /// component instance in its initial state: no restored scroll, filters or form drafts. Use it
+    /// when the state those instances hold is no longer valid for the current user - after switching
+    /// tenant or impersonating someone, for instance - since re-navigating to the current URL cannot
+    /// do it (Blazor reuses a component whose route and parameters didn't change; the built-in router
+    /// behaves the same way).
+    /// <br/>
+    /// Deliberately NOT a navigation and not a reload: the URL, history entry and scroll position are
+    /// untouched, no hook or guard runs, and route loaders do not re-run - the rebuilt chain is handed
+    /// the data it already loaded. Reach for <see cref="ReloadAsync"/> instead when the page's *data*
+    /// is stale too and the whole pipeline (guards, loaders, redirects) should run again. Content that
+    /// isn't on screen and isn't retained is unaffected either way.
+    /// <br/>
+    /// While a navigation is in flight - from the moment it starts, guards and hooks included - this
+    /// degrades to the plain overload: retained content is still released, but the visible chain is
+    /// left to the navigation, which is about to replace it with fresh instances anyway. Rebuilding it underneath a running pipeline would corrupt the commit.
+    /// </summary>
+    /// <remarks>
+    /// Default implementation throws <see cref="NotSupportedException"/>; the shipped
+    /// <see cref="IBrouter"/> service implements it. Override on custom test doubles if needed.
+    /// </remarks>
+    void ClearKeepAlive(bool includeActive) =>
         throw new NotSupportedException(
             $"This {nameof(IBrouter)} implementation does not support {nameof(ClearKeepAlive)}. " +
             "Override the method on your custom implementation to enable keep-alive eviction.");

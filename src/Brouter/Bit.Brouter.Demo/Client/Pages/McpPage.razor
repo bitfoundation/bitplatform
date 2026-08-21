@@ -127,6 +127,21 @@
         than from the internet, and <span class="bb-badge bb-badge-warn">structured output</span> means the tool
         publishes an <code>outputSchema</code> and answers with a validated object, not only with text.
     </p>
+    <p class="bb-card-desc">
+        Only two of them carry that last badge, and deliberately: a structured answer goes over the wire
+        <em>twice</em> - once as the object, once as the JSON text the spec asks a server to send on its
+        behalf for clients that cannot read one - so it earns its cost where the answer is something a
+        caller acts on rather than reads. A ranked search hit carrying its own follow-up call, and a
+        parse verdict, are that; a page of documentation is not, and comes back as Markdown, which is
+        also smaller than either half of the same thing as JSON.
+    </p>
+    <p class="bb-card-desc">
+        The reference tools share one rule worth knowing before you try them: each takes the key of the
+        thing you want - a type name, a slug, a heading, a path - and <em>leaving it out</em> asks for the
+        index of what there is. That is why there is no separate "list" tool beside any of them: a tool
+        costs its name, description and schema in every single request a client makes, forever, and an
+        optional argument says the same thing for nothing.
+    </p>
 
     @if (_tools.Length == 0)
     {
@@ -395,7 +410,7 @@
     <p class="bb-card-desc">
         A prompt is a workflow a person picks - in most clients they appear as slash commands. What
         <code>prompts/get</code> returns is the message that gets put in front of the model, and these
-        four spend their words on the order to call the tools in, because an agent with a dozen tools
+        four spend their words on the order to call the tools in, because an agent with a handful of tools
         usually fails by sequence rather than by ignorance.
     </p>
 
@@ -550,10 +565,10 @@
         a browser tab and read exactly what an agent would be handed, with no client in the way.
     </p>
     <ul class="bb-link-list">
-        <li><a href="/api/mcp/GetBrouterOverview" target="_blank" rel="noopener">/api/mcp/GetBrouterOverview</a></li>
+        <li><a href="/api/mcp/GetBrouterApi" target="_blank" rel="noopener">/api/mcp/GetBrouterApi</a> <span class="mcp-muted">- no argument: the index of types</span></li>
         <li><a href="/api/mcp/SearchBrouter?query=block%20navigation%20unsaved%20changes" target="_blank" rel="noopener">/api/mcp/SearchBrouter?query=block navigation unsaved changes</a></li>
-        <li><a href="/api/mcp/GetBrouterApiDetails?typeName=Broute" target="_blank" rel="noopener">/api/mcp/GetBrouterApiDetails?typeName=Broute</a></li>
-        <li><a href="/api/mcp/InspectBrouterRouteTemplate?template=/files/%7Bname%7D.%7Bext?%7D" target="_blank" rel="noopener">/api/mcp/InspectBrouterRouteTemplate?template=/files/{name}.{ext?}</a></li>
+        <li><a href="/api/mcp/GetBrouterApi?typeName=Broute" target="_blank" rel="noopener">/api/mcp/GetBrouterApi?typeName=Broute</a></li>
+        <li><a href="/api/mcp/InspectBrouterRouteTemplates?templates=/files/%7Bname%7D.%7Bext?%7D" target="_blank" rel="noopener">/api/mcp/InspectBrouterRouteTemplates?templates=/files/{name}.{ext?}</a></li>
         <li><a href="/api/mcp/GetBrouterSourceFile?path=Demo/Client/AppRouter.razor" target="_blank" rel="noopener">/api/mcp/GetBrouterSourceFile?path=Demo/Client/AppRouter.razor</a></li>
     </ul>
 </div>
@@ -591,11 +606,11 @@ app.MapMcp(<span class="s">"/mcp"</span>);
 
 <span class="c">// Server/Controllers/McpController.cs - a tool and an HTTP endpoint at once</span>
 [<span class="k">HttpGet</span>]
-[<span class="k">McpServerTool</span>(Name = <span class="k">nameof</span>(InspectBrouterRouteTemplate), Title = <span class="s">"Inspect one route template"</span>,
+[<span class="k">McpServerTool</span>(Name = <span class="k">nameof</span>(InspectBrouterRouteTemplates), Title = <span class="s">"Inspect route templates"</span>,
              ReadOnly = <span class="k">true</span>, OpenWorld = <span class="k">false</span>, UseStructuredContent = <span class="k">true</span>)]
 [<span class="k">Description</span>(<span class="s">"Parses a route template with Bit.Brouter's own parser and reports what it means…"</span>)]
-<span class="k">public</span> BrouterTemplateInspectionDto InspectBrouterRouteTemplate(<span class="k">string</span> template)
-    =&gt; BrouterTemplateInspector.Inspect(template, brouterOptions.Value.Constraints);</pre>
+<span class="k">public</span> BrouterRouteAnalysisDto InspectBrouterRouteTemplates(<span class="k">string</span> templates)
+    =&gt; BrouterTemplateInspector.Analyze(SplitTemplates(templates), brouterOptions.Value.Constraints);</pre>
     <div class="bb-try">
         <BrouterLink Href="/docs/typed-routes" class="btn btn-outline">← Typed routes</BrouterLink>
         <BrouterLink Href="/docs/migration" class="btn btn-primary">Migration →</BrouterLink>
@@ -628,12 +643,11 @@ app.MapMcp(<span class="s">"/mcp"</span>);
         ["GetBrouterSetupGuide"] = new() { ["renderMode"] = "wasm" },
         ["GetBrouterDocsPage"] = new() { ["slug"] = "guards" },
         ["GetBrouterGuideSection"] = new() { ["heading"] = "Async guards" },
-        ["GetBrouterApiDetails"] = new() { ["typeName"] = "Broute" },
+        ["GetBrouterApi"] = new() { ["typeName"] = "Broute" },
         ["GetBrouterSourceFile"] = new() { ["path"] = "Demo/Client/AppRouter.razor" },
-        ["InspectBrouterRouteTemplate"] = new() { ["template"] = "/files/{name}.{ext?}" },
         // A comma inside range(...) is part of the constraint, not a separator - which is exactly
         // what makes this the interesting example to send.
-        ["AnalyzeBrouterRouteTable"] = new() { ["templates"] = "/products/{id:int}\n/products/{slug}\n/reports/{year:int:range(2000,2100)}" },
+        ["InspectBrouterRouteTemplates"] = new() { ["templates"] = "/products/{id:int}\n/products/{slug}\n/reports/{year:int:range(2000,2100)}" },
         ["add-brouter-to-app"] = new() { ["renderMode"] = "wasm" },
         ["implement-brouter-feature"] = new() { ["feature"] = "warn before leaving a half-filled form" },
         ["debug-brouter-routing"] = new() { ["symptom"] = "/files/report.pdf renders the 404 route" },

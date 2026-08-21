@@ -53,3 +53,31 @@ jobs:
 
     - name: dotnet build
       run: dotnet build src/Butil/Bit.Butil.slnx
+
+    # The MCP suite boots the demo server as a child process and drives it over the wire, so it
+    # needs the server's output where the fixture's `dotnet run --artifacts-path` expects it. The
+    # solution build above already compiled both projects; this only redirects the server's output.
+    - name: Build the demo server the MCP suite boots
+      run: >
+        dotnet build src/Butil/Bit.Butil.Demo/Server/Bit.Butil.Demo.Server.csproj
+        --artifacts-path ${{ runner.temp }}/bit-butil-mcp-tests
+
+    # Run from inside src/ so global.json is in scope: dotnet test resolves it from the working
+    # directory, not from the project path, and without it the Microsoft.Testing.Platform runner
+    # it selects is never applied - dotnet test falls back to VSTest and rejects --report-trx.
+    - name: MCP server tests
+      env:
+        BUTIL_MCP_ARTIFACTS_PATH: ${{ runner.temp }}/bit-butil-mcp-tests
+      run: >
+        cd src/Butil &&
+        dotnet test tests/Bit.Butil.Tests.Mcp/Bit.Butil.Tests.Mcp.csproj
+        --no-build
+        --report-trx --report-trx-filename butil-mcp.trx
+
+    - name: Upload MCP test results
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: butil-mcp-results
+        path: '**/butil-mcp.trx'
+        if-no-files-found: ignore

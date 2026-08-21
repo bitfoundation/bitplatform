@@ -1,4 +1,4 @@
-@page "/resize-observer"
+﻿@page "/resize-observer"
 @implements IAsyncDisposable
 @inject IJSRuntime js
 
@@ -36,7 +36,7 @@
 """)
              Language="razor">
     <div @ref="boxRef"
-         style="resize:both;overflow:auto;width:16rem;height:6rem;min-width:8rem;min-height:4rem;max-width:100%;border:2px solid #6366f1;border-radius:8px;padding:0.6rem;">
+         class="demo-box" style="resize:both;overflow:auto;width:16rem;height:6rem;min-width:8rem;min-height:4rem;max-width:100%;">
         Drag my bottom-right corner to resize me.
     </div>
     <div class="controls">
@@ -221,8 +221,7 @@ public async ValueTask DisposeAsync()
         {
             boxWidthRem += 3;
             await boxRef.SetAttribute("style",
-                $"resize:both;overflow:auto;width:{boxWidthRem}rem;height:6rem;min-width:8rem;min-height:4rem;max-width:100%;" +
-                "border:2px solid #6366f1;border-radius:8px;padding:0.6rem;");
+                $"resize:both;overflow:auto;width:{boxWidthRem}rem;height:6rem;min-width:8rem;min-height:4rem;max-width:100%;");
             await growOutput.Info($"Box width set to {boxWidthRem}rem from C#");
         }
         catch (Exception ex)

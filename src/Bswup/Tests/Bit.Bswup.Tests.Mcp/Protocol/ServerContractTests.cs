@@ -69,13 +69,31 @@ public class ServerContractTests
         CollectionAssert.AreEquivalent(
             new[]
             {
-                "GetBswupOverview", "SearchBswup", "GetBswupSetupGuide", "GetBswupScriptOptions",
-                "GetBswupServiceWorkerSettings", "GetBswupServiceWorkerModes", "InspectBswupServiceWorker",
-                "AnalyzeBswupAssetCaching", "GetBswupEvents", "GetBswupJsApi", "GetBswupProgressUI",
-                "GetBswupDocsList", "GetBswupDocsPage", "GetBswupGuideSections", "GetBswupGuideSection",
-                "GetBswupSourceFiles", "GetBswupSourceFile",
+                "SearchBswup", "GetBswupSetupGuide", "GetBswupScriptOptions",
+                "GetBswupServiceWorkerSettings", "InspectBswupServiceWorker",
+                "GetBswupEvents", "GetBswupJsApi", "GetBswupProgressUI",
+                "GetBswupDocsPage", "GetBswupSourceFiles", "GetBswupSourceFile",
             },
             tools.Select(tool => tool.Name).ToArray());
+    }
+
+    [TestMethod]
+    public async Task ToolList_StaysSmallEnoughToBeWorthItsPlaceInAContextWindow()
+    {
+        // Every client pays for this list on every request, before a question is asked. It is the
+        // one cost here nobody can opt out of, so a tool whose answer another tool already
+        // contains does not belong in it - which is why there is no overview tool restating the
+        // list, no second pair of tools serving the README the docs pages already say, and no
+        // listing tool for a set of slugs that fits in a description.
+        var tools = await _server.Mcp.ListToolsAsync();
+
+        var characters = tools.Sum(tool =>
+            tool.Name.Length + (tool.Description?.Length ?? 0) +
+            tool.ProtocolTool.InputSchema.GetRawText().Length +
+            (tool.ProtocolTool.OutputSchema?.GetRawText().Length ?? 0));
+
+        Assert.IsTrue(tools.Count <= 12, $"{tools.Count} tools");
+        Assert.IsTrue(characters <= 18_000, $"the tool list costs {characters} characters before anyone asks anything");
     }
 
     [TestMethod]

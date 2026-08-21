@@ -6,12 +6,34 @@
 
 <PageTitle>Error - Bit.Butil</PageTitle>
 
-<header class="page-header">
-    <span class="eyebrow">500</span>
-    <h1>Something went wrong</h1>
-</header>
+<div class="status-page">
+    <span class="status-code">500</span>
 
-<p class="page-lead" role="alert">
-    An error occurred while processing your request. Head back to the
-    <a href="">documentation home</a> and try again.
-</p>
+    <h1>Something went wrong</h1>
+
+    @* role="alert" so the failure is announced: this page is the result of a navigation that
+       looked to the reader like any other, and the only thing that distinguishes it is this
+       sentence. *@
+    <p class="page-lead" role="alert">
+        An error occurred while processing your request. Nothing was lost - this site is
+        documentation, so trying again or heading back is always safe.
+    </p>
+
+    <div class="status-links">
+        <a class="status-link" href="">
+            <Icon Name="overview" Size="20" />
+            <span class="status-link-text">
+                <span class="status-link-title">Documentation home</span>
+                <span class="status-link-desc">Every API, grouped by area</span>
+            </span>
+        </a>
+        <a class="status-link" href="https://github.com/bitfoundation/bitplatform/issues"
+           target="_blank" rel="noopener noreferrer">
+            <Icon Name="open" Size="20" />
+            <span class="status-link-text">
+                <span class="status-link-title">Report an issue</span>
+                <span class="status-link-desc">If this keeps happening, we want to know</span>
+            </span>
+        </a>
+    </div>
+</div>

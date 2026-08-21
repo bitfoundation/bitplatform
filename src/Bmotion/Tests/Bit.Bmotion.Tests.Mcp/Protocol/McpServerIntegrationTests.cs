@@ -86,12 +86,15 @@ public class McpServerIntegrationTests
             [nameof(McpController.SearchBmotion)] = ["query", "limit"],
             [nameof(McpController.GetBmotionSetupGuide)] = ["renderMode"],
             [nameof(McpController.GetBmotionRecipe)] = ["id"],
-            [nameof(McpController.SimulateBmotionTransition)] = ["transition", "from", "to"],
+            [nameof(McpController.SimulateBmotionTransition)] = ["transition", "from", "to", "includeSamples"],
             [nameof(McpController.AnalyzeBmotionAnimation)] = ["properties", "transition"],
             [nameof(McpController.ReviewBmotionCode)] = ["code"],
             [nameof(McpController.GetBmotionGuideSection)] = ["heading"],
             [nameof(McpController.GetBmotionApiDetails)] = ["typeName"],
-            [nameof(McpController.GetBmotionSourceFile)] = ["path"],
+            [nameof(McpController.GetBmotionSourceFiles)] = ["filter"],
+            [nameof(McpController.GetBmotionSourceFile)] = ["path", "fromLine", "toLine"],
+            [nameof(McpController.GetBmotionEasings)] = ["filter"],
+            [nameof(McpController.GetBmotionAnimatableProperties)] = ["filter"],
         })
         {
             var properties = tools[name].ProtocolTool.InputSchema.GetProperty("properties");
@@ -116,8 +119,7 @@ public class McpServerIntegrationTests
             [nameof(McpController.SearchBmotion)] = new Dictionary<string, object?> { ["query"] = "staggered list", ["limit"] = 5 },
             [nameof(McpController.GetBmotionSetupGuide)] = new Dictionary<string, object?> { ["renderMode"] = "wasm" },
             [nameof(McpController.GetBmotionRecipe)] = new Dictionary<string, object?> { ["id"] = "staggered-list" },
-            [nameof(McpController.SimulateBmotionTransition)] = new Dictionary<string, object?> { ["transition"] = "spring(stiffness: 260, damping: 12)" },
-            [nameof(McpController.CompareBmotionTransitions)] = new Dictionary<string, object?> { ["transitions"] = "tween(0.3); spring(bounce: 0.2, duration: 0.4)" },
+            [nameof(McpController.SimulateBmotionTransition)] = new Dictionary<string, object?> { ["transition"] = "spring(stiffness: 260, damping: 12); tween(0.3)" },
             [nameof(McpController.AnalyzeBmotionAnimation)] = new Dictionary<string, object?> { ["properties"] = "x, opacity", ["transition"] = "tween(0.4)" },
             [nameof(McpController.ReviewBmotionCode)] = new Dictionary<string, object?> { ["code"] = "<Bmotion Animate=\"Bm.To(x: 100)\"><div /></Bmotion>" },
             [nameof(McpController.GetBmotionGuideSection)] = new Dictionary<string, object?> { ["heading"] = "Installation" },
@@ -152,11 +154,19 @@ public class McpServerIntegrationTests
     {
         var result = await _server.Client.CallToolAsync(
             nameof(McpController.SimulateBmotionTransition),
-            new Dictionary<string, object?> { ["transition"] = "spring(stiffness: 100, damping: 20)", ["from"] = 0, ["to"] = 100 });
+            new Dictionary<string, object?>
+            {
+                ["transition"] = "spring(stiffness: 100, damping: 20)",
+                ["from"] = 0,
+                ["to"] = 100,
+                ["includeSamples"] = true,
+            });
 
         Assert.IsFalse(result.IsError is true, Render(result));
 
-        var payload = Payload(result);
+        // The tool measures however many transitions it is handed, so one measurement arrives as a
+        // one-element array rather than as a bare object.
+        var payload = Single(result);
 
         Assert.AreEqual("Spring", payload.GetProperty("kind").GetString());
         Assert.IsTrue(payload.GetProperty("settleSeconds").GetDouble() > 0);
@@ -172,7 +182,7 @@ public class McpServerIntegrationTests
             nameof(McpController.SimulateBmotionTransition),
             new Dictionary<string, object?> { ["transition"] = "tween(0.5, Linear)", ["from"] = 12.5, ["to"] = 87.5 });
 
-        var payload = Payload(result);
+        var payload = Single(result);
 
         Assert.AreEqual(12.5, payload.GetProperty("from").GetDouble());
         Assert.AreEqual(87.5, payload.GetProperty("to").GetDouble());
@@ -213,7 +223,7 @@ public class McpServerIntegrationTests
 
         Assert.IsFalse(result.IsError is true, "A correctable mistake was reported as a failed call.");
 
-        var payload = Payload(result);
+        var payload = Single(result);
 
         Assert.IsFalse(string.IsNullOrWhiteSpace(payload.GetProperty("error").GetString()));
         StringAssert.Contains(payload.GetProperty("error").GetString()!, "spring");
@@ -237,7 +247,7 @@ public class McpServerIntegrationTests
             nameof(McpController.SimulateBmotionTransition),
             new Dictionary<string, object?> { ["transition"] = "tween(0.3)" });
 
-        var payload = Payload(result);
+        var payload = Single(result);
 
         Assert.AreEqual(0, payload.GetProperty("from").GetDouble());
         Assert.AreEqual(100, payload.GetProperty("to").GetDouble());
@@ -385,8 +395,8 @@ public class McpServerIntegrationTests
             nameof(McpController.SimulateBmotionTransition),
             new Dictionary<string, object?> { ["transition"] = "spring(stiffness: 260, damping: 12)" });
 
-        Assert.AreEqual(Payload(results[0]).GetProperty("settleSeconds").GetDouble(),
-                        Payload(alone).GetProperty("settleSeconds").GetDouble());
+        Assert.AreEqual(Single(results[0]).GetProperty("settleSeconds").GetDouble(),
+                        Single(alone).GetProperty("settleSeconds").GetDouble());
     }
 
     /// <summary>
@@ -404,10 +414,13 @@ public class McpServerIntegrationTests
         Assert.IsNotNull(catalog);
         Assert.AreNotEqual(0, catalog.Tools.Length);
 
-        var simulation = await http.GetFromJsonAsync<BmotionSimulationDto>(
+        var simulations = await http.GetFromJsonAsync<BmotionSimulationDto[]>(
             "/api/Mcp/SimulateBmotionTransition?transition=spring(stiffness:%20260,%20damping:%2012)");
 
-        Assert.IsNotNull(simulation);
+        Assert.IsNotNull(simulations);
+
+        var simulation = simulations.Single();
+
         Assert.AreEqual("Spring", simulation.Kind);
         Assert.IsTrue(simulation.SettleSeconds > 0);
     }
@@ -416,6 +429,17 @@ public class McpServerIntegrationTests
     private static string Render(CallToolResult result)
     {
         return string.Join('\n', result.Content.OfType<TextContentBlock>().Select(block => block.Text));
+    }
+
+    /// <summary>The one element of a tool that answers with a list, as the measuring tools do.</summary>
+    private static JsonElement Single(CallToolResult result)
+    {
+        var payload = Payload(result);
+
+        Assert.AreEqual(JsonValueKind.Array, payload.ValueKind, $"Expected a list: {Render(result)}");
+        Assert.AreEqual(1, payload.GetArrayLength(), $"Expected one measurement: {Render(result)}");
+
+        return payload[0];
     }
 
     /// <summary>

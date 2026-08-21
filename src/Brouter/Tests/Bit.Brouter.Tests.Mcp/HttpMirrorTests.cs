@@ -23,20 +23,13 @@ public class HttpMirrorTests
 
         (string Tool, string Query)[] calls =
         [
-            ("GetBrouterOverview", ""),
             ("SearchBrouter", "?query=guard&limit=3"),
             ("GetBrouterSetupGuide", "?renderMode=server"),
-            ("GetBrouterTypedRoutes", ""),
-            ("GetBrouterDocsList", ""),
             ("GetBrouterDocsPage", "?slug=guards"),
-            ("GetBrouterGuideSections", ""),
             ("GetBrouterGuideSection", "?heading=Async%20guards"),
-            ("GetBrouterApiList", ""),
-            ("GetBrouterApiDetails", "?typeName=Broute"),
+            ("GetBrouterApi", "?typeName=Broute"),
             ("GetBrouterRouteConstraints", ""),
-            ("InspectBrouterRouteTemplate", "?template=/users/{id:int}"),
-            ("AnalyzeBrouterRouteTable", "?templates=/users/{id:int}"),
-            ("GetBrouterSourceFiles", ""),
+            ("InspectBrouterRouteTemplates", "?templates=/users/{id:int}"),
             ("GetBrouterSourceFile", "?path=Demo/Client/AppRouter.razor"),
         ];
 
@@ -52,6 +45,15 @@ public class HttpMirrorTests
             var body = await response.Content.ReadAsStringAsync();
 
             Assert.IsFalse(string.IsNullOrWhiteSpace(body), $"GET /api/mcp/{tool} answered with an empty body.");
+        }
+
+        // The reference tools answer with the index of what there is when their key is left out, and
+        // that is a browser's way in: /api/mcp/GetBrouterApi with no query string is the type list.
+        foreach (var tool in new[] { "GetBrouterApi", "GetBrouterDocsPage", "GetBrouterGuideSection", "GetBrouterSourceFile" })
+        {
+            var body = await http.GetStringAsync($"/api/mcp/{tool}");
+
+            StringAssert.Contains(body, "# Bit.Brouter", $"GET /api/mcp/{tool} with no argument did not answer with an index.");
         }
     }
 
@@ -71,14 +73,18 @@ public class HttpMirrorTests
     {
         using var http = McpTestHost.CreateHttpClient();
 
-        using var document = JsonDocument.Parse(await http.GetStringAsync("/api/mcp/InspectBrouterRouteTemplate?template=/users/{id:int}"));
+        using var document = JsonDocument.Parse(await http.GetStringAsync("/api/mcp/InspectBrouterRouteTemplates?templates=/users/{id:int}"));
 
-        Assert.IsTrue(document.RootElement.GetProperty("isValid").GetBoolean());
-        Assert.AreEqual("users/{id:int}", document.RootElement.GetProperty("normalizedTemplate").GetString());
+        var route = document.RootElement.GetProperty("routes").EnumerateArray().Single();
 
-        // Shape is the analyzer's internal comparison key; it is only meaningful next to another
-        // template, and is deliberately kept out of a single template's answer.
-        Assert.IsFalse(document.RootElement.TryGetProperty("shape", out _), "The inspection leaked its internal collision key.");
+        Assert.IsTrue(route.GetProperty("isValid").GetBoolean());
+        Assert.AreEqual("users/{id:int}", route.GetProperty("normalizedTemplate").GetString());
+
+        // Shape is the router's comparison key; it is only meaningful next to another template, and
+        // is deliberately kept out of a single template's answer.
+        Assert.IsFalse(route.TryGetProperty("shape", out _),
+            "The inspection carried a collision key with nothing to collide with - and a member with nothing in it " +
+            "should not be serialized at all, which is how the protocol answers the same call.");
     }
 
     [TestMethod]

@@ -5,102 +5,54 @@ using Bit.Brouter.Demo.Server.Services;
 namespace Bit.Brouter.Tests.Mcp;
 
 /// <summary>
-/// The tools that hand out text an agent is meant to read and act on: the overview, the reference
-/// guide, the documentation pages, the setup guides and the demo's source files.
+/// The tools that hand out text an agent is meant to read and act on: the reference guide, the
+/// documentation pages, the setup guides and the demo's source files.
 /// <para>
 /// Every one of them answers out of an embedded resource or a rendered component, so what these
 /// tests really pin down is that the material is still there and still reachable - a renamed
 /// heading, a mistyped <c>LogicalName</c> in the .csproj or a page that no longer renders all
 /// produce a perfectly successful tool call carrying an apology instead of documentation.
 /// </para>
+/// <para>
+/// Each of them also takes one key and answers with one thing - and answers with the index of what
+/// there is when the key is left out. That second half is what a listing tool used to be, and it is
+/// tested here as the same behavior it replaced: the index has to name everything the key could be.
+/// </para>
 /// </summary>
 [TestClass]
-public class McpDocumentationToolTests
+public partial class McpDocumentationToolTests
 {
     [TestMethod]
-    public async Task Overview_opens_with_the_readme_and_names_the_build_it_answers_from()
+    public async Task The_guides_index_is_a_table_of_contents_in_reading_order()
     {
-        var overview = await McpCall.TextAsync("GetBrouterOverview");
+        // The index doubles as a table of contents: a sub-section has to follow the section it
+        // belongs to, or a reader picking a heading off it lands somewhere else entirely. It also
+        // carries each section's size, which is what makes fetching a three-hundred-line heading a
+        // decision rather than a surprise.
+        var index = await McpCall.TextAsync("GetBrouterGuideSection");
 
-        StringAssert.Contains(overview, "Blazor");
-        StringAssert.Contains(overview, $"Bit.Brouter {BrouterServerInstructions.BrouterVersion}");
-    }
+        var entries = index.Split('\n')
+                           .Select(line => line.TrimEnd())
+                           .Where(line => line.StartsWith("- ", StringComparison.Ordinal) || line.StartsWith("  - ", StringComparison.Ordinal))
+                           .ToArray();
 
-    [TestMethod]
-    public async Task Overview_carries_the_three_guide_sections_it_inlines()
-    {
-        var overview = await McpCall.TextAsync("GetBrouterOverview");
+        Assert.IsTrue(entries.Length > 20, $"Only {entries.Length} guide sections are in the index; the README has far more.");
 
-        foreach (var heading in new[] { "Install", "Quick start", "Features" })
+        StringAssert.StartsWith(entries[0], "- Install", "The guide no longer opens with its Install section.");
+
+        foreach (var entry in entries)
         {
-            StringAssert.Contains(overview, $"## {heading}",
-                $"The overview inlines the guide's '{heading}' section, and it is not in the answer.");
-
-            Assert.IsFalse(overview.Contains($"The guide's \"{heading}\" section was not found", StringComparison.Ordinal),
-                $"The guide's '{heading}' heading was renamed, so the overview now hands out an apology in its place.");
-        }
-    }
-
-    [TestMethod]
-    public async Task Overview_routes_the_reader_to_every_tool_this_server_has()
-    {
-        // The overview is the entry point: a tool it does not mention is a tool an agent that starts
-        // here never learns about.
-        var overview = await McpCall.TextAsync("GetBrouterOverview");
-        var mentioned = ToolNames.MentionedIn(overview).ToHashSet(StringComparer.Ordinal);
-
-        foreach (var tool in McpToolSurfaceTests.ExpectedTools)
-        {
-            // The overview is what the reader is already holding, so it does not point at itself.
-            if (tool is "GetBrouterOverview") continue;
-
-            Assert.IsTrue(mentioned.Contains(tool), $"The overview's 'Which tool to call' section never mentions '{tool}'.");
+            StringAssert.Matches(entry, LinesRegex(), $"'{entry}' does not say how long the section is.");
         }
 
-        foreach (var tool in mentioned)
+        // Every heading in the index has to be one the tool answers to - that is the whole point of
+        // handing it over. The sub-sections are indented under the section they sit inside.
+        foreach (var heading in new[] { "Install", "Data loader", "Loader caching (stale-while-revalidate)" })
         {
-            CollectionAssert.Contains(McpToolSurfaceTests.ExpectedTools, tool,
-                $"The overview tells the reader to call '{tool}', which this server does not expose.");
+            StringAssert.Contains(index, heading, $"'{heading}' is missing from the guide index.");
         }
-    }
 
-    [TestMethod]
-    public async Task Guide_sections_are_listed_with_their_level_and_size()
-    {
-        var sections = await McpCall.StructuredAsync<BrouterGuideSectionDto[]>("GetBrouterGuideSections");
-
-        Assert.IsTrue(sections.Length > 20, $"Only {sections.Length} guide sections were listed; the README has far more.");
-
-        foreach (var section in sections)
-        {
-            Assert.IsFalse(string.IsNullOrWhiteSpace(section.Heading));
-            Assert.IsTrue(section.Level is 2 or 3, $"'{section.Heading}' is listed at level {section.Level}.");
-            Assert.IsTrue(section.Lines > 0, $"'{section.Heading}' is listed as empty.");
-
-            // A sub-section without its parent cannot be placed by the reader.
-            if (section.Level == 3) Assert.IsNotNull(section.Parent, $"Sub-section '{section.Heading}' names no parent section.");
-            else Assert.IsNull(section.Parent, $"Top-level section '{section.Heading}' names a parent.");
-        }
-    }
-
-    [TestMethod]
-    public async Task Guide_sections_are_listed_in_reading_order_under_their_own_parents()
-    {
-        // The listing doubles as a table of contents: a sub-section has to follow the section it
-        // belongs to, or a reader picking a heading off it lands somewhere else entirely.
-        var sections = await McpCall.StructuredAsync<BrouterGuideSectionDto[]>("GetBrouterGuideSections");
-
-        Assert.AreEqual("Install", sections[0].Heading, "The guide no longer opens with its Install section.");
-
-        string? current = null;
-
-        foreach (var section in sections)
-        {
-            if (section.Level == 2) { current = section.Heading; continue; }
-
-            Assert.AreEqual(current, section.Parent,
-                $"'{section.Heading}' is listed under '{section.Parent}' but sits inside '{current}' in the README.");
-        }
+        StringAssert.Contains(index, "GetBrouterGuideSection(heading:", "The index never says what to do with a heading.");
     }
 
     [TestMethod]
@@ -132,29 +84,42 @@ public class McpDocumentationToolTests
     }
 
     [TestMethod]
-    public async Task An_unknown_guide_heading_answers_with_the_headings_that_do_exist()
+    public async Task An_unknown_guide_heading_answers_with_where_the_headings_are()
     {
         var answer = await McpCall.TextAsync("GetBrouterGuideSection", new() { ["heading"] = "Teleportation" });
 
         StringAssert.Contains(answer, "no section called 'Teleportation'");
-        StringAssert.Contains(answer, "'Async guards'", "The apology does not list what the guide does have.");
+        StringAssert.Contains(answer, "GetBrouterGuideSection with no heading", "The apology does not say how to find out what the guide does have.");
     }
 
     [TestMethod]
-    public async Task The_documentation_pages_are_listed_with_everything_needed_to_pick_one()
+    public async Task A_partial_guide_heading_answers_with_the_headings_it_could_have_meant()
     {
-        var pages = await McpCall.StructuredAsync<BrouterDocsPageDto[]>("GetBrouterDocsList");
+        var answer = await McpCall.TextAsync("GetBrouterGuideSection", new() { ["heading"] = "guards" });
 
-        Assert.AreEqual(DocsCatalog.AllPages.Count(), pages.Length);
+        StringAssert.Contains(answer, "Did you mean");
+        StringAssert.Contains(answer, "Async guards", "The apology does not name the section the caller was reaching for.");
+    }
 
-        foreach (var page in pages)
+    [TestMethod]
+    public async Task The_documentation_index_carries_everything_needed_to_pick_a_page()
+    {
+        var index = await McpCall.TextAsync("GetBrouterDocsPage");
+
+        foreach (var page in DocsCatalog.AllPages)
         {
-            Assert.IsFalse(string.IsNullOrWhiteSpace(page.Section));
-            Assert.IsFalse(string.IsNullOrWhiteSpace(page.Title));
-            Assert.IsFalse(string.IsNullOrWhiteSpace(page.Description));
-            Assert.IsFalse(string.IsNullOrWhiteSpace(page.Keywords), $"'{page.Title}' carries no keywords, so it cannot be searched for.");
-            StringAssert.StartsWith(page.Url, "/docs");
+            var slug = page.Slug.Length == 0 ? "overview" : page.Slug;
+
+            StringAssert.Contains(index, $"- `{slug}` - **{page.Title}**: {page.Description}",
+                $"'{page.Title}' is not in the documentation index, or is not described there.");
         }
+
+        foreach (var section in DocsCatalog.Sections)
+        {
+            StringAssert.Contains(index, $"## {section.Title}", $"The index does not group its pages under '{section.Title}'.");
+        }
+
+        StringAssert.Contains(index, "GetBrouterDocsPage(slug:", "The index never says what to do with a slug.");
     }
 
     [TestMethod]
@@ -175,14 +140,16 @@ public class McpDocumentationToolTests
     [TestMethod]
     public async Task The_documentation_overview_answers_to_the_words_a_caller_would_actually_use()
     {
-        // Its real slug is the empty string, which nobody types.
-        var byOmission = await McpCall.TextAsync("GetBrouterDocsPage");
+        // Its real slug is the empty string, which nobody types - and which is also how the tool is
+        // called when it is asked for the index, so the words that stand in for it have to work.
+        var byAlias = await McpCall.TextAsync("GetBrouterDocsPage", new() { ["slug"] = "overview" });
 
-        foreach (var alias in new[] { "overview", "index", "docs" })
+        StringAssert.StartsWith(byAlias, "Bit.Brouter documentation page: /docs");
+
+        foreach (var alias in new[] { "index", "docs" })
         {
-            var byAlias = await McpCall.TextAsync("GetBrouterDocsPage", new() { ["slug"] = alias });
-
-            Assert.AreEqual(byOmission, byAlias, $"'{alias}' does not resolve to the documentation overview.");
+            Assert.AreEqual(byAlias, await McpCall.TextAsync("GetBrouterDocsPage", new() { ["slug"] = alias }),
+                $"'{alias}' does not resolve to the documentation overview.");
         }
     }
 
@@ -196,27 +163,30 @@ public class McpDocumentationToolTests
     }
 
     [TestMethod]
-    public async Task The_source_files_include_the_route_table_and_a_sample_per_render_mode()
+    public async Task The_source_index_includes_the_route_table_and_a_sample_per_render_mode()
     {
-        var files = await McpCall.StructuredAsync<BrouterSourceFileDto[]>("GetBrouterSourceFiles");
-        var paths = files.Select(file => file.Path).ToArray();
+        var index = await McpCall.TextAsync("GetBrouterSourceFile");
 
-        CollectionAssert.Contains(paths, "Demo/Client/AppRouter.razor");
+        StringAssert.Contains(index, "`Demo/Client/AppRouter.razor`");
 
         foreach (var prefix in new[] { "Sample/Server/", "Sample/Wasm/", "Sample/Auto/", "Sample/Core/Extensions/" })
         {
-            Assert.IsTrue(paths.Any(path => path.StartsWith(prefix, StringComparison.Ordinal)),
+            StringAssert.Contains(index, $"`{prefix}",
                 $"No source file under '{prefix}' was embedded, so the setup guide that quotes it has nothing to show.");
         }
 
-        foreach (var file in files)
+        foreach (var file in BrouterSourceCatalog.SourceFiles)
         {
             Assert.IsTrue(file.Kind is "Demo" or "Sample", $"'{file.Path}' is listed as '{file.Kind}'.");
             Assert.IsTrue(file.Lines > 0, $"'{file.Path}' is listed as empty.");
             Assert.IsFalse(file.Path.StartsWith("BrouterSource", StringComparison.Ordinal),
                 $"'{file.Path}' still carries the resource prefix a caller is not supposed to know about.");
             Assert.IsFalse(file.Path.Contains('\\'), $"'{file.Path}' is spelled with a backslash, which no caller would type.");
+
+            StringAssert.Contains(index, $"`{file.Path}` ({file.Lines} lines)", $"'{file.Path}' is not in the source index.");
         }
+
+        StringAssert.Contains(index, "GetBrouterSourceFile(path:", "The index never says what to do with a path.");
     }
 
     [TestMethod]
@@ -247,11 +217,11 @@ public class McpDocumentationToolTests
     }
 
     [TestMethod]
-    public async Task An_unrecognizable_source_path_points_at_the_listing_tool()
+    public async Task An_unrecognizable_source_path_points_at_the_index()
     {
         var answer = await McpCall.TextAsync("GetBrouterSourceFile", new() { ["path"] = "../../../etc/passwd" });
 
-        StringAssert.Contains(answer, "GetBrouterSourceFiles");
+        StringAssert.Contains(answer, "GetBrouterSourceFile with no path");
 
         // Pointing at the listing tool is only the polite half; the answer must also be about
         // nothing, rather than the contents of whatever the path climbed out to.
@@ -307,4 +277,8 @@ public class McpDocumentationToolTests
 
         foreach (var renderMode in BrouterSetupGuide.RenderModes) StringAssert.Contains(answer, renderMode);
     }
+
+    // Every entry of the guide index ends in the section's size: "- Data loader (36 lines)".
+    [System.Text.RegularExpressions.GeneratedRegex(@"\(\d+ lines\)$")]
+    private static partial System.Text.RegularExpressions.Regex LinesRegex();
 }

@@ -103,29 +103,44 @@ public class SearchIndexTests
     }
 
     [TestMethod]
-    public void Search_DoesNotAnswerEveryQuestionWithTheWholeGuide()
+    public void Search_DoesNotIndexTheReadme()
     {
-        // The README's first heading covers two thirds of the file, so it matches nearly any query
-        // and answers none of them with more than "read the guide".
-        var broad = BswupSourceCatalog.GuideSections.OrderByDescending(section => section.Lines).First();
+        // The README says what the documentation pages say, in one 30,000-character section that
+        // matched nearly every query and answered none of them with more than "read the guide".
+        // It is still served as a resource; it is no longer something a search can spend a
+        // client's context window on.
+        var hits = new[] { "cache", "update", "progress", "worker", "install", "handler", "cleanup", "upgrade" }
+            .SelectMany(term => Search(term, 50))
+            .Where(hit => hit.Kind == "Guide section")
+            .ToArray();
 
-        foreach (var query in new[] { "cache an external CDN script", "bump the cache bucket per build", "subresource integrity", "app never picks up new versions" })
-        {
-            var hits = Search(query, 3);
-
-            Assert.AreNotEqual(broad.Heading, hits[0].Title,
-                $"'{query}' was answered with the whole guide first: {string.Join(", ", hits.Select(hit => hit.Title))}");
-        }
+        Assert.AreEqual(0, hits.Length, string.Join(", ", hits.Select(hit => hit.Title)));
     }
 
     [TestMethod]
-    public void Search_StillFindsTheBroadGuideSectionWhenItIsWhatWasAsked()
+    public void Search_IgnoresTheWordsEveryEntryHereShares()
     {
-        // De-weighted, not hidden: two thirds of the guide is still the only place some of this
-        // material is written down.
-        var broad = BswupSourceCatalog.GuideSections.OrderByDescending(section => section.Lines).First();
+        // "bswup" is in every entry, so it separates nothing - and it used to count towards the
+        // "how many terms matched" multiplier, which handed every query to the longest document.
+        var withSubject = Search("how do I install bswup", 5).Select(hit => hit.Title).ToArray();
+        var without = Search("how do I install", 5).Select(hit => hit.Title).ToArray();
 
-        RankOf(broad.Heading, broad.Heading, limit: 20);
+        CollectionAssert.AreEqual(without, withSubject,
+            $"naming the subject changed the answer: {string.Join(", ", withSubject)}");
+    }
+
+    [TestMethod]
+    [DataRow("bswup")]
+    [DataRow("what is bswup")]
+    [DataRow("bit bswup blazor")]
+    [DataRow("bit-bswup.js")]
+    public void Search_ForTheLibrarysOwnNameStillAnswers(string query)
+    {
+        // Those shared words are dropped only when the query says something else as well.
+        // These are the first thing anyone types, and every word of them is on that list - so
+        // filtered out unconditionally they would have the library answer its own name with
+        // nothing at all, which reads as "no such thing" rather than "ask more precisely".
+        Assert.IsTrue(Search(query, 5).Length > 0, $"'{query}' came back empty");
     }
 
     [TestMethod]
@@ -149,9 +164,23 @@ public class SearchIndexTests
     }
 
     [TestMethod]
+    public void Search_NarrowsTheFollowUpCallToTheHitItself()
+    {
+        // The whole point of a hit naming a call is that the agent runs it verbatim. A bare
+        // GetBswupServiceWorkerSettings() answers a question about one setting with twenty-four,
+        // which is the cost this index exists to avoid.
+        var narrowed = new[] { "Script attribute", "Service worker setting", "Service worker mode", "Event", "JavaScript API" };
+
+        foreach (var hit in Search("cache update install handler version scope", 50).Where(hit => narrowed.Contains(hit.Kind)))
+        {
+            StringAssert.Contains(hit.Tool, "(name: \"", $"{hit.Kind} '{hit.Title}' points at an unnarrowed call: {hit.Tool}");
+        }
+    }
+
+    [TestMethod]
     public void Search_CoversEveryCorpusItClaimsTo()
     {
-        var kinds = new[] { "Guide section", "Docs page", "Script attribute", "Service worker setting", "Service worker mode", "Event", "JavaScript API", "Progress parameter", "Source file" };
+        var kinds = new[] { "Docs page", "Script attribute", "Service worker setting", "Service worker mode", "Event", "JavaScript API", "Progress parameter", "Source file" };
 
         foreach (var kind in kinds)
         {

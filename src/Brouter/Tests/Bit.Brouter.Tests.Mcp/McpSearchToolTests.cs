@@ -56,7 +56,7 @@ public class McpSearchToolTests
         var member = result.Hits.FirstOrDefault(hit => hit.Title.Equals("Broute.KeepAlive", StringComparison.Ordinal));
 
         Assert.IsNotNull(member, $"'KeepAlive' did not surface Broute.KeepAlive. It found: {string.Join(", ", result.Hits.Select(hit => hit.Title))}.");
-        Assert.AreEqual("GetBrouterApiDetails(typeName: \"Broute\")", member.Tool);
+        Assert.AreEqual("GetBrouterApi(typeName: \"Broute\")", member.Tool);
     }
 
     [TestMethod]
@@ -105,17 +105,64 @@ public class McpSearchToolTests
     }
 
     [TestMethod]
-    public async Task The_query_and_the_words_it_was_ranked_by_come_back_with_the_hits()
+    public async Task A_hit_carries_nothing_the_caller_already_has()
     {
+        // The query went out one message ago and the words it was reduced to change nothing about a
+        // hit that can be read as it stands: both used to come back with every search, and both are
+        // now kept for the answer that has nothing else to say.
         var result = await SearchAsync("How do I redirect from a guard?");
 
-        Assert.AreEqual("How do I redirect from a guard?", result.Query);
+        Assert.IsTrue(result.Hits.Length > 0);
+        Assert.IsNull(result.Terms, "A successful search echoed the words it was ranked by back at the caller.");
+        Assert.IsNull(result.Message);
+    }
+
+    [TestMethod]
+    public async Task A_query_that_finds_nothing_says_what_it_was_ranked_by()
+    {
+        // Here the tokenizing is the answer: "guard" found nothing is a different fact from "the
+        // three words you sent were all filler", and the caller cannot tell them apart otherwise.
+        var result = await SearchAsync("How do I zzz from a qqq?");
+
+        Assert.AreEqual(0, result.Hits.Length);
+        Assert.IsNotNull(result.Terms);
 
         // Filler words rank nothing and would drag in every entry that merely contains them.
         CollectionAssert.DoesNotContain(result.Terms, "how");
         CollectionAssert.DoesNotContain(result.Terms, "from");
-        CollectionAssert.Contains(result.Terms, "redirect");
-        CollectionAssert.Contains(result.Terms, "guard");
+        CollectionAssert.Contains(result.Terms, "zzz");
+    }
+
+    [TestMethod]
+    public async Task The_librarys_own_name_does_not_rank_anything_unless_it_is_all_that_was_asked()
+    {
+        // Every entry here is about Brouter, so "brouter" separates nothing - and worse, it matches
+        // everything, which drags the longest documents to the top of every query it appears in.
+        var withName = await SearchAsync("brouter keep alive");
+        var without = await SearchAsync("keep alive");
+
+        CollectionAssert.AreEqual(
+            without.Hits.Select(hit => hit.Title).ToArray(),
+            withName.Hits.Select(hit => hit.Title).ToArray(),
+            "Naming the library changed the ranking, so the word is still being counted as a term.");
+
+        // Said on its own it is all there is to go on, so it still has to answer.
+        var alone = await SearchAsync("brouter");
+
+        Assert.IsTrue(alone.Hits.Length > 0, "A search for the library's own name came back with nothing.");
+    }
+
+    [TestMethod]
+    public async Task The_same_thing_is_not_offered_twice_under_one_name()
+    {
+        // Two overloads of a method are two members and one place to read about them. Listed twice,
+        // the second copy costs a hit out of the caller's budget to say nothing new.
+        var result = await SearchAsync("keep alive", limit: 20);
+
+        var duplicates = result.Hits.GroupBy(hit => (hit.Title, hit.Tool)).Where(group => group.Count() > 1).ToArray();
+
+        Assert.AreEqual(0, duplicates.Length,
+            $"The same hit came back more than once: {string.Join(", ", duplicates.Select(group => group.Key.Title))}");
     }
 
     [TestMethod]
@@ -141,7 +188,7 @@ public class McpSearchToolTests
         var result = await SearchAsync("how do the and for");
 
         Assert.AreEqual(0, result.Hits.Length);
-        Assert.AreEqual(0, result.Terms.Length);
+        Assert.AreEqual(0, result.Terms!.Length);
         Assert.IsNotNull(result.Message);
         StringAssert.Contains(result.Message, "filler word");
     }
@@ -178,6 +225,8 @@ public class McpSearchToolTests
 
         var result = await SearchAsync(query);
 
+        // Nothing matched, so the answer says what it was ranked by - which is where the cap shows.
+        Assert.IsNotNull(result.Terms);
         Assert.IsTrue(result.Terms.Length <= 16, $"{result.Terms.Length} terms were searched by; the cap is 16.");
     }
 }

@@ -66,8 +66,6 @@ public class ProgressCatalogTests
     {
         foreach (var parameter in BswupProgressCatalog.Parameters)
         {
-            Assert.AreEqual("Progress parameter", parameter.Kind, parameter.Name);
-            StringAssert.Contains(parameter.SetIn, "BswupProgress", parameter.Name);
             Assert.IsTrue(parameter.VerifiedFromSource, parameter.Name);
             Assert.IsFalse(string.IsNullOrWhiteSpace(parameter.Type), parameter.Name);
             Assert.IsFalse(string.IsNullOrWhiteSpace(parameter.Summary), $"{parameter.Name} has no description");

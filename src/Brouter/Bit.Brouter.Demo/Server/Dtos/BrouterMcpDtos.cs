@@ -1,31 +1,13 @@
-using System.Text.Json.Serialization;
-
 namespace Bit.Brouter.Demo.Server.Dtos;
 
-/// <summary>One page of the documentation site (mirrors an entry of the client's DocsCatalog).</summary>
-public record BrouterDocsPageDto
-{
-    /// <summary>The sidebar section the page belongs to, e.g. "Routing".</summary>
-    public required string Section { get; init; }
-
-    /// <summary>The value to pass to GetBrouterDocsPage. Empty string for the docs overview.</summary>
-    public required string Slug { get; init; }
-
-    /// <summary>The page's URL on the live documentation site.</summary>
-    public required string Url { get; init; }
-
-    public required string Title { get; init; }
-
-    public required string Description { get; init; }
-
-    /// <summary>Space-separated search terms that the page covers - useful for picking the right slug.</summary>
-    public required string Keywords { get; init; }
-}
-
-/// <summary>One heading of the library's README, which doubles as its reference guide.</summary>
+/// <summary>
+/// One heading of the library's README, which doubles as its reference guide. The guide is read
+/// through GetBrouterGuideSection (and the brouter://guide resources); this record is how the
+/// catalog, the search index and the completions describe a section to each other.
+/// </summary>
 public record BrouterGuideSectionDto
 {
-    /// <summary>The heading text, e.g. "Loader caching (stale-while-revalidate)". Pass it to GetBrouterGuideSection.</summary>
+    /// <summary>The heading text, e.g. "Loader caching (stale-while-revalidate)".</summary>
     public required string Heading { get; init; }
 
     /// <summary>Markdown heading level: 2 for a top-level section, 3 for a sub-section.</summary>
@@ -95,39 +77,10 @@ public record BrouterApiTypeDetailsDto
     public required BrouterApiMemberDto[] Members { get; init; }
 }
 
-/// <summary>What GetBrouterApiDetails answers: the type's reference, or why there is none.</summary>
-public record BrouterApiDetailsResultDto
-{
-    /// <summary>The full reference of the type, when a public type goes by the requested name.</summary>
-    public BrouterApiTypeDetailsDto? Details { get; init; }
-
-    /// <summary>Set instead of Details when nothing matched - it names the closest candidates.</summary>
-    public string? Message { get; init; }
-}
-
-/// <summary>A route constraint usable inside a route template, e.g. <c>{id:int}</c>.</summary>
-public record BrouterConstraintDto
-{
-    /// <summary>The constraint text as written in a template, e.g. "int" or "range(1,10)".</summary>
-    public required string Token { get; init; }
-
-    /// <summary>type (validates AND converts the bound value), validation (accepts/rejects, value stays a string), custom or chain.</summary>
-    public required string Category { get; init; }
-
-    public required string Rule { get; init; }
-
-    public required string PassExample { get; init; }
-
-    public required string FailExample { get; init; }
-
-    /// <summary>A live URL of the documentation site that exercises the constraint with the passing example.</summary>
-    public required string TryUrl { get; init; }
-}
-
 /// <summary>A source file of the demo/samples, retrievable through GetBrouterSourceFile.</summary>
 public record BrouterSourceFileDto
 {
-    /// <summary>The path to pass to GetBrouterSourceFile, e.g. "Demo/Pages/DataPage.razor".</summary>
+    /// <summary>The path to pass to GetBrouterSourceFile, e.g. "Demo/Client/Pages/DataPage.razor".</summary>
     public required string Path { get; init; }
 
     /// <summary>Demo (this documentation site) or Sample (the minimal hosting-model samples).</summary>
@@ -160,108 +113,24 @@ public record BrouterSearchHitDto
 /// <summary>What SearchBrouter answers: the ranked hits, or - when there are none - why, and what to try instead.</summary>
 public record BrouterSearchResultDto
 {
-    /// <summary>The query as it was received, so a result read out of context still says what was asked.</summary>
-    public required string Query { get; init; }
-
-    /// <summary>The words the query was actually searched by: punctuation, duplicates and filler words removed.</summary>
-    public required string[] Terms { get; init; }
-
     /// <summary>The matches, best first. Empty when nothing matched - Message then says what to do about it.</summary>
     public required BrouterSearchHitDto[] Hits { get; init; }
 
     /// <summary>True when the ranking was cut short at the requested limit, so a narrower query would show more.</summary>
     public bool HasMore { get; init; }
 
+    /// <summary>
+    /// The words the query was actually searched by - punctuation, duplicates and filler words
+    /// removed. Present only when nothing matched, which is the one time it explains something the
+    /// caller could not work out from the query it just sent.
+    /// </summary>
+    public string[]? Terms { get; init; }
+
     /// <summary>Set only when Hits is empty: the reason, and the tool to fall back to.</summary>
     public string? Message { get; init; }
 
     /// <summary>Titles that nearly matched, when nothing matched outright - a query worth retrying with.</summary>
     public string[]? DidYouMean { get; init; }
-}
-
-/// <summary>One URL builder emitted by the Bit.Brouter.Generators source generator.</summary>
-public record BrouterTypedRouteDto
-{
-    /// <summary>The generated method, e.g. "Counter".</summary>
-    public required string Method { get; init; }
-
-    /// <summary>Its parameter list, e.g. "(int init)".</summary>
-    public required string Signature { get; init; }
-
-    /// <summary>The URL it builds for a sample argument set - what the method is for, shown rather than described.</summary>
-    public string? ExampleUrl { get; init; }
-}
-
-/// <summary>The typed routes a project gets from the Bit.Brouter.Generators package.</summary>
-public record BrouterTypedRoutesDto
-{
-    /// <summary>The assembly whose route declarations produced these builders.</summary>
-    public required string GeneratedFor { get; init; }
-
-    /// <summary>How the generator produces this class, and how to enable it.</summary>
-    public required string HowItWorks { get; init; }
-
-    public required BrouterTypedRouteDto[] Builders { get; init; }
-
-    /// <summary>The constants under BrouterRoutes.Names - one per named route, for IBrouter.NavigateToName.</summary>
-    public required Dictionary<string, string> Names { get; init; }
-}
-
-/// <summary>What GetBrouterTypedRoutes answers: the generated output, or why this build has none.</summary>
-public record BrouterTypedRoutesResultDto
-{
-    /// <summary>The builders and route names the generator emitted for the documentation site.</summary>
-    public BrouterTypedRoutesDto? TypedRoutes { get; init; }
-
-    /// <summary>Set instead of TypedRoutes when the generator did not run for this build.</summary>
-    public string? Message { get; init; }
-}
-
-/// <summary>One route of an analyzed route table.</summary>
-public record BrouterRouteTableEntryDto
-{
-    public required string Template { get; init; }
-
-    public required bool IsValid { get; init; }
-
-    public string? Error { get; init; }
-
-    public int Specificity { get; init; }
-
-    /// <summary>1 = the route the router prefers when several of them match the same URL.</summary>
-    public int MatchOrder { get; init; }
-
-    /// <summary>
-    /// The template reduced to what the router actually tells apart - parameter names dropped, but
-    /// constraints and declared defaults kept. Two routes sharing a shape are indistinguishable.
-    /// </summary>
-    public string? Shape { get; init; }
-}
-
-/// <summary>The result of analyzing a set of route templates together.</summary>
-public record BrouterRouteTableAnalysisDto
-{
-    /// <summary>The routes, most specific first - the order in which the router prefers them.</summary>
-    public required BrouterRouteTableEntryDto[] Routes { get; init; }
-
-    /// <summary>Groups of templates that match exactly the same URLs. Brouter throws at registration for these.</summary>
-    public required string[][] Ambiguous { get; init; }
-
-    public required string[] Notes { get; init; }
-
-    /// <summary>
-    /// True when more templates were sent than this server analyzes in one call, which makes every
-    /// other member a partial answer - <see cref="Ambiguous"/> most of all, since it can only report
-    /// collisions among the templates it was given. Treat such an answer as covering the first
-    /// <see cref="AnalyzedTemplateCount"/> templates and nothing else.
-    /// </summary>
-    public bool IsPartial { get; init; }
-
-    /// <summary>How many templates the call sent - present only when <see cref="IsPartial"/> is true.</summary>
-    public int? SubmittedTemplateCount { get; init; }
-
-    /// <summary>How many of them were analyzed - present only when <see cref="IsPartial"/> is true.</summary>
-    public int? AnalyzedTemplateCount { get; init; }
 }
 
 /// <summary>One '/'-separated segment of a parsed route template.</summary>
@@ -288,7 +157,16 @@ public record BrouterTemplateSegmentDto
     public int Specificity { get; init; }
 }
 
-/// <summary>The result of parsing a route template with Brouter's own parser.</summary>
+/// <summary>
+/// The result of parsing one route template with Brouter's own parser.
+/// <para>
+/// The detail members - the segments, the parameter names, the notes - are filled in when a single
+/// template was submitted, which is the call that is about that template. In a set they are left
+/// out and <see cref="MatchOrder"/> and <see cref="Shape"/> take their place: that call is about
+/// how the templates relate, and a set of two hundred would otherwise answer with the segments of
+/// two hundred templates nobody asked about individually.
+/// </para>
+/// </summary>
 public record BrouterTemplateInspectionDto
 {
     public required string Template { get; init; }
@@ -304,18 +182,47 @@ public record BrouterTemplateInspectionDto
     /// <summary>Sum of the segment specificities - the tie-breaker between two routes that both match.</summary>
     public int Specificity { get; init; }
 
+    /// <summary>1 = the route the router prefers when several of them match the same URL. Only set within a set.</summary>
+    public int? MatchOrder { get; init; }
+
     public string[]? ParameterNames { get; init; }
 
     public BrouterTemplateSegmentDto[]? Segments { get; init; }
 
     /// <summary>
-    /// The canonical identity of what the template matches, mirroring the key the router itself uses
-    /// to reject ambiguous registrations. Serialized only as part of a route-table analysis, where
-    /// comparing one template against another is the point.
+    /// The template reduced to what the router actually tells apart - parameter names dropped, but
+    /// constraints and declared defaults kept - mirroring the key the router itself uses to reject
+    /// ambiguous registrations. Two routes sharing a shape are indistinguishable, so it is reported
+    /// where comparing one template against another is the point, and left out otherwise.
     /// </summary>
-    [JsonIgnore]
     public string? Shape { get; init; }
 
     /// <summary>Notes about the template's behavior that are easy to get wrong (middle optionals, catch-alls, ...).</summary>
     public string[]? Notes { get; init; }
+}
+
+/// <summary>The result of parsing one route template, or of comparing a set of them.</summary>
+public record BrouterRouteAnalysisDto
+{
+    /// <summary>The routes, most specific first - the order in which the router prefers them.</summary>
+    public required BrouterTemplateInspectionDto[] Routes { get; init; }
+
+    /// <summary>Groups of templates that match exactly the same URLs. Brouter throws at registration for these.</summary>
+    public required string[][] Ambiguous { get; init; }
+
+    public required string[] Notes { get; init; }
+
+    /// <summary>
+    /// True when more templates were sent than this server analyzes in one call, which makes every
+    /// other member a partial answer - <see cref="Ambiguous"/> most of all, since it can only report
+    /// collisions among the templates it was given. Treat such an answer as covering the first
+    /// <see cref="AnalyzedTemplateCount"/> templates and nothing else.
+    /// </summary>
+    public bool IsPartial { get; init; }
+
+    /// <summary>How many templates the call sent - present only when <see cref="IsPartial"/> is true.</summary>
+    public int? SubmittedTemplateCount { get; init; }
+
+    /// <summary>How many of them were analyzed - present only when <see cref="IsPartial"/> is true.</summary>
+    public int? AnalyzedTemplateCount { get; init; }
 }

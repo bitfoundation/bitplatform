@@ -31,6 +31,7 @@ public static class BrouterCompletions
         "the loader keeps returning stale data after a save",
         "two routes match the same URL and the wrong one wins",
         "the component is recreated on every navigation and loses its state",
+        "the page still shows the previous tenant's data after switching tenant",
         "/files/report.pdf renders the 404 route"
     ];
 
@@ -42,6 +43,7 @@ public static class BrouterCompletions
         "keep the search page alive so its scroll position survives navigation",
         "animate between two routes with a view transition",
         "nest a settings section under a shared layout",
+        "rebuild the current page from scratch after the user switches tenant",
         "bind a filter to the query string"
     ];
 

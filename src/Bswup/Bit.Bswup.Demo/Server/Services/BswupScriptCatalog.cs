@@ -113,15 +113,12 @@ public static partial class BswupScriptCatalog
             .. _scriptOptionDocs.Select(doc => new BswupOptionDto
             {
                 Name = doc.Name,
-                Kind = "Script attribute",
-                SetIn = "<script src=\"_content/Bit.Bswup/bit-bswup.js\"> attribute (or a property of the global object named by the `options` attribute)",
                 Type = doc.Type,
                 // The parsed default wins: it is what the shipped script will actually apply.
                 Default = defaults.GetValueOrDefault(doc.DefaultKey ?? doc.Name) ?? doc.Default,
                 Summary = doc.Summary,
                 Remarks = doc.Remarks,
-                VerifiedFromSource = attributes.Contains(doc.Name),
-                Docs = "GetBswupDocsPage(slug: \"script-options\")"
+                VerifiedFromSource = attributes.Contains(doc.Name)
             })
         ];
     }
@@ -145,14 +142,11 @@ public static partial class BswupScriptCatalog
         var settings = declarations.Select(setting => new BswupOptionDto
         {
             Name = setting.Name,
-            Kind = "Service worker setting",
-            SetIn = "service-worker.js, assigned on `self` BEFORE the importScripts line",
             Type = _settingTypes.GetValueOrDefault(setting.Name),
             Default = defaults.GetValueOrDefault(setting.Name) ?? _settingDefaults.GetValueOrDefault(setting.Name),
             Summary = setting.Summary.Length > 0 ? setting.Summary : null,
             Remarks = _settingRemarks.GetValueOrDefault(setting.Name),
-            VerifiedFromSource = true,
-            Docs = "GetBswupDocsPage(slug: \"service-worker\")"
+            VerifiedFromSource = true
         }).ToList();
 
         // A setting the interface no longer declares is still worth answering for: an app may have
@@ -164,12 +158,9 @@ public static partial class BswupScriptCatalog
             settings.Add(new BswupOptionDto
             {
                 Name = name,
-                Kind = "Service worker setting",
-                SetIn = "service-worker.js, assigned on `self` BEFORE the importScripts line",
                 Summary = "This setting is documented here but the shipped service worker no longer declares it - treat it as removed and verify against GetBswupSourceFile(path: \"Library/Scripts/bit-bswup.sw.ts\").",
                 Remarks = remarks,
-                VerifiedFromSource = false,
-                Docs = "GetBswupDocsPage(slug: \"service-worker\")"
+                VerifiedFromSource = false
             });
         }
 
@@ -248,8 +239,7 @@ public static partial class BswupScriptCatalog
                 modes.Add(new BswupModeDto
                 {
                     Name = name,
-                    Settings = new Dictionary<string, string>(settings, StringComparer.Ordinal),
-                    Note = "A preset only fills settings the service-worker file has not assigned itself, so any explicit assignment wins - including an explicitly falsy one such as `self.caseInsensitiveUrl = false`."
+                    Settings = new Dictionary<string, string>(settings, StringComparer.Ordinal)
                 });
             }
         }
@@ -491,7 +481,7 @@ public static partial class BswupScriptCatalog
         ["maxRetries"] = "Additional attempts after the first, for transient failures only (rejected fetch, 408/429/5xx). 404/403 and integrity mismatches are never retried - identical bytes would fail identically.",
         ["retryDelay"] = "Attempt n waits retryDelay * 2^(n-1) plus jitter, so a mass failure does not re-hit the origin in one synchronized burst.",
         ["cacheVersion"] = "Only the cache bucket name is affected; per-asset cache busting (?v=) and integrity still use each asset's own hash. Feed it a build-stamped value (commit SHA, build timestamp) so it bumps once per publish instead of on every noisy rebuild.",
-        ["mode"] = "A preset bundle of isPassive, defaultUrl, forcePrerender, errorTolerance, caseInsensitiveUrl and noPrerenderQuery. It only fills settings the file has not assigned itself. Call GetBswupServiceWorkerModes for what each one expands to.",
+        ["mode"] = "A preset bundle of isPassive, defaultUrl, forcePrerender, errorTolerance, caseInsensitiveUrl and noPrerenderQuery. It only fills settings the file has not assigned itself; the presets and what each expands to come back with this setting.",
     };
 
     private record EventDoc(string Name, string? Payload = null, string? Summary = null, string? Deprecated = null);

@@ -1,4 +1,4 @@
-@page "/media-devices"
+﻿@page "/media-devices"
 @implements IAsyncDisposable
 @inject Bit.Butil.MediaDevices mediaDevices
 
@@ -89,7 +89,7 @@ if (_stream is not null)
             <button class="danger" @onclick="StopStream">Stop stream</button>
         </div>
         <video @ref="_preview" autoplay playsinline muted
-               style="margin-top:1rem;max-width:100%;border-radius:8px;background:#111;min-height:120px"></video>
+               class="demo-video" style="min-height:120px"></video>
         <DemoConsole @ref="streamOutput" Title="stream output" />
     </DemoSection>
 
@@ -161,7 +161,7 @@ if (_screen is not null)
             </div>
         }
         <video @ref="_screenPreview" autoplay playsinline muted
-               style="margin-top:1rem;max-width:100%;border-radius:8px;background:#111;min-height:120px"></video>
+               class="demo-video" style="min-height:120px"></video>
         <DemoConsole @ref="captureOutput" Title="screen capture output" />
     </DemoSection>
 </div>

@@ -87,6 +87,13 @@ internal sealed class BrouterLoaderCache
         _entries[key] = new Entry { Value = value, WrittenUtc = DateTime.UtcNow, FromPreload = fromPreload };
     }
 
+    /// <summary>
+    /// Drops a single entry, so the next pass through that route+URL re-runs its loader. Used by
+    /// <see cref="IBrouter.ReloadAsync"/> to make the rebuilt chain load fresh data rather than
+    /// re-serve what the instances it just discarded were showing.
+    /// </summary>
+    public void Remove(string key) => _entries.Remove(key);
+
     public void Clear() => _entries.Clear();
 
     internal int Count => _entries.Count;

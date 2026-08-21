@@ -1,8 +1,9 @@
 @inject IBrouter brouter
 @implements IDisposable
 
-@* Previous/next navigation in the catalog's reading order - turns the docs into a course you
-   can page through. Lives in DocsShell below the outlet, so it re-computes per navigation. *@
+@* Previous/next navigation in the catalog's reading order - what turns the docs into a course you
+   can page through rather than a set of pages you have to know the name of. Lives in DocsShell
+   below the outlet, so it recomputes per navigation. *@
 
 @if (_current is not null && (_previous is not null || _next is not null))
 {
@@ -13,10 +14,6 @@
                 <span class="bb-pager-label">← Previous</span>
                 <span class="bb-pager-title">@_previous.Title</span>
             </BrouterLink>
-        }
-        else
-        {
-            <span></span>
         }
         @if (_next is not null)
         {

@@ -1,4 +1,4 @@
-@page "/mutation-observer"
+﻿@page "/mutation-observer"
 @implements IAsyncDisposable
 @inject IJSRuntime js
 
@@ -37,11 +37,11 @@
 """)
              Language="razor">
     <div @ref="containerRef" data-state="idle"
-         style="max-width:22rem;border:1px dashed #6366f1;border-radius:8px;padding:0.6rem;">
+         class="demo-box dashed" style="max-width:22rem;">
         <div>Observed container - change count: @changeCount</div>
         @foreach (var item in items)
         {
-            <div style="padding:0.25rem 0.5rem;margin-top:0.3rem;border:1px solid #22c55e;border-radius:6px;">@item</div>
+            <div class="demo-marker compact">@item</div>
         }
     </div>
     <div class="controls">
