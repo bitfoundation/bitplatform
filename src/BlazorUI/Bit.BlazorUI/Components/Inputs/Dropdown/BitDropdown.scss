@@ -766,6 +766,7 @@
     font-size: var(--bit-drp-fs);
     animation-fill-mode: both;
     @include drp-size-medium;
+
     animation-duration: $mot-duration-long;
     box-shadow: $box-shadow-popup;
     border-radius: $shp-radius-popup;

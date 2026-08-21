@@ -288,7 +288,7 @@ button.bit-dtg-htext {
 /* Nested groups: subtle indentation shading applied at every level so deeper groups
    keep the hierarchy cue (the level value drives indentation elsewhere). */
 .bit-dtg-group-row .bit-dtg-group-cell {
-    border-inline-start: rem2(3px) $shp-border-style $clr-pri;
+    border-inline-start: $shp-border-width-thick $shp-border-style $clr-pri;
 }
 
 /* ----------------------------------------------- Grouped column headers */

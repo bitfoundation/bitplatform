@@ -331,12 +331,12 @@
     --bit-bdg-height: #{spacing(2)};
     --bit-bdg-boradius: #{$shp-radius-full};
     --bit-bdg-padding: 0 #{spacing(0.5)};
-    --bit-bdg-fontsize: #{$tg-fs-2xs};
+    --bit-bdg-fontsize: #{$tg-fs-xs};
 }
 
 .bit-bdg-md {
     --bit-bdg-height: #{spacing(2.5)};
-    --bit-bdg-fontsize: #{$tg-fs-xs};
+    --bit-bdg-fontsize: #{$tg-fs-sm};
     --bit-bdg-boradius: #{$shp-radius-full};
     --bit-bdg-padding: 0 #{spacing(0.75)};
 }
@@ -345,7 +345,7 @@
     --bit-bdg-height: #{spacing(3)};
     --bit-bdg-padding: 0 #{spacing(1)};
     --bit-bdg-boradius: #{$shp-radius-full};
-    --bit-bdg-fontsize: #{$tg-fs-sm};
+    --bit-bdg-fontsize: #{$tg-fs-md};
 }
 
 .bit-bdg-dot {

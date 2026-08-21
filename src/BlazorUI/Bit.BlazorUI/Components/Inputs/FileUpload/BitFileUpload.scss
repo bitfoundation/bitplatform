@@ -367,7 +367,7 @@
 
 .bit-upl-md {
     --bit-upl-lbl-height: #{spacing(4.5)};
-    --bit-upl-lbl-fontsize: #{$tg-fs-md};
+    --bit-upl-lbl-fontsize: #{$tg-fs-sm};
     --bit-upl-lbl-padding: #{spacing(0.5)} #{spacing(2)};
     --bit-upl-itm-fontsize: #{$tg-fs-sm};
     --bit-upl-fs-fontsize: #{$tg-fs-xs};
@@ -378,7 +378,7 @@
 
 .bit-upl-lg {
     --bit-upl-lbl-height: #{spacing(5.5)};
-    --bit-upl-lbl-fontsize: #{$tg-fs-lg};
+    --bit-upl-lbl-fontsize: #{$tg-fs-md};
     --bit-upl-lbl-padding: #{spacing(0.75)} #{spacing(2.5)};
     --bit-upl-itm-fontsize: #{$tg-fs-md};
     --bit-upl-fs-fontsize: #{$tg-fs-sm};

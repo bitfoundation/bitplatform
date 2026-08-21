@@ -105,7 +105,7 @@
 }
 
 .bit-tag-lg {
-    --bit-tag-fontsize: #{$tg-fs-lg};
+    --bit-tag-fontsize: #{$tg-fs-md};
     --bit-tag-padding: #{spacing(0.500)};
     --bit-tag-minheight: #{spacing(3.5)};
 }

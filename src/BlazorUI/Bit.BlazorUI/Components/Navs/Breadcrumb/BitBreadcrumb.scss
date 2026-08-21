@@ -86,7 +86,7 @@
     user-select: none;
     padding: 0 spacing(0.5);
     color: var(--bit-brc-clr-div, #{$clr-fg-sec});
-    font-size: var(--bit-brc-font-size, #{$tg-fs-xl});
+    font-size: var(--bit-brc-font-size, #{$tg-fs-sm});
     line-height: var(--bit-brc-line-height, #{spacing(4.5)});
 }
 
@@ -117,7 +117,7 @@
     font-weight: $tg-fw-regular;
     padding: 0 spacing(1);
     color: var(--bit-brc-clr, #{$clr-fg-pri});
-    font-size: var(--bit-brc-font-size, #{$tg-fs-xl});
+    font-size: var(--bit-brc-font-size, #{$tg-fs-sm});
     line-height: var(--bit-brc-line-height, #{spacing(4.5)});
 }
 
@@ -270,7 +270,7 @@
 
 
 .bit-brc-sm {
-    --bit-brc-font-size: #{$tg-fs-md};
+    --bit-brc-font-size: #{$tg-fs-xs};
     --bit-brc-line-height: #{spacing(3.5)};
     --bit-brc-of-font-size: #{$tg-fs-xs};
     --bit-brc-of-line-height: #{spacing(2)};
@@ -278,7 +278,7 @@
 }
 
 .bit-brc-md {
-    --bit-brc-font-size: #{$tg-fs-xl};
+    --bit-brc-font-size: #{$tg-fs-sm};
     --bit-brc-line-height: #{spacing(4.5)};
     --bit-brc-of-font-size: #{$tg-fs-sm};
     --bit-brc-of-line-height: #{spacing(2.5)};
@@ -286,7 +286,7 @@
 }
 
 .bit-brc-lg {
-    --bit-brc-font-size: #{$tg-fs-2xl};
+    --bit-brc-font-size: #{$tg-fs-md};
     --bit-brc-line-height: #{spacing(5.5)};
     --bit-brc-of-font-size: #{$tg-fs-lg};
     --bit-brc-of-line-height: #{spacing(3)};

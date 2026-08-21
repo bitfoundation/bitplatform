@@ -8,7 +8,7 @@
     // The unfilled part stays neutral whatever the Color is, so it keeps reading as "not rated yet"
     // instead of as a second, dimmer accent.
     --bit-rtg-clr-uns: #{$clr-fg-ter};
-    --bit-rtg-size: #{spacing(2)};
+    --bit-rtg-size: #{$siz-icon-md};
 
     // While the pointer is over an interactive rating the filled part - which the hover preview has
     // already extended to the item under the pointer - shifts to the hover shade, so the preview reads
@@ -83,15 +83,15 @@
 }
 
 .bit-rtg-sm {
-    --bit-rtg-size: #{spacing(1)};
+    --bit-rtg-size: #{$siz-icon-sm};
 }
 
 .bit-rtg-md {
-    --bit-rtg-size: #{spacing(2)};
+    --bit-rtg-size: #{$siz-icon-md};
 }
 
 .bit-rtg-lg {
-    --bit-rtg-size: #{spacing(3)};
+    --bit-rtg-size: #{$siz-icon-lg};
 }
 
 .bit-rtg-alb {

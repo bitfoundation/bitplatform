@@ -106,7 +106,7 @@
         margin: 0 0 1em 0;
         padding: 0 1em;
         color: $clr-fg-sec;
-        border-inline-start: 0.25em $shp-border-style $clr-brd-pri;
+        border-inline-start: $shp-border-width-thick $shp-border-style $clr-brd-pri;
     }
 
     ul,

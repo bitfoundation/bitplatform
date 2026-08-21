@@ -238,7 +238,7 @@
 
 .bit-btn-sm {
     --bit-btn-spn-size: #{spacing(2.00)};
-    --bit-btn-lbl-fontsize: #{$tg-fs-2xs};
+    --bit-btn-lbl-fontsize: #{$tg-fs-xs};
     --bit-btn-prt-fontsize: #{$tg-fs-xs};
     --bit-btn-sct-fontsize: #{$tg-fs-2xs};
     --bit-btn-icn-fontsize: #{$siz-icon-sm};
@@ -250,7 +250,7 @@
 
 .bit-btn-md {
     --bit-btn-spn-size: #{spacing(2.35)};
-    --bit-btn-lbl-fontsize: #{$tg-fs-xs};
+    --bit-btn-lbl-fontsize: #{$tg-fs-sm};
     --bit-btn-prt-fontsize: #{$tg-fs-sm};
     --bit-btn-sct-fontsize: #{$tg-fs-xs};
     --bit-btn-icn-fontsize: #{$siz-icon-md};
@@ -262,7 +262,7 @@
 
 .bit-btn-lg {
     --bit-btn-spn-size: #{spacing(3.35)};
-    --bit-btn-lbl-fontsize: #{$tg-fs-sm};
+    --bit-btn-lbl-fontsize: #{$tg-fs-md};
     --bit-btn-prt-fontsize: #{$tg-fs-xl};
     --bit-btn-sct-fontsize: #{$tg-fs-md};
     --bit-btn-icn-fontsize: #{$siz-icon-lg};

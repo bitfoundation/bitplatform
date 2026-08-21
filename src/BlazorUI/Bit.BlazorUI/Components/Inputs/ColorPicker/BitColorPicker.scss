@@ -257,6 +257,7 @@
 
     &:focus-visible {
         @include focus-ring;
+
         border-radius: $shp-radius-control;
     }
 

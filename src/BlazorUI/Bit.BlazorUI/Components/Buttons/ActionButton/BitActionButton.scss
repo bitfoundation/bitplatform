@@ -130,7 +130,7 @@
             height: $shp-border-width;
             content: "";
             position: absolute;
-            background-color: currentColor;
+            background-color: currentcolor;
         }
 
         @media (hover: hover) {
@@ -158,7 +158,7 @@
 // light, link-like command - Material's "text button" - which every design system pads tighter
 // than a filled button), so the token still drives it.
 .bit-acb-sm {
-    --bit-acb-fontsize: #{$tg-fs-2xs};
+    --bit-acb-fontsize: #{$tg-fs-xs};
     --bit-acb-spn-size: #{spacing(1.25)};
     --bit-acb-padding: #{$siz-ctrl-pad-y-sm} #{calc($siz-ctrl-pad-x-sm * 0.667)};
 }
@@ -170,7 +170,7 @@
 }
 
 .bit-acb-lg {
-    --bit-acb-fontsize: #{$tg-fs-lg};
+    --bit-acb-fontsize: #{$tg-fs-md};
     --bit-acb-spn-size: #{spacing(2.25)};
     --bit-acb-padding: #{$siz-ctrl-pad-y-lg} #{$siz-ctrl-pad-x-md};
 }

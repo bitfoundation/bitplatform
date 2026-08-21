@@ -58,11 +58,11 @@
 .bit-snb-ttl {
     font-weight: $tg-fw-medium;
     font-size: $tg-fs-md;
-    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .bit-snb-bdy {
-    word-break: break-word;
+    overflow-wrap: anywhere;
     font-size: $tg-fs-xs;
 }
 

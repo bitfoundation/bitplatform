@@ -308,7 +308,7 @@
 
 .bit-fin-md {
     --bit-fin-lbl-height: #{spacing(4.5)};
-    --bit-fin-lbl-fontsize: #{$tg-fs-md};
+    --bit-fin-lbl-fontsize: #{$tg-fs-sm};
     --bit-fin-lbl-padding: #{spacing(0.5)} #{spacing(2)};
     --bit-fin-itm-fontsize: #{$tg-fs-sm};
     --bit-fin-fs-fontsize: #{$tg-fs-xs};
@@ -319,7 +319,7 @@
 
 .bit-fin-lg {
     --bit-fin-lbl-height: #{spacing(5.5)};
-    --bit-fin-lbl-fontsize: #{$tg-fs-lg};
+    --bit-fin-lbl-fontsize: #{$tg-fs-md};
     --bit-fin-lbl-padding: #{spacing(0.75)} #{spacing(2.5)};
     --bit-fin-itm-fontsize: #{$tg-fs-md};
     --bit-fin-fs-fontsize: #{$tg-fs-sm};
