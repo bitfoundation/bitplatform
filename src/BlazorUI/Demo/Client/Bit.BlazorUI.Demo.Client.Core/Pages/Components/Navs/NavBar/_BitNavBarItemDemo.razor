@@ -131,7 +131,9 @@
     <div>
         <b>FitWidth</b> shrinks the navbar to the width of its own content, and <b>FullWidth</b> stretches it
         over the full width of its container. Without either one the navbar takes the width its container
-        gives it.
+        gives it. Those two size the bar; <b>Justified</b> sizes the items inside it, giving each one an equal
+        share instead of the width of its own label, which is how a navigation bar keeps its destinations on
+        a predictable grid.
     </div>
     <br /><br />
     <div>FitWidth:</div><br />
@@ -143,13 +145,24 @@
     <div class="container">
         <BitNavBar Items="basicNavBarItems" FullWidth />
     </div>
+    <br /><br /><br /><br />
+    <div>Justified (items of unequal label length):</div><br />
+    <div class="container">
+        <BitNavBar Items="unevenNavBarItems" />
+    </div>
+    <br /><br />
+    <div class="container">
+        <BitNavBar Items="unevenNavBarItems" Justified />
+    </div>
 </DemoExample>
 
 <DemoExample Title="Badge" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9" PreventRenderForMcpClient>
     <div>
         <b>Badge</b> puts a short count or status on the icon of an item, and <b>Dot</b> marks it as needing
-        attention without a number. Both are decorations of the name the item already carries, so neither is
-        announced twice by a screen reader.
+        attention without a number. Both are drawn on the icon and hidden from assistive technology, and the
+        badge is folded into the name of the item instead, so it is announced once rather than twice
+        &mdash; "Inbox (12)". <b>BadgeAriaLabel</b> replaces that with a description a screen reader can read
+        out on its own, and is the only way a <b>Dot</b> is announced at all, since a dot carries no text.
     </div>
     <br /><br />
     <div class="container">
@@ -271,16 +284,28 @@
     Item click count: @countClick
 </DemoExample>
 
-<DemoExample Title="SingleTabStop" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15" PreventRenderForMcpClient>
+<DemoExample Title="Keyboard" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15" PreventRenderForMcpClient>
     <div>
         By default the navbar is a set of links that <b>Tab</b> reaches one by one, which is how a navigation
         landmark behaves. <b>SingleTabStop</b> turns it into the roving tab index of a toolbar instead: the
         whole bar is a single stop that lands on the selected item, and the rest are reached from there.
-        In both modes the arrow keys, <b>Home</b> and <b>End</b> move the focus along the bar.
+        In both modes the arrow keys of either axis, <b>Home</b> and <b>End</b> move the focus along the bar,
+        the horizontal pair flipping in RTL, and a disabled item is skipped. The focus stops at both ends;
+        <b>WrapNavigation</b> lets it wrap around from the last item to the first one and back.
     </div>
     <br /><br />
+    <div>SingleTabStop:</div><br />
     <div class="container">
         <BitNavBar SingleTabStop
+                   Mode="BitNavMode.Manual"
+                   Items="basicNavBarItems"
+                   DefaultSelectedItem="basicNavBarItems[1]" />
+    </div>
+    <br /><br /><br /><br />
+    <div>WrapNavigation:</div><br />
+    <div class="container">
+        <BitNavBar WrapNavigation
+                   SingleTabStop
                    Mode="BitNavMode.Manual"
                    Items="basicNavBarItems"
                    DefaultSelectedItem="basicNavBarItems[1]" />
@@ -326,7 +351,23 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17" PreventRenderForMcpClient>
+<DemoExample Title="Selected Icon" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17" PreventRenderForMcpClient>
+    <div>
+        A navigation bar conventionally marks its current destination with the filled variant of the same
+        glyph, which is what <b>SelectedIconName</b> (and <b>SelectedIcon</b>, for an external icon library)
+        is for: the item swaps to it while it is the selected one and falls back to its <b>IconName</b>
+        otherwise. It reads as a second, shape-based cue for the selection next to the color, which is what
+        keeps the current destination legible where a color difference alone is not enough.
+    </div>
+    <br /><br />
+    <div class="container">
+        <BitNavBar Mode="BitNavMode.Manual"
+                   Items="selectedIconItems"
+                   DefaultSelectedItem="selectedIconItems[0]" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18" PreventRenderForMcpClient>
     <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
     <br /><br />
     <div>Primary:</div><br />
@@ -417,7 +458,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+<DemoExample Title="External Icons" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
     <div>External icon libraries like FontAwesome can be used with the <b>Icon</b> parameter.</div>
 
     <br />
@@ -430,7 +471,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20" PreventRenderForMcpClient>
     <div>The <b>Size</b> scales the icon, the text and the padding of every item of the navbar at once.</div>
     <br /><br />
     <div>Small:</div><br />
@@ -449,7 +490,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+<DemoExample Title="Style & Class" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br /><br />
     <div>Component's Style:</div><br />
@@ -480,7 +521,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22" PreventRenderForMcpClient>
     <div>Use BitNavBar in right-to-left (RTL).</div>
     <br /><br />
     <div dir="rtl" class="container">

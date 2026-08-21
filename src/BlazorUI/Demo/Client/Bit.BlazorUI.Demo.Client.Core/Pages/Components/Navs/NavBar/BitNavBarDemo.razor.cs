@@ -96,6 +96,13 @@ public partial class BitNavBarDemo
         },
         new()
         {
+            Name = "Justified",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Gives every item an equal share of the navbar so that the items evenly fill it, which is how a navigation bar keeps its destinations on a predictable grid. By default each item only takes the width of its own content."
+        },
+        new()
+        {
             Name = "Match",
             Type = "BitNavMatch?",
             DefaultValue = "null",
@@ -192,6 +199,13 @@ public partial class BitNavBarDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Stacks the items of the navbar in a column, which turns it into a vertical navigation rail."
+        },
+        new()
+        {
+            Name = "WrapNavigation",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lets the arrow keys wrap around at both ends of the navbar, from the last item to the first one and back, the way the toolbar pattern does. By default the focus stops at the ends instead."
         }
     ];
 
@@ -248,6 +262,13 @@ public partial class BitNavBarDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "The badge text to render on the icon of the navbar item, for a count or a short status. Takes precedence over Dot when both are set.",
+               },
+               new()
+               {
+                   Name = "BadgeAriaLabel",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The accessible description of the badge (or the dot) of the navbar item, folded into the accessible name of the item so a count that only exists as a colored bubble is not lost on a screen reader. It falls back to the Badge text, and a Dot is only announced while this is set.",
                },
                new()
                {
@@ -308,6 +329,22 @@ public partial class BitNavBarDemo
                    Description = "Modifies how the URL of the navbar item is matched against the current URL in the automatic mode. Takes precedence over the Match of the navbar itself.",
                    LinkType = LinkType.Link,
                    Href = "#nav-match-enum",
+               },
+               new()
+               {
+                   Name = "SelectedIcon",
+                   Type = "BitIconInfo?",
+                   DefaultValue = "null",
+                   Description = "The icon to display while the navbar item is the selected one, using custom CSS classes for external icon libraries. Takes precedence over SelectedIconName when both are set, and falls back to Icon / IconName while neither is set.",
+                   LinkType = LinkType.Link,
+                   Href = "#bit-icon-info",
+               },
+               new()
+               {
+                   Name = "SelectedIconName",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The name of the icon to display from the built-in Fluent UI icons while the navbar item is the selected one, which is how a navigation bar marks its current destination with the filled variant of the same glyph.",
                },
                new()
                {
@@ -391,6 +428,13 @@ public partial class BitNavBarDemo
                },
                new()
                {
+                   Name = "BadgeAriaLabel",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The accessible description of the badge (or the dot) of the navbar option, folded into the accessible name of the option so a count that only exists as a colored bubble is not lost on a screen reader. It falls back to the Badge text, and a Dot is only announced while this is set.",
+               },
+               new()
+               {
                    Name = "Class",
                    Type = "string?",
                    DefaultValue = "null",
@@ -448,6 +492,22 @@ public partial class BitNavBarDemo
                    Description = "Modifies how the URL of the navbar option is matched against the current URL in the automatic mode. Takes precedence over the Match of the navbar itself.",
                    LinkType = LinkType.Link,
                    Href = "#nav-match-enum",
+               },
+               new()
+               {
+                   Name = "SelectedIcon",
+                   Type = "BitIconInfo?",
+                   DefaultValue = "null",
+                   Description = "The icon to display while the navbar option is the selected one, using custom CSS classes for external icon libraries. Takes precedence over SelectedIconName when both are set, and falls back to Icon / IconName while neither is set.",
+                   LinkType = LinkType.Link,
+                   Href = "#bit-icon-info",
+               },
+               new()
+               {
+                   Name = "SelectedIconName",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The name of the icon to display from the built-in Fluent UI icons while the navbar option is the selected one, which is how a navigation bar marks its current destination with the filled variant of the same glyph.",
                },
                new()
                {
@@ -529,6 +589,13 @@ public partial class BitNavBarDemo
                },
                new()
                {
+                   Name = "BadgeAriaLabel",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitNavBarItem.BadgeAriaLabel))",
+                   Description = "The BadgeAriaLabel field name and selector of the custom input class."
+               },
+               new()
+               {
                    Name = "Class",
                    Type = "BitNameSelectorPair<TItem, string?>",
                    DefaultValue = "new(nameof(BitNavBarItem.Class))",
@@ -586,6 +653,22 @@ public partial class BitNavBarDemo
                    Description = "The Match field name and selector of the custom input class.",
                    LinkType = LinkType.Link,
                    Href = "#nav-match-enum",
+               },
+               new()
+               {
+                   Name = "SelectedIcon",
+                   Type = "BitNameSelectorPair<TItem, BitIconInfo?>",
+                   DefaultValue = "new(nameof(BitNavBarItem.SelectedIcon))",
+                   Description = "The SelectedIcon field name and selector of the custom input class. Maps to SelectedIcon for external icon libraries.",
+                   LinkType = LinkType.Link,
+                   Href = "#bit-icon-info",
+               },
+               new()
+               {
+                   Name = "SelectedIconName",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitNavBarItem.SelectedIconName))",
+                   Description = "The SelectedIconName field name and selector of the custom input class. Maps to SelectedIconName for built-in Fluent UI icons."
                },
                new()
                {

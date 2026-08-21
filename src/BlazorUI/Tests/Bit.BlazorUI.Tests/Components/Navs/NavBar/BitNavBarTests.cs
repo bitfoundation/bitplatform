@@ -128,6 +128,19 @@ public class BitNavBarTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow(true, "bit-nbr-jst")]
+    [DataRow(false, "")]
+    public void BitNavBarShouldRespectJustified(bool justified, string expectedClass)
+    {
+        var component = RenderComponent<BitNavBar<BitNavBarOption>>(parameters =>
+        {
+            parameters.Add(p => p.Justified, justified);
+        });
+
+        AssertRootClass(component, expectedClass, "bit-nbr-jst");
+    }
+
+    [TestMethod]
     [DataRow(true, "bit-nbr-vrt")]
     [DataRow(false, "")]
     public void BitNavBarShouldRespectVertical(bool vertical, string expectedClass)
@@ -526,6 +539,166 @@ public class BitNavBarTests : BunitTestContext
         var component = RenderNavBar([new() { Text = "Home" }]);
 
         Assert.AreEqual(0, component.FindAll(".bit-nbr-icc").Count);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldFoldTheBadgeIntoTheNameOfItsItem()
+    {
+        // The badge itself is hidden from assistive technology, so a count that only exists as a colored
+        // bubble has to reach the name of the item instead.
+        var items = BasicItems();
+        items[1].Badge = "12";
+
+        var component = RenderNavBar(items);
+
+        Assert.AreEqual("Products (12)", component.FindAll(".bit-nbr-itm")[1].GetAttribute("aria-label"));
+        Assert.IsNull(component.FindAll(".bit-nbr-itm")[0].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldLetTheBadgeAriaLabelOfAnItemWinOverItsBadge()
+    {
+        var items = BasicItems();
+        items[1].Badge = "12";
+        items[1].BadgeAriaLabel = "12 unread messages";
+
+        var component = RenderNavBar(items);
+
+        Assert.AreEqual("Products (12 unread messages)", component.FindAll(".bit-nbr-itm")[1].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldAnnounceADotOnlyWithABadgeAriaLabel()
+    {
+        // A dot carries no text of its own, so there is nothing to announce until it is described.
+        var items = BasicItems();
+        items[1].Dot = true;
+
+        var component = RenderNavBar(items);
+
+        Assert.IsNull(component.FindAll(".bit-nbr-itm")[1].GetAttribute("aria-label"));
+
+        items[1].BadgeAriaLabel = "needs attention";
+        component.Render();
+
+        Assert.AreEqual("Products (needs attention)", component.FindAll(".bit-nbr-itm")[1].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldFoldTheBadgeIntoTheExplicitAriaLabelOfAnItem()
+    {
+        var items = BasicItems();
+        items[1].Badge = "12";
+        items[1].AriaLabel = "All the products";
+
+        var component = RenderNavBar(items);
+
+        Assert.AreEqual("All the products (12)", component.FindAll(".bit-nbr-itm")[1].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldFoldTheBadgeIntoTheNameOfAnIconOnlyItem()
+    {
+        var items = BasicItems();
+        items[1].Badge = "12";
+
+        var component = RenderNavBar(items, p => p.Add(c => c.IconOnly, true));
+
+        Assert.AreEqual("Products (12)", component.FindAll(".bit-nbr-itm")[1].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldNotNameATemplatedItemAfterItsBadge()
+    {
+        // A template owns the content of its item, so the navbar does not know what names it and must not
+        // overwrite that name with the text of the item.
+        var items = BasicItems();
+        items[1].Badge = "12";
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.ItemTemplate, (RenderFragment<BitNavBarItem>)(item => builder => builder.AddContent(0, item.Text)));
+        });
+
+        Assert.IsNull(component.FindAll(".bit-nbr-itm")[1].GetAttribute("aria-label"));
+    }
+
+
+
+    [TestMethod]
+    public void BitNavBarShouldSwapToTheSelectedIconOfTheSelectedItem()
+    {
+        var items = BasicItems();
+        items[0].SelectedIconName = "HomeSolid";
+        items[1].SelectedIconName = "ProductVariantSolid";
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.DefaultSelectedItem, items[0]);
+        });
+
+        var icons = component.FindAll(".bit-nbr-ico");
+
+        Assert.IsTrue(icons[0].ClassList.Contains("bit-icon--HomeSolid"));
+        // Only the selected item swaps; the rest keep their own icon.
+        Assert.IsTrue(icons[1].ClassList.Contains("bit-icon--ProductVariant"));
+        Assert.IsFalse(icons[1].ClassList.Contains("bit-icon--ProductVariantSolid"));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldKeepTheIconOfASelectedItemWithoutASelectedIcon()
+    {
+        var items = BasicItems();
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.DefaultSelectedItem, items[0]);
+        });
+
+        Assert.IsTrue(component.FindAll(".bit-nbr-ico")[0].ClassList.Contains("bit-icon--Home"));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldLetTheSelectedIconWinOverTheSelectedIconName()
+    {
+        var items = BasicItems();
+        items[0].SelectedIcon = BitIconInfo.Css("fa-solid fa-house");
+        items[0].SelectedIconName = "HomeSolid";
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.DefaultSelectedItem, items[0]);
+        });
+
+        var icon = component.FindAll(".bit-nbr-ico")[0];
+
+        Assert.IsTrue(icon.ClassList.Contains("fa-house"));
+        Assert.IsFalse(icon.ClassList.Contains("bit-icon--HomeSolid"));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldFollowTheSelectionWithTheSelectedIcon()
+    {
+        var items = BasicItems();
+        items[0].SelectedIconName = "HomeSolid";
+        items[1].SelectedIconName = "ProductVariantSolid";
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.DefaultSelectedItem, items[0]);
+        });
+
+        component.FindAll(".bit-nbr-itm")[1].Click();
+
+        var icons = component.FindAll(".bit-nbr-ico");
+
+        Assert.IsTrue(icons[0].ClassList.Contains("bit-icon--Home"));
+        Assert.IsFalse(icons[0].ClassList.Contains("bit-icon--HomeSolid"));
+        Assert.IsTrue(icons[1].ClassList.Contains("bit-icon--ProductVariantSolid"));
     }
 
 
@@ -989,6 +1162,44 @@ public class BitNavBarTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitNavBarShouldWrapAtBothEndsWithWrapNavigation()
+    {
+        var component = RenderNavBar(BasicItems(), p => p.Add(c => c.WrapNavigation, true));
+
+        PressKeyOn(component, 0, "ArrowLeft");
+        AssertFocused(component, 2);
+
+        PressKeyOn(component, 2, "ArrowRight");
+        AssertFocused(component, 0, 2);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldNotWrapHomeAndEndWithWrapNavigation()
+    {
+        // Home and End land inside the range, so the wrap must not carry them past an end.
+        var component = RenderNavBar(BasicItems(), p => p.Add(c => c.WrapNavigation, true));
+
+        PressKeyOn(component, 1, "Home");
+        AssertFocused(component, 0);
+
+        PressKeyOn(component, 1, "End");
+        AssertFocused(component, 2, 2);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldWrapOntoAnEnabledItemOnly()
+    {
+        var items = BasicItems();
+        items[2].IsEnabled = false;
+
+        var component = RenderNavBar(items, p => p.Add(c => c.WrapNavigation, true));
+
+        PressKeyOn(component, 0, "ArrowLeft");
+
+        AssertFocused(component, 1);
+    }
+
+    [TestMethod]
     public void BitNavBarShouldSkipADisabledItemWithTheArrowKeys()
     {
         // A disabled item renders as a native disabled button, which takes no focus at all, so walking onto
@@ -1098,6 +1309,11 @@ public class BitNavBarTests : BunitTestContext
             p.Add(c => c.Mode, BitNavMode.Manual);
             p.Add(c => c.SingleTabStop, true);
         });
+
+        // The stop follows the focus, but a disabled item is not one the keyboard walks, so focusing it
+        // leaves the stop on the first item that is enabled instead of taking the bar out of the tab
+        // sequence with it.
+        component.FindAll(".bit-nbr-itm")[0].FocusIn();
 
         var rendered = component.FindAll(".bit-nbr-itm");
 
@@ -1311,6 +1527,8 @@ public class BitNavBarTests : BunitTestContext
                 Glyph = "ProductVariant",
                 Link = "/products",
                 Counter = "7",
+                CounterLabel = "7 new products",
+                SelectedGlyph = "ProductVariantSolid",
                 Tooltip = "All the products",
                 Window = "_blank",
                 Current = BitNavAriaCurrent.Step,
@@ -1332,6 +1550,9 @@ public class BitNavBarTests : BunitTestContext
                 AdditionalUrls = { Selector = i => i.ExtraLinks },
                 Match = { Selector = i => i.Matching },
                 Badge = { Selector = i => i.Counter },
+                BadgeAriaLabel = { Selector = i => i.CounterLabel },
+                SelectedIcon = { Selector = i => i.SelectedGlyphInfo },
+                SelectedIconName = { Selector = i => i.SelectedGlyph },
                 Dot = { Selector = i => i.Marker },
                 IsEnabled = { Selector = i => i.Disabled is false },
                 Class = { Selector = i => i.CssClass },
@@ -1349,6 +1570,9 @@ public class BitNavBarTests : BunitTestContext
         CollectionAssert.AreEqual(new[] { "Home", "Products", "Profile" }, Texts(component));
 
         Assert.AreEqual("step", rendered[1].GetAttribute("aria-current"));
+        // The Products item is the selected one here, so it reads the selected icon and its aria-label is
+        // composed out of the explicit label the selector hands over and the description of its badge.
+        Assert.IsTrue(component.FindAll(".bit-nbr-ico")[1].ClassList.Contains("bit-icon--ProductVariantSolid"));
         Assert.AreEqual("All the products", rendered[1].GetAttribute("title"));
         Assert.AreEqual("_blank", rendered[1].GetAttribute("target"));
         Assert.IsTrue(rendered[1].ClassList.Contains("custom-item"));
@@ -1356,6 +1580,7 @@ public class BitNavBarTests : BunitTestContext
         Assert.AreEqual("7", component.Find(".bit-nbr-bdg").TextContent);
 
         Assert.IsTrue(rendered[2].ClassList.Contains("bit-nbr-dis"));
+        Assert.AreEqual("Products (7 new products)", rendered[1].GetAttribute("aria-label"));
         Assert.AreEqual("Your profile", rendered[2].GetAttribute("aria-label"));
         Assert.AreEqual(1, component.FindAll(".bit-nbr-bdt").Count);
     }
@@ -1487,10 +1712,31 @@ public class BitNavBarTests : BunitTestContext
 
         PressKeyOn(component, 0, "End");
 
-        // The move lands on the last option that is left, and the navbar no longer knows about the one
-        // that is gone.
-        Assert.AreEqual(2, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        // The move lands on the last option that is left - the very element the first End landed on, which
+        // is the one the Settings option still holds - and not on the element of the option that is gone.
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+
+        Assert.AreEqual(2, focused.Count);
+        Assert.AreEqual(((ElementReference)focused[0].Arguments[0]!).Id, ((ElementReference)focused[1].Arguments[0]!).Id);
         Assert.AreEqual("Settings", component.FindAll(".bit-nbr-txt")[^1].TextContent);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldReadTheSelectedIconAndTheBadgeOfAnOption()
+    {
+        Navigate("/profile");
+
+        var component = RenderComponent<BitNavBarBadgeOptionsTest>();
+
+        var items = component.FindAll(".bit-nbr-itm");
+        var icons = component.FindAll(".bit-nbr-ico");
+
+        // The Profile option matches the current URL, so it is the one that swaps to its selected icon.
+        Assert.IsTrue(icons[0].ClassList.Contains("bit-icon--Home"));
+        Assert.IsTrue(icons[1].ClassList.Contains("bit-icon--ContactSolid"));
+
+        Assert.AreEqual("Home (12)", items[0].GetAttribute("aria-label"));
+        Assert.AreEqual("Profile (needs attention)", items[1].GetAttribute("aria-label"));
     }
 
     [TestMethod]

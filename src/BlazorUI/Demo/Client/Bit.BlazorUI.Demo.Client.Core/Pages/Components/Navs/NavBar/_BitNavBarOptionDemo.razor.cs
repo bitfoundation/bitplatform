@@ -25,6 +25,12 @@ public partial class _BitNavBarOptionDemo
     private BitNavBarOption? tabStopSelectedOption;
     private BitNavBarOption tabStopOptionProducts = default!;
 
+    private BitNavBarOption? wrapSelectedOption;
+    private BitNavBarOption wrapOptionProducts = default!;
+
+    private BitNavBarOption? selectedIconSelectedOption;
+    private BitNavBarOption selectedIconOptionHome = default!;
+
     private BitNavBarOption? advancedSelectedOption;
     private BitNavBarOption advancedOptionProducts = default!;
 
@@ -35,6 +41,8 @@ public partial class _BitNavBarOptionDemo
             hideTextSelectedOption ??= hideTextOptionHome;
             accentSelectedOption ??= accentOptionHome;
             tabStopSelectedOption ??= tabStopOptionProducts;
+            wrapSelectedOption ??= wrapOptionProducts;
+            selectedIconSelectedOption ??= selectedIconOptionHome;
             advancedSelectedOption ??= advancedOptionProducts;
 
             StateHasChanged();

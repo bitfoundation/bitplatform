@@ -68,6 +68,14 @@ public partial class BitNavBar<TItem>
     [Parameter] public IList<TItem> Items { get; set; } = [];
 
     /// <summary>
+    /// Gives every item an equal share of the navbar so that the items evenly fill it, which is how a
+    /// navigation bar keeps its destinations on a predictable grid instead of letting a long label claim
+    /// more room than a short one. By default each item only takes the width of its own content.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Justified { get; set; }
+
+    /// <summary>
     /// Used to customize how content inside the item is rendered.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
@@ -149,4 +157,11 @@ public partial class BitNavBar<TItem>
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Vertical { get; set; }
+
+    /// <summary>
+    /// Lets the arrow keys wrap around at both ends of the navbar, from the last item to the first one and
+    /// back, the way the toolbar pattern does. By default the focus stops at the ends instead, so the bar
+    /// keeps a stable notion of a first and a last item.
+    /// </summary>
+    [Parameter] public bool WrapNavigation { get; set; }
 }

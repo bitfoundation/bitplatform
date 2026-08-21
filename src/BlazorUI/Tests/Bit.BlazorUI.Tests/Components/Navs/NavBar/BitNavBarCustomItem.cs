@@ -15,7 +15,10 @@ public class BitNavBarCustomItem
     public IEnumerable<string>? ExtraLinks { get; set; }
     public BitNavMatch? Matching { get; set; }
     public string? Counter { get; set; }
+    public string? CounterLabel { get; set; }
     public bool Marker { get; set; }
+    public string? SelectedGlyph { get; set; }
+    public BitIconInfo? SelectedGlyphInfo { get; set; }
     public bool Disabled { get; set; }
     public string? CssClass { get; set; }
     public string? CssStyle { get; set; }

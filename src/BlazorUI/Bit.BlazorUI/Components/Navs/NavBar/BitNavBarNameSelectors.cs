@@ -18,6 +18,11 @@ public class BitNavBarNameSelectors<TItem>
     public BitNameSelectorPair<TItem, string?> Badge { get; set; } = new(nameof(BitNavBarItem.Badge));
 
     /// <summary>
+    /// The BadgeAriaLabel field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> BadgeAriaLabel { get; set; } = new(nameof(BitNavBarItem.BadgeAriaLabel));
+
+    /// <summary>
     /// The Class field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Class { get; set; } = new(nameof(BitNavBarItem.Class));
@@ -58,6 +63,18 @@ public class BitNavBarNameSelectors<TItem>
     /// The Match field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, BitNavMatch?> Match { get; set; } = new(nameof(BitNavBarItem.Match));
+
+    /// <summary>
+    /// The SelectedIcon field name and selector of the custom input class.
+    /// Maps to <see cref="BitNavBarItem.SelectedIcon"/> for external icon libraries.
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitIconInfo?> SelectedIcon { get; set; } = new(nameof(BitNavBarItem.SelectedIcon));
+
+    /// <summary>
+    /// The SelectedIconName field name and selector of the custom input class.
+    /// Maps to <see cref="BitNavBarItem.SelectedIconName"/> for built-in Fluent UI icons.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> SelectedIconName { get; set; } = new(nameof(BitNavBarItem.SelectedIconName));
 
     /// <summary>
     /// The Style field name and selector of the custom input class.

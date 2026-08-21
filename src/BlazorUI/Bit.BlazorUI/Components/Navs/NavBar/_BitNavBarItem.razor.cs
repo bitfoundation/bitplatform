@@ -80,6 +80,13 @@ public partial class _BitNavBarItem<TItem> : IDisposable where TItem : class
 
 
 
+    // A custom item type reads its aria-current through a selector, which can hand over a value that is not
+    // one of the enum's own, so an unknown one falls back to the default rather than tearing the item down.
+    private static string GetAriaCurrent(BitNavAriaCurrent ariaCurrent)
+    {
+        return _AriaCurrentMap.TryGetValue(ariaCurrent, out var value) ? value : _AriaCurrentMap[BitNavAriaCurrent.Page];
+    }
+
     private static readonly Dictionary<BitNavAriaCurrent, string> _AriaCurrentMap = new()
     {
         [BitNavAriaCurrent.Page] = "page",

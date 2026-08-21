@@ -15,11 +15,25 @@
     // The item stays the very same element whether it is selected or not: an anchor that turns into a
     // button on selection loses the focus that was on it, and takes the context menu, the middle click and
     // the "open in a new tab" of the current destination away with it.
-    var ariaCurrent = isSelected ? _AriaCurrentMap[NavBar.GetAriaCurrent(Item)] : null;
+    var ariaCurrent = isSelected ? GetAriaCurrent(NavBar.GetAriaCurrent(Item)) : null;
     // The text is the accessible name of the item, so an item that does not render it has to carry it as a
     // label instead, otherwise an icon-only bar announces nothing at all.
     var isTextHidden = NavBar.IconOnly || (NavBar.HideUnselectedText && isSelected is false);
     var ariaLabel = NavBar.GetAriaLabel(Item) ?? (isTextHidden ? text : null);
+
+    var badge = NavBar.GetBadge(Item);
+    var dot = badge.HasNoValue() && NavBar.GetDot(Item);
+    // A badge is drawn on the icon and hidden from assistive technology, so an unread count that only
+    // exists as a colored bubble would be lost: it is folded into the name of the item instead. A dot
+    // carries no text of its own, so it is only announced when it was given a description.
+    var badgeLabel = NavBar.GetBadgeAriaLabel(Item) ?? (badge.HasValue() ? badge : null);
+    var hasTemplate = template is not null || NavBar.ItemTemplate is not null;
+    if (badgeLabel.HasValue() && (ariaLabel.HasValue() || (hasTemplate is false && text.HasValue())))
+    {
+        // A template owns the content of its item, so its name is only composed when it was labeled
+        // explicitly; the default content is the item's own text, which names it either way.
+        ariaLabel = $"{ariaLabel ?? text} ({badgeLabel})";
+    }
 }
 
 <_BitNavBarChild @ref="_child"
@@ -46,15 +60,17 @@
     }
     else
     {
-        var icon = BitIconInfo.From(NavBar.GetIcon(Item), NavBar.GetIconName(Item));
-        var badge = NavBar.GetBadge(Item);
-        var dot = badge.HasNoValue() && NavBar.GetDot(Item);
+        // A navigation bar conventionally marks its current destination with the filled variant of the
+        // same glyph, so the selected item swaps to its own icon when it was given one.
+        var icon = (isSelected ? BitIconInfo.From(NavBar.GetSelectedIcon(Item), NavBar.GetSelectedIconName(Item)) : null)
+                ?? BitIconInfo.From(NavBar.GetIcon(Item), NavBar.GetIconName(Item));
 
         @if (icon is not null || badge.HasValue() || dot)
         {
             @* The badge is positioned against the icon, so the two share a wrapper of their own rather
                than being placed against the item, where it would drift away from the icon as the item
-               grows. Both are decorations of the name the item already carries, so neither is read out. *@
+               grows. Neither is read out where it sits: the icon repeats the name of the item, and the
+               badge has already been folded into that name above. *@
             <span style="@NavBar.Styles?.ItemIconContainer" class="bit-nbr-icc @NavBar.Classes?.ItemIconContainer">
                 @if (icon is not null)
                 {

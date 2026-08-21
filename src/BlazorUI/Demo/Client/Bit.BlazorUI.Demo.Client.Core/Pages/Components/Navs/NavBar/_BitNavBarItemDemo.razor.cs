@@ -35,7 +35,7 @@ public partial class _BitNavBarItemDemo
     private static readonly List<BitNavBarItem> patternMatchItems =
     [
         new() { Text = "/components/*", IconName = BitIconName.F12DevTools, Url = "/components/*", Match = BitNavMatch.Wildcard, IsEnabled = false },
-        new() { Text = "^/components/n", IconName = BitIconName.Code, Url = "^/components/n", Match = BitNavMatch.Regex, IsEnabled = false },
+        new() { Text = "^/components/b", IconName = BitIconName.Code, Url = "^/components/b", Match = BitNavMatch.Regex, IsEnabled = false },
     ];
 
     private static readonly List<BitNavBarItem> additionalUrlsItems =
@@ -44,12 +44,28 @@ public partial class _BitNavBarItemDemo
         new() { Text = "Buttons", IconName = BitIconName.ButtonControl, Url = "/components/button", AdditionalUrls = ["/components/togglebutton"] },
     ];
 
+    private static readonly List<BitNavBarItem> unevenNavBarItems =
+    [
+        new() { Text = "Home", IconName = BitIconName.Home  },
+        new() { Text = "Products & services", IconName = BitIconName.ProductVariant },
+        new() { Text = "Academy", IconName = BitIconName.LearningTools },
+        new() { Text = "Me", IconName = BitIconName.Contact },
+    ];
+
     private static readonly List<BitNavBarItem> badgeNavBarItems =
     [
         new() { Text = "Home", IconName = BitIconName.Home  },
         new() { Text = "Inbox", IconName = BitIconName.Mail, Badge = "12" },
-        new() { Text = "Alerts", IconName = BitIconName.Ringer, Badge = "99+" },
-        new() { Text = "Profile", IconName = BitIconName.Contact, Dot = true },
+        new() { Text = "Alerts", IconName = BitIconName.Ringer, Badge = "99+", BadgeAriaLabel = "more than 99 unread alerts" },
+        new() { Text = "Profile", IconName = BitIconName.Contact, Dot = true, BadgeAriaLabel = "needs attention" },
+    ];
+
+    private static readonly List<BitNavBarItem> selectedIconItems =
+    [
+        new() { Text = "Home", IconName = BitIconName.Home, SelectedIconName = BitIconName.HomeSolid },
+        new() { Text = "Inbox", IconName = BitIconName.Mail, SelectedIconName = BitIconName.MailSolid },
+        new() { Text = "Alerts", IconName = BitIconName.Ringer, SelectedIconName = BitIconName.RingerSolid },
+        new() { Text = "Favorites", IconName = BitIconName.Heart, SelectedIconName = BitIconName.HeartFill },
     ];
 
     private static readonly List<BitNavBarItem> styleClassItems =

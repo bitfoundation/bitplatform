@@ -9,9 +9,10 @@
     --bit-nbr-txt-fs: #{$tg-fs-sm};
     --bit-nbr-gap: #{spacing(0.5)};
     --bit-nbr-pad: #{spacing(1)};
+    --bit-nbr-min: #{$siz-ctrl-md};
 
     &.bit-dis {
-        cursor: none;
+        cursor: default;
         pointer-events: none;
 
         .bit-nbr-itm {
@@ -41,9 +42,12 @@
 }
 
 .bit-nbr-itm {
-    // The items share the width of the bar evenly, and none of them is allowed to grow past its share:
-    // a long label is ellipsized inside its own item instead of pushing its neighbors out of the bar.
-    min-width: 0;
+    // Every item stays at least a control tall and wide, so an icon-only bar (or an inline one, which is
+    // only as tall as a single line) still offers a target a finger can hit. The minimum sits far below
+    // the width of a label, so a long one is still ellipsized inside its own item instead of pushing its
+    // neighbors out of the bar.
+    min-width: var(--bit-nbr-min);
+    min-height: var(--bit-nbr-min);
     display: flex;
     cursor: pointer;
     text-align: center;
@@ -59,7 +63,7 @@
     padding: var(--bit-nbr-pad);
     border-radius: $shp-radius-control;
     letter-spacing: $tg-ctrl-letter-spacing;
-    transition: color $mot-duration-short linear 0s, background-color $mot-duration-short linear 0s;
+    transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
@@ -141,6 +145,14 @@
     }
 }
 
+// Every item gets an equal share of the bar rather than the width of its own content, so a long label
+// does not claim more room than a short one and the destinations stay on a predictable grid.
+.bit-nbr-jst {
+    .bit-nbr-itm {
+        flex: 1 1 0;
+    }
+}
+
 .bit-nbr-vrt {
     .bit-nbr-cnt {
         // A rail stacks its items from the top rather than spreading them over whatever height its
@@ -166,6 +178,7 @@
     --bit-nbr-txt-fs: #{$tg-fs-2xs};
     --bit-nbr-gap: #{spacing(0.25)};
     --bit-nbr-pad: #{spacing(0.75)};
+    --bit-nbr-min: #{$siz-ctrl-sm};
 }
 
 .bit-nbr-md {
@@ -173,6 +186,7 @@
     --bit-nbr-txt-fs: #{$tg-fs-sm};
     --bit-nbr-gap: #{spacing(0.5)};
     --bit-nbr-pad: #{spacing(1)};
+    --bit-nbr-min: #{$siz-ctrl-md};
 }
 
 .bit-nbr-lg {
@@ -180,6 +194,7 @@
     --bit-nbr-txt-fs: #{$tg-fs-md};
     --bit-nbr-gap: #{spacing(0.75)};
     --bit-nbr-pad: #{spacing(1.5)};
+    --bit-nbr-min: #{$siz-ctrl-lg};
 }
 
 // forced-colors: selection is conveyed by text color and a background fill, both of which High Contrast

@@ -70,6 +70,28 @@ public partial class BitNavBar<TItem>
         return item.GetValueFromProperty<string?>(NameSelectors.Badge.Name);
     }
 
+    internal string? GetBadgeAriaLabel(TItem item)
+    {
+        if (item is BitNavBarItem navItem)
+        {
+            return navItem.BadgeAriaLabel;
+        }
+
+        if (item is BitNavBarOption navOption)
+        {
+            return navOption.BadgeAriaLabel;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.BadgeAriaLabel.Selector is not null)
+        {
+            return NameSelectors.BadgeAriaLabel.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.BadgeAriaLabel.Name);
+    }
+
     private string? GetClass(TItem item)
     {
         if (item is BitNavBarItem navItem)
@@ -222,6 +244,50 @@ public partial class BitNavBar<TItem>
         }
 
         return item.GetValueFromProperty<BitNavMatch?>(NameSelectors.Match.Name);
+    }
+
+    internal BitIconInfo? GetSelectedIcon(TItem item)
+    {
+        if (item is BitNavBarItem navItem)
+        {
+            return navItem.SelectedIcon;
+        }
+
+        if (item is BitNavBarOption navOption)
+        {
+            return navOption.SelectedIcon;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.SelectedIcon.Selector is not null)
+        {
+            return NameSelectors.SelectedIcon.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<BitIconInfo?>(NameSelectors.SelectedIcon.Name);
+    }
+
+    internal string? GetSelectedIconName(TItem item)
+    {
+        if (item is BitNavBarItem navItem)
+        {
+            return navItem.SelectedIconName;
+        }
+
+        if (item is BitNavBarOption navOption)
+        {
+            return navOption.SelectedIconName;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.SelectedIconName.Selector is not null)
+        {
+            return NameSelectors.SelectedIconName.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.SelectedIconName.Name);
     }
 
     private string? GetStyle(TItem item)

@@ -35,7 +35,7 @@ public partial class _BitNavBarCustomDemo
     private static readonly List<MenuItem> patternMatchCustoms =
     [
         new() { Title = "/components/*", ImageName = BitIconName.F12DevTools, Link = "/components/*", Matching = BitNavMatch.Wildcard, Disabled = true },
-        new() { Title = "^/components/n", ImageName = BitIconName.Code, Link = "^/components/n", Matching = BitNavMatch.Regex, Disabled = true },
+        new() { Title = "^/components/b", ImageName = BitIconName.Code, Link = "^/components/b", Matching = BitNavMatch.Regex, Disabled = true },
     ];
 
     private static readonly List<MenuItem> additionalUrlsCustoms =
@@ -44,12 +44,28 @@ public partial class _BitNavBarCustomDemo
         new() { Title = "Buttons", ImageName = BitIconName.ButtonControl, Link = "/components/button", ExtraLinks = ["/components/togglebutton"] },
     ];
 
+    private static readonly List<MenuItem> unevenNavBarCustoms =
+    [
+        new() { Title = "Home", ImageName = BitIconName.Home  },
+        new() { Title = "Products & services", ImageName = BitIconName.ProductVariant },
+        new() { Title = "Academy", ImageName = BitIconName.LearningTools },
+        new() { Title = "Me", ImageName = BitIconName.Contact },
+    ];
+
     private static readonly List<MenuItem> badgeNavBarCustoms =
     [
         new() { Title = "Home", ImageName = BitIconName.Home  },
         new() { Title = "Inbox", ImageName = BitIconName.Mail, Counter = "12" },
-        new() { Title = "Alerts", ImageName = BitIconName.Ringer, Counter = "99+" },
-        new() { Title = "Profile", ImageName = BitIconName.Contact, Marker = true },
+        new() { Title = "Alerts", ImageName = BitIconName.Ringer, Counter = "99+", CounterLabel = "more than 99 unread alerts" },
+        new() { Title = "Profile", ImageName = BitIconName.Contact, Marker = true, CounterLabel = "needs attention" },
+    ];
+
+    private static readonly List<MenuItem> selectedIconCustoms =
+    [
+        new() { Title = "Home", ImageName = BitIconName.Home, SelectedImageName = BitIconName.HomeSolid },
+        new() { Title = "Inbox", ImageName = BitIconName.Mail, SelectedImageName = BitIconName.MailSolid },
+        new() { Title = "Alerts", ImageName = BitIconName.Ringer, SelectedImageName = BitIconName.RingerSolid },
+        new() { Title = "Favorites", ImageName = BitIconName.Heart, SelectedImageName = BitIconName.HeartFill },
     ];
 
     private static readonly List<MenuItem> basicNavBarCustomsClassStyle =

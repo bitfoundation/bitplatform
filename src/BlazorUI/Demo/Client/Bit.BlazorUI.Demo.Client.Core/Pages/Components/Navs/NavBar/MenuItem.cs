@@ -13,5 +13,8 @@ public class MenuItem
     public IEnumerable<string>? ExtraLinks { get; set; }
     public BitNavMatch? Matching { get; set; }
     public string? Counter { get; set; }
+    public string? CounterLabel { get; set; }
     public bool Marker { get; set; }
+    public string? SelectedImageName { get; set; }
+    public BitIconInfo? SelectedImage { get; set; }
 }

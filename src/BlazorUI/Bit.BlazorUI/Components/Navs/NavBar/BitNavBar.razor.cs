@@ -116,6 +116,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         ClassBuilder.Register(() => IconOnly ? "bit-nbr-ion" : string.Empty);
         ClassBuilder.Register(() => (IconOnly is false && HideUnselectedText) ? "bit-nbr-hut" : string.Empty);
         ClassBuilder.Register(() => InlineText ? "bit-nbr-inl" : string.Empty);
+        ClassBuilder.Register(() => Justified ? "bit-nbr-jst" : string.Empty);
         ClassBuilder.Register(() => Vertical ? "bit-nbr-vrt" : string.Empty);
         ClassBuilder.Register(() => SafeArea ? "bit-nbr-sfa" : string.Empty);
 
@@ -188,7 +189,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
         if (Mode == BitNavMode.Automatic)
         {
-            SetSelectedItemByCurrentUrl();
+            await SetSelectedItemByCurrentUrl();
         }
         else
         {
@@ -215,7 +216,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         base.OnParametersSet();
     }
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         // Each option flags a selection recompute as it registers instead of matching immediately, so
         // registering n options collapses into a single match pass here rather than one O(n) pass each.
@@ -226,10 +227,10 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
             // A selection that actually moves pushes the render to the options it moved between itself, so
             // a pass that changes nothing leaves the options (and the element references they hand over)
             // exactly as they are.
-            SetSelectedItemByCurrentUrl();
+            await InvokeAsync(SetSelectedItemByCurrentUrl);
         }
 
-        base.OnAfterRender(firstRender);
+        await base.OnAfterRenderAsync(firstRender);
     }
 
 
@@ -377,8 +378,17 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         if (items.Count == 0) return;
 
         // The navigation stops at both ends of the navbar instead of wrapping around, so a bar keeps a
-        // stable notion of a first and a last item.
-        index = Math.Clamp(index, 0, items.Count - 1);
+        // stable notion of a first and a last item; WrapNavigation opts into the wrap of the toolbar
+        // pattern instead. Home and End land inside the range either way, so only the arrow keys reach
+        // past an end and only they are wrapped.
+        if (WrapNavigation)
+        {
+            index = ((index % items.Count) + items.Count) % items.Count;
+        }
+        else
+        {
+            index = Math.Clamp(index, 0, items.Count - 1);
+        }
 
         await FocusItemElement(items[index]);
     }
@@ -394,6 +404,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
             await element.FocusAsync();
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSException) { } // the focus call itself failed, which is nothing to tear the navbar down for
         catch (InvalidOperationException) { } // the element is no longer in the DOM
     }
 
@@ -418,13 +429,18 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         if (IsDisposed) return;
         if (Mode is not BitNavMode.Automatic) return;
 
-        SetSelectedItemByCurrentUrl();
+        // The event is raised outside the renderer's synchronization context, so the match (and the
+        // binding and the callback it invokes) is dispatched onto it rather than run right here.
+        _ = InvokeAsync(async () =>
+        {
+            await SetSelectedItemByCurrentUrl();
 
-        RefreshOptions();
-        StateHasChanged();
+            RefreshOptions();
+            StateHasChanged();
+        });
     }
 
-    private void SetSelectedItemByCurrentUrl()
+    private async Task SetSelectedItemByCurrentUrl()
     {
         if (IsDisposed) return;
         if (Mode is not BitNavMode.Automatic) return;
@@ -441,7 +457,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
             return GetAdditionalUrls(item)?.Any(u => IsMatch(u, match)) is true;
         });
 
-        _ = SetSelectedItem(currentItem);
+        await SetSelectedItem(currentItem);
 
         bool IsMatch(string? itemUrl, BitNavMatch match)
         {

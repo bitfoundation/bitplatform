@@ -21,6 +21,14 @@ public class BitNavBarItem
     public string? Badge { get; set; }
 
     /// <summary>
+    /// The accessible description of the badge (or the dot) of the navbar item, folded into the accessible
+    /// name of the item so a count that only exists as a colored bubble is not lost on a screen reader
+    /// ("Messages (5 unread)"). It falls back to the <see cref="Badge"/> text, and a <see cref="Dot"/> is
+    /// only announced while this is set, since a dot carries no text of its own.
+    /// </summary>
+    public string? BadgeAriaLabel { get; set; }
+
+    /// <summary>
     /// Custom CSS class for the navbar item.
     /// </summary>
     public string? Class { get; set; }
@@ -76,6 +84,23 @@ public class BitNavBarItem
     /// Takes precedence over the Match of the navbar itself.
     /// </summary>
     public BitNavMatch? Match { get; set; }
+
+    /// <summary>
+    /// The icon to display while the navbar item is the selected one, using custom CSS classes for external
+    /// icon libraries. Takes precedence over <see cref="SelectedIconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// A navigation bar conventionally marks its current destination with the filled variant of the same
+    /// glyph, which is what this pair of properties is for. While neither is set, the selected item keeps
+    /// its <see cref="Icon"/> / <see cref="IconName"/>.
+    /// </remarks>
+    public BitIconInfo? SelectedIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon to display from the built-in Fluent UI icons while the navbar item is the
+    /// selected one. For external icon libraries, use <see cref="SelectedIcon"/> instead.
+    /// </summary>
+    public string? SelectedIconName { get; set; }
 
     /// <summary>
     /// Custom CSS style for the navbar item.

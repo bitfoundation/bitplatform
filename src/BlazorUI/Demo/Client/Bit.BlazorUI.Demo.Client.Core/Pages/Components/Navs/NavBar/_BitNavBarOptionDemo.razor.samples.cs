@@ -46,7 +46,7 @@ public partial class _BitNavBarOptionDemo
 
 <BitNavBar TItem=""BitNavBarOption"">
     <BitNavBarOption Text=""/components/*"" IconName=""@BitIconName.F12DevTools"" Url=""/components/*"" Match=""BitNavMatch.Wildcard"" IsEnabled=""false"" />
-    <BitNavBarOption Text=""^/components/n"" IconName=""@BitIconName.Code"" Url=""^/components/n"" Match=""BitNavMatch.Regex"" IsEnabled=""false"" />
+    <BitNavBarOption Text=""^/components/b"" IconName=""@BitIconName.Code"" Url=""^/components/b"" Match=""BitNavMatch.Regex"" IsEnabled=""false"" />
 </BitNavBar>
 
 <BitNavBar TItem=""BitNavBarOption"">
@@ -121,14 +121,28 @@ protected override void OnAfterRender(bool firstRender)
     <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" />
     <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" />
     <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
+</BitNavBar>
+
+<BitNavBar TItem=""BitNavBarOption"">
+    <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" />
+    <BitNavBarOption Text=""Products & services"" IconName=""@BitIconName.ProductVariant"" />
+    <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" />
+    <BitNavBarOption Text=""Me"" IconName=""@BitIconName.Contact"" />
+</BitNavBar>
+
+<BitNavBar TItem=""BitNavBarOption"" Justified>
+    <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" />
+    <BitNavBarOption Text=""Products & services"" IconName=""@BitIconName.ProductVariant"" />
+    <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" />
+    <BitNavBarOption Text=""Me"" IconName=""@BitIconName.Contact"" />
 </BitNavBar>";
 
     private readonly string example9RazorCode = @"
 <BitNavBar TItem=""BitNavBarOption"">
     <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" />
     <BitNavBarOption Text=""Inbox"" IconName=""@BitIconName.Mail"" Badge=""12"" />
-    <BitNavBarOption Text=""Alerts"" IconName=""@BitIconName.Ringer"" Badge=""99+"" />
-    <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" Dot />
+    <BitNavBarOption Text=""Alerts"" IconName=""@BitIconName.Ringer"" Badge=""99+"" BadgeAriaLabel=""more than 99 unread alerts"" />
+    <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" Dot BadgeAriaLabel=""needs attention"" />
 </BitNavBar>";
 
     private readonly string example10RazorCode = @"
@@ -261,16 +275,27 @@ private bool reselectable = true;";
     <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" @ref=""tabStopOptionProducts"" />
     <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" />
     <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
+</BitNavBar>
+
+<BitNavBar TItem=""BitNavBarOption"" WrapNavigation SingleTabStop Mode=""BitNavMode.Manual"" @bind-SelectedItem=""wrapSelectedOption"">
+    <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" />
+    <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" @ref=""wrapOptionProducts"" />
+    <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" />
+    <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
 </BitNavBar>";
     private readonly string example15CsharpCode = @"
 private BitNavBarOption? tabStopSelectedOption;
 private BitNavBarOption tabStopOptionProducts = default!;
+
+private BitNavBarOption? wrapSelectedOption;
+private BitNavBarOption wrapOptionProducts = default!;
 
 protected override void OnAfterRender(bool firstRender)
 {
     if (firstRender)
     {
         tabStopSelectedOption ??= tabStopOptionProducts;
+        wrapSelectedOption ??= wrapOptionProducts;
         StateHasChanged();
     }
 
@@ -322,6 +347,28 @@ protected override void OnAfterRender(bool firstRender)
 }";
 
     private readonly string example17RazorCode = @"
+<BitNavBar TItem=""BitNavBarOption"" Mode=""BitNavMode.Manual"" @bind-SelectedItem=""selectedIconSelectedOption"">
+    <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" SelectedIconName=""@BitIconName.HomeSolid"" @ref=""selectedIconOptionHome"" />
+    <BitNavBarOption Text=""Inbox"" IconName=""@BitIconName.Mail"" SelectedIconName=""@BitIconName.MailSolid"" />
+    <BitNavBarOption Text=""Alerts"" IconName=""@BitIconName.Ringer"" SelectedIconName=""@BitIconName.RingerSolid"" />
+    <BitNavBarOption Text=""Favorites"" IconName=""@BitIconName.Heart"" SelectedIconName=""@BitIconName.HeartFill"" />
+</BitNavBar>";
+    private readonly string example17CsharpCode = @"
+private BitNavBarOption? selectedIconSelectedOption;
+private BitNavBarOption selectedIconOptionHome = default!;
+
+protected override void OnAfterRender(bool firstRender)
+{
+    if (firstRender)
+    {
+        selectedIconSelectedOption ??= selectedIconOptionHome;
+        StateHasChanged();
+    }
+
+    base.OnAfterRender(firstRender);
+}";
+
+    private readonly string example18RazorCode = @"
 <BitNavBar TItem=""BitNavBarOption"" Color=""BitColor.Primary"" Mode=""BitNavMode.Manual"">
     <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" />
     <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" />
@@ -428,7 +475,7 @@ protected override void OnAfterRender(bool firstRender)
     <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
 </BitNavBar>";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitNavBar TItem=""BitNavBarOption"">
@@ -438,7 +485,7 @@ protected override void OnAfterRender(bool firstRender)
     <BitNavBarOption Text=""Profile"" Icon=""@BitIconInfo.Fa(""solid user"")"" />
 </BitNavBar>";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitNavBar TItem=""BitNavBarOption"" Size=""BitSize.Small"" Mode=""BitNavMode.Manual"">
     <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" />
     <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" />
@@ -458,7 +505,7 @@ protected override void OnAfterRender(bool firstRender)
     <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
 </BitNavBar>";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <style>
     .custom-class {
         margin: 1rem;
@@ -518,7 +565,7 @@ protected override void OnAfterRender(bool firstRender)
     <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
 </BitNavBar>";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example22RazorCode = @"
 <BitNavBar Dir=""BitDir.Rtl"" TItem=""BitNavBarOption"">
     <BitNavBarOption Text=""خانه"" IconName=""@BitIconName.Home"" />
     <BitNavBarOption Text=""محصولات"" IconName=""@BitIconName.ProductVariant"" />
