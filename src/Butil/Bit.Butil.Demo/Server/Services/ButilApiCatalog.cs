@@ -21,6 +21,15 @@ public static class ButilApiCatalog
 {
     private const BindingFlags Declared = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
 
+    // What the JSON around the text costs, for the cap Trim holds an answer to. The property
+    // names, quotes, colons, commas and braces of one serialized member come to about eighty-five
+    // characters whatever the member says, so a sixty-member type carries five kilobytes that a
+    // count of the text alone cannot see; these round up from that, and the remainder is headroom
+    // for the escaping that a summary with quotes or line breaks adds.
+    private const int MemberJsonOverhead = 96;
+
+    private const int DetailsJsonOverhead = 192;
+
     private static readonly Assembly _assembly = typeof(BitButil).Assembly;
 
     private static readonly Lazy<Type[]> _publicTypes = new(() =>
@@ -105,31 +114,85 @@ public static class ButilApiCatalog
     /// XML remarks that explain its caveats - and a document tool truncates for exactly this reason.
     /// Cutting mid-member would be the wrong cut here: the members ARE the answer, and the last one
     /// is as likely to be the one asked about as the first. The remarks are what the size is, so
-    /// they are what goes, leaving every member with its signature, its defaults and its summary,
-    /// and a sentence saying where the rest is.
+    /// they are what goes first, leaving every member with its signature, its defaults and its
+    /// summary, and a sentence saying where the rest is.
+    /// </para>
+    /// <para>
+    /// Every cut is measured rather than assumed to have been enough: a type whose summaries alone
+    /// outrun the cap loses those too, and one that outruns it on signatures alone loses whole
+    /// members off the end - a break between two members being the last cut available that leaves
+    /// every member it keeps intact. The note says which cut was made, so a caller can tell a
+    /// shortened reference from a whole one.
     /// </para>
     /// </summary>
     public static ButilApiTypeDetailsDto Trim(ButilApiTypeDetailsDto details, int maxLength)
     {
         if (Length(details) <= maxLength) return details;
 
-        return details with
+        var trimmed = details with { Members = [.. details.Members.Select(m => m with { Remarks = null })] };
+        var cut = "The per-member remarks are omitted";
+
+        if (Fits(trimmed, cut, maxLength) is false)
         {
-            Members = [.. details.Members.Select(m => m with { Remarks = null })],
-            Remarks = $"{details.Remarks}\n\n[The per-member remarks are omitted here: this type's full reference is longer " +
-                      $"than {maxLength:N0} characters. Ask for one member's caveats with SearchButil(query: \"{details.Name}.<member>\"), " +
-                      $"or read the page at {details.DocsUrl ?? "the documentation site"}.]".TrimStart()
-        };
+            trimmed = trimmed with { Members = [.. trimmed.Members.Select(m => m with { Summary = null })] };
+            cut = "The per-member remarks and summaries are omitted";
+        }
+
+        if (Fits(trimmed, cut, maxLength) is false)
+        {
+            // The note is measured with both counts at their widest, so the sentence that finally
+            // goes in can only be shorter than the room this reserved for it.
+            var total = details.Members.Length;
+            var room = maxLength - Length(trimmed with { Members = [], Remarks = Note(trimmed, MemberCut(total, total), maxLength) });
+            var kept = 0;
+
+            foreach (var member in trimmed.Members)
+            {
+                room -= Length(member);
+                if (room < 0) break;
+
+                kept++;
+            }
+
+            cut = MemberCut(kept, total);
+            trimmed = trimmed with { Members = [.. trimmed.Members.Take(kept)] };
+        }
+
+        return trimmed with { Remarks = Note(trimmed, cut, maxLength) };
     }
 
-    /// <summary>Roughly what the reference costs on the wire - the text of it, without the JSON around it.</summary>
-    private static int Length(ButilApiTypeDetailsDto details)
-    {
-        return (details.Summary?.Length ?? 0)
-             + (details.Remarks?.Length ?? 0)
-             + details.Members.Sum(m => m.Name.Length + (m.Signature?.Length ?? 0) + (m.Type?.Length ?? 0)
-                                      + (m.Default?.Length ?? 0) + (m.Summary?.Length ?? 0) + (m.Remarks?.Length ?? 0));
-    }
+    /// <summary>Whether the reference and the note that explains the cut both fit inside the cap.</summary>
+    private static bool Fits(ButilApiTypeDetailsDto details, string cut, int maxLength) =>
+        Length(details with { Remarks = Note(details, cut, maxLength) }) <= maxLength;
+
+    /// <summary>
+    /// What replaces the remarks of a shortened reference: which cut was made, and where the rest is.
+    /// Every wording says "omitted" - that word is what a client, and the suite, reads to tell a
+    /// shortened reference from a whole one.
+    /// </summary>
+    private static string Note(ButilApiTypeDetailsDto details, string cut, int maxLength) =>
+        ($"{details.Remarks}\n\n[{cut} here: this type's full reference is longer than {maxLength:N0} characters. " +
+         $"Ask for one member's caveats with SearchButil(query: \"{details.Name}.<member>\"), " +
+         $"or read the page at {details.DocsUrl ?? "the documentation site"}.]").TrimStart();
+
+    /// <summary>The wording of the last cut, which is the only one that returns fewer members than the type has.</summary>
+    private static string MemberCut(int kept, int total) =>
+        $"Only the first {kept:N0} of this type's {total:N0} members are listed, and their summaries and remarks are omitted";
+
+    /// <summary>Roughly what the reference costs a client - its text, plus the JSON that carries it.</summary>
+    private static int Length(ButilApiTypeDetailsDto details) =>
+        DetailsJsonOverhead
+      + details.Name.Length + details.FullName.Length + details.Kind.Length
+      + (details.Inject?.Length ?? 0) + (details.DocsUrl?.Length ?? 0)
+      + (details.Implements?.Sum(name => name.Length + 4) ?? 0)
+      + (details.Summary?.Length ?? 0) + (details.Remarks?.Length ?? 0)
+      + details.Members.Sum(Length);
+
+    /// <summary>The same for one member, which is the part that repeats sixty times.</summary>
+    private static int Length(ButilApiMemberDto member) =>
+        MemberJsonOverhead
+      + member.Name.Length + member.Kind.Length + (member.Type?.Length ?? 0) + (member.Signature?.Length ?? 0)
+      + (member.Default?.Length ?? 0) + (member.Summary?.Length ?? 0) + (member.Remarks?.Length ?? 0);
 
     /// <summary>True when the class is registered by AddBitButilServices, i.e. injectable by its own name.</summary>
     public static bool IsService(Type type) => type.IsDefined(typeof(ButilServiceAttribute), inherit: false);

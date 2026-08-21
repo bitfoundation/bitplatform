@@ -37,7 +37,11 @@
             }
         </button>
     </div>
-    <pre data-language="@Language"><code>@Code.Trim('\r', '\n')</code></pre>
+    @* Highlighted by Services/SyntaxHighlighter.cs - the spans are the only markup in here, and
+       every one of them wraps text that came out of Escape(), so the MarkupString carries nothing
+       a sample could have injected. The language- class on the <code> is the convention every
+       other docs site uses, and HtmlToMarkdownService falls back to reading it. *@
+    <pre data-language="@Language"><code class="language-@Language">@_highlighted</code></pre>
 </div>
 
 @code {
@@ -46,6 +50,10 @@
 
     private bool _copied;
     private bool _failed;
+
+    // Highlighting a sample costs a scan of it, and the copy button re-renders this component
+    // three times per click, so it is done when the code changes rather than when it is drawn.
+    private MarkupString _highlighted;
 
     // What the bar shows. The slugs are what a Markdown fence wants; a human wants the name.
     private string Label => Language switch
@@ -63,6 +71,9 @@
         "" or null => "Code",
         _ => Language,
     };
+
+    protected override void OnParametersSet() =>
+        _highlighted = (MarkupString)SyntaxHighlighter.Highlight(Code.Trim('\r', '\n'), Language);
 
     private async Task Copy()
     {

@@ -2,10 +2,11 @@
    intent's own border. The intent is carried by the icon and by the wording as well as by the
    colour, so it survives a monochrome print and a reader who cannot separate the four hues. *@
 
-<div class="callout @Type" role="@Role">
+<div class="callout @Type">
     <span class="callout-icon" aria-hidden="true">
         <Icon Name="@Icon" Size="20" />
     </span>
+    <span class="visually-hidden">@Label:</span>
     <div class="callout-body">
         @if (!string.IsNullOrWhiteSpace(Title))
         {
@@ -30,12 +31,18 @@
         _ => "info",
     };
 
-    // Only the two that report something going wrong are announced out of turn; an explanatory
-    // aside is part of the prose and belongs in the reading order like everything else.
-    private string? Role => Type switch
+    // No role="alert" or role="status" here, on any intent. A callout on a documentation page is
+    // part of the prose: it is written before the reader arrives and it never changes afterwards,
+    // which is the opposite of what a live region is for. Marking one live would have a screen
+    // reader interrupt itself to read every warning on the page on each SPA navigation, out of the
+    // order the page was written in. The intent still has to reach a reader that cannot see the
+    // tint, so it is said in words the icon is hidden from - in the reading order, where the rest
+    // of the callout is.
+    private string Label => Type switch
     {
-        "error" => "alert",
-        "warning" => "status",
-        _ => null,
+        "warning" => "Warning",
+        "success" => "Success",
+        "error" => "Important",
+        _ => "Note",
     };
 }

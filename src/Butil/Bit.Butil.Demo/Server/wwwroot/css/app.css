@@ -145,6 +145,22 @@
     --colorCodeBackground: #F8F8F8;
     --colorCodeStroke: #E5E5E5;
 
+    /* Syntax tokens. Not Fluent - Fluent has no opinion about code - so this is the light palette
+       every developer already reads a diff in: the one a reader has no learning to do for. Every
+       entry clears 4.5:1 against the surface above, the tightest being the keyword red at 5.0, so
+       no token is legible only to a reader who can pick the hue out. */
+    --codeComment: #5F6672;
+    --codeKeyword: #CF222E;
+    --codeString: #0A3069;
+    --codeNumber: #0550AE;
+    --codeFunction: #7A34C4;
+    --codeType: #8A4400;
+    --codeTag: #116329;
+    --codeAttrName: #0550AE;
+    --codeAttrValue: #0A3069;
+    --codeMeta: #7A34C4;
+    --codePunct: #57606A;
+
     /* elevation */
     --shadow2: 0 0 2px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.14);
     --shadow4: 0 0 2px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.14);
@@ -221,6 +237,21 @@
 
     --colorCodeBackground: #1B1B1B;
     --colorCodeStroke: #3D3D3D;
+
+    /* The dark counterparts. Same hue per category as the light set, so a reader switching themes
+       is not relearning which colour means "string" - re-pitched rather than re-assigned, because
+       the light palette's saturations go to mud on a near-black surface. */
+    --codeComment: #8B949E;
+    --codeKeyword: #FF7B72;
+    --codeString: #A5D6FF;
+    --codeNumber: #79C0FF;
+    --codeFunction: #D2A8FF;
+    --codeType: #FFA657;
+    --codeTag: #7EE787;
+    --codeAttrName: #79C0FF;
+    --codeAttrValue: #A5D6FF;
+    --codeMeta: #D2A8FF;
+    --codePunct: #A0A7B0;
 
     /* Fluent's dark elevation is the same geometry at heavier alphas: a shadow has
        less to work with when the surface under it is already near-black. */
@@ -528,6 +559,22 @@ svg {
     outline-offset: var(--strokeWidthThin);
     box-shadow: 0 0 0 var(--strokeWidthThin) var(--colorStrokeFocus1);
     border-radius: var(--borderRadiusMedium);
+}
+
+
+/* Text for a reader that cannot see the picture: off-screen to the eye, in the
+   reading order to everything else. Not display:none and not visibility:hidden -
+   both of those take it out of the accessibility tree along with the layout. */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    clip-path: inset(50%);
+    border: 0;
 }
 
 
@@ -1617,6 +1664,36 @@ pre code {
     line-height: var(--codeLineHeight);
     font-family: var(--fontFamilyMonospace);
 }
+
+/* The token colours Client/Services/SyntaxHighlighter.cs paints with. Everything the scanner did
+   not recognise inherits the pane's own foreground, so an unsupported language, or a construct a
+   rule missed, comes out as ordinary code text rather than as a hole in the sample. */
+.tok-com { color: var(--codeComment); }
+.tok-kw { color: var(--codeKeyword); }
+.tok-str,
+.tok-atv { color: var(--codeString); }
+.tok-num,
+.tok-lit { color: var(--codeNumber); }
+.tok-fn { color: var(--codeFunction); }
+.tok-typ { color: var(--codeType); }
+.tok-tag { color: var(--codeTag); }
+.tok-atn,
+.tok-key,
+.tok-var { color: var(--codeAttrName); }
+.tok-meta { color: var(--codeMeta); }
+.tok-punc,
+.tok-op { color: var(--codePunct); }
+
+/* Markdown is the one language whose markup means "render this differently", so it is the one
+   place a token gets a weight or a slant. It costs nothing to a reader who cannot see them: this
+   is a listing of the source, not a rendering of it, so the ** and the # are still on the page. */
+.tok-head {
+    color: var(--codeFunction);
+    font-weight: var(--fontWeightSemibold);
+}
+
+.tok-strong { font-weight: var(--fontWeightSemibold); }
+.tok-em { font-style: italic; }
 
 
 /* ---------------------------------------------------------------------------
@@ -3601,6 +3678,13 @@ label.check {
         background: #FFFFFF !important;
         color: #000000 !important;
         box-shadow: none !important;
+    }
+
+    /* The token colours are set on the spans themselves, so blacking out the pre would leave
+       them behind. A printed sample goes monochrome: paper has no dark theme, cheap printers
+       dither mid-tones into mush, and the code's structure never depended on hue anyway. */
+    pre [class^="tok-"] {
+        color: #000000 !important;
     }
 
     .page-container {

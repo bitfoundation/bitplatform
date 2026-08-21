@@ -290,7 +290,9 @@ public class CatalogConsistencyTests : McpTestBase
 
         var sections = await ListAsync("GetButilGuideSection");
 
-        var missing = sections.Where(heading => whole.Contains($" {heading}", StringComparison.Ordinal) is false).ToArray();
+        // Matched as a heading rather than as prose: the guide mentioning a section's words in a
+        // sentence is not the same as the guide still having that section.
+        var missing = sections.Where(heading => whole.Contains($"## {heading}", StringComparison.Ordinal) is false).ToArray();
 
         Assert.That(missing, Is.Empty,
             "The section index lists headings that are not in the guide it was built from.");

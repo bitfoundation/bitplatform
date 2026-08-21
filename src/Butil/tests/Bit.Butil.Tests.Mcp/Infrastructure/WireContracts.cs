@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Bit.Butil.Tests.Mcp.Infrastructure;
 
@@ -20,7 +21,7 @@ public static class ButilMcp
     /// Seven, and the number is asserted as much as the names are. Each listing this server used to
     /// advertise as a tool of its own is now what its retrieval tool answers when called with no
     /// argument, and the single-API inspection is what PlanButilFeature answers when passed one
-    /// name - so a fifteenth entry appearing here is the signal that the surface has started
+    /// name - so an eighth entry appearing here is the signal that the surface has started
     /// growing back, which is the whole reason this list is written down by hand.
     /// </para>
     /// </summary>
@@ -137,13 +138,48 @@ public sealed partial record DocsIndexRow(string Group, string Slug, string Titl
             // went missing should read as a short row here rather than as a row that did not match.
             // Such a row is thrown on rather than dropped - a table that quietly lost a column would
             // otherwise shrink every listing the suite compares against it, on both sides at once.
-            var cells = line.Trim().Trim('|').Split('|').Select(cell => cell.Trim()).ToArray();
+            var cells = SplitCells(line);
             if (cells.Length != 6) throw new FormatException($"The index has a row of {cells.Length} cells rather than six: {line.Trim()}");
 
             rows.Add(new DocsIndexRow(group, match.Groups["slug"].Value, cells[1], cells[2], Cell(cells[3]), cells[4], Cell(cells[5])));
         }
 
         return [.. rows];
+    }
+
+    /// <summary>
+    /// A row's cells, split on the pipes that are column breaks rather than on every pipe. The
+    /// renderer writes a pipe inside a cell as <c>\|</c>, which is one character of that cell's
+    /// text; splitting on the raw character would read such a row as a column too long and throw on
+    /// it - reporting the corruption this exists to catch against the one row that is not corrupt.
+    /// </summary>
+    private static string[] SplitCells(string line)
+    {
+        var body = line.Trim();
+        if (body.StartsWith('|')) body = body[1..];
+        if (body.EndsWith('|') && body.EndsWith(@"\|", StringComparison.Ordinal) is false) body = body[..^1];
+
+        var cells = new List<string>();
+        var cell = new StringBuilder();
+
+        for (var i = 0; i < body.Length; i++)
+        {
+            if (body[i] == '\\' && i + 1 < body.Length && body[i + 1] == '|')
+            {
+                cell.Append('|');
+                i++;
+            }
+            else if (body[i] == '|')
+            {
+                cells.Add(cell.ToString().Trim());
+                cell.Clear();
+            }
+            else cell.Append(body[i]);
+        }
+
+        cells.Add(cell.ToString().Trim());
+
+        return [.. cells];
     }
 
     /// <summary>A list cell: comma-separated, or "-" when the row has none of that thing.</summary>

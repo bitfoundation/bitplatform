@@ -360,7 +360,6 @@ public static partial class HtmlToMarkdownService
         return null;
     }
 
-    /// <summary>A real table, or the ARIA role a grid of &lt;div&gt;s uses to be one.</summary>
     /// <summary>Whether the node is one of the interactive widgets that say nothing until clicked.</summary>
     private static bool IsSkippedByClass(HtmlNode node)
     {
@@ -376,6 +375,7 @@ public static partial class HtmlToMarkdownService
         return false;
     }
 
+    /// <summary>A real table, or the ARIA role a grid of &lt;div&gt;s uses to be one.</summary>
     private static bool IsTable(HtmlNode node) =>
         node.Name.Equals("table", StringComparison.OrdinalIgnoreCase) || Role(node) is "table" or "grid" or "treegrid";
 

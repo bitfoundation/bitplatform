@@ -59,7 +59,7 @@ public static class ButilIndexes
             {
                 var services = link.TypeNames();
 
-                builder.AppendLine($"| `{link.Url}` | {link.Title} | {link.Summary} | {Join(services)} | {link.Support.Label()} | {Requires(link)} |");
+                builder.AppendLine($"| `{link.Url}` | {Cell(link.Title)} | {Cell(link.Summary)} | {Join(services)} | {Cell(link.Support.Label())} | {Requires(link)} |");
             }
 
             builder.AppendLine();
@@ -114,7 +114,24 @@ public static class ButilIndexes
         return builder.ToString();
     }
 
-    private static string Join(string[] values) => values.Length == 0 ? "-" : string.Join(", ", values);
+    private static string Join(string[] values) => values.Length == 0 ? "-" : string.Join(", ", values.Select(Cell));
+
+    /// <summary>
+    /// One cell's text, made safe to sit between two pipes. A pipe inside a cell ends the cell and
+    /// a line break ends the row, so either one arriving in a title or a summary would shift every
+    /// column after it - which a reader of the table cannot see has happened, and which the callers
+    /// that parse the slug column back out of it cannot survive. Neither character appears in the
+    /// nav today; both are one edit to a summary away, and that edit would be made somewhere else.
+    /// </summary>
+    private static string Cell(string? text)
+    {
+        if (string.IsNullOrEmpty(text)) return string.Empty;
+
+        return text.Replace('\r', ' ')
+                   .Replace('\n', ' ')
+                   .Replace("|", @"\|", StringComparison.Ordinal)
+                   .Trim();
+    }
 
     /// <summary>
     /// The names of a page's preconditions, without the sentence that explains each - the table is a

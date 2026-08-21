@@ -5,8 +5,9 @@
    glyph rendered by the OS font cannot be re-coloured, cannot be sized against the type ramp, and
    is a different picture on every platform.
 
-   Brand marks (github, nuget) are the exception: they are filled paths reproduced as their owners
-   publish them, so they are the one place `fill` is used instead of `stroke`.
+   Every icon in the family is drawn to those metrics, so the `<svg>` carries them once here rather
+   than per path. A mark that cannot be drawn as a stroke - a filled brand logo, say - does not
+   belong in this dictionary: it would need its own `fill`, and there is no path for one.
 
    The markup is a compile-time constant looked up by name, so rendering it as a MarkupString
    inserts nothing a caller could influence. An unknown name renders nothing rather than throwing:
