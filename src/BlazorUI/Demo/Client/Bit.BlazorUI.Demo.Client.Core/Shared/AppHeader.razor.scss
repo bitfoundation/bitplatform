@@ -180,23 +180,26 @@
 
 
 // ── Controls ──────────────────────────────────────────────────────────────────────────────────
-// The octocat circle only spans ~87% of the svg's viewBox, so the mark is drawn oversized to put
-// the VISIBLE glyph at the button's 32px; anything past the ~13% built-in padding clips at the box
-// edge, which is under half a pixel. The svg is a mask rather than a picture, so the mark is
-// painted with the theme's primary color and follows the accent the home page's "Make it yours"
-// swatches apply - a colored asset could not.
+// The octocat circle only spans ~87% of the svg's viewBox, so the mark is drawn oversized - at 116%
+// of the box - to put the VISIBLE glyph at the button's full size; anything past the ~13% built-in
+// padding clips at the box edge, which is under half a pixel. Sizing it off the control-height token
+// rather than a literal keeps it level with the theme switcher's buttons beside it under the presets
+// that make a control taller than Fluent's 32px (Material 40px, Cupertino 36px), and the percentage
+// mask keeps the glyph in proportion as it grows. The svg is a mask rather than a picture, so the
+// mark is painted with the theme's primary color and follows the accent the home page's
+// "Make it yours" swatches apply - a colored asset could not.
 .github-btn {
     flex-shrink: 0;
-    width: rem2(32px);
-    height: rem2(32px);
+    width: $bit-size-control-md;
+    height: $bit-size-control-md;
     background-color: $bit-color-primary;
-    -webkit-mask: url('images/github-mark.svg') center / rem2(37px) rem2(37px) no-repeat;
-    mask: url('images/github-mark.svg') center / rem2(37px) rem2(37px) no-repeat;
+    -webkit-mask: url('images/github-mark.svg') center / 116% 116% no-repeat;
+    mask: url('images/github-mark.svg') center / 116% 116% no-repeat;
 }
 
-// The theme switcher needs no rule of its own here: BitThemeSwitcher.scss sizes its buttons to the
-// same 32px the github mark beside it uses, and its --bit-ths-gap default already matches this
-// row's.
+// The theme switcher needs no rule of its own here: BitThemeSwitcher.scss sizes its buttons off the
+// same --bit-siz-ctrl-md the github mark beside it now uses, and its --bit-ths-gap default already
+// matches this row's.
 
 ::deep {
     .menu-btn {

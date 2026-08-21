@@ -35,11 +35,6 @@
     // preview below it upwards.
     overflow: hidden;
 
-    // Open, the source is separated from the preview under it by the same hairline the rest of the
-    // page uses. Collapsed, the panel is squeezed to nothing, so that rule would draw a stray line
-    // across an empty strip.
-    border-bottom: rem2(1px) solid $bit-color-border-secondary;
-
     &[inert] {
         border-bottom: none;
     }
@@ -129,9 +124,9 @@
     .copy-btn {
         z-index: 1;
         display: flex;
-        top: rem2(16px);
+        top: 0.5rem;
+        right: 0.5rem;
         min-width: unset;
-        right: rem2(10px);
         width: rem2(34px);
         height: rem2(34px);
         position: absolute;
