@@ -238,7 +238,10 @@ brouter.Navigate(BrouterRoutes.ProfileByUsername(<span class="s">"saleh"</span>,
             way - and then keeps going. Where the framework's implementation is the right one -
             authorization, layouts - Brouter composes it instead of replacing it.
         </p>
-        <div class="bb-scroll">
+        @* Focusable and named: a scroll container with nothing tabbable inside it is unreachable
+           by keyboard otherwise, and the name is what tells a screen-reader user which table
+           they have landed in. *@
+        <div class="bb-scroll" tabindex="0" role="region" aria-label="Built-in Router compared with Brouter">
             <table class="bb-table bb-compare">
                 <thead>
                     <tr><th>Capability</th><th>Built-in Router</th><th>Brouter</th></tr>

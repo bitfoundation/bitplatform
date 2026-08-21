@@ -415,6 +415,37 @@
         /** Holds the page still behind a modal, so scrolling the dialog does not scroll the page. */
         lockScroll: function (locked) {
             document.documentElement.style.overflow = locked ? 'hidden' : '';
+        },
+
+        /**
+         * Keeps the palette's keyboard cursor inside its scrolling results list. The arrow keys
+         * move the cursor in C#; nothing about a class change scrolls anything, so without this
+         * the cursor walks off the bottom of the list and Enter opens a row nobody can see.
+         *
+         * Called after the render that moved the cursor, so the row is already marked active.
+         */
+        revealPaletteOption: function (index) {
+            var list = document.querySelector('.bb-palette-results');
+            if (list === null) return;
+
+            var option = document.getElementById('bb-palette-option-' + index);
+            if (option === null) return;
+
+            var listBox = list.getBoundingClientRect();
+            var optionBox = option.getBoundingClientRect();
+
+            // Going up onto the first row of a group, the group's own heading comes with it -
+            // scrolling to the row alone would leave the reader without the label above it.
+            var above = option.previousElementSibling;
+            var top = above !== null && above.classList.contains('bb-palette-group')
+                ? above.getBoundingClientRect().top
+                : optionBox.top;
+
+            if (top < listBox.top) {
+                list.scrollTop += top - listBox.top;
+            } else if (optionBox.bottom > listBox.bottom) {
+                list.scrollTop += optionBox.bottom - listBox.bottom;
+            }
         }
     };
 

@@ -10,7 +10,7 @@
    the "on this page" rail. The rail's contents are built by site.js from whatever headings the
    page rendered - see the note on the <nav> below. *@
 
-<div class="bb-docs">
+<div class="bb-docs" @onkeydown="OnKeyDown">
     <aside class="bb-docs-sidebar @(_menuOpen ? "bb-open" : null)" id="bb-docs-nav" aria-label="Documentation navigation">
         <p class="bb-overline bb-docs-nav-title">Documentation</p>
 
@@ -44,7 +44,7 @@
         @* The narrow-width entry into the panel above. It sits with the breadcrumb because at
            those widths the two together are the whole "where am I / where else can I go" row. *@
         <div class="bb-docs-topbar">
-            <button type="button" class="bb-docs-menu-toggle" aria-expanded="@(_menuOpen ? "true" : "false")"
+            <button @ref="_toggle" type="button" class="bb-docs-menu-toggle" aria-expanded="@(_menuOpen ? "true" : "false")"
                     aria-controls="bb-docs-nav" @onclick="() => _menuOpen = !_menuOpen">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
                     <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
@@ -108,6 +108,8 @@
         "https://github.com/bitfoundation/bitplatform/blob/develop/src/Brouter/Bit.Brouter.Demo/Client/Pages";
 
     private bool _menuOpen;
+    private bool _restorePending;
+    private ElementReference _toggle;
     private DocsPageInfo? _current;
     private Func<BrouterNavigationContext, ValueTask>? _onNavigated;
 
@@ -125,6 +127,29 @@
             return ValueTask.CompletedTask;
         };
         brouter.OnNavigated += _onNavigated;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_restorePending is false) return;
+
+        _restorePending = false;
+        await _toggle.FocusAsync();
+    }
+
+    /// <summary>
+    /// Escape closes the narrow-width drawer, the way every other overlay on the site closes. The
+    /// handler sits on the shell rather than on the panel because the button that opens the drawer
+    /// is outside the panel it controls, and a keydown reaches the shell from either of them.
+    /// </summary>
+    private void OnKeyDown(KeyboardEventArgs args)
+    {
+        if (_menuOpen is false || args.Key != "Escape") return;
+
+        _menuOpen = false;
+        // Once hidden, a panel that was holding focus hands it to <body> and the next Tab restarts
+        // at the top of the page - hence the trip back to the button that opened it.
+        _restorePending = true;
     }
 
     private void Recompute() => _current = DocsCatalog.FindByPath(brouter.Location.Path);

@@ -12,7 +12,7 @@
    state cannot get out of step. Ctrl+K / Cmd+K and "/" open it from anywhere - site.js owns the
    document-level listener and calls back in here. *@
 
-<button type="button" class="bb-search-trigger" @onclick="Open"
+<button type="button" class="bb-search-trigger" @ref="_trigger" @onclick="Open"
         aria-label="Search documentation" title="Search documentation (Ctrl+K)">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -27,14 +27,19 @@
 {
     @* The scrim takes the click that closes the dialog. The dialog itself stops the click from
        reaching it, so a click inside never closes what the reader is using. *@
-    <div class="bb-palette-scrim" @onclick="Close">
+    <div class="bb-palette-scrim" @onclick="() => Close()">
         <div class="bb-palette" role="dialog" aria-modal="true" aria-label="Search documentation"
              @onclick:stopPropagation="true" @onkeydown="OnKeyDown">
             @* Focus trap. The dialog claims to be modal, so Tab must not walk out of it into the
                page behind - which is still there and still focusable. These two zero-size stops
                sit either side of the content: reaching one means the reader tabbed past an end,
-               and focus is handed to the opposite end instead. Two elements and no interop. *@
-            <span class="bb-focus-sentinel" tabindex="0" aria-hidden="true" @onfocus="() => _escape.FocusAsync()"></span>
+               and focus is handed to the opposite end instead. Two elements and no interop.
+
+               Not aria-hidden: an element that is focusable and hidden from assistive technology
+               at the same time is a stop the screen reader has been told does not exist. They are
+               empty and zero-size, so there is nothing to announce anyway, and focus leaves again
+               in the same tick. *@
+            <span class="bb-focus-sentinel" tabindex="0" @onfocus="() => _escape.FocusAsync()"></span>
 
             <div class="bb-palette-input">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -53,7 +58,7 @@
                        spellcheck="false"
                        value="@_query"
                        @oninput="OnInput" />
-                <button type="button" class="bb-palette-esc" @ref="_escape" @onclick="Close" aria-label="Close search">Esc</button>
+                <button type="button" class="bb-palette-esc" @ref="_escape" @onclick="() => Close()" aria-label="Close search">Esc</button>
             </div>
 
             <div class="bb-palette-results" id="bb-palette-listbox" role="listbox" aria-label="Search results">
@@ -98,7 +103,7 @@
                 <span><kbd>Esc</kbd> to dismiss</span>
             </div>
 
-            <span class="bb-focus-sentinel" tabindex="0" aria-hidden="true" @onfocus="() => _input.FocusAsync()"></span>
+            <span class="bb-focus-sentinel" tabindex="0" @onfocus="() => _input.FocusAsync()"></span>
         </div>
     </div>
 }
@@ -133,10 +138,13 @@
     private bool _open;
     private bool _isApple;
     private bool _focusPending;
+    private bool _restorePending;
+    private bool _revealPending;
     private string _query = "";
     private Hit[] _results = [];
     private int _activeIndex;
 
+    private ElementReference _trigger;
     private ElementReference _input;
     private ElementReference _escape;
     private DotNetObjectReference<CommandPalette>? _self;
@@ -160,6 +168,20 @@
             _focusPending = false;
             await _input.FocusAsync();
         }
+
+        if (_restorePending)
+        {
+            _restorePending = false;
+            await _trigger.FocusAsync();
+        }
+
+        if (_revealPending)
+        {
+            _revealPending = false;
+            // After the render that moved the cursor, not before: the row has to carry its new
+            // class before its position is worth measuring.
+            await jsRuntime.InvokeVoidAsync("bitBrouterSite.revealPaletteOption", _activeIndex);
+        }
     }
 
     /// <summary>Opened by the document-level Ctrl+K / Cmd+K / "/" handler in site.js.</summary>
@@ -182,12 +204,20 @@
         LockScroll(true);
     }
 
-    private void Close()
+    /// <summary>
+    /// Dismisses the dialog. The whole dialog is unmounted on close, so unless focus is handed
+    /// somewhere deliberately it falls to &lt;body&gt; and the next Tab restarts at the top of the
+    /// page - hence the trip back to the button that opened it. A close that ends in a navigation
+    /// passes false: the new page decides where focus belongs, and moving it here would fight that.
+    /// </summary>
+    private void Close(bool restoreFocus = true)
     {
         _open = false;
         _query = "";
         _results = [];
         _activeIndex = 0;
+        _revealPending = false;
+        _restorePending = restoreFocus;
         LockScroll(false);
     }
 
@@ -217,10 +247,12 @@
                 // Wrapping, because a palette is a short list: falling off the end and landing back
                 // at the top is what every other palette does, and it saves a reversal.
                 _activeIndex = (_activeIndex + 1) % _results.Length;
+                _revealPending = true;
                 break;
 
             case "ArrowUp" when _results.Length > 0:
                 _activeIndex = (_activeIndex - 1 + _results.Length) % _results.Length;
+                _revealPending = true;
                 break;
 
             case "Enter" when _results.Length > 0:
@@ -231,7 +263,7 @@
 
     private void Go(Hit hit)
     {
-        Close();
+        Close(restoreFocus: false);
         brouter.Navigate(hit.Url);
     }
 

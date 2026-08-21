@@ -72,6 +72,15 @@
     color: transparent;
 }
 
+/* The gradient IS the text here: forced colors drops the background image, and transparent text
+   over nothing is a hole in the headline. The system's own text color takes over instead. */
+@media (forced-colors: active) {
+    .bb-hero-accent {
+        background: none;
+        color: CanvasText;
+    }
+}
+
 .bb-hero-sub {
     color: var(--bb-text-muted);
     font-size: 1.0625rem;

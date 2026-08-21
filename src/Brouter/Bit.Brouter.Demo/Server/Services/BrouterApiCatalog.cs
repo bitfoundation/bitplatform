@@ -85,12 +85,14 @@ public static class BrouterApiCatalog
         var builder = new StringBuilder();
 
         builder.AppendLine($"# {details.Name} ({details.Kind})").AppendLine();
-        builder.AppendLine($"`{details.FullName}`");
+        // One line: the fragments continue the FullName rather than standing on their own, so the
+        // line is only ended once every part of it has been written.
+        builder.Append($"`{details.FullName}`");
 
-        if (details.BaseType is not null) builder.AppendLine($" - inherits `{details.BaseType}`");
-        if (details.Implements?.Length > 0) builder.AppendLine($" - implements {string.Join(", ", details.Implements.Select(i => $"`{i}`"))}");
+        if (details.BaseType is not null) builder.Append($" - inherits `{details.BaseType}`");
+        if (details.Implements?.Length > 0) builder.Append($" - implements {string.Join(", ", details.Implements.Select(i => $"`{i}`"))}");
 
-        builder.AppendLine();
+        builder.AppendLine().AppendLine();
 
         if (details.Summary is not null) builder.AppendLine(details.Summary).AppendLine();
         if (details.Remarks is not null) builder.AppendLine(details.Remarks).AppendLine();

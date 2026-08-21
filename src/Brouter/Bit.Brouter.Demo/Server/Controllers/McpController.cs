@@ -108,7 +108,7 @@ public class McpController(HtmlRenderer htmlRenderer, IOptions<BrouterOptions> b
     public async Task<string> GetBrouterDocsPage(
         [Description("The page's slug, e.g. 'guards'. Pass 'overview' for the documentation overview; omit it for the index of pages.")] string? slug = null)
     {
-        if (slug is null) return DocsPageRenderer.RenderIndex();
+        if (string.IsNullOrWhiteSpace(slug)) return DocsPageRenderer.RenderIndex();
 
         var page = DocsPageRenderer.FindPage(slug);
 
