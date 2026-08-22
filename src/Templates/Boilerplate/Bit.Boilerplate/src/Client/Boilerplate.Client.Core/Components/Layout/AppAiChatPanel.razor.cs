@@ -150,7 +150,7 @@ public partial class AppAiChatPanel
             // transcribed here - what it heard lands in the box before the box is read below.
             await StopDictation(transcribe: true);
 
-            if (string.IsNullOrEmpty(userInput) && pendingAttachment is null) return;
+            if (string.IsNullOrWhiteSpace(userInput) && pendingAttachment is null) return;
 
             // The image goes up first: the message carries the path it was stored under, and there is none until the
             // upload answers with one. A failure sends nothing and leaves both in place, so send again is a retry.
@@ -219,12 +219,14 @@ public partial class AppAiChatPanel
 
         SnackBarService.Info(title, message);
 
+        var wasOpen = isOpen;
+
         isOpen = false; // Focus on the modal, not the conversation, so the panel is closed to avoid a focus trap.
         StateHasChanged();
 
         var result = await signInModalService.SignIn();
 
-        isOpen = true;
+        isOpen = wasOpen;
         StateHasChanged();
 
         return result;

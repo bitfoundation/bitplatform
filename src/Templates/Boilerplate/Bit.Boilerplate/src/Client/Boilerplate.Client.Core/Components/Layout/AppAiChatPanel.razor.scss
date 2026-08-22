@@ -183,6 +183,7 @@
         width: 100%;
         max-width: unset;
         gap: 0.3rem;
+
         // The file list is drawn after the label the box lives in, and the pending thumbnail belongs above the box.
         flex-flow: column-reverse nowrap;
     }

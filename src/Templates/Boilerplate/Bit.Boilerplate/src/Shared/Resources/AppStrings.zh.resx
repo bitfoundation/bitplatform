@@ -1319,16 +1319,16 @@
     <value>AI 聊天面板</value>
   </data>
   <data name="AiChatPanelDictate" xml:space="preserve">
-    <value>口述你的消息</value>
+    <value>语音输入你的消息</value>
   </data>
   <data name="AiChatPanelStopDictation" xml:space="preserve">
-    <value>停止口述</value>
+    <value>停止语音输入</value>
   </data>
   <data name="AiChatPanelDictation" xml:space="preserve">
     <value>语音输入</value>
   </data>
   <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
-    <value>麦克风访问已被阻止。请为本站点允许访问后再进行口述。</value>
+    <value>麦克风访问已被阻止。请为本站点允许访问后再使用语音输入。</value>
   </data>
   <data name="AiChatPanelDictationStopped" xml:space="preserve">
     <value>语音输入已停止：{0}</value>
@@ -1343,13 +1343,13 @@
     <value>正在把你说的话转成文字</value>
   </data>
   <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
-    <value>口述停止前的剩余时间</value>
+    <value>语音输入停止前的剩余时间</value>
   </data>
   <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
     <value>语音功能需要账户</value>
   </data>
   <data name="AiChatPanelSpeechSignInMessage" xml:space="preserve">
-    <value>口述和朗读都在服务器上运行。登录一次，你就可以对聊天说话，并让它朗读回复。</value>
+    <value>语音输入和朗读都在服务器上运行。登录一次，你就可以对聊天说话，并让它朗读回复。</value>
   </data>
   <data name="AiChatPanelAttachImage" xml:space="preserve">
     <value>添加图片</value>

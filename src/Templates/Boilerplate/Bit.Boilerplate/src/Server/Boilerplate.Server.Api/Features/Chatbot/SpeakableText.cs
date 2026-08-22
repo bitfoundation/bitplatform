@@ -110,7 +110,11 @@ public static partial class SpeakableText
     }
 
 
-    [GeneratedRegex(@"(?:```|~~~)[\s\S]*?(?:```|~~~)")]
+    /// <summary>
+    /// Each fence closes with the delimiter it opened with. One alternative accepting either end would let an
+    /// unpaired <c>~~~</c> close a block opened with backticks, swallowing every spoken word in between.
+    /// </summary>
+    [GeneratedRegex(@"```[\s\S]*?```|~~~[\s\S]*?~~~")]
     private static partial Regex FencedCodeRegex();
 
     [GeneratedRegex(@"!\[[^\]]*\]\([^)]*\)")]

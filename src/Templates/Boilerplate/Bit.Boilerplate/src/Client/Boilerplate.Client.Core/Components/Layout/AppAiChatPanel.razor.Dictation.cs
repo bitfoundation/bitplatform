@@ -88,6 +88,8 @@ public partial class AppAiChatPanel
 
             if (microphoneStream is null)
             {
+                readAloudPaused = false;
+
                 SnackBarService.Error(Localizer[nameof(AppStrings.AiChatPanelDictation)],
                                       Localizer[nameof(AppStrings.AiChatPanelMicrophoneBlocked)]);
                 return;

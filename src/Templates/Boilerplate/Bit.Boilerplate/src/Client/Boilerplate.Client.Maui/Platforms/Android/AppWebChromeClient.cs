@@ -24,7 +24,27 @@ public partial class AppWebChromeClient(WebChromeClient? blazorWebChromeClient) 
         if (request is null) return;
 
         var resources = request.GetResources() ?? [];
-        request.Grant(resources);
+
+        // An allow list of one, to be widened a resource at a time - the same shape as the Permissions-Policy header
+        // the web app sends (see WebApplicationExtensions.UseSecurityHeaders), where microphone=(self) is opened and
+        // everything beside it is left closed. Whoever comes to need the camera here opens it deliberately, rather
+        // than it arriving with a request nothing in this app makes.
+        //
+        // Worth the strictness because Android does not prompt for any of this: it asks the host app instead, and
+        // what is answered here is granted without the user ever being shown it. For the microphone that answer is
+        // only half of the decision - RECORD_AUDIO still has to be granted, and the panel asks for it through
+        // IPermissionService before it ever reaches getUserMedia.
+        //
+        // But ResourceProtectedMediaId has no such second half:
+        // no runtime permission stands behind it, so a grant here hands the page the device's DRM identifier - a
+        // stable value it can be fingerprinted by - and that is the end of it.
+        if (resources is [var resource] && resource == PermissionRequest.ResourceAudioCapture)
+        {
+            request.Grant(resources);
+            return;
+        }
+
+        request.Deny();
     }
 
 

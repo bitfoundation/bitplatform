@@ -17,6 +17,6 @@ public class TranscribeSpeechResponseDto
 /// </summary>
 public class SynthesizeSpeechRequestDto
 {
-    [Required(AllowEmptyStrings = false), StringLength(maximumLength: 8 * 1024 /*8KB*/)]
+    [Required(AllowEmptyStrings = false), StringLength(maximumLength: 128 * 1024 /*128K characters*/)]
     public string Text { get; set; } = default!;
 }

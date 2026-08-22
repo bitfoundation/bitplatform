@@ -114,6 +114,7 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
     /// </para>
     /// </summary>
     [HttpPost]
+    [RequestSizeLimit(2 * 1024 * 1024 /*2MB*/)]
     [EnableRateLimiting(RateLimitOptionsExtensions.SPEECH)]
     public async Task<IActionResult> SynthesizeSpeech(SynthesizeSpeechRequestDto request, CancellationToken cancellationToken)
     {
@@ -141,6 +142,7 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
             var response = await textToSpeechClient.GetAudioAsync(segment, new()
             {
                 VoiceId = AppSettings.AI?.OpenAI?.TextToSpeechVoice,
+                AudioFormat = "mp3",
                 Language = CultureInfoManager.InvariantGlobalization ? null : CultureInfo.CurrentUICulture.Name
             }, cancellationToken);
 
@@ -187,9 +189,10 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
     }
 
     /// <summary>
-    /// Lays the pieces of one answer end to end. mp3 - what an OpenAI compatible endpoint answers with unless told
-    /// otherwise - is a stream of self contained frames, so one after another plays as a single recording. A
-    /// container that describes the whole file in a header up front, wav being the obvious one, would need muxing.
+    /// Lays the pieces of one answer end to end. mp3 - which <see cref="SynthesizeSpeech"/> asks for by name rather
+    /// than leaving to the provider - is a stream of self contained frames, so one after another plays as a single
+    /// recording. A container that describes the whole file in a header up front, wav being the obvious one, would
+    /// need muxing, which is why the format is pinned there instead of taken as it comes.
     /// <para>
     /// Nearly every answer arrives as one piece and is handed straight back: the cap is on the spoken words, and the
     /// syntax, code blocks and urls that make an answer look long are gone by then.

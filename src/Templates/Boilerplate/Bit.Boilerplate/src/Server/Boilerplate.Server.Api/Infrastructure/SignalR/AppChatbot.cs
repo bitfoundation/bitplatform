@@ -57,6 +57,7 @@ public partial class AppChatbot
 
         var history = request.ChatMessagesHistory
             .Where(c => c.Successful && (string.IsNullOrWhiteSpace(c.Content) is false || c.AttachmentId is not null))
+            .TakeLast(MaxMessagesInHistory)
             .ToArray();
 
         foreach (var message in history)
@@ -64,8 +65,6 @@ public partial class AppChatbot
             chatMessages.Add(await ToChatMessage(message, cancellationToken));
         }
 
-        // The replayed conversation is whatever the client had on screen, so it arrives unbounded and carrying every
-        // picture the user ever attached.
         TrimChatHistory();
 
         CultureInfo? culture = null;
@@ -215,9 +214,9 @@ public partial class AppChatbot
     private const string AiChatImageMediaType = "image/webp";
 
     /// <summary>
-    /// The chat image the client named, or null when it named none or one that is not there. The kind is fixed here
-    /// rather than taken from the client, so an id is only ever looked for among this app's chat images - a payload
-    /// cannot point this at a profile picture.
+    /// The chat image the client named, or null when it named none. The kind is fixed here rather than taken from
+    /// the client, so an id is only ever looked for among this app's chat images - a payload cannot point this at a
+    /// profile picture.
     /// <para>
     /// The picture is handed over as a url for the provider to fetch, which costs nothing to produce and does not
     /// re-upload the same bytes on every turn of the conversation. That only works where the provider can reach this
@@ -231,18 +230,12 @@ public partial class AppChatbot
         if (attachmentId is null)
             return null;
 
-        var path = AttachmentController.GetFilePath(appSettings, attachmentId.Value, AttachmentKind.AiChatImage);
-
-        // The client is what names the attachment, so an id naming no chat image of this app's has to leave the
-        // message without a picture rather than fail it - and it must not become a link the provider fetches a 404
-        // from either, which is why the check comes before both shapes below.
-        if (await blobStorage.ObjectExists(path, cancellationToken) is false)
-            return null;
-
         if (hostEnvironment.IsDevelopment() is false)
         {
             return new UriContent(new Uri(httpContextAccessor.HttpContext!.Request.GetBaseUrl(), $"api/v1/Attachment/GetAttachment/{attachmentId}/{AttachmentKind.AiChatImage}"), AiChatImageMediaType);
         }
+
+        var path = AttachmentController.GetFilePath(appSettings, attachmentId.Value, AttachmentKind.AiChatImage);
 
         return new DataContent(await blobStorage.GetBytes(path, cancellationToken), AiChatImageMediaType);
     }
@@ -254,17 +247,18 @@ public partial class AppChatbot
     /// </summary>
     private const int MaxImagesInHistory = 3;
 
+    /// <summary>How many of the newest messages the model is shown.</summary>
+    private const int MaxMessagesInHistory = 40;
+
     /// <summary>
     /// The conversation is resent in full on every message, so an unbounded history grows the prompt (and its
     /// cost) without limit until the provider rejects it for exceeding the context window.
     /// </summary>
     private void TrimChatHistory()
     {
-        const int maxChatMessages = 40;
-
-        if (chatMessages.Count > maxChatMessages)
+        if (chatMessages.Count > MaxMessagesInHistory)
         {
-            chatMessages.RemoveRange(0, chatMessages.Count - maxChatMessages);
+            chatMessages.RemoveRange(0, chatMessages.Count - MaxMessagesInHistory);
         }
 
         var pictures = 0;

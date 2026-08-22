@@ -274,7 +274,7 @@
                                        Class="send-message-button"
                                        OnClick="WrapHandled(SendMessage)"
                                        Title="@Localizer[nameof(AppStrings.Send)]"
-                                       IsEnabled=@(isSending || string.IsNullOrEmpty(userInput) is false || pendingAttachment is not null)
+                                       IsEnabled=@(isSending || string.IsNullOrWhiteSpace(userInput) is false || pendingAttachment is not null)
                                        IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.SendMirrored : BitIconName.Send)" />
                         </BitStack>
                     </LabelTemplate>

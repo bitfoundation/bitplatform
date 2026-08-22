@@ -235,16 +235,20 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                 Path = GetFilePath(attachmentId, kind),
             };
 
-            (bool NeedsResize, uint Width, uint Height) imageResizeContext = kind switch
+            // ShrinkOnly makes the size a ceiling instead of a floor: the picture is only scaled down to it, and one
+            // that is already smaller is stored exactly as it arrived rather than rejected or blown up.
+            (bool NeedsResize, uint Width, uint Height, bool ShrinkOnly) imageResizeContext = kind switch
             {
-                AttachmentKind.UserProfileImageSmall => (true, 256, 256),
+                AttachmentKind.UserProfileImageSmall => (true, 256, 256, false),
                 //#if (module == "Sales" || module == "Admin")
-                AttachmentKind.ProductPrimaryImageMedium => (true, 512, 512),
+                AttachmentKind.ProductPrimaryImageMedium => (true, 512, 512, false),
                 //#endif
                 //#if (signalR == true)
-                AttachmentKind.AiChatImage => (true, 512, 512),
+                // Whatever the user had on screen when they attached it - a crop, a screenshot, a phone photo - so
+                // there is no size below which it is not worth showing the model.
+                AttachmentKind.AiChatImage => (true, 512, 512, true),
                 //#endif
-                _ => (false, 0, 0)
+                _ => (false, 0, 0, false)
             };
 
             if (imageResizeContext.NeedsResize is false)
@@ -261,10 +265,11 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             using var sourceStream = file.OpenReadStream();
             using MagickImage sourceImage = new(sourceStream);
 
-            if (sourceImage.Width < imageResizeContext.Width || sourceImage.Height < imageResizeContext.Height)
+            if (imageResizeContext.ShrinkOnly is false &&
+                (sourceImage.Width < imageResizeContext.Width || sourceImage.Height < imageResizeContext.Height))
                 return BadRequest(Localizer[nameof(AppStrings.ImageTooSmall), imageResizeContext.Width, imageResizeContext.Height, sourceImage.Width, sourceImage.Height].ToString());
 
-            sourceImage.Resize(new MagickGeometry(imageResizeContext.Width, imageResizeContext.Height));
+            sourceImage.Resize(new MagickGeometry(imageResizeContext.Width, imageResizeContext.Height) { Greater = imageResizeContext.ShrinkOnly });
 
             var resizedBytes = sourceImage.ToByteArray(MagickFormat.WebP);
 
