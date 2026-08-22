@@ -79,12 +79,71 @@
     height: var(--bit-pgn-btn-size);
 }
 
+// The jump sits on the same baseline as the buttons. Its input keeps the neutral surface of a text input
+// rather than the role color of the buttons, so the digits typed into it stay readable whichever color and
+// variant the pagination is rendered with.
+.bit-pgn-gtp,
+.bit-pgn-pss {
+    display: flex;
+    font-size: inherit;
+    align-items: center;
+    white-space: nowrap;
+    gap: spacing(0.5);
+    padding: 0 spacing(0.5);
+    height: var(--bit-pgn-btn-size);
+}
+
+.bit-pgn-gti,
+.bit-pgn-pse {
+    font: inherit;
+    color: $clr-fg-pri;
+    background: $clr-bg-sec;
+    padding: 0 spacing(0.5);
+    height: var(--bit-pgn-btn-size);
+    border-style: $shp-border-style;
+    border-width: $shp-border-width;
+    border-color: $clr-brd-sec;
+    border-radius: $shp-radius-control;
+
+    &:focus-visible {
+        z-index: 1;
+        @include focus-ring(var(--bit-pgn-clr-fcs, #{$clr-pri-focus}));
+    }
+
+    &[disabled] {
+        cursor: default;
+        pointer-events: none;
+        color: $clr-fg-dis;
+        background: $clr-bg-dis;
+        border-color: $clr-brd-dis;
+    }
+}
+
+// The spin buttons are dropped: the field is a jump to a page and not a value to step through, and they
+// would leave next to no room for the digits at the width the pagination gives it.
+.bit-pgn-gti {
+    text-align: center;
+    appearance: textfield;
+    width: calc(var(--bit-pgn-btn-size) * 1.75);
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+        margin: 0;
+        appearance: none;
+    }
+}
+
+.bit-pgn-pse {
+    cursor: pointer;
+}
+
 .bit-pgn-btn {
     cursor: pointer;
     text-align: center;
     font-size: inherit;
     align-items: center;
     display: inline-flex;
+    text-decoration: none;
     justify-content: center;
     width: var(--bit-pgn-btn-size);
     height: var(--bit-pgn-btn-size);
@@ -114,13 +173,25 @@
         @include focus-ring(var(--bit-pgn-clr-fcs, #{$clr-pri-focus}));
     }
 
-    &[disabled] {
+    // A link has no disabled attribute of its own, so a page control it cannot reach reports aria-disabled
+    // and is painted (and made inert) by the same rule.
+    &[disabled],
+    &[aria-disabled="true"] {
         cursor: default;
         pointer-events: none;
         color: var(--bit-pgn-clr-btn-txt-dis);
         border-color: var(--bit-pgn-clr-btn-brd-dis);
         background-color: var(--bit-pgn-clr-btn-bg-dis);
     }
+}
+
+// A navigation button carrying a text is no longer a square: it keeps the height of the others and grows
+// along the text, with the icon and the text sharing the room the way a labelled button does.
+.bit-pgn-lbl {
+    width: auto;
+    gap: spacing(0.5);
+    min-width: var(--bit-pgn-btn-size);
+    padding: 0 spacing(1);
 }
 
 .bit-pgn-sel {
@@ -150,6 +221,12 @@
     .bit-pgn-btn,
     .bit-pgn-elp {
         border-radius: 50%;
+    }
+
+    // A navigation button carrying a text is wider than it is tall, where a 50% radius would draw an
+    // ellipse instead of the pill the round shape asks for.
+    .bit-pgn-lbl {
+        border-radius: calc(var(--bit-pgn-btn-size) / 2);
     }
 }
 

@@ -22,36 +22,82 @@ public partial class BitPaginationDemo
 <BitPagination Count=""20"" MiddleCount=""5"" BoundaryCount=""1"" DefaultSelectedPage=""10"" />";
 
     private readonly string example6RazorCode = @"
+<BitPagination Count=""24"" EllipsisText=""..."" DefaultSelectedPage=""12"" />
+
+<BitPagination Count=""24"" EllipsisText=""⋯"" EllipsisAriaLabel=""Hidden pages"" DefaultSelectedPage=""12"" />";
+
+    private readonly string example7RazorCode = @"
 <BitPagination Count=""24"" ShowFirstButton ShowLastButton />
 
 <BitPagination Count=""24"" ShowFirstButton ShowLastButton ShowNextButton=""false"" ShowPreviousButton=""false"" />";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
+<BitPagination Count=""12"" PreviousButtonText=""Previous"" NextButtonText=""Next"" DefaultSelectedPage=""5"" />
+
+<BitPagination Count=""12""
+               Rounded
+               ShowFirstButton
+               ShowLastButton
+               FirstButtonText=""First""
+               LastButtonText=""Last""
+               ShowPageButtons=""false""
+               PreviousButtonText=""Previous""
+               NextButtonText=""Next""
+               Variant=""BitVariant.Outline""
+               DefaultSelectedPage=""5"" />";
+
+    private readonly string example9RazorCode = @"
 <BitPagination Count=""24"" ShowPageButtons=""false"" />
 
 <BitPagination Count=""24"" ShowPageButtons=""false"" ShowFirstButton ShowLastButton DefaultSelectedPage=""12"" />";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitPagination Count=""12"" ShowSummary DefaultSelectedPage=""4"" />
 
 <BitPagination Count=""12"" ShowSummary ShowPageButtons=""false"" ShowFirstButton ShowLastButton DefaultSelectedPage=""4"" />
 
 <BitPagination Count=""24"" ShowSummary ShowPageButtons=""false"" GetSummary=""@GetItemsRangeSummary"" DefaultSelectedPage=""3"" />";
-    private readonly string example8CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private string GetItemsRangeSummary(int page, int count)
 {
     return $""Showing {(page - 1) * 10 + 1} to {page * 10} of {count * 10} results"";
 }";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example11RazorCode = @"
+<BitPagination ShowSummary
+               ShowPageSizeSelector
+               Count=""@pageSizeCount""
+               PageSizeOptions=""@([10, 20, 50])""
+               @bind-PageSize=""selectedPageSize""
+               @bind-SelectedPage=""pageSizeSelectedPage""
+               GetSummary=""@GetPageSizeSummary"" />
+
+<div>Page size: <b>@selectedPageSize</b>, page: <b>@pageSizeSelectedPage</b> of <b>@pageSizeCount</b></div>";
+    private readonly string example11CsharpCode = @"
+private const int totalItems = 240;
+private int selectedPageSize = 10;
+private int pageSizeSelectedPage = 1;
+private int pageSizeCount => (int)Math.Ceiling(totalItems / (double)selectedPageSize);
+
+private string GetPageSizeSummary(int page, int count)
+{
+    return $""Showing {(page - 1) * selectedPageSize + 1} to {Math.Min(page * selectedPageSize, totalItems)} of {totalItems}"";
+}";
+
+    private readonly string example12RazorCode = @"
+<BitPagination Count=""24"" ShowGoToPage DefaultSelectedPage=""4"" />
+
+<BitPagination Count=""24"" ShowGoToPage GoToPageText="""" ShowSummary ShowPageButtons=""false"" ShowFirstButton ShowLastButton DefaultSelectedPage=""4"" />";
+
+    private readonly string example13RazorCode = @"
 <BitPagination Count=""5"" Loop />";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitPagination Count=""1"" HideOnSinglePage />
 
 <BitPagination Count=""3"" HideOnSinglePage />";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitPagination Count=""5""
                ShowFirstButton
                ShowLastButton
@@ -60,14 +106,14 @@ private string GetItemsRangeSummary(int page, int count)
                FirstButtonIconName=""@BitIconName.DoubleChevronLeft""
                LastButtonIconName=""@BitIconName.DoubleChevronRight"" />";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitPagination Count=""9"" Rounded ShowFirstButton ShowLastButton DefaultSelectedPage=""5"" />
 
 <BitPagination Count=""9"" Rounded Variant=""BitVariant.Outline"" DefaultSelectedPage=""5"" />
 
 <BitPagination Count=""9"" Rounded Variant=""BitVariant.Text"" DefaultSelectedPage=""5"" />";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitPagination Count=""5"" SelectedPage=""oneWaySelectedPage"" />
 <BitNumberField @bind-Value=""oneWaySelectedPage"" Min=""1"" Max=""5"" />
 
@@ -76,12 +122,28 @@ private string GetItemsRangeSummary(int page, int count)
 
 <BitPagination Count=""5"" OnChange=""p => onChangeSelectedPage = p"" />
 <div>Changed page: <b>@onChangeSelectedPage</b></div>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 private int oneWaySelectedPage = 1;
 private int twoWaySelectedPage = 2;
 private int onChangeSelectedPage = 3;";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example18RazorCode = @"
+<BitPagination Count=""8""
+               ShowFirstButton
+               ShowLastButton
+               GetPageHref=""@GetDemoPageHref""
+               @bind-SelectedPage=""linkSelectedPage"" />
+
+<div>Selected page: <b>@linkSelectedPage</b></div>";
+    private readonly string example18CsharpCode = @"
+private int linkSelectedPage = 1;
+
+private string GetDemoPageHref(int page)
+{
+    return $""#example18-page-{page}"";
+}";
+
+    private readonly string example19RazorCode = @"
 <BitPagination Count=""12""
                ShowFirstButton
                ShowLastButton
@@ -92,13 +154,13 @@ private int onChangeSelectedPage = 3;";
                NextButtonAriaLabel=""Go to the next page""
                PreviousButtonAriaLabel=""Go to the previous page""
                GetPageAriaLabel=""@GetResultsRangeLabel"" />";
-    private readonly string example14CsharpCode = @"
+    private readonly string example19CsharpCode = @"
 private string GetResultsRangeLabel(int page, bool isSelected)
 {
     return $""Results {(page - 1) * 10 + 1} to {page * 10}"";
 }";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitPagination Count=""5"" Color=""BitColor.Primary"" />
 <BitPagination Count=""5"" Color=""BitColor.Primary"" Variant=""BitVariant.Outline"" />
 <BitPagination Count=""5"" Color=""BitColor.Primary"" Variant=""BitVariant.Text"" />
@@ -166,7 +228,7 @@ private string GetResultsRangeLabel(int page, bool isSelected)
 <BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Error"" Variant=""BitVariant.Outline"" />
 <BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Error"" Variant=""BitVariant.Text"" />";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example21RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitPagination Count=""5""
@@ -196,7 +258,7 @@ private string GetResultsRangeLabel(int page, bool isSelected)
                FirstButtonIcon=""@BitIconInfo.Css(""bi bi-skip-start-fill"")""
                LastButtonIcon=""@BitIconInfo.Css(""bi bi-skip-end-fill"")"" />";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example22RazorCode = @"
 <BitPagination Count=""5"" Size=""BitSize.Small"" Variant=""BitVariant.Fill"" />
 <BitPagination Count=""5"" Size=""BitSize.Small"" Variant=""BitVariant.Outline"" />
 <BitPagination Count=""5"" Size=""BitSize.Small"" Variant=""BitVariant.Text"" />
@@ -209,7 +271,7 @@ private string GetResultsRangeLabel(int page, bool isSelected)
 <BitPagination Count=""5"" Size=""BitSize.Large"" Variant=""BitVariant.Text"" />
 <BitPagination Count=""5"" Size=""BitSize.Large"" Variant=""BitVariant.Outline"" />";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example23RazorCode = @"
 <style>
     .custom-class {
         margin-left: 1rem;
@@ -258,7 +320,7 @@ private string GetResultsRangeLabel(int page, bool isSelected)
                                   Button = ""custom-button"",
                                   SelectedButton = ""custom-selected-button""})"" />";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example24RazorCode = @"
 <BitPagination Dir=""BitDir.Rtl"" Count=""5"" Variant=""BitVariant.Fill"" ShowFirstButton ShowLastButton />
 <BitPagination Dir=""BitDir.Rtl"" Count=""5"" Variant=""BitVariant.Outline"" />
 <BitPagination Dir=""BitDir.Rtl"" Count=""5"" Variant=""BitVariant.Text"" />";
