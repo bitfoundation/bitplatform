@@ -79,8 +79,16 @@ public partial class AppHeader
         // interactive client comes up with the same selection instead of flashing another one first.
         // Nothing persisted (a first visit, or a visitor following the OS) means the site default,
         // which is Fluent 2 - without it the picker would show the first offered item until hydration.
+        // Resolved through the same helper the host page splats onto <html> (see App.razor) rather
+        // than compared as a raw string: it trims, lower-cases and validates the token, so a cookie
+        // reading " System " or a tampered value lands on whatever the document is painting instead
+        // of leaving the picker on a second, different selection. No bit-theme attribute comes back
+        // exactly when the OS is being followed or the stored value was unusable.
         var persisted = await PrerenderStateService.GetValue("AppHeader.Theme", () => Task.FromResult(PersistedTheme));
-        _initialTheme = persisted.HasValue() && persisted != BitThemePresets.System ? persisted : BitExtraThemePresets.Fluent2;
+        var rootTheme = BitThemeSsr.BuildRootThemeAttributeMap(persisted);
+        _initialTheme = rootTheme.TryGetValue(BitThemeAttributeNames.Theme, out var theme) && theme is string themeName
+                        ? themeName
+                        : BitExtraThemePresets.Fluent2;
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)

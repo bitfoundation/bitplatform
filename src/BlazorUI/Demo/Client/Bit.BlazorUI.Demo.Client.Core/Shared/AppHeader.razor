@@ -60,13 +60,6 @@
                 <AccentColorSwitcher Placement="AccentColorSwitcherPlacement.Header" />
             }
 
-            <a class="github-btn"
-               target="_blank"
-               rel="noopener noreferrer"
-               title="bit BlazorUI on GitHub"
-               aria-label="bit BlazorUI on GitHub"
-               href="https://github.com/bitfoundation/bitplatform"></a>
-
             @* The design system picker and the light/dark toggle are both this component's; all that is
                left here is the three things it cannot know about - the design systems this site offers
                (see _designSystems), the theme to show before JS interop is reachable (see OnInitAsync)
@@ -75,6 +68,13 @@
                               DesignSystems="_designSystems"
                               InitialTheme="@_initialTheme"
                               OnChange="WrapHandled<string>(OnThemeChanged)" />
+
+            <a class="github-btn"
+               target="_blank"
+               rel="noopener noreferrer"
+               title="bit BlazorUI on GitHub"
+               aria-label="bit BlazorUI on GitHub"
+               href="https://github.com/bitfoundation/bitplatform"></a>
         </div>
 
     </div>

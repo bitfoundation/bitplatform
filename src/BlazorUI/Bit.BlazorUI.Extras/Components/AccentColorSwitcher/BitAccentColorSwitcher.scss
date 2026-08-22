@@ -3,13 +3,15 @@
 .bit-acs {
     --bit-acs-size: #{rem2(24px)};
     --bit-acs-gap: #{rem2(10px)};
-    // What the neutral ("Default") swatch paints: the primary the active packaged preset ships,
-    // since picking that swatch clears every accent override and leaves exactly that primary. The
-    // packaged primary here (BitAccentColorPresets.Blue - a literal, not $clr-pri, which an applied
-    // accent rewrites while this swatch has to keep showing the color underneath it), which is what
-    // the Fluent and Material palettes both ship (Fluent 2's #0F6CBD is the same blue a shade off);
-    // the rule below retunes it to Cupertino's seed, the one packaged preset far enough away for the
-    // difference to show. A custom preset sets it on .bit-acs to its own primary.
+    // What the neutral ("Default") swatch paints: the seed blue of the active packaged preset - the
+    // color picking that swatch returns the palette to, since it clears every accent override. A
+    // literal (BitAccentColorPresets.Blue) rather than $clr-pri, because an applied accent rewrites
+    // $clr-pri while this swatch has to keep showing the color underneath it. It is the primary the
+    // Fluent and Material light schemes ship, and Fluent 2's #0F6CBD is the same blue a shade off;
+    // their dark schemes lighten that same hue (#4FA3F4), so the swatch names the palette family's
+    // blue rather than the exact primary of the scheme in use. The rule below retunes it to
+    // Cupertino's seed, the one packaged preset far enough away for the difference to show. A custom
+    // preset sets it on .bit-acs to its own seed.
     --bit-acs-ntr: #1276C6;
 
     // The seed the packaged Cupertino palette is generated from (iOS system blue). Matched on the

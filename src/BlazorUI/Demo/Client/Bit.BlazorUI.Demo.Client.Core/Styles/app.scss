@@ -73,8 +73,10 @@
         // number, because the track is a design-system decision - Material draws it 32px and
         // Cupertino 31px where Fluent draws it 20px - and a literal tuned to Fluent leaves the pivot
         // bar pinned *inside* this one on the other two presets. The floor keeps the row tall enough
-        // for the label beside a switch a preset draws shorter than its own text.
-        --demo-motion-bar-height: calc(max(#{$bit-size-switch-h-md}, #{rem2(24px)}) + #{$doc-space-2xs} * 2 + #{rem2(2px)});
+        // for the label beside a switch a preset draws shorter than its own text - and stands in for
+        // the track entirely under a custom theme that ships no --bit-siz-switch-h-md, which would
+        // otherwise leave the max() invalid at computed-value time and this whole variable unusable.
+        --demo-motion-bar-height: calc(max(var(--bit-siz-switch-h-md, #{rem2(24px)}), #{rem2(24px)}) + #{$doc-space-2xs} * 2 + #{rem2(2px)});
     }
 
     // A component demo page with its ForceAnimation toggle off: exactly the library's own reduced
@@ -284,6 +286,13 @@ html, body, .site-content, pre, .table-view, .side-rail {
         margin-top: $doc-space-sm;
     }
 
+    // The rule above stops at an accordion, and what a section folds away is the same mix of prose
+    // and code boxes as what it leaves open, so the accordion's body takes the same rhythm rather
+    // than the <br /> tags that rule was written to make unnecessary.
+    .bit-acd-con > * + * {
+        margin-top: $doc-space-sm;
+    }
+
     > p {
         line-height: 1.65;
     }
@@ -466,8 +475,17 @@ code {
 // the bar itself - a tab row and the padding around it - and a line of air under it. Published as a
 // variable on the page rather than a selector into the pivot's markup, so it holds for any pivot
 // that adopts the class.
+//
+// The first term is the bar's own `top` verbatim, safe-area inset included, so the clearance tracks
+// where the bar actually lands rather than where it would land on a device with no notch; the
+// default's 90px stays the floor, since with the motion bar hidden the derived stack can come out
+// under it on a short header.
 .doc-main:has(.pivot-sticky-header) {
-    --demo-section-scroll-margin: calc(var(--demo-pivot-sticky-top) + #{$bit-size-tab} + #{rem2(8px)} + #{$doc-space-2xs});
+    --demo-section-scroll-margin: calc(max(#{rem2(90px)}, var(--demo-pivot-sticky-top) + #{$bit-env-inset-top}) + #{$bit-size-tab} + #{rem2(8px)} + #{$doc-space-2xs});
+
+    .bit-ios & {
+        --demo-section-scroll-margin: calc(max(#{rem2(90px)}, var(--demo-pivot-sticky-top) + env(safe-area-inset-top)) + #{$bit-size-tab} + #{rem2(8px)} + #{$doc-space-2xs});
+    }
 }
 
 // The Color sections of the Slider, Toggle, NavBar and Pivot demos put the *Background roles on a
