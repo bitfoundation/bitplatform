@@ -560,17 +560,21 @@ internal static class ScriptBundling
 
         using (process)
         {
-            // Read before waiting: a bundle's worth of report can fill the pipe, and a full pipe would block
-            // the process this is waiting for.
-            var output = process.StandardOutput.ReadToEnd();
-            var error = process.StandardError.ReadToEnd();
+            // Drain both pipes at once, before waiting: a bundle's worth of report can fill either one, and
+            // a full pipe blocks the process this is waiting for - which draining them one after the other
+            // would do too, whenever the one still unread is the one that filled up.
+            var outputTask = process.StandardOutput.ReadToEndAsync();
+            var errorTask = process.StandardError.ReadToEndAsync();
 
-            if (process.WaitForExit(60_000) is false)
+            if (Task.WaitAll([outputTask, errorTask], 60_000) is false || process.WaitForExit(60_000) is false)
             {
                 process.Kill(entireProcessTree: true);
                 checks.That(false, $"{what} was not run", "node did not finish within 60 seconds");
                 return;
             }
+
+            var output = outputTask.Result;
+            var error = errorTask.Result;
 
             var reported = 0;
             foreach (var line in output.Split('\n').Select(line => line.Trim()))

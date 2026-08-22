@@ -53,6 +53,13 @@ internal static class ButilScriptLoader
         var end = identifier.IndexOf('.', prefix.Length);
         if (end <= prefix.Length) return false;
 
+        // A module name becomes part of an import path, so accept only what a module is actually named -
+        // anything with punctuation or a path separator in it is not Butil's and must not reach import().
+        for (var i = prefix.Length; i < end; i++)
+        {
+            if (char.IsLetterOrDigit(identifier[i]) is false && identifier[i] != '_') return false;
+        }
+
         module = identifier.Substring(prefix.Length, end - prefix.Length);
         return true;
     }

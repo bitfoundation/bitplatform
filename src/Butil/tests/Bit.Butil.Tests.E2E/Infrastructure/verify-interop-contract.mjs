@@ -101,7 +101,10 @@ function resolves(root, call) {
     const parts = call.split('.').slice(1); // drop the leading "BitButil"
     let current = root;
     for (const part of parts) {
-        if (current == null || !(part in current)) return false;
+        // `in` only applies to objects and functions; a primitive along the way means the rest of the
+        // path cannot exist, which is exactly what an unresolved call is.
+        if (current === null || (typeof current !== 'object' && typeof current !== 'function')) return false;
+        if (!(part in current)) return false;
         current = current[part];
     }
     return current !== undefined;

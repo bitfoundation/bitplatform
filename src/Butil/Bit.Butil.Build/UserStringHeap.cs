@@ -115,7 +115,9 @@ public static class UserStringHeap
 
             if (name == "#US")
             {
-                if (offset < 0 || size < 0 || metadata + offset + size > image.Length) throw Invalid(path, "the #US heap runs past the end of the file");
+                // Step by step, so that a hostile offset or size cannot overflow the sum back into range.
+                if (offset < 0 || offset > image.Length - metadata) throw Invalid(path, "the #US heap runs past the end of the file");
+                if (size < 0 || size > image.Length - metadata - offset) throw Invalid(path, "the #US heap runs past the end of the file");
                 return new Heap(metadata + offset, size);
             }
 

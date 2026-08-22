@@ -33,7 +33,7 @@ if (expectedArgument === undefined || scripts.length === 0) {
 }
 
 const expected = [...new Set(expectedArgument.split(',').filter(Boolean))].sort();
-const label = scripts.map(script => script.split(/[\/]/).pop()).join(' + ');
+const label = scripts.map(script => script.split(/[\\/]/).pop()).join(' + ');
 
 let failed = 0;
 
@@ -124,8 +124,11 @@ check(hollow.length === 0, `${label} registers usable namespaces`, `empty or mal
 // re-runs its body, which assigns a fresh object over the namespace - taking the mark, and in a real
 // app the module's listener bookkeeping, with it.
 const sentinel = '__butilReevaluationSentinel';
-for (const key of keys) {
-    if (key !== 'version') sandbox.BitButil[key][sentinel] = true;
+// Only namespaces that are objects can carry a mark. Anything else is already reported as hollow above,
+// and marking it would throw here or make the reset check below say something it did not measure.
+const markable = keys.filter(key => key !== 'version' && sandbox.BitButil[key] !== null && typeof sandbox.BitButil[key] === 'object');
+for (const key of markable) {
+    sandbox.BitButil[key][sentinel] = true;
 }
 
 if (evaluateAll(sandbox, `${label} evaluates a second time without throwing`)) {
@@ -134,7 +137,9 @@ if (evaluateAll(sandbox, `${label} evaluates a second time without throwing`)) {
         `${label} registers the same namespaces on a second evaluation`,
         describe(after));
 
-    const reset = after.filter(key => key !== 'version' && sandbox.BitButil[key][sentinel] !== true);
+    const reset = markable.filter(key => sandbox.BitButil[key] === null
+        || typeof sandbox.BitButil[key] !== 'object'
+        || sandbox.BitButil[key][sentinel] !== true);
     check(reset.length === 0,
         `${label} leaves already-registered namespaces untouched on a second evaluation`,
         `re-registered (their guard did not hold): [${reset.join(', ')}]`);

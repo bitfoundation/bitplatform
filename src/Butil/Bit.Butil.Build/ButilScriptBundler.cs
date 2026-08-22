@@ -93,13 +93,23 @@ public static class ButilScriptBundler
             dependencies.Add(name, deps);
         }
 
-        foreach (var pair in dependencies)
+        // Two things about a dependency, checked in the one place that can still say which line was wrong:
+        // that it names a module at all, and that the module came earlier - the order the manifest is read in
+        // is the order the chunks are concatenated in, so a dependency listed after its dependent would
+        // produce a bundle whose pieces run before the ones they need.
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var name in order)
         {
-            foreach (var dependency in pair.Value)
+            foreach (var dependency in dependencies[name])
             {
                 if (dependencies.ContainsKey(dependency) is false)
-                    throw new InvalidDataException($"{manifestPath}: {pair.Key} depends on {dependency}, which is not a module.");
+                    throw new InvalidDataException($"{manifestPath}: {name} depends on {dependency}, which is not a module.");
+
+                if (seen.Contains(dependency) is false)
+                    throw new InvalidDataException($"{manifestPath}: {name} depends on {dependency}, which it lists after itself; the manifest must be in dependency-first order.");
             }
+
+            seen.Add(name);
         }
 
         return new ButilScriptManifest(order, dependencies);

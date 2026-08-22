@@ -214,8 +214,11 @@ public static class BitButil
 
     /// <summary>
     /// Expects the whole <c>bit-butil.js</c> bundle to be loaded by the app (a <c>&lt;script&gt;</c> tag) and
-    /// never loads modules on demand - the default. Overrides the build-time switch; process-wide static toggle,
-    /// see <see cref="UseLazyScripts"/>.
+    /// never loads modules on demand - the default. It selects the loading mode at runtime, so it overrides
+    /// the <c>BitButilLazyScripts</c> build property's runtime effect but not its build-time one: a publish
+    /// that set the property left the bundle out of the output, and calling this cannot bring it back. Include
+    /// and load <c>bit-butil.js</c> yourself before choosing bundled mode. Process-wide static toggle, see
+    /// <see cref="UseLazyScripts"/>.
     /// </summary>
     public static void UseBundledScripts()
     {
