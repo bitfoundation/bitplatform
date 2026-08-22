@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createServiceWorkerContext, ORIGIN } from './harness.js';
+import { createServiceWorkerContext, FakeResponse, ORIGIN } from './harness.js';
 
 const manifest = (assets, version = 'v1') => ({ version, assets });
 
@@ -265,8 +265,11 @@ describe('update migration and diff', () => {
         sw.load();
 
         const oldCache = await sw.caches.open('bit-bswup - v1');
-        for (const [key, body] of Object.entries(oldEntries)) {
-            await oldCache.put(key, { ok: true, status: 200, body, clone: () => ({ body }) });
+        for (const [key, entry] of Object.entries(oldEntries)) {
+            // A plain string is only the body; an object also carries the headers the entry was
+            // cached with - what a header-only refresh has to replace.
+            const { body, headers } = (entry && typeof entry === 'object') ? entry : { body: entry };
+            await oldCache.put(key, new FakeResponse(body, { status: 200, headers }));
         }
 
         await install(sw);
@@ -321,6 +324,29 @@ describe('update migration and diff', () => {
 
         expect(sw.fetchLog.some(u => u.includes('data.json'))).toBe(false);
         expect(sw.caches.snapshot()['bit-bswup:/ - v2']).toContain(`${ORIGIN}/data.json`);
+    });
+
+    // Why hashless matters even for unchanging bytes: the demo re-lists dotnet.native.worker.mjs
+    // and the PDF.js worker as hashless externalAssets because their CONTENT never changes -
+    // only their Cross-Origin-Embedder-Policy did (credentialless -> require-corp). Migrating
+    // the cached response would keep the pre-switch header and leave the dedicated worker
+    // failing its embedder-policy check, so the refreshed response - headers included - has to
+    // land in the new bucket.
+    it('refreshes the cached headers of a hashless asset when only its headers changed', async () => {
+        const worker = `${ORIGIN}/_framework/dotnet.native.worker.mjs`;
+        const sw = await update({
+            config: { externalAssets: [{ url: '_framework/dotnet.native.worker.mjs' }] },
+            oldEntries: { [worker]: { body: 'worker-bytes', headers: { 'cross-origin-embedder-policy': 'credentialless' } } },
+            assets: [{ url: 'index.html', hash: 'idx' }],
+            // Same bytes, new header - exactly what the COEP switch produced on the server.
+            fetchHandler: async url => url.includes('dotnet.native.worker.mjs')
+                ? new FakeResponse('worker-bytes', { status: 200, headers: { 'cross-origin-embedder-policy': 'require-corp' } })
+                : new FakeResponse('ok', { status: 200 }),
+        });
+
+        const cached = await (await sw.caches.open('bit-bswup:/ - v2')).match(worker);
+        expect(await cached.text()).toBe('worker-bytes');
+        expect(cached.headers['cross-origin-embedder-policy']).toBe('require-corp');
     });
 
     it('always refreshes the default document, even with an unchanged hash', async () => {
