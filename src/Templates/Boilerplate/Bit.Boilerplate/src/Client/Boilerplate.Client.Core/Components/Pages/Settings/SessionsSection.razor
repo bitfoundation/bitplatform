@@ -77,8 +77,8 @@
                                            Variant="BitVariant.Text"
                                            IconName="@BitIconName.Delete"
                                            IsLoading="@revokingSessionIds.Contains(session.Id)"
-                                           Title="@Localizer["Revoke this session"]"
-                                           AriaLabel="@Localizer["Revoke this session"]"
+                                           Title="@Localizer[nameof(AppStrings.RevokeSessionTitle)]"
+                                           AriaLabel="@Localizer[nameof(AppStrings.RevokeSessionTitle)]"
                                            OnClick="WrapHandled(() => RevokeSession(session))" />
                                 @*#if (signalR == true || notification == true)*@
                                 <BitButton IconOnly

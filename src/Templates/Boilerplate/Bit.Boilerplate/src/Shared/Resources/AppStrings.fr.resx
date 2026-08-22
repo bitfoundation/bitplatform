@@ -1394,6 +1394,12 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>Écrivez un message...</value>
   </data>
+    <data name="AiChatPanelMaximize" xml:space="preserve">
+    <value>Agrandir</value>
+  </data>
+  <data name="AiChatPanelRestore" xml:space="preserve">
+    <value>Restaurer</value>
+  </data>
   <!--#endif -->
   <!--#if (ads == true) -->
   <data name="Upgrade" xml:space="preserve">
@@ -1603,7 +1609,72 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="ImageNotCarError" xml:space="preserve">
     <value>L'image fournie ne contient pas de voiture.</value>
   </data>
-    <!--#if (multitenant == true) -->
+      <data name="AddUserToGroupTitle" xml:space="preserve">
+    <value>Ajouter {0} à ce groupe d'utilisateurs</value>
+  </data>
+  <data name="RemoveUserFromGroupTitle" xml:space="preserve">
+    <value>Retirer {0} de ce groupe d'utilisateurs</value>
+  </data>
+  <data name="GrantFeatureTitle" xml:space="preserve">
+    <value>Accorder {0}</value>
+  </data>
+  <data name="RevokeFeatureTitle" xml:space="preserve">
+    <value>Révoquer {0}</value>
+  </data>
+  <data name="GrantAllGroupFeaturesTitle" xml:space="preserve">
+    <value>Accorder toutes les fonctionnalités {0}</value>
+  </data>
+  <data name="RevokeAllGroupFeaturesTitle" xml:space="preserve">
+    <value>Révoquer toutes les fonctionnalités {0}</value>
+  </data>
+  <data name="RefreshSelectedUserGroupTitle" xml:space="preserve">
+    <value>Actualiser le groupe d'utilisateurs sélectionné</value>
+  </data>
+  <data name="RefreshSelectedUserTitle" xml:space="preserve">
+    <value>Actualiser l'utilisateur sélectionné</value>
+  </data>
+  <data name="NoMatchingUserSessionMessage" xml:space="preserve">
+    <value>Aucune session ne correspond à votre recherche.</value>
+  </data>
+  <data name="TfaVerificationCodeRequiredMessage" xml:space="preserve">
+    <value>Saisissez le code à 6 chiffres de votre application d'authentification.</value>
+  </data>
+  <data name="TfaOpenInAuthenticatorAppTitle" xml:space="preserve">
+    <value>Ouvrir ce compte dans votre application d'authentification</value>
+  </data>
+  <data name="TfaQrCodeAlt" xml:space="preserve">
+    <value>Code QR pour configurer votre application d'authentification</value>
+  </data>
+  <data name="SessionNoLongerValidMessage" xml:space="preserve">
+    <value>Cette session n'est plus valide. Veuillez vous reconnecter.</value>
+  </data>
+  <data name="RevokeSessionTitle" xml:space="preserve">
+    <value>Révoquer cette session</value>
+  </data>
+  <data name="ImageMaxSizeErrorMessage" xml:space="preserve">
+    <value>L'image doit faire {0} ou moins.</value>
+  </data>
+  <data name="OnlyImageFilesAllowedErrorMessage" xml:space="preserve">
+    <value>Seuls les fichiers image peuvent être utilisés</value>
+  </data>
+  <data name="SamePhoneNumberErrorMessage" xml:space="preserve">
+    <value>C'est déjà votre numéro de téléphone. Saisissez-en un autre.</value>
+  </data>
+  <data name="SameEmailErrorMessage" xml:space="preserve">
+    <value>C'est déjà votre adresse e-mail. Saisissez-en une autre.</value>
+  </data>
+  <data name="MoreTabsTitle" xml:space="preserve">
+    <value>Plus d'onglets</value>
+  </data>
+  <!--#if (signalR == true) -->
+  <data name="SignalRConnectionId" xml:space="preserve">
+    <value>SignalRConnectionId</value>
+  </data>
+  <data name="ReadUserSessionLogsTitle" xml:space="preserve">
+    <value>Lire les journaux de session de l'utilisateur</value>
+  </data>
+  <!--#endif -->
+  <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>Locataire</value>
   </data>
@@ -1706,5 +1777,14 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="Inactive" xml:space="preserve">
     <value>Inactif</value>
   </data>
-    <!--#endif-->
+      <data name="DeclineInvitation" xml:space="preserve">
+    <value>Refuser l'invitation</value>
+  </data>
+  <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
+    <value>Refuser l'invitation à {0} ? Cette action est irréversible - vous aurez besoin d'une nouvelle invitation pour rejoindre.</value>
+  </data>
+  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
+    <value>Invitation refusée.</value>
+  </data>
+  <!--#endif-->
 </root>

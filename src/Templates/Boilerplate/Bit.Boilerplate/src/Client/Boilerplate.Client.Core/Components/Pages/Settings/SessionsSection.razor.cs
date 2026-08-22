@@ -46,7 +46,7 @@ public partial class SessionsSection
 
             if (currentSession is null)
             {
-                SnackBarService.Warning(Localizer["This session is no longer valid. Please sign in again."]);
+                SnackBarService.Warning(Localizer[nameof(AppStrings.SessionNoLongerValidMessage)]);
             }
 
             maxPrivilegedSessionsCount = user.GetClaimValue<int>(AppClaimTypes.MAX_PRIVILEGED_SESSIONS);

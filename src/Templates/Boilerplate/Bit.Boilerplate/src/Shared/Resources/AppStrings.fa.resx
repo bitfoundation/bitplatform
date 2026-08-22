@@ -1394,7 +1394,13 @@
     <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>پیامی را وارد کنید...</value>
   </data>
-    <!--#endif -->
+      <data name="AiChatPanelMaximize" xml:space="preserve">
+    <value>بیشینه کردن</value>
+  </data>
+  <data name="AiChatPanelRestore" xml:space="preserve">
+    <value>بازگرداندن</value>
+  </data>
+  <!--#endif -->
     <!--#if (ads == true) -->
     <data name="Upgrade" xml:space="preserve">
     <value>ارتقاء</value>
@@ -1603,7 +1609,72 @@
     <data name="ImageNotCarError" xml:space="preserve">
     <value>تصویر ارائه شده حاوی ماشین نیست.</value>
   </data>
-    <!--#if (multitenant == true) -->
+      <data name="AddUserToGroupTitle" xml:space="preserve">
+    <value>افزودن {0} به این گروه کاربری</value>
+  </data>
+  <data name="RemoveUserFromGroupTitle" xml:space="preserve">
+    <value>حذف {0} از این گروه کاربری</value>
+  </data>
+  <data name="GrantFeatureTitle" xml:space="preserve">
+    <value>اعطای {0}</value>
+  </data>
+  <data name="RevokeFeatureTitle" xml:space="preserve">
+    <value>لغو {0}</value>
+  </data>
+  <data name="GrantAllGroupFeaturesTitle" xml:space="preserve">
+    <value>اعطای همهٔ ویژگی‌های {0}</value>
+  </data>
+  <data name="RevokeAllGroupFeaturesTitle" xml:space="preserve">
+    <value>لغو همهٔ ویژگی‌های {0}</value>
+  </data>
+  <data name="RefreshSelectedUserGroupTitle" xml:space="preserve">
+    <value>به‌روزرسانی گروه کاربری انتخاب‌شده</value>
+  </data>
+  <data name="RefreshSelectedUserTitle" xml:space="preserve">
+    <value>به‌روزرسانی کاربر انتخاب‌شده</value>
+  </data>
+  <data name="NoMatchingUserSessionMessage" xml:space="preserve">
+    <value>هیچ نشستی با جست‌وجوی شما مطابقت ندارد.</value>
+  </data>
+  <data name="TfaVerificationCodeRequiredMessage" xml:space="preserve">
+    <value>کد ۶ رقمی را از برنامهٔ احراز هویت خود وارد کنید.</value>
+  </data>
+  <data name="TfaOpenInAuthenticatorAppTitle" xml:space="preserve">
+    <value>باز کردن این حساب در برنامهٔ احراز هویت</value>
+  </data>
+  <data name="TfaQrCodeAlt" xml:space="preserve">
+    <value>کد QR برای راه‌اندازی برنامهٔ احراز هویت</value>
+  </data>
+  <data name="SessionNoLongerValidMessage" xml:space="preserve">
+    <value>این نشست دیگر معتبر نیست. لطفاً دوباره وارد شوید.</value>
+  </data>
+  <data name="RevokeSessionTitle" xml:space="preserve">
+    <value>ابطال این نشست</value>
+  </data>
+  <data name="ImageMaxSizeErrorMessage" xml:space="preserve">
+    <value>حجم تصویر باید {0} یا کمتر باشد.</value>
+  </data>
+  <data name="OnlyImageFilesAllowedErrorMessage" xml:space="preserve">
+    <value>فقط فایل‌های تصویری قابل استفاده هستند</value>
+  </data>
+  <data name="SamePhoneNumberErrorMessage" xml:space="preserve">
+    <value>این همان شمارهٔ تلفن فعلی شماست. شمارهٔ دیگری وارد کنید.</value>
+  </data>
+  <data name="SameEmailErrorMessage" xml:space="preserve">
+    <value>این همان نشانی ایمیل فعلی شماست. نشانی دیگری وارد کنید.</value>
+  </data>
+  <data name="MoreTabsTitle" xml:space="preserve">
+    <value>زبانه‌های بیشتر</value>
+  </data>
+  <!--#if (signalR == true) -->
+  <data name="SignalRConnectionId" xml:space="preserve">
+    <value>SignalRConnectionId</value>
+  </data>
+  <data name="ReadUserSessionLogsTitle" xml:space="preserve">
+    <value>خواندن گزارش‌های نشست کاربر</value>
+  </data>
+  <!--#endif -->
+  <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>مستأجر</value>
   </data>
@@ -1706,5 +1777,14 @@
     <data name="Inactive" xml:space="preserve">
     <value>غیرفعال</value>
   </data>
-    <!--#endif-->
+      <data name="DeclineInvitation" xml:space="preserve">
+    <value>رد دعوت</value>
+  </data>
+  <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
+    <value>دعوت به {0} رد شود؟ این کار قابل بازگشت نیست - برای پیوستن به دعوت تازه‌ای نیاز خواهید داشت.</value>
+  </data>
+  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
+    <value>دعوت رد شد.</value>
+  </data>
+  <!--#endif-->
 </root>
