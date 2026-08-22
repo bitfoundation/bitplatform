@@ -432,8 +432,10 @@ internal static class ScriptBundling
                 unguarded.Add(module);
             }
 
+            // Forward only: the first occurrence, then a second search starting just past it. Same answer as
+            // comparing against LastIndexOf, without scanning the whole bundle backwards for every chunk.
             var first = bundleText.IndexOf(chunk, StringComparison.Ordinal);
-            if (first < 0 || first != bundleText.LastIndexOf(chunk, StringComparison.Ordinal)) duplicated.Add(module);
+            if (first < 0 || bundleText.IndexOf(chunk, first + 1, StringComparison.Ordinal) >= 0) duplicated.Add(module);
         }
 
         checks.That(unguarded.Count == 0,
@@ -566,7 +568,12 @@ internal static class ScriptBundling
             var outputTask = process.StandardOutput.ReadToEndAsync();
             var errorTask = process.StandardError.ReadToEndAsync();
 
-            if (Task.WaitAll([outputTask, errorTask], 60_000) is false || process.WaitForExit(60_000) is false)
+            // One 60-second deadline shared by both waits, so the failure message below is the truth: two
+            // independent 60-second timeouts would let this sit here for two minutes and still say sixty.
+            var elapsed = Stopwatch.StartNew();
+            int RemainingMilliseconds() => (int)Math.Max(0, 60_000 - elapsed.ElapsedMilliseconds);
+
+            if (Task.WaitAll([outputTask, errorTask], RemainingMilliseconds()) is false || process.WaitForExit(RemainingMilliseconds()) is false)
             {
                 process.Kill(entireProcessTree: true);
                 checks.That(false, $"{what} was not run", "node did not finish within 60 seconds");

@@ -23,7 +23,10 @@
        The task project has to be built first; it is, as a build dependency of Bit.Butil itself. -->
   <PropertyGroup>
     <!-- Both shapes stay in the output: the E2E suite runs this one app in bundle mode and, with ?lazy=1,
-         in lazy mode (see Program.cs). -->
+         in lazy mode (see Program.cs). Spelled out here rather than left to the mode, because naming the
+         property is also what keeps every module file through a trimmed publish, which otherwise publishes
+         only the modules the trimmed assembly can still import - and this app's harness pages are meant to
+         be servable whole. -->
     <BitButilIncludeScriptModules>true</BitButilIncludeScriptModules>
     <BitButilChunksDirectory>$(MSBuildThisFileDirectory)..\..\Bit.Butil\obj\butil-js\chunks\</BitButilChunksDirectory>
     <BitButilBuildTasksAssembly>$(MSBuildThisFileDirectory)..\..\Bit.Butil.Build\bin\$(Configuration)\netstandard2.0\Bit.Butil.Build.dll</BitButilBuildTasksAssembly>

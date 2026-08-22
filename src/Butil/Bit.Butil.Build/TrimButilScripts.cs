@@ -7,13 +7,15 @@ using Microsoft.Build.Utilities;
 namespace Bit.Butil.Build;
 
 /// <summary>
-/// Assembles a <c>bit-butil.js</c> that holds only the JavaScript modules a trimmed <c>Bit.Butil.dll</c>
-/// still calls. Runs in a consumer's publish; wired up by <c>buildTransitive/Bit.Butil.targets</c>.
+/// Works out which JavaScript modules a trimmed <c>Bit.Butil.dll</c> still calls, and assembles a
+/// <c>bit-butil.js</c> holding only those. Runs in a consumer's publish; wired up by
+/// <c>buildTransitive/Bit.Butil.targets</c>, which also uses <see cref="IncludedModules"/> to decide which
+/// per-module files an app publishing that shape of the scripts still needs.
 /// </summary>
 /// <remarks>
 /// The task is deliberately forgiving: when there is no trimmed assembly to read (the publish is not
 /// trimmed, or trimming did not touch Bit.Butil) it sets <see cref="Skipped"/> and writes nothing, and the
-/// consumer keeps the full bundle from the package. Only a genuinely broken input - a manifest that does not
+/// consumer keeps the full set the package ships. Only a genuinely broken input - a manifest that does not
 /// parse, a chunk that is missing - fails the build, because a silently wrong bundle would surface as
 /// "BitButil.x is undefined" in a browser long after publishing.
 /// </remarks>
@@ -31,8 +33,10 @@ public sealed class TrimButilScripts : Task
     [Required]
     public string ManifestPath { get; set; } = string.Empty;
 
-    /// <summary>Where to write the trimmed bundle.</summary>
-    [Required]
+    /// <summary>
+    /// Where to write the trimmed bundle. Optional: left empty, no bundle is written and the task only
+    /// works out the module set - which is all a lazy-scripts app needs, having no bundle to trim.
+    /// </summary>
     public string OutputPath { get; set; } = string.Empty;
 
     /// <summary>The modules the bundle ends up holding, in bundle order.</summary>
@@ -72,13 +76,16 @@ public sealed class TrimButilScripts : Task
                     $"Bit.Butil: the trimmed app calls 'BitButil.{module}.*' but no such JavaScript module exists in this version of Bit.Butil.");
             }
 
-            ButilScriptBundler.WriteBundle(ChunksDirectory, included, OutputPath);
+            if (string.IsNullOrEmpty(OutputPath) is false) ButilScriptBundler.WriteBundle(ChunksDirectory, included, OutputPath);
 
             ReferencedModules = referenced.Select(module => (ITaskItem)new TaskItem(module)).ToArray();
             IncludedModules = included.Select(module => (ITaskItem)new TaskItem(module)).ToArray();
 
-            Log.LogMessage(MessageImportance.High,
-                $"Bit.Butil: bit-butil.js trimmed to {included.Count} of {manifest.Order.Count} modules ({new FileInfo(OutputPath).Length:N0} bytes): {string.Join(", ", included)}");
+            var what = string.IsNullOrEmpty(OutputPath)
+                ? $"the trimmed app can reach {included.Count} of {manifest.Order.Count} modules"
+                : $"bit-butil.js trimmed to {included.Count} of {manifest.Order.Count} modules ({new FileInfo(OutputPath).Length:N0} bytes)";
+
+            Log.LogMessage(MessageImportance.High, $"Bit.Butil: {what}: {string.Join(", ", included)}");
             return true;
         }
         catch (Exception exception) when (exception is IOException or InvalidDataException or UnauthorizedAccessException or BadImageFormatException or ArgumentException)

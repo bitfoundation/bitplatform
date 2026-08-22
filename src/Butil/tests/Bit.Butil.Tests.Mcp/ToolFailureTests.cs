@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using ModelContextProtocol;
 using Bit.Butil.Tests.Mcp.Infrastructure;
 
 namespace Bit.Butil.Tests.Mcp;
@@ -311,7 +312,13 @@ public class ToolFailureTests : McpTestBase
     [TestMethod]
     public async Task A_call_to_a_tool_that_does_not_exist_is_an_error_rather_than_a_hang()
     {
-        // The one case that SHOULD be a protocol error: the tool itself is not there.
-        await Assert.ThrowsAsync<Exception>(async () => await Mcp.CallToolAsync("GetButilTeaAndBiscuits", cancellationToken: Ct));
+        // The one case that SHOULD be a protocol error: the tool itself is not there. It has to arrive as an
+        // McpException naming the tool - a bare failure of some other type would tell a client nothing about
+        // which call it was that did not land.
+        var exception = await Assert.ThrowsAsync<McpException>(
+            async () => await Mcp.CallToolAsync("GetButilTeaAndBiscuits", cancellationToken: Ct));
+
+        Assert.Contains("GetButilTeaAndBiscuits", exception.Message,
+            $"The error does not say which tool was missing: {exception.Message}");
     }
 }

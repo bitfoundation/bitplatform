@@ -125,6 +125,8 @@ internal static class ScriptTrimming
         ButilScriptBundler.WriteBundle(chunksDirectory, included, trimmedBundlePath);
         var trimmedBytes = File.ReadAllBytes(trimmedBundlePath);
 
+        // A download total, not a code total: each lazy module file is self-contained, so a dependency shared
+        // by several of them is counted once per file that inlines it.
         var lazyBytes = referenced
             .Select(module => Path.Combine(modulesDirectory, module + ".js"))
             .Where(File.Exists)

@@ -272,7 +272,14 @@ Fingerprints, integrity hashes and compressed variants are computed from the new
 that injects `Clipboard`, `LocalStorage` and `Window` ships about 8 KB of JavaScript instead of the
 110 KB bundle. It is on by default only in a Blazor WebAssembly project - a standalone app or PWA - because
 that is where the assembly being trimmed is the assembly calling the served JavaScript; a server that hosts
-a WebAssembly client keeps its own, full copy of the bundle (use lazy scripts there). Opt out with
+a WebAssembly client keeps its own, full copy of the bundle (use lazy scripts there). The same property
+trims the other shape too: wherever the module files are published - a lazy-scripts app, or an app keeping
+both shapes - only the modules the trimmed assembly can still name are published, and the rest of the
+`modules/` folder is dropped. Nothing can 404 over it: the identifier that would have imported a dropped
+module is gone from the assembly with it. `<BitButilIncludeScriptModules>true</BitButilIncludeScriptModules>`
+in the csproj publishes every module regardless, for an app that reaches them from outside its own interop
+calls. All of this happens in `dotnet publish` only: a build - and `dotnet run` and `dotnet watch` on top of
+it - keeps the full bundle and every module, so what you debug is never the trimmed JavaScript. Opt out with
 `false`, or opt in elsewhere with `true`:
 
 ```xml
@@ -297,7 +304,9 @@ The property also drops the bundle from the published output (and, in the defaul
 files) and turns the mode on at runtime - through the `Bit.Butil.LazyScripts` runtime switch and,
 since runtime configuration does not reach a .NET 8 WebAssembly app, a one-line module initializer
 compiled into the project that calls `BitButil.UseLazyScripts()`. `BitButilIncludeScriptBundle` and
-`BitButilIncludeScriptModules` override which shape ends up in the published output when you want both.
+`BitButilIncludeScriptModules` override which shape ends up in the published output when you want both. In a
+project that also trims (a WebAssembly publish does by default) the modules published are the ones the
+trimmed assembly can still import; naming `BitButilIncludeScriptModules` in the csproj publishes all of them.
 
 Prefer to keep it in C#? The registration call takes the same switches:
 

@@ -95,7 +95,8 @@ public class ToolSurfaceTests : McpTestBase
                 var schema = tool.JsonSchema;
 
                 Assert.AreEqual(JsonValueKind.Object, schema.ValueKind, $"{tool.Name} has no input schema object.");
-                Assert.AreEqual("object", schema.GetProperty("type").GetString());
+                Assert.IsTrue(schema.TryGetProperty("type", out var schemaType), $"{tool.Name}'s input schema has no 'type'.");
+                Assert.AreEqual("object", schemaType.GetString(), $"{tool.Name}'s input schema is not of type 'object'.");
 
                 string[] declared = schema.TryGetProperty("properties", out var properties)
                     ? [.. properties.EnumerateObject().Select(property => property.Name)]

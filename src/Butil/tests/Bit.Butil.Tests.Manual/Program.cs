@@ -156,7 +156,7 @@ internal static class Program
             Console.WriteLine($"  bundle would be : {scripts.Included.Length} modules ({string.Join(", ", scripts.Included)})");
             Console.WriteLine($"  full bundle     : {scripts.FullBundleBytes:N0} bytes");
             Console.WriteLine($"  trimmed bundle  : {scripts.TrimmedBundleBytes:N0} bytes ({scripts.TrimmedBundleGzipBytes:N0} gzip, {scripts.TrimmedBundleBrotliBytes:N0} brotli) - {100.0 * scripts.TrimmedBundleBytes / scripts.FullBundleBytes:F1}% of the full bundle");
-            Console.WriteLine($"  lazy modules    : {scripts.LazyModulesBytes:N0} bytes across {scripts.Referenced.Length} self-contained files (what lazy scripts would download in total)");
+            Console.WriteLine($"  lazy modules    : {scripts.LazyModulesBytes:N0} bytes downloaded across {scripts.Referenced.Length} self-contained files - the sum of the files, not the distinct JavaScript in them: each one inlines its dependencies, so shared code is counted once per file that carries it");
         }
         Console.WriteLine();
 

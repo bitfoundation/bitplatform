@@ -104,8 +104,15 @@ public static class UserStringHeap
         // padded to a 4-byte boundary, then flags and the stream count.
         var versionLength = ReadInt32(image, metadata + 12, path);
         if (versionLength < 0) throw Invalid(path, "a negative metadata version length");
-        var streamCount = ReadUInt16(image, metadata + 16 + Align4(versionLength) + 2, path);
-        var streamHeader = metadata + 16 + Align4(versionLength) + 4;
+
+        // Step by step, so that a hostile length cannot overflow the padding or the offsets built on it back
+        // into range: bound the raw length against what is left of the file first, then its padded form.
+        if (versionLength > image.Length - metadata - 16) throw Invalid(path, "a metadata version string that runs past the end of the file");
+        var versionSize = Align4(versionLength);
+        if (versionSize > image.Length - metadata - 16) throw Invalid(path, "a metadata version string that runs past the end of the file");
+
+        var streamCount = ReadUInt16(image, metadata + 16 + versionSize + 2, path);
+        var streamHeader = metadata + 16 + versionSize + 4;
 
         for (var i = 0; i < streamCount; i++)
         {

@@ -60,12 +60,19 @@ public class InteropContractTests
             return;
         }
 
-        var stdout = process.StandardOutput.ReadToEnd();
-        var stderr = process.StandardError.ReadToEnd();
+        // Drain both pipes at once, before waiting: the report can fill either one, and a full pipe blocks the
+        // process this is waiting for - which reading one to EOF and only then the other would do too,
+        // whenever the one still unread is the one that filled up.
+        var outputTask = process.StandardOutput.ReadToEndAsync();
+        var errorTask = process.StandardError.ReadToEndAsync();
         process.WaitForExit();
 
-        Assert.AreEqual(0, process.ExitCode, $"{stderr}{stdout}");
+        var stdout = outputTask.Result;
+        var stderr = errorTask.Result;
+
+        // Logged before the assertion, so the script's report is in the run's log for a pass as well as a fail.
         TestContext.WriteLine(stdout.Trim());
+        Assert.AreEqual(0, process.ExitCode, $"{stderr}{stdout}");
     }
 
     /// <summary>

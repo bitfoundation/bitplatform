@@ -251,7 +251,9 @@ public static partial class ButilSetupGuide
            web asset of the package - there is nothing to copy into your own wwwroot. Two optional csproj switches
            tree-shake that JavaScript, so a published app ships only the modules it can still reach: by default a
            trimmed publish (standalone WebAssembly) rebuilds `bit-butil.js` from only the modules the trimmed
-           `Bit.Butil.dll` still calls (`<BitButilTrimScripts>false</BitButilTrimScripts>` opts out);
+           `Bit.Butil.dll` still calls, and publishes only those modules under `modules/` too - publish only,
+           never a build (`<BitButilTrimScripts>false</BitButilTrimScripts>` opts out,
+           `<BitButilIncludeScriptModules>true</BitButilIncludeScriptModules>` publishes every module);
            `<BitButilLazyScripts>true</BitButilLazyScripts>` drops the script tag altogether and has each API
            `import()` its own module on first use, in every hosting model - set it in every project that uses Butil.
         3. Call `AddBitButilServices()` in EVERY DI container that renders your components. A Blazor Web App with an
