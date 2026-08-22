@@ -21,7 +21,7 @@ namespace Boilerplate.Tests.Features.RateLimiting;
 [TestClass, TestCategory("IntegrationTest")]
 public class IdentityRateLimitTests
 {
-    private const int BurstSize = 40; // AppRateLimitPolicies.IDENTITY permits 30 per minute.
+    private const int BurstSize = 40; // RateLimitOptionsExtensions.IDENTITY permits 30 per minute.
 
     /// <summary>
     /// Driven through the app's own typed controller proxy, so the rejection arrives as the

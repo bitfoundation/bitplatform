@@ -126,7 +126,7 @@
     <value>مقدار {0} یک آدرس ایمیل معتبر نیست.</value>
   </data>
     <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
-    <value>MaxLengthAttribute must have a Length value that is greater than zero. Use MaxLength() without parameters to indicate that the string or array can have the maximum allowable length.</value>
+    <value>MaxLengthAttribute باید مقدار Length بزرگ‌تر از صفر داشته باشد. برای اینکه مشخص شود رشته یا آرایه می‌تواند بیشترین طول مجاز را داشته باشد، از MaxLength() بدون پارامتر استفاده کنید.</value>
   </data>
     <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>مقدار {0} باید یک نوع رشته یا لیستی با حداقل طول "{1}" باشد.</value>
@@ -410,6 +410,22 @@
   </data>
     <data name="Ok" xml:space="preserve">
     <value>باشه</value>
+  </data>
+    <!-- Identity pages -->
+    <data name="Close" xml:space="preserve">
+    <value>بستن</value>
+  </data>
+    <data name="SignInWithPasskeyButtonText" xml:space="preserve">
+    <value>ورود با کلید عبور</value>
+  </data>
+    <data name="OpenGmail" xml:space="preserve">
+    <value>باز کردن Gmail</value>
+  </data>
+    <data name="OpenOutlook" xml:space="preserve">
+    <value>باز کردن Outlook</value>
+  </data>
+    <data name="AgreeToTermsMessage" xml:space="preserve">
+    <value>با ثبت‌نام، شما با موارد زیر موافقت می‌کنید:</value>
   </data>
     <!--#if (signalR == true) -->
     <data name="SystemPromptsTitle" xml:space="preserve">
@@ -899,7 +915,7 @@
     <value>شما میتوانید یک کد جدید در ایمیل یا تلفن خود دریافت کنید.</value>
   </data>
     <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
-    <value>Get code</value>
+    <value>دریافت کد</value>
   </data>
     <data name="TfaResetSharedKeyError" xml:space="preserve">
     <value>تنظیم مجدد کلید مشترک 2fa باید 2fa را غیرفعال کند تا زمانی که یک توکن 2fa بر اساس کلید مشترک جدید تأیید شود.</value>
@@ -1322,6 +1338,36 @@
   </data>
     <data name="AiChatPanelStopReading" xml:space="preserve">
     <value>توقف خواندن</value>
+  </data>
+    <data name="AiChatPanelTranscribing" xml:space="preserve">
+    <value>در حال نوشتن چیزی که گفتید</value>
+  </data>
+    <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
+    <value>زمان باقی‌مانده تا پایان گفتن پیام</value>
+  </data>
+    <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
+    <value>قابلیت صوتی به حساب کاربری نیاز دارد</value>
+  </data>
+    <data name="AiChatPanelSpeechSignInMessage" xml:space="preserve">
+    <value>تبدیل گفتار به نوشتار و خواندن پاسخ‌ها هر دو روی سرور انجام می‌شوند. یک بار وارد شوید تا هم بتوانید پیام خود را بگویید و هم پاسخ را بشنوید.</value>
+  </data>
+    <data name="AiChatPanelAttachImage" xml:space="preserve">
+    <value>پیوست کردن تصویر</value>
+  </data>
+    <data name="AiChatPanelImageTooLarge" xml:space="preserve">
+    <value>حجم تصویر بیشتر از ۱۰ مگابایت است.</value>
+  </data>
+    <data name="AiChatPanelOnlyImagesAllowed" xml:space="preserve">
+    <value>فقط تصویر می‌توان پیوست کرد.</value>
+  </data>
+    <data name="AiChatPanelAttachmentFailed" xml:space="preserve">
+    <value>تصویر پیوست نشد.</value>
+  </data>
+    <data name="AiChatPanelImageSignInTitle" xml:space="preserve">
+    <value>پیوست تصویر به حساب کاربری نیاز دارد</value>
+  </data>
+    <data name="AiChatPanelImageSignInMessage" xml:space="preserve">
+    <value>برای ارسال تصویر همراه پیام خود وارد شوید.</value>
   </data>
     <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>سلام{0}! من اینجا هستم تا تجربه اپلیکیشن شما رو فوق‌العاده کنم! سؤالی دارید یا به کمک نیاز دارید؟</value>

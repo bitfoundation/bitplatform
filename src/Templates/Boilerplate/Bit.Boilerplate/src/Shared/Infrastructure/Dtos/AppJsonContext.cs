@@ -87,8 +87,11 @@ namespace Boilerplate.Shared.Infrastructure.Dtos;
 //#if (signalR == true)
 [JsonSerializable(typeof(DiagnosticLogDto[]))]
 [JsonSerializable(typeof(StartChatRequest))]
+[JsonSerializable(typeof(AiChatMessageRequest))]
 [JsonSerializable(typeof(List<SystemPromptDto>))]
 [JsonSerializable(typeof(BackgroundJobProgressDto))]
+[JsonSerializable(typeof(SynthesizeSpeechRequestDto))]
+[JsonSerializable(typeof(TranscribeSpeechResponseDto))]
 //#endif
 public partial class AppJsonContext : JsonSerializerContext
 {

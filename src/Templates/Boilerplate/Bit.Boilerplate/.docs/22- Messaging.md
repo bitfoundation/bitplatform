@@ -600,7 +600,5 @@ When testing push notifications, it's critical to understand that there are **fo
 ---
 
 ### AI Wiki: Answered Questions
-* [Describe the workflow of bit Boilerplate's AI chat feature and provide a high-level overview.
-](https://deepwiki.com/search/describe-the-workflow-of-bit-b_822b9510-8e1d-456f-99bf-fb1778374a9a)
 
 Ask your own question [here](https://wiki.bitplatform.dev)

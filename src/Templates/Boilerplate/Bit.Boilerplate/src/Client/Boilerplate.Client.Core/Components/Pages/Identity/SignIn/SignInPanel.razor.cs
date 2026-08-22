@@ -27,9 +27,6 @@ public partial class SignInPanel
     [Parameter, SupplyParameterFromQuery(Name = "return-url")]
     public string? ReturnUrlQueryString { get; set; }
 
-    [Parameter, SupplyParameterFromQuery(Name = "userName")]
-    public string? UserNameQueryString { get; set; }
-
     [Parameter, SupplyParameterFromQuery(Name = "email")]
     public string? EmailQueryString { get; set; }
 
@@ -57,7 +54,6 @@ public partial class SignInPanel
 
         internalSignInPanelType = SignInPanelType;
 
-        model.UserName = UserNameQueryString;
         model.Email = EmailQueryString;
         model.PhoneNumber = PhoneNumberQueryString;
 
@@ -66,11 +62,16 @@ public partial class SignInPanel
             model.Otp = OtpQueryString;
 
             if (InPrerenderSession is false &&
-                (string.IsNullOrEmpty(model.UserName) is false ||
-                 string.IsNullOrEmpty(model.Email) is false ||
+                (string.IsNullOrEmpty(model.Email) is false ||
                  string.IsNullOrEmpty(model.PhoneNumber) is false))
             {
                 await DoSignIn();
+
+                // The one-time code is spent, whether or not it worked. It has no input of its own while the
+                // panel is in its password/magic-link layout, so anything left here would be invisible to the
+                // user and would still make the next submit an OTP sign-in: the server picks the credential
+                // type from this field alone (IdentityController.SignIn -> isOtpSignIn).
+                model.Otp = null;
             }
         }
 
@@ -156,7 +157,7 @@ public partial class SignInPanel
                         ? await identityController.ConfirmEmail(new() { Token = model.Otp, Email = model.Email }, CurrentCancellationToken)
                         : await identityController.ConfirmPhone(new() { Token = model.Otp, PhoneNumber = model.PhoneNumber }, CurrentCancellationToken);
 
-                    await AuthManager.StoreTokens(signInResponse, true);
+                    await AuthManager.StoreTokens(signInResponse, model.RememberMe);
                 }
 
                 if (requiresTwoFactor is false)
@@ -218,8 +219,6 @@ public partial class SignInPanel
                 queryParams.TryGetValue("return-url", out var returnUrl);
                 var returnUrlValue = GetValue(returnUrl);
                 ReturnUrlQueryString = Uri.IsAppRelativeUrl(returnUrlValue, requireLeadingSlash: false) ? returnUrlValue : PageUrls.Home;
-                queryParams.TryGetValue("userName", out var userName);
-                UserNameQueryString = GetValue(userName);
                 queryParams.TryGetValue("email", out var email);
                 EmailQueryString = GetValue(email);
                 queryParams.TryGetValue("phoneNumber", out var phoneNumber);
@@ -308,7 +307,7 @@ public partial class SignInPanel
                 return;
             }
 
-            var request = new IdentityRequestDto { UserName = model.UserName, Email = model.Email, PhoneNumber = model.PhoneNumber };
+            var request = new IdentityRequestDto { Email = model.Email, PhoneNumber = model.PhoneNumber };
 
             await identityController.SendOtp(request, GetSafeReturnUrl(), CurrentCancellationToken);
 

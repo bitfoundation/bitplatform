@@ -411,6 +411,22 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="Ok" xml:space="preserve">
     <value>OK</value>
   </data>
+    <!-- Identity pages -->
+    <data name="Close" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+    <data name="SignInWithPasskeyButtonText" xml:space="preserve">
+    <value>Se connecter avec une clé d’accès</value>
+  </data>
+    <data name="OpenGmail" xml:space="preserve">
+    <value>Ouvrir Gmail</value>
+  </data>
+    <data name="OpenOutlook" xml:space="preserve">
+    <value>Ouvrir Outlook</value>
+  </data>
+    <data name="AgreeToTermsMessage" xml:space="preserve">
+    <value>En vous inscrivant, vous acceptez nos</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SystemPromptsTitle" xml:space="preserve">
     <value>Instructions système</value>
@@ -1322,6 +1338,36 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   </data>
   <data name="AiChatPanelStopReading" xml:space="preserve">
     <value>Arrêter la lecture</value>
+  </data>
+  <data name="AiChatPanelTranscribing" xml:space="preserve">
+    <value>Transcription de ce que vous avez dit</value>
+  </data>
+  <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
+    <value>Temps restant avant l'arrêt de la dictée</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
+    <value>La voix nécessite un compte</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInMessage" xml:space="preserve">
+    <value>La dictée et la lecture à voix haute fonctionnent toutes deux sur le serveur. Connectez-vous une fois et vous pourrez dicter vos messages et écouter les réponses.</value>
+  </data>
+  <data name="AiChatPanelAttachImage" xml:space="preserve">
+    <value>Joindre une image</value>
+  </data>
+  <data name="AiChatPanelImageTooLarge" xml:space="preserve">
+    <value>L'image dépasse 10 Mo.</value>
+  </data>
+  <data name="AiChatPanelOnlyImagesAllowed" xml:space="preserve">
+    <value>Seules les images peuvent être jointes.</value>
+  </data>
+  <data name="AiChatPanelAttachmentFailed" xml:space="preserve">
+    <value>L'image n'a pas pu être jointe.</value>
+  </data>
+  <data name="AiChatPanelImageSignInTitle" xml:space="preserve">
+    <value>Les images nécessitent un compte</value>
+  </data>
+  <data name="AiChatPanelImageSignInMessage" xml:space="preserve">
+    <value>Connectez-vous pour envoyer une image avec votre message.</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>Salutations{0}! Je suis là pour rendre votre expérience d'application géniale ! Une question ou besoin d'aide ?</value>

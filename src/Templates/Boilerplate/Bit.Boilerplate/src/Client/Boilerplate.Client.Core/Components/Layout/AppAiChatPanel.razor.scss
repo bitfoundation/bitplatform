@@ -28,6 +28,15 @@
         height: $bit-env-height-available;
     }
 
+    .panel-cnt.maximized {
+        width: 100%;
+        max-width: 100%;
+
+        .body {
+            width: 100%;
+        }
+    }
+
     .scr-container {
         padding-inline-end: 0.5rem;
 
@@ -76,6 +85,11 @@
         min-height: 1.25rem;
         transition: opacity 0.15s ease-in-out;
 
+        // Something is being fetched for this message, so the row stays put instead of fading out from under it.
+        &.busy {
+            opacity: 1;
+        }
+
         button {
             width: 1.25rem;
             height: 1.25rem;
@@ -89,6 +103,12 @@
 
             &:hover i {
                 color: $bit-color-foreground-primary;
+            }
+
+            // Matches the icon it stands in for; the preset spinner is wider than this button.
+            .bit-btn-spn {
+                width: 0.7rem;
+                height: 0.7rem;
             }
         }
     }
@@ -120,20 +140,91 @@
     }
 
     .dictate-button {
+        z-index: 1; // Above the ring below, which covers the same box.
         left: unset;
         right: unset;
         inset-inline-end: 3rem;
+    }
 
-        // While the recognizer is live the button is the only feedback that the microphone is open, so it says so
-        // continuously rather than once.
-        &.listening i {
-            animation: dictate-pulse 1.2s ease-in-out infinite;
+    // Rings the microphone button, on its own box - Radius and Thickness multiply out to the button's 2rem - so the
+    // fill reads as that button running out of time rather than as a separate indicator.
+    .dictate-progress {
+        z-index: 0;
+        bottom: 0.5rem;
+        position: absolute;
+        pointer-events: none;
+        inset-inline-end: 3rem;
+
+        // A standalone progress ring is floored at 50px, which is wider than the button and taller than the field
+        // it sits in. Nothing here is standalone, so the floor goes and the svg keeps the size it was given.
+        svg {
+            min-width: unset;
+            min-height: unset;
+        }
+    }
+
+    .attach-button {
+        left: unset;
+        right: unset;
+        inset-inline-start: 0.5rem;
+    }
+
+    // Floats inside the field just before the microphone button, centred on the same line as it. The field's own end
+    // padding is widened while it is there so no text ends up underneath.
+    .dictate-wave {
+        bottom: 0.75rem;
+        position: absolute;
+        pointer-events: none;
+        inset-inline-end: 5.25rem;
+    }
+
+    // The file upload wraps the message box, so it is the composer rather than a control of its own size.
+    .composer {
+        width: 100%;
+        max-width: unset;
+        gap: 0.3rem;
+
+        // The file list is drawn after the label the box lives in, and the pending thumbnail belongs above the box.
+        flex-flow: column-reverse nowrap;
+    }
+
+    .message-box {
+        border-radius: 0.25rem;
+    }
+
+    // While an image is over the box, the box says it is what will catch it. The uploader puts this class on its own
+    // root for exactly that.
+    .composer.bit-upl-drg .message-box {
+        outline: 1px dashed $bit-color-primary;
+        outline-offset: 0.25rem;
+    }
+
+    // Only as wide as the picture, and what the cross on its corner is positioned against.
+    .pending-attachment {
+        position: relative;
+        width: fit-content;
+    }
+
+    // A badge on a thumbnail rather than a control of its own, so it is smaller than the smallest preset and carries
+    // no surface - under the pointer no more than at rest, since a plate lighting up over a picture reads as the
+    // picture changing. The shadow is the page background, keeping the cross legible over a photograph of any color.
+    .remove-attachment {
+        width: 1.25rem;
+        height: 1.25rem;
+        filter: drop-shadow(0 0 1px $bit-color-background-primary) drop-shadow(0 0 1px $bit-color-background-primary);
+
+        &, &:hover, &:active, &:focus {
+            background: none;
+        }
+
+        i {
+            font-size: 0.75rem;
         }
     }
 }
 
-@keyframes dictate-pulse {
-    50% {
-        opacity: 0.4;
-    }
+// Playback has no visible surface of its own: the element exists for the `ended` event that chains one read aloud
+// segment to the next, and a hidden media element still plays.
+.read-aloud-audio {
+    display: none;
 }

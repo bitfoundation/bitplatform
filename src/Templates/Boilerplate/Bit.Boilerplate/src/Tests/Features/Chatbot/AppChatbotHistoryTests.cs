@@ -1,6 +1,10 @@
 using Microsoft.Extensions.AI;
+using FluentStorage.Storage;
+using Boilerplate.Server.Api;
 using System.Threading.Channels;
 using Boilerplate.Shared.Features.Chatbot;
+using Boilerplate.Shared.Features.Attachments;
+using Boilerplate.Server.Api.Features.Attachments;
 using Boilerplate.Server.Api.Infrastructure.SignalR;
 
 namespace Boilerplate.Tests.Features.Chatbot;
@@ -49,7 +53,7 @@ public partial class AppChatbotHistoryTests
         var responses = chatbot.GetStreamingChannel();
 
         using var firstMessageCts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
-        var firstMessage = chatbot.ProcessNewMessage(generateFollowUpSuggestions: false, "what is bit platform?", httpContext.User, firstMessageCts.Token);
+        var firstMessage = chatbot.ProcessNewMessage(generateFollowUpSuggestions: false, new AiChatMessageRequest { Content = "what is bit platform?" }, httpContext.User, firstMessageCts.Token);
 
         // Reading the first chunk back is what makes the interruption deterministic: the answer is provably half
         // delivered - the user has seen this text - at the moment the message is cancelled.
@@ -71,7 +75,7 @@ public partial class AppChatbotHistoryTests
         chatClient.PauseAfterFirstChunk = null;
         chatClient.StreamingChunks = _ => ["Bit.BlazorUI is a component library."];
 
-        await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false, "and what is Bit.BlazorUI?", httpContext.User, TestContext.CancellationToken);
+        await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false, new AiChatMessageRequest { Content = "and what is Bit.BlazorUI?" }, httpContext.User, TestContext.CancellationToken);
 
         var secondConversation = chatClient.ReceivedConversations[1];
 
@@ -79,7 +83,7 @@ public partial class AppChatbotHistoryTests
             $"The interrupted answer was replayed to the model as a finished assistant turn. Conversation: {Describe(secondConversation)}");
 
         Assert.IsFalse(secondConversation.Any(message => message.Text?.Contains("interrupted", StringComparison.OrdinalIgnoreCase) is true),
-            $"A truncated turn was kept and tagged with a marker string. AiChatMessage.Successful already carries that signal typed, and the client already renders it. Conversation: {Describe(secondConversation)}");
+            $"A truncated turn was kept and tagged with a marker string. AiChatMessageResponse.Successful already carries that signal typed, and the client already renders it. Conversation: {Describe(secondConversation)}");
 
         Assert.IsTrue(secondConversation.Any(message => message.Role == ChatRole.User && message.Text == "what is bit platform?"),
             $"The interrupted USER turn must survive - the user asked it and never got an answer, so the model still owes one. Conversation: {Describe(secondConversation)}");
@@ -105,7 +109,7 @@ public partial class AppChatbotHistoryTests
 
         var responses = chatbot.GetStreamingChannel();
 
-        await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false, "what is bit platform?", httpContext.User, TestContext.CancellationToken);
+        await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false, new AiChatMessageRequest { Content = "what is bit platform?" }, httpContext.User, TestContext.CancellationToken);
 
         // Three chunks, then the success marker - the client needs that marker to stop its loader and to keep its
         // response counter in step with the number of user turns.
@@ -114,7 +118,7 @@ public partial class AppChatbotHistoryTests
         Assert.AreEqual("of tools.", await ReadNextResponse(responses, "the third streamed chunk"));
         Assert.AreEqual(SharedAppMessages.MESSAGE_PROCESS_SUCCESS, await ReadNextResponse(responses, "the terminal marker of the completed message"));
 
-        await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false, "and what is Bit.BlazorUI?", httpContext.User, TestContext.CancellationToken);
+        await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false, new AiChatMessageRequest { Content = "and what is Bit.BlazorUI?" }, httpContext.User, TestContext.CancellationToken);
 
         var secondConversation = chatClient.ReceivedConversations[1];
 
@@ -133,7 +137,7 @@ public partial class AppChatbotHistoryTests
     /// canceled. <c>StartChat</c> therefore has to drop exactly what <c>ProcessNewMessage</c> drops, or the model sees
     /// one conversation before a reconnect and a different one after it.
     /// <para>
-    /// This works only because <c>AiChatMessage.Successful</c> reaches the server at all: it used to be
+    /// This works only because <c>AiChatMessageResponse.Successful</c> reaches the server at all: it used to be
     /// <c>[JsonIgnore]</c>d, which made the flag a client-only affair (See <c>AiChatMessageWireContractTests</c>).
     /// </para>
     /// </summary>
@@ -165,7 +169,7 @@ public partial class AppChatbotHistoryTests
             ]
         }, signalRConnectionId: "test-connection-id", TestContext.CancellationToken);
 
-        await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false, "are they free?", httpContext.User, TestContext.CancellationToken);
+        await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false, new AiChatMessageRequest { Content = "are they free?" }, httpContext.User, TestContext.CancellationToken);
 
         var conversation = chatClient.ReceivedConversations[0];
 
@@ -203,14 +207,14 @@ public partial class AppChatbotHistoryTests
 
         await chatbot.StartChat(new StartChatRequest
         {
-            ChatMessagesHistory = [.. Enumerable.Range(0, maxChatMessages * 2).Select(index => new AiChatMessage
+            ChatMessagesHistory = [.. Enumerable.Range(0, maxChatMessages * 2).Select(index => new AiChatMessageResponse
             {
                 Content = $"message {index}",
                 Role = index % 2 == 0 ? AiChatMessageRole.User : AiChatMessageRole.Assistant
             })]
         }, signalRConnectionId: "test-connection-id", TestContext.CancellationToken);
 
-        await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false, "the newest question", httpContext.User, TestContext.CancellationToken);
+        await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false, new AiChatMessageRequest { Content = "the newest question" }, httpContext.User, TestContext.CancellationToken);
 
         var conversation = chatClient.ReceivedConversations[0];
 
@@ -225,9 +229,212 @@ public partial class AppChatbotHistoryTests
     }
 
     /// <summary>
+    /// An image the user attaches reaches the model as the stored bytes of that attachment. A url for the provider to
+    /// fetch would only work where this backend is reachable from the internet, so on a laptop serving localhost the
+    /// model silently never saw the picture.
+    /// </summary>
+    [TestMethod]
+    public async Task AnAttachedImage_Should_ReachTheModelAsTheBytesOfThatAttachmentOnly()
+    {
+        var chatClient = new TestChatClient();
+
+        await using var server = BuildServerWith(chatClient);
+        await server.Start(TestContext.CancellationToken);
+
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        var httpContext = SetCurrentHttpContext(scope.ServiceProvider, server.WebAppServerAddress);
+
+        var chatbot = scope.ServiceProvider.GetRequiredService<AppChatbot>();
+        await chatbot.StartChat(new StartChatRequest(), signalRConnectionId: "test-connection-id", TestContext.CancellationToken);
+
+        var attachmentId = Guid.NewGuid();
+        byte[] picture = [0x52, 0x49, 0x46, 0x46]; // "RIFF", where a webp starts.
+        await StoreAiChatImage(scope.ServiceProvider, attachmentId, picture);
+
+        await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false,
+                                        new AiChatMessageRequest
+                                        {
+                                            Content = "what is in this picture?",
+                                            AttachmentId = attachmentId
+                                        },
+                                        httpContext.User,
+                                        TestContext.CancellationToken);
+
+        var withAttachment = chatClient.ReceivedConversations[0][^1];
+
+        var image = withAttachment.Contents.OfType<DataContent>().SingleOrDefault();
+
+        Assert.IsNotNull(image, $"The attached image never reached the model. Contents: {Describe([withAttachment])}");
+        CollectionAssert.AreEqual(picture, image.Data.ToArray(),
+            "The model must be given the bytes held for the attachment the client named.");
+        Assert.AreEqual("what is in this picture?", withAttachment.Text,
+            "The message's text must survive alongside the image rather than being replaced by it.");
+    }
+
+    /// <summary>
+    /// The whole conversation goes up on every turn, and a picture costs orders of magnitude more tokens than the
+    /// sentence around it - so only the newest few are replayed however many the user has attached. What was said
+    /// about the older ones stays, and the panel goes on showing every picture; this is only about what the model is
+    /// handed.
+    /// </summary>
+    [TestMethod]
+    public async Task AConversationOfPictures_Should_ReplayOnlyTheNewestOnesToTheModel()
+    {
+        var chatClient = new TestChatClient();
+
+        await using var server = BuildServerWith(chatClient);
+        await server.Start(TestContext.CancellationToken);
+
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        var httpContext = SetCurrentHttpContext(scope.ServiceProvider, server.WebAppServerAddress);
+
+        var chatbot = scope.ServiceProvider.GetRequiredService<AppChatbot>();
+        await chatbot.StartChat(new StartChatRequest(), signalRConnectionId: "test-connection-id", TestContext.CancellationToken);
+
+        // One picture per turn, each holding the number of the turn it came from so the survivors can be named. The
+        // first carries no text at all, which is the turn that has nothing left once its picture is taken away.
+        const int turns = 5;
+        for (var turn = 1; turn <= turns; turn++)
+        {
+            var attachmentId = Guid.NewGuid();
+            await StoreAiChatImage(scope.ServiceProvider, attachmentId, [(byte)turn]);
+
+            await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false,
+                                            new AiChatMessageRequest
+                                            {
+                                                Content = turn == 1 ? null : $"picture {turn}",
+                                                AttachmentId = attachmentId
+                                            },
+                                            httpContext.User,
+                                            TestContext.CancellationToken);
+        }
+
+        var conversation = chatClient.ReceivedConversations[^1];
+        var pictures = conversation.SelectMany(message => message.Contents.OfType<DataContent>())
+                                   .Select(picture => picture.Data.ToArray()[0])
+                                   .ToArray();
+
+        CollectionAssert.AreEqual(new byte[] { 3, 4, 5 }, pictures,
+            $"The model must be handed the newest pictures and only those. Got the ones from turns [{string.Join(", ", pictures)}].");
+
+        Assert.IsTrue(conversation.Any(message => message.Text?.Contains("picture 2", StringComparison.Ordinal) is true),
+            $"A turn keeps its text when its picture is dropped - the model still owes an answer about it. Conversation: {Describe(conversation)}");
+
+        // The turn that was nothing but a picture would otherwise be left with no content at all, which not every
+        // provider accepts.
+        Assert.IsFalse(conversation.Where(message => message.Role == ChatRole.User).Any(message => message.Contents.Count == 0),
+            $"A message was left with no content once its picture was dropped. Conversation: {Describe(conversation)}");
+    }
+
+    /// <summary>
+    /// The cap belongs to the conversation rather than to the turn that added a picture to it, so a reconnect - which
+    /// replays everything the panel has on screen at once, through <c>StartChat</c> instead of one
+    /// <c>ProcessNewMessage</c> at a time - is held to the same few pictures.
+    /// </summary>
+    [TestMethod]
+    public async Task AReplayedConversationOfPictures_Should_ReachTheModelWithOnlyTheNewestOnes()
+    {
+        var chatClient = new TestChatClient();
+
+        await using var server = BuildServerWith(chatClient);
+        await server.Start(TestContext.CancellationToken);
+
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        var httpContext = SetCurrentHttpContext(scope.ServiceProvider, server.WebAppServerAddress);
+
+        // The conversation the panel would resend: a picture per turn, each holding the number of the turn it came
+        // from. The first carries no text, which is the turn left with nothing once its picture is taken away.
+        List<AiChatMessageResponse> history = [];
+        for (var turn = 1; turn <= 5; turn++)
+        {
+            var attachmentId = Guid.NewGuid();
+            await StoreAiChatImage(scope.ServiceProvider, attachmentId, [(byte)turn]);
+
+            history.Add(new() { Role = AiChatMessageRole.User, Content = turn == 1 ? null : $"picture {turn}", AttachmentId = attachmentId });
+            history.Add(new() { Role = AiChatMessageRole.Assistant, Content = $"that is picture {turn}" });
+        }
+
+        var chatbot = scope.ServiceProvider.GetRequiredService<AppChatbot>();
+        await chatbot.StartChat(new StartChatRequest { ChatMessagesHistory = history }, signalRConnectionId: "test-connection-id", TestContext.CancellationToken);
+
+        await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false,
+                                        new AiChatMessageRequest { Content = "and what did I show you?" },
+                                        httpContext.User,
+                                        TestContext.CancellationToken);
+
+        var conversation = chatClient.ReceivedConversations[0];
+        var pictures = conversation.SelectMany(message => message.Contents.OfType<DataContent>())
+                                   .Select(picture => picture.Data.ToArray()[0])
+                                   .ToArray();
+
+        CollectionAssert.AreEqual(new byte[] { 3, 4, 5 }, pictures,
+            $"A replayed conversation must reach the model with the newest pictures and only those. Got the ones from turns [{string.Join(", ", pictures)}].");
+
+        Assert.IsTrue(conversation.Any(message => message.Text?.Contains("picture 2", StringComparison.Ordinal) is true),
+            $"A turn keeps its text when its picture is dropped. Conversation: {Describe(conversation)}");
+
+        Assert.IsFalse(conversation.Where(message => message.Role == ChatRole.User).Any(message => message.Contents.Count == 0),
+            $"A message was left with no content once its picture was dropped. Conversation: {Describe(conversation)}");
+    }
+
+    /// <summary>
+    /// Outside development the picture is handed over as a url the provider fetches for itself, rather than as bytes
+    /// read from storage and re-uploaded on every turn. The bytes path stays for development, where the provider
+    /// cannot reach a backend serving localhost - which is why every other test here sees a <c>DataContent</c>.
+    /// </summary>
+    [TestMethod]
+    public async Task OutsideDevelopment_AnAttachedImage_Should_ReachTheModelAsAUrlInsteadOfBytes()
+    {
+        var chatClient = new TestChatClient();
+
+        // Only the environment is swapped, not the way the server is hosted: the test server is built as Development
+        // (See AppTestServer) and everything else about it should stay that way.
+        var hostEnvironment = A.Fake<IHostEnvironment>();
+        A.CallTo(() => hostEnvironment.EnvironmentName).Returns(Environments.Production);
+        A.CallTo(() => hostEnvironment.ApplicationName).Returns(typeof(AppChatbot).Assembly.GetName().Name);
+        A.CallTo(() => hostEnvironment.ContentRootPath).Returns(AppContext.BaseDirectory);
+
+        await using var server = BuildServerWith(chatClient, services => services.Replace(ServiceDescriptor.Singleton(hostEnvironment)));
+        await server.Start(TestContext.CancellationToken);
+
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        var httpContext = SetCurrentHttpContext(scope.ServiceProvider, server.WebAppServerAddress);
+
+        var chatbot = scope.ServiceProvider.GetRequiredService<AppChatbot>();
+        await chatbot.StartChat(new StartChatRequest(), signalRConnectionId: "test-connection-id", TestContext.CancellationToken);
+
+        var attachmentId = Guid.NewGuid();
+        await StoreAiChatImage(scope.ServiceProvider, attachmentId, [0x52, 0x49, 0x46, 0x46]);
+
+        await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false,
+                                        new AiChatMessageRequest { Content = "what is in this picture?", AttachmentId = attachmentId },
+                                        httpContext.User,
+                                        TestContext.CancellationToken);
+
+        var message = chatClient.ReceivedConversations[0][^1];
+
+        Assert.IsEmpty(message.Contents.OfType<DataContent>(),
+            $"The bytes were read and inlined anyway, so every turn re-uploads the whole picture. Contents: {Describe([message])}");
+
+        var link = message.Contents.OfType<UriContent>().SingleOrDefault();
+
+        Assert.IsNotNull(link, $"The picture never reached the model at all. Contents: {Describe([message])}");
+        Assert.AreEqual(new Uri(server.WebAppServerAddress, $"api/v1/Attachment/GetAttachment/{attachmentId}/{AttachmentKind.AiChatImage}"), link.Uri,
+            "The url must be this backend's own attachment route for the id the client named.");
+    }
+
+    /// <summary>Puts an AI chat image exactly where <c>AppChatbot</c> works out that it should be.</summary>
+    private async Task StoreAiChatImage(IServiceProvider scopedServices, Guid attachmentId, byte[] picture)
+    {
+        var path = AttachmentController.GetFilePath(scopedServices.GetRequiredService<ServerApiSettings>(), attachmentId, AttachmentKind.AiChatImage);
+
+        await scopedServices.GetRequiredService<IStore>().SetBytes(path, picture, cancellationToken: TestContext.CancellationToken);
+    }
+
+    /// <summary>
     /// Builds the real server with the model - and only the model - replaced.
     /// </summary>
-    private static AppTestServer BuildServerWith(TestChatClient chatClient)
+    private static AppTestServer BuildServerWith(TestChatClient chatClient, Action<IServiceCollection>? configureServices = null)
     {
         return new AppTestServer().Build(services =>
         {
@@ -236,6 +443,8 @@ public partial class AppChatbotHistoryTests
             // Every agent is built on the DI IChatClient (See AddAppAIAgents), so this single replacement removes the
             // network, the api key and the non-determinism while leaving the agent itself untouched.
             services.Replace(ServiceDescriptor.Singleton<IChatClient>(chatClient));
+
+            configureServices?.Invoke(services);
         },
         configuration =>
         {

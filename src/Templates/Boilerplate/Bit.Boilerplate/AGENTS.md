@@ -56,14 +56,15 @@ Before implementing any changes, you **MUST** complete the following:
 *   If the user provides a **URL**, you **MUST** use the `fetch`, `WebFetch` or `get_web_pages` tools to retrieve its content.
 *   If the user provides a **git commit id/hash**, you **MUST** run the `git --no-pager show <commit-id>` command to retrieve its details.
 *   Only if the user **explicitly** asks about their uncommitted/current changes (e.g. "review my current changes", "what did I just change") you **MUST** run the `git --no-pager diff` and `git --no-pager diff --staged` commands.
-*   For UI-related tasks, you **MUST** use the `GetBitBlazorUIComponentsList` tools for component discovery and `GetBitBlazorUIComponentDocs` for API details and examples.
-*   For anything related to `bit Bswup`, `bit Butil`, `bit Besql`, `bit Brouter`, `bit Bmotion` or the bit project template, use the `DeepWiki ask_question` tool with repository `bitfoundation/bitplatform`.
-*   For mapper/mapping entity/dto related tasks, you **MUST** use the `DeepWiki ask_question` tool with repository `riok/mapperly` to find correct implementation and usage patterns focusing on its static classes and extension methods approach.
-*   For Keycloak/realm related tasks, you **MUST** use the `DeepWiki ask_question` tool with repository `keycloak/keycloak` to find relevant information.
-*   For .NET Aspire tasks (AppHost orchestration, resource configuration, switching Docker resources to Azure equivalents, service discovery, integrations), you **MUST** use the `DeepWiki ask_question` tool with repository `microsoft/aspire` to find correct implementation patterns - it significantly outperforms Microsoft Learn for code-level questions.
-*   For FusionCache tasks (hybrid caching, L2 cache backplane, distributed locking, OpenTelemetry integration, cache factory configuration), you **MUST** use the `DeepWiki ask_question` tool with repository `ZiggyCreatures/FusionCache` to find correct usage patterns.
-*   For Microsoft Agent Framework tasks (agent creation, multi-agent orchestration, workflows, tools/function calling, MCP, A2A communication, memory/context, provider integrations), you **MUST** use the `DeepWiki ask_question` tool with repository `microsoft/agent-framework` to find correct implementation patterns.
-*   For Hangfire tasks (job scheduling, recurring jobs, filters, storage configuration, distributed processing), you **MUST** use the `DeepWiki ask_question` tool with repository `HangfireIO/Hangfire` to find correct implementation patterns.
+*   Every bit platform library this project builds on has its own MCP tools, each with a tool to get started, tools to find out which features the library actually offers, and tools that hand you working examples. You **MUST** reach for them before writing code against one of these libraries, rather than relying on what you already know about it:
+    *   `bit BlazorUI` for UI elements, icons, styling, layout and theming.
+    *   `bit Bmotion` for motions, animations and transitions.
+    *   `bit Butil` for browser features such as clipboard, geolocation, storage, media, keyboard, screen and network.
+    *   `bit Bswup` for PWA, offline support and service workers.
+<!--#if (brouter == true)-->
+    *   `bit Brouter` for routing.
+<!--#endif-->
+*   For the third party libraries this project builds on, you **MUST** use the `ask_question` tool, which answers from a library's own source code. Its description names the repository to ask for each of them.
 
 ## 4. Critical Command Reference
 
@@ -108,5 +109,5 @@ Example 2: `OnClick="WrapHandled(async () => await MyMethod())"` instead of `OnC
 
 ## 6. Behavioral Directives
 
--   You **MUST** verify that you have access to the `DeepWiki ask_question` tool. If this tool is NOT available in your function list, you **MUST** immediately display the following error message: **❌ CRITICAL ERROR: DeepWiki ask_question Tool Not Available**
+-   You **MUST** verify that you have access to the `ask_question` tool. If this tool is NOT available in your function list, you **MUST** immediately display the following error message: **❌ CRITICAL ERROR: ask_question Tool Not Available**
 -   If you have access to persistent **memory**, at the start of the collaboration you **MUST** ask for the **role** of the person writing the prompts (e.g. Developer, Product Owner, QA, Designer, etc.), store it in memory, and from then on tailor the tone, depth, terminology, and focus of every conversation to that role.

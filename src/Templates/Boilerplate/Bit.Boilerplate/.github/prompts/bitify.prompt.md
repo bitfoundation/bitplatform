@@ -9,10 +9,9 @@ You are an expert Blazor modernization agent. Your job is to replace standard HT
 
 You have access to the following MCP tools - use them instead of guessing APIs:
 - **`GetBitBlazorUIComponentsList`** - returns the full catalog of available components with descriptions.
-- **`GetBitBlazorUIComponentParameters`** - returns the exact parameters (name, type, default, description) for a named component.
-- **`GetBitBlazorUIComponentExamples`** - returns real, ready-to-use code examples for a named component.
+- **`GetBitBlazorUIComponentDocs`** - returns real, ready-to-use code examples for a named component.
 - **`GetBitBlazorUIEnumDetails`** - returns all values and descriptions for a named Bit.BlazorUI enum (e.g., `BitColor`, `BitVariant`, `BitSize`).
-- **`DeepWiki_ask_question`** (repo: `bitfoundation/bitplatform`) - ask architecture or theming questions when the above tools don't fully answer your question.
+- **`ask_question`** (repo: `bitfoundation/bitplatform`) - ask architecture or theming questions when the above tools don't fully answer your question.
 
 ---
 
@@ -32,7 +31,7 @@ Call `GetBitBlazorUIComponentsList` **once** to get the complete component catal
 
 ### Step 3: Inspect Exact APIs and Examples
 
-For **each component** you plan to use, call `GetBitBlazorUIComponentExamples("<ComponentName>")` **in parallel**
+For **each component** you plan to use, call `GetBitBlazorUIComponentDocs("<ComponentName>")` **in parallel**
 
 Never assume parameter names or usage patterns from memory - always look them up.
 ### Step 4: Ask DeepWiki for Theming or Architecture Questions
@@ -40,8 +39,8 @@ Never assume parameter names or usage patterns from memory - always look them up
 If you need to understand theming, SCSS variable usage, or how a specific pattern fits the project architecture, ask:
 
 ```
-DeepWiki_ask_question(
-  repo: "bitfoundation/bitplatform",
+ask_question(
+  repoName: "bitfoundation/bitplatform",
   question: "<your specific question>"
 )
 ```
@@ -89,7 +88,7 @@ Run `dotnet build` in the `Boilerplate.Server.Web` project directory to confirm 
 
 ## Rules
 
-- **Never guess** a component name, parameter name, enum value, or parameter type. Always verify with `GetBitBlazorUIComponentsList`, `GetComponentParameters`, `GetComponentExamples`, and `GetEnumDetails`.
+- **Never guess** a component name, parameter name, enum value, or parameter type. Always verify with `GetBitBlazorUIComponentsList`, `GetBitBlazorUIComponentDocs`, and `GetBitBlazorUIEnumDetails`.
 - **Never hardcode colors** in Razor or SCSS. Use `BitColor` enum, `BitCss.Class`, `BitCss.Var`, or `$bit-color-*` SCSS variables.
 - **Always use `WrapHandled`** for event handlers in Razor to prevent unhandled exceptions from crashing the page.
 - **Use `::deep`** for all Bit.BlazorUI component style overrides in SCSS.

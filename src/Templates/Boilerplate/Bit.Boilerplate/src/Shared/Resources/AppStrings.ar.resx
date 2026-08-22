@@ -411,6 +411,22 @@
   <data name="Ok" xml:space="preserve">
     <value>موافق</value>
   </data>
+    <!-- Identity pages -->
+    <data name="Close" xml:space="preserve">
+    <value>إغلاق</value>
+  </data>
+    <data name="SignInWithPasskeyButtonText" xml:space="preserve">
+    <value>تسجيل الدخول باستخدام مفتاح مرور</value>
+  </data>
+    <data name="OpenGmail" xml:space="preserve">
+    <value>فتح Gmail</value>
+  </data>
+    <data name="OpenOutlook" xml:space="preserve">
+    <value>فتح Outlook</value>
+  </data>
+    <data name="AgreeToTermsMessage" xml:space="preserve">
+    <value>بالتسجيل، أنت توافق على</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SystemPromptsTitle" xml:space="preserve">
     <value>تلقينات النظام</value>
@@ -1322,6 +1338,36 @@
   </data>
   <data name="AiChatPanelStopReading" xml:space="preserve">
     <value>إيقاف القراءة</value>
+  </data>
+  <data name="AiChatPanelTranscribing" xml:space="preserve">
+    <value>جارٍ تحويل ما قلته إلى نص</value>
+  </data>
+  <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
+    <value>الوقت المتبقي قبل توقف الإملاء</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
+    <value>الميزات الصوتية تتطلب حساباً</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInMessage" xml:space="preserve">
+    <value>الإملاء والقراءة بصوت عالٍ يعملان على الخادم. سجّل الدخول مرة واحدة لتتمكن من إملاء رسائلك وسماع الردود.</value>
+  </data>
+  <data name="AiChatPanelAttachImage" xml:space="preserve">
+    <value>إرفاق صورة</value>
+  </data>
+  <data name="AiChatPanelImageTooLarge" xml:space="preserve">
+    <value>حجم الصورة أكبر من 10 ميجابايت.</value>
+  </data>
+  <data name="AiChatPanelOnlyImagesAllowed" xml:space="preserve">
+    <value>يمكن إرفاق الصور فقط.</value>
+  </data>
+  <data name="AiChatPanelAttachmentFailed" xml:space="preserve">
+    <value>تعذّر إرفاق الصورة.</value>
+  </data>
+  <data name="AiChatPanelImageSignInTitle" xml:space="preserve">
+    <value>إرفاق الصور يتطلب حساباً</value>
+  </data>
+  <data name="AiChatPanelImageSignInMessage" xml:space="preserve">
+    <value>سجّل الدخول لإرسال صورة مع رسالتك.</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>مرحبًا{0}! أنا هنا لجعل تجربة التطبيق رائعة! هل لديك سؤال أو تحتاج مساعدة؟</value>

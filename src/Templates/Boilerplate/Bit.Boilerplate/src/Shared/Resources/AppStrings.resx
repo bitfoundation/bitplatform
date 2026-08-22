@@ -411,6 +411,22 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="Ok" xml:space="preserve">
     <value>Ok</value>
   </data>
+    <!-- Identity pages -->
+    <data name="Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+    <data name="SignInWithPasskeyButtonText" xml:space="preserve">
+    <value>Sign in with a passkey</value>
+  </data>
+    <data name="OpenGmail" xml:space="preserve">
+    <value>Open Gmail</value>
+  </data>
+    <data name="OpenOutlook" xml:space="preserve">
+    <value>Open Outlook</value>
+  </data>
+    <data name="AgreeToTermsMessage" xml:space="preserve">
+    <value>By signing up, you agree to our</value>
+  </data>
     <!--#if (signalR == true) -->
     <data name="SystemPromptsTitle" xml:space="preserve">
     <value>System prompts</value>
@@ -1322,6 +1338,36 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="AiChatPanelStopReading" xml:space="preserve">
     <value>Stop reading</value>
+  </data>
+    <data name="AiChatPanelTranscribing" xml:space="preserve">
+    <value>Writing down what you said</value>
+  </data>
+    <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
+    <value>Time left before dictation stops</value>
+  </data>
+    <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
+    <value>Voice needs an account</value>
+  </data>
+    <data name="AiChatPanelSpeechSignInMessage" xml:space="preserve">
+    <value>Dictation and read aloud both run on the server. Sign in once and you can talk to the chat and have it talk back.</value>
+  </data>
+    <data name="AiChatPanelAttachImage" xml:space="preserve">
+    <value>Attach an image</value>
+  </data>
+    <data name="AiChatPanelImageTooLarge" xml:space="preserve">
+    <value>The image is larger than 10 MB.</value>
+  </data>
+    <data name="AiChatPanelOnlyImagesAllowed" xml:space="preserve">
+    <value>Only images can be attached.</value>
+  </data>
+    <data name="AiChatPanelAttachmentFailed" xml:space="preserve">
+    <value>The image could not be attached.</value>
+  </data>
+    <data name="AiChatPanelImageSignInTitle" xml:space="preserve">
+    <value>Images need an account</value>
+  </data>
+    <data name="AiChatPanelImageSignInMessage" xml:space="preserve">
+    <value>Sign in to send a picture along with your message.</value>
   </data>
     <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>Greetings{0}! I'm here to make your app experience awesome! Got a question or need a hand?</value>

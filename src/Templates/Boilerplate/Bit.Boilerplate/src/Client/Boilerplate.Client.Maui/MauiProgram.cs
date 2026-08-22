@@ -178,6 +178,11 @@ public static partial class MauiProgram
                 settings.MixedContentMode = Android.Webkit.MixedContentHandling.AlwaysAllow;
             }
 
+            if (webView.WebChromeClient is not Platforms.Android.AppWebChromeClient)
+            {
+                webView.SetWebChromeClient(new Platforms.Android.AppWebChromeClient(webView.WebChromeClient));
+            }
+
             settings.BlockNetworkLoads = settings.BlockNetworkImage = false;
 #endif
         });
