@@ -9,7 +9,7 @@ public partial class BitPaginationDemo
             Name = "BoundaryCount",
             Type = "int",
             DefaultValue = "2",
-            Description = "The number of items at the start and end of the pagination."
+            Description = "The number of items at the start and end of the pagination. A value that is not positive falls back to the default."
         },
         new()
         {
@@ -45,6 +45,13 @@ public partial class BitPaginationDemo
         },
         new()
         {
+            Name = "FirstButtonAriaLabel",
+            Type = "string",
+            DefaultValue = "\"First page\"",
+            Description = "The accessible label of the first button, which is used as its tooltip as well."
+        },
+        new()
+        {
             Name = "FirstButtonIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -60,6 +67,34 @@ public partial class BitPaginationDemo
             Description = "The built-in icon name for the first button.",
             LinkType = LinkType.Link,
             Href = "https://blazorui.bitplatform.dev/iconography",
+        },
+        new()
+        {
+            Name = "GetPageAriaLabel",
+            Type = "Func<int, bool, string>?",
+            DefaultValue = "null",
+            Description = "Provides the accessible label of a page button, from its one-based number and whether it is the selected one, replacing the default \"Page {number}\" label."
+        },
+        new()
+        {
+            Name = "GetSummary",
+            Type = "Func<int, int, string>?",
+            DefaultValue = "null",
+            Description = "Provides the text of the summary, from the selected page and the total number of pages, replacing the default \"Page {number} of {count}\" text."
+        },
+        new()
+        {
+            Name = "HideOnSinglePage",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders nothing at all while there is a single page to navigate."
+        },
+        new()
+        {
+            Name = "LastButtonAriaLabel",
+            Type = "string",
+            DefaultValue = "\"Last page\"",
+            Description = "The accessible label of the last button, which is used as its tooltip as well."
         },
         new()
         {
@@ -81,10 +116,24 @@ public partial class BitPaginationDemo
         },
         new()
         {
+            Name = "Loop",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Wraps the next and previous buttons around the ends of the range, and keeps them enabled there."
+        },
+        new()
+        {
             Name = "MiddleCount",
             Type = "int",
             DefaultValue = "3",
-            Description = "The number of items to render in the middle of the pagination."
+            Description = "The number of items to render in the middle of the pagination. A value that is not positive falls back to the default."
+        },
+        new()
+        {
+            Name = "NextButtonAriaLabel",
+            Type = "string",
+            DefaultValue = "\"Next page\"",
+            Description = "The accessible label of the next button, which is used as its tooltip as well."
         },
         new()
         {
@@ -109,7 +158,14 @@ public partial class BitPaginationDemo
             Name = "OnChange",
             Type = "EventCallback<int>",
             DefaultValue = "null",
-            Description = "The event callback for when selected page changes."
+            Description = "The event callback for when selected page changes. It also runs when SelectedPage is bound one way."
+        },
+        new()
+        {
+            Name = "PreviousButtonAriaLabel",
+            Type = "string",
+            DefaultValue = "\"Previous page\"",
+            Description = "The accessible label of the previous button, which is used as its tooltip as well."
         },
         new()
         {
@@ -131,10 +187,17 @@ public partial class BitPaginationDemo
         },
         new()
         {
+            Name = "Rounded",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the buttons of the pagination with fully rounded (circular) corners."
+        },
+        new()
+        {
             Name = "SelectedPage",
             Type = "int",
             DefaultValue = "0",
-            Description = "The selected page number."
+            Description = "The selected page number. It is one-based and is clamped into the available range while rendering."
         },
         new()
         {
@@ -159,10 +222,24 @@ public partial class BitPaginationDemo
         },
         new()
         {
+            Name = "ShowPageButtons",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Determines whether to show the numeric page buttons. Turning them off leaves a compact pagination made of the navigation buttons only."
+        },
+        new()
+        {
             Name = "ShowPreviousButton",
             Type = "bool",
             DefaultValue = "true",
             Description = "Determines whether to show the previous button."
+        },
+        new()
+        {
+            Name = "ShowSummary",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows the position in the range, which reads \"Page {number} of {count}\" unless GetSummary replaces it, ahead of the buttons of the pagination. It is a status region, so a screen reader reports the new position as the page changes."
         },
         new()
         {
@@ -354,6 +431,13 @@ public partial class BitPaginationDemo
                 },
                 new()
                 {
+                    Name = "Summary",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the summary of the BitPagination."
+                },
+                new()
+                {
                     Name = "Button",
                     Type = "string?",
                     DefaultValue = "null",
@@ -438,4 +522,14 @@ public partial class BitPaginationDemo
     private int oneWaySelectedPage = 1;
     private int twoWaySelectedPage = 2;
     private int onChangeSelectedPage = 3;
+
+    private string GetResultsRangeLabel(int page, bool isSelected)
+    {
+        return $"Results {(page - 1) * 10 + 1} to {page * 10}";
+    }
+
+    private string GetItemsRangeSummary(int page, int count)
+    {
+        return $"Showing {(page - 1) * 10 + 1} to {page * 10} of {count * 10} results";
+    }
 }

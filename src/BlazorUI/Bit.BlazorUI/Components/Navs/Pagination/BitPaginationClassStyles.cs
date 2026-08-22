@@ -8,6 +8,11 @@ public class BitPaginationClassStyles
     public string? Root { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the summary of the BitPagination.
+    /// </summary>
+    public string? Summary { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the button of the BitPagination.
     /// </summary>
     public string? Button { get; set; }

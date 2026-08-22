@@ -39,6 +39,15 @@
     }
 }
 
+// The list and its items only carry the semantics of the markup: they are removed from the box tree so the
+// buttons stay the direct flex items of the root and the layout of the pagination is the one the root sets
+// (a gap coming from Styles.Root included). The explicit list roles in the markup keep the semantics that
+// removing these boxes used to drop.
+.bit-pgn-lst,
+.bit-pgn-itm {
+    display: contents;
+}
+
 .bit-pgn-trs {
     transform: var(--bit-pgn-ico-transform-start);
 }
@@ -52,10 +61,22 @@
     font-size: inherit;
     text-align: center;
     align-items: center;
+    user-select: none;
     justify-content: center;
     width: var(--bit-pgn-btn-size);
     height: var(--bit-pgn-btn-size);
     border-radius: $shp-radius-control;
+}
+
+// The summary sits on the same baseline as the buttons without taking their square shape, so a long text
+// (a localized one, or one counting items instead of pages) stays on a single line beside them.
+.bit-pgn-sum {
+    display: flex;
+    font-size: inherit;
+    align-items: center;
+    white-space: nowrap;
+    padding: 0 spacing(0.5);
+    height: var(--bit-pgn-btn-size);
 }
 
 .bit-pgn-btn {
@@ -119,6 +140,16 @@
         color: var(--bit-pgn-clr-btn-sel-txt-active);
         border-color: var(--bit-pgn-clr-btn-sel-brd-active);
         background-color: var(--bit-pgn-clr-btn-sel-bg-active);
+    }
+}
+
+
+// The pill shape applies to the ellipsis as well, so the gaps keep the outline of the buttons they stand
+// in for instead of breaking the row with a square.
+.bit-pgn-rnd {
+    .bit-pgn-btn,
+    .bit-pgn-elp {
+        border-radius: 50%;
     }
 }
 

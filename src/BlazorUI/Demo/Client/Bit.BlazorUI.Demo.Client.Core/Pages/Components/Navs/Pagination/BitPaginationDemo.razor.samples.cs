@@ -17,15 +17,88 @@ public partial class BitPaginationDemo
 <BitPagination Count=""11"" DefaultSelectedPage=""6"" BoundaryCount=""1"" />";
 
     private readonly string example5RazorCode = @"
-<BitPagination Count=""11"" MiddleCount=""3"" BoundaryCount=""1"" DefaultSelectedPage=""6"" />";
+<BitPagination Count=""11"" MiddleCount=""3"" BoundaryCount=""1"" DefaultSelectedPage=""6"" />
+
+<BitPagination Count=""20"" MiddleCount=""5"" BoundaryCount=""1"" DefaultSelectedPage=""10"" />";
 
     private readonly string example6RazorCode = @"
-<BitPagination Count=""24"" ShowFirstButton ShowLastButton />";
+<BitPagination Count=""24"" ShowFirstButton ShowLastButton />
+
+<BitPagination Count=""24"" ShowFirstButton ShowLastButton ShowNextButton=""false"" ShowPreviousButton=""false"" />";
 
     private readonly string example7RazorCode = @"
-<BitPagination Count=""5"" NextButtonIconName=""@BitIconName.Next"" PreviousButtonIconName=""@BitIconName.Previous"" />";
+<BitPagination Count=""24"" ShowPageButtons=""false"" />
+
+<BitPagination Count=""24"" ShowPageButtons=""false"" ShowFirstButton ShowLastButton DefaultSelectedPage=""12"" />";
 
     private readonly string example8RazorCode = @"
+<BitPagination Count=""12"" ShowSummary DefaultSelectedPage=""4"" />
+
+<BitPagination Count=""12"" ShowSummary ShowPageButtons=""false"" ShowFirstButton ShowLastButton DefaultSelectedPage=""4"" />
+
+<BitPagination Count=""24"" ShowSummary ShowPageButtons=""false"" GetSummary=""@GetItemsRangeSummary"" DefaultSelectedPage=""3"" />";
+    private readonly string example8CsharpCode = @"
+private string GetItemsRangeSummary(int page, int count)
+{
+    return $""Showing {(page - 1) * 10 + 1} to {page * 10} of {count * 10} results"";
+}";
+
+    private readonly string example9RazorCode = @"
+<BitPagination Count=""5"" Loop />";
+
+    private readonly string example10RazorCode = @"
+<BitPagination Count=""1"" HideOnSinglePage />
+
+<BitPagination Count=""3"" HideOnSinglePage />";
+
+    private readonly string example11RazorCode = @"
+<BitPagination Count=""5""
+               ShowFirstButton
+               ShowLastButton
+               NextButtonIconName=""@BitIconName.Next""
+               PreviousButtonIconName=""@BitIconName.Previous""
+               FirstButtonIconName=""@BitIconName.DoubleChevronLeft""
+               LastButtonIconName=""@BitIconName.DoubleChevronRight"" />";
+
+    private readonly string example12RazorCode = @"
+<BitPagination Count=""9"" Rounded ShowFirstButton ShowLastButton DefaultSelectedPage=""5"" />
+
+<BitPagination Count=""9"" Rounded Variant=""BitVariant.Outline"" DefaultSelectedPage=""5"" />
+
+<BitPagination Count=""9"" Rounded Variant=""BitVariant.Text"" DefaultSelectedPage=""5"" />";
+
+    private readonly string example13RazorCode = @"
+<BitPagination Count=""5"" SelectedPage=""oneWaySelectedPage"" />
+<BitNumberField @bind-Value=""oneWaySelectedPage"" Min=""1"" Max=""5"" />
+
+<BitPagination Count=""5"" @bind-SelectedPage=""twoWaySelectedPage"" />
+<BitNumberField @bind-Value=""twoWaySelectedPage"" Min=""1"" Max=""5"" />
+
+<BitPagination Count=""5"" OnChange=""p => onChangeSelectedPage = p"" />
+<div>Changed page: <b>@onChangeSelectedPage</b></div>";
+    private readonly string example13CsharpCode = @"
+private int oneWaySelectedPage = 1;
+private int twoWaySelectedPage = 2;
+private int onChangeSelectedPage = 3;";
+
+    private readonly string example14RazorCode = @"
+<BitPagination Count=""12""
+               ShowFirstButton
+               ShowLastButton
+               DefaultSelectedPage=""4""
+               AriaLabel=""Search results pages""
+               FirstButtonAriaLabel=""Go to the first page""
+               LastButtonAriaLabel=""Go to the last page""
+               NextButtonAriaLabel=""Go to the next page""
+               PreviousButtonAriaLabel=""Go to the previous page""
+               GetPageAriaLabel=""@GetResultsRangeLabel"" />";
+    private readonly string example14CsharpCode = @"
+private string GetResultsRangeLabel(int page, bool isSelected)
+{
+    return $""Results {(page - 1) * 10 + 1} to {page * 10}"";
+}";
+
+    private readonly string example15RazorCode = @"
 <BitPagination Count=""5"" Color=""BitColor.Primary"" />
 <BitPagination Count=""5"" Color=""BitColor.Primary"" Variant=""BitVariant.Outline"" />
 <BitPagination Count=""5"" Color=""BitColor.Primary"" Variant=""BitVariant.Text"" />
@@ -93,20 +166,7 @@ public partial class BitPaginationDemo
 <BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Error"" Variant=""BitVariant.Outline"" />
 <BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Error"" Variant=""BitVariant.Text"" />";
 
-    private readonly string example9RazorCode = @"
-<BitPagination Count=""5"" Size=""BitSize.Small"" Variant=""BitVariant.Fill"" />
-<BitPagination Count=""5"" Size=""BitSize.Small"" Variant=""BitVariant.Outline"" />
-<BitPagination Count=""5"" Size=""BitSize.Small"" Variant=""BitVariant.Text"" />
-
-<BitPagination Count=""5"" Size=""BitSize.Medium"" Variant=""BitVariant.Fill"" />
-<BitPagination Count=""5"" Size=""BitSize.Medium"" Variant=""BitVariant.Outline"" />
-<BitPagination Count=""5"" Size=""BitSize.Medium"" Variant=""BitVariant.Text"" />
-
-<BitPagination Count=""5"" Size=""BitSize.Large"" Variant=""BitVariant.Fill"" />
-<BitPagination Count=""5"" Size=""BitSize.Large"" Variant=""BitVariant.Text"" />
-<BitPagination Count=""5"" Size=""BitSize.Large"" Variant=""BitVariant.Outline"" />";
-
-    private readonly string example10RazorCode = @"
+    private readonly string example16RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitPagination Count=""5""
@@ -136,7 +196,20 @@ public partial class BitPaginationDemo
                FirstButtonIcon=""@BitIconInfo.Css(""bi bi-skip-start-fill"")""
                LastButtonIcon=""@BitIconInfo.Css(""bi bi-skip-end-fill"")"" />";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example17RazorCode = @"
+<BitPagination Count=""5"" Size=""BitSize.Small"" Variant=""BitVariant.Fill"" />
+<BitPagination Count=""5"" Size=""BitSize.Small"" Variant=""BitVariant.Outline"" />
+<BitPagination Count=""5"" Size=""BitSize.Small"" Variant=""BitVariant.Text"" />
+
+<BitPagination Count=""5"" Size=""BitSize.Medium"" Variant=""BitVariant.Fill"" />
+<BitPagination Count=""5"" Size=""BitSize.Medium"" Variant=""BitVariant.Outline"" />
+<BitPagination Count=""5"" Size=""BitSize.Medium"" Variant=""BitVariant.Text"" />
+
+<BitPagination Count=""5"" Size=""BitSize.Large"" Variant=""BitVariant.Fill"" />
+<BitPagination Count=""5"" Size=""BitSize.Large"" Variant=""BitVariant.Text"" />
+<BitPagination Count=""5"" Size=""BitSize.Large"" Variant=""BitVariant.Outline"" />";
+
+    private readonly string example18RazorCode = @"
 <style>
     .custom-class {
         margin-left: 1rem;
@@ -172,7 +245,7 @@ public partial class BitPaginationDemo
                PreviousButtonIconName=""@BitIconName.ChevronUp""
                Style=""margin-left: 1rem; flex-flow: column;"" />
 
-<BitPagination Count=""5"" Class=""custom-class"" />    
+<BitPagination Count=""5"" Class=""custom-class"" />
 
 <BitPagination Count=""5""
                Styles=""@(new() { Root = ""margin-left: 1rem; gap: 1rem;"",
@@ -185,22 +258,8 @@ public partial class BitPaginationDemo
                                   Button = ""custom-button"",
                                   SelectedButton = ""custom-selected-button""})"" />";
 
-    private readonly string example12RazorCode = @"
-<BitPagination Count=""5"" SelectedPage=""oneWaySelectedPage"" />
-<BitNumberField @bind-Value=""oneWaySelectedPage"" Min=""1"" Max=""5"" />
-
-<BitPagination Count=""5"" @bind-SelectedPage=""twoWaySelectedPage"" />
-<BitNumberField @bind-Value=""twoWaySelectedPage"" Min=""1"" Max=""5"" />
-
-<BitPagination Count=""5"" OnChange=""p => onChangeSelectedPage = p"" />
-<div>Changed page: <b>@onChangeSelectedPage</b></div>";
-    private readonly string example12CsharpCode = @"
-private int oneWaySelectedPage = 1;
-private int twoWaySelectedPage = 2;
-private int onChangeSelectedPage = 3;";
-
-    private readonly string example13RazorCode = @"
-<BitPagination Dir=""BitDir.Rtl"" Count=""5"" Variant=""BitVariant.Fill"" />
+    private readonly string example19RazorCode = @"
+<BitPagination Dir=""BitDir.Rtl"" Count=""5"" Variant=""BitVariant.Fill"" ShowFirstButton ShowLastButton />
 <BitPagination Dir=""BitDir.Rtl"" Count=""5"" Variant=""BitVariant.Outline"" />
 <BitPagination Dir=""BitDir.Rtl"" Count=""5"" Variant=""BitVariant.Text"" />";
 
