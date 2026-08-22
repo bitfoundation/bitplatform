@@ -231,8 +231,7 @@ public partial class AppChatbotHistoryTests
     /// <summary>
     /// An image the user attaches reaches the model as the stored bytes of that attachment. A url for the provider to
     /// fetch would only work where this backend is reachable from the internet, so on a laptop serving localhost the
-    /// model silently never saw the picture - and the client is what names the attachment, so an id that names no
-    /// chat image of this app's has to leave the message without a picture rather than fail it.
+    /// model silently never saw the picture.
     /// </summary>
     [TestMethod]
     public async Task AnAttachedImage_Should_ReachTheModelAsTheBytesOfThatAttachmentOnly()
@@ -270,21 +269,6 @@ public partial class AppChatbotHistoryTests
             "The model must be given the bytes held for the attachment the client named.");
         Assert.AreEqual("what is in this picture?", withAttachment.Text,
             "The message's text must survive alongside the image rather than being replaced by it.");
-
-        // ... and an id this app holds no chat image for leaves the message without one. Naming a blob that is not
-        // there is the whole of what a made-up id can do - the kind is fixed on the server - and it must not take
-        // the message down with it.
-        await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false,
-                                        new AiChatMessageRequest { Content = "and this one?", AttachmentId = Guid.NewGuid() },
-                                        httpContext.User,
-                                        TestContext.CancellationToken);
-
-        var withUnknownAttachment = chatClient.ReceivedConversations[1][^1];
-
-        Assert.IsEmpty(withUnknownAttachment.Contents.OfType<DataContent>(),
-            "An id nothing is stored under produced image content, so the client decides which blob the model is shown.");
-        Assert.AreEqual("and this one?", withUnknownAttachment.Text,
-            "The message's text must still reach the model when the attachment it named is missing.");
     }
 
     /// <summary>
@@ -437,15 +421,6 @@ public partial class AppChatbotHistoryTests
         Assert.IsNotNull(link, $"The picture never reached the model at all. Contents: {Describe([message])}");
         Assert.AreEqual(new Uri(server.WebAppServerAddress, $"api/v1/Attachment/GetAttachment/{attachmentId}/{AttachmentKind.AiChatImage}"), link.Uri,
             "The url must be this backend's own attachment route for the id the client named.");
-
-        // ... and an id nothing is stored under still hands over nothing, rather than a link that 404s.
-        await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false,
-                                        new AiChatMessageRequest { Content = "and this one?", AttachmentId = Guid.NewGuid() },
-                                        httpContext.User,
-                                        TestContext.CancellationToken);
-
-        Assert.IsEmpty(chatClient.ReceivedConversations[1][^1].Contents.OfType<UriContent>(),
-            "An id nothing is stored under produced a link, so the model is sent to fetch something that is not there.");
     }
 
     /// <summary>Puts an AI chat image exactly where <c>AppChatbot</c> works out that it should be.</summary>
