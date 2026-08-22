@@ -1,9 +1,9 @@
-using Microsoft.Playwright;
-using NUnit.Framework;
+﻿using Microsoft.Playwright;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Butil.Tests.E2E.Infrastructure;
 /// <summary>
-/// Self-managing Playwright base class. Unlike <c>Microsoft.Playwright.NUnit.PageTest</c> this
+/// Self-managing Playwright base class. Unlike <c>Microsoft.Playwright.MSTest.PageTest</c> this
 /// doesn't depend on runsettings being threaded through the test host (which doesn't happen
 /// reliably under the Microsoft.Testing.Platform runner). Instead it reads configuration from
 /// environment variables so the same binary runs against bundled Chromium, a system Chrome
@@ -25,7 +25,7 @@ public abstract class ButilHarnessTestBase
     /// <summary>The harness route a derived fixture drives, e.g. "/e2e".</summary>
     protected abstract string HarnessRoute { get; }
 
-    [SetUp]
+    [TestInitialize]
     public async Task SetUp()
     {
         _playwright = await Playwright.CreateAsync();
@@ -54,7 +54,7 @@ public abstract class ButilHarnessTestBase
         await Assertions.Expect(Page.Locator("#status")).ToHaveTextAsync("ready", new() { Timeout = 60_000 });
     }
 
-    [TearDown]
+    [TestCleanup]
     public async Task TearDown()
     {
         try

@@ -1,4 +1,4 @@
-@page "/troubleshooting"
+﻿@page "/troubleshooting"
 
 <PageTitle>Troubleshooting - Bit.Butil</PageTitle>
 
@@ -8,13 +8,23 @@
 
 <div class="stack">
     <DemoSection Title="Could not find 'BitButil.something' in 'window'"
-                 Description="The bridge script has not loaded. Either the script tag is missing from the host page, or it comes after the Blazor script and the app booted before window.BitButil existed. Put it first. If it is already first and still failing, check the network tab: a 404 on the _content path means static web assets are not being served, which usually means the host project does not reference Bit.Butil (a project reference from the client alone is not enough when a separate project does the hosting)."
+                 Description="The bridge script has not loaded. Either the script tag is missing from the host page, or it comes after the Blazor script and the app booted before window.BitButil existed. Put it first. If it is already first and still failing, check the network tab: a 404 on the _content path means static web assets are not being served, which usually means the host project does not reference Bit.Butil (a project reference from the client alone is not enough when a separate project does the hosting). In an app using lazy scripts there is deliberately no script tag and this error means something else - see the import failure below."
                  Code=@("""
 <!-- correct order -->
 <script src="_content/Bit.Butil/bit-butil.js"></script>
 <script src="_framework/blazor.web.js"></script>
 """)
                  Language="html" />
+
+    <DemoSection Title="Failed to fetch dynamically imported module"
+                 Description="Only lazy scripts can produce this: the app called an API, the library asked the browser to import that API's module, and the file was not there. Check the failing URL in the network tab. A 404 under _content/Bit.Butil/modules/ in a published app means the module files were not published - the default publish keeps the bundle and drops them, so turning lazy scripts on from C# alone needs BitButilIncludeScriptModules in the csproj as well, which is why the BitButilLazyScripts property is the better switch: it does both. A trimmed publish narrows the modules further - it publishes only the ones the trimmed assembly can still import, which is every one the library asks for on its own, so a module missing there means something outside those calls wanted it: set BitButilIncludeScriptModules to publish all of them. A URL pointing somewhere else entirely means ScriptModulesPath was set to a path the assets are not served from. And in a Blazor Web App the property has to be set in the server project as well as the client, or the prerender pass runs in a project that never turned lazy scripts on."
+                 Code=@("""
+<!-- the switch that both loads and publishes the modules -->
+<PropertyGroup>
+  <BitButilLazyScripts>true</BitButilLazyScripts>
+</PropertyGroup>
+""")
+                 Language="xml" />
 
     <DemoSection Title="Cannot provide a value for property 'clipboard'"
                  Description="AddBitButilServices was never called, or it was called in only one of the two containers your app has. A prerendering app instantiates every component twice - once on the server for the prerender pass and once in the browser - so both service collections have to register the same set, or prerendering fails with a missing-service exception before the browser ever sees the page. If this only happens in a published build, the cause is trimming instead: registration discovers services by reflection, so a Butil class reached only through reflection - never through an injection point, a field or a parameter anywhere in your code - is removed from the bundle and is not there to register."
@@ -104,6 +114,15 @@ if (await clipboard.IsSupported() is false) { /* ... */ }
 if (await crypto.IsSupported() is false) { /* SubtleCrypto is https-only */ }
 """) />
 
+    <DemoSection Title="One API stops working after publish, the rest are fine"
+                 Description="A published WebAssembly app rebuilds bit-butil.js from the modules its trimmed assembly still calls, so the JavaScript for an API the trimmer decided was unreachable is genuinely not in the bundle - and the symptom is the missing-bridge error above, for that one API. It is almost always correct: the API really is only reached from code that was trimmed away, or only through reflection, which the trimmer cannot follow. Inject the service somewhere the trimmer can see, or set BitButilTrimScripts to false to publish the whole bundle and confirm that is the cause."
+                 Code=@("""
+<PropertyGroup>
+  <BitButilTrimScripts>false</BitButilTrimScripts>
+</PropertyGroup>
+""")
+                 Language="xml" />
+
     <DemoSection Title="It works in debug and breaks after publish"
                  Description="Trimming removed a type that only the JSON serializer ever referenced. Butil's own types are annotated and survive, but your models crossing the interop boundary - anything you serialize into a Butil call or deserialize out of one - need to be reachable by the trimmer. Either keep them in a project that is not trimmed, or annotate them so the linker keeps their members."
                  Code=@("""
@@ -117,10 +136,11 @@ public class MyPayload
 
 <Callout Type="info" Title="Narrowing it down quickly">
     Most reports resolve to one of three questions. Is the bridge loaded - does
-    <code>window.BitButil</code> exist in the DevTools console? Is there a browser yet - is the code running
-    after the first render? Is the API even there - what does <code>IsSupported()</code> say? The
-    <a href="browser-support">browser-support page</a> answers the third one live for whichever browser you
-    are testing in.
+    <code>window.BitButil</code> exist in the DevTools console (under lazy scripts it appears only after the
+    first call, and <code>Object.keys(window.BitButil)</code> is then the list of modules imported so far)?
+    Is there a browser yet - is the code running after the first render? Is the API even there - what does
+    <code>IsSupported()</code> say? The <a href="browser-support">browser-support page</a> answers the third
+    one live for whichever browser you are testing in.
 </Callout>
 
 <Callout Type="warning" Title="Still stuck?">

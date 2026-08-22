@@ -1,4 +1,4 @@
-var BitButil = BitButil || {};
+var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
     interface Listener { element: HTMLElement; enter: (e: any) => void; leave: (e: any) => void; }

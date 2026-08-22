@@ -135,6 +135,7 @@
   <Folder Name="/Butil/">
     <File Path="Butil/README.md" />
     <Project Path="Butil/Bit.Butil/Bit.Butil.csproj" />
+    <Project Path="Butil/Bit.Butil.Build/Bit.Butil.Build.csproj" />
   </Folder>
   <Folder Name="/Butil/Bit.Butil.Demo/">
     <Project Path="Butil/Bit.Butil.Demo/Client/Bit.Butil.Demo.Client.csproj" />

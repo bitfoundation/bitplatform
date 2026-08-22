@@ -1,4 +1,4 @@
-using ModelContextProtocol.Server;
+﻿using ModelContextProtocol.Server;
 using System.ComponentModel;
 
 namespace Bit.Butil.Demo.Server.Controllers;
@@ -40,7 +40,8 @@ public static class McpPrompts
             2. Call `GetButilSetupGuide` with that hosting model and follow it.
             3. Get the two things that fail silently right - the `bit-butil.js` script tag before the Blazor script,
                and `AddBitButilServices()` in every DI container that renders components - and say out loud that you
-               did. Rule 2 of this server's instructions is the long version.
+               did. Rule 2 of this server's instructions is the long version, including the csproj switch that
+               tree-shakes the JavaScript and replaces the script tag with a per-API `import()`.
             4. Verify it end to end with a round trip that cannot pass by accident: write a value with
                `LocalStorage.SetItem`, read it back with `GetItem` from `OnAfterRenderAsync`, and show the result.
             5. Build the app and fix what the compiler says.
@@ -127,7 +128,8 @@ public static class McpPrompts
             3. Confirm the setup itself against `GetButilSetupGuide` for this hosting model: the `bit-butil.js`
                script tag present and BEFORE the Blazor script, and `AddBitButilServices()` called in every DI
                container - a missing registration surfaces during prerendering, a missing script surfaces as every
-               call doing nothing.
+               call doing nothing. If the project sets `BitButilLazyScripts` there is deliberately no script tag,
+               and the equivalent failure is a 404 on `_content/Bit.Butil/modules/<module>.js` in the network tab.
             4. Confirm the member with `GetButilApiDetails` before concluding it is a bug - check the actual
                signature and the default arguments, and read the XML remarks, which carry the per-member caveats.
             5. Call `SearchButil` with the symptom for anything the above did not cover.

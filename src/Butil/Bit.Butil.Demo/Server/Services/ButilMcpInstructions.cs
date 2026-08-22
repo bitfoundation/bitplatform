@@ -1,4 +1,4 @@
-namespace Bit.Butil.Demo.Server.Services;
+﻿namespace Bit.Butil.Demo.Server.Services;
 
 /// <summary>
 /// The server's <c>instructions</c>: the text an MCP client is handed at <c>initialize</c> and
@@ -59,7 +59,9 @@ public static class ButilMcpInstructions
            misplaced code does not throw, it quietly does nothing.
         2. Call AddBitButilServices() in EVERY DI container that renders components - a Blazor Web App with an
            interactive client has two - and put <script src="_content/Bit.Butil/bit-butil.js"> in the host page
-           BEFORE the Blazor script.
+           BEFORE the Blazor script. Unless the app tree-shakes its JavaScript with
+           <BitButilLazyScripts>true</BitButilLazyScripts>, which drops the tag entirely and has each API
+           import() its own module on first use; GetButilSetupGuide carries both shapes.
         3. Dispose every ButilSubscription and every handle. They hold a listener, a lock, or hardware.
         4. A denied permission or a dismissed picker comes back as false/null rather than as an exception.
            Treat it as a branch and show the user something.

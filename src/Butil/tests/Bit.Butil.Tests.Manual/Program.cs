@@ -141,6 +141,38 @@ internal static class Program
         VerifyInteropContract(assembly, trimmed, manifest, manifestError, [.. discoveredNames], failures);
         Console.WriteLine();
 
+        // The JavaScript side of the same story: which script modules this assembly still calls, whether
+        // that is the expected set, and what a consumer publishing it would ship. Same code as the
+        // publish-time bundler (Bit.Butil.Build), same trimmed assembly.
+        Console.WriteLine("--- javascript modules ---");
+        var scripts = string.IsNullOrEmpty(assembly.Location) ? null : ScriptTrimming.Run(assembly.Location, trimmed, failures);
+        if (scripts is null)
+        {
+            Console.WriteLine("  NOT CHECKED - see failures");
+        }
+        else
+        {
+            Console.WriteLine($"  modules called  : {scripts.Referenced.Length} of {scripts.TotalModules} ({string.Join(", ", scripts.Referenced)})");
+            Console.WriteLine($"  bundle would be : {scripts.Included.Length} modules ({string.Join(", ", scripts.Included)})");
+            Console.WriteLine($"  full bundle     : {scripts.FullBundleBytes:N0} bytes");
+            Console.WriteLine($"  trimmed bundle  : {scripts.TrimmedBundleBytes:N0} bytes ({scripts.TrimmedBundleGzipBytes:N0} gzip, {scripts.TrimmedBundleBrotliBytes:N0} brotli) - {100.0 * scripts.TrimmedBundleBytes / scripts.FullBundleBytes:F1}% of the full bundle");
+            Console.WriteLine($"  lazy modules    : {scripts.LazyModulesBytes:N0} bytes downloaded across {scripts.Referenced.Length} self-contained files - the sum of the files, not the distinct JavaScript in them: each one inlines its dependencies, so shared code is counted once per file that carries it");
+        }
+        Console.WriteLine();
+
+        // The publish-time bundler under test in its own right - the parsing, resolution and writing a real
+        // consumer's build can reach but this repository's one assembly never exercises - and the artifacts
+        // it works from, down to running an assembled bundle.
+        Console.WriteLine("--- script bundling ---");
+        var (bundlingPassed, bundlingFailed) = ScriptBundling.Run(string.IsNullOrEmpty(assembly.Location) ? null : assembly.Location, failures);
+        Console.WriteLine($"  {bundlingPassed} checks passed, {bundlingFailed} failed");
+        Console.WriteLine();
+
+        Console.WriteLine("--- lazy scripts ---");
+        var (lazyPassed, lazyFailed) = await LazyScripts.Run(failures);
+        Console.WriteLine($"  {lazyPassed} checks passed, {lazyFailed} failed");
+        Console.WriteLine();
+
         Console.WriteLine("--- activation ---");
         await using var provider = services.BuildServiceProvider();
         // CreateAsyncScope, not CreateScope: several Butil services implement only IAsyncDisposable, and

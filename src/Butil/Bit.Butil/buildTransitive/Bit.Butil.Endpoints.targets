@@ -1,0 +1,73 @@
+﻿<Project>
+
+    <!-- The .NET 9+ SDK half of the publish-time bundle trimming (see Bit.Butil.targets): defines the trimmed
+         bundle asset with content fingerprinting and gives it endpoints. Kept in its own file, imported only
+         on those SDKs, because the tasks and parameters used here do not exist on the .NET 8 SDK and MSBuild
+         rejects them even under a false condition. -->
+
+    <Target Name="_BitButilDefineTrimmedBundleWithEndpoints" AfterTargets="_BitButilAssembleTrimmedBundle"
+            Condition="'$(_BitButilTrimEnabled)' == 'true' and '@(_BitButilTrimmedBundleCandidate)' != ''">
+
+        <DefineStaticWebAssets CandidateAssets="@(_BitButilTrimmedBundleCandidate)"
+                               FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
+                               FingerprintPatterns="@(StaticWebAssetFingerprintPattern)">
+            <Output TaskParameter="Assets" ItemName="_BitButilTrimmedBundleAsset" />
+        </DefineStaticWebAssets>
+
+        <DefineStaticWebAssetEndpoints CandidateAssets="@(_BitButilTrimmedBundleAsset)"
+                                       ExistingEndpoints="@(StaticWebAssetEndpoint)"
+                                       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+            <Output TaskParameter="Endpoints" ItemName="_BitButilTrimmedBundleEndpoint" />
+        </DefineStaticWebAssetEndpoints>
+
+    </Target>
+
+    <!--
+    Restores the label a consumer's lookups go through.
+
+    A fingerprinted route carries a "label" endpoint property holding the unfingerprinted name, and that
+    label is what @Assets["_content/Bit.Butil/bit-butil.js"] and <ImportMap> resolve through. The label the
+    SDK writes here is the asset's *relative path*, bare ("bit-butil.js"), because the endpoints of the
+    trimmed bundle are defined in the consumer's project; the package's own endpoints - and every other
+    asset a consumer sees - reach it through a referenced project or package instead, which rebases route
+    and label together and so carries the base path in both. Left alone, the lookups would stop resolving
+    to the fingerprinted route.
+
+    Runs at the end of the publish pipeline rather than next to the definition above, because the compressed
+    (.br/.gz) variants of the trimmed bundle - and their own fingerprinted routes, each with a label of its
+    own - are derived from it later, by the SDK's compression targets. BeforeTargets the manifest generation
+    catches all of them in one pass.
+    -->
+    <Target Name="BitButilRestoreTrimmedBundleEndpointLabels" BeforeTargets="GenerateStaticWebAssetsPublishManifest"
+            Condition="'$(_BitButilTrimEnabled)' == 'true' and '$(_BitButilBundleBasePath)' != ''">
+
+        <!-- A prefix match rather than an exact one, so that "bit-butil.js", "bit-butil.js.br" and
+             "bit-butil.js.gz" are all covered by the one replacement. -->
+        <ItemGroup>
+            <StaticWebAssetEndpoint Condition="$([System.String]::Copy('%(EndpointProperties)').Contains('&quot;Name&quot;:&quot;label&quot;,&quot;Value&quot;:&quot;bit-butil.js'))">
+                <EndpointProperties>$([System.String]::Copy('%(EndpointProperties)').Replace('"Name":"label","Value":"bit-butil.js', '"Name":"label","Value":"$(_BitButilBundleBasePath)/bit-butil.js'))</EndpointProperties>
+            </StaticWebAssetEndpoint>
+        </ItemGroup>
+
+        <!-- Should an SDK ever write that label differently, the replacement above is a no-op and the lookups
+             would quietly stop resolving to the trimmed bundle. Assert the outcome rather than the shape of
+             the input: the trimmed bundle has a route besides its unfingerprinted one - so fingerprinting is
+             on and a label is what reaches it - yet no endpoint answers to that label. (With fingerprinting
+             off there is no second route and no label to restore, which is fine.) -->
+        <ItemGroup>
+            <_BitButilFingerprintedEndpoint Include="@(StaticWebAssetEndpoint)"
+                Condition="'%(AssetFile)' == '$(_BitButilTrimmedBundle)' and '%(Identity)' != '$(_BitButilBundleBasePath)/bit-butil.js'" />
+            <_BitButilLabelledEndpoint Include="@(StaticWebAssetEndpoint)"
+                Condition="$([System.String]::Copy('%(EndpointProperties)').Contains('&quot;Name&quot;:&quot;label&quot;,&quot;Value&quot;:&quot;$(_BitButilBundleBasePath)/bit-butil.js&quot;'))" />
+        </ItemGroup>
+
+        <Error Condition="'@(_BitButilFingerprintedEndpoint)' != '' and '@(_BitButilLabelledEndpoint)' == ''"
+               Text="Bit.Butil: the trimmed bit-butil.js is served from @(_BitButilFingerprintedEndpoint->'%(Identity)', ', ') but no endpoint carries the '$(_BitButilBundleBasePath)/bit-butil.js' label, so that lookup would no longer resolve to it. Set &lt;BitButilTrimScripts&gt;false&lt;/BitButilTrimScripts&gt; to publish the full bundle instead." />
+
+        <ItemGroup>
+            <_BitButilFingerprintedEndpoint Remove="@(_BitButilFingerprintedEndpoint)" />
+            <_BitButilLabelledEndpoint Remove="@(_BitButilLabelledEndpoint)" />
+        </ItemGroup>
+    </Target>
+
+</Project>

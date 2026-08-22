@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ModelContextProtocol.Protocol;
 using Bit.Butil.Tests.Mcp.Infrastructure;
 
@@ -15,119 +15,119 @@ namespace Bit.Butil.Tests.Mcp;
 /// generic instruction that reads fine and answers a different question.
 /// </para>
 /// </summary>
-[TestFixture]
-[Parallelizable(ParallelScope.Self)]
+[TestClass]
 public class PromptTests : McpTestBase
 {
-    [Test]
+    [TestMethod]
     public async Task Server_advertises_exactly_the_expected_prompts()
     {
         var prompts = await Mcp.ListPromptsAsync(cancellationToken: Ct);
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(prompts.Select(prompt => prompt.Name), Is.EquivalentTo(ButilMcp.Prompts.Keys));
+            CollectionAssert.AreEquivalent(ButilMcp.Prompts.Keys.ToArray(), prompts.Select(prompt => prompt.Name).ToArray());
 
             foreach (var prompt in prompts)
             {
-                Assert.That(prompt.Title, Is.Not.Null.And.Not.Empty, $"{prompt.Name} has no title for a person to pick from a menu.");
-                Assert.That(prompt.Description, Is.Not.Null.And.Not.Empty, $"{prompt.Name} has no description.");
+                Assert.IsFalse(string.IsNullOrEmpty(prompt.Title), $"{prompt.Name} has no title for a person to pick from a menu.");
+                Assert.IsFalse(string.IsNullOrEmpty(prompt.Description), $"{prompt.Name} has no description.");
 
                 string[] arguments = [.. (prompt.ProtocolPrompt.Arguments ?? []).Select(argument => argument.Name)];
 
-                Assert.That(arguments, Is.EquivalentTo(ButilMcp.Prompts[prompt.Name]), $"{prompt.Name} declares unexpected arguments.");
+                CollectionAssert.AreEquivalent(ButilMcp.Prompts[prompt.Name], arguments, $"{prompt.Name} declares unexpected arguments.");
 
                 foreach (var argument in prompt.ProtocolPrompt.Arguments ?? [])
                 {
                     // A prompt argument with no description is a box a person is asked to fill in
                     // with no indication of what belongs in it.
-                    Assert.That(argument.Description, Is.Not.Null.And.Not.Empty,
+                    Assert.IsFalse(string.IsNullOrEmpty(argument.Description),
                         $"{prompt.Name}.{argument.Name} has no description.");
                 }
             }
-        });
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task The_setup_prompt_puts_the_argument_into_the_workflow()
     {
         var text = await GetPromptTextAsync("add-butil-to-app", new() { ["hostingModel"] = "web-app" });
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(text, Does.Contain("web-app"), "The hosting model the caller passed never reached the prompt.");
-            Assert.That(text, Does.Contain("GetButilSetupGuide"));
-            Assert.That(text, Does.Contain("bit-butil.js"));
-            Assert.That(text, Does.Contain("AddBitButilServices()"));
-        });
+            Assert.Contains("web-app", text, "The hosting model the caller passed never reached the prompt.");
+            Assert.Contains("GetButilSetupGuide", text);
+            Assert.Contains("bit-butil.js", text);
+            Assert.Contains("AddBitButilServices()", text);
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task The_setup_prompt_has_a_default_that_still_works()
     {
         // The argument is optional and defaults to "unknown", which is a real branch of the
         // workflow rather than a placeholder: step one is then to determine the hosting model.
         var text = await GetPromptTextAsync("add-butil-to-app", []);
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(text, Does.Contain("unknown"));
-            Assert.That(text, Does.Contain("AddInteractiveWebAssemblyComponents").Or.Contain("WebAssemblyHostBuilder"));
-        });
+            Assert.Contains("unknown", text);
+            Assert.IsTrue(text.Contains("AddInteractiveWebAssemblyComponents", StringComparison.Ordinal)
+                          || text.Contains("WebAssemblyHostBuilder", StringComparison.Ordinal));
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task The_feature_prompt_carries_the_request_and_the_order_to_work_in()
     {
         const string feature = "let the user pick a photo and save a cropped copy back to disk";
 
         var text = await GetPromptTextAsync("implement-butil-feature", new() { ["feature"] = feature });
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(text, Does.Contain(feature));
+            Assert.Contains(feature, text);
 
             // Search first, then plan, then confirm the members - the sequence is the point.
-            Assert.That(text.IndexOf("SearchButil", StringComparison.Ordinal), Is.GreaterThanOrEqualTo(0));
-            Assert.That(text.IndexOf("SearchButil", StringComparison.Ordinal),
-                        Is.LessThan(text.IndexOf("PlanButilFeature", StringComparison.Ordinal)));
-            Assert.That(text.IndexOf("PlanButilFeature", StringComparison.Ordinal),
-                        Is.LessThan(text.IndexOf("GetButilApiDetails", StringComparison.Ordinal)));
-        });
+            Assert.IsGreaterThanOrEqualTo(0, text.IndexOf("SearchButil", StringComparison.Ordinal));
+            Assert.IsLessThan(text.IndexOf("PlanButilFeature", StringComparison.Ordinal),
+                              text.IndexOf("SearchButil", StringComparison.Ordinal));
+            Assert.IsLessThan(text.IndexOf("GetButilApiDetails", StringComparison.Ordinal),
+                              text.IndexOf("PlanButilFeature", StringComparison.Ordinal));
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task The_interop_prompt_takes_no_arguments_and_still_names_its_tools()
     {
         var text = await GetPromptTextAsync("replace-jsinterop-with-butil", []);
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(text, Does.Contain("IJSRuntime"));
-            Assert.That(text, Does.Contain("SearchButil"));
-            Assert.That(text, Does.Contain("GetButilApiDetails"));
-            Assert.That(text, Does.Contain("PlanButilFeature"));
-            Assert.That(text, Does.Contain("ButilSubscription"));
-        });
+            Assert.Contains("IJSRuntime", text);
+            Assert.Contains("SearchButil", text);
+            Assert.Contains("GetButilApiDetails", text);
+            Assert.Contains("PlanButilFeature", text);
+            Assert.Contains("ButilSubscription", text);
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task The_debug_prompt_starts_where_the_answer_usually_is()
     {
         const string symptom = "Clipboard.WriteText returns but nothing is on the clipboard";
 
         var text = await GetPromptTextAsync("debug-butil-issue", new() { ["symptom"] = symptom });
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(text, Does.Contain(symptom));
-            Assert.That(text, Does.Contain("troubleshooting"), "Step one is the troubleshooting page, where the cause is often verbatim.");
-            Assert.That(text, Does.Contain("PlanButilFeature"));
-            Assert.That(text, Does.Contain("prerender").IgnoreCase);
-        });
+            Assert.Contains(symptom, text);
+            Assert.Contains("troubleshooting", text, "Step one is the troubleshooting page, where the cause is often verbatim.");
+            Assert.Contains("PlanButilFeature", text);
+            Assert.Contains("prerender", text, StringComparison.OrdinalIgnoreCase);
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task Every_prompt_renders_and_only_names_tools_that_exist()
     {
         var prompts = await Mcp.ListPromptsAsync(cancellationToken: Ct);
@@ -155,15 +155,15 @@ public class PromptTests : McpTestBase
             }
         }
 
-        Assert.That(failures, Is.Empty, string.Join("\n", failures));
+        Assert.IsEmpty(failures, string.Join("\n", failures));
     }
 
     private async Task<string> GetPromptTextAsync(string name, Dictionary<string, object?> arguments)
     {
         var result = await Mcp.GetPromptAsync(name, arguments, cancellationToken: Ct);
 
-        Assert.That(result.Messages, Is.Not.Empty, $"{name} rendered no messages.");
-        Assert.That(result.Messages[0].Role, Is.EqualTo(Role.User), $"{name} should render as something to send, not as an assistant turn.");
+        Assert.IsNotEmpty(result.Messages, $"{name} rendered no messages.");
+        Assert.AreEqual(Role.User, result.Messages[0].Role, $"{name} should render as something to send, not as an assistant turn.");
 
         return string.Join("\n", result.Messages.Select(message => message.Content).OfType<TextContentBlock>().Select(block => block.Text));
     }

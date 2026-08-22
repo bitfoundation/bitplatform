@@ -3,6 +3,7 @@
     "path": "Bit.Butil.slnx",
     "projects": [
       "Bit.Butil\\Bit.Butil.csproj",
+      "Bit.Butil.Build\\Bit.Butil.Build.csproj",
       "Bit.Butil.Demo\\Client\\Bit.Butil.Demo.Client.csproj",
       "Bit.Butil.Demo\\Server\\Bit.Butil.Demo.Server.csproj",
       "Samples\\Bit.Butil.Samples.Core\\Bit.Butil.Samples.Core.csproj",

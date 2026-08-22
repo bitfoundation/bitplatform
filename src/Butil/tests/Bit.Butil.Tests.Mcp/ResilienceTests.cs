@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ModelContextProtocol.Client;
 using Bit.Butil.Tests.Mcp.Infrastructure;
 
@@ -17,11 +17,10 @@ namespace Bit.Butil.Tests.Mcp;
 /// single-threaded test and always shows up in production.
 /// </para>
 /// </summary>
-[TestFixture]
-[Parallelizable(ParallelScope.Self)]
+[TestClass]
 public class ResilienceTests : McpTestBase
 {
-    [Test]
+    [TestMethod]
     public async Task Concurrent_clients_get_the_same_answers()
     {
         // Six independent sessions asking at once, over the same stateless transport.
@@ -46,23 +45,23 @@ public class ResilienceTests : McpTestBase
 
         var answers = await Task.WhenAll(work);
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(answers.Select(answer => answer.Overview).Distinct().Count(), Is.EqualTo(1),
+            Assert.AreEqual(1, answers.Select(answer => answer.Overview).Distinct().Count(),
                 "Six concurrent sessions got different overviews.");
 
-            Assert.That(answers.Select(answer => answer.Page).Distinct().Count(), Is.EqualTo(1),
+            Assert.AreEqual(1, answers.Select(answer => answer.Page).Distinct().Count(),
                 "Six concurrent sessions got different renderings of the same page - the render cache is not answering consistently.");
 
             foreach (var answer in answers)
             {
-                Assert.That(answer.Page, Does.Not.Contain("could not be rendered on the server"));
-                Assert.That(answer.Search, Is.Not.Empty);
+                Assert.DoesNotContain("could not be rendered on the server", answer.Page);
+                Assert.IsNotEmpty(answer.Search);
             }
-        });
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task Rendering_several_different_pages_at_once_does_not_cross_them_over()
     {
         // A page is rendered outside the app's router, and its NavigationManager can only be
@@ -73,19 +72,19 @@ public class ResilienceTests : McpTestBase
         var pages = await Task.WhenAll(slugs.Select(async slug =>
             (Slug: slug, Text: Text(await CallAsync("GetButilDocsPage", new { slug })))));
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
             foreach (var (slug, text) in pages)
             {
-                Assert.That(text, Does.StartWith($"Bit.Butil documentation page: /{slug}"),
+                Assert.StartsWith($"Bit.Butil documentation page: /{slug}", text,
                     $"The answer for /{slug} is not the /{slug} page.");
 
-                Assert.That(text, Does.Not.Contain("could not be rendered"), $"/{slug} did not render under concurrency.");
+                Assert.DoesNotContain("could not be rendered", text, $"/{slug} did not render under concurrency.");
             }
-        });
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task The_same_question_twice_gives_the_same_answer()
     {
         // Every tool is annotated idempotent. A client is entitled to rely on that - it is what
@@ -110,11 +109,11 @@ public class ResilienceTests : McpTestBase
             var first = Text(await CallAsync(tool, arguments));
             var second = Text(await CallAsync(tool, arguments));
 
-            Assert.That(second, Is.EqualTo(first), $"{tool} answered differently the second time it was asked.");
+            Assert.AreEqual(first, second, $"{tool} answered differently the second time it was asked.");
         }
     }
 
-    [Test]
+    [TestMethod]
     public async Task A_cached_page_is_served_faster_than_it_was_rendered()
     {
         // Not a performance test - a cache-correctness one. Rendering a page and flattening it costs
@@ -130,15 +129,15 @@ public class ResilienceTests : McpTestBase
         var second = Text(await CallAsync("GetButilDocsPage", new { slug }));
         warm.Stop();
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(second, Is.EqualTo(first));
-            Assert.That(warm.Elapsed, Is.LessThanOrEqualTo(cold.Elapsed + TimeSpan.FromMilliseconds(50)),
+            Assert.AreEqual(first, second);
+            Assert.IsLessThanOrEqualTo(cold.Elapsed + TimeSpan.FromMilliseconds(50), warm.Elapsed,
                 $"The second render of /{slug} took {warm.ElapsedMilliseconds}ms against {cold.ElapsedMilliseconds}ms cold, so nothing was cached.");
-        });
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task A_cancelled_call_does_not_poison_what_comes_after_it()
     {
         // A client that gives up mid-render must not leave the server with a half-built cache entry
@@ -165,14 +164,14 @@ public class ResilienceTests : McpTestBase
 
         var text = Text(await CallAsync("GetButilDocsPage", new { slug = "web-authn" }));
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(text, Does.StartWith("Bit.Butil documentation page: /web-authn"));
-            Assert.That(text, Does.Not.Contain("could not be rendered"));
-        });
+            Assert.StartsWith("Bit.Butil documentation page: /web-authn", text);
+            Assert.DoesNotContain("could not be rendered", text);
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task A_fresh_session_needs_no_warm_up()
     {
         // The search index is built in the background from startup and nothing waits for it, so the
@@ -181,7 +180,7 @@ public class ResilienceTests : McpTestBase
         // fixture makes the call itself, before anything connects, and it is checked here.
         if (McpServerFixture.ColdSearch is { } cold)
         {
-            Assert.That(cold, Does.Contain("Clipboard"),
+            Assert.Contains("Clipboard", cold,
                 "The first search the server answered, made before any fixture connected, found nothing: the index needs warming up.");
         }
 
@@ -196,16 +195,16 @@ public class ResilienceTests : McpTestBase
 
         var result = await client.CallToolAsync("SearchButil", new Dictionary<string, object?> { ["query"] = "clipboard" }, cancellationToken: Ct);
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(result.IsError, Is.Not.True);
-            Assert.That(Text(result), Does.Contain("Clipboard"));
-        });
+            Assert.AreNotEqual(true, result.IsError);
+            Assert.Contains("Clipboard", Text(result));
+        }
 
         await transport.DisposeAsync();
     }
 
-    [Test]
+    [TestMethod]
     public async Task A_realistic_agent_session_completes_end_to_end()
     {
         // The workflow the prompts tell an agent to follow, run as one: search for a capability,
@@ -213,19 +212,19 @@ public class ResilienceTests : McpTestBase
         // working example. If any step hands the next one something it cannot use, this breaks.
         var search = await CallStructuredAsync<SearchResult>("SearchButil", new { query = "keep the screen awake while a video plays" });
 
-        Assert.That(search.Hits, Is.Not.Empty, search.Message);
+        Assert.IsNotEmpty(search.Hits, search.Message);
 
         var plan = await CallStructuredAsync<FeaturePlan>("PlanButilFeature", new { apis = "WakeLock" });
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(plan.Unknown, Is.Empty);
-            Assert.That(plan.RequiresSecureContext, Is.True, "A wake lock needs a secure context, and the plan is where an agent finds that out.");
-        });
+            Assert.IsEmpty(plan.Unknown);
+            Assert.IsTrue(plan.RequiresSecureContext, "A wake lock needs a secure context, and the plan is where an agent finds that out.");
+        }
 
         var inspection = (await CallStructuredAsync<FeaturePlan>("PlanButilFeature", new { apis = "WakeLock" })).Apis.Single();
 
-        Assert.That(inspection.NextCalls, Is.Not.Null.And.Not.Empty);
+        Assert.IsNotEmpty(inspection.NextCalls ?? []);
 
         // The inspection's own follow-up calls have to be callable verbatim, exactly like a search
         // hit's - an agent is told to make them next.
@@ -233,16 +232,16 @@ public class ResilienceTests : McpTestBase
         {
             var call = ToolCallReference.Parse(nextCall);
 
-            Assert.That(call, Is.Not.Null, $"'{nextCall}' is not a call an agent can make verbatim.");
-            Assert.That(ButilMcp.Tools.ContainsKey(call!.Tool), Is.True, $"'{nextCall}' names a tool that does not exist.");
+            Assert.IsNotNull(call, $"'{nextCall}' is not a call an agent can make verbatim.");
+            Assert.IsTrue(ButilMcp.Tools.ContainsKey(call!.Tool), $"'{nextCall}' names a tool that does not exist.");
 
             var answer = await CallAsync(call.Tool, call.Arguments);
 
-            Assert.That(Text(answer), Is.Not.Empty, $"'{nextCall}' answered with nothing.");
+            Assert.IsNotEmpty(Text(answer), $"'{nextCall}' answered with nothing.");
         }
 
         var example = Text(await CallAsync("GetButilSourceFile", new { path = "Demo/Client/Pages/WakeLockPage.razor" }));
 
-        Assert.That(example, Does.Contain("WakeLock"), "The page that documents an API is also the working example of it.");
+        Assert.Contains("WakeLock", example, "The page that documents an API is also the working example of it.");
     }
 }
