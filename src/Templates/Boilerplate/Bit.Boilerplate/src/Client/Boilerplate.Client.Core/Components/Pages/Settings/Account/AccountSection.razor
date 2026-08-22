@@ -1,7 +1,10 @@
 @inherits AppComponentBase
 
 <section>
-    <BitPivot Alignment="BitAlignment.Center" OverflowBehavior="BitPivotOverflowBehavior.Menu">
+    <BitPivot Alignment="BitAlignment.Center"
+              OverflowBehavior="BitPivotOverflowBehavior.Menu"
+              DefaultSelectedKey="@DefaultSelectedTab"
+              OverflowAriaLabel="@Localizer["More tabs"]">
         <BitPivotItem Key="@nameof(AppStrings.Passwordless)" HeaderText="@Localizer[nameof(AppStrings.Passwordless)]">
             <PasswordlessTab User="CurrentUser" />
         </BitPivotItem>

@@ -41,7 +41,13 @@ public partial class SessionsSection
 
             var userSessions = await userController.GetUserSessions(CurrentCancellationToken);
             otherSessions = userSessions.Where(s => s.Id != currentSessionId).ToArray();
-            currentSession = userSessions.Single(s => s.Id == currentSessionId);
+
+            currentSession = userSessions.SingleOrDefault(s => s.Id == currentSessionId);
+
+            if (currentSession is null)
+            {
+                SnackBarService.Warning(Localizer["This session is no longer valid. Please sign in again."]);
+            }
 
             maxPrivilegedSessionsCount = user.GetClaimValue<int>(AppClaimTypes.MAX_PRIVILEGED_SESSIONS);
             hasUnlimitedPrivilegedSessions = user.HasClaim(AppClaimTypes.MAX_PRIVILEGED_SESSIONS,
