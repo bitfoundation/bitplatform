@@ -27,7 +27,9 @@
             <BitButton AutoLoading IconOnly
                        IconName="@BitIconName.Refresh"
                        OnClick="WrapHandled(RefreshData)"
-                       IsEnabled="isLoadingRoles is false" />
+                       IsEnabled="isLoadingRoles is false"
+                       Title="@Localizer[nameof(AppStrings.Refresh)]"
+                       AriaLabel="@Localizer[nameof(AppStrings.Refresh)]" />
         </BitStack>
         <BitStack Horizontal Style="height:calc(100% - 49px)">
             <BitCard Class="roles-card page-card" NoShadow FullHeight>
@@ -140,6 +142,12 @@
                                 </BitStack>
                                 <BitBasicList Items="filteredUsers" Style="width:100%;height:100%">
                                     <RowTemplate Context="user">
+                                        @{
+                                            // The icon flips between add and remove, so the accessible name has to flip with it.
+                                            var userToggleLabel = Localizer[IsUserAssigned(user)
+                                                                            ? nameof(AppStrings.RemoveUserFromGroupTitle)
+                                                                            : nameof(AppStrings.AddUserToGroupTitle), user.DisplayName ?? ""];
+                                        }
                                         <BitStack Horizontal
                                                   Class="user-row"
                                                   title="@user.DisplayName"
@@ -150,7 +158,9 @@
                                             <BitSpacer />
                                             <BitButton AutoLoading IconOnly
                                                        OnClick="WrapHandled(() => ToggleUser(user))"
-                                                       IsEnabled="loadingRoleKey is null && selectedRoleItem is not null"
+                                                       IsEnabled="IsSelectedRoleLoaded"
+                                                       Title="@userToggleLabel"
+                                                       AriaLabel="@userToggleLabel"
                                                        IconName="@(IsUserAssigned(user) ? BitIconName.RemoveFrom : BitIconName.AddTo)" />
                                         </BitStack>
                                     </RowTemplate>
@@ -164,7 +174,14 @@
                                 Accent="BitColor.SecondaryBackground">
                             <ItemTemplate Context="item">
                                 @{
-                                    var isEnabled = loadingRoleKey is null && selectedRoleItem is not null;
+                                    var isEnabled = IsSelectedRoleLoaded;
+                                    // Two adjacent icon-only buttons meaning "revoke every feature in this group" and
+                                    // "grant every feature in this group" are indistinguishable without a name.
+                                    var featureToggleLabel = Localizer[IsFeatureAssigned(item)
+                                                                       ? nameof(AppStrings.RevokeFeatureTitle)
+                                                                       : nameof(AppStrings.GrantFeatureTitle), item.Text ?? ""];
+                                    var revokeGroupLabel = Localizer[nameof(AppStrings.RevokeAllGroupFeaturesTitle), item.Text ?? ""];
+                                    var grantGroupLabel = Localizer[nameof(AppStrings.GrantAllGroupFeaturesTitle), item.Text ?? ""];
                                 }
                                 <BitStack Horizontal VerticalAlign="BitAlignment.Center">
                                     <BitText Color="@((IsFeatureAssigned(item)) ? BitColor.PrimaryForeground : BitColor.TertiaryForeground)">
@@ -175,6 +192,8 @@
                                     {
                                         <BitButton AutoLoading IconOnly
                                                    IsEnabled="isEnabled"
+                                                   Title="@featureToggleLabel"
+                                                   AriaLabel="@featureToggleLabel"
                                                    OnClick="WrapHandled(() => ToggleFeature(item))"
                                                    IconName="@(IsFeatureAssigned(item) ? BitIconName.RemoveFrom : BitIconName.AddTo)" />
                                     }
@@ -184,12 +203,16 @@
                                             <BitButton AutoLoading IconOnly
                                                        IsEnabled="isEnabled"
                                                        Variant="BitVariant.Outline"
+                                                       Title="@revokeGroupLabel"
+                                                       AriaLabel="@revokeGroupLabel"
                                                        IconName="@(BitIconName.Blocked2Solid)"
                                                        OnClick="WrapHandled(() => DeleteFeatures(item))" />
 
                                             <BitButton AutoLoading IconOnly
                                                        IsEnabled="isEnabled"
                                                        Variant="BitVariant.Outline"
+                                                       Title="@grantGroupLabel"
+                                                       AriaLabel="@grantGroupLabel"
                                                        IconName="@(BitIconName.CircleAdditionSolid)"
                                                        OnClick="WrapHandled(() => AddFeatures(item))" />
                                         </BitStack>
@@ -205,10 +228,10 @@
                             <BitStack Horizontal VerticalAlign="BitAlignment.End">
                                 <BitNumberField @bind-Value="maxPrivilegedSessions"
                                                 Label="@Localizer[nameof(AppStrings.MaxPrevilegedSessions)]"
-                                                IsEnabled="loadingRoleKey is null && selectedRoleItem is not null" />
+                                                IsEnabled="IsSelectedRoleLoaded" />
                                 <BitButton AutoLoading
                                            OnClick="WrapHandled(SaveMaxPrivilegedSessions)"
-                                           IsEnabled="loadingRoleKey is null && selectedRoleItem is not null">
+                                           IsEnabled="IsSelectedRoleLoaded">
                                     @Localizer[nameof(AppStrings.Save)]
                                 </BitButton>
                             </BitStack>
@@ -219,6 +242,8 @@
                            Class="refresh-selected-btn"
                            IconName="@BitIconName.Refresh"
                            IsEnabled="selectedRoleItem is not null"
+                           Title="@Localizer[nameof(AppStrings.RefreshSelectedUserGroupTitle)]"
+                           AriaLabel="@Localizer[nameof(AppStrings.RefreshSelectedUserGroupTitle)]"
                            OnClick="WrapHandled(() => HandleOnSelectRole(selectedRoleItem))" />
             </BitCard>
         </BitStack>

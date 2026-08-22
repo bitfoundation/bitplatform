@@ -53,7 +53,7 @@ public partial class ChangeEmailTab
 
         if (sendModel.Email == Email)
         {
-            SnackBarService.Error(Localizer["That is already your email address. Enter a different one."]);
+            SnackBarService.Error(Localizer[nameof(AppStrings.SameEmailErrorMessage)]);
             return;
         }
 

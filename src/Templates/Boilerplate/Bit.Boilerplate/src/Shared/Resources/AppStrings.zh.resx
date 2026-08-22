@@ -1394,6 +1394,12 @@
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>写消息...</value>
   </data>
+    <data name="AiChatPanelMaximize" xml:space="preserve">
+    <value>最大化</value>
+  </data>
+  <data name="AiChatPanelRestore" xml:space="preserve">
+    <value>还原</value>
+  </data>
   <!--#endif -->
   <!--#if (ads == true) -->
   <data name="Upgrade" xml:space="preserve">
@@ -1603,7 +1609,72 @@
   <data name="ImageNotCarError" xml:space="preserve">
     <value>提供的图像不包含汽车。</value>
   </data>
-    <!--#if (multitenant == true) -->
+      <data name="AddUserToGroupTitle" xml:space="preserve">
+    <value>将 {0} 添加到此用户组</value>
+  </data>
+  <data name="RemoveUserFromGroupTitle" xml:space="preserve">
+    <value>将 {0} 从此用户组中移除</value>
+  </data>
+  <data name="GrantFeatureTitle" xml:space="preserve">
+    <value>授予 {0}</value>
+  </data>
+  <data name="RevokeFeatureTitle" xml:space="preserve">
+    <value>撤销 {0}</value>
+  </data>
+  <data name="GrantAllGroupFeaturesTitle" xml:space="preserve">
+    <value>授予所有 {0} 功能</value>
+  </data>
+  <data name="RevokeAllGroupFeaturesTitle" xml:space="preserve">
+    <value>撤销所有 {0} 功能</value>
+  </data>
+  <data name="RefreshSelectedUserGroupTitle" xml:space="preserve">
+    <value>刷新选定的用户组</value>
+  </data>
+  <data name="RefreshSelectedUserTitle" xml:space="preserve">
+    <value>刷新选定的用户</value>
+  </data>
+  <data name="NoMatchingUserSessionMessage" xml:space="preserve">
+    <value>没有与您的搜索匹配的会话。</value>
+  </data>
+  <data name="TfaVerificationCodeRequiredMessage" xml:space="preserve">
+    <value>请输入身份验证器应用中的 6 位验证码。</value>
+  </data>
+  <data name="TfaOpenInAuthenticatorAppTitle" xml:space="preserve">
+    <value>在身份验证器应用中打开此账户</value>
+  </data>
+  <data name="TfaQrCodeAlt" xml:space="preserve">
+    <value>用于设置身份验证器应用的二维码</value>
+  </data>
+  <data name="SessionNoLongerValidMessage" xml:space="preserve">
+    <value>此会话已失效，请重新登录。</value>
+  </data>
+  <data name="RevokeSessionTitle" xml:space="preserve">
+    <value>撤销此会话</value>
+  </data>
+  <data name="ImageMaxSizeErrorMessage" xml:space="preserve">
+    <value>图片大小不得超过 {0}。</value>
+  </data>
+  <data name="OnlyImageFilesAllowedErrorMessage" xml:space="preserve">
+    <value>只能使用图片文件</value>
+  </data>
+  <data name="SamePhoneNumberErrorMessage" xml:space="preserve">
+    <value>这已经是您的电话号码，请输入其他号码。</value>
+  </data>
+  <data name="SameEmailErrorMessage" xml:space="preserve">
+    <value>这已经是您的电子邮件地址，请输入其他地址。</value>
+  </data>
+  <data name="MoreTabsTitle" xml:space="preserve">
+    <value>更多选项卡</value>
+  </data>
+  <!--#if (signalR == true) -->
+  <data name="SignalRConnectionId" xml:space="preserve">
+    <value>SignalRConnectionId</value>
+  </data>
+  <data name="ReadUserSessionLogsTitle" xml:space="preserve">
+    <value>读取用户会话日志</value>
+  </data>
+  <!--#endif -->
+  <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>租户</value>
   </data>
@@ -1706,5 +1777,14 @@
     <data name="Inactive" xml:space="preserve">
     <value>未激活</value>
   </data>
-    <!--#endif-->
+      <data name="DeclineInvitation" xml:space="preserve">
+    <value>拒绝邀请</value>
+  </data>
+  <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
+    <value>拒绝加入 {0} 的邀请？此操作无法撤销 - 您需要新的邀请才能加入。</value>
+  </data>
+  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
+    <value>邀请已拒绝。</value>
+  </data>
+  <!--#endif-->
 </root>

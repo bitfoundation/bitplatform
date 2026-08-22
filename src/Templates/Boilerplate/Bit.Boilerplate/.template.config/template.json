@@ -614,7 +614,9 @@
                         "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
                         "src/Tests/Features/OpenApi/OpenApiParameterContractTests.cs",
                         "src/Tests/Features/Urls/WebAppUrlOriginHardeningTests.cs",
-                        "src/Tests/Features/RateLimiting/IdentityRateLimitTests.cs"
+                        "src/Tests/Features/RateLimiting/IdentityRateLimitTests.cs",
+                        "src/Tests/Features/Identity/RoleQuotaClaimLifecycleTests.cs",
+                        "src/Tests/Features/Tenants/TenantMembershipStateTests.cs"
                     ]
                 },
                 {
@@ -795,6 +797,7 @@
                         "src/Server/Boilerplate.Server.Api/Features/Identity/Services/AppRoleValidator.cs",
                         "src/Tests/Features/Tenants/TenantInvitationUITests.cs",
                         "src/Tests/Features/Tenants/TenantInvitationIsolationTests.cs",
+                        "src/Tests/Features/Tenants/TenantMembershipStateTests.cs",
                         "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
                         "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs",
                         "src/Tests/Features/Identity/PrivilegedSessionTenantSwitchTests.cs"

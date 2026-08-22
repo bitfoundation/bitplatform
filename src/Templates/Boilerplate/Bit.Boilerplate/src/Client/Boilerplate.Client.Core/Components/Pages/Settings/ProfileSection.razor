@@ -25,8 +25,8 @@
                            OnUploading="() => isUploading = true"
                            OnInvalid="HandleOnInvalid"
                            OnUploadFailed="HandleOnUploadFailed"
-                           MaxSizeErrorMessage="@Localizer["The image must be {0} or smaller.","10 MB"]"
-                           NotAllowedExtensionErrorMessage="@Localizer["Only image files can be used"]"
+                           MaxSizeErrorMessage="@Localizer[nameof(AppStrings.ImageMaxSizeErrorMessage),"10 MB"]"
+                           NotAllowedExtensionErrorMessage="@Localizer[nameof(AppStrings.OnlyImageFilesAllowedErrorMessage)]"
                            OnUploadComplete="WrapHandled(HandleOnUploadComplete)"
                            UploadRequestHttpHeadersProvider="WrapHandled(GetUploadRequestHeaders)">
                 <LabelTemplate>

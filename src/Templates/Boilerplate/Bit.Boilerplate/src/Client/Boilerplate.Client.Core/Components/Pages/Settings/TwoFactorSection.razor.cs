@@ -30,7 +30,7 @@ public partial class TwoFactorSection
     {
         if (string.IsNullOrWhiteSpace(verificationCode))
         {
-            SnackBarService.Error(Localizer["Enter the 6-digit code from your authenticator app."]);
+            SnackBarService.Error(Localizer[nameof(AppStrings.TfaVerificationCodeRequiredMessage)]);
             return;
         }
 

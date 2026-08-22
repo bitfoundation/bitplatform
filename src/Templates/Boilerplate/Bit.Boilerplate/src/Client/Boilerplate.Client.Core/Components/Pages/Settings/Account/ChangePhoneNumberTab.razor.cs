@@ -53,7 +53,7 @@ public partial class ChangePhoneNumberTab
 
         if (sendModel.PhoneNumber == PhoneNumber)
         {
-            SnackBarService.Error(Localizer["That is already your phone number. Enter a different one."]);
+            SnackBarService.Error(Localizer[nameof(AppStrings.SamePhoneNumberErrorMessage)]);
             return;
         }
 

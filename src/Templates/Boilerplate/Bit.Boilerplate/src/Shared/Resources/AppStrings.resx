@@ -1394,7 +1394,13 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>Write a message...</value>
   </data>
-    <!--#endif -->
+      <data name="AiChatPanelMaximize" xml:space="preserve">
+    <value>Maximize</value>
+  </data>
+  <data name="AiChatPanelRestore" xml:space="preserve">
+    <value>Restore</value>
+  </data>
+  <!--#endif -->
     <!--#if (ads == true) -->
     <data name="Upgrade" xml:space="preserve">
     <value>Upgrade</value>
@@ -1603,7 +1609,72 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="ImageNotCarError" xml:space="preserve">
     <value>The provided image does not contain a car.</value>
   </data>
-    <!--#if (multitenant == true) -->
+      <data name="AddUserToGroupTitle" xml:space="preserve">
+    <value>Add {0} to this user group</value>
+  </data>
+  <data name="RemoveUserFromGroupTitle" xml:space="preserve">
+    <value>Remove {0} from this user group</value>
+  </data>
+  <data name="GrantFeatureTitle" xml:space="preserve">
+    <value>Grant {0}</value>
+  </data>
+  <data name="RevokeFeatureTitle" xml:space="preserve">
+    <value>Revoke {0}</value>
+  </data>
+  <data name="GrantAllGroupFeaturesTitle" xml:space="preserve">
+    <value>Grant all {0} features</value>
+  </data>
+  <data name="RevokeAllGroupFeaturesTitle" xml:space="preserve">
+    <value>Revoke all {0} features</value>
+  </data>
+  <data name="RefreshSelectedUserGroupTitle" xml:space="preserve">
+    <value>Refresh the selected user group</value>
+  </data>
+  <data name="RefreshSelectedUserTitle" xml:space="preserve">
+    <value>Refresh the selected user</value>
+  </data>
+  <data name="NoMatchingUserSessionMessage" xml:space="preserve">
+    <value>No session matches your search.</value>
+  </data>
+  <data name="TfaVerificationCodeRequiredMessage" xml:space="preserve">
+    <value>Enter the 6-digit code from your authenticator app.</value>
+  </data>
+  <data name="TfaOpenInAuthenticatorAppTitle" xml:space="preserve">
+    <value>Open this account in your authenticator app</value>
+  </data>
+  <data name="TfaQrCodeAlt" xml:space="preserve">
+    <value>QR code for setting up your authenticator app</value>
+  </data>
+  <data name="SessionNoLongerValidMessage" xml:space="preserve">
+    <value>This session is no longer valid. Please sign in again.</value>
+  </data>
+  <data name="RevokeSessionTitle" xml:space="preserve">
+    <value>Revoke this session</value>
+  </data>
+  <data name="ImageMaxSizeErrorMessage" xml:space="preserve">
+    <value>The image must be {0} or smaller.</value>
+  </data>
+  <data name="OnlyImageFilesAllowedErrorMessage" xml:space="preserve">
+    <value>Only image files can be used</value>
+  </data>
+  <data name="SamePhoneNumberErrorMessage" xml:space="preserve">
+    <value>That is already your phone number. Enter a different one.</value>
+  </data>
+  <data name="SameEmailErrorMessage" xml:space="preserve">
+    <value>That is already your email address. Enter a different one.</value>
+  </data>
+  <data name="MoreTabsTitle" xml:space="preserve">
+    <value>More tabs</value>
+  </data>
+  <!--#if (signalR == true) -->
+  <data name="SignalRConnectionId" xml:space="preserve">
+    <value>SignalRConnectionId</value>
+  </data>
+  <data name="ReadUserSessionLogsTitle" xml:space="preserve">
+    <value>Read user session logs</value>
+  </data>
+  <!--#endif -->
+  <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>Tenant</value>
   </data>
@@ -1706,5 +1777,14 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="Inactive" xml:space="preserve">
     <value>Inactive</value>
   </data>
-    <!--#endif-->
+      <data name="DeclineInvitation" xml:space="preserve">
+    <value>Decline invitation</value>
+  </data>
+  <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
+    <value>Decline the invitation to {0}? This can't be undone - you'll need a new invitation to join.</value>
+  </data>
+  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
+    <value>Invitation declined.</value>
+  </data>
+  <!--#endif-->
 </root>

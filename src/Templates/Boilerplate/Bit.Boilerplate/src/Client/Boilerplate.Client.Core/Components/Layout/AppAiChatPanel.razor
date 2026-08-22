@@ -45,7 +45,7 @@
                            Color="BitColor.SecondaryBackground"
                            OnClick="() => isMaximized = !isMaximized"
                            IconName="@(isMaximized ? BitIconName.BackToWindow : BitIconName.FullScreen)"
-                           Title="@(isMaximized ? Localizer["Restore"] : Localizer["Maximize"])" />
+                           Title="@(isMaximized ? Localizer[nameof(AppStrings.AiChatPanelRestore)] : Localizer[nameof(AppStrings.AiChatPanelMaximize)])" />
             </BitStack>
         </Header>
         <Body>

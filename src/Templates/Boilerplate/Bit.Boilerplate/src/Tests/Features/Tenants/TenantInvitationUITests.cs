@@ -184,6 +184,10 @@ public partial class TenantInvitationUITests : AppPageTest
         // The Leave/Accept buttons carry icons whose glyphs leak into their accessible names, so match by substring.
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.LeaveTenant }).ClickAsync();
 
+        // Leaving is destructive, so it is confirmed before anything is sent - the elevated-access token is only
+        // requested after Yes. She has accepted this tenant, so the button and the dialog both read "leave", not "decline".
+        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Yes }).ClickAsync();
+
         // Leaving needs elevated access; she has none, so an elevated token is e-mailed (and dev-logged) and the OTP prompt appears.
         await page.Locator(".bit-otp-inp").First.WaitForAsync();
 

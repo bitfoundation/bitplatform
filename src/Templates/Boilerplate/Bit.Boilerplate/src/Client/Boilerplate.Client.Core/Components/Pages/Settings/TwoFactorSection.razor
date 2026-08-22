@@ -26,10 +26,10 @@
                 <li>
                     <BitStack FillContent>
                         @Localizer[nameof(AppStrings.TfaConfigureAutAppStep2)]
-                        <a href="@authenticatorUri" aria-label="@Localizer["Open this account in your authenticator app"]">
+                        <a href="@authenticatorUri" aria-label="@Localizer[nameof(AppStrings.TfaOpenInAuthenticatorAppTitle)]">
                             <img src="data:image/png;base64,@qrCode"
                                  style="width:256px"
-                                 alt="@Localizer["QR code for setting up your authenticator app"]" />
+                                 alt="@Localizer[nameof(AppStrings.TfaQrCodeAlt)]" />
                         </a>
                         <BitCard FullWidth>
                             <BitStack Horizontal VerticalAlign="BitAlignment.Center">

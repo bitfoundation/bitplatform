@@ -591,21 +591,24 @@ public partial class UserController : AppControllerBase, IUserController
             ? DbContext.Tenants.Where(t => t.IsActive)
             : DbContext.Tenants.Where(t => t.IsActive && t.Users.Any(tu => tu.UserId == userId));
 
-        // AcceptedOn is carried over from the current user's membership so the client can tell accepted tenants (Switch)
-        // apart from pending invitations (Accept). It stays null for tenants a global admin isn't a member of.
+        // The membership is carried over so the client can tell the three states apart: null = the caller has no
+        // membership at all (only reachable for a global admin, who is listed every active tenant), false = invited but
+        // not accepted yet (Accept), true = accepted (Switch). Collapsing "no membership" into false would put a Leave
+        // action on tenants the caller was never a member of, which the server can only answer with a 404.
         var tenants = await query
             .OrderBy(t => t.Name)
             .Select(t => new
             {
                 Tenant = t,
-                CurrentUserHasAcceptedThisTenantInvitation = t.Users.Where(tu => tu.UserId == userId).Select(tu => tu.AcceptedOn).FirstOrDefault()
+                IsMember = t.Users.Any(tu => tu.UserId == userId),
+                AcceptedOn = t.Users.Where(tu => tu.UserId == userId).Select(tu => tu.AcceptedOn).FirstOrDefault()
             })
             .ToListAsync(cancellationToken);
 
         return [.. tenants.Select(t =>
         {
             var dto = t.Tenant.Map();
-            dto.CurrentUserHasAcceptedThisTenantInvitation = t.CurrentUserHasAcceptedThisTenantInvitation is not null;
+            dto.CurrentUserHasAcceptedThisTenantInvitation = t.IsMember ? t.AcceptedOn is not null : null;
             return dto;
         })];
     }

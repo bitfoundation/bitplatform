@@ -1394,6 +1394,12 @@
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>اكتب رسالة...</value>
   </data>
+    <data name="AiChatPanelMaximize" xml:space="preserve">
+    <value>تكبير</value>
+  </data>
+  <data name="AiChatPanelRestore" xml:space="preserve">
+    <value>استعادة</value>
+  </data>
   <!--#endif -->
   <!--#if (ads == true) -->
   <data name="Upgrade" xml:space="preserve">
@@ -1603,7 +1609,72 @@
   <data name="ImageNotCarError" xml:space="preserve">
     <value>الصورة المقدمة لا تحتوي على سيارة.</value>
   </data>
-    <!--#if (multitenant == true) -->
+      <data name="AddUserToGroupTitle" xml:space="preserve">
+    <value>إضافة {0} إلى مجموعة المستخدمين هذه</value>
+  </data>
+  <data name="RemoveUserFromGroupTitle" xml:space="preserve">
+    <value>إزالة {0} من مجموعة المستخدمين هذه</value>
+  </data>
+  <data name="GrantFeatureTitle" xml:space="preserve">
+    <value>منح {0}</value>
+  </data>
+  <data name="RevokeFeatureTitle" xml:space="preserve">
+    <value>إلغاء {0}</value>
+  </data>
+  <data name="GrantAllGroupFeaturesTitle" xml:space="preserve">
+    <value>منح جميع خصائص {0}</value>
+  </data>
+  <data name="RevokeAllGroupFeaturesTitle" xml:space="preserve">
+    <value>إلغاء جميع خصائص {0}</value>
+  </data>
+  <data name="RefreshSelectedUserGroupTitle" xml:space="preserve">
+    <value>تحديث مجموعة المستخدمين المحددة</value>
+  </data>
+  <data name="RefreshSelectedUserTitle" xml:space="preserve">
+    <value>تحديث المستخدم المحدد</value>
+  </data>
+  <data name="NoMatchingUserSessionMessage" xml:space="preserve">
+    <value>لا توجد جلسة تطابق بحثك.</value>
+  </data>
+  <data name="TfaVerificationCodeRequiredMessage" xml:space="preserve">
+    <value>أدخل الرمز المكوّن من 6 أرقام من تطبيق المصادقة.</value>
+  </data>
+  <data name="TfaOpenInAuthenticatorAppTitle" xml:space="preserve">
+    <value>فتح هذا الحساب في تطبيق المصادقة</value>
+  </data>
+  <data name="TfaQrCodeAlt" xml:space="preserve">
+    <value>رمز QR لإعداد تطبيق المصادقة</value>
+  </data>
+  <data name="SessionNoLongerValidMessage" xml:space="preserve">
+    <value>لم تعد هذه الجلسة صالحة. يرجى تسجيل الدخول مرة أخرى.</value>
+  </data>
+  <data name="RevokeSessionTitle" xml:space="preserve">
+    <value>إلغاء هذه الجلسة</value>
+  </data>
+  <data name="ImageMaxSizeErrorMessage" xml:space="preserve">
+    <value>يجب ألا يزيد حجم الصورة عن {0}.</value>
+  </data>
+  <data name="OnlyImageFilesAllowedErrorMessage" xml:space="preserve">
+    <value>يمكن استخدام ملفات الصور فقط</value>
+  </data>
+  <data name="SamePhoneNumberErrorMessage" xml:space="preserve">
+    <value>هذا هو رقم هاتفك بالفعل. أدخل رقمًا مختلفًا.</value>
+  </data>
+  <data name="SameEmailErrorMessage" xml:space="preserve">
+    <value>هذا هو بريدك الإلكتروني بالفعل. أدخل بريدًا مختلفًا.</value>
+  </data>
+  <data name="MoreTabsTitle" xml:space="preserve">
+    <value>علامات تبويب أخرى</value>
+  </data>
+  <!--#if (signalR == true) -->
+  <data name="SignalRConnectionId" xml:space="preserve">
+    <value>SignalRConnectionId</value>
+  </data>
+  <data name="ReadUserSessionLogsTitle" xml:space="preserve">
+    <value>قراءة سجلات جلسة المستخدم</value>
+  </data>
+  <!--#endif -->
+  <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>المستأجر</value>
   </data>
@@ -1706,5 +1777,14 @@
     <data name="Inactive" xml:space="preserve">
     <value>غير نشط</value>
   </data>
-    <!--#endif-->
+      <data name="DeclineInvitation" xml:space="preserve">
+    <value>رفض الدعوة</value>
+  </data>
+  <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
+    <value>رفض الدعوة إلى {0}؟ لا يمكن التراجع عن هذا الإجراء - ستحتاج إلى دعوة جديدة للانضمام.</value>
+  </data>
+  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
+    <value>تم رفض الدعوة.</value>
+  </data>
+  <!--#endif-->
 </root>

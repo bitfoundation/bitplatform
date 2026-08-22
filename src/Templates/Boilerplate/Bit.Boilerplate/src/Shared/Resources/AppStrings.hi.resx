@@ -1394,6 +1394,12 @@
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>एक संदेश लिखें...</value>
   </data>
+    <data name="AiChatPanelMaximize" xml:space="preserve">
+    <value>बड़ा करें</value>
+  </data>
+  <data name="AiChatPanelRestore" xml:space="preserve">
+    <value>पुनर्स्थापित करें</value>
+  </data>
   <!--#endif -->
   <!--#if (ads == true) -->
   <data name="Upgrade" xml:space="preserve">
@@ -1603,7 +1609,72 @@
   <data name="ImageNotCarError" xml:space="preserve">
     <value>प्रदान की गई छवि में कार नहीं है।</value>
   </data>
-    <!--#if (multitenant == true) -->
+      <data name="AddUserToGroupTitle" xml:space="preserve">
+    <value>{0} को इस उपयोगकर्ता समूह में जोड़ें</value>
+  </data>
+  <data name="RemoveUserFromGroupTitle" xml:space="preserve">
+    <value>{0} को इस उपयोगकर्ता समूह से हटाएं</value>
+  </data>
+  <data name="GrantFeatureTitle" xml:space="preserve">
+    <value>{0} प्रदान करें</value>
+  </data>
+  <data name="RevokeFeatureTitle" xml:space="preserve">
+    <value>{0} रद्द करें</value>
+  </data>
+  <data name="GrantAllGroupFeaturesTitle" xml:space="preserve">
+    <value>{0} की सभी सुविधाएं प्रदान करें</value>
+  </data>
+  <data name="RevokeAllGroupFeaturesTitle" xml:space="preserve">
+    <value>{0} की सभी सुविधाएं रद्द करें</value>
+  </data>
+  <data name="RefreshSelectedUserGroupTitle" xml:space="preserve">
+    <value>चयनित उपयोगकर्ता समूह को रीफ़्रेश करें</value>
+  </data>
+  <data name="RefreshSelectedUserTitle" xml:space="preserve">
+    <value>चयनित उपयोगकर्ता को रीफ़्रेश करें</value>
+  </data>
+  <data name="NoMatchingUserSessionMessage" xml:space="preserve">
+    <value>आपकी खोज से कोई सत्र मेल नहीं खाता।</value>
+  </data>
+  <data name="TfaVerificationCodeRequiredMessage" xml:space="preserve">
+    <value>अपने प्रमाणक ऐप से 6 अंकों का कोड दर्ज करें।</value>
+  </data>
+  <data name="TfaOpenInAuthenticatorAppTitle" xml:space="preserve">
+    <value>इस खाते को अपने प्रमाणक ऐप में खोलें</value>
+  </data>
+  <data name="TfaQrCodeAlt" xml:space="preserve">
+    <value>आपके प्रमाणक ऐप को सेट करने के लिए QR कोड</value>
+  </data>
+  <data name="SessionNoLongerValidMessage" xml:space="preserve">
+    <value>यह सत्र अब मान्य नहीं है। कृपया फिर से साइन इन करें।</value>
+  </data>
+  <data name="RevokeSessionTitle" xml:space="preserve">
+    <value>इस सत्र को रद्द करें</value>
+  </data>
+  <data name="ImageMaxSizeErrorMessage" xml:space="preserve">
+    <value>छवि {0} या उससे छोटी होनी चाहिए।</value>
+  </data>
+  <data name="OnlyImageFilesAllowedErrorMessage" xml:space="preserve">
+    <value>केवल छवि फ़ाइलों का उपयोग किया जा सकता है</value>
+  </data>
+  <data name="SamePhoneNumberErrorMessage" xml:space="preserve">
+    <value>यह पहले से ही आपका फ़ोन नंबर है। कोई दूसरा दर्ज करें।</value>
+  </data>
+  <data name="SameEmailErrorMessage" xml:space="preserve">
+    <value>यह पहले से ही आपका ईमेल पता है। कोई दूसरा दर्ज करें।</value>
+  </data>
+  <data name="MoreTabsTitle" xml:space="preserve">
+    <value>और टैब</value>
+  </data>
+  <!--#if (signalR == true) -->
+  <data name="SignalRConnectionId" xml:space="preserve">
+    <value>SignalRConnectionId</value>
+  </data>
+  <data name="ReadUserSessionLogsTitle" xml:space="preserve">
+    <value>उपयोगकर्ता सत्र लॉग पढ़ें</value>
+  </data>
+  <!--#endif -->
+  <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>टेनेंट</value>
   </data>
@@ -1706,5 +1777,14 @@
     <data name="Inactive" xml:space="preserve">
     <value>निष्क्रिय</value>
   </data>
-    <!--#endif-->
+      <data name="DeclineInvitation" xml:space="preserve">
+    <value>निमंत्रण अस्वीकार करें</value>
+  </data>
+  <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
+    <value>{0} का निमंत्रण अस्वीकार करें? इसे पूर्ववत नहीं किया जा सकता - शामिल होने के लिए आपको नए निमंत्रण की आवश्यकता होगी।</value>
+  </data>
+  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
+    <value>निमंत्रण अस्वीकार कर दिया गया।</value>
+  </data>
+  <!--#endif-->
 </root>

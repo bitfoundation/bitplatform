@@ -4,7 +4,7 @@
     <BitPivot Alignment="BitAlignment.Center"
               OverflowBehavior="BitPivotOverflowBehavior.Menu"
               DefaultSelectedKey="@DefaultSelectedTab"
-              OverflowAriaLabel="@Localizer["More tabs"]">
+              OverflowAriaLabel="@Localizer[nameof(AppStrings.MoreTabsTitle)]">
         <BitPivotItem Key="@nameof(AppStrings.Passwordless)" HeaderText="@Localizer[nameof(AppStrings.Passwordless)]">
             <PasswordlessTab User="CurrentUser" />
         </BitPivotItem>
