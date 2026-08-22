@@ -199,11 +199,14 @@ public partial class ManageMyTenantsPage
             await userController.LeaveTenant(tenant.Id, CurrentCancellationToken);
 
             // Refreshing the token makes the server re-evaluate the tenant claim (falling back to another accepted tenant or none).
-            await AuthManager.RefreshToken(requestedBy: "LeaveTenant");
+            var accessToken = await AuthManager.RefreshToken(requestedBy: "LeaveTenant");
 
-            SnackBarService.Success(wasDecliningInvitation
-                                    ? Localizer[nameof(AppStrings.DeclinedInvitationSuccessfullyMessage)]
-                                    : Localizer[nameof(AppStrings.LeftTenantSuccessfullyMessage)]);
+            if (string.IsNullOrEmpty(accessToken) is false)
+            {
+                SnackBarService.Success(wasDecliningInvitation
+                                        ? Localizer[nameof(AppStrings.DeclinedInvitationSuccessfullyMessage)]
+                                        : Localizer[nameof(AppStrings.LeftTenantSuccessfullyMessage)]);
+            }
 
             await Refresh();
         }

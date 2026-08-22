@@ -64,6 +64,8 @@ public partial class UsersPage
                 await previousCts.TryCancel();
             }
 
+            loadingUserKey = null;
+
             allUsers = await userManagementController.GetAllUsers(CurrentCancellationToken);
 
             SearchUsers();
