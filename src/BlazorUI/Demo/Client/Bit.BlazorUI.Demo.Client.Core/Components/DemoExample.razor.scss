@@ -55,7 +55,7 @@
 // the page behind it.
 .example-container {
     overflow: auto;
-    padding: 1rem;
+    // padding: rem2(24px);
     // background-color: $bit-color-background-primary;
 
     @include lt-lg {

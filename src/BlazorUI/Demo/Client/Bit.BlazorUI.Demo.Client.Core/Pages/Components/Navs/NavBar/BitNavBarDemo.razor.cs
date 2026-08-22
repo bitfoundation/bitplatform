@@ -103,6 +103,15 @@ public partial class BitNavBarDemo
         },
         new()
         {
+            Name = "Indicator",
+            Type = "BitNavBarIndicator?",
+            DefaultValue = "null",
+            Description = "The shape of the indicator that marks the selected item: a line along the edge of the item, or the pill a Material navigation bar draws behind the icon of its current destination. While it is not set, the selection is conveyed by the color of the item and by the fill the Accent gives it.",
+            LinkType = LinkType.Link,
+            Href = "#indicator-enum",
+        },
+        new()
+        {
             Name = "InlineText",
             Type = "bool",
             DefaultValue = "false",
@@ -123,6 +132,15 @@ public partial class BitNavBarDemo
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
             Description = "Used to customize how content inside the item is rendered."
+        },
+        new()
+        {
+            Name = "ItemTemplateRenderMode",
+            Type = "BitNavItemTemplateRenderMode",
+            DefaultValue = "BitNavItemTemplateRenderMode.Normal",
+            Description = "Whether the ItemTemplate is rendered inside the anchor (or the button) each item is, or replaces it altogether, which is what items that are controls of their own need, since an interactive element cannot be nested in another one. Replaced items are left out of the keyboard navigation of the navbar, and whatever they render owns its own clicks, its own focus and its own accessible name.",
+            LinkType = LinkType.Link,
+            Href = "#template-render-mode-enum",
         },
         new()
         {
@@ -193,10 +211,24 @@ public partial class BitNavBarDemo
         },
         new()
         {
+            Name = "Scrollable",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lets the items scroll along the navbar instead of being squeezed into it, which is what a bar (or a rail) holding more destinations than it has room for needs. The scrollbar itself is hidden, the items keep the size of their own content, and the selected one is scrolled into view as the selection moves."
+        },
+        new()
+        {
             Name = "SelectedItem",
             Type = "TItem?",
             DefaultValue = "null",
             Description = "Selected item to show in the navbar. Supports two-way binding."
+        },
+        new()
+        {
+            Name = "SelectOnFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Selects an item as soon as the focus reaches it, so walking the navbar with the arrow keys switches the selection along with it, the way the tabs of a tab list do. It only applies to the Manual mode, where the selection is the navbar's own."
         },
         new()
         {
@@ -246,6 +278,12 @@ public partial class BitNavBarDemo
             Name = "FocusItem",
             Type = "Func<TItem, ValueTask>",
             Description = "Moves the focus to an item of the navbar.",
+        },
+        new()
+        {
+            Name = "ScrollItemIntoView",
+            Type = "Func<TItem, ValueTask>",
+            Description = "Brings an item into the visible area of a Scrollable navbar, without selecting it or moving the focus onto it. It is a no-op on a navbar that does not scroll.",
         },
         new()
         {
@@ -396,6 +434,15 @@ public partial class BitNavBarDemo
                    Type = "RenderFragment<BitNavBarItem>?",
                    DefaultValue = "null",
                    Description = "The custom template for the navbar item to render.",
+               },
+               new()
+               {
+                   Name = "TemplateRenderMode",
+                   Type = "BitNavItemTemplateRenderMode",
+                   DefaultValue = "BitNavItemTemplateRenderMode.Normal",
+                   Description = "Whether the Template of the navbar item is rendered inside the anchor (or the button) the item is, or replaces it altogether, which is what an item that is a control of its own needs, since an interactive element cannot be nested in another one. A replaced item is left out of the keyboard navigation of the navbar.",
+                   LinkType = LinkType.Link,
+                   Href = "#template-render-mode-enum",
                },
                new()
                {
@@ -562,6 +609,15 @@ public partial class BitNavBarDemo
                },
                new()
                {
+                   Name = "TemplateRenderMode",
+                   Type = "BitNavItemTemplateRenderMode",
+                   DefaultValue = "BitNavItemTemplateRenderMode.Normal",
+                   Description = "Whether the Template of the navbar option is rendered inside the anchor (or the button) the option is, or replaces it altogether, which is what an option that is a control of its own needs, since an interactive element cannot be nested in another one. A replaced option is left out of the keyboard navigation of the navbar.",
+                   LinkType = LinkType.Link,
+                   Href = "#template-render-mode-enum",
+               },
+               new()
+               {
                    Name = "Text",
                    Type = "string?",
                    DefaultValue = "null",
@@ -720,6 +776,15 @@ public partial class BitNavBarDemo
                    Type = "BitNameSelectorPair<TItem, RenderFragment<TItem>?>",
                    DefaultValue = "new(nameof(BitNavBarItem.Template))",
                    Description = "The Template field name and selector of the custom input class."
+               },
+               new()
+               {
+                   Name = "TemplateRenderMode",
+                   Type = "BitNameSelectorPair<TItem, BitNavItemTemplateRenderMode?>",
+                   DefaultValue = "new(nameof(BitNavBarItem.TemplateRenderMode))",
+                   Description = "The TemplateRenderMode field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#template-render-mode-enum",
                },
                new()
                {
@@ -926,6 +991,27 @@ public partial class BitNavBarDemo
                 new() { Name = "Date", Description = "Represents the current date within a collection of dates.", Value = "3" },
                 new() { Name = "Time", Description = "Represents the current time within a set of times.", Value = "4" },
                 new() { Name = "True", Description = "Represents the current item within a set.", Value = "5" }
+            ]
+        },
+        new()
+        {
+            Id = "template-render-mode-enum",
+            Name = "BitNavItemTemplateRenderMode",
+            Items =
+            [
+                new() { Name = "Normal", Description = "Renders the template inside the anchor (or the button) the item is, so the item keeps its click, its focus and its place in the keyboard navigation of the navbar.", Value = "0" },
+                new() { Name = "Replace", Description = "Replaces the anchor (or the button) the item is with the template, which is what an item that is a control of its own needs. The template owns its clicks, its focus and its accessible name, and the item is left out of the keyboard navigation of the navbar.", Value = "1" }
+            ]
+        },
+        new()
+        {
+            Id = "indicator-enum",
+            Name = "BitNavBarIndicator",
+            Items =
+            [
+                new() { Name = "None", Description = "No indicator of its own: the selection is conveyed by the color of the item and, while an Accent is set, by the fill of the item.", Value = "0" },
+                new() { Name = "Line", Description = "A line drawn along the edge of the selected item: its bottom edge in a horizontal navbar and its leading edge in a vertical rail, the way a tab strip marks its current tab.", Value = "1" },
+                new() { Name = "Pill", Description = "A pill drawn behind the icon of the selected item, which is how a Material navigation bar marks its current destination. It takes the fill off the item itself, so the pill is the only filled part.", Value = "2" }
             ]
         },
         new()

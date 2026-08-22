@@ -264,6 +264,35 @@
     }
 }
 
+// The items keep the size of their own content and the list scrolls along its own axis instead, which is
+// what a bar (or a rail) holding more destinations than it has room for needs. The scrollbar itself is
+// hidden: the bar is moved by its selection, its keyboard and a swipe rather than by dragging a bar around.
+.bit-nbr-scr {
+    > .bit-nbr-cnt {
+        overflow: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        scroll-behavior: smooth;
+        justify-content: flex-start;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
+    // A squeezed item would defeat the scrolling, so an item only ever grows into the room it is given (which
+    // is what Justified asks for) and never shrinks below what its own content needs.
+    .bit-nbr-lit {
+        flex-shrink: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bit-nbr-scr > .bit-nbr-cnt {
+        scroll-behavior: auto;
+    }
+}
+
 .bit-nbr-vrt {
     // A rail runs down the screen, so its header, its items and its footer stack in the same direction.
     flex-direction: column;
@@ -307,6 +336,63 @@
     background-color: var(--bit-nbr-clr-acc-active, transparent);
 }
 
+// The line runs along the edge of the selected item - the bottom edge across a bar, the leading edge down a
+// rail - which is how a tab strip marks its current tab. It is drawn on the item itself rather than on a
+// wrapper of its own, so a templated item carries it exactly like a default one does.
+.bit-nbr-lin {
+    .bit-nbr-itm {
+        position: relative;
+    }
+
+    .bit-nbr-sel::after {
+        content: "";
+        position: absolute;
+        inset-inline: 0;
+        inset-block-end: 0;
+        block-size: $siz-tab-indicator;
+        border-radius: $shp-radius-full;
+        background-color: var(--bit-nbr-clr-ind, currentColor);
+    }
+
+    &.bit-nbr-vrt .bit-nbr-sel::after {
+        inset-block: 0;
+        inset-inline: 0 auto;
+        inline-size: $siz-tab-indicator;
+        block-size: auto;
+    }
+}
+
+// The pill sits behind the icon of the selected item, which is how a navigation bar of the Material family
+// marks its current destination. It is the filled part in that mode, so the fill of the item itself is
+// dropped: an item filled underneath the pill would swallow it. An item with nothing to draw the pill on
+// (neither an icon nor a badge) keeps the fill instead, so its selection is not left to its color alone.
+.bit-nbr-pil {
+    .bit-nbr-icc {
+        padding: spacing(0.25) spacing(1.5);
+        border-radius: $shp-radius-full;
+        transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
+    }
+
+    @media (hover: hover) {
+        .bit-nbr-itm:hover {
+            background-color: transparent;
+
+            .bit-nbr-icc {
+                background-color: var(--bit-nbr-clr-acc-hover, transparent);
+            }
+        }
+    }
+
+    .bit-nbr-sel:has(.bit-nbr-icc) {
+        background-color: transparent;
+    }
+
+    .bit-nbr-sel .bit-nbr-icc {
+        color: var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr));
+        background-color: var(--bit-nbr-clr-acc-active, #{$clr-bg-ter});
+    }
+}
+
 .bit-nbr-dis {
     color: var(--bit-nbr-clr-dis, var(--bit-nbr-clr, currentColor));
     pointer-events: none;
@@ -345,6 +431,15 @@
         background-color: transparent;
     }
 
+    .bit-nbr-lin .bit-nbr-sel::after {
+        background-color: Highlight;
+    }
+
+    .bit-nbr-pil .bit-nbr-sel .bit-nbr-icc {
+        color: HighlightText;
+        background-color: Highlight;
+    }
+
     .bit-nbr-dis {
         color: GrayText;
     }
@@ -360,6 +455,7 @@
 @each $role, $tokens in $bit-color-roles {
     .bit-nbr-#{$role} {
         --bit-nbr-clr: #{role($tokens, main)};
+        --bit-nbr-clr-ind: #{role($tokens, main)};
         --bit-nbr-clr-dis: #{role($tokens, dis-text)};
         --bit-nbr-clr-fcs: #{role($tokens, focus)};
     }
@@ -378,6 +474,11 @@
             // A semantic accent covers the item with a vivid fill, which the Color role is not meant to
             // sit on, so the whole content of the item moves to the accent's on-color.
             --bit-nbr-clr-acc-text: #{role($tokens, on)};
+
+            // The indicator follows the accent as well while that accent has a color of its own to be
+            // drawn in; a surface accent is a background tint, which would leave the line invisible, so
+            // that one keeps the indicator on the Color role.
+            --bit-nbr-clr-ind: #{role($tokens, main)};
         }
         @else {
             // A surface accent only tints the item's background, so the content stays on the Color role,

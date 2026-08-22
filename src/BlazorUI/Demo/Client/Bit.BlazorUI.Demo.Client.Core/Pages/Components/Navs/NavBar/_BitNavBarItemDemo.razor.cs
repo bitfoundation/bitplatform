@@ -73,6 +73,21 @@ public partial class _BitNavBarItemDemo
         new() { Text = "Alerts", IconName = BitIconName.Ringer, SelectedIconName = BitIconName.RingerSolid },
         new() { Text = "Favorites", IconName = BitIconName.Heart, SelectedIconName = BitIconName.HeartFill },
     ];
+    // A bar with more destinations than it fits, which is what the Scrollable example is about.
+    private static readonly List<BitNavBarItem> scrollableNavBarItems =
+    [
+        new() { Text = "Home", IconName = BitIconName.Home },
+        new() { Text = "Products", IconName = BitIconName.ProductVariant },
+        new() { Text = "Academy", IconName = BitIconName.LearningTools },
+        new() { Text = "Inbox", IconName = BitIconName.Mail },
+        new() { Text = "Alerts", IconName = BitIconName.Ringer },
+        new() { Text = "Favorites", IconName = BitIconName.Heart },
+        new() { Text = "Reports", IconName = BitIconName.ReportDocument },
+        new() { Text = "Settings", IconName = BitIconName.Settings },
+        new() { Text = "Support", IconName = BitIconName.Help },
+        new() { Text = "Profile", IconName = BitIconName.Contact },
+    ];
+
 
     private static readonly List<BitNavBarItem> styleClassItems =
     [
@@ -129,6 +144,7 @@ public partial class _BitNavBarItemDemo
     private bool reselectable = true;
     private BitNavBarItem selectedItem = basicNavBarItems[0];
     private BitNavBarItem twoWaySelectedItem = basicNavBarItems[0];
+    private BitNavBarItem? scrollableSelectedItem;
     private BitNavBarItem? eventsClickedItem;
     private BitNavBarItem? eventsSelectedItem;
     private BitNavBarItem advancedSelectedItem = basicNavBarItems[1];

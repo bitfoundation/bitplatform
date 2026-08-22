@@ -91,6 +91,14 @@ public partial class BitNavBar<TItem>
     public bool IconOnly { get; set; }
 
     /// <summary>
+    /// The shape of the indicator that marks the selected item: a line along the edge of the item, or the
+    /// pill a Material navigation bar draws behind the icon of its current destination. While it is not set,
+    /// the selection is conveyed by the color of the item and by the fill the <see cref="Accent"/> gives it.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitNavBarIndicator? Indicator { get; set; }
+
+    /// <summary>
     /// Renders the icon and the text of each item side by side instead of stacking the text under the icon.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -113,6 +121,15 @@ public partial class BitNavBar<TItem>
     /// Used to customize how content inside the item is rendered.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
+
+    /// <summary>
+    /// Whether the <see cref="ItemTemplate"/> is rendered inside the anchor (or the button) each item is, or
+    /// replaces it altogether, which is what items that are controls of their own need, since an interactive
+    /// element cannot be nested in another one. Replaced items are left out of the keyboard navigation of the
+    /// navbar, and whatever they render owns its own clicks, its own focus and its own accessible name.
+    /// The mode of an item applies to the template of that item, and this one to the navbar's own template.
+    /// </summary>
+    [Parameter] public BitNavItemTemplateRenderMode ItemTemplateRenderMode { get; set; }
 
     /// <summary>
     /// Modifies how the URL of an item is matched against the current URL in the automatic mode.
@@ -166,11 +183,27 @@ public partial class BitNavBar<TItem>
     public bool SafeArea { get; set; }
 
     /// <summary>
+    /// Lets the items scroll along the navbar instead of being squeezed into it, which is what a bar (or a
+    /// rail) holding more destinations than it has room for needs. The scrollbar itself is hidden, the items
+    /// keep the size of their own content, and the selected one is scrolled into view as the selection moves.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Scrollable { get; set; }
+
+    /// <summary>
     /// Selected item to show in the navbar.
     /// </summary>
     [Parameter, TwoWayBound]
     [CallOnSet(nameof(OnSetSelectedItem))]
     public TItem? SelectedItem { get; set; }
+
+    /// <summary>
+    /// Selects an item as soon as the focus reaches it, so walking the navbar with the arrow keys switches
+    /// the selection along with it, the way the tabs of a tab list do. It only applies to the
+    /// <see cref="BitNavMode.Manual"/> mode, where the selection is the navbar's own; in the automatic mode
+    /// the current URL is what selects an item.
+    /// </summary>
+    [Parameter] public bool SelectOnFocus { get; set; }
 
     /// <summary>
     /// Takes the navbar out of the tab sequence as a single stop: only the selected item (or the first one,

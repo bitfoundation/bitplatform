@@ -36,6 +36,40 @@ namespace BitBlazorUI {
             }, { capture: true });
         }
 
+        // Keeps the selected item inside the visible area of a scrolling navbar. Element.scrollIntoView is
+        // deliberately not used here: it scrolls every scrollable ancestor of the item, so bringing a
+        // destination into view would drag the page the bar sits on along with it.
+        // The item is only handed over when the caller has one in mind (the public ScrollItemIntoView);
+        // the selected one is looked up in the DOM instead, so the scroll never depends on an element
+        // reference the navbar may not have been handed yet when the selection first lands.
+        public static scrollItemIntoView(containerId: string, item?: HTMLElement | null) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const target = item ?? container.querySelector('.bit-nbr-sel') as HTMLElement | null;
+            if (!target) return;
+
+            try {
+                const containerRect = container.getBoundingClientRect();
+                const itemRect = target.getBoundingClientRect();
+
+                // A rail scrolls down its own length and a bar across it, and only one of the two axes ever
+                // overflows, so each is corrected on its own and the other one stays where it is.
+                if (itemRect.top < containerRect.top) {
+                    container.scrollTop -= (containerRect.top - itemRect.top);
+                } else if (itemRect.bottom > containerRect.bottom) {
+                    container.scrollTop += (itemRect.bottom - containerRect.bottom);
+                }
+
+                if (itemRect.left < containerRect.left) {
+                    container.scrollLeft -= (containerRect.left - itemRect.left);
+                } else if (itemRect.right > containerRect.right) {
+                    container.scrollLeft += (itemRect.right - containerRect.right);
+                }
+            } catch (e) { console.error('BitBlazorUI.NavBar.scrollItemIntoView:', e); }
+        }
+
+
         private static isEditable(element: HTMLElement): boolean {
             if (element.isContentEditable) return true;
 

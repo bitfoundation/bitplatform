@@ -12,6 +12,7 @@ public class MenuItem
     public string? Link { get; set; }
     public IEnumerable<string>? ExtraLinks { get; set; }
     public BitNavMatch? Matching { get; set; }
+    public BitNavItemTemplateRenderMode FragmentRenderMode { get; set; }
     public string? Counter { get; set; }
     public string? CounterLabel { get; set; }
     public bool Marker { get; set; }

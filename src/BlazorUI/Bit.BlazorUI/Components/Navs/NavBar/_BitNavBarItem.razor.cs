@@ -5,6 +5,7 @@ namespace Bit.BlazorUI;
 public partial class _BitNavBarItem<TItem> : IDisposable where TItem : class
 {
     private bool _disposed;
+    private bool _replaced;
     private TItem? _registeredItem;
     private _BitNavBarChild? _child;
     private ElementReference _registeredElement;
@@ -19,9 +20,16 @@ public partial class _BitNavBarItem<TItem> : IDisposable where TItem : class
 
     protected override void OnAfterRender(bool firstRender)
     {
+        // An item rendered by a template of its own in the Replace mode has no anchor or button of the
+        // navbar's to hand over, so the registration it used to hold (while it was rendered normally) is
+        // dropped instead of being left pointing at an element that is gone.
+        if (_replaced)
+        {
+            DropItemElement();
+        }
         // The navbar moves the focus between its items from the keyboard, so every item hands over the
         // anchor or the button it rendered.
-        if (_child is not null)
+        else if (_child is not null)
         {
             RegisterItemElement(_child.Element);
         }
@@ -49,6 +57,16 @@ public partial class _BitNavBarItem<TItem> : IDisposable where TItem : class
         NavBar.RegisterItemElement(Item, element);
     }
 
+    private void DropItemElement()
+    {
+        if (_registeredItem is null) return;
+
+        NavBar?.UnregisterItemElement(_registeredItem, _registeredElement);
+
+        _registeredItem = null;
+        _registeredElement = default;
+    }
+
 
 
     // Method group (not a closure) so the EventCallback stays delegate-equal across renders and the DOM
@@ -59,9 +77,9 @@ public partial class _BitNavBarItem<TItem> : IDisposable where TItem : class
         return NavBar is null ? Task.CompletedTask : NavBar.HandleOnClick(Item);
     }
 
-    private void HandleOnFocusIn()
+    private Task HandleOnFocusIn()
     {
-        NavBar?.SetFocusedItem(Item);
+        return NavBar is null ? Task.CompletedTask : NavBar.HandleOnFocusIn(Item);
     }
 
     private Task HandleOnKeyDown(KeyboardEventArgs e)

@@ -184,7 +184,8 @@
         over the full width of its container. Without either one the navbar takes the width its container
         gives it. Those two size the bar; <b>Justified</b> sizes the items inside it, giving each one an equal
         share instead of the width of its own label, which is how a navigation bar keeps its destinations on
-        a predictable grid.
+        a predictable grid, and <b>Scrollable</b> is the other answer to a bar that runs out of
+        room: it leaves the items at the size of their own content and scrolls them instead.
     </div>
     <br /><br />
     <div>FitWidth:</div><br />
@@ -241,7 +242,8 @@
     <div>
         <b>Accent</b> fills the hovered and the selected item with a color, which gives the selection an
         indicator of its own instead of leaving it to the text color alone. A semantic accent moves the whole
-        content of the item onto its on-color, while a surface accent only tints the background.
+        content of the item onto its on-color, while a surface accent only tints the background. The
+        accent colors the <b>Indicator</b> as well, when the navbar carries one.
     </div>
     <br /><br />
     <div>Primary:</div><br />
@@ -280,7 +282,13 @@
 <DemoExample Title="Templates" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
     <div>
         <b>ItemTemplate</b> replaces the content of every item of the navbar, and the <b>Template</b> selector
-        replaces the content of a single item and wins over the navbar's template.
+        replaces the content of a single item and wins over the navbar's template. Either one renders inside
+        the anchor (or the button) the item is; the <b>TemplateRenderMode</b> selector of an item (and
+        <b>ItemTemplateRenderMode</b> of the navbar, for its own template) set to <b>Replace</b> has the
+        template render that element itself instead, which is what an item that is a control of its own
+        &mdash; the center action of a mobile bar &mdash; needs, since an interactive element cannot be
+        nested in another one. A replaced item owns its clicks, its focus and its accessible name, and is
+        left out of the keyboard navigation of the bar.
     </div>
     <br /><br />
     <div>ItemTemplate:</div><br />
@@ -301,6 +309,18 @@
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName },
                                             Template = { Selector = item => item.Fragment } })" />
+    </div>
+    <br /><br /><br /><br />
+    <div>Replaced item template:</div><br />
+    <div class="container">
+        <BitNavBar Justified
+                   Mode="BitNavMode.Manual"
+                   Items="replacedTemplateNavBarCustoms"
+                   DefaultSelectedItem="replacedTemplateNavBarCustoms[0]"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName },
+                                            Template = { Selector = item => item.Fragment },
+                                            TemplateRenderMode = { Selector = item => item.FragmentRenderMode } })" />
     </div>
 </DemoExample>
 
@@ -383,7 +403,9 @@
         whole bar is a single stop that lands on the selected item, and the rest are reached from there.
         In both modes the arrow keys of either axis, <b>Home</b> and <b>End</b> move the focus along the bar,
         the horizontal pair flipping in RTL, and a disabled item is skipped. The focus stops at both ends;
-        <b>WrapNavigation</b> lets it wrap around from the last item to the first one and back.
+        <b>WrapNavigation</b> lets it wrap around from the last item to the first one and back, and
+        <b>SelectOnFocus</b> moves the selection along with the focus in the <b>Manual</b> mode, the way the
+        tabs of a tab list do.
     </div>
     <br /><br />
     <div>SingleTabStop:</div><br />
@@ -399,6 +421,17 @@
     <div>WrapNavigation:</div><br />
     <div class="container">
         <BitNavBar WrapNavigation
+                   SingleTabStop
+                   Mode="BitNavMode.Manual"
+                   Items="basicNavBarCustoms"
+                   DefaultSelectedItem="basicNavBarCustoms[1]"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br /><br /><br />
+    <div>SelectOnFocus:</div><br />
+    <div class="container">
+        <BitNavBar SelectOnFocus
                    SingleTabStop
                    Mode="BitNavMode.Manual"
                    Items="basicNavBarCustoms"
@@ -455,7 +488,8 @@
         glyph, which is what the <b>SelectedIconName</b> selector (and <b>SelectedIcon</b>, for an external
         icon library) is for: the item swaps to it while it is the selected one and falls back to its
         <b>IconName</b> otherwise. It reads as a second, shape-based cue for the selection next to the color,
-        which is what keeps the current destination legible where a color difference alone is not enough.
+        which is what keeps the current destination legible where a color difference alone is not enough. <b>Indicator</b>
+        adds a third cue, drawn beside the content of the item rather than in it.
     </div>
     <br /><br />
     <div class="container">
@@ -581,7 +615,95 @@
     Selected item: @dynamicSelectedCustom?.Title
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21" PreventRenderForMcpClient>
+<DemoExample Title="Indicator" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21" PreventRenderForMcpClient>
+    <div>
+        <b>Indicator</b> gives the selection a mark of its own beside the color of the item: a <b>Line</b>
+        along the edge of the selected item &mdash; its bottom edge across a bar and its leading edge down a
+        <b>Vertical</b> rail, the way a tab strip marks its current tab &mdash; or the <b>Pill</b> a Material
+        navigation bar draws behind the icon of its current destination. The pill is the filled part in that
+        mode, so it takes the fill of the item over, and both follow the <b>Accent</b> when one is set.
+    </div>
+    <br /><br />
+    <div>Line:</div><br />
+    <div class="container">
+        <BitNavBar Indicator="BitNavBarIndicator.Line"
+                   Items="basicNavBarCustoms"
+                   Mode="BitNavMode.Manual"
+                   DefaultSelectedItem="basicNavBarCustoms[0]"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br /><br /><br />
+    <div>Pill:</div><br />
+    <div class="container">
+        <BitNavBar Indicator="BitNavBarIndicator.Pill"
+                   Items="basicNavBarCustoms"
+                   Mode="BitNavMode.Manual"
+                   DefaultSelectedItem="basicNavBarCustoms[0]"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br /><br /><br />
+    <div>Pill with an Accent:</div><br />
+    <div class="container">
+        <BitNavBar Indicator="BitNavBarIndicator.Pill"
+                   Accent="BitColor.Primary"
+                   Items="basicNavBarCustoms"
+                   Mode="BitNavMode.Manual"
+                   DefaultSelectedItem="basicNavBarCustoms[0]"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br /><br /><br />
+    <div>Line on a Vertical rail:</div><br />
+    <div class="container">
+        <BitNavBar Vertical
+                   FitWidth
+                   Indicator="BitNavBarIndicator.Line"
+                   Items="basicNavBarCustoms"
+                   Mode="BitNavMode.Manual"
+                   DefaultSelectedItem="basicNavBarCustoms[0]"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Scrollable" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+    <div>
+        A navbar squeezes its items into the room it has, which runs out once it holds more destinations than
+        it fits. <b>Scrollable</b> leaves every item at the size of its own content and scrolls the list
+        instead, with the scrollbar itself hidden, and it brings the selected item into view whenever the
+        selection moves &mdash; from a click, from the URL in the <b>Automatic</b> mode, or from the binding,
+        as the button below does. A <b>Vertical</b> rail scrolls down its own length in exactly the same way.
+    </div>
+    <br /><br />
+    <BitButton OnClick="@(() => scrollableSelectedCustom = scrollableNavBarCustoms[^1])">Select the last item</BitButton>
+    <br />
+    <div class="container">
+        <BitNavBar Scrollable
+                   Mode="BitNavMode.Manual"
+                   Items="scrollableNavBarCustoms"
+                   @bind-SelectedItem="scrollableSelectedCustom"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br />
+    Selected item: @scrollableSelectedCustom?.Title
+    <br /><br /><br /><br />
+    <div>Vertical:</div><br />
+    <div class="container">
+        <BitNavBar Scrollable
+                   Vertical
+                   FitWidth
+                   Style="height:16rem"
+                   Mode="BitNavMode.Manual"
+                   Items="scrollableNavBarCustoms"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23" PreventRenderForMcpClient>
     <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
     <br /><br />
     <div>Primary:</div><br />
@@ -723,7 +845,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+<DemoExample Title="External Icons" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
     <div>External icon libraries like FontAwesome can be used with the <b>Icon</b> parameter.</div>
 
     <br />
@@ -738,7 +860,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25" PreventRenderForMcpClient>
     <div>The <b>Size</b> scales the icon, the text and the padding of every item of the navbar at once.</div>
     <br /><br />
     <div>Small:</div><br />
@@ -766,7 +888,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
+<DemoExample Title="Style & Class" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" Id="example26">
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br /><br />
     <div>Component's Style:</div><br />
@@ -813,7 +935,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27" PreventRenderForMcpClient>
     <div>Use BitNavBar in right-to-left (RTL).</div>
     <br /><br />
     <div dir="rtl" class="container">
@@ -830,6 +952,22 @@
         new() { Title = "Home", ImageName = BitIconName.Home  },
         new() { Title = "Products", Fragment = (item) => @<div style="display:flex;flex-direction:column"><b>@item.Title</b><span>🎁</span></div> },
         new() { Title = "Academy", ImageName = BitIconName.LearningTools },
+        new() { Title = "Profile", ImageName = BitIconName.Contact },
+    ];
+
+    // The center item is a control of its own rather than a destination, so its template replaces the
+    // element the navbar would have rendered for it instead of being nested inside it.
+    private static readonly List<MenuItem> replacedTemplateNavBarCustoms =
+    [
+        new() { Title = "Home", ImageName = BitIconName.Home },
+        new() { Title = "Search", ImageName = BitIconName.Search },
+        new()
+        {
+            Title = "New",
+            FragmentRenderMode = BitNavItemTemplateRenderMode.Replace,
+            Fragment = (item) => @<BitButton IconOnly Title="@item.Title" IconName="@BitIconName.Add" Style="align-self:center" />
+        },
+        new() { Title = "Alerts", ImageName = BitIconName.Ringer },
         new() { Title = "Profile", ImageName = BitIconName.Contact },
     ];
 }

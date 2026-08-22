@@ -356,6 +356,28 @@ public partial class BitNavBar<TItem>
         return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.Template.Name);
     }
 
+    internal BitNavItemTemplateRenderMode GetTemplateRenderMode(TItem item)
+    {
+        if (item is BitNavBarItem navItem)
+        {
+            return navItem.TemplateRenderMode;
+        }
+
+        if (item is BitNavBarOption navOption)
+        {
+            return navOption.TemplateRenderMode;
+        }
+
+        if (NameSelectors is null) return BitNavItemTemplateRenderMode.Normal;
+
+        if (NameSelectors.TemplateRenderMode.Selector is not null)
+        {
+            return NameSelectors.TemplateRenderMode.Selector!(item) ?? BitNavItemTemplateRenderMode.Normal;
+        }
+
+        return item.GetValueFromProperty(NameSelectors.TemplateRenderMode.Name, BitNavItemTemplateRenderMode.Normal);
+    }
+
     internal string? GetText(TItem item)
     {
         if (item is BitNavBarItem navItem)

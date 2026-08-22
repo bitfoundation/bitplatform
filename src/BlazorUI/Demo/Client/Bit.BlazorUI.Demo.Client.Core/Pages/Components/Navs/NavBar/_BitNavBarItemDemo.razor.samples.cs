@@ -188,7 +188,12 @@ private static readonly List<BitNavBarItem> basicNavBarItems =
     </ItemTemplate>
 </BitNavBar>
 
-<BitNavBar Items=""templateNavBarItems"" />";
+<BitNavBar Items=""templateNavBarItems"" />
+
+<BitNavBar Justified
+           Mode=""BitNavMode.Manual""
+           Items=""replacedTemplateNavBarItems""
+           DefaultSelectedItem=""replacedTemplateNavBarItems[0]"" />";
     private readonly string example11CsharpCode = @"
 private static readonly List<BitNavBarItem> basicNavBarItems =
 [
@@ -203,6 +208,20 @@ private static readonly List<BitNavBarItem> templateNavBarItems =
     new() { Text = ""Home"", IconName = BitIconName.Home  },
     new() { Text = ""Products"", Template = (item) => @<div style=""display:flex;flex-direction:column""><b>@item.Text</b><span>&#127873;</span></div> },
     new() { Text = ""Academy"", IconName = BitIconName.LearningTools },
+    new() { Text = ""Profile"", IconName = BitIconName.Contact },
+];
+
+private static readonly List<BitNavBarItem> replacedTemplateNavBarItems =
+[
+    new() { Text = ""Home"", IconName = BitIconName.Home },
+    new() { Text = ""Search"", IconName = BitIconName.Search },
+    new()
+    {
+        Text = ""New"",
+        TemplateRenderMode = BitNavItemTemplateRenderMode.Replace,
+        Template = (item) => @<BitButton IconOnly Title=""@item.Text"" IconName=""@BitIconName.Add"" Style=""align-self:center"" />
+    },
+    new() { Text = ""Alerts"", IconName = BitIconName.Ringer },
     new() { Text = ""Profile"", IconName = BitIconName.Contact },
 ];";
 
@@ -283,6 +302,12 @@ private bool reselectable = true;";
            DefaultSelectedItem=""basicNavBarItems[1]"" />
 
 <BitNavBar WrapNavigation
+           SingleTabStop
+           Mode=""BitNavMode.Manual""
+           Items=""basicNavBarItems""
+           DefaultSelectedItem=""basicNavBarItems[1]"" />
+
+<BitNavBar SelectOnFocus
            SingleTabStop
            Mode=""BitNavMode.Manual""
            Items=""basicNavBarItems""
@@ -433,6 +458,71 @@ private void RemoveDynamicItem()
 private void ReverseDynamicItems() => dynamicNavBarItems.Reverse();";
 
     private readonly string example21RazorCode = @"
+<BitNavBar Indicator=""BitNavBarIndicator.Line""
+           Items=""basicNavBarItems""
+           Mode=""BitNavMode.Manual""
+           DefaultSelectedItem=""basicNavBarItems[0]"" />
+
+<BitNavBar Indicator=""BitNavBarIndicator.Pill""
+           Items=""basicNavBarItems""
+           Mode=""BitNavMode.Manual""
+           DefaultSelectedItem=""basicNavBarItems[0]"" />
+
+<BitNavBar Indicator=""BitNavBarIndicator.Pill""
+           Accent=""BitColor.Primary""
+           Items=""basicNavBarItems""
+           Mode=""BitNavMode.Manual""
+           DefaultSelectedItem=""basicNavBarItems[0]"" />
+
+<BitNavBar Vertical
+           FitWidth
+           Indicator=""BitNavBarIndicator.Line""
+           Items=""basicNavBarItems""
+           Mode=""BitNavMode.Manual""
+           DefaultSelectedItem=""basicNavBarItems[0]"" />";
+    private readonly string example21CsharpCode = @"
+private static readonly List<BitNavBarItem> basicNavBarItems =
+[
+    new() { Text = ""Home"", IconName = BitIconName.Home  },
+    new() { Text = ""Products"", IconName = BitIconName.ProductVariant },
+    new() { Text = ""Academy"", IconName = BitIconName.LearningTools },
+    new() { Text = ""Profile"", IconName = BitIconName.Contact },
+];";
+
+    private readonly string example22RazorCode = @"
+<BitButton OnClick=""@(() => scrollableSelectedItem = scrollableNavBarItems[^1])"">Select the last item</BitButton>
+
+<BitNavBar Scrollable
+           Mode=""BitNavMode.Manual""
+           Items=""scrollableNavBarItems""
+           @bind-SelectedItem=""scrollableSelectedItem"" />
+
+Selected item: @scrollableSelectedItem?.Text
+
+<BitNavBar Scrollable
+           Vertical
+           FitWidth
+           Style=""height:16rem""
+           Mode=""BitNavMode.Manual""
+           Items=""scrollableNavBarItems"" />";
+    private readonly string example22CsharpCode = @"
+private static readonly List<BitNavBarItem> scrollableNavBarItems =
+[
+    new() { Text = ""Home"", IconName = BitIconName.Home },
+    new() { Text = ""Products"", IconName = BitIconName.ProductVariant },
+    new() { Text = ""Academy"", IconName = BitIconName.LearningTools },
+    new() { Text = ""Inbox"", IconName = BitIconName.Mail },
+    new() { Text = ""Alerts"", IconName = BitIconName.Ringer },
+    new() { Text = ""Favorites"", IconName = BitIconName.Heart },
+    new() { Text = ""Reports"", IconName = BitIconName.ReportDocument },
+    new() { Text = ""Settings"", IconName = BitIconName.Settings },
+    new() { Text = ""Support"", IconName = BitIconName.Help },
+    new() { Text = ""Profile"", IconName = BitIconName.Contact },
+];
+
+private BitNavBarItem? scrollableSelectedItem;";
+
+    private readonly string example23RazorCode = @"
 <BitNavBar Color=""BitColor.Primary"" Items=""basicNavBarItems"" DefaultSelectedItem=""basicNavBarItems[0]"" Mode=""BitNavMode.Manual"" />
 <BitNavBar Color=""BitColor.Secondary"" Items=""basicNavBarItems"" DefaultSelectedItem=""basicNavBarItems[0]"" Mode=""BitNavMode.Manual"" />
 <BitNavBar Color=""BitColor.Tertiary"" Items=""basicNavBarItems"" DefaultSelectedItem=""basicNavBarItems[0]"" Mode=""BitNavMode.Manual"" />
@@ -453,32 +543,6 @@ private void ReverseDynamicItems() => dynamicNavBarItems.Reverse();";
 <BitNavBar Color=""BitColor.PrimaryBorder"" Items=""basicNavBarItems"" DefaultSelectedItem=""basicNavBarItems[0]"" Mode=""BitNavMode.Manual"" />
 <BitNavBar Color=""BitColor.SecondaryBorder"" Items=""basicNavBarItems"" DefaultSelectedItem=""basicNavBarItems[0]"" Mode=""BitNavMode.Manual"" />
 <BitNavBar Color=""BitColor.TertiaryBorder"" Items=""basicNavBarItems"" DefaultSelectedItem=""basicNavBarItems[0]"" Mode=""BitNavMode.Manual"" />";
-    private readonly string example21CsharpCode = @"
-private static readonly List<BitNavBarItem> basicNavBarItems =
-[
-    new() { Text = ""Home"", IconName = BitIconName.Home  },
-    new() { Text = ""Products"", IconName = BitIconName.ProductVariant },
-    new() { Text = ""Academy"", IconName = BitIconName.LearningTools },
-    new() { Text = ""Profile"", IconName = BitIconName.Contact },
-];";
-
-    private readonly string example22RazorCode = @"
-<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
-
-<BitNavBar Items=""externalIconItems"" />";
-    private readonly string example22CsharpCode = @"
-private static readonly List<BitNavBarItem> externalIconItems =
-[
-    new() { Text = ""Home"", Icon = ""fa-solid fa-house"" },
-    new() { Text = ""Products"", Icon = BitIconInfo.Css(""fa-solid fa-box"") },
-    new() { Text = ""Academy"", Icon = BitIconInfo.Fa(""solid graduation-cap"") },
-    new() { Text = ""Profile"", Icon = BitIconInfo.Fa(""solid user"") },
-];";
-
-    private readonly string example23RazorCode = @"
-<BitNavBar Size=""BitSize.Small"" Items=""basicNavBarItems"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""basicNavBarItems[0]"" />
-<BitNavBar Size=""BitSize.Medium"" Items=""basicNavBarItems"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""basicNavBarItems[0]"" />
-<BitNavBar Size=""BitSize.Large"" Items=""basicNavBarItems"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""basicNavBarItems[0]"" />";
     private readonly string example23CsharpCode = @"
 private static readonly List<BitNavBarItem> basicNavBarItems =
 [
@@ -489,6 +553,32 @@ private static readonly List<BitNavBarItem> basicNavBarItems =
 ];";
 
     private readonly string example24RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitNavBar Items=""externalIconItems"" />";
+    private readonly string example24CsharpCode = @"
+private static readonly List<BitNavBarItem> externalIconItems =
+[
+    new() { Text = ""Home"", Icon = ""fa-solid fa-house"" },
+    new() { Text = ""Products"", Icon = BitIconInfo.Css(""fa-solid fa-box"") },
+    new() { Text = ""Academy"", Icon = BitIconInfo.Fa(""solid graduation-cap"") },
+    new() { Text = ""Profile"", Icon = BitIconInfo.Fa(""solid user"") },
+];";
+
+    private readonly string example25RazorCode = @"
+<BitNavBar Size=""BitSize.Small"" Items=""basicNavBarItems"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""basicNavBarItems[0]"" />
+<BitNavBar Size=""BitSize.Medium"" Items=""basicNavBarItems"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""basicNavBarItems[0]"" />
+<BitNavBar Size=""BitSize.Large"" Items=""basicNavBarItems"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""basicNavBarItems[0]"" />";
+    private readonly string example25CsharpCode = @"
+private static readonly List<BitNavBarItem> basicNavBarItems =
+[
+    new() { Text = ""Home"", IconName = BitIconName.Home  },
+    new() { Text = ""Products"", IconName = BitIconName.ProductVariant },
+    new() { Text = ""Academy"", IconName = BitIconName.LearningTools },
+    new() { Text = ""Profile"", IconName = BitIconName.Contact },
+];";
+
+    private readonly string example26RazorCode = @"
 <style>
     .custom-class {
         margin: 1rem;
@@ -520,7 +610,7 @@ private static readonly List<BitNavBarItem> basicNavBarItems =
 
 <BitNavBar Items=""badgeNavBarItems"" Styles=""@(new() { ItemIcon = ""color: aqua;"", ItemText = ""color: tomato;"", ItemBadge = ""background: darkmagenta;"" })"" />
 <BitNavBar Items=""basicNavBarItems"" Classes=""@(new() { ItemIcon = ""custom-item-ico"", ItemText = ""custom-item-txt"" })"" />";
-    private readonly string example24CsharpCode = @"
+    private readonly string example26CsharpCode = @"
 private static readonly List<BitNavBarItem> basicNavBarItems =
 [
     new() { Text = ""Home"", IconName = BitIconName.Home  },
@@ -545,9 +635,9 @@ private static readonly List<BitNavBarItem> badgeNavBarItems =
     new() { Text = ""Profile"", IconName = BitIconName.Contact, Dot = true, BadgeAriaLabel = ""needs attention"" },
 ];";
 
-    private readonly string example25RazorCode = @"
+    private readonly string example27RazorCode = @"
 <BitNavBar Dir=""BitDir.Rtl"" Items=""rtlItems"" />";
-    private readonly string example25CsharpCode = @"
+    private readonly string example27CsharpCode = @"
 private static readonly List<BitNavBarItem> rtlItems =
 [
     new() { Text = ""خانه"", IconName = BitIconName.Home  },

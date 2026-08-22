@@ -2008,6 +2008,367 @@ public class BitNavBarTests : BunitTestContext
     }
 
 
+    [TestMethod]
+    [DataRow(true, "bit-nbr-scr")]
+    [DataRow(false, "")]
+    public void BitNavBarShouldRespectScrollable(bool scrollable, string expectedClass)
+    {
+        var component = RenderNavBar(BasicItems(), p => p.Add(c => c.Scrollable, scrollable));
+
+        AssertRootClass(component, expectedClass, "bit-nbr-scr");
+    }
+
+    [TestMethod]
+    [DataRow(BitNavBarIndicator.Line, "bit-nbr-lin")]
+    [DataRow(BitNavBarIndicator.Pill, "bit-nbr-pil")]
+    public void BitNavBarShouldRespectTheIndicator(BitNavBarIndicator indicator, string expectedClass)
+    {
+        var component = RenderNavBar(BasicItems(), p => p.Add(c => c.Indicator, indicator));
+
+        Assert.IsTrue(component.Find(".bit-nbr").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow(BitNavBarIndicator.None)]
+    public void BitNavBarShouldRenderNoIndicatorClassWithoutAnIndicator(BitNavBarIndicator? indicator)
+    {
+        var component = RenderNavBar(BasicItems(), p =>
+        {
+            if (indicator.HasValue)
+            {
+                p.Add(c => c.Indicator, indicator.Value);
+            }
+        });
+
+        var root = component.Find(".bit-nbr");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-nbr-lin"));
+        Assert.IsFalse(root.ClassList.Contains("bit-nbr-pil"));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldScrollTheSelectedItemIntoViewWhileScrollable()
+    {
+        // The selection moves without a pointer or a keyboard of its own behind it, so the item it lands on
+        // is brought into the scrolled area of the navbar rather than being left outside of it.
+        var component = RenderNavBar(BasicItems(), p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.Scrollable, true);
+        });
+
+        Assert.AreEqual(0, ScrollCalls());
+
+        component.FindAll(".bit-nbr-itm")[1].Click();
+
+        Assert.AreEqual(1, ScrollCalls());
+        Assert.AreEqual(component.Find(".bit-nbr-cnt").Id, LastScrollCall().Arguments[0]);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldScrollTheItemTheUrlSelectsIntoView()
+    {
+        Navigate("/home");
+
+        var component = RenderNavBar(UrlItems(), p => p.Add(c => c.Scrollable, true));
+
+        var initialCalls = ScrollCalls();
+
+        Navigate("/profile");
+
+        Assert.IsTrue(ScrollCalls() > initialCalls);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldNotScrollAnythingWithoutScrollable()
+    {
+        var component = RenderNavBar(BasicItems(), p => p.Add(c => c.Mode, BitNavMode.Manual));
+
+        component.FindAll(".bit-nbr-itm")[1].Click();
+
+        Assert.AreEqual(0, ScrollCalls());
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldSelectTheFocusedItemWithSelectOnFocus()
+    {
+        // The selection follows the focus in that mode, the way the tabs of a tab list do.
+        var items = BasicItems();
+        BitNavBarItem? selected = null;
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.SelectOnFocus, true);
+            p.Add(c => c.OnSelectItem, (BitNavBarItem i) => selected = i);
+        });
+
+        component.FindAll(".bit-nbr-itm")[1].FocusIn();
+
+        Assert.AreEqual("Products", SelectedText(component));
+        Assert.AreSame(items[1], selected);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldLeaveTheSelectionAloneOnFocusWithoutSelectOnFocus()
+    {
+        var component = RenderNavBar(BasicItems(), p => p.Add(c => c.Mode, BitNavMode.Manual));
+
+        component.FindAll(".bit-nbr-itm")[1].FocusIn();
+
+        Assert.IsNull(SelectedText(component));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldNotSelectOnFocusInTheAutomaticMode()
+    {
+        // In the automatic mode the current URL is what selects an item, and a selection made on focus
+        // would be undone by the very next match anyway.
+        Navigate("/home");
+
+        var component = RenderNavBar(UrlItems(), p => p.Add(c => c.SelectOnFocus, true));
+
+        component.FindAll(".bit-nbr-itm")[1].FocusIn();
+
+        Assert.AreEqual("Home", SelectedText(component));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldNotSelectOnFocusWhileTheNavBarIsDisabled()
+    {
+        var component = RenderNavBar(BasicItems(), p =>
+        {
+            p.Add(c => c.IsEnabled, false);
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.SelectOnFocus, true);
+        });
+
+        component.FindAll(".bit-nbr-itm")[1].FocusIn();
+
+        Assert.IsNull(SelectedText(component));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldNotSelectADisabledItemOnFocus()
+    {
+        var items = BasicItems();
+        items[1].IsEnabled = false;
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.SelectOnFocus, true);
+        });
+
+        component.FindAll(".bit-nbr-itm")[1].FocusIn();
+
+        Assert.IsNull(SelectedText(component));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldSelectTheOptionsOnFocusToo()
+    {
+        var component = RenderComponent<BitNavBarOptionsTest>(parameters =>
+        {
+            parameters.Add(p => p.Mode, BitNavMode.Manual);
+            parameters.Add(p => p.ShowMiddle, true);
+            parameters.Add(p => p.SelectOnFocus, true);
+        });
+
+        component.FindAll(".bit-nbr-itm")[1].FocusIn();
+
+        Assert.AreEqual("Profile", SelectedText(component));
+    }
+
+    [TestMethod]
+    public async Task BitNavBarScrollItemIntoViewShouldScrollAnyItemOfAScrollableNavBar()
+    {
+        var items = BasicItems();
+        var component = RenderNavBar(items, p => p.Add(c => c.Scrollable, true));
+
+        await component.InvokeAsync(async () => await component.Instance.ScrollItemIntoView(items[2]));
+
+        Assert.AreEqual(1, ScrollCalls());
+        Assert.AreEqual(component.Find(".bit-nbr-cnt").Id, LastScrollCall().Arguments[0]);
+        LastScrollCall().Arguments[1].ShouldBeElementReferenceTo(component.FindAll(".bit-nbr-itm")[2]);
+    }
+
+    [TestMethod]
+    public async Task BitNavBarScrollItemIntoViewShouldDoNothingWithoutScrollable()
+    {
+        var items = BasicItems();
+        var component = RenderNavBar(items);
+
+        await component.InvokeAsync(async () => await component.Instance.ScrollItemIntoView(items[2]));
+
+        Assert.AreEqual(0, ScrollCalls());
+    }
+
+
+    [TestMethod]
+    public void BitNavBarShouldReplaceTheItemWithItsTemplateInTheReplaceMode()
+    {
+        // An item that is a control of its own cannot be nested in the anchor (or the button) the navbar
+        // would have rendered for it, so the template renders that element itself instead.
+        var items = BasicItems();
+        items[1].TemplateRenderMode = BitNavItemTemplateRenderMode.Replace;
+        items[1].Template = (item) => (builder) =>
+        {
+            builder.OpenElement(0, "button");
+            builder.AddAttribute(1, "class", "replaced-item");
+            builder.AddContent(2, item.Text);
+            builder.CloseElement();
+        };
+
+        var component = RenderNavBar(items);
+
+        var wrappers = component.FindAll(".bit-nbr-lit");
+
+        Assert.AreEqual(3, wrappers.Count);
+        Assert.AreEqual(2, component.FindAll(".bit-nbr-itm").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-nbr-lit > .replaced-item").Count);
+        Assert.IsNull(wrappers[1].QuerySelector(".bit-nbr-itm"));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldKeepTheTemplateInsideTheItemInTheNormalMode()
+    {
+        var items = BasicItems();
+        items[1].Template = (item) => (builder) =>
+        {
+            builder.OpenElement(0, "span");
+            builder.AddAttribute(1, "class", "item-template");
+            builder.AddContent(2, item.Text);
+            builder.CloseElement();
+        };
+
+        var component = RenderNavBar(items);
+
+        Assert.AreEqual(3, component.FindAll(".bit-nbr-itm").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-nbr-itm > .item-template").Count);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldReplaceEveryItemWithTheItemTemplateInTheReplaceMode()
+    {
+        var component = RenderNavBar(BasicItems(), p =>
+        {
+            p.Add(c => c.ItemTemplateRenderMode, BitNavItemTemplateRenderMode.Replace);
+            p.Add(c => c.ItemTemplate, (RenderFragment<BitNavBarItem>)(item => builder =>
+            {
+                builder.OpenElement(0, "button");
+                builder.AddAttribute(1, "class", "replaced-item");
+                builder.AddContent(2, item.Text);
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-nbr-itm").Count);
+        Assert.AreEqual(3, component.FindAll(".bit-nbr-lit > .replaced-item").Count);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldLetTheModeOfAnItemWinOverTheModeOfTheNavBar()
+    {
+        // The template of an item wins over the navbar's own, so the mode that goes with it wins as well.
+        var items = BasicItems();
+        items[1].Template = (item) => (builder) =>
+        {
+            builder.OpenElement(0, "span");
+            builder.AddAttribute(1, "class", "item-template");
+            builder.AddContent(2, item.Text);
+            builder.CloseElement();
+        };
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.ItemTemplateRenderMode, BitNavItemTemplateRenderMode.Replace);
+            p.Add(c => c.ItemTemplate, (RenderFragment<BitNavBarItem>)(item => builder =>
+            {
+                builder.OpenElement(0, "button");
+                builder.AddAttribute(1, "class", "replaced-item");
+                builder.AddContent(2, item.Text);
+                builder.CloseElement();
+            }));
+        });
+
+        // The item that carries a template of its own keeps the navbar's element around it, since its own
+        // mode is the default one; the rest are replaced by the navbar's template.
+        Assert.AreEqual(1, component.FindAll(".bit-nbr-itm > .item-template").Count);
+        Assert.AreEqual(2, component.FindAll(".bit-nbr-lit > .replaced-item").Count);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldSkipAReplacedItemWithTheArrowKeys()
+    {
+        // A replaced item renders no element of the navbar's, so walking onto one would leave the focus
+        // where it was while the navbar believes it has moved.
+        var items = BasicItems();
+        items[1].TemplateRenderMode = BitNavItemTemplateRenderMode.Replace;
+        items[1].Template = (item) => (builder) =>
+        {
+            builder.OpenElement(0, "button");
+            builder.AddAttribute(1, "class", "replaced-item");
+            builder.AddContent(2, item.Text);
+            builder.CloseElement();
+        };
+
+        var component = RenderNavBar(items);
+
+        PressKeyOn(component, 0, "ArrowRight");
+
+        AssertFocused(component, 1);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldKeepTheSingleTabStopOffAReplacedItem()
+    {
+        var items = BasicItems();
+        items[0].TemplateRenderMode = BitNavItemTemplateRenderMode.Replace;
+        items[0].Template = (item) => (builder) =>
+        {
+            builder.OpenElement(0, "button");
+            builder.AddAttribute(1, "class", "replaced-item");
+            builder.AddContent(2, item.Text);
+            builder.CloseElement();
+        };
+
+        var component = RenderNavBar(items, p =>
+        {
+            p.Add(c => c.Mode, BitNavMode.Manual);
+            p.Add(c => c.SingleTabStop, true);
+        });
+
+        // The first item the navbar renders itself holds the stop, since the replaced one carries no
+        // element of the navbar's to put it on.
+        AssertTabStop(component, 0);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldReplaceAnOptionWithItsTemplateInTheReplaceMode()
+    {
+        var component = RenderComponent<BitNavBarReplacedOptionTest>();
+
+        Assert.AreEqual(2, component.FindAll(".bit-nbr-lit").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-nbr-itm").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-nbr-lit > .replaced-option").Count);
+    }
+
+
+
+    // How many times the navbar has asked the browser to bring an item into its scrolled area.
+    private int ScrollCalls()
+    {
+        return Context.JSInterop.Invocations["BitBlazorUI.NavBar.scrollItemIntoView"].Count;
+    }
+
+    private Bunit.JSRuntimeInvocation LastScrollCall()
+    {
+        return Context.JSInterop.Invocations["BitBlazorUI.NavBar.scrollItemIntoView"].Last();
+    }
+
+
 
     private static void AssertRootClass(IRenderedComponent<IComponent> component, string expectedClass, string toggledClass)
     {

@@ -122,6 +122,15 @@ public class BitNavBarItem
     public RenderFragment<BitNavBarItem>? Template { get; set; }
 
     /// <summary>
+    /// Whether the <see cref="Template"/> of the navbar item is rendered inside the anchor (or the button)
+    /// the item is, or replaces it altogether, which is what an item that is a control of its own - the
+    /// center action of a mobile bar, for instance - needs, since an interactive element cannot be nested
+    /// in another one. A replaced item is left out of the keyboard navigation of the navbar, and whatever it
+    /// renders owns its own clicks, its own focus and its own accessible name.
+    /// </summary>
+    public BitNavItemTemplateRenderMode TemplateRenderMode { get; set; } = BitNavItemTemplateRenderMode.Normal;
+
+    /// <summary>
     /// Text to render for the navbar item.
     /// </summary>
     public string? Text { get; set; }

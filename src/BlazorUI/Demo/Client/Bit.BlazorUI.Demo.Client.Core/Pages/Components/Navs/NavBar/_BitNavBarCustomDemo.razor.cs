@@ -73,6 +73,21 @@ public partial class _BitNavBarCustomDemo
         new() { Title = "Alerts", ImageName = BitIconName.Ringer, SelectedImageName = BitIconName.RingerSolid },
         new() { Title = "Favorites", ImageName = BitIconName.Heart, SelectedImageName = BitIconName.HeartFill },
     ];
+    // A bar with more destinations than it fits, which is what the Scrollable example is about.
+    private static readonly List<MenuItem> scrollableNavBarCustoms =
+    [
+        new() { Title = "Home", ImageName = BitIconName.Home },
+        new() { Title = "Products", ImageName = BitIconName.ProductVariant },
+        new() { Title = "Academy", ImageName = BitIconName.LearningTools },
+        new() { Title = "Inbox", ImageName = BitIconName.Mail },
+        new() { Title = "Alerts", ImageName = BitIconName.Ringer },
+        new() { Title = "Favorites", ImageName = BitIconName.Heart },
+        new() { Title = "Reports", ImageName = BitIconName.ReportDocument },
+        new() { Title = "Settings", ImageName = BitIconName.Settings },
+        new() { Title = "Support", ImageName = BitIconName.Help },
+        new() { Title = "Profile", ImageName = BitIconName.Contact },
+    ];
+
 
     private static readonly List<MenuItem> basicNavBarCustomsClassStyle =
     [
@@ -129,6 +144,7 @@ public partial class _BitNavBarCustomDemo
     private bool reselectable = true;
     private MenuItem selectedItem = basicNavBarCustoms[0];
     private MenuItem twoWaySelectedItem = basicNavBarCustoms[0];
+    private MenuItem? scrollableSelectedCustom;
     private MenuItem? eventsClickedItem;
     private MenuItem? eventsSelectedItem;
     private MenuItem advancedSelectedItem = basicNavBarCustoms[1];

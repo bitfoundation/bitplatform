@@ -63,6 +63,24 @@ public partial class _BitNavBarOptionDemo
     private BitNavBarOption? selectedIconSelectedOption;
     private BitNavBarOption selectedIconOptionHome = default!;
 
+    private BitNavBarOption? selectFocusSelectedOption;
+    private BitNavBarOption selectFocusOptionProducts = default!;
+
+    private BitNavBarOption? indicatorLineSelectedOption;
+    private BitNavBarOption indicatorLineOptionHome = default!;
+
+    private BitNavBarOption? indicatorPillSelectedOption;
+    private BitNavBarOption indicatorPillOptionHome = default!;
+
+    private BitNavBarOption? indicatorAccentSelectedOption;
+    private BitNavBarOption indicatorAccentOptionHome = default!;
+
+    private BitNavBarOption? indicatorVerticalSelectedOption;
+    private BitNavBarOption indicatorVerticalOptionHome = default!;
+
+    private BitNavBarOption? scrollableSelectedOption;
+    private BitNavBarOption scrollableOptionProfile = default!;
+
     private BitNavBarOption? advancedSelectedOption;
     private BitNavBarOption advancedOptionProducts = default!;
 
@@ -78,6 +96,12 @@ public partial class _BitNavBarOptionDemo
             wrapSelectedOption ??= wrapOptionProducts;
             selectedIconSelectedOption ??= selectedIconOptionHome;
             advancedSelectedOption ??= advancedOptionProducts;
+            selectFocusSelectedOption ??= selectFocusOptionProducts;
+            indicatorLineSelectedOption ??= indicatorLineOptionHome;
+            indicatorPillSelectedOption ??= indicatorPillOptionHome;
+            indicatorAccentSelectedOption ??= indicatorAccentOptionHome;
+            indicatorVerticalSelectedOption ??= indicatorVerticalOptionHome;
+
 
             StateHasChanged();
         }

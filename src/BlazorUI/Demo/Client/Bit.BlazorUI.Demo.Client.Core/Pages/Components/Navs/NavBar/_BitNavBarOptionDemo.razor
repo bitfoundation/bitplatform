@@ -198,7 +198,8 @@
         over the full width of its container. Without either one the navbar takes the width its container
         gives it. Those two size the bar; <b>Justified</b> sizes the options inside it, giving each one an
         equal share instead of the width of its own label, which is how a navigation bar keeps its
-        destinations on a predictable grid.
+        destinations on a predictable grid, and <b>Scrollable</b> is the other answer to a bar that
+        runs out of room: it leaves the options at the size of their own content and scrolls them instead.
     </div>
     <br /><br />
     <div>FitWidth:</div><br />
@@ -264,7 +265,8 @@
     <div>
         <b>Accent</b> fills the hovered and the selected option with a color, which gives the selection an
         indicator of its own instead of leaving it to the text color alone. A semantic accent moves the whole
-        content of the option onto its on-color, while a surface accent only tints the background.
+        content of the option onto its on-color, while a surface accent only tints the background. The
+        accent colors the <b>Indicator</b> as well, when the navbar carries one.
     </div>
     <br /><br />
     <div>Primary:</div><br />
@@ -340,6 +342,23 @@
                 </Template>
             </BitNavBarOption>
             <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+    <br /><br /><br /><br />
+    <div>Replaced option template:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Justified Mode="BitNavMode.Manual">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Search" IconName="@BitIconName.Search" />
+            @* The center option is a control of its own rather than a destination, so its template replaces
+               the element the navbar would have rendered for it instead of being nested inside it. *@
+            <BitNavBarOption Text="New" TemplateRenderMode="BitNavItemTemplateRenderMode.Replace">
+                <Template Context="option">
+                    <BitButton IconOnly Title="@option.Text" IconName="@BitIconName.Add" Style="align-self:center" />
+                </Template>
+            </BitNavBarOption>
+            <BitNavBarOption Text="Alerts" IconName="@BitIconName.Ringer" />
             <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
         </BitNavBar>
     </div>
@@ -443,7 +462,9 @@
         whole bar is a single stop that lands on the selected option, and the rest are reached from there.
         In both modes the arrow keys of either axis, <b>Home</b> and <b>End</b> move the focus along the bar,
         the horizontal pair flipping in RTL, and a disabled option is skipped. The focus stops at both ends;
-        <b>WrapNavigation</b> lets it wrap around from the last option to the first one and back.
+        <b>WrapNavigation</b> lets it wrap around from the last option to the first one and back, and
+        <b>SelectOnFocus</b> moves the selection along with the focus in the <b>Manual</b> mode, the way the
+        tabs of a tab list do.
     </div>
     <br /><br />
     <div>SingleTabStop:</div><br />
@@ -461,6 +482,16 @@
         <BitNavBar TItem="BitNavBarOption" WrapNavigation SingleTabStop Mode="BitNavMode.Manual" @bind-SelectedItem="wrapSelectedOption">
             <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
             <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" @ref="wrapOptionProducts" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+    <br /><br /><br /><br />
+    <div>SelectOnFocus:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" SelectOnFocus SingleTabStop Mode="BitNavMode.Manual" @bind-SelectedItem="selectFocusSelectedOption">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" @ref="selectFocusOptionProducts" />
             <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
             <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
         </BitNavBar>
@@ -512,7 +543,8 @@
         glyph, which is what <b>SelectedIconName</b> (and <b>SelectedIcon</b>, for an external icon library)
         is for: the option swaps to it while it is the selected one and falls back to its <b>IconName</b>
         otherwise. It reads as a second, shape-based cue for the selection next to the color, which is what
-        keeps the current destination legible where a color difference alone is not enough.
+        keeps the current destination legible where a color difference alone is not enough. <b>Indicator</b>
+        adds a third cue, drawn beside the content of the item rather than in it.
     </div>
     <br /><br />
     <div class="container">
@@ -675,7 +707,103 @@
     Selected item: @dynamicSelectedOption?.Text
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example21RazorCode" Id="example21" PreventRenderForMcpClient>
+<DemoExample Title="Indicator" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21" PreventRenderForMcpClient>
+    <div>
+        <b>Indicator</b> gives the selection a mark of its own beside the color of the option: a <b>Line</b>
+        along the edge of the selected option &mdash; its bottom edge across a bar and its leading edge down
+        a <b>Vertical</b> rail, the way a tab strip marks its current tab &mdash; or the <b>Pill</b> a
+        Material navigation bar draws behind the icon of its current destination. The pill is the filled part
+        in that mode, so it takes the fill of the option over, and both follow the <b>Accent</b> when one is
+        set.
+    </div>
+    <br /><br />
+    <div>Line:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Indicator="BitNavBarIndicator.Line" Mode="BitNavMode.Manual" @bind-SelectedItem="indicatorLineSelectedOption">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" @ref="indicatorLineOptionHome" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+    <br /><br /><br /><br />
+    <div>Pill:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Indicator="BitNavBarIndicator.Pill" Mode="BitNavMode.Manual" @bind-SelectedItem="indicatorPillSelectedOption">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" @ref="indicatorPillOptionHome" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+    <br /><br /><br /><br />
+    <div>Pill with an Accent:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Indicator="BitNavBarIndicator.Pill" Accent="BitColor.Primary" Mode="BitNavMode.Manual" @bind-SelectedItem="indicatorAccentSelectedOption">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" @ref="indicatorAccentOptionHome" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+    <br /><br /><br /><br />
+    <div>Line on a Vertical rail:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Vertical FitWidth Indicator="BitNavBarIndicator.Line" Mode="BitNavMode.Manual" @bind-SelectedItem="indicatorVerticalSelectedOption">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" @ref="indicatorVerticalOptionHome" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Scrollable" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+    <div>
+        A navbar squeezes its options into the room it has, which runs out once it holds more destinations
+        than it fits. <b>Scrollable</b> leaves every option at the size of its own content and scrolls the
+        list instead, with the scrollbar itself hidden, and it brings the selected option into view whenever
+        the selection moves &mdash; from a click, from the URL in the <b>Automatic</b> mode, or from the
+        binding, as the button below does. A <b>Vertical</b> rail scrolls down its own length the same way.
+    </div>
+    <br /><br />
+    <BitButton OnClick="@(() => scrollableSelectedOption = scrollableOptionProfile)">Select the last item</BitButton>
+    <br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Scrollable Mode="BitNavMode.Manual" @bind-SelectedItem="scrollableSelectedOption">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Inbox" IconName="@BitIconName.Mail" />
+            <BitNavBarOption Text="Alerts" IconName="@BitIconName.Ringer" />
+            <BitNavBarOption Text="Favorites" IconName="@BitIconName.Heart" />
+            <BitNavBarOption Text="Reports" IconName="@BitIconName.ReportDocument" />
+            <BitNavBarOption Text="Settings" IconName="@BitIconName.Settings" />
+            <BitNavBarOption Text="Support" IconName="@BitIconName.Help" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" @ref="scrollableOptionProfile" />
+        </BitNavBar>
+    </div>
+    <br />
+    Selected item: @scrollableSelectedOption?.Text
+    <br /><br /><br /><br />
+    <div>Vertical:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Scrollable Vertical FitWidth Style="height:16rem" Mode="BitNavMode.Manual">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Inbox" IconName="@BitIconName.Mail" />
+            <BitNavBarOption Text="Alerts" IconName="@BitIconName.Ringer" />
+            <BitNavBarOption Text="Favorites" IconName="@BitIconName.Heart" />
+            <BitNavBarOption Text="Reports" IconName="@BitIconName.ReportDocument" />
+            <BitNavBarOption Text="Settings" IconName="@BitIconName.Settings" />
+            <BitNavBarOption Text="Support" IconName="@BitIconName.Help" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example23RazorCode" Id="example23" PreventRenderForMcpClient>
     <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
     <br /><br />
     <div>Primary:</div><br />
@@ -851,7 +979,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example22RazorCode" Id="example22">
+<DemoExample Title="External Icons" RazorCode="@example24RazorCode" Id="example24">
     <div>External icon libraries like FontAwesome can be used with the <b>Icon</b> parameter.</div>
 
     <br />
@@ -869,7 +997,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example23RazorCode" Id="example23" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example25RazorCode" Id="example25" PreventRenderForMcpClient>
     <div>The <b>Size</b> scales the icon, the text and the padding of every option of the navbar at once.</div>
     <br /><br />
     <div>Small:</div><br />
@@ -903,7 +1031,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example24RazorCode" Id="example24">
+<DemoExample Title="Style & Class" RazorCode="@example26RazorCode" Id="example26">
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br /><br />
     <div>Component's Style:</div><br />
@@ -957,7 +1085,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example25RazorCode" Id="example25" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example27RazorCode" Id="example27" PreventRenderForMcpClient>
     <div>Use BitNavBar in right-to-left (RTL).</div>
     <br /><br />
     <div dir="rtl" class="container">

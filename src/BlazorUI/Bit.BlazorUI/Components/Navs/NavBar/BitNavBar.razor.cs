@@ -12,6 +12,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
     private string? _containerId;
     private bool _selectionDirty;
+    private bool _scrollToSelectedItem;
     private TItem? _focusedItem;
     private IList<TItem>? _oldItems;
     private bool _optionsOrderDirty;
@@ -34,6 +35,12 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     /// Moves the focus to an item of the navbar.
     /// </summary>
     public ValueTask FocusItem(TItem item) => FocusItemElement(item);
+
+    /// <summary>
+    /// Brings an item into the visible area of a <see cref="Scrollable"/> navbar, without selecting it or
+    /// moving the focus onto it. It is a no-op on a navbar that does not scroll.
+    /// </summary>
+    public ValueTask ScrollItemIntoView(TItem item) => ScrollItemElementIntoView(item);
 
 
 
@@ -151,6 +158,22 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         StateHasChanged();
     }
 
+    // The focus reaching an item is what moves the roving tab stop onto it, and - while the navbar was asked
+    // to have its selection follow the focus - what selects it as well, the way the tabs of a tab list do.
+    internal async Task HandleOnFocusIn(TItem item)
+    {
+        SetFocusedItem(item);
+
+        if (SelectOnFocus is false) return;
+        // Only the manual mode owns its selection: in the automatic mode the current URL is what selects an
+        // item, and a selection made here would be undone by the very next match anyway.
+        if (Mode is not BitNavMode.Manual) return;
+        if (IsEnabled is false) return;
+        if (GetIsEnabled(item) is false) return;
+
+        await SetSelectedItem(item);
+    }
+
     /// <summary>
     /// Whether an item is the selected one. The comparison goes through the default equality comparer of
     /// the item type, so a record or any other value-equal item type highlights the selection correctly.
@@ -174,6 +197,17 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         ClassBuilder.Register(() => Justified ? "bit-nbr-jst" : string.Empty);
         ClassBuilder.Register(() => Vertical ? "bit-nbr-vrt" : string.Empty);
         ClassBuilder.Register(() => SafeArea ? "bit-nbr-sfa" : string.Empty);
+
+        ClassBuilder.Register(() => Scrollable ? "bit-nbr-scr" : string.Empty);
+
+        // The indicator is what marks the selected item beyond its color: a line along the edge of the item,
+        // or the pill a Material navigation bar draws behind the icon of its current destination.
+        ClassBuilder.Register(() => Indicator switch
+        {
+            BitNavBarIndicator.Line => "bit-nbr-lin",
+            BitNavBarIndicator.Pill => "bit-nbr-pil",
+            _ => string.Empty
+        });
 
         // Baseline and Stretch describe how an item sits across the bar rather than how the items are
         // distributed along it, so neither one carries a distribution of its own here.
@@ -312,6 +346,16 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
             await InvokeAsync(SetSelectedItemByCurrentUrl);
         }
 
+        // A navbar that scrolls has to bring its selected item into view as the selection moves, since the
+        // selection moves without a pointer or a keyboard of its own behind it (the URL changed, the binding
+        // was written to), and the item it lands on can be well outside the scrolled area.
+        if (firstRender)
+        {
+            _scrollToSelectedItem = true;
+        }
+
+        await ScrollSelectedItemIntoView();
+
         await base.OnAfterRenderAsync(firstRender);
     }
 
@@ -407,6 +451,25 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         return IsTabStop(item) ? "0" : "-1";
     }
 
+    // The template that replaces an item, if the item is rendered by one: the template of the item in the
+    // Replace mode, or the navbar's own template while that one is in the Replace mode. Everything the
+    // navbar puts around an item - the anchor or the button, the click, the focus, the accessible name -
+    // is then the template's own business, so a replaced item is also left out of the keyboard navigation.
+    internal RenderFragment<TItem>? GetReplacedTemplate(TItem item)
+    {
+        var template = GetTemplate(item);
+
+        // The template of an item wins over the navbar's own, so the mode that goes with it wins as well.
+        if (template is not null)
+        {
+            return GetTemplateRenderMode(item) is BitNavItemTemplateRenderMode.Replace ? template : null;
+        }
+
+        return (ItemTemplate is not null && ItemTemplateRenderMode is BitNavItemTemplateRenderMode.Replace)
+                ? ItemTemplate
+                : null;
+    }
+
     internal string GetItemCssStyle(TItem item)
     {
         // The fragments are declarations, so they are joined with a semicolon: a space would run two of
@@ -455,10 +518,51 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         catch (JSException) { } // a failure on the JS side is not fatal here, the current order is kept
     }
 
-    // The items the keyboard moves between: the enabled ones, in the order they are rendered. A disabled
-    // item renders as a native disabled button (or as a link without an href), which takes no focus at all,
-    // so walking onto one would leave the focus where it was while the navbar believes it has moved.
-    private List<TItem> GetFocusableItems() => [.. _items.Where(GetIsEnabled)];
+    // Brings the element of an item into the scrolled area of the navbar, which is what the public
+    // ScrollItemIntoView is: the item is handed over as the element it rendered there, since that caller
+    // can ask for any item rather than only for the selected one. Only the container is scrolled (rather
+    // than every scrollable ancestor the way Element.scrollIntoView does), so bringing an item into view
+    // never drags the page the navbar sits on along with it.
+    private async ValueTask ScrollItemElementIntoView(TItem item)
+    {
+        if (Scrollable is false) return;
+        if (_itemElements.TryGetValue(item, out var element) is false) return;
+
+        try
+        {
+            await _js.BitNavBarScrollItemIntoView(_containerId!, element);
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone (the reader navigated away), nothing to scroll
+        catch (JSException) { } // a failure on the JS side leaves the scroll position as it is, which is not fatal
+    }
+
+    // Brings the item the selection has just landed on into the scrolled area of the navbar.
+    private async Task ScrollSelectedItemIntoView()
+    {
+        if (_scrollToSelectedItem is false) return;
+
+        _scrollToSelectedItem = false;
+
+        if (Scrollable is false) return;
+        if (SelectedItem is null) return;
+
+        try
+        {
+            // Which element is the selected one is read off the DOM rather than out of the elements the
+            // items have handed over, since a selection made on the very first render lands before they
+            // have handed anything over.
+            await _js.BitNavBarScrollSelectedItemIntoView(_containerId!);
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone (the reader navigated away), nothing to scroll
+        catch (JSException) { } // a failure on the JS side leaves the scroll position as it is, which is not fatal
+    }
+
+    // The items the keyboard moves between: the enabled ones the navbar renders itself, in the order they
+    // are rendered. A disabled item renders as a native disabled button (or as a link without an href),
+    // which takes no focus at all, and an item whose template replaced it renders no element of the
+    // navbar's at all, so walking onto either would leave the focus where it was while the navbar believes
+    // it has moved.
+    private List<TItem> GetFocusableItems() => [.. _items.Where(i => GetIsEnabled(i) && GetReplacedTemplate(i) is null)];
 
     // The single stop of the roving tab index is the item the focus was last on, and the selected one
     // before the bar has ever been focused, so Tab returns to where the reader left it either way. A navbar
@@ -515,6 +619,9 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
     private void OnSetSelectedItem()
     {
+        // The selection moved, so a scrolling navbar brings the item it landed on into view after the render.
+        _scrollToSelectedItem = true;
+
         RefreshOptions();
     }
 

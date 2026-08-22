@@ -92,6 +92,11 @@ public class BitNavBarNameSelectors<TItem>
     public BitNameSelectorPair<TItem, RenderFragment<TItem>?> Template { get; set; } = new(nameof(BitNavBarItem.Template));
 
     /// <summary>
+    /// The TemplateRenderMode field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitNavItemTemplateRenderMode?> TemplateRenderMode { get; set; } = new(nameof(BitNavBarItem.TemplateRenderMode));
+
+    /// <summary>
     /// The Text field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Text { get; set; } = new(nameof(BitNavBarItem.Text));
