@@ -73,13 +73,17 @@ public partial class TwoFactorAuthTests : AppPageTest
         return secret;
     }
 
-    /// <summary>Fills the verification code (a TOTP computed from <paramref name="authenticatorSecret"/>) and enables 2FA.</summary>
+    /// <summary>
+    /// Fills the verification code (a TOTP computed from <paramref name="authenticatorSecret"/>) and enables 2FA.
+    /// <para>
+    /// The field is a <c>BitOtpInput</c> - the same control the sign-in 2FA step uses below - so it is filled through
+    /// <see cref="BitOtpInputUtils"/> rather than by placeholder. It used to be a <c>BitTextField</c>, which had no
+    /// digit normalisation and so could not be typed into on a Persian/Arabic keyboard layout at all.
+    /// </para>
+    /// </summary>
     private async Task EnableTwoFactor(IPage page, string authenticatorSecret)
     {
-        var verificationCode = page.GetByPlaceholder(AppStrings.TfaConfigureAutAppVerificationCodePlaceholder);
-        await verificationCode.FillAsync(ComputeTotpCode(authenticatorSecret));
-        // The field commits its value on change (blur), so blur it before verifying to make sure the component reads it.
-        await verificationCode.BlurAsync();
+        await BitOtpInputUtils.FillOtpInputs(page, ComputeTotpCode(authenticatorSecret));
 
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.TfaConfigureAutAppVerifyButtonText }).ClickAsync();
     }

@@ -32,6 +32,7 @@ public partial class ChangeEmailTab
             showConfirmation = true;
             isEmailUnavailable = false;
             changeModel.Email = EmailQueryString;
+            sendModel.Email = EmailQueryString;
 
             if (string.IsNullOrEmpty(EmailTokenQueryString) is false)
             {
@@ -48,7 +49,13 @@ public partial class ChangeEmailTab
 
     private async Task SendToken()
     {
-        if (isWaiting || sendModel.Email == Email) return;
+        if (isWaiting) return;
+
+        if (sendModel.Email == Email)
+        {
+            SnackBarService.Error(Localizer["That is already your email address. Enter a different one."]);
+            return;
+        }
 
         // Proving the NEW address (the code sent below) is only half of it - the server also requires the user to prove
         // she still holds the CURRENT one, by quoting a code sent to it. That is what elevated access is.
@@ -86,8 +93,11 @@ public partial class ChangeEmailTab
         {
             await userController.ChangeEmail(changeModel, CurrentCancellationToken);
 
-            CurrentUser!.Email = changeModel.Email;
-            PubSubService.Publish(ClientAppMessages.PROFILE_UPDATED, CurrentUser);
+            if (CurrentUser is not null)
+            {
+                CurrentUser.Email = changeModel.Email;
+                PubSubService.Publish(ClientAppMessages.PROFILE_UPDATED, CurrentUser);
+            }
 
             SnackBarService.Warning(Localizer[nameof(AppStrings.SignOutOfAllDevicesWarningMessage)]);
 

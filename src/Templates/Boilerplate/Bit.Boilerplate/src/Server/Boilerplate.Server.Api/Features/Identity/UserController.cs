@@ -393,10 +393,12 @@ public partial class UserController : AppControllerBase, IUserController
         var userId = User.GetUserId();
         var user = await userManager.FindByIdAsync(userId.ToString()) ?? throw new ResourceNotFoundException().WithData("Reason", "User not found.");
 
-        // The empty request is a READ - the settings page calls it on every visit to fetch the shared key, the QR code and
-        // the recovery-code count - so the endpoint itself can't carry [Authorize(ELEVATED_ACCESS)] without prompting for a
+        // The empty request is a READ - the settings page calls it on every visit to fetch the enrolment material and the
+        // recovery-code count - so the endpoint itself can't carry [Authorize(ELEVATED_ACCESS)] without prompting for a
         // code every time the tab is opened. Everything that WEAKENS the second factor is gated here instead. Enabling is
         // excluded because it already requires a valid TOTP code, which is stronger proof than elevation.
+        // Note the gate below is NOT what keeps the shared key safe once two factor is on - the read is deliberately
+        // ungated, so the response itself withholds the key instead. See the enrolment-material block further down.
         var weakensTwoFactor = request.Enable is false || request.ResetSharedKey || request.ResetRecoveryCodes;
 
         var elevatedSessionExpiresOn = User.GetElevatedSessionExpiresOn();
@@ -452,13 +454,15 @@ public partial class UserController : AppControllerBase, IUserController
             }
         }
 
-        var sharedKey = FormatKey(unformattedKey);
-        var authenticatorUri = GenerateQrCodeUri(user.DisplayName!, unformattedKey);
-
+        var sharedKey = "";
         var qrCodeBase64 = "";
+        var authenticatorUri = "";
         var isTwoFactorEnabled = await userManager.GetTwoFactorEnabledAsync(user);
         if (isTwoFactorEnabled is false)
         {
+            sharedKey = FormatKey(unformattedKey);
+            authenticatorUri = GenerateQrCodeUri(user.DisplayName!, unformattedKey);
+
             using var qrGenerator = new QRCodeGenerator();
             using var qrCodeData = qrGenerator.CreateQrCode(authenticatorUri, QRCodeGenerator.ECCLevel.Q);
 

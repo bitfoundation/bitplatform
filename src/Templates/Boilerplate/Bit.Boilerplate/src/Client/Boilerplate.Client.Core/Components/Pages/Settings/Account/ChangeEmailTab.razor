@@ -10,7 +10,7 @@
                 <BitStack FillContent>
                     @if (Email is not null)
                     {
-                        <BitTextField Value="@Email" ReadOnly NoValidate />
+                        <BitTextField Value="@Email" ReadOnly NoValidate Label="@Localizer[nameof(AppStrings.Email)]" />
                     }
 
                     <BitTextField @bind-Value="sendModel.Email"
@@ -57,8 +57,10 @@
                     <BitOtpInput @bind-Value="changeModel.Token"
                                  AutoFocus
                                  Length="6"
+                                 NormalizeDigits
                                  Size="BitSize.Large"
                                  Type="BitInputType.Number"
+                                 InputMode="BitInputMode.Tel"
                                  OnFill="WrapHandled(ChangeEmail)"
                                  Label="@Localizer[nameof(AppStrings.EmailToken)]" />
                     <ValidationMessage For="@(() => changeModel.Token)" />
@@ -88,7 +90,8 @@
                     @Localizer[nameof(AppStrings.CheckSpamMailMessage)]
                 </BitText>
 
-                <BitButton Variant="BitVariant.Outline"
+                <BitButton IsLoading="isWaiting"
+                           Variant="BitVariant.Outline"
                            OnClick="WrapHandled(SendToken)"
                            ButtonType="BitButtonType.Button">
                     @Localizer[nameof(AppStrings.ResendEmailTokenButtonText)]

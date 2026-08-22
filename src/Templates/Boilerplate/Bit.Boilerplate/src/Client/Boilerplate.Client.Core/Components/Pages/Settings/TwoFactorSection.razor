@@ -2,7 +2,13 @@
 
 <section>
     <BitStack>
-        @if (isTwoFactorAuthEnabled is false)
+        @if (isLoading)
+        {
+            <BitShimmer Height="1.5rem" Width="18rem" />
+            <BitShimmer Height="1.5rem" Width="25rem" />
+            <BitShimmer Height="16rem" Width="16rem" />
+        }
+        else if (isTwoFactorAuthEnabled is false)
         {
             <BitText>@Localizer[nameof(AppStrings.TfaConfigureAutAppTitle)]</BitText>
 
@@ -20,8 +26,10 @@
                 <li>
                     <BitStack FillContent>
                         @Localizer[nameof(AppStrings.TfaConfigureAutAppStep2)]
-                        <a href="@authenticatorUri">
-                            <img src="data:image/png;base64,@qrCode" style="width:256px" />
+                        <a href="@authenticatorUri" aria-label="@Localizer["Open this account in your authenticator app"]">
+                            <img src="data:image/png;base64,@qrCode"
+                                 style="width:256px"
+                                 alt="@Localizer["QR code for setting up your authenticator app"]" />
                         </a>
                         <BitCard FullWidth>
                             <BitStack Horizontal VerticalAlign="BitAlignment.Center">
@@ -42,11 +50,15 @@
                     <br />
                     <br />
                     <div>
-                        <BitTextField @bind-Value="verificationCode"
-                                      Type="BitInputType.Number"
-                                      AutoComplete="@BitAutoCompleteValue.Off"
-                                      Label="@Localizer[nameof(AppStrings.TfaConfigureAutAppVerificationCodeLabel)]"
-                                      Placeholder="@Localizer[nameof(AppStrings.TfaConfigureAutAppVerificationCodePlaceholder)]" />
+                        <BitOtpInput @bind-Value="verificationCode"
+                                     AutoFocus
+                                     Length="6"
+                                     NormalizeDigits
+                                     Size="BitSize.Large"
+                                     Type="BitInputType.Number"
+                                     InputMode="BitInputMode.Tel"
+                                     OnFill="WrapHandled(EnableTwoFactorAuth)"
+                                     Label="@Localizer[nameof(AppStrings.TfaConfigureAutAppVerificationCodeLabel)]" />
                         <br />
                         <BitButton AutoLoading OnClick="WrapHandled(EnableTwoFactorAuth)">
                             @Localizer[nameof(AppStrings.TfaConfigureAutAppVerifyButtonText)]

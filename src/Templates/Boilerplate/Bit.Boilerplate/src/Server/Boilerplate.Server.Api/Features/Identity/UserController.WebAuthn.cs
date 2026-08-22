@@ -64,7 +64,13 @@ public partial class UserController
         return options;
     }
 
-    [HttpPut]
+    /// <summary>
+    /// Enrolling a passkey adds a NEW way to sign in, so it belongs with the other account-factor changes behind elevated
+    /// access (compare <see cref="Delete"/>, <see cref="ChangeUserName"/> and <see cref="RevokeSession"/>). Without this,
+    /// an access token stolen for a few minutes buys a credential that survives a password change AND revoking every
+    /// session, because nothing on those paths touches WebAuthnCredential - and the account owner has no UI that lists it.
+    /// </summary>
+    [HttpPut, Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task CreateWebAuthnCredential(AuthenticatorAttestationRawResponse attestationResponse, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();

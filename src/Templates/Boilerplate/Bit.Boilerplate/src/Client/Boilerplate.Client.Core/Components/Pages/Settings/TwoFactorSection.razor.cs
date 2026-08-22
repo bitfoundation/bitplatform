@@ -4,6 +4,7 @@ public partial class TwoFactorSection
 {
     private string? qrCode;
     private bool isWaiting;
+    private bool isLoading = true;
     private string? sharedKey;
     private int recoveryCodesLeft;
     private bool isKeyCopiedShown;
@@ -27,7 +28,11 @@ public partial class TwoFactorSection
 
     private async Task EnableTwoFactorAuth()
     {
-        if (string.IsNullOrWhiteSpace(verificationCode)) return;
+        if (string.IsNullOrWhiteSpace(verificationCode))
+        {
+            SnackBarService.Error(Localizer["Enter the 6-digit code from your authenticator app."]);
+            return;
+        }
 
         // Strip spaces and hyphens
         var twoFactorCode = verificationCode.Replace(" ", string.Empty).Replace("-", string.Empty);
@@ -108,6 +113,7 @@ public partial class TwoFactorSection
             authenticatorUri = response.AuthenticatorUri;
             recoveryCodesLeft = response.RecoveryCodesLeft;
             isTwoFactorAuthEnabled = response.IsTwoFactorEnabled;
+            isLoading = false;
 
             return response;
         }
