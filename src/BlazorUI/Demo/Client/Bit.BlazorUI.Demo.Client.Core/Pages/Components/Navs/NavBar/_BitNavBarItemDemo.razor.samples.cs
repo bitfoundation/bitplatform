@@ -52,7 +52,9 @@ private static readonly List<BitNavBarItem> basicNavBarItems =
 
 <BitNavBar Items=""prefixMatchItems"" Match=""BitNavMatch.Prefix"" />
 
-<BitNavBar Items=""patternMatchItems"" />
+<BitNavBar Items=""wildcardMatchItems"" />
+
+<BitNavBar Items=""regexMatchItems"" />
 
 <BitNavBar Items=""additionalUrlsItems"" />";
     private readonly string example4CsharpCode = @"
@@ -70,10 +72,16 @@ private static readonly List<BitNavBarItem> prefixMatchItems =
 
 // The URL of a Wildcard or a Regex item is a pattern rather than a route, so these items are disabled:
 // they still light up on a match, but a click cannot navigate to a URL no page answers.
-private static readonly List<BitNavBarItem> patternMatchItems =
+private static readonly List<BitNavBarItem> wildcardMatchItems =
 [
     new() { Text = ""/components/*"", IconName = BitIconName.F12DevTools, Url = ""/components/*"", Match = BitNavMatch.Wildcard, IsEnabled = false },
-    new() { Text = ""^/components/b"", IconName = BitIconName.Code, Url = ""^/components/b"", Match = BitNavMatch.Regex, IsEnabled = false },
+    new() { Text = ""/iconography/*"", IconName = BitIconName.AppIconDefault, Url = ""/iconography/*"", Match = BitNavMatch.Wildcard, IsEnabled = false },
+];
+
+private static readonly List<BitNavBarItem> regexMatchItems =
+[
+    new() { Text = ""^/components/navbar$"", IconName = BitIconName.Code, Url = ""^/components/navbar$"", Match = BitNavMatch.Regex, IsEnabled = false },
+    new() { Text = ""^/iconography$"", IconName = BitIconName.Code, Url = ""^/iconography$"", Match = BitNavMatch.Regex, IsEnabled = false },
 ];
 
 private static readonly List<BitNavBarItem> additionalUrlsItems =

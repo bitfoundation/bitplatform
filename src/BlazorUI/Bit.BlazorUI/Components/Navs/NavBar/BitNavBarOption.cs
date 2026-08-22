@@ -99,6 +99,10 @@ public partial class BitNavBarOption : ComponentBase, IDisposable
     /// <summary>
     /// Modifies how the URL of the navbar option is matched against the current URL in the automatic mode.
     /// Takes precedence over the Match of the navbar itself.
+    /// <br />
+    /// A Wildcard (or a Regex) URL is run as the pattern it was written as, so unlike an Exact or a Prefix
+    /// URL it is never normalized: it has to be app-relative and to carry its leading slash itself, as in
+    /// "/products/*".
     /// </summary>
     [Parameter] public BitNavMatch? Match { get; set; }
 

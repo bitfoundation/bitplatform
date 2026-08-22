@@ -20,7 +20,10 @@ public class MenuItem
     public IEnumerable<string>? ExtraLinks { get; set; }
     public BitNavMatch? Matching { get; set; }
     public string? Counter { get; set; }
+    public string? CounterLabel { get; set; }
     public bool Marker { get; set; }
+    public string? SelectedImageName { get; set; }
+    public BitIconInfo? SelectedImage { get; set; }
 }
 
 private static readonly List<MenuItem> basicNavBarCustoms =
@@ -83,7 +86,14 @@ private static readonly List<MenuItem> basicNavBarCustoms =
                                     IconName = { Selector = item => item.ImageName },
                                     Url = { Selector = item => item.Link } })"" />
 
-<BitNavBar Items=""patternMatchCustoms""
+<BitNavBar Items=""wildcardMatchCustoms""
+           NameSelectors=""@(new() { Text = { Selector = item => item.Title },
+                                    IconName = { Selector = item => item.ImageName },
+                                    Url = { Selector = item => item.Link },
+                                    Match = { Selector = item => item.Matching },
+                                    IsEnabled = { Selector = item => item.Disabled is false } })"" />
+
+<BitNavBar Items=""regexMatchCustoms""
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },
                                     IconName = { Selector = item => item.ImageName },
                                     Url = { Selector = item => item.Link },
@@ -110,10 +120,16 @@ private static readonly List<MenuItem> prefixMatchCustoms =
 
 // The URL of a Wildcard or a Regex item is a pattern rather than a route, so these items are disabled:
 // they still light up on a match, but a click cannot navigate to a URL no page answers.
-private static readonly List<MenuItem> patternMatchCustoms =
+private static readonly List<MenuItem> wildcardMatchCustoms =
 [
     new() { Title = ""/components/*"", ImageName = BitIconName.F12DevTools, Link = ""/components/*"", Matching = BitNavMatch.Wildcard, Disabled = true },
-    new() { Title = ""^/components/b"", ImageName = BitIconName.Code, Link = ""^/components/b"", Matching = BitNavMatch.Regex, Disabled = true },
+    new() { Title = ""/iconography/*"", ImageName = BitIconName.AppIconDefault, Link = ""/iconography/*"", Matching = BitNavMatch.Wildcard, Disabled = true },
+];
+
+private static readonly List<MenuItem> regexMatchCustoms =
+[
+    new() { Title = ""^/components/navbar$"", ImageName = BitIconName.Code, Link = ""^/components/navbar$"", Matching = BitNavMatch.Regex, Disabled = true },
+    new() { Title = ""^/iconography$"", ImageName = BitIconName.Code, Link = ""^/iconography$"", Matching = BitNavMatch.Regex, Disabled = true },
 ];
 
 private static readonly List<MenuItem> additionalUrlsCustoms =

@@ -540,6 +540,11 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         {
             await SetSelectedItemByCurrentUrl();
 
+            // The dispatch and the match itself both give the component a chance to be disposed in the
+            // meantime (the navigation that raised the event is what takes it off the page, after all),
+            // and a render requested after that point throws instead of doing anything.
+            if (IsDisposed) return;
+
             RefreshOptions();
             StateHasChanged();
         });

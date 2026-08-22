@@ -32,10 +32,16 @@ public partial class _BitNavBarCustomDemo
 
     // The URL of a Wildcard or a Regex item is a pattern rather than a route, so these items are disabled:
     // they still light up on a match, but a click cannot navigate to a URL no page answers.
-    private static readonly List<MenuItem> patternMatchCustoms =
+    private static readonly List<MenuItem> wildcardMatchCustoms =
     [
         new() { Title = "/components/*", ImageName = BitIconName.F12DevTools, Link = "/components/*", Matching = BitNavMatch.Wildcard, Disabled = true },
-        new() { Title = "^/components/b", ImageName = BitIconName.Code, Link = "^/components/b", Matching = BitNavMatch.Regex, Disabled = true },
+        new() { Title = "/iconography/*", ImageName = BitIconName.AppIconDefault, Link = "/iconography/*", Matching = BitNavMatch.Wildcard, Disabled = true },
+    ];
+
+    private static readonly List<MenuItem> regexMatchCustoms =
+    [
+        new() { Title = "^/components/navbar$", ImageName = BitIconName.Code, Link = "^/components/navbar$", Matching = BitNavMatch.Regex, Disabled = true },
+        new() { Title = "^/iconography$", ImageName = BitIconName.Code, Link = "^/iconography$", Matching = BitNavMatch.Regex, Disabled = true },
     ];
 
     private static readonly List<MenuItem> additionalUrlsCustoms =

@@ -71,6 +71,7 @@ public partial class _BitNavBarOptionDemo
         if (firstRender)
         {
             bindingSelectedOption ??= bindingOptionProducts;
+            twoWaySelectedOption ??= optionHome;
             hideTextSelectedOption ??= hideTextOptionHome;
             accentSelectedOption ??= accentOptionHome;
             tabStopSelectedOption ??= tabStopOptionProducts;

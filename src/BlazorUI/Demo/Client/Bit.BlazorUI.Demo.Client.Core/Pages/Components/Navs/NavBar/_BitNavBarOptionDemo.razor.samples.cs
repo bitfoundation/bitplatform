@@ -46,7 +46,12 @@ public partial class _BitNavBarOptionDemo
 
 <BitNavBar TItem=""BitNavBarOption"">
     <BitNavBarOption Text=""/components/*"" IconName=""@BitIconName.F12DevTools"" Url=""/components/*"" Match=""BitNavMatch.Wildcard"" IsEnabled=""false"" />
-    <BitNavBarOption Text=""^/components/b"" IconName=""@BitIconName.Code"" Url=""^/components/b"" Match=""BitNavMatch.Regex"" IsEnabled=""false"" />
+    <BitNavBarOption Text=""/iconography/*"" IconName=""@BitIconName.AppIconDefault"" Url=""/iconography/*"" Match=""BitNavMatch.Wildcard"" IsEnabled=""false"" />
+</BitNavBar>
+
+<BitNavBar TItem=""BitNavBarOption"">
+    <BitNavBarOption Text=""^/components/navbar$"" IconName=""@BitIconName.Code"" Url=""^/components/navbar$"" Match=""BitNavMatch.Regex"" IsEnabled=""false"" />
+    <BitNavBarOption Text=""^/iconography$"" IconName=""@BitIconName.Code"" Url=""^/iconography$"" Match=""BitNavMatch.Regex"" IsEnabled=""false"" />
 </BitNavBar>
 
 <BitNavBar TItem=""BitNavBarOption"">
@@ -274,6 +279,7 @@ protected override void OnAfterRender(bool firstRender)
         // An option only exists once it has rendered, so the navbar that has to open on one is handed
         // its reference here, where the reference has been assigned.
         bindingSelectedOption ??= bindingOptionProducts;
+        twoWaySelectedOption ??= optionHome;
 
         StateHasChanged();
     }

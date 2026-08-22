@@ -117,6 +117,10 @@ public partial class BitNavBar<TItem>
     /// <summary>
     /// Modifies how the URL of an item is matched against the current URL in the automatic mode.
     /// The Match of an item takes precedence over this value, and the default is an exact match.
+    /// <br />
+    /// A Wildcard (or a Regex) URL is run as the pattern it was written as, so unlike an Exact or a Prefix
+    /// URL it is never normalized: it has to be app-relative and to carry its leading slash itself, as in
+    /// "/products/*".
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnUrlMatchingChanged))]
