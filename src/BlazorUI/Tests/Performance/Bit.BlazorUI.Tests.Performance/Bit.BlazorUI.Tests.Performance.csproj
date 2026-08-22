@@ -15,11 +15,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.0" />
-        <PackageReference Include="Microsoft.Playwright.MSTest" Version="1.52.0" />
-        <PackageReference Include="MSTest" Version="3.9.0" />
-        <PackageReference Include="MSTest.Analyzers" Version="3.9.0" />
-        <PackageReference Include="coverlet.collector" Version="6.0.4" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
+        <PackageReference Include="Microsoft.Playwright.MSTest" Version="1.62.0" />
+        <PackageReference Include="MSTest" Version="4.3.3" />
+        <PackageReference Include="MSTest.Analyzers" Version="4.3.3">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="coverlet.collector" Version="10.0.1">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
 
     <ItemGroup>

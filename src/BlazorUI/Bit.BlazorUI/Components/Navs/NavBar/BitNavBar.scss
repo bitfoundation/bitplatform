@@ -37,6 +37,7 @@
     text-decoration: none;
     flex-direction: column;
     background: transparent;
+    letter-spacing: $tg-ctrl-letter-spacing;
 
     @media (hover:hover) {
         &:hover {
@@ -50,11 +51,11 @@
 }
 
 .bit-nbr-ico {
-    font-size: 1rem;
+    font-size: $tg-fs-md;
 }
 
 .bit-nbr-txt {
-    font-size: 0.85rem;
+    font-size: $tg-fs-sm;
 }
 
 .bit-nbr-ion {

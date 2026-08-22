@@ -9,7 +9,7 @@
     flex-direction: column;
     color: $clr-fg-pri;
     background: $clr-bg-pri;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-surface;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
@@ -41,7 +41,7 @@
     display: inline-flex;
     background: transparent;
     justify-content: center;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     border: $shp-border-width $shp-border-style transparent;
     transition: background-color $mot-duration-short, color $mot-duration-short, border-color $mot-duration-short;
 
@@ -72,13 +72,13 @@
     }
 
     &:disabled {
-        opacity: 0.4;
+        opacity: $opa-dis;
         cursor: not-allowed;
     }
 }
 
 .bit-mde-sep {
-    width: spacing(0.125);
+    width: $shp-border-width;
     align-self: stretch;
     margin: spacing(0.5);
     background: $clr-brd-sec;
@@ -100,8 +100,8 @@
     z-index: $zindex-overlay;
     color: $clr-fg-pri;
     background: $clr-bg-pri;
-    box-shadow: $box-shadow-callout;
-    border-radius: $shp-border-radius;
+    box-shadow: $box-shadow-popup;
+    border-radius: $shp-radius-popup;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
@@ -118,7 +118,7 @@
 }
 
 .bit-mde-mit {
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
 }
 
 .bit-mde-guard {
@@ -142,10 +142,10 @@
     min-width: 0;
     flex: 1 1 spacing(15);
     color: $clr-fg-pri;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     background: $clr-bg-pri;
     padding: spacing(0.5) spacing(0.75);
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     &:focus-visible {
@@ -158,9 +158,9 @@
     cursor: pointer;
     color: $clr-fg-pri;
     background: $clr-bg-pri;
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
     padding: spacing(0.5) spacing(1);
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     &:hover:not(:disabled) {
@@ -168,7 +168,7 @@
     }
 
     &:disabled {
-        opacity: 0.4;
+        opacity: $opa-dis;
         cursor: not-allowed;
     }
 }
@@ -218,7 +218,7 @@
     color: $clr-fg-pri;
     box-sizing: border-box;
     background: transparent;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     padding: spacing(1.5) spacing(1.75);
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 
@@ -249,7 +249,7 @@
     align-items: center;
     color: $clr-fg-sec;
     background: $clr-bg-sec;
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
     padding: spacing(0.5) spacing(1.5);
     border-top: $shp-border-width $shp-border-style $clr-brd-sec;
 }
@@ -280,9 +280,9 @@
     color: $clr-fg-pri;
     background: $clr-bg-pri;
     width: min(spacing(45), 90%);
-    box-shadow: $box-shadow-callout;
+    box-shadow: $box-shadow-dialog;
     padding: spacing(2) spacing(2.25);
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-dialog;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     header {
@@ -324,5 +324,5 @@
     cursor: pointer;
     color: $clr-fg-sec;
     background: transparent;
-    font-size: spacing(2.5);
+    font-size: $tg-fs-xl;
 }

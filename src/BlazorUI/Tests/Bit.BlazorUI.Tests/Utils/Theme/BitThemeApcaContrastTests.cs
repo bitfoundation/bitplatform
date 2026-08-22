@@ -117,7 +117,7 @@ public sealed class BitThemeApcaContrastTests
 
         foreach (var file in Directory.EnumerateFiles(
                      Path.Combine(AppContext.BaseDirectory, "theme-styles"),
-                     "colors.fluent-*.scss",
+                     "colors.*-*.scss",
                      SearchOption.AllDirectories))
         {
             var css = File.ReadAllText(file);

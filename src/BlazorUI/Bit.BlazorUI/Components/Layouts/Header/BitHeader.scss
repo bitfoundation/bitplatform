@@ -220,8 +220,7 @@
 // foreground color so it stays readable in a dark theme, where a black shadow over a dark surface is
 // invisible.
 .bit-hdr-elv {
-    box-shadow: 0 rem2(2px) rem2(4px) rem2(-1px) translucent(#{$clr-fg-pri}, 20%),
-                0 rem2(4px) rem2(6px) rem2(-4px) translucent(#{$clr-fg-pri}, 14%);
+    box-shadow: $box-shadow-appbar-top;
 }
 
 // A shadow that only shows up once the page has been scrolled has to arrive gradually, or the header
@@ -274,7 +273,7 @@
         height: auto;
         overflow: visible;
         clip-path: none;
-        border-radius: $shp-border-radius;
+        border-radius: $shp-radius-control;
         color: $clr-pri-text;
         background-color: $clr-pri;
         padding: #{spacing(1)} #{spacing(2)};

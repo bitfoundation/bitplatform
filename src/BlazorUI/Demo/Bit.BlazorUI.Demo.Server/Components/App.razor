@@ -167,6 +167,12 @@
 
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
+    @* The Fluent 2, Material and Cupertino design-system presets ship with Bit.BlazorUI.Extras as
+       override-only token bundles, so they must be linked after the core stylesheet that carries the
+       Fluent defaults. *@
+    <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.fluent2.css" />
+    <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.material.css" />
+    <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.cupertino.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Legacy/styles/bit.blazorui.legacy.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.Extensions.AI;
 using System.ClientModel.Primitives;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
+using ModelContextProtocol.Protocol;
 
 namespace Bit.Websites.Platform.Server.Startup;
 
@@ -68,6 +69,8 @@ public static class Services
         {
             options.EnableDetailedErrors = env.IsDevelopment();
         });
+
+        AddMcpServer(services);
 
         services.Configure<ForwardedHeadersOptions>(options =>
         {
@@ -138,5 +141,37 @@ public static class Services
         services.AddSwaggerGen();
 
         services.AddHealthChecks(env, configuration);
+    }
+
+    /// <summary>
+    /// Serves every tool of every MCP server listed in the repository's .mcp.json from this site's own
+    /// /mcp endpoint (mapped in <see cref="Middlewares"/>), so that an agent pointed at bitplatform.dev/mcp
+    /// gets all of them from a single connection. <see cref="McpProxyService"/> does the forwarding.
+    /// </summary>
+    private static void AddMcpServer(IServiceCollection services)
+    {
+        // Singleton: it keeps one session per upstream server, shared by every caller.
+        services.AddSingleton<McpProxyService>();
+
+        services.AddMcpServer(options =>
+        {
+            options.ServerInfo = new()
+            {
+                Name = "bitplatform",
+                Title = "bit platform",
+                Version = typeof(Services).Assembly.GetName().Version!.ToString()
+            };
+            options.ServerInstructions = "Provides the tools of every MCP server the bit platform team develops against, including the bit BlazorUI, Brouter, Butil, Bswup and Motion documentation servers.";
+        })
+            // Stateless: no session state is kept between requests, so the endpoint keeps working when the
+            // site runs behind a load balancer without session affinity. Nothing is lost by it here, since
+            // the proxied tools are documentation lookups that never call back into the client.
+            .WithHttpTransport(options => options.Stateless = true)
+            .WithListToolsHandler(async (request, cancellationToken) => new ListToolsResult
+            {
+                Tools = [.. await request.Services!.GetRequiredService<McpProxyService>().ListTools(cancellationToken)]
+            })
+            .WithCallToolHandler((request, cancellationToken) =>
+                request.Services!.GetRequiredService<McpProxyService>().CallTool(request.Params!, cancellationToken));
     }
 }

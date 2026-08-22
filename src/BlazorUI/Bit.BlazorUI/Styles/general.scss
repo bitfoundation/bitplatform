@@ -1,6 +1,7 @@
 @import "functions.scss";
 
 @import "semantic-tokens.scss";
+@import "family-tokens.scss";
 @import "bit-css.scss";
 @import "components.scss";
 @import "fabric.mdl2.bit.blazoui.scss";
@@ -96,8 +97,8 @@ button {
 @keyframes bit-fade-in {
     0% {
         opacity: 0;
-        animation-timing-function: cubic-bezier(0.1,0.25,0.75,0.9);
-        -webkit-animation-timing-function: cubic-bezier(0.1,0.25,0.75,0.9);
+        animation-timing-function: $mot-easing;
+        -webkit-animation-timing-function: $mot-easing;
     }
 
     100% {

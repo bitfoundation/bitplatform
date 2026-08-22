@@ -3,7 +3,7 @@
 .bit-chg {
     display: flex;
     gap: spacing(1);
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     width: fit-content;
     padding: spacing(1);
     flex-direction: column;
@@ -53,7 +53,7 @@
 .bit-chg-lbl {
     display: block;
     box-shadow: none;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     box-sizing: border-box;
     overflow-wrap: break-word;
 }
@@ -63,7 +63,7 @@
     color: $clr-fg-sec;
     box-sizing: border-box;
     overflow-wrap: break-word;
-    font-size: calc(var(--bit-chg-fontsize) - #{spacing(0.25)});
+    font-size: calc(var(--bit-chg-fontsize) * 0.85);
 }
 
 .bit-chg-cnt {
@@ -124,7 +124,7 @@
 .bit-chg-icn {
     border: none;
     display: flex;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     position: relative;
     align-items: center;
     box-sizing: border-box;
@@ -226,7 +226,7 @@
 
     // Matches the radius the tile layout sets below, so the focus ring (a box-shadow, which follows the
     // border radius) is rounded on a plain item too instead of only on a tile.
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     flex-direction: var(--bit-chg-flex-direction);
 }
 
@@ -238,7 +238,7 @@
 .bit-chg-dsc {
     display: block;
     color: $clr-fg-sec;
-    font-size: calc(var(--bit-chg-fontsize) - #{spacing(0.25)});
+    font-size: calc(var(--bit-chg-fontsize) * 0.85);
 }
 
 .bit-chg-ili {
@@ -254,8 +254,8 @@
     box-sizing: content-box;
     justify-content: center;
     min-height: spacing(2.5);
-    transition: all $mot-duration ease;
-    border-radius: $shp-border-radius;
+    transition: all $mot-duration $mot-easing;
+    border-radius: $shp-radius-control;
     padding-block-start: spacing(2.75);
     border: $shp-border-width $shp-border-style transparent;
 
@@ -292,7 +292,7 @@
 .bit-chg-itw {
     display: block;
     overflow: hidden;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     position: relative;
     min-height: spacing(4);
     max-width: spacing(8);
@@ -308,7 +308,7 @@
 
 .bit-chg-iic {
     padding: 0 spacing(3.75);
-    transition: opacity $mot-duration ease;
+    transition: opacity $mot-duration $mot-easing;
 
     .bit-chg-iiw {
         border-style: none;
@@ -398,7 +398,7 @@
     }
 
     .bit-chg-itx {
-        font-weight: bold;
+        font-weight: $tg-fw-bold;
     }
 }
 
@@ -657,24 +657,24 @@
 .bit-chg-sm {
     --bit-chg-item-gap: #{spacing(1)};
     --bit-chg-ico-size: #{spacing(3)};
-    --bit-chg-fontsize: #{spacing(1.5)};
-    --bit-chg-circle-size: #{spacing(1.75)};
+    --bit-chg-fontsize: #{$tg-fs-xs};
+    --bit-chg-circle-size: #{$siz-sel-sm};
     --bit-chg-dot-size: #{spacing(0.75)};
 }
 
 .bit-chg-md {
     --bit-chg-item-gap: #{spacing(1)};
     --bit-chg-ico-size: #{spacing(4)};
-    --bit-chg-fontsize: #{spacing(1.75)};
-    --bit-chg-circle-size: #{spacing(2.5)};
+    --bit-chg-fontsize: #{$tg-fs-sm};
+    --bit-chg-circle-size: #{$siz-sel-md};
     --bit-chg-dot-size: #{spacing(1.25)};
 }
 
 .bit-chg-lg {
     --bit-chg-item-gap: #{spacing(2)};
     --bit-chg-ico-size: #{spacing(5)};
-    --bit-chg-fontsize: #{spacing(2)};
-    --bit-chg-circle-size: #{spacing(3.25)};
+    --bit-chg-fontsize: #{$tg-fs-md};
+    --bit-chg-circle-size: #{$siz-sel-lg};
     --bit-chg-dot-size: #{spacing(1.5)};
 }
 

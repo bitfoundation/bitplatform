@@ -15,7 +15,7 @@
 
 .bit-ppl-hcn {
     display: flex;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: $clr-fg-pri;
     overflow-wrap: anywhere;
     background-color: $clr-bg-pri;
@@ -26,7 +26,7 @@
     flex-grow: 1;
     display: flex;
     align-items: center;
-    font-size: spacing(2.5);
+    font-size: $tg-fs-xl;
 }
 
 .bit-ppl-cls {
@@ -36,8 +36,8 @@
     height: spacing(5);
     align-items: center;
     justify-content: center;
-    font-size: spacing(1.75);
-    border-radius: spacing(0.25);
+    font-size: $tg-fs-sm;
+    border-radius: $shp-radius-control;
     background-color: transparent;
 
     @media (hover: hover) {

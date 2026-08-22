@@ -19,10 +19,10 @@
     margin: 0;
     padding: 0;
     box-shadow: none;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     position: relative;
     box-sizing: border-box;
-    font-size: spacing(2.25);
+    font-size: $tg-fs-lg;
     font-family: $tg-font-family;
 
     &.bit-dis {
@@ -92,10 +92,10 @@
     margin: 0;
     display: block;
     box-shadow: none;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     box-sizing: border-box;
     padding: spacing(0.5) 0;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     overflow-wrap: break-word;
     color: $clr-fg-pri;
 }
@@ -110,14 +110,14 @@
     gap: spacing(1);
     cursor: pointer;
     box-shadow: none;
-    height: spacing(4);
+    height: $siz-ctrl-md;
     position: relative;
     align-items: center;
     flex-flow: row nowrap;
     padding: 0 spacing(1);
     box-sizing: border-box;
     background-color: $clr-bg-pri;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
@@ -142,7 +142,7 @@
         color: $clr-fg-sec;
         pointer-events: none;
         display: inline-block;
-        font-size: spacing(1.5);
+        font-size: $tg-fs-xs;
     }
 
     @media (hover: hover) {
@@ -162,12 +162,12 @@
     border: none;
     cursor: pointer;
     box-shadow: none;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     border-radius: 0;
     color: $clr-fg-pri;
     box-sizing: border-box;
     text-overflow: ellipsis;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     background: none transparent;
     font-family: $tg-font-family;
 }
@@ -209,18 +209,18 @@
 .bit-dtrp-cal {
     display: none;
     position: fixed;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     outline: transparent;
     box-sizing: border-box;
     z-index: $zindex-callout;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     animation-fill-mode: both;
     animation-duration: $mot-duration-long;
     font-family: $tg-font-family;
-    box-shadow: $box-shadow-callout;
-    border-radius: $shp-border-radius;
+    box-shadow: $box-shadow-popup;
+    border-radius: $shp-radius-popup;
     animation-name: bit-fade-show, bit-slide-down;
-    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+    animation-timing-function: $mot-easing-decelerate;
 }
 
 .bit-dtrp-cac {
@@ -228,7 +228,7 @@
     outline: none;
     position: relative;
     overflow: hidden auto;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-popup;
     background-color: $clr-bg-pri;
 }
 
@@ -287,18 +287,18 @@
     width: 100%;
     border: none;
     aspect-ratio: 1;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     color: $clr-fg-pri;
     position: relative;
     text-align: center;
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
     line-height: spacing(3.5);
     animation-fill-mode: both;
     // A step shorter than the calendar's own entry above, so the days still resolve inside the
     // container rather than with it.
     animation-duration: $mot-duration;
     animation-name: bit-fade-show;
-    animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
+    animation-timing-function: $mot-easing;
 }
 
 .bit-dtrp-dbt {
@@ -315,11 +315,11 @@
     outline: transparent;
     font-weight: inherit;
     box-sizing: border-box;
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
     line-height: spacing(3);
     justify-content: center;
     background-color: transparent;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
 
     @media (hover: hover) {
         &:hover {
@@ -344,7 +344,7 @@
 }
 
 .bit-dtrp-dbo {
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     color: $clr-fg-sec;
 }
 
@@ -354,12 +354,12 @@
 }
 
 .bit-dtrp-dhl {
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     background-color: $clr-bg-ter;
 }
 
 .bit-dtrp-dtd {
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     border-radius: 50%;
     color: var(--bit-dtrp-clr-txt);
     background-color: var(--bit-dtrp-clr);
@@ -414,7 +414,7 @@
 }
 
 .bit-dtrp-dsse {
-    border-radius: spacing(1);
+    border-radius: $shp-radius-lg;
 }
 
 .bit-dtrp-dsb {
@@ -452,13 +452,13 @@
 
 .bit-dtrp-wnm {
     display: flex;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     color: $clr-fg-sec;
     width: spacing(3.5);
     align-items: center;
     height: spacing(3.5);
     box-sizing: border-box;
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
     justify-content: center;
     padding: spacing(0.375) 0 0 0;
     background-color: $clr-bg-sec;
@@ -486,7 +486,7 @@
     cursor: text;
     flex-grow: 1;
     overflow: hidden;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     text-align: start;
     color: $clr-fg-pri;
     position: relative;
@@ -495,11 +495,13 @@
     outline: transparent;
     display: inline-block;
     text-overflow: ellipsis;
-    padding: 0 spacing(1.25);
-    font-size: spacing(1.75);
+    // Tightened from the 1.25 step so the longest month name clears the navigation buttons next to it
+    // without the row having to run past the wrapper - see the header floor at the end of this file.
+    padding: 0 spacing(0.75);
+    font-size: $tg-fs-sm;
     line-height: spacing(3.5);
     background-color: transparent;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
 }
 
 .bit-dtrp-ptb {
@@ -541,12 +543,12 @@
     width: spacing(3.5);
     height: spacing(3.5);
     outline: transparent;
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
     min-width: spacing(3.5);
     min-height: spacing(3.5);
     line-height: spacing(3.5);
     background-color: transparent;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
 
     @media (hover: hover) {
         &:hover {
@@ -576,10 +578,10 @@
     text-align: center;
     width: spacing(3.75);
     outline: transparent;
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
     line-height: spacing(3.75);
     background-color: transparent;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
 
     @media (hover: hover) {
         &:hover {
@@ -650,9 +652,9 @@
     outline: transparent;
     text-overflow: ellipsis;
     padding: spacing(1) spacing(1.25);
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     background-color: transparent;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     font-family: $tg-font-family;
 
     @media (hover: hover) {
@@ -673,7 +675,7 @@
 }
 
 .bit-dtrp-prs {
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: var(--bit-dtrp-clr-txt);
     background-color: var(--bit-dtrp-clr);
 
@@ -714,11 +716,11 @@
     white-space: nowrap;
     outline: transparent;
     max-width: spacing(7);
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
     line-height: spacing(5);
     text-overflow: ellipsis;
     background-color: transparent;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
 
     @media (hover: hover) {
         &:hover {
@@ -734,7 +736,7 @@
 }
 
 .bit-dtrp-psm {
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     background-color: $clr-bg-sec;
 
     @media (hover: hover) {
@@ -789,7 +791,7 @@
     display: flex;
     align-items: center;
     align-content: center;
-    font-size: spacing(2.5);
+    font-size: $tg-fs-xl;
     justify-content: center;
     font-weight: $tg-font-weight;
 }
@@ -814,7 +816,7 @@
     width: spacing(3.75);
     box-sizing: border-box;
     justify-content: center;
-    font-size: spacing(2.28);
+    font-size: $tg-fs-lg;
     -moz-appearance: textfield; // Firefox
     font-weight: $tg-font-weight;
     background-color: $clr-bg-pri;
@@ -838,7 +840,7 @@
 
 .bit-dtrp-bam,
 .bit-dtrp-bpm {
-    font-size: spacing(1.8);
+    font-size: $tg-fs-sm;
     font-weight: $tg-font-weight;
 }
 
@@ -893,7 +895,7 @@
     .bit-dtrp-icn {
         border: none;
         flex: 1 1 0px;
-        text-align: left;
+        text-align: start;
     }
 
     &.bit-dis {
@@ -952,8 +954,8 @@
         overflow: hidden;
         animation-name: unset;
         transform: translateY(-100%);
-        box-shadow: $box-shadow-callout;
-        transition: transform $mot-duration ease-out, opacity $mot-duration-short linear;
+        box-shadow: $box-shadow-sheet;
+        transition: transform $mot-duration $mot-easing, opacity $mot-duration-short linear;
 
         .bit-dtrp-dwp,
         .bit-dtrp-mwp {
@@ -989,7 +991,7 @@
             max-width: unset;
             align-items: center;
             justify-content: center;
-            font-size: spacing(1.75);
+            font-size: $tg-fs-sm;
         }
 
         .bit-dtrp-nbt,
@@ -1191,4 +1193,17 @@
     --bit-dtrp-clr-hover: #{$clr-brd-ter-hover};
     --bit-dtrp-clr-active: #{$clr-brd-ter-active};
     --bit-dtrp-clr-body: #{$clr-bg-ter};
+}
+
+// --- month header floor ---
+// The header of the day view names the month in full, and the day wrapper it sits in is floored by a
+// spacing based min-width - a rhythm value, which does not grow when a design system types larger. The
+// longest month name already overruns that floor at the Fluent 14px base ("September 2024" wants 125px
+// of the 124px the arrows leave it) and overruns it further under a preset that sets a larger one, so
+// the label was silently ellipsised. The button therefore carries its own floor in em: it is read
+// against the button's own font, so it tracks whatever step the active ramp puts here, and the day
+// rows distribute the few extra pixels evenly (space-evenly) rather than leaving a gap at one end.
+// Only the day view takes it - the month view's header is a bare year and needs none of the room.
+.bit-dtrp-dwp .bit-dtrp-ptb {
+    min-width: 8.75em;
 }

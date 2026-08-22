@@ -1,7 +1,7 @@
 @import "../../../Styles/functions.scss";
 
 .bit-tgi {
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     position: relative;
     box-sizing: border-box;
     font-family: $tg-font-family;
@@ -10,7 +10,7 @@
 
 .bit-tgi-lbl {
     display: block;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     font-size: inherit;
     line-height: spacing(2.5);
     padding: spacing(0.625) 0;
@@ -83,7 +83,7 @@
     box-sizing: border-box;
     min-height: var(--bit-tgi-minheight);
     padding: var(--bit-tgi-padding);
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     border-width: $shp-border-width;
     border-style: $shp-border-style;
     transition: border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
@@ -102,7 +102,7 @@
     gap: spacing(0.375);
     line-height: spacing(2.25);
     padding: spacing(0.125) spacing(0.5);
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-chip;
     //the rule is drawn in every tag variant, transparent where it is not painted, so that switching from
     //a filled chip to an outlined one never moves the text in it by the width of a border.
     //The three colors are read out of custom properties the tag variant sets rather than being painted by
@@ -198,7 +198,7 @@
     font: inherit;
     line-height: spacing(2.25);
     padding: spacing(0.125) spacing(0.5);
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-chip;
     border-width: $shp-border-width;
     border-style: $shp-border-style;
     border-color: var(--bit-tgi-tag-brd);
@@ -240,6 +240,13 @@
 //pointer by fading rather than by taking a foreground color of its own, which would be the one color the
 //chip is not wearing.
 .bit-tgi-dbt {
+    //the glyph is well under the 24 CSS pixels WCAG 2.2 asks of a pointer target, and the chip it sits
+    //in is too short to carry that height. It takes what the chip can give instead: the full height of
+    //the chip and a pad on either side of the glyph, which multiplies the target without spilling out
+    //of the chip onto the one next to it.
+    align-self: stretch;
+    padding-inline: spacing(0.375);
+
     @media (hover: hover) {
         &:hover {
             opacity: 0.75;
@@ -535,27 +542,27 @@
 
 .bit-tgi-sm {
     --bit-tgi-gap: #{spacing(0.25)};
-    --bit-tgi-fontsize: #{spacing(1.5)};
+    --bit-tgi-fontsize: #{$tg-fs-xs};
     --bit-tgi-iconsize: #{spacing(1.125)};
-    --bit-tgi-tagfontsize: #{spacing(1.375)};
+    --bit-tgi-tagfontsize: #{$tg-fs-xs};
     --bit-tgi-minheight: #{spacing(3.5)};
     --bit-tgi-padding: #{spacing(0.25)} #{spacing(0.375)};
 }
 
 .bit-tgi-md {
     --bit-tgi-gap: #{spacing(0.375)};
-    --bit-tgi-fontsize: #{spacing(1.75)};
+    --bit-tgi-fontsize: #{$tg-fs-sm};
     --bit-tgi-iconsize: #{spacing(1.25)};
-    --bit-tgi-tagfontsize: #{spacing(1.5)};
+    --bit-tgi-tagfontsize: #{$tg-fs-xs};
     --bit-tgi-minheight: #{spacing(4.5)};
     --bit-tgi-padding: #{spacing(0.375)} #{spacing(0.5)};
 }
 
 .bit-tgi-lg {
     --bit-tgi-gap: #{spacing(0.5)};
-    --bit-tgi-fontsize: #{spacing(2)};
+    --bit-tgi-fontsize: #{$tg-fs-md};
     --bit-tgi-iconsize: #{spacing(1.5)};
-    --bit-tgi-tagfontsize: #{spacing(1.75)};
+    --bit-tgi-tagfontsize: #{$tg-fs-sm};
     --bit-tgi-minheight: #{spacing(5.5)};
     --bit-tgi-padding: #{spacing(0.5)} #{spacing(0.625)};
 }

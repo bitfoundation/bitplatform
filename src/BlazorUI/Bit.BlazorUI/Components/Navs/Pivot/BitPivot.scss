@@ -1,7 +1,7 @@
 @import "../../../Styles/functions.scss";
 
 .bit-pvt {
-    gap: 1rem;
+    gap: spacing(2);
     display: flex;
 
     &.bit-dis {
@@ -29,7 +29,7 @@
     justify-content: var(--bit-pvt-hal);
 
     * {
-        font-size: spacing(2);
+        font-size: $tg-fs-md;
     }
 }
 
@@ -50,10 +50,10 @@
     padding: 0;
     flex-grow: 1;
     box-shadow: none;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     position: relative;
     box-sizing: border-box;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     color: $clr-fg-pri;
 }
 
@@ -117,7 +117,7 @@
     bottom: 0;
     inset-inline-end: auto;
     inset-inline-start: 100%;
-    border-radius: 0 spacing(0.25) spacing(0.25) 0;
+    border-radius: 0 $shp-radius-popup $shp-radius-popup 0;
 }
 
 .bit-pvt-end .bit-pvt-mnc {
@@ -125,7 +125,7 @@
     bottom: 0;
     inset-inline-start: auto;
     inset-inline-end: 100%;
-    border-radius: spacing(0.25) 0 0 spacing(0.25);
+    border-radius: $shp-radius-popup 0 0 $shp-radius-popup;
 }
 
 .bit-pvt-lnk {
@@ -168,7 +168,7 @@
     }
 
     .bit-pvti-sel {
-        font-weight: 400;
+        font-weight: $tg-fw-regular;
         color: var(--bit-pvt-clr-text);
         background-color: var(--bit-pvt-clr);
     }
@@ -185,12 +185,12 @@
         }
 
         &::-webkit-scrollbar-track {
-            border-radius: spacing(1.25);
+            border-radius: $shp-radius-full;
             background-color: $clr-bg-sec;
         }
 
         &::-webkit-scrollbar-thumb {
-            border-radius: spacing(1.25);
+            border-radius: $shp-radius-full;
             background-color: $clr-fg-sec;
         }
     }
@@ -199,7 +199,7 @@
 .bit-pvt-sm {
     .bit-pvt-hct {
         * {
-            font-size: spacing(1.5);
+            font-size: $tg-fs-xs;
         }
     }
 }
@@ -207,7 +207,7 @@
 .bit-pvt-lg {
     .bit-pvt-hct {
         * {
-            font-size: spacing(2.5);
+            font-size: $tg-fs-md;
         }
     }
 }
@@ -219,16 +219,17 @@
     user-select: none;
     position: relative;
     text-align: center;
-    height: spacing(5.5);
+    height: $siz-tab;
     outline: transparent;
     display: inline-block;
     padding: 0 spacing(1);
     text-decoration: none;
     box-sizing: border-box;
-    margin-right: spacing(1);
-    line-height: spacing(5.5);
+    margin-inline-end: spacing(1);
+    line-height: $siz-tab;
     background-color: transparent;
     color: $clr-fg-pri;
+    letter-spacing: $tg-ctrl-letter-spacing;
 
     &:focus-visible {
         @include focus-ring(var(--bit-pvt-clr-focus));
@@ -243,7 +244,7 @@
         content: "";
         position: absolute;
         transform: scaleX(0);
-        height: spacing(0.25);
+        height: $siz-tab-indicator;
         inset-inline-end: spacing(1);
         inset-inline-start: spacing(1);
         background-color: transparent;
@@ -273,21 +274,22 @@
 .bit-pvti-sel {
     border: 0;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     border-radius: 0;
     user-select: none;
     color: $clr-fg-pri;
     position: relative;
     text-align: center;
-    height: spacing(5.5);
+    height: $siz-tab;
     outline: transparent;
     display: inline-block;
     padding: 0 spacing(1);
     text-decoration: none;
     box-sizing: border-box;
-    margin-right: spacing(1);
-    line-height: spacing(5.5);
+    margin-inline-end: spacing(1);
+    line-height: $siz-tab;
     background-color: transparent;
+    letter-spacing: $tg-ctrl-letter-spacing;
 
     &:focus-visible {
         @include focus-ring(var(--bit-pvt-clr-focus));
@@ -300,7 +302,7 @@
     }
 
     span {
-        font-size: spacing(2);
+        font-size: $tg-fs-md;
     }
 }
 
@@ -312,7 +314,7 @@
     .bit-pvti::before {
         bottom: auto;
         top: spacing(1);
-        width: spacing(0.25);
+        width: $siz-tab-indicator;
         transform: scaleY(0);
         inset-inline-start: 0;
         height: calc(100% - spacing(2));
@@ -371,7 +373,7 @@
     color: $clr-fg-pri;
     width: spacing(4);
     align-items: center;
-    height: spacing(5.5);
+    height: $siz-tab;
     display: inline-flex;
     box-sizing: border-box;
     justify-content: center;
@@ -403,7 +405,7 @@
 
 .bit-pvt-mor {
     flex-shrink: 0;
-    margin-right: 0;
+    margin-inline-end: 0;
 }
 
 .bit-pvt-ovl {
@@ -426,8 +428,8 @@
     position: absolute;
     inset-inline-end: 0;
     z-index: $zindex-callout;
-    box-shadow: $box-shadow-callout;
-    border-radius: 0 0 spacing(0.25) spacing(0.25);
+    box-shadow: $box-shadow-popup;
+    border-radius: 0 0 $shp-radius-popup $shp-radius-popup;
     background-color: $clr-bg-pri;
 }
 
@@ -472,7 +474,7 @@
     }
 
     &.bit-pvt-mni-sel {
-        font-weight: 600;
+        font-weight: $tg-fw-semibold;
     }
 }
 

@@ -10,10 +10,12 @@
     font-weight: $tg-font-weight;
     border-style: $shp-border-style;
     border-width: $shp-border-width;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-chip;
     padding: var(--bit-tag-padding);
     font-size: var(--bit-tag-fontsize);
     min-height: var(--bit-tag-minheight);
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
 
     &.bit-dis {
         cursor: default;
@@ -26,13 +28,18 @@
     flex-direction: row-reverse;
 }
 
+// The dismiss glyph is well under the 24 CSS pixels WCAG 2.2 asks of a pointer target, and a tag is too
+// short to carry that height. It takes what the tag can give instead: the full height of the tag and a
+// pad on either side of the glyph, which multiplies the target without spilling out of the tag.
 .bit-tag-cls {
-    padding: 0;
     border: none;
     display: flex;
     color: inherit;
     cursor: pointer;
+    align-items: center;
+    align-self: stretch;
     box-sizing: border-box;
+    padding: 0 spacing(0.375);
     background-color: transparent;
     font-size: var(--bit-tag-fontsize);
 }
@@ -86,19 +93,19 @@
 
 
 .bit-tag-sm {
-    --bit-tag-fontsize: #{spacing(1.5)};
+    --bit-tag-fontsize: #{$tg-fs-xs};
     --bit-tag-padding: #{spacing(0.250)};
     --bit-tag-minheight: #{spacing(2.25)};
 }
 
 .bit-tag-md {
-    --bit-tag-fontsize: #{spacing(1.75)};
+    --bit-tag-fontsize: #{$tg-fs-sm};
     --bit-tag-padding: #{spacing(0.375)};
     --bit-tag-minheight: #{spacing(2.75)};
 }
 
 .bit-tag-lg {
-    --bit-tag-fontsize: #{spacing(2.25)};
+    --bit-tag-fontsize: #{$tg-fs-md};
     --bit-tag-padding: #{spacing(0.500)};
     --bit-tag-minheight: #{spacing(3.5)};
 }

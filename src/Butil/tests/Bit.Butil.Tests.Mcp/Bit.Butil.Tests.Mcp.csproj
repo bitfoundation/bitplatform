@@ -26,7 +26,7 @@
     <!-- The client half of the same SDK the server is built on. The suite drives /mcp with a real
          protocol client rather than hand-rolled JSON-RPC, so what it exercises is what an editor,
          an agent host or Claude Code exercises - including the handshake and the schemas. -->
-    <PackageReference Include="ModelContextProtocol.Core" Version="2.1.0" />
+    <PackageReference Include="ModelContextProtocol.Core" Version="2.2.0" />
   </ItemGroup>
 
   <!-- Deliberately NO ProjectReference to Bit.Butil.Demo.Server. Everything here is asserted from

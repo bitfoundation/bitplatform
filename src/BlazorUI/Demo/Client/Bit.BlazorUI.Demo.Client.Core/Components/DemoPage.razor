@@ -116,90 +116,98 @@
 }
 else
 {
-    @* bit-fam is the class BitComponentBase.ForceAnimation renders. Setting it here rather than on each
-       sample restores the full motion durations for everything on the page, since those are inherited
-       custom properties. *@
-    <BitStack Horizontal AutoHeight Gap="0" Class="@(_forceAnimation ? "bit-fam" : null)">
-        <div class="page-container example">
+    @* The same article shell the prose pages use (DocsArticle / DocSection), so moving between the
+       guides and the reference never feels like changing sites: an eyebrow, the title with its
+       badges, a lead paragraph, then anchored sections separated by air and a hairline rather than
+       by a stack of cards.
 
-            <BitStack Element="header" Horizontal Wrap AutoHeight
-                      Gap="1rem"
-                      Class="page-header"
-                      VerticalAlign="BitAlignment.Baseline">
-                <BitText Element="h1" Typography="BitTypography.H4" Color="BitColor.PrimaryForeground">
-                    @Name
-                </BitText>
+       Only the shell is shared. What the sections hold is unchanged - in particular DemoExample
+       still puts an example's source ABOVE its live preview, which is the whole point of opening
+       the panel. *@
+    <div class="@($"doc-shell{(_forceAnimation ? " bit-fam" : " demo-reduced-motion")}")">
+        <article class="doc-main">
 
-                @if (SecondaryNames?.Length > 0)
+            <header class="doc-head">
+                @if (_catalogItem is not null)
                 {
+                    @* The category this component is filed under, so the page says where the reader
+                       is without needing a breadcrumb bar of its own. *@
+                    <p class="doc-eyebrow">@_catalogItem.Category</p>
+                }
+
+                <BitStack Horizontal Wrap AutoHeight
+                          Gap="1rem"
+                          VerticalAlign="BitAlignment.Baseline">
+                    <BitText Element="h1" Class="doc-title" Typography="BitTypography.H1" Color="BitColor.PrimaryForeground">
+                        @Name
+                    </BitText>
+
                     <BitStack Horizontal Wrap FitWidth AutoHeight Gap="0.375rem">
-                        @foreach (var name in SecondaryNames)
+                        @* Which NuGet package this component comes from, stated where the reader first
+                           meets the component rather than only in the install guide: reaching for a
+                           BitChart or a BitDataGrid without referencing Bit.BlazorUI.Extras is the most
+                           common false start with this library. *@
+                        <BitTag Text="@_packageName" Size="BitSize.Small" Variant="BitVariant.Outline"
+                                IconName="@BitIconName.Package" Color="BitColor.SecondaryForeground" />
+
+                        @if (SecondaryNames?.Length > 0)
                         {
                             @* Alternative names are metadata about the component, so they are set as
                                tags rather than as a second line of heading-sized text competing with
                                the title. *@
-                            <BitTag Text="@name" Size="BitSize.Small" Variant="BitVariant.Outline"
-                                    Color="BitColor.Info" />
+                            @foreach (var name in SecondaryNames)
+                            {
+                                <BitTag Text="@name" Size="BitSize.Small" Variant="BitVariant.Outline"
+                                        Color="BitColor.Info" />
+                            }
                         }
                     </BitStack>
-                }
-            </BitStack>
+                </BitStack>
 
-            @if (Description.HasValue() || DescriptionTemplate is not null)
-            {
-                @* The description reads as the page's lead paragraph: prose on the bare page,
-                   not one more card. *@
-                <section id="overview-section" class="page-lead">
-                    @if (DescriptionTemplate is not null)
-                    {
-                        @DescriptionTemplate
-                    }
-                    else
-                    {
-                        <BitText Element="p">@Description</BitText>
-                    }
-                </section>
-            }
+                @if (Description.HasValue() || DescriptionTemplate is not null)
+                {
+                    @* The description reads as the page's lead paragraph: prose on the bare page,
+                       not one more card. *@
+                    <div id="overview-section" class="doc-lead">
+                        @if (DescriptionTemplate is not null)
+                        {
+                            @DescriptionTemplate
+                        }
+                        else
+                        {
+                            <BitText Element="p" Typography="BitTypography.Subtitle1" Color="BitColor.SecondaryForeground">@Description</BitText>
+                        }
+                    </div>
+                }
+            </header>
+
+            <div class="motion-bar">
+                <BitToggle @bind-Value="_forceAnimation" Text="ForceAnimation (whole page)" />
+            </div>
 
             @if (Notes.HasValue() || NotesTemplate is not null)
             {
-                <BitCard Id="notes-section" FullWidth
-                         Background="BitColorKind.Primary"
-                         Class="page-section">
-                    <div class="section-heading">
-                        <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">Notes</BitText>
-                    </div>
+                <DocSection Id="notes-section" Title="Notes">
                     @if (NotesTemplate is not null)
                     {
                         @NotesTemplate
                     }
                     else
                     {
-                        @Notes
+                        <BitText Element="p">@Notes</BitText>
                     }
-                </BitCard>
+                </DocSection>
             }
-
-            <div class="motion-bar">
-                <BitToggle @bind-Value="_forceAnimation" Text="ForceAnimation (whole page)" />
-            </div>
 
             @if (IntroductionVideoUrl.HasValue() || Introduction.HasValue() || IntroductionTemplate is not null)
             {
-                <BitCard Id="introduction-section" FullWidth
-                         Background="BitColorKind.Primary"
-                         Class="page-section">
-                    <div class="section-heading">
-                        <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">Introduction</BitText>
-                        <BitSeparator />
-                    </div>
+                <DocSection Id="introduction-section" Title="Introduction">
                     @if (IntroductionVideoUrl.HasValue())
                     {
                         <BitStack Horizontal AutoHeight Class="video-container"
                                   HorizontalAlign="BitAlignment.Center">
                             <video src="@IntroductionVideoUrl" controls />
                         </BitStack>
-                        <br />
                     }
                     @if (Introduction.HasValue() || IntroductionTemplate is not null)
                     {
@@ -214,25 +222,16 @@ else
                             </BitText>
                         }
                     }
-                </BitCard>
+                </DocSection>
             }
 
-            <BitCard Id="usage-section" FullWidth
-                     Background="BitColorKind.Primary"
-                     Class="page-section">
-                <div class="section-heading">
-                    <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">Usage</BitText>
-                    <br />
-                </div>
+            <DocSection Id="usage-section" Title="Usage"
+                        Description="Every example is live. Open its code to see exactly what produced the component running underneath.">
                 @(ChildContent ?? Examples)
-            </BitCard>
+            </DocSection>
 
-            <BitCard Id="api-section" FullWidth
-                     Background="BitColorKind.Primary"
-                     Class="page-section">
-                <div class="section-heading">
-                    <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">API</BitText>
-                </div>
+            <DocSection Id="api-section" Title="API"
+                        Description="Every parameter, public member, sub-class and enum this component exposes.">
 
                 <DemoParametersTable Name="@($"Bit{Name}")" Parameters="Parameters" />
 
@@ -269,88 +268,36 @@ else
                 {
                     <DemoSubEnumsTable Enums="_componentBaseSubEnums" />
                 }
-            </BitCard>
+            </DocSection>
 
-            <BitCard Id="feedback-section" FullWidth NoShadow
-                     Background="BitColorKind.Primary"
-                     Border="BitColorKind.Secondary"
-                     Class="page-section">
-                <div class="section-heading">
-                    <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">Feedback</BitText>
-                    <BitSeparator />
-                </div>
-                <BitText Element="p">
-                    You can give us your feedback through our
-                    <BitLink Href="@REPO_URL" Target="_blank">GitHub repo</BitLink>
-                    by filing a new
-                    <BitLink Href="@($"{REPO_URL}/issues/new/choose")" Target="_blank">Issue</BitLink>
-                    or starting a new
-                    <BitLink Href="@($"{REPO_URL}/discussions/new/choose")" Target="_blank">Discussion</BitLink>.
-                </BitText>
-
-                @if (GitHubDemoUrl.HasValue())
+            @* The same closing block as every prose page. The source links the old wall of "Or you
+               can review / edit ..." sentences carried are all still here - as buttons, because that
+               is what they are. *@
+            <DocFeedback DocsPagePath="@(GitHubDemoUrl.HasValue() ? $"Components/{GitHubDemoUrl}" : null)">
+                @if (_sourceUrl is not null)
                 {
-                    <br />
-                    <BitText Element="p">
-                        Or you can
-                        <BitLink
-                        Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubDemoUrl}")"
-                        Target="_blank">review</BitLink>
-                        /
-                        <BitLink
-                        Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubDemoUrl}")"
-                        Target="_blank">edit</BitLink>
-                        this page on GitHub.
-                    </BitText>
-                }
+                    <BitButton Target="_blank"
+                               Href="@_sourceUrl"
+                               Variant="BitVariant.Text"
+                               IconName="@BitIconName.OpenSource"
+                               Color="BitColor.SecondaryForeground">
+                        View the component source
+                    </BitButton>
 
-                @if (GitHubUrl.HasValue())
-                {
-                    <br />
-                    <BitText Element="p">
-                        Or you can
-                        <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI/Components/{GitHubUrl}")"
-                                 Target="_blank">review</BitLink>
-                        /
-                        <BitLink Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Bit.BlazorUI/Components/{GitHubUrl}")"
-                                 Target="_blank">edit</BitLink>
-                        this component on GitHub.
-                    </BitText>
+                    <BitButton Target="_blank"
+                               Href="@_sourceEditUrl"
+                               Variant="BitVariant.Text"
+                               IconName="@BitIconName.Edit"
+                               Color="BitColor.SecondaryForeground">
+                        Edit the component
+                    </BitButton>
                 }
+            </DocFeedback>
 
-                @if (GitHubExtrasUrl.HasValue())
-                {
-                    <br />
-                    <BitText Element="p">
-                        Or you can
-                        <BitLink
-                        Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Extras/Components/{GitHubExtrasUrl}")"
-                        Target="_blank">review</BitLink>
-                        /
-                        <BitLink
-                        Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Bit.BlazorUI.Extras/Components/{GitHubExtrasUrl}")"
-                        Target="_blank">edit</BitLink>
-                        this component on GitHub.
-                    </BitText>
-                }
+            <DocPager />
 
-                @if (GitHubLegacyUrl.HasValue())
-                {
-                    <br />
-                    <BitText Element="p">
-                        Or you can
-                        <BitLink
-                        Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Legacy/Components/{GitHubLegacyUrl}")"
-                        Target="_blank">review</BitLink>
-                        /
-                        <BitLink
-                        Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Bit.BlazorUI.Legacy/Components/{GitHubLegacyUrl}")"
-                        Target="_blank">edit</BitLink>
-                        this component on GitHub.
-                    </BitText>
-                }
-            </BitCard>
-        </div>
-        <SideRail HasNotes="@(Notes.HasValue() || NotesTemplate is not null)" />
-    </BitStack>
+        </article>
+
+        <SideRail />
+    </div>
 }

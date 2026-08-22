@@ -155,11 +155,17 @@ public partial class BitProgress : BitComponentBase
         _ => 2
     };
 
+    // The linear bar reads its thickness from the theme's track tokens (--bit-siz-track-* via the
+    // size classes in BitProgress.scss) unless an explicit Thickness overrides it. The circular
+    // variant keeps the numeric value: SVG geometry (height/width attributes) cannot consume a CSS
+    // custom property.
+    private string GetThicknessStyleValue() => Thickness is not null ? $"{Thickness}px" : "var(--bit-prb-thickness)";
+
     private string GetProgressStyle()
     {
         StringBuilder sb = new();
 
-        sb.Append($"{(Circular ? "stroke-width" : "height")}: {GetThickness()}px;");
+        sb.Append(Circular ? $"stroke-width: {GetThickness()}px;" : $"height: {GetThicknessStyleValue()};");
 
         sb.Append(Styles?.Bar);
 

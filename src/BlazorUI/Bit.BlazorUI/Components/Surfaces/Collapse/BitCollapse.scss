@@ -2,10 +2,10 @@
 
 .bit-col {
     width: 100%;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     color: $clr-fg-pri;
     box-sizing: border-box;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     font-family: $tg-font-family;
     background-color: $clr-bg-pri;
 

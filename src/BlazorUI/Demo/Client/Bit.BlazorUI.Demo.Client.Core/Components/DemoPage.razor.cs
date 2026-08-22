@@ -6,6 +6,24 @@ public partial class DemoPage
 
     private bool _forceAnimation;
 
+    /// <summary>
+    /// This page's entry in the catalog, which is what supplies the category shown above the title.
+    /// Null for a component that has no nav entry, in which case the eyebrow is simply not rendered.
+    /// </summary>
+    private ComponentCatalogItem? _catalogItem;
+
+    /// <summary>
+    /// The NuGet package this component ships in. Which package a component belongs to is not
+    /// something a reader can infer from the component itself, and reaching for a BitChart or a
+    /// BitDataGrid without referencing Bit.BlazorUI.Extras is the most common false start with this
+    /// library - so the page says so beside the title rather than only in the install guide.
+    /// </summary>
+    private string _packageName = "Bit.BlazorUI";
+
+    /// <summary>The component's own source on GitHub, and the same URL in edit mode.</summary>
+    private string? _sourceUrl;
+    private string? _sourceEditUrl;
+
     [Parameter] public string Name { get; set; } = default!;
     [Parameter] public string[]? SecondaryNames { get; set; }
     [Parameter] public string? Description { get; set; }
@@ -26,6 +44,24 @@ public partial class DemoPage
     [Parameter] public string? GitHubLegacyUrl { get; set; }
     [Parameter] public string? GitHubDemoUrl { get; set; }
     [CascadingParameter(Name = nameof(RenderForMcpClient))] public bool RenderForMcpClient { get; set; }
+
+
+    protected override Task OnParamsSetAsync()
+    {
+        _catalogItem = ComponentCatalog.Find(NavigationManager.Uri);
+
+        // Exactly one of the three source parameters is set on any given page, and which one it is
+        // says both which package the component comes from and where its source lives.
+        (_packageName, _sourceUrl) =
+            GitHubExtrasUrl.HasValue() ? ("Bit.BlazorUI.Extras", $"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Extras/Components/{GitHubExtrasUrl}")
+            : GitHubLegacyUrl.HasValue() ? ("Bit.BlazorUI.Legacy", $"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Legacy/Components/{GitHubLegacyUrl}")
+            : GitHubUrl.HasValue() ? ("Bit.BlazorUI", $"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI/Components/{GitHubUrl}")
+            : ("Bit.BlazorUI", null);
+
+        _sourceEditUrl = _sourceUrl?.Replace("/blob/", "/edit/", StringComparison.Ordinal);
+
+        return base.OnParamsSetAsync();
+    }
 
     private readonly List<ComponentParameter> _componentBaseParameters =
     [

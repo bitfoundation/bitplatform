@@ -42,8 +42,8 @@
     color: $clr-ter;
     line-height: 1.5;
     white-space: pre;
-    font-weight: 400;
-    font-size: spacing(2);
+    font-weight: $tg-fw-regular;
+    font-size: $tg-fs-md;
     letter-spacing: 0.01em;
 }
 
@@ -51,8 +51,11 @@
     width: 100%;
     display: flex;
     gap: spacing(2);
-    align-items: center;
     box-sizing: border-box;
-    flex-direction: column;
-    justify-content: center;
+    // Follows the same theme decision as BitDialog's footer, so all dialog-like footers across the
+    // library lay out their actions identically for the active design system - including the
+    // stretch that runs a Cupertino alert's stacked actions full width.
+    align-items: $layout-dialog-actions-align;
+    flex-direction: $layout-dialog-actions-direction;
+    justify-content: $layout-dialog-actions-justify;
 }

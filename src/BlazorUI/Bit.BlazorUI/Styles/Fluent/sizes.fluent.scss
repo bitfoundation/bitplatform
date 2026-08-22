@@ -1,0 +1,93 @@
+// Size and opacity tokens - the dimensions a design system decides once and every component repeats.
+// The control heights and selection sizes are density-aware (multiples of the spacing unit times the
+// density multiplier, exactly what spacing() computes) so the compact/spacious presets keep working;
+// a preset built for another design system may set absolute lengths instead (Material: 40px
+// buttons / 56px fields; Cupertino: 44px).
+:root,
+:root[bit-theme="light"],
+:root [bit-theme="light"],
+:root[bit-theme="fluent"],
+:root [bit-theme="fluent"],
+:root[bit-theme="fluent-light"],
+:root [bit-theme="fluent-light"],
+:root[bit-theme="dark"],
+:root [bit-theme="dark"],
+:root[bit-theme="fluent-dark"],
+:root [bit-theme="fluent-dark"] {
+    //control heights (text fields, dropdowns, pickers, search boxes, icon-only buttons) per size class.
+    --bit-siz-ctrl-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.25); //26px
+    --bit-siz-ctrl-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4); //32px
+    --bit-siz-ctrl-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5); //40px
+
+    //icon glyph sizes inside controls per size class - rem, like type, so density does not shrink glyphs.
+    --bit-siz-icon-sm: 0.75rem; //12px
+    --bit-siz-icon-md: 1rem; //16px
+    --bit-siz-icon-lg: 1.25rem; //20px
+
+    //selection indicators - the checkbox box and the radio ring - per size class.
+    --bit-siz-sel-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.75); //14px
+    --bit-siz-sel-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
+    --bit-siz-sel-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.25); //26px
+
+    //control padding per size class - the inner horizontal / vertical padding of a padded control
+    //(buttons, toggle buttons, menu buttons; text inputs keep their own denser rhythm). Density-aware
+    //like the heights; a preset may set absolute lengths (Material: 24px x-padding; Cupertino: 20px).
+    --bit-siz-ctrl-pad-x-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
+    --bit-siz-ctrl-pad-x-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
+    --bit-siz-ctrl-pad-x-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
+    --bit-siz-ctrl-pad-y-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 0.5); //4px
+    --bit-siz-ctrl-pad-y-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 0.75); //6px
+    --bit-siz-ctrl-pad-y-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1); //8px
+
+    //the minimum width of a labeled button. Fluent imposes none; Material mandates 64px.
+    --bit-siz-ctrl-min-width: auto;
+
+    //row heights of the item lists inside popups (dropdown options, menu-button items, drop-menu
+    //rows, breadcrumb overflow) per size class (Material menu rows: 48px; Cupertino rows: 44px).
+    --bit-siz-item-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.75); //30px
+    --bit-siz-item-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4.5); //36px
+    --bit-siz-item-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5.5); //44px
+
+    //tab (pivot) header height and the thickness of its selection indicator. The indicator is its
+    //own token rather than the thick border width: Material's 3px tab indicator and a 2px focus
+    //underline are independent decisions.
+    --bit-siz-tab: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5.5); //44px
+    --bit-siz-tab-indicator: 0.125rem; //2px
+
+    //the thickness of a divider rule (BitSeparator, menu separators). Defaults to the hairline
+    //border width; a preset can thin it (Cupertino's 0.5px hairline) without touching control borders.
+    --bit-siz-divider: var(--bit-shp-brd-width);
+
+    //the switch (BitToggle) geometry per size class: the width and height of the track and the size
+    //of the knob. Density-aware like the control heights. The inset that holds the knob off the
+    //track edge is not a token: it is (track height - knob) / 2 less the border, which is what keeps
+    //the knob the same distance from the stroke on every side whatever geometry a preset sets.
+    --bit-siz-switch-w-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4); //32px
+    --bit-siz-switch-w-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5); //40px
+    --bit-siz-switch-w-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 6.5); //52px
+    --bit-siz-switch-h-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
+    --bit-siz-switch-h-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
+    --bit-siz-switch-h-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.25); //26px
+    --bit-siz-switch-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1); //8px
+    --bit-siz-switch-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
+    --bit-siz-switch-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
+
+    //the draggable handle of a BitSlider per size class.
+    --bit-siz-slider-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
+    --bit-siz-slider-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
+    --bit-siz-slider-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+
+    //the thickness of a linear track (BitProgress bar) per size class.
+    --bit-siz-track-sm: 0.125rem; //2px
+    --bit-siz-track-md: 0.25rem; //4px
+    --bit-siz-track-lg: 0.5rem; //8px
+
+    //the stroke of every inline circular spinner (buttons, dropdown, dialog, file upload).
+    --bit-siz-spinner-stroke: 0.125rem; //2px
+
+    //the tallest a popup list (dropdown, search suggestions, breadcrumb overflow) grows before it scrolls.
+    --bit-siz-popup-max-height: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 88.875);
+
+    //opacity of an element that is disabled but keeps its own colors (an image, a color swatch).
+    --bit-opa-dis: 0.5;
+}

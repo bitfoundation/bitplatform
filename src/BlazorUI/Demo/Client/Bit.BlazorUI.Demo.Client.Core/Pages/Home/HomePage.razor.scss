@@ -1,188 +1,114 @@
-@import '../../Styles/abstracts/_functions.scss';
-@import '../../Styles/abstracts/_media-queries.scss';
-@import '../../Styles/abstracts/_bit-css-variables.scss';
+@import '../../Styles/abstracts/_docs.scss';
 
-.homepage-container {
+.home {
     width: 100%;
     display: flex;
-    align-items: center;
     box-sizing: border-box;
     flex-flow: column nowrap;
-    justify-content: flex-start;
     background-color: $bit-color-background-primary;
 }
 
-.homepage-section {
+// One section, one full-bleed band. The band carries the surface; the inner element carries the
+// measure, so the color reaches the window edges while the text never does.
+.home-section {
     width: 100%;
     display: flex;
     justify-content: center;
-}
 
-// Every other section sits on the secondary surface, separated by the same hairline the rest of
-// the docs chrome uses instead of shadows.
-%alternate-section {
-    background-color: $bit-color-background-secondary;
-    border-top: rem2(1px) solid $bit-color-border-secondary;
-    border-bottom: rem2(1px) solid $bit-color-border-secondary;
-}
-
-.homepage-section-content {
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    max-width: rem2(1200px);
-    box-sizing: border-box;
-    padding-left: rem2(20px);
-    padding-right: rem2(20px);
-
-    @include md {
-        padding-left: rem2(30px);
-        padding-right: rem2(30px);
-    }
-}
-
-.hero-section {
-    overflow: hidden;
-
-    .homepage-section-content {
-        display: flex;
-        flex-flow: row nowrap;
-        justify-content: center;
-    }
-}
-
-.popular-components-section {
-    @extend %alternate-section;
-    margin-top: rem2(100px);
-    padding-top: rem2(80px);
-    padding-bottom: rem2(80px);
-
-    @include md {
-        margin-top: rem2(60px);
-        padding-top: rem2(60px);
-        padding-bottom: rem2(60px);
+    // Every other section sits on the secondary surface, separated by the same hairline the rest of
+    // the docs chrome uses instead of shadows.
+    &.alternate {
+        background-color: $bit-color-background-secondary;
+        border-block: rem2(1px) solid $bit-color-border-secondary;
     }
 
-    @include sm {
-        margin-top: rem2(40px);
-        padding-top: rem2(40px);
-        padding-bottom: rem2(40px);
-    }
-}
+    // The hero is two columns - the copy and the wall of running components beside it - and the
+    // collage is deliberately wider than the window, so the band clips it rather than scrolling.
+    // It opens the page, so it carries no padding of its own: the collage sets the height.
+    &.hero {
+        overflow: hidden;
+        padding-bottom: 5rem;
 
-.benefit-section {
-    padding-top: rem2(80px);
-    padding-bottom: rem2(80px);
-
-    @include md {
-        padding-top: rem2(60px);
-        padding-bottom: rem2(60px);
-    }
-
-    @include sm {
-        padding-top: rem2(40px);
-        padding-bottom: rem2(40px);
-    }
-}
-
-.ai-section {
-    @extend %alternate-section;
-    padding-top: rem2(80px);
-    padding-bottom: rem2(80px);
-
-    @include md {
-        padding-top: rem2(60px);
-        padding-bottom: rem2(60px);
-    }
-
-    @include sm {
-        padding-top: rem2(40px);
-        padding-bottom: rem2(40px);
-    }
-
-    .homepage-section-content {
-        gap: rem2(40px);
-        display: flex;
-        flex-flow: row nowrap;
-        align-items: center;
-        justify-content: space-between;
-
-        @include lt-lg {
-            flex-flow: column nowrap;
-            align-items: flex-start;
+        .home-section-inner {
+            display: flex;
+            padding-block: 0;
+            flex-flow: row nowrap;
+            justify-content: center;
         }
     }
-
-    .ai-section-info {
-        display: flex;
-        align-items: flex-start;
-        flex-flow: column nowrap;
-    }
-
-    .ai-section-code {
-        width: 100%;
-        max-width: rem2(460px);
-        flex-shrink: 0;
-    }
 }
 
-.component-list-section {
-    padding-top: rem2(60px);
-    padding-bottom: rem2(60px);
+.home-section-inner {
+    width: 100%;
+    margin-inline: auto;
+    box-sizing: border-box;
+    max-width: var(--demo-marketing-width);
+    padding: $doc-space-3xl $doc-space-md;
 
-    @include md {
-        padding-top: rem2(60px);
-        padding-bottom: rem2(60px);
+    @include lt-lg {
+        padding: $doc-space-2xl $doc-space-md;
     }
 
     @include sm {
-        padding-top: rem2(40px);
-        padding-bottom: rem2(40px);
-    }
-
-    .homepage-section-content {
-        display: flex;
-        flex-flow: column nowrap;
+        padding: $doc-space-xl $doc-space-sm;
     }
 }
 
-.contribution-section {
-    @extend %alternate-section;
-    padding-top: rem2(80px);
-    padding-bottom: rem2(80px);
+// The two-column sections - theming and AI - where an explanation sits beside the code it is
+// explaining. They collapse to one column early: a code block squeezed into half of a tablet is
+// worse than a code block under a paragraph.
+.split {
+    display: grid;
+    align-items: center;
+    gap: $doc-space-xl;
+    grid-template-columns: minmax(0, 1fr) minmax(0, rem2(500px));
 
-    @include md {
-        padding-top: rem2(60px);
-        padding-bottom: rem2(60px);
+    @include lt-xl {
+        gap: $doc-space-lg;
+        grid-template-columns: 1fr;
     }
+}
 
-    @include sm {
-        padding-top: rem2(40px);
-        padding-bottom: rem2(40px);
-    }
+.split-copy {
+    display: flex;
+    min-width: 0;
+    gap: $doc-space-sm;
+    align-items: flex-start;
+    flex-flow: column nowrap;
+}
 
-    .homepage-section-content {
-        display: flex;
-        align-items: flex-start;
-        flex-flow: column nowrap;
-        justify-content: flex-start;
-    }
+.split-actions {
+    margin-top: $doc-space-2xs;
+}
 
-    // The mark rides in the button's text slot, so it takes its size from the text and its color
-    // from currentColor - primary while the button is at rest, the on-primary text once the outline
-    // variant fills on hover.
-    .github-mark {
-        flex-shrink: 0;
-        width: rem2(24px);
-        height: rem2(24px);
-        background-color: currentColor;
-        -webkit-mask: url('images/github-mark.svg') center / contain no-repeat;
-        mask: url('images/github-mark.svg') center / contain no-repeat;
-    }
+.split-aside {
+    display: flex;
+    min-width: 0;
+    gap: $doc-space-2xs;
+    flex-flow: column nowrap;
+}
 
-    // The text slot is already a flex row inside the button; it only needs the gap the button itself
-    // puts between a real icon and the text.
-    ::deep .github-button .bit-btn-prt {
-        gap: rem2(8px);
-    }
+.home-cta {
+    display: flex;
+    gap: $doc-space-sm;
+    align-items: flex-start;
+    flex-flow: column nowrap;
+}
+
+// The mark rides in the button's text slot, so it takes its size from the text and its color from
+// currentColor - primary while the button is at rest, the on-primary text once the outline variant
+// fills on hover.
+.github-mark {
+    flex-shrink: 0;
+    width: rem2(22px);
+    height: rem2(22px);
+    background-color: currentColor;
+    -webkit-mask: url('images/github-mark.svg') center / contain no-repeat;
+    mask: url('images/github-mark.svg') center / contain no-repeat;
+}
+
+// The text slot is already a flex row inside the button; it only needs the gap the button itself
+// puts between a real icon and the text.
+::deep .github-button .bit-btn-prt {
+    gap: $doc-space-2xs;
 }

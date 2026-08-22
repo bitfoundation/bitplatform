@@ -17,4 +17,8 @@ public class BitTheme
     public BitThemeMotion Motion { get; set; } = new();
 
     public BitThemeLayout Layout { get; set; } = new();
+
+    public BitThemeSizes Size { get; set; } = new();
+
+    public BitThemeOpacities Opacity { get; set; } = new();
 }

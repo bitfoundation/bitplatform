@@ -3,14 +3,14 @@
 .bit-msg {
     width: 100%;
     display: flex;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     flex-flow: column;
     box-sizing: border-box;
     justify-content: center;
     font-family: $tg-font-family;
     border-width: $shp-border-width;
     border-style: $shp-border-style;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-surface;
     font-size: var(--bit-msg-fontsize);
     box-shadow: var(--bit-msg-boxshadow);
 }
@@ -82,15 +82,15 @@
 .bit-msg-exb,
 .bit-msg-dmb {
     cursor: pointer;
-    min-width: spacing(4);
-    min-height: spacing(4);
+    min-width: $siz-ctrl-md;
+    min-height: $siz-ctrl-md;
     color: var(--bit-msg-clr);
     background-color: transparent;
 }
 
 .bit-msg-exi,
 .bit-msg-dmi {
-    font-size: spacing(1.25);
+    font-size: $tg-fs-2xs;
 }
 
 .bit-msg-fil {
@@ -130,21 +130,21 @@
 
 .bit-msg-sm {
     --bit-msg-margin: #{spacing(0.5)};
-    --bit-msg-fontsize: #{spacing(1.5)};
+    --bit-msg-fontsize: #{$tg-fs-xs};
     --bit-msg-ico-margin: #{spacing(1)};
-    --bit-msg-ico-fontsize: #{spacing(1.5)};
+    --bit-msg-ico-fontsize: #{$siz-icon-sm};
 }
 
 .bit-msg-md {
     --bit-msg-margin: #{spacing(1)};
-    --bit-msg-fontsize: #{spacing(1.75)};
+    --bit-msg-fontsize: #{$tg-fs-sm};
     --bit-msg-ico-margin: #{spacing(1.2)};
-    --bit-msg-ico-fontsize: #{spacing(2)};
+    --bit-msg-ico-fontsize: #{$siz-icon-md};
 }
 
 .bit-msg-lg {
     --bit-msg-margin: #{spacing(2)};
-    --bit-msg-fontsize: #{spacing(2.0)};
+    --bit-msg-fontsize: #{$tg-fs-md};
     --bit-msg-ico-margin: #{spacing(2)};
-    --bit-msg-ico-fontsize: #{spacing(2.5)};
+    --bit-msg-ico-fontsize: #{$siz-icon-lg};
 }

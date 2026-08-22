@@ -1,12 +1,25 @@
 ﻿:root,
 :root[bit-theme="light"],
+:root [bit-theme="light"],
 :root[bit-theme="fluent"],
+:root [bit-theme="fluent"],
 :root[bit-theme="fluent-light"],
+:root [bit-theme="fluent-light"],
 :root[bit-theme="dark"],
-:root[bit-theme="fluent-dark"] {
+:root [bit-theme="dark"],
+:root[bit-theme="fluent-dark"],
+:root [bit-theme="fluent-dark"] {
     //spacing - base unit (length) times density (unitless); spacing() multiplies both.
     --bit-spa-scaling-factor: 0.5rem;
     --bit-layout-density-scale: 1;
+    //the base inset of a dialog surface - the one padding a design system decides for dialog
+    //headers, bodies and footers (Fluent 24px, Material 24px, Cupertino alerts 20px).
+    --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+    //layout - how a dialog/message-box footer lays out its action buttons. Fluent and Material run
+    //them in a row hugging the trailing edge; Cupertino stacks them full-width and centred.
+    --bit-layout-dialog-actions-direction: row;
+    --bit-layout-dialog-actions-justify: flex-end;
+    --bit-layout-dialog-actions-align: center;
     //zindex - the layering contract, top to bottom:
     //  snackbar (1400) - notifications, above everything.
     //  callout  (1300) - floating popup surfaces (dropdown/date-picker callouts, panel content).
@@ -26,6 +39,21 @@
     --bit-shp-brd-radius: 0.125rem;
     --bit-shp-brd-width: 0.0625rem;
     --bit-shp-brd-style: solid;
+
+    //shape - the heavier stroke: underline focus rules, selection indicators, the slider thumb ring.
+    --bit-shp-brd-width-thick: 0.125rem; //2px
+
+    //shape - radius scale. Fluent rounds controls at 2px (--bit-shp-brd-radius = xs); the rest of
+    //the ramp serves sub-elements and pills. The per-family radii (--bit-shp-radius-control/surface/
+    //popup/dialog) are aliases of --bit-shp-brd-radius and live in ../family-tokens.scss.
+    --bit-shp-radius-none: 0;
+    --bit-shp-radius-xs: 0.125rem; //2px
+    --bit-shp-radius-sm: 0.25rem; //4px
+    --bit-shp-radius-md: 0.375rem; //6px
+    --bit-shp-radius-lg: 0.5rem; //8px
+    --bit-shp-radius-xl: 0.75rem; //12px
+    --bit-shp-radius-2xl: 1rem; //16px
+    --bit-shp-radius-full: 9999px;
 
     //focus ring (a11y) - width is the visible thickness, offset is the gap between the element and the ring.
     --bit-shp-focus-ring-width: 0.125rem; //2px

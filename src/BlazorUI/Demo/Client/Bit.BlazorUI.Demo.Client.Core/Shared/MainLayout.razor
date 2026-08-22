@@ -1,7 +1,16 @@
 @inherits LayoutComponentBase
 
 <BitAppShell @ref="_appShellRef" PersistScroll>
-    <BitLayout HideNavPanel="_isHomePage" NavPanelWidth="_isNavPanelOpen ? 0 : 14 * 16" StickyHeader>
+    @* SkipLink is BitLayout's own: it targets the <main> the layout renders, so "skip to content"
+       really does skip the nav panel - which on a documentation page is a list of every component in
+       the library, and otherwise stands between a keyboard user and the article on every single
+       navigation. *@
+    <BitLayout SkipLink
+               StickyHeader
+               HideNavPanel="_isHomePage"
+               NavPanelWidth="_isNavPanelOpen ? 0 : 14 * 16"
+               NavPanelAriaLabel="Documentation"
+               SkipLinkText="Skip to content">
         <Header>
             <AppHeader IsHomePage="_isHomePage" OnToggleNavPanel="() => _isNavPanelOpen = true" />
         </Header>
@@ -11,7 +20,7 @@
                          NoPad NoToggle
                          Items="NavItems"
                          Style="width:222px"
-                         SearchBoxPlaceholder="Search component"
+                         SearchBoxPlaceholder="Filter components"
                          SearchBoxStyles="@(new() { Root = "padding-inline:8px" })">
                 <Footer>
                     @* The small-screen half of the header's switcher: at the widths where the header
@@ -22,7 +31,12 @@
             </BitNavPanel>
         </NavPanel>
         <Main>
-            <div class="site-content">
+            @* bit-fam is what BitComponentBase.ForceAnimation renders, and a couple of components
+               (Shimmer, Carousel) gate their keyframes on it rather than on the motion tokens alone.
+               Carrying it here on every page EXCEPT a component demo is the other half of the motion
+               policy in app.scss: those pages honour prefers-reduced-motion and offer a toggle for
+               it, and everywhere else the site animates normally. *@
+            <div class="site-content @(_isDemoPage ? null : "bit-fam")">
                 @Body
             </div>
         </Main>
@@ -37,4 +51,3 @@
 <BitProModalContainer />
 
 <AppAiChatPanel />
-

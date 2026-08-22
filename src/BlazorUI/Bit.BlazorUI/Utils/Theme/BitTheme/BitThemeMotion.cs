@@ -7,6 +7,12 @@ public class BitThemeMotion
     public string? DurationLong { get; set; }
     public string? EasingStandard { get; set; }
 
+    /// <summary>The entry curve of popups, callouts and sheets (<c>--bit-mot-easing-decelerate</c>).</summary>
+    public string? EasingDecelerate { get; set; }
+
+    /// <summary>The exit curve of popups, callouts and sheets (<c>--bit-mot-easing-accelerate</c>).</summary>
+    public string? EasingAccelerate { get; set; }
+
     /// <summary>
     /// The duration of every circular spinner in the library. Looping animations cannot use the
     /// durations above, which collapse to a near-zero value under reduced motion and would render as

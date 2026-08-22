@@ -1,0 +1,202 @@
+// Cupertino preset - the scheme-independent tokens: shape, size, spacing, typography, motion,
+// elevation and the dialog-footer layout. Values follow Apple's HIG and the measured UIKit /
+// Flutter-Cupertino constants; the palette lives in colors.cupertino-*.scss.
+//
+// This bundle is override-only and TOKENS ONLY: every rule below declares --bit-* custom properties
+// under [bit-theme="cupertino*"] selectors and wins over the Fluent defaults on source order, so it
+// must be linked AFTER bit.blazorui.css. It never selects a component class - anything iOS shapes
+// differently is a global token the components already read (the capsule button and chip radii, the
+// UISwitch geometry, the slider knob, the stacked alert actions), so re-skinning the library stays a
+// matter of retuning tokens rather than of restyling components.
+:root[bit-theme="cupertino"],
+:root [bit-theme="cupertino"],
+:root[bit-theme="cupertino-light"],
+:root [bit-theme="cupertino-light"],
+:root[bit-theme="cupertino-dark"],
+:root [bit-theme="cupertino-dark"] {
+    /*---- Shape ----*/
+    // iOS corners: fields 8, grouped-list cards 10, menus 13, alerts 14, buttons and chips capsules.
+    --bit-shp-brd-radius: 0.625rem; //10px
+    --bit-shp-radius-none: 0;
+    --bit-shp-radius-xs: 0.3125rem; //5px - the corner iOS gives a small box
+    --bit-shp-radius-sm: 0.5rem; //8px
+    --bit-shp-radius-md: 0.625rem; //10px
+    --bit-shp-radius-lg: 0.75rem; //12px
+    --bit-shp-radius-xl: 0.875rem; //14px
+    --bit-shp-radius-2xl: 1rem; //16px
+    --bit-shp-radius-full: 9999px;
+    // The control radius is the corner of a FIELD - a text field, a one-time-code cell, a picker -
+    // which iOS rounds far less than it rounds a button; the buttons take the capsule below.
+    --bit-shp-radius-control: 0.5rem; //8px
+    --bit-shp-radius-surface: 0.625rem; //10px - inset-grouped section
+    --bit-shp-radius-popup: 0.8125rem; //13px - context menus / popovers
+    --bit-shp-radius-dialog: 0.875rem; //14px - alerts
+    // iOS buttons are capsules, and a menu button and a dialog action are buttons there as well.
+    // BitButtonGroup is left on the control radius: it publishes its own Rounded parameter, and the
+    // iOS segmented control is a rounded rectangle rather than a capsule anyway.
+    --bit-shp-radius-button: var(--bit-shp-radius-full);
+    // Tags read as the iOS gray capsule chip, inside a field as much as standing on their own.
+    --bit-shp-radius-chip: var(--bit-shp-radius-full);
+    // A checkbox is not an iOS control; it takes the corner iOS gives a small box, not a button's.
+    --bit-shp-radius-selection: 0.3125rem; //5px
+    // The platform look is hairline separators and mostly borderless controls.
+    --bit-shp-brd-width: 0.5px;
+    // macOS/iPadOS keyboard focus ring is a thick halo.
+    --bit-shp-focus-ring-width: 0.1875rem; //3px
+
+    /*---- Size ----*/
+    --bit-siz-ctrl-sm: 1.75rem; //28px - small button / segmented control segment
+    --bit-siz-ctrl-md: 2.25rem; //36px - text/search field
+    --bit-siz-ctrl-lg: 2.75rem; //44px - the 44pt tap target / large button
+    --bit-siz-ctrl-pad-x-sm: 0.75rem; //12px
+    --bit-siz-ctrl-pad-x-md: 0.9375rem; //15px
+    --bit-siz-ctrl-pad-x-lg: 1.25rem; //20px
+    --bit-siz-ctrl-pad-y-sm: 0.375rem; //6px
+    --bit-siz-ctrl-pad-y-md: 0.4375rem; //7px
+    --bit-siz-ctrl-pad-y-lg: 0.6875rem; //11px
+    --bit-siz-ctrl-min-width: auto;
+    --bit-siz-icon-sm: 1.0625rem; //17px - SF small scale
+    --bit-siz-icon-md: 1.25rem; //20px - SF medium (body) scale
+    --bit-siz-icon-lg: 1.375rem; //22px - SF large scale
+    --bit-siz-sel-sm: 0.875rem; //14px - the iOS checkbox box
+    --bit-siz-sel-md: 1.25rem; //20px
+    --bit-siz-sel-lg: 1.5rem; //24px
+    --bit-siz-item-sm: 2.25rem; //36px
+    --bit-siz-item-md: 2.75rem; //44px - the standard iOS list row
+    --bit-siz-item-lg: 3.5rem; //56px - two-line row
+    --bit-siz-tab: 2.75rem; //44px - nav-bar height
+    --bit-siz-tab-indicator: 0.125rem; //2px
+    --bit-siz-divider: 0.5px; //the hairline separator
+    --bit-siz-track-sm: 0.125rem; //2px - the iOS slider/progress track
+    --bit-siz-track-md: 0.125rem; //2px
+    --bit-siz-track-lg: 0.25rem; //4px
+    // UISwitch: a 51x31 track with a 27pt thumb at the medium anchor; sm and lg scale around it.
+    // The knob's inset from the track edge is derived from the two, so it stays the 2pt inset less
+    // the hairline stroke - which is what centers the knob - at every size.
+    --bit-siz-switch-w-sm: 2.5625rem; //41px
+    --bit-siz-switch-w-md: 3.1875rem; //51px
+    --bit-siz-switch-w-lg: 3.8125rem; //61px
+    --bit-siz-switch-h-sm: 1.5625rem; //25px
+    --bit-siz-switch-h-md: 1.9375rem; //31px
+    --bit-siz-switch-h-lg: 2.3125rem; //37px
+    --bit-siz-switch-thumb-sm: 1.3125rem; //21px
+    --bit-siz-switch-thumb-md: 1.6875rem; //27px
+    --bit-siz-switch-thumb-lg: 2.0625rem; //33px
+    // UISlider: the 28pt knob at the medium anchor, on the 2pt track above.
+    --bit-siz-slider-thumb-sm: 1.5rem; //24px
+    --bit-siz-slider-thumb-md: 1.75rem; //28px
+    --bit-siz-slider-thumb-lg: 2rem; //32px
+
+    /*---- Spacing / layout ----*/
+    --bit-spa-dialog: 1.25rem; //20px - alert edge inset
+    // iOS alerts stack their actions full-width and centred; the stretch is what runs them the
+    // whole width of the alert, separated by the margins the actions already carry.
+    --bit-layout-dialog-actions-direction: column;
+    --bit-layout-dialog-actions-justify: center;
+    --bit-layout-dialog-actions-align: stretch;
+
+    /*---- Typography ----*/
+    // The San Francisco stack Apple's own sites use. SF is not redistributable, so off Apple
+    // devices (and without a locally installed SF Pro) this lands on Helvetica / Arial - which is
+    // what apple.com itself renders there.
+    --bit-tpg-font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    // The SF text styles: footnote 13 / subheadline 15 / body 17; size classes map sm->13, md->15, lg->17.
+    --bit-tpg-fs-2xs: 0.6875rem; //11px caption2
+    --bit-tpg-fs-xs: 0.8125rem; //13px footnote
+    --bit-tpg-fs-sm: 0.9375rem; //15px subheadline
+    --bit-tpg-fs-md: 1.0625rem; //17px body
+    --bit-tpg-fs-lg: 1.25rem; //20px title3
+    --bit-tpg-fs-xl: 1.375rem; //22px title2
+    --bit-tpg-fs-2xl: 1.75rem; //28px title1
+    --bit-tpg-fs-3xl: 2.125rem; //34px large title
+    --bit-tpg-fs-4xl: 2.5rem; //40px
+    // SF tracks its text sizes slightly tight; buttons are sentence-case, never uppercase.
+    --bit-tpg-ctrl-letter-spacing: -0.024em;
+    --bit-tpg-ctrl-text-transform: none;
+    // BitText variants mapped onto the SF text styles.
+    --bit-tpg-h1-font-size: 2.125rem; //large title 34px
+    --bit-tpg-h1-font-weight: 400;
+    --bit-tpg-h1-line-height: 1.206;
+    --bit-tpg-h1-letter-spacing: 0.011em;
+    --bit-tpg-h2-font-size: 1.75rem; //title1 28px
+    --bit-tpg-h2-font-weight: 400;
+    --bit-tpg-h2-line-height: 1.214;
+    --bit-tpg-h2-letter-spacing: 0.013em;
+    --bit-tpg-h3-font-size: 1.375rem; //title2 22px
+    --bit-tpg-h3-font-weight: 400;
+    --bit-tpg-h3-line-height: 1.273;
+    --bit-tpg-h3-letter-spacing: 0.016em;
+    --bit-tpg-h4-font-size: 1.25rem; //title3 20px
+    --bit-tpg-h4-font-weight: 400;
+    --bit-tpg-h4-line-height: 1.25;
+    --bit-tpg-h4-letter-spacing: 0.019em;
+    --bit-tpg-h5-font-size: 1.0625rem; //headline 17px
+    --bit-tpg-h5-font-weight: 600;
+    --bit-tpg-h5-line-height: 1.294;
+    --bit-tpg-h5-letter-spacing: -0.024em;
+    --bit-tpg-h6-font-size: 0.9375rem; //subheadline emphasized 15px
+    --bit-tpg-h6-font-weight: 600;
+    --bit-tpg-h6-line-height: 1.333;
+    --bit-tpg-h6-letter-spacing: -0.016em;
+    --bit-tpg-subtitle1-font-size: 1.0625rem; //body 17px
+    --bit-tpg-subtitle1-font-weight: 400;
+    --bit-tpg-subtitle1-line-height: 1.294;
+    --bit-tpg-subtitle1-letter-spacing: -0.024em;
+    --bit-tpg-subtitle2-font-size: 0.9375rem; //subheadline 15px
+    --bit-tpg-subtitle2-font-weight: 400;
+    --bit-tpg-subtitle2-line-height: 1.333;
+    --bit-tpg-subtitle2-letter-spacing: -0.016em;
+    --bit-tpg-body1-font-size: 1.0625rem; //body 17px
+    --bit-tpg-body1-line-height: 1.294;
+    --bit-tpg-body1-letter-spacing: -0.024em;
+    --bit-tpg-body2-font-size: 0.9375rem; //subheadline 15px
+    --bit-tpg-body2-line-height: 1.333;
+    --bit-tpg-body2-letter-spacing: -0.016em;
+    --bit-tpg-button-font-size: 1.0625rem; //body 17px
+    --bit-tpg-button-font-weight: 600;
+    --bit-tpg-button-line-height: 1.294;
+    --bit-tpg-button-letter-spacing: -0.024em;
+    --bit-tpg-button-text-transform: none;
+    --bit-tpg-caption1-font-size: 0.75rem; //caption1 12px
+    --bit-tpg-caption1-line-height: 1.333;
+    --bit-tpg-caption1-letter-spacing: 0;
+    --bit-tpg-caption2-font-size: 0.6875rem; //caption2 11px
+    --bit-tpg-caption2-line-height: 1.182;
+    --bit-tpg-caption2-letter-spacing: 0.005em;
+    --bit-tpg-overline-font-size: 0.8125rem; //the 13px grouped-section header
+    --bit-tpg-overline-line-height: 1.385;
+    --bit-tpg-overline-letter-spacing: -0.006em;
+    --bit-tpg-overline-text-transform: uppercase;
+
+    /*---- Motion ----*/
+    // iOS: quick fades (~200ms), 335ms sheets, ~500ms navigation; ease default, the sheet curve for
+    // entries and its mirror for exits.
+    --bit-mot-duration-short-full: 120ms;
+    --bit-mot-duration-full: 250ms;
+    --bit-mot-duration-long-full: 400ms;
+    --bit-mot-easing: cubic-bezier(0.25, 0.1, 0.25, 1);
+    --bit-mot-easing-decelerate: cubic-bezier(0.32, 0.72, 0, 1);
+    --bit-mot-easing-accelerate: cubic-bezier(0.67, 0.03, 0.65, 0.09);
+
+    /*---- Elevation ----*/
+    // Cupertino separates surfaces with hairlines and dimming, not shadows; what remains is the
+    // soft context-menu/popover halo and the thumb shadows the components own.
+    --bit-shd-cal: 0 0 10px rgba(0, 0, 0, 0.25);
+    --bit-shd-cal2: 0 10px 40px rgba(0, 0, 0, 0.2);
+    --bit-shd-card: none;
+    --bit-shd-popup: 0 0 10px rgba(0, 0, 0, 0.25);
+    --bit-shd-dialog: 0 10px 40px rgba(0, 0, 0, 0.2);
+    --bit-shd-sheet: 0 10px 40px rgba(0, 0, 0, 0.2);
+    --bit-shd-tooltip: 0 0 10px rgba(0, 0, 0, 0.25);
+    --bit-shd-snackbar: 0 3px 8px rgba(0, 0, 0, 0.15);
+    // App bars separate with the hairline, drawn as a half-pixel shadow toward the content.
+    --bit-shd-appbar-top: 0 0.5px 0 rgba(0, 0, 0, 0.3);
+    --bit-shd-appbar-bottom: 0 -0.5px 0 rgba(0, 0, 0, 0.3);
+}
+
+// The dark scheme redraws the hairline app-bar shadows in white, matching the iOS dark separators.
+:root[bit-theme="cupertino-dark"],
+:root [bit-theme="cupertino-dark"] {
+    --bit-shd-appbar-top: 0 0.5px 0 rgba(255, 255, 255, 0.16);
+    --bit-shd-appbar-bottom: 0 -0.5px 0 rgba(255, 255, 255, 0.16);
+}

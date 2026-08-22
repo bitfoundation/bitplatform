@@ -3,6 +3,24 @@
 .bit-acs {
     --bit-acs-size: #{rem2(24px)};
     --bit-acs-gap: #{rem2(10px)};
+    // What the neutral ("Default") swatch paints: the primary the active packaged preset ships,
+    // since picking that swatch clears every accent override and leaves exactly that primary. The
+    // Fluent light primary here (BitAccentColorPresets.Blue - a literal, not $clr-pri, which an
+    // applied accent rewrites while this swatch has to keep showing the color underneath it); the
+    // two rules below retune it to the Material and Cupertino seeds. A custom preset sets it on
+    // .bit-acs to its own primary.
+    --bit-acs-ntr: #1276C6;
+
+    // The seeds the packaged Material and Cupertino palettes are generated from (M3 baseline
+    // primary, iOS system blue). Matched on the prefix so the scheme suffix and a scoped preset
+    // (the attribute on an ancestor rather than on :root) both count.
+    [bit-theme^="material"] & {
+        --bit-acs-ntr: #6750A4;
+    }
+
+    [bit-theme^="cupertino"] & {
+        --bit-acs-ntr: #0071E3;
+    }
 
     display: flex;
     flex-flow: row wrap;
@@ -19,7 +37,7 @@
     width: var(--bit-acs-size);
     height: var(--bit-acs-size);
     background-color: var(--bit-acs-clr);
-    border: rem2(1px) solid $clr-brd-sec;
+    border: $shp-border-width $shp-border-style $clr-brd-sec;
     transition: transform $mot-duration $mot-easing;
 
     &:hover {
@@ -32,14 +50,14 @@
 }
 
 .bit-acs-act {
-    outline: rem2(2px) solid var(--bit-acs-clr);
+    outline: $shp-border-width-thick $shp-border-style var(--bit-acs-clr);
     outline-offset: rem2(2px);
 }
 
 .bit-acs.bit-dis {
     .bit-acs-swt {
         cursor: default;
-        opacity: 0.5;
+        opacity: $opa-dis;
 
         &:hover {
             transform: none;

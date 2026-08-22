@@ -1,79 +1,38 @@
-﻿@import '../Styles/abstracts/_functions.scss';
-@import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/abstracts/_bit-css-variables.scss';
+﻿@import '../Styles/abstracts/_docs.scss';
 
-.title {
-    background-image: url('images/404.svg');
+.not-found {
+    display: flex;
+    text-align: center;
+    align-items: center;
+    gap: $doc-space-sm;
+    margin-inline: auto;
+    flex-flow: column nowrap;
+    max-width: rem2(560px);
+    padding: $doc-space-3xl $doc-space-md;
+}
+
+// The existing 404 mark, sized down: on the old page it was the entire screen, which left no room
+// for anything a lost visitor could act on.
+.not-found-art {
+    width: rem2(220px);
+    height: rem2(150px);
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    width: rem2(288px);
-    height: rem2(240px);
-
-    @include md {
-        width: rem2(216px);
-        height: rem2(168px);
-    }
+    background-image: url('images/404.svg');
 
     @include sm {
-        width: rem2(144px);
-        height: rem2(112px);
+        width: rem2(160px);
+        height: rem2(110px);
     }
 }
 
-.description {
-    font-weight: 400;
-    text-align: center;
-    font-size: rem2(32px);
-    line-height: rem2(48px);
-    color: $bit-color-neutrals-gray110;
-
-    @include lt-xl {
-        font-size: rem2(24px);
-        line-height: rem2(32px);
-    }
-
-    @include sm {
-        font-size: rem2(18px);
-        line-height: rem2(24px);
-    }
+.not-found-text {
+    max-width: rem2(460px);
 }
 
-.disconnected-cable {
-    background-image: url('images/disconnected-cable.svg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+.not-found-search {
     width: 100%;
-    height: rem2(84px);
-
-    @include md {
-        height: rem2(64px);
-    }
-
-    @include sm {
-        height: rem2(28px);
-    }
-}
-
-::deep .not-found-back-btn {
-    width: rem2(213px);
-    height: rem2(56px);
-    font-weight: 600;
-    font-size: rem2(18px);
-    line-height: rem2(32px);
-
-    @include md {
-        width: rem2(161px);
-    }
-
-    @include sm {
-        width: rem2(118px);
-    }
-
-    @include lt-lg {
-        height: rem2(40px);
-        font-size: rem2(12px);
-        line-height: rem2(16px);
-    }
+    max-width: rem2(360px);
+    margin-bottom: $doc-space-2xs;
 }

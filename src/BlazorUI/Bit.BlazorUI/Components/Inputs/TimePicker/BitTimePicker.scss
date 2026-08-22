@@ -5,25 +5,25 @@
 // The default size, declared as a mixin so both the root element and the callout - which is moved out to
 // the body while it is open and therefore inherits nothing from the root - can fall back to it.
 @mixin tpc-size-medium {
-    --bit-tpc-inp-h: #{spacing(4)};
-    --bit-tpc-inp-fs: #{spacing(1.75)};
-    --bit-tpc-lbl-fs: #{spacing(1.75)};
+    --bit-tpc-inp-h: #{$siz-ctrl-md};
+    --bit-tpc-inp-fs: #{$tg-fs-sm};
+    --bit-tpc-lbl-fs: #{$tg-fs-sm};
     --bit-tpc-cell-size: #{spacing(3.75)};
-    --bit-tpc-cell-fs: #{spacing(2.28)};
-    --bit-tpc-ico-fs: #{spacing(1.5)};
-    --bit-tpc-sep-fs: #{spacing(2.5)};
-    --bit-tpc-ampm-fs: #{spacing(1.8)};
-    --bit-tpc-act-fs: #{spacing(1.75)};
+    --bit-tpc-cell-fs: #{$tg-fs-lg};
+    --bit-tpc-ico-fs: #{$tg-fs-xs};
+    --bit-tpc-sep-fs: #{$tg-fs-xl};
+    --bit-tpc-ampm-fs: #{$tg-fs-sm};
+    --bit-tpc-act-fs: #{$tg-fs-sm};
 }
 
 .bit-tpc {
     margin: 0;
     padding: 0;
     box-shadow: none;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     position: relative;
     box-sizing: border-box;
-    font-size: spacing(2.25);
+    font-size: $tg-fs-lg;
     font-family: $tg-font-family;
 
     @include tpc-size-medium;
@@ -79,7 +79,7 @@
     margin: 0;
     display: block;
     box-shadow: none;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     box-sizing: border-box;
     padding: spacing(0.5) 0;
     font-size: var(--bit-tpc-lbl-fs);
@@ -102,7 +102,7 @@
     flex-flow: row nowrap;
     padding: 0 spacing(1);
     box-sizing: border-box;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     background-color: $clr-bg-pri;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
@@ -124,7 +124,7 @@
     border: none;
     cursor: pointer;
     box-shadow: none;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     border-radius: 0;
     box-sizing: border-box;
     text-overflow: ellipsis;
@@ -167,7 +167,7 @@
     .bit-tpc-icn {
         border: none;
         flex: 1 1 0px;
-        text-align: left;
+        text-align: start;
     }
 
     &.bit-dis {
@@ -203,18 +203,18 @@
 .bit-tpc-cal {
     display: none;
     position: fixed;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     outline: transparent;
     box-sizing: border-box;
     z-index: $zindex-callout;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     animation-fill-mode: both;
     animation-duration: $mot-duration-long;
     font-family: $tg-font-family;
-    box-shadow: $box-shadow-callout;
-    border-radius: $shp-border-radius;
+    box-shadow: $box-shadow-popup;
+    border-radius: $shp-radius-popup;
     animation-name: bit-fade-show, bit-slide-down;
-    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+    animation-timing-function: $mot-easing-decelerate;
 
     @include tpc-size-medium;
 }
@@ -231,7 +231,7 @@
     overflow: hidden auto;
     align-content: center;
     justify-content: center;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-popup;
     background-color: $clr-bg-pri;
     padding: spacing(2);
     box-sizing: border-box;
@@ -345,7 +345,7 @@
     font-size: var(--bit-tpc-ico-fs);
     background-color: transparent;
     color: $clr-fg-pri;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     aspect-ratio: 1;
 
     @media (hover: hover) {
@@ -418,13 +418,13 @@
 .bit-tpc-abn {
     border: none;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: var(--bit-tpc-clr);
     font-size: var(--bit-tpc-act-fs);
     background-color: transparent;
     font-family: $tg-font-family;
     padding: spacing(0.75) spacing(1.5);
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
 
     @media (hover: hover) {
         &:hover:not(:disabled) {
@@ -507,31 +507,31 @@
         overflow: hidden;
         animation-name: unset;
         transform: translateY(-100%);
-        box-shadow: $box-shadow-callout;
-        transition: transform $mot-duration ease-out, opacity $mot-duration-short linear;
+        box-shadow: $box-shadow-sheet;
+        transition: transform $mot-duration $mot-easing, opacity $mot-duration-short linear;
 
         .bit-tpc-tdv {
-            font-size: spacing(7);
+            font-size: calc(#{$tg-fs-4xl} * 1.75);
         }
 
         .bit-tpc-tin {
             width: 100%;
             min-width: spacing(7);
             max-width: spacing(12);
-            font-size: spacing(5);
+            font-size: calc(#{$tg-fs-4xl} * 1.25);
         }
 
         .bit-tpc-tbt {
             width: 100%;
             min-width: spacing(7);
             max-width: spacing(12);
-            font-size: spacing(3);
+            font-size: $tg-fs-2xl;
         }
 
         .bit-tpc-bam,
         .bit-tpc-bpm {
             width: 100%;
-            font-size: spacing(4);
+            font-size: $tg-fs-4xl;
             margin: spacing(0.25);
         }
 
@@ -565,15 +565,15 @@
 
 
 .bit-tpc-sm {
-    --bit-tpc-inp-h: #{spacing(3.25)};
-    --bit-tpc-inp-fs: #{spacing(1.5)};
-    --bit-tpc-lbl-fs: #{spacing(1.5)};
+    --bit-tpc-inp-h: #{$siz-ctrl-sm};
+    --bit-tpc-inp-fs: #{$tg-fs-xs};
+    --bit-tpc-lbl-fs: #{$tg-fs-xs};
     --bit-tpc-cell-size: #{spacing(3)};
-    --bit-tpc-cell-fs: #{spacing(1.85)};
-    --bit-tpc-ico-fs: #{spacing(1.375)};
-    --bit-tpc-sep-fs: #{spacing(2)};
-    --bit-tpc-ampm-fs: #{spacing(1.5)};
-    --bit-tpc-act-fs: #{spacing(1.5)};
+    --bit-tpc-cell-fs: #{$tg-fs-sm};
+    --bit-tpc-ico-fs: #{$tg-fs-xs};
+    --bit-tpc-sep-fs: #{$tg-fs-md};
+    --bit-tpc-ampm-fs: #{$tg-fs-xs};
+    --bit-tpc-act-fs: #{$tg-fs-xs};
 }
 
 .bit-tpc-md {
@@ -581,13 +581,13 @@
 }
 
 .bit-tpc-lg {
-    --bit-tpc-inp-h: #{spacing(5)};
-    --bit-tpc-inp-fs: #{spacing(2)};
-    --bit-tpc-lbl-fs: #{spacing(2)};
+    --bit-tpc-inp-h: #{$siz-ctrl-lg};
+    --bit-tpc-inp-fs: #{$tg-fs-md};
+    --bit-tpc-lbl-fs: #{$tg-fs-md};
     --bit-tpc-cell-size: #{spacing(4.5)};
-    --bit-tpc-cell-fs: #{spacing(2.75)};
-    --bit-tpc-ico-fs: #{spacing(1.75)};
-    --bit-tpc-sep-fs: #{spacing(3)};
-    --bit-tpc-ampm-fs: #{spacing(2.1)};
-    --bit-tpc-act-fs: #{spacing(2)};
+    --bit-tpc-cell-fs: #{$tg-fs-xl};
+    --bit-tpc-ico-fs: #{$tg-fs-sm};
+    --bit-tpc-sep-fs: #{$tg-fs-2xl};
+    --bit-tpc-ampm-fs: #{$tg-fs-md};
+    --bit-tpc-act-fs: #{$tg-fs-md};
 }
