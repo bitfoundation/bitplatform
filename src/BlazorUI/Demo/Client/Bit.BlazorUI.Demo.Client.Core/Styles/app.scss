@@ -33,15 +33,15 @@
     // stylesheets need to agree on both: the bar sizes and places itself from these values, and
     // every other sticky element on a demo page stacks under them instead of overlapping. The
     // height stays 0 while the bar is hidden, which is every state except reduced motion.
-    --demo-motion-bar-top: calc(var(--demo-header-height) + #{rem2(6px)});
+    --demo-motion-bar-top: calc(var(--demo-header-height) + #{rem2(2px)});
     --demo-motion-bar-height: 0rem;
     // Where the multi-API pages' sticky pivot bar pins itself: directly under the motion bar, with
     // a hairline of air between them. Derived rather than written out, because the motion bar's
     // height is a theme decision (see the reduced-motion block below).
-    --demo-pivot-sticky-top: calc(var(--demo-motion-bar-top) + var(--demo-motion-bar-height) + #{rem2(4px)});
+    --demo-pivot-sticky-top: calc(var(--demo-motion-bar-top) + var(--demo-motion-bar-height) + #{rem2(1px)});
     // How far an anchored heading has to stop short of the sticky chrome above it. The default
     // clears the app header; a page that pins a second bar (the multi-API pivot) raises it.
-    --demo-section-scroll-margin: #{rem2(90px)};
+    --demo-section-scroll-margin: #{rem2(120px)};
 }
 
 // The site ignores prefers-reduced-motion everywhere except the component demo pages.
@@ -462,7 +462,7 @@ code {
     position: sticky;
     padding: 0.25rem 0.5rem;
     box-shadow: $bit-box-shadow-callout;
-    background-color: $bit-color-background-secondary;
+    background-color: $bit-color-background-tertiary;
     top: calc(var(--demo-pivot-sticky-top) + #{$bit-env-inset-top});
 
     .bit-ios & {
@@ -481,10 +481,10 @@ code {
 // default's 90px stays the floor, since with the motion bar hidden the derived stack can come out
 // under it on a short header.
 .doc-main:has(.pivot-sticky-header) {
-    --demo-section-scroll-margin: calc(max(#{rem2(90px)}, var(--demo-pivot-sticky-top) + #{$bit-env-inset-top}) + #{$bit-size-tab} + #{rem2(8px)} + #{$doc-space-2xs});
+    --demo-section-scroll-margin: calc(max(#{rem2(120px)}, var(--demo-pivot-sticky-top) + #{$bit-env-inset-top}) + #{$bit-size-tab} + #{rem2(8px)} + #{$doc-space-2xs});
 
     .bit-ios & {
-        --demo-section-scroll-margin: calc(max(#{rem2(90px)}, var(--demo-pivot-sticky-top) + env(safe-area-inset-top)) + #{$bit-size-tab} + #{rem2(8px)} + #{$doc-space-2xs});
+        --demo-section-scroll-margin: calc(max(#{rem2(120px)}, var(--demo-pivot-sticky-top) + env(safe-area-inset-top)) + #{$bit-size-tab} + #{rem2(8px)} + #{$doc-space-2xs});
     }
 }
 

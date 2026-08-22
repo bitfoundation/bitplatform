@@ -11,7 +11,7 @@
     border-style: $shp-border-style;
     border-width: $shp-border-width;
     border-radius: $shp-radius-chip;
-    padding: var(--bit-tag-padding);
+    padding: var(--bit-tag-pad-y) var(--bit-tag-pad-x);
     font-size: var(--bit-tag-fontsize);
     min-height: var(--bit-tag-minheight);
     letter-spacing: $tg-ctrl-letter-spacing;
@@ -92,20 +92,28 @@
 }
 
 
+// The inset of a chip is not square: the height is set by --bit-tag-minheight, so the block pad only has
+// to keep the label off the rule, while the inline pad is what makes the chip read as a chip. It is taken
+// from the control padding of the theme rather than from a literal, since the corner is $shp-radius-chip -
+// a pill in Cupertino, 8px in Material - and a rounder corner eats into the inline inset. Half the control
+// padding is the chip's share of it: a tag is a label, not a button.
 .bit-tag-sm {
     --bit-tag-fontsize: #{$tg-fs-xs};
-    --bit-tag-padding: #{spacing(0.250)};
+    --bit-tag-pad-y: #{spacing(0.250)};
+    --bit-tag-pad-x: calc(#{$siz-ctrl-pad-x-sm} / 2);
     --bit-tag-minheight: #{spacing(2.25)};
 }
 
 .bit-tag-md {
     --bit-tag-fontsize: #{$tg-fs-sm};
-    --bit-tag-padding: #{spacing(0.375)};
+    --bit-tag-pad-y: #{spacing(0.375)};
+    --bit-tag-pad-x: calc(#{$siz-ctrl-pad-x-md} / 2);
     --bit-tag-minheight: #{spacing(2.75)};
 }
 
 .bit-tag-lg {
     --bit-tag-fontsize: #{$tg-fs-md};
-    --bit-tag-padding: #{spacing(0.500)};
+    --bit-tag-pad-y: #{spacing(0.500)};
+    --bit-tag-pad-x: calc(#{$siz-ctrl-pad-x-lg} / 2);
     --bit-tag-minheight: #{spacing(3.5)};
 }
