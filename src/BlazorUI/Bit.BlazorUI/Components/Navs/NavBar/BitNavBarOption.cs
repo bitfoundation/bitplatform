@@ -2,6 +2,12 @@ namespace Bit.BlazorUI;
 
 public partial class BitNavBarOption : ComponentBase, IDisposable
 {
+    // The marker the navbar reads the markup order of the options back from, and the value that tells the
+    // options apart in that read-back.
+    internal const string _OPTION_ID_ATTRIBUTE = "data-bit-nbr-opt";
+
+    internal string _OptionId { get; } = BitShortId.NewId();
+
     private bool _disposed;
     private string? _lastUrl;
     private BitNavMatch? _lastMatch;

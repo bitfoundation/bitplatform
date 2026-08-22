@@ -40,7 +40,8 @@
     <div>
         In the <b>Manual</b> mode the selection is driven by clicks instead of by the current URL, which is
         what a navbar that switches between panels of the same page needs. <b>DefaultSelectedItem</b> sets the
-        item to start on.
+        item to start on. A navbar that switches panels rather than pages marks its current item with an
+        <b>AriaCurrent</b> of <b>True</b>, since it is not the page that is current but one item of a set.
     </div>
     <br /><br />
     <div class="container">
@@ -455,7 +456,120 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18" PreventRenderForMcpClient>
+<DemoExample Title="Alignment" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18" PreventRenderForMcpClient>
+    <div>
+        <b>Alignment</b> distributes the items along the navbar: packed at its <b>Start</b>, its <b>Center</b>
+        or its <b>End</b>, or spread over it with <b>SpaceBetween</b>, <b>SpaceAround</b> (what a horizontal
+        bar does on its own) and <b>SpaceEvenly</b>. It works in both directions, so it is also what moves the
+        destinations of a <b>Vertical</b> rail away from its top edge. <b>Justified</b> is the other half of
+        the picture: it has the items fill the navbar instead of sitting somewhere along it.
+    </div>
+    <br /><br />
+    <div>Start:</div><br />
+    <div class="container">
+        <BitNavBar Alignment="BitAlignment.Start"
+                   Items="basicNavBarCustoms"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br /><br /><br />
+    <div>Center:</div><br />
+    <div class="container">
+        <BitNavBar Alignment="BitAlignment.Center"
+                   Items="basicNavBarCustoms"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br /><br /><br />
+    <div>End:</div><br />
+    <div class="container">
+        <BitNavBar Alignment="BitAlignment.End"
+                   Items="basicNavBarCustoms"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br /><br /><br />
+    <div>SpaceBetween:</div><br />
+    <div class="container">
+        <BitNavBar Alignment="BitAlignment.SpaceBetween"
+                   Items="basicNavBarCustoms"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br /><br /><br /><br />
+    <div>Vertical &amp; Center:</div><br />
+    <div class="container">
+        <BitNavBar Vertical FitWidth
+                   Alignment="BitAlignment.Center"
+                   Items="basicNavBarCustoms"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Header & Footer" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+    <div>
+        <b>HeaderTemplate</b> and <b>FooterTemplate</b> render content before and after the items and outside
+        of the list the items form, so whatever they hold is not counted among the destinations by a screen
+        reader: the logo or the menu button of a bar, and the button a navigation rail is conventionally
+        headed or ended with.
+    </div>
+    <br /><br />
+    <div>Bar:</div><br />
+    <div class="container">
+        <BitNavBar Items="basicNavBarCustoms"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })">
+            <HeaderTemplate>
+                <BitImage Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" Width="32" />
+            </HeaderTemplate>
+            <FooterTemplate>
+                <BitButton IconOnly Title="More" Variant="BitVariant.Text" IconName="@BitIconName.More" />
+            </FooterTemplate>
+        </BitNavBar>
+    </div>
+    <br /><br /><br /><br />
+    <div>Rail:</div><br />
+    <div class="container">
+        <BitNavBar Vertical FitWidth IconOnly
+                   Items="basicNavBarCustoms"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })">
+            <HeaderTemplate>
+                <BitButton IconOnly Title="New" IconName="@BitIconName.Add" />
+            </HeaderTemplate>
+            <FooterTemplate>
+                <BitButton IconOnly Title="Settings" Variant="BitVariant.Text" IconName="@BitIconName.Settings" />
+            </FooterTemplate>
+        </BitNavBar>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Dynamic Items" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+    <div>
+        The <b>Items</b> collection is read again on every render, so items appended to (or removed from) the
+        very same list are picked up without handing the navbar a new collection. The selection survives as
+        long as the item it points at is still in the list, and the keyboard follows the new order at once.
+    </div>
+    <br /><br />
+    <BitStack Horizontal>
+        <BitButton OnClick="AddDynamicCustom">Add item</BitButton>
+        <BitButton OnClick="RemoveDynamicCustom">Remove item</BitButton>
+        <BitButton OnClick="ReverseDynamicCustoms">Reverse items</BitButton>
+    </BitStack>
+    <br />
+    <div class="container">
+        <BitNavBar Mode="BitNavMode.Manual"
+                   Items="dynamicNavBarCustoms"
+                   @bind-SelectedItem="dynamicSelectedCustom"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.ImageName } })" />
+    </div>
+    <br />
+    Selected item: @dynamicSelectedCustom?.Title
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21" PreventRenderForMcpClient>
     <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
     <br /><br />
     <div>Primary:</div><br />
@@ -597,7 +711,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+<DemoExample Title="External Icons" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
     <div>External icon libraries like FontAwesome can be used with the <b>Icon</b> parameter.</div>
 
     <br />
@@ -612,7 +726,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23" PreventRenderForMcpClient>
     <div>The <b>Size</b> scales the icon, the text and the padding of every item of the navbar at once.</div>
     <br /><br />
     <div>Small:</div><br />
@@ -640,7 +754,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+<DemoExample Title="Style & Class" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br /><br />
     <div>Component's Style:</div><br />
@@ -687,7 +801,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25" PreventRenderForMcpClient>
     <div>Use BitNavBar in right-to-left (RTL).</div>
     <br /><br />
     <div dir="rtl" class="container">

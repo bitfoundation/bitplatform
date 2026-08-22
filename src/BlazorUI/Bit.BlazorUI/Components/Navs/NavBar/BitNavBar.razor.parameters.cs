@@ -10,6 +10,28 @@ public partial class BitNavBar<TItem>
     public BitColor? Accent { get; set; }
 
     /// <summary>
+    /// How the items are distributed along the navbar: packed at its start, its center or its end, or
+    /// spread over it. While it is not set the items of a horizontal navbar are spread evenly over its
+    /// width and the items of a <see cref="Vertical"/> rail are packed at its top.
+    /// <br />
+    /// <see cref="BitAlignment.Baseline"/> and <see cref="BitAlignment.Stretch"/> carry no distribution of
+    /// their own and are left at the default; use <see cref="Justified"/> to have the items fill the navbar.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitAlignment? Alignment { get; set; }
+
+    /// <summary>
+    /// Keeps the order of the registered options in sync with the markup order of the options, even when an
+    /// option is added, removed or reordered conditionally after the first render (an option that shows up
+    /// later registers itself at the end of the list, no matter where in the markup it sits, which leaves
+    /// the keyboard moving between the items in another order than the one they are rendered in).
+    /// This is achieved by reading the DOM order of the options after each render, so it adds a JS interop
+    /// call per change and is opt-in. It only applies to the options; the Items collection already keeps
+    /// its own order.
+    /// </summary>
+    [Parameter] public bool AutoReorderOptions { get; set; }
+
+    /// <summary>
     /// Items to render as children.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -37,10 +59,22 @@ public partial class BitNavBar<TItem>
     public bool FitWidth { get; set; }
 
     /// <summary>
+    /// The content rendered after the items of the navbar, outside of the list they form: the trailing
+    /// actions of a bar, or the account button at the bottom of a navigation rail.
+    /// </summary>
+    [Parameter] public RenderFragment? FooterTemplate { get; set; }
+
+    /// <summary>
     /// Renders the nav bar in full width of its container element.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool FullWidth { get; set; }
+
+    /// <summary>
+    /// The content rendered before the items of the navbar, outside of the list they form: the logo or the
+    /// menu button of a bar, or the button a navigation rail is conventionally headed with.
+    /// </summary>
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
 
     /// <summary>
     /// Only renders the text of the selected item and leaves the rest of the items with their icon alone,

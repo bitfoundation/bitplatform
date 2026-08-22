@@ -95,6 +95,30 @@ public partial class _BitNavBarCustomDemo
     private static IEnumerable<BitChoiceGroupItem<MenuItem>> choiceGroupItems =
          basicNavBarCustoms.Select(i => new BitChoiceGroupItem<MenuItem>() { Id = i.Title, Text = i.Title, IsEnabled = true, Value = i });
 
+    private int dynamicCustomsCount = 3;
+    private MenuItem? dynamicSelectedCustom;
+    private readonly List<MenuItem> dynamicNavBarCustoms =
+    [
+        new() { Title = "Home", ImageName = BitIconName.Home },
+        new() { Title = "Products", ImageName = BitIconName.ProductVariant },
+        new() { Title = "Profile", ImageName = BitIconName.Contact },
+    ];
+
+    private void AddDynamicCustom()
+    {
+        dynamicCustomsCount++;
+        dynamicNavBarCustoms.Add(new() { Title = $"Item {dynamicCustomsCount}", ImageName = BitIconName.Tag });
+    }
+
+    private void RemoveDynamicCustom()
+    {
+        if (dynamicNavBarCustoms.Count == 0) return;
+
+        dynamicNavBarCustoms.RemoveAt(dynamicNavBarCustoms.Count - 1);
+    }
+
+    private void ReverseDynamicCustoms() => dynamicNavBarCustoms.Reverse();
+
     private int countClick;
     private bool reselectable = true;
     private MenuItem selectedItem = basicNavBarCustoms[0];

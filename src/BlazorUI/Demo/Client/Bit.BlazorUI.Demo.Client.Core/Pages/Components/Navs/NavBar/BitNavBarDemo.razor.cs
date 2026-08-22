@@ -15,6 +15,22 @@ public partial class BitNavBarDemo
         },
         new()
         {
+            Name = "Alignment",
+            Type = "BitAlignment?",
+            DefaultValue = "null",
+            Description = "How the items are distributed along the navbar: packed at its start, its center or its end, or spread over it. While it is not set, the items of a horizontal navbar are spread evenly over its width and the items of a vertical rail are packed at its top. Baseline and Stretch carry no distribution of their own and are left at the default; use Justified to have the items fill the navbar.",
+            LinkType = LinkType.Link,
+            Href = "#alignment-enum",
+        },
+        new()
+        {
+            Name = "AutoReorderOptions",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the order of the registered options in sync with the markup order of the options, even when an option is added, removed or reordered conditionally after the first render (an option that shows up later registers itself at the end of the list, which leaves the keyboard moving between the items in another order than the one they are rendered in). This is achieved by reading the DOM order of the options after each render, so it adds a JS interop call per change and is opt-in.",
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -52,10 +68,24 @@ public partial class BitNavBarDemo
         },
         new()
         {
+            Name = "FooterTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The content rendered after the items of the navbar, outside of the list they form: the trailing actions of a bar, or the account button at the bottom of a navigation rail."
+        },
+        new()
+        {
             Name = "FullWidth",
             Type = "bool",
             DefaultValue = "false",
             Description = "Renders the nav bar in full width of its container element."
+        },
+        new()
+        {
+            Name = "HeaderTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The content rendered before the items of the navbar, outside of the list they form: the logo or the menu button of a bar, or the button a navigation rail is conventionally headed with."
         },
         new()
         {
@@ -765,6 +795,20 @@ public partial class BitNavBarDemo
                },
                new()
                {
+                   Name = "Footer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the footer of the BitNavBar, rendered after the items."
+               },
+               new()
+               {
+                   Name = "Header",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the header of the BitNavBar, rendered before the items."
+               },
+               new()
+               {
                    Name = "Item",
                    Type = "string?",
                    DefaultValue = "null",
@@ -800,6 +844,13 @@ public partial class BitNavBarDemo
                },
                new()
                {
+                   Name = "ItemWrapper",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the list item wrapping each item of the BitNavBar."
+               },
+               new()
+               {
                    Name = "SelectedItem",
                    Type = "string?",
                    DefaultValue = "null",
@@ -820,13 +871,13 @@ public partial class BitNavBarDemo
                 new()
                 {
                     Name = "Automatic",
-                    Description = "The value of selected key will change using NavigationManager and the current url inside the component.",
+                    Description = "The navbar follows the browser: it selects the item whose URL points at the page the app currently sits on, and it re-selects on every navigation.",
                     Value = "0",
                 },
                 new()
                 {
                     Name = "Manual",
-                    Description = "Selected key changes will be sent back to the parent component and the component won't change its value.",
+                    Description = "The selection is driven by clicks and by the SelectedItem binding instead of by the current URL, which is what a navbar that switches between the panels of a single page needs.",
                     Value = "1",
                 }
             ]
@@ -875,6 +926,22 @@ public partial class BitNavBarDemo
                 new() { Name = "Date", Description = "Represents the current date within a collection of dates.", Value = "3" },
                 new() { Name = "Time", Description = "Represents the current time within a set of times.", Value = "4" },
                 new() { Name = "True", Description = "Represents the current item within a set.", Value = "5" }
+            ]
+        },
+        new()
+        {
+            Id = "alignment-enum",
+            Name = "BitAlignment",
+            Items =
+            [
+                new() { Name = "Start", Description = "Packs the items at the start of the navbar.", Value = "0" },
+                new() { Name = "End", Description = "Packs the items at the end of the navbar.", Value = "1" },
+                new() { Name = "Center", Description = "Packs the items in the center of the navbar.", Value = "2" },
+                new() { Name = "SpaceBetween", Description = "Spreads the items over the navbar, leaving no space before the first one and after the last one.", Value = "3" },
+                new() { Name = "SpaceAround", Description = "Spreads the items over the navbar with equal space around each of them, which is what a horizontal navbar does on its own.", Value = "4" },
+                new() { Name = "SpaceEvenly", Description = "Spreads the items over the navbar with equal space between them and at both of its ends.", Value = "5" },
+                new() { Name = "Baseline", Description = "Carries no distribution of its own here, so the navbar keeps its default.", Value = "6" },
+                new() { Name = "Stretch", Description = "Carries no distribution of its own here, so the navbar keeps its default. Use Justified to have the items fill the navbar.", Value = "7" }
             ]
         },
         new()

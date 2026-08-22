@@ -1751,20 +1751,260 @@ public class BitNavBarTests : BunitTestContext
         Assert.AreEqual("bit", root.GetAttribute("data-val-test"));
 
         content.MarkupMatches(@"
-<div class=""bit-nbr-cnt "">
-    <button type=""button"" class=""bit-nbr-itm"" style="""">
-        <span class=""bit-nbr-icc "">
-            <i aria-hidden=""true"" class=""bit-nbr-ico bit-icon bit-icon--Home ""></i>
-        </span>
-        <span class=""bit-nbr-txt "">Home</span>
-    </button>
-    <button type=""button"" class=""bit-nbr-itm"" style="""">
-        <span class=""bit-nbr-icc "">
-            <i aria-hidden=""true"" class=""bit-nbr-ico bit-icon bit-icon--ProductVariant ""></i>
-        </span>
-        <span class=""bit-nbr-txt "">Products</span>
-    </button>
-</div>");
+<ul role=""list"" id:ignore class=""bit-nbr-cnt "">
+    <li class=""bit-nbr-lit "">
+        <button type=""button"" class=""bit-nbr-itm"" style="""">
+            <span class=""bit-nbr-icc "">
+                <i aria-hidden=""true"" class=""bit-nbr-ico bit-icon bit-icon--Home ""></i>
+            </span>
+            <span class=""bit-nbr-txt ""><span class=""bit-nbr-txc"">Home</span></span>
+        </button>
+    </li>
+    <li class=""bit-nbr-lit "">
+        <button type=""button"" class=""bit-nbr-itm"" style="""">
+            <span class=""bit-nbr-icc "">
+                <i aria-hidden=""true"" class=""bit-nbr-ico bit-icon bit-icon--ProductVariant ""></i>
+            </span>
+            <span class=""bit-nbr-txt ""><span class=""bit-nbr-txc"">Products</span></span>
+        </button>
+    </li>
+</ul>");
+    }
+
+
+
+    [TestMethod]
+    public void BitNavBarShouldRenderItsItemsAsAList()
+    {
+        // The destinations are marked up as a list inside the navigation landmark, which is what has a
+        // screen reader announce how many of them the bar holds and which one it is on.
+        var component = RenderNavBar(BasicItems());
+
+        var list = component.Find("nav.bit-nbr > ul.bit-nbr-cnt");
+
+        Assert.AreEqual("list", list.GetAttribute("role"));
+
+        var wrappers = component.FindAll(".bit-nbr-cnt > li.bit-nbr-lit");
+
+        Assert.AreEqual(3, wrappers.Count);
+        Assert.IsTrue(wrappers.All(w => w.QuerySelector(".bit-nbr-itm") is not null));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldRenderTheOptionsAsListItemsToo()
+    {
+        var component = RenderComponent<BitNavBarOptionsTest>(p => p.Add(c => c.ShowMiddle, true));
+
+        Assert.AreEqual(3, component.FindAll(".bit-nbr-cnt > li.bit-nbr-lit > .bit-nbr-itm").Count);
+    }
+
+    [TestMethod]
+    [DataRow(BitAlignment.Start, "bit-nbr-str")]
+    [DataRow(BitAlignment.End, "bit-nbr-end")]
+    [DataRow(BitAlignment.Center, "bit-nbr-ctr")]
+    [DataRow(BitAlignment.SpaceBetween, "bit-nbr-sbt")]
+    [DataRow(BitAlignment.SpaceAround, "bit-nbr-sar")]
+    [DataRow(BitAlignment.SpaceEvenly, "bit-nbr-sev")]
+    public void BitNavBarShouldRespectAlignment(BitAlignment alignment, string expectedClass)
+    {
+        var component = RenderNavBar(BasicItems(), p => p.Add(c => c.Alignment, alignment));
+
+        Assert.IsTrue(component.Find(".bit-nbr").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow(BitAlignment.Baseline)]
+    [DataRow(BitAlignment.Stretch)]
+    public void BitNavBarShouldLeaveTheDistributionAloneWithoutAnAlignmentOfItsOwn(BitAlignment? alignment)
+    {
+        // Baseline and Stretch say how an item sits across the bar rather than how the items are spread
+        // along it, so neither one (and no alignment at all) takes the bar off its default distribution.
+        var component = RenderNavBar(BasicItems(), p =>
+        {
+            if (alignment.HasValue)
+            {
+                p.Add(c => c.Alignment, alignment.Value);
+            }
+        });
+
+        var alignmentClasses = new[] { "bit-nbr-str", "bit-nbr-end", "bit-nbr-ctr", "bit-nbr-sbt", "bit-nbr-sar", "bit-nbr-sev" };
+
+        Assert.IsFalse(component.Find(".bit-nbr").ClassList.Any(alignmentClasses.Contains));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldRenderTheHeaderAndTheFooterOutsideOfTheListOfItems()
+    {
+        // Whatever the app puts beside its destinations is not one of them, so it stays out of the list and
+        // is left out of the items a screen reader counts.
+        var component = RenderNavBar(BasicItems(), p =>
+        {
+            p.Add(c => c.HeaderTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"the-header\">header</span>")));
+            p.Add(c => c.FooterTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"the-footer\">footer</span>")));
+        });
+
+        Assert.IsNotNull(component.Find(".bit-nbr > .bit-nbr-hdr > .the-header"));
+        Assert.IsNotNull(component.Find(".bit-nbr > .bit-nbr-ftr > .the-footer"));
+
+        Assert.AreEqual(0, component.FindAll(".bit-nbr-cnt .the-header").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-nbr-cnt .the-footer").Count);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldNotRenderAHeaderOrAFooterWithoutATemplate()
+    {
+        var component = RenderNavBar(BasicItems());
+
+        Assert.AreEqual(0, component.FindAll(".bit-nbr-hdr").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-nbr-ftr").Count);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldRespectTheHeaderFooterAndItemWrapperClassesAndStyles()
+    {
+        var component = RenderNavBar(BasicItems(), p =>
+        {
+            p.Add(c => c.HeaderTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span>header</span>")));
+            p.Add(c => c.FooterTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span>footer</span>")));
+            p.Add(c => c.Classes, new BitNavBarClassStyles
+            {
+                Header = "header-class",
+                Footer = "footer-class",
+                ItemWrapper = "wrapper-class"
+            });
+            p.Add(c => c.Styles, new BitNavBarClassStyles
+            {
+                Header = "color: red",
+                Footer = "color: blue",
+                ItemWrapper = "color: green"
+            });
+        });
+
+        var header = component.Find(".bit-nbr-hdr");
+        var footer = component.Find(".bit-nbr-ftr");
+        var wrapper = component.Find(".bit-nbr-lit");
+
+        Assert.IsTrue(header.ClassList.Contains("header-class"));
+        Assert.IsTrue(footer.ClassList.Contains("footer-class"));
+        Assert.IsTrue(wrapper.ClassList.Contains("wrapper-class"));
+
+        StringAssert.Contains(header.GetAttribute("style"), "color: red");
+        StringAssert.Contains(footer.GetAttribute("style"), "color: blue");
+        StringAssert.Contains(wrapper.GetAttribute("style"), "color: green");
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldLayABadgeWithoutAnIconInTheFlowOfItsItem()
+    {
+        // A badge is positioned against the icon of its item, and an item without one has nothing to pin it
+        // to, so its wrapper is marked and the badge is laid out in the flow instead.
+        var items = BasicItems();
+        items[0].IconName = null;
+        items[0].Badge = "3";
+        items[1].Badge = "4";
+
+        var component = RenderNavBar(items);
+
+        var containers = component.FindAll(".bit-nbr-icc");
+
+        Assert.IsTrue(containers[0].ClassList.Contains("bit-nbr-nic"));
+        Assert.IsFalse(containers[1].ClassList.Contains("bit-nbr-nic"));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldMarkTheOptionsForTheOrderReadBackOnlyWithAutoReorderOptions()
+    {
+        // The marker is what the DOM read-back recovers the markup order from, so it is only rendered for
+        // the navbars that asked for the reordering.
+        var withReorder = RenderComponent<BitNavBarOptionsTest>(p =>
+        {
+            p.Add(c => c.ShowMiddle, true);
+            p.Add(c => c.AutoReorderOptions, true);
+        });
+
+        Assert.AreEqual(3, withReorder.FindAll("[data-bit-nbr-opt]").Count);
+
+        var withoutReorder = RenderComponent<BitNavBarOptionsTest>(p => p.Add(c => c.ShowMiddle, true));
+
+        Assert.AreEqual(0, withoutReorder.FindAll("[data-bit-nbr-opt]").Count);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldWalkTheOptionsInTheirRegistrationOrderWithoutAutoReorderOptions()
+    {
+        // An option that shows up after the first render registers itself at the end of the list, so the
+        // keyboard reaches it last even though it is rendered in the middle of the bar. That is the very
+        // thing AutoReorderOptions is there to correct.
+        var component = RenderComponent<BitNavBarOptionsTest>(p => p.Add(c => c.SingleTabStop, true));
+
+        component.Render(p => p.Add(c => c.ShowMiddle, true));
+
+        CollectionAssert.AreEqual(new[] { "Home", "Profile", "Settings" }, Texts(component));
+
+        PressKeyOn(component, 0, "ArrowRight");
+
+        // The move lands on Settings, which is rendered last but registered second.
+        AssertTabStop(component, 2);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldWalkTheOptionsInTheirMarkupOrderWithAutoReorderOptions()
+    {
+        var component = RenderComponent<BitNavBarOptionsTest>(p =>
+        {
+            p.Add(c => c.SingleTabStop, true);
+            p.Add(c => c.AutoReorderOptions, true);
+        });
+
+        component.Render(p => p.Add(c => c.ShowMiddle, true));
+
+        // What the browser would have reported: the markers of the options in the order they are rendered.
+        var orderedIds = component.FindAll("[data-bit-nbr-opt]")
+                                  .Select(e => e.GetAttribute("data-bit-nbr-opt")!)
+                                  .ToArray();
+
+        Assert.AreEqual(3, orderedIds.Length);
+
+        Context.JSInterop.Setup<string[]>("BitBlazorUI.Utils.getChildrenAttributes", _ => true).SetResult(orderedIds);
+
+        // Any render re-runs the read-back, which is what the change that added the option gives the navbar
+        // in the first place.
+        component.Render(p => p.Add(c => c.ShowMiddle, true));
+
+        PressKeyOn(component, 0, "ArrowRight");
+
+        // The move now lands on the option that is rendered second, whenever it happened to register.
+        AssertTabStop(component, 1);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldKeepAnOptionThatHasNotRenderedItsMarkerYet()
+    {
+        // A read-back that only reports a part of the options (one of them has registered but has not
+        // rendered its marker yet) leaves the rest at the end of the list rather than dropping them.
+        var component = RenderComponent<BitNavBarOptionsTest>(p =>
+        {
+            p.Add(c => c.SingleTabStop, true);
+            p.Add(c => c.AutoReorderOptions, true);
+        });
+
+        component.Render(p => p.Add(c => c.ShowMiddle, true));
+
+        var reportedIds = component.FindAll("[data-bit-nbr-opt]")
+                                   .Select(e => e.GetAttribute("data-bit-nbr-opt")!)
+                                   .Take(2)
+                                   .ToArray();
+
+        Context.JSInterop.Setup<string[]>("BitBlazorUI.Utils.getChildrenAttributes", _ => true).SetResult(reportedIds);
+
+        component.Render(p => p.Add(c => c.ShowMiddle, true));
+
+        Assert.AreEqual(3, component.FindAll(".bit-nbr-itm").Count);
+
+        PressKeyOn(component, 0, "End");
+
+        AssertTabStop(component, 2);
     }
 
 
@@ -1780,6 +2020,18 @@ public class BitNavBarTests : BunitTestContext
         else
         {
             Assert.IsTrue(root.ClassList.Contains(expectedClass));
+        }
+    }
+
+    // Where the single stop of the roving tab index sits, which follows the focus and is what the order of
+    // the items is observable through without reaching for the element the focus call was handed.
+    private static void AssertTabStop(IRenderedComponent<IComponent> component, int expectedIndex)
+    {
+        var items = component.FindAll(".bit-nbr-itm");
+
+        for (var i = 0; i < items.Count; i++)
+        {
+            Assert.AreEqual(i == expectedIndex ? "0" : "-1", items[i].GetAttribute("tabindex"));
         }
     }
 

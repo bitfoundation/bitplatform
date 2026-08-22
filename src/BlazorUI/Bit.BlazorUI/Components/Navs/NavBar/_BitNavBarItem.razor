@@ -36,60 +36,72 @@
     }
 }
 
-<_BitNavBarChild @ref="_child"
-                 Href="@href"
-                 Target="@target"
-                 AriaLabel="@ariaLabel"
-                 AriaCurrent="@ariaCurrent"
-                 OnClick="HandleOnClick"
-                 OnFocusIn="HandleOnFocusIn"
-                 OnKeyDown="HandleOnKeyDown"
-                 Disabled="@(isEnabled is false)"
-                 Style="@NavBar.GetItemCssStyle(Item)"
-                 Title="@(title ?? (isTextHidden ? text : null))"
-                 Class="@NavBar.GetItemCssClass(Item, isEnabled)"
-                 TabIndex="@NavBar.GetItemTabIndex(Item, isEnabled)"
-                 Rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url) is false ? "noopener noreferrer" : null)">
-    @if (template is not null)
-    {
-        @template(Item)
-    }
-    else if (NavBar.ItemTemplate is not null)
-    {
-        @NavBar.ItemTemplate(Item)
-    }
-    else
-    {
-        // A navigation bar conventionally marks its current destination with the filled variant of the
-        // same glyph, so the selected item swaps to its own icon when it was given one.
-        var icon = (isSelected ? BitIconInfo.From(NavBar.GetSelectedIcon(Item), NavBar.GetSelectedIconName(Item)) : null)
-                ?? BitIconInfo.From(NavBar.GetIcon(Item), NavBar.GetIconName(Item));
-
-        @if (icon is not null || badge.HasValue() || dot)
+@* The item sits in a list item of its own rather than being the list item itself, so the anchor (or the
+   button) the reader interacts with stays the very same element it has always been, and the marker the
+   option reordering reads back is carried by a wrapper that is always a direct child of the list. *@
+<li style="@NavBar.Styles?.ItemWrapper"
+    class="bit-nbr-lit @NavBar.Classes?.ItemWrapper"
+    @attributes="NavBar.GetItemMarkerAttributes(Item)">
+    <_BitNavBarChild @ref="_child"
+                     Href="@href"
+                     Target="@target"
+                     AriaLabel="@ariaLabel"
+                     AriaCurrent="@ariaCurrent"
+                     OnClick="HandleOnClick"
+                     OnFocusIn="HandleOnFocusIn"
+                     OnKeyDown="HandleOnKeyDown"
+                     Disabled="@(isEnabled is false)"
+                     Style="@NavBar.GetItemCssStyle(Item)"
+                     Title="@(title ?? (isTextHidden ? text : null))"
+                     Class="@NavBar.GetItemCssClass(Item, isEnabled)"
+                     TabIndex="@NavBar.GetItemTabIndex(Item, isEnabled)"
+                     Rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url) is false ? "noopener noreferrer" : null)">
+        @if (template is not null)
         {
-            @* The badge is positioned against the icon, so the two share a wrapper of their own rather
-               than being placed against the item, where it would drift away from the icon as the item
-               grows. Neither is read out where it sits: the icon repeats the name of the item, and the
-               badge has already been folded into that name above. *@
-            <span style="@NavBar.Styles?.ItemIconContainer" class="bit-nbr-icc @NavBar.Classes?.ItemIconContainer">
-                @if (icon is not null)
-                {
-                    <i aria-hidden="true" style="@NavBar.Styles?.ItemIcon" class="bit-nbr-ico @icon.GetCssClasses() @NavBar.Classes?.ItemIcon" />
-                }
-                @if (badge.HasValue())
-                {
-                    <span aria-hidden="true" style="@NavBar.Styles?.ItemBadge" class="bit-nbr-bdg @NavBar.Classes?.ItemBadge">@badge</span>
-                }
-                else if (dot)
-                {
-                    <span aria-hidden="true" style="@NavBar.Styles?.ItemBadge" class="bit-nbr-bdg bit-nbr-bdt @NavBar.Classes?.ItemBadge"></span>
-                }
-            </span>
+            @template(Item)
         }
-
-        @if (NavBar.IconOnly is false)
+        else if (NavBar.ItemTemplate is not null)
         {
-            <span style="@NavBar.Styles?.ItemText" class="bit-nbr-txt @NavBar.Classes?.ItemText">@text</span>
+            @NavBar.ItemTemplate(Item)
         }
-    }
-</_BitNavBarChild>
+        else
+        {
+            // A navigation bar conventionally marks its current destination with the filled variant of the
+            // same glyph, so the selected item swaps to its own icon when it was given one.
+            var icon = (isSelected ? BitIconInfo.From(NavBar.GetSelectedIcon(Item), NavBar.GetSelectedIconName(Item)) : null)
+                    ?? BitIconInfo.From(NavBar.GetIcon(Item), NavBar.GetIconName(Item));
+
+            @if (icon is not null || badge.HasValue() || dot)
+            {
+                @* The badge is positioned against the icon, so the two share a wrapper of their own rather
+                   than being placed against the item, where it would drift away from the icon as the item
+                   grows. Neither is read out where it sits: the icon repeats the name of the item, and the
+                   badge has already been folded into that name above.
+                   An item without an icon has nothing to pin the badge to, so the wrapper is marked and the
+                   badge is laid out in the flow of the item instead of floating over the empty spot. *@
+                <span style="@NavBar.Styles?.ItemIconContainer" class="bit-nbr-icc @(icon is null ? "bit-nbr-nic" : null) @NavBar.Classes?.ItemIconContainer">
+                    @if (icon is not null)
+                    {
+                        <i aria-hidden="true" style="@NavBar.Styles?.ItemIcon" class="bit-nbr-ico @icon.GetCssClasses() @NavBar.Classes?.ItemIcon" />
+                    }
+                    @if (badge.HasValue())
+                    {
+                        <span aria-hidden="true" style="@NavBar.Styles?.ItemBadge" class="bit-nbr-bdg @NavBar.Classes?.ItemBadge">@badge</span>
+                    }
+                    else if (dot)
+                    {
+                        <span aria-hidden="true" style="@NavBar.Styles?.ItemBadge" class="bit-nbr-bdg bit-nbr-bdt @NavBar.Classes?.ItemBadge"></span>
+                    }
+                </span>
+            }
+
+            @if (NavBar.IconOnly is false)
+            {
+                @* The text is clipped by a child of its own rather than by the element that carries it, so
+                   the HideUnselectedText mode can collapse that element to nothing and animate its way
+                   there: a track only shrinks past the content of an item when the item itself clips it. *@
+                <span style="@NavBar.Styles?.ItemText" class="bit-nbr-txt @NavBar.Classes?.ItemText"><span class="bit-nbr-txc">@text</span></span>
+            }
+        }
+    </_BitNavBarChild>
+</li>

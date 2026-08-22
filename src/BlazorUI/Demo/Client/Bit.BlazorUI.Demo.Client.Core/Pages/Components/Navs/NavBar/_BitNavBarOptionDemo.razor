@@ -49,7 +49,9 @@
         In the <b>Manual</b> mode the selection is driven by clicks instead of by the current URL, which is
         what a navbar that switches between panels of the same page needs. The options API has no
         <b>DefaultSelectedItem</b>, since an option only exists once it has rendered; bind
-        <b>SelectedItem</b> instead and hand it a captured option reference.
+        <b>SelectedItem</b> instead and hand it a captured option reference. A navbar that switches panels
+        rather than pages marks its current option with an <b>AriaCurrent</b> of <b>True</b>, since it is not
+        the page that is current but one option of a set.
     </div>
     <br /><br />
     <div class="container">
@@ -364,6 +366,25 @@
         options API sets a selection of its own.
     </div>
     <br /><br />
+    <div>
+        <b>DefaultSelectedItem</b>, which the items and the custom APIs open on, takes an item that already
+        exists when the navbar reads its parameters, and an option only exists once it has rendered, which
+        is after that. An options navbar therefore starts on a selection the same way it changes one: the
+        captured reference is assigned to the bound selection on the first render.
+    </div>
+    <br /><br />
+    <div>Initial selection:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Mode="BitNavMode.Manual" @bind-SelectedItem="bindingSelectedOption">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" @ref="bindingOptionProducts" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+    <br />
+    Selected item: @bindingSelectedOption?.Text
+    <br /><br /><br /><br />
     <div>Two-way SelectedItem:</div><br />
     <div class="container">
         <BitNavBar TItem="BitNavBarOption" Mode="BitNavMode.Manual" @bind-SelectedItem="twoWaySelectedOption">
@@ -494,7 +515,157 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example18RazorCode" Id="example18" PreventRenderForMcpClient>
+<DemoExample Title="Alignment" RazorCode="@example18RazorCode" Id="example18" PreventRenderForMcpClient>
+    <div>
+        <b>Alignment</b> distributes the options along the navbar: packed at its <b>Start</b>, its
+        <b>Center</b> or its <b>End</b>, or spread over it with <b>SpaceBetween</b>, <b>SpaceAround</b> (what
+        a horizontal bar does on its own) and <b>SpaceEvenly</b>. It works in both directions, so it is also
+        what moves the destinations of a <b>Vertical</b> rail away from its top edge. <b>Justified</b> is the
+        other half of the picture: it has the options fill the navbar instead of sitting somewhere along it.
+    </div>
+    <br /><br />
+    <div>Start:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Alignment="BitAlignment.Start">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+    <br /><br /><br /><br />
+    <div>Center:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Alignment="BitAlignment.Center">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+    <br /><br /><br /><br />
+    <div>End:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Alignment="BitAlignment.End">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+    <br /><br /><br /><br />
+    <div>SpaceBetween:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Alignment="BitAlignment.SpaceBetween">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+    <br /><br /><br /><br />
+    <div>Vertical &amp; Center:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Vertical FitWidth Alignment="BitAlignment.Center">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Header & Footer" RazorCode="@example19RazorCode" Id="example19">
+    <div>
+        <b>HeaderTemplate</b> and <b>FooterTemplate</b> render content before and after the options and
+        outside of the list the options form, so whatever they hold is not counted among the destinations by
+        a screen reader: the logo or the menu button of a bar, and the button a navigation rail is
+        conventionally headed or ended with. The options move into the <b>Options</b> element here, since the
+        navbar now receives more than one piece of content.
+    </div>
+    <br /><br />
+    <div>Bar:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption">
+            <HeaderTemplate>
+                <BitImage Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" Width="32" />
+            </HeaderTemplate>
+            <Options>
+                <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+                <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+                <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+                <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+            </Options>
+            <FooterTemplate>
+                <BitButton IconOnly Title="More" Variant="BitVariant.Text" IconName="@BitIconName.More" />
+            </FooterTemplate>
+        </BitNavBar>
+    </div>
+    <br /><br /><br /><br />
+    <div>Rail:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Vertical FitWidth IconOnly>
+            <HeaderTemplate>
+                <BitButton IconOnly Title="New" IconName="@BitIconName.Add" />
+            </HeaderTemplate>
+            <Options>
+                <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+                <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+                <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+                <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+            </Options>
+            <FooterTemplate>
+                <BitButton IconOnly Title="Settings" Variant="BitVariant.Text" IconName="@BitIconName.Settings" />
+            </FooterTemplate>
+        </BitNavBar>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Dynamic Items" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+    <div>
+        The options are rendered from a collection of their own, so options appended to (or removed from)
+        the very same list are picked up without handing the navbar anything new. The selection survives as
+        long as the option it points at is still in the list, and the keyboard follows the new order at once.
+    </div>
+    <br />
+    <div>
+        An option registers itself with the navbar as it renders, so one that appears after the first render
+        lands at the end of that list wherever in the markup it sits, and reordering the markup does not move
+        it at all: the options are still drawn in their own places, but the order the arrow keys, <b>Home</b>
+        and <b>End</b> follow is the order they registered in. <b>AutoReorderOptions</b> reads the DOM order
+        back after each render and puts the list in the order the options are written in, at the cost of one
+        interop call per change. Reverse the items below and walk the bar with the arrow keys to tell the
+        two apart.
+    </div>
+    <br /><br />
+    <BitStack Horizontal>
+        <BitButton OnClick="AddDynamicOption">Add item</BitButton>
+        <BitButton OnClick="RemoveDynamicOption">Remove item</BitButton>
+        <BitButton OnClick="ReverseDynamicOptions">Reverse items</BitButton>
+    </BitStack>
+    <br />
+    <BitToggle @bind-Value="dynamicAutoReorder" OnText="AutoReorderOptions" OffText="AutoReorderOptions" />
+    <br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption"
+                   Mode="BitNavMode.Manual"
+                   AutoReorderOptions="dynamicAutoReorder"
+                   @bind-SelectedItem="dynamicSelectedOption">
+            @* The key ties each option to its entry in the collection, so reversing the list moves the very
+               same options around instead of leaving them in place with new texts on them - which is what
+               keeps the selection on the option it was on, and what leaves the registration order behind
+               for AutoReorderOptions to put right. *@
+            @foreach (var option in dynamicOptions)
+            {
+                <BitNavBarOption @key="option" Text="@option.Text" IconName="@option.IconName" />
+            }
+        </BitNavBar>
+    </div>
+    <br />
+    Selected item: @dynamicSelectedOption?.Text
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example21RazorCode" Id="example21" PreventRenderForMcpClient>
     <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
     <br /><br />
     <div>Primary:</div><br />
@@ -670,7 +841,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example19RazorCode" Id="example19">
+<DemoExample Title="External Icons" RazorCode="@example22RazorCode" Id="example22">
     <div>External icon libraries like FontAwesome can be used with the <b>Icon</b> parameter.</div>
 
     <br />
@@ -688,7 +859,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example20RazorCode" Id="example20" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example23RazorCode" Id="example23" PreventRenderForMcpClient>
     <div>The <b>Size</b> scales the icon, the text and the padding of every option of the navbar at once.</div>
     <br /><br />
     <div>Small:</div><br />
@@ -722,7 +893,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example21RazorCode" Id="example21">
+<DemoExample Title="Style & Class" RazorCode="@example24RazorCode" Id="example24">
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br /><br />
     <div>Component's Style:</div><br />
@@ -776,7 +947,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example22RazorCode" Id="example22" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example25RazorCode" Id="example25" PreventRenderForMcpClient>
     <div>Use BitNavBar in right-to-left (RTL).</div>
     <br /><br />
     <div dir="rtl" class="container">

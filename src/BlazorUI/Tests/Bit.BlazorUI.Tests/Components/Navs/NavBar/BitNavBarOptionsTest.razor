@@ -1,6 +1,6 @@
 @using Bit.BlazorUI
 
-<BitNavBar TItem="BitNavBarOption" Mode="@Mode" SingleTabStop="@SingleTabStop">
+<BitNavBar TItem="BitNavBarOption" Mode="@Mode" SingleTabStop="@SingleTabStop" AutoReorderOptions="@AutoReorderOptions">
     <BitNavBarOption Text="Home" />
     @if (ShowMiddle)
     {
@@ -15,4 +15,6 @@
     [Parameter] public BitNavMode Mode { get; set; }
 
     [Parameter] public bool SingleTabStop { get; set; }
+
+    [Parameter] public bool AutoReorderOptions { get; set; }
 }

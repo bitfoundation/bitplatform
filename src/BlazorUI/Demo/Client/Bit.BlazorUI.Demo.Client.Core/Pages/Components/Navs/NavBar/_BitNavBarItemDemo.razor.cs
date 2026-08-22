@@ -95,6 +95,30 @@ public partial class _BitNavBarItemDemo
     private static IEnumerable<BitChoiceGroupItem<BitNavBarItem>> choiceGroupItems =
          basicNavBarItems.Select(i => new BitChoiceGroupItem<BitNavBarItem>() { Id = i.Text, Text = i.Text, IsEnabled = i.IsEnabled, Value = i });
 
+    private int dynamicItemsCount = 3;
+    private BitNavBarItem? dynamicSelectedItem;
+    private readonly List<BitNavBarItem> dynamicNavBarItems =
+    [
+        new() { Text = "Home", IconName = BitIconName.Home },
+        new() { Text = "Products", IconName = BitIconName.ProductVariant },
+        new() { Text = "Profile", IconName = BitIconName.Contact },
+    ];
+
+    private void AddDynamicItem()
+    {
+        dynamicItemsCount++;
+        dynamicNavBarItems.Add(new() { Text = $"Item {dynamicItemsCount}", IconName = BitIconName.Tag });
+    }
+
+    private void RemoveDynamicItem()
+    {
+        if (dynamicNavBarItems.Count == 0) return;
+
+        dynamicNavBarItems.RemoveAt(dynamicNavBarItems.Count - 1);
+    }
+
+    private void ReverseDynamicItems() => dynamicNavBarItems.Reverse();
+
     private int countClick;
     private bool reselectable = true;
     private BitNavBarItem selectedItem = basicNavBarItems[0];

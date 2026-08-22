@@ -1,34 +1,138 @@
-﻿@import '../../../../Styles/abstracts/_media-queries.scss';
+@import '../../../../Styles/abstracts/_functions.scss';
+@import '../../../../Styles/abstracts/_media-queries.scss';
+@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
+// A navigation bar is read in the context of the device it is pinned to, so every sample of this page
+// is framed as a conceptual phone: a dark bezel, a rounded screen clipped to it, a status strip and a
+// camera island. The frame is chrome of the demo alone - none of it appears in the code samples - and
+// it is built out of the two pseudo-elements of the frame itself, so the ~200 sample wrappers of the
+// three tabs pick it up without a single one of them growing markup of its own.
+@mixin device-frame($radius, $bezel) {
+    // The bezel is a real border rather than padding, so `overflow: hidden` clips the content to the
+    // padding box - the screen - instead of to the outer shell: a full-width bar with an accented item
+    // is then cut by the rounded corner of the screen the way it would be on a device.
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+    border: $bezel solid #1e2127;
+    border-radius: $radius;
+    // A breath of the theme's accent at the head of the screen, so the empty canvas above the bar
+    // reads as an app rather than as a blank rectangle.
+    background: radial-gradient(115% 55% at 50% 0%, color-mix(in srgb, #{$bit-color-primary} 8%, transparent), transparent 65%),
+                var(--demo-screen-bg, #{$bit-color-background-primary});
+    box-shadow: 0 0 0 rem2(2px) #3c4149,
+                0 rem2(16px) rem2(30px) rem2(-14px) rgba(0, 0, 0, 0.45),
+                inset 0 0 0 rem2(1px) rgba(127, 127, 127, 0.25);
+}
+
+// The status strip of the screen: the clock on the left and the signal bars on the right, both drawn
+// on the one pseudo-element. It is forced to ltr so the RTL sample keeps the clock and the bars where
+// every other sample has them instead of swapping them onto each other.
+@mixin device-status-bar($height) {
+    // The three signal bars share a baseline, with the tallest of them centered on the strip.
+    $bars-inset: calc((#{$height} - #{rem2(11px)}) / 2);
+
+    content: '12:30';
+    top: 0;
+    left: rem2(16px);
+    right: rem2(16px);
+    height: $height;
+    position: absolute;
+    display: flex;
+    align-items: center;
+    direction: ltr;
+    font-size: rem2(11px);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--demo-screen-fg, #{$bit-color-foreground-secondary});
+    opacity: 0.7;
+    pointer-events: none;
+    background-repeat: no-repeat;
+    background-image: linear-gradient(currentColor, currentColor),
+                      linear-gradient(currentColor, currentColor),
+                      linear-gradient(currentColor, currentColor);
+    background-size: rem2(3px) rem2(5px), rem2(3px) rem2(8px), rem2(3px) rem2(11px);
+    background-position: right rem2(10px) bottom $bars-inset, right rem2(5px) bottom $bars-inset, right 0 bottom $bars-inset;
+}
+
+// The camera island, centered on the top edge of the screen.
+@mixin device-island($top, $width, $height) {
+    content: '';
+    top: $top;
+    left: 50%;
+    width: $width;
+    height: $height;
+    position: absolute;
+    border-radius: rem2(999px);
+    background: #15171b;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
 
 ::deep {
     .container {
-        padding: 0.25rem;
-        padding-top: 5rem;
-        border: 1px solid gray;
+        @include device-frame(rem2(40px), rem2(10px));
+
+        // The bar is pinned to the foot of the screen, which is where a navigation bar of this kind
+        // lives; the strip left over above it is the app the bar belongs to.
+        width: 100%;
+        max-width: rem2(360px);
+        min-height: rem2(520px);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        // Sides only: a focus ring is drawn around an item as a spread shadow, and a justified bar
+        // whose first item sits flush against the screen edge would have it clipped away.
+        padding: 0 rem2(6px);
+
+        &::before {
+            @include device-status-bar(rem2(30px));
+        }
+
+        &::after {
+            @include device-island(rem2(8px), rem2(62px), rem2(16px));
+        }
+
+        // A vertical bar is a navigation rail: it runs down the side of the screen rather than along
+        // its foot, and starts below the status strip instead of underneath it.
+        &:has(> .bit-nbr-vrt) {
+            flex-direction: row;
+            justify-content: flex-start;
+            padding: rem2(30px) rem2(6px) rem2(6px);
+        }
+
+        // A bar sized to its own content is centered on the screen rather than left hanging at one
+        // edge of it. A rail is excluded: its edge is where it belongs.
+        > .bit-nbr-ftw:not(.bit-nbr-vrt) {
+            align-self: center;
+        }
     }
 
+    // The background colors are shown on an inverted panel, so the screen of the phones inside it
+    // takes that same surface and its status strip takes the color that stays legible on it.
+    .inverted-panel .container {
+        --demo-screen-bg: #{$bit-color-foreground-secondary};
+        --demo-screen-fg: #{$bit-color-background-secondary};
+    }
+
+    // The Advanced sample is a whole app rather than a bar on its own, so it gets the same device at
+    // the size of a real one.
     .mobile-frame {
-        height: 666px;
-        overflow: hidden;
-        max-width: 375px;
-        position: relative;
-        border-radius: 36px;
-        background-color: gray;
-        border: 16px solid #333;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
+        @include device-frame(rem2(48px), rem2(12px));
 
-    .mobile-frame::after {
-        top: 10px;
-        left: 50%;
-        content: '';
-        width: 60px;
-        height: 5px;
-        display: block;
-        background: #333;
-        position: absolute;
-        border-radius: 10px;
-        transform: translateX(-50%);
+        width: 100%;
+        max-width: rem2(375px);
+        height: rem2(680px);
+        // The app of the sample starts below the status strip.
+        padding-top: rem2(32px);
+
+        &::before {
+            @include device-status-bar(rem2(32px));
+        }
+
+        &::after {
+            @include device-island(rem2(9px), rem2(74px), rem2(18px));
+        }
     }
 
     .screen {

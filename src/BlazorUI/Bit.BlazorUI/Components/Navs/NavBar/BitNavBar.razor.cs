@@ -3,18 +3,23 @@ using Microsoft.AspNetCore.Components.Routing;
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// A tab panel that provides navigation links to the main areas of an app.
+/// A bar of navigation links to the main areas of an app, the way a mobile app puts its top-level
+/// destinations along the bottom of the screen or a rail puts them down its side.
 /// </summary>
 public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 {
     internal List<TItem> _items = [];
 
+    private string? _containerId;
     private bool _selectionDirty;
     private TItem? _focusedItem;
     private IList<TItem>? _oldItems;
+    private bool _optionsOrderDirty;
     private readonly Dictionary<TItem, ElementReference> _itemElements = [];
 
 
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
     [Inject] private NavigationManager _navigationManager { get; set; } = default!;
 
@@ -36,6 +41,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     {
         _items.Add((option as TItem)!);
         _selectionDirty = true;
+        _optionsOrderDirty = true;
         StateHasChanged();
     }
 
@@ -48,6 +54,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         _items.Remove(item);
         _itemElements.Remove(item);
         _selectionDirty = true;
+        _optionsOrderDirty = true;
 
         // The options render their own items and a re-render of the navbar does not reach them, so the ones
         // that are left are pushed a render of their own: what the removed one used to hold (the roving tab
@@ -62,6 +69,54 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     internal void MarkSelectionDirty()
     {
         _selectionDirty = true;
+    }
+
+    // Reorders the registered options by the DOM order of the markers they rendered, since an option that
+    // is rendered conditionally (or moved) after the first render registers itself at the end of the list
+    // no matter where in the markup it sits. The order of that list is what the keyboard moves along and
+    // what the single tab stop falls back to, so a bar whose options change would otherwise be walked in
+    // an order other than the one it is read in. Opt-in via AutoReorderOptions.
+    internal void ReorderOptions(string[] orderedOptionIds)
+    {
+        if (orderedOptionIds.Length == 0) return;
+
+        List<TItem> ordered = new(_items.Count);
+
+        foreach (var optionId in orderedOptionIds)
+        {
+            var item = _items.FirstOrDefault(i => (i as BitNavBarOption)?._OptionId == optionId);
+            if (item is null || ordered.Contains(item)) continue;
+
+            ordered.Add(item);
+        }
+
+        if (ordered.Count == 0) return;
+
+        // An option that has registered but has not rendered its marker yet keeps its place at the end
+        // rather than being dropped from the navbar altogether.
+        ordered.AddRange(_items.Except(ordered));
+
+        if (ordered.SequenceEqual(_items)) return;
+
+        _items = ordered;
+
+        // The automatic mode selects the first item that matches the current URL, so the item that wins a
+        // tie between two matching options is the one that comes first in the new order.
+        MarkSelectionDirty();
+
+        RefreshOptions();
+        StateHasChanged();
+    }
+
+    // Emits the marker attribute the DOM read-back recovers the markup order of the options from. Only
+    // rendered while AutoReorderOptions is enabled (to keep the attribute off every other navbar) and only
+    // for options: the Items collection is already in the order it is rendered in.
+    internal Dictionary<string, object>? GetItemMarkerAttributes(TItem item)
+    {
+        if (AutoReorderOptions is false) return null;
+        if (item is not BitNavBarOption option) return null;
+
+        return new() { [BitNavBarOption._OPTION_ID_ATTRIBUTE] = option._OptionId };
     }
 
     internal void RegisterItemElement(TItem item, ElementReference element)
@@ -119,6 +174,19 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         ClassBuilder.Register(() => Justified ? "bit-nbr-jst" : string.Empty);
         ClassBuilder.Register(() => Vertical ? "bit-nbr-vrt" : string.Empty);
         ClassBuilder.Register(() => SafeArea ? "bit-nbr-sfa" : string.Empty);
+
+        // Baseline and Stretch describe how an item sits across the bar rather than how the items are
+        // distributed along it, so neither one carries a distribution of its own here.
+        ClassBuilder.Register(() => Alignment switch
+        {
+            BitAlignment.Start => "bit-nbr-str",
+            BitAlignment.End => "bit-nbr-end",
+            BitAlignment.Center => "bit-nbr-ctr",
+            BitAlignment.SpaceBetween => "bit-nbr-sbt",
+            BitAlignment.SpaceAround => "bit-nbr-sar",
+            BitAlignment.SpaceEvenly => "bit-nbr-sev",
+            _ => string.Empty
+        });
 
         ClassBuilder.Register(() => Size switch
         {
@@ -180,6 +248,8 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
     protected override async Task OnInitializedAsync()
     {
+        _containerId = $"BitNavBar-{UniqueId}-container";
+
         SyncItems();
 
         // The subscription is not tied to the mode: the mode is a parameter that can flip after the
@@ -213,11 +283,23 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         // own parameters (Styles, IconOnly, ItemTemplate, ...) change, so push a re-render to each one.
         RefreshOptions();
 
+        // A pure reorder of the options registers and unregisters nothing, so the read-back is flagged to
+        // run after this render to detect it. It only mutates the list when the order actually changed, so
+        // a set of options that stayed put costs a single DOM read.
+        if (AutoReorderOptions && (Options ?? ChildContent) is not null)
+        {
+            _optionsOrderDirty = true;
+        }
+
         base.OnParametersSet();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // The order is recovered before the match runs, so the item that wins a tie between two options
+        // pointing at the same URL is the one that comes first in the markup.
+        await ReorderOptionsByDomOrder();
+
         // Each option flags a selection recompute as it registers instead of matching immediately, so
         // registering n options collapses into a single match pass here rather than one O(n) pass each.
         if (_selectionDirty)
@@ -349,6 +431,29 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
 
     private static bool AreEqual(TItem? first, TItem? second) => EqualityComparer<TItem?>.Default.Equals(first, second);
+
+    private async Task ReorderOptionsByDomOrder()
+    {
+        if (AutoReorderOptions is false) return;
+        if ((Options ?? ChildContent) is null) return;
+        if (_optionsOrderDirty is false) return;
+
+        _optionsOrderDirty = false;
+
+        try
+        {
+            var orderedOptionIds = await _js.BitUtilsGetChildrenAttributes(_containerId!, BitNavBarOption._OPTION_ID_ATTRIBUTE);
+
+            if (IsDisposed) return;
+
+            if (orderedOptionIds is not null)
+            {
+                ReorderOptions(orderedOptionIds);
+            }
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone (the reader navigated away), nothing to reorder
+        catch (JSException) { } // a failure on the JS side is not fatal here, the current order is kept
+    }
 
     // The items the keyboard moves between: the enabled ones, in the order they are rendered. A disabled
     // item renders as a native disabled button (or as a link without an href), which takes no focus at all,
