@@ -8,7 +8,8 @@ self.assetsExclude = [
     /bit\.blazorui\.fluent-light\.css$/,
     /Bit\.BlazorUI\.Demo.Client\.Web\.styles\.css$/,
     // Dropped from the hashed manifest set and re-added hashless below - see the note there.
-    /pdf\.js\/pdfjs-[\d.]+-worker\.js$/
+    /pdf\.js\/pdfjs-[\d.]+-worker\.js$/,
+    /_framework\/dotnet\.native\.worker\.mjs$/
 ];
 self.externalAssets = [
     {
@@ -16,6 +17,16 @@ self.externalAssets = [
     },
     {
         url: "_framework/bit.blazor.web.es2019.js"
+    },
+    {
+        // The multi-threaded .NET WebAssembly runtime spins its threads up as dedicated workers off
+        // this script, so it faces the same embedder-policy check as the PDF.js worker below. It is
+        // in the hashed manifest and its bytes never change, so an update migrates the cached
+        // response verbatim - headers included - and a returning PWA visitor would keep being
+        // served the pre-switch 'credentialless' copy against a 'require-corp' document, leaving
+        // the threaded runtime unable to boot. The no-cache in Middlewares.cs governs the HTTP
+        // cache only, not this Cache API copy, so the same hashless treatment is what fixes it.
+        url: "_framework/dotnet.native.worker.mjs"
     },
     {
         // PDF.js runs its parser in a dedicated worker, and a dedicated worker's script response

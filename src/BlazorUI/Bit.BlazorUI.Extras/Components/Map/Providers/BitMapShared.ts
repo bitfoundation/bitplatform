@@ -9,7 +9,10 @@ namespace BitBlazorUI {
          * Origins whose tiles failed in no-cors mode and are therefore requested in CORS mode from
          * now on. Keyed per origin, not a single page-wide flag: one tile host switching to CORS
          * says nothing about another, and a layer pointed at a host that sends CORP but no
-         * Access-Control-Allow-Origin would be broken - not fixed - by being dragged along.
+         * Access-Control-Allow-Origin would be broken - not fixed - by being dragged along. An
+         * entry is retracted again when the CORS-mode attempt fails just as completely, since the
+         * evidence that wrote it (every tile of one layer failing) is also what a layer that 404s
+         * or 401s its whole batch looks like - see createTileCorsFallback.
          */
         private static _corsTileOrigins: { [origin: string]: true } = {};
 
@@ -59,6 +62,10 @@ namespace BitBlazorUI {
          * therefore deferred by `_tileCorsRetryDelay` from the first error, giving the rest of
          * the initial batch of tiles - which a layer requests in parallel, so their results
          * interleave - the chance to disprove it.
+         *
+         * Wire it onto the CORS-mode attempt as well (the providers re-wire after retrying): a
+         * fallback created while the host is already marked does not retry, it verifies, and
+         * retracts the mark when that attempt's whole batch fails too.
          */
         static createTileCorsFallback(urlTemplate: string, retry: () => void) {
             const origin = BitMapHelpers.tileOrigin(urlTemplate);
@@ -67,28 +74,50 @@ namespace BitBlazorUI {
             // undefined - which a `=== false` guard would wave through, flipping those browsers to
             // CORS mode on the first ordinary tile error even though nothing there blocks no-cors
             // tiles in the first place. lib.dom types it as boolean, so only the runtime knows.
-            const enabled = origin !== null
+            const eligible = origin !== null
                 && origin !== location.origin
-                && self.crossOriginIsolated === true
-                && BitMapHelpers._corsTileOrigins[origin] !== true;
+                && self.crossOriginIsolated === true;
+            const alreadyCors = eligible && BitMapHelpers._corsTileOrigins[origin!] === true;
+            // A layer created while its host is already marked is the CORS-mode attempt, so it is
+            // also the evidence that decides whether the mark was right. "Every tile of this layer
+            // failed" is a heuristic - a layer whose whole batch 404s (wrong path template) or 401s
+            // (unauthenticated tileset) looks exactly like a COEP block from here - and it writes a
+            // decision for the entire origin. Left unchecked, one such layer would drag every later
+            // layer on that host into CORS mode with no way back, breaking a host that sends CORP
+            // but no Access-Control-Allow-Origin: the very case the per-origin keying exists to
+            // protect. So watch the CORS-mode attempt too, and if its whole batch fails as well,
+            // CORS mode is not what this host needed - unmark the origin and leave later layers to
+            // start from the default again. This cannot ping-pong: unmarking performs no retry, and
+            // each fallback acts at most once.
+            const enabled = eligible && !alreadyCors;
             let loaded = false;
-            let retried = false;
+            let acted = false;
             let scheduled = false;
             return {
                 onTileLoad: () => { loaded = true; },
                 onTileError: () => {
-                    if (!enabled || loaded || retried || scheduled) return;
+                    if (!eligible || loaded || acted || scheduled) return;
                     // The first error settles nothing on its own: the tiles of a layer are
                     // requested in parallel, so an ordinary missing tile can report back before
                     // any of its siblings has finished loading. Acting on it would switch a
                     // perfectly reachable host to CORS mode - and break it for good when it
                     // sends CORP but no Access-Control-Allow-Origin. Wait for the rest of the
-                    // batch instead and retry only if none of it loaded, which is the COEP
+                    // batch instead and act only if none of it loaded, which is the COEP
                     // signature: every tile of the layer blocked, not just one.
                     scheduled = true;
                     setTimeout(() => {
-                        if (loaded || retried) return;
-                        retried = true;
+                        if (loaded || acted) return;
+                        acted = true;
+                        if (!enabled) {
+                            // CORS mode did not help this layer either - retract the origin-wide
+                            // decision instead of leaving the host poisoned for everyone else.
+                            // Guarded on the mark still standing so a concurrent layer that just
+                            // re-established it is not undone.
+                            if (BitMapHelpers._corsTileOrigins[origin!] === true) {
+                                delete BitMapHelpers._corsTileOrigins[origin!];
+                            }
+                            return;
+                        }
                         BitMapHelpers._corsTileOrigins[origin!] = true;
                         // No longer inside the tile event, so the map may have been disposed
                         // meanwhile; a failing redraw must not surface as an unhandled error.

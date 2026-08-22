@@ -29,8 +29,9 @@ namespace BitBlazorUI {
          * retry of BitMapHelpers: when every tile of a cross-origin layer fails on a cross-origin
          * isolated page (COEP: require-corp blocks no-cors subresources that carry no CORP
          * header), the source is rebuilt in CORS mode. OpenLayers reads crossOrigin when the
-         * source is constructed, so the retry has to create a new one - it runs only after the
-         * tile host was marked as CORS-only, so the rebuilt source never retries again.
+         * source is constructed, so the retry has to create a new one - and because the rebuild
+         * goes through here again, the CORS-mode source gets its own fallback, which no longer
+         * retries but verifies: it retracts the origin-wide mark if that attempt fails as fully.
          */
         private static _setTileSource(ol: any, layer: any, params: { url: string, maxZoom: number, attributions: string }) {
             const source = new ol.XYZ({
@@ -40,6 +41,12 @@ namespace BitBlazorUI {
                 attributions: params.attributions,
             });
             const fallback = BitMapHelpers.createTileCorsFallback(params.url, () => {
+                // The retry is deferred, so a sync() may have swapped a different source onto this
+                // layer meanwhile. Rebuilding from the captured params would resurrect the tile url
+                // that sync() just replaced - and because the state already records the new url, no
+                // later sync() would consider it changed and put it back. Only retry while the
+                // source this fallback was wired to is still the one the layer is showing.
+                if (layer.getSource() !== source) return;
                 BitMapOpenLayers._setTileSource(ol, layer, params);
             });
             source.on('tileloadend', fallback.onTileLoad);

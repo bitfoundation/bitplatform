@@ -50,6 +50,11 @@ namespace BitBlazorUI {
             const fallback = BitMapHelpers.createTileCorsFallback(urlTemplate, () => {
                 layer.options.crossOrigin = 'anonymous';
                 layer.redraw();
+                // Re-wire so the CORS-mode attempt is watched too: if its whole batch fails as
+                // well, the helper retracts the origin-wide mark instead of leaving the host stuck
+                // in CORS mode for every later layer. The listeners above stay attached but are
+                // inert - a fallback acts at most once - and at most one extra pair is ever added.
+                BitMapLeaflet._wireTileCorsFallback(layer, urlTemplate);
             });
             layer.on('tileload', fallback.onTileLoad);
             layer.on('tileerror', fallback.onTileError);

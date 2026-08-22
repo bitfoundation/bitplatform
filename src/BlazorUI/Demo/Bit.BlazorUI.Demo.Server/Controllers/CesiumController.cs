@@ -25,8 +25,13 @@ public partial class CesiumController : AppControllerBase
     /// against this prefix after resolution, so a path containing '..' (or an absolute URL) can
     /// never reach another host - this endpoint takes a caller-supplied path and would otherwise
     /// be a server-side request forgery hole.
+    /// <para>
+    /// Derived from <see cref="BitCesiumMapProvider.DefaultBaseUrl"/> rather than spelled out, so
+    /// that bumping the pinned CesiumJS release in one place cannot leave this proxy silently
+    /// serving the previous build to the demo.
+    /// </para>
     /// </summary>
-    private const string UpstreamBaseUrl = "https://cesium.com/downloads/cesiumjs/releases/1.124/Build/Cesium/";
+    private const string UpstreamBaseUrl = $"{BitCesiumMapProvider.DefaultBaseUrl}/";
 
     /// <summary>Guards against a pathological path being composed into a request URL.</summary>
     private const int MaxPathLength = 512;
