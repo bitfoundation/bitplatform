@@ -27,7 +27,7 @@
 // Usage: node build.mjs [--minify] [--intermediate <dir>]
 //   --intermediate   the project's intermediate folder (MSBuild's BaseIntermediateOutputPath); default obj/
 
-import { readFileSync, readdirSync, writeFileSync, mkdirSync, rmSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync, renameSync, mkdirSync, rmSync, existsSync } from 'node:fs';
 import { join, basename, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as esbuild from 'esbuild';
@@ -120,17 +120,27 @@ rmSync(packOutDir, { recursive: true, force: true });
 mkdirSync(modulesOutDir, { recursive: true });
 mkdirSync(chunksOutDir, { recursive: true });
 
+// Every output is written to a temporary file and renamed into place, because a plain write truncates its
+// target first: an interrupted run would leave a half-written file newer than its inputs, which the MSBuild
+// Inputs/Outputs check in Bit.Butil.csproj would then take for an up-to-date build. A rename within a
+// directory is atomic, so an output holds either the previous run's content or this one's, never neither.
+function write(path, contents) {
+    const temporary = `${path}.tmp`;
+    writeFileSync(temporary, contents);
+    renameSync(temporary, path);
+}
+
 const everything = ordered(sources);
-writeFileSync(join(wwwroot, 'bit-butil.js'), concat(everything));
+write(join(wwwroot, 'bit-butil.js'), concat(everything));
 
 for (const name of sources) {
-    writeFileSync(join(modulesOutDir, `${name}.js`), concat(ordered([name])));
-    writeFileSync(join(chunksOutDir, `${name}.js`), chunks.get(name));
+    write(join(modulesOutDir, `${name}.js`), concat(ordered([name])));
+    write(join(chunksOutDir, `${name}.js`), chunks.get(name));
 }
 
 // One line per module, dependency-first order, `name=dep1,dep2`. Consumed by the publish-time bundler
 // (Bit.Butil.Build) and checked by the test projects; keep the format that simple.
-writeFileSync(join(chunksOutDir, 'manifest.txt'),
+write(join(chunksOutDir, 'manifest.txt'),
     everything.map(name => `${name}=${dependencies.get(name).join(',')}`).join('\n') + '\n');
 
 console.log(`bit-butil: ${sources.length} modules -> bundle, ${sources.length} lazy modules, ${sources.length} chunks${minify ? ' (minified)' : ''}`);

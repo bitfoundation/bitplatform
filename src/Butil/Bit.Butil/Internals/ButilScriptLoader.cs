@@ -18,8 +18,8 @@ namespace Bit.Butil;
 /// dependencies and is safe to evaluate more than once - see <c>build.mjs</c>), so the identifier alone says
 /// which one file to import. Modules are tracked per <see cref="IJSRuntime"/> - one per WebAssembly app or
 /// Server circuit - through a <see cref="ConditionalWeakTable{TKey,TValue}"/> so nothing here outlives the
-/// runtime it belongs to. Concurrent first calls into the same module share one import; a failed import is
-/// forgotten so the next call retries instead of failing forever on a transient error.
+/// runtime it belongs to. Concurrent first calls into the same module share one import; an import that does
+/// not succeed is forgotten so the next call retries instead of failing forever on a transient error.
 /// </remarks>
 internal static class ButilScriptLoader
 {
@@ -97,20 +97,23 @@ internal static class ButilScriptLoader
                 import = Task.FromException(exception);
             }
 
-            // Forget a failed import so a later call retries it; a lost connection or a 404 while a deploy
-            // is rolling out should not pin the module as broken for the rest of the session. Hung off the
-            // import rather than done in a caller's catch block, because by the time it fails every caller
-            // may have stopped waiting (each waits under its own cancellation token) - which would leave the
-            // failure cached for the next call, and its exception unobserved.
-            import.ContinueWith(static (faulted, state) =>
+            // Forget an import that did not succeed so a later call retries it; a lost connection or a 404
+            // while a deploy is rolling out should not pin the module as broken for the rest of the session.
+            // Hung off the import rather than done in a caller's catch block, because by the time it fails
+            // every caller may have stopped waiting (each waits under its own cancellation token) - which
+            // would leave the failure cached for the next call, and its exception unobserved.
+            // NotOnRanToCompletion rather than OnlyOnFaulted because an import that fails does not always
+            // fault: an interop call that runs past JSRuntime.DefaultAsyncTimeout - the Blazor Server
+            // default - ends up cancelled, and a cached cancelled task would throw for every later call.
+            import.ContinueWith(static (completed, state) =>
             {
-                _ = faulted.Exception; // Observed here; the callers still waiting see it through their await.
+                _ = completed.Exception; // Observed here; the callers still waiting see it through their await.
                 var (map, name, self) = ((ConcurrentDictionary<string, Lazy<Task>> Map, string Name, Lazy<Task> Self))state!;
                 map.TryRemove(new KeyValuePair<string, Lazy<Task>>(name, self));
             },
             (Map: modules, Name: module, Self: entry!),
             CancellationToken.None,
-            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+            TaskContinuationOptions.NotOnRanToCompletion | TaskContinuationOptions.ExecuteSynchronously,
             TaskScheduler.Default);
 
             return import;

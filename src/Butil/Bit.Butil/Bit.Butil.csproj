@@ -105,8 +105,8 @@
          bundle (wwwroot/bit-butil.js), the self-contained lazy-loadable modules (wwwroot/modules/*.js) and
          the chunks + dependency manifest the NuGet package carries for publish-time bundle trimming
          (obj/butil-js). See build.mjs for the shape of each output and why. Release minifies; build.mjs
-         writes each output whole, so an interrupted run cannot leave a half-written file that the Outputs
-         check above would then take for an up-to-date one. -->
+         writes each output to a temporary file and renames it into place, so an interrupted run cannot
+         leave a half-written file that the Outputs check above would then take for an up-to-date one. -->
     <Target Name="BuildJavaScript"
             Inputs="@(TypeScriptFiles);tsconfig.json;build.mjs"
             Outputs="wwwroot/bit-butil.js;wwwroot/modules/butil.js;$(BaseIntermediateOutputPath)butil-js/chunks/manifest.txt;$(BaseIntermediateOutputPath)bit-butil.$(Configuration).stamp">

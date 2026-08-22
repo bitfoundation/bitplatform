@@ -52,7 +52,19 @@
     BitButilTrimScripts=true.
     -->
 
+    <!-- The package carries the same targets file under buildTransitive\ and build\, and tooling that
+         imports both would evaluate everything below twice. The second pass would read properties this file
+         itself has already set - _BitButilScriptModulesRequested reads BitButilIncludeScriptModules "while
+         it is still unset", which after one pass it no longer is, and a lazy-scripts publish would then
+         stop trimming the module files - and it would append to the DependsOn lists a second time. So the
+         group below runs on the first import only; the rest of the file assigns rather than accumulates,
+         a redefined target simply replaces its twin, and the one item group is written to be repeatable. -->
     <PropertyGroup>
+        <_BitButilTargetsAlreadyImported>$(_BitButilTargetsImported)</_BitButilTargetsAlreadyImported>
+        <_BitButilTargetsImported>true</_BitButilTargetsImported>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(_BitButilTargetsAlreadyImported)' != 'true'">
         <BitButilLazyScripts Condition="'$(BitButilLazyScripts)' == ''">false</BitButilLazyScripts>
         <BitButilTrimScripts Condition="'$(BitButilTrimScripts)' == '' and ('$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' or '$(UsingMicrosoftNETSdkWebAssembly)' == 'true')">true</BitButilTrimScripts>
         <BitButilTrimScripts Condition="'$(BitButilTrimScripts)' == ''">false</BitButilTrimScripts>
@@ -91,7 +103,12 @@
 
     <!-- The runtime switch the C# side reads (BitButil.LazyScriptsEnabled): an AppContext switch through the
          host's runtime configuration... -->
+    <!-- Removed before it is included, so that a second import of this file (see the guard above) leaves one
+         option rather than two. The _BitButilTargetsAlreadyImported guard cannot serve here: MSBuild
+         evaluates every property in every import before it reaches any item, so by this point that property
+         reads "true" even on the first pass through the file. -->
     <ItemGroup Condition="'$(BitButilLazyScripts)' == 'true'">
+        <RuntimeHostConfigurationOption Remove="Bit.Butil.LazyScripts" />
         <RuntimeHostConfigurationOption Include="Bit.Butil.LazyScripts" Value="true" Trim="true" />
     </ItemGroup>
 
