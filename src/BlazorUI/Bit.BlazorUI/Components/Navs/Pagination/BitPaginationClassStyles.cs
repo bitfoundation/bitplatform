@@ -48,6 +48,11 @@ public class BitPaginationClassStyles
     public string? Button { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the text rendered beside the icon of a navigation button of the BitPagination.
+    /// </summary>
+    public string? ButtonText { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the ellipsis of the BitPagination.
     /// </summary>
     public string? Ellipsis { get; set; }

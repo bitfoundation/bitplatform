@@ -6,6 +6,7 @@
     align-items: center;
     display: inline-flex;
     font-size: var(--bit-pgn-font-size);
+    justify-content: var(--bit-pgn-justify-content, flex-start);
     --bit-pgn-ico-transform-end: scaleX(1);
     --bit-pgn-ico-transform-start: scaleX(-1);
     --bit-pgn-clr-dis: var(--bit-pgn-clr-dis-bg, #{$clr-bg-dis});
@@ -39,6 +40,12 @@
     }
 }
 
+// An aligned pagination is stretched across the room it is given, since a box that is only as wide as its own
+// controls has nothing to line them up inside of. It follows .bit-pgn so that it wins the display over it.
+.bit-pgn-aln {
+    display: flex;
+}
+
 // The list and its items only carry the semantics of the markup: they are removed from the box tree so the
 // buttons stay the direct flex items of the root and the layout of the pagination is the one the root sets
 // (a gap coming from Styles.Root included). The explicit list roles in the markup keep the semantics that
@@ -66,6 +73,47 @@
     width: var(--bit-pgn-btn-size);
     height: var(--bit-pgn-btn-size);
     border-radius: $shp-radius-control;
+}
+
+// A gap that jumps into the pages it hides is a control, so it drops the surface a button is painted with and
+// picks up the role color of the pagination only while it is pointed at, which keeps the row of pages reading
+// as a row of pages with a gap in it rather than as one more button.
+.bit-pgn-elb {
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    padding: 0;
+    text-decoration: none;
+    border-style: $shp-border-style;
+    border-width: $shp-border-width;
+    border-color: transparent;
+    background-color: transparent;
+
+    @media (hover: hover) {
+        &:hover {
+            color: var(--bit-pgn-clr-btn-txt-hover);
+            border-color: var(--bit-pgn-clr-btn-brd-hover);
+            background-color: var(--bit-pgn-clr-btn-bg-hover);
+        }
+    }
+
+    &:active {
+        color: var(--bit-pgn-clr-btn-txt-active);
+        border-color: var(--bit-pgn-clr-btn-brd-active);
+        background-color: var(--bit-pgn-clr-btn-bg-active);
+    }
+
+    &:focus-visible {
+        z-index: 1;
+        @include focus-ring(var(--bit-pgn-clr-fcs, #{$clr-pri-focus}));
+    }
+
+    &[disabled],
+    &[aria-disabled="true"] {
+        cursor: default;
+        pointer-events: none;
+        color: var(--bit-pgn-clr-btn-txt-dis);
+    }
 }
 
 // The summary sits on the same baseline as the buttons without taking their square shape, so a long text

@@ -1,24 +1,27 @@
-@page "/components/pagination"
+﻿@page "/components/pagination"
 
 <PageOutlet Url="components/pagination"
             Title="Pagination"
             Description="Pagination component helps users easily navigate through content, allowing swift browsing across multiple pages or sections." />
 
 <DemoPage Name="Pagination"
-          Description="Pagination splits long content into pages and renders the navigation to move between them: a range of page buttons that collapses into ellipses when the pages do not fit, optional first, previous, next and last buttons, a position summary, a page size selector and a jump straight to a page number, controls that render as buttons or as links, one-way and two-way binding of the selected page, and a navigation landmark that names every control for assistive technologies."
+          Description="Pagination splits long content into pages and renders the navigation to move between them. The range of pages is either given as a page count or worked out from the number of items and the page size, and it collapses into ellipses (clickable ones, if you want) when the pages do not fit. Around it sit optional first, previous, next and last buttons, a position summary, a page size selector and a jump straight to a page number. Every control renders as a button or, given an address, as a link; the selected page binds one way or two ways; and the whole thing is a navigation landmark that names each of its controls for assistive technologies."
           Parameters="componentParameters"
           SubEnums="componentSubEnums"
           SubClasses="componentSubClasses"
           GitHubUrl="Navs/Pagination/BitPagination.razor"
           GitHubDemoUrl="Navs/Pagination/BitPaginationDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <div>The <b>Count</b> parameter is the total number of pages, and it is all the pagination needs to render. The first page is selected by default and the previous and next buttons are shown, while the buttons that cannot go anywhere are disabled.</div>
+        <div>
+            The <b>Count</b> parameter is the total number of pages, and it is all the pagination needs to render. The first page is selected by default and the previous and next buttons are shown,
+            while the buttons that cannot go anywhere are disabled. When the number of items is what you know rather than the number of pages, hand it <BitLink Href="#example11">TotalItems</BitLink> instead.
+        </div>
         <br />
         <BitPagination Count="5" />
     </DemoExample>
 
     <DemoExample Title="Variants" RazorCode="@example2RazorCode" Id="example2">
-        <div>The pagination offers three variants: Fill (default), Outline, and Text.</div>
+        <div>The pagination offers three variants: Fill (default) paints the buttons, Outline leaves them on the surface behind a border, and Text drops both and keeps the label alone.</div>
         <br /><br />
         <div>Fill</div>
         <BitPagination Count="5" Variant="BitVariant.Fill" />
@@ -37,7 +40,10 @@
     </DemoExample>
 
     <DemoExample Title="BoundaryCount" RazorCode="@example4RazorCode" Id="example4">
-        <div><b>BoundaryCount</b> is how many pages stay visible at each end of the range, no matter which page is selected, so the first and the last pages are always one click away. The default is 2, and a value that is not positive falls back to it.</div>
+        <div>
+            <b>BoundaryCount</b> is how many pages stay visible at each end of the range, no matter which page is selected, so the first and the last pages are always one click away.
+            The default is 2, and a value that is not positive falls back to it, since a range with no fixed ends would lose that shortcut altogether.
+        </div>
         <br />
         <BitPagination Count="11" DefaultSelectedPage="6" BoundaryCount="1" />
     </DemoExample>
@@ -53,18 +59,25 @@
     <DemoExample Title="Ellipsis" RazorCode="@example6RazorCode" Id="example6">
         <div>
             <b>EllipsisText</b> replaces the glyph standing in for the pages that are collapsed out of the range, and <b>EllipsisAriaLabel</b> the name it is announced with.
-            The glyph itself is hidden from assistive technologies, so the gap is reported as one named item instead of being read out as a run of punctuation.
+            A plain gap keeps its glyph hidden from assistive technologies and lets the item around it carry that name, so it is reported as one named item instead of being read out as a run of punctuation.
         </div>
         <br />
         <BitPagination Count="24" EllipsisText="..." DefaultSelectedPage="12" />
         <br /><br />
         <BitPagination Count="24" EllipsisText="⋯" EllipsisAriaLabel="Hidden pages" DefaultSelectedPage="12" />
+        <br /><br /><br /><br />
+        <div>
+            <b>ClickableEllipsis</b> turns each gap into a control that jumps into the middle of the pages it hides, which is what makes the middle of a few hundred pages reachable in a couple of clicks
+            instead of one window at a time. It becomes a button (or a link, along with the rest of the pagination) named by <b>EllipsisAriaLabel</b>, so it is announced and reached like any other control.
+        </div>
+        <br />
+        <BitPagination Count="500" ClickableEllipsis DefaultSelectedPage="250" />
     </DemoExample>
 
     <DemoExample Title="Navigation buttons" RazorCode="@example7RazorCode" Id="example7">
         <div>
             Beside the previous and next buttons, which are shown by default, <b>ShowFirstButton</b> and <b>ShowLastButton</b> add the jumps to the two ends of the range.
-            Each of the four can be turned off on its own through <b>ShowPreviousButton</b> and <b>ShowNextButton</b>.
+            Each of the four can be turned off on its own through <b>ShowPreviousButton</b> and <b>ShowNextButton</b>. A button that has nowhere left to go disables itself at the end of the range it points at.
         </div>
         <br />
         <BitPagination Count="24" ShowFirstButton ShowLastButton />
@@ -123,14 +136,40 @@
         <BitPagination Count="24" ShowSummary ShowPageButtons="false" GetSummary="@GetItemsRangeSummary" DefaultSelectedPage="3" />
     </DemoExample>
 
-    <DemoExample Title="Page size" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Total items" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>
-            <b>ShowPageSizeSelector</b> opens the pagination with a selector of how many items a page holds, picked out of <b>PageSizeOptions</b> (10, 25, 50 and 100 by default).
-            Picking a size reports it through the two-way bound <b>PageSize</b> and through <b>OnPageSizeChange</b>, and changes nothing else: the number of pages the new size adds up to is yours to recompute into <b>Count</b>.
-            A selected page that falls out of the shrunk range is pulled back on its own.
+            <b>TotalItems</b> is the size of the result set, and the number of pages is worked out from it and the page size, replacing <b>Count</b>.
+            It is the form to reach for whenever the size of the result set is known: the range follows the page size on its own, so the
+            <BitLink Href="#example12">page size selector</BitLink> needs nothing wired up behind it, and the summary reports the items (<i>"1 - 10 of 240"</i>) instead of the pages.
         </div>
         <div>
-            <b>PageSizeText</b> is the visible text ahead of the selector and can be dropped, since <b>PageSizeAriaLabel</b> names it on its own.
+            Picking a new size keeps the first item of the current page in view rather than the page number, so a jump from 10 to 100 items a page lands on the page those items ended up on
+            instead of at the end of a range that just got shorter.
+        </div>
+        <br /><br />
+        <BitPagination ShowSummary
+                       ShowPageSizeSelector
+                       TotalItems="240"
+                       PageSizeOptions="@([10, 25, 100])"
+                       @bind-PageSize="totalItemsPageSize"
+                       @bind-SelectedPage="totalItemsSelectedPage" />
+        <br /><br />
+        <div>Page <b>@totalItemsSelectedPage</b> of <b>@((int)Math.Ceiling(240d / totalItemsPageSize))</b>, <b>@totalItemsPageSize</b> items a page</div>
+    </DemoExample>
+
+    <DemoExample Title="Page size" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <div>
+            <b>ShowPageSizeSelector</b> opens the pagination with a selector of how many items a page holds, picked out of <b>PageSizeOptions</b> (10, 25, 50 and 100 by default).
+            Picking a size reports it through the two-way bound <b>PageSize</b> and through <b>OnPageSizeChange</b>. A size that is not one of the options is offered along with them, in its place among them,
+            so the selector never shows one size while the pagination runs on another.
+        </div>
+        <div>
+            The example below is the form without <BitLink Href="#example11">TotalItems</BitLink>: the number of pages the new size adds up to is yours to recompute into <b>Count</b>,
+            and a selected page that falls out of the shrunk range is pulled back on its own. Hand it the number of items instead and both of those are taken care of for you.
+        </div>
+        <div>
+            <b>PageSizeText</b> is the visible text ahead of the selector, and it is what names the selector while it is there. Drop it for the compact form a narrow layout calls for
+            and <b>PageSizeAriaLabel</b> steps in, so the selector is never left unnamed and never announced as something other than what is written beside it.
         </div>
         <br /><br />
         <BitPagination ShowSummary
@@ -144,13 +183,15 @@
         <div>Page size: <b>@selectedPageSize</b>, page: <b>@pageSizeSelectedPage</b> of <b>@pageSizeCount</b></div>
     </DemoExample>
 
-    <DemoExample Title="Go to page" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="Go to page" RazorCode="@example13RazorCode" Id="example13">
         <div>
             <b>ShowGoToPage</b> closes the pagination with an input that jumps straight to the page number typed into it, which is the shortcut a long range needs.
-            The jump runs when the input is committed (on Enter, or when it loses the focus) and a number past the ends of the range lands on the nearest one.
+            The jump runs when the input is committed (on Enter, or when it loses the focus), a number past the ends of the range lands on the nearest one rather than being dropped,
+            and the field clears itself afterwards so the next jump starts from an empty one.
         </div>
         <div>
-            <b>GoToPageText</b> is the visible text ahead of the input and can be dropped, since <b>GoToPageAriaLabel</b> names the input on its own.
+            <b>GoToPageText</b> is the visible text ahead of the input, and it is what names the input while it is there. Drop it for the compact form and <b>GoToPageAriaLabel</b> steps in,
+            so the input is never left unnamed and never announced as something other than what is written beside it.
         </div>
         <br /><br />
         <BitPagination Count="24" ShowGoToPage DefaultSelectedPage="4" />
@@ -158,7 +199,7 @@
         <BitPagination Count="24" ShowGoToPage GoToPageText="" ShowSummary ShowPageButtons="false" ShowFirstButton ShowLastButton DefaultSelectedPage="4" />
     </DemoExample>
 
-    <DemoExample Title="Loop" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Loop" RazorCode="@example14RazorCode" Id="example14">
         <div>
             <b>Loop</b> wraps the previous and next buttons around the ends of the range: the next button moves from the last page back to the first one and the previous button from the first page to the last one.
             Both buttons also stay enabled at the ends while it is on, unless the range holds a single page and there is nowhere to wrap to. The first and last buttons are unaffected, since they always target a fixed page.
@@ -167,7 +208,7 @@
         <BitPagination Count="5" Loop />
     </DemoExample>
 
-    <DemoExample Title="Hide on single page" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Hide on single page" RazorCode="@example15RazorCode" Id="example15">
         <div><b>HideOnSinglePage</b> renders nothing at all while there is a single page to navigate, so a short result set is not left with navigation that cannot go anywhere.</div>
         <br />
         <BitPagination Count="1" HideOnSinglePage />
@@ -176,8 +217,11 @@
         <BitPagination Count="3" HideOnSinglePage />
     </DemoExample>
 
-    <DemoExample Title="Icon" RazorCode="@example15RazorCode" Id="example15">
-        <div>Each navigation button takes its own built-in icon through the <b>IconName</b> parameters, replacing the default chevrons.</div>
+    <DemoExample Title="Icon" RazorCode="@example16RazorCode" Id="example16">
+        <div>
+            Each navigation button takes its own built-in icon through <b>FirstButtonIconName</b>, <b>PreviousButtonIconName</b>, <b>NextButtonIconName</b> and <b>LastButtonIconName</b>, replacing the default chevrons.
+            The default chevrons are mirrored along with the layout in <BitLink Href="#example26">RTL</BitLink>; an icon you pick yourself is rendered as it is, so pick one that reads the same in both directions.
+        </div>
         <br />
         <BitPagination Count="5"
                        ShowFirstButton
@@ -188,8 +232,8 @@
                        LastButtonIconName="@BitIconName.DoubleChevronRight" />
     </DemoExample>
 
-    <DemoExample Title="Rounded" RazorCode="@example16RazorCode" Id="example16">
-        <div><b>Rounded</b> renders the buttons (and the ellipses standing between them) as circles instead of the default rounded rectangles.</div>
+    <DemoExample Title="Rounded" RazorCode="@example17RazorCode" Id="example17">
+        <div><b>Rounded</b> renders the buttons, and the ellipses standing between them, as circles instead of the default rounded rectangles. A navigation button carrying a text becomes a pill, since a circle would stretch into an ellipse.</div>
         <br /><br />
         <BitPagination Count="9" Rounded ShowFirstButton ShowLastButton DefaultSelectedPage="5" />
         <br /><br />
@@ -198,7 +242,30 @@
         <BitPagination Count="9" Rounded Variant="BitVariant.Text" DefaultSelectedPage="5" />
     </DemoExample>
 
-    <DemoExample Title="Binding" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+    <DemoExample Title="Alignment" RazorCode="@example18RazorCode" Id="example18">
+        <div>
+            The pagination is only as wide as its own controls, so it sits wherever the layout around it puts it. <b>Alignment</b> stretches it across the room it is given and lines the controls up
+            inside that room, which is what saves wrapping it in a flex container of its own. All of the <BitLink Href="#alignment-enum">BitAlignment</BitLink> values apply, the three space distributions included.
+        </div>
+        <br /><br />
+        <div class="alignment-box">
+            <BitPagination Count="5" Alignment="BitAlignment.Start" />
+        </div>
+        <br />
+        <div class="alignment-box">
+            <BitPagination Count="5" Alignment="BitAlignment.Center" />
+        </div>
+        <br />
+        <div class="alignment-box">
+            <BitPagination Count="5" Alignment="BitAlignment.End" />
+        </div>
+        <br />
+        <div class="alignment-box">
+            <BitPagination Count="5" Alignment="BitAlignment.SpaceBetween" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Binding" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
         <div>
             With <b>@(nameof(BitPagination.SelectedPage))</b> bound one way the pagination only renders the page you hand it and never changes it on its own, so the clicks reach you through <b>OnChange</b> and it is up to you to apply them.
             Binding it two way lets the pagination keep the value in sync by itself. <b>OnChange</b> runs in both cases, and only for a page the user actually asked for.
@@ -225,7 +292,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Links" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+    <DemoExample Title="Links" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
         <div>
             <b>GetPageHref</b> gives every control the address of the page it points at, which turns the whole pagination into links instead of buttons, so the range can be crawled, opened in another tab, or bookmarked.
             The four navigation controls ask for the address of the page they move to, so they turn into links along with the numeric ones.
@@ -233,6 +300,7 @@
         <div>
             A control with no page to reach — one at the end of the range it navigates, one the pagination is disabled for, or one <b>GetPageHref</b> returns nothing for — keeps its place while reporting <code>aria-disabled</code> and staying out of the tab order.
             The click still reaches <b>OnChange</b> and <b>SelectedPage</b>, so a pagination of links reports the page that was asked for exactly like a pagination of buttons.
+            The previous and next links also carry <code>rel="prev"</code> and <code>rel="next"</code>, which is what tells a crawler how the pages of the set follow one another.
         </div>
         <br /><br />
         <BitPagination Count="8"
@@ -244,16 +312,18 @@
         <div>Selected page: <b>@linkSelectedPage</b></div>
     </DemoExample>
 
-    <DemoExample Title="Accessibility" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+    <DemoExample Title="Accessibility" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
         <div>
             The pagination renders as a navigation landmark holding a list of page buttons, and marks the selected page with <code>aria-current="page"</code>.
-            Give it a name through <b>AriaLabel</b> whenever more than one pagination shares a page, so each of them can be told apart in the landmark list.
+            Give it a name through <b>AriaLabel</b> whenever more than one pagination shares a page, so each of them can be told apart in the landmark list, and point it at the region it pages through
+            with a plain <code>aria-controls</code> attribute, which lands on the landmark along with anything else you splat onto the component.
         </div>
         <div>
-            The navigation buttons carry no text, so each of them takes its accessible name (used as its tooltip as well) from
-            <b>FirstButtonAriaLabel</b>, <b>PreviousButtonAriaLabel</b>, <b>NextButtonAriaLabel</b> and <b>LastButtonAriaLabel</b>.
+            The navigation buttons carry no text, so each of them takes its accessible name from
+            <b>FirstButtonAriaLabel</b>, <b>PreviousButtonAriaLabel</b>, <b>NextButtonAriaLabel</b> and <b>LastButtonAriaLabel</b>, which doubles as the tooltip until a
+            <BitLink Href="#example8">visible text</BitLink> makes the tooltip a repetition of what is already on screen.
             <b>GetPageAriaLabel</b> replaces the default <i>"Page {number}"</i> label of a page button from its number and whether it is the selected one, which is the hook to localize them or to say what the page holds.
-            <b>EllipsisAriaLabel</b> and <b>GoToPageAriaLabel</b> name the collapsed range and the jump input the same way.
+            <b>EllipsisAriaLabel</b> names the collapsed range, and <b>GoToPageAriaLabel</b> and <b>PageSizeAriaLabel</b> name the jump input and the page size selector whenever their visible texts are dropped.
         </div>
         <div>
             A navigation button that reaches the end of the range it points at disables itself, which would drop the keyboard focus on the document. The focus is handed over to the page the pagination settled on instead,
@@ -272,7 +342,7 @@
                        GetPageAriaLabel="@GetResultsRangeLabel" />
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example20RazorCode" Id="example20">
+    <DemoExample Title="Color" RazorCode="@example22RazorCode" Id="example22">
         <div>Offering a range of specialized color variants, providing visual cues for specific actions or states within your application.</div>
         <br /><br />
         <div>Primary</div><br />
@@ -390,7 +460,7 @@
         <BitPagination IsEnabled="false" Count="5" Color="BitColor.Error" Variant="BitVariant.Text" />
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example21RazorCode" Id="example21">
+    <DemoExample Title="External Icons" RazorCode="@example23RazorCode" Id="example23">
         <div>Use icons from external libraries like FontAwesome and Bootstrap Icons with the navigation button <b>Icon</b> parameters.</div>
         <div>See the <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> section in the parameters table for usage.</div>
 
@@ -438,7 +508,7 @@
                        LastButtonIcon="@BitIconInfo.Css("bi bi-skip-end-fill")" />
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example22RazorCode" Id="example22">
+    <DemoExample Title="Size" RazorCode="@example24RazorCode" Id="example24">
         <div>Varying sizes for paginations tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.</div>
         <br /><br />
         <div>Small</div><br />
@@ -463,7 +533,7 @@
         <BitPagination Count="5" Size="BitSize.Large" Variant="BitVariant.Outline" />
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example23RazorCode" Id="example23">
+    <DemoExample Title="Style & Class" RazorCode="@example25RazorCode" Id="example25">
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
         <br /><br />
         <div>
@@ -490,7 +560,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example24RazorCode" Id="example24">
+    <DemoExample Title="RTL" RazorCode="@example26RazorCode" Id="example26">
         <div>Use BitPagination in right-to-left (RTL). The chevrons of the navigation buttons are mirrored along with the layout, so the next button keeps pointing at the direction the reading goes.</div>
         <br /><br />
         <div dir="rtl">
