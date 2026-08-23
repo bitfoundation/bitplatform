@@ -65,12 +65,7 @@
                     </div>
                 </ItemTemplate>
                 <EmptyTemplate>
-                    @* Empty also means "not measured yet", one frame before the observer first
-                       reports a width - and that frame must not claim the search found nothing. *@
-                    @if (filteredIcons.Count == 0)
-                    {
-                        <BitText Element="p" Typography="BitTypography.Subtitle1">No icon matches that name.</BitText>
-                    }
+                    <BitText Element="p" Typography="BitTypography.Subtitle1">No icon matches that name.</BitText>
                 </EmptyTemplate>
             </BitVirtualize>
         </div>

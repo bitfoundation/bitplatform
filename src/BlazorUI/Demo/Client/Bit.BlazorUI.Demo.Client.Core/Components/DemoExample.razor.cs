@@ -22,6 +22,12 @@ public partial class DemoExample
 
     private DotNetObjectReference<DemoExample>? _dotnetObj;
 
+    /// <summary>
+    /// The delegate this example put in the page's backfill queue, kept so that disposing can take
+    /// it back out again - see <see cref="DisposeAsync"/>.
+    /// </summary>
+    private Func<Task<bool>>? _backfillMount;
+
     [AutoInject] private DemoContentDeferral _contentDeferral = default!;
 
     /// <summary>
@@ -128,7 +134,10 @@ public partial class DemoExample
             // in the wrong place and find-in-page misses half the words. Registered here rather than
             // in OnInit so the queue is in document order - a child's OnAfterRender runs before its
             // parent's, and the page starts the backfill from its own.
-            Page?.QueueBackfill(MountPreviewAsync);
+            if (Page is not null)
+            {
+                Page.QueueBackfill(_backfillMount = MountPreviewAsync);
+            }
         }
 
         if (_isCodeMounted is false || _isCodeHighlighted) return;
@@ -258,16 +267,29 @@ public partial class DemoExample
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        if (disposing && _dotnetObj is not null)
+        if (disposing)
         {
-            try
+            // A BitPivot tab switch disposes the whole tab, so an example can go while its page
+            // stays. Left in the queue, its delegate would hold this component and its render
+            // fragment for the life of the page, and still cost a whole idle slice - it reports
+            // that it built something, since its own preview never was.
+            if (_backfillMount is not null)
             {
-                await JSRuntime.UnobserveVisibility(_previewElementId!);
+                Page?.DequeueBackfill(_backfillMount);
+                _backfillMount = null;
             }
-            catch (JSDisconnectedException) { } // the circuit is already gone, nothing left to unregister
 
-            _dotnetObj.Dispose();
-            _dotnetObj = null;
+            if (_dotnetObj is not null)
+            {
+                try
+                {
+                    await JSRuntime.UnobserveVisibility(_previewElementId!);
+                }
+                catch (JSDisconnectedException) { } // the circuit is already gone, nothing left to unregister
+
+                _dotnetObj.Dispose();
+                _dotnetObj = null;
+            }
         }
 
         await base.DisposeAsync(disposing);

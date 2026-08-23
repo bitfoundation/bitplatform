@@ -10,7 +10,7 @@ public partial class DemoPage
     /// <summary>The id the browser's idle queue is registered under. One per page is all it takes.</summary>
     private const string BACKFILL_ELEMENT_ID = "demo-page-backfill";
 
-    /// <summary>The section that holds the examples, and so the top a pivot tab switch returns to.</summary>
+    /// <summary>The anchor of the section that holds the examples.</summary>
     private const string USAGE_ELEMENT_ID = "usage-section";
 
     private bool _forceAnimation;
@@ -94,11 +94,17 @@ public partial class DemoPage
     /// The same two cases <see cref="DemoExample"/> distinguishes for its own preview: a page built on
     /// the client, where nothing on screen contradicts an empty block, and the prerendered first page,
     /// where the block is only allowed to empty out if it keeps the height its prerendered copy had.
+    /// <para>
+    /// And, as there, an address carrying a fragment holds nothing back at all: the anchors of the
+    /// sub-enum tables (#component-visibility, #component-dir) are inside this very block, so a deep
+    /// link to one of them has nowhere to land while the block is empty.
+    /// </para>
     /// </summary>
     private bool ShouldDeferApi()
     {
         if (RenderForMcpClient) return false;
         if (InPrerenderSession) return false;
+        if (NavigationManager.Uri.Contains('#', StringComparison.Ordinal)) return false;
 
         if (_contentDeferral.IsEnabled || AppRenderMode.IsBlazorHybrid) return true;
 
@@ -172,6 +178,25 @@ public partial class DemoPage
         _ = ScheduleBackfillAsync();
     }
 
+    /// <summary>
+    /// Takes a block back out of the queue, because the component that put it there is going away -
+    /// a BitPivot tab switch disposes the whole tab it was rendering. Left in, its delegate would
+    /// keep that component and its render fragment alive for the life of the page, and still report
+    /// that it built something, spending a whole idle slice on a component nobody can see.
+    /// </summary>
+    public void DequeueBackfill(Func<Task<bool>> mount)
+    {
+        var index = _backfill.IndexOf(mount);
+
+        if (index < 0) return;
+
+        _backfill.RemoveAt(index);
+
+        // Everything the walk has already passed sits before the index, so dropping one of those
+        // shifts the rest down under it.
+        if (index < _backfillIndex) _backfillIndex--;
+    }
+
     private async Task ScheduleBackfillAsync()
     {
         if (_backfillIndex >= _backfill.Count) return;
@@ -186,6 +211,17 @@ public partial class DemoPage
         catch (JSDisconnectedException)
         {
             _isBackfillScheduled = false; // the circuit is already gone; there is nobody left to fill in for
+        }
+        catch (Exception ex)
+        {
+            // Anything else - a script that predates requestIdleWork, a torn-down circuit. The flag
+            // has to come back down whatever it was: left latched, every later QueueBackfill returns
+            // early and the page stays half-built for good. Reported rather than rethrown because
+            // QueueBackfill's call is fire-and-forget, where a rethrow is an unobserved task and
+            // nobody hears it.
+            _isBackfillScheduled = false;
+
+            ExceptionHandler.Handle(ex);
         }
     }
 
@@ -209,8 +245,15 @@ public partial class DemoPage
             {
                 if (await mount()) break;
             }
+            catch (JSDisconnectedException) { return; } // the circuit is gone, and with it the idle queue
             catch (ObjectDisposedException) { } // that example is already gone; the next one may not be
-            catch (JSDisconnectedException) { return; }
+            catch (Exception ex)
+            {
+                // One example whose own markup throws must not strand the rest: letting it out of
+                // here would end the self-rescheduling chain, and every block after it - and the API
+                // tables behind them - would stay unmounted for the life of the page.
+                ExceptionHandler.Handle(ex);
+            }
         }
 
         await ScheduleBackfillAsync();

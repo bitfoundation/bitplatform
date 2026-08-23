@@ -47,7 +47,7 @@ else
 {
     @foreach (var group in _groups)
     {
-        <DocSection Id="cache-busting" Title="@group.Name" Description="@group.Summary">
+        <DocSection Id="@group.Anchor" Title="@group.Name" Description="@group.Summary">
             <div class="gallery-grid">
                 @foreach (var item in group.Items)
                 {

@@ -35,6 +35,14 @@ public partial class IconographyPage : IAsyncDisposable
     private const int ICON_CELL_GAP = 8;
     private const int ICON_ROW_HEIGHT = 76;
 
+    // How wide the grid is assumed to be until it has been measured. Nothing measures anything while
+    // the page is being prerendered - OnAfterRenderAsync never runs there - so a count of zero would
+    // chunk the icons into no rows at all and ship a page with not one icon on it, to a crawler and
+    // to a reader whose JS has not arrived yet. A desktop-ish guess instead: the first client frame
+    // corrects it from the real width, and everything below that width is a re-chunk, not an empty
+    // page.
+    private const int DEFAULT_COLUMN_COUNT = 8;
+
     private static readonly (string Label, BitColor Value)[] previewColors =
     [
         ("Primary", BitColor.Primary),
@@ -49,7 +57,7 @@ public partial class IconographyPage : IAsyncDisposable
     private List<IconInfo> allIcons = default!;
     private List<IconInfo> filteredIcons = default!;
     private List<IconInfo[]> iconRows = [];
-    private int columnCount;
+    private int columnCount = DEFAULT_COLUMN_COUNT;
     private IconInfo? selectedIcon;
     private bool isIconPanelOpen;
     private Dictionary<string, string>? iconGlyphs;
@@ -138,17 +146,12 @@ public partial class IconographyPage : IAsyncDisposable
 
     /// <summary>
     /// Chunks the icons currently on show into the fixed-width rows the virtualizer renders one at a
-    /// time. Nothing to chunk until the grid has been measured, which is the columnCount 0 case; the
-    /// empty list it leaves behind is what the EmptyTemplate reads as "not measured yet".
+    /// time. The count is <see cref="DEFAULT_COLUMN_COUNT"/> until the grid has been measured, so
+    /// there are always rows to chunk into and an empty list means exactly what it says: nothing
+    /// matched the search.
     /// </summary>
     private void BuildIconRows()
     {
-        if (columnCount == 0)
-        {
-            iconRows = [];
-            return;
-        }
-
         var rows = new List<IconInfo[]>((filteredIcons.Count + columnCount - 1) / columnCount);
 
         for (var i = 0; i < filteredIcons.Count; i += columnCount)

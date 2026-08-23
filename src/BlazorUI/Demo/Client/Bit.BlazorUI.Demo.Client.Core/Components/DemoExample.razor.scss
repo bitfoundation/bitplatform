@@ -55,7 +55,7 @@
 // the page behind it.
 .example-container {
     overflow: auto;
-    padding: 1rem;
+    padding: rem2(16px);
     // background-color: $bit-color-background-primary;
 
     // A preview that has not been built yet still has to stand roughly where it will stand. The
@@ -68,10 +68,6 @@
     // typical (see DemoExample).
     &.pending {
         min-height: rem2(180px);
-    }
-
-    @include lt-lg {
-        padding: rem2(16px);
     }
 
     &::-webkit-scrollbar {

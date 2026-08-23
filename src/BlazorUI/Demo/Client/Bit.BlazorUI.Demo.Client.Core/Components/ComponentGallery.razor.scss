@@ -1,11 +1,5 @@
 ﻿@import '../Styles/abstracts/_docs.scss';
 
-.gallery {
-    display: flex;
-    gap: $doc-space-xl;
-    flex-flow: column nowrap;
-}
-
 // Search and category chips travel together and stay reachable while the reader scrolls a list this
 // long. Sticky rather than fixed, so it releases the moment the gallery ends.
 .gallery-controls {
@@ -63,18 +57,6 @@
     opacity: 0.7;
     font-size: $bit-typography-fs-2xs;
     font-variant-numeric: tabular-nums;
-}
-
-.gallery-group {
-    display: flex;
-    gap: $doc-space-sm;
-    flex-flow: column nowrap;
-}
-
-.gallery-group-head {
-    display: flex;
-    gap: $doc-space-xs;
-    align-items: flex-start;
 }
 
 // Auto-fill rather than a fixed column count: the grid then holds the same card width whether it is
@@ -142,10 +124,4 @@
 
 ::deep .gallery-search {
     max-width: rem2(440px);
-}
-
-::deep .gallery-group-icon {
-    flex-shrink: 0;
-    font-size: rem2(20px);
-    margin-top: rem2(2px);
 }
