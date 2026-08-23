@@ -361,6 +361,23 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     /// </param>
     protected virtual void OnVisibilityChanged(BitVisibility visibility) { }
 
+    /// <summary>
+    /// Splices two style parts into the single declaration list a style attribute holds.
+    /// </summary>
+    /// <remarks>
+    /// Two parts landing in the same style attribute are only two declarations while a semicolon stands
+    /// between them: a part that was written without a trailing one would otherwise swallow the declaration
+    /// that follows it, and the CSS parser drops both.
+    /// </remarks>
+    private protected static string? JoinStyles(string? style, string? extraStyle)
+    {
+        if (style.HasNoValue()) return extraStyle;
+
+        if (extraStyle.HasNoValue()) return style;
+
+        return style!.TrimEnd().EndsWith(';') ? $"{style} {extraStyle}" : $"{style};{extraStyle}";
+    }
+
 
 
     /// <summary>
