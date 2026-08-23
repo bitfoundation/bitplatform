@@ -486,7 +486,7 @@ code {
 //
 // The first term is the bar's own `top` verbatim, safe-area inset included, so the clearance tracks
 // where the bar actually lands rather than where it would land on a device with no notch; the
-// default's 90px stays the floor, since with the motion bar hidden the derived stack can come out
+// default's 120px stays the floor, since with the motion bar hidden the derived stack can come out
 // under it on a short header.
 .doc-main:has(.pivot-sticky-header) {
     --demo-section-scroll-margin: calc(max(#{rem2(120px)}, var(--demo-pivot-sticky-top) + #{$bit-env-inset-top}) + #{$bit-size-tab} + #{rem2(8px)} + #{$doc-space-2xs});
