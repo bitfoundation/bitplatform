@@ -751,6 +751,8 @@ public class BitNavBarTests : BunitTestContext
     [DataRow("/components/nav/bar", "/components/**", true)]
     [DataRow("/components/nav", "/components/na?", true)]
     [DataRow("/components/navbar", "/components/na?", false)]
+    [DataRow("/Components/NavBar", "/components/*", true)]
+    [DataRow("/components/navbar", "/Components/*", true)]
     public void BitNavBarShouldRespectTheWildcardMatch(string currentUrl, string pattern, bool expected)
     {
         Navigate(currentUrl);

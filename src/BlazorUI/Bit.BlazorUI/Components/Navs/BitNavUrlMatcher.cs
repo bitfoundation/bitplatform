@@ -47,9 +47,11 @@ internal static class BitNavUrlMatcher
 
         if (match is BitNavMatch.Wildcard)
         {
+            // A wildcard is not a regex the caller writes options into, so it matches the way the plain
+            // modes do: the case of the path does not distinguish two pages.
             var pattern = $"^{WildcardToRegex(itemUrl!)}$";
-            return IsRegexMatch(currentUrl, pattern) ||
-                   (currentPath != currentUrl && IsRegexMatch(currentPath, pattern));
+            return IsRegexMatch(currentUrl, pattern, RegexOptions.IgnoreCase) ||
+                   (currentPath != currentUrl && IsRegexMatch(currentPath, pattern, RegexOptions.IgnoreCase));
         }
 
         var url = ToRelativeUrl(baseUri, itemUrl!);
@@ -132,11 +134,11 @@ internal static class BitNavUrlMatcher
     // The Regex and Wildcard modes run a pattern that comes from the item, so the match is given a
     // timeout to keep a pathological pattern from hanging the render, and a malformed one is simply
     // treated as a non-match instead of tearing the whole nav down.
-    private static bool IsRegexMatch(string input, string pattern)
+    private static bool IsRegexMatch(string input, string pattern, RegexOptions options = RegexOptions.None)
     {
         try
         {
-            return Regex.IsMatch(input, pattern, RegexOptions.None, TimeSpan.FromSeconds(1));
+            return Regex.IsMatch(input, pattern, options, TimeSpan.FromSeconds(1));
         }
         catch (RegexMatchTimeoutException) { return false; }
         catch (ArgumentException) { return false; }

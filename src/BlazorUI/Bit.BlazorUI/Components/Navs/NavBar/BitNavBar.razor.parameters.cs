@@ -206,9 +206,11 @@ public partial class BitNavBar<TItem>
     [Parameter] public bool SelectOnFocus { get; set; }
 
     /// <summary>
-    /// Takes the navbar out of the tab sequence as a single stop: only the selected item (or the first one,
-    /// while nothing is selected) is tabbable and the arrow keys move between the items, exactly like a
-    /// toolbar. By default every item is a tab stop of its own, the way the links of a navigation are.
+    /// Takes the navbar out of the tab sequence as a single stop: only one item is tabbable and the arrow
+    /// keys move between the items, exactly like a toolbar. The stop is the item the focus was last on, so
+    /// Tab returns to where the reader left it; before the navbar has ever been focused it is the selected
+    /// item, and the first focusable one while nothing is selected either. By default every item is a tab
+    /// stop of its own, the way the links of a navigation are.
     /// </summary>
     [Parameter] public bool SingleTabStop { get; set; }
 
