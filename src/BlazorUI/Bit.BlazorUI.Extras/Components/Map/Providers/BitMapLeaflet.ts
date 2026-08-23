@@ -40,6 +40,40 @@ namespace BitBlazorUI {
     export class BitMapLeaflet {
         private static _maps: { [id: string]: LeafletState } = {};
 
+        /**
+         * Wires the no-cors then CORS retry of BitMapHelpers onto a tile layer: when every tile
+         * of a cross-origin layer fails on a cross-origin isolated page (COEP: require-corp
+         * blocks no-cors subresources that carry no CORP header), the layer is redrawn in CORS
+         * mode. Leaflet reads options.crossOrigin per tile, so redraw() is enough.
+         */
+        private static _wireTileCorsFallback(layer: any, urlTemplate: string, isVerification: boolean = false) {
+            const fallback = BitMapHelpers.createTileCorsFallback(urlTemplate, () => {
+                layer.options.crossOrigin = 'anonymous';
+                // Re-wire so the CORS-mode attempt is watched too: if its whole batch fails as
+                // well, the helper retracts the origin-wide mark instead of leaving the host stuck
+                // in CORS mode for every later layer. The listeners above stay attached but are
+                // inert - a fallback acts at most once - and at most one extra pair is ever added.
+                // Wired before the redraw, which re-requests the tiles synchronously and would
+                // otherwise fire their load-start events past a listener that is not there yet.
+                BitMapLeaflet._wireTileCorsFallback(layer, urlTemplate, true);
+                layer.redraw();
+                return true;
+            }, isVerification, () => {
+                // The verification failed as fully as the first attempt, so CORS mode was not the
+                // answer for this host and the mark has just been retracted. This layer is still
+                // the one that was switched, though, and would go on asking for tiles in a mode
+                // this host refuses - i.e. render nothing - so put it back the way it was created.
+                // No new fallback is wired to it: it is back in the state whose failure started
+                // this, and re-arming it as a marker would loop.
+                layer.options.crossOrigin = undefined;
+                // The map may have been disposed while the decision was deferred.
+                try { layer.redraw(); } catch { /* ignore */ }
+            });
+            layer.on('tileloadstart', fallback.onTileStart);
+            layer.on('tileload', fallback.onTileLoad);
+            layer.on('tileerror', fallback.onTileError);
+        }
+
         public static async init(id: string, canvasId: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
             element = await BitMapHelpers.resolveMapCanvas(canvasId, element);
 
@@ -84,10 +118,15 @@ namespace BitBlazorUI {
                 tileOpacity: o.tileOpacity ?? 1,
             };
             const baseTileLayer = L.tileLayer(tileOptions.tileUrl, {
+                crossOrigin: BitMapHelpers.tileCrossOrigin(tileOptions.tileUrl),
                 maxZoom: tileOptions.tileMaxZoom,
                 attribution: tileOptions.tileAttribution,
                 opacity: tileOptions.tileOpacity,
-            }).addTo(map);
+            });
+            // Wired before the layer is added to the map: adding it requests the first batch of
+            // tiles synchronously, and it is exactly that batch the fallback has to count.
+            BitMapLeaflet._wireTileCorsFallback(baseTileLayer, tileOptions.tileUrl);
+            baseTileLayer.addTo(map);
 
             const state: LeafletState = {
                 L, map, dotnetObj,
@@ -163,10 +202,13 @@ namespace BitBlazorUI {
             if (tileChanged) {
                 if (s.baseTileLayer) s.map.removeLayer(s.baseTileLayer);
                 s.baseTileLayer = L.tileLayer(next.tileUrl, {
+                    crossOrigin: BitMapHelpers.tileCrossOrigin(next.tileUrl),
                     maxZoom: next.tileMaxZoom,
                     attribution: next.tileAttribution,
                     opacity: next.tileOpacity,
-                }).addTo(s.map);
+                });
+                BitMapLeaflet._wireTileCorsFallback(s.baseTileLayer, next.tileUrl);
+                s.baseTileLayer.addTo(s.map);
                 s._tileOptions = next;
             }
             if (s.baseTileLayer) {
@@ -427,11 +469,13 @@ namespace BitBlazorUI {
                 delete s.tileOverlays[opts.id];
             }
             const tl = L.tileLayer(opts.urlTemplate, {
+                crossOrigin: BitMapHelpers.tileCrossOrigin(opts.urlTemplate),
                 opacity: opts.opacity ?? 1,
                 zIndex: opts.zIndex ?? 100,
                 maxZoom: opts.maxZoom ?? 19,
                 attribution: opts.attribution || "",
             });
+            BitMapLeaflet._wireTileCorsFallback(tl, opts.urlTemplate);
             tl.addTo(s.map);
             s.tileOverlays[opts.id] = tl;
         }

@@ -24,6 +24,66 @@ namespace BitBlazorUI {
         private static readonly _defaultTileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
         private static readonly _osmAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
+        /**
+         * Builds the XYZ source of a tile layer and assigns it, wiring the no-cors then CORS
+         * retry of BitMapHelpers: when every tile of a cross-origin layer fails on a cross-origin
+         * isolated page (COEP: require-corp blocks no-cors subresources that carry no CORP
+         * header), the source is rebuilt in CORS mode. OpenLayers reads crossOrigin when the
+         * source is constructed, so the retry has to create a new one - and because the rebuild
+         * goes through here again with isVerification set, the CORS-mode source gets a fallback
+         * that no longer retries but verifies: if that attempt fails as fully, it retracts the
+         * origin-wide mark and rebuilds the layer's source in plain no-cors mode, since the source
+         * that produced the evidence would otherwise keep asking for tiles in a mode this host
+         * refuses and render nothing for the rest of the session.
+         */
+        private static _setTileSource(ol: any, layer: any, params: { url: string, maxZoom: number, attributions: string }, isVerification: boolean = false) {
+            const source = new ol.XYZ({
+                crossOrigin: BitMapHelpers.tileCrossOrigin(params.url),
+                url: params.url,
+                maxZoom: params.maxZoom,
+                attributions: params.attributions,
+            });
+            const fallback = BitMapHelpers.createTileCorsFallback(params.url, () => {
+                // The retry is deferred, so a sync() may have swapped a different source onto this
+                // layer meanwhile. Rebuilding from the captured params would resurrect the tile url
+                // that sync() just replaced - and because the state already records the new url, no
+                // later sync() would consider it changed and put it back. Only retry while the
+                // source this fallback was wired to is still the one the layer is showing;
+                // declining here also rolls the origin-wide mark back, since the CORS-mode layer
+                // that would have put it to the test is never created.
+                if (layer.getSource() !== source) return false;
+                BitMapOpenLayers._setTileSource(ol, layer, params, true);
+                return true;
+            }, isVerification, () => {
+                // Same guard as the retry: a sync() may have swapped a different source onto this
+                // layer while the decision was deferred, and reverting would resurrect the tile
+                // url that sync() replaced.
+                if (layer.getSource() !== source) return;
+                BitMapOpenLayers._setPlainTileSource(ol, layer, params);
+            });
+            source.on('tileloadstart', fallback.onTileStart);
+            source.on('tileloadend', fallback.onTileLoad);
+            source.on('tileloaderror', fallback.onTileError);
+            layer.setSource(source);
+        }
+
+        /**
+         * Rebuilds a tile source in plain no-cors mode, wiring no fallback to it: this is what a
+         * failed verification reverts to, and the state it reverts to is the very one whose failure
+         * started the retry - watching it again would mark the origin, redraw in CORS mode, fail
+         * the verification and revert once more, round and round. crossOrigin is spelled out rather
+         * than read from tileCrossOrigin() so a concurrent layer re-marking the origin in between
+         * cannot turn the revert back into the mode being reverted from.
+         */
+        private static _setPlainTileSource(ol: any, layer: any, params: { url: string, maxZoom: number, attributions: string }) {
+            layer.setSource(new ol.XYZ({
+                crossOrigin: undefined,
+                url: params.url,
+                maxZoom: params.maxZoom,
+                attributions: params.attributions,
+            }));
+        }
+
         private static _resolveTileUrl(o: any): string {
             return (o.tileUrl || BitMapOpenLayers._defaultTileUrl).replace('{s}', 'a');
         }
@@ -51,13 +111,11 @@ namespace BitBlazorUI {
             const tileAttribution = BitMapOpenLayers._resolveTileAttribution(tileUrl, o.tileAttribution);
             const tileOpacity = o.tileOpacity ?? 1;
 
-            const baseTile = new ol.TileLayer({
-                source: new ol.XYZ({
-                    url: tileUrl,
-                    maxZoom: tileMaxZoom,
-                    attributions: tileAttribution,
-                }),
-                opacity: tileOpacity,
+            const baseTile = new ol.TileLayer({ opacity: tileOpacity });
+            BitMapOpenLayers._setTileSource(ol, baseTile, {
+                url: tileUrl,
+                maxZoom: tileMaxZoom,
+                attributions: tileAttribution,
             });
 
             const map = new ol.Map({
@@ -209,11 +267,11 @@ namespace BitBlazorUI {
             if (nextTileUrl !== s.tileUrl ||
                 nextTileMaxZoom !== s.tileMaxZoom ||
                 nextTileAttribution !== s.tileAttribution) {
-                s.baseTileLayer.setSource(new ol.XYZ({
+                BitMapOpenLayers._setTileSource(ol, s.baseTileLayer, {
                     url: nextTileUrl,
                     maxZoom: nextTileMaxZoom,
                     attributions: nextTileAttribution,
-                }));
+                });
                 s.tileUrl = nextTileUrl;
                 s.tileMaxZoom = nextTileMaxZoom;
                 s.tileAttribution = nextTileAttribution;
@@ -460,13 +518,13 @@ namespace BitBlazorUI {
                 delete s.tileOverlays[opts.id];
             }
             const tl = new ol.TileLayer({
-                source: new ol.XYZ({
-                    url: (opts.urlTemplate || '').replace('{s}', 'a'),
-                    maxZoom: opts.maxZoom ?? 19,
-                    attributions: opts.attribution || '',
-                }),
                 opacity: opts.opacity ?? 1,
                 zIndex: opts.zIndex ?? 100,
+            });
+            BitMapOpenLayers._setTileSource(ol, tl, {
+                url: (opts.urlTemplate || '').replace('{s}', 'a'),
+                maxZoom: opts.maxZoom ?? 19,
+                attributions: opts.attribution || '',
             });
             s.tileOverlays[opts.id] = tl;
             s.map.addLayer(tl);

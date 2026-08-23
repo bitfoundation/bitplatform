@@ -4,6 +4,9 @@ public partial class DemoPage
 {
     private const string REPO_URL = "https://github.com/bitfoundation/bitplatform";
 
+    /// <summary>Host of the demo videos, which are proxied same-origin - see <see cref="_introductionVideoUrl"/>.</summary>
+    private const string VIDEOS_BASE_URL = "https://videos.bitplatform.dev/";
+
     /// <summary>The element the visibility observer watches to know the reader has reached the API tables.</summary>
     private const string API_ELEMENT_ID = "api-tables";
 
@@ -88,6 +91,25 @@ public partial class DemoPage
     [Parameter] public string? GitHubDemoUrl { get; set; }
     [CascadingParameter(Name = nameof(RenderForMcpClient))] public bool RenderForMcpClient { get; set; }
 
+
+    /// <summary>
+    /// The url the &lt;video&gt; element is actually given. The web demo is served cross-origin
+    /// isolated with Cross-Origin-Embedder-Policy: require-corp (see Middlewares.cs), under which a
+    /// cross-origin subresource is blocked unless it carries a Cross-Origin-Resource-Policy header
+    /// or is requested in CORS mode; the video host sends neither CORP nor
+    /// Access-Control-Allow-Origin, so both routes are dead ends and the video simply does not
+    /// play. It therefore comes through the same-origin passthrough of VideosController instead -
+    /// COEP only constrains cross-origin resources.
+    /// <para>
+    /// Blazor Hybrid keeps the url verbatim: its origin (app://0.0.0.0) hosts no such endpoint, and
+    /// a hybrid WebView is not cross-origin isolated, so the direct url both works and is the only
+    /// one that resolves there. Same reasoning as the CesiumJS BaseUrl in BitMapDemo.
+    /// </para>
+    /// </summary>
+    private string? _introductionVideoUrl =>
+        AppRenderMode.IsBlazorHybrid || IntroductionVideoUrl?.StartsWith(VIDEOS_BASE_URL, StringComparison.OrdinalIgnoreCase) is not true
+            ? IntroductionVideoUrl
+            : $"/api/videos/{IntroductionVideoUrl![VIDEOS_BASE_URL.Length..]}";
 
     /// <summary>
     /// Whether the API tables may wait - and, when they may, how much room they have to keep meanwhile.

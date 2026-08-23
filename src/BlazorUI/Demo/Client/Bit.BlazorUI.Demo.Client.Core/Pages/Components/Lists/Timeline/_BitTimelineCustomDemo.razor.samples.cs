@@ -267,7 +267,7 @@ private List<Event> templateItems =
         FirstContent = (item => @<BitPersona PrimaryText=""Xafan Salina""
                                              Size=""@BitPersonaSize.Size32""
                                              Presence=""@BitPersonaPresence.Online""
-                                             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />),
+                                             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />),
 
         DotContent = (item => @<div class=""dot-template""><BitRingLoading CustomSize=""30"" Color=""BitColor.Tertiary"" /></div>),
 
@@ -295,7 +295,7 @@ private List<Event> templateItems =
         FirstContent = (item => @<BitPersona PrimaryText=""Ted Randall""
                                              Size=""@BitPersonaSize.Size32""
                                              Presence=""@BitPersonaPresence.Online""
-                                             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-male.png"" />),
+                                             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-male.png"" />),
 
         DotContent = (item => @<div class=""dot-template""><BitRollerLoading CustomSize=""30"" Color=""BitColor.Tertiary"" /></div>),
 

@@ -6,7 +6,9 @@ self.assetsExclude = [
     /bit\.blazorui\.fluent\.css$/,
     /bit\.blazorui\.fluent-dark\.css$/,
     /bit\.blazorui\.fluent-light\.css$/,
-    /Bit\.BlazorUI\.Demo.Client\.Web\.styles\.css$/
+    /Bit\.BlazorUI\.Demo.Client\.Web\.styles\.css$/,
+    // Dropped from the hashed manifest set and re-added hashless below - see the note there.
+    /pdf\.js\/pdfjs-[\d.]+-worker\.js$/
 ];
 self.externalAssets = [
     {
@@ -14,6 +16,17 @@ self.externalAssets = [
     },
     {
         url: "_framework/bit.blazor.web.es2019.js"
+    },
+    {
+        // PDF.js runs its parser in a dedicated worker, and a dedicated worker's script response
+        // has its Cross-Origin-Embedder-Policy compared against the owner document's ("check a
+        // global object's embedder policy"): a mismatch turns the script into a network error.
+        // This site's COEP changed (credentialless -> require-corp, see Middlewares.cs), and an
+        // update keeps a cached response whose hash did not change - headers included - so the copy
+        // taken before the switch would keep saying 'credentialless', which WebKit reads as
+        // unsafe-none. Listing it hashless makes Bswup re-download it on every update, so its
+        // headers stay in step with the server while it remains precached for offline use.
+        url: "_content/Bit.BlazorUI.Legacy/pdf.js/pdfjs-4.7.76-worker.js"
     }
 ];
 

@@ -247,6 +247,16 @@
                 <BitLink Href="https://ion.cesium.com/tokens" Target="_blank">Cesium ion dashboard</BitLink>,
                 grant only the asset access it needs, and add your production domains to the token's allowed URLs list
                 so a copied token cannot be used from other origins.
+                <br /><br />
+                <b>Note (cross-origin isolation):</b> this demo site is served cross-origin isolated with
+                <code>Cross-Origin-Embedder-Policy: require-corp</code> to enable the multi-threaded WebAssembly
+                runtime, and under that header a cross-origin script must carry a
+                <code>Cross-Origin-Resource-Policy</code> header or be loaded in CORS mode. The CesiumJS build on
+                <code>cesium.com</code> sends neither, so the browser blocks it outright. This example therefore loads
+                CesiumJS from this site's own origin instead, via the provider's <code>BaseUrl</code> parameter - point
+                it at a copy of the <code>Build/Cesium</code> folder you host or proxy yourself. Note that CesiumJS
+                resolves its workers, <code>.wasm</code> decoders and assets relative to that URL, so the whole folder
+                has to be reachable under it. Your own app needs none of this unless it is cross-origin isolated too.
             </div>
             <br />
             <div style="height:420px">

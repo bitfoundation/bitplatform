@@ -5,6 +5,204 @@ namespace BitBlazorUI {
 
     /** Helpers shared by every BitMap provider implementation. */
     export class BitMapHelpers {
+        /**
+         * Origins whose tiles failed in no-cors mode and are therefore requested in CORS mode from
+         * now on. Keyed per origin, not a single page-wide flag: one tile host switching to CORS
+         * says nothing about another, and a layer pointed at a host that sends CORP but no
+         * Access-Control-Allow-Origin would be broken - not fixed - by being dragged along. An
+         * entry is retracted again when the CORS-mode attempt fails just as completely, since the
+         * evidence that wrote it (every tile of one layer failing) is also what a layer that 404s
+         * or 401s its whole batch looks like - see createTileCorsFallback.
+         */
+        private static _corsTileOrigins: { [origin: string]: true } = {};
+
+        /**
+         * How long a layer is given, after its first tile error, to prove itself reachable before
+         * the origin is switched to CORS mode - and how often the decision is re-examined while
+         * tiles are still on the wire. Long enough for the rest of the initial batch of tiles to
+         * land, short enough that a genuinely blocked layer redraws without a visible wait.
+         */
+        private static readonly _tileCorsRetryDelay = 1_000;
+
+        /**
+         * Upper bound on how long the decision may be deferred by tiles that are still loading.
+         * A request that never settles - a stalled connection, a tile server that accepts and then
+         * holds - must not leave a timer re-arming itself for the life of the page; past this the
+         * layer's fallback simply stops watching and decides nothing, which is the safe direction:
+         * an origin is only ever marked on positive evidence.
+         */
+        private static readonly _tileCorsMaxWait = 15_000;
+
+        /** Origin of a tile url template, or null when it does not parse. */
+        private static tileOrigin(urlTemplate: string): string | null {
+            try {
+                // {s} is Leaflet's subdomain placeholder and can sit in the host, so it has to be
+                // substituted before the URL parses; every other placeholder is in the path.
+                const url = (urlTemplate || '').replace('{s}', 'a');
+                return new URL(url, document.baseURI).origin;
+            } catch {
+                return null;
+            }
+        }
+
+        /**
+         * crossOrigin value to create a tile layer with, or undefined for the default no-cors mode.
+         *
+         * Tiles start out in no-cors mode so tile servers that send neither CORS nor CORP headers
+         * keep working (requesting those in CORS mode would block them). When the page is
+         * cross-origin isolated with Cross-Origin-Embedder-Policy: require-corp - the only COEP
+         * value WebKit understands, and what the multi-threaded WebAssembly runtime needs there -
+         * a cross-origin tile without a Cross-Origin-Resource-Policy header is blocked in no-cors
+         * mode instead, so the first layer on that host whose whole initial batch of tiles fails
+         * marks the host and redraws itself in CORS mode (OSM, Carto, OpenTopoMap... all send
+         * Access-Control-Allow-Origin: *). Mirrors the no-cors then CORS retry the Extras/Legacy
+         * script and stylesheet loaders do.
+         */
+        static tileCrossOrigin(urlTemplate: string): string | undefined {
+            const origin = BitMapHelpers.tileOrigin(urlTemplate);
+            return origin !== null && BitMapHelpers._corsTileOrigins[origin] ? 'anonymous' : undefined;
+        }
+
+        /**
+         * Creates the tile-load listeners implementing the no-cors then CORS retry for a single
+         * tile layer. `retry` is invoked at most once, and only when every tile of that layer
+         * failed: a layer that loaded at least one tile is talking to a reachable server, so a
+         * later error is an ordinary missing/failing tile and must not switch that host to CORS
+         * mode (which would break a tile server that sends no CORS headers). The decision is
+         * therefore deferred by `_tileCorsRetryDelay` from the first error, giving the rest of
+         * the initial batch of tiles - which a layer requests in parallel, so their results
+         * interleave - the chance to disprove it.
+         *
+         * `retry` returns false when it declined to redraw - the layer it was wired to has moved
+         * on meanwhile - in which case the mark is rolled back: it is the redrawn layer that
+         * verifies the mark, so a mark nothing redrew is a mark nothing would ever disprove.
+         *
+         * `isVerification` marks the fallback of that redrawn, CORS-mode layer, and is passed in
+         * by the provider rather than inferred from the origin already being marked. That layer
+         * does not retry, it verifies: "every tile of this layer failed" is a heuristic - a layer
+         * whose whole batch 404s (wrong path template) or 401s (unauthenticated tileset) looks
+         * exactly like a COEP block from here - so if the CORS-mode attempt fails just as fully,
+         * CORS mode is not what this host needed and the origin-wide mark is retracted and
+         * `revert` is called to put that layer back into no-cors mode: retracting the mark alone
+         * would leave the layer that produced the evidence requesting tiles in a mode this host
+         * refuses, i.e. rendering nothing for the rest of the session. Every other layer on a
+         * marked origin merely consumes the mark and watches nothing: were it to verify as well,
+         * an unrelated overlay 404ing its own batch would retract a mark another layer had just
+         * proved right. This cannot ping-pong: retracting performs no retry, the reverted layer is
+         * wired no new fallback, and each fallback acts at most once.
+         *
+         * `onTileStart` has to be wired to the provider's tile-load-start event for the "every
+         * tile failed" test to mean what it says: without it the verdict is a plain wall clock,
+         * and on a slow link one ordinary 404 whose siblings are merely slow would read as a whole
+         * failed batch. Counting what is still in flight lets the deadline be a floor rather than
+         * a verdict - the decision waits for the batch to settle - so that one loaded tile always
+         * gets the chance to disprove it.
+         */
+        static createTileCorsFallback(
+            urlTemplate: string,
+            retry: () => boolean | void,
+            isVerification: boolean = false,
+            revert?: () => void) {
+            const origin = BitMapHelpers.tileOrigin(urlTemplate);
+            // Compared against true explicitly: crossOriginIsolated is undefined on browsers that
+            // predate it (Safari < 15.2, Chrome < 87, Firefox < 79), and `x && undefined` yields
+            // undefined - which a `=== false` guard would wave through, flipping those browsers to
+            // CORS mode on the first ordinary tile error even though nothing there blocks no-cors
+            // tiles in the first place. lib.dom types it as boolean, so only the runtime knows.
+            const eligible = origin !== null
+                && origin !== location.origin
+                && self.crossOriginIsolated === true;
+            const verifying = eligible && isVerification;
+            const marking = eligible && !isVerification && BitMapHelpers._corsTileOrigins[origin!] !== true;
+            if (!verifying && !marking) {
+                // Neither role applies, so this layer's tile errors decide nothing about the origin.
+                const noop = () => { };
+                return { onTileStart: noop, onTileLoad: noop, onTileError: noop };
+            }
+            let loaded = false;
+            let acted = false;
+            let scheduled = false;
+            let inFlight = 0;
+            let waited = 0;
+
+            const settle = () => {
+                if (loaded || acted) return;
+                if (inFlight > 0) {
+                    // Siblings are still on the wire, so "every tile of this layer failed" is not
+                    // established yet - only "every tile that has come back so far did". A tile
+                    // still loading can be the one that disproves it, and on a slow link it
+                    // routinely is, so the delay acts as a floor and the batch settling is what
+                    // actually triggers the decision. Bounded, so a request that never settles
+                    // cannot keep this timer re-arming for the life of the page.
+                    waited += BitMapHelpers._tileCorsRetryDelay;
+                    if (waited >= BitMapHelpers._tileCorsMaxWait) {
+                        acted = true;
+                        return;
+                    }
+                    setTimeout(settle, BitMapHelpers._tileCorsRetryDelay);
+                    return;
+                }
+                acted = true;
+                if (verifying) {
+                    // CORS mode did not help this layer either - retract the origin-wide
+                    // decision instead of leaving the host poisoned for everyone else.
+                    // Guarded on the mark still standing so a concurrent layer that just
+                    // re-established it is not undone.
+                    if (BitMapHelpers._corsTileOrigins[origin!] === true) {
+                        delete BitMapHelpers._corsTileOrigins[origin!];
+                    }
+                    // Unconditionally, even when the mark was already gone: this layer is in CORS
+                    // mode either way, and a host that refuses CORS renders nothing until it is
+                    // put back the way it was created. The provider wires no fallback to the
+                    // reverted layer, so this ends here.
+                    if (revert) {
+                        try { revert(); } catch { /* ignore */ }
+                    }
+                    return;
+                }
+                // Whether the mark is ours to retract below. Two layers of the same host
+                // can both be markers - they are created before either has acted - so the
+                // one that acts second must not undo the first one's verified mark.
+                const wasMarked = BitMapHelpers._corsTileOrigins[origin!] === true;
+                // Written before the retry, not after: the retry rebuilds the layer, and
+                // what it rebuilds with is read back out of this very map by
+                // tileCrossOrigin().
+                BitMapHelpers._corsTileOrigins[origin!] = true;
+                // No longer inside the tile event, so the map may have been disposed
+                // meanwhile; a failing redraw must not surface as an unhandled error.
+                let retried = false;
+                try { retried = retry() !== false; } catch { /* ignore */ }
+                if (retried || wasMarked) return;
+                // Nothing was redrawn, so nothing will verify the mark - and the layer that
+                // would have is gone. Leaving it standing would hand every later layer on
+                // this host CORS mode for good on the strength of one unproven batch.
+                if (BitMapHelpers._corsTileOrigins[origin!] === true) {
+                    delete BitMapHelpers._corsTileOrigins[origin!];
+                }
+            };
+
+            return {
+                // Wired to the provider's tile-load-start event. A tile that has started but not
+                // come back is the evidence that the batch is not in yet; a provider that leaves
+                // this unwired degrades to the plain timer, never to a wrong count.
+                onTileStart: () => { inFlight++; },
+                onTileLoad: () => { if (inFlight > 0) inFlight--; loaded = true; },
+                onTileError: () => {
+                    if (inFlight > 0) inFlight--;
+                    if (loaded || acted || scheduled) return;
+                    // The first error settles nothing on its own: the tiles of a layer are
+                    // requested in parallel, so an ordinary missing tile can report back before
+                    // any of its siblings has finished loading. Acting on it would switch a
+                    // perfectly reachable host to CORS mode - and break it for good when it
+                    // sends CORP but no Access-Control-Allow-Origin. Wait for the rest of the
+                    // batch instead and act only if none of it loaded, which is the COEP
+                    // signature: every tile of the layer blocked, not just one.
+                    scheduled = true;
+                    setTimeout(settle, BitMapHelpers._tileCorsRetryDelay);
+                },
+            };
+        }
+
         /** Convert a CSS hex color + alpha (0..1) to an rgba() string. */
         static hexToRgba(hex: string | undefined, alpha: number): string {
             if (!hex || typeof hex !== 'string') return `rgba(51,136,255,${alpha})`;

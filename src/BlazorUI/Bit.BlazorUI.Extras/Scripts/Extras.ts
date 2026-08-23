@@ -90,16 +90,19 @@ namespace BitBlazorUI {
             return promise;
 
             async function addScript(url: string) {
-                return new Promise((res, rej) => {
+                return Extras.loadWithCorsFallback(url, crossOrigin => new Promise((res, rej) => {
                     const script = document.createElement('script');
                     script.src = url;
                     if (isModule) {
                         script.type = 'module';
                     }
-                    script.onload = res;
-                    script.onerror = rej;
+                    if (crossOrigin) {
+                        script.crossOrigin = 'anonymous';
+                    }
+                    script.onload = () => res(script);
+                    script.onerror = () => { script.remove(); rej(new Error(`Failed to load script: ${url}`)); };
                     document.body.appendChild(script);
-                })
+                }));
             }
         }
 
@@ -128,14 +131,46 @@ namespace BitBlazorUI {
             return promise;
 
             async function addStylesheet(url: string) {
-                return new Promise((res, rej) => {
+                return Extras.loadWithCorsFallback(url, crossOrigin => new Promise((res, rej) => {
                     const link = document.createElement('link');
                     link.href = url;
                     link.rel = 'stylesheet';
-                    link.onload = res;
-                    link.onerror = rej;
+                    if (crossOrigin) {
+                        link.crossOrigin = 'anonymous';
+                    }
+                    link.onload = () => res(link);
+                    link.onerror = () => { link.remove(); rej(new Error(`Failed to load stylesheet: ${url}`)); };
                     document.head.appendChild(link);
-                })
+                }));
+            }
+        }
+
+        /**
+         * Loads a resource in no-cors mode first and, when that fails for a cross-origin URL,
+         * retries once in CORS mode (crossorigin="anonymous").
+         *
+         * When the page is cross-origin isolated with Cross-Origin-Embedder-Policy: require-corp
+         * (the only COEP value Safari supports, needed for the multi-threaded WebAssembly runtime),
+         * a cross-origin script/stylesheet is blocked unless its response carries a
+         * Cross-Origin-Resource-Policy header or it is requested in CORS mode. Most CDNs send
+         * Access-Control-Allow-Origin: * but not CORP, so the CORS retry makes them load. Under
+         * COEP: credentialless (Chromium/Firefox) the first attempt succeeds and no retry happens,
+         * so hosts without CORS headers keep working there.
+         */
+        private static async loadWithCorsFallback<T>(url: string, load: (crossOrigin: boolean) => Promise<T>): Promise<T> {
+            try {
+                return await load(false);
+            } catch (e) {
+                if (!Extras.isCrossOrigin(url)) throw e;
+                return await load(true);
+            }
+        }
+
+        private static isCrossOrigin(url: string): boolean {
+            try {
+                return new URL(url, document.baseURI).origin !== window.location.origin;
+            } catch {
+                return false;
             }
         }
 

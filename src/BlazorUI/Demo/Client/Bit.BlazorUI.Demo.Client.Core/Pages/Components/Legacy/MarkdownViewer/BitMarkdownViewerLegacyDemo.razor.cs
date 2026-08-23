@@ -62,16 +62,16 @@ public partial class BitMarkdownViewerLegacyDemo
 
 
 
-    private string advancedMarkdown = @"![Header](https://user-images.githubusercontent.com/6169846/251658486-b16e1db8-5481-46c4-9fc1-c9b279a4364a.png)
+    private string advancedMarkdown = @"![Header](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/bitplatform-banner.webp)
 
 <br/>
 
 ![License](https://img.shields.io/github/license/bitfoundation/bitplatform.svg)
-![CI Status](https://github.com/bitfoundation/bitplatform/actions/workflows/bit.ci.yml/badge.svg)
+![CI Status](https://img.shields.io/github/actions/workflow/status/bitfoundation/bitplatform/bit.ci.BlazorUI.yml?logo=github)
 ![NuGet version](https://img.shields.io/nuget/v/bit.blazorui.svg?logo=nuget)
 [![Nuget downloads](https://img.shields.io/badge/packages_download-8.2M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)
-[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/bitfoundation/bitplatform.svg)](http://isitmaintained.com/project/bitfoundation/bitplatform ""Average time to resolve an issue"")
-[![Percentage of issues still open](http://isitmaintained.com/badge/open/bitfoundation/bitplatform.svg)](http://isitmaintained.com/project/bitfoundation/bitplatform ""Percentage of issues still open"")
+[![Closed issues](https://img.shields.io/github/issues-closed/bitfoundation/bitplatform?logo=github)](https://isitmaintained.com/project/bitfoundation/bitplatform ""Closed issues"")
+[![Open issues](https://img.shields.io/github/issues/bitfoundation/bitplatform?logo=github)](https://isitmaintained.com/project/bitfoundation/bitplatform ""Open issues"")
 
 <br/>
 
@@ -103,11 +103,11 @@ The following apps are our open-source projects powered by the bit platform show
 
 | | &nbsp;&nbsp;&nbsp;Web&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;iOS&nbsp;&nbsp;&nbsp; | Android | Windows | macOS |
 |:-:|:--:|:--:|:--:|:--:|:--:|
-| bitplatform | [![PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://bitplatform.dev)| *N/A* | *N/A* | *N/A* | *N/A* |
-| Sales | [![PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://sales.bitplatform.dev) | *Soon!* | *Soon!* | [![Windows app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382080-9ae97fea-934c-4097-aca4-124a2aed1595.png)](https://windows-sales.bitplatform.dev/SalesModule.Client.Windows-win-Setup.exe) | *Soon!* |
-| bit BlazorUI | [![Prerendered PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://blazorui.bitplatform.dev) | [![iOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381842-e72976ce-fd20-431d-a677-ca1ed625b83b.png)](https://apps.apple.com/us/app/bit-blazor-ui/id6450401404) | [![Android app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381958-24931682-87f6-44fc-a1c7-eecf46387005.png)](https://play.google.com/store/apps/details?id=com.bitplatform.BlazorUI.Demo) | [![Windows app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382080-9ae97fea-934c-4097-aca4-124a2aed1595.png)](https://windows-components.bitplatform.dev/Bit.BlazorUI.Demo.Client.Windows-win-Setup.exe) | [![macOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382211-0d58f9ba-1a1f-4481-a0ca-b23a393cca9f.png)](https://apps.apple.com/nl/app/bit-blazor-ui/id6450401404)
-| AdminPanel | [![Prerendered PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://adminpanel.bitplatform.dev) | [![iOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381842-e72976ce-fd20-431d-a677-ca1ed625b83b.png)](https://apps.apple.com/us/app/bit-adminpanel/id6450611349) | [![Android app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381958-24931682-87f6-44fc-a1c7-eecf46387005.png)](https://play.google.com/store/apps/details?id=com.bitplatform.AdminPanel.Template) | [![Windows app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382080-9ae97fea-934c-4097-aca4-124a2aed1595.png)](https://windows-admin.bitplatform.dev/AdminPanel.Client.Windows-win-Setup.exe) | [![macOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382211-0d58f9ba-1a1f-4481-a0ca-b23a393cca9f.png)](https://apps.apple.com/nl/app/bit-adminpanel/id6450611349) |
-| Todo | [![Prerendered PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://todo.bitplatform.dev) | [![iOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381842-e72976ce-fd20-431d-a677-ca1ed625b83b.png)](https://apps.apple.com/us/app/bit-todotemplate/id6450611072) | [![Android app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381958-24931682-87f6-44fc-a1c7-eecf46387005.png)](https://play.google.com/store/apps/details?id=com.bitplatform.Todo.Template) | [![Windows app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382080-9ae97fea-934c-4097-aca4-124a2aed1595.png)](https://windows-todo.bitplatform.dev/TodoSample.Client.Windows-win-Setup.exe) | [![macOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382211-0d58f9ba-1a1f-4481-a0ca-b23a393cca9f.png)](https://apps.apple.com/nl/app/bit-todotemplate/id6450611072)
+| bitplatform | [![PWA](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-pwa.png)](https://bitplatform.dev)| *N/A* | *N/A* | *N/A* | *N/A* |
+| Sales | [![PWA](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-pwa.png)](https://sales.bitplatform.dev) | *Soon!* | *Soon!* | [![Windows app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-windows.png)](https://windows-sales.bitplatform.dev/SalesModule.Client.Windows-win-Setup.exe) | *Soon!* |
+| bit BlazorUI | [![Prerendered PWA](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-pwa.png)](https://blazorui.bitplatform.dev) | [![iOS app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-ios.png)](https://apps.apple.com/us/app/bit-blazor-ui/id6450401404) | [![Android app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-android.png)](https://play.google.com/store/apps/details?id=com.bitplatform.BlazorUI.Demo) | [![Windows app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-windows.png)](https://windows-components.bitplatform.dev/Bit.BlazorUI.Demo.Client.Windows-win-Setup.exe) | [![macOS app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-macos.png)](https://apps.apple.com/nl/app/bit-blazor-ui/id6450401404)
+| AdminPanel | [![Prerendered PWA](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-pwa.png)](https://adminpanel.bitplatform.dev) | [![iOS app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-ios.png)](https://apps.apple.com/us/app/bit-adminpanel/id6450611349) | [![Android app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-android.png)](https://play.google.com/store/apps/details?id=com.bitplatform.AdminPanel.Template) | [![Windows app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-windows.png)](https://windows-admin.bitplatform.dev/AdminPanel.Client.Windows-win-Setup.exe) | [![macOS app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-macos.png)](https://apps.apple.com/nl/app/bit-adminpanel/id6450611349) |
+| Todo | [![Prerendered PWA](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-pwa.png)](https://todo.bitplatform.dev) | [![iOS app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-ios.png)](https://apps.apple.com/us/app/bit-todotemplate/id6450611072) | [![Android app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-android.png)](https://play.google.com/store/apps/details?id=com.bitplatform.Todo.Template) | [![Windows app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-windows.png)](https://windows-todo.bitplatform.dev/TodoSample.Client.Windows-win-Setup.exe) | [![macOS app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-macos.png)](https://apps.apple.com/nl/app/bit-todotemplate/id6450611072)
 
 1. [bitplatform.dev](https://bitplatform.dev): .NET 9 Pre-rendered PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
 2. [sales.bitplatform.dev](https://sales.bitplatform.dev): .NET 9 Sales Pre-rendered PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
@@ -135,7 +135,7 @@ We welcome contributions! Many people all over the world have helped make this p
 
 # **Contributions**
 
-![Alt](https://repobeats.axiom.co/api/embed/66dc1fc04ed967094b98ac118e8f18fa38b19f6a.svg ""bit platform open source contributions report"")";
+![Alt](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/repobeats.svg ""bit platform open source contributions report"")";
 
     private DateTimeOffset? parsingDateTime;
     private DateTimeOffset? parsedDateTime;
@@ -171,16 +171,16 @@ We welcome contributions! Many people all over the world have helped make this p
 </style>
 <BitMarkdownViewerLegacy Markdown=""@advancedMarkdown"" Class=""advanced"" />";
     private readonly string example2CsharpCode = @"
-private string advancedMarkdown = @""![Header](https://user-images.githubusercontent.com/6169846/251658486-b16e1db8-5481-46c4-9fc1-c9b279a4364a.png)
+private string advancedMarkdown = @""![Header](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/bitplatform-banner.webp)
 
 <br/>
 
 ![License](https://img.shields.io/github/license/bitfoundation/bitplatform.svg)
-![CI Status](https://github.com/bitfoundation/bitplatform/actions/workflows/bit.ci.yml/badge.svg)
+![CI Status](https://img.shields.io/github/actions/workflow/status/bitfoundation/bitplatform/bit.ci.BlazorUI.yml?logo=github)
 ![NuGet version](https://img.shields.io/nuget/v/bit.blazorui.svg?logo=nuget)
 [![Nuget downloads](https://img.shields.io/badge/packages_download-8.2M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)
-[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/bitfoundation/bitplatform.svg)](http://isitmaintained.com/project/bitfoundation/bitplatform """"Average time to resolve an issue"""")
-[![Percentage of issues still open](http://isitmaintained.com/badge/open/bitfoundation/bitplatform.svg)](http://isitmaintained.com/project/bitfoundation/bitplatform """"Percentage of issues still open"""")
+[![Closed issues](https://img.shields.io/github/issues-closed/bitfoundation/bitplatform?logo=github)](https://isitmaintained.com/project/bitfoundation/bitplatform """"Closed issues"""")
+[![Open issues](https://img.shields.io/github/issues/bitfoundation/bitplatform?logo=github)](https://isitmaintained.com/project/bitfoundation/bitplatform """"Open issues"""")
 
 <br/>
 
@@ -212,11 +212,11 @@ The following apps are our open-source projects powered by the bit platform show
 
 | | &nbsp;&nbsp;&nbsp;Web&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;iOS&nbsp;&nbsp;&nbsp; | Android | Windows | macOS |
 |:-:|:--:|:--:|:--:|:--:|:--:|
-| bitplatform | [![PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://bitplatform.dev)| *N/A* | *N/A* | *N/A* | *N/A* |
-| Sales | [![PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://sales.bitplatform.dev) | *Soon!* | *Soon!* | [![Windows app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382080-9ae97fea-934c-4097-aca4-124a2aed1595.png)](https://windows-sales.bitplatform.dev/SalesModule.Client.Windows-win-Setup.exe) | *Soon!* |
-| bit BlazorUI | [![Prerendered PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://blazorui.bitplatform.dev) | [![iOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381842-e72976ce-fd20-431d-a677-ca1ed625b83b.png)](https://apps.apple.com/us/app/bit-blazor-ui/id6450401404) | [![Android app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381958-24931682-87f6-44fc-a1c7-eecf46387005.png)](https://play.google.com/store/apps/details?id=com.bitplatform.BlazorUI.Demo) | [![Windows app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382080-9ae97fea-934c-4097-aca4-124a2aed1595.png)](https://windows-components.bitplatform.dev/Bit.BlazorUI.Demo.Client.Windows-win-Setup.exe) | [![macOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382211-0d58f9ba-1a1f-4481-a0ca-b23a393cca9f.png)](https://apps.apple.com/nl/app/bit-blazor-ui/id6450401404)
-| AdminPanel | [![Prerendered PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://adminpanel.bitplatform.dev) | [![iOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381842-e72976ce-fd20-431d-a677-ca1ed625b83b.png)](https://apps.apple.com/us/app/bit-adminpanel/id6450611349) | [![Android app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381958-24931682-87f6-44fc-a1c7-eecf46387005.png)](https://play.google.com/store/apps/details?id=com.bitplatform.AdminPanel.Template) | [![Windows app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382080-9ae97fea-934c-4097-aca4-124a2aed1595.png)](https://windows-admin.bitplatform.dev/AdminPanel.Client.Windows-win-Setup.exe) | [![macOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382211-0d58f9ba-1a1f-4481-a0ca-b23a393cca9f.png)](https://apps.apple.com/nl/app/bit-adminpanel/id6450611349) |
-| Todo | [![Prerendered PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://todo.bitplatform.dev) | [![iOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381842-e72976ce-fd20-431d-a677-ca1ed625b83b.png)](https://apps.apple.com/us/app/bit-todotemplate/id6450611072) | [![Android app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381958-24931682-87f6-44fc-a1c7-eecf46387005.png)](https://play.google.com/store/apps/details?id=com.bitplatform.Todo.Template) | [![Windows app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382080-9ae97fea-934c-4097-aca4-124a2aed1595.png)](https://windows-todo.bitplatform.dev/TodoSample.Client.Windows-win-Setup.exe) | [![macOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382211-0d58f9ba-1a1f-4481-a0ca-b23a393cca9f.png)](https://apps.apple.com/nl/app/bit-todotemplate/id6450611072)
+| bitplatform | [![PWA](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-pwa.png)](https://bitplatform.dev)| *N/A* | *N/A* | *N/A* | *N/A* |
+| Sales | [![PWA](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-pwa.png)](https://sales.bitplatform.dev) | *Soon!* | *Soon!* | [![Windows app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-windows.png)](https://windows-sales.bitplatform.dev/SalesModule.Client.Windows-win-Setup.exe) | *Soon!* |
+| bit BlazorUI | [![Prerendered PWA](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-pwa.png)](https://blazorui.bitplatform.dev) | [![iOS app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-ios.png)](https://apps.apple.com/us/app/bit-blazor-ui/id6450401404) | [![Android app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-android.png)](https://play.google.com/store/apps/details?id=com.bitplatform.BlazorUI.Demo) | [![Windows app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-windows.png)](https://windows-components.bitplatform.dev/Bit.BlazorUI.Demo.Client.Windows-win-Setup.exe) | [![macOS app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-macos.png)](https://apps.apple.com/nl/app/bit-blazor-ui/id6450401404)
+| AdminPanel | [![Prerendered PWA](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-pwa.png)](https://adminpanel.bitplatform.dev) | [![iOS app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-ios.png)](https://apps.apple.com/us/app/bit-adminpanel/id6450611349) | [![Android app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-android.png)](https://play.google.com/store/apps/details?id=com.bitplatform.AdminPanel.Template) | [![Windows app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-windows.png)](https://windows-admin.bitplatform.dev/AdminPanel.Client.Windows-win-Setup.exe) | [![macOS app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-macos.png)](https://apps.apple.com/nl/app/bit-adminpanel/id6450611349) |
+| Todo | [![Prerendered PWA](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-pwa.png)](https://todo.bitplatform.dev) | [![iOS app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-ios.png)](https://apps.apple.com/us/app/bit-todotemplate/id6450611072) | [![Android app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-android.png)](https://play.google.com/store/apps/details?id=com.bitplatform.Todo.Template) | [![Windows app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-windows.png)](https://windows-todo.bitplatform.dev/TodoSample.Client.Windows-win-Setup.exe) | [![macOS app](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/badge-macos.png)](https://apps.apple.com/nl/app/bit-todotemplate/id6450611072)
 
 1. [bitplatform.dev](https://bitplatform.dev): .NET 9 Pre-rendered PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
 2. [sales.bitplatform.dev](https://sales.bitplatform.dev): .NET 9 Sales Pre-rendered PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
@@ -244,7 +244,7 @@ We welcome contributions! Many people all over the world have helped make this p
 
 # **Contributions**
 
-![Alt](https://repobeats.axiom.co/api/embed/66dc1fc04ed967094b98ac118e8f18fa38b19f6a.svg """"bit platform open source contributions report"""")"";";
+![Alt](/_content/Bit.BlazorUI.Demo.Client.Core/images/markdown/repobeats.svg """"bit platform open source contributions report"""")"";";
 
     private readonly string example3RazorCode = @"
 <BitMarkdownViewerLegacy Markdown=""@(""# Events of the BitMarkdownViewerLegacy:\n\n- OnParsing\n- OnParsed\n- OnRendered"")""

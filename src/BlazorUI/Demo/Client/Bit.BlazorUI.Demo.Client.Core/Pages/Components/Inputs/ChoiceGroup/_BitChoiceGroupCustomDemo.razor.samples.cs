@@ -125,8 +125,8 @@ private readonly List<Order> imageCustoms =
         ItemValue = ""Bar"",
         ImageSize = new BitImageSize(32, 32),
         ImageDescription = ""alt for Bar image"",
-        ImageAddress = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"",
-        SelectedImageAddress = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"",
+        ImageAddress = ""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-bar-unselected.png"",
+        SelectedImageAddress = ""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-bar-selected.png"",
     },
     new()
     {
@@ -134,8 +134,8 @@ private readonly List<Order> imageCustoms =
         ItemValue = ""Pie"",
         ImageSize = new BitImageSize(32, 32),
         ImageDescription = ""alt for Pie image"",
-        ImageAddress= ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"",
-        SelectedImageAddress = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"",
+        ImageAddress= ""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-pie-unselected.png"",
+        SelectedImageAddress = ""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-pie-selected.png"",
     }
 ];
 
@@ -147,8 +147,8 @@ private readonly List<Order> inlineImageCustoms =
         ItemValue = ""Bar"",
         ImageSize = new BitImageSize(20, 20),
         ImageDescription = ""alt for Bar image"",
-        ImageAddress = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"",
-        SelectedImageAddress = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"",
+        ImageAddress = ""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-bar-unselected.png"",
+        SelectedImageAddress = ""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-bar-selected.png"",
     },
     new()
     {
@@ -156,8 +156,8 @@ private readonly List<Order> inlineImageCustoms =
         ItemValue = ""Pie"",
         ImageSize = new BitImageSize(20, 20),
         ImageDescription = ""alt for Pie image"",
-        ImageAddress= ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"",
-        SelectedImageAddress = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"",
+        ImageAddress= ""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-pie-unselected.png"",
+        SelectedImageAddress = ""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-pie-selected.png"",
     }
 ];
 
@@ -230,8 +230,8 @@ private readonly List<Order> imageCustoms =
         ItemValue = ""Bar"",
         ImageSize = new BitImageSize(32, 32),
         ImageDescription = ""alt for Bar image"",
-        ImageAddress = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"",
-        SelectedImageAddress = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"",
+        ImageAddress = ""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-bar-unselected.png"",
+        SelectedImageAddress = ""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-bar-selected.png"",
     },
     new()
     {
@@ -239,8 +239,8 @@ private readonly List<Order> imageCustoms =
         ItemValue = ""Pie"",
         ImageSize = new BitImageSize(32, 32),
         ImageDescription = ""alt for Pie image"",
-        ImageAddress= ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"",
-        SelectedImageAddress = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"",
+        ImageAddress= ""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-pie-unselected.png"",
+        SelectedImageAddress = ""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-pie-selected.png"",
     }
 ];
 
@@ -304,8 +304,8 @@ private readonly List<Order> imageCustoms =
         ItemValue = ""Bar"",
         ImageSize = new BitImageSize(32, 32),
         ImageDescription = ""alt for Bar image"",
-        ImageAddress = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"",
-        SelectedImageAddress = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"",
+        ImageAddress = ""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-bar-unselected.png"",
+        SelectedImageAddress = ""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-bar-selected.png"",
     },
     new()
     {
@@ -313,8 +313,8 @@ private readonly List<Order> imageCustoms =
         ItemValue = ""Pie"",
         ImageSize = new BitImageSize(32, 32),
         ImageDescription = ""alt for Pie image"",
-        ImageAddress= ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"",
-        SelectedImageAddress = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"",
+        ImageAddress= ""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-pie-unselected.png"",
+        SelectedImageAddress = ""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-pie-selected.png"",
     }
 ];
 

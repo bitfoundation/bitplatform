@@ -202,7 +202,7 @@ private TimeSpan? readOnlyTime = new(2, 50, 0);";
                        IconLocation=""BitIconLocation.Left""
                        Placeholder=""Select a time"">
     <IconTemplate>
-        <img src=""https://img.icons8.com/fluency/2x/clock.png"" width=""24"" height=""24"" />
+        <img src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/icon/clock.svg"" width=""24"" height=""24"" />
     </IconTemplate>
 </BitCircularTimePicker>
 

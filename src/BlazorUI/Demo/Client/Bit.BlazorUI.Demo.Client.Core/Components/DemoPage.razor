@@ -211,7 +211,12 @@ else
                     {
                         <BitStack Horizontal AutoHeight Class="video-container"
                                   HorizontalAlign="BitAlignment.Center">
-                            <video src="@IntroductionVideoUrl" controls />
+                            @* Same-origin on the web (see _introductionVideoUrl): under
+                               Cross-Origin-Embedder-Policy: require-corp a cross-origin video host has to
+                               send a Cross-Origin-Resource-Policy header or answer a CORS request, and the
+                               one this demo uses does neither - so crossorigin="anonymous" would not help
+                               either, and the video is proxied through VideosController instead. *@
+                            <video src="@_introductionVideoUrl" controls />
                         </BitStack>
                     }
                     @if (Introduction.HasValue() || IntroductionTemplate is not null)

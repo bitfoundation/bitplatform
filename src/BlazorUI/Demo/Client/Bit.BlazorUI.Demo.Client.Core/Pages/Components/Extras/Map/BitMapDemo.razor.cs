@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Map;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Map;
 
 public partial class BitMapDemo
 {
@@ -261,7 +261,21 @@ public partial class BitMapDemo
     private readonly BitMapLibreMapProvider maplibreProvider = new() { Center = new(48.8566, 2.3522), Zoom = 5 };
     private readonly BitOpenLayersMapProvider olProvider = new() { Center = new(35.6762, 139.6503), Zoom = 4 };
     private readonly BitArcGisMapProvider arcGisProvider = new() { Center = new(40, 0), Zoom = 2, BasemapId = "osm" };
-    private readonly BitCesiumMapProvider cesiumProvider = new() { Center = new(20, 0), Zoom = 2, SceneMode = "scene3d" };
+    // On the web the BaseUrl points at this site's own CesiumJS passthrough (CesiumController)
+    // rather than the cesium.com CDN: the demo is served with Cross-Origin-Embedder-Policy:
+    // require-corp, and cesium.com sends neither Cross-Origin-Resource-Policy nor
+    // Access-Control-Allow-Origin, so the browser blocks its script in both no-cors and CORS mode.
+    // Serving it same-origin sidesteps the check. Your own app only needs this if it is
+    // cross-origin isolated too - which is why the MAUI/Windows hybrid clients keep the default:
+    // their origin (app://0.0.0.0) hosts no such endpoint, and a hybrid WebView is not
+    // cross-origin isolated, so the CDN URL both works and is the only one that resolves there.
+    private readonly BitCesiumMapProvider cesiumProvider = new()
+    {
+        Center = new(20, 0),
+        Zoom = 2,
+        SceneMode = "scene3d",
+        BaseUrl = AppRenderMode.IsBlazorHybrid ? BitCesiumMapProvider.DefaultBaseUrl : "/api/cesium",
+    };
 
     // ── Example 2 – Markers ───────────────────────────────────────────────────
 
@@ -1127,5 +1141,10 @@ private readonly BitAzureMapsMapProvider azureMapsProvider = new()
 </div>";
     private readonly string example13CsharpCode = @"
 // Bind a stable field so the provider isn't reallocated on every render.
-private readonly BitCesiumMapProvider cesiumProvider = new() { Center = new(20, 0), Zoom = 2, SceneMode = ""scene3d"" };";
+private readonly BitCesiumMapProvider cesiumProvider = new() { Center = new(20, 0), Zoom = 2, SceneMode = ""scene3d"" };
+
+// Only needed when your page is cross-origin isolated (COEP: require-corp): cesium.com sends
+// neither a Cross-Origin-Resource-Policy nor an Access-Control-Allow-Origin header, so the
+// script is blocked. Point BaseUrl at a copy of the Build/Cesium folder on your own origin.
+// private readonly BitCesiumMapProvider cesiumProvider = new() { ..., BaseUrl = ""/api/cesium"" };";
 }

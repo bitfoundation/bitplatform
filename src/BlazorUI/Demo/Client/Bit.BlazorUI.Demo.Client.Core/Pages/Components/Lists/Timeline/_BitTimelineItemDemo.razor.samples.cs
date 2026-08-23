@@ -207,7 +207,7 @@ private List<BitTimelineItem> templateItems =
         PrimaryContent = (item => @<BitPersona PrimaryText=""Xafan Salina""
                                                Size=""@BitPersonaSize.Size32""
                                                Presence=""@BitPersonaPresence.Online""
-                                               ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />),
+                                               ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />),
 
         DotTemplate = (item => @<div class=""dot-template""><BitRingLoading CustomSize=""30"" Color=""BitColor.Tertiary"" /></div>),
 
@@ -235,7 +235,7 @@ private List<BitTimelineItem> templateItems =
         PrimaryContent = (item => @<BitPersona PrimaryText=""Ted Randall""
                                                Size=""@BitPersonaSize.Size32""
                                                Presence=""@BitPersonaPresence.Online""
-                                               ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-male.png"" />),
+                                               ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-male.png"" />),
 
         DotTemplate = (item => @<div class=""dot-template""><BitRollerLoading CustomSize=""30"" Color=""BitColor.Tertiary"" /></div>),
 

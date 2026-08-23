@@ -55,11 +55,40 @@ public sealed class BitCesiumMapProvider : BitMapProviderBase
     /// <inheritdoc />
     public override string JsObjectName => "BitMapCesium";
 
-    /// <inheritdoc />
-    public override IReadOnlyList<string> Scripts => ["https://cesium.com/downloads/cesiumjs/releases/1.124/Build/Cesium/Cesium.js"];
+    /// <summary>The CesiumJS release this provider is written against.</summary>
+    public const string CesiumVersion = "1.124";
+
+    /// <summary>Default <see cref="BaseUrl"/>: the official CesiumJS CDN build.</summary>
+    public const string DefaultBaseUrl = $"https://cesium.com/downloads/cesiumjs/releases/{CesiumVersion}/Build/Cesium";
+
+    /// <summary>
+    /// Base URL of the CesiumJS build to load (the <c>Build/Cesium</c> folder), without a trailing
+    /// slash. Defaults to <see cref="DefaultBaseUrl"/>.
+    /// <para>
+    /// Point this at a copy on your own origin when the page is served cross-origin isolated with
+    /// <c>Cross-Origin-Embedder-Policy: require-corp</c>: cesium.com sends neither a
+    /// <c>Cross-Origin-Resource-Policy</c> nor an <c>Access-Control-Allow-Origin</c> header, so the
+    /// browser blocks the script in both no-cors and CORS mode. Note that CesiumJS resolves its own
+    /// workers, <c>.wasm</c> decoders and assets relative to the URL it was loaded from, so the whole
+    /// <c>Build/Cesium</c> folder has to be reachable under this base - pointing it at a lone copy of
+    /// <c>Cesium.js</c> is not enough.
+    /// </para>
+    /// </summary>
+    public string BaseUrl { get; set; } = DefaultBaseUrl;
 
     /// <inheritdoc />
-    public override IReadOnlyList<string> Stylesheets => ["https://cesium.com/downloads/cesiumjs/releases/1.124/Build/Cesium/Widgets/widgets.css"];
+    public override IReadOnlyList<string> Scripts => [$"{NormalizedBaseUrl}/Cesium.js"];
+
+    /// <inheritdoc />
+    public override IReadOnlyList<string> Stylesheets => [$"{NormalizedBaseUrl}/Widgets/widgets.css"];
+
+    /// <summary>
+    /// <see cref="BaseUrl"/> without a trailing slash, falling back to <see cref="DefaultBaseUrl"/>
+    /// when it is blank, so the composed URLs never end up with an empty or doubled separator.
+    /// </summary>
+    private string NormalizedBaseUrl => string.IsNullOrWhiteSpace(BaseUrl)
+        ? DefaultBaseUrl
+        : BaseUrl.Trim().TrimEnd('/');
 
     /// <inheritdoc />
     public override object BuildOptionsPayload()
