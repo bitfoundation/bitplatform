@@ -6,8 +6,8 @@ namespace Bit.BlazorUI;
 public enum BitNavBarIndicator
 {
     /// <summary>
-    /// No indicator of its own: the selection is conveyed by the color of the item and, while an Accent is
-    /// set, by the fill of the item.
+    /// No indicator of its own: the selection is conveyed by the color of the item and, while Filled is
+    /// enabled, by the fill of the item.
     /// </summary>
     None,
 

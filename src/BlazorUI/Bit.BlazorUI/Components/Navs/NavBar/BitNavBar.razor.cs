@@ -252,27 +252,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
             _ => "bit-nbr-pri",
         });
 
-        ClassBuilder.Register(() => Accent switch
-        {
-            BitColor.Primary => "bit-nbr-apri",
-            BitColor.Secondary => "bit-nbr-asec",
-            BitColor.Tertiary => "bit-nbr-ater",
-            BitColor.Info => "bit-nbr-ainf",
-            BitColor.Success => "bit-nbr-asuc",
-            BitColor.Warning => "bit-nbr-awrn",
-            BitColor.SevereWarning => "bit-nbr-aswr",
-            BitColor.Error => "bit-nbr-aerr",
-            BitColor.PrimaryBackground => "bit-nbr-apbg",
-            BitColor.SecondaryBackground => "bit-nbr-asbg",
-            BitColor.TertiaryBackground => "bit-nbr-atbg",
-            BitColor.PrimaryForeground => "bit-nbr-apfg",
-            BitColor.SecondaryForeground => "bit-nbr-asfg",
-            BitColor.TertiaryForeground => "bit-nbr-atfg",
-            BitColor.PrimaryBorder => "bit-nbr-apbr",
-            BitColor.SecondaryBorder => "bit-nbr-asbr",
-            BitColor.TertiaryBorder => "bit-nbr-atbr",
-            _ => string.Empty,
-        });
+        ClassBuilder.Register(() => Filled ? "bit-nbr-fil" : string.Empty);
     }
 
     protected override void RegisterCssStyles()

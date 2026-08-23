@@ -8,13 +8,6 @@ public partial class BitNavBarDemo
     [
         new()
         {
-            Name = "Accent",
-            Type = "BitColor?",
-            DefaultValue = "null",
-            Description = "The accent color that fills the hovered and the selected item of the navbar. While it is not set, the selection is conveyed by the Color of the item alone.",
-        },
-        new()
-        {
             Name = "Alignment",
             Type = "BitAlignment?",
             DefaultValue = "null",
@@ -58,6 +51,13 @@ public partial class BitNavBarDemo
             Type = "TItem?",
             DefaultValue = "null",
             Description = "The initially selected item in manual mode."
+        },
+        new()
+        {
+            Name = "Filled",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Fills the hovered and the selected item of the navbar with the Color of the navbar. While it is not enabled, the selection is conveyed by the color of the item alone.",
         },
         new()
         {
@@ -106,7 +106,7 @@ public partial class BitNavBarDemo
             Name = "Indicator",
             Type = "BitNavBarIndicator?",
             DefaultValue = "null",
-            Description = "The shape of the indicator that marks the selected item: a line along the edge of the item, or the pill a Material navigation bar draws behind the icon of its current destination. While it is not set, the selection is conveyed by the color of the item and by the fill the Accent gives it.",
+            Description = "The shape of the indicator that marks the selected item: a line along the edge of the item, or the pill a Material navigation bar draws behind the icon of its current destination. While it is not set, the selection is conveyed by the color of the item and by the fill Filled gives it.",
             LinkType = LinkType.Link,
             Href = "#indicator-enum",
         },
@@ -1009,7 +1009,7 @@ public partial class BitNavBarDemo
             Name = "BitNavBarIndicator",
             Items =
             [
-                new() { Name = "None", Description = "No indicator of its own: the selection is conveyed by the color of the item and, while an Accent is set, by the fill of the item.", Value = "0" },
+                new() { Name = "None", Description = "No indicator of its own: the selection is conveyed by the color of the item and, while Filled is enabled, by the fill of the item.", Value = "0" },
                 new() { Name = "Line", Description = "A line drawn along the edge of the selected item: its bottom edge in a horizontal navbar and its leading edge in a vertical rail, the way a tab strip marks its current tab.", Value = "1" },
                 new() { Name = "Pill", Description = "A pill drawn behind the icon of the selected item, which is how a Material navigation bar marks its current destination. It takes the fill off the item itself, so the pill is the only filled part.", Value = "2" }
             ]

@@ -147,5 +147,4 @@ public partial class _BitNavBarCustomDemo
     private MenuItem? scrollableSelectedCustom;
     private MenuItem? eventsClickedItem;
     private MenuItem? eventsSelectedItem;
-    private MenuItem advancedSelectedItem = basicNavBarCustoms[1];
 }

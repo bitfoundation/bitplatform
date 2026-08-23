@@ -3,13 +3,6 @@ namespace Bit.BlazorUI;
 public partial class BitNavBar<TItem>
 {
     /// <summary>
-    /// The accent color that fills the hovered and the selected item of the navbar.
-    /// While it is not set, the selection is conveyed by the <see cref="Color"/> of the item alone.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public BitColor? Accent { get; set; }
-
-    /// <summary>
     /// How the items are distributed along the navbar: packed at its start, its center or its end, or
     /// spread over it. While it is not set the items of a horizontal navbar are spread evenly over its
     /// width and the items of a <see cref="Vertical"/> rail are packed at its top.
@@ -53,6 +46,13 @@ public partial class BitNavBar<TItem>
     [Parameter] public TItem? DefaultSelectedItem { get; set; }
 
     /// <summary>
+    /// Fills the hovered and the selected item of the navbar with the <see cref="Color"/> of the navbar.
+    /// While it is not enabled, the selection is conveyed by the color of the item alone.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Filled { get; set; }
+
+    /// <summary>
     /// Renders the nav bar in a width to only fit its content.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -93,7 +93,7 @@ public partial class BitNavBar<TItem>
     /// <summary>
     /// The shape of the indicator that marks the selected item: a line along the edge of the item, or the
     /// pill a Material navigation bar draws behind the icon of its current destination. While it is not set,
-    /// the selection is conveyed by the color of the item and by the fill the <see cref="Accent"/> gives it.
+    /// the selection is conveyed by the color of the item and by the fill <see cref="Filled"/> gives it.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitNavBarIndicator? Indicator { get; set; }

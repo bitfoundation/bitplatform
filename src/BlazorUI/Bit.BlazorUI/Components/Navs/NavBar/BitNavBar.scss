@@ -14,6 +14,7 @@
     --bit-nbr-txt-fs: #{$tg-fs-sm};
     --bit-nbr-gap: #{spacing(0.5)};
     --bit-nbr-pad: #{spacing(1)};
+    --bit-nbr-row-pad: #{spacing(2)};
     --bit-nbr-min: #{$siz-ctrl-md};
 
     // The label's line box is fixed rather than inherited from the page, so the room an item needs with
@@ -189,7 +190,18 @@
     height: spacing(1);
 }
 
+// An item laid out on a single line - an icon on its own, or an icon beside its label - is only as tall
+// as that line, so the padding around it is all the room it has: on the padding of a stacked item, a bar
+// pinned to the foot of the screen leaves its content a few pixels off the bottom edge. The wider
+// single-line padding gives it the breathing room a stacked item gets from the second line it carries,
+// and takes the item to a target a finger can hit comfortably. Only the block padding is widened for an
+// inline item, which already has the width of its label; an icon on its own is widened on both axes so
+// it stays square.
 .bit-nbr-ion {
+    .bit-nbr-itm {
+        padding: var(--bit-nbr-row-pad);
+    }
+
     .bit-nbr-txt {
         display: none;
     }
@@ -253,6 +265,7 @@
 .bit-nbr-inl {
     .bit-nbr-itm {
         flex-direction: row;
+        padding-block: var(--bit-nbr-row-pad);
     }
 }
 
@@ -378,12 +391,20 @@
             background-color: transparent;
 
             .bit-nbr-icc {
+                color: var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr));
                 background-color: var(--bit-nbr-clr-acc-hover, transparent);
             }
+        }
+
+        // The pill is the only filled part in this mode, so the on-color of the fill belongs inside it
+        // alone: the label beside it sits on the untouched background and stays on the Color role.
+        .bit-nbr-itm:has(.bit-nbr-icc):hover {
+            color: var(--bit-nbr-clr);
         }
     }
 
     .bit-nbr-sel:has(.bit-nbr-icc) {
+        color: var(--bit-nbr-clr);
         background-color: transparent;
     }
 
@@ -404,6 +425,7 @@
     --bit-nbr-txt-fs: #{$tg-fs-2xs};
     --bit-nbr-gap: #{spacing(0.25)};
     --bit-nbr-pad: #{spacing(0.75)};
+    --bit-nbr-row-pad: #{spacing(1.5)};
     --bit-nbr-min: #{$siz-ctrl-sm};
 }
 
@@ -412,6 +434,7 @@
     --bit-nbr-txt-fs: #{$tg-fs-sm};
     --bit-nbr-gap: #{spacing(0.5)};
     --bit-nbr-pad: #{spacing(1)};
+    --bit-nbr-row-pad: #{spacing(2)};
     --bit-nbr-min: #{$siz-ctrl-md};
 }
 
@@ -420,6 +443,7 @@
     --bit-nbr-txt-fs: #{$tg-fs-md};
     --bit-nbr-gap: #{spacing(0.75)};
     --bit-nbr-pad: #{spacing(1.5)};
+    --bit-nbr-row-pad: #{spacing(2.5)};
     --bit-nbr-min: #{$siz-ctrl-lg};
 }
 
@@ -462,28 +486,16 @@
 }
 
 
-// The accent fills the hovered and the selected item, so what is drawn on top of it moves to the accent's
-// own colors along with it. Without an accent none of these are defined and every var() above falls back
-// to the unfilled look: the Color role on a transparent background.
+// The fill covers the hovered and the selected item with the Color role itself, so what is drawn on top of
+// it - the content of the item and the indicator - moves to that role's on-color to stay legible over it.
+// Without the fill none of these are defined and every var() above falls back to the unfilled look: the
+// Color role on a transparent background. The selector carries both classes, so it outweighs the role loop
+// above and takes the indicator over from it.
 @each $role, $tokens in $bit-color-roles {
-    .bit-nbr-a#{$role} {
+    .bit-nbr-fil.bit-nbr-#{$role} {
         --bit-nbr-clr-acc-hover: #{role($tokens, hover)};
         --bit-nbr-clr-acc-active: #{role($tokens, active)};
-
-        @if role($tokens, kind) == semantic {
-            // A semantic accent covers the item with a vivid fill, which the Color role is not meant to
-            // sit on, so the whole content of the item moves to the accent's on-color.
-            --bit-nbr-clr-acc-text: #{role($tokens, on)};
-
-            // The indicator follows the accent as well while that accent has a color of its own to be
-            // drawn in; a surface accent is a background tint, which would leave the line invisible, so
-            // that one keeps the indicator on the Color role.
-            --bit-nbr-clr-ind: #{role($tokens, main)};
-        }
-        @else {
-            // A surface accent only tints the item's background, so the content stays on the Color role,
-            // exactly as it is when the item is not selected.
-            --bit-nbr-clr-acc-text: var(--bit-nbr-clr);
-        }
+        --bit-nbr-clr-acc-text: #{role($tokens, on)};
+        --bit-nbr-clr-ind: #{role($tokens, on)};
     }
 }

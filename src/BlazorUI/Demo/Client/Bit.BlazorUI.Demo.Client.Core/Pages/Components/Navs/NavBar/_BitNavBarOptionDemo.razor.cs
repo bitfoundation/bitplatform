@@ -51,8 +51,8 @@ public partial class _BitNavBarOptionDemo
     private BitNavBarOption? hideTextSelectedOption;
     private BitNavBarOption hideTextOptionHome = default!;
 
-    private BitNavBarOption? accentSelectedOption;
-    private BitNavBarOption accentOptionHome = default!;
+    private BitNavBarOption? filledSelectedOption;
+    private BitNavBarOption filledOptionHome = default!;
 
     private BitNavBarOption? tabStopSelectedOption;
     private BitNavBarOption tabStopOptionProducts = default!;
@@ -72,17 +72,14 @@ public partial class _BitNavBarOptionDemo
     private BitNavBarOption? indicatorPillSelectedOption;
     private BitNavBarOption indicatorPillOptionHome = default!;
 
-    private BitNavBarOption? indicatorAccentSelectedOption;
-    private BitNavBarOption indicatorAccentOptionHome = default!;
+    private BitNavBarOption? indicatorFilledSelectedOption;
+    private BitNavBarOption indicatorFilledOptionHome = default!;
 
     private BitNavBarOption? indicatorVerticalSelectedOption;
     private BitNavBarOption indicatorVerticalOptionHome = default!;
 
     private BitNavBarOption? scrollableSelectedOption;
     private BitNavBarOption scrollableOptionProfile = default!;
-
-    private BitNavBarOption? advancedSelectedOption;
-    private BitNavBarOption advancedOptionProducts = default!;
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -91,15 +88,14 @@ public partial class _BitNavBarOptionDemo
             bindingSelectedOption ??= bindingOptionProducts;
             twoWaySelectedOption ??= optionHome;
             hideTextSelectedOption ??= hideTextOptionHome;
-            accentSelectedOption ??= accentOptionHome;
+            filledSelectedOption ??= filledOptionHome;
             tabStopSelectedOption ??= tabStopOptionProducts;
             wrapSelectedOption ??= wrapOptionProducts;
             selectedIconSelectedOption ??= selectedIconOptionHome;
-            advancedSelectedOption ??= advancedOptionProducts;
             selectFocusSelectedOption ??= selectFocusOptionProducts;
             indicatorLineSelectedOption ??= indicatorLineOptionHome;
             indicatorPillSelectedOption ??= indicatorPillOptionHome;
-            indicatorAccentSelectedOption ??= indicatorAccentOptionHome;
+            indicatorFilledSelectedOption ??= indicatorFilledOptionHome;
             indicatorVerticalSelectedOption ??= indicatorVerticalOptionHome;
 
 

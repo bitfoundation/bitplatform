@@ -76,7 +76,7 @@
         // The bar is pinned to the foot of the screen, which is where a navigation bar of this kind
         // lives; the strip left over above it is the app the bar belongs to.
         width: 100%;
-        max-width: rem2(360px);
+        max-width: rem2(320px);
         min-height: rem2(520px);
         display: flex;
         flex-direction: column;
@@ -113,33 +113,6 @@
     .inverted-panel .container {
         --demo-screen-bg: #{$bit-color-foreground-secondary};
         --demo-screen-fg: #{$bit-color-background-secondary};
-    }
-
-    // The Advanced sample is a whole app rather than a bar on its own, so it gets the same device at
-    // the size of a real one.
-    .mobile-frame {
-        @include device-frame(rem2(48px), rem2(12px));
-
-        width: 100%;
-        max-width: rem2(375px);
-        height: rem2(680px);
-        // The app of the sample starts below the status strip.
-        padding-top: rem2(32px);
-
-        &::before {
-            @include device-status-bar(rem2(32px));
-        }
-
-        &::after {
-            @include device-island(rem2(9px), rem2(74px), rem2(18px));
-        }
-    }
-
-    .screen {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
     }
 
     .custom-class {

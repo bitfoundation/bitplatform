@@ -215,25 +215,24 @@ public class BitNavBarTests : BunitTestContext
     }
 
     [TestMethod]
-    [DataRow(BitColor.Primary, "bit-nbr-apri")]
-    [DataRow(BitColor.Success, "bit-nbr-asuc")]
-    [DataRow(BitColor.SecondaryBackground, "bit-nbr-asbg")]
-    public void BitNavBarShouldRespectAccent(BitColor accent, string expectedClass)
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitNavBarShouldRespectFilled(bool filled)
     {
         var component = RenderComponent<BitNavBar<BitNavBarOption>>(parameters =>
         {
-            parameters.Add(p => p.Accent, accent);
+            parameters.Add(p => p.Filled, filled);
         });
 
-        Assert.IsTrue(component.Find(".bit-nbr").ClassList.Contains(expectedClass));
+        Assert.AreEqual(filled, component.Find(".bit-nbr").ClassList.Contains("bit-nbr-fil"));
     }
 
     [TestMethod]
-    public void BitNavBarShouldNotRenderAnAccentClassWithoutAnAccent()
+    public void BitNavBarShouldNotRenderTheFilledClassByDefault()
     {
         var component = RenderComponent<BitNavBar<BitNavBarOption>>();
 
-        Assert.IsFalse(component.Find(".bit-nbr").ClassList.Any(c => c.StartsWith("bit-nbr-a", StringComparison.Ordinal)));
+        Assert.IsFalse(component.Find(".bit-nbr").ClassList.Contains("bit-nbr-fil"));
     }
 
     [TestMethod]
