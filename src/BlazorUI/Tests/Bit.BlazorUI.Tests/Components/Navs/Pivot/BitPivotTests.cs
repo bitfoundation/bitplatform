@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -654,11 +655,7 @@ public class BitPivotTests : BunitTestContext
             {
                 foreach (var tab in tabs)
                 {
-                    builder.OpenComponent<BitPivotItem>(0);
-                    builder.SetKey(tab);
-                    builder.AddComponentParameter(1, nameof(BitPivotItem.Key), tab);
-                    builder.AddComponentParameter(2, nameof(BitPivotItem.HeaderText), tab);
-                    builder.CloseComponent();
+                    AddItem(builder, 0, tab);
                 }
             });
         });
@@ -1250,11 +1247,7 @@ public class BitPivotTests : BunitTestContext
             {
                 foreach (var tab in tabs)
                 {
-                    builder.OpenComponent<BitPivotItem>(0);
-                    builder.SetKey(tab);
-                    builder.AddComponentParameter(1, nameof(BitPivotItem.Key), tab);
-                    builder.AddComponentParameter(2, nameof(BitPivotItem.HeaderText), tab);
-                    builder.CloseComponent();
+                    AddItem(builder, 0, tab);
                 }
             });
         });
@@ -1307,7 +1300,7 @@ public class BitPivotTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitPivotSelectItemByKeyShouldSelectTheItemItCanAndRefuseTheOnesItCannot()
+    public async Task BitPivotSelectItemByKeyShouldSelectTheItemItCanAndRefuseTheOnesItCannot()
     {
         var component = RenderComponent<BitPivot>(parameters =>
         {
@@ -1317,16 +1310,16 @@ public class BitPivotTests : BunitTestContext
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "d").Add(i => i.Visibility, BitVisibility.Collapsed));
         });
 
-        component.InvokeAsync(() => component.Instance.SelectItemByKey("b"));
+        await component.InvokeAsync(() => component.Instance.SelectItemByKey("b"));
         Assert.AreEqual("b", component.Instance.SelectedItem?.Key);
 
-        component.InvokeAsync(() => component.Instance.SelectItemByKey("c"));
+        await component.InvokeAsync(() => component.Instance.SelectItemByKey("c"));
         Assert.AreEqual("b", component.Instance.SelectedItem?.Key);
 
-        component.InvokeAsync(() => component.Instance.SelectItemByKey("d"));
+        await component.InvokeAsync(() => component.Instance.SelectItemByKey("d"));
         Assert.AreEqual("b", component.Instance.SelectedItem?.Key);
 
-        component.InvokeAsync(() => component.Instance.SelectItemByKey("nothing"));
+        await component.InvokeAsync(() => component.Instance.SelectItemByKey("nothing"));
         Assert.AreEqual("b", component.Instance.SelectedItem?.Key);
     }
 
@@ -1666,11 +1659,11 @@ public class BitPivotTests : BunitTestContext
         return (string[])Context.JSInterop.Invocations["BitBlazorUI.Pivot.setupKeys"].Last().Arguments[1]!;
     }
 
-    private static void AddItem(RenderTreeBuilder builder, int sequence, string key)
+    private static void AddItem(RenderTreeBuilder builder, int sequence, string key, string? id = null)
     {
         builder.OpenComponent<BitPivotItem>(sequence);
         builder.SetKey(key);
-        builder.AddComponentParameter(sequence + 1, nameof(BitPivotItem.Id), key);
+        builder.AddComponentParameter(sequence + 1, nameof(BitPivotItem.Id), id ?? key);
         builder.AddComponentParameter(sequence + 2, nameof(BitPivotItem.Key), key);
         builder.AddComponentParameter(sequence + 3, nameof(BitPivotItem.HeaderText), key);
         builder.CloseComponent();

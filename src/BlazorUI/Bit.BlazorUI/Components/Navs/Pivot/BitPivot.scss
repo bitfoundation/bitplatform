@@ -275,6 +275,7 @@
     .bit-pvt-hct > .bit-pvti:not(.bit-pvt-mor) {
         flex: 1 1 0;
         min-width: 0;
+
         // Sharing the whole line leaves nothing between the items unless the pivot asks for a gap.
         margin-inline-end: var(--bit-pvt-gap, 0);
     }
