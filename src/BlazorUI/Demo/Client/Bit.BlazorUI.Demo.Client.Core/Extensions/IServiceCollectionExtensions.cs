@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
+using Bit.BlazorUI.Demo.Client.Core.Components;
 using Bit.BlazorUI.Demo.Client.Core.Services.HttpMessageHandlers;
 using Bit.BlazorUI.Legacy;
 
@@ -15,6 +16,10 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<IPrerenderStateService, PrerenderStateService>();
 
         services.TryAddSessioned<IPubSubService, PubSubService>();
+
+        // Scoped, so that "a page has already been painted" is asked of this reader rather than of
+        // the whole server - see the type for why that distinction matters.
+        services.TryAddScoped<DemoContentDeferral>();
 
         services.TryAddTransient<RequestHeadersDelegationHandler>();
         services.TryAddTransient<RetryDelegatingHandler>();

@@ -30,6 +30,15 @@
         height: $bit-env-height-available;
     }
 
+    .panel-cnt.maximized {
+        width: 100%;
+        max-width: 100%;
+
+        .body {
+            width: 100%;
+        }
+    }
+
     // Kept at the size the old icon badge occupied, as a circle so the filled variant reads as a
     // launcher rather than a stray button.
     .open-panel-button {

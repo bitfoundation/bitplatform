@@ -171,12 +171,18 @@
                                     </BitButton>
                                 }
 
-                                <BitButton Color="BitColor.Error"
-                                           Variant="BitVariant.Text"
-                                           IconName="@BitIconName.Leave"
-                                           OnClick="WrapHandled(() => LeaveTenant(tenant))">
-                                    @Localizer[nameof(AppStrings.LeaveTenant)]
-                                </BitButton>
+                                @* Only offered where a membership actually exists. A global admin is listed every active
+                                   tenant, including ones she never joined, and leaving one of those can only 404. *@
+                                @if (IsMemberOf(tenant))
+                                {
+                                    <BitButton Color="BitColor.Error"
+                                               Variant="BitVariant.Text"
+                                               IconName="@BitIconName.Leave"
+                                               IsLoading="leavingTenantId == tenant.Id"
+                                               OnClick="WrapHandled(() => ConfirmLeaveTenant(tenant))">
+                                        @Localizer[IsDecliningInvitation(tenant) ? nameof(AppStrings.DeclineInvitation) : nameof(AppStrings.LeaveTenant)]
+                                    </BitButton>
+                                }
                             </BitStack>
                         </BitStack>
                     </BitCard>
@@ -185,3 +191,14 @@
         }
     </BitStack>
 </section>
+
+<BitDialog OnOk="WrapHandled(LeaveTenant)"
+           @bind-IsOpen="isLeaveTenantDialogOpen"
+           OkText="@Localizer[nameof(AppStrings.Yes)]"
+           CancelText="@Localizer[nameof(AppStrings.No)]"
+           Title="@Localizer[tenantToLeave is not null && IsDecliningInvitation(tenantToLeave) ? nameof(AppStrings.DeclineInvitation) : nameof(AppStrings.LeaveTenant)]"
+           Message="@(tenantToLeave is null
+                      ? ""
+                      : IsDecliningInvitation(tenantToLeave)
+                        ? Localizer[nameof(AppStrings.DeclineInvitationConfirmMessage), string.IsNullOrEmpty(tenantToLeave.Title) ? tenantToLeave.Name! : tenantToLeave.Title!]
+                        : Localizer[nameof(AppStrings.LeaveTenantConfirmMessage), string.IsNullOrEmpty(tenantToLeave.Title) ? tenantToLeave.Name! : tenantToLeave.Title!])" />

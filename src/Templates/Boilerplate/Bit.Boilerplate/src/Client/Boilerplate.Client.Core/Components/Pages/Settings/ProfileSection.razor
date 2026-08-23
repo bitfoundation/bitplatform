@@ -2,7 +2,7 @@
 
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center">
-        @if (Loading)
+        @if (CurrentUser is null)
         {
             <BitShimmer Height="4.5rem" Circle />
             <BitShimmer Height="1.5rem" Width="12.5rem" />
@@ -20,9 +20,13 @@
                            HideFileView
                            Accept="image/*"
                            MaxSize="1024 * 1024 * 10"
+                           AllowedExtensions="@(["image/*"])"
                            UploadUrlProvider="GetUploadUrl"
                            OnUploading="() => isUploading = true"
+                           OnInvalid="HandleOnInvalid"
                            OnUploadFailed="HandleOnUploadFailed"
+                           MaxSizeErrorMessage="@Localizer[nameof(AppStrings.ImageMaxSizeErrorMessage),"10 MB"]"
+                           NotAllowedExtensionErrorMessage="@Localizer[nameof(AppStrings.OnlyImageFilesAllowedErrorMessage)]"
                            OnUploadComplete="WrapHandled(HandleOnUploadComplete)"
                            UploadRequestHttpHeadersProvider="WrapHandled(GetUploadRequestHeaders)">
                 <LabelTemplate>

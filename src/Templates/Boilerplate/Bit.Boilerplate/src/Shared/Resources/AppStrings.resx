@@ -411,6 +411,22 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="Ok" xml:space="preserve">
     <value>Ok</value>
   </data>
+    <!-- Identity pages -->
+    <data name="Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+    <data name="SignInWithPasskeyButtonText" xml:space="preserve">
+    <value>Sign in with a passkey</value>
+  </data>
+    <data name="OpenGmail" xml:space="preserve">
+    <value>Open Gmail</value>
+  </data>
+    <data name="OpenOutlook" xml:space="preserve">
+    <value>Open Outlook</value>
+  </data>
+    <data name="AgreeToTermsMessage" xml:space="preserve">
+    <value>By signing up, you agree to our</value>
+  </data>
     <!--#if (signalR == true) -->
     <data name="SystemPromptsTitle" xml:space="preserve">
     <value>System prompts</value>
@@ -1323,6 +1339,36 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="AiChatPanelStopReading" xml:space="preserve">
     <value>Stop reading</value>
   </data>
+    <data name="AiChatPanelTranscribing" xml:space="preserve">
+    <value>Writing down what you said</value>
+  </data>
+    <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
+    <value>Time left before dictation stops</value>
+  </data>
+    <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
+    <value>Voice needs an account</value>
+  </data>
+    <data name="AiChatPanelSpeechSignInMessage" xml:space="preserve">
+    <value>Dictation and read aloud both run on the server. Sign in once and you can talk to the chat and have it talk back.</value>
+  </data>
+    <data name="AiChatPanelAttachImage" xml:space="preserve">
+    <value>Attach an image</value>
+  </data>
+    <data name="AiChatPanelImageTooLarge" xml:space="preserve">
+    <value>The image is larger than 10 MB.</value>
+  </data>
+    <data name="AiChatPanelOnlyImagesAllowed" xml:space="preserve">
+    <value>Only images can be attached.</value>
+  </data>
+    <data name="AiChatPanelAttachmentFailed" xml:space="preserve">
+    <value>The image could not be attached.</value>
+  </data>
+    <data name="AiChatPanelImageSignInTitle" xml:space="preserve">
+    <value>Images need an account</value>
+  </data>
+    <data name="AiChatPanelImageSignInMessage" xml:space="preserve">
+    <value>Sign in to send a picture along with your message.</value>
+  </data>
     <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>Greetings{0}! I'm here to make your app experience awesome! Got a question or need a hand?</value>
   </data>
@@ -1348,7 +1394,13 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>Write a message...</value>
   </data>
-    <!--#endif -->
+      <data name="AiChatPanelMaximize" xml:space="preserve">
+    <value>Maximize</value>
+  </data>
+  <data name="AiChatPanelRestore" xml:space="preserve">
+    <value>Restore</value>
+  </data>
+  <!--#endif -->
     <!--#if (ads == true) -->
     <data name="Upgrade" xml:space="preserve">
     <value>Upgrade</value>
@@ -1557,7 +1609,84 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="ImageNotCarError" xml:space="preserve">
     <value>The provided image does not contain a car.</value>
   </data>
-    <!--#if (multitenant == true) -->
+      <data name="AddUserToGroupTitle" xml:space="preserve">
+    <value>Add {0} to this user group</value>
+  </data>
+  <data name="RemoveUserFromGroupTitle" xml:space="preserve">
+    <value>Remove {0} from this user group</value>
+  </data>
+  <data name="GrantFeatureTitle" xml:space="preserve">
+    <value>Grant {0}</value>
+  </data>
+  <data name="RevokeFeatureTitle" xml:space="preserve">
+    <value>Revoke {0}</value>
+  </data>
+  <data name="GrantAllGroupFeaturesTitle" xml:space="preserve">
+    <value>Grant all {0} features</value>
+  </data>
+  <data name="RevokeAllGroupFeaturesTitle" xml:space="preserve">
+    <value>Revoke all {0} features</value>
+  </data>
+  <data name="RefreshSelectedUserGroupTitle" xml:space="preserve">
+    <value>Refresh the selected user group</value>
+  </data>
+  <data name="RefreshSelectedUserTitle" xml:space="preserve">
+    <value>Refresh the selected user</value>
+  </data>
+  <data name="NoMatchingUserSessionMessage" xml:space="preserve">
+    <value>No session matches your search.</value>
+  </data>
+  <data name="TfaVerificationCodeRequiredMessage" xml:space="preserve">
+    <value>Enter the 6-digit code from your authenticator app.</value>
+  </data>
+  <data name="TfaOpenInAuthenticatorAppTitle" xml:space="preserve">
+    <value>Open this account in your authenticator app</value>
+  </data>
+  <data name="TfaQrCodeAlt" xml:space="preserve">
+    <value>QR code for setting up your authenticator app</value>
+  </data>
+  <data name="SessionNoLongerValidMessage" xml:space="preserve">
+    <value>This session is no longer valid. Please sign in again.</value>
+  </data>
+  <data name="RevokeSessionTitle" xml:space="preserve">
+    <value>Revoke this session</value>
+  </data>
+  <data name="ImageMaxSizeErrorMessage" xml:space="preserve">
+    <value>The image must be {0} or smaller.</value>
+  </data>
+  <data name="OnlyImageFilesAllowedErrorMessage" xml:space="preserve">
+    <value>Only image files can be used</value>
+  </data>
+  <data name="SamePhoneNumberErrorMessage" xml:space="preserve">
+    <value>That is already your phone number. Enter a different one.</value>
+  </data>
+  <data name="SameEmailErrorMessage" xml:space="preserve">
+    <value>That is already your email address. Enter a different one.</value>
+  </data>
+  <data name="MoreTabsTitle" xml:space="preserve">
+    <value>More tabs</value>
+  </data>
+  <data name="OpenNavigationMenuTitle" xml:space="preserve">
+    <value>Open the navigation menu</value>
+  </data>
+  <data name="AccountMenuTitle" xml:space="preserve">
+    <value>Account menu</value>
+  </data>
+  <data name="SwitchToDarkThemeTitle" xml:space="preserve">
+    <value>Switch to the dark theme</value>
+  </data>
+  <data name="SwitchToLightThemeTitle" xml:space="preserve">
+    <value>Switch to the light theme</value>
+  </data>
+  <!--#if (signalR == true) -->
+  <data name="SignalRConnectionId" xml:space="preserve">
+    <value>SignalRConnectionId</value>
+  </data>
+  <data name="ReadUserSessionLogsTitle" xml:space="preserve">
+    <value>Read user session logs</value>
+  </data>
+  <!--#endif -->
+  <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>Tenant</value>
   </data>
@@ -1660,5 +1789,14 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="Inactive" xml:space="preserve">
     <value>Inactive</value>
   </data>
-    <!--#endif-->
+      <data name="DeclineInvitation" xml:space="preserve">
+    <value>Decline invitation</value>
+  </data>
+  <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
+    <value>Decline the invitation to {0}? This can't be undone - you'll need a new invitation to join.</value>
+  </data>
+  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
+    <value>Invitation declined.</value>
+  </data>
+  <!--#endif-->
 </root>

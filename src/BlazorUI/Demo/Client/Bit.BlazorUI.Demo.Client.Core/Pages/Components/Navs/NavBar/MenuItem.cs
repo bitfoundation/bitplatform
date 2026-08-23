@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
 
 public class MenuItem
 {
@@ -9,4 +9,13 @@ public class MenuItem
     public string? CssClass { get; set; }
     public string? Style { get; set; }
     public bool Disabled { get; set; }
+    public string? Link { get; set; }
+    public IEnumerable<string>? ExtraLinks { get; set; }
+    public BitNavMatch? Matching { get; set; }
+    public BitNavItemTemplateRenderMode FragmentRenderMode { get; set; }
+    public string? Counter { get; set; }
+    public string? CounterLabel { get; set; }
+    public bool Marker { get; set; }
+    public string? SelectedImageName { get; set; }
+    public BitIconInfo? SelectedImage { get; set; }
 }

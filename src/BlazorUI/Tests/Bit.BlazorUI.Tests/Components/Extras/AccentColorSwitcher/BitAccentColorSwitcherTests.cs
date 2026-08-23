@@ -8,6 +8,11 @@ namespace Bit.BlazorUI.Tests.Components.Extras.AccentColorSwitcher;
 [TestClass]
 public class BitAccentColorSwitcherTests : BunitTestContext
 {
+    // The second of the DefaultAccents, standing in here for "a configured accent that is not the
+    // neutral one". Read off the preset rather than spelled out, so a retune of the preset cannot
+    // leave these tests asserting on a hex nothing offers any more.
+    private static readonly string PurpleToken = BitAccentColorPresets.Purple.TrimStart('#').ToLowerInvariant();
+
     private void RegisterServices(System.Action<BitAccentColorConfig>? accentColor = null)
     {
         // The switcher resolves the scoped BitAccentColorService, which itself needs the core
@@ -214,7 +219,7 @@ public class BitAccentColorSwitcherTests : BunitTestContext
         component.FindAll(".bit-acs-swt").First(s => s.GetAttribute("title") == "Purple").Click();
 
         var apply = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.AccentColor.apply");
-        Assert.AreEqual("8764b8", apply.Arguments[0]);
+        Assert.AreEqual(PurpleToken, apply.Arguments[0]);
         Assert.IsNull(apply.Arguments[1], "The default None strategy keeps no palette snapshot.");
         Assert.AreEqual(false, apply.Arguments[3], "The default None strategy sets no bit-accent attribute.");
         Assert.AreEqual((int)BitAccentColorPersistence.LocalStorage, apply.Arguments[4],

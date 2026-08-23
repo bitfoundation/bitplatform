@@ -8,6 +8,7 @@ public partial class RolesPage
     private string? editRoleName;
     private string? roleSearchText;
     private string? loadingRoleKey;
+    private string? loadedRoleKey;
     private string? userSearchText;
     private bool isDeleteDialogOpen;
     private bool isLoadingRoles = true;
@@ -92,6 +93,8 @@ public partial class RolesPage
     {
         if (item is null) return;
 
+        CancellationTokenSource? loadCts = null;
+
         try
         {
             if (loadRoleDataCts is not null)
@@ -102,24 +105,38 @@ public partial class RolesPage
                 await currentCts.TryCancel();
             }
 
-            var loadCts = loadRoleDataCts = new();
+            loadCts = loadRoleDataCts = new();
 
             selectedRoleItem = item;
             loadingRoleKey = item.Key;
+            loadedRoleKey = null;
             editRoleName = selectedRoleItem.Text;
 
             var id = Guid.Parse(item.Key!);
             await Task.WhenAll(LoadRoleUsers(id, loadCts),
                                LoadRoleClaims(id, loadCts));
+
+            if (ReferenceEquals(loadRoleDataCts, loadCts))
+            {
+                loadedRoleKey = item.Key;
+            }
         }
         finally
         {
-            if (loadingRoleKey == item.Key)
+            // Click the Sales group, then click it again before it loads (the nav is Reselectable, and the card's
+            // refresh button re-enters the same way). Comparing keys, the first (now superseded) call would find its
+            // own key and null the flag while the second is still fetching, so Sales stops spinning mid-load.
+            if (loadCts is not null && ReferenceEquals(loadRoleDataCts, loadCts))
             {
                 loadingRoleKey = null;
             }
         }
     }
+
+    /// <summary>
+    /// True only while the users/claims/quota on screen provably belong to the role on screen.
+    /// </summary>
+    private bool IsSelectedRoleLoaded => loadedRoleKey is not null && loadedRoleKey == selectedRoleItem?.Key;
 
     private async Task LoadRoleUsers(Guid roleId, CancellationTokenSource cancellationToken)
     {
@@ -166,8 +183,7 @@ public partial class RolesPage
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
 
         var role = ((RoleDto)selectedRoleItem.Data!);
-        role.Name = editRoleName;
-        await roleManagementController.Update(role, CurrentCancellationToken);
+        await roleManagementController.Update(new RoleDto { Id = role.Id, Name = editRoleName }, CurrentCancellationToken);
 
         await LoadAllRoles();
     }
@@ -179,7 +195,6 @@ public partial class RolesPage
 
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
         var roleId = Guid.Parse(selectedRoleItem.Key!);
-        var role = ((RoleDto)selectedRoleItem.Data!);
         await roleManagementController.Delete(roleId, CurrentCancellationToken);
 
         await LoadAllRoles();
@@ -224,7 +239,10 @@ public partial class RolesPage
 
         await roleManagementController.DeleteClaims(Guid.Parse(selectedRoleItem.Key!), itemsToDelete, CurrentCancellationToken);
 
-        _ = itemsToDelete.Select(selectedRoleClaims.Remove).ToList();
+        foreach (var claim in itemsToDelete)
+        {
+            selectedRoleClaims.Remove(claim);
+        }
 
         SetClaimsToFeatureNavItems();
     }
@@ -287,11 +305,28 @@ public partial class RolesPage
 
     private async Task SaveMaxPrivilegedSessions()
     {
-        if (selectedRoleItem is null || maxPrivilegedSessions.HasValue is false) return;
-
-        if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
+        if (selectedRoleItem is null) return;
 
         var claim = selectedRoleClaims.SingleOrDefault(c => c.ClaimType == AppClaimTypes.MAX_PRIVILEGED_SESSIONS);
+
+        // An empty field means "no quota of its own, fall back to AppSettings.Identity.MaxPrivilegedSessionsCount", which
+        // is expressed by removing the claim. Without this the quota could be set but never taken back off a role.
+        if (maxPrivilegedSessions.HasValue is false)
+        {
+            if (claim is null) return;
+
+            if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
+
+            await roleManagementController.DeleteClaims(Guid.Parse(selectedRoleItem.Key!),
+                                                        [new ClaimDto { ClaimType = claim.ClaimType, ClaimValue = claim.ClaimValue }],
+                                                        CurrentCancellationToken);
+
+            selectedRoleClaims.Remove(claim);
+
+            return;
+        }
+
+        if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
 
         var roleId = Guid.Parse(selectedRoleItem.Key!);
 
@@ -328,17 +363,17 @@ public partial class RolesPage
         {
             RoleId = Guid.Parse(selectedRoleItem.Key!),
             Message = notificationMessage,
-            PageUrl = notificationPageUrl
+            PageUrl = string.IsNullOrWhiteSpace(notificationPageUrl) ? null : notificationPageUrl
         }, CurrentCancellationToken);
 
-        notificationMessage = "";
-        notificationPageUrl = "";
+        notificationMessage = null;
+        notificationPageUrl = null;
     }
     //#endif
 
     private bool IsFeatureAssigned(BitNavItem item)
     {
-        if (loadingRoleKey is not null || selectedRoleItem is null) return false;
+        if (IsSelectedRoleLoaded is false) return false;
 
         if (item.ChildItems.Count == 0)
             return selectedRoleClaims.Any(p => p.ClaimValue == item.Key);
@@ -348,7 +383,7 @@ public partial class RolesPage
 
     private bool IsUserAssigned(UserDto user)
     {
-        return loadingRoleKey is null && selectedRoleItem is not null && selectedRoleUsers.Any(u => user.Id == u.Id);
+        return IsSelectedRoleLoaded && selectedRoleUsers.Any(u => user.Id == u.Id);
     }
 
     private void SetClaimsToFeatureNavItems()
@@ -366,7 +401,7 @@ public partial class RolesPage
         if (string.IsNullOrWhiteSpace(roleSearchText) is false)
         {
             var t = roleSearchText.Trim();
-            filteredRoles = [.. allRoles.Where(u => ((u.Name + u.NormalizedName) ?? string.Empty).Contains(t, StringComparison.InvariantCultureIgnoreCase))];
+            filteredRoles = [.. allRoles.Where(u => string.Join('|', u.Name, u.NormalizedName).Contains(t, StringComparison.InvariantCultureIgnoreCase))];
         }
 
         roleNavItems = [.. filteredRoles.Select(r => new BitNavItem
@@ -384,7 +419,7 @@ public partial class RolesPage
         if (string.IsNullOrWhiteSpace(userSearchText) is false)
         {
             var t = userSearchText.Trim();
-            filteredUsers = [.. allUsers.Where(u => ((u.FullName + u.Email + u.PhoneNumber + u.UserName) ?? string.Empty).Contains(t, StringComparison.InvariantCultureIgnoreCase))];
+            filteredUsers = [.. allUsers.Where(u => string.Join('|', u.FullName, u.Email, u.PhoneNumber, u.UserName).Contains(t, StringComparison.InvariantCultureIgnoreCase))];
         }
     }
 
@@ -392,7 +427,11 @@ public partial class RolesPage
     {
         if (selectedRoleItem is null) return;
 
-        if (selectedRoleItem.Text == AppRoles.GlobalAdmin) return;
+        if (selectedRoleItem.Text == AppRoles.GlobalAdmin)
+        {
+            SnackBarService.Error(Localizer[nameof(AppStrings.UserCantUnassignAllSuperAdminsErrorMessage)]);
+            return;
+        }
 
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
 

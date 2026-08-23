@@ -19,15 +19,28 @@
         align-items: center;
         margin-bottom: $doc-space-md;
         padding: $doc-space-2xs $doc-space-sm;
-        top: calc(var(--demo-header-height) + 0.35rem + #{$bit-env-inset-top});
+
+        // Both halves of the bar's box come from app.scss rather than from the toggle inside it: the
+        // pivot bar of a multi-API page pins itself directly under this one, and it can only do that
+        // if the height it offsets by is the height this bar actually takes. A floor rather than a
+        // fixed height, so a preset that draws its switch track shorter than the label beside it
+        // still leaves the row tall enough to read.
+        top: calc(var(--demo-motion-bar-top) + #{$bit-env-inset-top});
+        min-height: var(--demo-motion-bar-height);
+
+        // The label is held to one line for the same reason: that height is derived from the switch
+        // track rather than measured, so a label wrapping on a narrow screen would make this bar
+        // taller than the value the pivot bar offsets by - and pin that bar inside this one.
+        ::deep .bit-tgl-stx {
+            white-space: nowrap;
+        }
 
         // Drawn as one more surface in the column under it - same corner family, stroked all round -
         // so it does not read as a stray rule across the page.
         @include doc-surface;
-        // background-color: $bit-color-background-secondary;
 
         .bit-ios & {
-            top: calc(var(--demo-header-height) + 0.35rem + env(safe-area-inset-top));
+            top: calc(var(--demo-motion-bar-top) + env(safe-area-inset-top));
         }
     }
 }

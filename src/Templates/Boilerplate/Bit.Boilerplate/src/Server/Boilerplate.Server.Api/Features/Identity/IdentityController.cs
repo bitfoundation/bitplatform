@@ -37,7 +37,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     /// By leveraging summary tags in your controller's actions and DTO properties you can make your codes much easier to maintain.
     /// These comments will also be used in swagger/scalar docs and ui.
     /// </summary>
-    [HttpPost, EnableRateLimiting(AppRateLimitPolicies.IDENTITY)]
+    [HttpPost, EnableRateLimiting(RateLimitOptionsExtensions.IDENTITY)]
     public async Task SignUp(SignUpRequestDto request, CancellationToken cancellationToken)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
@@ -81,7 +81,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         await SendConfirmationToken(userToAdd, request.ReturnUrl, cancellationToken);
     }
 
-    [HttpPost, Produces<SignInResponseDto>(), EnableRateLimiting(AppRateLimitPolicies.IDENTITY)]
+    [HttpPost, Produces<SignInResponseDto>(), EnableRateLimiting(RateLimitOptionsExtensions.IDENTITY)]
     public async Task SignIn(SignInRequestDto request, CancellationToken cancellationToken)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
@@ -424,7 +424,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     /// <summary>
     /// For either otp or magic link
     /// </summary>
-    [HttpPost, EnableRateLimiting(AppRateLimitPolicies.IDENTITY)]
+    [HttpPost, EnableRateLimiting(RateLimitOptionsExtensions.IDENTITY)]
     public async Task SendOtp(IdentityRequestDto request, string? returnUrl = null, CancellationToken cancellationToken = default)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
@@ -484,7 +484,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         await Task.WhenAll(sendMessagesTasks);
     }
 
-    [HttpPost, EnableRateLimiting(AppRateLimitPolicies.IDENTITY)]
+    [HttpPost, EnableRateLimiting(RateLimitOptionsExtensions.IDENTITY)]
     public async Task SendTwoFactorToken(SignInRequestDto request, CancellationToken cancellationToken)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
@@ -568,14 +568,16 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"Otp_{originalAuthenticationMethod},{user.OtpRequestedOn?.ToUniversalTime()}"));
 
-        var qs = $"userName={Uri.EscapeDataString(user.UserName!)}";
+        var identifier = string.IsNullOrEmpty(user.Email) is false
+                            ? $"email={Uri.EscapeDataString(user.Email)}"
+                            : $"phoneNumber={Uri.EscapeDataString(user.PhoneNumber!)}";
+
+        var url = $"{PageUrls.SignIn}?otp={Uri.EscapeDataString(token)}&{identifier}&culture={CultureInfo.CurrentUICulture.Name}";
 
         if (string.IsNullOrEmpty(returnUrl) is false)
         {
-            qs += $"&return-url={Uri.EscapeDataString(returnUrl)}";
+            url += $"&return-url={Uri.EscapeDataString(returnUrl)}";
         }
-
-        var url = $"{PageUrls.SignIn}?otp={Uri.EscapeDataString(token)}&{qs}&culture={CultureInfo.CurrentUICulture.Name}";
 
         return (token, url);
     }

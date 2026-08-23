@@ -411,6 +411,22 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="Ok" xml:space="preserve">
     <value>OK</value>
   </data>
+    <!-- Identity pages -->
+    <data name="Close" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+    <data name="SignInWithPasskeyButtonText" xml:space="preserve">
+    <value>Se connecter avec une clé d’accès</value>
+  </data>
+    <data name="OpenGmail" xml:space="preserve">
+    <value>Ouvrir Gmail</value>
+  </data>
+    <data name="OpenOutlook" xml:space="preserve">
+    <value>Ouvrir Outlook</value>
+  </data>
+    <data name="AgreeToTermsMessage" xml:space="preserve">
+    <value>En vous inscrivant, vous acceptez nos</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SystemPromptsTitle" xml:space="preserve">
     <value>Instructions système</value>
@@ -1323,6 +1339,36 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="AiChatPanelStopReading" xml:space="preserve">
     <value>Arrêter la lecture</value>
   </data>
+  <data name="AiChatPanelTranscribing" xml:space="preserve">
+    <value>Transcription de ce que vous avez dit</value>
+  </data>
+  <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
+    <value>Temps restant avant l'arrêt de la dictée</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
+    <value>La voix nécessite un compte</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInMessage" xml:space="preserve">
+    <value>La dictée et la lecture à voix haute fonctionnent toutes deux sur le serveur. Connectez-vous une fois et vous pourrez dicter vos messages et écouter les réponses.</value>
+  </data>
+  <data name="AiChatPanelAttachImage" xml:space="preserve">
+    <value>Joindre une image</value>
+  </data>
+  <data name="AiChatPanelImageTooLarge" xml:space="preserve">
+    <value>L'image dépasse 10 Mo.</value>
+  </data>
+  <data name="AiChatPanelOnlyImagesAllowed" xml:space="preserve">
+    <value>Seules les images peuvent être jointes.</value>
+  </data>
+  <data name="AiChatPanelAttachmentFailed" xml:space="preserve">
+    <value>L'image n'a pas pu être jointe.</value>
+  </data>
+  <data name="AiChatPanelImageSignInTitle" xml:space="preserve">
+    <value>Les images nécessitent un compte</value>
+  </data>
+  <data name="AiChatPanelImageSignInMessage" xml:space="preserve">
+    <value>Connectez-vous pour envoyer une image avec votre message.</value>
+  </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>Salutations{0}! Je suis là pour rendre votre expérience d'application géniale ! Une question ou besoin d'aide ?</value>
   </data>
@@ -1347,6 +1393,12 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <!--#endif -->
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>Écrivez un message...</value>
+  </data>
+    <data name="AiChatPanelMaximize" xml:space="preserve">
+    <value>Agrandir</value>
+  </data>
+  <data name="AiChatPanelRestore" xml:space="preserve">
+    <value>Restaurer</value>
   </data>
   <!--#endif -->
   <!--#if (ads == true) -->
@@ -1557,7 +1609,84 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="ImageNotCarError" xml:space="preserve">
     <value>L'image fournie ne contient pas de voiture.</value>
   </data>
-    <!--#if (multitenant == true) -->
+      <data name="AddUserToGroupTitle" xml:space="preserve">
+    <value>Ajouter {0} à ce groupe d'utilisateurs</value>
+  </data>
+  <data name="RemoveUserFromGroupTitle" xml:space="preserve">
+    <value>Retirer {0} de ce groupe d'utilisateurs</value>
+  </data>
+  <data name="GrantFeatureTitle" xml:space="preserve">
+    <value>Accorder {0}</value>
+  </data>
+  <data name="RevokeFeatureTitle" xml:space="preserve">
+    <value>Révoquer {0}</value>
+  </data>
+  <data name="GrantAllGroupFeaturesTitle" xml:space="preserve">
+    <value>Accorder toutes les fonctionnalités {0}</value>
+  </data>
+  <data name="RevokeAllGroupFeaturesTitle" xml:space="preserve">
+    <value>Révoquer toutes les fonctionnalités {0}</value>
+  </data>
+  <data name="RefreshSelectedUserGroupTitle" xml:space="preserve">
+    <value>Actualiser le groupe d'utilisateurs sélectionné</value>
+  </data>
+  <data name="RefreshSelectedUserTitle" xml:space="preserve">
+    <value>Actualiser l'utilisateur sélectionné</value>
+  </data>
+  <data name="NoMatchingUserSessionMessage" xml:space="preserve">
+    <value>Aucune session ne correspond à votre recherche.</value>
+  </data>
+  <data name="TfaVerificationCodeRequiredMessage" xml:space="preserve">
+    <value>Saisissez le code à 6 chiffres de votre application d'authentification.</value>
+  </data>
+  <data name="TfaOpenInAuthenticatorAppTitle" xml:space="preserve">
+    <value>Ouvrir ce compte dans votre application d'authentification</value>
+  </data>
+  <data name="TfaQrCodeAlt" xml:space="preserve">
+    <value>Code QR pour configurer votre application d'authentification</value>
+  </data>
+  <data name="SessionNoLongerValidMessage" xml:space="preserve">
+    <value>Cette session n'est plus valide. Veuillez vous reconnecter.</value>
+  </data>
+  <data name="RevokeSessionTitle" xml:space="preserve">
+    <value>Révoquer cette session</value>
+  </data>
+  <data name="ImageMaxSizeErrorMessage" xml:space="preserve">
+    <value>L'image doit faire {0} ou moins.</value>
+  </data>
+  <data name="OnlyImageFilesAllowedErrorMessage" xml:space="preserve">
+    <value>Seuls les fichiers image peuvent être utilisés</value>
+  </data>
+  <data name="SamePhoneNumberErrorMessage" xml:space="preserve">
+    <value>C'est déjà votre numéro de téléphone. Saisissez-en un autre.</value>
+  </data>
+  <data name="SameEmailErrorMessage" xml:space="preserve">
+    <value>C'est déjà votre adresse e-mail. Saisissez-en une autre.</value>
+  </data>
+  <data name="MoreTabsTitle" xml:space="preserve">
+    <value>Plus d'onglets</value>
+  </data>
+  <data name="OpenNavigationMenuTitle" xml:space="preserve">
+    <value>Ouvrir le menu de navigation</value>
+  </data>
+  <data name="AccountMenuTitle" xml:space="preserve">
+    <value>Menu du compte</value>
+  </data>
+  <data name="SwitchToDarkThemeTitle" xml:space="preserve">
+    <value>Passer au thème sombre</value>
+  </data>
+  <data name="SwitchToLightThemeTitle" xml:space="preserve">
+    <value>Passer au thème clair</value>
+  </data>
+  <!--#if (signalR == true) -->
+  <data name="SignalRConnectionId" xml:space="preserve">
+    <value>SignalRConnectionId</value>
+  </data>
+  <data name="ReadUserSessionLogsTitle" xml:space="preserve">
+    <value>Lire les journaux de session de l'utilisateur</value>
+  </data>
+  <!--#endif -->
+  <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>Locataire</value>
   </data>
@@ -1660,5 +1789,14 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="Inactive" xml:space="preserve">
     <value>Inactif</value>
   </data>
-    <!--#endif-->
+      <data name="DeclineInvitation" xml:space="preserve">
+    <value>Refuser l'invitation</value>
+  </data>
+  <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
+    <value>Refuser l'invitation à {0} ? Cette action est irréversible - vous aurez besoin d'une nouvelle invitation pour rejoindre.</value>
+  </data>
+  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
+    <value>Invitation refusée.</value>
+  </data>
+  <!--#endif-->
 </root>

@@ -29,14 +29,19 @@
     // examples still use the full column.
     --demo-header-height: #{$doc-header-height};
 
-    // The height of DemoPage's reduced-motion toggle bar. Two unrelated stylesheets need to agree
-    // on it: the bar sizes itself from this value, and every other sticky element on a demo page
-    // offsets its own top by it so they stack instead of overlapping. It stays 0 while the bar is
-    // hidden, which is every state except reduced motion.
+    // Where DemoPage's reduced-motion toggle bar pins itself, and how tall it is. Two unrelated
+    // stylesheets need to agree on both: the bar sizes and places itself from these values, and
+    // every other sticky element on a demo page stacks under them instead of overlapping. The
+    // height stays 0 while the bar is hidden, which is every state except reduced motion.
+    --demo-motion-bar-top: calc(var(--demo-header-height) + #{rem2(2px)});
     --demo-motion-bar-height: 0rem;
+    // Where the multi-API pages' sticky pivot bar pins itself: directly under the motion bar, with
+    // a hairline of air between them. Derived rather than written out, because the motion bar's
+    // height is a theme decision (see the reduced-motion block below).
+    --demo-pivot-sticky-top: calc(var(--demo-motion-bar-top) + var(--demo-motion-bar-height) + #{rem2(1px)});
     // How far an anchored heading has to stop short of the sticky chrome above it. The default
     // clears the app header; a page that pins a second bar (the multi-API pivot) raises it.
-    --demo-section-scroll-margin: #{rem2(90px)};
+    --demo-section-scroll-margin: #{rem2(120px)};
 }
 
 // The site ignores prefers-reduced-motion everywhere except the component demo pages.
@@ -62,8 +67,16 @@
         --bit-mot-easing-spinner: var(--bit-mot-easing-spinner-full, cubic-bezier(0.53, 0.21, 0.29, 0.67));
         --bit-mot-loop-factor: var(--bit-mot-loop-factor-full, 1);
 
-        // The bar's own height, which the sticky pivot bar under it offsets itself by.
-        --demo-motion-bar-height: #{rem2(32px)};
+        // The bar's own height, which the sticky pivot bar under it offsets itself by. It holds a
+        // single BitToggle on a doc surface, so it is that toggle's switch track plus the surface's
+        // vertical padding and its stroke on both edges. Derived rather than written out as one
+        // number, because the track is a design-system decision - Material draws it 32px and
+        // Cupertino 31px where Fluent draws it 20px - and a literal tuned to Fluent leaves the pivot
+        // bar pinned *inside* this one on the other two presets. The floor keeps the row tall enough
+        // for the label beside a switch a preset draws shorter than its own text - and stands in for
+        // the track entirely under a custom theme that ships no --bit-siz-switch-h-md, which would
+        // otherwise leave the max() invalid at computed-value time and this whole variable unusable.
+        --demo-motion-bar-height: calc(max(var(--bit-siz-switch-h-md, #{rem2(24px)}), #{rem2(24px)}) + #{$doc-space-2xs} * 2 + #{rem2(2px)});
     }
 
     // A component demo page with its ForceAnimation toggle off: exactly the library's own reduced
@@ -273,6 +286,31 @@ html, body, .site-content, pre, .table-view, .side-rail {
         margin-top: $doc-space-sm;
     }
 
+    // The rule above stops at an accordion, and what a section folds away is the same mix of prose
+    // and code boxes as what it leaves open, so the accordion's body takes the same rhythm rather
+    // than the <br /> tags that rule was written to make unnecessary. Chained with `>` the whole
+    // way down for the reason at the top of this block: an accordion the *section* holds is prose,
+    // where the one a BitAccordion demo renders inside its preview is the subject, and a descendant
+    // selector cannot tell the two apart.
+    > .bit-acd > .bit-acd-cnt > .bit-acd-con > * + * {
+        margin-top: $doc-space-sm;
+    }
+
+    // And it stops at the API section's wrapper, which the tables share so the whole block can be
+    // mounted as one unit when the reader reaches it (see DemoPage). The wrapper holds the same
+    // stack of headings and tables that used to be the section's own children, so it keeps the
+    // rhythm those children had.
+    > .api-tables > * + * {
+        margin-top: $doc-space-sm;
+    }
+
+    // A link standing on its own line is a child of the section like any other, but an <a> is
+    // inline, so the rhythm above has no box to move. Making it a block is what puts that air back
+    // - the alternative being the <br /> that same rhythm was written to make unnecessary.
+    > a {
+        display: inline-block;
+    }
+
     > p {
         line-height: 1.65;
     }
@@ -442,19 +480,36 @@ code {
     position: sticky;
     padding: 0.25rem 0.5rem;
     box-shadow: $bit-box-shadow-callout;
-    background-color: $bit-color-background-secondary;
-    top: calc(rem2(75px) + #{$bit-env-inset-top} + var(--demo-motion-bar-height));
+    background-color: $bit-color-background-tertiary;
+    top: calc(var(--demo-pivot-sticky-top) + #{$bit-env-inset-top});
 
     .bit-ios & {
-        top: calc(rem2(75px) + env(safe-area-inset-top) + var(--demo-motion-bar-height));
+        top: calc(var(--demo-pivot-sticky-top) + env(safe-area-inset-top));
     }
 }
 
 // A page hosting this bar has one more sticky layer over its examples, so DemoExample's anchored
-// section titles need more clearance than the default. Published as a variable on the page rather
-// than a selector into the pivot's markup, so it holds for any pivot that adopts the class.
+// section titles need more clearance than the default: everything the bar pins itself past, plus
+// the bar itself - a tab row and the padding around it - and a line of air under it. Published as a
+// variable on the page rather than a selector into the pivot's markup, so it holds for any pivot
+// that adopts the class.
+//
+// The first term is the bar's own `top` verbatim, safe-area inset included, so the clearance tracks
+// where the bar actually lands rather than where it would land on a device with no notch; the
+// default's 120px stays the floor, since with the motion bar hidden the derived stack can come out
+// under it on a short header.
+//
+// The tab row is read as a raw custom property rather than through an alias in
+// _bit-css-variables.scss, because it needs the same guard --demo-motion-bar-height documents and an
+// alias cannot carry one: a theme that ships no --bit-siz-tab would otherwise make this calc()
+// invalid at computed-value time and take the whole variable with it, leaving every anchor on a
+// multi-API page to scroll under the sticky header at 0 clearance.
 .doc-main:has(.pivot-sticky-header) {
-    --demo-section-scroll-margin: 11rem;
+    --demo-section-scroll-margin: calc(max(#{rem2(120px)}, var(--demo-pivot-sticky-top) + #{$bit-env-inset-top}) + var(--bit-siz-tab, #{rem2(44px)}) + #{rem2(8px)} + #{$doc-space-2xs});
+
+    .bit-ios & {
+        --demo-section-scroll-margin: calc(max(#{rem2(120px)}, var(--demo-pivot-sticky-top) + env(safe-area-inset-top)) + var(--bit-siz-tab, #{rem2(44px)}) + #{rem2(8px)} + #{$doc-space-2xs});
+    }
 }
 
 // The Color sections of the Slider, Toggle, NavBar and Pivot demos put the *Background roles on a

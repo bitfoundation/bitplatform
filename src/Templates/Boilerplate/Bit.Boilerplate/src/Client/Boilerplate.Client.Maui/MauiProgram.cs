@@ -134,12 +134,6 @@ public static partial class MauiProgram
                             args.Handled = true;
                             args.State = Microsoft.Web.WebView2.Core.CoreWebView2PermissionState.Allow;
                         };
-                        if (AppEnvironment.IsDevelopment() is false)
-                        {
-                            var settings = webView.CoreWebView2.Settings;
-                            settings.IsZoomControlEnabled = false;
-                            settings.AreBrowserAcceleratorKeysEnabled = false;
-                        }
                     });
                 });
 
@@ -151,10 +145,9 @@ public static partial class MauiProgram
             webView.ScrollView.Bounces = false;
             webView.Opaque = false;
 
-            if ((DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && DeviceInfo.Current.Version >= new Version(13, 3))
-                || (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Current.Version >= new Version(16, 4)))
+            if (DeviceInfo.Current.Version >= new Version(16, 4))
             {
-                webView.SetValueForKey(NSObject.FromObject(true), new NSString("inspectable"));
+                webView.Inspectable = true;
             }
 #elif Android
             webView.SetBackgroundColor(Android.Graphics.Color.ParseColor(webViewBackgroundColor));
@@ -173,9 +166,16 @@ public static partial class MauiProgram
                 settings.JavaScriptCanOpenWindowsAutomatically =
                 settings.DomStorageEnabled = true;
 
+            Android.Webkit.WebView.SetWebContentsDebuggingEnabled(true);
+
             if (AppEnvironment.IsDevelopment())
             {
                 settings.MixedContentMode = Android.Webkit.MixedContentHandling.AlwaysAllow;
+            }
+
+            if (webView.WebChromeClient is not Platforms.Android.AppWebChromeClient)
+            {
+                webView.SetWebChromeClient(new Platforms.Android.AppWebChromeClient(webView.WebChromeClient));
             }
 
             settings.BlockNetworkLoads = settings.BlockNetworkImage = false;

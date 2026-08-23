@@ -1,8 +1,10 @@
 //+:cnd:noEmit
 using System.Threading.Channels;
-using Boilerplate.Shared;
 using Microsoft.Agents.AI;
+using FluentStorage.Storage;
 using Boilerplate.Shared.Features.Chatbot;
+using Boilerplate.Shared.Features.Attachments;
+using Boilerplate.Server.Api.Features.Attachments;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 
 namespace Boilerplate.Server.Api.Infrastructure.SignalR;
@@ -23,7 +25,11 @@ public partial class AppChatbot
 {
     private AIAgent? supportAgent = default!;
 
+    [AutoInject] private IStore blobStorage = default!;
+    [AutoInject] private IHostEnvironment hostEnvironment = default!;
+    [AutoInject] private IFusionCache cache = default!;
     [AutoInject] private TimeProvider timeProvider = default!;
+    [AutoInject] private ServerApiSettings appSettings = default!;
     [AutoInject] private IConfiguration configuration = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
@@ -47,9 +53,19 @@ public partial class AppChatbot
         string? signalRConnectionId,
         CancellationToken cancellationToken)
     {
-        chatMessages = [.. request.ChatMessagesHistory
-            .Where(c => c.Successful && string.IsNullOrWhiteSpace(c.Content) is false)
-            .Select(c => new ChatMessage(c.Role is AiChatMessageRole.Assistant ? ChatRole.Assistant : ChatRole.User, c.Content))];
+        chatMessages = [];
+
+        var history = request.ChatMessagesHistory
+            .Where(c => c.Successful && (string.IsNullOrWhiteSpace(c.Content) is false || c.AttachmentId is not null))
+            .TakeLast(MaxMessagesInHistory)
+            .ToArray();
+
+        foreach (var message in history)
+        {
+            chatMessages.Add(await ToChatMessage(message, cancellationToken));
+        }
+
+        TrimChatHistory();
 
         CultureInfo? culture = null;
         if (request.CultureId is not null && CultureInfoManager.InvariantGlobalization is false)
@@ -83,7 +99,7 @@ public partial class AppChatbot
     /// </summary>
     public async Task ProcessNewMessage(
         bool generateFollowUpSuggestions,
-        string incomingMessage,
+        AiChatMessageRequest incomingMessage,
         ClaimsPrincipal? user,
         CancellationToken cancellationToken)
     {
@@ -95,7 +111,7 @@ public partial class AppChatbot
 
             supportAgent ??= serviceProvider.GetRequiredKeyedService<AIAgent>("SupportAgent");
 
-            chatMessages.Add(new(ChatRole.User, incomingMessage));
+            chatMessages.Add(await ToChatMessage(incomingMessage, cancellationToken));
 
             TrimChatHistory();
 
@@ -133,20 +149,28 @@ public partial class AppChatbot
             if (assistantResponse.Length > 0)
             {
                 chatMessages.Add(new(ChatRole.Assistant, assistantResponse.ToString()));
+
+                await ChatbotController.RememberAnswer(cache, assistantResponse.ToString(), cancellationToken);
             }
 
             await SendTerminalMarkerToClient(SharedAppMessages.MESSAGE_PROCESS_SUCCESS);
 
             if (generateFollowUpSuggestions)
             {
-                // Generate follow-up suggestions
-                var followUpSuggestions = await GenerateFollowUpSuggestions(
-                    incomingMessage,
-                    assistantResponse.ToString(),
-                    chatOptions,
-                    cancellationToken);
+                try
+                {
+                    var followUpSuggestions = await GenerateFollowUpSuggestions(
+                        incomingMessage.Content ?? string.Empty,
+                        assistantResponse.ToString(),
+                        chatOptions,
+                        cancellationToken);
 
-                await SendStringToClient(JsonSerializer.Serialize(followUpSuggestions), cancellationToken);
+                    await SendStringToClient(JsonSerializer.Serialize(followUpSuggestions), cancellationToken);
+                }
+                catch (Exception exp)
+                {
+                    try { exceptionHandler.Handle(exp, new() { { "SignalRConnectionId", signalRConnectionId } }); } catch { }
+                }
             }
         }
         catch (Exception exp) when (exp is OperationCanceledException or ChannelClosedException)
@@ -160,17 +184,112 @@ public partial class AppChatbot
         }
     }
 
+    private Task<ChatMessage> ToChatMessage(AiChatMessageResponse message, CancellationToken cancellationToken)
+        => ToChatMessage(message.Role is AiChatMessageRole.Assistant ? ChatRole.Assistant : ChatRole.User,
+                         message.Content,
+                         message.AttachmentId,
+                         cancellationToken);
+
+    /// <summary>
+    /// The role is not taken from the payload: everything arriving on this stream is the user speaking.
+    /// </summary>
+    private Task<ChatMessage> ToChatMessage(AiChatMessageRequest message, CancellationToken cancellationToken)
+        => ToChatMessage(ChatRole.User, message.Content, message.AttachmentId, cancellationToken);
+
+    /// <summary>
+    /// The text of a message, plus the image the user attached to it, if any.
+    /// </summary>
+    private async Task<ChatMessage> ToChatMessage(ChatRole role, string? content, Guid? attachmentId, CancellationToken cancellationToken)
+    {
+        List<AIContent> contents = [];
+
+        if (string.IsNullOrWhiteSpace(content) is false)
+        {
+            contents.Add(new TextContent(content));
+        }
+
+        if (await ReadAttachedImage(attachmentId, cancellationToken) is AIContent image)
+        {
+            contents.Add(image);
+        }
+
+        return new ChatMessage(role, contents);
+    }
+
+    /// <summary>What <c>AttachmentController</c> stores and serves an AI chat image as.</summary>
+    private const string AiChatImageMediaType = "image/webp";
+
+    /// <summary>
+    /// The chat image the client named, or null when it named none. The kind is fixed here rather than taken from
+    /// the client, so an id is only ever looked for among this app's chat images - a payload cannot point this at a
+    /// profile picture.
+    /// <para>
+    /// The picture is handed over as a url for the provider to fetch, which costs nothing to produce and does not
+    /// re-upload the same bytes on every turn of the conversation. That only works where the provider can reach this
+    /// backend, and a machine serving localhost cannot be reached from the internet - so development sends the bytes
+    /// themselves instead. A deployment that is not reachable from the internet either (a private network, say) has
+    /// to do the same.
+    /// </para>
+    /// </summary>
+    private async Task<AIContent?> ReadAttachedImage(Guid? attachmentId, CancellationToken cancellationToken)
+    {
+        if (attachmentId is null)
+            return null;
+
+        if (hostEnvironment.IsDevelopment() is false)
+        {
+            return new UriContent(new Uri(httpContextAccessor.HttpContext!.Request.GetBaseUrl(), $"api/v1/Attachment/GetAttachment/{attachmentId}/{AttachmentKind.AiChatImage}"), AiChatImageMediaType);
+        }
+
+        var path = AttachmentController.GetFilePath(appSettings, attachmentId.Value, AttachmentKind.AiChatImage);
+
+        return new DataContent(await blobStorage.GetBytes(path, cancellationToken), AiChatImageMediaType);
+    }
+
+    /// <summary>
+    /// How many of the newest pictures the model is shown. An image costs orders of magnitude more tokens than the
+    /// sentence around it, so a handful of them reach the context window long before the message count below does.
+    /// The panel still shows every picture the user attached; only what is replayed to the model is capped.
+    /// </summary>
+    private const int MaxImagesInHistory = 3;
+
+    /// <summary>How many of the newest messages the model is shown.</summary>
+    private const int MaxMessagesInHistory = 40;
+
     /// <summary>
     /// The conversation is resent in full on every message, so an unbounded history grows the prompt (and its
     /// cost) without limit until the provider rejects it for exceeding the context window.
     /// </summary>
     private void TrimChatHistory()
     {
-        const int maxChatMessages = 40;
-
-        if (chatMessages.Count > maxChatMessages)
+        if (chatMessages.Count > MaxMessagesInHistory)
         {
-            chatMessages.RemoveRange(0, chatMessages.Count - maxChatMessages);
+            chatMessages.RemoveRange(0, chatMessages.Count - MaxMessagesInHistory);
+        }
+
+        var pictures = 0;
+
+        for (var i = chatMessages.Count - 1; i >= 0; i--)
+        {
+            var contents = chatMessages[i].Contents;
+
+            for (var j = contents.Count - 1; j >= 0; j--)
+            {
+                // Both shapes a picture arrives in - see ReadAttachedImage - or the cap would quietly stop applying
+                // in every environment that hands the model a url.
+                if (contents[j] is not (DataContent or UriContent)) continue;
+
+                if (++pictures <= MaxImagesInHistory) continue;
+
+                contents.RemoveAt(j);
+            }
+
+            // What was said about a picture stays in the conversation once the picture itself is gone - but a message
+            // that was nothing else is left with no content at all, which not every provider accepts.
+            if (contents.Count == 0)
+            {
+                contents.Add(new TextContent("(an image the user attached earlier)"));
+            }
         }
     }
 

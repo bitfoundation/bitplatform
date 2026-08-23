@@ -411,6 +411,22 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="Ok" xml:space="preserve">
     <value>OK</value>
   </data>
+    <!-- Identity pages -->
+    <data name="Close" xml:space="preserve">
+    <value>Stäng</value>
+  </data>
+    <data name="SignInWithPasskeyButtonText" xml:space="preserve">
+    <value>Logga in med en lösenordsnyckel</value>
+  </data>
+    <data name="OpenGmail" xml:space="preserve">
+    <value>Öppna Gmail</value>
+  </data>
+    <data name="OpenOutlook" xml:space="preserve">
+    <value>Öppna Outlook</value>
+  </data>
+    <data name="AgreeToTermsMessage" xml:space="preserve">
+    <value>Genom att registrera dig godkänner du våra</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SystemPromptsTitle" xml:space="preserve">
     <value>Systemprompts</value>
@@ -1323,6 +1339,36 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="AiChatPanelStopReading" xml:space="preserve">
     <value>Sluta läsa upp</value>
   </data>
+  <data name="AiChatPanelTranscribing" xml:space="preserve">
+    <value>Skriver ner det du sa</value>
+  </data>
+  <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
+    <value>Tid kvar innan dikteringen stoppas</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
+    <value>Rösten kräver ett konto</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInMessage" xml:space="preserve">
+    <value>Diktering och uppläsning körs båda på servern. Logga in en gång så kan du diktera dina meddelanden och lyssna på svaren.</value>
+  </data>
+  <data name="AiChatPanelAttachImage" xml:space="preserve">
+    <value>Bifoga en bild</value>
+  </data>
+  <data name="AiChatPanelImageTooLarge" xml:space="preserve">
+    <value>Bilden är större än 10 MB.</value>
+  </data>
+  <data name="AiChatPanelOnlyImagesAllowed" xml:space="preserve">
+    <value>Endast bilder kan bifogas.</value>
+  </data>
+  <data name="AiChatPanelAttachmentFailed" xml:space="preserve">
+    <value>Bilden kunde inte bifogas.</value>
+  </data>
+  <data name="AiChatPanelImageSignInTitle" xml:space="preserve">
+    <value>Bilder kräver ett konto</value>
+  </data>
+  <data name="AiChatPanelImageSignInMessage" xml:space="preserve">
+    <value>Logga in för att skicka en bild tillsammans med ditt meddelande.</value>
+  </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>Hej{0}! Jag är här för att göra din app-upplevelse fantastisk! Har du en fråga eller behöver du hjälp?</value>
   </data>
@@ -1347,6 +1393,12 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <!--#endif -->
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>Skriv ett meddelande...</value>
+  </data>
+    <data name="AiChatPanelMaximize" xml:space="preserve">
+    <value>Maximera</value>
+  </data>
+  <data name="AiChatPanelRestore" xml:space="preserve">
+    <value>Återställ</value>
   </data>
   <!--#endif -->
   <!--#if (ads == true) -->
@@ -1557,7 +1609,84 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="ImageNotCarError" xml:space="preserve">
     <value>Den medföljande bilden innehåller inte någon bil.</value>
   </data>
-    <!--#if (multitenant == true) -->
+      <data name="AddUserToGroupTitle" xml:space="preserve">
+    <value>Lägg till {0} i den här användargruppen</value>
+  </data>
+  <data name="RemoveUserFromGroupTitle" xml:space="preserve">
+    <value>Ta bort {0} från den här användargruppen</value>
+  </data>
+  <data name="GrantFeatureTitle" xml:space="preserve">
+    <value>Bevilja {0}</value>
+  </data>
+  <data name="RevokeFeatureTitle" xml:space="preserve">
+    <value>Återkalla {0}</value>
+  </data>
+  <data name="GrantAllGroupFeaturesTitle" xml:space="preserve">
+    <value>Bevilja alla {0}-funktioner</value>
+  </data>
+  <data name="RevokeAllGroupFeaturesTitle" xml:space="preserve">
+    <value>Återkalla alla {0}-funktioner</value>
+  </data>
+  <data name="RefreshSelectedUserGroupTitle" xml:space="preserve">
+    <value>Uppdatera den valda användargruppen</value>
+  </data>
+  <data name="RefreshSelectedUserTitle" xml:space="preserve">
+    <value>Uppdatera den valda användaren</value>
+  </data>
+  <data name="NoMatchingUserSessionMessage" xml:space="preserve">
+    <value>Ingen session matchar din sökning.</value>
+  </data>
+  <data name="TfaVerificationCodeRequiredMessage" xml:space="preserve">
+    <value>Ange den 6-siffriga koden från din autentiseringsapp.</value>
+  </data>
+  <data name="TfaOpenInAuthenticatorAppTitle" xml:space="preserve">
+    <value>Öppna det här kontot i din autentiseringsapp</value>
+  </data>
+  <data name="TfaQrCodeAlt" xml:space="preserve">
+    <value>QR-kod för att konfigurera din autentiseringsapp</value>
+  </data>
+  <data name="SessionNoLongerValidMessage" xml:space="preserve">
+    <value>Den här sessionen är inte längre giltig. Logga in igen.</value>
+  </data>
+  <data name="RevokeSessionTitle" xml:space="preserve">
+    <value>Återkalla den här sessionen</value>
+  </data>
+  <data name="ImageMaxSizeErrorMessage" xml:space="preserve">
+    <value>Bilden får vara högst {0}.</value>
+  </data>
+  <data name="OnlyImageFilesAllowedErrorMessage" xml:space="preserve">
+    <value>Endast bildfiler kan användas</value>
+  </data>
+  <data name="SamePhoneNumberErrorMessage" xml:space="preserve">
+    <value>Det är redan ditt telefonnummer. Ange ett annat.</value>
+  </data>
+  <data name="SameEmailErrorMessage" xml:space="preserve">
+    <value>Det är redan din e-postadress. Ange en annan.</value>
+  </data>
+  <data name="MoreTabsTitle" xml:space="preserve">
+    <value>Fler flikar</value>
+  </data>
+  <data name="OpenNavigationMenuTitle" xml:space="preserve">
+    <value>Öppna navigeringsmenyn</value>
+  </data>
+  <data name="AccountMenuTitle" xml:space="preserve">
+    <value>Kontomeny</value>
+  </data>
+  <data name="SwitchToDarkThemeTitle" xml:space="preserve">
+    <value>Byt till mörkt tema</value>
+  </data>
+  <data name="SwitchToLightThemeTitle" xml:space="preserve">
+    <value>Byt till ljust tema</value>
+  </data>
+  <!--#if (signalR == true) -->
+  <data name="SignalRConnectionId" xml:space="preserve">
+    <value>SignalRConnectionId</value>
+  </data>
+  <data name="ReadUserSessionLogsTitle" xml:space="preserve">
+    <value>Läs användarens sessionsloggar</value>
+  </data>
+  <!--#endif -->
+  <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>Tenant</value>
   </data>
@@ -1660,5 +1789,14 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <data name="Inactive" xml:space="preserve">
     <value>Inaktiv</value>
   </data>
-    <!--#endif-->
+      <data name="DeclineInvitation" xml:space="preserve">
+    <value>Avböj inbjudan</value>
+  </data>
+  <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
+    <value>Avböja inbjudan till {0}? Detta kan inte ångras - du behöver en ny inbjudan för att gå med.</value>
+  </data>
+  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
+    <value>Inbjudan avböjd.</value>
+  </data>
+  <!--#endif-->
 </root>

@@ -22,7 +22,7 @@ public partial class UsersPage
     private bool isLoadingOnlineUsersCount;
     private List<BitNavItem> userNavItems = [];
     private bool isRevokeAllUserSessionsDialogOpen;
-    private CancellationTokenSource? loadRoleDataCts;
+    private CancellationTokenSource? loadUserSessionsCts;
     private List<UserSessionDto> allUserSessions = [];
     private List<UserSessionDto> filteredUserSessions = [];
 
@@ -56,11 +56,22 @@ public partial class UsersPage
         {
             isLoadingUsers = true;
 
+            // Any in-flight user session load is now irrelevant: the user list has changed, so the selected user may have been deleted or renamed.
+            if (loadUserSessionsCts is not null)
+            {
+                using var previousCts = loadUserSessionsCts;
+                loadUserSessionsCts = null;
+                await previousCts.TryCancel();
+            }
+
+            loadingUserKey = null;
+
             allUsers = await userManagementController.GetAllUsers(CurrentCancellationToken);
 
             SearchUsers();
 
             allUserSessions = [];
+            filteredUserSessions = [];
             selectedUserDto = new();
             selectedUserItem = null;
         }
@@ -100,16 +111,18 @@ public partial class UsersPage
     {
         if (item is null) return;
 
+        CancellationTokenSource? loadCts = null;
+
         try
         {
-            if (loadRoleDataCts is not null)
+            if (loadUserSessionsCts is not null)
             {
-                using var previousCts = loadRoleDataCts;
-                loadRoleDataCts = null;
+                using var previousCts = loadUserSessionsCts;
+                loadUserSessionsCts = null;
                 await previousCts.TryCancel();
             }
 
-            var loadCts = loadRoleDataCts = new();
+            loadCts = loadUserSessionsCts = new();
 
             loadingUserKey = item.Key;
             selectedUserItem = item;
@@ -117,9 +130,12 @@ public partial class UsersPage
 
             user.Patch(selectedUserDto);
 
+            allUserSessions = [];
+            filteredUserSessions = [];
+
             var userSessions = await userManagementController.GetUserSessions(user.Id, loadCts.Token);
 
-            if (ReferenceEquals(loadRoleDataCts, loadCts) is false) return; // Selected user changed while we were loading, so don't assign the sessions to the previous user.
+            if (ReferenceEquals(loadUserSessionsCts, loadCts) is false) return; // Selected user changed while we were loading, so don't assign the sessions to the previous user.
 
             allUserSessions = userSessions;
 
@@ -127,7 +143,10 @@ public partial class UsersPage
         }
         finally
         {
-            if (loadingUserKey == item.Key)
+            // Select Bob, then revoke one of his sessions before the first load lands: RevokeUserSession re-enters here
+            // with Bob's key again. Comparing keys, the first (now superseded) call would find its own key and null the
+            // flag while the second is still fetching - Bob's row stops spinning and his Sessions tab says he has none.
+            if (loadCts is not null && ReferenceEquals(loadUserSessionsCts, loadCts))
             {
                 loadingUserKey = null;
             }
@@ -163,7 +182,7 @@ public partial class UsersPage
         if (string.IsNullOrWhiteSpace(userSearchText) is false)
         {
             var t = userSearchText.Trim();
-            filteredUsers = [.. allUsers.Where(u => ((u.FullName + u.Email + u.PhoneNumber + u.UserName) ?? string.Empty).Contains(t, StringComparison.InvariantCultureIgnoreCase))];
+            filteredUsers = [.. allUsers.Where(u => string.Join('|', u.FullName, u.Email, u.PhoneNumber, u.UserName).Contains(t, StringComparison.InvariantCultureIgnoreCase))];
         }
 
         userNavItems = [.. filteredUsers.Select(u => new BitNavItem
@@ -181,7 +200,7 @@ public partial class UsersPage
         if (string.IsNullOrWhiteSpace(sessionSearchText) is false)
         {
             var t = sessionSearchText.Trim();
-            filteredUserSessions = [.. allUserSessions.Where(us => ((us.IP + us.Address + us.DeviceInfo + us.RenewedOnDateTimeOffset + us.Id) ?? string.Empty).Contains(t, StringComparison.InvariantCultureIgnoreCase))];
+            filteredUserSessions = [.. allUserSessions.Where(us => string.Join('|', us.IP, us.Address, us.DeviceInfo, us.RenewedOnDateTimeOffset.ToLocalTime(), us.Id).Contains(t, StringComparison.InvariantCultureIgnoreCase))];
         }
     }
 
@@ -191,9 +210,21 @@ public partial class UsersPage
     /// </summary>
     private async Task ReadUserSessionLogs(Guid userSessionId)
     {
-        var logs = await hubConnection.InvokeAsync<DiagnosticLogDto[]>(SharedAppMessages.GetUserSessionLogs, userSessionId);
+        var logs = await hubConnection.InvokeAsync<DiagnosticLogDto[]>(SharedAppMessages.GetUserSessionLogs, userSessionId, CurrentCancellationToken);
 
         PubSubService.Publish(ClientAppMessages.SHOW_DIAGNOSTIC_MODAL, logs);
     }
     //#endif
+
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (loadUserSessionsCts is not null)
+        {
+            await loadUserSessionsCts.TryCancel();
+            loadUserSessionsCts.Dispose();
+        }
+
+        await base.DisposeAsync(disposing);
+    }
 }

@@ -126,7 +126,7 @@
     <value>مقدار {0} یک آدرس ایمیل معتبر نیست.</value>
   </data>
     <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
-    <value>MaxLengthAttribute must have a Length value that is greater than zero. Use MaxLength() without parameters to indicate that the string or array can have the maximum allowable length.</value>
+    <value>MaxLengthAttribute باید مقدار Length بزرگ‌تر از صفر داشته باشد. برای اینکه مشخص شود رشته یا آرایه می‌تواند بیشترین طول مجاز را داشته باشد، از MaxLength() بدون پارامتر استفاده کنید.</value>
   </data>
     <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>مقدار {0} باید یک نوع رشته یا لیستی با حداقل طول "{1}" باشد.</value>
@@ -410,6 +410,22 @@
   </data>
     <data name="Ok" xml:space="preserve">
     <value>باشه</value>
+  </data>
+    <!-- Identity pages -->
+    <data name="Close" xml:space="preserve">
+    <value>بستن</value>
+  </data>
+    <data name="SignInWithPasskeyButtonText" xml:space="preserve">
+    <value>ورود با کلید عبور</value>
+  </data>
+    <data name="OpenGmail" xml:space="preserve">
+    <value>باز کردن Gmail</value>
+  </data>
+    <data name="OpenOutlook" xml:space="preserve">
+    <value>باز کردن Outlook</value>
+  </data>
+    <data name="AgreeToTermsMessage" xml:space="preserve">
+    <value>با ثبت‌نام، شما با موارد زیر موافقت می‌کنید:</value>
   </data>
     <!--#if (signalR == true) -->
     <data name="SystemPromptsTitle" xml:space="preserve">
@@ -899,7 +915,7 @@
     <value>شما میتوانید یک کد جدید در ایمیل یا تلفن خود دریافت کنید.</value>
   </data>
     <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
-    <value>Get code</value>
+    <value>دریافت کد</value>
   </data>
     <data name="TfaResetSharedKeyError" xml:space="preserve">
     <value>تنظیم مجدد کلید مشترک 2fa باید 2fa را غیرفعال کند تا زمانی که یک توکن 2fa بر اساس کلید مشترک جدید تأیید شود.</value>
@@ -1323,6 +1339,36 @@
     <data name="AiChatPanelStopReading" xml:space="preserve">
     <value>توقف خواندن</value>
   </data>
+    <data name="AiChatPanelTranscribing" xml:space="preserve">
+    <value>در حال نوشتن چیزی که گفتید</value>
+  </data>
+    <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
+    <value>زمان باقی‌مانده تا پایان گفتن پیام</value>
+  </data>
+    <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
+    <value>قابلیت صوتی به حساب کاربری نیاز دارد</value>
+  </data>
+    <data name="AiChatPanelSpeechSignInMessage" xml:space="preserve">
+    <value>تبدیل گفتار به نوشتار و خواندن پاسخ‌ها هر دو روی سرور انجام می‌شوند. یک بار وارد شوید تا هم بتوانید پیام خود را بگویید و هم پاسخ را بشنوید.</value>
+  </data>
+    <data name="AiChatPanelAttachImage" xml:space="preserve">
+    <value>پیوست کردن تصویر</value>
+  </data>
+    <data name="AiChatPanelImageTooLarge" xml:space="preserve">
+    <value>حجم تصویر بیشتر از ۱۰ مگابایت است.</value>
+  </data>
+    <data name="AiChatPanelOnlyImagesAllowed" xml:space="preserve">
+    <value>فقط تصویر می‌توان پیوست کرد.</value>
+  </data>
+    <data name="AiChatPanelAttachmentFailed" xml:space="preserve">
+    <value>تصویر پیوست نشد.</value>
+  </data>
+    <data name="AiChatPanelImageSignInTitle" xml:space="preserve">
+    <value>پیوست تصویر به حساب کاربری نیاز دارد</value>
+  </data>
+    <data name="AiChatPanelImageSignInMessage" xml:space="preserve">
+    <value>برای ارسال تصویر همراه پیام خود وارد شوید.</value>
+  </data>
     <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>سلام{0}! من اینجا هستم تا تجربه اپلیکیشن شما رو فوق‌العاده کنم! سؤالی دارید یا به کمک نیاز دارید؟</value>
   </data>
@@ -1348,7 +1394,13 @@
     <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>پیامی را وارد کنید...</value>
   </data>
-    <!--#endif -->
+      <data name="AiChatPanelMaximize" xml:space="preserve">
+    <value>بیشینه کردن</value>
+  </data>
+  <data name="AiChatPanelRestore" xml:space="preserve">
+    <value>بازگرداندن</value>
+  </data>
+  <!--#endif -->
     <!--#if (ads == true) -->
     <data name="Upgrade" xml:space="preserve">
     <value>ارتقاء</value>
@@ -1557,7 +1609,84 @@
     <data name="ImageNotCarError" xml:space="preserve">
     <value>تصویر ارائه شده حاوی ماشین نیست.</value>
   </data>
-    <!--#if (multitenant == true) -->
+      <data name="AddUserToGroupTitle" xml:space="preserve">
+    <value>افزودن {0} به این گروه کاربری</value>
+  </data>
+  <data name="RemoveUserFromGroupTitle" xml:space="preserve">
+    <value>حذف {0} از این گروه کاربری</value>
+  </data>
+  <data name="GrantFeatureTitle" xml:space="preserve">
+    <value>اعطای {0}</value>
+  </data>
+  <data name="RevokeFeatureTitle" xml:space="preserve">
+    <value>لغو {0}</value>
+  </data>
+  <data name="GrantAllGroupFeaturesTitle" xml:space="preserve">
+    <value>اعطای همهٔ ویژگی‌های {0}</value>
+  </data>
+  <data name="RevokeAllGroupFeaturesTitle" xml:space="preserve">
+    <value>لغو همهٔ ویژگی‌های {0}</value>
+  </data>
+  <data name="RefreshSelectedUserGroupTitle" xml:space="preserve">
+    <value>به‌روزرسانی گروه کاربری انتخاب‌شده</value>
+  </data>
+  <data name="RefreshSelectedUserTitle" xml:space="preserve">
+    <value>به‌روزرسانی کاربر انتخاب‌شده</value>
+  </data>
+  <data name="NoMatchingUserSessionMessage" xml:space="preserve">
+    <value>هیچ نشستی با جست‌وجوی شما مطابقت ندارد.</value>
+  </data>
+  <data name="TfaVerificationCodeRequiredMessage" xml:space="preserve">
+    <value>کد ۶ رقمی را از برنامهٔ احراز هویت خود وارد کنید.</value>
+  </data>
+  <data name="TfaOpenInAuthenticatorAppTitle" xml:space="preserve">
+    <value>باز کردن این حساب در برنامهٔ احراز هویت</value>
+  </data>
+  <data name="TfaQrCodeAlt" xml:space="preserve">
+    <value>کد QR برای راه‌اندازی برنامهٔ احراز هویت</value>
+  </data>
+  <data name="SessionNoLongerValidMessage" xml:space="preserve">
+    <value>این نشست دیگر معتبر نیست. لطفاً دوباره وارد شوید.</value>
+  </data>
+  <data name="RevokeSessionTitle" xml:space="preserve">
+    <value>ابطال این نشست</value>
+  </data>
+  <data name="ImageMaxSizeErrorMessage" xml:space="preserve">
+    <value>حجم تصویر باید {0} یا کمتر باشد.</value>
+  </data>
+  <data name="OnlyImageFilesAllowedErrorMessage" xml:space="preserve">
+    <value>فقط فایل‌های تصویری قابل استفاده هستند</value>
+  </data>
+  <data name="SamePhoneNumberErrorMessage" xml:space="preserve">
+    <value>این همان شمارهٔ تلفن فعلی شماست. شمارهٔ دیگری وارد کنید.</value>
+  </data>
+  <data name="SameEmailErrorMessage" xml:space="preserve">
+    <value>این همان نشانی ایمیل فعلی شماست. نشانی دیگری وارد کنید.</value>
+  </data>
+  <data name="MoreTabsTitle" xml:space="preserve">
+    <value>زبانه‌های بیشتر</value>
+  </data>
+  <data name="OpenNavigationMenuTitle" xml:space="preserve">
+    <value>باز کردن منوی ناوبری</value>
+  </data>
+  <data name="AccountMenuTitle" xml:space="preserve">
+    <value>منوی حساب کاربری</value>
+  </data>
+  <data name="SwitchToDarkThemeTitle" xml:space="preserve">
+    <value>تغییر به پوسته تیره</value>
+  </data>
+  <data name="SwitchToLightThemeTitle" xml:space="preserve">
+    <value>تغییر به پوسته روشن</value>
+  </data>
+  <!--#if (signalR == true) -->
+  <data name="SignalRConnectionId" xml:space="preserve">
+    <value>SignalRConnectionId</value>
+  </data>
+  <data name="ReadUserSessionLogsTitle" xml:space="preserve">
+    <value>خواندن گزارش‌های نشست کاربر</value>
+  </data>
+  <!--#endif -->
+  <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>مستأجر</value>
   </data>
@@ -1660,5 +1789,14 @@
     <data name="Inactive" xml:space="preserve">
     <value>غیرفعال</value>
   </data>
-    <!--#endif-->
+      <data name="DeclineInvitation" xml:space="preserve">
+    <value>رد دعوت</value>
+  </data>
+  <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
+    <value>دعوت به {0} رد شود؟ این کار قابل بازگشت نیست - برای پیوستن به دعوت تازه‌ای نیاز خواهید داشت.</value>
+  </data>
+  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
+    <value>دعوت رد شد.</value>
+  </data>
+  <!--#endif-->
 </root>

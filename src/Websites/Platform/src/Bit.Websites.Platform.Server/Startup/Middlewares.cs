@@ -68,6 +68,9 @@ public class Middlewares
 
         app.MapControllers();
 
+        // Exposes the tools of every MCP server of the repository's .mcp.json at bitplatform.dev/mcp.
+        app.MapMcp("/mcp");
+
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
         var healthCheckSettings = appSettings.HealthCheckSettings;

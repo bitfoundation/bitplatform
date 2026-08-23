@@ -590,7 +590,6 @@ A value attached with `WithData("Email", …)` would **not** appear here - it go
 ---
 
 ### AI Wiki: Answered Questions
-* [Tell me everything about ServerConnectionException](https://deepwiki.com/search/tell-me-everything-about-serve_9576ec69-a10d-4b72-ad88-086ab54db2bf)
 
 Ask your own question [here](https://wiki.bitplatform.dev)
 

@@ -411,6 +411,22 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="Ok" xml:space="preserve">
     <value>Oké</value>
   </data>
+    <!-- Identity pages -->
+    <data name="Close" xml:space="preserve">
+    <value>Sluiten</value>
+  </data>
+    <data name="SignInWithPasskeyButtonText" xml:space="preserve">
+    <value>Inloggen met een passkey</value>
+  </data>
+    <data name="OpenGmail" xml:space="preserve">
+    <value>Gmail openen</value>
+  </data>
+    <data name="OpenOutlook" xml:space="preserve">
+    <value>Outlook openen</value>
+  </data>
+    <data name="AgreeToTermsMessage" xml:space="preserve">
+    <value>Door u te registreren, gaat u akkoord met onze</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SystemPromptsTitle" xml:space="preserve">
     <value>Systeem prompts</value>
@@ -1323,6 +1339,36 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="AiChatPanelStopReading" xml:space="preserve">
     <value>Voorlezen stoppen</value>
   </data>
+  <data name="AiChatPanelTranscribing" xml:space="preserve">
+    <value>Bezig met uitschrijven wat u zei</value>
+  </data>
+  <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
+    <value>Resterende tijd voordat het dicteren stopt</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
+    <value>Spraak vereist een account</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInMessage" xml:space="preserve">
+    <value>Dicteren en voorlezen draaien allebei op de server. Meld u één keer aan en u kunt tegen de chat praten en de antwoorden laten voorlezen.</value>
+  </data>
+  <data name="AiChatPanelAttachImage" xml:space="preserve">
+    <value>Een afbeelding bijvoegen</value>
+  </data>
+  <data name="AiChatPanelImageTooLarge" xml:space="preserve">
+    <value>De afbeelding is groter dan 10 MB.</value>
+  </data>
+  <data name="AiChatPanelOnlyImagesAllowed" xml:space="preserve">
+    <value>Alleen afbeeldingen kunnen worden bijgevoegd.</value>
+  </data>
+  <data name="AiChatPanelAttachmentFailed" xml:space="preserve">
+    <value>De afbeelding kon niet worden bijgevoegd.</value>
+  </data>
+  <data name="AiChatPanelImageSignInTitle" xml:space="preserve">
+    <value>Afbeeldingen vereisen een account</value>
+  </data>
+  <data name="AiChatPanelImageSignInMessage" xml:space="preserve">
+    <value>Meld u aan om een afbeelding met uw bericht mee te sturen.</value>
+  </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>Hallo{0}! Ik ben hier om je app-ervaring geweldig te maken! Heb je een vraag of heb je hulp nodig?</value>
   </data>
@@ -1347,6 +1393,12 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <!--#endif -->
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>Schrijf een bericht...</value>
+  </data>
+    <data name="AiChatPanelMaximize" xml:space="preserve">
+    <value>Maximaliseren</value>
+  </data>
+  <data name="AiChatPanelRestore" xml:space="preserve">
+    <value>Herstellen</value>
   </data>
   <!--#endif -->
   <!--#if (ads == true) -->
@@ -1557,7 +1609,84 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="ImageNotCarError" xml:space="preserve">
     <value>De opgegeven afbeelding bevat geen auto.</value>
   </data>
-    <!--#if (multitenant == true) -->
+      <data name="AddUserToGroupTitle" xml:space="preserve">
+    <value>{0} aan deze gebruikersgroep toevoegen</value>
+  </data>
+  <data name="RemoveUserFromGroupTitle" xml:space="preserve">
+    <value>{0} uit deze gebruikersgroep verwijderen</value>
+  </data>
+  <data name="GrantFeatureTitle" xml:space="preserve">
+    <value>{0} toekennen</value>
+  </data>
+  <data name="RevokeFeatureTitle" xml:space="preserve">
+    <value>{0} intrekken</value>
+  </data>
+  <data name="GrantAllGroupFeaturesTitle" xml:space="preserve">
+    <value>Alle {0}-functies toekennen</value>
+  </data>
+  <data name="RevokeAllGroupFeaturesTitle" xml:space="preserve">
+    <value>Alle {0}-functies intrekken</value>
+  </data>
+  <data name="RefreshSelectedUserGroupTitle" xml:space="preserve">
+    <value>Geselecteerde gebruikersgroep vernieuwen</value>
+  </data>
+  <data name="RefreshSelectedUserTitle" xml:space="preserve">
+    <value>Geselecteerde gebruiker vernieuwen</value>
+  </data>
+  <data name="NoMatchingUserSessionMessage" xml:space="preserve">
+    <value>Geen sessie komt overeen met uw zoekopdracht.</value>
+  </data>
+  <data name="TfaVerificationCodeRequiredMessage" xml:space="preserve">
+    <value>Voer de 6-cijferige code uit uw authenticator-app in.</value>
+  </data>
+  <data name="TfaOpenInAuthenticatorAppTitle" xml:space="preserve">
+    <value>Dit account openen in uw authenticator-app</value>
+  </data>
+  <data name="TfaQrCodeAlt" xml:space="preserve">
+    <value>QR-code voor het instellen van uw authenticator-app</value>
+  </data>
+  <data name="SessionNoLongerValidMessage" xml:space="preserve">
+    <value>Deze sessie is niet langer geldig. Meld u opnieuw aan.</value>
+  </data>
+  <data name="RevokeSessionTitle" xml:space="preserve">
+    <value>Deze sessie intrekken</value>
+  </data>
+  <data name="ImageMaxSizeErrorMessage" xml:space="preserve">
+    <value>De afbeelding mag maximaal {0} groot zijn.</value>
+  </data>
+  <data name="OnlyImageFilesAllowedErrorMessage" xml:space="preserve">
+    <value>Alleen afbeeldingsbestanden kunnen worden gebruikt</value>
+  </data>
+  <data name="SamePhoneNumberErrorMessage" xml:space="preserve">
+    <value>Dat is al uw telefoonnummer. Voer een ander nummer in.</value>
+  </data>
+  <data name="SameEmailErrorMessage" xml:space="preserve">
+    <value>Dat is al uw e-mailadres. Voer een ander adres in.</value>
+  </data>
+  <data name="MoreTabsTitle" xml:space="preserve">
+    <value>Meer tabbladen</value>
+  </data>
+  <data name="OpenNavigationMenuTitle" xml:space="preserve">
+    <value>Navigatiemenu openen</value>
+  </data>
+  <data name="AccountMenuTitle" xml:space="preserve">
+    <value>Accountmenu</value>
+  </data>
+  <data name="SwitchToDarkThemeTitle" xml:space="preserve">
+    <value>Overschakelen naar het donkere thema</value>
+  </data>
+  <data name="SwitchToLightThemeTitle" xml:space="preserve">
+    <value>Overschakelen naar het lichte thema</value>
+  </data>
+  <!--#if (signalR == true) -->
+  <data name="SignalRConnectionId" xml:space="preserve">
+    <value>SignalRConnectionId</value>
+  </data>
+  <data name="ReadUserSessionLogsTitle" xml:space="preserve">
+    <value>Sessielogboeken van de gebruiker lezen</value>
+  </data>
+  <!--#endif -->
+  <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>Tenant</value>
   </data>
@@ -1660,5 +1789,14 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="Inactive" xml:space="preserve">
     <value>Inactief</value>
   </data>
-    <!--#endif-->
+      <data name="DeclineInvitation" xml:space="preserve">
+    <value>Uitnodiging afwijzen</value>
+  </data>
+  <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
+    <value>De uitnodiging voor {0} afwijzen? Dit kan niet ongedaan worden gemaakt - u hebt een nieuwe uitnodiging nodig om deel te nemen.</value>
+  </data>
+  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
+    <value>Uitnodiging afgewezen.</value>
+  </data>
+  <!--#endif-->
 </root>

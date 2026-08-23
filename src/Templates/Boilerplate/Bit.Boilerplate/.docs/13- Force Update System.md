@@ -33,7 +33,7 @@ Every HTTP request from the client automatically includes two critical headers:
 
 This happens in the **`RequestHeadersDelegatingHandler`** class:
 
-**File**: [`src/Client/Boilerplate.Client.Core/Services/HttpMessageHandlers/RequestHeadersDelegatingHandler.cs`](/src/Client/Boilerplate.Client.Core/Services/HttpMessageHandlers/RequestHeadersDelegatingHandler.cs)
+**File**: [`src/Client/Boilerplate.Client.Core/Infrastructure/Services/HttpMessageHandlers/RequestHeadersDelegatingHandler.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Services/HttpMessageHandlers/RequestHeadersDelegatingHandler.cs)
 
 ```csharp
 protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -60,7 +60,7 @@ protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage 
 
 SignalR connections also benefit from this system because they use the same `HttpMessageHandlerFactory`:
 
-**File**: [`src/Client/Boilerplate.Client.Core/Extensions/IClientCoreServiceCollectionExtensions.cs`](/src/Client/Boilerplate.Client.Core/Extensions/IClientCoreServiceCollectionExtensions.cs)
+**File**: [`src/Client/Boilerplate.Client.Core/Infrastructure/Extensions/IClientCoreServiceCollectionExtensions.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Extensions/IClientCoreServiceCollectionExtensions.cs)
 
 ```csharp
 var hubConnection = new HubConnectionBuilder()
@@ -81,24 +81,23 @@ This ensures that even SignalR connections are version-validated.
 
 On the server, the **`ForceUpdateMiddleware`** intercepts every request and validates the client version.
 
-**File**: [`src/Server/Boilerplate.Server.Api/RequestPipeline/ForceUpdateMiddleware.cs`](/src/Server/Boilerplate.Server.Api/RequestPipeline/ForceUpdateMiddleware.cs)
+**File**: [`src/Server/Boilerplate.Server.Api/Infrastructure/RequestPipeline/ForceUpdateMiddleware.cs`](/src/Server/Boilerplate.Server.Api/Infrastructure/RequestPipeline/ForceUpdateMiddleware.cs)
 
 ```csharp
 public class ForceUpdateMiddleware(RequestDelegate next, ServerApiSettings settings)
 {
+    private readonly RequestDelegate next = next;
+    private readonly ServerApiSettings settings = settings;
+
     public async Task InvokeAsync(HttpContext context)
     {
-        if (context.Request.Headers.TryGetValue("X-App-Version", out var appVersionHeaderValue)
-            && appVersionHeaderValue.Any())
+        if (Version.TryParse(context.Request.Headers["X-App-Version"].FirstOrDefault(), out var appVersion)
+            && Enum.TryParse<AppPlatformType>(context.Request.Headers["X-App-Platform"].FirstOrDefault(), ignoreCase: true, out var appPlatformType)
+            && Enum.IsDefined(appPlatformType) // TryParse also accepts numeric strings, e.g. "999", which are not real platforms.
+            && settings.SupportedAppVersions?.GetMinimumSupportedAppVersion(appPlatformType) is { } minVersion
+            && appVersion < minVersion)
         {
-            var appVersion = appVersionHeaderValue.Single()!;
-            var appPlatformType = Enum.Parse<AppPlatformType>(context.Request.Headers["X-App-Platform"].Single()!);
-            var minVersion = settings.SupportedAppVersions!.GetMinimumSupportedAppVersion(appPlatformType);
-            
-            if (minVersion != null && Version.Parse(appVersion) < minVersion)
-            {
-                throw new ClientNotSupportedException();
-            }
+            throw new ClientNotSupportedException().WithData("Reason", $"The client version '{appVersion}' is not supported. Minimum supported version is '{minVersion}'.");
         }
 
         await next(context);
@@ -173,7 +172,7 @@ When `ClientNotSupportedException` is thrown, it follows a special handling path
 
 ### The Exception Class
 
-**File**: [`src/Shared/Exceptions/ClientNotSupportedException.cs`](/src/Shared/Exceptions/ClientNotSupportedException.cs)
+**File**: [`src/Shared/Infrastructure/Exceptions/ClientNotSupportedException.cs`](/src/Shared/Infrastructure/Exceptions/ClientNotSupportedException.cs)
 
 ```csharp
 public partial class ClientNotSupportedException : BadRequestException
@@ -190,7 +189,7 @@ public partial class ClientNotSupportedException : BadRequestException
 
 When the client receives this exception, it's caught in the **`ExceptionDelegatingHandler`**:
 
-**File**: [`src/Client/Boilerplate.Client.Core/Services/HttpMessageHandlers/ExceptionDelegatingHandler.cs`](/src/Client/Boilerplate.Client.Core/Services/HttpMessageHandlers/ExceptionDelegatingHandler.cs)
+**File**: [`src/Client/Boilerplate.Client.Core/Infrastructure/Services/HttpMessageHandlers/ExceptionDelegatingHandler.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Services/HttpMessageHandlers/ExceptionDelegatingHandler.cs)
 
 ```csharp
 catch (ClientNotSupportedException)
@@ -206,7 +205,7 @@ catch (ClientNotSupportedException)
 
 The `ClientNotSupportedException` is explicitly ignored from logging to prevent noise:
 
-**File**: [`src/Shared/Services/SharedExceptionHandler.cs`](/src/Shared/Services/SharedExceptionHandler.cs)
+**File**: [`src/Shared/Infrastructure/Services/SharedExceptionHandler.cs`](/src/Shared/Infrastructure/Services/SharedExceptionHandler.cs)
 
 ```csharp
 public virtual bool IgnoreException(Exception exception)
@@ -226,7 +225,7 @@ Each platform implements the **`IAppUpdateService`** interface to handle updates
 
 ### Interface Definition
 
-**File**: [`src/Client/Boilerplate.Client.Core/Services/Contracts/IAppUpdateService.cs`](/src/Client/Boilerplate.Client.Core/Services/Contracts/IAppUpdateService.cs)
+**File**: [`src/Client/Boilerplate.Client.Core/Infrastructure/Services/Contracts/IAppUpdateService.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Services/Contracts/IAppUpdateService.cs)
 
 ```csharp
 public interface IAppUpdateService
@@ -260,7 +259,7 @@ public partial class WebAppUpdateService : IAppUpdateService
 
 ### Windows Platform: Auto-Update via Velopack
 
-**File**: [`src/Client/Boilerplate.Client.Windows/Services/WindowsAppUpdateService.cs`](/src/Client/Boilerplate.Client.Windows/Services/WindowsAppUpdateService.cs)
+**File**: [`src/Client/Boilerplate.Client.Windows/Infrastructure/Services/WindowsAppUpdateService.cs`](/src/Client/Boilerplate.Client.Windows/Infrastructure/Services/WindowsAppUpdateService.cs)
 
 ```csharp
 public partial class WindowsAppUpdateService : IAppUpdateService
@@ -302,7 +301,7 @@ public partial class WindowsAppUpdateService : IAppUpdateService
 
 ### Android, iOS, macOS: Open App Store
 
-**File**: [`src/Client/Boilerplate.Client.Maui/Services/MauiAppUpdateService.cs`](/src/Client/Boilerplate.Client.Maui/Services/MauiAppUpdateService.cs)
+**File**: [`src/Client/Boilerplate.Client.Maui/Infrastructure/Services/MauiAppUpdateService.cs`](/src/Client/Boilerplate.Client.Maui/Infrastructure/Services/MauiAppUpdateService.cs)
 
 ```csharp
 public partial class MauiAppUpdateService : IAppUpdateService
@@ -330,7 +329,7 @@ When the force update message is published, a snackbar is shown to the user.
 **File**: [`src/Client/Boilerplate.Client.Core/Components/Layout/ForceUpdateSnackBar.razor`](/src/Client/Boilerplate.Client.Core/Components/Layout/ForceUpdateSnackBar.razor)
 
 ```xml
-<BitSnackBar @ref="bitSnackBar" AutoDismiss="false" Persistent>
+<BitSnackBar @ref="bitSnackBar" AutoDismiss="false" Persistent Class="force-update-snack-bar">
     <TitleTemplate>
         <BitStack FitHeight>
             <BitText Typography="BitTypography.H5">
@@ -366,11 +365,11 @@ public partial class ForceUpdateSnackBar
     private Action? unsubscribe;
     private BitSnackBar bitSnackBar = default!;
 
-    protected override async Task OnInitAsync()
+    // Subscribing after the first render is load bearing: FORCE_UPDATE is a persistent message, and Subscribe
+    // delivers a queued one synchronously - from OnInitAsync that would run the handler while bitSnackBar is null.
+    protected override async Task OnAfterFirstRenderAsync()
     {
-        await base.OnInitAsync();
-
-        if (InPrerenderSession) return;
+        await base.OnAfterFirstRenderAsync();
 
         unsubscribe = PubSubService.Subscribe(ClientAppMessages.FORCE_UPDATE, async (_) =>
         {

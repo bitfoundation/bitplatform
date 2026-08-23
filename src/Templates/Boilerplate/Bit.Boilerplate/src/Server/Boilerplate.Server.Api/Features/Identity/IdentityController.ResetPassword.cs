@@ -6,7 +6,7 @@ namespace Boilerplate.Server.Api.Features.Identity;
 
 public partial class IdentityController
 {
-    [HttpPost, EnableRateLimiting(AppRateLimitPolicies.IDENTITY)]
+    [HttpPost, EnableRateLimiting(RateLimitOptionsExtensions.IDENTITY)]
     public async Task SendResetPasswordToken(SendResetPasswordTokenRequestDto request, CancellationToken cancellationToken)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);

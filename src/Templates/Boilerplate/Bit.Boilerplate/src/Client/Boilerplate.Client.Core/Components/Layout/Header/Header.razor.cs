@@ -24,8 +24,6 @@ public partial class Header : AppComponentBase
 
             StateHasChanged();
         });
-
-        NavigationManager.LocationChanged += NavigationManager_LocationChanged;
     }
 
 
@@ -39,19 +37,11 @@ public partial class Header : AppComponentBase
         await history.GoBack();
     }
 
-    private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        // The sign-in and sign-up button hrefs are bound to NavigationManager.GetRelativePath().
-        // To ensure the bound values update with each route change, it's necessary to call StateHasChanged on location changes.
-        StateHasChanged();
-    }
-
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         await base.DisposeAsync(disposing);
 
         unsubscribePageTitleChanged?.Invoke();
-        NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
     }
 }

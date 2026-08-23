@@ -1,4 +1,16 @@
 # https://developers.cloudflare.com/pages/configuration/headers/
+
+/*
+  Strict-Transport-Security: max-age=2592000
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), camera=(), microphone=(self), payment=(), usb=(), display-capture=()
+  Cross-Origin-Resource-Policy: cross-origin
+  Content-Security-Policy: object-src 'none'; frame-ancestors 'self'; form-action 'self'; worker-src 'self'; upgrade-insecure-requests;
+
 # https://yurl.chayev.com/
+# The file has no extension, so the host would otherwise serve it as application/octet-stream and iOS would reject it.
 /.well-known/apple-app-site-association
   Content-Type: application/json; charset=utf-8

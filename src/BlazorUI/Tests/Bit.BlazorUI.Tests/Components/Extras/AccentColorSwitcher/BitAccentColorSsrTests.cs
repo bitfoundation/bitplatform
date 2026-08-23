@@ -7,6 +7,11 @@ namespace Bit.BlazorUI.Tests.Components.Extras.AccentColorSwitcher;
 [TestClass]
 public sealed class BitAccentColorSsrTests
 {
+    // The second of the DefaultAccents, standing in here for "a configured accent that is not the
+    // neutral one". Read off the preset rather than spelled out, so a retune of the preset cannot
+    // leave these tests asserting on a hex nothing offers any more.
+    private static readonly string PurpleToken = BitAccentColorPresets.Purple.TrimStart('#').ToLowerInvariant();
+
     [TestMethod]
     public void InlineHeadScriptWrapsTheBodyInAScriptElement()
     {
@@ -126,7 +131,7 @@ public sealed class BitAccentColorSsrTests
         var css = BitAccentColorSsr.BuildStaticCss([new BitAccentColorItem { Name = "Crimson", Color = "#DC143C" }]);
 
         StringAssert.Contains(css, $"[{BitAccentColorNames.Attribute}=\"dc143c\"]", StringComparison.Ordinal);
-        Assert.IsFalse(css.Contains("8764b8", StringComparison.Ordinal),
+        Assert.IsFalse(css.Contains(PurpleToken, StringComparison.Ordinal),
             "A custom accent list replaces the defaults; the default palettes must not leak in.");
     }
 

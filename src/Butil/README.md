@@ -19,7 +19,8 @@ dotnet add package Bit.Butil
 ```
 
 Add its script tag to your host page, **before** the Blazor script so `window.BitButil` exists by
-the time the app boots:
+the time the app boots (or skip the tag entirely with lazy scripts - see
+[Shipping only the JavaScript you use](#shipping-only-the-javascript-you-use)):
 
 ```html
 <script src="_content/Bit.Butil/bit-butil.js"></script>
@@ -254,6 +255,88 @@ The package is marked `IsTrimmable`. Types crossing the interop boundary carry
 `[DynamicDependency]` annotations, so trimming a published WASM app keeps what the serializer
 needs. The public `FastInvoke*` extensions are annotated `[RequiresUnreferencedCode]` so a trimming
 consumer gets the warning at their own call site.
+
+### Shipping only the JavaScript you use
+
+`bit-butil.js` covers every API in the package. The C# side of an unused API is trimmed away from a
+published app (see `AddBitButilServices` above); the JavaScript side can be tree-shaken too. There are two
+ways of tree-shaking it, both set in the app's csproj, and both working from the same per-module build of
+the scripts (one `Scripts/*.ts` file is one module, `BitButil.clipboard` for `Clipboard` and so on).
+
+**Publish-time bundle trimming - the default, nothing to add.** Keep the script tag. When the app is
+published trimmed - a Blazor WebAssembly publish is - the package's build logic reads the trimmed
+`Bit.Butil.dll`, finds which `BitButil.<module>.*` identifiers survived (every interop call goes
+through such a literal, so the trimmed assembly is the exact list of modules the app can still reach)
+and replaces `bit-butil.js` with a bundle assembled from only those modules and their dependencies.
+Fingerprints, integrity hashes and compressed variants are computed from the new content. An app
+that injects `Clipboard`, `LocalStorage` and `Window` ships about 8 KB of JavaScript instead of the
+110 KB bundle. It is on by default only in a Blazor WebAssembly project - a standalone app or PWA - because
+that is where the assembly being trimmed is the assembly calling the served JavaScript; a server that hosts
+a WebAssembly client keeps its own, full copy of the bundle (use lazy scripts there). The same property
+trims the other shape too: wherever the module files are published - a lazy-scripts app, or an app keeping
+both shapes - only the modules the trimmed assembly can still name are published, and the rest of the
+`modules/` folder is dropped. Nothing can 404 over it: the identifier that would have imported a dropped
+module is gone from the assembly with it. `<BitButilIncludeScriptModules>true</BitButilIncludeScriptModules>`
+in the csproj publishes every module regardless, for an app that reaches them from outside its own interop
+calls. All of this happens in `dotnet publish` only: a build - and `dotnet run` and `dotnet watch` on top of
+it - keeps the full bundle and every module, so what you debug is never the trimmed JavaScript. Opt out with
+`false`, or opt in elsewhere with `true`:
+
+```xml
+<PropertyGroup>
+  <BitButilTrimScripts>false</BitButilTrimScripts>
+</PropertyGroup>
+```
+
+**Lazy scripts.** No script tag at all: the first call into an API `import()`s that API's module
+(`_content/Bit.Butil/modules/clipboard.js` for `Clipboard`), so only the JavaScript for the APIs the
+app actually calls is ever downloaded - in every hosting model, trimmed or not. Each module file is
+self-contained and safe to load more than once. Set the property in every project that uses Butil
+(a Blazor Web App's server and client both) and drop the script tag from the host page:
+
+```xml
+<PropertyGroup>
+  <BitButilLazyScripts>true</BitButilLazyScripts>
+</PropertyGroup>
+```
+
+The property also drops the bundle from the published output (and, in the default mode, the module
+files) and turns the mode on at runtime - through the `Bit.Butil.LazyScripts` runtime switch and,
+since runtime configuration does not reach a .NET 8 WebAssembly app, a one-line module initializer
+compiled into the project that calls `BitButil.UseLazyScripts()`. `BitButilIncludeScriptBundle` and
+`BitButilIncludeScriptModules` override which shape ends up in the published output when you want both. In a
+project that also trims (a WebAssembly publish does by default) the modules published are the ones the
+trimmed assembly can still import; naming `BitButilIncludeScriptModules` in the csproj publishes all of them.
+
+Prefer to keep it in C#? The registration call takes the same switches:
+
+```csharp
+builder.Services.AddBitButilServices(options =>
+{
+    options.LazyScripts = true;                  // or false to insist on the bundle
+    options.ScriptModulesPath = "/cdn/butil/";   // optional, when the modules are served elsewhere
+    options.FastInvoke = true;                   // optional, same as BitButil.UseFastInvoke()
+});
+```
+
+That is equivalent to `BitButil.UseLazyScripts()` / `BitButil.UseBundledScripts()` (process-wide, last
+call wins) and needs no script tag either. What it cannot do is change the published output - which is why
+`BitButilLazyScripts` is the better switch wherever the csproj is an option. The default (bundle mode)
+publishes the bundle and drops the module files, so the C# switch on its own leaves the `import()`s with
+nothing to fetch; keep them with
+
+```xml
+<PropertyGroup>
+  <BitButilIncludeScriptModules>true</BitButilIncludeScriptModules>
+</PropertyGroup>
+```
+
+and the bundle, still published, is simply never loaded (harmless - but a PWA precaches it). Publish-time
+bundle trimming has no runtime counterpart at all, since it happens inside `dotnet publish`.
+
+Trade-offs: lazy scripts cost one extra request the first time each module is used, and the modules'
+first call is necessarily asynchronous (every Butil API already is). The trimmed bundle is one request
+and needs no thought, but only in the project that publishes trimmed.
 
 ---
 

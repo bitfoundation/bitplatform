@@ -1,18 +1,9 @@
 {
     "mcpServers": {
-        "MicrosoftLearn": {
+        "bitplatform": {
             "type": "http",
-            "url": "https://learn.microsoft.com/api/mcp"
+            "url": "https://bitplatform.dev/mcp"
         },
-        "DeepWiki": {
-            "type": "http",
-            "url": "https://mcp.deepwiki.com/mcp"
-        },
-        "bitBlazorUI": {
-            "type": "http",
-            "url": "https://blazorui.bitplatform.dev/mcp"
-        },
-        //#if (aspire == true)
         "aspire": {
             "type": "stdio",
             "command": "aspire",
@@ -21,7 +12,6 @@
                 "mcp"
             ]
         },
-        //#endif
         "playwright": {
             "type": "stdio",
             "command": "npx",

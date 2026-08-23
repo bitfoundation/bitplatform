@@ -10,7 +10,7 @@
                 <BitStack FillContent>
                     @if (PhoneNumber is not null)
                     {
-                        <BitTextField Value="@PhoneNumber" ReadOnly NoValidate />
+                        <BitTextField Value="@PhoneNumber" ReadOnly NoValidate Label="@Localizer[nameof(AppStrings.PhoneNumber)]" />
                     }
 
                     <BitPhoneInput @bind-Value="sendModel.PhoneNumber"
@@ -57,8 +57,10 @@
                     <BitOtpInput @bind-Value="changeModel.Token"
                                  AutoFocus
                                  Length="6"
+                                 NormalizeDigits
                                  Size="BitSize.Large"
                                  Type="BitInputType.Number"
+                                 InputMode="BitInputMode.Tel"
                                  OnFill="WrapHandled(ChangePhoneNumber)"
                                  Label="@Localizer[nameof(AppStrings.PhoneToken)]" />
                     <ValidationMessage For="@(() => changeModel.Token)" />

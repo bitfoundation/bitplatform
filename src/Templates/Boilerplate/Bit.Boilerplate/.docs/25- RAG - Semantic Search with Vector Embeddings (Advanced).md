@@ -119,23 +119,6 @@ For production environments, you should use more accurate models:
 }
 ```
 
-- **Models**: `text-embedding-3-small`, `text-embedding-3-large`
-- **Pros**: High accuracy, widely supported
-- **Cons**: Requires API calls, costs per token
-
-#### **Azure OpenAI**
-**Configuration** in `appsettings.json`:
-```json
-"AzureOpenAI": {
-    "EmbeddingModel": "text-embedding-3-small",
-    "EmbeddingApiKey": "your-key",
-    "EmbeddingEndpoint": "https://yourResourceName.openai.azure.com/openai/deployments/yourDeployment"
-}
-```
-
-- **Pros**: Enterprise-grade, compliance, data residency control
-- **Cons**: Requires Azure subscription, costs
-
 #### **Hugging Face Models**
 **Configuration** in `appsettings.json`:
 ```json

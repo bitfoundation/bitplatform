@@ -1,0 +1,11 @@
+@using Bit.BlazorUI
+
+<BitNavBar TItem="BitNavBarOption" Mode="BitNavMode.Automatic">
+    <BitNavBarOption Text="Home" Url="/" />
+    <BitNavBarOption Text="Profile" Url="@ProfileUrl" />
+    <BitNavBarOption Text="Settings" Url="/settings" />
+</BitNavBar>
+
+@code {
+    [Parameter] public string? ProfileUrl { get; set; }
+}

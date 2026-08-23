@@ -1,4 +1,4 @@
-var BitButil = BitButil || {};
+var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
     // Handles never cross into .NET - only ids do. A FileSystemHandle is a live object with no

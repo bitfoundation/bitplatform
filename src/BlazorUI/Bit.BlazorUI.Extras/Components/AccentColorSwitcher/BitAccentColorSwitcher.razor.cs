@@ -17,10 +17,10 @@ public partial class BitAccentColorSwitcher : BitComponentBase
     /// The accent colors offered when <see cref="BitAccentColorConfig.Accents"/> is not set (on the
     /// <see cref="Config"/> parameter nor on the configuration registered in DI): the six
     /// <see cref="BitAccentColorPresets"/> hues, starting with the packaged palette's own primary.
-    /// That first item is named "Default" rather than after a hue: its token is the Fluent blue the
-    /// service treats as "no override", but the swatch paints the primary of whichever packaged
-    /// preset is active (purple under Material, iOS blue under Cupertino - see the --bit-acs-ntr
-    /// custom property in BitAccentColorSwitcher.scss), so naming it "Blue" would be wrong there.
+    /// That first item is named "Default" rather than after a hue: its token is the blue the service
+    /// treats as "no override", but the swatch paints the primary of whichever packaged preset is
+    /// active (iOS blue under Cupertino - see the --bit-acs-ntr custom property in
+    /// BitAccentColorSwitcher.scss), so naming it "Blue" would be wrong there.
     /// </summary>
     public static readonly IReadOnlyList<BitAccentColorItem> DefaultAccents =
     [
@@ -190,12 +190,12 @@ public partial class BitAccentColorSwitcher : BitComponentBase
 
         // The neutral accent is "the packaged palette's own primary" (see BitAccentColorService):
         // picking it clears the overrides, so what it yields is whatever primary the active preset
-        // ships - Fluent's blue, Material's purple, Cupertino's system blue. Its swatch therefore
-        // paints through --bit-acs-ntr, which the stylesheet sets per packaged preset (the Fluent
-        // blue by default; the Material and Cupertino bundles retune it), with the token's own hex
-        // as the fallback for a page that loads none of the bundles. Read from a custom property
-        // rather than from the theme's --bit-clr-pri, which an applied accent overrides - the point
-        // of this swatch is to show the primary underneath that override.
+        // ships - this blue under Fluent, Fluent 2 and Material, Cupertino's system blue. Its swatch
+        // therefore paints through --bit-acs-ntr, which the stylesheet sets per packaged preset (this
+        // blue by default; the Cupertino bundle retunes it), with the token's own hex as the fallback
+        // for a page that loads none of the bundles. Read from a custom property rather than from the
+        // theme's --bit-clr-pri, which an applied accent overrides - the point of this swatch is to
+        // show the primary underneath that override.
         if (BitAccentColorSsr.NormalizeToken(value) == BitAccentColorSsr.NormalizeToken(BitAccentColorPresets.Blue))
         {
             return $"var(--bit-acs-ntr, {BitAccentColorPresets.Blue})";

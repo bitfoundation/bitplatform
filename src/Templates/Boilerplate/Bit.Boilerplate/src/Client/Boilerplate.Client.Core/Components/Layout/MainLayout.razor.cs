@@ -60,7 +60,10 @@ public partial class MainLayout : IAsyncDisposable
             // dependencies, its value remains null. 
             // Even though Server.Web and Server.Api may be deployed on different servers, 
             // we can still assume that if the client is displaying a pre-rendered result, it is online.
-            IsOnline ??= IsOnline ?? inPrerenderSession is true ? true : null;
+            if (inPrerenderSession)
+            {
+                IsOnline ??= true;
+            }
 
             authManager.AuthenticationStateChanged += AuthManager_AuthenticationStateChanged;
 

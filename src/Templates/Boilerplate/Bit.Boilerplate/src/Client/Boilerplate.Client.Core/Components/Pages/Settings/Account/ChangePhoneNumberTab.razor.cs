@@ -32,6 +32,7 @@ public partial class ChangePhoneNumberTab
             showConfirmation = true;
             isPhoneNumberUnavailable = false;
             changeModel.PhoneNumber = PhoneNumberQueryString;
+            sendModel.PhoneNumber = PhoneNumberQueryString;
 
             if (string.IsNullOrEmpty(PhoneNumberTokenQueryString) is false)
             {
@@ -48,7 +49,13 @@ public partial class ChangePhoneNumberTab
 
     private async Task SendToken()
     {
-        if (isWaiting || sendModel.PhoneNumber == PhoneNumber) return;
+        if (isWaiting) return;
+
+        if (sendModel.PhoneNumber == PhoneNumber)
+        {
+            SnackBarService.Error(Localizer[nameof(AppStrings.SamePhoneNumberErrorMessage)]);
+            return;
+        }
 
         // Proving the NEW number (the code sent below) is only half of it - the server also requires the user to prove
         // she still holds the CURRENT identifiers, by quoting a code sent to them. That is what elevated access is.
@@ -92,8 +99,11 @@ public partial class ChangePhoneNumberTab
             // so the warning snackbar survives to be seen by the user.
             SnackBarService.Warning(Localizer[nameof(AppStrings.SignOutOfAllDevicesWarningMessage)]);
 
-            CurrentUser!.PhoneNumber = changeModel.PhoneNumber;
-            PubSubService.Publish(ClientAppMessages.PROFILE_UPDATED, CurrentUser);
+            if (CurrentUser is not null)
+            {
+                CurrentUser.PhoneNumber = changeModel.PhoneNumber;
+                PubSubService.Publish(ClientAppMessages.PROFILE_UPDATED, CurrentUser);
+            }
 
             showConfirmation = false;
             isPhoneNumberUnavailable = true;

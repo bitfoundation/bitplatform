@@ -1,12 +1,12 @@
-using Bit.Butil.Tests.E2E.Infrastructure;
-using NUnit.Framework;
+﻿using Bit.Butil.Tests.E2E.Infrastructure;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Butil.Tests.E2E;
 
-[Parallelizable(ParallelScope.Self)]
+[TestClass]
 public class CookieTests : ButilPageTest
 {
-    [Test]
+    [TestMethod]
     public async Task Cookie_Set_Get_Survives_Reserved_Characters_Roundtrip()
     {
         // Pre-clean: removing twice doesn't break anything if the cookie isn't there yet.
@@ -16,7 +16,7 @@ public class CookieTests : ButilPageTest
         await ClickAndExpectAsync("cookie-get", "cookie:get:v=1; b=hello world & again");
     }
 
-    [Test]
+    [TestMethod]
     public async Task Cookie_Remove_Deletes_The_Entry()
     {
         await ClickAndExpectAsync("cookie-set", "cookie:set");

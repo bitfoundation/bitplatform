@@ -1,5 +1,6 @@
 using System.Net.Sockets;
 using System.Reflection;
+using System.Threading.Channels;
 
 namespace Boilerplate.Shared.Infrastructure.Services;
 
@@ -143,6 +144,8 @@ public partial class SharedExceptionHandler
     public virtual bool IsTransientException(Exception? exp)
     {
         return (exp is TimeoutException)
+             || (exp is OperationCanceledException)
+             || (exp is ChannelClosedException)
              || (exp is WebException webExp && webExp.WithData("Status", webExp.Status).Status is WebExceptionStatus.ConnectFailure)
              || (exp is not AggregateException && exp?.InnerException is not null && IsTransientException(exp.InnerException))
              || (exp is HttpIOException httpIOExp && httpIOExp.WithData("HttpRequestError", httpIOExp.HttpRequestError).HttpRequestError is not HttpRequestError.UserAuthenticationError)
