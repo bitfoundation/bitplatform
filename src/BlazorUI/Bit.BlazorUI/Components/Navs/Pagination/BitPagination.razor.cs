@@ -36,6 +36,11 @@ public partial class BitPagination : BitComponentBase
 
     private int _correctedPage;
     private string? _goToPageText;
+    private bool _correctedPageSize;
+
+    // The pages the last render put on the screen, which is what the captured element references are pruned
+    // against so that walking a long range does not keep a reference of every page it went through.
+    private int[] _renderedPages = [];
 
     // The offered page sizes are materialized once per parameter change rather than on every render, since a
     // consumer is free to hand over an enumerable that walks (or computes) itself each time it is read.
@@ -84,6 +89,9 @@ public partial class BitPagination : BitComponentBase
     /// <remarks>
     /// A count that is not positive still leaves a single page to be on, since a pagination with no page at
     /// all has nothing to render.
+    /// <br />
+    /// This is what the pagination goes on while no <see cref="TotalItems"/> is given: a total number of
+    /// items takes over and the number of pages is worked out of it and of <see cref="PageSize"/>.
     /// </remarks>
     [Parameter] public int Count { get; set; }
 
@@ -177,7 +185,8 @@ public partial class BitPagination : BitComponentBase
 
     /// <summary>
     /// Provides the text of the summary, from the selected page and the total number of pages, replacing the
-    /// default "Page {number} of {count}" text.
+    /// default text (which reads "Page {number} of {count}", or "Showing {first} to {last} of {total}" while
+    /// <see cref="TotalItems"/> is given).
     /// </summary>
     /// <remarks>
     /// This is the hook to localize the summary, or to report the position in terms of the items rather than
@@ -330,9 +339,12 @@ public partial class BitPagination : BitComponentBase
     /// The number of items a page holds, which the page size selector picks.
     /// </summary>
     /// <remarks>
-    /// The pagination only reports the number that was picked: the range of pages it renders still comes from
-    /// <see cref="Count"/>, which the consumer recomputes from the new page size. A value that is not positive
-    /// falls back to the first of the <see cref="PageSizeOptions"/>.
+    /// The range of pages follows the picked size on its own while <see cref="TotalItems"/> is given, and
+    /// comes from <see cref="Count"/> - which the consumer recomputes from the new size - otherwise.
+    /// <br />
+    /// A value that is not positive falls back to the first of the <see cref="PageSizeOptions"/>, and the
+    /// fallback is written back while the selector is shown, so the size the consumer holds is the one the
+    /// selector opens on.
     /// </remarks>
     [Parameter, TwoWayBound]
     public int PageSize { get; set; }
@@ -354,8 +366,12 @@ public partial class BitPagination : BitComponentBase
     /// The default value is <strong>10, 25, 50 and 100</strong>.
     /// </summary>
     /// <remarks>
-    /// An empty list falls back to the default, since a selector with nothing to pick from would leave the
-    /// page size it reports unreachable.
+    /// An empty list (or one holding nothing but sizes that are not positive, which are dropped) falls back
+    /// to the default, since a selector with nothing to pick from would leave the page size it reports
+    /// unreachable.
+    /// <br />
+    /// A <see cref="PageSize"/> the list does not hold is offered along with the others, so the selector
+    /// always shows the size the pagination is paging by.
     /// </remarks>
     [Parameter] public IEnumerable<int>? PageSizeOptions { get; set; }
 
@@ -464,9 +480,10 @@ public partial class BitPagination : BitComponentBase
     /// The default value is <strong>false</strong>.
     /// </summary>
     /// <remarks>
-    /// Picking a size reports it through <see cref="PageSize"/> and <see cref="OnPageSizeChange"/> and changes
-    /// nothing else: the number of pages the new size adds up to is the consumer's to recompute into
-    /// <see cref="Count"/>, and a selected page that falls out of the shrunk range is pulled back on its own.
+    /// Picking a size reports it through <see cref="PageSize"/> and <see cref="OnPageSizeChange"/>. The range
+    /// of pages the new size adds up to is rendered on its own while <see cref="TotalItems"/> is given, and is
+    /// the consumer's to recompute into <see cref="Count"/> otherwise. A selected page that falls out of the
+    /// shrunk range is pulled back either way.
     /// </remarks>
     [Parameter] public bool ShowPageSizeSelector { get; set; }
 
@@ -476,7 +493,8 @@ public partial class BitPagination : BitComponentBase
     [Parameter] public bool ShowPreviousButton { get; set; } = true;
 
     /// <summary>
-    /// Shows the position in the range, which reads "Page {number} of {count}" unless
+    /// Shows the position in the range, which reads "Page {number} of {count}" - or
+    /// "Showing {first} to {last} of {total}" while <see cref="TotalItems"/> is given - unless
     /// <see cref="GetSummary"/> replaces it, ahead of the buttons of the pagination.
     /// <br />
     /// The default value is <strong>false</strong>.
@@ -500,6 +518,24 @@ public partial class BitPagination : BitComponentBase
     [Parameter] public BitPaginationClassStyles? Styles { get; set; }
 
     /// <summary>
+    /// The total number of items the pages are made of, which the number of pages is worked out of instead of
+    /// being asked for through <see cref="Count"/>.
+    /// </summary>
+    /// <remarks>
+    /// A data source reports how many items it holds, not how many pages they add up to, so handing the total
+    /// over is what keeps the arithmetic (and the rounding of the last, partly filled page) out of the
+    /// consumer. The number of pages is the total divided by <see cref="PageSize"/>, rounded up, which is why
+    /// the page size selector needs nothing else to work: picking a size renders the range the new size adds
+    /// up to on its own, and a selected page that falls out of it is pulled back.
+    /// <br />
+    /// It takes over from <see cref="Count"/> while it is positive, and is ignored otherwise.
+    /// <br />
+    /// The default summary reports the range of items of the current page instead of its number while the
+    /// total is known, since that is the count the total was given for.
+    /// </remarks>
+    [Parameter] public int TotalItems { get; set; }
+
+    /// <summary>
     /// The visual variant of the pagination.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -517,17 +553,28 @@ public partial class BitPagination : BitComponentBase
     /// </remarks>
     public ValueTask FocusAsync()
     {
-        if (ShowPageButtons && _pageRefs.TryGetValue(_SelectedPage, out var pageRef)) return pageRef.FocusAsync();
+        // Nothing is rendered at all, so every reference left behind points at an element that is gone.
+        if (_IsHidden) return ValueTask.CompletedTask;
 
-        if (ShowFirstButton) return _firstButtonRef.FocusAsync();
+        if (ShowPageButtons && _pageRefs.TryGetValue(_SelectedPage, out var pageRef)) return Focus(pageRef);
 
-        if (ShowPreviousButton) return _previousButtonRef.FocusAsync();
+        if (ShowFirstButton) return Focus(_firstButtonRef);
 
-        if (ShowNextButton) return _nextButtonRef.FocusAsync();
+        if (ShowPreviousButton) return Focus(_previousButtonRef);
 
-        if (ShowLastButton) return _lastButtonRef.FocusAsync();
+        if (ShowNextButton) return Focus(_nextButtonRef);
+
+        if (ShowLastButton) return Focus(_lastButtonRef);
 
         return ValueTask.CompletedTask;
+    }
+
+    // A control that was never rendered (the whole pagination hidden by HideOnSinglePage, or a first render
+    // that has not happened yet) leaves an empty reference behind, which throws instead of doing nothing when
+    // it is focused.
+    private static ValueTask Focus(ElementReference element)
+    {
+        return element.Context is null ? ValueTask.CompletedTask : element.FocusAsync();
     }
 
 
@@ -569,6 +616,10 @@ public partial class BitPagination : BitComponentBase
 
     protected override async Task OnInitializedAsync()
     {
+        // The offered sizes are needed before the first clamp: the page a range holds (and so the range a
+        // total number of items adds up to) follows the page size, which falls back to the first of them.
+        MaterializePageSizeOptions();
+
         if (SelectedPageHasBeenSet is false && DefaultSelectedPage != 0)
         {
             await AssignSelectedPage(Math.Clamp(DefaultSelectedPage, 1, _Count));
@@ -584,7 +635,24 @@ public partial class BitPagination : BitComponentBase
 
     protected override async Task OnParametersSetAsync()
     {
-        _pageSizeOptions = PageSizeOptions?.ToArray() is { Length: > 0 } options ? options : DefaultPageSizeOptions;
+        MaterializePageSizeOptions();
+
+        // A page size that is not one the selector can show (a value that was never picked, or one that is
+        // not positive) is written back the same way an out of range selected page is, so that the size the
+        // consumer holds is the one the selector opens on and the paging math on both sides agrees. Only the
+        // rendered selector reports a size, so a pagination without one leaves the value alone.
+        if (PageSize == _PageSize)
+        {
+            _correctedPageSize = false;
+        }
+        else if (ShowPageSizeSelector && _correctedPageSize is false)
+        {
+            // The same fallback is only written once: a consumer that drops it would otherwise be answered
+            // with another correction on every render, and the two would keep re-rendering each other.
+            _correctedPageSize = true;
+
+            await AssignPageSize(_PageSize);
+        }
 
         // A selected page that fell outside of the range (a count that shrank under it, or a value that was
         // never inside it) is written back so that the value a consumer is bound to never keeps pointing at a
@@ -610,10 +678,17 @@ public partial class BitPagination : BitComponentBase
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        PruneStalePageReferences();
+
         // A navigation button that disabled itself by reaching the end of the range it points at drops the
         // keyboard focus on the document, so the focus is handed over to the control that took its place
         // (the selected page, or the navigation button pointing the other way) once the new markup is there.
-        if (_focusTarget != FocusTarget.None)
+        // A pagination that hid itself in the meantime has no control left to hand it to.
+        if (_IsHidden)
+        {
+            _focusTarget = FocusTarget.None;
+        }
+        else if (_focusTarget != FocusTarget.None)
         {
             var target = _focusTarget;
             _focusTarget = FocusTarget.None;
@@ -623,13 +698,13 @@ public partial class BitPagination : BitComponentBase
                 case FocusTarget.SelectedPage:
                     if (_pageRefs.TryGetValue(_SelectedPage, out var pageRef))
                     {
-                        await pageRef.FocusAsync();
+                        await Focus(pageRef);
                     }
                     break;
-                case FocusTarget.First: await _firstButtonRef.FocusAsync(); break;
-                case FocusTarget.Previous: await _previousButtonRef.FocusAsync(); break;
-                case FocusTarget.Next: await _nextButtonRef.FocusAsync(); break;
-                case FocusTarget.Last: await _lastButtonRef.FocusAsync(); break;
+                case FocusTarget.First: await Focus(_firstButtonRef); break;
+                case FocusTarget.Previous: await Focus(_previousButtonRef); break;
+                case FocusTarget.Next: await Focus(_nextButtonRef); break;
+                case FocusTarget.Last: await Focus(_lastButtonRef); break;
             }
         }
 
@@ -638,9 +713,13 @@ public partial class BitPagination : BitComponentBase
 
 
 
-    // There is always at least one page to be on, so a count that is not positive still renders a pagination
-    // holding that page instead of an empty one.
-    private int _Count => Count > 0 ? Count : 1;
+    // A total number of items is what a data source reports, so the number of pages is worked out of it and
+    // of the page size (in long, since a total close to the whole range of an int would overflow the rounding
+    // up of the last, partly filled page) whenever it is given. There is always at least one page to be on,
+    // so a count that is not positive still renders a pagination holding that page instead of an empty one.
+    private int _Count => TotalItems > 0
+                            ? (int)Math.Min(int.MaxValue, (TotalItems + (long)_PageSize - 1) / _PageSize)
+                            : (Count > 0 ? Count : 1);
 
     // The rendering runs off a clamped view of the selected page so that a value outside of the range (which
     // a one way bound SelectedPage can hold, since the component cannot write it back) still renders a
@@ -658,6 +737,10 @@ public partial class BitPagination : BitComponentBase
     // The first and last buttons always target a fixed page, so they are the ones the loop leaves alone. The
     // previous and next buttons only stay enabled at the ends of the range while the loop has somewhere else
     // to take them, which a range holding a single page does not.
+    // Navigation that cannot go anywhere is noise, so a single page renders nothing at all while the
+    // pagination was asked to hide itself over one.
+    private bool _IsHidden => HideOnSinglePage && _Count <= 1;
+
     private bool _IsFirstDisabled => IsEnabled is false || _SelectedPage == 1;
 
     private bool _IsPreviousDisabled => IsEnabled is false || (Loop ? _Count == 1 : _SelectedPage == 1);
@@ -696,10 +779,82 @@ public partial class BitPagination : BitComponentBase
 
     private string GetSummaryText()
     {
-        return GetSummary?.Invoke(_SelectedPage, _Count) ?? $"Page {_SelectedPage} of {_Count}";
+        if (GetSummary is not null) return GetSummary(_SelectedPage, _Count);
+
+        // A total number of items is only ever given to be reported, so the summary counts the items of the
+        // current page rather than repeating the page number the buttons already carry. The last page is
+        // only partly filled, which is where the range stops short of a whole page.
+        if (TotalItems > 0)
+        {
+            var first = (_SelectedPage - 1L) * _PageSize + 1;
+            var last = Math.Min(first + _PageSize - 1, TotalItems);
+
+            return $"Showing {first} to {last} of {TotalItems}";
+        }
+
+        return $"Page {_SelectedPage} of {_Count}";
     }
 
+    private void MaterializePageSizeOptions()
+    {
+        // A size that is not positive is dropped rather than offered: it would leave the selector picking a
+        // page that holds nothing, and the number of pages a total of items adds up to undefined.
+        var given = PageSizeOptions?.Where(size => size > 0).ToArray();
+
+        var options = given is { Length: > 0 } ? given : DefaultPageSizeOptions;
+
+        // A picked size the list does not hold is offered along with the others, where it belongs among them
+        // while they run up. A select falls back to its first option otherwise, which would leave the selector
+        // showing another size than the one the pagination is actually paging by.
+        if (PageSize > 0 && Array.IndexOf(options, PageSize) < 0)
+        {
+            var index = 0;
+            while (index < options.Length && options[index] < PageSize) index++;
+
+            var merged = new int[options.Length + 1];
+            Array.Copy(options, merged, index);
+            merged[index] = PageSize;
+            Array.Copy(options, index, merged, index + 1, options.Length - index);
+
+            options = merged;
+        }
+
+        _pageSizeOptions = options;
+    }
+
+    // A page button is captured when it is inserted, so a page that left the range keeps a reference of an
+    // element that is no longer there. Dropping those keeps the pagination from holding one reference per
+    // page a long range was walked through; a page that comes back is captured again as it is inserted.
+    private void PruneStalePageReferences()
+    {
+        if (ShowPageButtons is false || _IsHidden)
+        {
+            _pageRefs.Clear();
+            _renderedPages = [];
+            return;
+        }
+
+        if (_pageRefs.Count <= _renderedPages.Length) return;
+
+        int[] captured = [.. _pageRefs.Keys];
+
+        foreach (var page in captured)
+        {
+            if (Array.IndexOf(_renderedPages, page) < 0)
+            {
+                _pageRefs.Remove(page);
+            }
+        }
+    }
+
+    // The pages the render is about to lay out are kept so that the references captured for the ones that
+    // left the range can be dropped once it is done.
     private int[] GeneratePages()
+    {
+        return _renderedPages = BuildPages();
+    }
+
+    private int[] BuildPages()
     {
         // The size of the window is worked out in long so that boundary and middle counts big enough to
         // overflow an int still compare as wider than the count and fall back to spelling every page out.
@@ -777,6 +932,28 @@ public partial class BitPagination : BitComponentBase
         await OnChange.InvokeAsync(page);
     }
 
+    // A click that opens the address somewhere else (another tab, another window, a download) leaves this
+    // pagination where it is: the page that was asked for is the one opening over there, and moving the
+    // selection here as well would report a page the user never came to.
+    private async Task ChangePageFromLink(MouseEventArgs e, int page)
+    {
+        if (IsModifiedClick(e)) return;
+
+        await ChangePage(page);
+    }
+
+    private async Task ChangePageFromLink(MouseEventArgs e, FocusTarget source, int page)
+    {
+        if (IsModifiedClick(e)) return;
+
+        await ChangePageFrom(source, page);
+    }
+
+    private static bool IsModifiedClick(MouseEventArgs e)
+    {
+        return e.CtrlKey || e.MetaKey || e.ShiftKey || e.AltKey;
+    }
+
     private async Task ChangePageFrom(FocusTarget source, int page)
     {
         if (IsEnabled is false) return;
@@ -837,6 +1014,18 @@ public partial class BitPagination : BitComponentBase
         if (size == _PageSize) return;
 
         await AssignPageSize(size);
+
+        // The list of offered sizes holds the picked one, so a size that was only offered because it was
+        // picked before is dropped from it again as soon as it is not.
+        MaterializePageSizeOptions();
+
+        // A bigger page holds the same items in fewer pages, and the range the new size adds up to can stop
+        // short of the selected page. The pagination works that range out on its own while it is given a
+        // total number of items, so it is also the one to pull the selection back into it.
+        if (SelectedPage != _SelectedPage)
+        {
+            await AssignSelectedPage(_SelectedPage);
+        }
 
         // The callback runs even when PageSize is bound one way and could not be written back, so that a
         // consumer holding the value itself still hears about the size the user asked for.

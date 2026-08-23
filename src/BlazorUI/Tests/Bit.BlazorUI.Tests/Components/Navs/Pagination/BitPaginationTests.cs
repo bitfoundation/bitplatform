@@ -1756,8 +1756,8 @@ public class BitPaginationTests : BunitTestContext
     [TestMethod]
     public void BitPaginationShouldKeepAPageSizeThatIsNotOneOfTheOptions()
     {
-        // The picked size is reported as it is: an option list that does not hold it leaves the selector with
-        // nothing marked rather than silently reporting another size.
+        // The picked size is offered along with the others, in its place among them: a select falls back to
+        // its first option otherwise, and the selector would show another size than the one being paged by.
         var comp = RenderComponent<BitPagination>(parameters =>
         {
             parameters.Add(p => p.Count, 12);
@@ -1765,7 +1765,96 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.ShowPageSizeSelector, true);
         });
 
-        Assert.AreEqual(0, comp.FindAll(".bit-pgn-pse option").Count(o => o.HasAttribute("selected")));
+        var options = comp.FindAll(".bit-pgn-pse option");
+
+        CollectionAssert.AreEqual(new[] { "7", "10", "25", "50", "100" }, options.Select(o => o.TextContent.Trim()).ToArray());
+        Assert.AreEqual("7", options.Single(o => o.HasAttribute("selected")).GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldOfferAPickedPageSizeInItsPlaceAmongTheOptions()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 12);
+            parameters.Add(p => p.PageSize, 30);
+            parameters.Add(p => p.PageSizeOptions, new[] { 10, 20, 40 });
+            parameters.Add(p => p.ShowPageSizeSelector, true);
+        });
+
+        var options = comp.FindAll(".bit-pgn-pse option");
+
+        CollectionAssert.AreEqual(new[] { "10", "20", "30", "40" }, options.Select(o => o.TextContent.Trim()).ToArray());
+        Assert.AreEqual("30", options.Single(o => o.HasAttribute("selected")).GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldDropThePageSizeOptionsThatAreNotPositive()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 12);
+            parameters.Add(p => p.PageSizeOptions, new[] { 0, 15, -5, 30 });
+            parameters.Add(p => p.ShowPageSizeSelector, true);
+        });
+
+        var options = comp.FindAll(".bit-pgn-pse option");
+
+        // A page holding nothing is not a size to offer, and it would leave the range of pages of a total
+        // number of items undefined.
+        CollectionAssert.AreEqual(new[] { "15", "30" }, options.Select(o => o.TextContent.Trim()).ToArray());
+        Assert.AreEqual("15", options.Single(o => o.HasAttribute("selected")).GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldFallBackToTheDefaultPageSizeOptionsWithoutAPositiveOne()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.TotalItems, 45);
+            parameters.Add(p => p.PageSizeOptions, new[] { 0, -5 });
+            parameters.Add(p => p.ShowPageSizeSelector, true);
+        });
+
+        var options = comp.FindAll(".bit-pgn-pse option");
+
+        CollectionAssert.AreEqual(new[] { "10", "25", "50", "100" }, options.Select(o => o.TextContent.Trim()).ToArray());
+
+        // The pages of the total are worked out of the size that was fallen back to, and not of an empty one.
+        Assert.AreEqual(5, GetPageButtons(comp).Count);
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldHideASinglePageOfTotalItems()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.TotalItems, 8);
+            parameters.Add(p => p.PageSize, 10);
+            parameters.Add(p => p.HideOnSinglePage, true);
+        });
+
+        Assert.AreEqual(0, comp.FindAll(".bit-pgn").Count);
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldLandOnTheEndOfTheRangeOfTotalItemsFromTheGoToPage()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.TotalItems, 45);
+            parameters.Add(p => p.PageSize, 10);
+            parameters.Add(p => p.ShowGoToPage, true);
+        });
+
+        var input = comp.Find(".bit-pgn-gti");
+
+        // 45 items of 10 add up to 5 pages, so the range the jump lands in stops there.
+        Assert.AreEqual("5", input.GetAttribute("max"));
+
+        input.Change("9");
+
+        Assert.AreEqual("5", comp.Find(".bit-pgn-sel").TextContent.Trim());
     }
 
     [TestMethod]
@@ -1817,6 +1906,316 @@ public class BitPaginationTests : BunitTestContext
         Assert.IsTrue(comp.FindAll(".bit-pgn-itm")
                           .Where(i => i.QuerySelector(".bit-pgn-elp") is not null)
                           .All(i => i.GetAttribute("aria-label") == "More pages"));
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldWorkTheCountOutOfTotalItems()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.TotalItems, 240);
+            parameters.Add(p => p.PageSize, 10);
+            parameters.Add(p => p.DefaultSelectedPage, 24);
+        });
+
+        // 240 items of 10 add up to 24 pages, and the last one of them is the selected page.
+        Assert.AreEqual("24", comp.Find(".bit-pgn-sel").TextContent.Trim());
+        Assert.AreEqual("24", GetPageButtons(comp)[^1].TextContent.Trim());
+
+        // The range ends there, so the next button has nowhere left to go.
+        Assert.IsNotNull(FindByAriaLabel(comp, "Next page")!.GetAttribute("disabled"));
+        Assert.IsNull(FindByAriaLabel(comp, "Previous page")!.GetAttribute("disabled"));
+    }
+
+    [TestMethod]
+    [DataRow(25, 10, 3)]
+    [DataRow(20, 10, 2)]
+    [DataRow(1, 10, 1)]
+    [DataRow(240, 25, 10)]
+    public void BitPaginationShouldRoundThePartlyFilledLastPageUp(int total, int size, int expected)
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.TotalItems, total);
+            parameters.Add(p => p.PageSize, size);
+            parameters.Add(p => p.BoundaryCount, 20);
+            parameters.Add(p => p.MiddleCount, 20);
+        });
+
+        var pages = GetPageButtons(comp);
+
+        Assert.AreEqual(expected, pages.Count);
+        Assert.AreEqual(expected.ToString(), pages[^1].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldPreferTotalItemsOverTheCount()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 3);
+            parameters.Add(p => p.TotalItems, 55);
+            parameters.Add(p => p.PageSize, 10);
+            parameters.Add(p => p.BoundaryCount, 10);
+            parameters.Add(p => p.MiddleCount, 10);
+        });
+
+        Assert.AreEqual(6, GetPageButtons(comp).Count);
+    }
+
+    [TestMethod]
+    [DataRow(0)]
+    [DataRow(-5)]
+    public void BitPaginationShouldFallBackToTheCountForANonPositiveTotalItems(int total)
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 3);
+            parameters.Add(p => p.TotalItems, total);
+        });
+
+        Assert.AreEqual(3, GetPageButtons(comp).Count);
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldFollowThePickedPageSizeWithTotalItems()
+    {
+        var size = 10;
+        var page = 12;
+
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.TotalItems, 240);
+            parameters.Add(p => p.ShowPageSizeSelector, true);
+            parameters.Bind(p => p.PageSize, size, v => size = v);
+            parameters.Bind(p => p.SelectedPage, page, v => page = v);
+        });
+
+        Assert.AreEqual("12", comp.Find(".bit-pgn-sel").TextContent.Trim());
+
+        comp.Find(".bit-pgn-pse").Change("100");
+
+        // 240 items of 100 add up to 3 pages, so the range shrinks on its own and the selection is pulled back.
+        Assert.AreEqual(100, size);
+        Assert.AreEqual(3, page);
+        Assert.AreEqual("3", comp.Find(".bit-pgn-sel").TextContent.Trim());
+        Assert.AreEqual(3, GetPageButtons(comp).Count);
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldReportTheRangeOfItemsInTheSummaryWithTotalItems()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.TotalItems, 245);
+            parameters.Add(p => p.PageSize, 10);
+            parameters.Add(p => p.ShowSummary, true);
+            parameters.Add(p => p.DefaultSelectedPage, 3);
+        });
+
+        Assert.AreEqual("Showing 21 to 30 of 245", comp.Find(".bit-pgn-sum").TextContent.Trim());
+
+        comp.Render(parameters =>
+        {
+            parameters.Add(p => p.TotalItems, 245);
+            parameters.Add(p => p.PageSize, 10);
+            parameters.Add(p => p.ShowSummary, true);
+            parameters.Add(p => p.SelectedPage, 25);
+        });
+
+        // The last page is only partly filled, so the range stops at the total instead of at a whole page.
+        Assert.AreEqual("Showing 241 to 245 of 245", comp.Find(".bit-pgn-sum").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldPreferGetSummaryOverTheRangeOfItems()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.TotalItems, 240);
+            parameters.Add(p => p.PageSize, 10);
+            parameters.Add(p => p.ShowSummary, true);
+            parameters.Add(p => p.GetSummary, (int page, int count) => $"{page}/{count}");
+        });
+
+        Assert.AreEqual("1/24", comp.Find(".bit-pgn-sum").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldWriteBackThePageSizeFallbackWhileTheSelectorIsShown()
+    {
+        var size = 0;
+
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 5);
+            parameters.Add(p => p.ShowPageSizeSelector, true);
+            parameters.Add(p => p.PageSizeOptions, new[] { 20, 40 });
+            parameters.Bind(p => p.PageSize, size, v => size = v);
+        });
+
+        // The selector opens on the first of the offered sizes, so that is the size the consumer is handed.
+        Assert.AreEqual(20, size);
+        Assert.AreEqual("20", comp.Find(".bit-pgn-pse").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldNotWriteBackThePageSizeWithoutTheSelector()
+    {
+        var size = 0;
+
+        RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 5);
+            parameters.Bind(p => p.PageSize, size, v => size = v);
+        });
+
+        // Nothing picks a size while the selector is not rendered, so the value is left alone.
+        Assert.AreEqual(0, size);
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldCorrectTheSamePageSizeOnlyOnce()
+    {
+        // A consumer that drops the corrected size and hands the empty one back would otherwise be answered
+        // with another correction on every render, and the two would keep re-rendering each other.
+        var changes = new System.Collections.Generic.List<int>();
+
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 5);
+            parameters.Add(p => p.ShowPageSizeSelector, true);
+            parameters.Bind(p => p.PageSize, 0, changes.Add);
+        });
+
+        Assert.AreEqual(1, changes.Count);
+        Assert.AreEqual(10, changes[0]);
+
+        comp.Render(parameters =>
+        {
+            parameters.Add(p => p.Count, 5);
+            parameters.Add(p => p.ShowPageSizeSelector, true);
+            parameters.Bind(p => p.PageSize, 0, changes.Add);
+        });
+
+        Assert.AreEqual(1, changes.Count);
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldNotMoveTheSelectionForAModifiedClickOnAPageLink()
+    {
+        var page = 1;
+
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 5);
+            parameters.Add(p => p.GetPageHref, (int n) => $"/results?page={n}");
+            parameters.Bind(p => p.SelectedPage, page, v => page = v);
+        });
+
+        IElement Third() => comp.FindAll(".bit-pgn-btn").First(l => l.TextContent.Trim() == "3");
+
+        // A click opening the address in another tab or window leaves this pagination where it is.
+        Third().Click(new Microsoft.AspNetCore.Components.Web.MouseEventArgs { CtrlKey = true });
+        Assert.AreEqual(1, page);
+
+        Third().Click(new Microsoft.AspNetCore.Components.Web.MouseEventArgs { MetaKey = true });
+        Assert.AreEqual(1, page);
+
+        Third().Click(new Microsoft.AspNetCore.Components.Web.MouseEventArgs { ShiftKey = true });
+        Assert.AreEqual(1, page);
+
+        Third().Click(new Microsoft.AspNetCore.Components.Web.MouseEventArgs { AltKey = true });
+        Assert.AreEqual(1, page);
+
+        // A plain click still moves it.
+        Third().Click();
+        Assert.AreEqual(3, page);
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldNotMoveTheSelectionForAModifiedClickOnANavigationLink()
+    {
+        var page = 2;
+
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 5);
+            parameters.Add(p => p.ShowLastButton, true);
+            parameters.Add(p => p.GetPageHref, (int n) => $"/results?page={n}");
+            parameters.Bind(p => p.SelectedPage, page, v => page = v);
+        });
+
+        FindLinkByAriaLabel(comp, "Next page")!.Click(new Microsoft.AspNetCore.Components.Web.MouseEventArgs { CtrlKey = true });
+        Assert.AreEqual(2, page);
+
+        FindLinkByAriaLabel(comp, "Last page")!.Click(new Microsoft.AspNetCore.Components.Web.MouseEventArgs { CtrlKey = true });
+        Assert.AreEqual(2, page);
+
+        FindLinkByAriaLabel(comp, "Next page")!.Click();
+        Assert.AreEqual(3, page);
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldStillMoveTheSelectionForAModifiedClickOnAButton()
+    {
+        var page = 1;
+
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 5);
+            parameters.Bind(p => p.SelectedPage, page, v => page = v);
+        });
+
+        // A button has no address to open somewhere else, so the modifier means nothing to it.
+        FindPageButton(comp, 4)!.Click(new Microsoft.AspNetCore.Components.Web.MouseEventArgs { CtrlKey = true });
+
+        Assert.AreEqual(4, page);
+    }
+
+    [TestMethod]
+    public async Task BitPaginationShouldNotFocusAnythingWhileHiddenOnASinglePage()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 1);
+            parameters.Add(p => p.HideOnSinglePage, true);
+            parameters.Add(p => p.ShowFirstButton, true);
+            parameters.Add(p => p.ShowLastButton, true);
+        });
+
+        // Not one control was rendered, so there is no element behind any of the references to focus.
+        await comp.InvokeAsync(async () => await comp.Instance.FocusAsync());
+
+        Assert.AreEqual(0, CountFocusCalls());
+    }
+
+    [TestMethod]
+    public async Task BitPaginationShouldNotFocusTheControlsItHidItselfBehind()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 5);
+            parameters.Add(p => p.HideOnSinglePage, true);
+            parameters.Add(p => p.ShowFirstButton, true);
+            parameters.Add(p => p.DefaultSelectedPage, 3);
+        });
+
+        await comp.InvokeAsync(async () => await comp.Instance.FocusAsync());
+
+        Assert.AreEqual(1, CountFocusCalls());
+
+        // The range shrank to a single page, so the controls the references were captured from are gone.
+        comp.Render(parameters =>
+        {
+            parameters.Add(p => p.Count, 1);
+            parameters.Add(p => p.HideOnSinglePage, true);
+            parameters.Add(p => p.ShowFirstButton, true);
+        });
+
+        await comp.InvokeAsync(async () => await comp.Instance.FocusAsync());
+
+        Assert.AreEqual(1, CountFocusCalls());
     }
 
     private static IElement? FindLinkByAriaLabel(IRenderedComponent<BitPagination> comp, string label)

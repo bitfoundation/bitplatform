@@ -34,7 +34,7 @@ public partial class BitPaginationDemo
             Name = "Count",
             Type = "int",
             DefaultValue = "1",
-            Description = "The total number of pages."
+            Description = "The total number of pages. It is what the pagination goes on while no TotalItems is given, which takes over and has the count worked out of it."
         },
         new()
         {
@@ -108,7 +108,7 @@ public partial class BitPaginationDemo
             Name = "GetSummary",
             Type = "Func<int, int, string>?",
             DefaultValue = "null",
-            Description = "Provides the text of the summary, from the selected page and the total number of pages, replacing the default \"Page {number} of {count}\" text."
+            Description = "Provides the text of the summary, from the selected page and the total number of pages, replacing the default text (which reads \"Page {number} of {count}\", or \"Showing {first} to {last} of {total}\" while TotalItems is given)."
         },
         new()
         {
@@ -228,7 +228,7 @@ public partial class BitPaginationDemo
             Name = "PageSize",
             Type = "int",
             DefaultValue = "0",
-            Description = "The number of items a page holds, which the page size selector picks. A value that is not positive falls back to the first of the PageSizeOptions."
+            Description = "The number of items a page holds, which the page size selector picks. The range of pages follows it on its own while TotalItems is given. A value that is not positive falls back to the first of the PageSizeOptions, and the fallback is written back while the selector is shown."
         },
         new()
         {
@@ -242,7 +242,7 @@ public partial class BitPaginationDemo
             Name = "PageSizeOptions",
             Type = "IEnumerable<int>?",
             DefaultValue = "null",
-            Description = "The page sizes the page size selector offers. An empty list falls back to the default 10, 25, 50 and 100."
+            Description = "The page sizes the page size selector offers. Sizes that are not positive are dropped, and an empty list falls back to the default 10, 25, 50 and 100. A PageSize the list does not hold is offered along with the others."
         },
         new()
         {
@@ -337,7 +337,7 @@ public partial class BitPaginationDemo
             Name = "ShowPageSizeSelector",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Shows a selector that picks how many items a page holds, ahead of everything else in the pagination. Picking a size reports it through PageSize and OnPageSizeChange and changes nothing else."
+            Description = "Shows a selector that picks how many items a page holds, ahead of everything else in the pagination. Picking a size reports it through PageSize and OnPageSizeChange; the range of pages it adds up to is rendered on its own while TotalItems is given, and is yours to recompute into Count otherwise."
         },
         new()
         {
@@ -351,7 +351,7 @@ public partial class BitPaginationDemo
             Name = "ShowSummary",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Shows the position in the range, which reads \"Page {number} of {count}\" unless GetSummary replaces it, ahead of the buttons of the pagination. It is a status region, so a screen reader reports the new position as the page changes."
+            Description = "Shows the position in the range, which reads \"Page {number} of {count}\" - or \"Showing {first} to {last} of {total}\" while TotalItems is given - unless GetSummary replaces it, ahead of the buttons of the pagination. It is a status region, so a screen reader reports the new position as the page changes."
         },
         new()
         {
@@ -373,12 +373,29 @@ public partial class BitPaginationDemo
         },
         new()
         {
+            Name = "TotalItems",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The total number of items the pages are made of, which the number of pages is worked out of (divided by PageSize, rounded up) instead of being asked for through Count. It takes over from Count while it is positive."
+        },
+        new()
+        {
             Name = "Variant",
             Type = "BitVariant?",
             DefaultValue = "null",
             Description = "The visual variant of the pagination.",
             LinkType = LinkType.Link,
             Href = "#variant-enum"
+        },
+    ];
+
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "() => ValueTask",
+            Description = "Gives the keyboard focus to the button of the selected page, falling back to the first navigation button that is rendered while the page buttons are turned off. This is what a consumer reloading the list behind the pagination calls to put the focus back on the navigation the reload was asked from."
         },
     ];
 
@@ -683,11 +700,14 @@ public partial class BitPaginationDemo
         return $"Showing {(page - 1) * selectedPageSize + 1} to {Math.Min(page * selectedPageSize, totalItems)} of {totalItems}";
     }
 
+    private int totalItemsPageSize = 10;
+    private int totalItemsSelectedPage = 1;
+
     private int linkSelectedPage = 1;
 
     private string GetDemoPageHref(int page)
     {
-        return $"#example18-page-{page}";
+        return $"#example19-page-{page}";
     }
 
     private int oneWaySelectedPage = 1;

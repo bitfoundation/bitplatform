@@ -14,11 +14,12 @@
    links rather than in buttons. The two forms are written out side by side rather than folded into one
    dynamic tag: which one is rendered follows from GetPageHref alone, so a control never swaps its markup
    while the selection moves. A link with no page to reach carries no href, and reports aria-disabled in
-   place of the disabled attribute an anchor has no use for. *@
+   place of the disabled attribute an anchor has no use for. A click carrying a modifier opens the address
+   somewhere else, so it leaves the selection of this pagination alone. *@
 @* The aria-label sits before the attribute splatting so that an aria-label passed as a plain attribute
    still wins over the default name of the landmark, while the id, the style, the class and the dir stay
    after it and keep the ones the component renders. *@
-@if (HideOnSinglePage is false || _Count > 1)
+@if (_IsHidden is false)
 {
     <nav @ref="RootElement"
          aria-label="@(AriaLabel ?? "Pagination")"
@@ -70,7 +71,7 @@
                     {
                         var firstHref = GetHref(1, _IsFirstDisabled);
                         <a @ref="_firstButtonRef"
-                           @onclick="@(() => ChangePageFrom(FocusTarget.First, 1))"
+                           @onclick="@(e => ChangePageFromLink(e, FocusTarget.First, 1))"
                            href="@firstHref"
                            title="@FirstButtonAriaLabel"
                            aria-label="@FirstButtonAriaLabel"
@@ -113,7 +114,7 @@
                     {
                         var previousHref = GetHref(_PreviousPage, _IsPreviousDisabled);
                         <a @ref="_previousButtonRef"
-                           @onclick="@(() => ChangePageFrom(FocusTarget.Previous, _PreviousPage))"
+                           @onclick="@(e => ChangePageFromLink(e, FocusTarget.Previous, _PreviousPage))"
                            href="@previousHref"
                            title="@PreviousButtonAriaLabel"
                            aria-label="@PreviousButtonAriaLabel"
@@ -174,7 +175,7 @@
                             {
                                 var pageHref = GetHref(pageNumber, IsEnabled is false);
                                 <a @ref="_pageRefs[pageNumber]"
-                                   @onclick="@(() => ChangePage(pageNumber))"
+                                   @onclick="@(e => ChangePageFromLink(e, pageNumber))"
                                    href="@pageHref"
                                    aria-current="@(isSelected ? "page" : null)"
                                    aria-disabled="@(pageHref is null ? "true" : null)"
@@ -211,7 +212,7 @@
                     {
                         var nextHref = GetHref(_NextPage, _IsNextDisabled);
                         <a @ref="_nextButtonRef"
-                           @onclick="@(() => ChangePageFrom(FocusTarget.Next, _NextPage))"
+                           @onclick="@(e => ChangePageFromLink(e, FocusTarget.Next, _NextPage))"
                            href="@nextHref"
                            title="@NextButtonAriaLabel"
                            aria-label="@NextButtonAriaLabel"
@@ -254,7 +255,7 @@
                     {
                         var lastHref = GetHref(_Count, _IsLastDisabled);
                         <a @ref="_lastButtonRef"
-                           @onclick="@(() => ChangePageFrom(FocusTarget.Last, _Count))"
+                           @onclick="@(e => ChangePageFromLink(e, FocusTarget.Last, _Count))"
                            href="@lastHref"
                            title="@LastButtonAriaLabel"
                            aria-label="@LastButtonAriaLabel"
