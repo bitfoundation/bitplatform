@@ -96,4 +96,14 @@ public class BitPivotClassStyles
     /// Custom CSS classes/styles for the dismiss icon of the header items of the BitPivot.
     /// </summary>
     public string? DismissIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the add button of the BitPivot.
+    /// </summary>
+    public string? AddButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the add icon of the BitPivot.
+    /// </summary>
+    public string? AddIcon { get; set; }
 }

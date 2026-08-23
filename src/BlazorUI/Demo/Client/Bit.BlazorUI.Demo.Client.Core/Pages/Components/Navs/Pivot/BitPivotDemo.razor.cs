@@ -6,12 +6,56 @@ public partial class BitPivotDemo
     [
         new()
         {
+            Name = "Addable",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders a button at the end of the pivot items that reports a request for a new tab through the OnAdd callback. The pivot does not add an item itself, since the items belong to the markup that declares them, so the handler is what puts the new one into the list.",
+        },
+        new()
+        {
+            Name = "AddAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The aria-label of the add button of the pivot (default: Add).",
+        },
+        new()
+        {
+            Name = "AddIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon of the add button of the pivot using custom CSS classes for external icon libraries. Takes precedence over AddIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "AddIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon of the add button of the pivot from the built-in Fluent UI icons (default: Add).",
+        },
+        new()
+        {
+            Name = "AddTitle",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The title (tooltip) of the add button of the pivot (default: Add).",
+        },
+        new()
+        {
             Name = "Alignment",
             Type = "BitAlignment?",
             DefaultValue = "null",
             Description = "Determines the alignment of the header section of the pivot.",
             LinkType = LinkType.Link,
             Href = "#alignment-enum",
+        },
+        new()
+        {
+            Name = "AriaLabelledBy",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The id of the element that labels the header of the pivot (rendered into the aria-labelledby of the tablist), which is what names a pivot sitting under a heading of its own. It wins over the AriaLabel.",
         },
         new()
         {
@@ -98,6 +142,13 @@ public partial class BitPivotDemo
         },
         new()
         {
+            Name = "Gap",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The gap between the pivot items of the header.",
+        },
+        new()
+        {
             Name = "HeaderEnd",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -179,11 +230,25 @@ public partial class BitPivotDemo
         },
         new()
         {
+            Name = "OnAdd",
+            Type = "EventCallback",
+            Description = "Callback for when the add button of an Addable pivot is clicked.",
+        },
+        new()
+        {
             Name = "OnChange",
             Type = "EventCallback<BitPivotItem>",
             Description = "Callback for when the selected pivot item changes.",
             LinkType = LinkType.Link,
             Href = "#pivot-item",
+        },
+        new()
+        {
+            Name = "OnChanging",
+            Type = "EventCallback<BitPivotChangeArgs>",
+            Description = "Callback for just before the selected pivot item changes, which can call the change off by setting the Cancel of its arguments, so that a tab holding unsaved work can refuse to be left.",
+            LinkType = LinkType.Link,
+            Href = "#pivot-change-args",
         },
         new()
         {
@@ -476,6 +541,30 @@ public partial class BitPivotDemo
         },
         new()
         {
+            Id = "pivot-change-args",
+            Title = "BitPivotChangeArgs",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Item",
+                    Type = "BitPivotItem",
+                    DefaultValue = "",
+                    Description = "The pivot item the selection is about to move to.",
+                    LinkType = LinkType.Link,
+                    Href = "#pivot-item",
+                },
+                new()
+                {
+                    Name = "Cancel",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Set to true to cancel the change and keep the item that is currently selected.",
+                }
+            ]
+        },
+        new()
+        {
             Id = "pivot-reorder-event-args",
             Title = "BitPivotReorderEventArgs",
             Parameters =
@@ -643,6 +732,20 @@ public partial class BitPivotDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the dismiss icon of the header items of the BitPivot."
+               },
+               new()
+               {
+                   Name = "AddButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the add button of the BitPivot."
+               },
+               new()
+               {
+                   Name = "AddIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the add icon of the BitPivot."
                }
             ]
         },
@@ -966,13 +1069,36 @@ public partial class BitPivotDemo
 
     private string selectedKey = "1";
     private int itemClickCount;
+    private int addableTabCount = 3;
+    private bool lockHistoryTab = true;
     private string? detachedSelectedKey = "Foo";
+    private string? addableSelectedKey = "Tab 1";
     private BitPivotItem? changedPivotItem;
     private BitPivotItem? clickedPivotItem;
+    private BitPivotItem? refusedPivotItem;
+    private List<string> addableTabs = ["Tab 1", "Tab 2", "Tab 3"];
     private List<string> dismissibleTabs = ["Home", "Documents", "Pictures", "Settings"];
     private List<string> reorderableTabs = ["File", "Shared", "Recent", "Favorites"];
 
     private void ResetDismissibleTabs() => dismissibleTabs = ["Home", "Documents", "Pictures", "Settings"];
+
+    private void HandleChanging(BitPivotChangeArgs args)
+    {
+        refusedPivotItem = null;
+
+        if (lockHistoryTab is false || args.Item.HeaderText != "History") return;
+
+        args.Cancel = true;
+        refusedPivotItem = args.Item;
+    }
+
+    private void AddPivotTab()
+    {
+        var key = $"Tab {++addableTabCount}";
+
+        addableTabs.Add(key);
+        addableSelectedKey = key;
+    }
 
     private void HandleReorder(BitPivotReorderEventArgs args)
     {
@@ -1311,12 +1437,34 @@ private string? detachedSelectedKey = ""Foo"";";
 
 <div>Last changed to: <b>@changedPivotItem?.HeaderText</b></div>
 <div>Last header clicked: <b>@clickedPivotItem?.HeaderText</b></div>
-<div>Clicks on the Biz header: <b>@itemClickCount</b></div>";
+<div>Clicks on the Biz header: <b>@itemClickCount</b></div>
+
+<BitToggle @bind-Value=""lockHistoryTab"" Label=""Keep the History tab from being selected"" />
+
+<BitPivot OnChanging=""@HandleChanging"">
+    <BitPivotItem HeaderText=""Draft""><div>Pivot #1: Draft</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Preview""><div>Pivot #2: Preview</div></BitPivotItem>
+    <BitPivotItem HeaderText=""History""><div>Pivot #3: History</div></BitPivotItem>
+</BitPivot>
+
+<div>Last refused: <b>@refusedPivotItem?.HeaderText</b></div>";
 
     private readonly string example14CsharpCode = @"
 private int itemClickCount;
+private bool lockHistoryTab = true;
 private BitPivotItem? changedPivotItem;
-private BitPivotItem? clickedPivotItem;";
+private BitPivotItem? clickedPivotItem;
+private BitPivotItem? refusedPivotItem;
+
+private void HandleChanging(BitPivotChangeArgs args)
+{
+    refusedPivotItem = null;
+
+    if (lockHistoryTab is false || args.Item.HeaderText != ""History"") return;
+
+    args.Cancel = true;
+    refusedPivotItem = args.Item;
+}";
 
     private readonly string example15RazorCode = @"
 <BitPivot>
@@ -1423,6 +1571,53 @@ private void HandleReorder(BitPivotReorderEventArgs args)
 </BitPivot>";
 
     private readonly string example19RazorCode = @"
+<BitPivot Addable Dismissible
+          @bind-SelectedKey=""addableSelectedKey""
+          OnAdd=""AddPivotTab""
+          OnItemDismiss=""@(item => addableTabs.Remove(item.Key!))"">
+    @foreach (var tab in addableTabs)
+    {
+        <BitPivotItem @key=""tab"" Key=""@tab"" HeaderText=""@tab"">
+            <div>Content of the @tab tab.</div>
+        </BitPivotItem>
+    }
+</BitPivot>
+
+<div>Selected key: <b>@addableSelectedKey</b></div>";
+
+    private readonly string example19CsharpCode = @"
+private int addableTabCount = 3;
+private string? addableSelectedKey = ""Tab 1"";
+private List<string> addableTabs = [""Tab 1"", ""Tab 2"", ""Tab 3""];
+
+private void AddPivotTab()
+{
+    var key = $""Tab {++addableTabCount}"";
+
+    addableTabs.Add(key);
+    addableSelectedKey = key;
+}";
+
+    private readonly string example20RazorCode = @"
+<BitPivot>
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot Gap=""0"" HeaderType=""BitPivotHeaderType.Tab"">
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot Gap=""2rem"">
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>";
+
+    private readonly string example21RazorCode = @"
 <BitPivot Color=""BitColor.Primary"">
     <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
     <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
@@ -1547,7 +1742,7 @@ private void HandleReorder(BitPivotReorderEventArgs args)
 </BitPivot>";
 
 
-    private readonly string example20RazorCode = @"
+    private readonly string example22RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitPivot>
@@ -1606,7 +1801,7 @@ private void HandleReorder(BitPivotReorderEventArgs args)
 </BitPivot>";
 
 
-    private readonly string example21RazorCode = @"
+    private readonly string example23RazorCode = @"
 <BitPivot Size=""@BitSize.Small"">
     <BitPivotItem HeaderText=""File"" IconName=""@BitIconName.FabricFolder""><div>Pivot #1: File</div></BitPivotItem>
     <BitPivotItem HeaderText=""Shared"" ItemCount=""32""><div>Pivot #2: Shared</div></BitPivotItem>
@@ -1625,7 +1820,7 @@ private void HandleReorder(BitPivotReorderEventArgs args)
     <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
 </BitPivot>";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example24RazorCode = @"
 <style>
     .custom-class {
         margin: 1rem;
@@ -1673,7 +1868,7 @@ private void HandleReorder(BitPivotReorderEventArgs args)
     <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
 </BitPivot>";
 
-    private readonly string example23RazorCode = @"
+    private readonly string example25RazorCode = @"
 <BitPivot Dir=""BitDir.Rtl"" OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"">
     <BitPivotItem HeaderText=""اسناد"" IconName=""@BitIconName.FabricFolder"">
         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.

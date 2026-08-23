@@ -23,7 +23,7 @@
             {
                 var prevIcon = BitIconInfo.From(PreviousIcon, PreviousIconName ?? (_isVertical ? "ChevronUp" : "ChevronLeft"));
                 <button type="button"
-                        disabled="@(_slideAtStart || _slideHasOverflow is false)"
+                        disabled="@(IsEnabled is false || _slideAtStart || _slideHasOverflow is false)"
                         style="@Styles?.SlideButton"
                         aria-label="@(PreviousAriaLabel ?? "Previous")"
                         @onclick="() => Slide(false)"
@@ -39,6 +39,7 @@
                  @onkeydown:preventDefault="_preventKeyDownDefault"
                  role="tablist"
                  aria-label="@AriaLabel"
+                 aria-labelledby="@AriaLabelledBy"
                  aria-orientation="@(_isVertical ? "vertical" : "horizontal")"
                  style="@Styles?.Header"
                  class="bit-pvt-hct @Classes?.Header">
@@ -51,6 +52,7 @@
                        the Space that opens the menu as an activation of the focused tab. *@
                     <button @ref="_moreRef"
                             type="button"
+                            disabled="@(IsEnabled is false)"
                             style="display:none;@Styles?.OverflowButton"
                             aria-haspopup="menu"
                             aria-label="@(OverflowAriaLabel ?? "More")"
@@ -72,7 +74,7 @@
             {
                 var nextIcon = BitIconInfo.From(NextIcon, NextIconName ?? (_isVertical ? "ChevronDown" : "ChevronRight"));
                 <button type="button"
-                        disabled="@(_slideAtEnd || _slideHasOverflow is false)"
+                        disabled="@(IsEnabled is false || _slideAtEnd || _slideHasOverflow is false)"
                         style="@Styles?.SlideButton"
                         aria-label="@(NextAriaLabel ?? "Next")"
                         @onclick="() => Slide(true)"
@@ -81,11 +83,29 @@
                 </button>
             }
 
+            @if (Addable)
+            {
+                var addIcon = BitIconInfo.From(AddIcon, AddIconName ?? "Add");
+                @* Outside the tablist on purpose: it asks for a new tab rather than being one, so it keeps
+                   its own natural place in the tab order instead of taking one of the arrow keys. *@
+                <button type="button"
+                        disabled="@(IsEnabled is false)"
+                        title="@(AddTitle ?? "Add")"
+                        style="@Styles?.AddButton"
+                        aria-label="@(AddAriaLabel ?? "Add")"
+                        @onclick="HandleAddClick"
+                        class="bit-pvt-abt @Classes?.AddButton">
+                    <i aria-hidden="true" style="@Styles?.AddIcon" class="@addIcon?.GetCssClasses() @Classes?.AddIcon" />
+                </button>
+            }
+
             @if (OverflowBehavior is BitPivotOverflowBehavior.Menu)
             {
+                @* Clicking away closes the menu the way Escape does, which includes handing the focus
+                   back to the button that holds it. *@
                 <div class="bit-pvt-ovl"
                      style="display:@(_isMenuOpen ? "block" : "none")"
-                     @onclick="CloseMenu"></div>
+                     @onclick="CloseMenuAndFocusButton"></div>
 
                 @* The menu takes the focus on itself and points at the item it is on with an
                    aria-activedescendant, which the WAI-ARIA menu pattern offers as the alternative to

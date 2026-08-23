@@ -16,6 +16,7 @@ public partial class BitPivot : BitComponentBase
     private bool _slideHasOverflow;
     private bool _rendered;
     private bool _focusAfterRender;
+    private bool _keyCheckNeeded;
     private bool _orderCheckNeeded;
     private bool _focusMenuAfterRender;
     private bool _preventKeyDownDefault;
@@ -43,10 +44,44 @@ public partial class BitPivot : BitComponentBase
 
 
     /// <summary>
+    /// Renders a button at the end of the pivot items that reports a request for a new tab through the
+    /// <see cref="OnAdd"/> callback. The pivot does not add an item itself, since the items belong to the
+    /// markup that declares them, so the handler is what puts the new one into the list.
+    /// </summary>
+    [Parameter] public bool Addable { get; set; }
+
+    /// <summary>
+    /// The aria-label of the add button of the pivot (default: Add).
+    /// </summary>
+    [Parameter] public string? AddAriaLabel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon of the add button of the pivot using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="AddIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? AddIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon of the add button of the pivot from the built-in Fluent UI icons (default: Add).
+    /// </summary>
+    [Parameter] public string? AddIconName { get; set; }
+
+    /// <summary>
+    /// The title (tooltip) of the add button of the pivot (default: Add).
+    /// </summary>
+    [Parameter] public string? AddTitle { get; set; }
+
+    /// <summary>
     /// Determines the alignment of the header section of the pivot.
     /// </summary>
     [Parameter, ResetStyleBuilder]
     public BitAlignment? Alignment { get; set; }
+
+    /// <summary>
+    /// The id of the element that labels the header of the pivot (rendered into the aria-labelledby of the
+    /// tablist), which is what names a pivot sitting under a heading of its own. It wins over the AriaLabel.
+    /// </summary>
+    [Parameter] public string? AriaLabelledBy { get; set; }
 
     /// <summary>
     /// Renders the next and previous buttons of the Slide overflow behavior only while there actually
@@ -112,6 +147,12 @@ public partial class BitPivot : BitComponentBase
     public bool FullWidth { get; set; }
 
     /// <summary>
+    /// The gap between the pivot items of the header.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public string? Gap { get; set; }
+
+    /// <summary>
     /// The content rendered at the end of the header, after the pivot items and after the overflow
     /// or slide affordances, which is where the actions belonging to the whole pivot usually go.
     /// </summary>
@@ -175,10 +216,21 @@ public partial class BitPivot : BitComponentBase
     [Parameter] public string? NextIconName { get; set; }
 
     /// <summary>
+    /// Callback for when the add button of an <see cref="Addable"/> pivot is clicked.
+    /// </summary>
+    [Parameter] public EventCallback OnAdd { get; set; }
+
+    /// <summary>
     /// Callback for when the selected pivot item changes.
     /// </summary>
     [Parameter]
     public EventCallback<BitPivotItem> OnChange { get; set; }
+
+    /// <summary>
+    /// Callback for just before the selected pivot item changes, which can call the change off by setting
+    /// the Cancel of its arguments, so that a tab holding unsaved work can refuse to be left.
+    /// </summary>
+    [Parameter] public EventCallback<BitPivotChangeArgs> OnChanging { get; set; }
 
     /// <summary>
     /// Callback for when a pivot header item is clicked.
@@ -300,7 +352,7 @@ public partial class BitPivot : BitComponentBase
     {
         var item = _allItems.FirstOrDefault(i => i.Key == key);
 
-        if (item is null || item == _selectedItem || item.IsEnabled is false) return;
+        if (item is null || item == _selectedItem || IsItemSelectable(item) is false) return;
 
         await SelectItem(item);
     }
@@ -400,6 +452,8 @@ public partial class BitPivot : BitComponentBase
     {
         StyleBuilder.Register(() => Styles?.Root);
 
+        StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-pvt-gap:{Gap}" : string.Empty);
+
         StyleBuilder.Register(() => Alignment switch
         {
             BitAlignment.Start => "--bit-pvt-hal:flex-start",
@@ -437,6 +491,18 @@ public partial class BitPivot : BitComponentBase
             _orderCheckNeeded = false;
 
             await SortItemsByDomOrder();
+        }
+
+        if (_keyCheckNeeded)
+        {
+            _keyCheckNeeded = false;
+
+            // The tab the key was waiting for never showed up, so the bound value goes back to the tab
+            // that is actually selected rather than being left pointing at nothing.
+            if (_allItems.Exists(i => i.Key == SelectedKey) is false)
+            {
+                RevertSelectedKey();
+            }
         }
 
         _rendered = true;
@@ -653,7 +719,15 @@ public partial class BitPivot : BitComponentBase
 
     internal string GetDismissAriaLabel(BitPivotItem item)
     {
-        return string.Format(DismissAriaLabelFormat ?? "Remove {0}", item.HeaderText);
+        // A tab given a header template of its own has no header text to be named by, so the label falls
+        // back to whatever else names it rather than reading as a Remove with nothing after it.
+        var name = item.HeaderText.HasValue() ? item.HeaderText
+                 : item.AriaLabel.HasValue() ? item.AriaLabel
+                 : item.Title;
+
+        return name.HasValue()
+                ? string.Format(DismissAriaLabelFormat ?? "Remove {0}", name)
+                : (DismissTitle ?? "Remove");
     }
 
     internal string GetMenuItemId(int index)
@@ -666,6 +740,28 @@ public partial class BitPivot : BitComponentBase
         if (SelectedKeyHasBeenSet && SelectedKeyChanged.HasDelegate is false) return;
 
         if (item == _selectedItem) return;
+
+        // The change is offered to the handler before anything moves, so that a tab holding unsaved work
+        // can refuse to be left.
+        if (OnChanging.HasDelegate)
+        {
+            var args = new BitPivotChangeArgs(item);
+
+            await OnChanging.InvokeAsync(args);
+
+            if (args.Cancel)
+            {
+                // A change called off after the bound key was already moved would leave that key pointing
+                // at a tab that is not shown, so it goes back to the tab that is actually selected.
+                if (SelectedKeyHasBeenSet && _selectedItem?.Key != SelectedKey)
+                {
+                    await AssignSelectedKey(_selectedItem?.Key);
+                }
+
+                StateHasChanged();
+                return;
+            }
+        }
 
         MoveFocus(item);
 
@@ -700,6 +796,7 @@ public partial class BitPivot : BitComponentBase
         {
             _selectedItem?.SetIsSelected(false);
             _selectedItem = item;
+            _scrollTarget = item;
             _ = AssignSelectedKey(item.Key);
             StateHasChanged();
             return;
@@ -713,6 +810,7 @@ public partial class BitPivot : BitComponentBase
             _selectedItem?.SetIsSelected(false);
             item.SetIsSelected(true);
             _selectedItem = item;
+            _scrollTarget = item;
             StateHasChanged();
             return;
         }
@@ -724,6 +822,7 @@ public partial class BitPivot : BitComponentBase
         {
             item.SetIsSelected(true);
             _selectedItem = item;
+            _scrollTarget = item;
             StateHasChanged();
         }
     }
@@ -773,6 +872,7 @@ public partial class BitPivot : BitComponentBase
 
         next.SetIsSelected(true);
         _selectedItem = next;
+        _scrollTarget = next;
         _mountedItems.Add(next);
         _ = AssignSelectedKey(next.Key);
 
@@ -918,8 +1018,17 @@ public partial class BitPivot : BitComponentBase
             if (forward || backward)
             {
                 var from = _allItems.IndexOf(current);
+                var step = forward ? 1 : -1;
+                var to = from + step;
 
-                await ReorderItem(current, from + (forward ? 1 : -1));
+                // A tab that is not shown is not a place another one can be moved to either, so the move
+                // steps over it and lands on the next tab that is really in the header.
+                while (to >= 0 && to < _allItems.Count && IsItemSelectable(_allItems[to]) is false)
+                {
+                    to += step;
+                }
+
+                await ReorderItem(current, to);
 
                 _focusAfterRender = true;
                 return;
@@ -1139,20 +1248,33 @@ public partial class BitPivot : BitComponentBase
     {
         var newItem = _allItems.FirstOrDefault(i => i.Key == key);
 
-        if (newItem is null || newItem == _selectedItem || newItem.IsEnabled is false)
+        if (newItem is null)
         {
-            // The new key cannot be honored, so the bound value goes back to the key of the item that
-            // is actually selected instead of being left pointing at a tab that is not shown. Assigning
-            // the key that is already there is a no-op, which is what keeps this from looping.
-            if (_selectedItem is not null && _selectedItem.Key != SelectedKey)
-            {
-                _ = AssignSelectedKey(_selectedItem.Key);
-            }
+            // The key can be the key of a tab that is being added in the very same render - adding a tab
+            // and selecting it is one gesture - and that tab has not registered itself yet, so the key is
+            // left alone and looked at again once the render it came with has gone through.
+            _keyCheckNeeded = true;
+            return;
+        }
 
+        if (newItem == _selectedItem || IsItemSelectable(newItem) is false)
+        {
+            RevertSelectedKey();
             return;
         }
 
         _ = SelectItem(newItem);
+    }
+
+    // The new key cannot be honored, so the bound value goes back to the key of the item that is
+    // actually selected instead of being left pointing at a tab that is not shown. Assigning the key
+    // that is already there is a no-op, which is what keeps this from looping.
+    private void RevertSelectedKey()
+    {
+        if (_selectedItem is not null && _selectedItem.Key != SelectedKey)
+        {
+            _ = AssignSelectedKey(_selectedItem.Key);
+        }
     }
 
     private string GetItemStyle(BitPivotItem? item)
@@ -1194,6 +1316,8 @@ public partial class BitPivot : BitComponentBase
 
     private void ToggleMenu()
     {
+        if (IsEnabled is false) return;
+
         if (_isMenuOpen)
         {
             CloseMenu();
@@ -1293,8 +1417,9 @@ public partial class BitPivot : BitComponentBase
                 return;
 
             case "Tab":
-                CloseMenu();
-                StateHasChanged();
+                // Closing the menu takes the element the focus is on out of the page, so the focus goes
+                // back to the button that holds it rather than dropping all the way to the document body.
+                await CloseMenuAndFocusButton();
                 return;
 
             case "Enter":
@@ -1339,6 +1464,8 @@ public partial class BitPivot : BitComponentBase
             _preventMoreKeyDownDefault = prevent;
             StateHasChanged();
         }
+
+        if (IsEnabled is false) return;
 
         if (e.Key is "Escape")
         {
@@ -1412,6 +1539,13 @@ public partial class BitPivot : BitComponentBase
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
         catch (InvalidOperationException) { } // the element is not in the dom anymore
+    }
+
+    private async Task HandleAddClick()
+    {
+        if (IsEnabled is false) return;
+
+        await OnAdd.InvokeAsync();
     }
 
     private async Task Slide(bool forward)

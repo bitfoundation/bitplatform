@@ -104,7 +104,8 @@
         min-width: 0;
     }
 
-    .bit-pvt-sbt {
+    .bit-pvt-sbt,
+    .bit-pvt-abt {
         width: 100%;
         height: spacing(4);
     }
@@ -114,7 +115,7 @@
     .bit-pvti {
         text-align: start;
         margin-inline-end: 0;
-        margin-block-end: spacing(0.5);
+        margin-block-end: var(--bit-pvt-gap, #{spacing(0.5)});
     }
 
     &.bit-pvt-scr .bit-pvt-hct {
@@ -128,6 +129,14 @@
             width: spacing(0.625);
         }
     }
+}
+
+// The header of a Bottom pivot sits at the foot of it, where a menu opening downwards would run off
+// the end of the page, so it opens over the header instead.
+.bit-pvt-btm .bit-pvt-mnc {
+    top: auto;
+    bottom: 100%;
+    border-radius: $shp-radius-popup $shp-radius-popup 0 0;
 }
 
 .bit-pvt-sta .bit-pvt-mnc {
@@ -222,12 +231,12 @@
 .bit-pvt-wrp {
     .bit-pvt-hct {
         flex-wrap: wrap;
-        row-gap: spacing(0.5);
+        row-gap: var(--bit-pvt-gap, #{spacing(0.5)});
     }
 
     &.bit-pvt-sta .bit-pvt-hct,
     &.bit-pvt-end .bit-pvt-hct {
-        column-gap: spacing(0.5);
+        column-gap: var(--bit-pvt-gap, #{spacing(0.5)});
     }
 }
 
@@ -266,7 +275,8 @@
     .bit-pvt-hct > .bit-pvti:not(.bit-pvt-mor) {
         flex: 1 1 0;
         min-width: 0;
-        margin-inline-end: 0;
+        // Sharing the whole line leaves nothing between the items unless the pivot asks for a gap.
+        margin-inline-end: var(--bit-pvt-gap, 0);
     }
 }
 
@@ -301,7 +311,7 @@
     text-decoration: none;
     box-sizing: border-box;
     scroll-margin: spacing(1);
-    margin-inline-end: spacing(1);
+    margin-inline-end: var(--bit-pvt-gap, #{spacing(1)});
     line-height: $siz-tab;
     background-color: transparent;
     color: $clr-fg-pri;
@@ -347,6 +357,14 @@
             background-color: var(--bit-pvt-clr-dis);
         }
     }
+}
+
+// The gutter belongs between the items rather than after the last one, which would otherwise hold a
+// header aligned to the end (or centred) away from the place it is aligned to. Carries the class of the
+// root so that it outweighs the FullWidth rule above, which sets a margin of its own.
+.bit-pvt .bit-pvt-hct > .bit-pvti:last-child {
+    margin-inline-end: 0;
+    margin-block-end: 0;
 }
 
 // The header text of the selected item turns semibold, which is wider than the same words in the
@@ -459,6 +477,41 @@
     font-size: $tg-fs-2xs;
 }
 
+// Asks for a new tab rather than being one of them, so it is a fixed affordance beside the header
+// that keeps its own width whatever the tabs sharing the line do.
+.bit-pvt-abt {
+    border: 0;
+    padding: 0;
+    flex-shrink: 0;
+    cursor: pointer;
+    border-radius: 0;
+    color: $clr-fg-pri;
+    width: spacing(4);
+    align-items: center;
+    height: $siz-tab;
+    display: inline-flex;
+    box-sizing: border-box;
+    justify-content: center;
+    background-color: transparent;
+
+    @media (hover: hover) {
+        &:hover {
+            color: $clr-fg-pri-hover;
+            background-color: $clr-bg-pri-hover;
+        }
+    }
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-pvt-clr-focus));
+    }
+
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+        pointer-events: none;
+    }
+}
+
 .bit-pvt-sta,
 .bit-pvt-end {
     // The indicator runs down the side here, so it collapses along the other axis. Both rules below
@@ -567,6 +620,12 @@
 .bit-pvt-mor {
     flex-shrink: 0;
     margin-inline-end: 0;
+
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+        pointer-events: none;
+    }
 
     // The selected tab can be one of the ones folded away, and a header showing no selection at all
     // reads as if nothing were selected, so the button holding it carries the selection instead.

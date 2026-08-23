@@ -169,6 +169,17 @@ public class BitPivotTests : BunitTestContext
         Assert.AreEqual("Workspace sections", component.Find(".bit-pvt-hct").GetAttribute("aria-label"));
     }
 
+    [TestMethod]
+    public void BitPivotShouldPutItsAriaLabelledByOnTheTablist()
+    {
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabelledBy, "sections-heading");
+        });
+
+        Assert.AreEqual("sections-heading", component.Find(".bit-pvt-hct").GetAttribute("aria-labelledby"));
+    }
+
     [TestMethod, DataRow("Detailed label")]
     public void BitPivotAriaLabelTest(string ariaLabel)
     {
@@ -1116,6 +1127,321 @@ public class BitPivotTests : BunitTestContext
         Assert.AreEqual("true", component.FindAll(".bit-pvt-mni")[0].GetAttribute("aria-checked"));
     }
 
+
+
+    [TestMethod]
+    public void BitPivotAddableShouldRenderAnAddButtonThatRaisesOnAdd()
+    {
+        var count = 0;
+
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.Addable, true);
+            parameters.Add(p => p.OnAdd, () => count++);
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+        });
+
+        var button = component.Find(".bit-pvt-abt");
+
+        Assert.AreEqual("Add", button.GetAttribute("aria-label"));
+        Assert.AreEqual("Add", button.GetAttribute("title"));
+
+        // The add button asks for a tab rather than being one, so it stays out of the tablist.
+        Assert.AreEqual(0, component.FindAll(".bit-pvt-hct .bit-pvt-abt").Count);
+
+        button.Click();
+
+        Assert.AreEqual(1, count);
+    }
+
+    [TestMethod]
+    public void BitPivotShouldNotRenderAnAddButtonWithoutAddable()
+    {
+        Assert.AreEqual(0, RenderPivot(2).FindAll(".bit-pvt-abt").Count);
+    }
+
+    [TestMethod]
+    public void BitPivotShouldNameTheAddButtonAsItIsAskedTo()
+    {
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.Addable, true);
+            parameters.Add(p => p.AddTitle, "New tab");
+            parameters.Add(p => p.AddAriaLabel, "Open a new tab");
+            parameters.Add(p => p.AddIconName, "CircleAddition");
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+        });
+
+        var button = component.Find(".bit-pvt-abt");
+
+        Assert.AreEqual("Open a new tab", button.GetAttribute("aria-label"));
+        Assert.AreEqual("New tab", button.GetAttribute("title"));
+        Assert.AreEqual(1, component.FindAll(".bit-pvt-abt .bit-icon--CircleAddition").Count);
+    }
+
+    [TestMethod]
+    public void BitPivotShouldRespectGap()
+    {
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.Gap, "2rem");
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+        });
+
+        Assert.IsTrue(component.Find(".bit-pvt").GetAttribute("style")!.Contains("--bit-pvt-gap:2rem"));
+    }
+
+    [TestMethod]
+    public void BitPivotOnChangingShouldBeAbleToCallTheChangeOff()
+    {
+        var changed = new List<string?>();
+
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.OnChanging, (BitPivotChangeArgs args) => args.Cancel = args.Item.HeaderText == "B");
+            parameters.Add(p => p.OnChange, (BitPivotItem i) => changed.Add(i.HeaderText));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "C"));
+        });
+
+        component.FindAll("[role=tab]")[1].Click();
+
+        // A change that is called off never happens, so it never reaches OnChange either.
+        Assert.AreEqual("true", component.FindAll("[role=tab]")[0].GetAttribute("aria-selected"));
+        Assert.AreEqual(0, changed.Count);
+
+        component.FindAll("[role=tab]")[2].Click();
+
+        Assert.AreEqual("true", component.FindAll("[role=tab]")[2].GetAttribute("aria-selected"));
+        Assert.AreEqual(1, changed.Count);
+        Assert.AreEqual("C", changed[0]);
+    }
+
+    [TestMethod]
+    public void BitPivotOnChangingShouldSendABoundKeyBackWhenItCallsTheChangeOff()
+    {
+        var key = "a";
+
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Bind(p => p.SelectedKey, key, v => key = v!);
+            parameters.Add(p => p.OnChanging, (BitPivotChangeArgs args) => args.Cancel = true);
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "a"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "b"));
+        });
+
+        component.Render(parameters => parameters.Bind(p => p.SelectedKey, "b", v => key = v!));
+
+        Assert.AreEqual("a", key);
+        Assert.AreEqual("true", component.FindAll("[role=tab]")[0].GetAttribute("aria-selected"));
+    }
+
+    [TestMethod]
+    public void BitPivotShouldHonorAKeyPointingAtATabThatIsAddedInTheSameRender()
+    {
+        var tabs = new List<string> { "a", "b" };
+        var key = "a";
+
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Bind(p => p.SelectedKey, key, v => key = v!);
+            parameters.AddChildContent(builder =>
+            {
+                foreach (var tab in tabs)
+                {
+                    builder.OpenComponent<BitPivotItem>(0);
+                    builder.SetKey(tab);
+                    builder.AddComponentParameter(1, nameof(BitPivotItem.Key), tab);
+                    builder.AddComponentParameter(2, nameof(BitPivotItem.HeaderText), tab);
+                    builder.CloseComponent();
+                }
+            });
+        });
+
+        // Adding a tab and selecting it is one gesture, so the key reaches the pivot before the tab does.
+        tabs.Add("c");
+        key = "c";
+        component.Render(parameters => parameters.Bind(p => p.SelectedKey, key, v => key = v!));
+
+        // The key is left alone rather than being sent back to the tab that was selected before it.
+        Assert.AreEqual("c", key);
+        Assert.AreEqual(3, component.FindAll("[role=tab]").Count);
+        Assert.AreEqual("true", component.FindAll("[role=tab]")[2].GetAttribute("aria-selected"));
+    }
+
+    [TestMethod]
+    public void BitPivotShouldStillSendBackABoundKeyThatNoTabEverAnswersTo()
+    {
+        var key = "a";
+
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Bind(p => p.SelectedKey, key, v => key = v!);
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "a"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "b"));
+        });
+
+        component.Render(parameters => parameters.Bind(p => p.SelectedKey, "nothing", v => key = v!));
+
+        Assert.AreEqual("a", key);
+        Assert.AreEqual("true", component.FindAll("[role=tab]")[0].GetAttribute("aria-selected"));
+    }
+
+    [TestMethod]
+    public void BitPivotShouldNotLetAKeyPointAtATabThatIsNotShown()
+    {
+        var key = "a";
+
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Bind(p => p.SelectedKey, key, v => key = v!);
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "a"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "b").Add(i => i.Visibility, BitVisibility.Collapsed));
+        });
+
+        component.Render(parameters => parameters.Bind(p => p.SelectedKey, "b", v => key = v!));
+
+        Assert.AreEqual("a", key);
+        Assert.AreEqual("true", component.FindAll("[role=tab]")[0].GetAttribute("aria-selected"));
+    }
+
+    [TestMethod]
+    public void BitPivotSelectItemByKeyShouldSelectTheItemItCanAndRefuseTheOnesItCannot()
+    {
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "a"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "b"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "c").Add(i => i.IsEnabled, false));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "d").Add(i => i.Visibility, BitVisibility.Collapsed));
+        });
+
+        component.InvokeAsync(() => component.Instance.SelectItemByKey("b"));
+        Assert.AreEqual("b", component.Instance.SelectedItem?.Key);
+
+        component.InvokeAsync(() => component.Instance.SelectItemByKey("c"));
+        Assert.AreEqual("b", component.Instance.SelectedItem?.Key);
+
+        component.InvokeAsync(() => component.Instance.SelectItemByKey("d"));
+        Assert.AreEqual("b", component.Instance.SelectedItem?.Key);
+
+        component.InvokeAsync(() => component.Instance.SelectItemByKey("nothing"));
+        Assert.AreEqual("b", component.Instance.SelectedItem?.Key);
+    }
+
+    [TestMethod]
+    public void BitPivotDisabledShouldTurnOffTheAffordancesOfItsHeaderAsWell()
+    {
+        var slide = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Addable, true);
+            parameters.Add(p => p.OverflowBehavior, BitPivotOverflowBehavior.Slide);
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+        });
+
+        Assert.IsTrue(slide.Find(".bit-pvt-spv").HasAttribute("disabled"));
+        Assert.IsTrue(slide.Find(".bit-pvt-snx").HasAttribute("disabled"));
+        Assert.IsTrue(slide.Find(".bit-pvt-abt").HasAttribute("disabled"));
+
+        var menu = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.OverflowBehavior, BitPivotOverflowBehavior.Menu);
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B"));
+        });
+
+        menu.InvokeAsync(() => menu.Instance.OnSetOverflowItems([1]));
+
+        Assert.IsTrue(menu.Find(".bit-pvt-mor").HasAttribute("disabled"));
+
+        // The menu of a disabled pivot stays shut whatever reaches the button that opens it.
+        menu.Find(".bit-pvt-mor").Click();
+        Assert.AreEqual("false", menu.Find(".bit-pvt-mor").GetAttribute("aria-expanded"));
+
+        menu.Find(".bit-pvt-mor").KeyDown("ArrowDown");
+        Assert.AreEqual("false", menu.Find(".bit-pvt-mor").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void BitPivotOverflowMenuShouldCloseOnTabAndOnAClickAway()
+    {
+        var component = RenderOverflowPivot();
+
+        component.Find(".bit-pvt-mor").Click();
+        Assert.AreEqual("true", component.Find(".bit-pvt-mor").GetAttribute("aria-expanded"));
+
+        // Closing the menu takes the element the focus is on out of the page, so Tab hands it back to
+        // the button rather than letting it drop to the document body.
+        component.Find(".bit-pvt-mnc").KeyDown("Tab");
+        Assert.AreEqual("false", component.Find(".bit-pvt-mor").GetAttribute("aria-expanded"));
+
+        component.Find(".bit-pvt-mor").Click();
+        component.Find(".bit-pvt-ovl").Click();
+        Assert.AreEqual("false", component.Find(".bit-pvt-mor").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void BitPivotShouldNameTheDismissButtonOfATabThatHasNoHeaderTextOfItsOwn()
+    {
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.Dismissible, true);
+            parameters.AddChildContent<BitPivotItem>(p => p
+                .Add(i => i.AriaLabel, "The first tab")
+                .Add(i => i.Header, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span>A</span>"))));
+            parameters.AddChildContent<BitPivotItem>(p => p
+                .Add(i => i.Header, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span>B</span>"))));
+        });
+
+        var buttons = component.FindAll(".bit-pvti-dbt");
+
+        Assert.AreEqual("Remove The first tab", buttons[0].GetAttribute("aria-label"));
+
+        // Nothing names the second one, so the label falls back to the title of the button itself
+        // rather than reading as a Remove with nothing after it.
+        Assert.AreEqual("Remove", buttons[1].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitPivotShouldStepOverATabThatIsNotShownWhileReorderingFromTheKeyboard()
+    {
+        var moves = new List<(int, int)>();
+
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.Reorderable, true);
+            parameters.Add(p => p.OnItemReorder, (BitPivotReorderEventArgs a) => moves.Add((a.OldIndex, a.NewIndex)));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B").Add(i => i.Visibility, BitVisibility.Collapsed));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "C"));
+        });
+
+        component.Find(".bit-pvt-hct").KeyDown(new KeyboardEventArgs { Key = "ArrowRight", CtrlKey = true });
+
+        // The hidden tab is not a place in the header, so the move lands on the one after it.
+        Assert.AreEqual(1, moves.Count);
+        Assert.AreEqual((0, 2), moves[0]);
+    }
+
+    [TestMethod]
+    public void BitPivotShouldBringTheTabItStartsOnIntoView()
+    {
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.OverflowBehavior, BitPivotOverflowBehavior.Scroll);
+            parameters.Add(p => p.DefaultSelectedKey, "c");
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "a"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "b"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "c"));
+        });
+
+        // The tab the pivot starts on can be one that is scrolled out of sight, so it is asked for.
+        Assert.AreEqual("c", component.Instance.SelectedItem?.Key);
+        Assert.IsTrue(Context.JSInterop.Invocations["BitBlazorUI.Pivot.scrollToItem"].Count > 0);
+    }
 
 
     private static void AddItem(RenderTreeBuilder builder, int sequence, string key)

@@ -101,7 +101,9 @@ namespace BitBlazorUI {
         private disposed: boolean = false;
         private observer: ResizeObserver | null = null;
         private scrollHandler: (() => void) | null = null;
+        private wheelHandler: ((e: WheelEvent) => void) | null = null;
         private dragStartHandler: ((e: DragEvent) => void) | null = null;
+        private slideTimer: number | null = null;
         private lastOverflow: string = '';
         private lastSlideState: string = '';
 
@@ -132,8 +134,34 @@ namespace BitBlazorUI {
                 this.observer.observe(this.header);
 
                 if (this.isSlide) {
-                    this.scrollHandler = Utils.throttle(() => this.updateSlide(), 100) as () => void;
+                    const throttled = Utils.throttle(() => this.updateSlide(), 100) as () => void;
+                    // the throttle only calls on its leading edge, so a scroll that comes to rest inside
+                    // its window would otherwise leave the buttons reporting the state the header was in
+                    // on the way rather than the one it ended up in.
+                    this.scrollHandler = () => { throttled(); this.scheduleSlideUpdate(); };
                     this.header.addEventListener('scroll', this.scrollHandler, { passive: true });
+
+                    if (!this.isVertical) {
+                        // the header of the Slide behavior scrolls sideways and hides its scrollbar, so a
+                        // wheel over it moves it along instead of scrolling the page past the very header
+                        // the user is trying to get through. the page keeps the wheel at either end of it.
+                        this.wheelHandler = (e: WheelEvent) => {
+                            try {
+                                if (e.ctrlKey || e.deltaY === 0 || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+
+                                const maxScroll = this.header.scrollWidth - this.header.clientWidth;
+                                if (maxScroll <= 1) return;
+
+                                const abs = Math.abs(this.header.scrollLeft);
+                                const forward = e.deltaY > 0;
+                                if (forward ? abs >= maxScroll - 1 : abs <= 1) return;
+
+                                e.preventDefault();
+                                this.header.scrollBy({ left: (this.isRtl ? -1 : 1) * e.deltaY, behavior: 'auto' });
+                            } catch { }
+                        };
+                        this.header.addEventListener('wheel', this.wheelHandler, { passive: false });
+                    }
                 }
 
                 if (this.isReorderable) {
@@ -256,6 +284,22 @@ namespace BitBlazorUI {
             }
         }
 
+        // A final read of the header once it has come to rest, which is what the leading-edge throttle
+        // of the scroll handler cannot give on its own.
+        private scheduleSlideUpdate() {
+            if (this.disposed) return;
+
+            if (this.slideTimer !== null) {
+                clearTimeout(this.slideTimer);
+            }
+
+            this.slideTimer = setTimeout(() => {
+                this.slideTimer = null;
+                if (this.disposed) return;
+                this.updateSlide();
+            }, 150) as unknown as number;
+        }
+
         private updateSlide() {
             try {
                 let atStart: boolean;
@@ -308,6 +352,10 @@ namespace BitBlazorUI {
                     const sign = this.isRtl ? -1 : 1;
                     this.header.scrollBy({ left: direction * sign * amount, behavior });
                 }
+
+                // the smooth scroll above lands after the last scroll event the throttle let through,
+                // so the buttons are asked to read the header again once it has come to rest.
+                this.scheduleSlideUpdate();
             } catch (e) {
                 console.error('BitBlazorUI.Pivot.slide:', e);
             }
@@ -329,6 +377,14 @@ namespace BitBlazorUI {
                 if (this.scrollHandler) {
                     this.header.removeEventListener('scroll', this.scrollHandler);
                     this.scrollHandler = null;
+                }
+                if (this.wheelHandler) {
+                    this.header.removeEventListener('wheel', this.wheelHandler);
+                    this.wheelHandler = null;
+                }
+                if (this.slideTimer !== null) {
+                    clearTimeout(this.slideTimer);
+                    this.slideTimer = null;
                 }
                 if (this.dragStartHandler) {
                     this.header.removeEventListener('dragstart', this.dragStartHandler);
