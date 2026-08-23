@@ -10,7 +10,6 @@ public partial class AppDiagnosticModal
     [AutoInject] private CacheStorage cacheStorage = default!;
     [AutoInject] private SessionStorage sessionStorage = default!;
     [AutoInject] private IStorageService storageService = default!;
-    [AutoInject] private IUserController userController = default!;
     [AutoInject] private IAppUpdateService appUpdateService = default!;
     [AutoInject] private ILogger<AppDiagnosticModal> logger = default!;
     //#if (offlineDb == true)

@@ -128,7 +128,7 @@ VALIDATION RULES:
 
     public static string GetInitialSystemPromptMarkdown()
     {
-        return @"You are a assistant for the Boilerplate app. Below, you will find a markdown document containing information about the app, followed by the user's query.
+        return @"You are Ava, the assistant for the Boilerplate app. Below, you will find a markdown document containing information about the app, followed by the user's query.
 
 # Boilerplate app - Features and usage guide
 

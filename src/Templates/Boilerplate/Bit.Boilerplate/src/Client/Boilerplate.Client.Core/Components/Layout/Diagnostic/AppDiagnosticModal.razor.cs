@@ -44,6 +44,7 @@ public partial class AppDiagnosticModal
     private DiagnosticLogDto[] allLogs = default!;
     private BitDropdownItem<string>[] allCategoryItems = [];
     private DiagnosticLogDto[] filteredLogs = default!;
+    private (DiagnosticLogDto item, int index)[] indexedFilteredLogs = [];
     private BitBasicList<(DiagnosticLogDto, int)> logStackRef = default!;
     private readonly BitDropdownItem<LogLevel>[] logLevelItems = Enum.GetValues<LogLevel>().Select(v => new BitDropdownItem<LogLevel>() { Value = v, Text = v.ToString() }).ToArray();
     private IEnumerable<LogLevel> filterLogLevelValues = AppEnvironment.IsDevelopment()
@@ -189,6 +190,7 @@ public partial class AppDiagnosticModal
                                    .OrderByIf(isDescendingSort is false, l => l.CreatedOn);
 
         filteredLogs = [.. query];
+        indexedFilteredLogs = [.. filteredLogs.Indexed()];
 
         IEnumerable<DiagnosticLogDto> FilterSearchText(DiagnosticLogDto[] logs)
         {
@@ -198,14 +200,15 @@ public partial class AppDiagnosticModal
             {
                 try
                 {
-                    var regExp = new Regex(searchText, RegexOptions.IgnoreCase);
+                    var regExp = new Regex(searchText, RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(200));
 
                     return [.. logs.Where(l => regExp.IsMatch(l.Message ?? string.Empty) ||
                                                regExp.IsMatch(l.Category ?? string.Empty) ||
                                                l.State?.Any(s => regExp.IsMatch(s.Key) || regExp.IsMatch(s.Value ?? string.Empty)) is true)];
                 }
-                catch
+                catch (Exception exp) when (exp is RegexParseException or RegexMatchTimeoutException)
                 {
+                    SnackBarService.Warning("Regular expression", exp.Message);
                     return [];
                 }
             }

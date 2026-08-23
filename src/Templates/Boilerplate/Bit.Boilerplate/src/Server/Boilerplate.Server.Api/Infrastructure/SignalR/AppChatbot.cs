@@ -157,14 +157,20 @@ public partial class AppChatbot
 
             if (generateFollowUpSuggestions)
             {
-                // Generate follow-up suggestions
-                var followUpSuggestions = await GenerateFollowUpSuggestions(
-                    incomingMessage.Content ?? string.Empty,
-                    assistantResponse.ToString(),
-                    chatOptions,
-                    cancellationToken);
+                try
+                {
+                    var followUpSuggestions = await GenerateFollowUpSuggestions(
+                        incomingMessage.Content ?? string.Empty,
+                        assistantResponse.ToString(),
+                        chatOptions,
+                        cancellationToken);
 
-                await SendStringToClient(JsonSerializer.Serialize(followUpSuggestions), cancellationToken);
+                    await SendStringToClient(JsonSerializer.Serialize(followUpSuggestions), cancellationToken);
+                }
+                catch (Exception exp)
+                {
+                    try { exceptionHandler.Handle(exp, new() { { "SignalRConnectionId", signalRConnectionId } }); } catch { }
+                }
             }
         }
         catch (Exception exp) when (exp is OperationCanceledException or ChannelClosedException)

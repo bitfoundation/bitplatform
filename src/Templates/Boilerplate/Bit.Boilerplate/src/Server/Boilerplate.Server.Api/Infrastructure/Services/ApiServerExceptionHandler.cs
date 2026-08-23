@@ -125,6 +125,10 @@ public partial class ApiServerExceptionHandler : SharedExceptionHandler, IProble
             {
                 logger.LogError(exception, exceptionMessageToLog);
             }
+            else if (IsTransientException(exception))
+            {
+                logger.LogWarning(exception, exceptionMessageToLog);
+            }
             else
             {
                 logger.LogCritical(exception, exceptionMessageToLog);

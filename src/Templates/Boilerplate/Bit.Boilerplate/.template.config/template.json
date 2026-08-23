@@ -556,6 +556,7 @@
                         "src/Tests/Features/Diagnostics/TelemetryScopeTests.cs",
                         "src/Tests/Features/Diagnostics/LoggingConfigurationTests.cs",
                         "src/Tests/Features/Diagnostics/AppInsightsReadinessTests.cs",
+                        "src/Tests/Features/Diagnostics/DiagnosticModalVirtualizationTests.cs",
                         "src/Tests/Features/Ads/AdsServiceTests.cs",
                         "src/Tests/Features/Configuration/ClientSettingsValidationTests.cs",
                         "src/Tests/Features/Identity/TrustedOriginsTests.cs",
@@ -654,6 +655,7 @@
                         "src/Tests/Features/Chatbot/SpeakableTextTests.cs",
                         "src/Tests/Features/Chatbot/AiChatPanelTestBase.cs",
                         "src/Tests/Features/Chatbot/AppChatbotHistoryTests.cs",
+                        "src/Tests/Features/Chatbot/AiChatPanelAnswerRoutingTests.cs",
                         "src/Tests/Features/Chatbot/TestChatClient.cs"
                     ]
                 },

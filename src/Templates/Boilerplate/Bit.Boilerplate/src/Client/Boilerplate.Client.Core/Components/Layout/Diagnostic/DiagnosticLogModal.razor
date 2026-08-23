@@ -2,7 +2,7 @@
 
 <div>
     <BitProModal @bind-IsOpen="IsLogModalOpen" FullSize>
-        <BitStack style="padding:1rem;">
+        <BitStack Padding="1rem">
             <BitStack Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
                 <BitText Typography="BitTypography.H6">Log details</BitText>
                 <BitButton IconOnly
@@ -14,21 +14,25 @@
                 <BitSpacer />
                 <BitButton IconOnly
                            Title="Prev"
+                           AriaLabel="Prev"
                            Color="BitColor.Tertiary"
                            Variant="BitVariant.Text"
-                           OnClick="async () => await OnNav.InvokeAsync(false)" 
+                           OnClick="WrapHandled(() => OnNav.InvokeAsync(false))"
                            IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.ChevronRightMed : BitIconName.ChevronLeftMed)" />
                 <BitButton IconOnly
                            Title="Next"
+                           AriaLabel="Next"
                            Color="BitColor.Tertiary"
                            Variant="BitVariant.Text"
-                           OnClick="async () => await OnNav.InvokeAsync(true)" 
+                           OnClick="WrapHandled(() => OnNav.InvokeAsync(true))"
                            IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.ChevronLeftMed : BitIconName.ChevronRightMed)" />
                 <BitButton IconOnly
+                           Title="Close"
+                           AriaLabel="Close"
                            Color="BitColor.Info"
                            Variant="BitVariant.Text"
-                           IconName="@BitIconName.ChromeClose" 
-                           OnClick="async () => { IsLogModalOpen = false; await IsLogModalOpenChanged.InvokeAsync(false); }" />
+                           IconName="@BitIconName.ChromeClose"
+                           OnClick="WrapHandled(async () => { IsLogModalOpen = false; await IsLogModalOpenChanged.InvokeAsync(false); })" />
             </BitStack>
 
             <BitText Class="log-modal" Color="Color">

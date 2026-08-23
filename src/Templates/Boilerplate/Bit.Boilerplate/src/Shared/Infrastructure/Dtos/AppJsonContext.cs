@@ -88,6 +88,7 @@ namespace Boilerplate.Shared.Infrastructure.Dtos;
 [JsonSerializable(typeof(DiagnosticLogDto[]))]
 [JsonSerializable(typeof(StartChatRequest))]
 [JsonSerializable(typeof(AiChatMessageRequest))]
+[JsonSerializable(typeof(AiChatFollowUpList))]
 [JsonSerializable(typeof(List<SystemPromptDto>))]
 [JsonSerializable(typeof(BackgroundJobProgressDto))]
 [JsonSerializable(typeof(SynthesizeSpeechRequestDto))]
