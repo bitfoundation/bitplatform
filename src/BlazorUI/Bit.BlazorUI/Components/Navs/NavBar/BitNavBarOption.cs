@@ -2,13 +2,48 @@ namespace Bit.BlazorUI;
 
 public partial class BitNavBarOption : ComponentBase, IDisposable
 {
+    // The marker the navbar reads the markup order of the options back from, and the value that tells the
+    // options apart in that read-back.
+    internal const string _OPTION_ID_ATTRIBUTE = "data-bit-nbr-opt";
+
+    internal string _OptionId { get; } = BitShortId.NewId();
+
     private bool _disposed;
+    private string? _lastUrl;
+    private BitNavMatch? _lastMatch;
+    private IEnumerable<string>? _lastAdditionalUrls;
 
 
 
     [CascadingParameter] protected BitNavBar<BitNavBarOption> NavBar { get; set; } = default!;
 
 
+
+    /// <summary>
+    /// The value of the aria-current attribute of the navbar option when it is the selected one.
+    /// </summary>
+    [Parameter] public BitNavAriaCurrent AriaCurrent { get; set; } = BitNavAriaCurrent.Page;
+
+    /// <summary>
+    /// The accessible label of the navbar option, announced instead of its content.
+    /// When it is not provided and the text of the option is not rendered (in the IconOnly or the
+    /// HideUnselectedText modes), the text of the option is used, so an icon is never left unnamed.
+    /// </summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// The badge text to render on the icon of the navbar option, for a count or a short status.
+    /// Takes precedence over <see cref="Dot"/> when both are set.
+    /// </summary>
+    [Parameter] public string? Badge { get; set; }
+
+    /// <summary>
+    /// The accessible description of the badge (or the dot) of the navbar option, folded into the accessible
+    /// name of the option so a count that only exists as a colored bubble is not lost on a screen reader
+    /// ("Messages (5 unread)"). It falls back to the <see cref="Badge"/> text, and a <see cref="Dot"/> is
+    /// only announced while this is set, since a dot carries no text of its own.
+    /// </summary>
+    [Parameter] public string? BadgeAriaLabel { get; set; }
 
     /// <summary>
     /// Custom CSS class for the navbar option.
@@ -19,6 +54,12 @@ public partial class BitNavBarOption : ComponentBase, IDisposable
     /// The custom data for the navbar option to provide additional state.
     /// </summary>
     [Parameter] public object? Data { get; set; }
+
+    /// <summary>
+    /// Renders a small dot on the icon of the navbar option, to mark it as needing attention without
+    /// showing a number. Ignored while <see cref="Badge"/> is set.
+    /// </summary>
+    [Parameter] public bool Dot { get; set; }
 
     /// <summary>
     /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
@@ -56,6 +97,33 @@ public partial class BitNavBarOption : ComponentBase, IDisposable
     [Parameter] public string? Key { get; set; }
 
     /// <summary>
+    /// Modifies how the URL of the navbar option is matched against the current URL in the automatic mode.
+    /// Takes precedence over the Match of the navbar itself.
+    /// <br />
+    /// A Wildcard (or a Regex) URL is run as the pattern it was written as, so unlike an Exact or a Prefix
+    /// URL it is never normalized: it has to be app-relative and to carry its leading slash itself, as in
+    /// "/products/*".
+    /// </summary>
+    [Parameter] public BitNavMatch? Match { get; set; }
+
+    /// <summary>
+    /// The icon to display while the navbar option is the selected one, using custom CSS classes for external
+    /// icon libraries. Takes precedence over <see cref="SelectedIconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// A navigation bar conventionally marks its current destination with the filled variant of the same
+    /// glyph, which is what this pair of parameters is for. While neither is set, the selected option keeps
+    /// its <see cref="Icon"/> / <see cref="IconName"/>.
+    /// </remarks>
+    [Parameter] public BitIconInfo? SelectedIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon to display from the built-in Fluent UI icons while the navbar option is the
+    /// selected one. For external icon libraries, use <see cref="SelectedIcon"/> instead.
+    /// </summary>
+    [Parameter] public string? SelectedIconName { get; set; }
+
+    /// <summary>
     /// Custom CSS style for the navbar option.
     /// </summary>
     [Parameter] public string? Style { get; set; }
@@ -69,6 +137,15 @@ public partial class BitNavBarOption : ComponentBase, IDisposable
     /// The custom template for the navbar option to render.
     /// </summary>
     [Parameter] public RenderFragment<BitNavBarOption>? Template { get; set; }
+
+    /// <summary>
+    /// Whether the <see cref="Template"/> of the navbar option is rendered inside the anchor (or the button)
+    /// the option is, or replaces it altogether, which is what an option that is a control of its own - the
+    /// center action of a mobile bar, for instance - needs, since an interactive element cannot be nested in
+    /// another one. A replaced option is left out of the keyboard navigation of the navbar, and whatever it
+    /// renders owns its own clicks, its own focus and its own accessible name.
+    /// </summary>
+    [Parameter] public BitNavItemTemplateRenderMode TemplateRenderMode { get; set; } = BitNavItemTemplateRenderMode.Normal;
 
     /// <summary>
     /// Text to render for the navbar option.
@@ -104,6 +181,27 @@ public partial class BitNavBarOption : ComponentBase, IDisposable
         NavBar?.RegisterOption(this);
 
         await base.OnInitializedAsync();
+    }
+
+    // A URL (or the way it is matched) that changes after the option was registered points the option at
+    // another page, so the automatic mode has to look for its selected option again. Only an actual change
+    // flags it: flagging on every parameter set would have each recompute render, and each render flag
+    // another recompute.
+    protected override void OnParametersSet()
+    {
+        var additionalUrls = AdditionalUrls?.ToArray();
+
+        if (Url != _lastUrl || Match != _lastMatch ||
+            (additionalUrls ?? []).SequenceEqual(_lastAdditionalUrls ?? []) is false)
+        {
+            _lastUrl = Url;
+            _lastMatch = Match;
+            _lastAdditionalUrls = additionalUrls;
+
+            NavBar?.MarkSelectionDirty();
+        }
+
+        base.OnParametersSet();
     }
 
     // Renders the option's item in place, so the rendered order of the items always follows the

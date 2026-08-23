@@ -18,6 +18,77 @@ public partial class _BitNavBarItemDemo
         new() { Text = "Profile", IconName = BitIconName.Contact },
     ];
 
+    private static readonly List<BitNavBarItem> exactMatchItems =
+    [
+        new() { Text = "NavBar", IconName = BitIconName.GlobalNavButton, Url = "/components/navbar" },
+        new() { Text = "Nav", IconName = BitIconName.BulletedList, Url = "/components/nav" },
+    ];
+
+    private static readonly List<BitNavBarItem> prefixMatchItems =
+    [
+        new() { Text = "Components", IconName = BitIconName.F12DevTools, Url = "/components" },
+        new() { Text = "Iconography", IconName = BitIconName.AppIconDefault, Url = "/iconography" },
+    ];
+
+    // The URL of a Wildcard or a Regex item is a pattern rather than a route, so these items are disabled:
+    // they still light up on a match, but a click cannot navigate to a URL no page answers.
+    private static readonly List<BitNavBarItem> wildcardMatchItems =
+    [
+        new() { Text = "/components/*", IconName = BitIconName.F12DevTools, Url = "/components/*", Match = BitNavMatch.Wildcard, IsEnabled = false },
+        new() { Text = "/iconography/*", IconName = BitIconName.AppIconDefault, Url = "/iconography/*", Match = BitNavMatch.Wildcard, IsEnabled = false },
+    ];
+
+    private static readonly List<BitNavBarItem> regexMatchItems =
+    [
+        new() { Text = "^/components/navbar$", IconName = BitIconName.Code, Url = "^/components/navbar$", Match = BitNavMatch.Regex, IsEnabled = false },
+        new() { Text = "^/iconography$", IconName = BitIconName.Code, Url = "^/iconography$", Match = BitNavMatch.Regex, IsEnabled = false },
+    ];
+
+    private static readonly List<BitNavBarItem> additionalUrlsItems =
+    [
+        new() { Text = "Navs", IconName = BitIconName.GlobalNavButton, Url = "/components/nav", AdditionalUrls = ["/components/navbar", "/components/breadcrumb"] },
+        new() { Text = "Buttons", IconName = BitIconName.ButtonControl, Url = "/components/button", AdditionalUrls = ["/components/togglebutton"] },
+    ];
+
+    private static readonly List<BitNavBarItem> unevenNavBarItems =
+    [
+        new() { Text = "Home", IconName = BitIconName.Home  },
+        new() { Text = "Products & services", IconName = BitIconName.ProductVariant },
+        new() { Text = "Academy", IconName = BitIconName.LearningTools },
+        new() { Text = "Me", IconName = BitIconName.Contact },
+    ];
+
+    private static readonly List<BitNavBarItem> badgeNavBarItems =
+    [
+        new() { Text = "Home", IconName = BitIconName.Home  },
+        new() { Text = "Inbox", IconName = BitIconName.Mail, Badge = "12" },
+        new() { Text = "Alerts", IconName = BitIconName.Ringer, Badge = "99+", BadgeAriaLabel = "more than 99 unread alerts" },
+        new() { Text = "Profile", IconName = BitIconName.Contact, Dot = true, BadgeAriaLabel = "needs attention" },
+    ];
+
+    private static readonly List<BitNavBarItem> selectedIconItems =
+    [
+        new() { Text = "Home", IconName = BitIconName.Home, SelectedIconName = BitIconName.HomeSolid },
+        new() { Text = "Inbox", IconName = BitIconName.Mail, SelectedIconName = BitIconName.MailSolid },
+        new() { Text = "Alerts", IconName = BitIconName.Ringer, SelectedIconName = BitIconName.RingerSolid },
+        new() { Text = "Favorites", IconName = BitIconName.Heart, SelectedIconName = BitIconName.HeartFill },
+    ];
+    // A bar with more destinations than it fits, which is what the Scrollable example is about.
+    private static readonly List<BitNavBarItem> scrollableNavBarItems =
+    [
+        new() { Text = "Home", IconName = BitIconName.Home },
+        new() { Text = "Products", IconName = BitIconName.ProductVariant },
+        new() { Text = "Academy", IconName = BitIconName.LearningTools },
+        new() { Text = "Inbox", IconName = BitIconName.Mail },
+        new() { Text = "Alerts", IconName = BitIconName.Ringer },
+        new() { Text = "Favorites", IconName = BitIconName.Heart },
+        new() { Text = "Reports", IconName = BitIconName.ReportDocument },
+        new() { Text = "Settings", IconName = BitIconName.Settings },
+        new() { Text = "Support", IconName = BitIconName.Help },
+        new() { Text = "Profile", IconName = BitIconName.Contact },
+    ];
+
+
     private static readonly List<BitNavBarItem> styleClassItems =
     [
         new() { Text = "Home", IconName = BitIconName.Home  },
@@ -45,10 +116,35 @@ public partial class _BitNavBarItemDemo
     private static IEnumerable<BitChoiceGroupItem<BitNavBarItem>> choiceGroupItems =
          basicNavBarItems.Select(i => new BitChoiceGroupItem<BitNavBarItem>() { Id = i.Text, Text = i.Text, IsEnabled = i.IsEnabled, Value = i });
 
+    private int dynamicItemsCount = 3;
+    private BitNavBarItem? dynamicSelectedItem;
+    private readonly List<BitNavBarItem> dynamicNavBarItems =
+    [
+        new() { Text = "Home", IconName = BitIconName.Home },
+        new() { Text = "Products", IconName = BitIconName.ProductVariant },
+        new() { Text = "Profile", IconName = BitIconName.Contact },
+    ];
+
+    private void AddDynamicItem()
+    {
+        dynamicItemsCount++;
+        dynamicNavBarItems.Add(new() { Text = $"Item {dynamicItemsCount}", IconName = BitIconName.Tag });
+    }
+
+    private void RemoveDynamicItem()
+    {
+        if (dynamicNavBarItems.Count == 0) return;
+
+        dynamicNavBarItems.RemoveAt(dynamicNavBarItems.Count - 1);
+    }
+
+    private void ReverseDynamicItems() => dynamicNavBarItems.Reverse();
+
     private int countClick;
     private bool reselectable = true;
     private BitNavBarItem selectedItem = basicNavBarItems[0];
     private BitNavBarItem twoWaySelectedItem = basicNavBarItems[0];
+    private BitNavBarItem? scrollableSelectedItem;
     private BitNavBarItem? eventsClickedItem;
-    private BitNavBarItem advancedSelectedItem = basicNavBarItems[1];
+    private BitNavBarItem? eventsSelectedItem;
 }
