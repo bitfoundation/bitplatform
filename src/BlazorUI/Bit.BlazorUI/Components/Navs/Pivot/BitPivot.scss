@@ -5,7 +5,7 @@
     display: flex;
 
     &.bit-dis {
-        .content-container {
+        .bit-pvt-cct {
             cursor: default;
             pointer-events: none;
             color: var(--bit-pvt-clr-dis-text);
@@ -27,10 +27,6 @@
     display: flex;
     white-space: nowrap;
     justify-content: var(--bit-pvt-hal);
-
-    * {
-        font-size: $tg-fs-md;
-    }
 }
 
 .bit-pvt-hwr {
@@ -45,6 +41,14 @@
     min-width: 0;
 }
 
+.bit-pvt-hst,
+.bit-pvt-hnd {
+    display: flex;
+    flex-shrink: 0;
+    gap: spacing(0.5);
+    align-items: center;
+}
+
 .bit-pvt-cct {
     margin: 0;
     padding: 0;
@@ -55,6 +59,12 @@
     box-sizing: border-box;
     font-size: $tg-fs-sm;
     color: $clr-fg-pri;
+
+    // The panel is a tab stop of its own (the WAI-ARIA tabs pattern asks for it when the content
+    // holds nothing focusable), so it needs a focus ring like any other.
+    &:focus-visible {
+        @include focus-ring(var(--bit-pvt-clr-focus));
+    }
 }
 
 .bit-pvt-top {
@@ -94,9 +104,18 @@
         min-width: 0;
     }
 
-    .bit-pvt-sbt {
+    .bit-pvt-sbt,
+    .bit-pvt-abt {
         width: 100%;
         height: spacing(4);
+    }
+
+    // A tab in a column reads as a row of a list rather than as a centred chip, so its content runs
+    // from the start edge and the trailing gutter of the horizontal layout is dropped.
+    .bit-pvti {
+        text-align: start;
+        margin-inline-end: 0;
+        margin-block-end: var(--bit-pvt-gap, #{spacing(0.5)});
     }
 
     &.bit-pvt-scr .bit-pvt-hct {
@@ -110,6 +129,14 @@
             width: spacing(0.625);
         }
     }
+}
+
+// The header of a Bottom pivot sits at the foot of it, where a menu opening downwards would run off
+// the end of the page, so it opens over the header instead.
+.bit-pvt-btm .bit-pvt-mnc {
+    top: auto;
+    bottom: 100%;
+    border-radius: $shp-radius-popup $shp-radius-popup 0 0;
 }
 
 .bit-pvt-sta .bit-pvt-mnc {
@@ -158,7 +185,11 @@
 }
 
 .bit-pvt-tab {
+    // A filled tab is a shape of its own rather than a label with a line under it, so its corner is
+    // the one the design system gives every other control of the same family.
     .bit-pvti {
+        border-radius: $shp-radius-control;
+
         @media(hover:hover) {
             &:hover {
                 color: var(--bit-pvt-clr-text);
@@ -168,7 +199,6 @@
     }
 
     .bit-pvti-sel {
-        font-weight: $tg-fw-regular;
         color: var(--bit-pvt-clr-text);
         background-color: var(--bit-pvt-clr);
     }
@@ -196,19 +226,74 @@
     }
 }
 
-.bit-pvt-sm {
+// Lets the header run onto as many extra lines as it needs instead of folding, sliding or scrolling
+// the tabs that do not fit, which keeps every tab reachable without any affordance at all.
+.bit-pvt-wrp {
     .bit-pvt-hct {
-        * {
-            font-size: $tg-fs-xs;
-        }
+        flex-wrap: wrap;
+        row-gap: var(--bit-pvt-gap, #{spacing(0.5)});
+    }
+
+    &.bit-pvt-sta .bit-pvt-hct,
+    &.bit-pvt-end .bit-pvt-hct {
+        column-gap: var(--bit-pvt-gap, #{spacing(0.5)});
     }
 }
 
-.bit-pvt-lg {
-    .bit-pvt-hct {
-        * {
-            font-size: $tg-fs-md;
-        }
+// The size classes move the header along the type ramp. Each of the three lands on a step of its
+// own - a Medium header that reads the same as a Large one is not a size at all - and the rule is
+// scoped to the parts that carry text so that it never resizes the content of a custom Header.
+.bit-pvt-sm .bit-pvt-hct {
+    .bit-pvti,
+    .bit-pvti-txt,
+    .bit-pvti-cnr {
+        font-size: $tg-fs-xs;
+    }
+}
+
+.bit-pvt-md .bit-pvt-hct {
+    .bit-pvti,
+    .bit-pvti-txt,
+    .bit-pvti-cnr {
+        font-size: $tg-fs-sm;
+    }
+}
+
+.bit-pvt-lg .bit-pvt-hct {
+    .bit-pvti,
+    .bit-pvti-txt,
+    .bit-pvti-cnr {
+        font-size: $tg-fs-md;
+    }
+}
+
+// Stretches the items over the whole header, which is what turns a handful of tabs into a segmented
+// control rather than a row of labels huddled at one edge.
+.bit-pvt-fwd {
+    // The overflow More button carries .bit-pvti as well, and it is a fixed affordance rather than
+    // one of the tabs sharing the line, so it keeps its natural width.
+    .bit-pvt-hct > .bit-pvti:not(.bit-pvt-mor) {
+        flex: 1 1 0;
+        min-width: 0;
+
+        // Sharing the whole line leaves nothing between the items unless the pivot asks for a gap.
+        margin-inline-end: var(--bit-pvt-gap, 0);
+    }
+}
+
+// The icon over the label instead of beside it, which buys a much shorter tab for the same words.
+.bit-pvt-stk {
+    .bit-pvti {
+        height: auto;
+        line-height: normal;
+        padding-block: spacing(0.75);
+        min-height: calc(#{$siz-tab} * 1.6);
+    }
+
+    .bit-pvti > span {
+        gap: spacing(0.25);
+        flex-flow: column;
+        justify-content: center;
     }
 }
 
@@ -221,14 +306,17 @@
     text-align: center;
     height: $siz-tab;
     outline: transparent;
-    display: inline-block;
+    align-items: center;
+    display: inline-flex;
     padding: 0 spacing(1);
     text-decoration: none;
     box-sizing: border-box;
-    margin-inline-end: spacing(1);
+    scroll-margin: spacing(1);
+    margin-inline-end: var(--bit-pvt-gap, #{spacing(1)});
     line-height: $siz-tab;
     background-color: transparent;
     color: $clr-fg-pri;
+    font-size: $tg-fs-sm;
     letter-spacing: $tg-ctrl-letter-spacing;
 
     &:focus-visible {
@@ -254,6 +342,7 @@
     > span {
         height: 100%;
         display: flex;
+        min-width: 0;
         gap: spacing(0.5);
         flex-wrap: nowrap;
         align-items: center;
@@ -271,38 +360,162 @@
     }
 }
 
-.bit-pvti-sel {
-    border: 0;
-    cursor: pointer;
-    font-weight: $tg-fw-semibold;
-    border-radius: 0;
-    user-select: none;
-    color: $clr-fg-pri;
-    position: relative;
-    text-align: center;
-    height: $siz-tab;
-    outline: transparent;
-    display: inline-block;
-    padding: 0 spacing(1);
-    text-decoration: none;
-    box-sizing: border-box;
-    margin-inline-end: spacing(1);
-    line-height: $siz-tab;
-    background-color: transparent;
-    letter-spacing: $tg-ctrl-letter-spacing;
+// The gutter belongs between the items rather than after the last one, which would otherwise hold a
+// header aligned to the end (or centred) away from the place it is aligned to. Carries the class of the
+// root so that it outweighs the FullWidth rule above, which sets a margin of its own.
+.bit-pvt .bit-pvt-hct > .bit-pvti:last-child {
+    margin-inline-end: 0;
+    margin-block-end: 0;
+}
 
-    &:focus-visible {
-        @include focus-ring(var(--bit-pvt-clr-focus));
+// A header template of its own lays out as if the wrapper that keeps its keys away from the tablist
+// were not there, so its content keeps its own place among the flex children of the item.
+.bit-pvti-hdr {
+    display: contents;
+}
+
+// The header text of the selected item turns semibold, which is wider than the same words in the
+// regular weight and would shove every tab after it sideways on each selection change. The room for
+// the bold copy is reserved up front by laying an invisible bold duplicate under the label, so the
+// tab is the same width whether or not it happens to be the selected one.
+.bit-pvti-txt {
+    display: block;
+
+    &::after {
+        height: 0;
+        display: block;
+        overflow: hidden;
+        visibility: hidden;
+        pointer-events: none;
+        content: attr(data-content);
+        font-weight: $tg-fw-semibold;
     }
+}
+
+.bit-pvti-sel {
+    color: $clr-fg-pri;
+    font-weight: $tg-fw-semibold;
 
     // Only the scale differs from the unselected state; the geometry, color and transition all come
     // from .bit-pvti::before so both ends of a selection change animate with the same curve.
     &::before {
         transform: scaleX(1);
     }
+}
 
-    span {
-        font-size: $tg-fs-md;
+// #region Reordering
+
+// The tab that is being dragged is faded in place while it travels, and the one it is over shows the
+// edge it would land on, so the header says where the drop is going before it happens.
+.bit-pvti-drg {
+    opacity: $opa-dis;
+}
+
+.bit-pvti-dro::after {
+    top: 0;
+    content: "";
+    bottom: 0;
+    position: absolute;
+    inset-inline-start: 0;
+    inset-inline-end: auto;
+    width: $shp-border-width-thick;
+    background-color: var(--bit-pvt-clr);
+}
+
+// The tab travelling forward comes to rest on the far side of the one it is dropped on.
+.bit-pvti-dro-end::after {
+    inset-inline-start: auto;
+    inset-inline-end: 0;
+}
+
+.bit-pvt-sta,
+.bit-pvt-end {
+    .bit-pvti-dro::after {
+        top: 0;
+        bottom: auto;
+        width: auto;
+        inset-inline: 0;
+        height: $shp-border-width-thick;
+    }
+
+    .bit-pvti-dro-end::after {
+        top: auto;
+        bottom: 0;
+    }
+}
+
+// #endregion
+
+// Folded away by the Menu overflow behavior. A class rather than an inline display, so that hiding
+// an item this way never overwrites the display the component itself puts on a hidden item.
+.bit-pvt-ovh {
+    display: none !important;
+}
+
+.bit-pvti-dbt {
+    border: 0;
+    padding: 0;
+    flex-shrink: 0;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    color: currentcolor;
+    justify-content: center;
+    width: spacing(2);
+    height: spacing(2);
+    box-sizing: border-box;
+    margin-inline-start: spacing(0.5);
+    border-radius: $shp-radius-full;
+    background-color: transparent;
+
+    @media (hover: hover) {
+        &:hover {
+            color: $clr-fg-pri-hover;
+            background-color: $clr-bg-pri-hover;
+        }
+    }
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-pvt-clr-focus));
+    }
+}
+
+.bit-pvti-dsi {
+    font-size: $tg-fs-2xs;
+}
+
+// Asks for a new tab rather than being one of them, so it is a fixed affordance beside the header
+// that keeps its own width whatever the tabs sharing the line do.
+.bit-pvt-abt {
+    border: 0;
+    padding: 0;
+    flex-shrink: 0;
+    cursor: pointer;
+    border-radius: 0;
+    color: $clr-fg-pri;
+    width: spacing(4);
+    align-items: center;
+    height: $siz-tab;
+    display: inline-flex;
+    box-sizing: border-box;
+    justify-content: center;
+    background-color: transparent;
+
+    @media (hover: hover) {
+        &:hover {
+            color: $clr-fg-pri-hover;
+            background-color: $clr-bg-pri-hover;
+        }
+    }
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-pvt-clr-focus));
+    }
+
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+        pointer-events: none;
     }
 }
 
@@ -361,6 +574,10 @@
         &::-webkit-scrollbar {
             display: none;
         }
+
+        @media (prefers-reduced-motion: reduce) {
+            scroll-behavior: auto;
+        }
     }
 }
 
@@ -386,6 +603,10 @@
         }
     }
 
+    &:focus-visible {
+        @include focus-ring(var(--bit-pvt-clr-focus));
+    }
+
     &:disabled {
         cursor: default;
         color: $clr-fg-dis;
@@ -406,6 +627,19 @@
 .bit-pvt-mor {
     flex-shrink: 0;
     margin-inline-end: 0;
+
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+        pointer-events: none;
+    }
+
+    // The selected tab can be one of the ones folded away, and a header showing no selection at all
+    // reads as if nothing were selected, so the button holding it carries the selection instead.
+    &.bit-pvt-mor-sel {
+        color: var(--bit-pvt-clr);
+        font-weight: $tg-fw-semibold;
+    }
 }
 
 .bit-pvt-ovl {
@@ -428,9 +662,17 @@
     position: absolute;
     inset-inline-end: 0;
     z-index: $zindex-callout;
+    max-height: $siz-popup-max-height;
     box-shadow: $box-shadow-popup;
     border-radius: 0 0 $shp-radius-popup $shp-radius-popup;
     background-color: $clr-bg-pri;
+
+    // The menu itself is what holds the focus while it is open and points at the item it is on with
+    // an aria-activedescendant, so the ring belongs on that item rather than around the whole menu.
+    &:focus,
+    &:focus-visible {
+        outline: none;
+    }
 }
 
 // forced-colors: the selected-tab indicator is a background-painted ::before, which High Contrast
@@ -467,6 +709,10 @@
         }
     }
 
+    &:focus-visible {
+        @include focus-ring(var(--bit-pvt-clr-focus));
+    }
+
     &[disabled] {
         cursor: default;
         color: $clr-fg-dis;
@@ -475,6 +721,12 @@
 
     &.bit-pvt-mni-sel {
         font-weight: $tg-fw-semibold;
+    }
+
+    // The item the aria-activedescendant of the menu points at: the real focus never leaves the menu,
+    // so this is what stands in for the focus ring the item would otherwise draw for itself.
+    &.bit-pvt-mni-act {
+        @include focus-ring(var(--bit-pvt-clr-focus));
     }
 }
 
