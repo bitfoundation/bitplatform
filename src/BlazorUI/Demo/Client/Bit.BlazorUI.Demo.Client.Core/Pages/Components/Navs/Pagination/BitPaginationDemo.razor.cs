@@ -1,9 +1,18 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Pagination;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Pagination;
 
 public partial class BitPaginationDemo
 {
     private readonly List<ComponentParameter> componentParameters =
     [
+        new()
+        {
+            Name = "Alignment",
+            Type = "BitAlignment?",
+            DefaultValue = "null",
+            Description = "The horizontal alignment of the pagination inside the room it is given, which stretches it across that room. The pagination is only as wide as its own controls without it.",
+            LinkType = LinkType.Link,
+            Href = "#alignment-enum"
+        },
         new()
         {
             Name = "BoundaryCount",
@@ -22,6 +31,13 @@ public partial class BitPaginationDemo
         },
         new()
         {
+            Name = "ClickableEllipsis",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Turns every ellipsis into a control that jumps into the middle of the pages it collapses. It follows the rest of the pagination as a button or a link, and is named by EllipsisAriaLabel."
+        },
+        new()
+        {
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
@@ -34,7 +50,7 @@ public partial class BitPaginationDemo
             Name = "Count",
             Type = "int",
             DefaultValue = "1",
-            Description = "The total number of pages. It is what the pagination goes on while no TotalItems is given, which takes over and has the count worked out of it."
+            Description = "The total number of pages. It is ignored while TotalItems is set, since the number of pages then follows from the number of items and the page size."
         },
         new()
         {
@@ -62,7 +78,7 @@ public partial class BitPaginationDemo
             Name = "FirstButtonAriaLabel",
             Type = "string",
             DefaultValue = "\"First page\"",
-            Description = "The accessible label of the first button, which is used as its tooltip as well."
+            Description = "The accessible label of the first button, which is used as its tooltip as well until FirstButtonText puts a visible text beside its icon."
         },
         new()
         {
@@ -108,21 +124,21 @@ public partial class BitPaginationDemo
             Name = "GetSummary",
             Type = "Func<int, int, string>?",
             DefaultValue = "null",
-            Description = "Provides the text of the summary, from the selected page and the total number of pages, replacing the default text (which reads \"Page {number} of {count}\", or \"Showing {first} to {last} of {total}\" while TotalItems is given)."
+            Description = "Provides the text of the summary, from the selected page and the total number of pages, replacing the default \"Page {number} of {count}\" (or \"1 - 10 of 240\" while TotalItems is set) text."
         },
         new()
         {
             Name = "GoToPageAriaLabel",
             Type = "string",
             DefaultValue = "\"Go to page\"",
-            Description = "The accessible label of the go to page input, which names it on its own so the visible GoToPageText beside it can be dropped."
+            Description = "The accessible label of the go to page input, which steps in once the visible GoToPageText beside it is dropped. While that text is there it is the one naming the input."
         },
         new()
         {
             Name = "GoToPageText",
             Type = "string?",
             DefaultValue = "\"Go to\"",
-            Description = "The text rendered ahead of the go to page input. An empty text leaves the input on its own."
+            Description = "The text rendered ahead of the go to page input, which names it. An empty text leaves the input on its own, named by GoToPageAriaLabel."
         },
         new()
         {
@@ -136,7 +152,7 @@ public partial class BitPaginationDemo
             Name = "LastButtonAriaLabel",
             Type = "string",
             DefaultValue = "\"Last page\"",
-            Description = "The accessible label of the last button, which is used as its tooltip as well."
+            Description = "The accessible label of the last button, which is used as its tooltip as well until LastButtonText puts a visible text beside its icon."
         },
         new()
         {
@@ -182,7 +198,7 @@ public partial class BitPaginationDemo
             Name = "NextButtonAriaLabel",
             Type = "string",
             DefaultValue = "\"Next page\"",
-            Description = "The accessible label of the next button, which is used as its tooltip as well."
+            Description = "The accessible label of the next button, which is used as its tooltip as well until NextButtonText puts a visible text beside its icon."
         },
         new()
         {
@@ -228,14 +244,14 @@ public partial class BitPaginationDemo
             Name = "PageSize",
             Type = "int",
             DefaultValue = "0",
-            Description = "The number of items a page holds, which the page size selector picks. The range of pages follows it on its own while TotalItems is given. A value that is not positive falls back to the first of the PageSizeOptions, and the fallback is written back while the selector is shown."
+            Description = "The number of items a page holds, which the page size selector picks. A value that is not positive falls back to the first of the PageSizeOptions and the fallback is written back while the selector is shown, and one that is positive but not among them is offered by the selector along with them."
         },
         new()
         {
             Name = "PageSizeAriaLabel",
             Type = "string",
             DefaultValue = "\"Items per page\"",
-            Description = "The accessible label of the page size selector, which names it on its own so the visible PageSizeText beside it can be dropped."
+            Description = "The accessible label of the page size selector, which steps in once the visible PageSizeText beside it is dropped. While that text is there it is the one naming the selector."
         },
         new()
         {
@@ -249,14 +265,14 @@ public partial class BitPaginationDemo
             Name = "PageSizeText",
             Type = "string?",
             DefaultValue = "\"Items per page\"",
-            Description = "The text rendered ahead of the page size selector. An empty text leaves the selector on its own."
+            Description = "The text rendered ahead of the page size selector, which names it. An empty text leaves the selector on its own, named by PageSizeAriaLabel."
         },
         new()
         {
             Name = "PreviousButtonAriaLabel",
             Type = "string",
             DefaultValue = "\"Previous page\"",
-            Description = "The accessible label of the previous button, which is used as its tooltip as well."
+            Description = "The accessible label of the previous button, which is used as its tooltip as well until PreviousButtonText puts a visible text beside its icon."
         },
         new()
         {
@@ -337,7 +353,7 @@ public partial class BitPaginationDemo
             Name = "ShowPageSizeSelector",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Shows a selector that picks how many items a page holds, ahead of everything else in the pagination. Picking a size reports it through PageSize and OnPageSizeChange; the range of pages it adds up to is rendered on its own while TotalItems is given, and is yours to recompute into Count otherwise."
+            Description = "Shows a selector that picks how many items a page holds, ahead of everything else in the pagination. Picking a size reports it through PageSize and OnPageSizeChange, and recomputes the range of pages while TotalItems is set."
         },
         new()
         {
@@ -351,7 +367,7 @@ public partial class BitPaginationDemo
             Name = "ShowSummary",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Shows the position in the range, which reads \"Page {number} of {count}\" - or \"Showing {first} to {last} of {total}\" while TotalItems is given - unless GetSummary replaces it, ahead of the buttons of the pagination. It is a status region, so a screen reader reports the new position as the page changes."
+            Description = "Shows the position in the range, which reads \"Page {number} of {count}\" (or \"1 - 10 of 240\" while TotalItems is set) unless GetSummary replaces it, ahead of the buttons of the pagination. It is a status region, so a screen reader reports the new position as the page changes."
         },
         new()
         {
@@ -376,7 +392,7 @@ public partial class BitPaginationDemo
             Name = "TotalItems",
             Type = "int",
             DefaultValue = "0",
-            Description = "The total number of items the pages are made of, which the number of pages is worked out of (divided by PageSize, rounded up) instead of being asked for through Count. It takes over from Count while it is positive."
+            Description = "The total number of items the pagination pages through, which the number of pages is worked out from along with PageSize, replacing Count. Picking a new page size then keeps the first item of the current page in view, and the summary reports the items instead of the pages."
         },
         new()
         {
@@ -401,6 +417,63 @@ public partial class BitPaginationDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
+        new()
+        {
+            Id = "alignment-enum",
+            Name = "BitAlignment",
+            Description = "Defines the horizontal alignment of the pagination inside the room it is given.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Start",
+                    Description="Lines the controls up at the start of the room.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "End",
+                    Description="Lines the controls up at the end of the room.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Center",
+                    Description="Centers the controls inside the room.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "SpaceBetween",
+                    Description="Shares the room out between the controls, leaving none of it at the two ends.",
+                    Value="3",
+                },
+                new()
+                {
+                    Name= "SpaceAround",
+                    Description="Shares the room out around the controls, leaving half of it at the two ends.",
+                    Value="4",
+                },
+                new()
+                {
+                    Name= "SpaceEvenly",
+                    Description="Shares the room out evenly between the controls and at the two ends.",
+                    Value="5",
+                },
+                new()
+                {
+                    Name= "Baseline",
+                    Description="Lines the controls up on their baseline.",
+                    Value="6",
+                },
+                new()
+                {
+                    Name= "Stretch",
+                    Description="Stretches the controls across the room.",
+                    Value="7",
+                }
+            ]
+        },
         new()
         {
             Id = "color-enum",
@@ -616,6 +689,13 @@ public partial class BitPaginationDemo
                 },
                 new()
                 {
+                    Name = "ButtonText",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the text rendered beside the icon of a navigation button of the BitPagination."
+                },
+                new()
+                {
                     Name = "Ellipsis",
                     Type = "string?",
                     DefaultValue = "null",
@@ -707,7 +787,7 @@ public partial class BitPaginationDemo
 
     private string GetDemoPageHref(int page)
     {
-        return $"#example19-page-{page}";
+        return $"#example20-page-{page}";
     }
 
     private int oneWaySelectedPage = 1;
