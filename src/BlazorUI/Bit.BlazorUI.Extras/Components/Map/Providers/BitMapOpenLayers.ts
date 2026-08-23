@@ -31,8 +31,10 @@ namespace BitBlazorUI {
          * header), the source is rebuilt in CORS mode. OpenLayers reads crossOrigin when the
          * source is constructed, so the retry has to create a new one - and because the rebuild
          * goes through here again with isVerification set, the CORS-mode source gets a fallback
-         * that no longer retries but verifies: it retracts the origin-wide mark if that attempt
-         * fails as fully.
+         * that no longer retries but verifies: if that attempt fails as fully, it retracts the
+         * origin-wide mark and rebuilds the layer's source in plain no-cors mode, since the source
+         * that produced the evidence would otherwise keep asking for tiles in a mode this host
+         * refuses and render nothing for the rest of the session.
          */
         private static _setTileSource(ol: any, layer: any, params: { url: string, maxZoom: number, attributions: string }, isVerification: boolean = false) {
             const source = new ol.XYZ({
@@ -52,10 +54,34 @@ namespace BitBlazorUI {
                 if (layer.getSource() !== source) return false;
                 BitMapOpenLayers._setTileSource(ol, layer, params, true);
                 return true;
-            }, isVerification);
+            }, isVerification, () => {
+                // Same guard as the retry: a sync() may have swapped a different source onto this
+                // layer while the decision was deferred, and reverting would resurrect the tile
+                // url that sync() replaced.
+                if (layer.getSource() !== source) return;
+                BitMapOpenLayers._setPlainTileSource(ol, layer, params);
+            });
+            source.on('tileloadstart', fallback.onTileStart);
             source.on('tileloadend', fallback.onTileLoad);
             source.on('tileloaderror', fallback.onTileError);
             layer.setSource(source);
+        }
+
+        /**
+         * Rebuilds a tile source in plain no-cors mode, wiring no fallback to it: this is what a
+         * failed verification reverts to, and the state it reverts to is the very one whose failure
+         * started the retry - watching it again would mark the origin, redraw in CORS mode, fail
+         * the verification and revert once more, round and round. crossOrigin is spelled out rather
+         * than read from tileCrossOrigin() so a concurrent layer re-marking the origin in between
+         * cannot turn the revert back into the mode being reverted from.
+         */
+        private static _setPlainTileSource(ol: any, layer: any, params: { url: string, maxZoom: number, attributions: string }) {
+            layer.setSource(new ol.XYZ({
+                crossOrigin: undefined,
+                url: params.url,
+                maxZoom: params.maxZoom,
+                attributions: params.attributions,
+            }));
         }
 
         private static _resolveTileUrl(o: any): string {
