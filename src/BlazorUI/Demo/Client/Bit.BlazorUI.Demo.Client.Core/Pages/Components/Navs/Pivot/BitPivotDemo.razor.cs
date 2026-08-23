@@ -15,6 +15,13 @@ public partial class BitPivotDemo
         },
         new()
         {
+            Name = "AutoHideSlideButtons",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the next and previous buttons of the Slide overflow behavior only while there actually is something to slide to, instead of leaving them in place in their disabled state.",
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -121,6 +128,20 @@ public partial class BitPivotDemo
         },
         new()
         {
+            Name = "KeepMounted",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the content of every tab that has been shown at least once mounted, so that leaving a tab and coming back to it finds the content in the state it was left in. Unlike MountAll, a tab that has never been selected is not rendered at all.",
+        },
+        new()
+        {
+            Name = "Loop",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Wraps the keyboard navigation of the header around at both of its ends, so that the next key on the last item lands on the first one.",
+        },
+        new()
+        {
             Name = "MountAll",
             Type = "bool",
             DefaultValue = "false",
@@ -179,6 +200,14 @@ public partial class BitPivotDemo
             Description = "Callback for when the dismiss button of a pivot item is clicked, or the Delete key is pressed while it holds the focus. The pivot does not remove the item itself, since the items belong to the markup that declares them, so the handler is what takes the item out of the list.",
             LinkType = LinkType.Link,
             Href = "#pivot-item",
+        },
+        new()
+        {
+            Name = "OnItemReorder",
+            Type = "EventCallback<BitPivotReorderEventArgs>",
+            Description = "Callback for when a pivot item is dragged onto another one, or moved with the Ctrl+Arrow keys, in a Reorderable pivot. The pivot does not move the item itself, since the items belong to the markup that declares them, so the handler is what reorders the list.",
+            LinkType = LinkType.Link,
+            Href = "#pivot-reorder-event-args",
         },
         new()
         {
@@ -246,6 +275,13 @@ public partial class BitPivotDemo
         },
         new()
         {
+            Name = "Reorderable",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lets the pivot items be dragged onto one another, and the focused one be moved with the Ctrl+Arrow keys, to ask for a new order through the OnItemReorder callback. A single item opts in or out of it on its own using the Reorderable parameter of the BitPivotItem.",
+        },
+        new()
+        {
             Name = "SelectedKey",
             Type = "string?",
             DefaultValue = "null",
@@ -293,6 +329,15 @@ public partial class BitPivotDemo
             Type = "BitPivotItem?",
             DefaultValue = "null",
             Description = "The pivot item that is currently selected.",
+            LinkType = LinkType.Link,
+            Href = "#pivot-item",
+        },
+        new()
+        {
+            Name = "Items",
+            Type = "IReadOnlyList<BitPivotItem>",
+            DefaultValue = "",
+            Description = "The pivot items in the order they are declared in.",
             LinkType = LinkType.Link,
             Href = "#pivot-item",
         },
@@ -415,10 +460,48 @@ public partial class BitPivotDemo
                 },
                 new()
                 {
+                    Name = "Reorderable",
+                    Type = "bool?",
+                    DefaultValue = "null",
+                    Description = "Overrides the Reorderable of the parent pivot for this item alone, so a single tab can be pinned in place while the rest of the header is reordered, or the other way around.",
+                },
+                new()
+                {
                     Name = "Title",
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "The title (tooltip) of the pivot item header, which is the usual place for the full text of a header that is too long to be shown in one.",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "pivot-reorder-event-args",
+            Title = "BitPivotReorderEventArgs",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Item",
+                    Type = "BitPivotItem",
+                    DefaultValue = "",
+                    Description = "The pivot item that is being moved.",
+                    LinkType = LinkType.Link,
+                    Href = "#pivot-item",
+                },
+                new()
+                {
+                    Name = "OldIndex",
+                    Type = "int",
+                    DefaultValue = "0",
+                    Description = "The index the item is moving from.",
+                },
+                new()
+                {
+                    Name = "NewIndex",
+                    Type = "int",
+                    DefaultValue = "0",
+                    Description = "The index the item is moving to.",
                 }
             ]
         },
@@ -724,6 +807,12 @@ public partial class BitPivotDemo
                     Description="Display next and previous buttons to slide through the tabs that don't fit.",
                     Value="3",
                 },
+                new()
+                {
+                    Name= "Wrap",
+                    Description="Wrap the tabs that don't fit onto as many extra lines (or columns) as they need.",
+                    Value="4",
+                },
             ]
         },
         new()
@@ -881,8 +970,20 @@ public partial class BitPivotDemo
     private BitPivotItem? changedPivotItem;
     private BitPivotItem? clickedPivotItem;
     private List<string> dismissibleTabs = ["Home", "Documents", "Pictures", "Settings"];
+    private List<string> reorderableTabs = ["File", "Shared", "Recent", "Favorites"];
 
     private void ResetDismissibleTabs() => dismissibleTabs = ["Home", "Documents", "Pictures", "Settings"];
+
+    private void HandleReorder(BitPivotReorderEventArgs args)
+    {
+        var oldIndex = reorderableTabs.IndexOf(args.Item.Key!);
+        var newIndex = args.NewIndex;
+
+        if (oldIndex < 0 || newIndex < 0 || newIndex >= reorderableTabs.Count) return;
+
+        reorderableTabs.RemoveAt(oldIndex);
+        reorderableTabs.Insert(newIndex, args.Item.Key!);
+    }
 
 
 
@@ -1042,6 +1143,22 @@ public partial class BitPivotDemo
     <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
 </BitPivot>
 
+<BitPivot OverflowBehavior=""@BitPivotOverflowBehavior.Wrap"">
+    <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
+</BitPivot>
+
+<BitPivot AutoHideSlideButtons OverflowBehavior=""@BitPivotOverflowBehavior.Slide"">
+    <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Shared"">Content of the Shared tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
+</BitPivot>
+
 <BitPivot Position=""@BitPivotPosition.Start"" OverflowBehavior=""@BitPivotOverflowBehavior.Menu"" Style=""height:200px"">
     <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
@@ -1121,6 +1238,12 @@ private void ResetDismissibleTabs() => dismissibleTabs = [""Home"", ""Documents"
 </BitPivot>
 
 <BitPivot Navigable=""false"">
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot Loop=""false"">
     <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
     <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
     <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
@@ -1257,6 +1380,49 @@ private BitPivotItem? clickedPivotItem;";
 </BitPivot>";
 
     private readonly string example17RazorCode = @"
+<BitPivot Reorderable OnItemReorder=""@HandleReorder"">
+    @foreach (var tab in reorderableTabs)
+    {
+        <BitPivotItem @key=""tab"" Key=""@tab"" HeaderText=""@tab"">
+            <div>Content of the @tab tab.</div>
+        </BitPivotItem>
+    }
+    <BitPivotItem Key=""Pinned"" HeaderText=""Pinned"" Reorderable=""false"" IconName=""@BitIconName.Pinned"">
+        <div>This tab stays where it is.</div>
+    </BitPivotItem>
+</BitPivot>";
+
+    private readonly string example17CsharpCode = @"
+private List<string> reorderableTabs = [""File"", ""Shared"", ""Recent"", ""Favorites""];
+
+private void HandleReorder(BitPivotReorderEventArgs args)
+{
+    var oldIndex = reorderableTabs.IndexOf(args.Item.Key!);
+    var newIndex = args.NewIndex;
+
+    if (oldIndex < 0 || newIndex < 0 || newIndex >= reorderableTabs.Count) return;
+
+    reorderableTabs.RemoveAt(oldIndex);
+    reorderableTabs.Insert(newIndex, args.Item.Key!);
+}";
+
+    private readonly string example18RazorCode = @"
+<BitPivot>
+    <BitPivotItem HeaderText=""First""><input placeholder=""Type here..."" /></BitPivotItem>
+    <BitPivotItem HeaderText=""Second""><input placeholder=""Type here..."" /></BitPivotItem>
+</BitPivot>
+
+<BitPivot KeepMounted>
+    <BitPivotItem HeaderText=""First""><input placeholder=""Type here..."" /></BitPivotItem>
+    <BitPivotItem HeaderText=""Second""><input placeholder=""Type here..."" /></BitPivotItem>
+</BitPivot>
+
+<BitPivot MountAll>
+    <BitPivotItem HeaderText=""First""><input placeholder=""Type here..."" /></BitPivotItem>
+    <BitPivotItem HeaderText=""Second""><input placeholder=""Type here..."" /></BitPivotItem>
+</BitPivot>";
+
+    private readonly string example19RazorCode = @"
 <BitPivot Color=""BitColor.Primary"">
     <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
     <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
@@ -1381,7 +1547,7 @@ private BitPivotItem? clickedPivotItem;";
 </BitPivot>";
 
 
-    private readonly string example18RazorCode = @"
+    private readonly string example20RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitPivot>
@@ -1440,7 +1606,7 @@ private BitPivotItem? clickedPivotItem;";
 </BitPivot>";
 
 
-    private readonly string example19RazorCode = @"
+    private readonly string example21RazorCode = @"
 <BitPivot Size=""@BitSize.Small"">
     <BitPivotItem HeaderText=""File"" IconName=""@BitIconName.FabricFolder""><div>Pivot #1: File</div></BitPivotItem>
     <BitPivotItem HeaderText=""Shared"" ItemCount=""32""><div>Pivot #2: Shared</div></BitPivotItem>
@@ -1459,7 +1625,7 @@ private BitPivotItem? clickedPivotItem;";
     <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
 </BitPivot>";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example22RazorCode = @"
 <style>
     .custom-class {
         margin: 1rem;
@@ -1507,7 +1673,7 @@ private BitPivotItem? clickedPivotItem;";
     <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
 </BitPivot>";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example23RazorCode = @"
 <BitPivot Dir=""BitDir.Rtl"" OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"">
     <BitPivotItem HeaderText=""اسناد"" IconName=""@BitIconName.FabricFolder"">
         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.

@@ -2,17 +2,27 @@
 @inherits BitComponentBase
 
 @* The tab is a div rather than a button so that it can hold a dismiss button of its own without
-   nesting one interactive element inside another. Its activation keys are handled by the tablist. *@
+   nesting one interactive element inside another. Its activation keys are handled by the tablist.
+
+   The default of the dragover is prevented only while the tab can actually take a drop: a tab that
+   always prevented it would swallow anything else dropped on it - a file, a link - that the page
+   itself would otherwise be handling. *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      @onclick="HandleOnClick"
      @onfocusin="HandleOnFocusIn"
+     @ondragstart="HandleOnDragStart"
+     @ondragenter="HandleOnDragEnter"
+     @ondragend="HandleOnDragEnd"
+     @ondragover:preventDefault="_IsReorderable"
+     @ondrop="HandleOnDrop"
      id="@_Id"
      role="tab"
      title="@Title"
      aria-label="@AriaLabel"
      data-content="@HeaderText"
+     draggable="@(_IsReorderable ? "true" : null)"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value"
+     class="@ClassBuilder.Value @Parent?.GetItemDragClass(this)"
      tabindex="@Parent?.GetItemTabIndex(this)"
      aria-controls="@Parent?.GetItemPanelId(this)"
      aria-disabled="@(IsEnabled ? null : "true")"

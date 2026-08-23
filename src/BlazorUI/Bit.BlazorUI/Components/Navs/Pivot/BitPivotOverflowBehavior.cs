@@ -20,5 +20,10 @@ public enum BitPivotOverflowBehavior
     /// <summary>
     /// Display next and previous buttons to slide through the tabs that don't fit
     /// </summary>
-    Slide
+    Slide,
+
+    /// <summary>
+    /// Wrap the tabs that don't fit onto as many extra lines (or columns) as they need
+    /// </summary>
+    Wrap
 }

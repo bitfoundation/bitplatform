@@ -176,7 +176,11 @@
 }
 
 .bit-pvt-tab {
+    // A filled tab is a shape of its own rather than a label with a line under it, so its corner is
+    // the one the design system gives every other control of the same family.
     .bit-pvti {
+        border-radius: $shp-radius-control;
+
         @media(hover:hover) {
             &:hover {
                 color: var(--bit-pvt-clr-text);
@@ -210,6 +214,20 @@
             border-radius: $shp-radius-full;
             background-color: $clr-fg-sec;
         }
+    }
+}
+
+// Lets the header run onto as many extra lines as it needs instead of folding, sliding or scrolling
+// the tabs that do not fit, which keeps every tab reachable without any affordance at all.
+.bit-pvt-wrp {
+    .bit-pvt-hct {
+        flex-wrap: wrap;
+        row-gap: spacing(0.5);
+    }
+
+    &.bit-pvt-sta .bit-pvt-hct,
+    &.bit-pvt-end .bit-pvt-hct {
+        column-gap: spacing(0.5);
     }
 }
 
@@ -360,6 +378,49 @@
     }
 }
 
+// #region Reordering
+
+// The tab that is being dragged is faded in place while it travels, and the one it is over shows the
+// edge it would land on, so the header says where the drop is going before it happens.
+.bit-pvti-drg {
+    opacity: $opa-dis;
+}
+
+.bit-pvti-dro::after {
+    top: 0;
+    content: "";
+    bottom: 0;
+    position: absolute;
+    inset-inline-start: 0;
+    inset-inline-end: auto;
+    width: $shp-border-width-thick;
+    background-color: var(--bit-pvt-clr);
+}
+
+// The tab travelling forward comes to rest on the far side of the one it is dropped on.
+.bit-pvti-dro-end::after {
+    inset-inline-start: auto;
+    inset-inline-end: 0;
+}
+
+.bit-pvt-sta,
+.bit-pvt-end {
+    .bit-pvti-dro::after {
+        top: 0;
+        bottom: auto;
+        width: auto;
+        inset-inline: 0;
+        height: $shp-border-width-thick;
+    }
+
+    .bit-pvti-dro-end::after {
+        top: auto;
+        bottom: 0;
+    }
+}
+
+// #endregion
+
 // Folded away by the Menu overflow behavior. A class rather than an inline display, so that hiding
 // an item this way never overwrites the display the component itself puts on a hidden item.
 .bit-pvt-ovh {
@@ -373,7 +434,7 @@
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    color: currentColor;
+    color: currentcolor;
     justify-content: center;
     width: spacing(2);
     height: spacing(2);
@@ -453,6 +514,10 @@
         &::-webkit-scrollbar {
             display: none;
         }
+
+        @media (prefers-reduced-motion: reduce) {
+            scroll-behavior: auto;
+        }
     }
 }
 
@@ -502,6 +567,13 @@
 .bit-pvt-mor {
     flex-shrink: 0;
     margin-inline-end: 0;
+
+    // The selected tab can be one of the ones folded away, and a header showing no selection at all
+    // reads as if nothing were selected, so the button holding it carries the selection instead.
+    &.bit-pvt-mor-sel {
+        color: var(--bit-pvt-clr);
+        font-weight: $tg-fw-semibold;
+    }
 }
 
 .bit-pvt-ovl {
@@ -528,6 +600,13 @@
     box-shadow: $box-shadow-popup;
     border-radius: 0 0 $shp-radius-popup $shp-radius-popup;
     background-color: $clr-bg-pri;
+
+    // The menu itself is what holds the focus while it is open and points at the item it is on with
+    // an aria-activedescendant, so the ring belongs on that item rather than around the whole menu.
+    &:focus,
+    &:focus-visible {
+        outline: none;
+    }
 }
 
 // forced-colors: the selected-tab indicator is a background-painted ::before, which High Contrast
@@ -576,6 +655,12 @@
 
     &.bit-pvt-mni-sel {
         font-weight: $tg-fw-semibold;
+    }
+
+    // The item the aria-activedescendant of the menu points at: the real focus never leaves the menu,
+    // so this is what stands in for the focus ring the item would otherwise draw for itself.
+    &.bit-pvt-mni-act {
+        @include focus-ring(var(--bit-pvt-clr-focus));
     }
 }
 

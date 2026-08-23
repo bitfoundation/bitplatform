@@ -11,11 +11,12 @@ internal static class BitPivotJsRuntimeExtensions
         ElementReference? moreButton,
         bool isMenu,
         bool isSlide,
+        bool isReorderable,
         bool isRtl,
         bool isVertical,
         DotNetObjectReference<T> dotnetObj) where T : class
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Pivot.setup", id, header, moreButton, isMenu, isSlide, isRtl, isVertical, dotnetObj);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Pivot.setup", id, header, moreButton, isMenu, isSlide, isReorderable, isRtl, isVertical, dotnetObj);
     }
 
     internal static ValueTask BitPivotRefresh(this IJSRuntime jsRuntime, string id)
@@ -28,9 +29,14 @@ internal static class BitPivotJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.Pivot.slide", id, forward);
     }
 
-    internal static ValueTask BitPivotScrollToSelected(this IJSRuntime jsRuntime, ElementReference header)
+    internal static ValueTask<string[]?> BitPivotGetItemsOrder(this IJSRuntime jsRuntime, ElementReference header)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Pivot.scrollToSelected", header);
+        return jsRuntime.Invoke<string[]?>("BitBlazorUI.Pivot.getItemsOrder", header);
+    }
+
+    internal static ValueTask BitPivotScrollToItem(this IJSRuntime jsRuntime, ElementReference element)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Pivot.scrollToItem", element);
     }
 
     internal static ValueTask BitPivotDispose(this IJSRuntime jsRuntime, string id)

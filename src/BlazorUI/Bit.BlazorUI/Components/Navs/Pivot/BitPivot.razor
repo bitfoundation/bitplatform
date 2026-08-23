@@ -19,7 +19,7 @@
                 </div>
             }
 
-            @if (OverflowBehavior is BitPivotOverflowBehavior.Slide)
+            @if (_ShowSlideButtons)
             {
                 var prevIcon = BitIconInfo.From(PreviousIcon, PreviousIconName ?? (_isVertical ? "ChevronUp" : "ChevronLeft"));
                 <button type="button"
@@ -57,8 +57,10 @@
                             aria-controls="@_MenuId"
                             aria-expanded="@(_isMenuOpen ? "true" : "false")"
                             @onclick="ToggleMenu"
+                            @onkeydown="HandleMoreKeyDown"
+                            @onkeydown:preventDefault="_preventMoreKeyDownDefault"
                             @onkeydown:stopPropagation="true"
-                            class="bit-pvti bit-pvt-mor @Classes?.OverflowButton">
+                            class="bit-pvti bit-pvt-mor @(_IsSelectedOverflowed ? "bit-pvt-mor-sel" : null) @Classes?.OverflowButton">
                         <span>
                             <i aria-hidden="true" class="@moreIcon?.GetCssClasses()" />
                         </span>
@@ -66,7 +68,7 @@
                 }
             </div>
 
-            @if (OverflowBehavior is BitPivotOverflowBehavior.Slide)
+            @if (_ShowSlideButtons)
             {
                 var nextIcon = BitIconInfo.From(NextIcon, NextIconName ?? (_isVertical ? "ChevronDown" : "ChevronRight"));
                 <button type="button"
@@ -85,24 +87,41 @@
                      style="display:@(_isMenuOpen ? "block" : "none")"
                      @onclick="CloseMenu"></div>
 
-                <div style="display:@(_isMenuOpen ? "block" : "none");@Styles?.OverflowCallout"
+                @* The menu takes the focus on itself and points at the item it is on with an
+                   aria-activedescendant, which the WAI-ARIA menu pattern offers as the alternative to
+                   moving the real focus from one of its items to the next. *@
+                <div @ref="_menuRef"
+                     style="display:@(_isMenuOpen ? "block" : "none");@Styles?.OverflowCallout"
                      id="@_MenuId"
                      role="menu"
+                     tabindex="-1"
                      aria-label="@(OverflowAriaLabel ?? "More")"
+                     aria-activedescendant="@_ActiveMenuItemId"
                      @onkeydown="HandleMenuKeyDown"
+                     @onkeydown:preventDefault="_preventMenuKeyDownDefault"
                      class="bit-pvt-mnc @Classes?.OverflowCallout">
-                    @foreach (var index in _overflowItemIndexes)
+                    @for (var i = 0; i < _overflowItemIndexes.Length; i++)
                     {
+                        var index = _overflowItemIndexes[i];
                         var item = (index >= 0 && index < _allItems.Count) ? _allItems[index] : null;
                         if (item is null) continue;
 
+                        var itemIndex = i;
+
+                        @* menuitemradio rather than menuitem: the menu is another way of making the
+                           single choice the tablist makes, so each of its items carries whether it is
+                           the one currently chosen. *@
                         <button type="button"
-                                role="menuitem"
+                                id="@GetMenuItemId(itemIndex)"
+                                tabindex="-1"
+                                role="menuitemradio"
+                                title="@item.Title"
                                 disabled="@(item.IsEnabled is false)"
                                 aria-disabled="@(item.IsEnabled ? null : "true")"
+                                aria-checked="@(item.IsSelected ? "true" : "false")"
                                 style="@Styles?.OverflowItem"
                                 @onclick="() => SelectFromMenu(item)"
-                                class="bit-pvt-mni @(item.IsSelected ? "bit-pvt-mni-sel" : null) @Classes?.OverflowItem">
+                                class="bit-pvt-mni @(item.IsSelected ? "bit-pvt-mni-sel" : null) @(itemIndex == _menuFocusIndex ? "bit-pvt-mni-act" : null) @Classes?.OverflowItem">
                             @{
                                 var menuIcon = BitIconInfo.From(item.Icon, item.IconName);
                             }
@@ -141,10 +160,15 @@
        nothing focusable of its own. *@
     @if (HeaderOnly is false)
     {
-        if (MountAll)
+        if (MountAll || KeepMounted)
         {
+            // KeepMounted keeps a panel for every tab that has been shown at least once, so that
+            // leaving a tab and coming back to it finds the content in the state it was left in.
+            TrackMountedItem();
             @foreach (var item in _allItems)
             {
+                if (IsItemPanelRendered(item) is false) continue;
+
                 var isSelected = item == _selectedItem;
                 <div role="tabpanel"
                      tabindex="0"

@@ -4,7 +4,7 @@
             Description="The Pivot switches between distinct sections of content from a row of headers, following the WAI-ARIA tabs pattern." />
 
 <DemoPage Name="Pivot" SecondaryNames="@(["Tab", "TabPage"])"
-          Description="The Pivot switches between two or more distinct sections of content from a single row (or column) of headers, where selecting a header shows the section it belongs to. Headers can carry an icon, a count and a dismiss button, run along any of the four sides, and fold into an overflow menu, a scroll area or a pair of slide buttons when there is no room for all of them. The whole header is a single tab stop that the arrow, Home and End keys navigate, as the WAI-ARIA tabs pattern describes."
+          Description="The Pivot switches between two or more distinct sections of content from a single row (or column) of headers, where selecting a header shows the section it belongs to. Headers can carry an icon, a count and a dismiss button, be dragged into a new order, run along any of the four sides, and fold into an overflow menu, a scroll area, a pair of slide buttons or extra lines when there is no room for all of them. The whole header is a single tab stop that the arrow, Home and End keys navigate, as the WAI-ARIA tabs pattern describes."
           Parameters="componentParameters" SubClasses="componentSubClasses" SubEnums="componentSubEnums"
           PublicMembers="componentPublicMembers"
           GitHubUrl="Navs/Pivot/BitPivot.razor" GitHubDemoUrl="Navs/Pivot/BitPivotDemo.razor">
@@ -255,9 +255,13 @@
             The <strong>OverflowBehavior</strong> decides what happens when the headers no longer fit:
             <strong>Menu</strong> folds the ones that do not fit into a menu behind a More button,
             <strong>Slide</strong> adds a pair of buttons that scroll the header along,
-            <strong>Scroll</strong> leaves a scroll bar under (or beside) it, and <strong>None</strong>
-            (the default) simply lets them overflow. Selecting a tab from the keyboard or from the bound
-            key brings it back into view in the Scroll and Slide behaviors.
+            <strong>Scroll</strong> leaves a scroll bar under (or beside) it, <strong>Wrap</strong> runs
+            them onto as many extra lines as they need, and <strong>None</strong> (the default) simply lets
+            them overflow. Selecting a tab from the keyboard or from the bound key brings it back into view
+            in the Scroll and Slide behaviors. The More button of the Menu behavior answers to the keys of
+            a menu - the arrows step through it, Home and End jump to either end, Enter selects and Escape
+            closes it - and marks itself as the selected one while it is the selected tab that is folded
+            away.
         </div>
         <br />
 
@@ -302,6 +306,35 @@
                 <BitPivotItem HeaderText="Documents">Content of the Documents tab.</BitPivotItem>
                 <BitPivotItem HeaderText="Pictures">Content of the Pictures tab.</BitPivotItem>
                 <BitPivotItem HeaderText="Downloads">Content of the Downloads tab.</BitPivotItem>
+            </BitPivot>
+        </div>
+        <br /><br />
+
+        <div><b>Wrap</b> (the tabs that do not fit run onto the next line):</div>
+        <br />
+        <div style="max-width:450px" class="box">
+            <BitPivot OverflowBehavior="@BitPivotOverflowBehavior.Wrap">
+                <BitPivotItem HeaderText="File">Content of the File tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Shared with me">Content of the Shared with me tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Recent">Content of the Recent tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Favorites">Content of the Favorites tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Documents">Content of the Documents tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Pictures">Content of the Pictures tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Downloads">Content of the Downloads tab.</BitPivotItem>
+            </BitPivot>
+        </div>
+        <br /><br />
+
+        <div>
+            <b>AutoHideSlideButtons</b> takes the slide buttons away entirely while the whole header fits,
+            instead of leaving them in place in their disabled state:
+        </div>
+        <br />
+        <div class="box">
+            <BitPivot AutoHideSlideButtons OverflowBehavior="@BitPivotOverflowBehavior.Slide">
+                <BitPivotItem HeaderText="File">Content of the File tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Shared">Content of the Shared tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Recent">Content of the Recent tab.</BitPivotItem>
             </BitPivot>
         </div>
         <br /><br />
@@ -443,6 +476,17 @@
         </div>
         <br />
         <BitPivot Navigable="false">
+            <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
+            <BitPivotItem HeaderText="Shared"><div>Pivot #2: Shared</div></BitPivotItem>
+            <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
+        </BitPivot>
+        <br /><br /><br />
+        <div>
+            <strong>Loop</strong> turned off stops the navigation at both ends of the header instead of
+            wrapping it around, so the last tab is really the last one the arrow keys reach:
+        </div>
+        <br />
+        <BitPivot Loop="false">
             <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
             <BitPivotItem HeaderText="Shared"><div>Pivot #2: Shared</div></BitPivotItem>
             <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
@@ -621,7 +665,67 @@
         </BitPivot>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example17RazorCode" Id="example17" PreventRenderForMcpClient>
+    <DemoExample Title="Reorderable" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+        <div>
+            <strong>Reorderable</strong> lets the headers be dragged onto one another, and the focused one
+            be moved with <strong>Ctrl</strong> and an arrow key, so a header can be put in the order its
+            user works in. Like the dismiss button, the pivot only asks: the items belong to the markup
+            that declares them, so <strong>OnItemReorder</strong> hands over the item together with the
+            index it is leaving and the index it is going to, and the handler is what moves it. A single
+            item pins itself in place with its own <strong>Reorderable</strong> set to false.
+        </div>
+        <br />
+        <BitPivot Reorderable OnItemReorder="@HandleReorder">
+            @foreach (var tab in reorderableTabs)
+            {
+                <BitPivotItem @key="tab" Key="@tab" HeaderText="@tab">
+                    <div>Content of the @tab tab.</div>
+                </BitPivotItem>
+            }
+            <BitPivotItem Key="Pinned" HeaderText="Pinned" Reorderable="false" IconName="@BitIconName.Pinned">
+                <div>This tab stays where it is.</div>
+            </BitPivotItem>
+        </BitPivot>
+    </DemoExample>
+
+    <DemoExample Title="Mounting" RazorCode="@example18RazorCode" Id="example18">
+        <div>
+            By default only the selected tab is rendered, and leaving a tab throws its content away.
+            <strong>KeepMounted</strong> keeps every tab that has been shown at least once around and
+            hides it instead, so coming back to it finds the scroll position, the form and the state it
+            was left in; a tab that has never been selected still costs nothing. <strong>MountAll</strong>
+            goes further and renders every tab up front, which is what a page that has to read or export
+            the content of the tabs it is not showing needs.
+        </div>
+        <br />
+        <div>Type into the boxes, switch tabs and come back:</div>
+        <br />
+
+        <div><b>Default</b> (the content of a tab that is left is thrown away):</div>
+        <br />
+        <BitPivot>
+            <BitPivotItem HeaderText="First"><input placeholder="Type here..." /></BitPivotItem>
+            <BitPivotItem HeaderText="Second"><input placeholder="Type here..." /></BitPivotItem>
+        </BitPivot>
+        <br /><br /><br />
+
+        <div><b>KeepMounted</b> (the content of a tab that has been shown is kept):</div>
+        <br />
+        <BitPivot KeepMounted>
+            <BitPivotItem HeaderText="First"><input placeholder="Type here..." /></BitPivotItem>
+            <BitPivotItem HeaderText="Second"><input placeholder="Type here..." /></BitPivotItem>
+        </BitPivot>
+        <br /><br /><br />
+
+        <div><b>MountAll</b> (every tab is rendered up front):</div>
+        <br />
+        <BitPivot MountAll>
+            <BitPivotItem HeaderText="First"><input placeholder="Type here..." /></BitPivotItem>
+            <BitPivotItem HeaderText="Second"><input placeholder="Type here..." /></BitPivotItem>
+        </BitPivot>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example19RazorCode" Id="example19" PreventRenderForMcpClient>
         <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
         <div>Using the <b>Color</b> parameter and its value of type <BitLink Href="#color-enum">BitColor</BitLink> enum:</div>
         <br />
@@ -846,7 +950,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="External Icons" RazorCode="@example20RazorCode" Id="example20">
         <div>Use icons from external libraries like FontAwesome, and Bootstrap Icons with the <b>Icon</b> parameter.
         </div>
         <div>See the <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> section in the parameters table for usage.
@@ -931,7 +1035,7 @@
         </BitPivot>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example19RazorCode" Id="example19" PreventRenderForMcpClient>
+    <DemoExample Title="Size" RazorCode="@example21RazorCode" Id="example21" PreventRenderForMcpClient>
         <div>
             The <strong>Size</strong> moves the headers along the type ramp - <strong>Small</strong>,
             <strong>Medium</strong> (the default) and <strong>Large</strong> - so a pivot can be the
@@ -963,7 +1067,7 @@
         </BitPivot>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example20RazorCode" Id="example20">
+    <DemoExample Title="Style & Class" RazorCode="@example22RazorCode" Id="example22">
         <div>
             <strong>Style</strong> and <strong>Class</strong> reach the root element of the pivot, while
             <strong>Styles</strong> and <strong>Classes</strong> reach every part of it by name - the
@@ -1002,7 +1106,7 @@
         </BitPivot>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example21RazorCode" Id="example21">
+    <DemoExample Title="RTL" RazorCode="@example23RazorCode" Id="example23">
         <div>
             Setting <strong>Dir</strong> to <strong>Rtl</strong> mirrors the pivot: the headers run from
             the right, the selection indicator and the slide buttons follow, the Start and End positions

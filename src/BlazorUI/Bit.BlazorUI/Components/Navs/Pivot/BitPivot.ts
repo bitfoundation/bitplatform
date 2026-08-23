@@ -8,6 +8,7 @@ namespace BitBlazorUI {
             moreButton: HTMLElement | null,
             isMenu: boolean,
             isSlide: boolean,
+            isReorderable: boolean,
             isRtl: boolean,
             isVertical: boolean,
             dotnetObj: DotNetObject) {
@@ -23,7 +24,7 @@ namespace BitBlazorUI {
                 }
             });
 
-            const instance = new PivotInstance(id, header, moreButton, isMenu, isSlide, isRtl, isVertical, dotnetObj);
+            const instance = new PivotInstance(id, header, moreButton, isMenu, isSlide, isReorderable, isRtl, isVertical, dotnetObj);
             Pivot._instances[id] = instance;
             instance.start();
         }
@@ -40,19 +41,30 @@ namespace BitBlazorUI {
             instance.slide(forward);
         }
 
-        // Brings the selected tab back into view after a selection that did not come from a click on
-        // it (the keyboard, the bound key, the overflow menu). Works off the header element itself
-        // rather than an instance, since the Scroll behavior sets up no instance at all.
-        public static scrollToSelected(header: HTMLElement) {
-            if (!header) return;
+        // The order the tabs are declared in, which is the order they are laid out in but not the order
+        // the component registers them in: an item rendered after the first pass is created last.
+        public static getItemsOrder(header: HTMLElement): string[] {
+            if (!header) return [];
 
             try {
-                const selected = header.querySelector<HTMLElement>('.bit-pvti-sel');
-                if (!selected) return;
-
-                selected.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+                return Array.from(header.querySelectorAll<HTMLElement>('.bit-pvti:not(.bit-pvt-mor)')).map(el => el.id);
             } catch (e) {
-                console.error('BitBlazorUI.Pivot.scrollToSelected:', e);
+                console.error('BitBlazorUI.Pivot.getItemsOrder:', e);
+                return [];
+            }
+        }
+
+        // Brings a tab back into view after a selection or a focus move that did not come from a click
+        // on it (the keyboard, the bound key, the overflow menu). Works off the element itself rather
+        // than an instance, since the Scroll behavior sets up no instance at all.
+        public static scrollToItem(element: HTMLElement) {
+            if (!element || !element.scrollIntoView) return;
+
+            try {
+                const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+                element.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: reduced ? 'auto' : 'smooth' });
+            } catch (e) {
+                console.error('BitBlazorUI.Pivot.scrollToItem:', e);
             }
         }
 
@@ -82,12 +94,14 @@ namespace BitBlazorUI {
         private moreButton: HTMLElement | null;
         private isMenu: boolean;
         private isSlide: boolean;
+        private isReorderable: boolean;
         private isRtl: boolean;
         private isVertical: boolean;
         private dotnetObj: DotNetObject;
         private disposed: boolean = false;
         private observer: ResizeObserver | null = null;
         private scrollHandler: (() => void) | null = null;
+        private dragStartHandler: ((e: DragEvent) => void) | null = null;
         private lastOverflow: string = '';
         private lastSlideState: string = '';
 
@@ -97,6 +111,7 @@ namespace BitBlazorUI {
             moreButton: HTMLElement | null,
             isMenu: boolean,
             isSlide: boolean,
+            isReorderable: boolean,
             isRtl: boolean,
             isVertical: boolean,
             dotnetObj: DotNetObject) {
@@ -105,6 +120,7 @@ namespace BitBlazorUI {
             this.moreButton = moreButton;
             this.isMenu = isMenu;
             this.isSlide = isSlide;
+            this.isReorderable = isReorderable;
             this.isRtl = isRtl;
             this.isVertical = isVertical;
             this.dotnetObj = dotnetObj;
@@ -118,6 +134,21 @@ namespace BitBlazorUI {
                 if (this.isSlide) {
                     this.scrollHandler = Utils.throttle(() => this.updateSlide(), 100) as () => void;
                     this.header.addEventListener('scroll', this.scrollHandler, { passive: true });
+                }
+
+                if (this.isReorderable) {
+                    // a drag whose data transfer carries nothing never starts in some browsers, and
+                    // the handler of the component itself has no way of filling that in from C#.
+                    this.dragStartHandler = (e: DragEvent) => {
+                        try {
+                            if (!e.dataTransfer) return;
+                            e.dataTransfer.effectAllowed = 'move';
+                            if (e.dataTransfer.types.length === 0) {
+                                e.dataTransfer.setData('text/plain', '');
+                            }
+                        } catch { }
+                    };
+                    this.header.addEventListener('dragstart', this.dragStartHandler);
                 }
             } catch (e) {
                 console.error('BitBlazorUI.Pivot.start:', e);
@@ -266,14 +297,16 @@ namespace BitBlazorUI {
             if (this.disposed) return;
 
             try {
+                const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+                const behavior: ScrollBehavior = reduced ? 'auto' : 'smooth';
                 const direction = forward ? 1 : -1;
                 if (this.isVertical) {
                     const amount = Math.max(this.header.clientHeight * 0.75, 50);
-                    this.header.scrollBy({ top: direction * amount, behavior: 'smooth' });
+                    this.header.scrollBy({ top: direction * amount, behavior });
                 } else {
                     const amount = Math.max(this.header.clientWidth * 0.75, 50);
                     const sign = this.isRtl ? -1 : 1;
-                    this.header.scrollBy({ left: direction * sign * amount, behavior: 'smooth' });
+                    this.header.scrollBy({ left: direction * sign * amount, behavior });
                 }
             } catch (e) {
                 console.error('BitBlazorUI.Pivot.slide:', e);
@@ -296,6 +329,10 @@ namespace BitBlazorUI {
                 if (this.scrollHandler) {
                     this.header.removeEventListener('scroll', this.scrollHandler);
                     this.scrollHandler = null;
+                }
+                if (this.dragStartHandler) {
+                    this.header.removeEventListener('dragstart', this.dragStartHandler);
+                    this.dragStartHandler = null;
                 }
             } catch (e) {
                 console.error('BitBlazorUI.Pivot.dispose:', e);

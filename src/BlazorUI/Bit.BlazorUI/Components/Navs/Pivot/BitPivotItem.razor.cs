@@ -6,7 +6,7 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitPivotItem : BitComponentBase
 {
-    private (bool, BitVisibility, string?, string?, string?, int?, bool?) _lastHeaderState;
+    private (bool, BitVisibility, string?, string?, string?, string?, int?, bool?, bool?) _lastHeaderState;
 
 
 
@@ -90,6 +90,12 @@ public partial class BitPivotItem : BitComponentBase
     [Parameter] public EventCallback OnDismiss { get; set; }
 
     /// <summary>
+    /// Overrides the Reorderable of the parent pivot for this item alone, so a single tab can be
+    /// pinned in place while the rest of the header is reordered, or the other way around.
+    /// </summary>
+    [Parameter] public bool? Reorderable { get; set; }
+
+    /// <summary>
     /// The title (tooltip) of the pivot item header, which is the usual place for the full text of a
     /// header that is too long to be shown in one.
     /// </summary>
@@ -117,6 +123,8 @@ public partial class BitPivotItem : BitComponentBase
 
 
     protected override string RootElementClass => "bit-pvti";
+
+    private bool _IsReorderable => Parent?.GetItemReorderable(this) is true;
 
     protected override void RegisterCssClasses()
     {
@@ -146,7 +154,10 @@ public partial class BitPivotItem : BitComponentBase
         // Everything the parent draws on its own behalf out of this item - the overflow menu copy of
         // the header, the roving tabindex, the dismiss button - is stale as soon as any of these
         // change, and the parent has no other way of hearing about it.
-        var state = (IsEnabled, Visibility, HeaderText, IconName, Key, ItemCount, Dismissible);
+        // The Icon is compared by the classes it renders rather than by the instance, so an item given
+        // a freshly constructed BitIconInfo on every render of its parent does not report a change
+        // that is not one, which would leave the two StateHasChanged calls feeding each other.
+        var state = (IsEnabled, Visibility, HeaderText, Icon?.GetCssClasses(), IconName, Key, ItemCount, Dismissible, Reorderable);
 
         if (state == _lastHeaderState) return;
 
@@ -179,6 +190,28 @@ public partial class BitPivotItem : BitComponentBase
     private void HandleOnFocusIn()
     {
         Parent?.HandleItemFocusIn(this);
+    }
+
+    private void HandleOnDragStart()
+    {
+        Parent?.HandleItemDragStart(this);
+    }
+
+    private void HandleOnDragEnter()
+    {
+        Parent?.HandleItemDragEnter(this);
+    }
+
+    private void HandleOnDragEnd()
+    {
+        Parent?.HandleItemDragEnd();
+    }
+
+    private async Task HandleOnDrop()
+    {
+        if (Parent is null) return;
+
+        await Parent.HandleItemDrop(this);
     }
 
 
