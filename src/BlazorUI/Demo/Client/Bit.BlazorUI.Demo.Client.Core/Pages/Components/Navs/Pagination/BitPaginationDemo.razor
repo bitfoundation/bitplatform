@@ -70,6 +70,7 @@
         <div>
             <b>ClickableEllipsis</b> turns each gap into a control that jumps into the middle of the pages it hides, which is what makes the middle of a few hundred pages reachable in a couple of clicks
             instead of one window at a time. It becomes a button (or a link, along with the rest of the pagination) named by <b>EllipsisAriaLabel</b>, so it is announced and reached like any other control.
+            The jump can spell the pages it landed among out in place of the gap that was clicked, so the focus is handed over to the page the pagination settled on rather than being dropped on the document.
         </div>
         <br />
         <BitPagination Count="500" ClickableEllipsis DefaultSelectedPage="250" />
@@ -162,7 +163,7 @@
         <div>
             <b>ShowPageSizeSelector</b> opens the pagination with a selector of how many items a page holds, picked out of <b>PageSizeOptions</b> (10, 25, 50 and 100 by default).
             Picking a size reports it through the two-way bound <b>PageSize</b> and through <b>OnPageSizeChange</b>. A size that is not one of the options is offered along with them, in its place among them,
-            so the selector never shows one size while the pagination runs on another.
+            so the selector never shows one size while the pagination runs on another — and a pick that is not taken (<b>PageSize</b> bound one way and left where it was) puts the selector back on the size in force.
         </div>
         <div>
             The example below is the form without <BitLink Href="#example11">TotalItems</BitLink>: the number of pages the new size adds up to is yours to recompute into <b>Count</b>,
@@ -210,7 +211,11 @@
     </DemoExample>
 
     <DemoExample Title="Hide on single page" RazorCode="@example15RazorCode" Id="example15">
-        <div><b>HideOnSinglePage</b> renders nothing at all while there is a single page to navigate, so a short result set is not left with navigation that cannot go anywhere.</div>
+        <div>
+            <b>HideOnSinglePage</b> renders nothing at all while there is a single page to navigate, so a short result set is not left with navigation that cannot go anywhere.
+            Nothing at all means nothing at all: the summary, the <BitLink Href="#example12">page size selector</BitLink> and the jump go with the page controls, so leave it off wherever a size big enough
+            to leave a single page would take the selector that picked it off the screen with it.
+        </div>
         <br />
         <BitPagination Count="1" HideOnSinglePage />
         <div>&nbsp;(nothing is rendered above for a single page)</div>
@@ -330,6 +335,7 @@
         <div>
             A navigation button that reaches the end of the range it points at disables itself, which would drop the keyboard focus on the document. The focus is handed over to the page the pagination settled on instead,
             or to the navigation button pointing the other way while the page buttons are turned off, so a keyboard walk through the range never loses its place.
+            A <BitLink Href="#example6">clickable ellipsis</BitLink> hands it over the same way, since the jump can spell the pages it landed among out in place of the gap that was clicked.
         </div>
         <br /><br />
         <BitPagination Count="12"

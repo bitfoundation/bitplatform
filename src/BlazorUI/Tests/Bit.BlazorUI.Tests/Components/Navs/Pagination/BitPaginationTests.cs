@@ -2734,6 +2734,140 @@ public class BitPaginationTests : BunitTestContext
         Assert.AreEqual(1, CountFocusCalls());
     }
 
+    [TestMethod]
+    public void BitPaginationShouldCorrectABoundSelectedPageHandedBackAsZero()
+    {
+        var page = 3;
+
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 5);
+            parameters.Add(p => p.SelectedPage, page);
+            parameters.Add(p => p.SelectedPageChanged, v => page = v);
+        });
+
+        // Zero is a page that does not exist like any other one outside of the range, so it is written back
+        // rather than being taken for the state of a value that was never corrected.
+        comp.Render(parameters => parameters.Add(p => p.SelectedPage, 0));
+
+        Assert.AreEqual(1, page);
+        Assert.AreEqual("1", comp.Find(".bit-pgn-sel").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldSeparateTheTwoStylesOfAButtonThatCarriesBoth()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 5);
+            parameters.Add(p => p.ShowFirstButton, true);
+            parameters.Add(p => p.DefaultSelectedPage, 3);
+            parameters.Add(p => p.Styles, new BitPaginationClassStyles
+            {
+                Button = "color: red",
+                SelectedButton = "background-color: blue",
+                FirstButton = "border-color: green"
+            });
+        });
+
+        // A style that was written without a trailing semicolon would swallow the one that follows it into the
+        // same declaration, so the two are separated by one.
+        Assert.AreEqual("color: red;background-color: blue", comp.Find(".bit-pgn-sel").GetAttribute("style"));
+        Assert.AreEqual("color: red;border-color: green", FindByAriaLabel(comp, "First page")!.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldNotAddASecondSemicolonToAStyleThatAlreadyEndsWithOne()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 5);
+            parameters.Add(p => p.DefaultSelectedPage, 3);
+            parameters.Add(p => p.Styles, new BitPaginationClassStyles
+            {
+                Button = "color: red;",
+                SelectedButton = "background-color: blue;"
+            });
+        });
+
+        Assert.AreEqual("color: red; background-color: blue;", comp.Find(".bit-pgn-sel").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldRenderOnlyOneOfTheTwoStylesWhenTheOtherIsMissing()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 5);
+            parameters.Add(p => p.DefaultSelectedPage, 3);
+            parameters.Add(p => p.Styles, new BitPaginationClassStyles { SelectedButton = "color: red;" });
+        });
+
+        Assert.AreEqual("color: red;", comp.Find(".bit-pgn-sel").GetAttribute("style"));
+        Assert.IsFalse(FindPageButton(comp, 2)!.HasAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldMoveTheFocusOffTheClickableEllipsisItJumpedFrom()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 500);
+            parameters.Add(p => p.ClickableEllipsis, true);
+            parameters.Add(p => p.DefaultSelectedPage, 250);
+        });
+
+        // The jump can spell the pages it landed among out in place of the gap that was clicked, so the page
+        // the pagination settled on takes the focus over instead of it being dropped on the document.
+        comp.FindAll(".bit-pgn-elb")[0].Click();
+
+        Assert.AreEqual("125", comp.Find(".bit-pgn-sel").TextContent.Trim());
+        Assert.AreEqual(1, CountFocusCalls());
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldPutThePageSizeSelectorBackOnTheSizeThePaginationRunsOn()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 12);
+            parameters.Add(p => p.ShowPageSizeSelector, true);
+            parameters.Add(p => p.PageSize, 10);
+        });
+
+        // The size was not taken (PageSize is bound one way and the consumer left it where it was), so the
+        // selector is put back on the size the pagination is actually paging by, and the focus follows it.
+        comp.Find(".bit-pgn-pse").Change("25");
+
+        var select = comp.Find(".bit-pgn-pse");
+
+        Assert.AreEqual("10", select.GetAttribute("value"));
+        Assert.IsTrue(select.QuerySelectorAll("option").First(o => o.TextContent.Trim() == "10").HasAttribute("selected"));
+        Assert.AreEqual(1, CountFocusCalls());
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldLeaveThePageSizeSelectorAloneForASizeThatWasTaken()
+    {
+        var size = 10;
+
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 12);
+            parameters.Add(p => p.ShowPageSizeSelector, true);
+            parameters.Add(p => p.PageSize, size);
+            parameters.Add(p => p.PageSizeChanged, v => size = v);
+        });
+
+        comp.Find(".bit-pgn-pse").Change("25");
+
+        var select = comp.Find(".bit-pgn-pse");
+
+        Assert.AreEqual(25, size);
+        Assert.AreEqual("25", select.GetAttribute("value"));
+        Assert.AreEqual(0, CountFocusCalls());
+    }
+
     private static int GetLastRenderedPage(IRenderedComponent<BitPagination> comp)
     {
         return int.Parse(GetRenderedPages(comp)[^1]);

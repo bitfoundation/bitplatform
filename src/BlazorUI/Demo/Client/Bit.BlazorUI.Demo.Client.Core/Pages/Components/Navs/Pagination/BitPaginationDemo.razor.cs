@@ -34,7 +34,7 @@ public partial class BitPaginationDemo
             Name = "ClickableEllipsis",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Turns every ellipsis into a control that jumps into the middle of the pages it collapses. It follows the rest of the pagination as a button or a link, and is named by EllipsisAriaLabel."
+            Description = "Turns every ellipsis into a control that jumps into the middle of the pages it collapses. It follows the rest of the pagination as a button or a link, is named by EllipsisAriaLabel, and hands the focus over to the page the jump landed on."
         },
         new()
         {
@@ -145,7 +145,7 @@ public partial class BitPaginationDemo
             Name = "HideOnSinglePage",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders nothing at all while there is a single page to navigate."
+            Description = "Renders nothing at all while there is a single page to navigate, the summary, the page size selector and the jump included."
         },
         new()
         {

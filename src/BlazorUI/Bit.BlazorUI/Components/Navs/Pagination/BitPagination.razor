@@ -41,7 +41,12 @@
                 {
                     <label for="@($"{_Id}-pss")" style="@Styles?.PageSizeLabel" class="bit-pgn-psl @Classes?.PageSizeLabel">@PageSizeText</label>
                 }
-                <select id="@($"{_Id}-pss")"
+                @* The key is what puts the select back on the size the pagination runs on after a pick the
+                   consumer did not take: the value it renders with is the one it already rendered with, so
+                   only replacing the element itself can undo what the user picked in it. *@
+                <select @key="_pageSizeKey"
+                        @ref="_pageSizeSelectRef"
+                        id="@($"{_Id}-pss")"
                         value="@_PageSize"
                         disabled="@(IsEnabled is false)"
                         aria-label="@(PageSizeText.HasValue() ? null : PageSizeAriaLabel)"
@@ -79,7 +84,7 @@
                            title="@(FirstButtonText.HasValue() ? null : FirstButtonAriaLabel)"
                            aria-label="@FirstButtonAriaLabel"
                            aria-disabled="@(firstHref is null ? "true" : null)"
-                           style="@Styles?.Button @Styles?.FirstButton"
+                           style="@JoinStyles(Styles?.Button, Styles?.FirstButton)"
                            class="@firstClass">
                             <i aria-hidden="true" style="@Styles?.FirstButtonIcon" class="@firstIcon?.GetCssClasses() @Classes?.FirstButtonIcon" />
                             @if (FirstButtonText.HasValue())
@@ -96,7 +101,7 @@
                                 title="@(FirstButtonText.HasValue() ? null : FirstButtonAriaLabel)"
                                 aria-label="@FirstButtonAriaLabel"
                                 disabled="@_IsFirstDisabled"
-                                style="@Styles?.Button @Styles?.FirstButton"
+                                style="@JoinStyles(Styles?.Button, Styles?.FirstButton)"
                                 class="@firstClass">
                             <i aria-hidden="true" style="@Styles?.FirstButtonIcon" class="@firstIcon?.GetCssClasses() @Classes?.FirstButtonIcon" />
                             @if (FirstButtonText.HasValue())
@@ -123,7 +128,7 @@
                            title="@(PreviousButtonText.HasValue() ? null : PreviousButtonAriaLabel)"
                            aria-label="@PreviousButtonAriaLabel"
                            aria-disabled="@(previousHref is null ? "true" : null)"
-                           style="@Styles?.Button @Styles?.PreviousButton"
+                           style="@JoinStyles(Styles?.Button, Styles?.PreviousButton)"
                            class="@previousClass">
                             <i aria-hidden="true" style="@Styles?.PreviousButtonIcon" class="@previousIcon?.GetCssClasses() @Classes?.PreviousButtonIcon" />
                             @if (PreviousButtonText.HasValue())
@@ -140,7 +145,7 @@
                                 title="@(PreviousButtonText.HasValue() ? null : PreviousButtonAriaLabel)"
                                 aria-label="@PreviousButtonAriaLabel"
                                 disabled="@_IsPreviousDisabled"
-                                style="@Styles?.Button @Styles?.PreviousButton"
+                                style="@JoinStyles(Styles?.Button, Styles?.PreviousButton)"
                                 class="@previousClass">
                             <i aria-hidden="true" style="@Styles?.PreviousButtonIcon" class="@previousIcon?.GetCssClasses() @Classes?.PreviousButtonIcon" />
                             @if (PreviousButtonText.HasValue())
@@ -180,7 +185,7 @@
                                 if (_UseLinks)
                                 {
                                     var ellipsisHref = GetHref(ellipsisPage, IsEnabled is false);
-                                    <a @onclick="@(e => ChangePageFromLink(e, ellipsisPage))"
+                                    <a @onclick="@(e => ChangePageFromLink(e, FocusTarget.Ellipsis, ellipsisPage))"
                                        href="@ellipsisHref"
                                        title="@EllipsisAriaLabel"
                                        aria-label="@EllipsisAriaLabel"
@@ -192,7 +197,7 @@
                                 }
                                 else
                                 {
-                                    <button @onclick="@(() => ChangePage(ellipsisPage))"
+                                    <button @onclick="@(() => ChangePageFrom(FocusTarget.Ellipsis, ellipsisPage))"
                                             type="button"
                                             title="@EllipsisAriaLabel"
                                             aria-label="@EllipsisAriaLabel"
@@ -219,7 +224,7 @@
                                    aria-current="@(isSelected ? "page" : null)"
                                    aria-disabled="@(pageHref is null ? "true" : null)"
                                    aria-label="@GetPageLabel(pageNumber, isSelected)"
-                                   style="@Styles?.Button @(isSelected ? Styles?.SelectedButton : null)"
+                                   style="@JoinStyles(Styles?.Button, isSelected ? Styles?.SelectedButton : null)"
                                    class="@pageClass">
                                     @pageNumber
                                 </a>
@@ -232,7 +237,7 @@
                                         disabled="@(IsEnabled is false)"
                                         aria-current="@(isSelected ? "page" : null)"
                                         aria-label="@GetPageLabel(pageNumber, isSelected)"
-                                        style="@Styles?.Button @(isSelected ? Styles?.SelectedButton : null)"
+                                        style="@JoinStyles(Styles?.Button, isSelected ? Styles?.SelectedButton : null)"
                                         class="@pageClass">
                                     @pageNumber
                                 </button>
@@ -257,7 +262,7 @@
                            title="@(NextButtonText.HasValue() ? null : NextButtonAriaLabel)"
                            aria-label="@NextButtonAriaLabel"
                            aria-disabled="@(nextHref is null ? "true" : null)"
-                           style="@Styles?.Button @Styles?.NextButton"
+                           style="@JoinStyles(Styles?.Button, Styles?.NextButton)"
                            class="@nextClass">
                             @if (NextButtonText.HasValue())
                             {
@@ -274,7 +279,7 @@
                                 title="@(NextButtonText.HasValue() ? null : NextButtonAriaLabel)"
                                 aria-label="@NextButtonAriaLabel"
                                 disabled="@_IsNextDisabled"
-                                style="@Styles?.Button @Styles?.NextButton"
+                                style="@JoinStyles(Styles?.Button, Styles?.NextButton)"
                                 class="@nextClass">
                             @if (NextButtonText.HasValue())
                             {
@@ -300,7 +305,7 @@
                            title="@(LastButtonText.HasValue() ? null : LastButtonAriaLabel)"
                            aria-label="@LastButtonAriaLabel"
                            aria-disabled="@(lastHref is null ? "true" : null)"
-                           style="@Styles?.Button @Styles?.LastButton"
+                           style="@JoinStyles(Styles?.Button, Styles?.LastButton)"
                            class="@lastClass">
                             @if (LastButtonText.HasValue())
                             {
@@ -317,7 +322,7 @@
                                 title="@(LastButtonText.HasValue() ? null : LastButtonAriaLabel)"
                                 aria-label="@LastButtonAriaLabel"
                                 disabled="@_IsLastDisabled"
-                                style="@Styles?.Button @Styles?.LastButton"
+                                style="@JoinStyles(Styles?.Button, Styles?.LastButton)"
                                 class="@lastClass">
                             @if (LastButtonText.HasValue())
                             {

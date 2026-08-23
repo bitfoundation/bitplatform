@@ -36,11 +36,29 @@ public partial class BitPagination : BitComponentBase
     /// The control the focus is handed over to after a navigation button disabled itself by moving the
     /// selection to the end of the range it points at.
     /// </summary>
-    private enum FocusTarget { None, SelectedPage, First, Previous, Next, Last }
+    /// <remarks>
+    /// Ellipsis is a source only: a gap that jumps into the pages it hides can be replaced by the pages the
+    /// jump spelled out, so it always hands the focus over, and never takes it.
+    /// </remarks>
+    private enum FocusTarget { None, SelectedPage, First, Previous, Next, Last, Ellipsis }
 
-    private int _correctedPage;
+    // The value that was last written back over an out of range selected page, which is what keeps the same
+    // correction from being made twice. Nothing at all is the state of a value that is inside the range, so
+    // that a zero handed back by a consumer is a value to correct like any other rather than that state.
+    private int? _correctedPage;
+
     private string? _goToPageText;
     private bool _correctedPageSize;
+
+    // A page size selector the consumer did not follow keeps showing the size that was picked, since the value
+    // it renders with did not change and nothing patches the element back. Rendering it under a new key
+    // replaces it, which is what puts it back on the size the pagination is actually running on.
+    // The size that was picked is kept until the render that follows the pick, since whether it is the one the
+    // pagination ends up paging by is only known once the consumer has had its say over it.
+    private int _pageSizeKey;
+    private int? _pickedPageSize;
+    private bool _restorePageSizeFocus;
+    private ElementReference _pageSizeSelectRef;
 
     // The pages the last render put on the screen, which is what the captured element references are pruned
     // against so that walking a long range does not keep a reference of every page it went through.
@@ -103,6 +121,9 @@ public partial class BitPagination : BitComponentBase
     /// <see cref="GetPageHref"/> hands it an address, and it takes its accessible name from
     /// <see cref="EllipsisAriaLabel"/>. While it is off, the ellipsis stays the plain text it is by default and
     /// is hidden from assistive technologies.
+    /// <br />
+    /// The jump can spell the pages it landed among out in place of the gap that was clicked, so the keyboard
+    /// focus is handed over to the page it settled on rather than being dropped on the document.
     /// </remarks>
     [Parameter] public bool ClickableEllipsis { get; set; }
 
@@ -263,6 +284,10 @@ public partial class BitPagination : BitComponentBase
     /// <remarks>
     /// Navigation that cannot go anywhere is noise, so hiding it keeps the layout of a short result set clean.
     /// Leave it off when the pagination sits in a fixed layout that a disappearing element would reflow.
+    /// <br />
+    /// Nothing at all means nothing at all: the summary, the page size selector and the jump go with the page
+    /// controls. Leave it off along with <see cref="ShowPageSizeSelector"/>, where a size big enough to leave a
+    /// single page would otherwise take the selector that picked it off the screen with it.
     /// </remarks>
     [Parameter] public bool HideOnSinglePage { get; set; }
 
@@ -736,7 +761,7 @@ public partial class BitPagination : BitComponentBase
         // intermediate one.
         if (SelectedPage == _SelectedPage)
         {
-            _correctedPage = 0;
+            _correctedPage = null;
         }
         else if (SelectedPage != _correctedPage)
         {
@@ -754,6 +779,36 @@ public partial class BitPagination : BitComponentBase
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         PruneStalePageReferences();
+
+        // A page size selector that was replaced to put it back on the size the pagination runs on left the
+        // keyboard focus on the document along with the element it replaced, so it is handed back over. A
+        // selector that was taken off the screen in the meantime has nothing left to hand it to.
+        if (_restorePageSizeFocus)
+        {
+            _restorePageSizeFocus = false;
+
+            if (_IsHidden is false && ShowPageSizeSelector)
+            {
+                await Focus(_pageSizeSelectRef);
+            }
+        }
+
+        // The select is showing the size that was picked out of it, and the value it renders with is the one it
+        // already rendered with whenever that size is not the one that ended up in force - a size the consumer
+        // dropped, or clamped into another one - so nothing patches the element back on its own. Rendering it
+        // under a new key replaces it, which puts it back on the size the pagination is actually paging by.
+        if (_pickedPageSize is int picked)
+        {
+            _pickedPageSize = null;
+
+            if (picked != _PageSize && _IsHidden is false && ShowPageSizeSelector)
+            {
+                _pageSizeKey++;
+                _restorePageSizeFocus = true;
+
+                StateHasChanged();
+            }
+        }
 
         // A navigation button that disabled itself by reaching the end of the range it points at drops the
         // keyboard focus on the document, so the focus is handed over to the control that took its place
@@ -852,6 +907,18 @@ public partial class BitPagination : BitComponentBase
         _ => "bit-pgn-fil"
     };
 
+    // Two of the style parts land in the same style attribute (the one every button carries and the one of that
+    // particular button), and they are only one declaration list while a semicolon stands between them: a part
+    // that was written without a trailing one would otherwise swallow the declaration that follows it.
+    private static string? JoinStyles(string? style, string? extraStyle)
+    {
+        if (style.HasNoValue()) return extraStyle;
+
+        if (extraStyle.HasNoValue()) return style;
+
+        return style!.TrimEnd().EndsWith(';') ? $"{style} {extraStyle}" : $"{style};{extraStyle}";
+    }
+
     private string GetPageLabel(int page, bool isSelected)
     {
         return GetPageAriaLabel?.Invoke(page, isSelected) ?? $"Page {page}";
@@ -894,7 +961,20 @@ public partial class BitPagination : BitComponentBase
             return;
         }
 
-        if (_pageRefs.Count <= _renderedPages.Length) return;
+        // The generated list holds a placeholder for every gap beside the pages themselves, and only the pages
+        // are captured, so counting the whole list would call a reference of a page that left the range one of
+        // the ones the render put on the screen.
+        var rendered = 0;
+
+        foreach (var page in _renderedPages)
+        {
+            if (page != EllipsisPage)
+            {
+                rendered++;
+            }
+        }
+
+        if (_pageRefs.Count <= rendered) return;
 
         int[] captured = [.. _pageRefs.Keys];
 
@@ -1050,6 +1130,9 @@ public partial class BitPagination : BitComponentBase
             FocusTarget.Previous => Loop ? _Count > 1 : page > 1,
             FocusTarget.Next => Loop ? _Count > 1 : page < _Count,
             FocusTarget.Last => page < _Count,
+            // The pages a gap collapses can be spelled out by the very jump into them, which takes the gap
+            // that was clicked out of the markup, so the page the jump landed on takes the focus over.
+            FocusTarget.Ellipsis => false,
             _ => true
         };
 
@@ -1085,6 +1168,11 @@ public partial class BitPagination : BitComponentBase
         // the old size worked out and both of them move as soon as the new size lands.
         var previousSize = _PageSize;
         var previousPage = _SelectedPage;
+
+        // The size that was picked is checked against the one that ends up in force once the render it started
+        // is over, since a consumer is free to drop it or to clamp it and the select would then be left showing
+        // a size the pagination is not paging by.
+        _pickedPageSize = size;
 
         var assigned = await AssignPageSize(size);
 

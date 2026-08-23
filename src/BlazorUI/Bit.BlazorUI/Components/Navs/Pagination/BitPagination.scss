@@ -205,6 +205,9 @@
     align-items: center;
     display: inline-flex;
     text-decoration: none;
+    // The button grows along the text it carries rather than breaking it: a wrapped label would push the
+    // control past the height every other one of the pagination stands at.
+    white-space: nowrap;
     justify-content: center;
     font-family: $tg-font-family;
     font-weight: $tg-font-weight;
