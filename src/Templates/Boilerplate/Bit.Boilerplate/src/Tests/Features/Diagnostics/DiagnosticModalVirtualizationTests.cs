@@ -34,10 +34,11 @@ public class DiagnosticModalVirtualizationTests
 
         await using var ctx = server.CreateBunitContext();
 
-        WriteLogs();
-
         try
         {
+            // Inside the try so that a failure while filling the process-wide store still reaches the cleanup below.
+            WriteLogs();
+
             var cut = ctx.Render<AppDiagnosticModal>();
 
             // The modal shows itself only when something asks it to - the header spacer, the keyboard shortcut, or

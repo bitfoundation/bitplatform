@@ -5,7 +5,7 @@ namespace Boilerplate.Tests.Features.Chatbot;
 /// <summary>
 /// The panel has no message identity on the wire: the stream is a bare sequence of strings, and which assistant
 /// bubble a frame belongs to is worked out by COUNTING terminal markers against the number of questions asked
-/// (<c>AppAiChatPanel.HandleStreamedResponse</c>). One marker too many, or one too few, and the count is permanently
+/// (<c>AppAiChatPanel.RunChannel</c>). One marker too many, or one too few, and the count is permanently
 /// out of step with the conversation - after which every frame fails its own "is this the current answer" test and is
 /// dropped. The panel then answers nothing, for ever, with no error anywhere: empty bubbles, a loader that flashes
 /// and stops, and a server that is answering every question correctly the whole time.

@@ -330,9 +330,16 @@ public partial class AppAiChatPanel
 
                 int expectedResponsesCount = chatMessages.Count(c => c.Role is AiChatMessageRole.User);
 
-                if (response.Contains(nameof(AiChatFollowUpList.FollowUpSuggestions)))
+                // A suggestion list is one whole JSON document in a single frame (AppChatbot's SendStringToClient),
+                // while an answer arrives as free-form fragments - so the shape is what tells them apart. An answer
+                // that merely quotes the property name must not be parsed, and must not end the stream if it is.
+                if (response.StartsWith('{') && response.Contains(nameof(AiChatFollowUpList.FollowUpSuggestions)))
                 {
-                    followUpSuggestions = JsonSerializer.Deserialize(response, JsonSerializerOptions.GetTypeInfo<AiChatFollowUpList>())?.FollowUpSuggestions ?? [];
+                    try
+                    {
+                        followUpSuggestions = JsonSerializer.Deserialize(response, JsonSerializerOptions.GetTypeInfo<AiChatFollowUpList>())?.FollowUpSuggestions ?? [];
+                    }
+                    catch (JsonException) { }
                 }
                 else if (response is SharedAppMessages.MESSAGE_PROCESS_SUCCESS or SharedAppMessages.MESSAGE_PROCESS_ERROR)
                 {
@@ -398,6 +405,8 @@ public partial class AppAiChatPanel
         {
             lastAssistantMessage!.Successful = false;
         }
+
+        isLoading = false;
     }
 
     private void RestartChannel()
