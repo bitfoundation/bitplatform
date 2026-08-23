@@ -3,86 +3,64 @@
 @* The library, browsable. Two ways in - type what you are after, or pick the category it belongs
    to - over one grid of cards that says what each component is for. It reads ComponentCatalog, so
    it can never fall behind the nav the way the hand-written list it replaces did. *@
-<div class="gallery">
 
-    <div class="gallery-controls">
-        <BitSearchBox Immediate
-                      DebounceTime="150"
-                      Value="@_filter"
-                      ValueChanged="ApplyFilter"
-                      Class="gallery-search"
-                      Placeholder="Search 100+ components by name, alias or purpose"
-                      IconName="@BitIconName.Search" />
+<div class="gallery-controls">
+    <BitSearchBox Immediate DebounceTime="150" Value="@_filter" ValueChanged="ApplyFilter" Class="gallery-search"
+                  Placeholder="Search 100+ components by name, alias or purpose" IconName="@BitIconName.Search" />
 
-        <div class="gallery-chips" role="group" aria-label="Filter by category">
-            <button type="button"
-                    class="gallery-chip @(_category is null ? "active" : null)"
-                    aria-pressed="@(_category is null)"
-                    @onclick="() => SelectCategory(null)">
-                All
-                <span class="gallery-chip-count">@ComponentCatalog.Items.Count</span>
-            </button>
-            @foreach (var category in ComponentCatalog.Categories)
-            {
-                var isActive = _category == category.Name;
-                <button type="button"
-                        class="gallery-chip @(isActive ? "active" : null)"
-                        aria-pressed="@isActive"
-                        @onclick="() => SelectCategory(category.Name)">
-                    @category.Name
-                    <span class="gallery-chip-count">@category.Items.Count</span>
-                </button>
-            }
-        </div>
-    </div>
-
-    @if (_groups.Count == 0)
-    {
-        @* A dead end is the one thing a search must never be: this says what was searched for and
-           offers the way back to everything. *@
-        <div class="gallery-empty">
-            <BitIcon IconName="@BitIconName.SearchIssue" Size="BitSize.Large" Color="BitColor.TertiaryForeground" />
-            <BitText Element="p" Typography="BitTypography.Subtitle1">No component matches &ldquo;@_filter&rdquo;</BitText>
-            <BitText Element="p" Color="BitColor.SecondaryForeground">
-                Try a shorter term, the name another library uses (&ldquo;select&rdquo;, &ldquo;switch&rdquo;, &ldquo;chip&rdquo;),
-                or what you want it to do.
-            </BitText>
-            <BitButton Variant="BitVariant.Outline" OnClick="ClearFilters" IconName="@BitIconName.ClearFilter">
-                Show all components
-            </BitButton>
-        </div>
-    }
-    else
-    {
-        @foreach (var group in _groups)
+    <div class="gallery-chips" role="group" aria-label="Filter by category">
+        <button type="button" class="gallery-chip @(_category is null ? "active" : null)"
+                aria-pressed="@(_category is null)" @onclick="() => SelectCategory(null)">
+            All
+            <span class="gallery-chip-count">@ComponentCatalog.Items.Count</span>
+        </button>
+        @foreach (var category in ComponentCatalog.Categories)
         {
-            <section class="gallery-group">
-                <div class="gallery-group-head">
-                    <BitIcon IconName="@group.IconName" Class="gallery-group-icon" Color="BitColor.Primary" />
-                    <div>
-                        <BitText Element="h3" Typography="BitTypography.H6" Color="BitColor.PrimaryForeground">@group.Name</BitText>
-                        @if (group.Summary.HasValue())
-                        {
-                            <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">@group.Summary</BitText>
-                        }
-                    </div>
-                </div>
-
-                <div class="gallery-grid">
-                    @foreach (var item in group.Items)
-                    {
-                        <a class="gallery-card" href="@item.Url">
-                            <span class="gallery-card-name">@item.Name</span>
-                            @if (item.Aliases.HasValue())
-                            {
-                                <span class="gallery-card-aliases">@item.Aliases</span>
-                            }
-                            <span class="gallery-card-summary">@item.Summary</span>
-                        </a>
-                    }
-                </div>
-            </section>
+            var isActive = _category == category.Name;
+            <button type="button" class="gallery-chip @(isActive ? "active" : null)" aria-pressed="@isActive"
+                    @onclick="() => SelectCategory(category.Name)">
+                @category.Name
+                <span class="gallery-chip-count">@category.Items.Count</span>
+            </button>
         }
-    }
-
+    </div>
 </div>
+
+@if (_groups.Count == 0)
+{
+    @* A dead end is the one thing a search must never be: this says what was searched for and
+           offers the way back to everything. *@
+    <div class="gallery-empty">
+        <BitIcon IconName="@BitIconName.SearchIssue" Size="BitSize.Large" Color="BitColor.TertiaryForeground" />
+        <BitText Element="p" Typography="BitTypography.Subtitle1">No component matches &ldquo;@_filter&rdquo;</BitText>
+        <BitText Element="p" Color="BitColor.SecondaryForeground">
+            Try a shorter term, the name another library uses (&ldquo;select&rdquo;, &ldquo;switch&rdquo;,
+            &ldquo;chip&rdquo;),
+            or what you want it to do.
+        </BitText>
+        <BitButton Variant="BitVariant.Outline" OnClick="ClearFilters" IconName="@BitIconName.ClearFilter">
+            Show all components
+        </BitButton>
+    </div>
+}
+else
+{
+    @foreach (var group in _groups)
+    {
+        <DocSection Id="@group.Anchor" Title="@group.Name" Description="@group.Summary">
+            <div class="gallery-grid">
+                @foreach (var item in group.Items)
+                {
+                    <a class="gallery-card" href="@item.Url">
+                        <span class="gallery-card-name">@item.Name</span>
+                        @if (item.Aliases.HasValue())
+                        {
+                            <span class="gallery-card-aliases">@item.Aliases</span>
+                        }
+                        <span class="gallery-card-summary">@item.Summary</span>
+                    </a>
+                }
+            </div>
+        </DocSection>
+    }
+}

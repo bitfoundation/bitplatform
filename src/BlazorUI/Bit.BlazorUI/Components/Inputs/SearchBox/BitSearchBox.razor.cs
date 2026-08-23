@@ -1419,7 +1419,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
                 scrollOffset: 0,
                 headerId: string.Empty,
                 footerId: string.Empty,
-                setCalloutWidth: false,
+                setCalloutWidth: true,
                 fixedCalloutWidth: FixedCalloutWidth,
                 maxWindowWidth: 0);
         }

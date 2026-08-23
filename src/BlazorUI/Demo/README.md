@@ -16,8 +16,8 @@ reads).
 
 ## Build speed
 
-Two things keep the Debug inner loop small, and both are off in Release so that
-packing and CI still see the full picture:
+Three things keep the Debug inner loop small, and all three come back in Release so
+that packing and CI still see the full picture:
 
 - **One target framework.** `Bit.BlazorUI`, `.Assets`, `.Extras`, `.Icons`,
   `.Legacy` and the test projects multi-target `net10.0;net9.0;net8.0`, but the
@@ -27,6 +27,14 @@ packing and CI still see the full picture:
   its findings are warnings only, so `RunAnalyzersDuringBuild` is off in Debug (see
   `Directory.Build.props`). The IDE still reports them live, and Release builds
   still run them.
+- **No trim/AOT analysis during build.** `IsAotCompatible` and `IsTrimmable` turn on
+  ILLink's Roslyn analyzers, and their `DynamicallyAccessedMembersAnalyzer` walks
+  every method body: ~26s of wall clock per library project, so a one-line edit in
+  `Bit.BlazorUI` used to cost 58s before the demo client came back. `Bit.Build.props`
+  turns all three switches (`EnableTrimAnalyzer`, `EnableAotAnalyzer`,
+  `EnableSingleFileAnalyzer` - they only pay off together) off for local Debug builds.
+  Release keeps them, and so does CI, which builds Debug but sets `CI=true`. Pass
+  `-p:RunTrimAnalyzers=true` to check trim warnings locally before opening a PR.
 
 Beyond that:
 

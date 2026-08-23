@@ -3,13 +3,11 @@
 
 // The size of the control and of its callout is driven by these variables so a single size class,
 // applied to the root element and repeated on the callout, resizes every part consistently.
-// The trigger text is a line box stretched over the control, so its line-height is derived from the
-// control height minus the two borders instead of being a fixed length: a preset that raises the
-// control height (Material 40px, Cupertino 36px) then keeps the text centered next to the chevron.
+// A preset that raises the control height (Material 40px, Cupertino 36px) then resizes the trigger,
+// the callout and the rows inside it together.
 @mixin drp-size-medium {
     --bit-drp-fs: #{$tg-fs-sm};
     --bit-drp-h: #{$siz-ctrl-md};
-    --bit-drp-lh: calc(#{$siz-ctrl-md} - 2 * #{$shp-border-width});
     --bit-drp-lbl-lh: #{spacing(2.75)};
     --bit-drp-itm-h: #{$siz-item-md};
     --bit-drp-itm-fs: #{$tg-fs-sm};
@@ -262,20 +260,33 @@
     overflow: hidden;
     font-weight: $tg-fw-regular;
     position: relative;
-    align-self: stretch;
+    align-self: center;
     white-space: nowrap;
     box-sizing: border-box;
     text-overflow: ellipsis;
     font-size: var(--bit-drp-fs);
-    line-height: var(--bit-drp-lh);
+    line-height: normal;
     border-radius: $shp-radius-control;
     padding-inline-start: spacing(1);
+
+    // Centered as a line box of its own rather than as a line box stretched over the control: where
+    // the line box is stretched, the glyphs sit on the half-leading the font's ascent and descent
+    // produce, and no two families put the baseline in the same place - Roboto's ascent minus its
+    // descent falls a pixel short of its cap height at the control font size where Segoe UI's does
+    // not, so the Material trigger read a pixel high while the Fluent one read centered. Trimming the
+    // box down to the cap and the baseline takes the metrics out of it and centers the glyphs
+    // themselves; the symmetric padding is what the overflow clips against, so descenders survive it.
+    @supports (text-box: trim-both cap alphabetic) {
+        text-box: trim-both cap alphabetic;
+        padding-block: 0.35em;
+    }
 }
 
 .bit-drp-sch {
     .bit-drp-tcn {
         height: unset;
         display: flex;
+        align-self: stretch;
         flex-wrap: wrap;
         gap: spacing(0.5);
         min-height: var(--bit-drp-h);
@@ -1134,7 +1145,6 @@
 .bit-drp-sm {
     --bit-drp-fs: #{$tg-fs-xs};
     --bit-drp-h: #{$siz-ctrl-sm};
-    --bit-drp-lh: calc(#{$siz-ctrl-sm} - 2 * #{$shp-border-width});
     --bit-drp-lbl-lh: #{spacing(2.5)};
     --bit-drp-itm-h: #{$siz-item-sm};
     --bit-drp-itm-fs: #{$tg-fs-xs};
@@ -1147,7 +1157,6 @@
 .bit-drp-lg {
     --bit-drp-fs: #{$tg-fs-md};
     --bit-drp-h: #{$siz-ctrl-lg};
-    --bit-drp-lh: calc(#{$siz-ctrl-lg} - 2 * #{$shp-border-width});
     --bit-drp-lbl-lh: #{spacing(3)};
     --bit-drp-itm-h: #{$siz-item-lg};
     --bit-drp-itm-fs: #{$tg-fs-md};

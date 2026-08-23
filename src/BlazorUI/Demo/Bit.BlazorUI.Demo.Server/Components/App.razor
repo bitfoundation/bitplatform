@@ -1,4 +1,4 @@
-@using Bit.BlazorUI.Demo.Client.Core.Shared
+﻿@using Bit.BlazorUI.Demo.Client.Core.Shared
 @using Bit.BlazorUI.Demo.Client.Web.Shared.Components
 
 @{
@@ -52,8 +52,14 @@
 @* bit-theme-persist / bit-theme-persist-cookie: the client keeps the chosen theme in localStorage AND
    in the cookie read above, which is what lets the server render the right theme in the first place.
    bit-theme-view-transition: theme toggles cross-fade via the View Transitions API (skipped
-   automatically on unsupported browsers / prefers-reduced-motion). *@
-<html lang="en" @attributes="rootThemeAttributes" bit-theme-persist bit-theme-persist-cookie bit-theme-view-transition>
+   automatically on unsupported browsers / prefers-reduced-motion).
+   bit-theme-light / bit-theme-dark: the site dresses in Fluent 2 by default, so the two names the
+   OS-following resolution (bit-theme-system, emitted above whenever nothing is persisted) picks
+   between are the Fluent 2 pair rather than the core light / dark Fluent ones. A visitor who has
+   already picked a design system in the header is painted from their cookie instead and never
+   reaches this. *@
+<html lang="en" @attributes="rootThemeAttributes" bit-theme-persist bit-theme-persist-cookie bit-theme-view-transition
+      bit-theme-light="@BitExtraThemePresets.Fluent2Light" bit-theme-dark="@BitExtraThemePresets.Fluent2Dark">
 
 <head>
     @* First thing in the document: re-resolves bit-theme from localStorage / the preference cookie
@@ -153,6 +159,50 @@
     </script>
 
     <HeadOutlet @rendermode=renderMode />
+
+    @* Keeps a title in the document for the whole hand-over from the prerendered HTML to the client.
+       When the client app boots, <HeadOutlet> above is activated as its own root component, separately
+       from <Routes> below and before it: at that first render nobody has registered the title section
+       yet (the <PageTitle> lives inside Routes - in PageOutlet and in Routes.razor's fallback), so the
+       diff against the prerendered markup deletes the <title> element, and it only comes back once
+       Routes has rendered - the whole of hydration later under WebAssembly. A head with no <title>
+       makes the browser label the tab with the URL, which is the flash the visitor sees. This watches
+       <head> and parks a copy of the last known title there while the real element is missing, then
+       drops it again the moment Blazor puts one back (Blazor's own title always sits earlier in <head>
+       than this one, so document.title reports the real value while both are present). *@
+    <Script>
+        (function () {
+            var head = document.head;
+            var lastTitle = document.title || 'bit BlazorUI';
+            var placeholder = null;
+
+            function findRealTitle() {
+                var titles = head.getElementsByTagName('title');
+                for (var i = 0; i < titles.length; i++) {
+                    if (titles[i] !== placeholder) return titles[i];
+                }
+                return null;
+            }
+
+            function sync() {
+                var real = findRealTitle();
+                if (real) {
+                    if (real.textContent) lastTitle = real.textContent;
+                    if (placeholder) {
+                        placeholder.remove();
+                        placeholder = null;
+                    }
+                } else if (placeholder === null) {
+                    placeholder = document.createElement('title');
+                    placeholder.textContent = lastTitle;
+                    head.appendChild(placeholder);
+                }
+            }
+
+            sync();
+            new MutationObserver(sync).observe(head, { childList: true, subtree: true, characterData: true });
+        })();
+    </Script>
 
     @if (includeWasm)
     {

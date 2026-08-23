@@ -58,6 +58,71 @@ public static class IJSRuntimeExtensions
     }
 
     /// <summary>
+    /// Watches the usable width of the element with the given id and reports it - immediately, then on
+    /// every change - to the named method. The iconography grid needs it to know how many icons fit on
+    /// a row, which is what lets it virtualize by row.
+    /// </summary>
+    public static async Task ObserveElementWidth<T>(this IJSRuntime jsRuntime, string id, DotNetObjectReference<T> dotnetObj, string methodName) where T : class
+    {
+        await jsRuntime.InvokeVoid("observeElementWidth", id, dotnetObj, methodName);
+    }
+
+    public static async Task UnobserveElementWidth(this IJSRuntime jsRuntime, string id)
+    {
+        await jsRuntime.InvokeVoid("unobserveElementWidth", id);
+    }
+
+    /// <summary>
+    /// Calls the named method once the element with the given id has come within reach of the viewport,
+    /// and then stops watching it. This is what lets a demo page hold back the parts of itself the
+    /// reader has not reached yet - an example's live preview, the API tables - instead of building the
+    /// whole page on every navigation.
+    /// </summary>
+    public static async Task ObserveVisibility<T>(this IJSRuntime jsRuntime, string id, DotNetObjectReference<T> dotnetObj, string methodName) where T : class
+    {
+        await jsRuntime.InvokeVoid("observeVisibility", id, dotnetObj, methodName);
+    }
+
+    public static async Task UnobserveVisibility(this IJSRuntime jsRuntime, string id)
+    {
+        await jsRuntime.InvokeVoid("unobserveVisibility", id);
+    }
+
+    /// <summary>
+    /// The height the element with the given id takes in the document right now, asked for
+    /// synchronously - or 0 when it cannot be asked at all.
+    /// <para>
+    /// Synchronously is the whole point: a demo page needs this while it is deciding, in OnInit,
+    /// whether to hold a preview back, and the only moment that answer means anything is the one
+    /// before the render batch replaces the prerendered markup it is measuring. Only the WebAssembly
+    /// runtime can answer in that window - under Blazor Server, and during prerendering itself,
+    /// there is no in-process runtime and this returns 0, which every caller reads as "do not hold
+    /// anything back".
+    /// </para>
+    /// </summary>
+    public static double TryGetElementHeight(this IJSRuntime jsRuntime, string id)
+    {
+        return jsRuntime is IJSInProcessRuntime inProcessRuntime
+                ? inProcessRuntime.Invoke<double>("getElementHeight", id)
+                : 0;
+    }
+
+    /// <summary>
+    /// Calls the named method once, the next time the browser is idle. A demo page uses it to fill in
+    /// the parts of itself the reader has not reached, one at a time, so that holding them back never
+    /// leaves the page permanently incomplete.
+    /// </summary>
+    public static async Task RequestIdleWork<T>(this IJSRuntime jsRuntime, string id, DotNetObjectReference<T> dotnetObj, string methodName) where T : class
+    {
+        await jsRuntime.InvokeVoid("requestIdleWork", id, dotnetObj, methodName);
+    }
+
+    public static async Task CancelIdleWork(this IJSRuntime jsRuntime, string id)
+    {
+        await jsRuntime.InvokeVoid("cancelIdleWork", id);
+    }
+
+    /// <summary>
     /// Claims Ctrl/Cmd+K (and a bare "/") for the search input inside the element with the given id.
     /// Registered from JS rather than through a Blazor key handler so the shortcut works no matter
     /// where the focus currently is - which is the whole point of a global shortcut.

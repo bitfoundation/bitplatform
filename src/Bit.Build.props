@@ -44,6 +44,23 @@
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     </PropertyGroup>
 
+    <!-- IsAotCompatible and IsTrimmable above turn on ILLink's Roslyn analyzers, whose
+         DynamicallyAccessedMembersAnalyzer walks every method body: on a project the size of
+         Bit.BlazorUI that is ~26s of wall clock (260s of CPU) added to every incremental compile,
+         and with Bit.BlazorUI, .Extras and .Legacy each paying it, it dominates the inner loop -
+         editing one component and rebuilding the demo client costs 58s instead of 14s.
+
+         Trim/AOT warnings only decide something when the package ships, so the analysis is kept
+         where it is read - Release builds, and CI, which builds Debug but sets CI=true on every
+         runner - and dropped from local Debug builds. Pass -p:RunTrimAnalyzers=true to run them
+         locally. All three switches have to go off together: any one of them left on loads the
+         analyzer and costs the full time. -->
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' And '$(CI)' != 'true' And '$(RunTrimAnalyzers)' != 'true' ">
+        <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
+        <EnableAotAnalyzer>false</EnableAotAnalyzer>
+        <EnableSingleFileAnalyzer>false</EnableSingleFileAnalyzer>
+    </PropertyGroup>
+
     <!-- README and LICENSE -->
     <PropertyGroup>
         <SignAssembly>True</SignAssembly>

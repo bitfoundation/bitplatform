@@ -263,6 +263,132 @@ function unregisterWindowResizeListener(id: string) {
     delete windowResizeListeners[id];
 }
 
+const elementWidthObservers: { [key: string]: ResizeObserver } = {};
+
+// Reports the usable (padding-excluded) width of an element to .NET whenever it changes. The
+// iconography grid virtualizes by row, so it has to know how many cells fit across before it can
+// chunk the icons - and a window resize listener would not see the width change when it is the
+// side rail collapsing or a scrollbar appearing rather than the window that moved.
+function observeElementWidth(id: string, dotnetObj: any, methodName: string) {
+    unobserveElementWidth(id);
+
+    const element = document.getElementById(id);
+    if (element == null) return;
+
+    const report = () => {
+        const style = getComputedStyle(element);
+        const width = element.clientWidth - parseFloat(style.paddingInlineStart) - parseFloat(style.paddingInlineEnd);
+        dotnetObj.invokeMethodAsync(methodName, Math.max(0, width));
+    };
+
+    const observer = new ResizeObserver(report);
+    observer.observe(element);
+    elementWidthObservers[id] = observer;
+
+    report();
+}
+
+function unobserveElementWidth(id: string) {
+    const observer = elementWidthObservers[id];
+    if (observer == null) return;
+
+    observer.disconnect();
+    delete elementWidthObservers[id];
+}
+
+const visibilityObservers: { [key: string]: IntersectionObserver } = {};
+
+// Reports - once, and then never again - that the element with the given id has come within reach of
+// the viewport. It is how a demo page mounts an example's live preview, and its API tables, only when
+// the reader is actually approaching them: a component page carries dozens of working components and
+// a few hundred table rows, and building all of it on every navigation is what makes those pages
+// freeze on a phone.
+//
+// The margin is deliberately asymmetric. Downwards it is one and a half phone screens, so a block is
+// mounted well before it can be seen. Upwards it is effectively infinite, which means everything
+// ABOVE the reader always counts as reached: a block only ever stays unmounted BELOW where they are,
+// so mounting can never change the height of the page above the scroll position - which would slide
+// the page under them, and land a restored scroll position or an "#example12" deep link in the wrong
+// place.
+function observeVisibility(id: string, dotnetObj: any, methodName: string) {
+    unobserveVisibility(id);
+
+    const element = document.getElementById(id);
+    if (element == null) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        if (entries.some(entry => entry.isIntersecting) === false) return;
+
+        // Before the callback, not after: invokeMethodAsync resolves on a later turn, and a second
+        // entry arriving in the meantime would report the same element twice.
+        unobserveVisibility(id);
+
+        dotnetObj.invokeMethodAsync(methodName);
+    }, { rootMargin: '100000px 0px 1200px 0px' });
+
+    observer.observe(element);
+    visibilityObservers[id] = observer;
+}
+
+function unobserveVisibility(id: string) {
+    const observer = visibilityObservers[id];
+    if (observer == null) return;
+
+    observer.disconnect();
+    delete visibilityObservers[id];
+}
+
+// The height the element with the given id takes in the document right now, or 0 when there is no
+// such element.
+//
+// A component page asks this of its own previews at the one moment their prerendered copies are
+// still the ones on screen - while the client is building the render tree that is about to replace
+// them, before that batch reaches the DOM. The answer is the room a held-back preview has to keep,
+// which is what lets the very first page hold anything back at all: the placeholder stands exactly
+// as tall as the markup the server sent, so nothing below it moves.
+function getElementHeight(id: string) {
+    const element = document.getElementById(id);
+    return element == null ? 0 : element.getBoundingClientRect().height;
+}
+
+const idleWorkHandles: { [key: string]: { handle: number, isIdle: boolean } } = {};
+
+// Calls the named method the next time the browser has nothing better to do. It is how a demo page
+// fills in the previews the reader has not scrolled to: the visibility observer guarantees nobody
+// ever waits for one, and this guarantees the page becomes whole anyway - so an anchor lands in the
+// right place, find-in-page finds everything, and a fast scroll never outruns the observer.
+//
+// One call mounts one preview and then asks for the next slice, rather than draining the queue in a
+// single callback: the point is to leave the main thread between two of them.
+function requestIdleWork(id: string, dotnetObj: any, methodName: string) {
+    cancelIdleWork(id);
+
+    const run = () => {
+        delete idleWorkHandles[id];
+        dotnetObj.invokeMethodAsync(methodName);
+    };
+
+    // Safari still has no requestIdleCallback; a short timeout is the same shape of promise, minus
+    // the browser's opinion about when it is idle.
+    const idle = (window as any).requestIdleCallback;
+    idleWorkHandles[id] = idle
+        ? { handle: idle(run, { timeout: 500 }), isIdle: true }
+        : { handle: window.setTimeout(run, 32), isIdle: false };
+}
+
+function cancelIdleWork(id: string) {
+    const entry = idleWorkHandles[id];
+    if (entry == null) return;
+
+    delete idleWorkHandles[id];
+
+    if (entry.isIdle) {
+        (window as any).cancelIdleCallback?.(entry.handle);
+    } else {
+        window.clearTimeout(entry.handle);
+    }
+}
+
 declare namespace BitBlazorUI {
     class Theme { static init(options: any): void; }
 }

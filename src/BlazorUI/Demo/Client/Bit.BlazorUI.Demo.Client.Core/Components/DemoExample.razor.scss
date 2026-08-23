@@ -55,11 +55,19 @@
 // the page behind it.
 .example-container {
     overflow: auto;
-    // padding: rem2(24px);
+    padding: rem2(16px);
     // background-color: $bit-color-background-primary;
 
-    @include lt-lg {
-        padding: rem2(16px);
+    // A preview that has not been built yet still has to stand roughly where it will stand. The
+    // observer only holds back what is BELOW the reader, and it decides that from the geometry it
+    // finds: left at its padding alone, an unheld example is some forty pixels tall, thirty of them
+    // fit inside the observer's own margin, and a page that meant to build three examples builds all
+    // thirty - the deferral would pay for the observers and buy nothing. It is also what keeps the
+    // page still as each preview arrives. On the first page this is overridden inline with the
+    // height the prerendered copy of this very preview was measured at, which is exact rather than
+    // typical (see DemoExample).
+    &.pending {
+        min-height: rem2(180px);
     }
 
     &::-webkit-scrollbar {

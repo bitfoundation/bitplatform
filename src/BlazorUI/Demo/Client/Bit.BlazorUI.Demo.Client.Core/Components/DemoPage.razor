@@ -124,6 +124,11 @@ else
        Only the shell is shared. What the sections hold is unchanged - in particular DemoExample
        still puts an example's source ABOVE its live preview, which is the whole point of opening
        the panel. *@
+    @* Cascaded so that every example on the page can put its held-back preview in line to be built
+       during the browser's idle time - see QueueBackfill. Fixed: the page an example belongs to is
+       decided when it is created and never changes, and an unfixed cascade would re-render all of
+       them on every render of this one. *@
+    <CascadingValue Value="this" IsFixed="true">
     <div class="@($"doc-shell{(_forceAnimation ? " bit-fam" : " demo-reduced-motion")}")">
         <article class="doc-main">
 
@@ -225,7 +230,7 @@ else
                 </DocSection>
             }
 
-            <DocSection Id="usage-section" Title="Usage"
+            <DocSection Id="@USAGE_ELEMENT_ID" Title="Usage"
                         Description="Every example is live. Open its code to see exactly what produced the component running underneath.">
                 @(ChildContent ?? Examples)
             </DocSection>
@@ -233,41 +238,52 @@ else
             <DocSection Id="api-section" Title="API"
                         Description="Every parameter, public member, sub-class and enum this component exposes.">
 
-                <DemoParametersTable Name="@($"Bit{Name}")" Parameters="Parameters" />
+                @* Between a quarter and a third of a component page is these tables - the Dropdown's
+                   run to three hundred rows - and they sit below everything else on the page, which
+                   means the reader has to scroll past every example before reaching them. So they
+                   are built when that scroll arrives rather than on every navigation. Nothing on the
+                   page comes after them, so mounting them can move nothing but themselves. *@
+                <div class="api-tables" id="@API_ELEMENT_ID"
+                     style="@(_pendingApiHeight > 0 && _isApiMounted is false ? $"min-height:{_pendingApiHeight}px" : null)">
+                    @if (_isApiMounted)
+                    {
+                        <DemoParametersTable Name="@($"Bit{Name}")" Parameters="Parameters" />
 
-                @if (PublicMembers.Any())
-                {
-                    <DemoParametersTable Name="@($"Bit{Name}")" NameSuffix="public members" Parameters="PublicMembers" />
-                }
+                        if (PublicMembers.Any())
+                        {
+                            <DemoParametersTable Name="@($"Bit{Name}")" NameSuffix="public members" Parameters="PublicMembers" />
+                        }
 
-                @if (_textInputComponents.Contains(Name))
-                {
-                    <DemoParametersTable Name="BitTextInputBase" Parameters="_textInputBaseParameters" />
-                }
+                        if (_textInputComponents.Contains(Name))
+                        {
+                            <DemoParametersTable Name="BitTextInputBase" Parameters="_textInputBaseParameters" />
+                        }
 
-                @if (_inputComponents.Contains(Name))
-                {
-                    <DemoParametersTable Name="BitInputBase" Parameters="_inputBaseParameters" />
+                        if (_inputComponents.Contains(Name))
+                        {
+                            <DemoParametersTable Name="BitInputBase" Parameters="_inputBaseParameters" />
 
-                    <DemoParametersTable Name="BitInputBase" NameSuffix="public members" Parameters="_inputBasePublicMembers" />
-                }
+                            <DemoParametersTable Name="BitInputBase" NameSuffix="public members" Parameters="_inputBasePublicMembers" />
+                        }
 
-                @if (_notInheritedComponents.Contains(Name) is false)
-                {
-                    <DemoParametersTable Name="BitComponentBase" Parameters="_componentBaseParameters" />
+                        if (_notInheritedComponents.Contains(Name) is false)
+                        {
+                            <DemoParametersTable Name="BitComponentBase" Parameters="_componentBaseParameters" />
 
-                    <DemoParametersTable Name="BitComponentBase" NameSuffix="public members"
-                                         Parameters="_componentBasePublicMembers" />
-                }
+                            <DemoParametersTable Name="BitComponentBase" NameSuffix="public members"
+                                                 Parameters="_componentBasePublicMembers" />
+                        }
 
-                <DemoSubClassesTable Classes="SubClasses" />
+                        <DemoSubClassesTable Classes="SubClasses" />
 
-                <DemoSubEnumsTable Enums="SubEnums" />
+                        <DemoSubEnumsTable Enums="SubEnums" />
 
-                @if (_notInheritedComponents.Contains(Name) is false)
-                {
-                    <DemoSubEnumsTable Enums="_componentBaseSubEnums" />
-                }
+                        if (_notInheritedComponents.Contains(Name) is false)
+                        {
+                            <DemoSubEnumsTable Enums="_componentBaseSubEnums" />
+                        }
+                    }
+                </div>
             </DocSection>
 
             @* The same closing block as every prose page. The source links the old wall of "Or you
@@ -300,4 +316,5 @@ else
 
         <SideRail />
     </div>
+    </CascadingValue>
 }
