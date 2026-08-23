@@ -97,14 +97,28 @@ public sealed class TestChatClient : IChatClient
         }
     }
 
-    public Task<ChatResponse> GetResponseAsync(
+    /// <summary>
+    /// When set, a non-streamed call waits here instead of answering. In practice that is the follow-up suggestions
+    /// agent, which runs AFTER the answer's terminal marker has already gone out - so this holds a message in the
+    /// one state a test could not otherwise reach: answered, but not finished. Tests never complete it; they send the
+    /// next message, which is what cancels it, exactly as a user typing again does.
+    /// </summary>
+    public TaskCompletionSource? PauseNonStreamingResponse { get; set; }
+
+    public async Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages,
         ChatOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         Capture(messages);
 
-        return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, NonStreamingResponse)));
+        if (PauseNonStreamingResponse is not null)
+        {
+            // Throws OperationCanceledException the moment the hub cancels this message.
+            await PauseNonStreamingResponse.Task.WaitAsync(cancellationToken);
+        }
+
+        return new ChatResponse(new ChatMessage(ChatRole.Assistant, NonStreamingResponse));
     }
 
     public object? GetService(Type serviceType, object? serviceKey = null)

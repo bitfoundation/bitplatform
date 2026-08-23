@@ -11,7 +11,7 @@
                Class="open-panel-button"
                OnClick="() => isOpen = true"
                IconName="@BitIconName.ChatBot"
-               FloatPosition="BitPosition.BottomRight"
+               FloatPosition="BitPosition.BottomEnd"
                Title="@Localizer[nameof(AppStrings.AiChatPanelTitle)]"
                AriaLabel="@Localizer[nameof(AppStrings.AiChatPanelTitle)]" />
 
@@ -69,7 +69,8 @@
                                         {
                                             @* Markdown rather than an img tag so the picture is rendered by the same
                                                viewer the answers are, and picks up the same image styling. *@
-                                            <BitMarkdownViewer Markdown="@($"![]({GetAttachmentUrl(attachmentId)})")" />
+                                            <BitMarkdownViewer Markdown="@($"![]({GetAttachmentUrl(attachmentId)})")"
+                                                               ImageRendering="BitMarkdownViewerImageRendering.All" />
                                         }
                                         @if (string.IsNullOrEmpty(message.Content) is false)
                                         {
@@ -79,7 +80,10 @@
                                 }
                                 else
                                 {
-                                    <BitMarkdownViewer Markdown="@message.Content" Pipeline="BitMarkdownPipelines.Advanced" />
+                                    <BitMarkdownViewer Markdown="@message.Content"
+                                                       MaxLength="100_000"
+                                                       StripBidiControlCharacters
+                                                       Pipeline="BitMarkdownPipelines.Advanced" />
                                     @if (message.Successful is false)
                                     {
                                         <BitTag Color="BitColor.Error" Size="BitSize.Small" Style="min-height:18px">
@@ -132,7 +136,7 @@
                                            Variant="BitVariant.Outline"
                                            Class="default-prompt-button"
                                            Color="BitColor.SecondaryBackground"
-                                           OnClick="() => SendPromptMessage(suggestion)">
+                                           OnClick="WrapHandled(() => SendPromptMessage(suggestion))">
                                     @suggestion
                                 </BitButton>
                             }
@@ -153,7 +157,7 @@
                                    Variant="BitVariant.Outline"
                                    Class="default-prompt-button"
                                    Color="BitColor.SecondaryBackground"
-                                   OnClick="() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPrompt1)])">
+                                   OnClick="WrapHandled(() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPrompt1)]))">
                             @Localizer[nameof(AppStrings.AiChatPanelPrompt1)]
                         </BitButton>
 
@@ -161,7 +165,7 @@
                                    Variant="BitVariant.Outline"
                                    Class="default-prompt-button"
                                    Color="BitColor.SecondaryBackground"
-                                   OnClick="() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPrompt2)])">
+                                   OnClick="WrapHandled(() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPrompt2)]))">
                             @Localizer[nameof(AppStrings.AiChatPanelPrompt2)]
                         </BitButton>
 
@@ -169,7 +173,7 @@
                                    Variant="BitVariant.Outline"
                                    Class="default-prompt-button"
                                    Color="BitColor.SecondaryBackground"
-                                   OnClick="() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPrompt3)])">
+                                   OnClick="WrapHandled(() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPrompt3)]))">
                             @Localizer[nameof(AppStrings.AiChatPanelPrompt3)]
                         </BitButton>
                     </BitStack>
@@ -206,6 +210,7 @@
                                           Immediate
                                           Multiline
                                           AutoHeight
+                                          MaxRows="6"
                                           PreventEnter
                                           MaxLength="1024"
                                           Style="width:100%"
@@ -221,6 +226,7 @@
                                        Class="attach-button"
                                        Variant="BitVariant.Text"
                                        IconName="@BitIconName.Attach"
+                                       FloatPosition="BitPosition.BottomStart"
                                        IsEnabled="@(isUploadingAttachment is false)"
                                        Color="BitColor.SecondaryForeground"
                                        OnClick="WrapHandled(BrowseAttachment)"
@@ -258,6 +264,7 @@
                                            Class="dictate-button"
                                            Variant="BitVariant.Text"
                                            IsLoading="isTranscribing"
+                                           FloatPosition="BitPosition.BottomEnd"
                                            OnClick="WrapHandled(ToggleDictation)"
                                            IconName="@(isListening ? BitIconName.CircleStopSolid : BitIconName.Microphone)"
                                            Color="@(isListening ? BitColor.Error : isTranscribing ? BitColor.Primary : BitColor.SecondaryForeground)"
@@ -273,6 +280,7 @@
                                        FloatOffset="0.5rem"
                                        Class="send-message-button"
                                        OnClick="WrapHandled(SendMessage)"
+                                       FloatPosition="BitPosition.BottomEnd"
                                        Title="@Localizer[nameof(AppStrings.Send)]"
                                        IsEnabled=@(isSending || string.IsNullOrWhiteSpace(userInput) is false || pendingAttachment is not null)
                                        IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.SendMirrored : BitIconName.Send)" />

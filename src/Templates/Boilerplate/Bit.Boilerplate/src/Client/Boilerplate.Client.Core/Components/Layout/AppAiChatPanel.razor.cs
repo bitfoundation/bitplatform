@@ -116,10 +116,14 @@ public partial class AppAiChatPanel
     }
 
 
-    private async Task HubConnection_Reconnected(string? _)
+    private Task HubConnection_Reconnected(string? _)
     {
-        if (channel is null) return;
-        await RestartChannel();
+        if (channel is not null)
+        {
+            RestartChannel();
+        }
+
+        return Task.CompletedTask;
     }
 
     private async Task SendPromptMessage(string prompt)
@@ -136,8 +140,8 @@ public partial class AppAiChatPanel
 
     private async Task SendMessage()
     {
-        // The enter key and the suggestions arrive here without going through the send button the loading state is
-        // holding shut, so a second send can otherwise start on top of one still uploading.
+        // e.g. the user presses enter twice, or taps a suggestion while an image is still uploading: both arrive here
+        // without going through the send button that the loading state is holding shut.
         if (isSending) return;
 
         // Rendered before anything is awaited, so the button is already saying so by the time the upload starts.
@@ -158,7 +162,7 @@ public partial class AppAiChatPanel
 
             if (channel is null)
             {
-                _ = StartChannel();
+                StartChannel();
             }
 
             isLoading = true;
@@ -249,7 +253,7 @@ public partial class AppAiChatPanel
 
         SetDefaultValues();
 
-        await RestartChannel();
+        RestartChannel();
     }
 
     private void SetDefaultValues()
@@ -272,7 +276,7 @@ public partial class AppAiChatPanel
 
         await StopReadAloud();
 
-        await StopChannel();
+        StopChannel();
     }
 
 
@@ -292,45 +296,66 @@ public partial class AppAiChatPanel
         await SendMessage();
     }
 
-    private async Task StartChannel()
+    private void StartChannel()
     {
-        channel = Channel.CreateUnbounded<AiChatMessageRequest>(new() { SingleReader = true, SingleWriter = true });
+        var newChannel = Channel.CreateUnbounded<AiChatMessageRequest>(new() { SingleReader = true, SingleWriter = true });
 
-        // The following code streams user's input messages to the server and processes the streamed responses.
-        // It keeps the chat ongoing until CurrentCancellationToken is cancelled.
-        await foreach (var response in hubConnection.StreamAsync<string>(SharedAppMessages.StartChat,
-                                                                         new StartChatRequest()
-                                                                         {
-                                                                             CultureId = CultureInfo.CurrentCulture.LCID,
-                                                                             TimeZoneId = TimeZoneInfo.Local.Id,
-                                                                             DeviceInfo = TelemetryContext.Platform,
-                                                                             ChatMessagesHistory = chatMessages
-                                                                         },
-                                                                         channel.Reader.ReadAllAsync(CurrentCancellationToken),
-                                                                         cancellationToken: CurrentCancellationToken))
+        channel = newChannel;
+
+        // Not awaited: RunChannel lives as long as the conversation does.
+        _ = RunChannel(newChannel);
+    }
+
+    /// <summary>
+    /// Streams the user's input messages to the server and processes the streamed responses.
+    /// It keeps the chat ongoing until CurrentCancellationToken is cancelled.
+    /// </summary>
+    private async Task RunChannel(Channel<AiChatMessageRequest> ownChannel)
+    {
+        try
         {
-            int expectedResponsesCount = chatMessages.Count(c => c.Role is AiChatMessageRole.User);
+            await foreach (var response in hubConnection.StreamAsync<string>(SharedAppMessages.StartChat,
+                                                                             new StartChatRequest()
+                                                                             {
+                                                                                 CultureId = CultureInfo.CurrentCulture.LCID,
+                                                                                 TimeZoneId = TimeZoneInfo.Local.Id,
+                                                                                 DeviceInfo = TelemetryContext.Platform,
+                                                                                 ChatMessagesHistory = chatMessages
+                                                                             },
+                                                                             ownChannel.Reader.ReadAllAsync(CurrentCancellationToken),
+                                                                             cancellationToken: CurrentCancellationToken))
+            {
+                // Frames belonging to a conversation the panel has already replaced (Clear, or a reconnect) are dropped.
+                if (ReferenceEquals(channel, ownChannel) is false) continue;
 
-            if (response.Contains(nameof(AiChatFollowUpList.FollowUpSuggestions)))
-            {
-                followUpSuggestions = JsonSerializer.Deserialize<AiChatFollowUpList>(response)?.FollowUpSuggestions ?? [];
-            }
-            else
-            {
-                if (response is SharedAppMessages.MESSAGE_PROCESS_SUCCESS)
+                int expectedResponsesCount = chatMessages.Count(c => c.Role is AiChatMessageRole.User);
+
+                if (response.Contains(nameof(AiChatFollowUpList.FollowUpSuggestions)))
                 {
-                    responseCounter++;
-                    isLoading = false;
-                    await ReadAloudCompletedAnswer(); // The answer is whole, so there is something worth reading out.
+                    followUpSuggestions = JsonSerializer.Deserialize(response, JsonSerializerOptions.GetTypeInfo<AiChatFollowUpList>())?.FollowUpSuggestions ?? [];
                 }
-                else if (response is SharedAppMessages.MESSAGE_PROCESS_ERROR)
+                else if (response is SharedAppMessages.MESSAGE_PROCESS_SUCCESS or SharedAppMessages.MESSAGE_PROCESS_ERROR)
                 {
+                    // One marker per message. A second one for a message already answered - the server reporting the
+                    // follow-up generation that the next message cancelled - would leave this counter ahead of the
+                    // conversation for good, and a counter that is ahead discards every later answer in silence.
+                    if (responseCounter >= expectedResponsesCount) continue;
+
                     responseCounter++;
-                    if (responseCounter == expectedResponsesCount)
+
+                    if (response is SharedAppMessages.MESSAGE_PROCESS_SUCCESS)
                     {
-                        isLoading = false; // Hide loading only if this is an error for the last user's message.
+                        isLoading = false;
+                        await ReadAloudCompletedAnswer(); // The answer is whole, so there is something worth reading out.
                     }
-                    chatMessages[responseCounter * 2].Successful = false;
+                    else
+                    {
+                        if (responseCounter == expectedResponsesCount)
+                        {
+                            isLoading = false; // Hide loading only if this is an error for the last user's message.
+                        }
+                        chatMessages[responseCounter * 2].Successful = false;
+                    }
                 }
                 else
                 {
@@ -339,24 +364,47 @@ public partial class AppAiChatPanel
                         lastAssistantMessage!.Content += response;
                     }
                 }
-            }
 
-            StateHasChanged();
+                StateHasChanged();
+            }
+        }
+        catch (Exception exp)
+        {
+            ExceptionHandler.Handle(exp, ExceptionDisplayKind.NonInterrupting);
+        }
+        finally
+        {
+            // A stream that ends with no error at all is how the server reports one (AppHub.StartChat yields nothing),
+            // so the panel is released here rather than waiting for a marker that is not coming.
+            if (ReferenceEquals(channel, ownChannel) && CurrentCancellationToken.IsCancellationRequested is false)
+            {
+                channel = null;
+                isLoading = false;
+                StateHasChanged();
+            }
         }
     }
 
-    private async Task StopChannel()
+    private void StopChannel()
     {
         if (channel is null) return;
 
         channel.Writer.Complete();
         channel = null;
+
+        // Keeps a half-written answer out of the history replayed to the model, which would otherwise read its own
+        // unfinished sentence as something it completed (see StartChatRequest's Successful).
+        if (isLoading && ReferenceEquals(chatMessages.LastOrDefault(), lastAssistantMessage))
+        {
+            lastAssistantMessage!.Successful = false;
+        }
     }
 
-    private async Task RestartChannel()
+    private void RestartChannel()
     {
-        await StopChannel();
-        await StartChannel();
+        StopChannel();
+
+        StartChannel();
     }
 
 
@@ -376,7 +424,7 @@ public partial class AppAiChatPanel
 
         await StopReadAloud();
 
-        await StopChannel();
+        StopChannel();
 
         await base.DisposeAsync(disposing);
     }

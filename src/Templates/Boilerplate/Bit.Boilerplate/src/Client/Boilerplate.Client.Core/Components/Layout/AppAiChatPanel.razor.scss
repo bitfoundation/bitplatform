@@ -4,12 +4,9 @@
 ::deep {
     .open-panel-button {
         padding: 0;
-        left: unset;
-        right: unset;
         width: 2.5rem;
         height: 2.5rem;
         border-radius: 50%;
-        inset-inline-end: 2rem;
 
         @include lt-md {
             bottom: 4rem;
@@ -133,16 +130,8 @@
         height: 100%;
     }
 
-    .send-message-button {
-        left: unset;
-        right: unset;
-        inset-inline-end: 0.5rem;
-    }
-
     .dictate-button {
         z-index: 1; // Above the ring below, which covers the same box.
-        left: unset;
-        right: unset;
         inset-inline-end: 3rem;
     }
 
@@ -161,12 +150,6 @@
             min-width: unset;
             min-height: unset;
         }
-    }
-
-    .attach-button {
-        left: unset;
-        right: unset;
-        inset-inline-start: 0.5rem;
     }
 
     // Floats inside the field just before the microphone button, centred on the same line as it. The field's own end
