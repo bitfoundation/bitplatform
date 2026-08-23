@@ -156,34 +156,13 @@
 
 <DemoExample Title="Layout" RazorCode="@example7RazorCode" Id="example7" PreventRenderForMcpClient>
     <div>
-        <b>InlineText</b> puts the text of an option beside its icon instead of under it, and <b>Vertical</b>
-        stacks the options in a column, which turns the navbar into a navigation rail. The two combine into a
-        classic side rail.
+        <b>InlineText</b> puts the text of an option beside its icon instead of under it, which is what a
+        navbar does with the room a wider layout gives it. Stacking the options into a column instead turns
+        the navbar into a navigation rail, which <b>Vertical</b> covers in a section of its own below.
     </div>
     <br /><br />
-    <div>InlineText:</div><br />
     <div class="container">
         <BitNavBar TItem="BitNavBarOption" InlineText>
-            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
-            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
-            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
-            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
-        </BitNavBar>
-    </div>
-    <br /><br /><br /><br />
-    <div>Vertical:</div><br />
-    <div class="container">
-        <BitNavBar TItem="BitNavBarOption" Vertical FitWidth>
-            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
-            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
-            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
-            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
-        </BitNavBar>
-    </div>
-    <br /><br /><br /><br />
-    <div>Vertical &amp; InlineText:</div><br />
-    <div class="container">
-        <BitNavBar TItem="BitNavBarOption" Vertical InlineText FitWidth>
             <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
             <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
             <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
@@ -224,15 +203,6 @@
     <br /><br /><br /><br />
     <div>Justified (options of unequal label length):</div><br />
     <div class="container">
-        <BitNavBar TItem="BitNavBarOption">
-            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
-            <BitNavBarOption Text="Products &amp; services" IconName="@BitIconName.ProductVariant" />
-            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
-            <BitNavBarOption Text="Me" IconName="@BitIconName.Contact" />
-        </BitNavBar>
-    </div>
-    <br /><br />
-    <div class="container">
         <BitNavBar TItem="BitNavBarOption" Justified>
             <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
             <BitNavBarOption Text="Products &amp; services" IconName="@BitIconName.ProductVariant" />
@@ -242,7 +212,154 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Badge" RazorCode="@example9RazorCode" Id="example9" PreventRenderForMcpClient>
+<DemoExample Title="Alignment" RazorCode="@example9RazorCode" Id="example9" PreventRenderForMcpClient>
+    <div>
+        <b>Alignment</b> distributes the options along the navbar: packed at its <b>Start</b>, its
+        <b>Center</b> or its <b>End</b>, or spread over it with <b>SpaceBetween</b>, <b>SpaceAround</b> (what
+        a horizontal bar does on its own) and <b>SpaceEvenly</b>. It works in both directions, so it is also
+        what moves the destinations of a <b>Vertical</b> rail away from its top edge. <b>Justified</b> is the
+        other half of the picture: it has the options fill the navbar instead of sitting somewhere along it.
+    </div>
+    <br /><br />
+    <div>Start:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Alignment="BitAlignment.Start">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+    <br /><br /><br /><br />
+    <div>Center:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Alignment="BitAlignment.Center">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+    <br /><br /><br /><br />
+    <div>End:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Alignment="BitAlignment.End">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+    <br /><br /><br /><br />
+    <div>SpaceBetween:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Alignment="BitAlignment.SpaceBetween">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Vertical" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10" PreventRenderForMcpClient>
+    <div>
+        <b>Vertical</b> stacks the options in a column, which turns the navbar into the navigation rail that
+        runs down the side of a page instead of across the foot of it. The header, the options and the
+        footer all follow that direction, and a rail is normally sized with <b>FitWidth</b>, so it takes the
+        width of its own content rather than the width of its container. Everything the bar does the rail
+        does too: <b>InlineText</b> and <b>IconOnly</b> reshape its options, <b>Alignment</b> moves them
+        away from its top edge, the <b>Line</b> indicator runs down the leading edge of the selected option
+        instead of along its bottom, <b>Scrollable</b> scrolls the rail down its own length, and the header
+        and the footer sit above and below the options.
+    </div>
+    <br /><br />
+    <div>Basic:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Vertical FitWidth>
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+    <br /><br /><br /><br />
+    <div>InlineText:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Vertical InlineText FitWidth>
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+    <br /><br /><br /><br />
+    <div>IconOnly:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Vertical IconOnly FitWidth>
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+    <br /><br /><br /><br />
+    <div>Alignment:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Vertical FitWidth Alignment="BitAlignment.Center">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+    <br /><br /><br /><br />
+    <div>Indicator:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Vertical FitWidth Indicator="BitNavBarIndicator.Line" Mode="BitNavMode.Manual" @bind-SelectedItem="indicatorVerticalSelectedOption">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" @ref="indicatorVerticalOptionHome" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+    <br /><br /><br /><br />
+    <div>Scrollable:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Scrollable Vertical FitWidth Style="height:16rem" Mode="BitNavMode.Manual">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Inbox" IconName="@BitIconName.Mail" />
+            <BitNavBarOption Text="Alerts" IconName="@BitIconName.Ringer" />
+            <BitNavBarOption Text="Favorites" IconName="@BitIconName.Heart" />
+            <BitNavBarOption Text="Reports" IconName="@BitIconName.ReportDocument" />
+            <BitNavBarOption Text="Settings" IconName="@BitIconName.Settings" />
+            <BitNavBarOption Text="Support" IconName="@BitIconName.Help" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </div>
+    <br /><br /><br /><br />
+    <div>Header &amp; Footer:</div><br />
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption" Vertical FitWidth IconOnly>
+            <HeaderTemplate>
+                <BitButton IconOnly Title="New" IconName="@BitIconName.Add" />
+            </HeaderTemplate>
+            <Options>
+                <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+                <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+                <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+                <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+            </Options>
+            <FooterTemplate>
+                <BitButton IconOnly Title="Settings" Variant="BitVariant.Text" IconName="@BitIconName.Settings" />
+            </FooterTemplate>
+        </BitNavBar>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Badge" RazorCode="@example11RazorCode" Id="example11" PreventRenderForMcpClient>
     <div>
         <b>Badge</b> puts a short count or status on the icon of an option, and <b>Dot</b> marks it as needing
         attention without a number. Both are drawn on the icon and hidden from assistive technology, and the
@@ -261,7 +378,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Accent" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10" PreventRenderForMcpClient>
+<DemoExample Title="Accent" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12" PreventRenderForMcpClient>
     <div>
         <b>Accent</b> fills the hovered and the selected option with a color, which gives the selection an
         indicator of its own instead of leaving it to the text color alone. A semantic accent moves the whole
@@ -310,7 +427,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Templates" RazorCode="@example11RazorCode" Id="example11">
+<DemoExample Title="Templates" RazorCode="@example13RazorCode" Id="example13">
     <div>
         <b>ItemTemplate</b> replaces the content of every option of the navbar, and the <b>Template</b> of a
         single option replaces that one option's content and wins over the navbar's template.
@@ -364,7 +481,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Events" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<DemoExample Title="Events" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
     <div>
         <b>OnItemClick</b> is invoked when an option is clicked, and <b>OnSelectItem</b> when the selection
         actually moves onto an option, whether that came from a click or from the URL in the <b>Automatic</b>
@@ -388,7 +505,7 @@
     Selected item: @eventsSelectedOption?.Text
 </DemoExample>
 
-<DemoExample Title="Binding" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+<DemoExample Title="Binding" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
     <div>
         <b>SelectedItem</b> binds both ways, so the selection can be read and written from outside the navbar
         at any time. An option is captured with <b>@@ref</b> and handed to the binding, which is how the
@@ -434,7 +551,7 @@
     </BitChoiceGroup>
 </DemoExample>
 
-<DemoExample Title="Reselectable" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+<DemoExample Title="Reselectable" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
     <div>
         The events of an option that is already selected are swallowed, so a second click on the current
         destination changes nothing. <b>Reselectable</b> lets them through, which is what a bar that scrolls
@@ -455,7 +572,7 @@
     Item click count: @countClick
 </DemoExample>
 
-<DemoExample Title="Keyboard" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15" PreventRenderForMcpClient>
+<DemoExample Title="Keyboard" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17" PreventRenderForMcpClient>
     <div>
         By default the navbar is a set of links that <b>Tab</b> reaches one by one, which is how a navigation
         landmark behaves. <b>SingleTabStop</b> turns it into the roving tab index of a toolbar instead: the
@@ -498,7 +615,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Advanced" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+<DemoExample Title="Advanced" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
     <div>
         An illustrative example of integrating this component into a straightforward mobile application.
         <b>SafeArea</b> reserves the space the device asks for under the bar, so the home indicator of a phone
@@ -537,7 +654,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Selected Icon" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17" PreventRenderForMcpClient>
+<DemoExample Title="Selected Icon" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19" PreventRenderForMcpClient>
     <div>
         A navigation bar conventionally marks its current destination with the filled variant of the same
         glyph, which is what <b>SelectedIconName</b> (and <b>SelectedIcon</b>, for an external icon library)
@@ -557,67 +674,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Alignment" RazorCode="@example18RazorCode" Id="example18" PreventRenderForMcpClient>
-    <div>
-        <b>Alignment</b> distributes the options along the navbar: packed at its <b>Start</b>, its
-        <b>Center</b> or its <b>End</b>, or spread over it with <b>SpaceBetween</b>, <b>SpaceAround</b> (what
-        a horizontal bar does on its own) and <b>SpaceEvenly</b>. It works in both directions, so it is also
-        what moves the destinations of a <b>Vertical</b> rail away from its top edge. <b>Justified</b> is the
-        other half of the picture: it has the options fill the navbar instead of sitting somewhere along it.
-    </div>
-    <br /><br />
-    <div>Start:</div><br />
-    <div class="container">
-        <BitNavBar TItem="BitNavBarOption" Alignment="BitAlignment.Start">
-            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
-            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
-            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
-            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
-        </BitNavBar>
-    </div>
-    <br /><br /><br /><br />
-    <div>Center:</div><br />
-    <div class="container">
-        <BitNavBar TItem="BitNavBarOption" Alignment="BitAlignment.Center">
-            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
-            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
-            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
-            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
-        </BitNavBar>
-    </div>
-    <br /><br /><br /><br />
-    <div>End:</div><br />
-    <div class="container">
-        <BitNavBar TItem="BitNavBarOption" Alignment="BitAlignment.End">
-            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
-            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
-            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
-            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
-        </BitNavBar>
-    </div>
-    <br /><br /><br /><br />
-    <div>SpaceBetween:</div><br />
-    <div class="container">
-        <BitNavBar TItem="BitNavBarOption" Alignment="BitAlignment.SpaceBetween">
-            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
-            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
-            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
-            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
-        </BitNavBar>
-    </div>
-    <br /><br /><br /><br />
-    <div>Vertical &amp; Center:</div><br />
-    <div class="container">
-        <BitNavBar TItem="BitNavBarOption" Vertical FitWidth Alignment="BitAlignment.Center">
-            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
-            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
-            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
-            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
-        </BitNavBar>
-    </div>
-</DemoExample>
-
-<DemoExample Title="Header & Footer" RazorCode="@example19RazorCode" Id="example19">
+<DemoExample Title="Header & Footer" RazorCode="@example20RazorCode" Id="example20">
     <div>
         <b>HeaderTemplate</b> and <b>FooterTemplate</b> render content before and after the options and
         outside of the list the options form, so whatever they hold is not counted among the destinations by
@@ -626,7 +683,6 @@
         navbar now receives more than one piece of content.
     </div>
     <br /><br />
-    <div>Bar:</div><br />
     <div class="container">
         <BitNavBar TItem="BitNavBarOption">
             <HeaderTemplate>
@@ -643,27 +699,9 @@
             </FooterTemplate>
         </BitNavBar>
     </div>
-    <br /><br /><br /><br />
-    <div>Rail:</div><br />
-    <div class="container">
-        <BitNavBar TItem="BitNavBarOption" Vertical FitWidth IconOnly>
-            <HeaderTemplate>
-                <BitButton IconOnly Title="New" IconName="@BitIconName.Add" />
-            </HeaderTemplate>
-            <Options>
-                <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
-                <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
-                <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
-                <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
-            </Options>
-            <FooterTemplate>
-                <BitButton IconOnly Title="Settings" Variant="BitVariant.Text" IconName="@BitIconName.Settings" />
-            </FooterTemplate>
-        </BitNavBar>
-    </div>
 </DemoExample>
 
-<DemoExample Title="Dynamic Items" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+<DemoExample Title="Dynamic Items" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
     <div>
         The options are rendered from a collection of their own, so options appended to (or removed from)
         the very same list are picked up without handing the navbar anything new. The selection survives as
@@ -707,7 +745,7 @@
     Selected item: @dynamicSelectedOption?.Text
 </DemoExample>
 
-<DemoExample Title="Indicator" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21" PreventRenderForMcpClient>
+<DemoExample Title="Indicator" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22" PreventRenderForMcpClient>
     <div>
         <b>Indicator</b> gives the selection a mark of its own beside the color of the option: a <b>Line</b>
         along the edge of the selected option &mdash; its bottom edge across a bar and its leading edge down
@@ -746,19 +784,9 @@
             <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
         </BitNavBar>
     </div>
-    <br /><br /><br /><br />
-    <div>Line on a Vertical rail:</div><br />
-    <div class="container">
-        <BitNavBar TItem="BitNavBarOption" Vertical FitWidth Indicator="BitNavBarIndicator.Line" Mode="BitNavMode.Manual" @bind-SelectedItem="indicatorVerticalSelectedOption">
-            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" @ref="indicatorVerticalOptionHome" />
-            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
-            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
-            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
-        </BitNavBar>
-    </div>
 </DemoExample>
 
-<DemoExample Title="Scrollable" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+<DemoExample Title="Scrollable" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
     <div>
         A navbar squeezes its options into the room it has, which runs out once it holds more destinations
         than it fits. <b>Scrollable</b> leaves every option at the size of its own content and scrolls the
@@ -768,7 +796,7 @@
     </div>
     <br /><br />
     <BitButton OnClick="@(() => scrollableSelectedOption = scrollableOptionProfile)">Select the last item</BitButton>
-    <br />
+    <br /><br />
     <div class="container">
         <BitNavBar TItem="BitNavBarOption" Scrollable Mode="BitNavMode.Manual" @bind-SelectedItem="scrollableSelectedOption">
             <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
@@ -785,25 +813,9 @@
     </div>
     <br />
     Selected item: @scrollableSelectedOption?.Text
-    <br /><br /><br /><br />
-    <div>Vertical:</div><br />
-    <div class="container">
-        <BitNavBar TItem="BitNavBarOption" Scrollable Vertical FitWidth Style="height:16rem" Mode="BitNavMode.Manual">
-            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
-            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
-            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
-            <BitNavBarOption Text="Inbox" IconName="@BitIconName.Mail" />
-            <BitNavBarOption Text="Alerts" IconName="@BitIconName.Ringer" />
-            <BitNavBarOption Text="Favorites" IconName="@BitIconName.Heart" />
-            <BitNavBarOption Text="Reports" IconName="@BitIconName.ReportDocument" />
-            <BitNavBarOption Text="Settings" IconName="@BitIconName.Settings" />
-            <BitNavBarOption Text="Support" IconName="@BitIconName.Help" />
-            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
-        </BitNavBar>
-    </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example23RazorCode" Id="example23" PreventRenderForMcpClient>
+<DemoExample Title="Color" RazorCode="@example24RazorCode" Id="example24" PreventRenderForMcpClient>
     <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
     <br /><br />
     <div>Primary:</div><br />
@@ -979,7 +991,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example24RazorCode" Id="example24">
+<DemoExample Title="External Icons" RazorCode="@example25RazorCode" Id="example25">
     <div>External icon libraries like FontAwesome can be used with the <b>Icon</b> parameter.</div>
 
     <br />
@@ -997,7 +1009,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example25RazorCode" Id="example25" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example26RazorCode" Id="example26" PreventRenderForMcpClient>
     <div>The <b>Size</b> scales the icon, the text and the padding of every option of the navbar at once.</div>
     <br /><br />
     <div>Small:</div><br />
@@ -1031,7 +1043,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example26RazorCode" Id="example26">
+<DemoExample Title="Style & Class" RazorCode="@example27RazorCode" Id="example27">
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br /><br />
     <div>Component's Style:</div><br />
@@ -1085,7 +1097,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example27RazorCode" Id="example27" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example28RazorCode" Id="example28" PreventRenderForMcpClient>
     <div>Use BitNavBar in right-to-left (RTL).</div>
     <br /><br />
     <div dir="rtl" class="container">
