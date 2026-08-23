@@ -1,6 +1,7 @@
 namespace BitBlazorUI {
     export class Pivot {
         private static _instances: Record<string, PivotInstance> = {};
+        private static _keyHandlers: Record<string, { element: HTMLElement, handler: (e: KeyboardEvent) => void }> = {};
 
         public static setup(
             id: string,
@@ -29,10 +30,14 @@ namespace BitBlazorUI {
             instance.start();
         }
 
-        public static refresh(id: string) {
+        // Returns the indexes of the items that ended up folded away, so that a caller which has to act
+        // on the new fold right away (the overflow menu handing the focus back) reads it from the call
+        // itself rather than from the OnSetOverflowItems callback, which lands a turn later. Null when
+        // there is no instance, or none that folds anything, and the caller keeps what it has.
+        public static refresh(id: string): number[] | null {
             const instance = Pivot._instances[id];
-            if (!instance) return;
-            instance.update();
+            if (!instance) return null;
+            return instance.update();
         }
 
         public static slide(id: string, forward: boolean) {
@@ -57,15 +62,81 @@ namespace BitBlazorUI {
         // Brings a tab back into view after a selection or a focus move that did not come from a click
         // on it (the keyboard, the bound key, the overflow menu). Works off the element itself rather
         // than an instance, since the Scroll behavior sets up no instance at all.
+        // Only the header is scrolled: the scrollIntoView of the item takes every scrollable ancestor
+        // of it along, so a pivot sitting below the fold would yank the whole page down to itself as
+        // soon as it is rendered on the tab it starts on.
         public static scrollToItem(element: HTMLElement) {
-            if (!element || !element.scrollIntoView) return;
+            if (!element || !element.closest) return;
 
             try {
+                const header = element.closest('.bit-pvt-hct') as HTMLElement | null;
+                if (!header || !header.scrollBy) return;
+
+                const item = element.getBoundingClientRect();
+                const view = header.getBoundingClientRect();
+
+                const top = Pivot.scrollDelta(item.top, item.bottom, view.top, view.bottom);
+                const left = Pivot.scrollDelta(item.left, item.right, view.left, view.right);
+
+                if (top === 0 && left === 0) return;
+
                 const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-                element.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: reduced ? 'auto' : 'smooth' });
+                header.scrollBy({ top, left, behavior: reduced ? 'auto' : 'smooth' });
             } catch (e) {
                 console.error('BitBlazorUI.Pivot.scrollToItem:', e);
             }
+        }
+
+        // How far the header has to move along one axis for the item to sit inside it, which is nothing
+        // at all while the item already fits: the nearest edge is the one it is brought to, the way the
+        // nearest of scrollIntoView does it.
+        private static scrollDelta(start: number, end: number, viewStart: number, viewEnd: number): number {
+            if (start < viewStart) return start - viewStart;
+
+            if (end > viewEnd) return end - viewEnd;
+
+            return 0;
+        }
+
+        // Suppresses the default behavior (scrolling the page) of the keys the header navigates with.
+        // The keyboard logic itself runs in the Blazor keydown handler, which cannot decide to
+        // preventDefault per key: its flag is applied by the render that follows the key, so the first
+        // press of each of them would scroll the page anyway and the flag it left standing would then
+        // swallow the Tab that takes the focus out of the header.
+        public static setupKeys(headerId: string, keys: string[]) {
+            Pivot.disposeKeys(headerId);
+
+            const header = document.getElementById(headerId);
+            if (!header) return;
+
+            const handler = (e: KeyboardEvent) => {
+                if (keys.indexOf(e.key) === -1) return;
+
+                // a modified key is a shortcut of the browser or of the operating system rather than one
+                // of the keys the header takes.
+                if (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return;
+
+                // only the tab itself: a header template can hold something interactive of its own, and
+                // the space typed into an input there belongs to the input rather than to the tablist.
+                // the More button keeps its own space as well, which is what raises the click that opens
+                // its menu.
+                const target = e.target as HTMLElement | null;
+                if (!target || !target.matches || !target.matches('.bit-pvti:not(.bit-pvt-mor)')) return;
+
+                e.preventDefault();
+            };
+
+            header.addEventListener('keydown', handler);
+
+            Pivot._keyHandlers[headerId] = { element: header, handler };
+        }
+
+        public static disposeKeys(headerId: string) {
+            const entry = Pivot._keyHandlers[headerId];
+            if (!entry) return;
+
+            entry.element.removeEventListener('keydown', entry.handler);
+            delete Pivot._keyHandlers[headerId];
         }
 
         public static dispose(id: string) {
@@ -185,18 +256,20 @@ namespace BitBlazorUI {
             this.update();
         }
 
-        public update() {
-            if (this.disposed) return;
+        public update(): number[] | null {
+            if (this.disposed) return null;
 
             // the element gets removed from the dom without the component being able to dispose
             // this instance in some scenarios (like a disconnected circuit), so it disposes itself.
             if (this.header.isConnected === false) {
                 Pivot.disposeInstance(this.id, this);
-                return;
+                return null;
             }
 
-            if (this.isMenu) this.updateMenu();
+            const overflowIndexes = this.isMenu ? this.updateMenu() : null;
             if (this.isSlide) this.updateSlide();
+
+            return overflowIndexes;
         }
 
         public isHeader(header: HTMLElement) {
@@ -231,7 +304,7 @@ namespace BitBlazorUI {
             return el.offsetWidth + marginLeft + marginRight;
         }
 
-        private updateMenu() {
+        private updateMenu(): number[] | null {
             try {
                 const items = this.getItems();
 
@@ -243,11 +316,16 @@ namespace BitBlazorUI {
 
                 const containerSize = this.isVertical ? this.header.clientHeight : this.header.clientWidth;
 
-                // an item the component itself hides takes part in neither the measuring nor the menu,
-                // but keeps its place in the index so that the indexes still address the .NET items.
+                // an item the component itself collapses takes part in neither the measuring nor the
+                // menu, but keeps its place in the index so that the indexes still address the .NET
+                // items. one that it only makes invisible still holds the room it takes in the header,
+                // so it is measured along with the rest of them.
                 const shown = items
-                    .map((it, i) => ({ it, i }))
-                    .filter(x => window.getComputedStyle(x.it).display !== 'none');
+                    .map((it, i) => {
+                        const style = window.getComputedStyle(it);
+                        return { it, i, display: style.display, visibility: style.visibility };
+                    })
+                    .filter(x => x.display !== 'none');
 
                 let total = 0;
                 shown.forEach(x => (total += this.outerSize(x.it)));
@@ -262,10 +340,14 @@ namespace BitBlazorUI {
                     let used = 0;
                     shown.forEach(x => {
                         used += this.outerSize(x.it);
-                        if (used > available) {
-                            x.it.classList.add(PivotInstance.hiddenClass);
-                            overflowIndexes.push(x.i);
-                        }
+                        if (used <= available) return;
+
+                        // an invisible item is not something the menu can offer either, and folding it
+                        // away would take the room it holds in the header with it, so it is left alone.
+                        if (x.visibility === 'hidden') return;
+
+                        x.it.classList.add(PivotInstance.hiddenClass);
+                        overflowIndexes.push(x.i);
                     });
 
                     // if nothing actually overflowed (e.g. only the more button didn't fit) hide it.
@@ -275,12 +357,16 @@ namespace BitBlazorUI {
                 }
 
                 const serialized = overflowIndexes.join(',');
-                if (serialized === this.lastOverflow) return;
-                this.lastOverflow = serialized;
+                if (serialized !== this.lastOverflow) {
+                    this.lastOverflow = serialized;
 
-                this.invoke('OnSetOverflowItems', overflowIndexes);
+                    this.invoke('OnSetOverflowItems', overflowIndexes);
+                }
+
+                return overflowIndexes;
             } catch (e) {
                 console.error('BitBlazorUI.Pivot.updateMenu:', e);
+                return null;
             }
         }
 

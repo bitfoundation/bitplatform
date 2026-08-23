@@ -19,9 +19,19 @@ internal static class BitPivotJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.Pivot.setup", id, header, moreButton, isMenu, isSlide, isReorderable, isRtl, isVertical, dotnetObj);
     }
 
-    internal static ValueTask BitPivotRefresh(this IJSRuntime jsRuntime, string id)
+    internal static ValueTask<int[]?> BitPivotRefresh(this IJSRuntime jsRuntime, string id)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Pivot.refresh", id);
+        return jsRuntime.Invoke<int[]?>("BitBlazorUI.Pivot.refresh", id);
+    }
+
+    internal static ValueTask BitPivotSetupKeys(this IJSRuntime jsRuntime, string headerId, string[] keys)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Pivot.setupKeys", headerId, keys);
+    }
+
+    internal static ValueTask BitPivotDisposeKeys(this IJSRuntime jsRuntime, string headerId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Pivot.disposeKeys", headerId);
     }
 
     internal static ValueTask BitPivotSlide(this IJSRuntime jsRuntime, string id, bool forward)

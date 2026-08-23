@@ -1444,6 +1444,228 @@ public class BitPivotTests : BunitTestContext
     }
 
 
+    [TestMethod]
+    public void BitPivotShouldSuppressTheDefaultOfTheKeysItNavigatesWithInTheBrowser()
+    {
+        // Blazor applies its preventDefault directive from the render that follows the key, so the first
+        // press of each of them would scroll the page anyway and the flag it left standing would swallow
+        // the Tab that leaves the header. A listener of the browser's own is what suppresses them, and
+        // only the keys the header actually takes are handed to it.
+        RenderPivot(2);
+
+        CollectionAssert.AreEqual(new[] { " ", "Home", "End" }, LastPreventedKeys());
+
+        RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.Position, BitPivotPosition.Start);
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+        });
+
+        // The vertical arrows are the ones a vertical header navigates with.
+        CollectionAssert.AreEqual(new[] { " ", "Home", "End", "ArrowUp", "ArrowDown" }, LastPreventedKeys());
+
+        RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.Navigable, false);
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+        });
+
+        // Nothing navigates a header that is not navigable, so only the key that activates the focused
+        // tab is left to suppress.
+        CollectionAssert.AreEqual(new[] { " " }, LastPreventedKeys());
+    }
+
+    [TestMethod]
+    public void BitPivotOverflowMenuShouldKeepTrackOfTheFoldedTabsAcrossAnItemGoingAway()
+    {
+        var showSecond = true;
+
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.OverflowBehavior, BitPivotOverflowBehavior.Menu);
+            parameters.AddChildContent(builder =>
+            {
+                AddItem(builder, 0, "a");
+
+                if (showSecond)
+                {
+                    AddItem(builder, 10, "b");
+                }
+
+                AddItem(builder, 20, "c");
+                AddItem(builder, 30, "d");
+            });
+        });
+
+        // The header the JS half measured is the one that still holds the second tab.
+        component.InvokeAsync(() => component.Instance.OnSetOverflowItems([2, 3]));
+
+        Assert.AreEqual("c,d", string.Join(",", component.FindAll(".bit-pvt-mni").Select(b => b.TextContent.Trim())));
+
+        showSecond = false;
+        component.Render();
+
+        // The item is unregistered as it is disposed, which lands after the render that dropped it, so
+        // what the fold has become is what the render after that one draws.
+        component.Render();
+
+        // The indexes address whichever tab has taken that place in the list now, so the fold is kept on
+        // the items themselves rather than on the places they happened to be measured in.
+        Assert.AreEqual("c,d", string.Join(",", component.FindAll(".bit-pvt-mni").Select(b => b.TextContent.Trim())));
+
+        var tabs = component.FindAll("[role=tab]");
+
+        Assert.AreEqual(3, tabs.Count);
+        Assert.AreEqual("0", tabs[0].GetAttribute("tabindex"));
+        Assert.AreEqual("-1", tabs[1].GetAttribute("tabindex"));
+        Assert.AreEqual("-1", tabs[2].GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitPivotOverflowMenuShouldRefuseATabThatIsNotShownAnymore()
+    {
+        var hideThird = false;
+
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.OverflowBehavior, BitPivotOverflowBehavior.Menu);
+            parameters.AddChildContent(builder =>
+            {
+                AddItem(builder, 0, "a");
+                AddItem(builder, 10, "b");
+
+                builder.OpenComponent<BitPivotItem>(20);
+                builder.SetKey("c");
+                builder.AddComponentParameter(21, nameof(BitPivotItem.Key), "c");
+                builder.AddComponentParameter(22, nameof(BitPivotItem.HeaderText), "c");
+                builder.AddComponentParameter(23, nameof(BitPivotItem.Visibility), hideThird ? BitVisibility.Hidden : BitVisibility.Visible);
+                builder.CloseComponent();
+
+                AddItem(builder, 30, "d");
+            });
+        });
+
+        component.InvokeAsync(() => component.Instance.OnSetOverflowItems([2, 3]));
+
+        hideThird = true;
+        component.Render();
+
+        component.FindAll(".bit-pvt-mni")[0].Click();
+
+        // A tab that is not shown cannot take the selection from the menu any more than it can from the
+        // bound key, which would otherwise leave the pivot showing the panel of a hidden tab.
+        Assert.AreEqual("a", component.Instance.SelectedItem?.Key);
+    }
+
+    [TestMethod]
+    public void BitPivotOverflowMenuShouldTakeTheNewFoldFromTheRefreshItAsksFor()
+    {
+        var component = RenderOverflowPivot();
+
+        component.Find(".bit-pvt-mor").Click();
+
+        Assert.AreEqual(2, component.FindAll(".bit-pvt-mni").Count);
+
+        // Selecting a folded tab can leave the header with room for all of its tabs again, and the
+        // refresh reports that on the call itself rather than a turn later on its callback: it is what
+        // says whether the button that held the menu is still there to take the focus back.
+        Context.JSInterop.Setup<int[]>("BitBlazorUI.Pivot.refresh", _ => true).SetResult([]);
+
+        component.FindAll(".bit-pvt-mni")[0].Click();
+
+        Assert.AreEqual(0, component.FindAll(".bit-pvt-mni").Count);
+        Assert.AreEqual("C", component.Instance.SelectedItem?.HeaderText);
+    }
+
+    [TestMethod]
+    public void BitPivotOverflowMenuShouldPointAtAnItemItHasActuallyRendered()
+    {
+        var showLast = true;
+
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.OverflowBehavior, BitPivotOverflowBehavior.Menu);
+            parameters.AddChildContent(builder =>
+            {
+                AddItem(builder, 0, "a");
+                AddItem(builder, 10, "b");
+                AddItem(builder, 20, "c");
+
+                if (showLast)
+                {
+                    AddItem(builder, 30, "d");
+                }
+            });
+        });
+
+        component.InvokeAsync(() => component.Instance.OnSetOverflowItems([2, 3]));
+
+        component.Find(".bit-pvt-mor").Click();
+        component.Find(".bit-pvt-mnc").KeyDown("ArrowDown");
+
+        Assert.AreEqual(component.FindAll(".bit-pvt-mni")[1].Id, component.Find(".bit-pvt-mnc").GetAttribute("aria-activedescendant"));
+
+        showLast = false;
+        component.Render();
+
+        // The item is unregistered as it is disposed, which lands after the render that dropped it, so
+        // what the menu has become is what the render after that one draws.
+        component.Render();
+
+        var active = component.Find(".bit-pvt-mnc").GetAttribute("aria-activedescendant");
+
+        // The menu the last folded tab left is one item shorter, and an aria-activedescendant naming a
+        // button that was never rendered points a screen reader at nothing at all.
+        Assert.IsFalse(string.IsNullOrEmpty(active));
+        Assert.IsTrue(component.FindAll(".bit-pvt-mni").Any(b => b.Id == active));
+    }
+
+    [TestMethod]
+    public void BitPivotShouldEndTheWholeDragWhenTheTabItIsOverGoesAway()
+    {
+        var showLast = true;
+
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.Reorderable, true);
+            parameters.Add(p => p.OnItemReorder, (BitPivotReorderEventArgs a) => { });
+            parameters.AddChildContent(builder =>
+            {
+                AddItem(builder, 0, "a");
+                AddItem(builder, 10, "b");
+
+                if (showLast)
+                {
+                    AddItem(builder, 20, "c");
+                }
+            });
+        });
+
+        var tabs = component.FindAll("[role=tab]");
+
+        tabs[0].DragStart();
+        tabs[2].DragEnter();
+
+        Assert.IsTrue(component.FindAll("[role=tab]")[0].ClassList.Contains("bit-pvti-drg"));
+        Assert.IsTrue(component.FindAll("[role=tab]")[2].ClassList.Contains("bit-pvti-dro"));
+
+        showLast = false;
+        component.Render();
+
+        // The tab the drop was going to land on is gone, so the drag it was half of goes with it rather
+        // than leaving the header painting the other half of one that cannot be finished.
+        tabs = component.FindAll("[role=tab]");
+
+        Assert.IsFalse(tabs[0].ClassList.Contains("bit-pvti-drg"));
+        Assert.IsFalse(tabs[1].ClassList.Contains("bit-pvti-dro"));
+    }
+
+
+    private string[] LastPreventedKeys()
+    {
+        return (string[])Context.JSInterop.Invocations["BitBlazorUI.Pivot.setupKeys"].Last().Arguments[1]!;
+    }
+
     private static void AddItem(RenderTreeBuilder builder, int sequence, string key)
     {
         builder.OpenComponent<BitPivotItem>(sequence);

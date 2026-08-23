@@ -22,7 +22,7 @@
      data-content="@HeaderText"
      draggable="@(_IsReorderable ? "true" : null)"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value @Parent?.GetItemDragClass(this)"
+     class="@ClassBuilder.Value @Parent?.GetItemDragClass(this) @Parent?.GetItemOverflowClass(this)"
      tabindex="@Parent?.GetItemTabIndex(this)"
      aria-controls="@Parent?.GetItemPanelId(this)"
      aria-disabled="@(IsEnabled ? null : "true")"
@@ -40,7 +40,13 @@
 
         @if (Header is not null)
         {
-            @Header
+            @* A header of its own can hold something interactive, and every key of the tabs pattern is
+               handled on the tablist around it: without this the Space typed into an input would
+               activate the tab instead of reaching the input, and Delete would dismiss it. The wrapper
+               lays out as if it were not there, so the content keeps its own place in the header. *@
+            <span class="bit-pvti-hdr" @onkeydown:stopPropagation="true">
+                @Header
+            </span>
         }
         else if (HeaderText.HasValue())
         {

@@ -367,6 +367,12 @@
     margin-block-end: 0;
 }
 
+// A header template of its own lays out as if the wrapper that keeps its keys away from the tablist
+// were not there, so its content keeps its own place among the flex children of the item.
+.bit-pvti-hdr {
+    display: contents;
+}
+
 // The header text of the selected item turns semibold, which is wider than the same words in the
 // regular weight and would shove every tab after it sideways on each selection change. The room for
 // the bold copy is reserved up front by laying an invisible bold duplicate under the label, so the

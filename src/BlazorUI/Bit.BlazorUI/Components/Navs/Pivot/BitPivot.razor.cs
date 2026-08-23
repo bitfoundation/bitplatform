@@ -19,10 +19,8 @@ public partial class BitPivot : BitComponentBase
     private bool _keyCheckNeeded;
     private bool _orderCheckNeeded;
     private bool _focusMenuAfterRender;
-    private bool _preventKeyDownDefault;
-    private bool _preventMenuKeyDownDefault;
-    private bool _preventMoreKeyDownDefault;
     private int _menuFocusIndex = -1;
+    private string? _preventedKeys;
     private ElementReference _moreRef;
     private ElementReference _menuRef;
     private ElementReference _headerRef;
@@ -31,11 +29,23 @@ public partial class BitPivot : BitComponentBase
     private BitPivotItem? _focusedItem;
     private BitPivotItem? _scrollTarget;
     private BitPivotItem? _selectedItem;
-    private int[] _overflowItemIndexes = [];
     private List<BitPivotItem> _allItems = [];
+    private List<BitPivotItem> _overflowItems = [];
     private HashSet<BitPivotItem> _mountedItems = [];
+    private HashSet<BitPivotItem> _overflowItemSet = [];
     private BitPivotOverflowBehavior? _setupBehavior;
     private DotNetObjectReference<BitPivot>? _dotnetObj;
+
+    // The default behavior (scrolling the page) of the keys the overflow menu and the button that
+    // opens it navigate with is suppressed in the browser rather than with Blazor's preventDefault
+    // directive: that directive is applied by the render that follows the key, so the first press of
+    // each of them would scroll the page anyway, and the flag it left standing would then swallow the
+    // Tab that takes the focus out of them. The tablist has a listener of its own for the same reason,
+    // registered by UpdatePreventedKeys.
+    // Space is deliberately left out of the button's own keys: preventing its default there is what
+    // would keep it from raising the click that opens the menu.
+    private static readonly string[] _menuScrollingKeys = ["ArrowUp", "ArrowDown", "Home", "End", " "];
+    private static readonly string[] _moreScrollingKeys = ["ArrowUp", "ArrowDown"];
 
 
 
@@ -365,6 +375,10 @@ public partial class BitPivot : BitComponentBase
 
     private string _MenuId => $"{_Id}-mnu";
 
+    private string _MoreId => $"{_Id}-mor";
+
+    private string _HeaderId => $"{_Id}-hdr";
+
     // The slide affordances go away with nothing to slide to when the pivot asks for it, so that a
     // header that happens to fit does not carry a pair of permanently disabled buttons.
     private bool _ShowSlideButtons => OverflowBehavior is BitPivotOverflowBehavior.Slide
@@ -372,10 +386,9 @@ public partial class BitPivot : BitComponentBase
 
     // The selected tab can be one of the tabs the Menu behavior folded away, and a header showing no
     // selection at all reads as if nothing were selected, so the button that holds it says so.
-    private bool _IsSelectedOverflowed => _selectedItem is not null
-                                       && _overflowItemIndexes.Any(i => i >= 0 && i < _allItems.Count && _allItems[i] == _selectedItem);
+    private bool _IsSelectedOverflowed => _selectedItem is not null && _overflowItemSet.Contains(_selectedItem);
 
-    private string? _ActiveMenuItemId => (_isMenuOpen && _menuFocusIndex >= 0 && _menuFocusIndex < _overflowItemIndexes.Length)
+    private string? _ActiveMenuItemId => (_isMenuOpen && _menuFocusIndex >= 0 && _menuFocusIndex < _overflowItems.Count)
                                             ? GetMenuItemId(_menuFocusIndex)
                                             : null;
 
@@ -507,6 +520,8 @@ public partial class BitPivot : BitComponentBase
 
         _rendered = true;
 
+        await UpdatePreventedKeys();
+
         var behavior = OverflowBehavior ?? BitPivotOverflowBehavior.None;
         // A reorderable header needs a bit of JS of its own: a drag that carries nothing on its data
         // transfer never starts in some browsers, and Blazor has no way of filling that in from C#.
@@ -535,6 +550,8 @@ public partial class BitPivot : BitComponentBase
                 {
                     _jsSetup = false;
                     await _js.BitPivotDispose(_Id);
+                    await _js.BitUtilsDisposePreventDefaultKeys(_MenuId);
+                    await _js.BitUtilsDisposePreventDefaultKeys(_MoreId);
                     _dotnetObj.Dispose();
                     _dotnetObj = null;
                 }
@@ -543,7 +560,8 @@ public partial class BitPivot : BitComponentBase
                 _slideAtEnd = false;
                 _slideAtStart = true;
                 _slideHasOverflow = false;
-                _overflowItemIndexes = [];
+                _overflowItems = [];
+                _overflowItemSet = [];
 
                 if (needsJs && IsDisposed is false)
                 {
@@ -561,6 +579,12 @@ public partial class BitPivot : BitComponentBase
                         _dotnetObj);
 
                     _jsSetup = true;
+
+                    if (behavior is BitPivotOverflowBehavior.Menu)
+                    {
+                        await _js.BitUtilsPreventDefaultKeys(_MenuId, _menuScrollingKeys);
+                        await _js.BitUtilsPreventDefaultKeys(_MoreId, _moreScrollingKeys);
+                    }
                 }
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
@@ -573,7 +597,7 @@ public partial class BitPivot : BitComponentBase
         {
             try
             {
-                await _js.BitPivotRefresh(_Id);
+                ApplyOverflowItems(await _js.BitPivotRefresh(_Id));
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
@@ -632,22 +656,7 @@ public partial class BitPivot : BitComponentBase
     {
         if (IsDisposed) return;
 
-        _overflowItemIndexes = indexes ?? [];
-
-        if (_overflowItemIndexes.Length == 0)
-        {
-            CloseMenu();
-        }
-        else if (_menuFocusIndex >= _overflowItemIndexes.Length)
-        {
-            _menuFocusIndex = _overflowItemIndexes.Length - 1;
-        }
-
-        // Which items can hold the tabindex of the header changed along with the fold, and the tabindex
-        // is rendered by the items themselves.
-        RefreshItems();
-
-        StateHasChanged();
+        ApplyOverflowItems(indexes);
     }
 
     [JSInvokable("OnSetSlideState")]
@@ -660,6 +669,81 @@ public partial class BitPivot : BitComponentBase
         _slideAtEnd = atEnd;
 
         StateHasChanged();
+    }
+
+
+
+    // The indexes address the header the way the JS half measured it, so they are resolved into the
+    // items themselves right away: a tab registered or dismissed before the next measure would
+    // otherwise leave them addressing whichever tab has taken that place in the list. A null is the
+    // answer of a refresh that folded nothing of its own (no instance, or no overflow behavior), and
+    // leaves the fold as it stands rather than reporting an empty one.
+    private void ApplyOverflowItems(int[]? indexes)
+    {
+        if (indexes is null) return;
+
+        // An item the pivot itself hides is not something the menu can offer either, and the fold it
+        // was measured in may be older than the parameter that hid it, so it is dropped here as well
+        // rather than only where the JS half leaves it out.
+        List<BitPivotItem> items = [.. indexes.Where(i => i >= 0 && i < _allItems.Count)
+                                              .Select(i => _allItems[i])
+                                              .Where(i => i.Visibility == BitVisibility.Visible)];
+
+        if (items.SequenceEqual(_overflowItems)) return;
+
+        _overflowItems = items;
+        _overflowItemSet = [.. items];
+
+        if (_overflowItems.Count == 0)
+        {
+            CloseMenu();
+        }
+        else if (_menuFocusIndex >= _overflowItems.Count)
+        {
+            _menuFocusIndex = _overflowItems.Count - 1;
+        }
+
+        // Which items can hold the tabindex of the header changed along with the fold, and the tabindex
+        // is rendered by the items themselves.
+        RefreshAllItems();
+
+        StateHasChanged();
+    }
+
+    // The keys of the tablist are registered with the browser rather than left to Blazor's
+    // preventDefault directive (see _menuScrollingKeys), and which of them the header actually takes
+    // depends on how it is configured: Space activates the focused tab whatever else it does, Home and
+    // End only reach it while it navigates, and the vertical arrows only while it is a vertical one.
+    // The tablist has a listener of the pivot's own rather than the shared one of Utils, since only the
+    // keys pressed on a tab itself are its own: a header template can hold something interactive, whose
+    // keys belong to it.
+    private async Task UpdatePreventedKeys()
+    {
+        List<string> keys = [" "];
+
+        if (Navigable)
+        {
+            keys.Add("Home");
+            keys.Add("End");
+
+            if (_isVertical)
+            {
+                keys.Add("ArrowUp");
+                keys.Add("ArrowDown");
+            }
+        }
+
+        var registration = $"{_HeaderId}|{string.Join(',', keys)}";
+
+        if (_preventedKeys == registration) return;
+
+        _preventedKeys = registration;
+
+        try
+        {
+            await _js.BitPivotSetupKeys(_HeaderId, [.. keys]);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
 
@@ -715,6 +799,15 @@ public partial class BitPivot : BitComponentBase
         return _allItems.IndexOf(_dragItem!) < _allItems.IndexOf(item)
                 ? "bit-pvti-dro bit-pvti-dro-end"
                 : "bit-pvti-dro";
+    }
+
+    // The fold of the Menu behavior is applied by the JS half, which measures the header, but the class
+    // it applies is rendered here as well: the class attribute belongs to Blazor, so a render that
+    // changes anything else about the item would otherwise wipe the fold off and pop the tab back into
+    // a header that has no room for it.
+    internal string? GetItemOverflowClass(BitPivotItem item)
+    {
+        return _overflowItemSet.Contains(item) ? "bit-pvt-ovh" : null;
     }
 
     internal string GetDismissAriaLabel(BitPivotItem item)
@@ -792,7 +885,7 @@ public partial class BitPivot : BitComponentBase
 
         // An item that declares itself selected wins over the key, so a pivot driven by the IsSelected
         // of its items still ends up with exactly one selected tab.
-        if (item.IsSelected && IsItemFocusable(item))
+        if (item.IsSelected && IsItemSelectable(item))
         {
             _selectedItem?.SetIsSelected(false);
             _selectedItem = item;
@@ -818,7 +911,7 @@ public partial class BitPivot : BitComponentBase
         // Nothing is selected yet, so the first item that can take the selection gets it. That also
         // covers a SelectedKey (or a DefaultSelectedKey) matching none of the items at all, which
         // would otherwise leave the pivot showing an empty panel.
-        if (_selectedItem is null && IsItemFocusable(item))
+        if (_selectedItem is null && IsItemSelectable(item))
         {
             item.SetIsSelected(true);
             _selectedItem = item;
@@ -834,6 +927,25 @@ public partial class BitPivot : BitComponentBase
         _allItems.Remove(item);
         _mountedItems.Remove(item);
 
+        if (_overflowItemSet.Remove(item))
+        {
+            _overflowItems.Remove(item);
+
+            // The menu is one item shorter than the place it was left open on.
+            if (_overflowItems.Count == 0)
+            {
+                CloseMenu();
+            }
+            else if (_menuFocusIndex >= _overflowItems.Count)
+            {
+                _menuFocusIndex = _overflowItems.Count - 1;
+            }
+
+            // The menu is drawn by the pivot itself rather than by the items, so nothing else would ask
+            // for it again and it would go on offering a tab that is not there anymore.
+            StateHasChanged();
+        }
+
         if (_focusedItem == item)
         {
             _focusedItem = null;
@@ -844,14 +956,16 @@ public partial class BitPivot : BitComponentBase
             _scrollTarget = null;
         }
 
-        if (_dragItem == item)
+        // Either end of a drag going away ends the whole drag: keeping the other end would leave the
+        // header painting a drop indicator on a tab that nothing is being dropped on anymore.
+        if (_dragItem == item || _dragOverItem == item)
         {
-            _dragItem = null;
-        }
+            var other = _dragItem == item ? _dragOverItem : _dragItem;
 
-        if (_dragOverItem == item)
-        {
+            _dragItem = null;
             _dragOverItem = null;
+
+            RefreshItems(other);
         }
 
         if (_selectedItem != item) return;
@@ -860,8 +974,8 @@ public partial class BitPivot : BitComponentBase
         // instead of leaving the pivot with a selected key pointing at nothing.
         _selectedItem = null;
 
-        var next = _allItems.Skip(index).FirstOrDefault(IsItemFocusable)
-                ?? _allItems.Take(index).LastOrDefault(IsItemFocusable);
+        var next = _allItems.Skip(index).FirstOrDefault(IsItemSelectable)
+                ?? _allItems.Take(index).LastOrDefault(IsItemSelectable);
 
         if (next is null)
         {
@@ -926,10 +1040,13 @@ public partial class BitPivot : BitComponentBase
     {
         if (GetItemReorderable(item) is false) return;
 
+        var previousDragItem = _dragItem;
+        var previousDragOverItem = _dragOverItem;
+
         _dragItem = item;
         _dragOverItem = null;
 
-        RefreshItems();
+        RefreshItems(previousDragItem, previousDragOverItem, item);
     }
 
     internal void HandleItemDragEnter(BitPivotItem item)
@@ -938,19 +1055,24 @@ public partial class BitPivot : BitComponentBase
         if (GetItemReorderable(item) is false) return;
         if (_dragOverItem == item) return;
 
+        var previousDragOverItem = _dragOverItem;
+
         _dragOverItem = item;
 
-        RefreshItems();
+        RefreshItems(previousDragOverItem, item);
     }
 
     internal void HandleItemDragEnd()
     {
         if (_dragItem is null && _dragOverItem is null) return;
 
+        var previousDragItem = _dragItem;
+        var previousDragOverItem = _dragOverItem;
+
         _dragItem = null;
         _dragOverItem = null;
 
-        RefreshItems();
+        RefreshItems(previousDragItem, previousDragOverItem);
     }
 
     internal async Task HandleItemDrop(BitPivotItem item)
@@ -965,21 +1087,11 @@ public partial class BitPivot : BitComponentBase
         await ReorderItem(dragged, _allItems.IndexOf(item));
     }
 
-    // ArrowUp, ArrowDown, Home, End and Space scroll the page by default, so their default action is
-    // suppressed while the header navigates with them. Kept key-scoped so Tab, Enter and the
-    // horizontal arrows outside of a vertical header still behave normally.
+    // The keys of the WAI-ARIA tabs pattern, which reach this handler from every item of the header:
+    // the tab itself is a div rather than a button, so none of them are handled natively. Their default
+    // action (scrolling the page) is suppressed by UpdatePreventedKeys rather than here.
     internal async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        // Blazor decides whether to prevent a default from the value of the last render, so the flag
-        // is re-rendered as soon as it changes rather than only on the paths that navigate - left
-        // standing after an arrow key, it would swallow the Tab that takes the focus out of the header.
-        var prevent = IsEnabled && e.Key is "ArrowUp" or "ArrowDown" or "Home" or "End" or " ";
-        if (_preventKeyDownDefault != prevent)
-        {
-            _preventKeyDownDefault = prevent;
-            StateHasChanged();
-        }
-
         if (IsEnabled is false) return;
 
         var current = _focusedItem is not null && IsItemFocusable(_focusedItem) ? _focusedItem : GetActiveItem();
@@ -1113,8 +1225,6 @@ public partial class BitPivot : BitComponentBase
         return _allItems.FirstOrDefault(IsItemFocusable);
     }
 
-    // An item folded into the overflow menu is hidden, so it can neither hold the tabindex of the
-    // header nor be reached by the arrow keys; the menu is what gets to it instead.
     // Whether the item can hold the selection at all, which is the focusable test without the fold:
     // an overflowed tab is out of the header, but its panel is still what the pivot would show.
     private static bool IsItemSelectable(BitPivotItem item)
@@ -1122,15 +1232,13 @@ public partial class BitPivot : BitComponentBase
         return item.IsEnabled && item.Visibility == BitVisibility.Visible;
     }
 
+    // An item folded into the overflow menu is hidden, so it can neither hold the tabindex of the
+    // header nor be reached by the arrow keys; the menu is what gets to it instead.
     private bool IsItemFocusable(BitPivotItem item)
     {
-        if (item.IsEnabled is false) return false;
+        if (IsItemSelectable(item) is false) return false;
 
-        if (item.Visibility != BitVisibility.Visible) return false;
-
-        if (_overflowItemIndexes.Length == 0) return true;
-
-        return _overflowItemIndexes.Contains(_allItems.IndexOf(item)) is false;
+        return _overflowItemSet.Contains(item) is false;
     }
 
     private async Task FocusItem(BitPivotItem? item)
@@ -1202,7 +1310,7 @@ public partial class BitPivot : BitComponentBase
 
         _allItems = [.. _allItems.OrderBy(i => order.TryGetValue(i._Id, out var index) ? index : int.MaxValue)];
 
-        RefreshItems();
+        RefreshAllItems();
 
         StateHasChanged();
     }
@@ -1220,12 +1328,29 @@ public partial class BitPivot : BitComponentBase
 
         _focusedItem = item;
 
-        if (GetActiveItem() == previous) return;
+        var current = GetActiveItem();
 
-        RefreshItems();
+        if (current == previous) return;
+
+        RefreshItems(previous, current);
     }
 
-    private void RefreshItems()
+    // Only the items whose share of what the pivot renders for them has actually moved are asked to
+    // render themselves: a drag touches at most the two ends of the move it is making, and the roving
+    // tabindex at most the item that was holding it and the one taking it over.
+    private void RefreshItems(params BitPivotItem?[] items)
+    {
+        if (IsDisposed) return;
+
+        foreach (var item in items)
+        {
+            item?.Refresh();
+        }
+    }
+
+    // The fold of the overflow menu and a reordering of the header change what is rendered for every
+    // one of the items at once, so those two are what the whole list is asked for.
+    private void RefreshAllItems()
     {
         if (IsDisposed) return;
 
@@ -1334,7 +1459,7 @@ public partial class BitPivot : BitComponentBase
         _isMenuOpen = true;
         _menuFocusIndex = -1;
 
-        for (var i = 0; i < _overflowItemIndexes.Length; i++)
+        for (var i = 0; i < _overflowItems.Count; i++)
         {
             if (GetMenuItem(i) != _selectedItem) continue;
 
@@ -1358,16 +1483,12 @@ public partial class BitPivot : BitComponentBase
 
     private BitPivotItem? GetMenuItem(int index)
     {
-        if (index < 0 || index >= _overflowItemIndexes.Length) return null;
-
-        var itemIndex = _overflowItemIndexes[index];
-
-        return (itemIndex >= 0 && itemIndex < _allItems.Count) ? _allItems[itemIndex] : null;
+        return (index >= 0 && index < _overflowItems.Count) ? _overflowItems[index] : null;
     }
 
     private void MoveMenuFocus(int step)
     {
-        var count = _overflowItemIndexes.Length;
+        var count = _overflowItems.Count;
         if (count == 0) return;
 
         var start = _menuFocusIndex + step;
@@ -1379,7 +1500,7 @@ public partial class BitPivot : BitComponentBase
 
     private void MoveMenuFocusFrom(int start, int step)
     {
-        var count = _overflowItemIndexes.Length;
+        var count = _overflowItems.Count;
         if (count == 0) return;
 
         var index = start;
@@ -1401,13 +1522,6 @@ public partial class BitPivot : BitComponentBase
     // tablist around it navigates tabs, and the menu is a menu.
     private async Task HandleMenuKeyDown(KeyboardEventArgs e)
     {
-        var prevent = e.Key is "ArrowUp" or "ArrowDown" or "Home" or "End" or " " or "Enter";
-        if (_preventMenuKeyDownDefault != prevent)
-        {
-            _preventMenuKeyDownDefault = prevent;
-            StateHasChanged();
-        }
-
         if (_isMenuOpen is false) return;
 
         switch (e.Key)
@@ -1442,7 +1556,7 @@ public partial class BitPivot : BitComponentBase
                 break;
 
             case "End":
-                MoveMenuFocusFrom(_overflowItemIndexes.Length - 1, -1);
+                MoveMenuFocusFrom(_overflowItems.Count - 1, -1);
                 break;
 
             default:
@@ -1456,15 +1570,6 @@ public partial class BitPivot : BitComponentBase
     // into it, and Escape closes it again without the tablist ever seeing any of them.
     private void HandleMoreKeyDown(KeyboardEventArgs e)
     {
-        // Space is deliberately left alone: preventing its default on a button is what would keep it
-        // from raising the click that opens the menu.
-        var prevent = e.Key is "ArrowUp" or "ArrowDown";
-        if (_preventMoreKeyDownDefault != prevent)
-        {
-            _preventMoreKeyDownDefault = prevent;
-            StateHasChanged();
-        }
-
         if (IsEnabled is false) return;
 
         if (e.Key is "Escape")
@@ -1481,7 +1586,7 @@ public partial class BitPivot : BitComponentBase
 
             if (e.Key is "ArrowUp")
             {
-                MoveMenuFocusFrom(_overflowItemIndexes.Length - 1, -1);
+                MoveMenuFocusFrom(_overflowItems.Count - 1, -1);
             }
 
             return;
@@ -1510,7 +1615,9 @@ public partial class BitPivot : BitComponentBase
     {
         CloseMenu();
 
-        if (IsEnabled is false || item.IsEnabled is false)
+        // A disabled or hidden item cannot take the selection from the menu either, for the same reason
+        // SelectKeyInternal refuses it: the selection would be left on a tab that is not shown.
+        if (IsEnabled is false || IsItemSelectable(item) is false)
         {
             StateHasChanged();
             return;
@@ -1526,13 +1633,23 @@ public partial class BitPivot : BitComponentBase
         {
             try
             {
-                await _js.BitPivotRefresh(_Id);
+                // The new fold is read from the refresh itself rather than waited for on the callback,
+                // since it is what decides where the focus goes just below.
+                ApplyOverflowItems(await _js.BitPivotRefresh(_Id));
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
-        // The tab the menu was closed on stays folded away, so the focus goes back to the button that
-        // holds it rather than to an element that is not in the header anymore.
+        // The tab the menu was closed on usually stays folded away, so the focus goes back to the button
+        // that holds it rather than to an element that is not in the header anymore. Selecting it can
+        // just as well have left the header with room for all of its tabs again, and the button is not
+        // shown at all then: focusing it would silently drop the focus to the document body.
+        if (_overflowItemSet.Contains(item) is false)
+        {
+            await FocusItem(item);
+            return;
+        }
+
         try
         {
             await _moreRef.FocusAsync();
@@ -1552,21 +1669,35 @@ public partial class BitPivot : BitComponentBase
     {
         if (IsEnabled is false || _jsSetup is false) return;
 
-        await _js.BitPivotSlide(_Id, forward);
+        try
+        {
+            await _js.BitPivotSlide(_Id, forward);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
 
-        if (_dotnetObj is not null)
+        try
         {
-            try
+            if (_preventedKeys is not null)
+            {
+                await _js.BitPivotDisposeKeys(_HeaderId);
+            }
+
+            if (_dotnetObj is not null)
             {
                 await _js.BitPivotDispose(_Id);
+                await _js.BitUtilsDisposePreventDefaultKeys(_MenuId);
+                await _js.BitUtilsDisposePreventDefaultKeys(_MoreId);
             }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
 
+        if (_dotnetObj is not null)
+        {
             _dotnetObj.Dispose();
             _dotnetObj = null;
         }

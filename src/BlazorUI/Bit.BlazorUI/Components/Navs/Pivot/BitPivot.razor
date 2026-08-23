@@ -33,10 +33,12 @@
             }
 
             @* The arrow, Home, End, Enter, Space and Delete keys of the tabs pattern are all handled
-               on the tablist, so a single handler covers every item that bubbles its keydown here. *@
+               on the tablist, so a single handler covers every item that bubbles its keydown here.
+               Their default action is suppressed by UpdatePreventedKeys, on a listener of the browser's
+               own, since Blazor's preventDefault directive cannot be decided per key. *@
             <div @ref="_headerRef"
                  @onkeydown="HandleOnKeyDown"
-                 @onkeydown:preventDefault="_preventKeyDownDefault"
+                 id="@_HeaderId"
                  role="tablist"
                  aria-label="@AriaLabel"
                  aria-labelledby="@AriaLabelledBy"
@@ -52,6 +54,7 @@
                        the Space that opens the menu as an activation of the focused tab. *@
                     <button @ref="_moreRef"
                             type="button"
+                            id="@_MoreId"
                             disabled="@(IsEnabled is false)"
                             style="display:none;@Styles?.OverflowButton"
                             aria-haspopup="menu"
@@ -60,7 +63,6 @@
                             aria-expanded="@(_isMenuOpen ? "true" : "false")"
                             @onclick="ToggleMenu"
                             @onkeydown="HandleMoreKeyDown"
-                            @onkeydown:preventDefault="_preventMoreKeyDownDefault"
                             @onkeydown:stopPropagation="true"
                             class="bit-pvti bit-pvt-mor @(_IsSelectedOverflowed ? "bit-pvt-mor-sel" : null) @Classes?.OverflowButton">
                         <span>
@@ -118,21 +120,16 @@
                      aria-label="@(OverflowAriaLabel ?? "More")"
                      aria-activedescendant="@_ActiveMenuItemId"
                      @onkeydown="HandleMenuKeyDown"
-                     @onkeydown:preventDefault="_preventMenuKeyDownDefault"
                      class="bit-pvt-mnc @Classes?.OverflowCallout">
-                    @for (var i = 0; i < _overflowItemIndexes.Length; i++)
+                    @for (var i = 0; i < _overflowItems.Count; i++)
                     {
-                        var index = _overflowItemIndexes[i];
-                        var item = (index >= 0 && index < _allItems.Count) ? _allItems[index] : null;
-                        if (item is null) continue;
-
-                        var itemIndex = i;
+                        var item = _overflowItems[i];
 
                         @* menuitemradio rather than menuitem: the menu is another way of making the
                            single choice the tablist makes, so each of its items carries whether it is
                            the one currently chosen. *@
                         <button type="button"
-                                id="@GetMenuItemId(itemIndex)"
+                                id="@GetMenuItemId(i)"
                                 tabindex="-1"
                                 role="menuitemradio"
                                 title="@item.Title"
@@ -141,7 +138,7 @@
                                 aria-checked="@(item.IsSelected ? "true" : "false")"
                                 style="@Styles?.OverflowItem"
                                 @onclick="() => SelectFromMenu(item)"
-                                class="bit-pvt-mni @(item.IsSelected ? "bit-pvt-mni-sel" : null) @(itemIndex == _menuFocusIndex ? "bit-pvt-mni-act" : null) @Classes?.OverflowItem">
+                                class="bit-pvt-mni @(item.IsSelected ? "bit-pvt-mni-sel" : null) @(i == _menuFocusIndex ? "bit-pvt-mni-act" : null) @Classes?.OverflowItem">
                             @{
                                 var menuIcon = BitIconInfo.From(item.Icon, item.IconName);
                             }
