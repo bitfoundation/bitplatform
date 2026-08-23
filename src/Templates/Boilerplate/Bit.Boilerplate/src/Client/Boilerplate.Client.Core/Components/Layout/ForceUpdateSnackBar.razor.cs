@@ -9,12 +9,9 @@ public partial class ForceUpdateSnackBar
     private Action? unsubscribe;
     private BitSnackBar bitSnackBar = default!;
 
-
-    protected override async Task OnInitAsync()
+    protected override async Task OnAfterFirstRenderAsync()
     {
-        await base.OnInitAsync();
-
-        if (InPrerenderSession) return;
+        await base.OnAfterFirstRenderAsync();
 
         unsubscribe = PubSubService.Subscribe(ClientAppMessages.FORCE_UPDATE, async (_) =>
         {

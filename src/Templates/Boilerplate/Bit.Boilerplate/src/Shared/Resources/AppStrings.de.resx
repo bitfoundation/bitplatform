@@ -1666,6 +1666,18 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="MoreTabsTitle" xml:space="preserve">
     <value>Weitere Registerkarten</value>
   </data>
+  <data name="OpenNavigationMenuTitle" xml:space="preserve">
+    <value>Navigationsmenü öffnen</value>
+  </data>
+  <data name="AccountMenuTitle" xml:space="preserve">
+    <value>Kontomenü</value>
+  </data>
+  <data name="SwitchToDarkThemeTitle" xml:space="preserve">
+    <value>Zum dunklen Design wechseln</value>
+  </data>
+  <data name="SwitchToLightThemeTitle" xml:space="preserve">
+    <value>Zum hellen Design wechseln</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SignalRConnectionId" xml:space="preserve">
     <value>SignalRConnectionId</value>

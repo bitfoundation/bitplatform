@@ -1666,6 +1666,18 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="MoreTabsTitle" xml:space="preserve">
     <value>Fler flikar</value>
   </data>
+  <data name="OpenNavigationMenuTitle" xml:space="preserve">
+    <value>Öppna navigeringsmenyn</value>
+  </data>
+  <data name="AccountMenuTitle" xml:space="preserve">
+    <value>Kontomeny</value>
+  </data>
+  <data name="SwitchToDarkThemeTitle" xml:space="preserve">
+    <value>Byt till mörkt tema</value>
+  </data>
+  <data name="SwitchToLightThemeTitle" xml:space="preserve">
+    <value>Byt till ljust tema</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SignalRConnectionId" xml:space="preserve">
     <value>SignalRConnectionId</value>

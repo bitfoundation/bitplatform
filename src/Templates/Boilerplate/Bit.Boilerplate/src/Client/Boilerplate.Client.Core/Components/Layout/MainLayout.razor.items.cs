@@ -112,20 +112,30 @@ public partial class MainLayout
             Url = PageUrls.About,
         });
 
-        var (manageRoles, manageUsers, manageAiPrompt) = await (authorizationService.IsAuthorized(authUser!, AppFeatures.Management.Roles_Manage),
-            authorizationService.IsAuthorized(authUser!, AppFeatures.Management.Users_Manage),
-            authorizationService.IsAuthorized(authUser!, AppFeatures.Management.SystemPrompts_Write));
+        var (manageRoles, manageUsers) = await (authorizationService.IsAuthorized(authUser!, AppFeatures.Management.Roles_Manage),
+            authorizationService.IsAuthorized(authUser!, AppFeatures.Management.Users_Manage));
+
+        //#if (signalR == true)
+        var manageAiPrompt = await authorizationService.IsAuthorized(authUser!, AppFeatures.Management.SystemPrompts_Write);
+        //#endif
 
         //#if (multitenant == true)
         if (tenantIsSelected is false)
         {
-            manageRoles = manageUsers = manageAiPrompt = false;
+            manageRoles = manageUsers = false;
+            //#if (signalR == true)
+            manageAiPrompt = false;
+            //#endif
         }
 
         var manageTenantsGlobally = await authorizationService.IsAuthorized(authUser!, AppFeatures.Management.Tenants_Manage_Global);
         //#endif
 
-        if (manageRoles || manageUsers || manageAiPrompt
+        // Every flag in this condition has to be able to contribute a child item below, or the group renders empty.
+        if (manageRoles || manageUsers
+            //#if (signalR == true)
+            || manageAiPrompt
+            //#endif
             //#if (multitenant == true)
             || manageTenantsGlobally
             //#endif

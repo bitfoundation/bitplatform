@@ -2,13 +2,13 @@
 @inherits AppComponentBase;
 
 <section>
-    <BitNavBar TItem="BitNavBarOption" Style="width:100%">
+    <BitNavBar FullWidth TItem="BitNavBarOption">
 
         <BitNavBarOption Text="@Localizer[nameof(AppStrings.Home)]" IconName="@BitIconName.Home" Url="@PageUrls.Home" />
 
         @*#if (offlineDb == true)*@
         <AuthorizeView Policy="@AppFeatures.Todo.Todo_Manage_Self">
-            <BitNavBarOption Text="@Localizer[nameof(AppStrings.Todo)]" IconName="@BitIconName.ToDoLogoOutline" Url="@PageUrls.OfflineTodo" />
+            <BitNavBarOption Text="@Localizer[nameof(AppStrings.OfflineTodoTitle)]" IconName="@BitIconName.ToDoLogoOutline" Url="@PageUrls.OfflineTodo" />
         </AuthorizeView>
         @*#elseif (sample == true)*@
         <AuthorizeView Policy="@AppFeatures.Todo.Todo_Manage_Self">
