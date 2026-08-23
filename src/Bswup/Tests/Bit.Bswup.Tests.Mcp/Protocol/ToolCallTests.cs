@@ -366,7 +366,7 @@ public class ToolCallTests
         var autoReload = ui.GetProperty("parameters").EnumerateArray()
                            .Single(parameter => parameter.GetProperty("name").GetString() == "AutoReload");
 
-        Assert.AreEqual("false", autoReload.GetProperty("default").GetString());
+        Assert.AreEqual("true", autoReload.GetProperty("default").GetString());
 
         var ids = ui.GetProperty("elements").EnumerateArray().Select(element => element.GetProperty("id").GetString()).ToArray();
 

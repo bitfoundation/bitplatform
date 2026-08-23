@@ -47,7 +47,8 @@ public class ServerContractTests
         StringAssert.Contains(instructions, "BEFORE the importScripts line");
         StringAssert.Contains(instructions, "service-worker.published.js");
         StringAssert.Contains(instructions, "SearchBswup");
-        StringAssert.Contains(instructions, "AutoReload", "the default that changed is the one recalled knowledge gets wrong");
+        StringAssert.Contains(instructions, "AutoReload", "whether an update announces itself is what recalled knowledge gets wrong");
+        StringAssert.Contains(instructions, "ShowOnUpdate", "and so is whether its download is shown");
     }
 
     [TestMethod]

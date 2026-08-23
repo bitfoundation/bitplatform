@@ -30,6 +30,14 @@ const fullSplash = {
     'bit-bswup-error-retry': {},
 };
 
+// AutoReload defaults to true - a finished update activates itself - so the manual reload
+// button only ever appears for an app that opted out, or as a stall/rejection fallback. The
+// tests that exercise the button as the primary path opt out the way such an app does.
+const manualReloadSplash = {
+    ...fullSplash,
+    'bit-bswup': { ...SPLASH, 'data-bit-bswup-auto-reload': 'false' },
+};
+
 describe('self-initialization from data-* attributes', () => {
     // The component no longer emits an inline <script> (blocked by a strict CSP, and not
     // executed at all when added by an interactive Blazor renderer).
@@ -195,27 +203,25 @@ describe('error handling', () => {
 });
 
 describe('update ready', () => {
-    // CHANGED in v-10-6-0: an unprompted reload discards the user's in-page state, so updates
-    // now default to the prompt-then-reload pattern; auto-reload is opt-in.
-    it('defaults to the manual reload button, not an automatic reload', () => {
+    // The attribute-less fallback in autoStart() must track BswupProgress.razor's AutoReload
+    // default, or hand-written config markup silently behaves differently from the component.
+    it('defaults to an automatic reload', () => {
         const ctx = progressPage({ elements: fullSplash }); // no auto-reload attribute anywhere
+
+        let reloaded = 0;
+        ctx.window.bitBswupHandler('UPDATE_READY', { reload: () => { reloaded++; return Promise.resolve(); } });
+
+        expect(reloaded).toBe(1);
+    });
+
+    it('honors an explicit data-bit-bswup-auto-reload="false"', () => {
+        const ctx = progressPage({ elements: manualReloadSplash });
 
         let reloaded = 0;
         ctx.window.bitBswupHandler('UPDATE_READY', { reload: () => { reloaded++; return Promise.resolve(); } });
 
         expect(reloaded).toBe(0);
         expect(ctx.elements['bit-bswup-reload'].style.display).toBe('block');
-    });
-
-    it('honors an explicit data-bit-bswup-auto-reload="true"', () => {
-        const ctx = progressPage({
-            elements: { ...fullSplash, 'bit-bswup': { 'data-bit-bswup-config': 'true', 'data-bit-bswup-auto-reload': 'true' } },
-        });
-
-        let reloaded = 0;
-        ctx.window.bitBswupHandler('UPDATE_READY', { reload: () => { reloaded++; return Promise.resolve(); } });
-
-        expect(reloaded).toBe(1);
     });
 
     it('wires the reload button when autoReload is off', () => {
@@ -340,38 +346,86 @@ describe('custom handler', () => {
     });
 });
 
-// Background updates download behind a healthy running app: the full-viewport overlay (which
-// has no background and, when shown, sits on top of every click target) must stay hidden, and
-// completion must surface through the reload button - which lives OUTSIDE #bit-bswup so it can
-// appear without revealing the splash.
-describe('background updates stay out of the way', () => {
-    it('does not paint the overlay for background-update progress (firstInstall: false)', () => {
+// A background update downloads behind an app that is already running, and by default its
+// progress is shown exactly like a first install's - the splash and its percentage are the
+// only feedback most apps give that an update is being fetched. ShowOnUpdate="false" is the
+// opt-out for an app whose splash is a take-over it does not want painted over a live UI.
+describe('background-update progress', () => {
+    it('paints the splash for background-update progress by default (firstInstall: false)', () => {
         const ctx = progressPage({ elements: fullSplash });
         ctx.window.bitBswupHandler('DOWNLOAD_PROGRESS', { percent: 30, index: 1, asset: { url: 'a.js' }, firstInstall: false });
 
-        expect(ctx.elements['bit-bswup'].style.display).not.toBe('block');
+        expect(ctx.elements['bit-bswup'].style.display).toBe('block');
+        expect(ctx.elements['bit-bswup-progress-bar'].style.width).toBe('30%');
+        expect(ctx.elements['bit-bswup-percent'].textContent).toBe('30%');
     });
 
-    it('still takes the screen over for first-install progress', () => {
+    // The custom-splash contract: a ChildContent indicator is driven purely through the CSS
+    // variables on #bit-bswup, so an update that skipped them would leave a visible-but-frozen
+    // indicator rather than nothing at all.
+    it('drives the percent CSS variables for a background update too', () => {
+        const ctx = progressPage({ elements: fullSplash });
+        ctx.window.bitBswupHandler('DOWNLOAD_PROGRESS', { percent: 30, index: 1, asset: { url: 'a.js' }, firstInstall: false });
+
+        expect(ctx.elements['bit-bswup'].style.getPropertyValue('--bit-bswup-percent')).toBe('30%');
+        expect(ctx.elements['bit-bswup'].style.getPropertyValue('--bit-bswup-percent-text')).toBe('"30%"');
+    });
+
+    it('paints the splash for first-install progress', () => {
         const ctx = progressPage({ elements: fullSplash });
         ctx.window.bitBswupHandler('DOWNLOAD_PROGRESS', { percent: 30, index: 1, asset: { url: 'a.js' }, firstInstall: true });
 
         expect(ctx.elements['bit-bswup'].style.display).toBe('block');
     });
 
-    it('keeps the old take-over behavior when the flag is absent (older bit-bswup.js cached)', () => {
-        const ctx = progressPage({ elements: fullSplash });
+    it('suppresses the background-update splash under ShowOnUpdate="false"', () => {
+        const ctx = progressPage({
+            elements: { ...fullSplash, 'bit-bswup': { ...SPLASH, 'data-bit-bswup-show-on-update': 'false' } },
+        });
+        ctx.window.bitBswupHandler('DOWNLOAD_PROGRESS', { percent: 30, index: 1, asset: { url: 'a.js' }, firstInstall: false });
+
+        expect(ctx.elements['bit-bswup'].style.display).not.toBe('block');
+    });
+
+    // ShowOnUpdate is about the OVERLAY, not about the app: a first install has no running app
+    // to protect, so it is painted whatever the setting says.
+    it('still paints a first install under ShowOnUpdate="false"', () => {
+        const ctx = progressPage({
+            elements: { ...fullSplash, 'bit-bswup': { ...SPLASH, 'data-bit-bswup-show-on-update': 'false' } },
+        });
+        ctx.window.bitBswupHandler('DOWNLOAD_PROGRESS', { percent: 30, index: 1, asset: { url: 'a.js' }, firstInstall: true });
+
+        expect(ctx.elements['bit-bswup'].style.display).toBe('block');
+    });
+
+    // firstInstall rides on the message from bit-bswup.js; an older copy of that bundle still
+    // cached alongside this script omits it. Absent must mean "paint", never "suppress".
+    it('paints when the flag is absent, even under ShowOnUpdate="false"', () => {
+        const ctx = progressPage({
+            elements: { ...fullSplash, 'bit-bswup': { ...SPLASH, 'data-bit-bswup-show-on-update': 'false' } },
+        });
         ctx.window.bitBswupHandler('DOWNLOAD_PROGRESS', { percent: 30, index: 1, asset: { url: 'a.js' } });
 
         expect(ctx.elements['bit-bswup'].style.display).toBe('block');
     });
 
-    it('shows the reload button for a finished background update without revealing the overlay', () => {
+    it('activates a finished background update automatically', () => {
         const ctx = progressPage({ elements: fullSplash });
         let reloaded = 0;
         ctx.window.bitBswupHandler('DOWNLOAD_FINISHED', { firstInstall: false, reload: () => { reloaded++; return Promise.resolve(); } });
 
-        expect(reloaded).toBe(0); // AutoReload defaults false
+        expect(reloaded).toBe(1);
+    });
+
+    // The button lives OUTSIDE #bit-bswup so it can appear without revealing the splash - which
+    // is what a background update needs under AutoReload="false", and what an update already
+    // staged at page load needs regardless (it never produced a progress event to reveal it).
+    it('surfaces a finished background update through the button under AutoReload="false"', () => {
+        const ctx = progressPage({ elements: manualReloadSplash });
+        let reloaded = 0;
+        ctx.window.bitBswupHandler('DOWNLOAD_FINISHED', { firstInstall: false, reload: () => { reloaded++; return Promise.resolve(); } });
+
+        expect(reloaded).toBe(0);
         expect(ctx.elements['bit-bswup-reload'].style.display).toBe('block');
         expect(ctx.elements['bit-bswup'].style.display).not.toBe('block');
     });
@@ -382,7 +436,7 @@ describe('background updates stay out of the way', () => {
 // the announcement.
 describe('update-ready announcement', () => {
     it('announces through the status live region when the button appears', () => {
-        const ctx = progressPage({ elements: fullSplash });
+        const ctx = progressPage({ elements: manualReloadSplash });
         ctx.window.bitBswupHandler('UPDATE_READY', { reload: () => Promise.resolve() });
 
         expect(ctx.elements['bit-bswup-reload'].style.display).toBe('block');
@@ -390,7 +444,7 @@ describe('update-ready announcement', () => {
     });
 
     it('clears the announcement when a failed install hides the button', () => {
-        const ctx = progressPage({ elements: fullSplash });
+        const ctx = progressPage({ elements: manualReloadSplash });
         ctx.window.bitBswupHandler('UPDATE_READY', { reload: () => Promise.resolve() });
         ctx.window.bitBswupHandler('ERROR', { reason: 'install-aborted', message: 'failed', fatal: true });
 
@@ -424,7 +478,7 @@ describe('splash subtree replaced after initialization', () => {
     });
 
     it('shows the reload button on a replacement node too', () => {
-        const ctx = progressPage({ elements: fullSplash });
+        const ctx = progressPage({ elements: manualReloadSplash });
         ctx.addElement('bit-bswup-reload', {});
         ctx.addElement('bit-bswup-reload-status', {});
 

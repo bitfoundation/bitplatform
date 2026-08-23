@@ -26,7 +26,8 @@
             <tr><th>Parameter</th><th>Default</th><th>Description</th></tr>
         </thead>
         <tbody>
-            <tr><td><code>AutoReload</code></td><td><code>false</code></td><td>Reload automatically when an update finishes instead of showing the reload button. <strong>Changed in v-10-6-0</strong> - previously defaulted to <code>true</code>.</td></tr>
+            <tr><td><code>AutoReload</code></td><td><code>true</code></td><td>Reload automatically when an update finishes. Set it to <code>false</code> to show the reload button and let the user accept the update instead.</td></tr>
+            <tr><td><code>ShowOnUpdate</code></td><td><code>true</code></td><td>Drive the splash during a background update - one downloading behind an already-installed, running app - as well as during a first install. Set it to <code>false</code> when the splash is a full-viewport take-over that should not paint over a live UI.</td></tr>
             <tr><td><code>ShowLogs</code></td><td><code>false</code></td><td>Log lifecycle messages to the console.</td></tr>
             <tr><td><code>ShowAssets</code></td><td><code>false</code></td><td>List each downloaded asset inside the splash.</td></tr>
             <tr><td><code>AppContainer</code></td><td><code>#app</code></td><td>Selector of the element to hide while installing (used with <code>HideApp</code>). An invalid selector is tolerated - only the hiding is skipped.</td></tr>
@@ -41,10 +42,15 @@
 <h2>Behavior worth knowing</h2>
 <ul>
     <li>
-        The full-screen splash is <strong>first-install only</strong>. A background update downloads
-        silently behind the running app; when it finishes - or when an update is already staged at page
-        load - the reload button appears on its own, with a screen-reader announcement through a
-        <code>role="status"</code> region.
+        The splash is painted for a <strong>background update</strong> as well as a first install, so the
+        user sees an update being fetched. Set <code>ShowOnUpdate="false"</code> to make it first-install
+        only, for a take-over splash that should not paint over a running app.
+    </li>
+    <li>
+        The update-ready button lives <em>outside</em> <code>#bit-bswup</code> so it can appear without
+        revealing the splash: an update already staged at page load never produced a progress event to
+        reveal it, and neither does one under <code>ShowOnUpdate="false"</code>. Its appearance is
+        announced through a <code>role="status"</code> region.
     </li>
     <li>
         Clicks outside the splash content pass through the overlay, so an app force-started under a failure
@@ -57,7 +63,7 @@
     </li>
     <li>
         Runtime toggles are available via
-        <code>BitBswupProgress.config({ autoReload, showLogs, showAssets, hideApp, autoHide })</code>.
+        <code>BitBswupProgress.config({ autoReload, showLogs, showAssets, hideApp, autoHide, showOnUpdate })</code>.
     </li>
 </ul>
 
@@ -83,9 +89,9 @@
 </div>
 <Callout Type="warning" Title="Don't render your own reload button">
     The update-ready button (<code>#bit-bswup-reload</code>) and its status region are always rendered by
-    the component itself, <em>outside</em> the overlay, even with custom content - they are the only way a
-    finished update surfaces under the default <code>AutoReload="false"</code>. A custom splash should not
-    render its own copy of those two; restyle them by id instead.
+    the component itself, <em>outside</em> the overlay, even with custom content - they are what an app
+    running under <code>AutoReload="false"</code> relies on to surface a finished update. A custom splash
+    should not render its own copy of those two; restyle them by id instead.
 </Callout>
 
 <h2>Standalone WebAssembly apps</h2>
