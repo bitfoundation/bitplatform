@@ -76,4 +76,24 @@ public class BitPivotClassStyles
     /// Custom CSS classes/styles for the header item count of the BitPivot.
     /// </summary>
     public string? HeaderItemCount { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the start content of the header of the BitPivot.
+    /// </summary>
+    public string? HeaderStart { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the end content of the header of the BitPivot.
+    /// </summary>
+    public string? HeaderEnd { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the dismiss button of the header items of the BitPivot.
+    /// </summary>
+    public string? DismissButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the dismiss icon of the header items of the BitPivot.
+    /// </summary>
+    public string? DismissIcon { get; set; }
 }

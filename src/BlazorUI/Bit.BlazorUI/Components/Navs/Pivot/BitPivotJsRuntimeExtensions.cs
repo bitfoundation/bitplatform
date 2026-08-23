@@ -28,6 +28,11 @@ internal static class BitPivotJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.Pivot.slide", id, forward);
     }
 
+    internal static ValueTask BitPivotScrollToSelected(this IJSRuntime jsRuntime, ElementReference header)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Pivot.scrollToSelected", header);
+    }
+
     internal static ValueTask BitPivotDispose(this IJSRuntime jsRuntime, string id)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Pivot.dispose", id);

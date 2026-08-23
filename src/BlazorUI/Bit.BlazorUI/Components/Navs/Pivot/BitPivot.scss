@@ -5,7 +5,7 @@
     display: flex;
 
     &.bit-dis {
-        .content-container {
+        .bit-pvt-cct {
             cursor: default;
             pointer-events: none;
             color: var(--bit-pvt-clr-dis-text);
@@ -27,10 +27,6 @@
     display: flex;
     white-space: nowrap;
     justify-content: var(--bit-pvt-hal);
-
-    * {
-        font-size: $tg-fs-md;
-    }
 }
 
 .bit-pvt-hwr {
@@ -45,6 +41,14 @@
     min-width: 0;
 }
 
+.bit-pvt-hst,
+.bit-pvt-hnd {
+    display: flex;
+    flex-shrink: 0;
+    gap: spacing(0.5);
+    align-items: center;
+}
+
 .bit-pvt-cct {
     margin: 0;
     padding: 0;
@@ -55,6 +59,12 @@
     box-sizing: border-box;
     font-size: $tg-fs-sm;
     color: $clr-fg-pri;
+
+    // The panel is a tab stop of its own (the WAI-ARIA tabs pattern asks for it when the content
+    // holds nothing focusable), so it needs a focus ring like any other.
+    &:focus-visible {
+        @include focus-ring(var(--bit-pvt-clr-focus));
+    }
 }
 
 .bit-pvt-top {
@@ -97,6 +107,14 @@
     .bit-pvt-sbt {
         width: 100%;
         height: spacing(4);
+    }
+
+    // A tab in a column reads as a row of a list rather than as a centred chip, so its content runs
+    // from the start edge and the trailing gutter of the horizontal layout is dropped.
+    .bit-pvti {
+        text-align: start;
+        margin-inline-end: 0;
+        margin-block-end: spacing(0.5);
     }
 
     &.bit-pvt-scr .bit-pvt-hct {
@@ -168,7 +186,6 @@
     }
 
     .bit-pvti-sel {
-        font-weight: $tg-fw-regular;
         color: var(--bit-pvt-clr-text);
         background-color: var(--bit-pvt-clr);
     }
@@ -196,19 +213,58 @@
     }
 }
 
-.bit-pvt-sm {
-    .bit-pvt-hct {
-        * {
-            font-size: $tg-fs-xs;
-        }
+// The size classes move the header along the type ramp. Each of the three lands on a step of its
+// own - a Medium header that reads the same as a Large one is not a size at all - and the rule is
+// scoped to the parts that carry text so that it never resizes the content of a custom Header.
+.bit-pvt-sm .bit-pvt-hct {
+    .bit-pvti,
+    .bit-pvti-txt,
+    .bit-pvti-cnr {
+        font-size: $tg-fs-xs;
     }
 }
 
-.bit-pvt-lg {
-    .bit-pvt-hct {
-        * {
-            font-size: $tg-fs-md;
-        }
+.bit-pvt-md .bit-pvt-hct {
+    .bit-pvti,
+    .bit-pvti-txt,
+    .bit-pvti-cnr {
+        font-size: $tg-fs-sm;
+    }
+}
+
+.bit-pvt-lg .bit-pvt-hct {
+    .bit-pvti,
+    .bit-pvti-txt,
+    .bit-pvti-cnr {
+        font-size: $tg-fs-md;
+    }
+}
+
+// Stretches the items over the whole header, which is what turns a handful of tabs into a segmented
+// control rather than a row of labels huddled at one edge.
+.bit-pvt-fwd {
+    // The overflow More button carries .bit-pvti as well, and it is a fixed affordance rather than
+    // one of the tabs sharing the line, so it keeps its natural width.
+    .bit-pvt-hct > .bit-pvti:not(.bit-pvt-mor) {
+        flex: 1 1 0;
+        min-width: 0;
+        margin-inline-end: 0;
+    }
+}
+
+// The icon over the label instead of beside it, which buys a much shorter tab for the same words.
+.bit-pvt-stk {
+    .bit-pvti {
+        height: auto;
+        line-height: normal;
+        padding-block: spacing(0.75);
+        min-height: calc(#{$siz-tab} * 1.6);
+    }
+
+    .bit-pvti > span {
+        gap: spacing(0.25);
+        flex-flow: column;
+        justify-content: center;
     }
 }
 
@@ -221,14 +277,17 @@
     text-align: center;
     height: $siz-tab;
     outline: transparent;
-    display: inline-block;
+    align-items: center;
+    display: inline-flex;
     padding: 0 spacing(1);
     text-decoration: none;
     box-sizing: border-box;
+    scroll-margin: spacing(1);
     margin-inline-end: spacing(1);
     line-height: $siz-tab;
     background-color: transparent;
     color: $clr-fg-pri;
+    font-size: $tg-fs-sm;
     letter-spacing: $tg-ctrl-letter-spacing;
 
     &:focus-visible {
@@ -254,6 +313,7 @@
     > span {
         height: 100%;
         display: flex;
+        min-width: 0;
         gap: spacing(0.5);
         flex-wrap: nowrap;
         align-items: center;
@@ -271,39 +331,71 @@
     }
 }
 
-.bit-pvti-sel {
-    border: 0;
-    cursor: pointer;
-    font-weight: $tg-fw-semibold;
-    border-radius: 0;
-    user-select: none;
-    color: $clr-fg-pri;
-    position: relative;
-    text-align: center;
-    height: $siz-tab;
-    outline: transparent;
-    display: inline-block;
-    padding: 0 spacing(1);
-    text-decoration: none;
-    box-sizing: border-box;
-    margin-inline-end: spacing(1);
-    line-height: $siz-tab;
-    background-color: transparent;
-    letter-spacing: $tg-ctrl-letter-spacing;
+// The header text of the selected item turns semibold, which is wider than the same words in the
+// regular weight and would shove every tab after it sideways on each selection change. The room for
+// the bold copy is reserved up front by laying an invisible bold duplicate under the label, so the
+// tab is the same width whether or not it happens to be the selected one.
+.bit-pvti-txt {
+    display: block;
 
-    &:focus-visible {
-        @include focus-ring(var(--bit-pvt-clr-focus));
+    &::after {
+        height: 0;
+        display: block;
+        overflow: hidden;
+        visibility: hidden;
+        pointer-events: none;
+        content: attr(data-content);
+        font-weight: $tg-fw-semibold;
     }
+}
+
+.bit-pvti-sel {
+    color: $clr-fg-pri;
+    font-weight: $tg-fw-semibold;
 
     // Only the scale differs from the unselected state; the geometry, color and transition all come
     // from .bit-pvti::before so both ends of a selection change animate with the same curve.
     &::before {
         transform: scaleX(1);
     }
+}
 
-    span {
-        font-size: $tg-fs-md;
+// Folded away by the Menu overflow behavior. A class rather than an inline display, so that hiding
+// an item this way never overwrites the display the component itself puts on a hidden item.
+.bit-pvt-ovh {
+    display: none !important;
+}
+
+.bit-pvti-dbt {
+    border: 0;
+    padding: 0;
+    flex-shrink: 0;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    color: currentColor;
+    justify-content: center;
+    width: spacing(2);
+    height: spacing(2);
+    box-sizing: border-box;
+    margin-inline-start: spacing(0.5);
+    border-radius: $shp-radius-full;
+    background-color: transparent;
+
+    @media (hover: hover) {
+        &:hover {
+            color: $clr-fg-pri-hover;
+            background-color: $clr-bg-pri-hover;
+        }
     }
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-pvt-clr-focus));
+    }
+}
+
+.bit-pvti-dsi {
+    font-size: $tg-fs-2xs;
 }
 
 .bit-pvt-sta,
@@ -386,6 +478,10 @@
         }
     }
 
+    &:focus-visible {
+        @include focus-ring(var(--bit-pvt-clr-focus));
+    }
+
     &:disabled {
         cursor: default;
         color: $clr-fg-dis;
@@ -428,6 +524,7 @@
     position: absolute;
     inset-inline-end: 0;
     z-index: $zindex-callout;
+    max-height: $siz-popup-max-height;
     box-shadow: $box-shadow-popup;
     border-radius: 0 0 $shp-radius-popup $shp-radius-popup;
     background-color: $clr-bg-pri;
@@ -465,6 +562,10 @@
             color: $clr-fg-pri-hover;
             background-color: $clr-bg-pri-hover;
         }
+    }
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-pvt-clr-focus));
     }
 
     &[disabled] {

@@ -1,16 +1,23 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
+@* The root carries no role of its own: it holds the tablist and the tabpanel, and any role here
+   would sit between the two and break the association the WAI-ARIA tabs pattern relies on. *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
-     role="toolbar"
-     aria-label="@AriaLabel"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
 
     <CascadingValue Value="this" IsFixed="true">
         <div style="@Styles?.HeaderContainer" class="bit-pvt-hwr @Classes?.HeaderContainer">
+
+            @if (HeaderStart is not null)
+            {
+                <div style="@Styles?.HeaderStart" class="bit-pvt-hst @Classes?.HeaderStart">
+                    @HeaderStart
+                </div>
+            }
 
             @if (OverflowBehavior is BitPivotOverflowBehavior.Slide)
             {
@@ -21,26 +28,39 @@
                         aria-label="@(PreviousAriaLabel ?? "Previous")"
                         @onclick="() => Slide(false)"
                         class="bit-pvt-sbt bit-pvt-spv @Classes?.SlideButton">
-                    <i class="@prevIcon?.GetCssClasses()" />
+                    <i aria-hidden="true" class="@prevIcon?.GetCssClasses()" />
                 </button>
             }
 
-            <div @ref="_headerRef" style="@Styles?.Header" class="bit-pvt-hct @Classes?.Header" role="tablist">
+            @* The arrow, Home, End, Enter, Space and Delete keys of the tabs pattern are all handled
+               on the tablist, so a single handler covers every item that bubbles its keydown here. *@
+            <div @ref="_headerRef"
+                 @onkeydown="HandleOnKeyDown"
+                 @onkeydown:preventDefault="_preventKeyDownDefault"
+                 role="tablist"
+                 aria-label="@AriaLabel"
+                 aria-orientation="@(_isVertical ? "vertical" : "horizontal")"
+                 style="@Styles?.Header"
+                 class="bit-pvt-hct @Classes?.Header">
                 @ChildContent
 
                 @if (OverflowBehavior is BitPivotOverflowBehavior.Menu)
                 {
                     var moreIcon = BitIconInfo.From(OverflowIcon, OverflowIconName ?? "More");
+                    @* Its keys are its own: the tablist around it would otherwise take the Enter or
+                       the Space that opens the menu as an activation of the focused tab. *@
                     <button @ref="_moreRef"
                             type="button"
                             style="display:none;@Styles?.OverflowButton"
-                            aria-haspopup="true"
+                            aria-haspopup="menu"
                             aria-label="@(OverflowAriaLabel ?? "More")"
+                            aria-controls="@_MenuId"
                             aria-expanded="@(_isMenuOpen ? "true" : "false")"
                             @onclick="ToggleMenu"
+                            @onkeydown:stopPropagation="true"
                             class="bit-pvti bit-pvt-mor @Classes?.OverflowButton">
                         <span>
-                            <i class="@moreIcon?.GetCssClasses()" />
+                            <i aria-hidden="true" class="@moreIcon?.GetCssClasses()" />
                         </span>
                     </button>
                 }
@@ -55,7 +75,7 @@
                         aria-label="@(NextAriaLabel ?? "Next")"
                         @onclick="() => Slide(true)"
                         class="bit-pvt-sbt bit-pvt-snx @Classes?.SlideButton">
-                    <i class="@nextIcon?.GetCssClasses()" />
+                    <i aria-hidden="true" class="@nextIcon?.GetCssClasses()" />
                 </button>
             }
 
@@ -66,7 +86,10 @@
                      @onclick="CloseMenu"></div>
 
                 <div style="display:@(_isMenuOpen ? "block" : "none");@Styles?.OverflowCallout"
+                     id="@_MenuId"
                      role="menu"
+                     aria-label="@(OverflowAriaLabel ?? "More")"
+                     @onkeydown="HandleMenuKeyDown"
                      class="bit-pvt-mnc @Classes?.OverflowCallout">
                     @foreach (var index in _overflowItemIndexes)
                     {
@@ -76,6 +99,7 @@
                         <button type="button"
                                 role="menuitem"
                                 disabled="@(item.IsEnabled is false)"
+                                aria-disabled="@(item.IsEnabled ? null : "true")"
                                 style="@Styles?.OverflowItem"
                                 @onclick="() => SelectFromMenu(item)"
                                 class="bit-pvt-mni @(item.IsSelected ? "bit-pvt-mni-sel" : null) @Classes?.OverflowItem">
@@ -84,7 +108,7 @@
                             }
                             @if (menuIcon is not null)
                             {
-                                <i class="@menuIcon.GetCssClasses()" />
+                                <i aria-hidden="true" class="@menuIcon.GetCssClasses()" />
                             }
                             @if (item.Header is not null)
                             {
@@ -102,28 +126,43 @@
                     }
                 </div>
             }
+
+            @if (HeaderEnd is not null)
+            {
+                <div style="@Styles?.HeaderEnd" class="bit-pvt-hnd @Classes?.HeaderEnd">
+                    @HeaderEnd
+                </div>
+            }
         </div>
     </CascadingValue>
 
+    @* The panel is focusable on purpose: the WAI-ARIA tabs pattern asks for it so that a keyboard
+       user leaving the tablist lands on the content it controls even when that content holds
+       nothing focusable of its own. *@
     @if (HeaderOnly is false)
     {
         if (MountAll)
         {
             @foreach (var item in _allItems)
             {
+                var isSelected = item == _selectedItem;
                 <div role="tabpanel"
-                     aria-hidden="false"
-                     aria-labelledby="@(item?._Id)"
+                     tabindex="0"
+                     id="@GetItemPanelId(item)"
+                     hidden="@(isSelected is false)"
+                     aria-hidden="@(isSelected ? null : "true")"
+                     aria-labelledby="@item._Id"
                      style="@GetItemStyle(item)"
                      class="bit-pvt-cct @GetItemClass(item)">
-                    @(item?.Body ?? item?.ChildContent)
+                    @(item.Body ?? item.ChildContent)
                 </div>
             }
         }
         else
         {
             <div role="tabpanel"
-                 aria-hidden="false"
+                 tabindex="0"
+                 id="@(_selectedItem is null ? null : GetItemPanelId(_selectedItem))"
                  aria-labelledby="@(_selectedItem?._Id)"
                  style="@GetItemStyle(_selectedItem)"
                  class="bit-pvt-cct @GetItemClass(_selectedItem)">

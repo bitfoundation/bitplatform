@@ -1,8 +1,12 @@
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// A single tab of a <see cref="BitPivot"/>: its header, which is rendered into the tablist, and the
+/// content of the tabpanel that the header selects.
+/// </summary>
 public partial class BitPivotItem : BitComponentBase
 {
-    private bool _isEnabled;
+    private (bool, BitVisibility, string?, string?, string?, int?, bool?) _lastHeaderState;
 
 
 
@@ -29,6 +33,12 @@ public partial class BitPivotItem : BitComponentBase
     /// The content of the pivot item, It can be Any custom tag or a text.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Overrides the Dismissible of the parent pivot for this item alone, so a single tab can gain or
+    /// lose its dismiss button independently of the rest.
+    /// </summary>
+    [Parameter] public bool? Dismissible { get; set; }
 
     /// <summary>
     /// The content of the pivot item header, It can be Any custom tag or a text.
@@ -68,11 +78,38 @@ public partial class BitPivotItem : BitComponentBase
     /// </summary>
     [Parameter] public string? Key { get; set; }
 
+    /// <summary>
+    /// Callback for when this pivot item header is clicked or activated from the keyboard.
+    /// </summary>
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    /// <summary>
+    /// Callback for when the dismiss button of this pivot item is clicked, or the Delete key is
+    /// pressed while it holds the focus.
+    /// </summary>
+    [Parameter] public EventCallback OnDismiss { get; set; }
+
+    /// <summary>
+    /// The title (tooltip) of the pivot item header, which is the usual place for the full text of a
+    /// header that is too long to be shown in one.
+    /// </summary>
+    [Parameter] public string? Title { get; set; }
+
 
 
     internal void SetIsSelected(bool value)
     {
         _ = AssignIsSelected(value);
+
+        StateHasChanged();
+    }
+
+    // Part of what this item renders - its tabindex, its aria-controls - is state the pivot owns
+    // rather than a parameter of its own, and Blazor skips re-rendering a child whose parameters
+    // have not changed, so the pivot asks the item to render itself when that state moves.
+    internal void Refresh()
+    {
+        if (IsDisposed) return;
 
         StateHasChanged();
     }
@@ -106,9 +143,15 @@ public partial class BitPivotItem : BitComponentBase
     {
         await base.OnParametersSetAsync();
 
-        if (IsEnabled == _isEnabled) return;
+        // Everything the parent draws on its own behalf out of this item - the overflow menu copy of
+        // the header, the roving tabindex, the dismiss button - is stale as soon as any of these
+        // change, and the parent has no other way of hearing about it.
+        var state = (IsEnabled, Visibility, HeaderText, IconName, Key, ItemCount, Dismissible);
 
-        _isEnabled = IsEnabled;
+        if (state == _lastHeaderState) return;
+
+        _lastHeaderState = state;
+
         Parent?.Refresh();
     }
 
@@ -121,10 +164,21 @@ public partial class BitPivotItem : BitComponentBase
 
     private async Task HandleOnClick()
     {
-        if (IsEnabled is false || Parent is null || Parent.IsEnabled is false) return;
+        if (Parent is null) return;
 
-        Parent.SelectItem(this);
-        await Parent.OnItemClick.InvokeAsync(this);
+        await Parent.HandleItemClick(this);
+    }
+
+    private async Task HandleOnDismiss()
+    {
+        if (Parent is null) return;
+
+        await Parent.HandleItemDismiss(this);
+    }
+
+    private void HandleOnFocusIn()
+    {
+        Parent?.HandleItemFocusIn(this);
     }
 
 

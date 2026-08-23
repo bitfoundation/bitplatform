@@ -40,6 +40,22 @@ namespace BitBlazorUI {
             instance.slide(forward);
         }
 
+        // Brings the selected tab back into view after a selection that did not come from a click on
+        // it (the keyboard, the bound key, the overflow menu). Works off the header element itself
+        // rather than an instance, since the Scroll behavior sets up no instance at all.
+        public static scrollToSelected(header: HTMLElement) {
+            if (!header) return;
+
+            try {
+                const selected = header.querySelector<HTMLElement>('.bit-pvti-sel');
+                if (!selected) return;
+
+                selected.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+            } catch (e) {
+                console.error('BitBlazorUI.Pivot.scrollToSelected:', e);
+            }
+        }
+
         public static dispose(id: string) {
             const instance = Pivot._instances[id];
             if (!instance) return;
@@ -59,6 +75,8 @@ namespace BitBlazorUI {
     }
 
     class PivotInstance {
+        public static readonly hiddenClass = 'bit-pvt-ovh';
+
         private id: string;
         private header: HTMLElement;
         private moreButton: HTMLElement | null;
@@ -158,14 +176,22 @@ namespace BitBlazorUI {
             try {
                 const items = this.getItems();
 
-                // reset everything to its natural state before measuring.
-                items.forEach(it => (it.style.display = ''));
+                // reset everything to its natural state before measuring. the overflowed items are
+                // hidden with a class of their own rather than with an inline display, which would
+                // otherwise wipe out the display the component itself puts on a hidden item.
+                items.forEach(it => it.classList.remove(PivotInstance.hiddenClass));
                 if (this.moreButton) this.moreButton.style.display = 'none';
 
                 const containerSize = this.isVertical ? this.header.clientHeight : this.header.clientWidth;
 
+                // an item the component itself hides takes part in neither the measuring nor the menu,
+                // but keeps its place in the index so that the indexes still address the .NET items.
+                const shown = items
+                    .map((it, i) => ({ it, i }))
+                    .filter(x => window.getComputedStyle(x.it).display !== 'none');
+
                 let total = 0;
-                items.forEach(it => (total += this.outerSize(it)));
+                shown.forEach(x => (total += this.outerSize(x.it)));
 
                 let overflowIndexes: number[] = [];
 
@@ -175,11 +201,11 @@ namespace BitBlazorUI {
                     const available = containerSize - moreSize;
 
                     let used = 0;
-                    items.forEach((it, i) => {
-                        used += this.outerSize(it);
+                    shown.forEach(x => {
+                        used += this.outerSize(x.it);
                         if (used > available) {
-                            it.style.display = 'none';
-                            overflowIndexes.push(i);
+                            x.it.classList.add(PivotInstance.hiddenClass);
+                            overflowIndexes.push(x.i);
                         }
                     });
 
@@ -258,6 +284,11 @@ namespace BitBlazorUI {
             this.disposed = true;
 
             try {
+                // the items that were folded away are handed back to the header: the overflow
+                // behavior may be switching to one that shows all of them again.
+                this.getItems().forEach(it => it.classList.remove(PivotInstance.hiddenClass));
+                if (this.moreButton) this.moreButton.style.display = 'none';
+
                 if (this.observer) {
                     this.observer.disconnect();
                     this.observer = null;
