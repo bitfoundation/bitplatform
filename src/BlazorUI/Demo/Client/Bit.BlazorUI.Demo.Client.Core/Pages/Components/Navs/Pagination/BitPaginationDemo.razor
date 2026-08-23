@@ -251,7 +251,8 @@
     <DemoExample Title="Alignment" RazorCode="@example18RazorCode" Id="example18">
         <div>
             The pagination is only as wide as its own controls, so it sits wherever the layout around it puts it. <b>Alignment</b> stretches it across the room it is given and lines the controls up
-            inside that room, which is what saves wrapping it in a flex container of its own. All of the <BitLink Href="#alignment-enum">BitAlignment</BitLink> values apply, the three space distributions included.
+            inside that room, which is what saves wrapping it in a flex container of its own. The controls are laid out along one row, so the <BitLink Href="#alignment-enum">BitAlignment</BitLink> values that place a box
+            along it apply - the three space distributions included - while <code>Baseline</code> and <code>Stretch</code>, which place it across the other axis, leave the pagination where it starts.
         </div>
         <br /><br />
         <div class="alignment-box">

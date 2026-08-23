@@ -2320,8 +2320,6 @@ public class BitPaginationTests : BunitTestContext
     [DataRow(BitAlignment.SpaceBetween, "space-between")]
     [DataRow(BitAlignment.SpaceAround, "space-around")]
     [DataRow(BitAlignment.SpaceEvenly, "space-evenly")]
-    [DataRow(BitAlignment.Baseline, "baseline")]
-    [DataRow(BitAlignment.Stretch, "stretch")]
     public void BitPaginationShouldRespectAlignment(BitAlignment alignment, string value)
     {
         var comp = RenderComponent<BitPagination>(parameters =>
@@ -2336,6 +2334,27 @@ public class BitPaginationTests : BunitTestContext
         // its own controls has nothing to line them up inside of.
         Assert.IsTrue(root.ClassList.Contains("bit-pgn-aln"));
         Assert.IsTrue(root.GetAttribute("style")!.Contains($"--bit-pgn-justify-content:{value}"));
+    }
+
+    [TestMethod]
+    [DataRow(BitAlignment.Baseline)]
+    [DataRow(BitAlignment.Stretch)]
+    public void BitPaginationShouldIgnoreAnAlignmentThatDoesNotApplyToItsRow(BitAlignment alignment)
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 5);
+            parameters.Add(p => p.Alignment, alignment);
+        });
+
+        var root = comp.Find(".bit-pgn");
+
+        // The controls are laid out along one row, and both of these place a box across the other axis, which
+        // justify-content takes neither of them for - baseline is not one of its values at all, so writing it
+        // out would leave the declaration invalid and the alignment on the initial value rather than on the
+        // fallback the custom property carries. The pagination is left laid out the way it is with no alignment.
+        Assert.IsFalse(root.ClassList.Contains("bit-pgn-aln"));
+        Assert.IsFalse(root.GetAttribute("style")?.Contains("--bit-pgn-justify-content") ?? false);
     }
 
     [TestMethod]
@@ -2871,6 +2890,126 @@ public class BitPaginationTests : BunitTestContext
     private static int GetLastRenderedPage(IRenderedComponent<BitPagination> comp)
     {
         return int.Parse(GetRenderedPages(comp)[^1]);
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldMoveTheFocusWithASelectedPageTheConsumerAppliesItself()
+    {
+        var page = 1;
+
+        // The page is handed over through the callback rather than written back, which is the form a consumer
+        // that owns the value uses, so the pagination is still on the old page once the click is over.
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 5);
+            parameters.Add(p => p.ShowLastButton, true);
+            parameters.Add(p => p.SelectedPage, page);
+            parameters.Add(p => p.OnChange, (int p) => page = p);
+        });
+
+        FindByAriaLabel(comp, "Last page")!.Click();
+
+        Assert.AreEqual(5, page);
+
+        // The focus is handed over by the render that puts the pagination on the page that was asked for, which
+        // is the one the consumer drives, and not by the render the click itself started.
+        Assert.AreEqual(0, CountFocusCalls());
+
+        comp.Render(parameters => parameters.Add(p => p.SelectedPage, page));
+
+        Assert.AreEqual(1, CountFocusCalls());
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldWriteBackAnotherPageSizeFallbackAfterTheFirstWasDropped()
+    {
+        var sizes = new System.Collections.Generic.List<int>();
+
+        // The consumer hears every fallback and stores none of them, which is what the write back has to stop
+        // repeating over the same size - and go on making once the offered sizes move under it.
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 5);
+            parameters.Add(p => p.PageSize, 0);
+            parameters.Add(p => p.ShowPageSizeSelector, true);
+            parameters.Add(p => p.PageSizeOptions, new[] { 10, 25 });
+            parameters.Add(p => p.PageSizeChanged, (int v) => sizes.Add(v));
+        });
+
+        CollectionAssert.AreEqual(new[] { 10 }, sizes.ToArray());
+
+        comp.Render(parameters =>
+        {
+            parameters.Add(p => p.PageSize, 0);
+            parameters.Add(p => p.PageSizeOptions, new[] { 25, 50 });
+        });
+
+        // The first of the offered sizes is another one now, so it is a fallback of its own and the value the
+        // consumer holds is answered with it rather than being left pointing at nothing.
+        CollectionAssert.AreEqual(new[] { 10, 25 }, sizes.ToArray());
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldWriteBackAnotherPageAfterTheFirstCorrectionWasDropped()
+    {
+        var pages = new System.Collections.Generic.List<int>();
+
+        // The consumer hears every correction and stores none of them, which is what the write back has to stop
+        // repeating over the same page - and go on making once the range moves under it.
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 5);
+            parameters.Add(p => p.SelectedPage, 99);
+            parameters.Add(p => p.SelectedPageChanged, (int v) => pages.Add(v));
+        });
+
+        CollectionAssert.AreEqual(new[] { 5 }, pages.ToArray());
+
+        comp.Render(parameters =>
+        {
+            parameters.Add(p => p.Count, 3);
+            parameters.Add(p => p.SelectedPage, 99);
+        });
+
+        // The last page of the range that is left is another one, so it is a correction of its own.
+        CollectionAssert.AreEqual(new[] { 5, 3 }, pages.ToArray());
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldOfferAPageSizeOnlyOnceItIsRepeated()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 12);
+            parameters.Add(p => p.PageSizeOptions, new[] { 10, 10, 25 });
+            parameters.Add(p => p.ShowPageSizeSelector, true);
+        });
+
+        var options = comp.FindAll(".bit-pgn-pse option");
+
+        // Two rows reporting the same size are one choice, and only one of them could ever be the one the
+        // selector shows as picked.
+        CollectionAssert.AreEqual(new[] { "10", "25" }, options.Select(o => o.TextContent.Trim()).ToArray());
+        Assert.AreEqual(1, options.Count(o => o.HasAttribute("selected")));
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldJumpIntoTheMiddleOfAGapThatSpansTheWholeRange()
+    {
+        // The two pages the gap sits between add up past an int, which the midpoint must not be worked out in.
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, int.MaxValue);
+            parameters.Add(p => p.ClickableEllipsis, true);
+            parameters.Add(p => p.DefaultSelectedPage, 1100000000);
+        });
+
+        var ellipsis = comp.FindAll(".bit-pgn-elb").Last();
+
+        ellipsis.Click();
+
+        // The jump lands between the page it followed and the last one, and never back at the first page.
+        Assert.IsTrue(comp.Instance.SelectedPage > 1100000000);
     }
 
 

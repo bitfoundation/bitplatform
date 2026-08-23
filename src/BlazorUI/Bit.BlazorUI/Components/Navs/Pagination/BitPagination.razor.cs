@@ -42,13 +42,31 @@ public partial class BitPagination : BitComponentBase
     /// </remarks>
     private enum FocusTarget { None, SelectedPage, First, Previous, Next, Last, Ellipsis }
 
-    // The value that was last written back over an out of range selected page, which is what keeps the same
-    // correction from being made twice. Nothing at all is the state of a value that is inside the range, so
-    // that a zero handed back by a consumer is a value to correct like any other rather than that state.
-    private int? _correctedPage;
+    // The correction that was last written back over an out of range selected page (the value the consumer was
+    // holding, and the one it was answered with), which is what keeps the same correction from being made twice.
+    // Both halves are kept rather than only the consumer's value: a range that moved under a value the consumer
+    // never took is a new correction to make, and one kept under the consumer's value alone would be blocked
+    // forever by the first. Nothing at all is the state of a value that is inside the range, so that a zero
+    // handed back by a consumer is a value to correct like any other rather than that state.
+    private (int Held, int Corrected)? _correctedPage;
 
+    // The same, for the page size the selector reports.
+    private (int Held, int Corrected)? _correctedPageSize;
+
+    // A jump field holding text the browser could not read as a number reports an empty value, which is the value
+    // the render that clears the field carries as well, so the render patches nothing and the typed text stays on
+    // the screen. The value of the element is emptied directly once that render is over, which is the only thing
+    // that takes such text off it.
     private string? _goToPageText;
-    private bool _correctedPageSize;
+    private bool _goToPageTyped;
+    private bool _clearGoToPageInput;
+    private ElementReference _goToPageInputRef;
+
+    // Enter inside the jump field commits it, and an enclosing form takes the very same key as a request to
+    // submit itself. Blazor cannot suppress the default action of one key from a keydown handler, so the key is
+    // suppressed on the element itself, which is only worth doing while the field is on the screen.
+    private static readonly string[] _goToPageSubmittingKeys = ["Enter"];
+    private bool _goToPageKeysPrevented;
 
     // A page size selector the consumer did not follow keeps showing the size that was picked, since the value
     // it renders with did not change and nothing patches the element back. Rendering it under a new key
@@ -64,11 +82,27 @@ public partial class BitPagination : BitComponentBase
     // against so that walking a long range does not keep a reference of every page it went through.
     private int[] _renderedPages = [];
 
-    // The offered page sizes are materialized once per parameter change rather than on every render, since a
-    // consumer is free to hand over an enumerable that walks (or computes) itself each time it is read.
+    // The offered page sizes are materialized once per list the consumer hands over rather than on every render
+    // (or on every parameter set), since a consumer is free to hand over an enumerable that walks - or computes -
+    // itself each time it is read. The list that was materialized is kept beside them so that another one can be
+    // told from the same one being read again.
+    private IEnumerable<int>? _lastPageSizeOptions;
     private int[] _pageSizeOptions = DefaultPageSizeOptions;
 
+    // The merged list the selector renders, which is the offered sizes plus the size in force whenever that size
+    // is not one of them. The two it follows from are kept beside it so that a render that moved neither of them
+    // does not sort and allocate it again.
+    private int _pageSizeSelectorOptionsSize;
+    private int[] _pageSizeSelectorOptions = DefaultPageSizeOptions;
+    private int[]? _pageSizeSelectorOptionsFor;
+
+    // The control a navigation button hands the keyboard focus over to once it disabled itself, and the page the
+    // pagination has to be showing for that control to be on the screen. The two are kept until that page is the
+    // one being rendered, which is this render for a SelectedPage bound two ways and a later one for a consumer
+    // that applies the page itself out of the callback.
+    private int _focusPage;
     private FocusTarget _focusTarget;
+
     private ElementReference _firstButtonRef;
     private ElementReference _previousButtonRef;
     private ElementReference _nextButtonRef;
@@ -81,6 +115,10 @@ public partial class BitPagination : BitComponentBase
 
 
 
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
     /// <summary>
     /// The horizontal alignment of the pagination inside the room it is given.
     /// </summary>
@@ -88,6 +126,10 @@ public partial class BitPagination : BitComponentBase
     /// The pagination is only as wide as its controls by default, so it sits wherever the layout around it puts
     /// it. Setting an alignment stretches it across the room it is given and lines the controls up inside that
     /// room, which is what saves wrapping it in a flex container of its own.
+    /// <br />
+    /// The controls are laid out along one row, so the members that place a box across the other axis
+    /// (<see cref="BitAlignment.Baseline"/> and <see cref="BitAlignment.Stretch"/>) mean nothing here and leave
+    /// the pagination laid out the way it is with no alignment given at all.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public BitAlignment? Alignment { get; set; }
@@ -693,26 +735,31 @@ public partial class BitPagination : BitComponentBase
 
         // The alignment only means something once the pagination is stretched across the room it is given, so
         // the class that does the stretching is what the alignment itself is rendered through.
-        ClassBuilder.Register(() => Alignment.HasValue ? "bit-pgn-aln" : string.Empty);
+        ClassBuilder.Register(() => _AlignmentValue is null ? string.Empty : "bit-pgn-aln");
     }
 
     protected override void RegisterCssStyles()
     {
-        StyleBuilder.Register(() => Alignment switch
-        {
-            BitAlignment.Start => "--bit-pgn-justify-content:flex-start",
-            BitAlignment.End => "--bit-pgn-justify-content:flex-end",
-            BitAlignment.Center => "--bit-pgn-justify-content:center",
-            BitAlignment.SpaceBetween => "--bit-pgn-justify-content:space-between",
-            BitAlignment.SpaceAround => "--bit-pgn-justify-content:space-around",
-            BitAlignment.SpaceEvenly => "--bit-pgn-justify-content:space-evenly",
-            BitAlignment.Baseline => "--bit-pgn-justify-content:baseline",
-            BitAlignment.Stretch => "--bit-pgn-justify-content:stretch",
-            _ => string.Empty
-        });
+        StyleBuilder.Register(() => _AlignmentValue is null ? string.Empty : $"--bit-pgn-justify-content:{_AlignmentValue}");
 
         StyleBuilder.Register(() => Styles?.Root);
     }
+
+    // The controls are laid out along one row, and Baseline and Stretch place a box across the other axis, which
+    // justify-content takes neither of them for: baseline is not one of its values at all, so the declaration
+    // would be invalid and the alignment would fall to the initial value rather than to the fallback the custom
+    // property carries. Both are left without a value of their own, which leaves the pagination laid out the way
+    // it is with no alignment given rather than stretched across a room it cannot line itself up inside of.
+    private string? _AlignmentValue => Alignment switch
+    {
+        BitAlignment.Start => "flex-start",
+        BitAlignment.End => "flex-end",
+        BitAlignment.Center => "center",
+        BitAlignment.SpaceBetween => "space-between",
+        BitAlignment.SpaceAround => "space-around",
+        BitAlignment.SpaceEvenly => "space-evenly",
+        _ => null
+    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -743,15 +790,20 @@ public partial class BitPagination : BitComponentBase
         // pagination without one leaves the value alone.
         if (PageSize == _PageSize)
         {
-            _correctedPageSize = false;
+            _correctedPageSize = null;
         }
-        else if (ShowPageSizeSelector && _correctedPageSize is false)
+        else if (ShowPageSizeSelector && _correctedPageSize != (PageSize, _PageSize))
         {
-            // The same fallback is only written once: a consumer that drops it would otherwise be answered
-            // with another correction on every render, and the two would keep re-rendering each other.
-            _correctedPageSize = true;
+            // The same fallback is only written once over the same held size: a consumer that drops it would
+            // otherwise be answered with another correction on every render, and the two would keep
+            // re-rendering each other. A different fallback (the offered sizes moved under a size the consumer
+            // never took) is a correction of its own and is written back the way the first one was.
+            _correctedPageSize = (PageSize, _PageSize);
 
             await AssignPageSize(_PageSize);
+
+            // The merged list the selector renders holds the size in force, which the write back just moved.
+            UpdatePageSizeSelectorOptions();
         }
 
         // A selected page that fell outside of the range (a count that shrank under it, or a value that was
@@ -763,12 +815,14 @@ public partial class BitPagination : BitComponentBase
         {
             _correctedPage = null;
         }
-        else if (SelectedPage != _correctedPage)
+        else if (_correctedPage != (SelectedPage, _SelectedPage))
         {
-            // The same out of range value is only corrected once: a consumer that hands it back unchanged
-            // (a callback that drops the new page instead of storing it) would otherwise be answered with
-            // another correction on every render, and the two would keep re-rendering each other.
-            _correctedPage = SelectedPage;
+            // The same out of range value is only corrected once with the same page: a consumer that hands it
+            // back unchanged (a callback that drops the new page instead of storing it) would otherwise be
+            // answered with another correction on every render, and the two would keep re-rendering each
+            // other. A range that moved under a value the consumer never took lands on another page, which is
+            // a correction of its own and is written back the way the first one was.
+            _correctedPage = (SelectedPage, _SelectedPage);
 
             await AssignSelectedPage(_SelectedPage);
         }
@@ -779,6 +833,8 @@ public partial class BitPagination : BitComponentBase
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         PruneStalePageReferences();
+
+        await UpdateGoToPageInput();
 
         // A page size selector that was replaced to put it back on the size the pagination runs on left the
         // keyboard focus on the document along with the element it replaced, so it is handed back over. A
@@ -813,12 +869,15 @@ public partial class BitPagination : BitComponentBase
         // A navigation button that disabled itself by reaching the end of the range it points at drops the
         // keyboard focus on the document, so the focus is handed over to the control that took its place
         // (the selected page, or the navigation button pointing the other way) once the new markup is there.
+        // The hand over waits for the render that puts the pagination on the page the click asked for, since
+        // that is the first one holding the control it is meant for: a consumer applying the page itself out
+        // of the callback renders it a beat after the click, and the page rendered until then is the old one.
         // A pagination that hid itself in the meantime has no control left to hand it to.
         if (_IsHidden)
         {
             _focusTarget = FocusTarget.None;
         }
-        else if (_focusTarget != FocusTarget.None)
+        else if (_focusTarget != FocusTarget.None && _SelectedPage == _focusPage)
         {
             var target = _focusTarget;
             _focusTarget = FocusTarget.None;
@@ -839,6 +898,44 @@ public partial class BitPagination : BitComponentBase
         }
 
         await base.OnAfterRenderAsync(firstRender);
+    }
+
+    // Everything the jump field needs the element itself for, once the render that put the element there is over.
+    private async Task UpdateGoToPageInput()
+    {
+        var rendered = _IsHidden is false && ShowGoToPage;
+
+        // A field that left the screen took the listener with it, so the next one to be rendered is a new
+        // element that has to be registered again.
+        if (rendered is false)
+        {
+            _goToPageKeysPrevented = false;
+            _clearGoToPageInput = false;
+            return;
+        }
+
+        try
+        {
+            // The listener that takes Enter off the field belongs to the element it is registered on, and
+            // registering it again over the same element only refreshes the keys it holds.
+            if (_goToPageKeysPrevented is false)
+            {
+                _goToPageKeysPrevented = true;
+
+                await _js.BitUtilsRegisterPreventKeys(_goToPageInputRef, _goToPageSubmittingKeys);
+            }
+
+            // Text the browser could not read as a number is reported as an empty value, so the render that
+            // emptied the field carried the value it already carried and patched nothing. Emptying the element
+            // itself is what takes such text off it, and it leaves the focus where the user put it.
+            if (_clearGoToPageInput)
+            {
+                _clearGoToPageInput = false;
+
+                await _js.BitUtilsSetProperty(_goToPageInputRef, "value", string.Empty);
+            }
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
 
@@ -862,12 +959,6 @@ public partial class BitPagination : BitComponentBase
     // A page size that was never picked falls back to the first of the offered ones, so the selector opens on
     // a size that is actually one of its options instead of on an empty selection.
     private int _PageSize => PageSize > 0 ? PageSize : _pageSizeOptions[0];
-
-    // A page size that is not one of the offered ones is offered along with them, in its place among them, since
-    // a selector that does not hold the size it reports would show one size while the pagination runs on another.
-    private int[] _PageSizeSelectorOptions => Array.IndexOf(_pageSizeOptions, _PageSize) < 0
-        ? [.. _pageSizeOptions.Append(_PageSize).Order()]
-        : _pageSizeOptions;
 
     private int _MiddleCount => MiddleCount > 0 ? MiddleCount : DefaultMiddleCount;
 
@@ -907,18 +998,6 @@ public partial class BitPagination : BitComponentBase
         _ => "bit-pgn-fil"
     };
 
-    // Two of the style parts land in the same style attribute (the one every button carries and the one of that
-    // particular button), and they are only one declaration list while a semicolon stands between them: a part
-    // that was written without a trailing one would otherwise swallow the declaration that follows it.
-    private static string? JoinStyles(string? style, string? extraStyle)
-    {
-        if (style.HasNoValue()) return extraStyle;
-
-        if (extraStyle.HasNoValue()) return style;
-
-        return style!.TrimEnd().EndsWith(';') ? $"{style} {extraStyle}" : $"{style};{extraStyle}";
-    }
-
     private string GetPageLabel(int page, bool isSelected)
     {
         return GetPageAriaLabel?.Invoke(page, isSelected) ?? $"Page {page}";
@@ -942,11 +1021,41 @@ public partial class BitPagination : BitComponentBase
 
     private void UpdatePageSizeOptions()
     {
-        // A size that is not positive is dropped rather than offered: it would leave the selector picking a
-        // page that holds nothing, and the number of pages a total of items adds up to undefined.
-        var options = PageSizeOptions?.Where(size => size > 0).ToArray();
+        // The list is only walked again once the consumer hands over another one: an enumerable that computes
+        // itself each time it is read would otherwise be walked, and the array it lands in allocated, on every
+        // parameter set the parent drives - a keystroke elsewhere on the page, a timer, a cascading value.
+        if (ReferenceEquals(_lastPageSizeOptions, PageSizeOptions) is false)
+        {
+            _lastPageSizeOptions = PageSizeOptions;
 
-        _pageSizeOptions = options is { Length: > 0 } ? options : DefaultPageSizeOptions;
+            // A size that is not positive is dropped rather than offered: it would leave the selector picking a
+            // page that holds nothing, and the number of pages a total of items adds up to undefined. A size
+            // offered twice is dropped along with them, since two rows reporting the same size are one choice
+            // and only one of them could ever be the one the selector shows as picked.
+            var options = PageSizeOptions?.Where(size => size > 0).Distinct().ToArray();
+
+            _pageSizeOptions = options is { Length: > 0 } ? options : DefaultPageSizeOptions;
+        }
+
+        UpdatePageSizeSelectorOptions();
+    }
+
+    // A page size that is not one of the offered ones is offered along with them, in its place among them, since
+    // a selector that does not hold the size it reports would show one size while the pagination runs on another.
+    // The merged list is worked out whenever the offered sizes or the size in force move rather than on every
+    // render, since a render of the go to page field (one per keystroke) does not move either of them.
+    private void UpdatePageSizeSelectorOptions()
+    {
+        var pageSize = _PageSize;
+
+        if (ReferenceEquals(_pageSizeSelectorOptionsFor, _pageSizeOptions) && _pageSizeSelectorOptionsSize == pageSize) return;
+
+        _pageSizeSelectorOptionsFor = _pageSizeOptions;
+        _pageSizeSelectorOptionsSize = pageSize;
+
+        _pageSizeSelectorOptions = Array.IndexOf(_pageSizeOptions, pageSize) < 0
+            ? [.. _pageSizeOptions.Append(pageSize).Order()]
+            : _pageSizeOptions;
     }
 
     // A page button is captured when it is inserted, so a page that left the range keeps a reference of an
@@ -990,9 +1099,11 @@ public partial class BitPagination : BitComponentBase
     // The gap is a shortcut into the middle of what it hides, which is the page halfway between the two it sits
     // between. A gap always holds at least two pages (a single one is spelled out in its place), so the page the
     // jump lands on is never one of the two already rendered beside it.
+    // The two are added in long: a range wide enough for the pair to run past an int would otherwise wrap into a
+    // negative midpoint, and the jump would land on the first page instead of in the middle of the gap.
     private static int GetEllipsisPage(int[] pages, int index)
     {
-        return (pages[index - 1] + pages[index + 1]) / 2;
+        return (int)(((long)pages[index - 1] + pages[index + 1]) / 2);
     }
 
     // The pages the render is about to lay out are kept so that the references captured for the ones that
@@ -1106,16 +1217,28 @@ public partial class BitPagination : BitComponentBase
     {
         if (IsEnabled is false) return;
 
-        var target = ResolveFocusTarget(source, Math.Clamp(page, 1, _Count));
-
-        await ChangePage(page);
+        var requested = Math.Clamp(page, 1, _Count);
 
         // The focus only moves once the page actually changed, so a click that lands on the page already
-        // selected leaves it where the user put it.
-        if (target != FocusTarget.None && _SelectedPage == Math.Clamp(page, 1, _Count))
+        // selected leaves it where the user put it. Whether it changed is read from the page that was asked for
+        // rather than from the one the pagination ends up on: a SelectedPage bound one way is moved by the
+        // consumer answering OnChange and not by the pagination itself, so the selection here is still the old
+        // one once the click is over and the two would never compare as equal.
+        // The page it was asked for is kept along with the target, since it is the render that puts the
+        // pagination on that page - this one for a two way binding, a later one for the consumer answering a
+        // callback - that has the control the focus belongs to on the screen to hand it to.
+        if (requested != _SelectedPage)
         {
-            _focusTarget = target;
+            var target = ResolveFocusTarget(source, requested);
+
+            if (target != FocusTarget.None)
+            {
+                _focusPage = requested;
+                _focusTarget = target;
+            }
         }
+
+        await ChangePage(page);
     }
 
     // A navigation button is removed from the tab order the moment the page it moved to disables it, and the
@@ -1176,6 +1299,10 @@ public partial class BitPagination : BitComponentBase
 
         var assigned = await AssignPageSize(size);
 
+        // The merged list the selector renders holds the size in force, which the pick just moved. Nothing sets
+        // a parameter here, so the render that follows is the only chance the list has to catch up with it.
+        UpdatePageSizeSelectorOptions();
+
         // The number of pages follows the page size while the number of items is known, so the page the user was
         // on is no longer the page the items they were looking at are. The selection moves to the page the first
         // of those items landed on, which keeps the reading position instead of the page number. The range only
@@ -1201,17 +1328,36 @@ public partial class BitPagination : BitComponentBase
 
     private void HandleGoToPageInput(ChangeEventArgs e)
     {
+        _goToPageTyped = true;
         _goToPageText = e.Value?.ToString();
+    }
+
+    // Enter is the gesture the jump is committed with, and it is handled here rather than left to the change
+    // event: the key is taken off the element (an enclosing form would otherwise read it as a request to submit
+    // itself), and a field the browser could not read as a number reports no change to fire that event with.
+    private async Task HandleGoToPageKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key is not "Enter") return;
+
+        await CommitGoToPage(_goToPageText);
     }
 
     private async Task HandleGoToPageChange(ChangeEventArgs e)
     {
-        _goToPageText = e.Value?.ToString();
+        await CommitGoToPage(e.Value?.ToString());
+    }
 
-        // The input clears itself so that the next jump starts from an empty field instead of from the number
-        // the previous one left behind. Assigning the text first and clearing it after keeps the two values
-        // different, which is what makes the rendered input follow.
-        var text = _goToPageText;
+    // The field is emptied so that the next jump starts from a blank one instead of from the number the previous
+    // one left behind.
+    private async Task CommitGoToPage(string? text)
+    {
+        // A number the field was holding is taken off it by the render itself, which is carrying an empty value
+        // over the one it rendered before. Text the browser could not read as a number is reported as an empty
+        // value already, so that render patches nothing and the element is emptied directly instead. A field
+        // that was never typed into is already blank and is left alone.
+        _clearGoToPageInput = _goToPageTyped && text.HasNoValue();
+
+        _goToPageTyped = false;
         _goToPageText = string.Empty;
 
         if (int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var page) is false) return;

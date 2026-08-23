@@ -53,7 +53,7 @@
                         @onchange="HandlePageSizeChange"
                         style="@Styles?.PageSizeSelect"
                         class="bit-pgn-pse @Classes?.PageSizeSelect">
-                    @foreach (var option in _PageSizeSelectorOptions)
+                    @foreach (var option in _pageSizeSelectorOptions)
                     {
                         <option value="@option" selected="@(option == _PageSize)">@option</option>
                     }
@@ -338,7 +338,10 @@
         @* The jump closes the pagination, after the controls it is the shortcut for. The visible label names
            the input while it is there and the aria-label steps in once it is dropped, so the input is never
            unnamed and never announced as something other than what is written beside it. The value is tracked
-           on every keystroke so that clearing the field after a jump actually reaches the DOM. *@
+           on every keystroke so that clearing the field after a jump actually reaches the DOM.
+           Enter is what commits the jump, so it is handled here rather than left to the change event, and its
+           default action is taken off the element: an enclosing form would otherwise read the key as a request
+           to submit itself and navigate the page away instead of jumping inside it. *@
         @if (ShowGoToPage)
         {
             <div style="@Styles?.GoToPage" class="bit-pgn-gtp @Classes?.GoToPage">
@@ -346,7 +349,8 @@
                 {
                     <label for="@($"{_Id}-gtp")" style="@Styles?.GoToPageLabel" class="bit-pgn-gtl @Classes?.GoToPageLabel">@GoToPageText</label>
                 }
-                <input id="@($"{_Id}-gtp")"
+                <input @ref="_goToPageInputRef"
+                       id="@($"{_Id}-gtp")"
                        min="1"
                        max="@_Count"
                        type="number"
@@ -356,6 +360,7 @@
                        aria-label="@(GoToPageText.HasValue() ? null : GoToPageAriaLabel)"
                        @oninput="HandleGoToPageInput"
                        @onchange="HandleGoToPageChange"
+                       @onkeydown="HandleGoToPageKeyDown"
                        style="@Styles?.GoToPageInput"
                        class="bit-pgn-gti @Classes?.GoToPageInput" />
             </div>

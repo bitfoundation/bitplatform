@@ -289,12 +289,13 @@
 
 // The pill shape applies to the ellipsis as well, so the gaps keep the outline of the buttons they stand
 // in for instead of breaking the row with a square.
-// The radius is half of the height rather than 50%: a button carrying a text (or a page number wide enough
-// to grow it) is wider than it is tall, where a relative radius would draw an ellipse instead of a pill.
+// The radius is the pill token rather than 50%: a button carrying a text (or a page number wide enough to
+// grow it) is wider than it is tall, where a relative radius would draw an ellipse instead of a pill, and
+// the token stays a pill at any height the theme or the consumer gives the button.
 .bit-pgn-rnd {
     .bit-pgn-btn,
     .bit-pgn-elp {
-        border-radius: calc(var(--bit-pgn-btn-size) / 2);
+        border-radius: $shp-radius-full;
     }
 }
 
