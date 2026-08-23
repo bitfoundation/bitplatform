@@ -27,7 +27,17 @@ public static class Services
         services.AddScoped<TelegramBotService>();
 
         // Upstream client for the same-origin CesiumJS passthrough (see CesiumController).
-        services.AddHttpClient(nameof(CesiumController), client => client.Timeout = TimeSpan.FromSeconds(30));
+        // No HttpClient.Timeout: it is a deadline for the whole exchange, the streamed body
+        // included, and that body is drained at the pace of the browser downloading it - a client
+        // on a slow link would have the multi-megabyte Cesium.js truncated mid-response. The
+        // controller puts its own deadline on the part that is actually the server's to bound,
+        // reaching the upstream and getting its headers back.
+        services.AddHttpClient(nameof(CesiumController), client => client.Timeout = Timeout.InfiniteTimeSpan);
+
+        // Upstream client for the same-origin demo-video passthrough (see VideosController), with
+        // no Timeout for the same reason - all the more so there, where the body is a media stream
+        // the browser holds open for as long as the video is playing.
+        services.AddHttpClient(nameof(VideosController), client => client.Timeout = Timeout.InfiniteTimeSpan);
 
         services.AddExceptionHandler<ServerExceptionHandler>();
 

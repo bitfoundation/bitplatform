@@ -36,6 +36,14 @@ public partial class CesiumController : AppControllerBase
     /// <summary>Guards against a pathological path being composed into a request URL.</summary>
     private const int MaxPathLength = 512;
 
+    /// <summary>
+    /// How long the upstream is given to accept the request and answer with its headers. It
+    /// deliberately does not cover the body: that is streamed straight to the browser and so is
+    /// paced by the browser, which is why the named client itself carries no
+    /// <see cref="HttpClient.Timeout"/> (see Services.cs).
+    /// </summary>
+    private static readonly TimeSpan UpstreamHeadersTimeout = TimeSpan.FromSeconds(30);
+
     [AutoInject] private IHttpClientFactory httpClientFactory = default!;
 
     [HttpGet("{**path}")]
@@ -51,9 +59,21 @@ public partial class CesiumController : AppControllerBase
 
         var httpClient = httpClientFactory.CreateClient(nameof(CesiumController));
 
+        // The token this send is made with also governs the reads of the streamed body below, so
+        // the deadline is armed for the header phase only and disarmed as soon as the headers are
+        // in - a slow but healthy client must not have its download cut off at the 30 s mark. It
+        // stays linked to RequestAborted throughout, so a client that goes away still tears the
+        // upstream request down. Disposed with the request rather than here: the body outlives
+        // this method.
+        var headersTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        HttpContext.Response.RegisterForDispose(headersTimeout);
+        headersTimeout.CancelAfter(UpstreamHeadersTimeout);
+
         // ResponseHeadersRead so the body streams through instead of being buffered in memory:
         // Cesium.js alone is several megabytes.
-        var upstreamResponse = await httpClient.GetAsync(upstreamUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        var upstreamResponse = await httpClient.GetAsync(upstreamUri, HttpCompletionOption.ResponseHeadersRead, headersTimeout.Token);
+
+        headersTimeout.CancelAfter(Timeout.InfiniteTimeSpan);
 
         if (upstreamResponse.IsSuccessStatusCode is false)
         {

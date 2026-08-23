@@ -63,11 +63,22 @@ namespace BitBlazorUI {
          * the initial batch of tiles - which a layer requests in parallel, so their results
          * interleave - the chance to disprove it.
          *
-         * Wire it onto the CORS-mode attempt as well (the providers re-wire after retrying): a
-         * fallback created while the host is already marked does not retry, it verifies, and
-         * retracts the mark when that attempt's whole batch fails too.
+         * `retry` returns false when it declined to redraw - the layer it was wired to has moved
+         * on meanwhile - in which case the mark is rolled back: it is the redrawn layer that
+         * verifies the mark, so a mark nothing redrew is a mark nothing would ever disprove.
+         *
+         * `isVerification` marks the fallback of that redrawn, CORS-mode layer, and is passed in
+         * by the provider rather than inferred from the origin already being marked. That layer
+         * does not retry, it verifies: "every tile of this layer failed" is a heuristic - a layer
+         * whose whole batch 404s (wrong path template) or 401s (unauthenticated tileset) looks
+         * exactly like a COEP block from here - so if the CORS-mode attempt fails just as fully,
+         * CORS mode is not what this host needed and the origin-wide mark is retracted. Every
+         * other layer on a marked origin merely consumes the mark and watches nothing: were it to
+         * verify as well, an unrelated overlay 404ing its own batch would retract a mark another
+         * layer had just proved right. This cannot ping-pong: retracting performs no retry, and
+         * each fallback acts at most once.
          */
-        static createTileCorsFallback(urlTemplate: string, retry: () => void) {
+        static createTileCorsFallback(urlTemplate: string, retry: () => boolean | void, isVerification: boolean = false) {
             const origin = BitMapHelpers.tileOrigin(urlTemplate);
             // Compared against true explicitly: crossOriginIsolated is undefined on browsers that
             // predate it (Safari < 15.2, Chrome < 87, Firefox < 79), and `x && undefined` yields
@@ -77,26 +88,20 @@ namespace BitBlazorUI {
             const eligible = origin !== null
                 && origin !== location.origin
                 && self.crossOriginIsolated === true;
-            const alreadyCors = eligible && BitMapHelpers._corsTileOrigins[origin!] === true;
-            // A layer created while its host is already marked is the CORS-mode attempt, so it is
-            // also the evidence that decides whether the mark was right. "Every tile of this layer
-            // failed" is a heuristic - a layer whose whole batch 404s (wrong path template) or 401s
-            // (unauthenticated tileset) looks exactly like a COEP block from here - and it writes a
-            // decision for the entire origin. Left unchecked, one such layer would drag every later
-            // layer on that host into CORS mode with no way back, breaking a host that sends CORP
-            // but no Access-Control-Allow-Origin: the very case the per-origin keying exists to
-            // protect. So watch the CORS-mode attempt too, and if its whole batch fails as well,
-            // CORS mode is not what this host needed - unmark the origin and leave later layers to
-            // start from the default again. This cannot ping-pong: unmarking performs no retry, and
-            // each fallback acts at most once.
-            const enabled = eligible && !alreadyCors;
+            const verifying = eligible && isVerification;
+            const marking = eligible && !isVerification && BitMapHelpers._corsTileOrigins[origin!] !== true;
+            if (!verifying && !marking) {
+                // Neither role applies, so this layer's tile errors decide nothing about the origin.
+                const noop = () => { };
+                return { onTileLoad: noop, onTileError: noop };
+            }
             let loaded = false;
             let acted = false;
             let scheduled = false;
             return {
                 onTileLoad: () => { loaded = true; },
                 onTileError: () => {
-                    if (!eligible || loaded || acted || scheduled) return;
+                    if (loaded || acted || scheduled) return;
                     // The first error settles nothing on its own: the tiles of a layer are
                     // requested in parallel, so an ordinary missing tile can report back before
                     // any of its siblings has finished loading. Acting on it would switch a
@@ -108,7 +113,7 @@ namespace BitBlazorUI {
                     setTimeout(() => {
                         if (loaded || acted) return;
                         acted = true;
-                        if (!enabled) {
+                        if (verifying) {
                             // CORS mode did not help this layer either - retract the origin-wide
                             // decision instead of leaving the host poisoned for everyone else.
                             // Guarded on the mark still standing so a concurrent layer that just
@@ -118,10 +123,25 @@ namespace BitBlazorUI {
                             }
                             return;
                         }
+                        // Whether the mark is ours to retract below. Two layers of the same host
+                        // can both be markers - they are created before either has acted - so the
+                        // one that acts second must not undo the first one's verified mark.
+                        const wasMarked = BitMapHelpers._corsTileOrigins[origin!] === true;
+                        // Written before the retry, not after: the retry rebuilds the layer, and
+                        // what it rebuilds with is read back out of this very map by
+                        // tileCrossOrigin().
                         BitMapHelpers._corsTileOrigins[origin!] = true;
                         // No longer inside the tile event, so the map may have been disposed
                         // meanwhile; a failing redraw must not surface as an unhandled error.
-                        try { retry(); } catch { /* ignore */ }
+                        let retried = false;
+                        try { retried = retry() !== false; } catch { /* ignore */ }
+                        if (retried || wasMarked) return;
+                        // Nothing was redrawn, so nothing will verify the mark - and the layer that
+                        // would have is gone. Leaving it standing would hand every later layer on
+                        // this host CORS mode for good on the strength of one unproven batch.
+                        if (BitMapHelpers._corsTileOrigins[origin!] === true) {
+                            delete BitMapHelpers._corsTileOrigins[origin!];
+                        }
                     }, BitMapHelpers._tileCorsRetryDelay);
                 },
             };

@@ -30,10 +30,11 @@ namespace BitBlazorUI {
          * isolated page (COEP: require-corp blocks no-cors subresources that carry no CORP
          * header), the source is rebuilt in CORS mode. OpenLayers reads crossOrigin when the
          * source is constructed, so the retry has to create a new one - and because the rebuild
-         * goes through here again, the CORS-mode source gets its own fallback, which no longer
-         * retries but verifies: it retracts the origin-wide mark if that attempt fails as fully.
+         * goes through here again with isVerification set, the CORS-mode source gets a fallback
+         * that no longer retries but verifies: it retracts the origin-wide mark if that attempt
+         * fails as fully.
          */
-        private static _setTileSource(ol: any, layer: any, params: { url: string, maxZoom: number, attributions: string }) {
+        private static _setTileSource(ol: any, layer: any, params: { url: string, maxZoom: number, attributions: string }, isVerification: boolean = false) {
             const source = new ol.XYZ({
                 crossOrigin: BitMapHelpers.tileCrossOrigin(params.url),
                 url: params.url,
@@ -45,10 +46,13 @@ namespace BitBlazorUI {
                 // layer meanwhile. Rebuilding from the captured params would resurrect the tile url
                 // that sync() just replaced - and because the state already records the new url, no
                 // later sync() would consider it changed and put it back. Only retry while the
-                // source this fallback was wired to is still the one the layer is showing.
-                if (layer.getSource() !== source) return;
-                BitMapOpenLayers._setTileSource(ol, layer, params);
-            });
+                // source this fallback was wired to is still the one the layer is showing;
+                // declining here also rolls the origin-wide mark back, since the CORS-mode layer
+                // that would have put it to the test is never created.
+                if (layer.getSource() !== source) return false;
+                BitMapOpenLayers._setTileSource(ol, layer, params, true);
+                return true;
+            }, isVerification);
             source.on('tileloadend', fallback.onTileLoad);
             source.on('tileloaderror', fallback.onTileError);
             layer.setSource(source);

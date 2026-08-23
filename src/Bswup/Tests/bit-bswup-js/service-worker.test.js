@@ -326,20 +326,21 @@ describe('update migration and diff', () => {
         expect(sw.caches.snapshot()['bit-bswup:/ - v2']).toContain(`${ORIGIN}/data.json`);
     });
 
-    // Why hashless matters even for unchanging bytes: the demo re-lists dotnet.native.worker.mjs
-    // and the PDF.js worker as hashless externalAssets because their CONTENT never changes -
-    // only their Cross-Origin-Embedder-Policy did (credentialless -> require-corp). Migrating
-    // the cached response would keep the pre-switch header and leave the dedicated worker
-    // failing its embedder-policy check, so the refreshed response - headers included - has to
-    // land in the new bucket.
+    // Why hashless matters even for unchanging bytes: the demo re-lists the PDF.js worker as a
+    // hashless externalAsset because its CONTENT never changes - only its
+    // Cross-Origin-Embedder-Policy did (credentialless -> require-corp). Migrating the cached
+    // response would keep the pre-switch header and leave the dedicated worker failing its
+    // embedder-policy check, so the refreshed response - headers included - has to land in the
+    // new bucket.
     it('refreshes the cached headers of a hashless asset when only its headers changed', async () => {
-        const worker = `${ORIGIN}/_framework/dotnet.native.worker.mjs`;
+        const workerUrl = '_content/Bit.BlazorUI.Legacy/pdf.js/pdfjs-4.7.76-worker.js';
+        const worker = `${ORIGIN}/${workerUrl}`;
         const sw = await update({
-            config: { externalAssets: [{ url: '_framework/dotnet.native.worker.mjs' }] },
+            config: { externalAssets: [{ url: workerUrl }] },
             oldEntries: { [worker]: { body: 'worker-bytes', headers: { 'cross-origin-embedder-policy': 'credentialless' } } },
             assets: [{ url: 'index.html', hash: 'idx' }],
             // Same bytes, new header - exactly what the COEP switch produced on the server.
-            fetchHandler: async url => url.includes('dotnet.native.worker.mjs')
+            fetchHandler: async url => url.includes('pdfjs-4.7.76-worker.js')
                 ? new FakeResponse('worker-bytes', { status: 200, headers: { 'cross-origin-embedder-policy': 'require-corp' } })
                 : new FakeResponse('ok', { status: 200 }),
         });
