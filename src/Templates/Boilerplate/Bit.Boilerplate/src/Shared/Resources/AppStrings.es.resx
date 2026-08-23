@@ -1666,6 +1666,18 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="MoreTabsTitle" xml:space="preserve">
     <value>Más pestañas</value>
   </data>
+  <data name="OpenNavigationMenuTitle" xml:space="preserve">
+    <value>Abrir el menú de navegación</value>
+  </data>
+  <data name="AccountMenuTitle" xml:space="preserve">
+    <value>Menú de cuenta</value>
+  </data>
+  <data name="SwitchToDarkThemeTitle" xml:space="preserve">
+    <value>Cambiar al tema oscuro</value>
+  </data>
+  <data name="SwitchToLightThemeTitle" xml:space="preserve">
+    <value>Cambiar al tema claro</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SignalRConnectionId" xml:space="preserve">
     <value>SignalRConnectionId</value>

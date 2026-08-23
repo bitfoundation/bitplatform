@@ -1666,6 +1666,18 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   <data name="MoreTabsTitle" xml:space="preserve">
     <value>More tabs</value>
   </data>
+  <data name="OpenNavigationMenuTitle" xml:space="preserve">
+    <value>Open the navigation menu</value>
+  </data>
+  <data name="AccountMenuTitle" xml:space="preserve">
+    <value>Account menu</value>
+  </data>
+  <data name="SwitchToDarkThemeTitle" xml:space="preserve">
+    <value>Switch to the dark theme</value>
+  </data>
+  <data name="SwitchToLightThemeTitle" xml:space="preserve">
+    <value>Switch to the light theme</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SignalRConnectionId" xml:space="preserve">
     <value>SignalRConnectionId</value>

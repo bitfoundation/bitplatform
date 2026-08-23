@@ -1666,6 +1666,18 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="MoreTabsTitle" xml:space="preserve">
     <value>Meer tabbladen</value>
   </data>
+  <data name="OpenNavigationMenuTitle" xml:space="preserve">
+    <value>Navigatiemenu openen</value>
+  </data>
+  <data name="AccountMenuTitle" xml:space="preserve">
+    <value>Accountmenu</value>
+  </data>
+  <data name="SwitchToDarkThemeTitle" xml:space="preserve">
+    <value>Overschakelen naar het donkere thema</value>
+  </data>
+  <data name="SwitchToLightThemeTitle" xml:space="preserve">
+    <value>Overschakelen naar het lichte thema</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SignalRConnectionId" xml:space="preserve">
     <value>SignalRConnectionId</value>

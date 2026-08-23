@@ -1666,6 +1666,18 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="MoreTabsTitle" xml:space="preserve">
     <value>Plus d'onglets</value>
   </data>
+  <data name="OpenNavigationMenuTitle" xml:space="preserve">
+    <value>Ouvrir le menu de navigation</value>
+  </data>
+  <data name="AccountMenuTitle" xml:space="preserve">
+    <value>Menu du compte</value>
+  </data>
+  <data name="SwitchToDarkThemeTitle" xml:space="preserve">
+    <value>Passer au thème sombre</value>
+  </data>
+  <data name="SwitchToLightThemeTitle" xml:space="preserve">
+    <value>Passer au thème clair</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SignalRConnectionId" xml:space="preserve">
     <value>SignalRConnectionId</value>

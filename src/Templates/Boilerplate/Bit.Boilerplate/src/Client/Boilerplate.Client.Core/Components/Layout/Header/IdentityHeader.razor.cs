@@ -18,8 +18,8 @@ public partial class IdentityHeader : AppComponentBase
     /// (the icon does the same - See the IconName expression in the razor).
     /// </summary>
     private string ThemeToggleLabel => CurrentTheme == AppThemeType.Light
-        ? Localizer["Switch to the dark theme"]
-        : Localizer["Switch to the light theme"];
+        ? Localizer[nameof(AppStrings.SwitchToDarkThemeTitle)]
+        : Localizer[nameof(AppStrings.SwitchToLightThemeTitle)];
 
 
     protected override async Task OnInitAsync()

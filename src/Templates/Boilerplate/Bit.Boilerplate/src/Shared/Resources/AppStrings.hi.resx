@@ -1666,6 +1666,18 @@
   <data name="MoreTabsTitle" xml:space="preserve">
     <value>और टैब</value>
   </data>
+  <data name="OpenNavigationMenuTitle" xml:space="preserve">
+    <value>नेविगेशन मेनू खोलें</value>
+  </data>
+  <data name="AccountMenuTitle" xml:space="preserve">
+    <value>खाता मेनू</value>
+  </data>
+  <data name="SwitchToDarkThemeTitle" xml:space="preserve">
+    <value>डार्क थीम पर स्विच करें</value>
+  </data>
+  <data name="SwitchToLightThemeTitle" xml:space="preserve">
+    <value>लाइट थीम पर स्विच करें</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SignalRConnectionId" xml:space="preserve">
     <value>SignalRConnectionId</value>

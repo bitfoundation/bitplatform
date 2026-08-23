@@ -41,11 +41,11 @@ public partial class AppMenu
 
     private string? ProfileImageUrl => CurrentUser?.GetProfileImageUrl(AbsoluteServerAddress);
 
-    private string AccountMenuLabel => CurrentUser?.DisplayName ?? Localizer["Account menu"].Value;
+    private string AccountMenuLabel => CurrentUser?.DisplayName ?? Localizer[nameof(AppStrings.AccountMenuTitle)].Value;
 
     private string ThemeToggleLabel => CurrentTheme == AppThemeType.Light
-        ? Localizer["Switch to the dark theme"]
-        : Localizer["Switch to the light theme"];
+        ? Localizer[nameof(AppStrings.SwitchToDarkThemeTitle)]
+        : Localizer[nameof(AppStrings.SwitchToLightThemeTitle)];
 
 
     protected override async Task OnInitAsync()
