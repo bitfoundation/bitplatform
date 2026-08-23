@@ -113,7 +113,9 @@ else
                are in view (see DemoContentDeferral for when this applies, and observeVisibility in
                Scripts/app.ts for how far "in reach" reaches). The container itself always renders: it
                is what the observer watches, and it has to be in the document to be watched. *@
-            <div class="example-container" id="@_previewElementId">
+            <div class="@($"example-container{(_isPreviewMounted ? "" : " pending")}")"
+                 id="@_previewElementId"
+                 style="@(_pendingPreviewHeight > 0 && _isPreviewMounted is false ? $"min-height:{_pendingPreviewHeight}px" : null)">
                 @if (_isPreviewMounted)
                 {
                     @ChildContent

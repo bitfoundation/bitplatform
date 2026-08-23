@@ -338,6 +338,57 @@ function unobserveVisibility(id: string) {
     delete visibilityObservers[id];
 }
 
+// The height the element with the given id takes in the document right now, or 0 when there is no
+// such element.
+//
+// A component page asks this of its own previews at the one moment their prerendered copies are
+// still the ones on screen - while the client is building the render tree that is about to replace
+// them, before that batch reaches the DOM. The answer is the room a held-back preview has to keep,
+// which is what lets the very first page hold anything back at all: the placeholder stands exactly
+// as tall as the markup the server sent, so nothing below it moves.
+function getElementHeight(id: string) {
+    const element = document.getElementById(id);
+    return element == null ? 0 : element.getBoundingClientRect().height;
+}
+
+const idleWorkHandles: { [key: string]: { handle: number, isIdle: boolean } } = {};
+
+// Calls the named method the next time the browser has nothing better to do. It is how a demo page
+// fills in the previews the reader has not scrolled to: the visibility observer guarantees nobody
+// ever waits for one, and this guarantees the page becomes whole anyway - so an anchor lands in the
+// right place, find-in-page finds everything, and a fast scroll never outruns the observer.
+//
+// One call mounts one preview and then asks for the next slice, rather than draining the queue in a
+// single callback: the point is to leave the main thread between two of them.
+function requestIdleWork(id: string, dotnetObj: any, methodName: string) {
+    cancelIdleWork(id);
+
+    const run = () => {
+        delete idleWorkHandles[id];
+        dotnetObj.invokeMethodAsync(methodName);
+    };
+
+    // Safari still has no requestIdleCallback; a short timeout is the same shape of promise, minus
+    // the browser's opinion about when it is idle.
+    const idle = (window as any).requestIdleCallback;
+    idleWorkHandles[id] = idle
+        ? { handle: idle(run, { timeout: 500 }), isIdle: true }
+        : { handle: window.setTimeout(run, 32), isIdle: false };
+}
+
+function cancelIdleWork(id: string) {
+    const entry = idleWorkHandles[id];
+    if (entry == null) return;
+
+    delete idleWorkHandles[id];
+
+    if (entry.isIdle) {
+        (window as any).cancelIdleCallback?.(entry.handle);
+    } else {
+        window.clearTimeout(entry.handle);
+    }
+}
+
 declare namespace BitBlazorUI {
     class Theme { static init(options: any): void; }
 }

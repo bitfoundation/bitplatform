@@ -2,17 +2,24 @@ namespace Bit.BlazorUI.Demo.Client.Core.Components;
 
 /// <summary>
 /// Whether a component demo page may hold back the parts of itself the reader has not reached yet -
-/// an example's live preview, the API tables - and mount them as they approach the viewport (see
-/// <c>observeVisibility</c> in Scripts/app.ts).
+/// an example's live preview, the API tables - without having to measure anything first, and mount
+/// them as they approach the viewport (see <c>observeVisibility</c> in Scripts/app.ts) or during the
+/// browser's idle time (<c>requestIdleWork</c>, and DemoPage.QueueBackfill).
 /// <para>
-/// It is off for the first page the app paints and on for every page after it, which is not a
-/// half-measure but the whole point. The first page is the prerendered one: its HTML is already in
-/// the document - it is what the crawlers and the social scrapers read, and what the browser has
-/// restored a scroll position or an "#example12" fragment against - so holding anything back there
-/// would only take away markup that has already been paid for and shift the page under the reader
-/// when the app finally boots. Every page after it is built from nothing on the client, at the top
-/// of the document, with no prerendered copy to contradict - which is exactly the navigation that
-/// freezes on a phone, and exactly where mounting only what is in reach is free of consequences.
+/// It is off for the first page the app paints and on for every page after it. Every page after the
+/// first is built from nothing on the client, at the top of the document, with no prerendered copy to
+/// contradict - which is exactly the navigation that freezes on a phone, and exactly where mounting
+/// only what is in reach is free of consequences.
+/// </para>
+/// <para>
+/// The first page is the prerendered one, and there the same trick has one condition: its HTML is
+/// already in the document - it is what the crawlers and the social scrapers read, and what the
+/// browser has restored a scroll position or an "#example12" fragment against - so a block may only
+/// empty out if what replaces it stands exactly as tall as what the server sent. That is a
+/// measurement, not a flag, so it is not this type's business: the page and the example take it
+/// themselves, off their own prerendered markup, in the last moment before the client's first render
+/// batch replaces it (see <c>TryGetElementHeight</c>). Prerendering itself and the MCP rendering are
+/// never deferred at all - both owe their reader the whole page in one pass.
 /// </para>
 /// <para>
 /// Registered scoped rather than held in a static, which is the difference between "this reader has

@@ -124,6 +124,11 @@ else
        Only the shell is shared. What the sections hold is unchanged - in particular DemoExample
        still puts an example's source ABOVE its live preview, which is the whole point of opening
        the panel. *@
+    @* Cascaded so that every example on the page can put its held-back preview in line to be built
+       during the browser's idle time - see QueueBackfill. Fixed: the page an example belongs to is
+       decided when it is created and never changes, and an unfixed cascade would re-render all of
+       them on every render of this one. *@
+    <CascadingValue Value="this" IsFixed="true">
     <div class="@($"doc-shell{(_forceAnimation ? " bit-fam" : " demo-reduced-motion")}")">
         <article class="doc-main">
 
@@ -238,7 +243,8 @@ else
                    means the reader has to scroll past every example before reaching them. So they
                    are built when that scroll arrives rather than on every navigation. Nothing on the
                    page comes after them, so mounting them can move nothing but themselves. *@
-                <div class="api-tables" id="@API_ELEMENT_ID">
+                <div class="api-tables" id="@API_ELEMENT_ID"
+                     style="@(_pendingApiHeight > 0 && _isApiMounted is false ? $"min-height:{_pendingApiHeight}px" : null)">
                     @if (_isApiMounted)
                     {
                         <DemoParametersTable Name="@($"Bit{Name}")" Parameters="Parameters" />
@@ -310,4 +316,5 @@ else
 
         <SideRail />
     </div>
+    </CascadingValue>
 }

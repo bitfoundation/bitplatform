@@ -7,15 +7,45 @@ public partial class DemoPage
     /// <summary>The element the visibility observer watches to know the reader has reached the API tables.</summary>
     private const string API_ELEMENT_ID = "api-tables";
 
+    /// <summary>The id the browser's idle queue is registered under. One per page is all it takes.</summary>
+    private const string BACKFILL_ELEMENT_ID = "demo-page-backfill";
+
+    /// <summary>The section that holds the examples, and so the top a pivot tab switch returns to.</summary>
+    private const string USAGE_ELEMENT_ID = "usage-section";
+
     private bool _forceAnimation;
 
     /// <summary>
     /// Whether the API tables have been built. They are the last thing on the page and nothing is
-    /// anchored below them, so on a page built client-side they wait until the reader scrolls that
-    /// far; see <see cref="DemoContentDeferral"/> and the razor.
+    /// anchored below them, so they wait until the reader scrolls that far; see
+    /// <see cref="ShouldDeferApi"/>, <see cref="DemoContentDeferral"/> and the razor.
     /// </summary>
     private bool _isApiMounted = true;
+
+    /// <summary>
+    /// The room the held-back API block keeps on the prerendered page: the height its own prerendered
+    /// copy was measured at. Zero on a page built client-side, which has no such copy.
+    /// </summary>
+    private int _pendingApiHeight;
+
     private DotNetObjectReference<DemoPage>? _dotnetObj;
+
+    // What this page is still holding back, in document order, and how far the backfill has walked
+    // it. Held here rather than in the scoped deferral service so that its lifetime is the page's:
+    // navigating away disposes the queue with the components that filled it.
+    private readonly List<Func<Task<bool>>> _backfill = [];
+    private int _backfillIndex;
+    private bool _isBackfillScheduled;
+    private DotNetObjectReference<DemoPage>? _idleObj;
+
+    /// <summary>
+    /// False while this page is still being built for the first time, true from the moment it stands
+    /// complete on screen. What it distinguishes is a navigation - where the reader is at the top of a
+    /// page that is not there yet, and holding back what they cannot see costs them nothing - from
+    /// everything that happens afterwards, with the reader standing in the middle of a finished page.
+    /// <see cref="DemoExample"/> reads it to decide whether it may hold its own preview back.
+    /// </summary>
+    public bool HasRendered { get; private set; }
 
     [AutoInject] private DemoContentDeferral _contentDeferral = default!;
 
@@ -59,11 +89,27 @@ public partial class DemoPage
     [CascadingParameter(Name = nameof(RenderForMcpClient))] public bool RenderForMcpClient { get; set; }
 
 
+    /// <summary>
+    /// Whether the API tables may wait - and, when they may, how much room they have to keep meanwhile.
+    /// The same two cases <see cref="DemoExample"/> distinguishes for its own preview: a page built on
+    /// the client, where nothing on screen contradicts an empty block, and the prerendered first page,
+    /// where the block is only allowed to empty out if it keeps the height its prerendered copy had.
+    /// </summary>
+    private bool ShouldDeferApi()
+    {
+        if (RenderForMcpClient) return false;
+        if (InPrerenderSession) return false;
+
+        if (_contentDeferral.IsEnabled || AppRenderMode.IsBlazorHybrid) return true;
+
+        _pendingApiHeight = (int)Math.Ceiling(JSRuntime.TryGetElementHeight(API_ELEMENT_ID));
+
+        return _pendingApiHeight > 0;
+    }
+
     protected override Task OnInitAsync()
     {
-        _isApiMounted = RenderForMcpClient
-                     || InPrerenderSession
-                     || _contentDeferral.IsEnabled is false;
+        _isApiMounted = ShouldDeferApi() is false;
 
         return base.OnInitAsync();
     }
@@ -78,40 +124,159 @@ public partial class DemoPage
         {
             _dotnetObj = DotNetObjectReference.Create(this);
             await JSRuntime.ObserveVisibility(API_ELEMENT_ID, _dotnetObj, nameof(OnApiReached));
+
+            // Last in the queue, as it is last on the page.
+            QueueBackfill(MountApiAsync);
         }
 
         // From here on the page on screen is one this app built, not the prerendered one, so every
-        // page after this may hold back what the reader has not reached. Set last, after this page
-        // has rendered in full, so that it is only ever the *next* page that defers anything.
+        // page after this may hold back what the reader has not reached without having to measure
+        // anything first. Set last, after this page has rendered in full.
         _contentDeferral.Enable();
+
+        // Set last, once the page stands complete: from here on an example that renders is one the
+        // reader has asked for from a page they are already looking at, not one more piece of a page
+        // still being built.
+        HasRendered = true;
+
+        await ScheduleBackfillAsync();
+    }
+
+    /// <summary>
+    /// Puts a held-back block in line to be built during the browser's idle time. Called by the
+    /// examples as they render, so the queue ends up in document order - which is the order the
+    /// reader would have reached them in.
+    /// <para>
+    /// An example that registers after this page has rendered restarts the queue rather than joining
+    /// one that has already been walked: nothing re-renders this page to notice such an example
+    /// arriving, so the restart has to come from here.
+    /// </para>
+    /// </summary>
+    public void QueueBackfill(Func<Task<bool>> mount)
+    {
+        // A drained queue holds nothing but delegates over previews that are already built, so it is
+        // emptied rather than grown - the index would otherwise only ever walk forwards.
+        if (_backfillIndex >= _backfill.Count)
+        {
+            _backfill.Clear();
+            _backfillIndex = 0;
+        }
+
+        _backfill.Add(mount);
+
+        // The page-load pass is scheduled once, by OnAfterFirstRenderAsync, after every example has
+        // had its turn to register - so that the queue is walked in document order.
+        if (HasRendered is false) return;
+        if (_isBackfillScheduled) return;
+
+        _ = ScheduleBackfillAsync();
+    }
+
+    private async Task ScheduleBackfillAsync()
+    {
+        if (_backfillIndex >= _backfill.Count) return;
+
+        _idleObj ??= DotNetObjectReference.Create(this);
+        _isBackfillScheduled = true;
+
+        try
+        {
+            await JSRuntime.RequestIdleWork(BACKFILL_ELEMENT_ID, _idleObj, nameof(OnIdleBackfill));
+        }
+        catch (JSDisconnectedException)
+        {
+            _isBackfillScheduled = false; // the circuit is already gone; there is nobody left to fill in for
+        }
+    }
+
+    /// <summary>
+    /// One block per idle slice, then ask for the next one. Draining the whole queue in a single
+    /// callback would put back exactly the stall the deferral was there to avoid.
+    /// </summary>
+    [JSInvokable]
+    public async Task OnIdleBackfill()
+    {
+        _isBackfillScheduled = false;
+
+        // A block the reader has already scrolled to is mounted and reports that it had nothing to
+        // do, which is not worth an idle slice of its own - the queue walks on until something is
+        // actually built.
+        while (_backfillIndex < _backfill.Count)
+        {
+            var mount = _backfill[_backfillIndex++];
+
+            try
+            {
+                if (await mount()) break;
+            }
+            catch (ObjectDisposedException) { } // that example is already gone; the next one may not be
+            catch (JSDisconnectedException) { return; }
+        }
+
+        await ScheduleBackfillAsync();
     }
 
     /// <summary>The reader has scrolled within reach of the API section. Mounting is one way.</summary>
     [JSInvokable]
-    public Task OnApiReached()
+    public async Task OnApiReached()
     {
-        if (_isApiMounted) return Task.CompletedTask;
+        // The observer stops watching before it reports, so there is nothing left to unregister.
+        await MountApiAsync(stillObserved: false);
+    }
+
+    private Task<bool> MountApiAsync() => MountApiAsync(stillObserved: true);
+
+    private async Task<bool> MountApiAsync(bool stillObserved)
+    {
+        if (_isApiMounted) return false;
 
         _isApiMounted = true;
 
-        _dotnetObj?.Dispose();
-        _dotnetObj = null;
-
-        return InvokeAsync(StateHasChanged);
-    }
-
-    protected override async ValueTask DisposeAsync(bool disposing)
-    {
-        if (disposing && _dotnetObj is not null)
+        // Only the backfill leaves a live observer behind.
+        if (stillObserved)
         {
             try
             {
                 await JSRuntime.UnobserveVisibility(API_ELEMENT_ID);
             }
             catch (JSDisconnectedException) { } // the circuit is already gone, nothing left to unregister
+        }
 
-            _dotnetObj.Dispose();
-            _dotnetObj = null;
+        _dotnetObj?.Dispose();
+        _dotnetObj = null;
+
+        await InvokeAsync(StateHasChanged);
+
+        return true;
+    }
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (disposing)
+        {
+            if (_dotnetObj is not null)
+            {
+                try
+                {
+                    await JSRuntime.UnobserveVisibility(API_ELEMENT_ID);
+                }
+                catch (JSDisconnectedException) { } // the circuit is already gone, nothing left to unregister
+
+                _dotnetObj.Dispose();
+                _dotnetObj = null;
+            }
+
+            if (_idleObj is not null)
+            {
+                try
+                {
+                    await JSRuntime.CancelIdleWork(BACKFILL_ELEMENT_ID);
+                }
+                catch (JSDisconnectedException) { }
+
+                _idleObj.Dispose();
+                _idleObj = null;
+            }
         }
 
         await base.DisposeAsync(disposing);
