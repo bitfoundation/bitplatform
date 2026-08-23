@@ -107,8 +107,17 @@ else
                 </div>
             }
 
-            <div class="example-container">
-                @ChildContent
+            @* The live preview - the working components themselves, which is the bulk of what a demo
+               page costs to build. It is mounted once the reader is within reach of it rather than on
+               every navigation, so a page carrying thirty of these only ever builds the handful that
+               are in view (see DemoContentDeferral for when this applies, and observeVisibility in
+               Scripts/app.ts for how far "in reach" reaches). The container itself always renders: it
+               is what the observer watches, and it has to be in the document to be watched. *@
+            <div class="example-container" id="@_previewElementId">
+                @if (_isPreviewMounted)
+                {
+                    @ChildContent
+                }
             </div>
         </div>
     </section>

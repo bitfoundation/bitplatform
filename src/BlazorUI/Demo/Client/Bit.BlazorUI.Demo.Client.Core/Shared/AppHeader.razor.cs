@@ -41,6 +41,13 @@ public partial class AppHeader
     private string _currentPath = "/";
 
     /// <summary>
+    /// Which of the five links the bar is currently highlighting, or null while the reader is
+    /// somewhere none of them claims. This - rather than the path - is the whole of what the address
+    /// decides about this component, so it is what a location change is compared against.
+    /// </summary>
+    private string? _activeNavHref;
+
+    /// <summary>
     /// The site's five destinations, in the order a visitor meets them: what it is, what is in it,
     /// how to make it yours, and the icon set. Anything deeper is the nav panel's job.
     /// </summary>
@@ -93,11 +100,18 @@ public partial class AppHeader
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
-        SetCurrentPath();
+        // Only when the highlighted link actually moved. Nothing else in the bar answers to the
+        // address, and rendering it means rendering the search box, the accent swatches and the
+        // theme picker - none of which have anything to say about a move from one component page to
+        // the next, which is the move that has to be quick. Every one of those hundred navigations
+        // leaves "Components" highlighted, and so leaves this bar exactly as it was.
+        if (SetCurrentPath() is false) return;
+
         StateHasChanged();
     }
 
-    private void SetCurrentPath()
+    /// <summary>Returns whether the highlighted link changed.</summary>
+    private bool SetCurrentPath()
     {
         var url = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
 
@@ -105,6 +119,14 @@ public partial class AppHeader
         if (separatorIndex >= 0) url = url[..separatorIndex];
 
         _currentPath = url.Length > 1 ? url.TrimEnd('/').ToLowerInvariant() : "/";
+
+        var activeNavHref = Array.Find(_navLinks, link => IsActive(link.Href)).Href;
+
+        if (activeNavHref == _activeNavHref) return false;
+
+        _activeNavHref = activeNavHref;
+
+        return true;
     }
 
     /// <summary>

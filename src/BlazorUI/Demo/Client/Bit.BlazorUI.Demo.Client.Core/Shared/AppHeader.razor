@@ -27,7 +27,7 @@
             <nav class="app-nav" aria-label="Primary">
                 @foreach (var link in _navLinks)
                 {
-                    var isActive = IsActive(link.Href);
+                    var isActive = link.Href == _activeNavHref;
                     <a class="app-nav-link @(isActive ? "active" : null)"
                        href="@link.Href"
                        aria-current="@(isActive ? "page" : null)">@link.Text</a>

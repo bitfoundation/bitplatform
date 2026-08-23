@@ -296,6 +296,48 @@ function unobserveElementWidth(id: string) {
     delete elementWidthObservers[id];
 }
 
+const visibilityObservers: { [key: string]: IntersectionObserver } = {};
+
+// Reports - once, and then never again - that the element with the given id has come within reach of
+// the viewport. It is how a demo page mounts an example's live preview, and its API tables, only when
+// the reader is actually approaching them: a component page carries dozens of working components and
+// a few hundred table rows, and building all of it on every navigation is what makes those pages
+// freeze on a phone.
+//
+// The margin is deliberately asymmetric. Downwards it is one and a half phone screens, so a block is
+// mounted well before it can be seen. Upwards it is effectively infinite, which means everything
+// ABOVE the reader always counts as reached: a block only ever stays unmounted BELOW where they are,
+// so mounting can never change the height of the page above the scroll position - which would slide
+// the page under them, and land a restored scroll position or an "#example12" deep link in the wrong
+// place.
+function observeVisibility(id: string, dotnetObj: any, methodName: string) {
+    unobserveVisibility(id);
+
+    const element = document.getElementById(id);
+    if (element == null) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        if (entries.some(entry => entry.isIntersecting) === false) return;
+
+        // Before the callback, not after: invokeMethodAsync resolves on a later turn, and a second
+        // entry arriving in the meantime would report the same element twice.
+        unobserveVisibility(id);
+
+        dotnetObj.invokeMethodAsync(methodName);
+    }, { rootMargin: '100000px 0px 1200px 0px' });
+
+    observer.observe(element);
+    visibilityObservers[id] = observer;
+}
+
+function unobserveVisibility(id: string) {
+    const observer = visibilityObservers[id];
+    if (observer == null) return;
+
+    observer.disconnect();
+    delete visibilityObservers[id];
+}
+
 declare namespace BitBlazorUI {
     class Theme { static init(options: any): void; }
 }

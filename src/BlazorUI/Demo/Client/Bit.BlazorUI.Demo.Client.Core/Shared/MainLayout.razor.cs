@@ -39,15 +39,30 @@ public partial class MainLayout : IDisposable
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
-        SetCurrentUrl();
+        // Only when one of the two flags actually moved. Rendering the layout means rendering the nav
+        // panel with every component in the library in it, plus the header and the footer - and the
+        // answer to "is this the home page" and "is this a component page" is the same for every one
+        // of the hundred navigations from one component page to the next, which is exactly the
+        // navigation that has to be quick.
+        if (SetCurrentUrl() is false) return;
+
         StateHasChanged();
     }
 
-    private void SetCurrentUrl()
+    /// <summary>Returns whether either flag changed.</summary>
+    private bool SetCurrentUrl()
     {
         var url = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
-        _isHomePage = url == "/";
-        _isDemoPage = url.StartsWith("/components/", StringComparison.OrdinalIgnoreCase);
+
+        var isHomePage = url == "/";
+        var isDemoPage = url.StartsWith("/components/", StringComparison.OrdinalIgnoreCase);
+
+        if (isHomePage == _isHomePage && isDemoPage == _isDemoPage) return false;
+
+        _isHomePage = isHomePage;
+        _isDemoPage = isDemoPage;
+
+        return true;
     }
 
 

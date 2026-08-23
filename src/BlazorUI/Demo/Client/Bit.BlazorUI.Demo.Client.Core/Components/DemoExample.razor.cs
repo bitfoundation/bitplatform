@@ -10,6 +10,14 @@ public partial class DemoExample
     private bool _isCodeMounted;
     private bool _isCodeHighlighted;
 
+    // The same treatment for the live preview, except that this one the reader never asks for: it is
+    // mounted as they approach it and stays mounted from then on. Starts true - so nothing is held
+    // back - unless this render is one where holding back is safe; see ShouldDeferPreview.
+    private bool _isPreviewMounted = true;
+    private DotNetObjectReference<DemoExample>? _dotnetObj;
+
+    [AutoInject] private DemoContentDeferral _contentDeferral = default!;
+
     [Parameter] public string Title { get; set; } = default!;
     [Parameter] public string Id { get; set; } = default!;
     [Parameter] public string RazorCode { get; set; } = default!;
@@ -25,11 +33,32 @@ public partial class DemoExample
     // before - for the rare DemoExample declared without an Id.
     private string? _codeElementId => Id.HasValue() ? $"{Id}-code" : null;
 
+    /// <summary>The element the visibility observer watches, which is the preview's own container.</summary>
+    private string? _previewElementId => Id.HasValue() ? $"{Id}-preview" : null;
+
+    /// <summary>
+    /// Whether this example may hold its preview back until the reader approaches it.
+    /// <para>
+    /// Beyond <see cref="DemoContentDeferral"/> - which is what decides that this is a page built on
+    /// the client rather than the prerendered one - two things have to hold. There has to be an Id,
+    /// since that is what the observer is given to watch. And the address must not carry a fragment:
+    /// the browser is then about to jump to an anchor, and an anchor is only in the right place once
+    /// everything above it is the size it will end up being.
+    /// </para>
+    /// </summary>
+    private bool ShouldDeferPreview => RenderForMcpClient is false
+                                    && _previewElementId is not null
+                                    && InPrerenderSession is false
+                                    && _contentDeferral.IsEnabled
+                                    && NavigationManager.Uri.Contains('#', StringComparison.Ordinal) is false;
+
     protected override Task OnInitAsync()
     {
         // The MCP branch prints the source as markdown rather than rendering the panel, so nothing
         // there is mounted or highlighted; showCode only matters for the browser branch below.
         showCode = RenderForMcpClient;
+
+        _isPreviewMounted = ShouldDeferPreview is false;
 
         return Task.CompletedTask;
     }
@@ -42,6 +71,12 @@ public partial class DemoExample
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (RenderForMcpClient) return;
+
+        if (firstRender && _isPreviewMounted is false)
+        {
+            _dotnetObj = DotNetObjectReference.Create(this);
+            await JSRuntime.ObserveVisibility(_previewElementId!, _dotnetObj, nameof(OnPreviewReached));
+        }
 
         if (_isCodeMounted is false || _isCodeHighlighted) return;
 
@@ -120,5 +155,43 @@ public partial class DemoExample
         copyLinkMessage = "Copy link";
 
         StateHasChanged();
+    }
+
+
+
+    /// <summary>
+    /// The reader has come within reach of this example. Mounting is one way: the preview stays from
+    /// here on, so scrolling back up never rebuilds what is already there.
+    /// </summary>
+    [JSInvokable]
+    public Task OnPreviewReached()
+    {
+        if (_isPreviewMounted) return Task.CompletedTask;
+
+        _isPreviewMounted = true;
+
+        // The observer has already stopped watching and will not report again, so the reference it
+        // was holding has nothing left to reach.
+        _dotnetObj?.Dispose();
+        _dotnetObj = null;
+
+        return InvokeAsync(StateHasChanged);
+    }
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (disposing && _dotnetObj is not null)
+        {
+            try
+            {
+                await JSRuntime.UnobserveVisibility(_previewElementId!);
+            }
+            catch (JSDisconnectedException) { } // the circuit is already gone, nothing left to unregister
+
+            _dotnetObj.Dispose();
+            _dotnetObj = null;
+        }
+
+        await base.DisposeAsync(disposing);
     }
 }

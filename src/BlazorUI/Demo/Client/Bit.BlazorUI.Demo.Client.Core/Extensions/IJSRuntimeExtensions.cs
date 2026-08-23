@@ -73,6 +73,22 @@ public static class IJSRuntimeExtensions
     }
 
     /// <summary>
+    /// Calls the named method once the element with the given id has come within reach of the viewport,
+    /// and then stops watching it. This is what lets a demo page hold back the parts of itself the
+    /// reader has not reached yet - an example's live preview, the API tables - instead of building the
+    /// whole page on every navigation.
+    /// </summary>
+    public static async Task ObserveVisibility<T>(this IJSRuntime jsRuntime, string id, DotNetObjectReference<T> dotnetObj, string methodName) where T : class
+    {
+        await jsRuntime.InvokeVoid("observeVisibility", id, dotnetObj, methodName);
+    }
+
+    public static async Task UnobserveVisibility(this IJSRuntime jsRuntime, string id)
+    {
+        await jsRuntime.InvokeVoid("unobserveVisibility", id);
+    }
+
+    /// <summary>
     /// Claims Ctrl/Cmd+K (and a bare "/") for the search input inside the element with the given id.
     /// Registered from JS rather than through a Blazor key handler so the shortcut works no matter
     /// where the focus currently is - which is the whole point of a global shortcut.

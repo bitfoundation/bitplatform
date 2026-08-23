@@ -4,7 +4,20 @@ public partial class DemoPage
 {
     private const string REPO_URL = "https://github.com/bitfoundation/bitplatform";
 
+    /// <summary>The element the visibility observer watches to know the reader has reached the API tables.</summary>
+    private const string API_ELEMENT_ID = "api-tables";
+
     private bool _forceAnimation;
+
+    /// <summary>
+    /// Whether the API tables have been built. They are the last thing on the page and nothing is
+    /// anchored below them, so on a page built client-side they wait until the reader scrolls that
+    /// far; see <see cref="DemoContentDeferral"/> and the razor.
+    /// </summary>
+    private bool _isApiMounted = true;
+    private DotNetObjectReference<DemoPage>? _dotnetObj;
+
+    [AutoInject] private DemoContentDeferral _contentDeferral = default!;
 
     /// <summary>
     /// This page's entry in the catalog, which is what supplies the category shown above the title.
@@ -45,6 +58,64 @@ public partial class DemoPage
     [Parameter] public string? GitHubDemoUrl { get; set; }
     [CascadingParameter(Name = nameof(RenderForMcpClient))] public bool RenderForMcpClient { get; set; }
 
+
+    protected override Task OnInitAsync()
+    {
+        _isApiMounted = RenderForMcpClient
+                     || InPrerenderSession
+                     || _contentDeferral.IsEnabled is false;
+
+        return base.OnInitAsync();
+    }
+
+    protected override async Task OnAfterFirstRenderAsync()
+    {
+        await base.OnAfterFirstRenderAsync();
+
+        if (RenderForMcpClient) return;
+
+        if (_isApiMounted is false)
+        {
+            _dotnetObj = DotNetObjectReference.Create(this);
+            await JSRuntime.ObserveVisibility(API_ELEMENT_ID, _dotnetObj, nameof(OnApiReached));
+        }
+
+        // From here on the page on screen is one this app built, not the prerendered one, so every
+        // page after this may hold back what the reader has not reached. Set last, after this page
+        // has rendered in full, so that it is only ever the *next* page that defers anything.
+        _contentDeferral.Enable();
+    }
+
+    /// <summary>The reader has scrolled within reach of the API section. Mounting is one way.</summary>
+    [JSInvokable]
+    public Task OnApiReached()
+    {
+        if (_isApiMounted) return Task.CompletedTask;
+
+        _isApiMounted = true;
+
+        _dotnetObj?.Dispose();
+        _dotnetObj = null;
+
+        return InvokeAsync(StateHasChanged);
+    }
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (disposing && _dotnetObj is not null)
+        {
+            try
+            {
+                await JSRuntime.UnobserveVisibility(API_ELEMENT_ID);
+            }
+            catch (JSDisconnectedException) { } // the circuit is already gone, nothing left to unregister
+
+            _dotnetObj.Dispose();
+            _dotnetObj = null;
+        }
+
+        await base.DisposeAsync(disposing);
+    }
 
     protected override Task OnParamsSetAsync()
     {

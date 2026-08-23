@@ -293,6 +293,14 @@ html, body, .site-content, pre, .table-view, .side-rail {
         margin-top: $doc-space-sm;
     }
 
+    // And it stops at the API section's wrapper, which the tables share so the whole block can be
+    // mounted as one unit when the reader reaches it (see DemoPage). The wrapper holds the same
+    // stack of headings and tables that used to be the section's own children, so it keeps the
+    // rhythm those children had.
+    .api-tables > * + * {
+        margin-top: $doc-space-sm;
+    }
+
     > p {
         line-height: 1.65;
     }
