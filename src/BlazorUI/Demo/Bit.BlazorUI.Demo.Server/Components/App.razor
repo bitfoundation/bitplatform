@@ -1,4 +1,4 @@
-@using Bit.BlazorUI.Demo.Client.Core.Shared
+﻿@using Bit.BlazorUI.Demo.Client.Core.Shared
 @using Bit.BlazorUI.Demo.Client.Web.Shared.Components
 
 @{
@@ -159,6 +159,50 @@
     </script>
 
     <HeadOutlet @rendermode=renderMode />
+
+    @* Keeps a title in the document for the whole hand-over from the prerendered HTML to the client.
+       When the client app boots, <HeadOutlet> above is activated as its own root component, separately
+       from <Routes> below and before it: at that first render nobody has registered the title section
+       yet (the <PageTitle> lives inside Routes - in PageOutlet and in Routes.razor's fallback), so the
+       diff against the prerendered markup deletes the <title> element, and it only comes back once
+       Routes has rendered - the whole of hydration later under WebAssembly. A head with no <title>
+       makes the browser label the tab with the URL, which is the flash the visitor sees. This watches
+       <head> and parks a copy of the last known title there while the real element is missing, then
+       drops it again the moment Blazor puts one back (Blazor's own title always sits earlier in <head>
+       than this one, so document.title reports the real value while both are present). *@
+    <Script>
+        (function () {
+            var head = document.head;
+            var lastTitle = document.title || 'bit BlazorUI';
+            var placeholder = null;
+
+            function findRealTitle() {
+                var titles = head.getElementsByTagName('title');
+                for (var i = 0; i < titles.length; i++) {
+                    if (titles[i] !== placeholder) return titles[i];
+                }
+                return null;
+            }
+
+            function sync() {
+                var real = findRealTitle();
+                if (real) {
+                    if (real.textContent) lastTitle = real.textContent;
+                    if (placeholder) {
+                        placeholder.remove();
+                        placeholder = null;
+                    }
+                } else if (placeholder === null) {
+                    placeholder = document.createElement('title');
+                    placeholder.textContent = lastTitle;
+                    head.appendChild(placeholder);
+                }
+            }
+
+            sync();
+            new MutationObserver(sync).observe(head, { childList: true, subtree: true, characterData: true });
+        })();
+    </Script>
 
     @if (includeWasm)
     {
