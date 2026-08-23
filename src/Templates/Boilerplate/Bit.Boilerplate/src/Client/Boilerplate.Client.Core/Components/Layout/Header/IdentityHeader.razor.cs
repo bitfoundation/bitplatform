@@ -7,12 +7,19 @@ public partial class IdentityHeader : AppComponentBase
     [CascadingParameter] public AppThemeType? CurrentTheme { get; set; }
 
 
-    [AutoInject] private History history = default!;
     [AutoInject] private ThemeService themeService = default!;
     [AutoInject] private CultureService cultureService = default!;
 
 
     private BitDropdownItem<string>[] cultures = default!;
+
+    /// <summary>
+    /// The accessible name of the icon-only theme button, which names the theme the click switches TO
+    /// (the icon does the same - See the IconName expression in the razor).
+    /// </summary>
+    private string ThemeToggleLabel => CurrentTheme == AppThemeType.Light
+        ? Localizer["Switch to the dark theme"]
+        : Localizer["Switch to the light theme"];
 
 
     protected override async Task OnInitAsync()

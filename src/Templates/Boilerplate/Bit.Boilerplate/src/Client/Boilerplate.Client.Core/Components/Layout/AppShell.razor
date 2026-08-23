@@ -19,18 +19,24 @@
                                 <NotAuthorized>
                                     <BitActionButton IconOnly="isNavPanelToggled"
                                                      IconName="@BitIconName.Signin"
+                                                     Title="@Localizer[nameof(AppStrings.SignIn)]"
+                                                     AriaLabel="@Localizer[nameof(AppStrings.SignIn)]"
                                                      Href="@($"{PageUrls.SignIn}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
-                                        @(isNavPanelToggled ? "" : Localizer[nameof(AppStrings.SignIn)])
+                                        @Localizer[nameof(AppStrings.SignIn)]
                                     </BitActionButton>
                                     <BitActionButton IconOnly="isNavPanelToggled"
                                                      IconName="@BitIconName.UserWindow"
-                                                     OnClick="ModalSignIn">
-                                        @(isNavPanelToggled ? "" : Localizer[nameof(AppStrings.SignInByModal)])
+                                                     OnClick="WrapHandled(ModalSignIn)"
+                                                     Title="@Localizer[nameof(AppStrings.SignInByModal)]"
+                                                     AriaLabel="@Localizer[nameof(AppStrings.SignInByModal)]">
+                                        @Localizer[nameof(AppStrings.SignInByModal)]
                                     </BitActionButton>
                                     <BitActionButton IconOnly="isNavPanelToggled"
                                                      IconName="@BitIconName.AddFriend"
+                                                     Title="@Localizer[nameof(AppStrings.SignUp)]"
+                                                     AriaLabel="@Localizer[nameof(AppStrings.SignUp)]"
                                                      Href="@($"{PageUrls.SignUp}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
-                                        @(isNavPanelToggled ? "" : Localizer[nameof(AppStrings.SignUp)])
+                                        @Localizer[nameof(AppStrings.SignUp)]
                                     </BitActionButton>
                                 </NotAuthorized>
                             </AuthorizeView>
@@ -77,7 +83,7 @@
                 @if (IsIdentityPage is true)
                 {
                     <div class="panel">
-                        <BitImage Width="70%" Src="_content/Boilerplate.Client.Core/images/identitylayout-image.webp" />
+                        <BitImage Alt="" Width="70%" Src="_content/Boilerplate.Client.Core/images/identitylayout-image.webp" />
                     </div>
                 }
             </div>
