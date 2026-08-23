@@ -147,6 +147,7 @@
 .bit-pgn-gti,
 .bit-pgn-pse {
     font: inherit;
+
     // The height is the one every control of the pagination stands at, so the border is counted into it
     // rather than added on top of it.
     box-sizing: border-box;
@@ -205,6 +206,7 @@
     align-items: center;
     display: inline-flex;
     text-decoration: none;
+
     // The button grows along the text it carries rather than breaking it: a wrapped label would push the
     // control past the height every other one of the pagination stands at.
     white-space: nowrap;
@@ -222,6 +224,7 @@
     color: var(--bit-pgn-clr-btn-txt);
     border-color: var(--bit-pgn-clr-btn-brd);
     background-color: var(--bit-pgn-clr-btn-bg);
+
     // The states below repaint all three, so they animate together from here.
     transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 

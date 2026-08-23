@@ -167,7 +167,7 @@ private int twoWaySelectedPage = 2;
 private int onChangeSelectedPage = 3;";
 
     private readonly string example20RazorCode = @"
-<BitPagination Count=""8""
+<BitPagination Count=""linkPageCount""
                ShowFirstButton
                ShowLastButton
                GetPageHref=""@GetDemoPageHref""
@@ -175,11 +175,24 @@ private int onChangeSelectedPage = 3;";
 
 <div>Selected page: <b>@linkSelectedPage</b></div>";
     private readonly string example20CsharpCode = @"
+[SupplyParameterFromQuery(Name = ""page"")] public string? LinkPage { get; set; }
+
+private const int linkPageCount = 8;
 private int linkSelectedPage = 1;
+
+protected override void OnParametersSet()
+{
+    if (int.TryParse(LinkPage, out var page))
+    {
+        linkSelectedPage = Math.Clamp(page, 1, linkPageCount);
+    }
+
+    base.OnParametersSet();
+}
 
 private string GetDemoPageHref(int page)
 {
-    return $""#example20-page-{page}"";
+    return $""?page={page}"";
 }";
 
     private readonly string example21RazorCode = @"

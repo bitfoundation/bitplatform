@@ -783,11 +783,29 @@ public partial class BitPaginationDemo
     private int totalItemsPageSize = 10;
     private int totalItemsSelectedPage = 1;
 
+    // The links are addresses of this very page: the page they point at rides in the query string, so a click,
+    // a middle click into another tab and a bookmark all land on the pagination showing the page that was asked
+    // for. The value arrives as text, since a query holding anything but a number is a URL that was typed by
+    // hand rather than a page to move to, and it is clamped to the range the pagination renders, so the URL and
+    // the selection never disagree.
+    [SupplyParameterFromQuery(Name = "page")] public string? LinkPage { get; set; }
+
+    private const int linkPageCount = 8;
     private int linkSelectedPage = 1;
+
+    protected override void OnParametersSet()
+    {
+        if (int.TryParse(LinkPage, out var page))
+        {
+            linkSelectedPage = Math.Clamp(page, 1, linkPageCount);
+        }
+
+        base.OnParametersSet();
+    }
 
     private string GetDemoPageHref(int page)
     {
-        return $"#example20-page-{page}";
+        return $"?page={page}";
     }
 
     private int oneWaySelectedPage = 1;
