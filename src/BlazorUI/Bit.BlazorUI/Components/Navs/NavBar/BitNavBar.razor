@@ -10,7 +10,15 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
 
-    <div style="@Styles?.Container" class="bit-nbr-cnt @Classes?.Container">
+    @if (HeaderTemplate is not null)
+    {
+        <div style="@Styles?.Header" class="bit-nbr-hdr @Classes?.Header">@HeaderTemplate</div>
+    }
+
+    @* The destinations are marked up as the list they are, so a screen reader announces how many of them
+       the bar holds and which one it is on. The role is spelled out because a list whose bullets are
+       removed loses its list semantics in some browsers. *@
+    <ul id="@_containerId" role="list" style="@Styles?.Container" class="bit-nbr-cnt @Classes?.Container">
         @if (Options is not null || ChildContent is not null)
         {
             <CascadingValue Value="this" IsFixed="true">
@@ -24,5 +32,10 @@
                 <_BitNavBarItem @key="@GetItemKey(item, idx.ToString())" NavBar="this" Item="item" />
             }
         }
-    </div>
+    </ul>
+
+    @if (FooterTemplate is not null)
+    {
+        <div style="@Styles?.Footer" class="bit-nbr-ftr @Classes?.Footer">@FooterTemplate</div>
+    }
 </nav>

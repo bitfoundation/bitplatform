@@ -25,11 +25,17 @@ public partial class AppHub
     /// 
     /// The above 3 reasons are the main motivations of this design/implementation using SignalR instead of using SSE or other techniques.
     /// Checkout <see cref="AppChatbot"/> for more details.
+    ///
+    /// What does NOT travel on this stream is audio. Dictation and read aloud are ordinary requests to
+    /// <c>ChatbotController</c> instead: a recording or a synthesised answer is megabytes rather than a sentence, and
+    /// a new incoming message cancels whatever is being processed - so an upload sharing this stream would both stall
+    /// the conversation and be cancelled by the very message it was meant to become. Only the image a user attaches
+    /// travels here, and only as the id it was stored under.
     /// </summary>
     [HubMethodName(SharedAppMessages.StartChat)]
     public async IAsyncEnumerable<string> StartChat(
         StartChatRequest request,
-        IAsyncEnumerable<string> incomingMessages,
+        IAsyncEnumerable<AiChatMessageRequest> incomingMessages,
         [EnumeratorCancellation] CancellationToken cancellationToken,
         [FromServices] AppChatbot chatbotService)
     {

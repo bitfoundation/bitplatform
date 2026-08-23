@@ -1,4 +1,4 @@
-var BitButil = BitButil || {};
+var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
     // Everything here operates on an <audio>/<video> the caller already has an ElementReference to.

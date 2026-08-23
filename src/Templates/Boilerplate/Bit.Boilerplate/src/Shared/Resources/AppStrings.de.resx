@@ -411,6 +411,22 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="Ok" xml:space="preserve">
     <value>OK</value>
   </data>
+    <!-- Identity pages -->
+    <data name="Close" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+    <data name="SignInWithPasskeyButtonText" xml:space="preserve">
+    <value>Mit einem Passkey anmelden</value>
+  </data>
+    <data name="OpenGmail" xml:space="preserve">
+    <value>Gmail öffnen</value>
+  </data>
+    <data name="OpenOutlook" xml:space="preserve">
+    <value>Outlook öffnen</value>
+  </data>
+    <data name="AgreeToTermsMessage" xml:space="preserve">
+    <value>Mit der Registrierung akzeptierst du unsere</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SystemPromptsTitle" xml:space="preserve">
     <value>Systemprompts</value>
@@ -1323,6 +1339,36 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="AiChatPanelStopReading" xml:space="preserve">
     <value>Vorlesen beenden</value>
   </data>
+  <data name="AiChatPanelTranscribing" xml:space="preserve">
+    <value>Das Gesagte wird in Text umgewandelt</value>
+  </data>
+  <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
+    <value>Verbleibende Zeit, bis das Diktat endet</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
+    <value>Sprachfunktionen erfordern ein Konto</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInMessage" xml:space="preserve">
+    <value>Diktieren und Vorlesen laufen beide auf dem Server. Melden Sie sich einmal an, dann können Sie mit dem Chat sprechen und sich von ihm antworten lassen.</value>
+  </data>
+  <data name="AiChatPanelAttachImage" xml:space="preserve">
+    <value>Bild anhängen</value>
+  </data>
+  <data name="AiChatPanelImageTooLarge" xml:space="preserve">
+    <value>Das Bild ist größer als 10 MB.</value>
+  </data>
+  <data name="AiChatPanelOnlyImagesAllowed" xml:space="preserve">
+    <value>Es können nur Bilder angehängt werden.</value>
+  </data>
+  <data name="AiChatPanelAttachmentFailed" xml:space="preserve">
+    <value>Das Bild konnte nicht angehängt werden.</value>
+  </data>
+  <data name="AiChatPanelImageSignInTitle" xml:space="preserve">
+    <value>Bilder erfordern ein Konto</value>
+  </data>
+  <data name="AiChatPanelImageSignInMessage" xml:space="preserve">
+    <value>Melden Sie sich an, um ein Bild mit Ihrer Nachricht zu senden.</value>
+  </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>Hallo{0}! Ich bin hier, um Ihr App-Erlebnis fantastisch zu machen! Haben Sie eine Frage oder brauchen Sie Hilfe?</value>
   </data>
@@ -1347,6 +1393,12 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <!--#endif -->
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>Nachricht schreiben...</value>
+  </data>
+    <data name="AiChatPanelMaximize" xml:space="preserve">
+    <value>Maximieren</value>
+  </data>
+  <data name="AiChatPanelRestore" xml:space="preserve">
+    <value>Wiederherstellen</value>
   </data>
   <!--#endif -->
   <!--#if (ads == true) -->
@@ -1557,7 +1609,84 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="ImageNotCarError" xml:space="preserve">
     <value>Das bereitgestellte Bild enthält kein Auto.</value>
   </data>
-    <!--#if (multitenant == true) -->
+      <data name="AddUserToGroupTitle" xml:space="preserve">
+    <value>{0} zu dieser Benutzergruppe hinzufügen</value>
+  </data>
+  <data name="RemoveUserFromGroupTitle" xml:space="preserve">
+    <value>{0} aus dieser Benutzergruppe entfernen</value>
+  </data>
+  <data name="GrantFeatureTitle" xml:space="preserve">
+    <value>{0} gewähren</value>
+  </data>
+  <data name="RevokeFeatureTitle" xml:space="preserve">
+    <value>{0} entziehen</value>
+  </data>
+  <data name="GrantAllGroupFeaturesTitle" xml:space="preserve">
+    <value>Alle {0}-Funktionen gewähren</value>
+  </data>
+  <data name="RevokeAllGroupFeaturesTitle" xml:space="preserve">
+    <value>Alle {0}-Funktionen entziehen</value>
+  </data>
+  <data name="RefreshSelectedUserGroupTitle" xml:space="preserve">
+    <value>Ausgewählte Benutzergruppe aktualisieren</value>
+  </data>
+  <data name="RefreshSelectedUserTitle" xml:space="preserve">
+    <value>Ausgewählten Benutzer aktualisieren</value>
+  </data>
+  <data name="NoMatchingUserSessionMessage" xml:space="preserve">
+    <value>Keine Sitzung entspricht Ihrer Suche.</value>
+  </data>
+  <data name="TfaVerificationCodeRequiredMessage" xml:space="preserve">
+    <value>Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App ein.</value>
+  </data>
+  <data name="TfaOpenInAuthenticatorAppTitle" xml:space="preserve">
+    <value>Dieses Konto in Ihrer Authenticator-App öffnen</value>
+  </data>
+  <data name="TfaQrCodeAlt" xml:space="preserve">
+    <value>QR-Code zum Einrichten Ihrer Authenticator-App</value>
+  </data>
+  <data name="SessionNoLongerValidMessage" xml:space="preserve">
+    <value>Diese Sitzung ist nicht mehr gültig. Bitte melden Sie sich erneut an.</value>
+  </data>
+  <data name="RevokeSessionTitle" xml:space="preserve">
+    <value>Diese Sitzung widerrufen</value>
+  </data>
+  <data name="ImageMaxSizeErrorMessage" xml:space="preserve">
+    <value>Das Bild darf höchstens {0} groß sein.</value>
+  </data>
+  <data name="OnlyImageFilesAllowedErrorMessage" xml:space="preserve">
+    <value>Es können nur Bilddateien verwendet werden</value>
+  </data>
+  <data name="SamePhoneNumberErrorMessage" xml:space="preserve">
+    <value>Das ist bereits Ihre Telefonnummer. Geben Sie eine andere ein.</value>
+  </data>
+  <data name="SameEmailErrorMessage" xml:space="preserve">
+    <value>Das ist bereits Ihre E-Mail-Adresse. Geben Sie eine andere ein.</value>
+  </data>
+  <data name="MoreTabsTitle" xml:space="preserve">
+    <value>Weitere Registerkarten</value>
+  </data>
+  <data name="OpenNavigationMenuTitle" xml:space="preserve">
+    <value>Navigationsmenü öffnen</value>
+  </data>
+  <data name="AccountMenuTitle" xml:space="preserve">
+    <value>Kontomenü</value>
+  </data>
+  <data name="SwitchToDarkThemeTitle" xml:space="preserve">
+    <value>Zum dunklen Design wechseln</value>
+  </data>
+  <data name="SwitchToLightThemeTitle" xml:space="preserve">
+    <value>Zum hellen Design wechseln</value>
+  </data>
+  <!--#if (signalR == true) -->
+  <data name="SignalRConnectionId" xml:space="preserve">
+    <value>SignalRConnectionId</value>
+  </data>
+  <data name="ReadUserSessionLogsTitle" xml:space="preserve">
+    <value>Sitzungsprotokolle des Benutzers lesen</value>
+  </data>
+  <!--#endif -->
+  <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>Mandant</value>
   </data>
@@ -1660,5 +1789,14 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <data name="Inactive" xml:space="preserve">
     <value>Inaktiv</value>
   </data>
-    <!--#endif-->
+      <data name="DeclineInvitation" xml:space="preserve">
+    <value>Einladung ablehnen</value>
+  </data>
+  <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
+    <value>Die Einladung zu {0} ablehnen? Dies kann nicht rückgängig gemacht werden - Sie benötigen eine neue Einladung, um beizutreten.</value>
+  </data>
+  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
+    <value>Einladung abgelehnt.</value>
+  </data>
+  <!--#endif-->
 </root>

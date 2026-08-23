@@ -7,7 +7,7 @@ public partial class IdentityController
 {
     [AutoInject] private PhoneService phoneService = default!;
 
-    [HttpPost, EnableRateLimiting(AppRateLimitPolicies.IDENTITY)]
+    [HttpPost, EnableRateLimiting(RateLimitOptionsExtensions.IDENTITY)]
     public async Task SendConfirmPhoneToken(SendPhoneTokenRequestDto request, CancellationToken cancellationToken)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);

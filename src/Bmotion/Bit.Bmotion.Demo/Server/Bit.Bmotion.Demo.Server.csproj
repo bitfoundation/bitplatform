@@ -11,7 +11,7 @@
     <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.11" />
     <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
-    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.1.0" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
   </ItemGroup>
 
   <ItemGroup>

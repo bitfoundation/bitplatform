@@ -228,7 +228,7 @@ public static class ComponentCatalog
         ["Breadcrumb"] = "Shows where a page sits in the hierarchy, and the way back up.",
         ["DropMenu"] = "A button that opens a callout hosting any content: a list, a form, a filter.",
         ["Nav"] = "Links to the main areas of an app, and a tree view for hierarchical data.",
-        ["NavBar"] = "A row of navigation links to the main areas of an app.",
+        ["NavBar"] = "A bar of navigation links to the main areas of an app, the way a mobile app puts its top-level destinations along the bottom of the screen.",
         ["Pagination"] = "Moves between pages of a long collection.",
         ["Pivot"] = "Tabs for switching between frequently accessed, distinct content categories.",
 

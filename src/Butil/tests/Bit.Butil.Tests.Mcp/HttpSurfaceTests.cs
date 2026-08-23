@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Text.Json;
 using System.Xml.Linq;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bit.Butil.Tests.Mcp.Infrastructure;
 
 namespace Bit.Butil.Tests.Mcp;
@@ -18,13 +18,12 @@ namespace Bit.Butil.Tests.Mcp;
 /// testing it against the real pipeline rather than a hand-built one.
 /// </para>
 /// </summary>
-[TestFixture]
-[Parallelizable(ParallelScope.Self)]
+[TestClass]
 public class HttpSurfaceTests : McpTestBase
 {
     private static HttpClient Http => McpServerFixture.Http;
 
-    [Test]
+    [TestMethod]
     public async Task Every_tool_is_also_a_plain_GET_anyone_can_open_in_a_browser()
     {
         // "The same methods are exposed as plain HTTP GET endpoints under /api/mcp/..., which makes
@@ -47,15 +46,15 @@ public class HttpSurfaceTests : McpTestBase
             using var response = await Http.GetAsync(McpServerFixture.Url($"api/mcp/{tool}{query}"));
             var body = await response.Content.ReadAsStringAsync();
 
-            Assert.Multiple(() =>
+            using (Assert.Scope())
             {
-                Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK), $"GET /api/mcp/{tool} answered {(int)response.StatusCode}.");
-                Assert.That(body, Is.Not.Empty, $"GET /api/mcp/{tool} answered with nothing.");
-            });
+                Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, $"GET /api/mcp/{tool} answered {(int)response.StatusCode}.");
+                Assert.IsNotEmpty(body, $"GET /api/mcp/{tool} answered with nothing.");
+            }
         }
     }
 
-    [Test]
+    [TestMethod]
     public async Task The_GET_mirror_answers_the_same_data_as_the_tool()
     {
         // The mirror is the same method, so a difference here means one of the two paths is doing
@@ -64,24 +63,24 @@ public class HttpSurfaceTests : McpTestBase
         // be shown not to have drifted.
         using var response = await Http.GetAsync(McpServerFixture.Url("api/mcp/GetButilApiDetails?typeName=Clipboard"));
 
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
         var overHttp = JsonSerializer.Deserialize<ApiDetailsResult>(await response.Content.ReadAsStringAsync(), JsonOptions);
         var overMcp = await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails", new { typeName = "Clipboard" });
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(overHttp, Is.Not.Null);
-            Assert.That(overHttp!.Details?.Name, Is.EqualTo("Clipboard"));
+            Assert.IsNotNull(overHttp);
+            Assert.AreEqual("Clipboard", overHttp!.Details?.Name);
 
             // Re-serialized rather than compared as records: the payload carries arrays, and record
             // equality on those is by reference.
-            Assert.That(JsonSerializer.Serialize(overHttp, JsonOptions), Is.EqualTo(JsonSerializer.Serialize(overMcp, JsonOptions)),
+            Assert.AreEqual(JsonSerializer.Serialize(overMcp, JsonOptions), JsonSerializer.Serialize(overHttp, JsonOptions),
                 "The GET mirror and the tool answered with different data.");
-        });
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task A_browser_may_read_the_mcp_endpoint_from_another_origin()
     {
         // Browser-based MCP clients call /mcp with fetch from another origin, and a browser will not
@@ -94,18 +93,18 @@ public class HttpSurfaceTests : McpTestBase
 
         using var response = await Http.SendAsync(request);
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That((int)response.StatusCode, Is.LessThan(400), $"The preflight was answered with {(int)response.StatusCode}.");
-            Assert.That(response.Headers.Contains("Access-Control-Allow-Origin"), Is.True, "The preflight carries no Access-Control-Allow-Origin.");
-            Assert.That(response.Headers.GetValues("Access-Control-Allow-Origin"), Does.Contain("*"));
+            Assert.IsLessThan(400, (int)response.StatusCode, $"The preflight was answered with {(int)response.StatusCode}.");
+            Assert.IsTrue(response.Headers.Contains("Access-Control-Allow-Origin"), "The preflight carries no Access-Control-Allow-Origin.");
+            Assert.Contains("*", response.Headers.GetValues("Access-Control-Allow-Origin"));
 
             var allowedMethods = string.Join(",", response.Headers.TryGetValues("Access-Control-Allow-Methods", out var methods) ? methods : []);
-            Assert.That(allowedMethods, Does.Contain("POST"));
-        });
+            Assert.Contains("POST", allowedMethods);
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task The_negotiated_protocol_version_is_readable_across_origins()
     {
         // Expose-Headers rides on the actual response, not on the preflight - so this has to be a
@@ -122,21 +121,21 @@ public class HttpSurfaceTests : McpTestBase
 
         var exposed = string.Join(",", response.Headers.TryGetValues("Access-Control-Expose-Headers", out var values) ? values : []);
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
             // First, or a 500 that happens to carry the headers reads as a pass.
-            Assert.That(response.IsSuccessStatusCode, Is.True, $"The cross-origin tools/list was answered with {(int)response.StatusCode}.");
-            Assert.That(response.Headers.Contains("Access-Control-Allow-Origin"), Is.True, "The response carries no Access-Control-Allow-Origin.");
-            Assert.That(exposed, Does.Contain("MCP-Protocol-Version").IgnoreCase);
-            Assert.That(exposed, Does.Contain("WWW-Authenticate").IgnoreCase);
+            Assert.IsTrue(response.IsSuccessStatusCode, $"The cross-origin tools/list was answered with {(int)response.StatusCode}.");
+            Assert.IsTrue(response.Headers.Contains("Access-Control-Allow-Origin"), "The response carries no Access-Control-Allow-Origin.");
+            Assert.Contains("MCP-Protocol-Version", exposed, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("WWW-Authenticate", exposed, StringComparison.OrdinalIgnoreCase);
 
             // AllowAnyOrigin and credentials are mutually exclusive by design, and that is the right
             // way round: no cookie of this site's should ride along on a cross-origin tool call.
-            Assert.That(response.Headers.Contains("Access-Control-Allow-Credentials"), Is.False);
-        });
+            Assert.IsFalse(response.Headers.Contains("Access-Control-Allow-Credentials"));
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task The_api_mirror_is_reachable_from_another_origin_too()
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, McpServerFixture.Url("api/mcp/GetButilApiDetails"));
@@ -144,24 +143,24 @@ public class HttpSurfaceTests : McpTestBase
 
         using var response = await Http.SendAsync(request);
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(response.Headers.Contains("Access-Control-Allow-Origin"), Is.True);
-        });
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            Assert.IsTrue(response.Headers.Contains("Access-Control-Allow-Origin"));
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task The_endpoint_is_anonymous()
     {
         // Everything behind these routes is public read-only documentation. A 401 here would mean
         // an MCP client is being asked to authenticate to read a library's docs.
         using var response = await Http.GetAsync(McpServerFixture.Url("api/mcp/GetButilSetupGuide?hostingModel=wasm"));
 
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Test]
+    [TestMethod]
     public async Task Discovery_files_point_at_the_endpoint()
     {
         using var robots = await Http.GetAsync(McpServerFixture.Url("robots.txt"));
@@ -173,24 +172,24 @@ public class HttpSurfaceTests : McpTestBase
         using var sitemap = await Http.GetAsync(McpServerFixture.Url("sitemap.xml"));
         var sitemapBody = await sitemap.Content.ReadAsStringAsync();
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(robots.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(robotsBody, Does.Contain("Sitemap: "));
-            Assert.That(robotsBody, Does.Contain("/sitemap.xml"));
+            Assert.AreEqual(HttpStatusCode.OK, robots.StatusCode);
+            Assert.Contains("Sitemap: ", robotsBody);
+            Assert.Contains("/sitemap.xml", robotsBody);
 
-            Assert.That(llms.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(llmsBody, Does.StartWith("# Bit.Butil"));
-            Assert.That(llmsBody, Does.Contain("/mcp"), "llms.txt is where an assistant learns the MCP endpoint exists.");
-            Assert.That(llmsBody, Does.Contain("/api/mcp/"));
+            Assert.AreEqual(HttpStatusCode.OK, llms.StatusCode);
+            Assert.StartsWith("# Bit.Butil", llmsBody);
+            Assert.Contains("/mcp", llmsBody, "llms.txt is where an assistant learns the MCP endpoint exists.");
+            Assert.Contains("/api/mcp/", llmsBody);
 
-            Assert.That(sitemap.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(sitemapBody, Does.StartWith("<?xml"));
-            Assert.That(sitemapBody, Does.Contain("<urlset"));
-        });
+            Assert.AreEqual(HttpStatusCode.OK, sitemap.StatusCode);
+            Assert.StartsWith("<?xml", sitemapBody);
+            Assert.Contains("<urlset", sitemapBody);
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task The_discovery_files_are_generated_from_the_same_nav_the_tools_use()
     {
         // All three are generated from DocsNav rather than written by hand, so a page added to the
@@ -199,10 +198,10 @@ public class HttpSurfaceTests : McpTestBase
         // Both comparisons below are "no page is missing", which an index of no pages satisfies -
         // so the index having arrived at all is asserted before anything is held against it.
         using var response = await Http.GetAsync(McpServerFixture.Url("api/mcp/GetButilDocsPage"));
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK), "The docs index did not answer over HTTP.");
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "The docs index did not answer over HTTP.");
 
         var pages = DocsIndexRow.ParseAll(await response.Content.ReadAsStringAsync());
-        Assert.That(pages, Is.Not.Empty, "The docs index answered with no rows, so there is nothing to hold the discovery files to.");
+        Assert.IsNotEmpty(pages, "The docs index answered with no rows, so there is nothing to hold the discovery files to.");
 
         var sitemap = await (await Http.GetAsync(McpServerFixture.Url("sitemap.xml"))).Content.ReadAsStringAsync();
         var llms = await (await Http.GetAsync(McpServerFixture.Url("llms.txt"))).Content.ReadAsStringAsync();
@@ -218,21 +217,21 @@ public class HttpSurfaceTests : McpTestBase
         var missingFromSitemap = pages.Where(page => sitemapped.Contains(page.Slug.Trim('/')) is false).ToArray();
         var missingFromLlms = pages.Where(page => llms.Contains($"/{page.Slug})", StringComparison.Ordinal) is false).ToArray();
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(missingFromSitemap.Select(page => page.Slug), Is.Empty);
-            Assert.That(missingFromLlms.Select(page => page.Slug), Is.Empty);
-        });
+            Assert.IsEmpty(missingFromSitemap.Select(page => page.Slug));
+            Assert.IsEmpty(missingFromLlms.Select(page => page.Slug));
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task The_endpoint_the_discovery_files_advertise_is_the_one_that_answers()
     {
         // llms.txt tells an assistant where the server is. A relative move of the route would leave
         // that sentence pointing at a 404 that nothing else in the suite would notice.
         var llms = await (await Http.GetAsync(McpServerFixture.Url("llms.txt"))).Content.ReadAsStringAsync();
 
-        Assert.That(llms, Does.Contain($"{McpServerFixture.BaseUrl}/mcp"),
+        Assert.Contains($"{McpServerFixture.BaseUrl}/mcp", llms,
             "llms.txt should advertise the endpoint on the origin the request arrived on.");
 
         // And that endpoint answers MCP rather than the app's router: a JSON-RPC envelope back from
@@ -246,11 +245,11 @@ public class HttpSurfaceTests : McpTestBase
         using var response = await Http.SendAsync(request);
         var body = await response.Content.ReadAsStringAsync();
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That((int)response.StatusCode, Is.LessThan(500), $"POST /mcp answered {(int)response.StatusCode}.");
-            Assert.That(body, Does.Contain("\"jsonrpc\""), $"POST /mcp did not answer with JSON-RPC: {body[..Math.Min(300, body.Length)]}");
-            Assert.That(body, Does.Contain("SearchButil"), "POST /mcp did not list this server's tools.");
-        });
+            Assert.IsLessThan(500, (int)response.StatusCode, $"POST /mcp answered {(int)response.StatusCode}.");
+            Assert.Contains("\"jsonrpc\"", body, $"POST /mcp did not answer with JSON-RPC: {body[..Math.Min(300, body.Length)]}");
+            Assert.Contains("SearchButil", body, "POST /mcp did not list this server's tools.");
+        }
     }
 }

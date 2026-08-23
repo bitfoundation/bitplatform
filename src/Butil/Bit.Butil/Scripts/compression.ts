@@ -1,4 +1,4 @@
-var BitButil = BitButil || {};
+var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
     // Round-trips bytes through a transform stream by wrapping them in a one-chunk Response, whose

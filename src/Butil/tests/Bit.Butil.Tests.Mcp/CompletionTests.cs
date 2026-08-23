@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ModelContextProtocol.Protocol;
 using Bit.Butil.Tests.Mcp.Infrastructure;
 
@@ -15,128 +15,127 @@ namespace Bit.Butil.Tests.Mcp;
 /// list that has drifted from the tools offers values that then do not resolve.
 /// </para>
 /// </summary>
-[TestFixture]
-[Parallelizable(ParallelScope.Self)]
+[TestClass]
 public class CompletionTests : McpTestBase
 {
-    [Test]
+    [TestMethod]
     public async Task The_hosting_model_argument_completes_to_the_models_that_exist()
     {
         var completion = await CompleteAsync(new PromptReference { Name = "add-butil-to-app" }, "hostingModel", "");
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(completion.Values, Is.EquivalentTo(new[] { "wasm", "web-app", "server", "hybrid", "unknown" }));
-            Assert.That(completion.Total, Is.EqualTo(5));
-            Assert.That(completion.HasMore, Is.Not.True);
-        });
+            CollectionAssert.AreEquivalent(new[] { "wasm", "web-app", "server", "hybrid", "unknown" }, completion.Values.ToArray());
+            Assert.AreEqual(5, completion.Total);
+            Assert.AreNotEqual(true, completion.HasMore);
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task Typing_narrows_the_hosting_models()
     {
         var completion = await CompleteAsync(new PromptReference { Name = "add-butil-to-app" }, "hostingModel", "w");
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
             // "unknown" contains a w, so it is offered too - but after the two that start with one.
-            Assert.That(completion.Values, Is.EqualTo(new[] { "wasm", "web-app", "unknown" }).AsCollection);
-            Assert.That(completion.Values, Does.Not.Contain("server"));
-            Assert.That(completion.Values, Does.Not.Contain("hybrid"));
-        });
+            Assert.AreSequenceEqual(new[] { "wasm", "web-app", "unknown" }, completion.Values);
+            Assert.DoesNotContain("server", completion.Values);
+            Assert.DoesNotContain("hybrid", completion.Values);
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task A_prose_argument_offers_nothing_rather_than_a_menu_of_prose()
     {
         var completion = await CompleteAsync(new PromptReference { Name = "implement-butil-feature" }, "feature", "");
 
-        Assert.That(completion.Values, Is.Empty, "Offering a menu of possible feature descriptions would be worse than silence.");
+        Assert.IsEmpty(completion.Values, "Offering a menu of possible feature descriptions would be worse than silence.");
     }
 
-    [Test]
+    [TestMethod]
     public async Task Docs_slugs_complete_from_the_same_list_the_tool_serves()
     {
         var completion = await CompleteAsync(new ResourceTemplateReference { Uri = "butil://docs/{slug}" }, "slug", "");
 
         var slugs = (await DocsIndexAsync()).Select(page => page.Slug).ToArray();
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
             // The protocol caps one response at 100 values, so Total - not the length of Values - is
             // what has to agree with the listing. Every value offered still has to come from it.
-            Assert.That(completion.Total, Is.EqualTo(slugs.Length));
-            Assert.That(completion.Values, Is.Not.Empty);
-            Assert.That(completion.Values, Is.SubsetOf(slugs),
+            Assert.AreEqual(slugs.Length, completion.Total);
+            Assert.IsNotEmpty(completion.Values);
+            CollectionAssert.IsSubsetOf(completion.Values.ToArray(), slugs,
                 "The completion list and the docs listing have drifted apart, so a completed slug may not resolve.");
-        });
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task Type_names_complete_from_the_same_list_the_tool_serves()
     {
         var completion = await CompleteAsync(new ResourceTemplateReference { Uri = "butil://api/{typeName}" }, "typeName", "Clip");
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(completion.Values, Does.Contain("Clipboard"));
-            Assert.That(completion.Values.All(value => value.Contains("Clip", StringComparison.OrdinalIgnoreCase)), Is.True);
-        });
+            Assert.Contains("Clipboard", completion.Values);
+            Assert.IsTrue(completion.Values.All(value => value.Contains("Clip", StringComparison.OrdinalIgnoreCase)));
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task Prefix_matches_come_before_mere_containment()
     {
         // Someone typing "storage" wants StorageManager before "Local & Session Storage", and both
         // before neither.
         var completion = await CompleteAsync(new ResourceTemplateReference { Uri = "butil://api/{typeName}" }, "typeName", "Storage");
 
-        Assert.That(completion.Values, Is.Not.Empty);
+        Assert.IsNotEmpty(completion.Values);
 
         var firstNonPrefix = completion.Values.ToList().FindIndex(value => value.StartsWith("Storage", StringComparison.OrdinalIgnoreCase) is false);
         var lastPrefix = completion.Values.ToList().FindLastIndex(value => value.StartsWith("Storage", StringComparison.OrdinalIgnoreCase));
 
         if (firstNonPrefix >= 0)
         {
-            Assert.That(lastPrefix, Is.LessThan(firstNonPrefix),
+            Assert.IsLessThan(firstNonPrefix, lastPrefix,
                 $"Prefix matches are not grouped first: {string.Join(", ", completion.Values)}");
         }
     }
 
-    [Test]
+    [TestMethod]
     public async Task Guide_headings_complete_from_the_same_list_the_tool_serves()
     {
         var completion = await CompleteAsync(new ResourceTemplateReference { Uri = "butil://guide/{heading}" }, "heading", "");
 
         var headings = await ListAsync("GetButilGuideSection");
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(completion.Total, Is.EqualTo(headings.Length));
-            Assert.That(completion.Values, Is.Not.Empty);
-            Assert.That(completion.Values, Is.SubsetOf(headings),
+            Assert.AreEqual(headings.Length, completion.Total);
+            Assert.IsNotEmpty(completion.Values);
+            CollectionAssert.IsSubsetOf(completion.Values.ToArray(), headings,
                 "The completion list and the guide's own section list have drifted apart.");
-        });
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task Source_paths_complete_and_are_capped_honestly()
     {
         var completion = await CompleteAsync(new ResourceTemplateReference { Uri = "butil://source/{path}" }, "path", "");
 
         var files = await ListAsync("GetButilSourceFile");
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
             // The protocol caps one response at 100 values. Total and HasMore are what tell a client
             // to keep typing rather than that the list simply ends here.
-            Assert.That(completion.Values.Count, Is.LessThanOrEqualTo(100));
-            Assert.That(completion.Total, Is.EqualTo(files.Length));
-            Assert.That(completion.HasMore, Is.EqualTo(files.Length > 100));
-        });
+            Assert.IsLessThanOrEqualTo(100, completion.Values.Count);
+            Assert.AreEqual(files.Length, completion.Total);
+            Assert.AreEqual(files.Length > 100, completion.HasMore);
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task Completed_values_are_values_the_server_can_then_resolve()
     {
         // The point of the whole handler: what it offers has to work when it is used.
@@ -146,7 +145,7 @@ public class CompletionTests : McpTestBase
         {
             var text = Text(await CallAsync("GetButilDocsPage", new { slug }));
 
-            Assert.That(text, Does.Not.StartWith("No documentation page has the slug"),
+            Assert.DoesNotStartWith("No documentation page has the slug", text,
                 $"The completion offered '{slug}', which the docs tool then could not resolve.");
         }
 
@@ -156,30 +155,30 @@ public class CompletionTests : McpTestBase
         {
             var details = await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails", new { typeName });
 
-            Assert.That(details.Details, Is.Not.Null, $"The completion offered '{typeName}', which the API tool then could not resolve.");
+            Assert.IsNotNull(details.Details, $"The completion offered '{typeName}', which the API tool then could not resolve.");
         }
     }
 
-    [Test]
+    [TestMethod]
     public async Task An_argument_with_no_closed_set_completes_to_nothing_rather_than_failing()
     {
         var unknownTemplate = await CompleteAsync(new ResourceTemplateReference { Uri = "butil://nothing/{here}" }, "here", "");
         var unknownArgument = await CompleteAsync(new ResourceTemplateReference { Uri = "butil://docs/{slug}" }, "notAnArgument", "");
         var unknownPrompt = await CompleteAsync(new PromptReference { Name = "no-such-prompt" }, "whatever", "");
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(unknownTemplate.Values, Is.Empty);
-            Assert.That(unknownArgument.Values, Is.Empty);
-            Assert.That(unknownPrompt.Values, Is.Empty);
-        });
+            Assert.IsEmpty(unknownTemplate.Values);
+            Assert.IsEmpty(unknownArgument.Values);
+            Assert.IsEmpty(unknownPrompt.Values);
+        }
     }
 
     private async Task<Completion> CompleteAsync(Reference reference, string argumentName, string argumentValue)
     {
         var result = await Mcp.CompleteAsync(reference, argumentName, argumentValue, cancellationToken: Ct);
 
-        Assert.That(result.Completion, Is.Not.Null);
+        Assert.IsNotNull(result.Completion);
 
         return result.Completion;
     }

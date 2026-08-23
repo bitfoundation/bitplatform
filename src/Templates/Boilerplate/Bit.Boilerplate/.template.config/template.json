@@ -573,6 +573,10 @@
                         "src/Tests/Features/Identity/TestAccountUtils.cs",
                         "src/Tests/Features/Identity/RoleAdministrationGuardTests.cs",
                         "src/Tests/Features/Identity/ConfirmPageTwoFactorTests.cs",
+                        "src/Tests/Features/Identity/SignInPanelCredentialStateTests.cs",
+                        "src/Tests/Features/Identity/WebAuthnEnrolmentElevationTests.cs",
+                        "src/Tests/Features/Identity/TwoFactorSharedKeyExposureTests.cs",
+                        "src/Tests/Features/Identity/AccountSectionDeepLinkTests.cs",
                         "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs",
                         "src/Tests/Features/Seo/**",
                         "src/Tests/Features/Tenants/TenantInvitationUITests.cs",
@@ -610,7 +614,9 @@
                         "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
                         "src/Tests/Features/OpenApi/OpenApiParameterContractTests.cs",
                         "src/Tests/Features/Urls/WebAppUrlOriginHardeningTests.cs",
-                        "src/Tests/Features/RateLimiting/IdentityRateLimitTests.cs"
+                        "src/Tests/Features/RateLimiting/IdentityRateLimitTests.cs",
+                        "src/Tests/Features/Identity/RoleQuotaClaimLifecycleTests.cs",
+                        "src/Tests/Features/Tenants/TenantMembershipStateTests.cs"
                     ]
                 },
                 {
@@ -644,8 +650,8 @@
                         "src/Tests/Features/Chatbot/SystemPromptContractTests.cs",
                         "src/Tests/Features/Chatbot/AiChatMessageWireContractTests.cs",
                         "src/Tests/Features/Chatbot/AiChatPanelThemeUITests.cs",
-                        "src/Tests/Features/Chatbot/AiChatPanelReadAloudUITests.cs",
-                        "src/Tests/Features/Chatbot/AiChatPanelDictationUITests.cs",
+                        "src/Tests/Features/Chatbot/ChatbotSpeechEndpointTests.cs",
+                        "src/Tests/Features/Chatbot/SpeakableTextTests.cs",
                         "src/Tests/Features/Chatbot/AiChatPanelTestBase.cs",
                         "src/Tests/Features/Chatbot/AppChatbotHistoryTests.cs",
                         "src/Tests/Features/Chatbot/TestChatClient.cs"
@@ -791,6 +797,7 @@
                         "src/Server/Boilerplate.Server.Api/Features/Identity/Services/AppRoleValidator.cs",
                         "src/Tests/Features/Tenants/TenantInvitationUITests.cs",
                         "src/Tests/Features/Tenants/TenantInvitationIsolationTests.cs",
+                        "src/Tests/Features/Tenants/TenantMembershipStateTests.cs",
                         "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
                         "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs",
                         "src/Tests/Features/Identity/PrivilegedSessionTenantSwitchTests.cs"

@@ -1,4 +1,4 @@
-var BitButil = BitButil || {};
+var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
     const DEFAULT_PROPERTIES = ['name', 'email', 'tel'];

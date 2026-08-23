@@ -127,6 +127,31 @@ public static class TestAccountUtils
         Assert.IsFalse(string.IsNullOrEmpty(accessToken), "The elevation refresh should have produced a new access token.");
     }
 
+    /// <summary>
+    /// Clears the one-time-code and lockout state of <paramref name="email"/>'s account: <c>OtpRequestedOn</c>,
+    /// <c>AccessFailedCount</c> and <c>LockoutEnd</c>.
+    /// <para>
+    /// A test that needs to know whether a one-time code is live on the <b>shared seeded</b> account cannot assume it -
+    /// the state is persisted per user, the test database outlives the run, and a leftover from an earlier run answers a
+    /// sign-in attempt differently (<c>SignInManagerExtensions.OtpSignIn</c> reports an expired token only while
+    /// <c>OtpRequestedOn</c> is unset or stale). Per-run accounts from <see cref="CreateAndSignIn"/> need none of this.
+    /// </para>
+    /// </summary>
+    public static async Task ResetOtpAndLockoutState(AppTestServer server, string email, CancellationToken cancellationToken)
+    {
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var normalizedEmail = email.ToUpperInvariant();
+
+        var user = await dbContext.Set<User>().SingleAsync(u => u.NormalizedEmail == normalizedEmail, cancellationToken);
+
+        user.OtpRequestedOn = null;
+        user.AccessFailedCount = 0;
+        user.LockoutEnd = null;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public static async Task<Guid> ReadUserId(AppTestServer server, string email, CancellationToken cancellationToken)
     {
         await using var scope = server.WebApp.Services.CreateAsyncScope();

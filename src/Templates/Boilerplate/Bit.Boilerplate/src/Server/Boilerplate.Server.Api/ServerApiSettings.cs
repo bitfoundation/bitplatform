@@ -23,6 +23,11 @@ public partial class ServerApiSettings : ServerSharedSettings
     [Required]
     public string UserProfileImagesDir { get; set; } = default!;
 
+    //#if (signalR == true)
+    [Required]
+    public string AiChatImagesDir { get; set; } = default!;
+    //#endif
+
     //#if (captcha == "reCaptcha")
     /// <summary>
     /// Create one at https://console.cloud.google.com/security/recaptcha/create for Web Application Type and use site key in Client.Core
@@ -163,6 +168,17 @@ public class OpenAIOptions
     public string? EmbeddingModel { get; set; }
     public Uri? EmbeddingEndpoint { get; set; }
     public string? EmbeddingApiKey { get; set; }
+
+    //#if (signalR == true)
+    public string? SpeechToTextModel { get; set; }
+    public Uri? SpeechToTextEndpoint { get; set; }
+    public string? SpeechToTextApiKey { get; set; }
+
+    public string? TextToSpeechModel { get; set; }
+    public Uri? TextToSpeechEndpoint { get; set; }
+    public string? TextToSpeechApiKey { get; set; }
+    public string? TextToSpeechVoice { get; set; }
+    //#endif
 }
 
 public class HuggingFaceOptions

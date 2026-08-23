@@ -1,6 +1,6 @@
-# Bit.Butil end-to-end tests
+﻿# Bit.Butil end-to-end tests
 
-NUnit + Microsoft.Playwright suite that boots `Bit.Butil.Samples.Web` (Blazor WASM) as a child process and exercises two deterministic harness pages. Uses the **Microsoft.Testing.Platform** runner (mandated by the repo `global.json`) via NUnit's MTP runner.
+MSTest + Microsoft.Playwright suite that boots `Bit.Butil.Samples.Web` (Blazor WASM) as a child process and exercises two deterministic harness pages. Uses the **Microsoft.Testing.Platform** runner (mandated by the repo `global.json`) via `EnableMSTestRunner`.
 
 ## First-time setup
 
@@ -42,6 +42,27 @@ dotnet test .\Bit.Butil.Tests.E2E.csproj
 * `Infrastructure/ButilHarnessTestBase.cs` - self-managing Playwright base class (launch + context + page) that reads the env vars above.
 * `Infrastructure/ButilPageTest.cs` / `ButilObserversPageTest.cs` - thin bases pinning each harness route.
 * `*Tests.cs` - narrowly-scoped tests grouped by Butil surface.
+* `LazyScriptsTests.cs` - opens `/e2e?lazy=1`, which starts the sample with no `bit-butil.js` on the page and
+  `BitButil.UseLazyScripts()` on (see `Bit.Butil.Samples.Web/Program.cs` and `index.html`), and proves the
+  per-module `import()` path in a real browser: modules arrive on first use, one at a time, one file each
+  (a module carries its own dependencies, so there is no request per helper), nothing that was not called
+  is fetched, and the calls behave as in bundle mode.
+* `InteropContractTests.cs` - runs `Infrastructure/verify-interop-contract.mjs` under Node: every
+  `BitButil.x.y` identifier the C# side invokes must resolve against the bundle **and** against its own
+  lazy-loadable module file evaluated on its own.
+
+### Running against a trimmed publish
+
+`Bit.Butil.Samples.Web` imports Bit.Butil's consumer-side build logic by hand (see its csproj), so a
+`dotnet publish -c Release` of it goes through the same publish-time bundle trimming a NuGet consumer gets -
+its `bit-butil.js` holds only the modules the trimmed `Bit.Butil.dll` still calls. Serve the published
+`wwwroot` with any static server (SPA fallback to `index.html`) and point the suite at it to run every
+test, bundle and lazy, against that output:
+
+```powershell
+$env:BUTIL_E2E_BASE_URL = "http://127.0.0.1:5199"
+dotnet test .\Bit.Butil.Tests.E2E.csproj
+```
 * `ci/bit.ci.Butil.e2e.yml` - a ready-made workflow (triggered by any `src/Butil/**` change) that is **not currently enabled**: CI does not run this suite today. To turn it on, copy the file into `.github/workflows/` and enable it there.
 
 ## Harness pages

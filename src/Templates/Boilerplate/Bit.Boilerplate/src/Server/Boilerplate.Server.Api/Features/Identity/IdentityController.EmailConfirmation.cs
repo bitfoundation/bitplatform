@@ -7,7 +7,7 @@ public partial class IdentityController
 {
     [AutoInject] private IdentityEmailService emailService = default!;
 
-    [HttpPost, EnableRateLimiting(AppRateLimitPolicies.IDENTITY)]
+    [HttpPost, EnableRateLimiting(RateLimitOptionsExtensions.IDENTITY)]
     public async Task SendConfirmEmailToken(SendEmailTokenRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByEmailAsync(request.Email!)

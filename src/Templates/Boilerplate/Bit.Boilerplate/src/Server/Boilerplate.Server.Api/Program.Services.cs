@@ -233,21 +233,7 @@ public static partial class Program
             });
         });
 
-        services.AddRateLimiter(options =>
-        {
-            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-
-            options.AddPolicy(AppRateLimitPolicies.IDENTITY, context =>
-                System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
-                    partitionKey: context.User.IsAuthenticated()
-                        ? $"user:{context.User.GetUserId()}"
-                        : $"ip:{context.Connection.RemoteIpAddress}",
-                    factory: _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
-                    {
-                        PermitLimit = 30,
-                        Window = TimeSpan.FromMinutes(1)
-                    }));
-        });
+        services.AddRateLimiter(options => options.AddAppRateLimitPolicies());
 
         services.AddSingleton(sp =>
         {
@@ -295,6 +281,7 @@ public static partial class Program
         var signalRBuilder = services.AddSignalR(options =>
         {
             options.EnableDetailedErrors = env.IsDevelopment();
+            configuration.GetRequiredSection("HubOptions").Bind(options);
         }).AddJsonProtocol(options => options.PayloadSerializerOptions.ApplyDefaultOptions());
 
         if (string.IsNullOrEmpty(configuration["Azure:SignalR:ConnectionString"]) is false)
@@ -580,6 +567,36 @@ public static partial class Program
             .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
             // .UseDistributedCache()
         }
+
+        //#if (signalR == true)
+        // Speech in and speech out for the AI chat panel (See ChatbotController.TranscribeSpeech / SynthesizeSpeech).
+        // They are Microsoft.Extensions.AI abstractions rather than the browser's Web Speech api, so a phone's web
+        // view, a home-screen pwa and the MAUI app all behave the same - Web Speech is missing or crippled in most
+        // of them. Each one is optional on its own: with no key the corresponding button is never offered.
+#pragma warning disable MEAI001 // ISpeechToTextClient and ITextToSpeechClient are still experimental.
+        if (string.IsNullOrEmpty(appSettings.AI?.OpenAI?.SpeechToTextApiKey) is false)
+        {
+            services.AddSpeechToTextClient(sp => new OpenAI.Audio.AudioClient(model: appSettings.AI.OpenAI.SpeechToTextModel, credential: new(appSettings.AI.OpenAI.SpeechToTextApiKey), options: new()
+            {
+                Endpoint = appSettings.AI.OpenAI.SpeechToTextEndpoint,
+                Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
+            }).AsISpeechToTextClient())
+            .UseLogging()
+            .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
+        }
+
+        if (string.IsNullOrEmpty(appSettings.AI?.OpenAI?.TextToSpeechApiKey) is false)
+        {
+            services.AddTextToSpeechClient(sp => new OpenAI.Audio.AudioClient(model: appSettings.AI.OpenAI.TextToSpeechModel, credential: new(appSettings.AI.OpenAI.TextToSpeechApiKey), options: new()
+            {
+                Endpoint = appSettings.AI.OpenAI.TextToSpeechEndpoint,
+                Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
+            }).AsITextToSpeechClient())
+            .UseLogging()
+            .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
+        }
+#pragma warning restore MEAI001
+        //#endif
         //#endif
 
         // Configure Hangfire to use Redis for persistent background job storage

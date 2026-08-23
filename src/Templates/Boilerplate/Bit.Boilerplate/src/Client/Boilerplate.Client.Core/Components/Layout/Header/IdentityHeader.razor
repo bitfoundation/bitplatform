@@ -16,6 +16,8 @@
                    Variant="BitVariant.Text"
                    OnClick="WrapHandled(ToggleTheme)"
                    Color="BitColor.SecondaryBackground"
+                   Title="@ThemeToggleLabel"
+                   AriaLabel="@ThemeToggleLabel"
                    IconName="@(CurrentTheme == AppThemeType.Light ? BitIconName.ClearNight : BitIconName.Sunny)" />
 
         @if (CultureInfoManager.InvariantGlobalization is false)

@@ -11,11 +11,9 @@ public partial class AppMenu
     [CascadingParameter] public AppThemeType? CurrentTheme { get; set; }
 
 
-    [AutoInject] private Cookie cookie = default!;
     [AutoInject] private ThemeService themeService = default!;
     [AutoInject] private CultureService cultureService = default!;
     [AutoInject] private IUserController userController = default!;
-    [AutoInject] private CultureInfoManager cultureInfoManager = default!;
     [AutoInject] private SignInModalService signInModalService = default!;
     //#if (brouter == true && multitenant == true)
     [AutoInject] private IBrouter brouter = default!;
@@ -30,6 +28,7 @@ public partial class AppMenu
     private bool showTenants;
     private string? currentTenantId;
     private BitChoiceGroupItem<string>[] tenants = [];
+    private HashSet<string> pendingInvitationTenantIds = [];
     //#endif
 
     private bool ShowMainMenu =>
@@ -41,6 +40,12 @@ public partial class AppMenu
 
 
     private string? ProfileImageUrl => CurrentUser?.GetProfileImageUrl(AbsoluteServerAddress);
+
+    private string AccountMenuLabel => CurrentUser?.DisplayName ?? Localizer[nameof(AppStrings.AccountMenuTitle)].Value;
+
+    private string ThemeToggleLabel => CurrentTheme == AppThemeType.Light
+        ? Localizer[nameof(AppStrings.SwitchToDarkThemeTitle)]
+        : Localizer[nameof(AppStrings.SwitchToLightThemeTitle)];
 
 
     protected override async Task OnInitAsync()
@@ -80,16 +85,29 @@ public partial class AppMenu
         var user = (await AuthenticationStateTask).User;
         currentTenantId = user.GetTenantId()?.ToString();
 
-        tenants = [.. (await userController.GetTenants(CurrentCancellationToken))
-                        .Select(t => new BitChoiceGroupItem<string> { Value = t.Id.ToString(), Text = t.Title ?? t.Name })];
+        // GetTenants also returns tenants the user has only been INVITED to, and switching into one of those is what
+        // accepts the invitation (See IdentityController.Refresh) - so they have to be told apart in the list rather
+        // than offered as if they were memberships. A pending invitation is only relevant for regular users; a global
+        // admin is listed every active tenant and always just switches (See ManageMyTenantsPage.IsPendingInvitation).
+        var isGlobalAdmin = await AuthorizationService.IsAuthorized(user, AppFeatures.Management.Tenants_Manage_Global);
+
+        var userTenants = await userController.GetTenants(CurrentCancellationToken);
+
+        pendingInvitationTenantIds = isGlobalAdmin
+            ? []
+            : [.. userTenants.Where(t => t.CurrentUserHasAcceptedThisTenantInvitation is false).Select(t => t.Id.ToString())];
+
+        tenants = [.. userTenants.Select(t => new BitChoiceGroupItem<string> { Value = t.Id.ToString(), Text = t.Title ?? t.Name })];
     }
+
+    private bool IsPendingInvitation(string? tenantId) => tenantId is not null && pendingInvitationTenantIds.Contains(tenantId);
 
     private async Task OnTenantChanged(string? tenantId)
     {
         if (Guid.TryParse(tenantId, out var newTenantId) is false || tenantId == currentTenantId)
             return;
 
-        isOpen = false;
+        CloseMenu();
 
         // Switching calls the refresh token api that stores the new tenant id in the token's claims (See IdentityController.Refresh).
         if (await AuthManager.SwitchTenant(newTenantId, CurrentCancellationToken))
@@ -112,7 +130,19 @@ public partial class AppMenu
 
     private async Task GoToProfile()
     {
-        NavigationManager.NavigateTo(PageUrls.Settings);
+        CloseMenu();
+        NavigationManager.NavigateTo($"{PageUrls.Settings}/{PageUrls.SettingsSections.Profile}");
+    }
+
+    /// <summary>
+    /// Closes the menu and resets its sub panels, so it reopens on the main menu rather than on whichever
+    /// sub panel was open when it was closed. BitDropMenu only raises OnDismiss when it closes itself
+    /// (a click on the overlay or on the trigger); assigning the bound IsOpen from code does not.
+    /// </summary>
+    private void CloseMenu()
+    {
+        isOpen = false;
+        OnDropMenuDismiss();
     }
 
     private void OnDropMenuDismiss()
@@ -147,7 +177,7 @@ public partial class AppMenu
 
     private async Task ModalSignIn()
     {
-        isOpen = false;
+        CloseMenu();
         await signInModalService.SignIn();
     }
 }

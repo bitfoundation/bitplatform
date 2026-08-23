@@ -15,4 +15,22 @@
     <ProjectReference Include="..\Bit.Butil.Samples.Core\Bit.Butil.Samples.Core.csproj" />
   </ItemGroup>
 
+  <!-- Bit.Butil reaches this app as a ProjectReference (through Samples.Core), so the consumer-side logic
+       the NuGet package would import (script-loading mode, publish-time bundle trimming) is imported by
+       hand here, pointed at the source tree instead of a package folder. That is what lets a trimmed
+       publish of this sample - what the E2E suite can run against - exercise the same trimmed bit-butil.js
+       a real consumer gets. Everything about the import is a no-op for a plain build or an untrimmed run.
+       The task project has to be built first; it is, as a build dependency of Bit.Butil itself. -->
+  <PropertyGroup>
+    <!-- Both shapes stay in the output: the E2E suite runs this one app in bundle mode and, with ?lazy=1,
+         in lazy mode (see Program.cs). Spelled out here rather than left to the mode, because naming the
+         property is also what keeps every module file through a trimmed publish, which otherwise publishes
+         only the modules the trimmed assembly can still import - and this app's harness pages are meant to
+         be servable whole. -->
+    <BitButilIncludeScriptModules>true</BitButilIncludeScriptModules>
+    <BitButilChunksDirectory>$(MSBuildThisFileDirectory)..\..\Bit.Butil\obj\butil-js\chunks\</BitButilChunksDirectory>
+    <BitButilBuildTasksAssembly>$(MSBuildThisFileDirectory)..\..\Bit.Butil.Build\bin\$(Configuration)\netstandard2.0\Bit.Butil.Build.dll</BitButilBuildTasksAssembly>
+  </PropertyGroup>
+  <Import Project="..\..\Bit.Butil\buildTransitive\Bit.Butil.targets" />
+
 </Project>

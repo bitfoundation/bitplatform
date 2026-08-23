@@ -29,6 +29,12 @@ public partial class PasswordlessTab
     {
         if (User?.UserName is null) return;
 
+        // Elevate BEFORE the ceremony, not after: GetWebAuthnCredentialOptions writes a 3 minute cache entry and
+        // TryEnterElevatedAccessMode rotates the access token, so doing it first means the fresh token is what
+        // CreateWebAuthnCredential travels on and the user is never asked for a code once the passkey already exists.
+        // Short-circuits to true when the session is already elevated, so a two factor sign-in adds no prompt.
+        if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
+
         // Only on Android this action will replace the current credential registered on the device,
         // since android won't show the user selection window when there are multiple credentials registered.
         // So it may be a good idea to show a confirm modal if this behavior is not appropriate for your app (as shown in the following commented lines):

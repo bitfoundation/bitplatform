@@ -1,4 +1,4 @@
-var BitButil = BitButil || {};
+var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
     // The set of actions we have installed a handler for, so unsetting can clear exactly those and

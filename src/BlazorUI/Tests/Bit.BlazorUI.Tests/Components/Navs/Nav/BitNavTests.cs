@@ -1518,7 +1518,9 @@ public class BitNavTests : BunitTestContext
         DataRow("/products/1/2", "/products/*", false),
         DataRow("/products/1/2", "/products/**", true),
         DataRow("/products/1", "/products/?", true),
-        DataRow("/products/12", "/products/?", false)]
+        DataRow("/products/12", "/products/?", false),
+        DataRow("/Products/1", "/products/*", true),
+        DataRow("/products/1", "/Products/*", true)]
     public void BitNavShouldRespectTheWildcardMatch(string url, string pattern, bool expectedSelected)
     {
         Navigate(url);

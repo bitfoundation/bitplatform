@@ -4,7 +4,7 @@
         "allowJs": true,
         "target": "ES2019",
         "lib": [ "DOM", "ESNext" ],
-        "outFile": "wwwroot/bit-butil.js",
+        "outDir": "obj/scripts",
         // Incremental type-safety hardening. Full "strict"/"noImplicitAny" would require typing
         // every interop script and is deferred; these flags catch real bugs (fallthrough, missing
         // returns, unreachable code) without forcing a rewrite of the loosely-typed glue.

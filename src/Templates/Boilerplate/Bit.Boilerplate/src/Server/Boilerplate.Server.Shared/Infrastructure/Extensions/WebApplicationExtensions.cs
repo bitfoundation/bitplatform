@@ -97,6 +97,12 @@ public static class WebApplicationExtensions
             return app;
         }
 
+        // [mirror] the security baseline these headers set - keep in sync with:
+        // - src/Client/Boilerplate.Client.Web/wwwroot/_headers (Cloudflare Pages)
+        // - src/Client/Boilerplate.Client.Web/wwwroot/staticwebapp.config.json (Azure Static Web Apps)
+        // - src/Client/Boilerplate.Client.Maui/Platforms/Android/AppWebChromeClient.cs (Permissions-Policy only)
+        // The first two serve the published wwwroot without ever running this middleware, so they repeat every header below.
+        // The third grants and denies is the same decision Permissions-Policy makes here.
         public WebApplication UseSecurityHeaders()
         {
             // NOTE: These headers represent a strong security baseline.
