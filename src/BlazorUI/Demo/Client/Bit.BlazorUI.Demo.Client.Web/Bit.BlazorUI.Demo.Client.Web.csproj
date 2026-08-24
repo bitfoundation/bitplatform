@@ -16,11 +16,6 @@
         <StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
         <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
         <WasmEnableSIMD>true</WasmEnableSIMD>
-        <!-- Multi-threaded WebAssembly runtime: lets BitPdfViewer's BackgroundRendering
-             offload parsing/rendering to a worker thread. Requires the hosting server to
-             send the COOP/COEP cross-origin-isolation headers (see the demo server's
-             Middlewares.cs) so the runtime can use SharedArrayBuffer. -->
-        <WasmEnableThreads>true</WasmEnableThreads>
     </PropertyGroup>
 
     <ItemGroup>
@@ -48,11 +43,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- These assemblies are only needed by the legacy Chart's Newtonsoft.Json serialization, so
-             keeping them out of the initial WASM download reduces the app's startup payload. Note that
-             nothing loads them back at runtime here: Blazor's lazy assembly loading isn't compatible
-             with the multi-threaded runtime enabled by WasmEnableThreads above, so BitChartLegacyDemo
-             shows a note about that limitation instead of its samples in WebAssembly. -->
+        <!-- Lazily loaded on demand by the legacy Chart demo (see BitChartLegacyDemo). These
+             assemblies are only needed by the legacy Chart's Newtonsoft.Json serialization, so
+             keeping them out of the initial WASM download reduces the app's startup payload. -->
         <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
         <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
         <BlazorWebAssemblyLazyLoad Include="System.Data.Common.wasm" />

@@ -1,94 +1,57 @@
-@page "/components/legacy/chart"
+﻿@page "/components/legacy/chart"
 
 <PageOutlet Url="components/legacy/chart"
             Title="ChartLegacy"
             Description="Simple and flexible charting component for data visualization, which supports eight chart types: bar, line, area, pie, bubble, radar, polar, and scatter." />
 
-<DemoPage Name="ChartLegacy"
-          Description="Simple and flexible charting component for data visualization, which supports eight chart types: bar, line, area, pie, bubble, radar, polar, and scatter."
-          Parameters="componentParameters"
-          SubClasses="componentSubClasses"
-          GitHubLegacyUrl="Chart/BitChartLegacy.razor"
-          GitHubDemoUrl="Legacy/Chart/BitChartLegacyDemo.razor">
-    <NotesTemplate>
-        <BitText>
-            To use this component, you need to install the
-            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Legacy" Target="_blank">
-                <BitTag Reversed
-                        Text="Bit.BlazorUI.Legacy"
-                        Color="BitColor.SecondaryBackground"
-                        IconName="@BitIconName.NavigateExternalInline" />
-            </BitLink>
-            nuget package, as described in the <BitLink Href="/getting-started#legacy-components">Legacy components</BitLink> section of the Getting started page.
-        </BitText>
-    </NotesTemplate>
-    <Examples>
-        @if (isWasm)
-        {
-            <BitMessage Multiline Color="BitColor.Warning">
-                <BitText Element="p">
-                    <strong>The samples of this page are not rendered in the WebAssembly version of this demo app.</strong>
+<div>
+    @if (isLoadingAssemblies)
+    {
+        <LoadingComponent />
+    }
+    else
+    {
+        <DemoPage Name="ChartLegacy"
+                  Description="Simple and flexible charting component for data visualization, which supports eight chart types: bar, line, area, pie, bubble, radar, polar, and scatter."
+                  Parameters="componentParameters"
+                  SubClasses="componentSubClasses"
+                  GitHubLegacyUrl="Chart/BitChartLegacy.razor"
+                  GitHubDemoUrl="Legacy/Chart/BitChartLegacyDemo.razor">
+            <NotesTemplate>
+                <BitText>
+                    To use this component, you need to install the
+                    <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Legacy" Target="_blank">
+                        <BitTag Reversed
+                                Text="Bit.BlazorUI.Legacy"
+                                Color="BitColor.SecondaryBackground"
+                                IconName="@BitIconName.NavigateExternalInline" />
+                    </BitLink>
+                    nuget package, as described in the <BitLink Href="/getting-started#legacy-components">Legacy components</BitLink> section of the Getting started page.
                 </BitText>
-                <br />
-                <BitText Element="p">
-                    BitChartLegacy serializes its configuration with
-                    <BitTag Color="BitColor.SecondaryBackground">Newtonsoft.Json</BitTag>, so the samples need the
-                    <BitTag Color="BitColor.SecondaryBackground">Newtonsoft.Json</BitTag>,
-                    <BitTag Color="BitColor.SecondaryBackground">System.Private.Xml</BitTag> and
-                    <BitTag Color="BitColor.SecondaryBackground">System.Data.Common</BitTag> assemblies. To keep the
-                    startup download of this app small, those assemblies are not part of the initial payload: they are
-                    declared as <BitTag Color="BitColor.SecondaryBackground">BlazorWebAssemblyLazyLoad</BitTag> in the
-                    project file and used to be fetched on demand with
-                    <BitTag Color="BitColor.SecondaryBackground">LazyAssemblyLoader</BitTag> when this page was opened.
-                </BitText>
-                <br />
-                <BitText Element="p">
-                    Blazor's lazy assembly loading feature is not compatible with the multi-threaded WebAssembly
-                    runtime, and this demo app is built with
-                    <BitTag Color="BitColor.SecondaryBackground">WasmEnableThreads</BitTag> enabled, which other
-                    components of the app rely on. The lazy load therefore fails with an exception that takes the whole
-                    app down, so this page now shows this note instead of running the samples.
-                </BitText>
-                <br />
-                <BitText Element="p">
-                    This is a limitation of the configuration of this demo app and not of the component itself:
-                    BitChartLegacy works in Blazor Server, in Blazor Hybrid (MAUI, WPF, WinForms) and in any Blazor
-                    WebAssembly app that either doesn't enable WASM threads or ships those assemblies in the initial
-                    download instead of lazy loading them.
-                </BitText>
-                <br />
-                <BitText Element="p">
-                    You can still read the full source code of every sample
-                    <BitLink Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/Legacy/Chart"
-                             Target="_blank">on GitHub</BitLink>. For new apps we recommend the native
-                    <BitLink Href="/components/chart">BitChart</BitLink> component instead: it renders with SVG, needs
-                    no JavaScript charting engine and no lazy loaded assemblies, so it also runs here.
-                </BitText>
-            </BitMessage>
-        }
-        else
-        {
-            <_BitChartLegacyBarDemo />
+            </NotesTemplate>
+            <Examples>
+                <_BitChartLegacyBarDemo />
 
-            <_BitChartLegacyHorizontalBarDemo />
+                <_BitChartLegacyHorizontalBarDemo />
 
-            <_BitChartLegacyStackedBarDemo />
+                <_BitChartLegacyStackedBarDemo />
 
-            <_BitChartLegacyLineDemo />
+                <_BitChartLegacyLineDemo />
 
-            <_BitChartLegacyPieDemo />
+                <_BitChartLegacyPieDemo />
 
-            <_BitChartLegacyDoughnutDemo />
+                <_BitChartLegacyDoughnutDemo />
 
-            <_BitChartLegacyPolarAreaDemo />
+                <_BitChartLegacyPolarAreaDemo />
 
-            <_BitChartLegacyTimeDemo />
+                <_BitChartLegacyTimeDemo />
 
-            <_BitChartLegacyScatterDemo />
+                <_BitChartLegacyScatterDemo />
 
-            <_BitChartLegacyBubbleDemo />
+                <_BitChartLegacyBubbleDemo />
 
-            <_BitChartLegacyRadarDemo />
-        }
-    </Examples>
-</DemoPage>
+                <_BitChartLegacyRadarDemo />
+            </Examples>
+        </DemoPage>
+    }
+</div>

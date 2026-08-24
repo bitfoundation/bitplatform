@@ -1,4 +1,4 @@
-﻿// using Microsoft.AspNetCore.Components.WebAssembly.Services;
+﻿using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Legacy.Chart;
 
@@ -73,32 +73,26 @@ public partial class BitChartLegacyDemo
 
     // BitChartLegacy serializes its config with Newtonsoft.Json, so the samples need assemblies that this
     // demo app keeps out of its initial WebAssembly payload through the BlazorWebAssemblyLazyLoad item group.
-    // Blazor's lazy assembly loading is not compatible with the multi-threaded WebAssembly runtime the app is
-    // built with (WasmEnableThreads), and the failing load brought the whole app down, so in WebAssembly the
-    // samples are replaced by a note explaining the limitation. Every other host (Blazor Server, MAUI,
-    // Windows) has those assemblies from the start and renders the samples as usual.
-    private readonly bool isWasm = OperatingSystem.IsBrowser();
+    // They are fetched on demand here, before the samples render. Every other host (Blazor Server, MAUI,
+    // Windows) already has them and the load is skipped.
+    [AutoInject] LazyAssemblyLoader lazyAssemblyLoader = default!;
 
+    private bool isLoadingAssemblies = true;
 
+    protected async override Task OnInitializedAsync()
+    {
+        try
+        {
+            if (OperatingSystem.IsBrowser())
+            {
+                await lazyAssemblyLoader.LoadAssembliesAsync(["Newtonsoft.Json.wasm", "System.Private.Xml.wasm", "System.Data.Common.wasm"]);
+            }
+        }
+        finally
+        {
+            isLoadingAssemblies = false;
+        }
 
-    // [AutoInject] LazyAssemblyLoader lazyAssemblyLoader = default!;
-
-    // private bool isLoadingAssemblies = true;
-
-    // protected async override Task OnInitializedAsync()
-    // {
-    //     try
-    //     {
-    //         if (OperatingSystem.IsBrowser())
-    //         {
-    //             await lazyAssemblyLoader.LoadAssembliesAsync(["Newtonsoft.Json.wasm", "System.Private.Xml.wasm", "System.Data.Common.wasm"]);
-    //         }
-    //     }
-    //     finally
-    //     {
-    //         isLoadingAssemblies = false;
-    //     }
-
-    //     await base.OnInitializedAsync();
-    // }
+        await base.OnInitializedAsync();
+    }
 }
