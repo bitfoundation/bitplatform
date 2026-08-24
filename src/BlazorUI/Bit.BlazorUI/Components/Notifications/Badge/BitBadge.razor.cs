@@ -9,10 +9,15 @@ public partial class BitBadge : BitComponentBase
     private string? _content;
     private string? _rel;
     private bool _isZeroContent;
+    private bool _isContentCapped;
+    private string? _shownText;
+    private bool _wasBadgeVisible;
 
     // A counter that ticks over while the page stays open answers the change with a short bump. A keyframe
     // animation only restarts when the class carrying it changes, so the two classes alternate; the class is
-    // unset until the first change, which leaves a badge arriving on the page to its entry animation alone.
+    // unset while the badge is off the page, which leaves a badge arriving on it to its entry animation
+    // alone - the two are declared on the same element, and the bump would otherwise win the cascade for
+    // the rest of the badge's life (see OnParametersSet).
     private string? _bumpClass => _bump switch { true => "bit-bdg-bm1", false => "bit-bdg-bm2", _ => null };
 
     // A glyph and a template are content of their own rather than a number, so an emptied counter next to
@@ -39,9 +44,32 @@ public partial class BitBadge : BitComponentBase
     // the badge is. That case keeps the region where it is, and this one moves it out to the root.
     private bool _hasOwnLiveRegion => Live && _isClickable is false;
 
+    // A template is markup rather than a count, so nothing can be read out of it in words: what a badge
+    // showing one says is whatever the template renders, not the content sitting behind it.
+    private bool _hasTemplateContent => Dot is false && ContentTemplate is not null;
+
     // What the badge stands for in words: the description when there is one, and the counter itself
-    // otherwise - unless that counter is an emptied one the badge is no longer showing.
-    private string? _liveText => Description.HasValue() ? Description : (Dot || _isZeroSuppressed ? null : _content);
+    // otherwise - unless that counter is an emptied one, or one a template has taken the badge over from,
+    // in which case it is not what the badge is showing.
+    private string? _liveText => Description.HasValue()
+                               ? Description
+                               : (Dot || _isZeroSuppressed || _hasTemplateContent ? null : _content);
+
+    // The region speaks for the badge, so the badge is hidden from assistive technologies while it does -
+    // otherwise the count would reach a screen reader twice. A template is the one thing the region cannot
+    // speak for, so a badge showing one keeps its own voice instead of being silenced for nothing.
+    private bool _isBadgeMuted => _hasOwnLiveRegion && (Description.HasValue() || _hasTemplateContent is false);
+
+    // What the badge is showing in words right now, which is what a change of it is worth a bump for: a
+    // badge that is off the page, showing a template or showing an emptied counter is showing no text at all.
+    private string? _shownContent => _isBadgeVisible && _hasTemplateContent is false && Dot is false && _isZeroSuppressed is false
+                                   ? _content
+                                   : null;
+
+    // A cap is the one thing the badge shortens, so the figure behind it is spelled out on hover on its own -
+    // a "99+" a reader cannot get the real count out of is the whole reason the tooltip is worth having. A
+    // Title of its own always wins, and a badge showing its content in full has nothing left to reveal.
+    private string? _titleText => Title ?? (_isContentCapped && _shownContent is not null ? Content?.ToString() : null);
 
 
 
@@ -95,6 +123,10 @@ public partial class BitBadge : BitComponentBase
     /// <remarks>
     /// A template is content of its own, so neither <see cref="Max"/> nor <see cref="ShowZero"/> reads it:
     /// the badge shows what the template renders and stays on the page while it is set.
+    /// <br />
+    /// It is markup rather than words, so nothing can be read out of it in text either: a template badge that
+    /// is also <see cref="Live"/> needs a <see cref="Description"/> for the live region to have anything to
+    /// announce.
     /// </remarks>
     [Parameter] public RenderFragment? ContentTemplate { get; set; }
 
@@ -208,15 +240,22 @@ public partial class BitBadge : BitComponentBase
     /// and disappears is announced every time, and the badge is hidden from assistive technologies while it
     /// is on so nothing is announced twice. A badge that is a button keeps the region inside itself instead,
     /// since a focusable element cannot be hidden from a screen reader.
+    /// <br />
+    /// What the region reads out is the <see cref="Description"/> when there is one and the counter itself
+    /// otherwise. A <see cref="ContentTemplate"/> is markup neither of them can be read out of, so a badge
+    /// showing one keeps its own voice and needs a <see cref="Description"/> for the region to say anything.
     /// </remarks>
     [Parameter] public bool Live { get; set; }
 
     /// <summary>
-    /// Max value to display when content is an integral number.
+    /// Max value to display when content is a number.
     /// </summary>
     /// <remarks>
     /// A content above it renders as the max followed by a plus sign, for example <c>99+</c>. It reads every
     /// numeric type, integral or fractional, and leaves everything else the badge is given untouched.
+    /// <br />
+    /// A capped badge is the one a reader cannot get the real figure out of, so it carries that figure as its
+    /// tooltip unless a <see cref="Title"/> of its own says something better.
     /// </remarks>
     [Parameter]
     [CallOnSet(nameof(OnSetContentAndMax))]
@@ -355,6 +394,9 @@ public partial class BitBadge : BitComponentBase
     /// it the place to spell out what the badge shortens: the exact count behind a <see cref="Max"/> of
     /// <c>99+</c>, or the reading behind an icon. A title is not a text alternative, so what a screen reader
     /// should hear still belongs in <see cref="Description"/>.
+    /// <br />
+    /// A badge showing a count its <see cref="Max"/> has capped spells that count out on hover on its own, so
+    /// this is only needed when there is something better to say than the figure itself.
     /// </remarks>
     [Parameter] public string? Title { get; set; }
 
@@ -474,9 +516,8 @@ public partial class BitBadge : BitComponentBase
 
     private void OnSetContentAndMax()
     {
-        var previousContent = _content;
-
         _isZeroContent = false;
+        _isContentCapped = false;
 
         if (Content is null)
         {
@@ -489,10 +530,11 @@ public partial class BitBadge : BitComponentBase
         else if (TryGetNumber(Content, out var number))
         {
             _isZeroContent = number == 0;
+            _isContentCapped = Max.HasValue && number > Max.Value;
 
             // A capped count is reported as the max it went past; anything else is printed the way the value
             // itself prints, so a fraction keeps its separator and a localized digit set keeps its digits.
-            _content = (Max.HasValue && number > Max.Value) ? $"{Max.Value}+" : Content.ToString();
+            _content = _isContentCapped ? $"{Max!.Value}+" : Content.ToString();
         }
         else
         {
@@ -500,13 +542,33 @@ public partial class BitBadge : BitComponentBase
             // through its own ToString() instead of silently dropping out of the badge.
             _content = Content.ToString();
         }
+    }
 
-        // Only a change of what the badge is already showing is worth a bump: the first pass through here
-        // happens before the badge is on the page, and it is the entry animation that reports its arrival.
-        if (IsRendered && _content != previousContent)
+    protected override void OnParametersSet()
+    {
+        // The bump is decided here rather than as the content is set, because what the badge ends up showing
+        // is not settled until the whole batch of parameters has landed: ShowZero, Hidden, Dot and a template
+        // each take the counter off the badge without ever going through the content setter.
+        var isVisible = _isBadgeVisible;
+        var shownContent = _shownContent;
+
+        if (isVisible is false)
         {
+            // A badge that is off the page comes back to it with the entry animation, so the bump is cleared
+            // out of that animation's way rather than being left to win the cascade over it for good.
+            _bump = null;
+        }
+        else if (IsRendered && _wasBadgeVisible && shownContent != _shownText)
+        {
+            // A keyframe animation only restarts when the class carrying it changes, so the two classes
+            // alternate on every change of the text a badge that was already there is showing.
             _bump = _bump is not true;
         }
+
+        _shownText = shownContent;
+        _wasBadgeVisible = isVisible;
+
+        base.OnParametersSet();
     }
 
     private void OnSetHrefAndRel()

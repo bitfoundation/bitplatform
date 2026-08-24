@@ -14,8 +14,13 @@
 // The overlay layer the badge is positioned inside of. It covers the child content rather than
 // sitting next to it, so it lets every pointer through to the child underneath; only a badge that
 // is a button takes its clicks back (see .bit-bdg-clk).
+//
+// It is lifted one layer above the child it covers, so a child that carries a stacking order of its
+// own - a card, a raised button, an image with a filter over it - cannot paint over the badge that
+// belongs to it. A badge that has to give way to something else instead reads its own --bit-bdg-zin.
 .bit-bdg-wrp {
     top: 0;
+    z-index: var(--bit-bdg-zin, 1);
     width: 100%;
     height: 100%;
     display: flex;

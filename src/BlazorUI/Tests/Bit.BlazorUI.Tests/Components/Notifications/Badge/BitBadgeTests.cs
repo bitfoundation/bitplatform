@@ -1746,4 +1746,293 @@ public class BitBadgeTests : BunitTestContext
 
         Assert.IsFalse(hostClicked);
     }
+
+    [TestMethod]
+    public void BitBadgeShouldClearItsBumpWhileItIsShowingNoText()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 1);
+            parameters.Add(p => p.ShowZero, false);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Content, 2));
+
+        Assert.IsTrue(component.Find(".bit-bdg-ctn").ClassList.Contains("bit-bdg-bm1"));
+
+        component.Render(parameters => parameters.Add(p => p.Content, 0));
+
+        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+
+        component.Render(parameters => parameters.Add(p => p.Content, 1));
+
+        // The badge is landing on the page again rather than ticking over on it, so the arrival is the entry
+        // animation's to report. The bump is declared on the same element and would otherwise win the cascade
+        // for the rest of the badge's life, which would leave it with no entry animation ever again.
+        var badge = component.Find(".bit-bdg-ctn");
+        Assert.IsFalse(badge.ClassList.Contains("bit-bdg-bm1"));
+        Assert.IsFalse(badge.ClassList.Contains("bit-bdg-bm2"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldNotBumpWhileItIsHidden()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 1);
+            parameters.Add(p => p.Hidden, true);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Content, 2));
+        component.Render(parameters => parameters.Add(p => p.Hidden, false));
+
+        // Nothing the reader could see has changed while the badge was off the page, so what it does now is
+        // arrive rather than tick over.
+        var badge = component.Find(".bit-bdg-ctn");
+        Assert.IsFalse(badge.ClassList.Contains("bit-bdg-bm1"));
+        Assert.IsFalse(badge.ClassList.Contains("bit-bdg-bm2"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldNotBumpForAContentATemplateHasTakenOver()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.ContentTemplate, (RenderFragment)(builder => builder.AddContent(0, "template")));
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Content, 6));
+
+        // The template is what the badge is showing, so a count changing behind it changes nothing the
+        // reader can see and is not worth a bump.
+        var badge = component.Find(".bit-bdg-ctn");
+        Assert.IsFalse(badge.ClassList.Contains("bit-bdg-bm1"));
+        Assert.IsFalse(badge.ClassList.Contains("bit-bdg-bm2"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldNotBumpForAContentADotHasTakenOver()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Dot, true);
+            parameters.Add(p => p.Content, 5);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Content, 6));
+
+        var badge = component.Find(".bit-bdg-ctn");
+        Assert.IsFalse(badge.ClassList.Contains("bit-bdg-bm1"));
+        Assert.IsFalse(badge.ClassList.Contains("bit-bdg-bm2"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldStillBumpForAnEmptiedCountItKeepsShowing()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 1);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Content, 0));
+
+        // ShowZero is on by default, so the zero is what the badge is showing now - a change like any other.
+        Assert.IsTrue(component.Find(".bit-bdg-ctn").ClassList.Contains("bit-bdg-bm1"));
+    }
+
+    [TestMethod]
+    public void BitBadgeLiveRegionShouldCarryNoTextForATemplate()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Live, true);
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.ContentTemplate, (RenderFragment)(builder => builder.AddContent(0, "template")));
+        });
+
+        // The template is what the badge shows and it is markup rather than words, so the count behind it is
+        // not what a screen reader should be told the badge says.
+        Assert.AreEqual(string.Empty, component.Find(".bit-bdg-lvr").TextContent);
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldNotMuteATemplateItsLiveRegionCannotRead()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Live, true);
+            parameters.Add(p => p.ContentTemplate, (RenderFragment)(builder => builder.AddContent(0, "template")));
+        });
+
+        // Hiding the badge from assistive technologies is what keeps the count from being announced twice.
+        // A region with nothing to say in its place has nothing to keep it from, so silencing the badge would
+        // leave the template reaching a screen reader as nothing at all.
+        Assert.IsNull(component.Find(".bit-bdg-wrp").GetAttribute("aria-hidden"));
+        Assert.AreEqual("template", component.Find(".bit-bdg-con").TextContent);
+    }
+
+    [TestMethod]
+    public void BitBadgeLiveRegionShouldSpeakForATemplateThatHasADescription()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Live, true);
+            parameters.Add(p => p.Description, "99 percent complete");
+            parameters.Add(p => p.ContentTemplate, (RenderFragment)(builder => builder.AddContent(0, "99%")));
+        });
+
+        // A description is words, so the region can carry it - and the badge is hidden behind it again.
+        Assert.AreEqual("99 percent complete", component.Find(".bit-bdg-lvr").TextContent);
+        Assert.AreEqual("true", component.Find(".bit-bdg-wrp").GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldMuteAnIconOnlyBadgeItsLiveRegionSpeaksFor()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Live, true);
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.IconName, "Mail");
+        });
+
+        // A glyph carries no text of its own, so the counter next to it is all the badge has to say and the
+        // region says it in its place.
+        Assert.AreEqual("5", component.Find(".bit-bdg-lvr").TextContent);
+        Assert.AreEqual("true", component.Find(".bit-bdg-wrp").GetAttribute("aria-hidden"));
+    }
+    [TestMethod]
+    public void BitBadgeShouldBumpWhenATextlessBadgeItWasAlreadyShowingGainsACount()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Mail");
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Content, 3));
+
+        // The badge never left the page, so nothing replays its entry animation: the count turning up inside
+        // a glyph-only badge is a change of what it shows like any other.
+        Assert.IsTrue(component.Find(".bit-bdg-ctn").ClassList.Contains("bit-bdg-bm1"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldBumpWhenACountItWasAlreadyShowingIsTakenOverByATemplate()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 3);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.ContentTemplate, (RenderFragment)(builder => builder.AddContent(0, "template"))));
+
+        Assert.IsTrue(component.Find(".bit-bdg-ctn").ClassList.Contains("bit-bdg-bm1"));
+    }
+    [TestMethod]
+    public void BitBadgeShouldSpellOutACappedCountInItsTooltip()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Max, 99);
+            parameters.Add(p => p.Content, 12345);
+        });
+
+        // A "99+" is the one thing a reader cannot get the real figure out of, so the figure is what the
+        // badge says on hover without being asked.
+        var badge = component.Find(".bit-bdg-ctn");
+        Assert.AreEqual("99+", badge.TextContent);
+        Assert.AreEqual("12345", badge.GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldNotSpellOutACountItIsAlreadyShowingInFull()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Max, 99);
+            parameters.Add(p => p.Content, 50);
+        });
+
+        // The badge is showing the whole count, so a tooltip repeating it would say nothing new.
+        Assert.IsFalse(component.Find(".bit-bdg-ctn").HasAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitBadgeTitleShouldWinOverTheCountItWouldHaveSpelledOut()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Max, 99);
+            parameters.Add(p => p.Content, 12345);
+            parameters.Add(p => p.Title, "12345 unread messages");
+        });
+
+        Assert.AreEqual("12345 unread messages", component.Find(".bit-bdg-ctn").GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldStopSpellingOutACountItStopsShowing()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Max, 99);
+            parameters.Add(p => p.Content, 12345);
+            parameters.Add(p => p.Dot, true);
+        });
+
+        // A dot shows no count at all, so there is nothing a cap has shortened for the tooltip to restore.
+        Assert.IsFalse(component.Find(".bit-bdg-ctn").HasAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldStopSpellingOutACountATemplateHasTakenOver()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Max, 99);
+            parameters.Add(p => p.Content, 12345);
+            parameters.Add(p => p.ContentTemplate, (RenderFragment)(builder => builder.AddContent(0, "template")));
+        });
+
+        Assert.IsFalse(component.Find(".bit-bdg-ctn").HasAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldFollowTheCapWithItsTooltipAtRuntime()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Max, 99);
+            parameters.Add(p => p.Content, 12345);
+        });
+
+        Assert.AreEqual("12345", component.Find(".bit-bdg-ctn").GetAttribute("title"));
+
+        component.Render(parameters => parameters.Add(p => p.Content, 5));
+
+        Assert.IsFalse(component.Find(".bit-bdg-ctn").HasAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitBadgeButtonAndAnchorShouldSpellOutACappedCountToo()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Max, 9);
+            parameters.Add(p => p.Content, 42);
+            parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        Assert.AreEqual("42", component.Find(".bit-bdg-ctn").GetAttribute("title"));
+
+        component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Max, 9);
+            parameters.Add(p => p.Content, 42);
+            parameters.Add(p => p.Href, "/inbox");
+        });
+
+        Assert.AreEqual("42", component.Find(".bit-bdg-ctn").GetAttribute("title"));
+    }
 }

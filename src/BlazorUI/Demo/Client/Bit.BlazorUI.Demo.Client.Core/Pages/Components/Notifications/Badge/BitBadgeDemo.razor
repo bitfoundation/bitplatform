@@ -124,8 +124,9 @@
     <DemoExample Title="Max" RazorCode="@example5RazorCode" Id="example5">
         <div>
             <b>Max</b> caps a numeric content: anything above it renders as the max followed by a plus sign, so a counter never grows wider than the room it was given.
-            It reads every numeric type - integral or fractional, not only <code>int</code> - and leaves a string content untouched. <b>Title</b> is the tooltip of the badge
-            itself, which is where the figure a cap shortens can still be read in full.
+            It reads every numeric type - integral or fractional, not only <code>int</code> - and leaves a string content untouched. A capped badge is the one a reader
+            cannot get the real figure out of, so it carries that figure as its tooltip on its own: hover the second badge below and it reads 100. <b>Title</b> overrides
+            that wherever there is something better to say than the number itself, as the third one does.
         </div>
         <br /><br />
         <div class="example-content">
@@ -407,6 +408,12 @@
             <b>Live</b> adds a polite live region, so a count that changes while the page stays open is announced as it changes - keep it off for a count that only mirrors
             what is already on the screen. The region is kept on the page whether or not the badge itself is, which is what makes a counter that appears, changes and then
             <BitLink Href="#example6">disappears</BitLink> announced every time: a live region inserted together with its own text is announced by nothing.
+            What the region reads out is the Description when there is one and the counter itself otherwise; a <BitLink Href="#example7">ContentTemplate</BitLink> is markup
+            neither of them can be read out of, so a badge showing one keeps its own voice and needs a Description before <b>Live</b> has anything to announce.
+            <b>AriaLabel</b> is the other half: where a Description says what the badge <i>shows</i>, the label names the badge as a <i>control</i>. A badge that is a
+            <BitLink Href="#example16">button</BitLink> or a <BitLink Href="#example17">link</BitLink> is what a screen reader lands on, so the label moves onto that control
+            itself - which is what an icon-only or dotted one, carrying no text to be named by, needs before it becomes either. A Description already names the control, so
+            the two are not set together.
         </div>
         <br /><br />
         <div class="example-content">
@@ -416,6 +423,10 @@
 
             <BitBadge Dot Color="BitColor.Success" Description="Online">
                 <BitIcon IconName="@BitIconName.Contact" Color="BitColor.Tertiary" />
+            </BitBadge>
+
+            <BitBadge Dot Color="BitColor.Error" Href="#example18" AriaLabel="Open the alerts you have not read">
+                <BitIcon IconName="@BitIconName.Ringer" Color="BitColor.Tertiary" />
             </BitBadge>
         </div>
         <br /><br />
@@ -763,8 +774,9 @@
             <b>Style</b> and <b>Class</b> land on the root of the component - the box that wraps the child content - while <b>Styles</b> and <b>Classes</b> reach every part of it
             on its own: the root, the wrapper the badge is positioned inside of, the badge itself, its icon, its content, its visually hidden description and its live region.
             The badge also reads a handful of CSS variables off its root, for what no parameter covers: <code>--bit-bdg-clr</code> and <code>--bit-bdg-clr-txt</code> for a color
-            outside the theme roles, <code>--bit-bdg-clr-ring</code> for the color a <BitLink Href="#example11">Bordered</BitLink> ring is drawn in, and
-            <code>--bit-bdg-gap</code> for the room between an <BitLink Href="#example14">inline</BitLink> badge and its child.
+            outside the theme roles, <code>--bit-bdg-clr-ring</code> for the color a <BitLink Href="#example11">Bordered</BitLink> ring is drawn in,
+            <code>--bit-bdg-gap</code> for the room between an <BitLink Href="#example14">inline</BitLink> badge and its child, and <code>--bit-bdg-zin</code> for the
+            layer an overlaid badge is painted on, which it sits one above its child on by default so nothing the child raises can cover it.
         </div>
         <br /><br />
         <div>Component's Style & Class:</div><br />

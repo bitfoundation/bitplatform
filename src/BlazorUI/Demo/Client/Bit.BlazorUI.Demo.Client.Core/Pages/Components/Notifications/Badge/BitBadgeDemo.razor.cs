@@ -48,7 +48,7 @@ public partial class BitBadgeDemo
             Name = "ContentTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom template to render inside the badge, in place of Content. A template is content of its own, so neither Max nor ShowZero reads it."
+            Description = "The custom template to render inside the badge, in place of Content. A template is content of its own, so neither Max nor ShowZero reads it, and it is markup rather than words, so a Live badge showing one needs a Description before its live region has anything to announce."
         },
         new()
         {
@@ -108,14 +108,14 @@ public partial class BitBadgeDemo
             Name = "Live",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Announces the badge to assistive technologies whenever its content changes, by turning it into a polite live region. The region is kept on the page whether or not the badge itself is, so a counter that appears, changes and disappears is announced every time."
+            Description = "Announces the badge to assistive technologies whenever its content changes, by turning it into a polite live region. The region is kept on the page whether or not the badge itself is, so a counter that appears, changes and disappears is announced every time. It reads out the Description when there is one and the counter itself otherwise."
         },
         new()
         {
             Name = "Max",
             Type = "int?",
             DefaultValue = "null",
-            Description = "Max value to display when content is an integral number. A content above it renders as the max followed by a plus sign, for example 99+."
+            Description = "Max value to display when content is a number. A content above it renders as the max followed by a plus sign, for example 99+, and the badge carries the figure it shortened as its tooltip unless a Title of its own says something better."
         },
         new()
         {
@@ -223,7 +223,7 @@ public partial class BitBadgeDemo
             Name = "Title",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The tooltip to show when the mouse is placed on the badge. It is rendered on the badge itself rather than on the child content underneath it, which makes it the place to spell out what the badge shortens - the exact count behind a Max of 99+. A title is not a text alternative, so what a screen reader should hear belongs in Description."
+            Description = "The tooltip to show when the mouse is placed on the badge. It is rendered on the badge itself rather than on the child content underneath it. A badge whose Max has capped its count already spells that count out on hover, so this is only needed when there is something better to say than the figure itself. A title is not a text alternative, so what a screen reader should hear belongs in Description."
         },
         new()
         {
@@ -967,6 +967,10 @@ private int counter;";
 
 <BitBadge Dot Color=""BitColor.Success"" Description=""Online"">
     <BitIcon IconName=""@BitIconName.Contact"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+
+<BitBadge Dot Color=""BitColor.Error"" Href=""#example18"" AriaLabel=""Open the alerts you have not read"">
+    <BitIcon IconName=""@BitIconName.Ringer"" Color=""BitColor.Tertiary"" />
 </BitBadge>
 
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => unread++"">Receive a message</BitButton>";

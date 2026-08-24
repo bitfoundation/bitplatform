@@ -71,7 +71,7 @@
            the wrapper drops out of the overlay layer and the badge is laid out in the flow instead. *@
         <span style="@Styles?.BadgeWrapper"
               class="bit-bdg-wrp @(ChildContent is null || Inline ? "bit-bdg-stl" : null) @Classes?.BadgeWrapper"
-              aria-hidden="@(_hasOwnLiveRegion ? "true" : null)">
+              aria-hidden="@(_isBadgeMuted ? "true" : null)">
             @if (Href.HasValue())
             {
                 @* A badge that leads somewhere is a real link: it comes with the context menu, the middle click,
@@ -85,7 +85,7 @@
                    href="@(IsEnabled ? Href : null)"
                    rel="@_rel"
                    target="@Target"
-                   title="@Title"
+                   title="@_titleText"
                    tabindex="@(IsEnabled ? TabIndex : "-1")"
                    aria-disabled="@(IsEnabled ? null : "true")"
                    aria-label="@(labelOnBadge ? AriaLabel : null)"
@@ -103,7 +103,7 @@
                         style="@Styles?.Badge"
                         class="bit-bdg-ctn bit-bdg-clk @_bumpClass @Classes?.Badge"
                         type="button"
-                        title="@Title"
+                        title="@_titleText"
                         tabindex="@TabIndex"
                         disabled="@(IsEnabled is false)"
                         aria-label="@(labelOnBadge ? AriaLabel : null)"
@@ -114,7 +114,7 @@
             }
             else
             {
-                <span style="@Styles?.Badge" class="bit-bdg-ctn @_bumpClass @Classes?.Badge" title="@Title">
+                <span style="@Styles?.Badge" class="bit-bdg-ctn @_bumpClass @Classes?.Badge" title="@_titleText">
                     @badgeContent
                 </span>
             }
