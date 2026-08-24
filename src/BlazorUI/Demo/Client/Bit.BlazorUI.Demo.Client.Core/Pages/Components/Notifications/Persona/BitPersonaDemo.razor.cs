@@ -36,10 +36,26 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Name = "Active",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Marks the persona as active, which decorates its coin according to ActiveAppearance.",
+        },
+        new()
+        {
+            Name = "ActiveAppearance",
+            Type = "BitPersonaActiveAppearance?",
+            DefaultValue = "null",
+            Description = "How the coin is decorated while Active is true. The default is a ring.",
+            LinkType = LinkType.Link,
+            Href = "#active-appearance-enum",
+        },
+        new()
+        {
             Name = "AutoCoinColor",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, automatically generates a stable coin background color derived from the person's name or initials. Only takes effect when CoinColor is not explicitly set.",
+            Description = "If true, automatically generates a stable coin background color derived from CoinColorSeed, ImageInitials or PrimaryText. Only takes effect when CoinColor is not explicitly set.",
         },
         new()
         {
@@ -61,10 +77,26 @@ public partial class BitPersonaDemo
         },
         new()
         {
-            Name = "Squared",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "If true, renders the coin with a square shape instead of the default circular shape.",
+            Name = "CoinColorSeed",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text AutoCoinColor hashes to pick a coin color, so the color follows the identity of the person rather than the name being displayed. Falls back to ImageInitials and then PrimaryText.",
+        },
+        new()
+        {
+            Name = "CoinIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon rendered inside the coin in place of the initials. Takes precedence over CoinIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "CoinIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the icon rendered inside the coin in place of the initials.",
         },
         new()
         {
@@ -91,6 +123,13 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Name = "FullWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the persona in full width of its container element.",
+        },
+        new()
+        {
             Name = "HidePersonaDetails",
             Type = "bool",
             DefaultValue = "false",
@@ -105,10 +144,17 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Name = "ImageAttributes",
+            Type = "Dictionary<string, object>",
+            DefaultValue = "new Dictionary<string, object>()",
+            Description = "Captures additional HTML attributes to be applied to the rendered img element of the coin (crossorigin, referrerpolicy, decoding, fetchpriority, draggable, ...).",
+        },
+        new()
+        {
             Name = "ImageInitials",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The user's initials to display in the image area when there is no image.",
+            Description = "The user's initials to display in the image area when there is no image. When it is not set, the initials are derived from PrimaryText.",
         },
         new()
         {
@@ -132,6 +178,13 @@ public partial class BitPersonaDemo
             Type = "string",
             DefaultValue = "Edit image",
             Description = "The text of the image overlay.",
+        },
+        new()
+        {
+            Name = "ImageSizes",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The set of media conditions that tells the browser which of the ImageSrcSet candidates to pick. Maps to the HTML img sizes attribute.",
         },
         new()
         {
@@ -223,6 +276,13 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Name = "PresenceTitles",
+            Type = "Dictionary<BitPersonaPresence, string>?",
+            DefaultValue = "null",
+            Description = "The titles to be shown as a tooltip on hover over the presence dot, one per status. The matching entry also becomes the accessible name of the dot and takes precedence over PresenceTitle.",
+        },
+        new()
+        {
             Name = "PrimaryText",
             Type = "string?",
             DefaultValue = "null",
@@ -261,7 +321,7 @@ public partial class BitPersonaDemo
             Name = "Unknown",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, show the special coin for unknown persona. It has '?' in place of initials, with static font and background colors.",
+            Description = "If true, show the special coin for unknown persona. It shows an icon in place of the initials, and takes precedence over the image and the initials.",
         },
         new()
         {
@@ -289,11 +349,18 @@ public partial class BitPersonaDemo
         new()
         {
             Name = "Size",
-            Type = "string?",
-            DefaultValue = "null",
+            Type = "BitPersonaSize",
+            DefaultValue = "BitPersonaSize.Size48",
             LinkType = LinkType.Link,
             Href = "#size-enum",
             Description = "Decides the size of the control.",
+        },
+        new()
+        {
+            Name = "Squared",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, renders the coin with a square shape instead of the default circular shape.",
         },
         new()
         {
@@ -354,14 +421,14 @@ public partial class BitPersonaDemo
                     Name = "Presentation",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the presentation of the BitPersona."
+                    Description = "Custom CSS classes/styles for the presence dot of the BitPersona at Size8. Kept for backward compatibility - Presence is applied to the dot at every size and is what new code should use."
                 },
                 new()
                 {
                     Name = "ImageContainer",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the image container of the BitPersona.."
+                    Description = "Custom CSS classes/styles for the image container of the BitPersona."
                 },
                 new()
                 {
@@ -369,6 +436,13 @@ public partial class BitPersonaDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the unknown icon of the BitPersona."
+                },
+                new()
+                {
+                    Name = "CoinIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the coin icon of the BitPersona, which is the icon shown inside the coin in place of the initials."
                 },
                 new()
                 {
@@ -417,7 +491,7 @@ public partial class BitPersonaDemo
                     Name = "Presence",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the presence of the BitPersona."
+                    Description = "Custom CSS classes/styles for the presence dot of the BitPersona."
                 },
                 new()
                 {
@@ -496,42 +570,62 @@ public partial class BitPersonaDemo
         {
             Id = "presence-enum",
             Name = "BitPersonaPresence",
+            Description = "The availability of the person a BitPersona represents, shown as a dot on the coin.",
             Items =
             [
                 new()
                 {
-                    Name = "Away",
-                    Value = "3",
-                },
-                new()
-                {
-                    Name = "Blocked",
-                    Value = "5",
-                },
-                new()
-                {
-                    Name = "Busy",
-                    Value = "6",
-                },
-                new()
-                {
-                    Name = "Dnd",
-                    Value = "4",
-                },
-                new()
-                {
                     Name = "None",
+                    Description = "No presence is known or worth showing, so no dot is rendered at all.",
                     Value = "0",
                 },
                 new()
                 {
                     Name = "Offline",
+                    Description = "The person is signed out.",
                     Value = "1",
                 },
                 new()
                 {
                     Name = "Online",
+                    Description = "The person is signed in and available.",
                     Value = "2",
+                },
+                new()
+                {
+                    Name = "Away",
+                    Description = "The person is signed in but idle.",
+                    Value = "3",
+                },
+                new()
+                {
+                    Name = "Dnd",
+                    Description = "The person has asked not to be interrupted.",
+                    Value = "4",
+                },
+                new()
+                {
+                    Name = "Blocked",
+                    Description = "The person cannot be reached from here.",
+                    Value = "5",
+                },
+                new()
+                {
+                    Name = "Busy",
+                    Description = "The person is signed in and occupied.",
+                    Value = "6",
+                },
+                new()
+                {
+                    Name = "OutOfOffice",
+                    Description = "The person is away from work for an extended period.",
+                    Value = "7",
+                },
+                new()
+                {
+                    Name = "Unknown",
+                    Description = "The presence of the person could not be determined.",
+                    Value = "8",
                 },
             ]
         },
@@ -544,56 +638,56 @@ public partial class BitPersonaDemo
                 new()
                 {
                     Name = "Size8",
-                    Description = "Renders a 8px BitPersonaCoin.",
-                    Value = "",
+                    Description = "A presence dot and the primary text only, with no coin at all.",
+                    Value = "0",
                 },
                 new()
                 {
                     Name = "Size24",
-                    Description = "Renders a 24px BitPersonaCoin.",
-                    Value = "",
+                    Description = "A 24px coin with the primary text.",
+                    Value = "1",
                 },
                 new()
                 {
                     Name = "Size32",
-                    Description = "Renders a 32px BitPersonaCoin.",
-                    Value = "",
+                    Description = "A 32px coin with the primary text.",
+                    Value = "2",
                 },
                 new()
                 {
                     Name = "Size40",
-                    Description = "Renders a 40px BitPersonaCoin.",
-                    Value = "",
+                    Description = "A 40px coin with the primary and secondary texts.",
+                    Value = "3",
                 },
                 new()
                 {
                     Name = "Size48",
-                    Description = "Renders a 48px BitPersonaCoin.",
-                    Value = "",
+                    Description = "A 48px coin with the primary and secondary texts.",
+                    Value = "4",
                 },
                 new()
                 {
                     Name = "Size56",
-                    Description = "Renders a 56px BitPersonaCoin.",
-                    Value = "",
+                    Description = "A 56px coin with the primary and secondary texts.",
+                    Value = "5",
                 },
                 new()
                 {
                     Name = "Size72",
-                    Description = "Renders a 72px BitPersonaCoin.",
-                    Value = "",
+                    Description = "A 72px coin with the primary, secondary and tertiary texts.",
+                    Value = "6",
                 },
                 new()
                 {
                     Name = "Size100",
-                    Description = "Renders a 100px BitPersonaCoin.",
-                    Value = "",
+                    Description = "A 100px coin with all four texts.",
+                    Value = "7",
                 },
                 new()
                 {
                     Name = "Size120",
-                    Description = "Renders a 120px BitPersonaCoin.",
-                    Value = "",
+                    Description = "A 120px coin with all four texts.",
+                    Value = "8",
                 }
             ]
         },
@@ -710,6 +804,33 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Id = "active-appearance-enum",
+            Name = "BitPersonaActiveAppearance",
+            Description = "Determines how the coin of a BitPersona is decorated while the persona is active.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Ring",
+                    Description = "Draws a ring around the coin in the coin color, separated from it by a gap in the page background color.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Shadow",
+                    Description = "Lifts the coin with an elevation shadow.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "RingShadow",
+                    Description = "Combines the ring and the elevation shadow.",
+                    Value = "2",
+                },
+            ]
+        },
+        new()
+        {
             Id = "variant-enum",
             Name = "BitVariant",
             Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
@@ -784,5 +905,19 @@ public partial class BitPersonaDemo
         { BitPersonaPresence.Dnd, BitIconName.SkypeMinus },
         { BitPersonaPresence.Blocked, BitIconName.BlockedSolid },
         { BitPersonaPresence.Busy, BitIconName.Blocked2Solid },
+        { BitPersonaPresence.OutOfOffice, BitIconName.Airplane },
+        { BitPersonaPresence.Unknown, BitIconName.StatusCircleQuestionMark },
+    };
+
+    private readonly Dictionary<BitPersonaPresence, string> _presenceTitles = new()
+    {
+        { BitPersonaPresence.Offline, "Signed out" },
+        { BitPersonaPresence.Online, "Available" },
+        { BitPersonaPresence.Away, "Be right back" },
+        { BitPersonaPresence.Dnd, "Do not disturb" },
+        { BitPersonaPresence.Blocked, "Blocked" },
+        { BitPersonaPresence.Busy, "In a call" },
+        { BitPersonaPresence.OutOfOffice, "Out of office" },
+        { BitPersonaPresence.Unknown, "Presence unknown" },
     };
 }

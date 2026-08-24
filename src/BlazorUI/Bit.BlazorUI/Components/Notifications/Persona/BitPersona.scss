@@ -22,18 +22,42 @@
     --bit-prs-presence-glyph-sm: #{rem2(4px)};
     --bit-prs-presence-glyph-md: #{rem2(6.8px)};
     --bit-prs-initials-lg: #{rem2(42px)};
+    // How far the presence dot hangs off the coin. One knob, read by all four of the positions the dot
+    // can take (the two writing directions crossed with the two reading orders), so the square coin -
+    // whose corner sits further out than the circle's - retunes it once per size instead of restating
+    // every position it is used in.
+    --bit-prs-presence-inset: #{spacing(-0.25)};
+    // The ring the dot is cut out of. A dot on a colored surface wants the ring to match that surface
+    // rather than the border color the default draws, which is what this is here to be retuned to.
+    --bit-prs-presence-brd-clr: #{$clr-brd-sec};
+    // The active ring: the gap between the coin and the ring, and the ring itself.
+    --bit-prs-ring-gap: #{rem2(2px)};
+    --bit-prs-ring-width: #{rem2(2px)};
     --bit-prs-flex-direction: row;
     flex-direction: var(--bit-prs-flex-direction);
 
     &.bit-dis {
+        cursor: default;
         color: $clr-fg-dis;
+        user-select: none;
         pointer-events: none;
-        background-color: $clr-bg-dis;
+
+        // The coin keeps its own colors and is dimmed instead: a persona is a picture of a person, not a
+        // filled control, and repainting it in the disabled surface color reads as a broken image.
+        .bit-prs-cin {
+            opacity: $opa-dis;
+        }
     }
 }
 
 .bit-prs-fwi {
     width: 100%;
+    justify-content: flex-start;
+
+    // The texts take whatever the coin leaves, which is what gives them something to ellipsize against.
+    .bit-prs-det {
+        flex: 1 1 auto;
+    }
 }
 
 .bit-prs-cin {
@@ -49,6 +73,9 @@
     position: relative;
     border-radius: 50%;
     place-items: center;
+    // The declared width is the whole coin, border included - a 48px persona that measures 50px on the
+    // page is one that no longer lines up with the row it sits in.
+    box-sizing: border-box;
     border-width: $shp-border-width;
     border-style: $shp-border-style;
 
@@ -59,19 +86,20 @@
     }
 }
 
+// The glyph that stands in for the initials - the icon that was asked for, or the generic person when a
+// name gives no initials to show. Sized off the coin, the same way the initials are.
+.bit-prs-cic {
+    line-height: 1;
+}
+
 .bit-prs-rvs {
     --bit-prs-flex-direction: row-reverse;
 }
 
-.bit-prs-him {
-    // TODO: the following lines seem redundant, we will remove it later if no issues found.
-    // .bit-prs-imc {
-    //     border: none;
-    //     border-width: 0;
-    // }
-}
-
 .bit-prs-sqr {
+    // The square coin's corner sits further out than the circle's, so the dot has to follow it out.
+    --bit-prs-presence-inset: #{spacing(-0.4)};
+
     .bit-prs-imc {
         border-radius: $shp-radius-control;
     }
@@ -81,13 +109,17 @@
     z-index: 2;
     width: 100%;
     height: 100%;
-    display: none;
+    opacity: 0;
+    display: flex;
     font-weight: $tg-fw-regular;
     position: absolute;
     align-items: center;
+    visibility: hidden;
     justify-content: center;
     font-size: $tg-fs-sm;
-    transition: all $mot-duration-short linear;
+    // Faded rather than switched on: display cannot be animated, and visibility keeps the overlay out of
+    // the accessibility tree and out of the way of the pointer while it is away.
+    transition: opacity $mot-duration-short $mot-easing, visibility $mot-duration-short $mot-easing;
     color: var(--bit-prs-coin-clr-txt);
     background-color: var(--bit-prs-coin-clr-bg);
 }
@@ -113,25 +145,28 @@
     position: absolute;
     border-radius: 50%;
     align-items: center;
-    bottom: spacing(-0.25);
-    inset-inline-end: spacing(-0.25);
+    bottom: var(--bit-prs-presence-inset);
+    inset-inline-end: var(--bit-prs-presence-inset);
     font-size: var(--bit-prs-presence-glyph-sm);
     box-sizing: content-box;
     justify-content: center;
     forced-color-adjust: none;
     background-clip: border-box;
-    border: $shp-border-width $shp-border-style $clr-brd-sec;
+    border: $shp-border-width $shp-border-style var(--bit-prs-presence-brd-clr);
 }
 
 .bit-prs-rvs {
     .bit-prs-pre {
         inset-inline-end: unset;
-        inset-inline-start: spacing(-0.25);
+        inset-inline-start: var(--bit-prs-presence-inset);
     }
 }
 
 .bit-prs-det {
     display: flex;
+    // A flex item will not shrink past the width of its content unless it is told it may, and without
+    // that the texts push the persona wider instead of ellipsizing inside it.
+    min-width: 0;
     overflow: hidden;
     text-align: start;
     flex-direction: column;
@@ -170,11 +205,20 @@
     font-family: $tg-font-family;
     background-color: transparent;
     padding-inline-start: spacing(0.5);
+    transition: color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
             color: $clr-fg-pri-hover;
         }
+    }
+
+    // The button is invisible until it is reached, so reaching it with the keyboard has to reveal it too -
+    // a focused control nobody can see is a focus indicator that is not there.
+    &:focus-visible {
+        color: $clr-fg-pri-hover;
+
+        @include focus-ring;
     }
 }
 
@@ -189,9 +233,54 @@
         @media (hover: hover) {
             &:hover {
                 .bit-prs-imo {
-                    display: flex;
+                    opacity: 1;
+                    visibility: visible;
                 }
             }
+        }
+
+        // The overlay names what activating the coin does, so it is shown to the keyboard on the same terms
+        // as to the pointer.
+        &:focus-visible {
+            @include focus-ring;
+
+            .bit-prs-imo {
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+    }
+}
+
+// The active ring is drawn as two shadows: a gap in the page color, then the ring in the coin color, so
+// the coin reads as lifted out of whatever it sits on rather than merely outlined.
+.bit-prs-arg {
+    .bit-prs-imc {
+        box-shadow: 0 0 0 var(--bit-prs-ring-gap) #{$clr-bg-pri},
+                    0 0 0 calc(var(--bit-prs-ring-gap) + var(--bit-prs-ring-width)) var(--bit-prs-coin-clr-bg);
+    }
+}
+
+.bit-prs-ash {
+    .bit-prs-imc {
+        box-shadow: $box-shadow-card;
+    }
+}
+
+.bit-prs-ars {
+    .bit-prs-imc {
+        box-shadow: 0 0 0 var(--bit-prs-ring-gap) #{$clr-bg-pri},
+                    0 0 0 calc(var(--bit-prs-ring-gap) + var(--bit-prs-ring-width)) var(--bit-prs-coin-clr-bg),
+                    $box-shadow-card;
+    }
+}
+
+@media (forced-colors: active) {
+    .bit-prs-arg,
+    .bit-prs-ars {
+        .bit-prs-imc {
+            outline: $shp-border-width-thick $shp-border-style;
+            outline-offset: var(--bit-prs-ring-gap);
         }
     }
 }
@@ -211,6 +300,22 @@
 
 .bit-prs-dnd {
     background-color: $clr-err;
+
+    // Busy and do-not-disturb are the same red, which leaves the two of them indistinguishable to anyone
+    // who has not been told which is which. The bar is what the rest of the industry marks the stricter of
+    // the two with.
+    &::after {
+        content: "";
+        width: 60%;
+        height: $shp-border-width-thick;
+        border-radius: $shp-radius-full;
+        background-color: $clr-ntr-white;
+    }
+
+    // A presence icon says the same thing better, so the bar steps aside for one.
+    &:has(> i)::after {
+        content: none;
+    }
 }
 
 .bit-prs-blk {
@@ -222,15 +327,19 @@
     background-color: $clr-err;
 }
 
+.bit-prs-oof {
+    background-color: $clr-swr;
+}
+
+.bit-prs-unk {
+    background-color: $clr-fg-ter;
+}
+
 .bit-prs-s8 {
     gap: spacing(1);
 
     .bit-prs-pre {
         position: static;
-    }
-
-    .bit-prs-pic {
-        font-size: $tg-fs-2xs;
     }
 
     .bit-prs-ptx {
@@ -247,6 +356,11 @@
 .bit-prs-s24 {
     gap: spacing(1);
 
+    // The smallest square coins are barely wider than the dot, so it stays where the circle put it.
+    &.bit-prs-sqr {
+        --bit-prs-presence-inset: #{spacing(-0.25)};
+    }
+
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(3);
@@ -262,6 +376,10 @@
 
 .bit-prs-s32 {
     gap: spacing(1);
+
+    &.bit-prs-sqr {
+        --bit-prs-presence-inset: #{spacing(-0.25)};
+    }
 
     .bit-prs-imc {
         aspect-ratio: 1;
@@ -308,21 +426,6 @@
     .bit-prs-otx {
         display: none;
     }
-
-    &.bit-prs-sqr {
-        .bit-prs-pre {
-            right: spacing(-0.4);
-            bottom: spacing(-0.4);
-        }
-
-
-        &.bit-prs-rvs {
-            .bit-prs-pre {
-                right: unset;
-                left: spacing(-0.4);
-            }
-        }
-    }
 }
 
 .bit-prs-s48 {
@@ -356,20 +459,6 @@
 
     .bit-prs-otx {
         display: none;
-    }
-
-    &.bit-prs-sqr {
-        .bit-prs-pre {
-            right: spacing(-0.4);
-            bottom: spacing(-0.4);
-        }
-
-        &.bit-prs-rvs {
-            .bit-prs-pre {
-                right: unset;
-                left: spacing(-0.4);
-            }
-        }
     }
 }
 
@@ -407,17 +496,7 @@
     }
 
     &.bit-prs-sqr {
-        .bit-prs-pre {
-            right: spacing(-0.5);
-            bottom: spacing(-0.5);
-        }
-
-        &.bit-prs-rvs {
-            .bit-prs-pre {
-                right: unset;
-                left: spacing(-0.5);
-            }
-        }
+        --bit-prs-presence-inset: #{spacing(-0.5)};
     }
 }
 
@@ -457,17 +536,7 @@
     }
 
     &.bit-prs-sqr {
-        .bit-prs-pre {
-            right: spacing(-1);
-            bottom: spacing(-1);
-
-            &.bit-prs-rvs {
-                .bit-prs-pre {
-                    right: unset;
-                    left: spacing(-1);
-                }
-            }
-        }
+        --bit-prs-presence-inset: #{spacing(-1)};
     }
 }
 
@@ -509,17 +578,7 @@
     }
 
     &.bit-prs-sqr {
-        .bit-prs-pre {
-            right: spacing(-1);
-            bottom: spacing(-1);
-        }
-
-        &.bit-prs-rvs {
-            .bit-prs-pre {
-                right: unset;
-                left: spacing(-1);
-            }
-        }
+        --bit-prs-presence-inset: #{spacing(-1)};
     }
 }
 
@@ -561,17 +620,7 @@
     }
 
     &.bit-prs-sqr {
-        .bit-prs-pre {
-            right: spacing(-1.5);
-            bottom: spacing(-1.5);
-        }
-
-        &.bit-prs-rvs {
-            .bit-prs-pre {
-                right: unset;
-                left: spacing(-1.5);
-            }
-        }
+        --bit-prs-presence-inset: #{spacing(-1.5)};
     }
 }
 

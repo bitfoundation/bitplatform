@@ -2,50 +2,79 @@
 @inherits BitComponentBase
 
 @{
-    var presentationIconName = GetPresentationIconName();
-    var presentationIcon = GetPresentationIcon();
+    var hasPresence = Presence is not BitPersonaPresence.None;
+    var presenceIcon = hasPresence ? GetPresenceIcon() : null;
+    var presenceTitle = hasPresence ? GetPresenceTitle() : null;
+    var presenceLabel = hasPresence ? GetPresenceLabel() : null;
+    var isCoinClickable = OnImageClick.HasDelegate;
 
-    var presenceIconInfo = BitIconInfo.From(presentationIcon, presentationIconName);
+    @* What fills the coin when there is no picture in it: the initials, or - when a name gives none, or an
+       icon was asked for instead - a glyph, so the coin is never left blank. It is worked out here rather
+       than where it is rendered because the coin reaches for it from two places: on its own, and behind an
+       image that is still loading or has failed. A coin already carrying a loaded picture asks for none of
+       this, which is what keeps a list of a hundred faces from deriving a hundred sets of initials it will
+       never show. *@
+    RenderFragment? coinFallback = null;
+    if (NeedsCoinFallback())
+    {
+        var initials = GetInitials();
+        var coinIcon = GetCoinIcon(initials);
+
+        if (coinIcon is not null)
+        {
+            coinFallback = @<i aria-hidden="true"
+                              style="@Styles?.CoinIcon"
+                              class="bit-prs-cic @coinIcon.GetCssClasses() @Classes?.CoinIcon" />;
+        }
+        else
+        {
+            coinFallback = @<span style="@Styles?.Initials" class="bit-prs-ini @Classes?.Initials">@initials</span>;
+        }
+    }
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()">
+     dir="@Dir?.ToString().ToLower()"
+     role="@GetRootRole()"
+     aria-label="@GetRootAriaLabel()">
 
-    <div style="@Styles?.CoinContainer" class="bit-prs-cin @Classes?.CoinContainer" role="presentation">
+    <div style="@Styles?.CoinContainer" class="bit-prs-cin @Classes?.CoinContainer">
         @if (Size is BitPersonaSize.Size8)
         {
-            if (Presence is BitPersonaPresence.None)
+            @* The smallest size has no coin at all - the presence dot stands in for it, in the flow of the
+               row rather than pinned to a corner. *@
+            if (hasPresence)
             {
-                @if (presenceIconInfo is not null)
-                {
-                    <i role="presentation"
-                       style="@Styles?.PresentationIcon"
-                       class="bit-prs-pic @presenceIconInfo.GetCssClasses() @Classes?.PresentationIcon" />
-                }
-            }
-            else
-            {
-                <div title="@PresenceTitle"
-                     style="@Styles?.Presentation"
-                     class="bit-prs-pre @GetPresentationClass() @Classes?.Presentation"></div>
+                <div role="img"
+                     title="@presenceTitle"
+                     aria-label="@presenceLabel"
+                     style="@JoinStyles(Styles?.Presence, Styles?.Presentation)"
+                     class="bit-prs-pre @GetPresentationClass() @Classes?.Presence @Classes?.Presentation"></div>
             }
         }
         else
         {
-
-            <div style="@GetImageContainerStyle()" class="@GetImageContainerClass()" @onclick="HandleImageClick">
+            <div style="@GetImageContainerStyle()"
+                 class="@GetImageContainerClass()"
+                 role="@(isCoinClickable ? "button" : null)"
+                 tabindex="@(isCoinClickable ? (IsEnabled ? "0" : "-1") : null)"
+                 aria-label="@GetCoinButtonLabel()"
+                 @onclick="HandleImageClick"
+                 @onkeydown="HandleImageKeyDown">
                 @if (Unknown)
                 {
                     var unknownIconInfo = BitIconInfo.From(UnknownIcon, UnknownIconName ?? "Help");
 
-                    <i style="@Styles?.UnknownIcon" class="@unknownIconInfo?.GetCssClasses() @Classes?.UnknownIcon" role="presentation" />
+                    <i aria-hidden="true"
+                       style="@Styles?.UnknownIcon"
+                       class="bit-prs-cic @unknownIconInfo?.GetCssClasses() @Classes?.UnknownIcon" />
                 }
                 else if (ImageUrl.HasValue() || CoinTemplate is not null)
                 {
-                    if (OnImageClick.HasDelegate)
+                    if (isCoinClickable)
                     {
                         <div style="@Styles?.ImageOverlay" class="bit-prs-imo @GetCoinClass() @Classes?.ImageOverlay">
                             @if (ImageOverlayTemplate is not null)
@@ -59,41 +88,35 @@
                         </div>
                     }
 
-                    if ((ShowInitialsUntilImageLoads && _isLoaded is false) || _hasError)
-                    {
-                        <span style="@Styles?.Initials" class="bit-prs-ini @Classes?.Initials">
-                            @GetInitials()
-                        </span>
-                    }
+                    @* Only an image has a load to wait for and a load to fail: a coin template paints itself,
+                       so nothing is ever left showing behind it. *@
+                    @coinFallback
 
                     if (CoinTemplate is not null)
                     {
                         @CoinTemplate
                     }
-                    else if (ImageUrl.HasValue())
+                    else if (_hasError is false)
                     {
-                        if (_hasError is false)
-                        {
-                            var dimension = GetPersonaImageDimension();
+                        var dimension = GetPersonaImageDimension();
 
-                            <img @onload="HandleOnLoad"
-                                 @onerror="HandleOnError"
-                                 src="@ImageUrl"
-                                 alt="@ImageAlt"
-                                 width="@dimension"
-                                 height="@dimension"
-                                 srcset="@ImageSrcSet"
-                                 class="bit-prs-img @Classes?.Image"
-                                 loading="@ImageLoading?.ToString().ToLower()"
-                                 style="@($"{(_isLoaded ? null : "opacity:0;")}{Styles?.Image}")" />
-                        }
+                        <img @attributes="ImageAttributes"
+                             @onload="HandleOnLoad"
+                             @onerror="HandleOnError"
+                             src="@ImageUrl"
+                             alt="@(ImageAlt ?? string.Empty)"
+                             width="@dimension"
+                             height="@dimension"
+                             sizes="@ImageSizes"
+                             srcset="@ImageSrcSet"
+                             class="bit-prs-img @Classes?.Image"
+                             loading="@ImageLoading?.ToString().ToLower()"
+                             style="@($"{(_isLoaded ? null : "opacity:0;")}{Styles?.Image}")" />
                     }
                 }
                 else
                 {
-                    <span style="@Styles?.Initials" class="bit-prs-ini @Classes?.Initials">
-                        @GetInitials()
-                    </span>
+                    @coinFallback
                 }
             </div>
 
@@ -109,24 +132,31 @@
                     <button @onclick="HandleActionClick"
                             type="button"
                             title="@ActionButtonTitle"
+                            aria-label="@ActionButtonTitle"
+                            disabled="@(IsEnabled is false)"
                             style="@Styles?.ActionButton"
                             class="bit-prs-abt @Classes?.ActionButton">
                         @if (actionIcon is not null)
                         {
-                            <i style="@Styles?.ActionButtonIcon"
+                            <i aria-hidden="true"
+                               style="@Styles?.ActionButtonIcon"
                                class="bit-prs-aic @actionIcon.GetCssClasses() @Classes?.ActionButtonIcon" />
                         }
                     </button>
                 }
             }
-            else if (Presence is not BitPersonaPresence.None)
+            else if (hasPresence)
             {
-                <div title="@PresenceTitle" style="@GetPresentationStyle()" class="bit-prs-pre @GetPresentationClass() @Classes?.Presence">
-                    @if (presenceIconInfo is not null)
+                <div role="img"
+                     title="@presenceTitle"
+                     aria-label="@presenceLabel"
+                     style="@GetPresentationStyle()"
+                     class="bit-prs-pre @GetPresentationClass() @Classes?.Presence">
+                    @if (presenceIcon is not null)
                     {
-                        <i role="presentation"
+                        <i aria-hidden="true"
                            style="@Styles?.PresentationIcon"
-                           class="@presenceIconInfo?.GetCssClasses() @Classes?.PresentationIcon" />
+                           class="@presenceIcon.GetCssClasses() @Classes?.PresentationIcon" />
                     }
                 </div>
             }
@@ -135,57 +165,70 @@
 
     @if (HidePersonaDetails is false || Size is BitPersonaSize.Size8)
     {
+        @* A row that has nothing in it is left out rather than rendered empty: the details column spreads its
+           rows apart, and an empty one would take a share of that space and push the rest off center. *@
         <div style="@Styles?.DetailsContainer" class="bit-prs-det @Classes?.DetailsContainer">
-            <div title="@PrimaryText"
-                 style="@Styles?.PrimaryTextContainer"
-                 class="bit-prs-ptx @Classes?.PrimaryTextContainer">
-                @if (PrimaryTextTemplate is not null)
-                {
-                    @PrimaryTextTemplate
-                }
-                else
-                {
-                    @PrimaryText
-                }
-            </div>
-            <div title="@SecondaryText"
-                 style="@Styles?.SecondaryTextContainer"
-                 class="bit-prs-stx @Classes?.SecondaryTextContainer">
-                @if (SecondaryTextTemplate is not null)
-                {
-                    @SecondaryTextTemplate
-                }
-                else
-                {
-                    @SecondaryText
-                }
-            </div>
-            <div title="@TertiaryText"
-                 style="@Styles?.TertiaryTextContainer"
-                 class="bit-prs-ttx @Classes?.TertiaryTextContainer">
-                @if (TertiaryTextTemplate is not null)
-                {
-                    @TertiaryTextTemplate
-                }
-                else
-                {
-                    @TertiaryText
-                }
-            </div>
-            <div title="@OptionalText"
-                 style="@Styles?.OptionalTextContainer"
-                 class="bit-prs-otx @Classes?.OptionalTextContainer">
-                @if (OptionalTextTemplate is not null)
-                {
-                    @OptionalTextTemplate
-                }
-                else
-                {
-                    @OptionalText
-                }
-            </div>
+            @if (PrimaryTextTemplate is not null || PrimaryText.HasValue())
+            {
+                <div title="@PrimaryText"
+                     style="@Styles?.PrimaryTextContainer"
+                     class="bit-prs-ptx @Classes?.PrimaryTextContainer">
+                    @if (PrimaryTextTemplate is not null)
+                    {
+                        @PrimaryTextTemplate
+                    }
+                    else
+                    {
+                        @PrimaryText
+                    }
+                </div>
+            }
+            @if (SecondaryTextTemplate is not null || SecondaryText.HasValue())
+            {
+                <div title="@SecondaryText"
+                     style="@Styles?.SecondaryTextContainer"
+                     class="bit-prs-stx @Classes?.SecondaryTextContainer">
+                    @if (SecondaryTextTemplate is not null)
+                    {
+                        @SecondaryTextTemplate
+                    }
+                    else
+                    {
+                        @SecondaryText
+                    }
+                </div>
+            }
+            @if (TertiaryTextTemplate is not null || TertiaryText.HasValue())
+            {
+                <div title="@TertiaryText"
+                     style="@Styles?.TertiaryTextContainer"
+                     class="bit-prs-ttx @Classes?.TertiaryTextContainer">
+                    @if (TertiaryTextTemplate is not null)
+                    {
+                        @TertiaryTextTemplate
+                    }
+                    else
+                    {
+                        @TertiaryText
+                    }
+                </div>
+            }
+            @if (OptionalTextTemplate is not null || OptionalText.HasValue())
+            {
+                <div title="@OptionalText"
+                     style="@Styles?.OptionalTextContainer"
+                     class="bit-prs-otx @Classes?.OptionalTextContainer">
+                    @if (OptionalTextTemplate is not null)
+                    {
+                        @OptionalTextTemplate
+                    }
+                    else
+                    {
+                        @OptionalText
+                    }
+                </div>
+            }
         </div>
     }
 
 </div>
-

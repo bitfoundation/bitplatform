@@ -27,4 +27,10 @@
         font-weight: bold;
         font-style: italic;
     }
+
+    .width-box {
+        width: 20rem;
+        padding: 0.5rem;
+        border: 1px solid var(--bit-clr-brd-sec);
+    }
 }
