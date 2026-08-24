@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -1140,6 +1142,587 @@ public class BitTagTests : BunitTestContext
 
 
     [TestMethod]
+    public void BitTagShouldCarryTheAriaLabelAsHiddenTextWhenItHasNoWordsOfItsOwn()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Pinned");
+            parameters.Add(p => p.AriaLabel, "Pinned to the top");
+        });
+
+        // an aria-label on an element with no role of its own is not something every screen reader reads,
+        // so the name of an icon-only static tag is carried as text taken out of the layout instead
+        var hidden = component.Find(".bit-tag-vhd");
+        Assert.AreEqual("Pinned to the top", hidden.TextContent);
+        Assert.AreEqual("Pinned to the top", component.Find(".bit-tag").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldNotCarryAHiddenLabelWhenItHasWordsOfItsOwn()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.AriaLabel, "The design tag");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-tag-vhd").Count);
+    }
+
+    [TestMethod]
+    public void BitTagShouldNotCarryAHiddenLabelWhenTheTagIsAControl()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Filter");
+            parameters.Add(p => p.AriaLabel, "Show the filters");
+            parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        // the button carries the name itself, and a name announced twice is worse than one announced once
+        Assert.AreEqual(0, component.FindAll(".bit-tag-vhd").Count);
+        Assert.AreEqual("Show the filters", component.Find("button.bit-tag-cnt").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldNotCarryAHiddenLabelForATemplate()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "A template");
+            parameters.AddChildContent("<span>whatever the template says</span>");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-tag-vhd").Count);
+    }
+
+    [TestMethod]
+    public void BitTagShouldRenderAriaDescriptionOnTheRootWhenItIsNotAControl()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.AriaDescription, "The design of the product");
+        });
+
+        var root = component.Find(".bit-tag");
+        var describedBy = root.GetAttribute("aria-describedby");
+
+        Assert.IsFalse(string.IsNullOrEmpty(describedBy));
+
+        var description = component.Find($"[id='{describedBy}']");
+        Assert.AreEqual("The design of the product", description.TextContent);
+        Assert.IsTrue(description.ClassList.Contains("bit-tag-vhd"));
+    }
+
+    [TestMethod]
+    public void BitTagAriaDescriptionShouldMoveOntoTheControlWhenTheTagIsOne()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Only mine");
+            parameters.Add(p => p.AriaDescription, "Shows only the items you own");
+            parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        var root = component.Find(".bit-tag");
+        var button = component.Find("button.bit-tag-cnt");
+
+        // a description belongs to whatever carries the name, which is the control once there is one
+        Assert.IsNull(root.GetAttribute("aria-describedby"));
+        Assert.AreEqual($"{root.Id}-dsc", button.GetAttribute("aria-describedby"));
+        Assert.AreEqual("Shows only the items you own", component.Find($"[id='{root.Id}-dsc']").TextContent);
+    }
+
+    [TestMethod]
+    public void BitTagAriaDescriptionShouldMoveOntoTheAnchorWhenTheTagIsALink()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Docs");
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.AriaDescription, "Opens the documentation");
+        });
+
+        var root = component.Find(".bit-tag");
+
+        Assert.IsNull(root.GetAttribute("aria-describedby"));
+        Assert.AreEqual($"{root.Id}-dsc", component.Find("a.bit-tag-cnt").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldNotRenderAnyDescriptionWithoutAnAriaDescription()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+        });
+
+        Assert.IsNull(component.Find(".bit-tag").GetAttribute("aria-describedby"));
+        Assert.AreEqual(0, component.FindAll(".bit-tag-vhd").Count);
+    }
+
+    [TestMethod]
+    public void BitTagDismissButtonShouldBeNamedAfterTheTextOfTheTag()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        var dismiss = component.Find(".bit-tag-cls");
+
+        // a row of dismiss buttons all announcing "Dismiss" names none of the tags they remove, so with no
+        // label of its own the button is named after the tag it takes away
+        Assert.AreEqual("Remove Design", dismiss.GetAttribute("aria-label"));
+        Assert.AreEqual("Remove Design", dismiss.GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldRespectDismissLabelFormat()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.DismissLabelFormat, "Delete the {0} tag");
+            parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        var dismiss = component.Find(".bit-tag-cls");
+
+        Assert.AreEqual("Delete the Design tag", dismiss.GetAttribute("aria-label"));
+        Assert.AreEqual("Delete the Design tag", dismiss.GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitTagDismissLabelShouldWinOverTheFormat()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.DismissLabel, "Clear this filter");
+            parameters.Add(p => p.DismissLabelFormat, "Delete the {0} tag");
+            parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        Assert.AreEqual("Clear this filter", component.Find(".bit-tag-cls").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitTagDismissLabelFormatShouldFallBackToTheTextWhenItIsMalformed()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.DismissLabelFormat, "Remove {this is not a placeholder}");
+            parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        // a wrong format string is a typo in the app rather than a reason to throw while rendering a chip
+        Assert.AreEqual("Design", component.Find(".bit-tag-cls").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitTagDismissButtonShouldFallBackToDismissWhenTheTagHasNoText()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Tag");
+            parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        Assert.AreEqual("Dismiss", component.Find(".bit-tag-cls").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitTagDismissButtonShouldStillBeNamedAfterTheTextBehindATemplate()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+            parameters.AddChildContent("<span>A template</span>");
+        });
+
+        // the template replaces what the text renders as, not what the tag stands for
+        Assert.AreEqual("Remove Design", component.Find(".bit-tag-cls").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitTagLinkShouldRespectDownload()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Logo");
+            parameters.Add(p => p.Href, "/images/logo.png");
+            parameters.Add(p => p.Download, "logo.png");
+        });
+
+        Assert.AreEqual("logo.png", component.Find("a.bit-tag-cnt").GetAttribute("download"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldNotRenderDownloadWithoutOne()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Docs");
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+        });
+
+        Assert.IsNull(component.Find("a.bit-tag-cnt").GetAttribute("download"));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitTagShouldRespectStopPropagation(bool stopPropagation)
+    {
+        var component = RenderComponent<BitTagPropagationTest>(parameters =>
+        {
+            parameters.Add(p => p.StopPropagation, stopPropagation);
+        });
+
+        component.Find("button.bit-tag-cnt").Click();
+
+        // the click a tag answers is still a click on the page, so it reaches a clickable container around
+        // it unless the tag is told to keep it to itself
+        Assert.AreEqual(1, component.Instance.TagClickCount);
+        Assert.AreEqual(stopPropagation ? 0 : 1, component.Instance.ContainerClickCount);
+    }
+
+    [TestMethod]
+    public async Task BitTagFocusAsyncShouldFocusTheButtonOfAControlTag()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        // the element the tag focuses is the control it renders, which is what a list of tags moves the
+        // focus onto once one of them is gone
+        await component.Instance.FocusAsync();
+    }
+
+    [TestMethod]
+    public async Task BitTagFocusAsyncShouldFocusTheAnchorOfALinkTag()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Docs");
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+        });
+
+        await component.Instance.FocusAsync();
+    }
+
+    [TestMethod]
+    public async Task BitTagFocusAsyncShouldFocusTheDismissButtonOfATagThatHasOnlyThat()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        await component.Instance.FocusAsync();
+    }
+
+    [TestMethod]
+    public async Task BitTagFocusAsyncShouldFallBackToTheRootOfAPlainTag()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+        });
+
+        await component.Instance.FocusAsync();
+    }
+
+
+    [TestMethod]
+    public void BitTagShouldNotListenForKeysWithoutSomethingToDismiss()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        // the dismiss shortcut is the only key the tag answers, so a tag with nothing to dismiss listens for
+        // none at all rather than paying for a round trip on every keystroke that does nothing
+        Assert.Throws<MissingEventHandlerException>(() => component.Find("button.bit-tag-cnt").KeyDown("Delete"));
+    }
+
+    [TestMethod]
+    public void BitTagSelectedLinkShouldReportAriaCurrent()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.Href, "/design");
+            parameters.Add(p => p.Selected, true);
+        });
+
+        var anchor = component.Find("a.bit-tag-cnt");
+
+        // aria-pressed belongs to a button and says nothing on an anchor, so the picked one of a set of
+        // links reports itself as the current one instead
+        Assert.AreEqual("true", anchor.GetAttribute("aria-current"));
+        Assert.IsNull(anchor.GetAttribute("aria-pressed"));
+    }
+
+    [TestMethod]
+    public void BitTagUnselectedLinkShouldNotReportAriaCurrent()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.Href, "/design");
+        });
+
+        Assert.IsNull(component.Find("a.bit-tag-cnt").GetAttribute("aria-current"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldNotCarryAHiddenLabelWhenThePictureIsAlreadyNamed()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.IconUrl, "/images/avatar.png");
+            parameters.Add(p => p.IconAlt, "Annie Lindqvist");
+            parameters.Add(p => p.AriaLabel, "Annie Lindqvist");
+        });
+
+        // the alt of the picture is already read out, and a name announced twice is worse than once
+        Assert.AreEqual(0, component.FindAll(".bit-tag-vhd").Count);
+    }
+
+
+    [TestMethod]
+    public void BitTagShouldKeepAnAriaLabelPassedThroughHtmlAttributesWhileItIsAControl()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitTag>(0);
+            builder.AddAttribute(1, nameof(BitTag.Text), "Design");
+            builder.AddAttribute(2, nameof(BitTag.OnClick), EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+            builder.AddAttribute(3, "aria-label", "From the attributes");
+            builder.CloseComponent();
+        });
+
+        // the tag writes its own attributes after the splat, so a null one of its own must not take the
+        // app's value off the element with it
+        Assert.AreEqual("From the attributes", component.Find(".bit-tag").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitTagAriaLabelShouldWinOverTheOnePassedThroughHtmlAttributes()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitTag>(0);
+            builder.AddAttribute(1, nameof(BitTag.IconName), "Pinned");
+            builder.AddAttribute(2, nameof(BitTag.AriaLabel), "From the parameter");
+            builder.AddAttribute(3, "aria-label", "From the attributes");
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("From the parameter", component.Find(".bit-tag").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldKeepATitlePassedThroughHtmlAttributes()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitTag>(0);
+            builder.AddAttribute(1, nameof(BitTag.Text), "Design");
+            builder.AddAttribute(2, "title", "From the attributes");
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("From the attributes", component.Find(".bit-tag").GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitTagTitleShouldWinOverTheOnePassedThroughHtmlAttributes()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitTag>(0);
+            builder.AddAttribute(1, nameof(BitTag.Text), "Design");
+            builder.AddAttribute(2, nameof(BitTag.Title), "From the parameter");
+            builder.AddAttribute(3, "title", "From the attributes");
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("From the parameter", component.Find(".bit-tag").GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldJoinItsDescriptionWithTheOnePassedThroughHtmlAttributes()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitTag>(0);
+            builder.AddAttribute(1, nameof(BitTag.Text), "Design");
+            builder.AddAttribute(2, nameof(BitTag.AriaDescription), "The description of the tag");
+            builder.AddAttribute(3, "aria-describedby", "hint-1");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-tag");
+
+        // both descriptions are announced, in the order they are pointed at
+        Assert.AreEqual($"{root.Id}-dsc hint-1", root.GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldDismissFromTheKeyboardWhileFocusIsOnTheAnchorOfALinkTag()
+    {
+        var dismissed = false;
+
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Docs");
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, () => dismissed = true));
+        });
+
+        component.Find("a.bit-tag-cnt").KeyDown("Delete");
+
+        Assert.IsTrue(dismissed);
+    }
+
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitTagShouldStartFromDefaultSelected(bool defaultSelected)
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.DefaultSelected, defaultSelected);
+        });
+
+        Assert.AreEqual(defaultSelected, component.Find(".bit-tag").ClassList.Contains("bit-tag-sel"));
+        Assert.AreEqual(defaultSelected, component.Instance.Selected);
+    }
+
+    [TestMethod]
+    public void BitTagDefaultSelectedAloneShouldMakeTheTagAToggle()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.DefaultSelected, false);
+        });
+
+        var button = component.Find("button.bit-tag-cnt");
+
+        // an uncontrolled chip needs nothing else to be a chip: it flips and paints itself
+        Assert.AreEqual("false", button.GetAttribute("aria-pressed"));
+
+        button.Click();
+
+        Assert.IsTrue(component.Find(".bit-tag").ClassList.Contains("bit-tag-sel"));
+        Assert.AreEqual("true", component.Find("button.bit-tag-cnt").GetAttribute("aria-pressed"));
+        Assert.IsTrue(component.Instance.Selected);
+    }
+
+    [TestMethod]
+    public void BitTagDefaultSelectedShouldNotOverrideAValueTheAppOwns()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.Selected, false);
+            parameters.Add(p => p.DefaultSelected, true);
+        });
+
+        // a Selected set one way belongs to the app, and neither the default nor a click may change it
+        Assert.IsFalse(component.Instance.Selected);
+        Assert.IsFalse(component.Find(".bit-tag").ClassList.Contains("bit-tag-sel"));
+    }
+
+    [TestMethod]
+    public void BitTagOnChangingShouldBeAbleToCancelTheChange()
+    {
+        var changed = false;
+        var selected = false;
+
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.Selected, selected);
+            parameters.Add(p => p.SelectedChanged, EventCallback.Factory.Create<bool>(this, v => selected = v));
+            parameters.Add(p => p.OnChange, EventCallback.Factory.Create<bool>(this, () => changed = true));
+            parameters.Add(p => p.OnChanging, EventCallback.Factory.Create<BitTagChangeArgs>(this, args => args.Cancel = true));
+        });
+
+        component.Find("button.bit-tag-cnt").Click();
+
+        Assert.IsFalse(selected);
+        Assert.IsFalse(changed);
+        Assert.IsFalse(component.Find(".bit-tag").ClassList.Contains("bit-tag-sel"));
+    }
+
+    [TestMethod]
+    public void BitTagOnChangingShouldSeeTheValueTheTagIsMovingTo()
+    {
+        bool? incoming = null;
+
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.DefaultSelected, false);
+            parameters.Add(p => p.OnChanging, EventCallback.Factory.Create<BitTagChangeArgs>(this, args => incoming = args.Value));
+        });
+
+        component.Find("button.bit-tag-cnt").Click();
+
+        Assert.IsTrue(incoming);
+        Assert.IsTrue(component.Instance.Selected);
+    }
+
+    [TestMethod]
+    public void BitTagOnChangingShouldNotRunWithoutAChangeToMake()
+    {
+        var asked = false;
+
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+            parameters.Add(p => p.OnChanging, EventCallback.Factory.Create<BitTagChangeArgs>(this, args => asked = true));
+        });
+
+        component.Find("button.bit-tag-cnt").Click();
+
+        // OnChanging alone does not make a tag a toggle, so a plain click tag has no selection to ask about
+        Assert.IsFalse(asked);
+    }
+
+    [TestMethod]
+    public void BitTagShouldNotChangeTheSelectionWhileDisabledEvenWithADefault()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.DefaultSelected, false);
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        Assert.IsTrue(component.Find("button.bit-tag-cnt").HasAttribute("disabled"));
+        Assert.IsFalse(component.Instance.Selected);
+    }
+
+
+    [TestMethod]
     public void BitTagParamsShouldHaveCorrectParamName()
     {
         Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitTag)}", BitTagParams.ParamName);
@@ -1150,7 +1733,7 @@ public class BitTagTests : BunitTestContext
     {
         var @params = new BitTagParams();
 
-        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.IsTrue(typeof(IBitComponentParams).IsAssignableFrom(typeof(BitTagParams)));
         Assert.AreEqual(BitTagParams.ParamName, @params.Name);
     }
 
@@ -1171,7 +1754,12 @@ public class BitTagTests : BunitTestContext
                 FullWidth = true,
                 Reversed = true,
                 DismissIconName = "ChromeClose",
-                DismissLabel = "Cascaded dismiss"
+                DismissLabel = "Cascaded dismiss",
+                Title = "Cascaded title",
+                Target = "_blank",
+                Download = "cascaded.png",
+                StopPropagation = true,
+                AriaDescription = "Cascaded description"
             }
         };
 
@@ -1200,6 +1788,43 @@ public class BitTagTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-tag-icn").ClassList.Contains("bit-icon--Add"));
         Assert.IsTrue(component.Find(".bit-tag-dsi").ClassList.Contains("bit-icon--ChromeClose"));
         Assert.AreEqual("Cascaded dismiss", component.Find(".bit-tag-cls").GetAttribute("aria-label"));
+        Assert.AreEqual("Cascaded title", root.GetAttribute("title"));
+        Assert.AreEqual($"{root.Id}-dsc", root.GetAttribute("aria-describedby"));
+        Assert.AreEqual("Cascaded description", component.Find($"[id='{root.Id}-dsc']").TextContent);
+    }
+
+    [TestMethod]
+    public void BitTagShouldApplyCascadingLinkParametersFromBitParams()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitTagParams
+            {
+                Target = "_blank",
+                Download = "cascaded.png",
+                Rel = BitLinkRels.NoFollow
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitTag>(0);
+                builder.AddAttribute(1, nameof(BitTag.Text), "Cascaded");
+                builder.AddAttribute(2, nameof(BitTag.Href), "https://bitplatform.dev");
+                builder.CloseComponent();
+            });
+        });
+
+        var anchor = component.Find("a.bit-tag-cnt");
+
+        Assert.AreEqual("_blank", anchor.GetAttribute("target"));
+        Assert.AreEqual("cascaded.png", anchor.GetAttribute("download"));
+        // the rel attribute is derived from Href, Rel and Target together, so it has to be recalculated
+        // after the cascaded values have filled the last two in
+        Assert.AreEqual("nofollow", anchor.GetAttribute("rel"));
     }
 
     [TestMethod]

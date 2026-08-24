@@ -22,6 +22,12 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
 
 
     /// <summary>
+    /// The detailed description of the tag for the benefit of screen readers, rendered into a visually
+    /// hidden element the tag points at with aria-describedby.
+    /// </summary>
+    public string? AriaDescription { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the tag.
     /// </summary>
     public BitTagClassStyles? Classes { get; set; }
@@ -46,6 +52,18 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
     /// The accessible name and the tooltip of the dismiss button.
     /// </summary>
     public string? DismissLabel { get; set; }
+
+    /// <summary>
+    /// The format the dismiss button is named by while it has no DismissLabel of its own, where {0} is the
+    /// text of the tag. The default is "Remove {0}".
+    /// </summary>
+    public string? DismissLabelFormat { get; set; }
+
+    /// <summary>
+    /// Prompts the browser to download the Href of the tag rather than to navigate to it, using the value as
+    /// the suggested file name.
+    /// </summary>
+    public string? Download { get; set; }
 
     /// <summary>
     /// Stretches the tag to fill the width of whatever holds it.
@@ -74,6 +92,11 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
     public bool? NoWrap { get; set; }
 
     /// <summary>
+    /// The relationship between the current document and the one the Href of the tag leads to.
+    /// </summary>
+    public BitLinkRels? Rel { get; set; }
+
+    /// <summary>
     /// Reverses the direction flow of the content of the tag.
     /// </summary>
     public bool? Reversed { get; set; }
@@ -100,14 +123,29 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
     public BitSize? Size { get; set; }
 
     /// <summary>
+    /// Stops the click of the tag from bubbling any further up the DOM.
+    /// </summary>
+    public bool? StopPropagation { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the tag.
     /// </summary>
     public BitTagClassStyles? Styles { get; set; }
 
     /// <summary>
+    /// The browsing context the Href of the tag is opened in, for example _blank.
+    /// </summary>
+    public string? Target { get; set; }
+
+    /// <summary>
     /// The text of the tag.
     /// </summary>
     public string? Text { get; set; }
+
+    /// <summary>
+    /// The tooltip to show when the mouse is placed on the tag.
+    /// </summary>
+    public string? Title { get; set; }
 
     /// <summary>
     /// The visual variant of the tag.
@@ -132,6 +170,11 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
         if (bitTag is null) return;
 
         UpdateBaseParameters(bitTag);
+
+        if (AriaDescription.HasValue() && bitTag.HasNotBeenSet(nameof(AriaDescription)))
+        {
+            bitTag.AriaDescription = AriaDescription;
+        }
 
         if (Classes is not null && bitTag.HasNotBeenSet(nameof(Classes)))
         {
@@ -162,6 +205,16 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
             bitTag.DismissLabel = DismissLabel;
         }
 
+        if (DismissLabelFormat.HasValue() && bitTag.HasNotBeenSet(nameof(DismissLabelFormat)))
+        {
+            bitTag.DismissLabelFormat = DismissLabelFormat;
+        }
+
+        if (Download is not null && bitTag.HasNotBeenSet(nameof(Download)))
+        {
+            bitTag.Download = Download;
+        }
+
         if (FullWidth.HasValue && bitTag.HasNotBeenSet(nameof(FullWidth)))
         {
             bitTag.FullWidth = FullWidth.Value;
@@ -189,6 +242,16 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
             bitTag.NoWrap = NoWrap.Value;
 
             bitTag.ClassBuilder.Reset();
+        }
+
+        var relWasSet = false;
+        var targetWasSet = false;
+
+        if (Rel.HasValue && bitTag.HasNotBeenSet(nameof(Rel)))
+        {
+            bitTag.Rel = Rel.Value;
+
+            relWasSet = true;
         }
 
         if (Reversed.HasValue && bitTag.HasNotBeenSet(nameof(Reversed)))
@@ -222,6 +285,11 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
             bitTag.ClassBuilder.Reset();
         }
 
+        if (StopPropagation.HasValue && bitTag.HasNotBeenSet(nameof(StopPropagation)))
+        {
+            bitTag.StopPropagation = StopPropagation.Value;
+        }
+
         if (Styles is not null && bitTag.HasNotBeenSet(nameof(Styles)))
         {
             bitTag.Styles = Styles;
@@ -229,9 +297,28 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
             bitTag.StyleBuilder.Reset();
         }
 
+        if (Target.HasValue() && bitTag.HasNotBeenSet(nameof(Target)))
+        {
+            bitTag.Target = Target;
+
+            targetWasSet = true;
+        }
+
+        // the rel attribute is derived from Href, Rel and Target together, so it is recalculated
+        // whenever one of the two that can be cascaded has just been filled in from here.
+        if (relWasSet || targetWasSet)
+        {
+            bitTag.OnSetHrefAndRel();
+        }
+
         if (Text.HasValue() && bitTag.HasNotBeenSet(nameof(Text)))
         {
             bitTag.Text = Text;
+        }
+
+        if (Title.HasValue() && bitTag.HasNotBeenSet(nameof(Title)))
+        {
+            bitTag.Title = Title;
         }
 
         if (Variant.HasValue && bitTag.HasNotBeenSet(nameof(Variant)))

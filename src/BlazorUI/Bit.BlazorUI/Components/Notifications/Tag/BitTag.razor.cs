@@ -8,17 +8,22 @@ namespace Bit.BlazorUI;
 public partial class BitTag : BitComponentBase
 {
     private string? _rel;
+    private ElementReference _contentRef;
+    private ElementReference _dismissRef;
 
     // A tag that leads somewhere is an anchor, and a tag that does something - acting on the page or
     // toggling itself - is a button. Anything else is a label, which is not a control and never takes focus.
     private bool _isLink => Href.HasValue();
-    private bool _isToggle => SelectedChanged.HasDelegate || OnChange.HasDelegate;
+    private bool _isToggle => SelectedChanged.HasDelegate || OnChange.HasDelegate || DefaultSelected.HasValue;
     private bool _isButton => _isLink is false && (OnClick.HasDelegate || _isToggle);
     private bool _isInteractive => _isLink || _isButton;
 
     // The dismiss button carries no text of its own, so the name it is given is the only thing a screen
-    // reader has to announce it by. It falls back to a bare "Dismiss" for the app that never sets one.
-    private string _dismissLabel => DismissLabel ?? "Dismiss";
+    // reader has to announce it by. A row of them all called "Dismiss" names none of the tags they remove,
+    // so with no name of its own the button is named after the text of the tag; a tag with no text either
+    // falls back to a bare "Dismiss".
+    private string _dismissLabel => DismissLabel
+                                 ?? (Text.HasValue() ? Format(DismissLabelFormat ?? "Remove {0}", Text!) : "Dismiss");
 
 
 
@@ -36,12 +41,24 @@ public partial class BitTag : BitComponentBase
 
 
     /// <summary>
+    /// The detailed description of the tag for the benefit of screen readers, rendered into a visually
+    /// hidden element the tag points at with <c>aria-describedby</c>.
+    /// </summary>
+    /// <remarks>
+    /// A description is read after the name of whatever carries it, so use it for what does not belong in
+    /// the name itself - why a filter is unavailable, what dismissing the tag will do. It lands on the
+    /// anchor or the button the tag becomes while it is a control, and on the root of the tag otherwise.
+    /// </remarks>
+    [Parameter] public string? AriaDescription { get; set; }
+
+    /// <summary>
     /// Child content of component, the content that the tag will apply to.
     /// </summary>
     /// <remarks>
     /// It replaces <see cref="Text"/> and <see cref="SecondaryText"/> only; an <see cref="Icon"/>, an
     /// <see cref="IconUrl"/> and the checkmark of a selected tag keep rendering before it, so a template
-    /// does not have to reproduce them.
+    /// does not have to reproduce them. It is also where anything that belongs after the label goes - a
+    /// trailing glyph, a count - since the template is laid out in the same row as the icon that precedes it.
     /// </remarks>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -55,6 +72,17 @@ public partial class BitTag : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
+
+    /// <summary>
+    /// The initial value of <see cref="Selected"/> for a tag that keeps its own selection.
+    /// </summary>
+    /// <remarks>
+    /// Setting it is the whole of what an uncontrolled filter chip needs: the tag becomes a toggle that flips
+    /// and paints itself, starting from this value, without the app holding a field for it. Use
+    /// <see cref="Selected"/> instead where the app owns the value - a tag whose <see cref="Selected"/> is set
+    /// one way, without binding it, is one the tag itself is not allowed to change.
+    /// </remarks>
+    [Parameter] public bool? DefaultSelected { get; set; }
 
     /// <summary>
     /// Gets or sets the icon to use for the dismiss button using custom CSS classes for external icon libraries.
@@ -80,16 +108,37 @@ public partial class BitTag : BitComponentBase
 
     /// <summary>
     /// The accessible name and the tooltip of the dismiss button.
-    /// <br />
-    /// The default value is <strong>Dismiss</strong>.
     /// </summary>
     /// <remarks>
     /// The button carries a glyph rather than words, so this is the only thing a screen reader has to
-    /// announce it by. Set it to something that names what is being removed - "Remove the Design tag" reads
-    /// far better than a row of buttons all called "Dismiss" - and to the language of the app, since the
-    /// fallback is English.
+    /// announce it by. With no value here it is named after the <see cref="Text"/> of the tag through
+    /// <see cref="DismissLabelFormat"/> - "Remove Design" - and falls back to a bare "Dismiss" on a tag that
+    /// carries no text of its own; set this where neither reading is the right one.
     /// </remarks>
     [Parameter] public string? DismissLabel { get; set; }
+
+    /// <summary>
+    /// The format the dismiss button is named by while it has no <see cref="DismissLabel"/> of its own,
+    /// where <c>{0}</c> is the <see cref="Text"/> of the tag.
+    /// <br />
+    /// The default value is <strong>Remove {0}</strong>.
+    /// </summary>
+    /// <remarks>
+    /// This is what names a whole list of dismissible tags at once, and what translates that name: the
+    /// fallback is English, and the word order of the language the app is in may not be the English one.
+    /// </remarks>
+    [Parameter] public string? DismissLabelFormat { get; set; }
+
+    /// <summary>
+    /// Prompts the browser to download the <see cref="Href"/> of the tag rather than to navigate to it,
+    /// using the value as the suggested file name.
+    /// </summary>
+    /// <remarks>
+    /// An empty string keeps the name the server suggests. It is the <c>download</c> attribute of the anchor
+    /// the tag becomes, so it does nothing without an <see cref="Href"/> and only applies to same-origin,
+    /// <c>blob:</c> and <c>data:</c> URLs.
+    /// </remarks>
+    [Parameter] public string? Download { get; set; }
 
     /// <summary>
     /// Stretches the tag to fill the width of whatever holds it, instead of shrinking to its content.
@@ -198,10 +247,21 @@ public partial class BitTag : BitComponentBase
     /// Callback for when the <see cref="Selected"/> value of the tag has changed.
     /// </summary>
     /// <remarks>
-    /// Setting it - or binding <see cref="Selected"/> - is what turns the tag into a toggle: it becomes a
-    /// button that flips its own selection on every activation and reports that state through <c>aria-pressed</c>.
+    /// Setting it - or binding <see cref="Selected"/>, or giving a <see cref="DefaultSelected"/> - is what
+    /// turns the tag into a toggle: it becomes a button that flips its own selection on every activation and
+    /// reports that state through <c>aria-pressed</c>.
     /// </remarks>
     [Parameter] public EventCallback<bool> OnChange { get; set; }
+
+    /// <summary>
+    /// Callback invoked before the <see cref="Selected"/> value of the tag changes, letting the change be cancelled.
+    /// </summary>
+    /// <remarks>
+    /// Set <c>Cancel</c> on the provided <see cref="BitTagChangeArgs"/> to keep the current selection. Since
+    /// the callback is awaited, it can also run asynchronous work first - a confirmation, a request that has
+    /// to succeed before the filter is applied.
+    /// </remarks>
+    [Parameter] public EventCallback<BitTagChangeArgs> OnChanging { get; set; }
 
     /// <summary>
     /// Click event handler of the tag, which also turns the tag into a button.
@@ -223,8 +283,13 @@ public partial class BitTag : BitComponentBase
     /// <remarks>
     /// The button is a control of its own next to the content of the tag, so a click on it never reaches
     /// <see cref="OnClick"/>. It can also be triggered from the keyboard with the Delete and the Backspace
-    /// keys while the focus is anywhere inside the tag, in which case the callback is invoked with an empty
+    /// keys while the focus is on any control the tag renders - the button itself, and the anchor or button
+    /// the tag becomes while it is one - in which case the callback is invoked with an empty
     /// <see cref="MouseEventArgs"/>.
+    /// <br />
+    /// With no name given to the button through <see cref="DismissLabel"/>, it is named after the
+    /// <see cref="Text"/> of the tag - "Remove Design" - so a row of them names the tag each one removes
+    /// rather than announcing "Dismiss" over and over.
     /// <br />
     /// The component does not remove itself: what the handler does with the dismissal - taking the tag out of
     /// a list, clearing a filter - is up to the app.
@@ -272,9 +337,13 @@ public partial class BitTag : BitComponentBase
     /// Bind it - or set <see cref="OnChange"/> - to turn the tag into a filter chip: it becomes a button that
     /// flips this value on every activation and reports it to assistive technologies through <c>aria-pressed</c>.
     /// <br />
-    /// Set without either, it is a static "this one is picked" state the app drives on its own. Nothing then
-    /// announces it - a tag that is not a control has no state to report - so where the selection carries
-    /// meaning rather than decoration, say so in the <c>AriaLabel</c> or in the text of the tag itself.
+    /// Set without either, it is a static "this one is picked" state the app drives on its own, and one the
+    /// tag is not allowed to change - use <see cref="DefaultSelected"/> for a tag that keeps its own. Nothing
+    /// announces a static selection either - a tag that is not a control has no state to report - so where it
+    /// carries meaning rather than decoration, say so in the <c>AriaLabel</c> or in the text of the tag itself.
+    /// <br />
+    /// A tag that is a link reports it as <c>aria-current</c> instead, which is what marks the picked one of
+    /// a set of links; <c>aria-pressed</c> belongs to a button and would say nothing on an anchor.
     /// </remarks>
     [Parameter, ResetClassBuilder, TwoWayBound]
     public bool Selected { get; set; }
@@ -307,6 +376,18 @@ public partial class BitTag : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
+
+    /// <summary>
+    /// Stops the click of the tag from bubbling any further up the DOM.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// Use it for a tag sitting inside something else that reacts to a click - a row, a card, a list item -
+    /// where activating the tag should not also activate what holds it. The dismiss button stops the click
+    /// of its own whether or not this is set.
+    /// </remarks>
+    [Parameter] public bool StopPropagation { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the tag.
@@ -413,12 +494,58 @@ public partial class BitTag : BitComponentBase
 
 
 
+    protected override async Task OnInitializedAsync()
+    {
+        if (DefaultSelected.HasValue)
+        {
+            await AssignSelected(DefaultSelected.Value);
+        }
+
+        await base.OnInitializedAsync();
+    }
+
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTagParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
 
         base.OnParametersSet();
+    }
+
+
+
+    /// <summary>
+    /// Gives the keyboard focus to the tag.
+    /// </summary>
+    /// <remarks>
+    /// It focuses whatever the tag offers the keyboard: the anchor or the button it becomes while it is a
+    /// control, the dismiss button of a tag that only has one, and the root of a tag that is neither - which
+    /// a browser only takes while a <c>TabIndex</c> has been given to it.
+    /// <br />
+    /// This is what a list of dismissible tags moves the focus on with after removing one of them: a focus
+    /// left on an element that is gone falls back to the document, and the keyboard user loses their place.
+    /// </remarks>
+    public ValueTask FocusAsync()
+    {
+        if (_isInteractive) return _contentRef.FocusAsync();
+
+        return OnDismiss.HasDelegate ? _dismissRef.FocusAsync() : RootElement.FocusAsync();
+    }
+
+
+
+    // A format string is app-supplied, so a wrong one is a typo rather than an exception: the tag falls back
+    // to naming the button after itself.
+    private static string Format(string format, string text)
+    {
+        try
+        {
+            return string.Format(System.Globalization.CultureInfo.CurrentCulture, format, text);
+        }
+        catch (FormatException)
+        {
+            return text;
+        }
     }
 
 
@@ -438,7 +565,18 @@ public partial class BitTag : BitComponentBase
 
         if (_isToggle is false) return;
 
-        if (await AssignSelected(Selected is false) is false) return;
+        var value = Selected is false;
+
+        if (OnChanging.HasDelegate)
+        {
+            var args = new BitTagChangeArgs(value);
+
+            await OnChanging.InvokeAsync(args);
+
+            if (args.Cancel) return;
+        }
+
+        if (await AssignSelected(value) is false) return;
 
         await OnChange.InvokeAsync(Selected);
     }
@@ -462,7 +600,7 @@ public partial class BitTag : BitComponentBase
         await OnDismiss.InvokeAsync(new MouseEventArgs());
     }
 
-    private void OnSetHrefAndRel()
+    internal void OnSetHrefAndRel()
     {
         if (Href.HasNoValue() || Href!.StartsWith('#'))
         {

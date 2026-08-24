@@ -5,6 +5,14 @@
     align-items: center;
 }
 
+
+.example-card {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--bit-clr-brd-sec);
+    background-color: var(--bit-clr-bg-sec);
+}
+
 ::deep {
     .custom-class {
         border-radius: 0.25rem;

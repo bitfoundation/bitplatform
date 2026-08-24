@@ -55,6 +55,7 @@
 .bit-tag-int {
     cursor: pointer;
     appearance: none;
+    user-select: none;
     transition: background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
@@ -126,6 +127,22 @@
     border-radius: $shp-radius-full;
 }
 
+// The name and the description a screen reader is given where the tag itself has no words to carry them:
+// an aria-label on an element with no role of its own is not guaranteed to be announced, and a description
+// has to live somewhere in the DOM to be pointed at. Taken out of the layout without being taken out of the
+// accessibility tree, which display:none or visibility:hidden would both do.
+.bit-tag-vhd {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
 .bit-tag-rvs {
     flex-direction: row-reverse;
 
@@ -171,6 +188,7 @@
     cursor: pointer;
     flex-shrink: 0;
     appearance: none;
+    user-select: none;
     align-items: center;
     align-self: stretch;
     box-sizing: border-box;
@@ -210,6 +228,7 @@
     color: var(--bit-tag-clr-txt);
     border-color: var(--bit-tag-clr);
     background-color: var(--bit-tag-clr);
+
     // A filled tag is already wearing the role color, so it answers the pointer by deepening it. The overlay
     // is composited from the label color so that it works over every role, including the neutral ones whose
     // hover slot is not a deeper version of themselves.
@@ -237,6 +256,7 @@
 
     &.bit-tag-sel {
         background-color: var(--bit-tag-clr-light);
+
         // A selected chip is already wearing its hover color, so the pointer has to take it one step further -
         // otherwise a filter chip looks inert for as long as it is picked.
         --bit-tag-clr-hover-bg: var(--bit-tag-clr-light-hover);
@@ -259,6 +279,7 @@
 
     &.bit-tag-sel {
         background-color: var(--bit-tag-clr-light);
+
         // A selected chip is already wearing its hover color, so the pointer has to take it one step further -
         // otherwise a filter chip looks inert for as long as it is picked.
         --bit-tag-clr-hover-bg: var(--bit-tag-clr-light-hover);
@@ -339,4 +360,43 @@
 
 .bit-tag-sqr {
     --bit-tag-radius: #{$shp-radius-none};
+}
+
+
+// A forced-colors mode throws away every color the tag paints, which would leave the three variants
+// indistinguishable from one another, the selected state invisible and the disabled one looking enabled.
+// The rule and the states are re-established here in system colors, which are the only ones such a mode keeps.
+@media (forced-colors: active) {
+    .bit-tag {
+        border-color: ButtonText;
+    }
+
+    // The text variant carries no rule of its own in any other mode either.
+    .bit-tag-txt {
+        border-color: transparent;
+    }
+
+    // A picked filter chip is the one state that has to survive: it opts out of the forced palette and
+    // paints itself in the selection colors of the system instead.
+    .bit-tag-sel {
+        forced-color-adjust: none;
+        color: HighlightText;
+        border-color: Highlight;
+        background-color: Highlight;
+    }
+
+    // The disabled state comes last and takes the paint of a selected tag off with it, since GrayText on the
+    // system highlight is the one pairing of these colors that cannot be read.
+    .bit-tag.bit-dis {
+        color: GrayText;
+        border-color: GrayText;
+        background-color: Canvas;
+    }
+
+    // currentcolor is the forced text color here, which a selected tag has opted out of, so the ring is
+    // pinned to the system highlight for both.
+    .bit-tag-int:focus-visible,
+    .bit-tag-cls:focus-visible {
+        outline-color: Highlight;
+    }
 }

@@ -6,10 +6,17 @@ public partial class BitTagDemo
     [
         new()
         {
+            Name = "AriaDescription",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The detailed description of the tag for the benefit of screen readers, rendered into a visually hidden element the tag points at with aria-describedby."
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Child content of component, the content that the tag will apply to. It replaces the Text and the SecondaryText only; an icon, an image and the checkmark of a selected tag keep rendering before it."
+            Description = "Child content of component, the content that the tag will apply to. It replaces the Text and the SecondaryText only; an icon, an image and the checkmark of a selected tag keep rendering before it, and it is laid out in the same row as them, so it is also where anything belonging after the label goes."
         },
         new()
         {
@@ -28,6 +35,13 @@ public partial class BitTagDemo
             Description = "The general color of the tag.",
             LinkType = LinkType.Link,
             Href = "#color-enum"
+        },
+        new()
+        {
+            Name = "DefaultSelected",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "The initial value of Selected for a tag that keeps its own selection: setting it is the whole of what an uncontrolled filter chip needs. A Selected that is set one way, without binding, is one the tag itself is not allowed to change."
         },
         new()
         {
@@ -52,7 +66,21 @@ public partial class BitTagDemo
             Name = "DismissLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The accessible name and the tooltip of the dismiss button, which falls back to \"Dismiss\". The button carries a glyph rather than words, so this is the only thing a screen reader has to announce it by."
+            Description = "The accessible name and the tooltip of the dismiss button. With no value it is named after the Text of the tag through the DismissLabelFormat, and falls back to \"Dismiss\" on a tag that carries no text of its own."
+        },
+        new()
+        {
+            Name = "DismissLabelFormat",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The format the dismiss button is named by while it has no DismissLabel of its own, where {0} is the Text of the tag. Defaults to \"Remove {0}\", which is also what translating that name goes through."
+        },
+        new()
+        {
+            Name = "Download",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Prompts the browser to download the Href of the tag rather than to navigate to it, using the value as the suggested file name. An empty string keeps the name the server suggests."
         },
         new()
         {
@@ -123,6 +151,15 @@ public partial class BitTagDemo
         },
         new()
         {
+            Name = "OnChanging",
+            Type = "EventCallback<BitTagChangeArgs>",
+            DefaultValue = "",
+            Description = "Callback invoked before the Selected value changes, letting the change be cancelled by setting Cancel on the args. Since it is awaited, it can also run asynchronous work first.",
+            LinkType = LinkType.Link,
+            Href = "#tag-change-args"
+        },
+        new()
+        {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             DefaultValue = "",
@@ -133,7 +170,7 @@ public partial class BitTagDemo
             Name = "OnDismiss",
             Type = "EventCallback<MouseEventArgs>",
             DefaultValue = "",
-            Description = "Dismiss button click event, if set the dismiss icon will show up. It can also be triggered with the Delete and the Backspace keys from anywhere inside the tag."
+            Description = "Dismiss button click event, if set the dismiss icon will show up. It can also be triggered with the Delete and the Backspace keys from any control the tag renders, and with no DismissLabel of its own the button takes the Text of the tag for its name."
         },
         new()
         {
@@ -163,7 +200,7 @@ public partial class BitTagDemo
             Name = "Selected",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Marks the tag as selected, which paints it in its selected colors and shows a checkmark in front of its content. Binding it - or setting OnChange - turns the tag into a toggle button reporting aria-pressed."
+            Description = "Marks the tag as selected, which paints it in its selected colors and shows a checkmark in front of its content. Binding it - or setting OnChange - turns the tag into a toggle button reporting aria-pressed; a tag that is a link reports aria-current instead."
         },
         new()
         {
@@ -210,6 +247,13 @@ public partial class BitTagDemo
         },
         new()
         {
+            Name = "StopPropagation",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stops the click of the tag from bubbling any further up the DOM, for a tag sitting inside something else that reacts to a click."
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitTagClassStyles?",
             DefaultValue = "null",
@@ -246,6 +290,16 @@ public partial class BitTagDemo
             Description = "The visual variant of the tag.",
             LinkType = LinkType.Link,
             Href = "#variant-enum"
+        },
+    ];
+
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask",
+            Description = "Gives the keyboard focus to the tag: the anchor or the button it becomes while it is a control, the dismiss button of a tag that has only that, and the root element otherwise."
         },
     ];
 
@@ -334,6 +388,29 @@ public partial class BitTagDemo
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the dismiss icon of the BitTag."
                },
+            ]
+        },
+        new()
+        {
+            Id = "tag-change-args",
+            Title = "BitTagChangeArgs",
+            Description = "The arguments of the OnChanging callback of the BitTag.",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Value",
+                   Type = "bool",
+                   DefaultValue = "",
+                   Description = "The selection state the tag is about to move to."
+               },
+               new()
+               {
+                   Name = "Cancel",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Set to true to cancel the change and keep the current selection state."
+               }
             ]
         },
         new()
@@ -654,9 +731,11 @@ public partial class BitTagDemo
 
     private int clickCount;
     private int dismissCount;
+    private int cardClickCount;
     private bool isPinned;
     private bool isStarred = true;
     private bool isOnlyMine;
+    private bool allowSelectionChange;
     private bool isStyledSelected = true;
 
     private List<string> dismissibleTags = ["Design", "Research", "Docs"];
@@ -667,6 +746,32 @@ public partial class BitTagDemo
     private void ResetDismissibleTags()
     {
         dismissibleTags = ["Design", "Research", "Docs"];
+    }
+
+    private List<string> focusTags = ["Design", "Research", "Docs"];
+    private readonly Dictionary<string, BitTag> focusTagRefs = [];
+
+    private async Task DismissFocusTag(string tag)
+    {
+        var index = focusTags.IndexOf(tag);
+
+        focusTags.Remove(tag);
+        focusTagRefs.Remove(tag);
+
+        if (focusTags.Count == 0) return;
+
+        // the tag that took its place, or the last one when the end of the list was removed
+        var next = focusTags[Math.Min(index, focusTags.Count - 1)];
+
+        if (focusTagRefs.TryGetValue(next, out var nextRef))
+        {
+            await nextRef.FocusAsync();
+        }
+    }
+
+    private void ResetFocusTags()
+    {
+        focusTags = ["Design", "Research", "Docs"];
     }
 
     private void ToggleFilter(string filter, bool selected)
@@ -714,7 +819,10 @@ public partial class BitTagDemo
 <BitTag Text=""Annie Lindqvist"" IconUrl=""/images/persona-female.png"" Variant=""BitVariant.Outline"" />
 
 <BitTag Text=""Annie Lindqvist"" SecondaryText=""Software engineer"" IconUrl=""/images/persona-female.png""
-        Color=""BitColor.Tertiary"" Size=""BitSize.Large"" />";
+        Color=""BitColor.Tertiary"" Size=""BitSize.Large"" />
+
+<BitTag Text=""Awaiting review"" Color=""BitColor.Warning""
+        IconUrl=""/images/persona-female.png"" IconAlt=""Assigned to Annie Lindqvist"" />";
 
     private readonly string example6RazorCode = @"
 <BitTag Text=""Alex Parker"" SecondaryText=""Product designer"" IconName=""@BitIconName.Contact"" Variant=""BitVariant.Outline"" />
@@ -726,11 +834,13 @@ public partial class BitTagDemo
     <BitTag Text=""@tag""
             IconName=""@BitIconName.Tag""
             Variant=""BitVariant.Outline""
-            DismissLabel=""@($""Remove the {tag} tag"")""
             OnDismiss=""() => dismissibleTags.Remove(tag)"" />
 }
 
-<BitTag Text=""Custom glyph"" Color=""BitColor.Error"" DismissIconName=""@BitIconName.ChromeClose"" OnDismiss=""() => { }"" />
+<BitTag Text=""Custom glyph"" Color=""BitColor.Error"" DismissIconName=""@BitIconName.ChromeClose""
+        DismissLabel=""Clear the custom glyph tag"" OnDismiss=""() => { }"" />
+
+<BitTag Text=""Formatted label"" Color=""BitColor.Info"" DismissLabelFormat=""Take the {0} tag off the list"" OnDismiss=""() => { }"" />
 
 <BitTag Text=""Disabled"" IsEnabled=""false"" OnDismiss=""() => { }"" />
 
@@ -753,10 +863,19 @@ private void ResetDismissibleTags()
 
 <BitTag Text=""Disabled"" IsEnabled=""false"" OnClick=""() => clickCount++"" />
 
-<div>Clicked <b>@clickCount</b> times, dismissed <b>@dismissCount</b> times.</div>";
+<div class=""example-card"" @onclick=""() => cardClickCount++"">
+    The card counts every click that reaches it. The second tag stops its own.
+
+    <BitTag Text=""Bubbles"" Variant=""BitVariant.Outline"" OnClick=""() => clickCount++"" />
+
+    <BitTag Text=""Stops"" Variant=""BitVariant.Outline"" Color=""BitColor.Info"" StopPropagation OnClick=""() => clickCount++"" />
+</div>
+
+<div>Clicked <b>@clickCount</b> times, dismissed <b>@dismissCount</b> times, card clicked <b>@cardClickCount</b> times.</div>";
     private readonly string example8CsharpCode = @"
 private int clickCount;
-private int dismissCount;";
+private int dismissCount;
+private int cardClickCount;";
 
     private readonly string example9RazorCode = @"
 <BitTag Text=""Iconography"" IconName=""@BitIconName.Ribbon"" Href=""/iconography"" Variant=""BitVariant.Outline"" />
@@ -766,6 +885,9 @@ private int dismissCount;";
 <BitTag Text=""Source"" Color=""BitColor.Secondary"" IconName=""@BitIconName.OpenInNewWindow""
         Href=""https://github.com/bitfoundation/bitplatform"" Target=""_blank""
         Rel=""BitLinkRels.NoFollow | BitLinkRels.NoReferrer"" />
+
+<BitTag Text=""Logo"" IconName=""@BitIconName.Download"" Color=""BitColor.Success"" Variant=""BitVariant.Outline""
+        Href=""/images/bit-logo-blue.png"" Download=""bit-logo.png"" />
 
 <BitTag Text=""Disabled"" Href=""https://bitplatform.dev"" IsEnabled=""false"" />";
 
@@ -786,10 +908,20 @@ private int dismissCount;";
 
 <BitTag Text=""Static selection"" Selected Color=""BitColor.Success"" />
 
+<BitTag Text=""Current link"" Selected Href=""#example10"" Color=""BitColor.Info"" Variant=""BitVariant.Outline"" />
+
+<BitTag Text=""Keeps its own state"" DefaultSelected=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.Tertiary"" />
+
+<BitTag Text=""Asks first"" DefaultSelected=""false"" Color=""BitColor.Warning""
+        OnChanging=""args => args.Cancel = allowSelectionChange is false"" />
+
+<BitToggle @bind-Value=""allowSelectionChange"" Label=""Allow the change"" Inline />
+
 <div>Selected: <b>@(selectedFilters.Count == 0 ? ""none"" : string.Join("", "", selectedFilters))</b></div>";
     private readonly string example10CsharpCode = @"
 private bool isPinned;
 private bool isStarred = true;
+private bool allowSelectionChange;
 
 private readonly string[] filters = [""Open"", ""In progress"", ""Done""];
 private readonly List<string> selectedFilters = [""In progress""];
@@ -819,6 +951,10 @@ private void ToggleFilter(string filter, bool selected)
 
 <BitTag IconName=""@BitIconName.Contact"" Variant=""BitVariant.Outline"" Color=""BitColor.Tertiary"">
     <b>Alex</b>&nbsp;<span style=""opacity:0.7"">(owner)</span>
+</BitTag>
+
+<BitTag IconName=""@BitIconName.Filter"" Color=""BitColor.Info"" OnClick=""() => { }"">
+    Status<BitIcon IconName=""@BitIconName.ChevronDown"" />
 </BitTag>";
 
     private readonly string example12RazorCode = @"
@@ -836,15 +972,56 @@ private void ToggleFilter(string filter, bool selected)
 <BitTag FullWidth Text=""Full width and dismissible"" IconName=""@BitIconName.Tag"" Color=""BitColor.Info"" OnDismiss=""() => { }"" />";
 
     private readonly string example14RazorCode = @"
+@foreach (var tag in focusTags)
+{
+    <BitTag @ref=""focusTagRefs[tag]""
+            Text=""@tag""
+            IconName=""@BitIconName.Tag""
+            Variant=""BitVariant.Outline""
+            OnDismiss=""() => DismissFocusTag(tag)"" />
+}
+
+<BitButton Variant=""BitVariant.Outline"" IsEnabled=""@(focusTags.Count < 3)"" OnClick=""ResetFocusTags"">Reset</BitButton>";
+    private readonly string example14CsharpCode = @"
+private List<string> focusTags = [""Design"", ""Research"", ""Docs""];
+private readonly Dictionary<string, BitTag> focusTagRefs = [];
+
+private async Task DismissFocusTag(string tag)
+{
+    var index = focusTags.IndexOf(tag);
+
+    focusTags.Remove(tag);
+    focusTagRefs.Remove(tag);
+
+    if (focusTags.Count == 0) return;
+
+    // the tag that took its place, or the last one when the end of the list was removed
+    var next = focusTags[Math.Min(index, focusTags.Count - 1)];
+
+    if (focusTagRefs.TryGetValue(next, out var nextRef))
+    {
+        await nextRef.FocusAsync();
+    }
+}
+
+private void ResetFocusTags()
+{
+    focusTags = [""Design"", ""Research"", ""Docs""];
+}";
+
+    private readonly string example15RazorCode = @"
 <BitTag IconName=""@BitIconName.Filter"" AriaLabel=""Show the filters"" OnClick=""() => { }"" />
+
+<BitTag IconName=""@BitIconName.Pinned"" AriaLabel=""Pinned to the top"" Variant=""BitVariant.Outline"" />
 
 <BitTag Text=""Design"" DismissLabel=""Remove the Design tag"" Variant=""BitVariant.Outline"" OnDismiss=""() => { }"" />
 
-<BitTag Text=""Only mine"" @bind-Selected=""isOnlyMine"" Variant=""BitVariant.Outline"" />";
-    private readonly string example14CsharpCode = @"
+<BitTag Text=""Only mine"" @bind-Selected=""isOnlyMine"" Variant=""BitVariant.Outline""
+        AriaDescription=""Shows only the items you own"" />";
+    private readonly string example15CsharpCode = @"
 private bool isOnlyMine;";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitTag Text=""Primary"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Primary"" Variant=""BitVariant.Fill"" />
 <BitTag Text=""Primary"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Primary"" Variant=""BitVariant.Outline"" />
 <BitTag Text=""Primary"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Primary"" Variant=""BitVariant.Text"" />
@@ -937,7 +1114,7 @@ private bool isOnlyMine;";
 <BitTag IsEnabled=""false"" Text=""SecondaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SecondaryBorder"" />
 <BitTag IsEnabled=""false"" Text=""TertiaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryBorder"" />";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitTag Text=""House"" Icon=""@(""fa-solid fa-house"")"" />
@@ -950,6 +1127,8 @@ private bool isOnlyMine;";
 
 <BitTag Text=""Dismiss"" Icon=""@BitIconInfo.Fa(""solid tag"")"" DismissIcon=""@BitIconInfo.Fa(""solid xmark"")"" OnDismiss=""() => { }"" />
 
+<BitTag Text=""Selected"" Icon=""@BitIconInfo.Fa(""solid star"")"" SelectedIcon=""@BitIconInfo.Fa(""solid check"")"" Selected />
+
 
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
@@ -961,9 +1140,11 @@ private bool isOnlyMine;";
 
 <BitTag Text=""Gear"" Icon=""@BitIconInfo.Bi(""gear-fill"")"" />
 
-<BitTag Text=""Dismiss"" Icon=""@BitIconInfo.Bi(""tag-fill"")"" DismissIcon=""@BitIconInfo.Bi(""x-lg"")"" OnDismiss=""() => { }"" />";
+<BitTag Text=""Dismiss"" Icon=""@BitIconInfo.Bi(""tag-fill"")"" DismissIcon=""@BitIconInfo.Bi(""x-lg"")"" OnDismiss=""() => { }"" />
 
-    private readonly string example17RazorCode = @"
+<BitTag Text=""Selected"" Icon=""@BitIconInfo.Bi(""star-fill"")"" SelectedIcon=""@BitIconInfo.Bi(""check-lg"")"" Selected />";
+
+    private readonly string example18RazorCode = @"
 <BitTag Text=""Small"" IconName=""@BitIconName.Calendar"" Size=""BitSize.Small"" Variant=""BitVariant.Fill"" />
 <BitTag Text=""Small"" IconName=""@BitIconName.Calendar"" Size=""BitSize.Small"" Variant=""BitVariant.Outline"" />
 <BitTag Text=""Small"" IconName=""@BitIconName.Calendar"" Size=""BitSize.Small"" Variant=""BitVariant.Text"" />
@@ -979,7 +1160,7 @@ private bool isOnlyMine;";
 <BitTag Text=""Large"" IconName=""@BitIconName.Calendar"" Size=""BitSize.Large"" Variant=""BitVariant.Text"" />
 <BitTag Text=""Large"" IconName=""@BitIconName.Calendar"" Size=""BitSize.Large"" Variant=""BitVariant.Outline"" OnDismiss=""() => { }"" />";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <style>
     .custom-class {
         border-radius: 0.25rem;
@@ -1031,17 +1212,17 @@ private bool isOnlyMine;";
 <BitTag Text=""Selected""
         @bind-Selected=""isStyledSelected""
         Classes=""@(new() { Selected = ""custom-selected"" })"" />";
-    private readonly string example18CsharpCode = @"
+    private readonly string example19CsharpCode = @"
 private bool isStyledSelected = true;";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <div dir=""rtl"">
     <BitTag Dir=""BitDir.Rtl"" Text=""برچسب"" IconName=""@BitIconName.Calendar"" />
 
     <BitTag Dir=""BitDir.Rtl"" Text=""طراحی"" IconName=""@BitIconName.Tag"" Color=""BitColor.Info"" Variant=""BitVariant.Outline"" />
 
     <BitTag Dir=""BitDir.Rtl"" Text=""حذف کنید"" IconName=""@BitIconName.Tag"" Color=""BitColor.Error""
-            DismissLabel=""حذف"" OnDismiss=""() => { }"" />
+            DismissLabelFormat=""حذف {0}"" OnDismiss=""() => { }"" />
 
     <BitTag Dir=""BitDir.Rtl"" Text=""معکوس"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Success""
             Reversed OnDismiss=""() => { }"" />
