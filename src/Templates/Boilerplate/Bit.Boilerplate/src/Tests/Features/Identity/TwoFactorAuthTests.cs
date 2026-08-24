@@ -74,18 +74,27 @@ public partial class TwoFactorAuthTests : AppPageTest
     }
 
     /// <summary>
-    /// Fills the verification code (a TOTP computed from <paramref name="authenticatorSecret"/>) and enables 2FA.
+    /// Fills the verification code (a TOTP computed from <paramref name="authenticatorSecret"/>), which is all it takes
+    /// to enable 2FA.
     /// <para>
     /// The field is a <c>BitOtpInput</c> - the same control the sign-in 2FA step uses below - so it is filled through
     /// <see cref="BitOtpInputUtils"/> rather than by placeholder. It used to be a <c>BitTextField</c>, which had no
     /// digit normalisation and so could not be typed into on a Persian/Arabic keyboard layout at all.
     /// </para>
+    /// <para>
+    /// Deliberately no click on "Verify" afterwards. Filling the last digit raises the input's <c>OnFill</c>, which is
+    /// wired to the <b>same</b> <c>EnableTwoFactorAuth</c> handler as that button (TwoFactorSection.razor:60 and :63),
+    /// so clicking it as well races the handler already in flight: the moment 2FA is enabled the whole
+    /// <c>isTwoFactorAuthEnabled is false</c> branch is swapped for the recovery-codes pivot, taking the button with
+    /// it. Playwright then reported "element was detached from the DOM, retrying" until it timed out - only on CI,
+    /// where the round trip finishes while it is still checking the button is stable. Every other
+    /// <see cref="BitOtpInputUtils.FillOtpInputs(IPage, string)"/> call site in this suite relies on <c>OnFill</c>
+    /// alone; this one was the outlier.
+    /// </para>
     /// </summary>
     private async Task EnableTwoFactor(IPage page, string authenticatorSecret)
     {
         await BitOtpInputUtils.FillOtpInputs(page, ComputeTotpCode(authenticatorSecret));
-
-        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.TfaConfigureAutAppVerifyButtonText }).ClickAsync();
     }
 
     /// <summary>Signs the current user out through the header menu and its confirmation dialog.</summary>
