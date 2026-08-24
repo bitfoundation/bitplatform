@@ -252,10 +252,10 @@ public partial class AppChatbotHistoryTests
         await StoreAiChatImage(scope.ServiceProvider, attachmentId, picture);
 
         await chatbot.ProcessNewMessage(new AiChatMessageRequest
-                                        {
-                                            Content = "what is in this picture?",
-                                            AttachmentId = attachmentId
-                                        },
+        {
+            Content = "what is in this picture?",
+            AttachmentId = attachmentId
+        },
                                         httpContext.User,
                                         TestContext.CancellationToken);
 
@@ -299,10 +299,10 @@ public partial class AppChatbotHistoryTests
             await StoreAiChatImage(scope.ServiceProvider, attachmentId, [(byte)turn]);
 
             await chatbot.ProcessNewMessage(new AiChatMessageRequest
-                                            {
-                                                Content = turn == 1 ? null : $"picture {turn}",
-                                                AttachmentId = attachmentId
-                                            },
+            {
+                Content = turn == 1 ? null : $"picture {turn}",
+                AttachmentId = attachmentId
+            },
                                             httpContext.User,
                                             TestContext.CancellationToken);
         }
