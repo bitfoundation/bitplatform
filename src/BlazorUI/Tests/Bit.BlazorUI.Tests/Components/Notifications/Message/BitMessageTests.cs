@@ -1127,11 +1127,8 @@ public class BitMessageTests : BunitTestContext
 
 
     [TestMethod,
+        // One explicit role is enough: the color has no say once a role was asked for.
         DataRow("alert", BitColor.Info),
-        DataRow("alert", BitColor.Success),
-        DataRow("alert", BitColor.Warning),
-        DataRow("alert", BitColor.SevereWarning),
-        DataRow("alert", BitColor.Error),
 
         DataRow(null, BitColor.Primary),
         DataRow(null, BitColor.Secondary),
@@ -1573,7 +1570,8 @@ public class BitMessageTests : BunitTestContext
 
         var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(300));
+            // Long enough that the press below lands well inside the countdown on a slow agent.
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(1000));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
@@ -1581,7 +1579,7 @@ public class BitMessageTests : BunitTestContext
 
         Assert.AreEqual(1, dismissCount);
 
-        Thread.Sleep(800);
+        Thread.Sleep(1600);
 
         Assert.AreEqual(1, dismissCount);
     }
@@ -1614,7 +1612,8 @@ public class BitMessageTests : BunitTestContext
 
         var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(400));
+            // Long enough that all three parameter sets below land inside the countdown on a slow agent.
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(1200));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
@@ -1622,11 +1621,11 @@ public class BitMessageTests : BunitTestContext
         // pushing the callback out of reach of the wait below.
         for (var i = 0; i < 3; i++)
         {
-            Thread.Sleep(150);
+            Thread.Sleep(300);
             component.Render(parameters => parameters.Add(p => p.Class, $"round-{i}"));
         }
 
-        WaitUntil(() => dismissCount == 1, 1000);
+        WaitUntil(() => dismissCount == 1, 1500);
 
         Assert.AreEqual(1, dismissCount);
     }

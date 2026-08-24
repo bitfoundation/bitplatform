@@ -20,6 +20,11 @@ public partial class BitMessage : BitComponentBase
     private bool _isFocusInside;
     private bool _isPausedByApi;
 
+    // A hold has no length of its own: a pointer can rest on the message, and a PauseAutoDismiss can go unanswered,
+    // for as long as the reader likes. So a held countdown waits on the resume rather than waking four times a
+    // second to find the hold still on. This is what the resume opens.
+    private TaskCompletionSource? _autoDismissResume;
+
     // A dismissal can be awaited on the way out, which leaves room for a second one to start alongside it.
     private bool _isDismissing;
 
@@ -820,6 +825,7 @@ public partial class BitMessage : BitComponentBase
         _isFocusInside = false;
         _isPausedByApi = false;
         _isAutoDismissPaused = false;
+        ReleaseAutoDismissGate();
 
         _armedAutoDismissTime = null;
         _autoFocusDone = false;
@@ -894,12 +900,22 @@ public partial class BitMessage : BitComponentBase
 
             while (remaining > TimeSpan.Zero)
             {
+                // A held countdown stops spending, so it waits on the resume rather than on the clock: a hold
+                // lasts as long as the reader likes, and waking four times a second to find it still on is
+                // waking for nothing. A hold with no gate to wait on falls through to the step below.
+                if (_isAutoDismissPaused && _autoDismissResume is { } resume)
+                {
+                    await resume.Task.WaitAsync(ct);
+
+                    continue;
+                }
+
                 var step = remaining < _AutoDismissTick ? remaining : _AutoDismissTick;
 
                 await Task.Delay(step, ct);
 
-                // A held countdown keeps ticking but stops spending, so the remaining time is preserved
-                // for as long as the pointer or the focus stays on the message.
+                // The step is what tells a hold that went up during it from one that did not: a step spent under
+                // a hold is not spent at all.
                 if (_isAutoDismissPaused is false) remaining -= step;
             }
 
@@ -1014,13 +1030,30 @@ public partial class BitMessage : BitComponentBase
 
         if (_isAutoDismissPaused == paused) return;
 
-        _isAutoDismissPaused = paused;
+        // The gate goes up before the flag that sends the countdown to it, and comes down after the flag that
+        // sends it on its way, so the countdown never finds itself held with nothing left to wait on.
+        if (paused)
+        {
+            _autoDismissResume = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _isAutoDismissPaused = true;
+        }
+        else
+        {
+            _isAutoDismissPaused = false;
+            ReleaseAutoDismissGate();
+        }
 
         // The flag is what the countdown task reads, and it has just been written. The render is only owed to the
         // bar that draws the countdown, so a message without one is not re-rendered on every hover of it.
         if (IsDisposed || _ShowsAutoDismissProgress is false) return;
 
         _ = InvokeAsync(StateHasChanged);
+    }
+
+    // Lets go of a countdown waiting on the gate, and leaves nothing behind for the next hold to trip over.
+    private void ReleaseAutoDismissGate()
+    {
+        Interlocked.Exchange(ref _autoDismissResume, null)?.TrySetResult();
     }
 
     // Only meaningful together with Truncate, and it goes through the same assignment the expander button does,
