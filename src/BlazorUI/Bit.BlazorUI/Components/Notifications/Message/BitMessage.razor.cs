@@ -37,8 +37,8 @@ public partial class BitMessage : BitComponentBase
 
     // Held as fields so re-registering them on every parameter set keeps handing the renderer the same
     // delegate instance, which is what lets the diff leave the listener alone.
-    private readonly Action _onPointerEnter;
-    private readonly Action _onPointerLeave;
+    private readonly Action<PointerEventArgs> _onPointerEnter;
+    private readonly Action<PointerEventArgs> _onPointerLeave;
     private readonly Action _onFocusIn;
     private readonly Action _onFocusOut;
     private readonly Func<KeyboardEventArgs, Task> _onRootKeyDown;
@@ -75,8 +75,9 @@ public partial class BitMessage : BitComponentBase
     /// <remarks>
     /// The countdown only runs while dismissing the message would do something at all - that is, while
     /// <see cref="OnDismiss"/> has a handler, <see cref="Dismissible"/> is set, or <see cref="Dismissed"/> is bound
-    /// - and while the message is enabled. It is held for as long as the pointer is over the message or the focus
-    /// is inside it, so the message cannot vanish while it is being read or acted upon (WCAG 2.2.1 Timing
+    /// - and while the message is enabled. It is held for as long as a pointer that can rest on the message - a
+    /// mouse or a pen, never a touch, which is a tap that is over as soon as it began - is over it, or the focus is
+    /// inside it, so the message cannot vanish while it is being read or acted upon (WCAG 2.2.1 Timing
     /// Adjustable). Assigning a different value re-arms the countdown.
     /// </remarks>
     [Parameter] public TimeSpan? AutoDismissTime { get; set; }
@@ -355,11 +356,14 @@ public partial class BitMessage : BitComponentBase
     public bool Multiline { get; set; }
 
     /// <summary>
-    ///  Whether the message has a dismiss button and its callback. If null, dismiss button won't show.
+    /// Reports that the message was dismissed, and renders the dismiss button that does it. Without a handler and
+    /// without <see cref="Dismissible"/>, the message has no dismiss button at all.
     /// </summary>
     /// <remarks>
     /// Taking the message off the page is left to this callback. Use <see cref="Dismissible"/> instead - on its own
-    /// or alongside this one - to have the message do that itself.
+    /// or alongside this one - to have the message do that itself. It is invoked whatever the dismissal came from:
+    /// the button, the Escape key, the <see cref="AutoDismissTime"/> countdown or a <see cref="DismissAsync()"/>
+    /// call; use <see cref="OnDismissing"/> to tell them apart, or to refuse one.
     /// </remarks>
     [Parameter] public EventCallback OnDismiss { get; set; }
 
@@ -377,6 +381,17 @@ public partial class BitMessage : BitComponentBase
     /// again, so it is not left standing there with an exhausted bar and no timer behind it.
     /// </remarks>
     [Parameter] public EventCallback<BitMessageDismissArgs> OnDismissing { get; set; }
+
+    /// <summary>
+    /// How urgently the message interrupts a screen reader, independently of the role it is announced under.
+    /// </summary>
+    /// <remarks>
+    /// The role of the message already carries an urgency of its own - <c>alert</c> interrupts, <c>status</c> waits
+    /// its turn - and that is what most messages want, so this is left unset unless the two have to be told apart:
+    /// an <c>alert</c> that should not cut in on what the reader is being told, a <c>status</c> that has to be heard
+    /// at once, or a <see cref="BitPoliteness.Off"/> that keeps the role but stops the announcement.
+    /// </remarks>
+    [Parameter] public BitPoliteness? Politeness { get; set; }
 
     /// <summary>
     /// Custom role to apply to the message text.
@@ -442,9 +457,11 @@ public partial class BitMessage : BitComponentBase
     /// <summary>
     /// Determines if the message text is truncated.
     /// If true, a button will render to toggle between a single line view and multiline view.
-    /// This parameter is for single line messages with no buttons only in a limited space scenario.
     /// </summary>
     /// <remarks>
+    /// It is for the message that has to fit in a tight space: the content is clipped to one line and the button
+    /// unfolds it, so the whole of it is still reachable without the message taking the room to show it.
+    /// <br />
     /// On a <see cref="Multiline"/> message there is nothing folded away to unfold, so this does nothing on its own
     /// there; give that message a <see cref="MaxLines"/> cap and the same button appears, unfolding it past the cap
     /// instead of past the single line.
@@ -742,16 +759,25 @@ public partial class BitMessage : BitComponentBase
     // add a boundary to walk in and out of, so the root stays a plain div.
     private bool _HasRootName => AriaLabel.HasValue() || _HasTitle;
 
-    // A role written on the component itself wins - it was put there on purpose. It is handed back out rather
-    // than left to the splatted attributes: this one is written after them, and an attribute written after the
-    // splat replaces what the splat put there, null included.
-    private string? _RootRole => HtmlAttributes.TryGetValue("role", out var role)
-        ? role?.ToString()
-        : (_HasRootName ? "group" : null);
+    // Everything the message writes on its root is written after the splatted attributes, and an attribute
+    // written after the splat replaces what the splat put there, null included - which would quietly wipe an
+    // aria attribute a consumer had put on the component. So what was written on the component itself is handed
+    // back out where there was one: it was put there on purpose, and it wins.
+    private string? RootAttribute(string name, string? value)
+        => HtmlAttributes.TryGetValue(name, out var written) ? written?.ToString() : value;
+
+    private string? _RootRole => RootAttribute("role", _HasRootName ? "group" : null);
 
     // An explicit label wins; otherwise the title of the message is the name of the group, the way the heading
     // of a section names the section.
-    private string? _RootLabelledBy => (AriaLabel.HasValue() is false && _HasTitle) ? $"{_Id}-ttl" : null;
+    private string? _RootLabelledBy
+        => RootAttribute("aria-labelledby", (AriaLabel.HasValue() is false && _HasTitle) ? $"{_Id}-ttl" : null);
+
+    // A description is only ever read out where the focus lands on the thing it describes, so the message points
+    // at its own text only while the focus can land on it at all. Without it, a reader taken to the message by
+    // AutoFocus - or landing on it by Tab - is handed a named group and told nothing of what is inside it, since
+    // a live region is announced when it changes rather than when it is reached.
+    private string? _RootDescribedBy => RootAttribute("aria-describedby", _TabIndex is not null ? $"{_Id}-cnt" : null);
 
 
 
@@ -762,8 +788,8 @@ public partial class BitMessage : BitComponentBase
     {
         if (_HasAutoDismiss)
         {
-            AddHandler("onmouseenter", _onPointerEnter);
-            AddHandler("onmouseleave", _onPointerLeave);
+            AddHandler("onpointerenter", _onPointerEnter);
+            AddHandler("onpointerleave", _onPointerLeave);
             AddHandler("onfocusin", _onFocusIn);
             AddHandler("onfocusout", _onFocusOut);
         }
@@ -883,6 +909,14 @@ public partial class BitMessage : BitComponentBase
         }
         catch (OperationCanceledException) { }
         catch (ObjectDisposedException) { }
+        catch (Exception ex)
+        {
+            // The countdown is started rather than awaited, so an exception thrown by the dismissal it triggers -
+            // out of OnDismissing, or out of OnDismiss - has no caller to surface on and would be left unobserved.
+            // It is handed to the component's error boundary instead, the way an exception out of a click handler is -
+            // unless the component is already gone, where there is no longer a boundary to hand it to.
+            if (IsDisposed is false) await DispatchExceptionAsync(ex);
+        }
     }
 
     private async Task DismissAsync(BitMessageDismissReason reason)
@@ -932,19 +966,29 @@ public partial class BitMessage : BitComponentBase
         }
     }
 
-    private void HandlePointerEnter()
+    private void HandlePointerEnter(PointerEventArgs e)
     {
+        if (IsHoveringPointer(e) is false) return;
+
         _isPointerOver = true;
 
         RefreshAutoDismissHold();
     }
 
-    private void HandlePointerLeave()
+    private void HandlePointerLeave(PointerEventArgs e)
     {
+        if (IsHoveringPointer(e) is false) return;
+
         _isPointerOver = false;
 
         RefreshAutoDismissHold();
     }
+
+    // A touch is a tap, not a hover: the pointer is created at the tap and destroyed at the end of it, and a
+    // browser sending the compatibility mouse events of that tap never takes them back. A message tapped once
+    // would be left holding its countdown for good, so only the pointers that can genuinely rest on the message
+    // - a mouse or a pen - are allowed to hold it. The hover styles are gated the same way in CSS.
+    private static bool IsHoveringPointer(PointerEventArgs e) => e.PointerType is not "touch";
 
     private void HandleFocusIn()
     {
@@ -1012,6 +1056,16 @@ public partial class BitMessage : BitComponentBase
 
         await DismissAsync(BitMessageDismissReason.Escape);
     }
+
+    // Written alongside the role rather than in place of it: an explicit aria-live is what an assistive technology
+    // reads first, so it overrides the urgency the role implies while leaving the role itself where it was.
+    private string? GetPoliteness() => Politeness switch
+    {
+        BitPoliteness.Off => "off",
+        BitPoliteness.Polite => "polite",
+        BitPoliteness.Assertive => "assertive",
+        _ => null
+    };
 
     private string? GetTextRole()
     {

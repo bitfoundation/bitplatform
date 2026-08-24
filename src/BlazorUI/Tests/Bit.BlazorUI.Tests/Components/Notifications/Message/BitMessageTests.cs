@@ -15,6 +15,11 @@ public class BitMessageTests : BunitTestContext
 {
     private const string LongText = "In the beginning, there is silence - a blank canvas yearning to be filled.";
 
+    // Only the pointers that can rest on the message hold its countdown, so the ones the tests send have to
+    // say which kind they are.
+    private static readonly PointerEventArgs _mousePointer = new() { PointerType = "mouse" };
+    private static readonly PointerEventArgs _touchPointer = new() { PointerType = "touch" };
+
     // The auto-dismiss callback fires off the render loop, so there is no render for WaitForAssertion to
     // hang its re-check on. The condition is polled from the test thread instead.
     private static void WaitUntil(Func<bool> condition, int timeoutMilliseconds = 5000)
@@ -492,6 +497,40 @@ public class BitMessageTests : BunitTestContext
         var component = RenderComponent<BitMessage>();
 
         Assert.IsEmpty(component.FindAll(".bit-msg-act"));
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public void BitMessageActionsShouldSitOutsideTheAnnouncedRegion(bool multiline)
+    {
+        // What the live region announces is what the message says, not the buttons that act on it - an
+        // announcement that read out its own controls would be read out again every time one of them changed.
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.Actions, "<button>Retry</button>");
+            parameters.AddChildContent("Hello");
+        });
+
+        Assert.IsEmpty(component.Find(".bit-msg-cnc").QuerySelectorAll(".bit-msg-act"));
+    }
+
+    [TestMethod]
+    public void BitMessageButtonsShouldSitOutsideTheAnnouncedRegion()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.Add(p => p.Dismissible, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        var announced = component.Find(".bit-msg-cnc");
+
+        Assert.IsEmpty(announced.QuerySelectorAll(".bit-msg-exb"));
+        Assert.IsEmpty(announced.QuerySelectorAll(".bit-msg-dmb"));
     }
 
 
@@ -1119,6 +1158,124 @@ public class BitMessageTests : BunitTestContext
         Assert.AreEqual(expectedRole, textEl.GetAttribute("role"));
     }
 
+    [TestMethod,
+        DataRow(BitPoliteness.Off, "off"),
+        DataRow(BitPoliteness.Polite, "polite"),
+        DataRow(BitPoliteness.Assertive, "assertive")
+    ]
+    public void BitMessageShouldRespectPoliteness(BitPoliteness politeness, string expectedAriaLive)
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Politeness, politeness);
+        });
+
+        Assert.AreEqual(expectedAriaLive, component.Find(".bit-msg-cnc").GetAttribute("aria-live"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotDeclareAPolitenessWithoutBeingAsked()
+    {
+        // The role of the message already carries an urgency of its own, so nothing is written next to it
+        // until the two have to be told apart.
+        var component = RenderComponent<BitMessage>();
+
+        Assert.IsNull(component.Find(".bit-msg-cnc").GetAttribute("aria-live"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldKeepTheRoleAlongsideAPoliteness()
+    {
+        // The politeness overrides the urgency the role implies; it does not take the role away.
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Color, BitColor.Error);
+            parameters.Add(p => p.Politeness, BitPoliteness.Polite);
+        });
+
+        var textEl = component.Find(".bit-msg-cnc");
+
+        Assert.AreEqual("alert", textEl.GetAttribute("role"));
+        Assert.AreEqual("polite", textEl.GetAttribute("aria-live"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldAllowAPolitenessAlongsideACustomRole()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Role, "status");
+            parameters.Add(p => p.Politeness, BitPoliteness.Assertive);
+        });
+
+        var textEl = component.Find(".bit-msg-cnc");
+
+        Assert.AreEqual("status", textEl.GetAttribute("role"));
+        Assert.AreEqual("assertive", textEl.GetAttribute("aria-live"));
+    }
+
+    [TestMethod,
+        DataRow("0"),
+        DataRow("-1")
+    ]
+    public void BitMessageShouldDescribeAFocusableRootByItsOwnText(string tabIndex)
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Id, "the-message");
+            parameters.Add(p => p.TabIndex, tabIndex);
+            parameters.AddChildContent("Hello");
+        });
+
+        // A live region is announced when it changes, not when it is reached, so the focus landing on the message
+        // would otherwise be told nothing of what is inside it.
+        Assert.AreEqual("the-message-cnt", component.Find(".bit-msg").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldDescribeAnAutoFocusedRootByItsOwnText()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Id, "the-message");
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.AddChildContent("Hello");
+        });
+
+        Assert.AreEqual("the-message-cnt", component.Find(".bit-msg").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotDescribeARootTheFocusCannotReach()
+    {
+        // A description is only ever read out where the focus lands on the thing it describes.
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.AddChildContent("Hello");
+        });
+
+        Assert.IsNull(component.Find(".bit-msg").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod,
+        DataRow("aria-describedby", "written-by-hand"),
+        DataRow("aria-labelledby", "written-by-hand")
+    ]
+    public void BitMessageShouldNotWipeAConsumerSuppliedAriaAttribute(string name, string value)
+    {
+        // Everything the message writes on its root is written after the splat, and an attribute written after
+        // the splat replaces what the splat put there - null included.
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitMessage>(0);
+            builder.AddAttribute(1, nameof(BitMessage.Title), "Upload failed");
+            builder.AddAttribute(2, name, value);
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual(value, component.Find(".bit-msg").GetAttribute(name));
+    }
+
     [TestMethod]
     public void BitMessageWithATitleShouldBeAGroupNamedByIt()
     {
@@ -1262,7 +1419,7 @@ public class BitMessageTests : BunitTestContext
         });
 
         // Nothing to call means nothing to arm, so the pause listeners are not wired up either.
-        Assert.ThrowsExactly<MissingEventHandlerException>(() => component.Find(".bit-msg").MouseEnter());
+        Assert.ThrowsExactly<MissingEventHandlerException>(() => component.Find(".bit-msg").PointerEnter(_mousePointer));
     }
 
     [TestMethod,
@@ -1277,7 +1434,7 @@ public class BitMessageTests : BunitTestContext
             parameters.Add(p => p.OnDismiss, () => { });
         });
 
-        Assert.ThrowsExactly<MissingEventHandlerException>(() => component.Find(".bit-msg").MouseEnter());
+        Assert.ThrowsExactly<MissingEventHandlerException>(() => component.Find(".bit-msg").PointerEnter(_mousePointer));
     }
 
     [TestMethod]
@@ -1290,8 +1447,8 @@ public class BitMessageTests : BunitTestContext
         });
 
         // No exception means the listeners are there; the countdown is long enough not to fire meanwhile.
-        component.Find(".bit-msg").MouseEnter();
-        component.Find(".bit-msg").MouseLeave();
+        component.Find(".bit-msg").PointerEnter(_mousePointer);
+        component.Find(".bit-msg").PointerLeave(_mousePointer);
         component.Find(".bit-msg").FocusIn();
         component.Find(".bit-msg").FocusOut();
     }
@@ -1307,17 +1464,106 @@ public class BitMessageTests : BunitTestContext
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
-        component.Find(".bit-msg").MouseEnter();
+        component.Find(".bit-msg").PointerEnter(_mousePointer);
 
         // Well past the countdown, but the pointer is holding it.
         Thread.Sleep(1500);
         Assert.AreEqual(0, dismissCount);
 
-        component.Find(".bit-msg").MouseLeave();
+        component.Find(".bit-msg").PointerLeave(_mousePointer);
 
         WaitUntil(() => dismissCount == 1);
 
         Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotLetATouchHoldTheAutoDismissCountdown()
+    {
+        var dismissCount = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(300));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        // A tap sends a pointer that is gone the moment it ends, and the compatibility mouse events of it are
+        // never taken back: a touch that could hold the countdown would hold it for good.
+        component.Find(".bit-msg").PointerEnter(_touchPointer);
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotLetATouchLetGoOfAHeldAutoDismissCountdown()
+    {
+        var dismissCount = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(300));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        component.Find(".bit-msg").PointerEnter(_mousePointer);
+
+        // The touch was never allowed to take the hold, so it is not allowed to give it back either.
+        component.Find(".bit-msg").PointerLeave(_touchPointer);
+
+        Thread.Sleep(900);
+
+        Assert.AreEqual(0, dismissCount);
+
+        component.Find(".bit-msg").PointerLeave(_mousePointer);
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public async Task BitMessageShouldStopTheCountdownWhenItIsDisposed()
+    {
+        var dismissCount = 0;
+
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(300));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        // The countdown outlives the render loop unless it is called off, and a message that is no longer on
+        // the page has nothing left to dismiss.
+        await Context.DisposeComponentsAsync();
+
+        Thread.Sleep(900);
+
+        Assert.AreEqual(0, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldDropThePauseListenersOnceTheCountdownIsTakenAway()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
+            parameters.Add(p => p.OnDismiss, () => { });
+        });
+
+        component.Find(".bit-msg").PointerEnter(_mousePointer);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.AutoDismissTime, (TimeSpan?)null);
+            parameters.Add(p => p.OnDismiss, () => { });
+        });
+
+        // Nothing left to hold means nothing left to listen for: an always-present listener would turn every
+        // hover of every message into a round trip on a Server circuit.
+        Assert.ThrowsExactly<MissingEventHandlerException>(() => component.Find(".bit-msg").PointerEnter(_mousePointer));
     }
 
     [TestMethod]
@@ -2012,18 +2258,18 @@ public class BitMessageTests : BunitTestContext
     {
         var consumerCount = 0;
 
-        // The auto-dismiss hold registers an onmouseenter of its own; an onmouseenter written on the
+        // The auto-dismiss hold registers an onpointerenter of its own; an onpointerenter written on the
         // component has to keep winning.
         var component = Context.Render(builder =>
         {
             builder.OpenComponent<BitMessage>(0);
             builder.AddAttribute(1, nameof(BitMessage.AutoDismissTime), TimeSpan.FromSeconds(30));
             builder.AddAttribute(2, nameof(BitMessage.OnDismiss), EventCallback.Factory.Create(this, () => { }));
-            builder.AddAttribute(3, "onmouseenter", EventCallback.Factory.Create<MouseEventArgs>(this, _ => consumerCount++));
+            builder.AddAttribute(3, "onpointerenter", EventCallback.Factory.Create<PointerEventArgs>(this, _ => consumerCount++));
             builder.CloseComponent();
         });
 
-        component.Find(".bit-msg").MouseEnter();
+        component.Find(".bit-msg").PointerEnter(_mousePointer);
 
         Assert.AreEqual(1, consumerCount);
     }
@@ -2090,8 +2336,8 @@ public class BitMessageTests : BunitTestContext
         });
 
         // No exception means the countdown is armed and holds like any other.
-        component.Find(".bit-msg").MouseEnter();
-        component.Find(".bit-msg").MouseLeave();
+        component.Find(".bit-msg").PointerEnter(_mousePointer);
+        component.Find(".bit-msg").PointerLeave(_mousePointer);
     }
 
 
@@ -2210,11 +2456,11 @@ public class BitMessageTests : BunitTestContext
             parameters.AddChildContent("Hello");
         });
 
-        component.Find(".bit-msg").MouseEnter();
+        component.Find(".bit-msg").PointerEnter(_mousePointer);
 
         component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-msg-prb").ClassList.Contains("bit-msg-pau")));
 
-        component.Find(".bit-msg").MouseLeave();
+        component.Find(".bit-msg").PointerLeave(_mousePointer);
 
         component.WaitForAssertion(() => Assert.IsFalse(component.Find(".bit-msg-prb").ClassList.Contains("bit-msg-pau")));
     }
@@ -2324,11 +2570,11 @@ public class BitMessageTests : BunitTestContext
             parameters.AddChildContent("Hello");
         });
 
-        component.Find(".bit-msg").MouseEnter();
+        component.Find(".bit-msg").PointerEnter(_mousePointer);
         component.Find(".bit-msg").FocusIn();
 
         // Letting go of one of the reasons to hold the countdown is not letting go of the others.
-        component.Find(".bit-msg").MouseLeave();
+        component.Find(".bit-msg").PointerLeave(_mousePointer);
 
         Thread.Sleep(400);
 
@@ -2352,9 +2598,9 @@ public class BitMessageTests : BunitTestContext
             parameters.AddChildContent("Hello");
         });
 
-        component.Find(".bit-msg").MouseEnter();
+        component.Find(".bit-msg").PointerEnter(_mousePointer);
         component.Find(".bit-msg").FocusIn();
-        component.Find(".bit-msg").MouseLeave();
+        component.Find(".bit-msg").PointerLeave(_mousePointer);
 
         component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-msg-prb").ClassList.Contains("bit-msg-pau")));
 
@@ -2431,7 +2677,7 @@ public class BitMessageTests : BunitTestContext
 
         // Held by the pointer, then taken off the page by hand: no mouseleave is ever coming for that hold, so
         // keeping it would leave the next showing counting down forever.
-        component.Find(".bit-msg").MouseEnter();
+        component.Find(".bit-msg").PointerEnter(_mousePointer);
         component.Find(".bit-msg-dmb").Click();
 
         Assert.IsEmpty(component.FindAll(".bit-msg"));

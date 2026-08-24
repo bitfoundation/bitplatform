@@ -12,7 +12,8 @@
          autofocus="@AutoFocus"
          role="@_RootRole"
          aria-label="@AriaLabel"
-         aria-labelledby="@_RootLabelledBy">
+         aria-labelledby="@_RootLabelledBy"
+         aria-describedby="@_RootDescribedBy">
         <div style="@Styles?.RootContainer" class="bit-msg-rct @Classes?.RootContainer">
             <div style="@Styles?.Container" class="bit-msg-con @Classes?.Container">
                 @if (HideIcon is false)
@@ -32,7 +33,8 @@
                 <div style="@Styles?.ContentContainer"
                      class="bit-msg-cnc@(_IsExpanded ? " bit-msg-cnx": "") @Classes?.ContentContainer"
                      id="@($"{_Id}-cnt")"
-                     role="@GetTextRole()">
+                     role="@GetTextRole()"
+                     aria-live="@GetPoliteness()">
                     <div style="@Styles?.ContentWrapper" class="bit-msg-cnw@(_IsTitleInline ? " bit-msg-cwi" : "") @Classes?.ContentWrapper">
                         @* A live region announces what changes inside it, so a delayed announcement leaves it empty
                            for one render and hands it the text on the next one, once it is already on the page. *@

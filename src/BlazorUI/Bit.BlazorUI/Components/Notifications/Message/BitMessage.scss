@@ -178,9 +178,12 @@
 // On a single-line message the actions share the line with the content, so they are held to the height of the
 // line rather than being allowed to grow it. The cap follows the size of the message, but never falls below the
 // height of a control: what goes in here is buttons, and they keep their own default size whatever the message does.
+// The inset keeps the last of them off the edge of the message where nothing follows it, and apart from the round
+// buttons where something does; it is logical, so it follows the direction of the message.
 .bit-msg-act {
     display: flex;
     justify-content: flex-end;
+    margin-inline-end: spacing(0.5);
     max-height: var(--bit-msg-act-maxheight);
 }
 

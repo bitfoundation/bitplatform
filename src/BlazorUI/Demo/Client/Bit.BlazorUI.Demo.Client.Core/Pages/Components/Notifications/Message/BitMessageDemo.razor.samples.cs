@@ -369,16 +369,24 @@ private bool isErrorDismissed;
 private bool isWarningDismissed;";
 
     private readonly string example15RazorCode = @"
-<BitMessage IconAriaLabel=""Error"">
+<BitMessage Color=""BitColor.Error"" IconAriaLabel=""Error"">
     The payment could not be authorized. Announced as ""Error: The payment could not be authorized.""
 </BitMessage>
 
-<BitMessage Role=""status"">
+<BitMessage Color=""BitColor.Error"" Role=""status"">
     An error-colored message that reports no error, announced politely as a status.
 </BitMessage>
 
-<BitMessage Role=""none"">
+<BitMessage Color=""BitColor.Error"" Role=""none"">
     Part of the page rather than news about it: not announced at all.
+</BitMessage>
+
+<BitMessage Color=""BitColor.Error"" Politeness=""BitPoliteness.Polite"">
+    An error worth reporting but not worth interrupting for: still an <b>alert</b>, announced politely.
+</BitMessage>
+
+<BitMessage Color=""BitColor.Success"" Politeness=""BitPoliteness.Assertive"">
+    A success the reader has to hear about at once: still a <b>status</b>, announced assertively.
 </BitMessage>
 
 <BitButton OnClick=""() => isDelayedDismissed = false"">Show a delayed-announcement message</BitButton>
@@ -409,6 +417,30 @@ private BitMessage? focusableMessage;
 private bool isAutoFocusDismissed = true;";
 
     private readonly string example17RazorCode = @"
+<BitMessage IsEnabled=""isMessageEnabled""
+            Truncate
+            Dismissible
+            DismissOnEscape
+            ShowAutoDismissProgress
+            Color=""BitColor.Warning""
+            Title=""Licence expiring""
+            AutoDismissTime=""TimeSpan.FromSeconds(10)""
+            @bind-Dismissed=""isDisabledSampleDismissed"">
+    Your licence runs out in 14 days. Renew it before then to keep the shared workspaces open to
+    everyone who is using them today.
+</BitMessage>
+
+<BitToggle Label=""IsEnabled"" @bind-Value=""isMessageEnabled"" />
+
+@if (isDisabledSampleDismissed)
+{
+    <BitButton OnClick=""() => isDisabledSampleDismissed = false"">Dismissed, click to bring it back</BitButton>
+}";
+    private readonly string example17CsharpCode = @"
+private bool isMessageEnabled = true;
+private bool isDisabledSampleDismissed;";
+
+    private readonly string example18RazorCode = @"
 <BitMessage Color=""BitColor.Primary"">Primary.</BitMessage>
 <BitMessage Color=""BitColor.Secondary"">Secondary.</BitMessage>
 <BitMessage Color=""BitColor.Tertiary"">Tertiary.</BitMessage>
@@ -431,7 +463,7 @@ private bool isAutoFocusDismissed = true;";
 <BitMessage Color=""BitColor.SecondaryBorder"">SecondaryBorder.</BitMessage>
 <BitMessage Color=""BitColor.TertiaryBorder"">TertiaryBorder.</BitMessage>";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitMessage Color=""BitColor.Info"" Icon=""@(""fa-solid fa-circle-info"")"">
@@ -473,12 +505,12 @@ private bool isAutoFocusDismissed = true;";
     begins here, in this quiet moment where everything is possible.
 </BitMessage>";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitMessage Size=""BitSize.Small"" Color=""BitColor.Primary"">Small</BitMessage>
 <BitMessage Size=""BitSize.Medium"" Color=""BitColor.Secondary"">Medium</BitMessage>
 <BitMessage Size=""BitSize.Large"" Color=""BitColor.Tertiary"">Large</BitMessage>";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <style>
     .custom-class {
         padding: 1rem;
@@ -595,7 +627,7 @@ private bool isAutoFocusDismissed = true;";
     begins here, in this quiet moment where everything is possible.
 </BitMessage>";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example22RazorCode = @"
 <BitMessage Dir=""BitDir.Rtl"" Color=""BitColor.Info"">
     پیام خبری (پیش فرض). <BitLink Href=""https://bitplatform.dev"">به وبسایت ما سر بزنید.</BitLink>
 </BitMessage>

@@ -23,14 +23,15 @@
             <BitTag Color="BitColor.SecondaryBackground">Error</BitTag> are announced as an
             <BitTag Color="BitColor.SecondaryBackground">alert</BitTag>, which interrupts a screen reader;
             everything else is announced politely as a <BitTag Color="BitColor.SecondaryBackground">status</BitTag>.
-            Override that with <b>Role</b> where the color is chosen for looks rather than for severity.
+            Override that with <b>Role</b> where the color is chosen for looks rather than for severity, and with
+            <b>Politeness</b> where the role is right but the urgency is not.
             <br /><br />
             Never let the color carry the meaning on its own - the text has to say what happened - and never leave a
             warning or an error without a way forward: give it an <b>Actions</b> button or a link that resolves it.
             <br /><br />
-            <b>AutoDismissTime</b> is a time limit, so it holds while the pointer is over the message or the focus is
-            inside it. Keep it for confirmations that need no answer; anything with an action in it should wait to be
-            dismissed by hand.
+            <b>AutoDismissTime</b> is a time limit, so it holds while a mouse or a pen rests on the message or the
+            focus is inside it. Keep it for confirmations that need no answer; anything with an action in it should
+            wait to be dismissed by hand.
             <br /><br />
             The icon is decorative markup and is hidden from screen readers, so where the text does not say what kind
             of message this is, say it with <b>IconAriaLabel</b>. And leave <b>AutoFocus</b> for the messages that have
@@ -310,8 +311,9 @@
         <DemoExample Title="Auto-dismiss" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>
                 <b>AutoDismissTime</b> dismisses the message on its own once the given time has passed. The countdown
-                is a time limit, so it holds for as long as the pointer is over the message or the focus is inside it
-                and the message cannot vanish mid-read; <b>PauseAutoDismiss</b> and <b>ResumeAutoDismiss</b> hold it
+                is a time limit, so it holds for as long as a pointer that can rest on the message - a mouse or a pen,
+                never a touch, which is over as soon as it began - is over it, or the focus is inside it, and the
+                message cannot vanish mid-read; <b>PauseAutoDismiss</b> and <b>ResumeAutoDismiss</b> hold it
                 over anything else, and the bar holds with them. <b>ShowAutoDismissProgress</b> draws the countdown as
                 a bar along the bottom edge, holding exactly where the countdown holds. The countdown runs wherever
                 dismissing would do something - an <b>OnDismiss</b> handler, <b>Dismissible</b>, or a <b>Dismissed</b>
@@ -338,7 +340,6 @@
 
             <BitMessage Dismissible
                         ShowAutoDismissProgress
-                        Color="BitColor.Info"
                         AutoDismissTime="TimeSpan.FromSeconds(10)"
                         @bind-Dismissed="isProgressDismissed">
                 Ten seconds, drawn along the bottom edge. Hover me and the bar stops with the countdown.
@@ -572,9 +573,11 @@
                 <b>Warning</b>, <b>SevereWarning</b> and <b>Error</b> interrupt the screen reader as an
                 <b>alert</b>, everything else waits its turn as a <b>status</b>. <b>Role</b> overrides that where
                 the color was chosen for looks rather than for severity, and <b>Role="none"</b> silences the region
-                altogether for a message that is part of the page rather than news about it. The icon is decorative
-                and hidden from screen readers, so <b>IconAriaLabel</b> is what says which kind of message this is
-                where the text does not - it leads the announcement, invisibly. A message that has a name - a
+                altogether for a message that is part of the page rather than news about it. <b>Politeness</b> splits
+                the two apart where they have to be: it writes the urgency on its own, leaving the role where it was,
+                for the alert that should not cut in and the status that has to be heard at once. The icon is
+                decorative and hidden from screen readers, so <b>IconAriaLabel</b> is what says which kind of message
+                this is where the text does not - it leads the announcement, invisibly. A message that has a name - a
                 <b>Title</b>, or an <b>AriaLabel</b> of its own - is also a named group, so a screen reader can step
                 over it as one unit instead of walking through it line by line. A live region only announces what
                 changes inside it, so a region that arrives with its text already in place is a change of nothing and
@@ -586,16 +589,24 @@
             </div>
             <br />
             <div class="box">
-                <BitMessage IconAriaLabel="Error">
+                <BitMessage Color="BitColor.Error" IconAriaLabel="Error">
                     The payment could not be authorized. Announced as "Error: The payment could not be authorized."
                 </BitMessage>
 
-                <BitMessage Role="status">
+                <BitMessage Color="BitColor.Error" Role="status">
                     An error-colored message that reports no error, announced politely as a status.
                 </BitMessage>
 
-                <BitMessage Role="none">
+                <BitMessage Color="BitColor.Error" Role="none">
                     Part of the page rather than news about it: not announced at all.
+                </BitMessage>
+
+                <BitMessage Color="BitColor.Error" Politeness="BitPoliteness.Polite">
+                    An error worth reporting but not worth interrupting for: still an <b>alert</b>, announced politely.
+                </BitMessage>
+
+                <BitMessage Color="BitColor.Success" Politeness="BitPoliteness.Assertive">
+                    A success the reader has to hear about at once: still a <b>status</b>, announced assertively.
                 </BitMessage>
             </div>
             <br />
@@ -615,7 +626,9 @@
                 <b>TabIndex</b> is needed. Keep it for the messages that have to be acted upon - the rest are already
                 announced by the live region, and moving the focus away from what the reader was doing is an
                 interruption. The same move is available at any time through the <b>FocusAsync</b> method of a
-                captured message.
+                captured message. A message the focus can reach - through <b>AutoFocus</b> or a <b>TabIndex</b> -
+                also points at its own text as its description, so landing on it says what it says: a live region
+                is announced when it changes, not when it is reached.
             </div>
             <br />
             <div class="box">
@@ -638,7 +651,41 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Color" RazorCode="@example17RazorCode" Id="example17">
+        <DemoExample Title="Disabled" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+            <div>
+                A disabled message keeps saying what it says - it is a notice, not a control, so its text stays at
+                full contrast and is still announced. What <b>IsEnabled</b> turns off is everything that would change
+                it: the dismiss and expander buttons are dimmed and stop responding, the <b>Escape</b> key stops
+                dismissing, and no <b>AutoDismissTime</b> countdown is started, so a disabled message cannot slip
+                away while it is out of reach. Enabling it again arms the countdown from the beginning. The public
+                methods are left alone - a message turned off in the interface can still be dismissed or unfolded by
+                the code that owns it.
+            </div>
+            <br />
+            <div class="box">
+                <BitMessage IsEnabled="isMessageEnabled"
+                            Truncate
+                            Dismissible
+                            DismissOnEscape
+                            ShowAutoDismissProgress
+                            Color="BitColor.Warning"
+                            Title="Licence expiring"
+                            AutoDismissTime="TimeSpan.FromSeconds(10)"
+                            @bind-Dismissed="isDisabledSampleDismissed">
+                    Your licence runs out in 14 days. Renew it before then to keep the shared workspaces open to
+                    everyone who is using them today.
+                </BitMessage>
+
+                <BitToggle Label="IsEnabled" @bind-Value="isMessageEnabled" />
+
+                @if (isDisabledSampleDismissed)
+                {
+                    <BitButton OnClick="() => isDisabledSampleDismissed = false">Dismissed, click to bring it back</BitButton>
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Color" RazorCode="@example18RazorCode" Id="example18">
             <div>
                 <b>Color</b> sets the palette, the default icon and the urgency of the announcement in one go.
                 The eight semantic colors are the ones to reach for; the background, foreground and border
@@ -672,7 +719,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="External Icons" RazorCode="@example18RazorCode" Id="example18">
+        <DemoExample Title="External Icons" RazorCode="@example19RazorCode" Id="example19">
             <div>
                 Every icon of the message also takes a <b>BitIconInfo</b>, which renders whatever CSS classes an
                 external library needs - <b>Icon</b>, <b>DismissIcon</b>, <b>ExpandIcon</b> and <b>CollapseIcon</b>.
@@ -733,7 +780,7 @@
             </BitMessage>
         </DemoExample>
 
-        <DemoExample Title="Size" RazorCode="@example19RazorCode" Id="example19">
+        <DemoExample Title="Size" RazorCode="@example20RazorCode" Id="example20">
             <div>
                 <b>Size</b> scales the type, the icon, the inset, the two round buttons and the countdown track of the
                 message together, so a small message is not left carrying medium-sized buttons.
@@ -746,7 +793,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example20RazorCode" Id="example20">
+        <DemoExample Title="Style & Class" RazorCode="@example21RazorCode" Id="example21">
             <div>
                 <b>Style</b> and <b>Class</b> land on the root element, while <b>Styles</b> and <b>Classes</b> reach
                 each part of the message on its own - the root, the containers, the icon, the title, the content, the
@@ -849,7 +896,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example21RazorCode" Id="example21">
+        <DemoExample Title="RTL" RazorCode="@example22RazorCode" Id="example22">
             <div>
                 Set <b>Dir</b> to <b>BitDir.Rtl</b> to mirror the message: the icon moves to the right and the
                 expander and dismiss buttons to the left.

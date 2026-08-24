@@ -254,7 +254,7 @@ public partial class BitMessageDemo
         {
             Name = "OnDismiss",
             Type = "EventCallback",
-            Description = "Whether the message has a dismiss button and its callback. If null, dismiss button won't show. Taking the message off the page is left to this callback; use Dismissible to have the message do that itself.",
+            Description = "Reports that the message was dismissed - by its button, the Escape key, the countdown or a DismissAsync call - and renders the dismiss button that does it. Taking the message off the page is left to this callback; use Dismissible to have the message do that itself.",
         },
         new()
         {
@@ -263,6 +263,15 @@ public partial class BitMessageDemo
             Description = "Callback invoked before the message is dismissed, letting the dismissal be cancelled. Set Cancel on the provided args to keep the message where it is, and read its Reason to tell the dismiss button, the Escape key, the countdown and a DismissAsync call apart. Refusing a countdown gives the message its AutoDismissTime over again.",
             LinkType = LinkType.Link,
             Href = "#message-dismiss-args",
+        },
+        new()
+        {
+            Name = "Politeness",
+            Type = "BitPoliteness?",
+            DefaultValue = "null",
+            Description = "How urgently the message interrupts a screen reader (aria-live), independently of the role it is announced under. Left unset, the role carries the urgency on its own: alert interrupts, status waits its turn.",
+            LinkType = LinkType.Link,
+            Href = "#politeness-enum",
         },
         new()
         {
@@ -329,7 +338,7 @@ public partial class BitMessageDemo
             Name = "Truncate",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines if the message text is truncated. If true, a button will render to toggle between a single line view and multiline view. This parameter is for single line messages with no buttons only in a limited space scenario. On a Multiline message it unfolds the content past the MaxLines cap instead, and does nothing without one.",
+            Description = "Determines if the message text is truncated. If true, the content is clipped to a single line and a button renders to unfold it, for a message that has to fit in a tight space. On a Multiline message it unfolds the content past the MaxLines cap instead, and does nothing without one.",
         },
         new()
         {
@@ -575,6 +584,33 @@ public partial class BitMessageDemo
                     Name = "Stretch",
                     Value = "7",
                 }
+            ]
+        },
+        new()
+        {
+            Id = "politeness-enum",
+            Name = "BitPoliteness",
+            Description = "How urgently a live region interrupts a screen reader, which is what the aria-live attribute carries.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Off",
+                    Description = "The region is not a live region: nothing in it is announced as it changes (aria-live=\"off\").",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Polite",
+                    Description = "The change waits its turn and is announced once the screen reader has finished what it was saying (aria-live=\"polite\").",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Assertive",
+                    Description = "The change interrupts the screen reader and is announced right away (aria-live=\"assertive\").",
+                    Value = "2",
+                },
             ]
         },
         new()
@@ -861,6 +897,9 @@ public partial class BitMessageDemo
 
     private BitMessage? focusableMessage;
     private bool isAutoFocusDismissed = true;
+
+    private bool isMessageEnabled = true;
+    private bool isDisabledSampleDismissed;
 
     private double elevation = 7;
     private bool isErrorDismissed;
