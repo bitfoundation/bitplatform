@@ -49,9 +49,9 @@ self.externalAssets = [
     {
         "url": /\/_framework\/resource-collection\.[^\/]*\.js$/
     },
-    {
-        "url": "https://www.googletagmanager.com/gtag/js?id=G-G1ET5L69QF"
-    }
+    // {
+    //     "url": "https://www.googletagmanager.com/gtag/js?id=G-G1ET5L69QF"
+    // }
 ];
 
 self.caseInsensitiveUrl = true;

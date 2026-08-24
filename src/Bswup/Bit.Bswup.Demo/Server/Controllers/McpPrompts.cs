@@ -107,8 +107,9 @@ public static class McpPrompts
                `GetBswupScriptOptions(name: "updateOnVisibility")` and
                `GetBswupJsApi(name: "checkForUpdate")`.
             5. Confirm the API you are relying on with `GetBswupEvents` or `GetBswupProgressUI` before concluding
-               it is a bug - check the actual default of the parameter involved. `AutoReload` defaults to `false`
-               since v-10-6-0, which is the cause behind most "updates no longer apply themselves" reports.
+               it is a bug - check the actual default of the parameter involved. "updates no longer apply
+               themselves" is usually `AutoReload="false"`, and "no progress is shown while an update
+               downloads" is usually `ShowOnUpdate="false"`; both default to `true`.
             6. Call `SearchBswup` with the symptom for anything the troubleshooting page did not cover.
 
             Tell me the cause and the fix, and cite the tool call that established it.

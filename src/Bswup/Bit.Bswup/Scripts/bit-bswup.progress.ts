@@ -25,6 +25,9 @@
     //   hideApp               - hide the app element during download
     //   autoHide              - hide the splash automatically when the download finishes
     //   handler               - optional name of a user handler invoked after the built-in one
+    //   showOnUpdate          - drive the splash during a background update too, not only
+    //                           during a first install (defaults to true - the behavior every
+    //                           version of this package has had)
     // Resolves a splash element at USE time, with a cache that re-resolves when the cached
     // node has been replaced. Capturing the elements once at start() froze the UI whenever an
     // interactive Blazor render swapped the splash subtree after initialization: the handler
@@ -50,7 +53,12 @@
         appContainerSelector: string,
         hideApp: boolean,
         autoHide: boolean,
-        handler?: string) {
+        handler?: string,
+        // Appended after the optional `handler` so every existing positional call site - a
+        // hand-written BitBswupProgress.start(...) with the original seven arguments - keeps
+        // compiling AND keeps the original behavior, since the default is the original
+        // behavior.
+        showOnUpdate: boolean = true) {
 
         // Install the global handler FIRST. Everything below touches the DOM, and a bad
         // AppContainer selector makes document.querySelector throw - previously that threw
@@ -184,6 +192,7 @@
                 const autoHide_ = _config.autoHide ?? autoHide;
                 const showAssets_ = _config.showAssets ?? showAssets;
                 const autoReload_ = _config.autoReload ?? autoReload;
+                const showOnUpdate_ = _config.showOnUpdate ?? showOnUpdate;
 
                 // Resolved per message, not captured at start() - see el(): an interactive
                 // render may have replaced the splash subtree since the previous message.
@@ -212,16 +221,21 @@
 
                     case BswupMessage.downloadProgress: {
                         // Background updates (firstInstall === false) download behind a
-                        // healthy running app. Painting the full-viewport splash over it
-                        // blocked every click for the entire download - and the overlay root
-                        // has no background, so it rendered as stray text on top of the live
-                        // UI. The built-in overlay is therefore first-install-only; progress
-                        // still reaches the user handler for apps that render their own
-                        // indicator, and completion surfaces through the reload button. The
-                        // strict === false check keeps the old take-over behavior when the
-                        // flag is absent (an older bit-bswup.js still cached alongside this
-                        // script).
-                        if (data && data.firstInstall === false) {
+                        // healthy running app, so a splash that takes over the whole viewport
+                        // paints over a UI the user is still using. That is a property of the
+                        // splash, not of the package: the default one covers the viewport,
+                        // while a custom ChildContent is usually a small corner indicator that
+                        // is *meant* to show during an update. So the reveal stays ON by
+                        // default - as it has been in every released version - and an app
+                        // whose splash should not take over opts out with ShowOnUpdate=false.
+                        // Progress still reaches the user handler either way, and completion
+                        // still surfaces through AutoReload or the reload button.
+                        // (The default splash cannot swallow clicks regardless: #bit-bswup is
+                        // pointer-events:none in bit-bswup.progress.css, with its children
+                        // re-enabled.)
+                        // The strict === false check keeps the reveal when the flag is absent
+                        // (an older bit-bswup.js still cached alongside this script).
+                        if (showOnUpdate_ === false && data && data.firstInstall === false) {
                             return showLogs_ ? console.log('asset downloaded (background update):', data) : undefined;
                         }
 
@@ -268,8 +282,15 @@
                             // and offer a manual retry wired to data.reload - the original
                             // reject-recovery behavior, now also covering a silent stall. On a
                             // clean resolve (first install completing) hide the splash instead.
+                            // A background update under ShowOnUpdate="false" is the exception:
+                            // that flag exists so the overlay never paints over a running app,
+                            // and a stalled auto-reload is no reason to break it - recovery there
+                            // surfaces the button alone, which lives OUTSIDE #bit-bswup precisely
+                            // so it can appear without the overlay. The strict === false check
+                            // matches downloadProgress: an absent flag keeps the old reveal.
+                            const revealOnStall = !(showOnUpdate_ === false && data.firstInstall === false);
                             autoReloadWithFallback(data.reload, () => {
-                                bswupEl && (bswupEl.style.display = 'block');
+                                revealOnStall && bswupEl && (bswupEl.style.display = 'block');
                                 showReloadButton(data.reload);
                             }, () => {
                                 hideApp_ && appEl && (appEl.style.display = appElOriginalDisplay);
@@ -449,16 +470,17 @@
         const handlerAttr = configEl.getAttribute('data-bit-bswup-handler');
 
         start(
-            // The fallback only applies to hand-written config markup that omits the
-            // attribute (the Razor component always renders it); it must track the
-            // component's AutoReload default - false since v-10-6-0, see BswupProgress.razor.
-            bool('data-bit-bswup-auto-reload', false),
+            // Every fallback here only applies to hand-written config markup that omits the
+            // attribute (the Razor component always renders all of them); each one tracks the
+            // matching parameter default on BswupProgress.razor.
+            bool('data-bit-bswup-auto-reload', true),
             bool('data-bit-bswup-show-logs', false),
             bool('data-bit-bswup-show-assets', false),
             configEl.getAttribute('data-bit-bswup-app-container') || '#app',
             bool('data-bit-bswup-hide-app', false),
             bool('data-bit-bswup-auto-hide', false),
-            handlerAttr || undefined
+            handlerAttr || undefined,
+            bool('data-bit-bswup-show-on-update', true)
         );
     }
 
@@ -551,4 +573,5 @@ interface IBswupProgressConfigs {
     showAssets?: boolean | undefined;
     hideApp?: boolean | undefined;
     autoHide?: boolean | undefined;
+    showOnUpdate?: boolean | undefined;
 };

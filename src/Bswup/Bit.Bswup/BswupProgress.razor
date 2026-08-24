@@ -2,21 +2,27 @@
     [Parameter] public RenderFragment ChildContent { get; set; } = default!;
 
     // Whether a finished update is activated (and every open tab reloaded) automatically, or
-    // announced through the reload button for the user to accept. Defaults to false: an
-    // unprompted reload discards whatever in-page state the user has mid-session (a
-    // half-filled form has no other copy), which is a worse failure than running one version
-    // behind for a while - and it matches the prompt-then-reload pattern of the standard
-    // Blazor template and this package's own README sample. First installs are unaffected:
-    // they always complete the claim-and-start flow (no reload) regardless of this setting.
-    // CHANGED in v-10-6-0 - previous versions defaulted to true; set AutoReload="true"
-    // explicitly to keep the old behavior.
-    [Parameter] public bool AutoReload { get; set; } = false;
+    // announced through the reload button for the user to accept. Set AutoReload="false" to
+    // get the prompt-then-reload pattern instead: an unprompted reload discards whatever
+    // in-page state the user has mid-session (a half-filled form has no other copy). First
+    // installs are unaffected: they always complete the claim-and-start flow (no reload)
+    // regardless of this setting.
+    [Parameter] public bool AutoReload { get; set; } = true;
     [Parameter] public bool ShowLogs { get; set; } = false;
     [Parameter] public bool ShowAssets { get; set; } = false;
     [Parameter] public string AppContainer { get; set; } = "#app";
     [Parameter] public bool HideApp { get; set; } = false;
     [Parameter] public bool AutoHide { get; set; } = false;
     [Parameter] public string? Handler { get; set; }
+
+    // Whether the splash is driven during a BACKGROUND update - an update downloading behind
+    // an app that is already installed and running - as well as during a first install.
+    // Defaults to true, which is the behavior every version of this package has had: the
+    // splash appears and its progress ticks for both cases.
+    // Set ShowOnUpdate="false" when the splash is a full-viewport take-over that should not
+    // paint over a healthy running app; progress still reaches a custom Handler, and the
+    // finished update still surfaces through AutoReload or the reload button.
+    [Parameter] public bool ShowOnUpdate { get; set; } = true;
 }
 
 @* Configuration is published as data-* attributes and read by bit-bswup.progress.js when it
@@ -45,6 +51,7 @@
      data-bit-bswup-app-container="@AppContainer"
      data-bit-bswup-hide-app="@(HideApp ? "true" : "false")"
      data-bit-bswup-auto-hide="@(AutoHide ? "true" : "false")"
+     data-bit-bswup-show-on-update="@(ShowOnUpdate ? "true" : "false")"
      data-bit-bswup-handler="@Handler">
     @if (ChildContent is not null)
     {
@@ -77,20 +84,23 @@
         </div>
     }
 </div>
-@* Rendered for BOTH the default splash and custom ChildContent: with AutoReload defaulting
-   to false, this button is the only way a finished update surfaces - a custom splash that
-   omitted it would silently lose every update notification (the update just stays staged).
-   A custom splash that renders its own control can restyle these by id, or simply keep them.
+@* Rendered for BOTH the default splash and custom ChildContent, and inert until an update is
+   actually waiting: it carries display:none, and under the default AutoReload="true" a finished
+   update activates itself without ever revealing it. It is what an app that sets
+   AutoReload="false" relies on - including one whose splash is custom ChildContent, which is
+   exactly the shape the bit Boilerplate template scaffolds - so making it default-splash-only
+   would silently drop the update prompt from every such app. A custom splash that wants it
+   somewhere else restyles it by id.
 
-   Deliberately OUTSIDE #bit-bswup: the update-ready button must be showable while the
-   overlay stays hidden. A background update never reveals the splash over the running
-   app, and an update already staged at page load never produced a progress event to
-   reveal it - in both cases unhiding a button INSIDE a display:none parent rendered
-   nothing. The button positions itself (position: fixed in bit-bswup.progress.css).
-   type="button" keeps a host <form> (e.g. a login page) from treating the click as a
-   submit. The visually-hidden role="status" region is what announces the button's
-   appearance to screen readers - display:none removes the button itself from the
-   accessibility tree, so its display toggle alone is never announced.
+   Deliberately OUTSIDE #bit-bswup: the update-ready button must be showable while the overlay
+   stays hidden. An update already staged at page load never produced a progress event to
+   reveal the splash, and ShowOnUpdate="false" suppresses the reveal outright - in both cases
+   unhiding a button INSIDE a display:none parent rendered nothing. The button positions
+   itself (position: fixed in bit-bswup.progress.css), which it did inside the overlay too, so
+   moving it out changed nothing about where it lands. type="button" keeps a host <form> (e.g.
+   a login page) from treating the click as a submit. The visually-hidden role="status" region
+   is what announces the button's appearance to screen readers - display:none removes the
+   button itself from the accessibility tree, so its display toggle alone is never announced.
 
    Unlike #bit-bswup (see the comment above), the initial hiding here IS inline: there is no
    legitimate "visible before an update exists" styling for this button, and the inline style

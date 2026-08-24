@@ -152,7 +152,9 @@ public class PromptTests
         StringAssert.Contains(text, "troubleshooting");
         StringAssert.Contains(text, "after the `importScripts` line");
         StringAssert.Contains(text, "only one of the");
-        StringAssert.Contains(text, "AutoReload", "the changed default is behind most 'updates no longer apply themselves' reports");
+        StringAssert.Contains(text, "AutoReload=\"false\"", "it is behind most 'updates no longer apply themselves' reports - naming the opt-out value is the whole point");
+        StringAssert.Contains(text, "ShowOnUpdate=\"false\"", "it is behind most 'no progress is shown while an update downloads' reports");
+        StringAssert.Contains(text, "both default to `true`", "the prompt must not send the model looking for a default that changed");
     }
 
     [TestMethod]

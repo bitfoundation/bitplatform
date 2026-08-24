@@ -6,10 +6,9 @@ namespace Bit.Bswup.Tests.Mcp.Services;
 
 /// <summary>
 /// The built-in splash reference. Its parameters are reflected off the shipped assembly rather
-/// than listed by hand, for one concrete reason: <c>AutoReload</c> flipped to <c>false</c> in
-/// v-10-6-0, and an agent still answering "true" from memory is the cause behind most "updates no
-/// longer apply themselves" reports. These tests pin that the reflection still happens - and that
-/// the defaults it reports are the ones the component really has.
+/// than listed by hand, so that a default answered from memory can never outlive the default the
+/// component really has. These tests pin that the reflection still happens - and that the defaults
+/// it reports are the ones the component really has.
 /// </summary>
 [TestClass]
 public class ProgressCatalogTests
@@ -28,7 +27,8 @@ public class ProgressCatalogTests
     }
 
     [TestMethod]
-    [DataRow("AutoReload", "false")]
+    [DataRow("AutoReload", "true")]
+    [DataRow("ShowOnUpdate", "true")]
     [DataRow("ShowLogs", "false")]
     [DataRow("ShowAssets", "false")]
     [DataRow("HideApp", "false")]
@@ -41,15 +41,20 @@ public class ProgressCatalogTests
         Assert.AreEqual(expected, parameter.Default);
     }
 
+    // The two parameters that decide whether an update reaches the user at all - one whether it
+    // is announced, the other whether it is shown downloading. Both are on, and an answer that
+    // reports either as off sends people looking for a bug that is a setting.
     [TestMethod]
-    public void AutoReload_IsReportedAsOffWithTheVersionItChangedIn()
+    [DataRow("AutoReload")]
+    [DataRow("ShowOnUpdate")]
+    public void UpdateVisibility_IsReportedAsOnByDefault(string name)
     {
-        var autoReload = BswupProgressCatalog.Parameters.Single(parameter => parameter.Name == "AutoReload");
+        var parameter = BswupProgressCatalog.Parameters.Single(p => p.Name == name);
 
-        Assert.AreEqual("false", autoReload.Default);
-        Assert.AreEqual("bool", autoReload.Type);
-        StringAssert.Contains(autoReload.Summary, "v-10-6-0",
-            "the answer has to carry the change, not just the current value - that is what corrects a remembered default");
+        Assert.AreEqual("true", parameter.Default);
+        Assert.AreEqual("bool", parameter.Type);
+        StringAssert.Contains(parameter.Summary, "false",
+            "the answer has to name the opt-out, not just the current value");
     }
 
     [TestMethod]
@@ -57,7 +62,7 @@ public class ProgressCatalogTests
     {
         var names = BswupProgressCatalog.Parameters.Select(parameter => parameter.Name).ToArray();
 
-        Assert.AreEqual("AutoReload", names[0], "the one that changed leads");
+        Assert.AreEqual("AutoReload", names[0], "what happens when an update finishes leads");
         Assert.IsTrue(Array.IndexOf(names, "ChildContent") > Array.IndexOf(names, "ShowAssets"));
     }
 
@@ -118,7 +123,7 @@ public class ProgressCatalogTests
 
         var notes = string.Join("\n", BswupProgressCatalog.ProgressUi.Notes);
 
-        StringAssert.Contains(notes, "FIRST-INSTALL only");
+        StringAssert.Contains(notes, "BACKGROUND UPDATE");
         StringAssert.Contains(notes, "Content-Security-Policy");
         StringAssert.Contains(notes, "index.html", "the standalone-WebAssembly caveat is the one people hit");
     }

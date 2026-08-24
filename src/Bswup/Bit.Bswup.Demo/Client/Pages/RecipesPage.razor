@@ -151,17 +151,18 @@
     this at startup; see <a href="troubleshooting#offline-broken">the troubleshooting entry</a>.
 </Callout>
 
-<h2 id="passive">Boot fast, cache in the background</h2>
+<h2 id="passive">Boot fast, cache only what is used</h2>
 <p>
     The opposite trade-off: <a href="service-worker#ispassive"><code>isPassive</code></a> lets the first paint
     happen immediately instead of waiting behind a full precache.
 </p>
 <CodeBlock Language="javascript" Code="self.isPassive = true;" />
 <p>
-    It does not mean "never download everything". Once Blazor has started, the worker tops the cache up in the
-    background with every asset not yet fetched, so the app still ends up fully offline-capable - what you buy
-    is that the user is never held behind a progress bar on their first visit. The cost is that assets the app
-    lazily requests during the top-up can be fetched twice: bandwidth, not correctness.
+    It means exactly "never download everything": nothing is precached during install, and nothing is topped up
+    in the background afterwards either. Each asset is cached the first time the running app requests it, so the
+    user is never held behind a progress bar and never pays for assets the app does not use. The cost is offline
+    completeness - a page whose lazy-loaded assets were never requested while online will not work offline. If
+    that matters more than the first paint, leave passive mode off and use <code>mode = 'FullOffline'</code>.
 </p>
 
 <h2 id="durable-storage">Ask for durable storage at the right moment</h2>

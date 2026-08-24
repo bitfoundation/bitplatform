@@ -3,11 +3,13 @@
 self.assetsExclude = [/\.scp\.css$/, /weather\.json$/];
 self.caseInsensitiveUrl = true;
 
-//self.externalAssets = [
-//    {
-//        "url": "not-found/script.file.js"
-//    }
-//];
+self.externalAssets = [
+   {
+       "url": "not-found/script.file.js"
+   }
+];
+
+self.errorTolerance = 'lax';
 
 //// Resiliency knobs (see the Bswup README for details):
 //self.errorTolerance = 'strict';           // abort the install if any asset fails ('lax' = best-effort lazy-fill, the default)

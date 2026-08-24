@@ -1072,6 +1072,8 @@ function handleMessage(e: MessageEvent<string> & BswupExtendableEvent) {
         // rejecting) can still reject it; the app is already running at this point, so log
         // and move on rather than raising a terminal error for a background top-up - and
         // rather than letting the rejection surface as a failed extended event.
+        // In passive mode createAssetsCache returns immediately without downloading anything:
+        // a bulk fill is exactly what that mode opts out of.
         e.waitUntil(createAssetsCache(true).catch(err => {
             diag('*** BLAZOR_STARTED - background top-up failed:', err);
         }));
@@ -1124,6 +1126,22 @@ const MAX_PATTERN_ASSET_GENERATIONS = 3;
 async function createAssetsCache(ignoreProgressReport = false) {
     diagGroup('bit-bswup:createAssetsCache:' + ignoreProgressReport);
 
+    // Passive mode means exactly one thing: Bswup never bulk-downloads the asset list - the
+    // cache is filled only by handleFetch, asset by asset, as the running app actually asks
+    // for them. The post-BLAZOR_STARTED top-up is a bulk download, so in passive mode it must
+    // not run at all. Gating it on `passiveFirstTime` (an EMPTY cache) is not enough: the
+    // top-up is triggered after Blazor.start() resolves, by which point the boot assets have
+    // already been lazy-filled, so the cache is never empty and every remaining asset would
+    // be downloaded anyway - precisely the behavior passive mode exists to avoid. Apps that
+    // want the whole manifest precached ask for it with isPassive = false (mode
+    // 'FullOffline'); passive apps trade offline-completeness for a first paint - and a
+    // bandwidth footprint - that is never more than what was actually used.
+    if (self.isPassive && ignoreProgressReport) {
+        diag('passive mode - skipping the post-start top-up; assets fill lazily on fetch.');
+        diagGroupEnd();
+        return;
+    }
+
     const newCache = await caches.open(CACHE_NAME);
     const cacheKeys = await caches.keys();
 
@@ -1160,20 +1178,17 @@ async function createAssetsCache(ignoreProgressReport = false) {
     let newCacheKeys = await newCache.keys();
     const firstTime = newCacheKeys.length === 0;
     const passiveFirstTime = self.isPassive && firstTime
+
+    diag('passiveFirstTime:', passiveFirstTime);
+    
     // Passive first install: skip the download and let the page boot immediately (assets
-    // lazy-fill as the app fetches them) - but only for the INSTALL run. The
-    // post-BLAZOR_STARTED top-up (ignoreProgressReport) must proceed regardless: it is what
-    // completes the offline cache in the background once the app is running. Gating it on
-    // the cache being non-empty made that completion a race against the first lazy-fill
-    // put - almost always won, but "the offline story depends on a put landing first" is
-    // not a semantic; now the top-up deterministically fills whatever is still missing.
-    if (passiveFirstTime && !ignoreProgressReport) {
+    // lazy-fill as the app fetches them). Only the install run can reach this - the top-up
+    // pass returned above - so there is always a page listening for the 'bypass' reply.
+    if (passiveFirstTime) {
         sendMessage({ type: 'bypass', data: { firstTime: true } });
         diagGroupEnd();
         return;
     }
-
-    diag('passiveFirstTime:', passiveFirstTime);
 
     let current = 0;
     let total = UNIQUE_ASSETS.length;

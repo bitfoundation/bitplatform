@@ -212,11 +212,13 @@
     </li>
 </ol>
 
-<h2>Why an update never reloads your tab out from under you</h2>
+<h2>When an update reloads your tabs</h2>
 <p>
-    An unprompted reload is not a cosmetic annoyance - it discards whatever the user had typed, scrolled to,
-    or half-completed. That is why <a href="progress-ui"><code>AutoReload</code></a> defaults to
-    <code>false</code>. But the opposite failure is worse and much less obvious, so Bswup handles it for you:
+    A finished update applies itself and reloads the tab, because <a href="progress-ui"><code>AutoReload</code></a>
+    defaults to <code>true</code>. An unprompted reload is not a cosmetic annoyance though - it discards whatever
+    the user had typed, scrolled to, or half-completed - so set <code>AutoReload="false"</code> to have the update
+    announce itself through the reload button and let the user accept it. But the opposite failure is worse and
+    much less obvious, so Bswup handles it for you:
 </p>
 <Callout Type="warning" Title="The stale-tab hazard">
     A service worker is single-instance per origin, so accepting an update in <em>one</em> tab activates the

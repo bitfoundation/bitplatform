@@ -10,9 +10,9 @@ namespace Bit.Bswup.Demo.Server.Services;
 /// <c>bit-bswup.progress.js</c> drives.
 /// <para>
 /// The parameters are reflected rather than listed by hand for the same reason the rest of this
-/// server reads the shipped sources: a default that changed - <c>AutoReload</c> did, in v-10-6-0 -
-/// must not keep being reported as what it used to be. The element ids come from the script's own
-/// contract and are the part a custom <c>ChildContent</c> splash has to write against.
+/// server reads the shipped sources: a default that changes must not keep being reported as what
+/// it used to be. The element ids come from the script's own contract and are the part a custom
+/// <c>ChildContent</c> splash has to write against.
 /// </para>
 /// </summary>
 public static class BswupProgressCatalog
@@ -31,7 +31,7 @@ public static class BswupProgressCatalog
             Parameters = BuildParameters(),
             Elements =
             [
-                new() { Id = "bit-bswup", Role = "The splash overlay itself. Hidden by bit-bswup.progress.css until a first install reveals it." },
+                new() { Id = "bit-bswup", Role = "The splash overlay itself. Hidden by bit-bswup.progress.css until a download reveals it - a first install, or a background update unless ShowOnUpdate is false." },
                 new() { Id = "bit-bswup-progress-bar", Role = "The bar whose width (and aria-valuenow) is set from the download percentage." },
                 new() { Id = "bit-bswup-percent", Role = "Text node written as `${percent}%`." },
                 new() { Id = "bit-bswup-assets", Role = "List the downloaded assets are prepended to, when ShowAssets is on." },
@@ -39,10 +39,10 @@ public static class BswupProgressCatalog
                 new() { Id = "bit-bswup-error-message", Role = "The human-readable message of the failure." },
                 new() { Id = "bit-bswup-error-details", Role = "The structured detail of the failure (reason, url, hash)." },
                 new() { Id = "bit-bswup-error-retry", Role = "Retries the install." },
-                new() { Id = "bit-bswup-reload", Role = "The update-ready button. Rendered OUTSIDE the overlay, because a background update never reveals the splash - with AutoReload off this button is the only way a finished update surfaces.", RenderedByComponent = true },
+                new() { Id = "bit-bswup-reload", Role = "The update-ready button, and with AutoReload off the only way a finished update surfaces. Rendered OUTSIDE the overlay, so it can appear while the overlay stays hidden - which is what an update already staged at page load needs (it never produced a progress event to reveal the splash), and what ShowOnUpdate=\"false\" needs on every update.", RenderedByComponent = true },
                 new() { Id = "bit-bswup-reload-status", Role = "A visually hidden role=\"status\" region: revealing a display:none button is silent for screen readers, so the announcement rides here.", RenderedByComponent = true },
             ],
-            RuntimeConfig = "BitBswupProgress.config({ autoReload, showLogs, showAssets, hideApp, autoHide }) - each value overrides the matching parameter for the rest of the session.",
+            RuntimeConfig = "BitBswupProgress.config({ autoReload, showLogs, showAssets, hideApp, autoHide, showOnUpdate }) - each value overrides the matching parameter for the rest of the session.",
             Requires =
             [
                 "<link rel=\"stylesheet\" href=\"_content/Bit.Bswup/bit-bswup.progress.css\" />",
@@ -50,9 +50,9 @@ public static class BswupProgressCatalog
             ],
             Notes =
             [
-                "The full-screen splash is FIRST-INSTALL only. A background update downloads silently behind the running app and surfaces through the reload button alone.",
+                "The splash is painted for a BACKGROUND UPDATE as well as a first install, so the user sees an update being fetched. ShowOnUpdate=\"false\" makes it first-install only, for a take-over splash that should not paint over a running app; the update then surfaces through AutoReload or the reload button alone.",
                 "The component emits no inline <script>: its parameters are published as data-bit-bswup-* attributes that the script reads at load. That is what makes it work under a strict Content-Security-Policy and when rendered by an interactive Blazor renderer.",
-                "ChildContent replaces the default splash markup; the component keeps configuring itself and drives whichever documented ids your markup includes. Do not render your own #bit-bswup-reload or #bit-bswup-reload-status - the component always renders those two itself, and a duplicate id would shadow the working button.",
+                "ChildContent replaces the default splash markup; the component keeps configuring itself and drives whichever documented ids your markup includes - plus the --bit-bswup-percent / --bit-bswup-percent-text CSS variables it sets on #bit-bswup. Do not render your own #bit-bswup-reload or #bit-bswup-reload-status - the component always renders those two itself, and a duplicate id would shadow the working button.",
                 "Handler names an ADDITIONAL function called after the built-in handling, so custom behavior layers on instead of replacing the UI. Pointing it at bitBswupHandler itself is detected and ignored.",
                 "In a standalone WebAssembly app the component cannot render early enough to be the first-install splash (Blazor only starts once the install finishes) - write the splash markup into index.html instead, as Sample/BasicSample/wwwroot/index.html does.",
             ]
@@ -138,7 +138,8 @@ public static class BswupProgressCatalog
     // renders them in.
     private static readonly Dictionary<string, string> _descriptions = new(StringComparer.Ordinal)
     {
-        ["AutoReload"] = "Activate a finished update immediately (reloading every open tab) instead of showing the reload button. CHANGED in v-10-6-0: this used to default to true. First installs are unaffected - they always complete the seamless claim-and-start flow with no reload.",
+        ["AutoReload"] = "Activate a finished update immediately (reloading every open tab). Set it to false to show the reload button and let the user accept the update instead. First installs are unaffected - they always complete the seamless claim-and-start flow with no reload.",
+        ["ShowOnUpdate"] = "Drive the splash during a background update - one downloading behind an already-installed, running app - as well as during a first install. Set it to false when the splash is a full-viewport take-over that should not paint over a live UI; progress still reaches a custom Handler, and the finished update still surfaces through AutoReload or the reload button.",
         ["HideApp"] = "Hide the app container while the first install downloads.",
         ["AppContainer"] = "Selector of the element to hide while installing (used with HideApp). An invalid selector is tolerated - the splash still works, only the hiding is skipped.",
         ["AutoHide"] = "Hide the splash automatically when the download finishes.",

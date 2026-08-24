@@ -1240,24 +1240,49 @@ describe('passive mode', () => {
         expect(bypass[0].data.firstTime).toBe(true);
     });
 
-    // The offline story must not depend on whether a lazy-fill put happened to land before
-    // BLAZOR_STARTED arrived: the top-up deterministically fills whatever is missing.
-    it('the BLAZOR_STARTED top-up fills the cache even when nothing was lazily cached yet', async () => {
+    // Passive mode means the asset list is NEVER bulk-downloaded - not during install, and not
+    // by the post-start top-up either. Gating the top-up on an empty cache is not enough:
+    // BLAZOR_STARTED arrives after Blazor.start() has already lazy-filled the boot assets, so
+    // the cache is never actually empty by then and every remaining asset would be pulled -
+    // exactly what an app picking passive mode opted out of.
+    it('the BLAZOR_STARTED top-up downloads nothing in passive mode', async () => {
         const sw = boot({ config: { isPassive: true }, assets });
         await install(sw);
         expect(sw.fetchLog).toHaveLength(0);
+
+        // What the app actually asked for gets cached, as always in passive mode.
+        await sw.fetchEvent({ url: `${ORIGIN}/index.html` });
+        await sw.settle();
+        const fetchesBeforeTopUp = sw.fetchLog.length;
 
         let waited;
         sw.handlers.message({ data: 'BLAZOR_STARTED', waitUntil: p => { waited = p; } });
         await waited;
         await sw.settle();
 
+        expect(sw.fetchLog).toHaveLength(fetchesBeforeTopUp);
         const keys = sw.caches.snapshot()['bit-bswup:/ - v1'];
         expect(keys).toContain(`${ORIGIN}/index.html.idx`);
-        expect(keys).toContain(`${ORIGIN}/app.js.h1`);
+        expect(keys).not.toContain(`${ORIGIN}/app.js.h1`); // never requested => never cached
         // And silently: the page UI is long gone - no progress stream, no second bypass.
         expect(sw.messagesOfType('progress')).toHaveLength(0);
         expect(sw.messagesOfType('bypass')).toHaveLength(1);
+    });
+
+    // The top-up is skipped by the mode, not by the cache being empty - so a passive worker
+    // whose cache already holds entries (any page load after the first) still downloads nothing.
+    it('skips the top-up in passive mode even when the cache is already populated', async () => {
+        const sw = boot({ config: { isPassive: true }, assets });
+        await install(sw);
+        const cache = await sw.caches.open('bit-bswup:/ - v1');
+        await cache.put(`${ORIGIN}/index.html.idx`, {});
+
+        let waited;
+        sw.handlers.message({ data: 'BLAZOR_STARTED', waitUntil: p => { waited = p; } });
+        await waited;
+        await sw.settle();
+
+        expect(sw.fetchLog).toHaveLength(0);
     });
 });
 

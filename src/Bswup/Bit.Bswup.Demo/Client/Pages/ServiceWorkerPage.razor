@@ -152,12 +152,13 @@
 
 <h3 id="ispassive">isPassive</h3>
 <p>
-    Enables passive mode: assets are not cached in advance but upon first request. Passive mode does not
-    skip the full download entirely - on a <em>first</em> install, once Blazor has started, the service
-    worker still tops up the cache in the background with every asset not yet fetched, so the app ends up
-    fully offline-capable. What passive mode buys is that the first paint is never blocked behind a full
-    precache. Assets lazily fetched by the app while the top-up runs can be downloaded twice in that
-    window - a bandwidth cost, not a correctness issue.
+    Enables passive mode: assets are never bulk-downloaded, they are cached one by one upon first request.
+    Nothing is precached during install, and the post-start background top-up is skipped too - the cache
+    only ever holds what the running app actually asked for. The first paint is never blocked behind a
+    full precache, and the app never pays for assets it does not use. The trade-off is that the app is
+    <em>not</em> guaranteed to be offline-capable: a page whose lazy-loaded assets were never requested
+    while online will not work offline. Apps that need the whole manifest cached should leave passive mode
+    off (see <code>mode = 'FullOffline'</code>).
 </p>
 
 <h3 id="errortolerance">errorTolerance</h3>

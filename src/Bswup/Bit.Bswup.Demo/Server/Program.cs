@@ -96,9 +96,10 @@ builder.Services.AddMcpServer(options =>
 (offline support, an install progress bar, controlled updates).
 
 Answer from these tools rather than from memory. Bswup's setting names look like Workbox's and like
-the standard Microsoft Blazor PWA template's but are not the same, and its defaults have changed
-between versions - BswupProgress.AutoReload flipped to false in v-10-6-0. Every tool here reads the
-shipped build, so it is right about the version in front of you where recalled knowledge is not.
+the standard Microsoft Blazor PWA template's but are not the same, and settings that decide whether
+an update reaches the user at all - BswupProgress.AutoReload, BswupProgress.ShowOnUpdate - are worth
+confirming rather than recalling. Every tool here reads the shipped build, so it is right about the
+version in front of you where recalled knowledge is not.
 
 Start with SearchBswup unless you already know the setting, slug or event you want, and then call
 the follow-up each hit names, verbatim: those calls are narrowed to the hit, and the same tool
