@@ -1030,8 +1030,8 @@ describe('updateReady for an update already staged at page load', () => {
     });
 });
 
-// BLAZOR_STARTED is the sole trigger of the worker's post-start cache top-up - in passive
-// mode that top-up IS the offline story, so the reply must go back on every path.
+// BLAZOR_STARTED is the sole trigger of the worker's post-start cache top-up - the pass that
+// fills whatever a lax install failed to precache - so the reply must go back on every path.
 describe('CLIENTS_CLAIMED handshake', () => {
     it('replies BLAZOR_STARTED to the claiming worker once Blazor has started', async () => {
         const ctx = page();

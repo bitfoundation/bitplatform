@@ -211,7 +211,7 @@ public static partial class BswupServiceWorkerInspector
 
         if (IsTruthy(settings.GetValueOrDefault("isPassive")))
         {
-            notes.Add("isPassive is on: the assets below are not precached during install, they are cached on first request - and a first install still tops the cache up in the background once Blazor has started, so the set that ends up cached is the same.");
+            notes.Add("isPassive is on: the assets below are never bulk-downloaded - not during install, and not after Blazor starts. Each is cached on first request, so what ends up cached is only the subset the running app actually asked for.");
         }
 
         return new BswupAssetAnalysisDto
