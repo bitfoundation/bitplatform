@@ -184,8 +184,8 @@
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
         <Error Text="Enable long paths in Windows. https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell#enable-long-paths-in-windows-10-version-1607-and-later" Condition=" $([MSBuild]::IsOSPlatform('windows')) AND $([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem', 'LongPathsEnabled', null, RegistryView.Registry64)) != '1' " />
-        <Error Text="Version '$(Version)' cannot be turned into an android versionCode. Pass a major.minor or major.minor.patch value (optionally followed by a revision or a pre-release suffix), e.g. 1.0.0, 1.0.0.4 or 1.0.0-rc1."
-               Condition=" '$([System.Text.RegularExpressions.Regex]::IsMatch($(Version), `^\d+\.\d+`))' != 'true' " />
+        <Error Text="Version '$(Version)' cannot be represented as an android versionCode. versionCode is derived from major, minor and patch only, so a revision ('1.0.0.4') or a pre-release suffix ('1.0.0-rc1') is DISCARDED - '1.0.0.6' and '1.0.0.7' would both ship as 10000, and the store rejects the second upload or, worse, accepts an update no device receives. Pass major.minor or major.minor.patch, e.g. 1.0.0 or 1.0.1."
+               Condition=" '$([System.Text.RegularExpressions.Regex]::IsMatch($(Version), `^\d+\.\d+(\.\d+)?$`))' != 'true' " />
         <CallTarget Targets="BuildCssFiles" />
     </Target>
 

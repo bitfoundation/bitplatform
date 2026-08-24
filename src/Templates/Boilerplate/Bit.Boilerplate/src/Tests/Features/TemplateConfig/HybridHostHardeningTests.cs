@@ -5,84 +5,33 @@ namespace Boilerplate.Tests.Features.TemplateConfig;
 
 /// <summary>
 /// Guards three decisions in the two blazor hybrid heads that are one line each, invisible at runtime, and expensive
-/// to get wrong. None of them can be caught by building or by running the app: a debuggable web view, an over-broad
-/// permission grant and a committed signing key all behave exactly like the correct thing right up until they don't.
+/// to get wrong. None of them can be caught by building or by running the app: an over-broad permission grant, a
+/// committed signing key and an unrepresentable version all behave exactly like the correct thing right up until
+/// they don't.
 /// <para>
 /// Source scans, not rendering or integration tests, on purpose. Each property being defended is a property of the
 /// source text and holds for all 22 template configurations - none of these files carries a template conditional and
 /// none is excluded by <c>template.json</c> - while a rendering test would prove one configuration on one platform, and the
 /// platforms that matter here (android, ios, the WinUI head) are not ones this suite can drive at all.
 /// </para>
+/// <para>
+/// <b>Deliberately not guarded: web view developer tools.</b> <c>AddBlazorWebViewDeveloperTools()</c> is
+/// unconditional in both hybrid heads, and MAUI's own <c>BlazorWebViewHandler</c> reads <c>DeveloperTools.Enabled</c>
+/// to call <c>WebView.SetWebContentsDebuggingEnabled</c> on android and to set <c>inspectable</c> on ios 16.4+. A
+/// released, store-signed build is therefore attachable from <c>chrome://inspect</c> or Safari's Web Inspector, which
+/// gives anyone with an authorized device connection a javascript console inside the signed-in page's own origin.
+/// That is the maintainer's call, and the trade is that a Release-configuration build stays debuggable on a real
+/// device, which is how these apps are actually diagnosed. Guard tests for it were written, run against a control,
+/// and then removed - a test that asserts the opposite of the shipped decision is worse than no test. If the decision
+/// is ever revisited, the assertion is: <c>AddBlazorWebViewDeveloperTools()</c> inside a positive
+/// <c>if (AppEnvironment.IsDevelopment())</c> in <c>MauiProgram.Services.cs</c> and
+/// <c>Client.Windows/Program.Services.cs</c>, and no literal <c>true</c> passed to
+/// <c>SetWebContentsDebuggingEnabled</c> or <c>Inspectable</c> in <c>MauiProgram.cs</c>.
+/// </para>
 /// </summary>
 [TestClass, TestCategory("UnitTest")]
 public class HybridHostHardeningTests
 {
-    /// <summary>
-    /// <c>AddBlazorWebViewDeveloperTools()</c> is what makes a released app's web view inspectable, and neither the
-    /// compiler nor the app says so.
-    /// <para>
-    /// The review filed this as one stray <c>SetWebContentsDebuggingEnabled(true)</c> in <c>MauiProgram</c>. That was
-    /// wrong, and decompiling the shipping framework assembly is what showed it: MAUI's own
-    /// <c>BlazorWebViewHandler.CreatePlatformView</c> already calls
-    /// <c>WebView.SetWebContentsDebuggingEnabled(DeveloperTools.Enabled)</c> on android and already sets
-    /// <c>inspectable</c> on ios 16.4+, from the same flag. So gating the line the finding named would have changed
-    /// nothing at all - the exposure lives in the <c>services.AddBlazorWebViewDeveloperTools()</c> call, which was
-    /// unconditional in both heads. This test pins the corrected fact rather than the finding's first guess, which is
-    /// the whole reason it is worth its runtime.
-    /// </para>
-    /// </summary>
-    [TestMethod]
-    [DataRow("src/Client/Boilerplate.Client.Maui/MauiProgram.Services.cs")]
-    [DataRow("src/Client/Boilerplate.Client.Windows/Program.Services.cs")]
-    public void BlazorWebViewDeveloperTools_Should_OnlyBeEnabledInDevelopment(string relativePath)
-    {
-        var source = ReadTemplateFile(relativePath);
-
-        var call = source.IndexOf("AddBlazorWebViewDeveloperTools", StringComparison.Ordinal);
-
-        Assert.AreNotEqual(-1, call,
-            $"{relativePath} no longer calls AddBlazorWebViewDeveloperTools. If that is deliberate, delete this DataRow; " +
-            "if the call moved, this test has stopped guarding anything.");
-
-        // The guard has to be the enclosing statement, so look back rather than anywhere in the file: an
-        // AppEnvironment.IsDevelopment() somewhere else entirely would satisfy a whole-file search and prove nothing.
-        var preceding = source[..call];
-        var guard = preceding.LastIndexOf("AppEnvironment.IsDevelopment()", StringComparison.Ordinal);
-
-        Assert.AreNotEqual(-1, guard,
-            $"{relativePath} calls AddBlazorWebViewDeveloperTools with no AppEnvironment.IsDevelopment() guard before it. " +
-            "That turns DeveloperTools.Enabled on in release, and MAUI's BlazorWebViewHandler then makes the web view " +
-            "inspectable from chrome://inspect (android) or Safari's Web Inspector (ios) - a javascript console inside " +
-            "the signed-in page's own origin, on a store build.");
-
-        var between = preceding[guard..];
-
-        Assert.IsFalse(between.Contains('}'),
-            $"{relativePath} has an AppEnvironment.IsDevelopment() before AddBlazorWebViewDeveloperTools, but a block " +
-            "closes between the two, so the call is not actually inside the guard.");
-    }
-
-    /// <summary>
-    /// The redundant restatements of the same switch in <c>MauiProgram.SetupBlazorWebView</c>. They are not the cause
-    /// of the exposure - see the test above - but a hard-coded <c>true</c> in either of them would put it back
-    /// regardless of what the DI registration decided, which is a strictly worse failure than the original because the
-    /// fix would look like it was already applied.
-    /// </summary>
-    [TestMethod]
-    public void MauiProgram_Should_NotHardCodeWebViewDebuggingOn()
-    {
-        var source = ReadTemplateFile("src/Client/Boilerplate.Client.Maui/MauiProgram.cs");
-
-        StringAssert.DoesNotMatch(source, new Regex(@"SetWebContentsDebuggingEnabled\(\s*true\s*\)"),
-            "MauiProgram hard-codes android web view debugging on. Pass AppEnvironment.IsDevelopment() instead - " +
-            "MAUI's own handler already made this call from DeveloperTools.Enabled, so a literal true here silently " +
-            "overrides the release decision.");
-
-        StringAssert.DoesNotMatch(source, new Regex(@"Inspectable\s*=\s*true"),
-            "MauiProgram hard-codes WKWebView Inspectable on, which makes a released ios build attachable from " +
-            "Safari's Web Inspector. Pass AppEnvironment.IsDevelopment() instead.");
-    }
-
     /// <summary>
     /// WebView2's <c>PermissionRequested</c>: answering every kind with <c>Allow</c> and setting <c>Handled</c>
     /// suppresses WebView2's own prompt, so camera, geolocation and clipboard-read are granted with no ui to any
@@ -110,13 +59,23 @@ public class HybridHostHardeningTests
 
         // The kind test has to come before the grant, not merely exist in the file: a switch placed after it would
         // already have allowed everything.
-        var kindCheck = source[..grant].LastIndexOf("PermissionKind", StringComparison.Ordinal);
+        var preceding = source[..grant];
+        var kindCheck = preceding.LastIndexOf("PermissionKind", StringComparison.Ordinal);
 
         Assert.AreNotEqual(-1, kindCheck,
             $"{relativePath} sets CoreWebView2PermissionState.Allow without ever inspecting args.PermissionKind, so " +
             "every kind WebView2 asks about - Camera, Geolocation, ClipboardRead, FileReadWrite, WindowManagement - is " +
             "granted silently, and setting Handled suppresses the prompt that would otherwise have asked the user. " +
             "Allow only the kinds the app actually uses and leave the rest at CoreWebView2PermissionState.Default.");
+
+        // ...and it has to CONTROL the grant, not merely precede it. Reading args.PermissionKind into a log line and
+        // then allowing everything anyway would satisfy the assertion above while changing nothing, so what is
+        // required is the early-out between the two: every kind that is not on the allow list leaves the handler
+        // before Handled/Allow are ever set, which is what preserves WebView2's own prompt for it.
+        Assert.IsTrue(preceding[kindCheck..].Contains("return"),
+            $"{relativePath} inspects args.PermissionKind before granting, but nothing returns between the check and " +
+            "CoreWebView2PermissionState.Allow - so the check does not gate the grant and every kind is still allowed. " +
+            "Use an allow list that returns early for everything else, leaving those requests at Default.");
     }
 
     /// <summary>
@@ -154,9 +113,8 @@ public class HybridHostHardeningTests
     [TestMethod]
     [DataRow("1.0.0", 0)]
     [DataRow("1.0.7", 7)]
-    [DataRow("1.0.7.4", 7)]
-    [DataRow("1.0.7-rc1", 7)]
-    public void MauiVersionCode_Should_ReadThePatchOfEveryVersionShapeCiPassesIn(string version, int expectedPatch)
+    [DataRow("1.0", 0)]
+    public void MauiVersionCode_Should_ReadThePatchOfEveryAcceptedVersionShape(string version, int expectedPatch)
     {
         var csproj = ReadTemplateFile("src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj");
 
@@ -174,6 +132,40 @@ public class HybridHostHardeningTests
             $"The shipped pattern '{shipped}' reads patch {patch} out of Version '{version}', not {expectedPatch}. " +
             "A wrong patch is not a build failure - it becomes a versionCode the store has already seen, so the next " +
             "upload is rejected or, worse, accepted as an update no device ever receives.");
+    }
+
+    /// <summary>
+    /// The other half, and the one that actually closes the defect. <c>versionCode</c> is
+    /// <c>major*10000 + minor*100 + patch</c> — it has nowhere to put a fourth component or a pre-release label, so
+    /// <c>1.0.0.6</c> and <c>1.0.0.7</c> both compute to <b>10000</b>, which is the exact collision the finding
+    /// described. Unanchoring the patch regex did <b>not</b> fix that: it only helps when the patch itself is
+    /// non-zero. The build therefore has to refuse a Version it cannot represent, rather than quietly discard part of
+    /// it, which is also this project's stated preference for a misconfiguration.
+    /// </summary>
+    [TestMethod]
+    [DataRow("1.0.0", true)]
+    [DataRow("1.0", true)]
+    [DataRow("10.20.30", true)]
+    [DataRow("1.0.0.4", false)]
+    [DataRow("1.0.0-rc1", false)]
+    [DataRow("1", false)]
+    public void MauiVersionCode_Should_RefuseAVersionItCannotRepresent(string version, bool expectedToBuild)
+    {
+        var csproj = ReadTemplateFile("src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj");
+
+        var validation = Regex.Match(csproj, @"IsMatch\(\$\(Version\),\s*`(?<pattern>[^`]+)`\)");
+
+        Assert.IsTrue(validation.Success,
+            "Could not find the Version validation condition in Boilerplate.Client.Maui.csproj. Without it a Version " +
+            "carrying a revision or a pre-release label is silently truncated into a colliding versionCode.");
+
+        var accepted = Regex.IsMatch(version, validation.Groups["pattern"].Value);
+
+        Assert.AreEqual(expectedToBuild, accepted,
+            expectedToBuild
+                ? $"Version '{version}' is a shape the versionCode represents exactly, but the build refuses it."
+                : $"Version '{version}' is accepted by the build, yet the versionCode cannot represent it - the extra " +
+                  "component is discarded and the app ships with a versionCode another build has already used.");
     }
 
     private static string ReadTemplateFile(string relativePath)
