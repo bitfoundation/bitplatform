@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
   <!-- 
@@ -433,6 +433,12 @@
   </data>
   <data name="SystemPromptsSubTitle" xml:space="preserve">
     <value>यहाँ चैटबॉट के लिए सिस्टम प्रॉम्प्ट्स देखें।</value>
+  </data>
+  <data name="PromptKindSupport" xml:space="preserve">
+    <value>सहायता</value>
+  </data>
+  <data name="PromptKindAnalyzeProductImage" xml:space="preserve">
+    <value>उत्पाद छवि का विश्लेषण करें</value>
   </data>
   <data name="PushNotificationJob" xml:space="preserve">
     <value>पुष नोटिफिकेशन जॉब</value>
@@ -1142,6 +1148,12 @@
   </data>
   <data name="DeleteTodoItem" xml:space="preserve">
     <value>कार्य आइटम हटाएं</value>
+  </data>
+  <data name="SortAscending" xml:space="preserve">
+    <value>आरोही क्रम में क्रमबद्ध करें</value>
+  </data>
+  <data name="SortDescending" xml:space="preserve">
+    <value>अवरोही क्रम में क्रमबद्ध करें</value>
   </data>
   <!--#endif -->
   <!--#if (module == "Admin" || module == "Sales") -->

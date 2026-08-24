@@ -125,6 +125,7 @@ public partial class OfflineTodoPage
     private void ExitEditMode(TodoItemDto todoItem)
     {
         todoItem.IsInEditMode = false;
+        underEditTodoItemTitle = null;
     }
 
     private async Task AddTodoItem()
@@ -145,10 +146,7 @@ public partial class OfflineTodoPage
 
         allTodoItems.Add(addedTodoItem!);
 
-        if (TodoItemIsVisible(addedTodoItem!))
-        {
-            viewTodoItems.Add(addedTodoItem!);
-        }
+        FilterViewTodoItems();
 
         newTodoTitle = "";
         await newTodoInput.FocusAsync();
@@ -183,11 +181,20 @@ public partial class OfflineTodoPage
 
         isLoading = true;
 
+        // todoItem is the very instance the list renders, and the local write below commits before the push is
+        // accepted, so a title the server rejects would otherwise stay on screen and in the local database.
+        var previousTitle = todoItem.Title;
+
         try
         {
             todoItem.Title = underEditTodoItemTitle;
 
             await UpdateTodoItem(todoItem);
+        }
+        catch
+        {
+            todoItem.Title = previousTitle;
+            throw;
         }
         finally
         {
@@ -205,9 +212,6 @@ public partial class OfflineTodoPage
 
         todoItem.IsInEditMode = false;
 
-        if (TodoItemIsVisible(todoItem) is false)
-        {
-            viewTodoItems.Remove(todoItem);
-        }
+        FilterViewTodoItems();
     }
 }

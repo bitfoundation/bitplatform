@@ -55,9 +55,9 @@
         @if (otherSessions is not null && otherSessions.Any())
         {
             <br />
-            <BitPullToRefresh OnRefresh="async () => await LoadSessions(false)" ScrollerSelector=".sessions-list" Style="width:100%">
+            <BitPullToRefresh OnRefresh="WrapHandled(async () => await LoadSessions(false))" ScrollerSelector=".sessions-list" Style="width:100%">
                 <BitText>@Localizer[nameof(AppStrings.OtherSessions)]</BitText>
-                <BitBasicList Items="otherSessions" EnableVirtualization Class="sessions-list">
+                <BitBasicList Items="otherSessions" Virtualize ItemSize="120" Class="sessions-list">
                     <RowTemplate Context="session">
                         <BitCard FullWidth Style="margin-bottom:1rem">
                             <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">

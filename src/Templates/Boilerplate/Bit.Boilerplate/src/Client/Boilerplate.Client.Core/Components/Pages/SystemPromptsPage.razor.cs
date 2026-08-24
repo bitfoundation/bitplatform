@@ -11,6 +11,17 @@ public partial class SystemPromptsPage
 
     private bool isLoading = true;
 
+    /// <summary>
+    /// The tab header, localized rather than the raw enum member name - a tab that reads "AnalyzeProductImage" is
+    /// neither spaced nor translatable. A new PromptKind falls back to its name until it gets its own key.
+    /// </summary>
+    private string GetPromptKindText(PromptKind promptKind) => promptKind switch
+    {
+        PromptKind.Support => Localizer[nameof(AppStrings.PromptKindSupport)],
+        PromptKind.AnalyzeProductImage => Localizer[nameof(AppStrings.PromptKindAnalyzeProductImage)],
+        _ => promptKind.ToString()
+    };
+
     protected override async Task OnAfterFirstRenderAsync()
     {
         await base.OnAfterFirstRenderAsync();

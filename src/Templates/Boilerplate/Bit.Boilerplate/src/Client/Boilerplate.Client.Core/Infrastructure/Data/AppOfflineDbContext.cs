@@ -38,6 +38,8 @@ public partial class AppOfflineDbContext(DbContextOptions<AppOfflineDbContext> o
     protected override void OnDatasyncInitialization(DatasyncOfflineOptionsBuilder optionsBuilder)
     {
         optionsBuilder
+            // Last writer wins.
+            .UseDefaultConflictResolver(new ClientWinsConflictResolver())
             .UseHttpClient(this.GetService<HttpClient>())
             .Entity<TodoItemDto>(options =>
             {
