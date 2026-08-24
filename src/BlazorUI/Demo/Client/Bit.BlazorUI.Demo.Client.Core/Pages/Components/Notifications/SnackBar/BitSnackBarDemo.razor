@@ -25,7 +25,7 @@
         <BitButton OnClick="OpenBasicSnackBar">Open SnackBar</BitButton>
     </DemoExample>
 
-    <DemoExample Title="Position" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <DemoExample Title="Position & Offset" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <div>
             The <b>Position</b> parameter pins the stack to one of the six corners and edges of the screen
             (default is <b>BottomEnd</b>). The start/end naming follows the text direction, so a snack bar keeps to the
@@ -35,8 +35,7 @@
             banner, the safe area of a phone.
         </div>
         <br />
-        <BitSnackBar @ref="positionRef" Position="position" Offset="@offset"
-                     AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(3)" />
+        <BitSnackBar @ref="positionRef" Position="position" Offset="@offset" />
         <BitChoiceGroup @bind-Value="position" Label="Position" Horizontal
                         TItem="BitChoiceGroupOption<BitSnackBarPosition>" TValue="BitSnackBarPosition">
             <BitChoiceGroupOption Text="TopStart" Value="BitSnackBarPosition.TopStart" />
@@ -193,19 +192,19 @@
         <div>
             By default the title and the body are kept to a single line and cut off with an ellipsis, with the full text
             in a tooltip, which keeps the stack the same size no matter what is shown in it. <b>Multiline</b> lets both
-            wrap instead, for the notifications whose whole text has to be read. Either way an item is only as wide as
-            its longest line needs; <b>MaxWidth</b> caps that, so a long message on a wide screen wraps at a readable
-            measure rather than running the whole way across the display.
+            wrap instead, for the notifications whose whole text has to be read. Neither shows until the item has a width
+            to run out of: an item is only as wide as its longest line needs, so the same message sits on one line either
+            way until <b>MaxWidth</b> caps it - at that measure the default truncates and a multiline one wraps.
         </div>
         <br />
-        <BitSnackBar @ref="singleLineRef" />
-        <BitButton OnClick="OpenSingleLine">Single line</BitButton>
+        <BitSnackBar @ref="uncappedRef" />
+        <BitButton OnClick="OpenUncapped">Uncapped</BitButton>
         <br /><br />
-        <BitSnackBar @ref="multilineRef" Multiline />
-        <BitButton OnClick="OpenMultiline">Multiline</BitButton>
+        <BitSnackBar @ref="singleLineRef" MaxWidth="20rem" />
+        <BitButton OnClick="OpenSingleLine">Single line, capped at 20rem</BitButton>
         <br /><br />
-        <BitSnackBar @ref="maxWidthRef" Multiline MaxWidth="20rem" />
-        <BitButton OnClick="OpenMaxWidth">Multiline, capped at 20rem</BitButton>
+        <BitSnackBar @ref="multilineRef" Multiline MaxWidth="20rem" />
+        <BitButton OnClick="OpenMultiline">Multiline, capped at 20rem</BitButton>
     </DemoExample>
 
     <DemoExample Title="Templates" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">

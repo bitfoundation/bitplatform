@@ -1127,17 +1127,18 @@ public partial class BitSnackBarDemo
     }
 
 
+    private BitSnackBar uncappedRef = default!;
     private BitSnackBar singleLineRef = default!;
     private BitSnackBar multilineRef = default!;
-    private BitSnackBar maxWidthRef = default!;
 
+    private const string LongTitle = "A title that is also too long to fit on one line";
     private const string LongBody = "This body is long enough that it does not fit on a single line, so it is either cut off with an ellipsis or wrapped over as many lines as it needs.";
 
-    private async Task OpenSingleLine() => await singleLineRef.Info("A title that is also too long to fit on one line", LongBody);
+    private async Task OpenUncapped() => await uncappedRef.Info(LongTitle, LongBody);
 
-    private async Task OpenMultiline() => await multilineRef.Info("A title that is also too long to fit on one line", LongBody);
+    private async Task OpenSingleLine() => await singleLineRef.Info(LongTitle, LongBody);
 
-    private async Task OpenMaxWidth() => await maxWidthRef.Info("A title that is also too long to fit on one line", LongBody);
+    private async Task OpenMultiline() => await multilineRef.Info(LongTitle, LongBody);
 
 
     private string? bodyTemplateAnswer;

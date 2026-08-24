@@ -13,8 +13,7 @@ private async Task OpenBasicSnackBar()
 }";
 
     private readonly string example2RazorCode = @"
-<BitSnackBar @ref=""positionRef"" Position=""position"" Offset=""@offset""
-             AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(3)"" />
+<BitSnackBar @ref=""positionRef"" Position=""position"" Offset=""@offset"" />
 
 <BitChoiceGroup @bind-Value=""position"" Label=""Position"" Horizontal
                 TItem=""BitChoiceGroupOption<BitSnackBarPosition>"" TValue=""BitSnackBarPosition"">
@@ -246,26 +245,27 @@ private async Task Undo(BitSnackBarItem item)
 }";
 
     private readonly string example8RazorCode = @"
-<BitSnackBar @ref=""singleLineRef"" />
-<BitButton OnClick=""OpenSingleLine"">Single line</BitButton>
+<BitSnackBar @ref=""uncappedRef"" />
+<BitButton OnClick=""OpenUncapped"">Uncapped</BitButton>
 
-<BitSnackBar @ref=""multilineRef"" Multiline />
-<BitButton OnClick=""OpenMultiline"">Multiline</BitButton>
+<BitSnackBar @ref=""singleLineRef"" MaxWidth=""20rem"" />
+<BitButton OnClick=""OpenSingleLine"">Single line, capped at 20rem</BitButton>
 
-<BitSnackBar @ref=""maxWidthRef"" Multiline MaxWidth=""20rem"" />
-<BitButton OnClick=""OpenMaxWidth"">Multiline, capped at 20rem</BitButton>";
+<BitSnackBar @ref=""multilineRef"" Multiline MaxWidth=""20rem"" />
+<BitButton OnClick=""OpenMultiline"">Multiline, capped at 20rem</BitButton>";
     private readonly string example8CsharpCode = @"
+private BitSnackBar uncappedRef = default!;
 private BitSnackBar singleLineRef = default!;
 private BitSnackBar multilineRef = default!;
-private BitSnackBar maxWidthRef = default!;
 
+private const string LongTitle = ""A title that is also too long to fit on one line"";
 private const string LongBody = ""This body is long enough that it does not fit on a single line, so it is either cut off with an ellipsis or wrapped over as many lines as it needs."";
 
-private async Task OpenSingleLine() => await singleLineRef.Info(""A title that is also too long to fit on one line"", LongBody);
+private async Task OpenUncapped() => await uncappedRef.Info(LongTitle, LongBody);
 
-private async Task OpenMultiline() => await multilineRef.Info(""A title that is also too long to fit on one line"", LongBody);
+private async Task OpenSingleLine() => await singleLineRef.Info(LongTitle, LongBody);
 
-private async Task OpenMaxWidth() => await maxWidthRef.Info(""A title that is also too long to fit on one line"", LongBody);";
+private async Task OpenMultiline() => await multilineRef.Info(LongTitle, LongBody);";
 
     private readonly string example9RazorCode = @"
 <BitSnackBar @ref=""titleTemplateRef"">
