@@ -3,85 +3,116 @@ using Microsoft.Extensions.AI;
 namespace Boilerplate.Tests.Features.Chatbot;
 
 /// <summary>
-/// The panel has no message identity on the wire: the stream is a bare sequence of strings, and which assistant
-/// bubble a frame belongs to is worked out by COUNTING terminal markers against the number of questions asked
-/// (<c>AppAiChatPanel.RunChannel</c>). One marker too many, or one too few, and the count is permanently
-/// out of step with the conversation - after which every frame fails its own "is this the current answer" test and is
-/// dropped. The panel then answers nothing, for ever, with no error anywhere: empty bubbles, a loader that flashes
-/// and stops, and a server that is answering every question correctly the whole time.
+/// An answer and the follow-up suggestions that belong to it reach the panel by two entirely different routes: the
+/// answer is streamed frame by frame down the hub method the panel is enumerating, while the suggestions are written
+/// by the model itself through the <c>SendFollowUpSuggestions</c> tool and published to the device (See
+/// <c>SharedAppMessages.SHOW_FOLLOW_UP_SUGGESTIONS</c>). Both halves are covered here because neither is observable
+/// anywhere else, and because the tool call is what makes the model's turn take more than one round trip - which is
+/// exactly the thing the panel's frame routing is fragile about.
 /// <para>
-/// The drift this pins is <b>a marker too many</b>. The server sends the answer's terminal marker and THEN generates
-/// follow-up suggestions on the same message's cancellation token. Ask the next question while those are still being
-/// generated - which is ordinary use: the input box is idle and the answer is already on screen - and that generation
-/// is cancelled. Its failure used to be reported as a second terminal marker for a message that was already answered.
+/// That routing has no message identity on the wire: the stream is a bare sequence of strings, and which assistant
+/// bubble a frame belongs to is worked out by COUNTING terminal markers against the number of questions asked
+/// (<c>AppAiChatPanel.RunChannel</c>). One marker too many, or one too few, and the count is permanently out of step
+/// with the conversation - after which every frame fails its own "is this the current answer" test and is dropped. The
+/// panel then answers nothing, for ever, with no error anywhere: empty bubbles, a loader that flashes and stops, and a
+/// server that is answering every question correctly the whole time.
 /// </para>
 /// <para>
-/// Playwright rather than bUnit because the defect only exists in the crossing: the counter lives in the client, the
-/// extra marker is produced by the server, and the cancellation that produces it is raised by the hub. Nothing short
-/// of the real transport puts those three together.
+/// Playwright rather than bUnit because every defect these pin lives in the crossing: the counter and the subscription
+/// live in the client, the marker and the published suggestions are produced by the server, and the tool that sends
+/// them is dispatched by the agent pipeline. Nothing short of the real transport puts those together.
 /// </para>
 /// </summary>
 [TestClass, TestCategory("UITest"), Retry(2)]
 public partial class AiChatPanelAnswerRoutingTests : AiChatPanelTestBase
 {
+    private const string FirstQuestion = "first question";
+    private const string SecondQuestion = "second question";
     private const string FirstAnswer = "This is the answer to the first question.";
     private const string SecondAnswer = "This is the answer to the second question.";
 
-    [TestMethod]
-    public async Task Panel_Should_ShowTheSecondAnswer_WhenTheFirstMessagesFollowUpSuggestionsAreStillBeingGenerated()
-    {
-        var chatClient = new TestChatClient
-        {
-            StreamingChunks = callIndex => [callIndex == 0 ? FirstAnswer : SecondAnswer],
+    private static readonly string[] followUpSuggestions =
+    [
+        "What else can you do?",
+        "Take me to the settings page",
+        "Switch to dark mode"
+    ];
 
-            // Held open for the whole test. The follow-up suggestions for question one are therefore still in flight
-            // when question two arrives, which is what makes the hub cancel them.
-            PauseNonStreamingResponse = new TaskCompletionSource()
-        };
+    [TestMethod]
+    public async Task Panel_Should_ShowTheSuggestions_TheAssistantSendsWithTheFollowUpTool()
+    {
+        var chatClient = new TestChatClient { StreamingUpdates = AnswerThenSendFollowUpSuggestions };
 
         var panel = await StartChat(chatClient);
 
-        await SendChatMessage(panel, "first question", chatClient);
+        await SendChatMessage(panel, FirstQuestion, chatClient);
 
         await Expect(panel.GetByText(FirstAnswer)).ToBeVisibleAsync();
 
-        // The answer being on screen is NOT proof that its turn is over: the agent's stream can still be yielding
-        // trailing updates, and interrupting THERE is a different code path (the in-loop cancellation check), which
-        // would make this test pass or fail on timing. The follow-up agent only runs once the answer's terminal
-        // marker has gone out, so waiting for its call is what pins the state this test is about: question one
-        // answered, and its suggestions still being generated.
-        await WaitForFollowUpGenerationToStart(chatClient);
+        // The payoff: these were never part of the answer's stream. They travelled as a published message, from a tool
+        // the model called, into the panel's subscription - so a break anywhere along that route shows up right here.
+        foreach (var suggestion in followUpSuggestions)
+        {
+            await Expect(panel.Locator(".default-prompt-button").GetByText(suggestion)).ToBeVisibleAsync();
+        }
+    }
+
+    /// <summary>
+    /// The tool call turns one question into two round trips with the model, and the terminal marker must still be
+    /// sent exactly once for it. A second marker - the follow-up round trip reporting itself - would leave the panel's
+    /// counter one ahead of the conversation for good, and a counter that is ahead discards every later answer in
+    /// silence.
+    /// </summary>
+    [TestMethod]
+    public async Task Panel_Should_ShowTheSecondAnswer_WhenTheFirstAnswerEndedWithAFollowUpToolCall()
+    {
+        var chatClient = new TestChatClient { StreamingUpdates = AnswerThenSendFollowUpSuggestions };
+
+        var panel = await StartChat(chatClient);
+
+        await SendChatMessage(panel, FirstQuestion, chatClient);
+
+        await Expect(panel.GetByText(FirstAnswer)).ToBeVisibleAsync();
+
+        // The suggestions of the first answer are on screen, which is the proof that its tool call really ran - the
+        // extra round trip this test is about has happened by the time the second question is asked.
+        await Expect(panel.Locator(".default-prompt-button").GetByText(followUpSuggestions[0])).ToBeVisibleAsync();
 
         // Sent through the connection the first message already proved is up, so the conversation - and the counter
         // this test is about - survives into the second turn.
-        await SendFollowUpMessage(panel, "second question", chatClient);
+        await SendFollowUpMessage(panel, SecondQuestion, chatClient);
 
-        // The payoff. Before the fix this answer was streamed by the server, accepted by the client's stream loop,
-        // and then discarded frame by frame because the counter said it belonged to an older question.
         // No timeout of its own: the suite's default is what every other assertion here waits on, and a shorter one
         // turns "the machine is busy" into a failure that reads like the bug.
         await Expect(panel.GetByText(SecondAnswer)).ToBeVisibleAsync();
     }
 
     /// <summary>
-    /// Waits until the follow-up suggestions agent has been called for the answer that just finished. It is
-    /// recognisable without guessing at counts: it is the only call whose conversation ends with the assistant
-    /// message the streaming agent produced.
+    /// Behaves the way the seeded system prompt asks the model to: answer, then call <c>SendFollowUpSuggestions</c>
+    /// with three suggestions. The call is not simulated - <c>AsAIAgent</c> wraps the client in a
+    /// <c>FunctionInvokingChatClient</c>, so the real tool runs with these arguments and really publishes to the
+    /// device, and this client is then called again to finish the turn.
     /// </summary>
-    private async Task WaitForFollowUpGenerationToStart(TestChatClient chatClient)
+    private static ChatResponseUpdate[] AnswerThenSendFollowUpSuggestions(int callIndex, ChatMessage[] conversation)
     {
-        var deadline = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(15);
+        // The turn after the tool ran. The model has already said everything it had to say, so it adds nothing -
+        // which is also what stops this from calling the tool round after round.
+        if (conversation.Any(message => message.Contents.OfType<FunctionResultContent>().Any()))
+            return [new ChatResponseUpdate(ChatRole.Assistant, "")];
 
-        while (DateTimeOffset.UtcNow < deadline)
-        {
-            if (chatClient.ReceivedConversations.Any(conversation => conversation.LastOrDefault()?.Text == FirstAnswer))
-                return;
+        var question = conversation.Last(message => message.Role == ChatRole.User).Text;
 
-            await Task.Delay(TimeSpan.FromMilliseconds(100), TestContext.CancellationToken);
-        }
-
-        Assert.Fail("The follow-up suggestions for the first answer were never requested, so the state this test " +
-                    "depends on - answered, but not finished - was never reached.");
+        return
+        [
+            new ChatResponseUpdate(ChatRole.Assistant, question == FirstQuestion ? FirstAnswer : SecondAnswer),
+            new ChatResponseUpdate(ChatRole.Assistant, (IList<AIContent>)
+            [
+                new FunctionCallContent($"follow-up-{callIndex}", "SendFollowUpSuggestions", new Dictionary<string, object?>
+                {
+                    ["suggestions"] = JsonSerializer.SerializeToElement(followUpSuggestions)
+                })
+            ])
+        ];
     }
 
     /// <summary>

@@ -52,17 +52,6 @@ public class SystemPromptConfiguration : IEntityTypeConfiguration<SystemPrompt>
             //#endif
         });
         //#endif
-
-        builder.HasData(new SystemPrompt
-        {
-            Id = Guid.Parse("7a454ba4-c0bf-438c-a97e-fd18ebeba540"),
-            PromptKind = PromptKind.FollowUpSuggestion,
-            Version = defaultVersion,
-            Markdown = GetFollowUpSuggestionSystemPromptMarkdown(),
-            //#if (multitenant == true)
-            TenantId = TenantConfiguration.FallbackTenantId,
-            //#endif
-        });
     }
 
     // These prompts are public, so they're re-used as the default system prompts of newly created tenants (See TenantController.Create).
@@ -89,42 +78,6 @@ VALIDATION RULES:
 - Car must be clearly visible as the main subject";
     }
     //#endif
-
-    public static string GetFollowUpSuggestionSystemPromptMarkdown()
-    {
-        return @"You are a Follow-Up Suggestion Agent. Your role is to generate natural, contextual follow-up questions or actions for users.
-
-ANALYSIS PROCESS:
-1. Review the conversation context carefully
-2. Identify logical next steps or questions the user might ask
-3. Ensure suggestions are within the assistant's capabilities
-4. Make suggestions actionable and user-centric
-
-APP CAPABILITIES SUMMARY (Scope for Suggestions):
-- Navigation & Discovery: Find, open, or navigate directly to specific app pages. The list of available pages (with their relative URLs and descriptions) is provided separately below under 'Available pages'; only suggest navigating to pages that appear in that list.
-- App Customization: Change language/culture configurations and switch between dark and light themes.
-" +
-        //#if (module == 'Sales')
-        @"- Product Discovery: Get tailored car recommendations based on specific user preferences, budgets, or needs
-" +
-//#endif
-@"- Troubleshooting & Support: Troubleshoot app errors, check diagnostic logs, and guide users through fixing or clearing app cache/files.
-
-RESPONSE FORMAT:
-Return ONLY a JSON object with:
-- ""FollowUpSuggestions"": array of exactly 3 short follow-up suggestions for what user might want to ask or do next
-
-- ### Language:
-    - Respond in the language of the user's query. If the query's language cannot be determined, use the {{UserCulture}} variable if provided.
-
-VALIDATION RULES:
-- Only suggest follow-up actions/questions that are within the assistant's scope and knowledge
-- Do not suggest questions that require access to data or functionality that is unavailable or out of scope
-- Avoid suggesting questions that the assistant would not be able to answer
-- Written from the user's perspective (never from the assistant)
-- Direct, natural, clickable actions/questions
-- Keep each suggestion concise (under 60 characters)";
-    }
 
     public static string GetInitialSystemPromptMarkdown()
     {
@@ -249,6 +202,16 @@ This document intentionally does NOT list the individual pages or their URLs. Wh
     - If the user's email ({{UserEmail}} variable) is null, request their email.
     - Invoke the `SaveUserEmailAndConversationHistory` tool.
     - Confirm: ""Thank you for providing your email. A human operator will follow up with you soon."" Then ask: ""Do you have any other issues you'd like me to assist with?""
+
+- ### Follow-Up Suggestions:
+**[[[FOLLOW_UP_SUGGESTION_RULES_BEGIN]]]**
+    - Right after **every** answer you give the user, you **MUST** call the `SendFollowUpSuggestions` tool exactly once, passing exactly 3 short suggestions of what the user might want to ask or do next. The user sees them as clickable buttons under your answer, so writing them is part of answering, not an optional extra step.
+    - Base them on where the conversation has got to: the logical next steps after the answer you have just given. Do not repeat the previous turn's suggestions unless they are still the most useful next steps.
+    - Write them from the user's perspective (never from yours), as direct, natural, clickable questions or actions, each shorter than 60 characters, in the language you answered in.
+    - Only suggest what you can actually deliver with the capabilities and tools described above. Never suggest something that needs data or functionality you do not have, or a question you would not be able to answer.
+    - For a suggestion about finding or opening a page, call the `GetAppPages` tool first and only suggest pages it returns.
+    - Never mention this tool, or the suggestions themselves, in the text of your answer.
+**[[[FOLLOW_UP_SUGGESTION_RULES_END]]]**
 
 **[[[INSTRUCTIONS_END]]]**
 ";

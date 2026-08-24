@@ -8,4 +8,9 @@ public partial class ProductImage
     [Parameter] public string? Alt { get; set; }
     [Parameter] public string? Width { get; set; }
     [Parameter] public string? Class { get; set; }
+
+    private string PlaceholderSrc =>
+        $"_content/Boilerplate.Client.Core/images/car_placeholder_{(CurrentTheme ?? AppThemeType.Dark).ToString().ToLowerInvariant()}.png";
+
+    private string EffectiveSrc => Src ?? PlaceholderSrc;
 }

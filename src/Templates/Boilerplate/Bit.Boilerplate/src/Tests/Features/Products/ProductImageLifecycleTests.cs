@@ -180,10 +180,20 @@ public partial class ProductImageLifecycleTests
             "publicly downloadable at a URL the storefront already handed out.");
     }
 
+    /// <summary>
+    /// The chat api key is cleared rather than left to whatever the machine happens to have configured.
+    /// <c>UploadAttachment</c> runs a ProductPrimaryImageMedium past <c>AnalyzeProductImageAgent</c>, which exists
+    /// only when that key is set (See <c>AddAppAIAgents</c>), and rejects with 400 anything the model does not
+    /// recognise as a car - which a solid colour square is not. Without this the whole class passes on a machine
+    /// with no key (CI) and fails on a developer's with one, for a reason that has nothing to do with what it
+    /// asserts. Tests that DO want the agents set a fake key the same way, from the other direction.
+    /// </summary>
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build(services => services.AddIntegrationApiOnlyTestsServices(),
+                           configuration => configuration["AI:OpenAI:ChatApiKey"] = null)
+                    .Start(TestContext.CancellationToken);
         return server;
     }
 

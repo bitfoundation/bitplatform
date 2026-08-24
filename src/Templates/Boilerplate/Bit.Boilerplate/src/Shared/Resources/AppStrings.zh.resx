@@ -1164,6 +1164,9 @@
     <data name="Of" xml:space="preserve">
     <value>共</value>
   </data>
+    <data name="TryAgain" xml:space="preserve">
+    <value>重试</value>
+  </data>
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>管理面板</value>
@@ -1261,6 +1264,18 @@
   <data name="DashboardSubtitle" xml:space="preserve">
     <value>这是您的分析数据</value>
   </data>
+    <data name="DeleteCategory" xml:space="preserve">
+    <value>删除类别</value>
+  </data>
+    <data name="AreYouSureWannaDeleteCategory" xml:space="preserve">
+    <value>您确定要删除类别 {0} 吗？</value>
+  </data>
+    <data name="PresetColors" xml:space="preserve">
+    <value>预设颜色</value>
+  </data>
+    <data name="ProductCouldNotBeLoaded" xml:space="preserve">
+    <value>无法加载此产品。</value>
+  </data>
   <!--#endif -->
   <!--#if (captcha == "reCaptcha") -->
   <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
@@ -1282,6 +1297,15 @@
   </data>
   <data name="PurchaseSuccessful" xml:space="preserve">
     <value>购买成功！</value>
+  </data>
+    <data name="NoProductsToShow" xml:space="preserve">
+    <value>暂无可显示的产品。</value>
+  </data>
+    <data name="SearchProducts" xml:space="preserve">
+    <value>搜索产品</value>
+  </data>
+    <data name="ProductsCouldNotBeLoaded" xml:space="preserve">
+    <value>无法加载产品。</value>
   </data>
   <!--#endif -->
   <data name="Passwordless" xml:space="preserve">

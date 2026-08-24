@@ -99,9 +99,8 @@ public partial class TenantController : AppControllerBase, ITenantController
         await DbContext.SystemPrompts.AddRangeAsync([
             new() { PromptKind = PromptKind.Support, Markdown = SystemPromptConfiguration.GetInitialSystemPromptMarkdown(), TenantId = tenantToAdd.Id },
             //#if (module == "Sales" || module == "Admin")
-            new() { PromptKind = PromptKind.AnalyzeProductImage, Markdown = SystemPromptConfiguration.GetAnalyzeProductImageSystemPromptMarkdown(), TenantId = tenantToAdd.Id },
+            new() { PromptKind = PromptKind.AnalyzeProductImage, Markdown = SystemPromptConfiguration.GetAnalyzeProductImageSystemPromptMarkdown(), TenantId = tenantToAdd.Id }
             //#endif
-            new() { PromptKind = PromptKind.FollowUpSuggestion, Markdown = SystemPromptConfiguration.GetFollowUpSuggestionSystemPromptMarkdown(), TenantId = tenantToAdd.Id }
         ], cancellationToken);
         //#endif
 

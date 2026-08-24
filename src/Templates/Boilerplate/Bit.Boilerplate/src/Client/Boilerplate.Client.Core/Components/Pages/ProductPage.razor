@@ -27,10 +27,10 @@
 
         @if (isLoadingProduct)
         {
-            <BitCard FullWidth Background="BitColorKind.Tertiary" Style="padding:3rem 1rem;">
+            <BitCard FullWidth Style="padding:3rem 1rem;">
                 <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Gap="2rem" Class="product-stack">
                     <BitShimmer Height="256px" Width="50%" Background="BitColor.PrimaryBackground" />
-                    <BitStack AutoHeight Grows>
+                    <BitStack AutoWidth Grows>
                         <BitShimmer Height="6rem" Width="100%" />
                         <BitShimmer Height="1rem" Width="100%" />
                         <BitShimmer Height="1rem" Width="100%" />
@@ -39,26 +39,12 @@
                     </BitStack>
                 </BitStack>
             </BitCard>
-
-            <br />
-
-            <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.About)]</BitText>
-
-            <BitCard FullWidth>
-                <BitStack AutoHeight Grows>
-                    <BitShimmer Height="1rem" Width="100%" />
-                    <BitShimmer Height="1rem" Width="100%" />
-                    <BitShimmer Height="1rem" Width="100%" />
-                    <BitShimmer Height="1rem" Width="100%" />
-                    <BitShimmer Height="1rem" Width="100%" />
-                </BitStack>
-            </BitCard>
         }
         else
         {
             if (product is null)
             {
-                <NotFoundPage />
+                <NotFoundContent />
             }
             else
             {
@@ -68,7 +54,7 @@
                         <BitStack AutoWidth Grows>
                             <BitText Typography="BitTypography.H2">@product.Name</BitText>
                             <BitText Color="BitColor.Info">@product.CategoryName</BitText>
-                            <BitText Typography="BitTypography.H6">@((MarkupString)product.DescriptionHTML!)</BitText>
+                            <BitText Element="div" Typography="BitTypography.H6">@((MarkupString)product.DescriptionHTML!)</BitText>
                             <BitText Typography="BitTypography.H4">@product.FormattedPrice</BitText>
                             <BitButton AutoLoading OnClick="WrapHandled(Buy)">@Localizer[nameof(AppStrings.Buy)]</BitButton>
                         </BitStack>
@@ -147,7 +133,7 @@
                                 <BitStack>
                                     <ProductImage Src="@GetProductImageUrl(prd)" Alt="@prd.PrimaryImageAltText" Width="100%" />
                                     <BitText>@prd.Name</BitText>
-                                    <BitText Typography="BitTypography.Body2">@((MarkupString)prd.DescriptionHTML!)</BitText>
+                                    <BitText Element="div" Typography="BitTypography.Body2">@((MarkupString)prd.DescriptionHTML!)</BitText>
                                     <BitText Typography="BitTypography.H6">@prd.FormattedPrice</BitText>
                                 </BitStack>
                             </BitCard>
@@ -184,7 +170,7 @@
         {
             <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.SiblingProducts)]</BitText>
 
-            <BitScrollablePane Width="100%" Style="padding:0.5rem">
+            <BitScrollablePane Width="100%" Style="padding:0.5rem 1.5px">
                 <BitStack Horizontal FitWidth Style="align-items:unset">
                     @foreach (var prd in siblingProducts)
                     {
@@ -193,7 +179,7 @@
                                 <BitStack>
                                     <ProductImage Src="@GetProductImageUrl(prd)" Alt="@prd.PrimaryImageAltText" Width="100%" />
                                     <BitText>@prd.Name</BitText>
-                                    <BitText Typography="BitTypography.Body2">@((MarkupString)prd.DescriptionHTML!)</BitText>
+                                    <BitText Element="div" Typography="BitTypography.Body2">@((MarkupString)prd.DescriptionHTML!)</BitText>
                                     <BitText Typography="BitTypography.H6">@prd.FormattedPrice</BitText>
                                 </BitStack>
                             </BitCard>

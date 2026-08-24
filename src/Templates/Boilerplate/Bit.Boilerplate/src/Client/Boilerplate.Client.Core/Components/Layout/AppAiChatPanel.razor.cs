@@ -50,6 +50,7 @@ public partial class AppAiChatPanel
     private AiChatMessageResponse? greetingMessage;
     private List<AiChatMessageResponse> chatMessages = []; // TODO: Persist these values in client-side storage to retain them across app restarts.
     private List<string> followUpSuggestions = [];
+    private Action unsubFollowUpSuggestions = default!;
     //#if(module == "Sales")
     private Action unsubSearchProducts = default!;
     //#endif
@@ -60,6 +61,29 @@ public partial class AppAiChatPanel
 
     protected override Task OnInitAsync()
     {
+        // The assistant writes these itself, with the SendFollowUpSuggestions tool, so they arrive on their own
+        // whenever it calls it - not as part of the answer's stream (See AppChatbot.SendFollowUpSuggestions).
+        unsubFollowUpSuggestions = PubSubService.Subscribe(SharedAppMessages.SHOW_FOLLOW_UP_SUGGESTIONS, async payload =>
+        {
+            if (payload is null) return;
+
+            var followUpList = payload is JsonElement jsonElement
+                ? jsonElement.Deserialize(JsonSerializerOptions.GetTypeInfo<AiChatFollowUpList>()) /* Message gets published from server through SignalR */
+                : (AiChatFollowUpList)payload;
+
+            // The publisher is the hub connection's own callback, which is not the renderer's thread.
+            await InvokeAsync(() =>
+            {
+                // Suggestions for a conversation that is no longer on screen - the user cleared the chat while the
+                // assistant was still answering - would otherwise be offered on top of an empty panel.
+                if (chatMessages.Count is <= 1) return;
+
+                followUpSuggestions = followUpList?.FollowUpSuggestions ?? [];
+
+                StateHasChanged();
+            });
+        });
+
         //#if(module == "Sales")
         unsubSearchProducts = PubSubService.Subscribe(ClientAppMessages.SEARCH_PRODUCTS, async (value) =>
         {
@@ -166,6 +190,8 @@ public partial class AppAiChatPanel
             }
 
             isLoading = true;
+
+            followUpSuggestions = [];
 
             var message = new AiChatMessageRequest
             {
@@ -330,18 +356,7 @@ public partial class AppAiChatPanel
 
                 int expectedResponsesCount = chatMessages.Count(c => c.Role is AiChatMessageRole.User);
 
-                // A suggestion list is one whole JSON document in a single frame (AppChatbot's SendStringToClient),
-                // while an answer arrives as free-form fragments - so the shape is what tells them apart. An answer
-                // that merely quotes the property name must not be parsed, and must not end the stream if it is.
-                if (response.StartsWith('{') && response.Contains(nameof(AiChatFollowUpList.FollowUpSuggestions)))
-                {
-                    try
-                    {
-                        followUpSuggestions = JsonSerializer.Deserialize(response, JsonSerializerOptions.GetTypeInfo<AiChatFollowUpList>())?.FollowUpSuggestions ?? [];
-                    }
-                    catch (JsonException) { }
-                }
-                else if (response is SharedAppMessages.MESSAGE_PROCESS_SUCCESS or SharedAppMessages.MESSAGE_PROCESS_ERROR)
+                if (response is SharedAppMessages.MESSAGE_PROCESS_SUCCESS or SharedAppMessages.MESSAGE_PROCESS_ERROR)
                 {
                     // One marker per message. A second one for a message already answered - the server reporting the
                     // follow-up generation that the next message cancelled - would leave this counter ahead of the
@@ -419,6 +434,8 @@ public partial class AppAiChatPanel
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
+        unsubFollowUpSuggestions();
+
         //#if(module == "Sales")
         unsubSearchProducts();
         //#endif

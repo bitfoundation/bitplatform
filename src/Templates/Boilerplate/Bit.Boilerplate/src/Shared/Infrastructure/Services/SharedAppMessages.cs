@@ -102,6 +102,12 @@ public partial class SharedAppMessages
     /// </summary>
     public const string MESSAGE_PROCESS_SUCCESS = nameof(MESSAGE_PROCESS_SUCCESS);
 
+    /// <summary>
+    /// The chat bot sends this message with the follow-up suggestions it wrote for the answer it has just given
+    /// (See <c>AppChatbot.SendFollowUpSuggestions</c>). The payload is an <c>AiChatFollowUpList</c>.
+    /// </summary>
+    public const string SHOW_FOLLOW_UP_SUGGESTIONS = nameof(SHOW_FOLLOW_UP_SUGGESTIONS);
+
     #endregion
 
     #region Client commands to server

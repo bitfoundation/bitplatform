@@ -1164,6 +1164,9 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <data name="Of" xml:space="preserve">
     <value>av</value>
   </data>
+    <data name="TryAgain" xml:space="preserve">
+    <value>Försök igen</value>
+  </data>
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>Adminpanel</value>
@@ -1261,6 +1264,18 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="DashboardSubtitle" xml:space="preserve">
     <value>Här är dina analysdata</value>
   </data>
+    <data name="DeleteCategory" xml:space="preserve">
+    <value>Ta bort kategori</value>
+  </data>
+    <data name="AreYouSureWannaDeleteCategory" xml:space="preserve">
+    <value>Är du säker på att du vill ta bort kategorin {0}?</value>
+  </data>
+    <data name="PresetColors" xml:space="preserve">
+    <value>Förinställda färger</value>
+  </data>
+    <data name="ProductCouldNotBeLoaded" xml:space="preserve">
+    <value>Produkten kunde inte laddas.</value>
+  </data>
   <!--#endif -->
   <!--#if (captcha == "reCaptcha") -->
   <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
@@ -1282,6 +1297,15 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   </data>
   <data name="PurchaseSuccessful" xml:space="preserve">
     <value>Köpet lyckades!</value>
+  </data>
+    <data name="NoProductsToShow" xml:space="preserve">
+    <value>Inga produkter att visa just nu.</value>
+  </data>
+    <data name="SearchProducts" xml:space="preserve">
+    <value>Sök produkter</value>
+  </data>
+    <data name="ProductsCouldNotBeLoaded" xml:space="preserve">
+    <value>Produkterna kunde inte laddas.</value>
   </data>
   <!--#endif -->
   <data name="Passwordless" xml:space="preserve">

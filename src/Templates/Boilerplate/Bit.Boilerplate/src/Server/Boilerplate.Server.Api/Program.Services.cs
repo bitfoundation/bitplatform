@@ -255,7 +255,7 @@ public static partial class Program
             //#if (api == "Integrated")
             .AddApplicationPart(typeof(AppControllerBase).Assembly)
             //#endif
-            .AddOData(options => options.EnableQueryFeatures(maxTopValue: 100))
+            .AddOData(options => options.EnableQueryFeatures())
             .AddDataAnnotationsLocalization(options => options.DataAnnotationLocalizerProvider = StringLocalizerProvider.ProvideLocalizer)
             .ConfigureApiBehaviorOptions(options =>
             {
@@ -696,13 +696,6 @@ public static partial class Program
             return sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: GetSystemPrompt(PromptKind.Support, sp),
                     name: "SupportAgent",
                     description: "Provides support and assistance to users", tools: [.. aiFunctions]);
-        }, lifetime: ServiceLifetime.Scoped);
-
-        builder.AddAIAgent("FollowUpSuggestionsAgent", (sp, _) =>
-        {
-            return sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: GetSystemPrompt(PromptKind.FollowUpSuggestion, sp),
-                    name: "FollowUpSuggestionsAgent",
-                    description: "Generates follow-up suggestions based on user interactions");
         }, lifetime: ServiceLifetime.Scoped);
     }
     //#endif

@@ -64,10 +64,11 @@ public sealed class TestChatClient : IChatClient
     public TaskCompletionSource? PauseAfterFirstChunk { get; set; }
 
     /// <summary>
-    /// The answer to a non-streamed call. The follow-up suggestions agent asks for a strict json object, so the
-    /// default is a valid (empty) <c>AiChatFollowUpList</c>.
+    /// The answer to a non-streamed call - the shape the agents that do not stream (the product image analyzer, for
+    /// one) ask for. The chat panel's own agent never takes this path: it streams, and everything it sends alongside
+    /// the answer it sends by calling a tool.
     /// </summary>
-    public string NonStreamingResponse { get; set; } = /*lang=json,strict*/ """{"FollowUpSuggestions":[]}""";
+    public string NonStreamingResponse { get; set; } = "Hi, how can I help?";
 
     public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IEnumerable<ChatMessage> messages,
@@ -97,28 +98,14 @@ public sealed class TestChatClient : IChatClient
         }
     }
 
-    /// <summary>
-    /// When set, a non-streamed call waits here instead of answering. In practice that is the follow-up suggestions
-    /// agent, which runs AFTER the answer's terminal marker has already gone out - so this holds a message in the
-    /// one state a test could not otherwise reach: answered, but not finished. Tests never complete it; they send the
-    /// next message, which is what cancels it, exactly as a user typing again does.
-    /// </summary>
-    public TaskCompletionSource? PauseNonStreamingResponse { get; set; }
-
-    public async Task<ChatResponse> GetResponseAsync(
+    public Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages,
         ChatOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         Capture(messages);
 
-        if (PauseNonStreamingResponse is not null)
-        {
-            // Throws OperationCanceledException the moment the hub cancels this message.
-            await PauseNonStreamingResponse.Task.WaitAsync(cancellationToken);
-        }
-
-        return new ChatResponse(new ChatMessage(ChatRole.Assistant, NonStreamingResponse));
+        return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, NonStreamingResponse)));
     }
 
     public object? GetService(Type serviceType, object? serviceKey = null)
