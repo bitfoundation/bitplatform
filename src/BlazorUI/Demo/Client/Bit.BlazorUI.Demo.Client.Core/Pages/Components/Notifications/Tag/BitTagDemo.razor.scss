@@ -1,4 +1,11 @@
-﻿::deep {
+﻿.example-content {
+    gap: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+::deep {
     .custom-class {
         border-radius: 0.25rem;
         box-shadow: aqua 0 0 0.5rem;
@@ -15,5 +22,10 @@
     .custom-icon {
         font-size: 1.25rem;
         font-weight: bolder;
+    }
+
+    .custom-selected {
+        border-color: deeppink;
+        background-color: deeppink;
     }
 }

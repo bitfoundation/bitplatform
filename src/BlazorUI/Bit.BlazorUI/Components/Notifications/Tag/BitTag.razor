@@ -1,29 +1,104 @@
 @namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
-     id="@_Id"
-     aria-label="@AriaLabel"
-     style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()">
-    @if (ChildContent is not null)
+@{
+    var icon = BitIconInfo.From(Icon, IconName);
+
+    @* The checkmark of a selected tag, which is what makes a filter chip readable as picked rather than
+       as merely a different color - a state carried by color alone is one a reader cannot see. *@
+    var selectedIcon = Selected && HideSelectedIcon is false
+                     ? BitIconInfo.From(SelectedIcon, SelectedIconName ?? "Accept")
+                     : null;
+
+    var hasLabel = Text.HasValue() || SecondaryText.HasValue();
+
+    @* The label of the tag names whatever the tag became: an anchor, a button or nothing at all. A tag that
+       is one of the first two is the control a screen reader lands on, so the name moves onto that control
+       and only stays on the root when there is no control to carry it. *@
+    var labelOnRoot = _isInteractive is false;
+
+    RenderFragment content =
+        @<text>
+            @if (selectedIcon is not null)
+            {
+                <i aria-hidden="true" style="@Styles?.SelectedIcon" class="bit-tag-sic @selectedIcon.GetCssClasses() @Classes?.SelectedIcon" />
+            }
+
+            @if (icon is not null)
+            {
+                <i aria-hidden="true" style="@Styles?.Icon" class="bit-tag-icn @icon.GetCssClasses() @Classes?.Icon" />
+            }
+            else if (IconUrl.HasValue())
+            {
+                @* The picture of what the tag stands for - an avatar, a flag, a logo. It is decorative next to
+                   the label it sits beside, so it carries an empty alt unless one is given on purpose. *@
+                <img src="@IconUrl" alt="@(IconAlt ?? string.Empty)" style="@Styles?.Image" class="bit-tag-img @Classes?.Image" />
+            }
+
+            @if (ChildContent is not null)
+            {
+                @ChildContent
+            }
+            else if (hasLabel)
+            {
+                <span style="@Styles?.Label" class="bit-tag-lbl @Classes?.Label">
+                    @if (Text.HasValue())
+                    {
+                        <span style="@Styles?.Text" class="bit-tag-tex @Classes?.Text">@Text</span>
+                    }
+
+                    @if (SecondaryText.HasValue())
+                    {
+                        <span style="@Styles?.SecondaryText" class="bit-tag-stx @Classes?.SecondaryText">@SecondaryText</span>
+                    }
+                </span>
+            }
+        </text>;
+}
+
+<span @ref="RootElement" @attributes="HtmlAttributes"
+      id="@_Id"
+      title="@Title"
+      style="@StyleBuilder.Value"
+      class="@ClassBuilder.Value"
+      aria-label="@(labelOnRoot ? AriaLabel : null)"
+      dir="@Dir?.ToString().ToLower()">
+    @if (_isLink)
     {
-        @ChildContent
+        @* A tag that leads somewhere is a real anchor: it comes with the context menu, the middle click, the
+           status bar and the announcement that every link of the page comes with, none of which a click
+           handler on a span can reproduce. A disabled one keeps neither the href nor the focus. *@
+        <a @onclick="HandleOnClick"
+           @onclick:preventDefault="@(IsEnabled is false)"
+           @onkeydown="HandleOnKeyDown"
+           style="@Styles?.Content"
+           class="bit-tag-cnt bit-tag-int @Classes?.Content"
+           href="@(IsEnabled ? Href : null)"
+           rel="@_rel"
+           target="@Target"
+           tabindex="@(IsEnabled ? TabIndex : "-1")"
+           aria-disabled="@(IsEnabled ? null : "true")"
+           aria-label="@(labelOnRoot ? null : AriaLabel)">@content</a>
+    }
+    else if (_isButton)
+    {
+        @* A tag that does something is a real button: it comes with the keyboard, the focus ring and the
+           disabled semantics a span with an onclick handler would each have to reimplement. The dismiss
+           button is its sibling rather than its child, since a control inside a button is a control no
+           assistive technology can reach. *@
+        <button @onclick="HandleOnClick"
+                @onkeydown="HandleOnKeyDown"
+                style="@Styles?.Content"
+                class="bit-tag-cnt bit-tag-int @Classes?.Content"
+                type="button"
+                tabindex="@TabIndex"
+                disabled="@(IsEnabled is false)"
+                aria-pressed="@(_isToggle ? Selected.ToString().ToLower() : null)"
+                aria-label="@(labelOnRoot ? null : AriaLabel)">@content</button>
     }
     else
     {
-        var icon = BitIconInfo.From(Icon, IconName);
-        
-        @if (icon is not null)
-        {
-            <i style="@Styles?.Icon" class="bit-tag-icn @icon.GetCssClasses() @Classes?.Icon" />
-        }
-
-        @if (Text is not null)
-        {
-            <span style="@Styles?.Text" class="bit-tag-tex @Classes?.Text">@Text</span>
-        }
+        <span style="@Styles?.Content" class="bit-tag-cnt @Classes?.Content">@content</span>
     }
 
     @if (OnDismiss.HasDelegate)
@@ -31,12 +106,16 @@
         var dismissIcon = BitIconInfo.From(DismissIcon, DismissIconName ?? "Cancel");
 
         <button @onclick="HandleOnDismissClick"
+                @onclick:stopPropagation="true"
+                @onkeydown="HandleOnKeyDown"
                 style="@Styles?.DismissButton"
                 class="bit-tag-cls @Classes?.DismissButton"
                 type="button"
-                title="Dismiss"
-                aria-label="Dismiss">
-            <i style="@Styles?.DismissIcon" class="bit-tag-dsi @dismissIcon?.GetCssClasses() @Classes?.DismissIcon" />
+                title="@_dismissLabel"
+                tabindex="@TabIndex"
+                disabled="@(IsEnabled is false)"
+                aria-label="@_dismissLabel">
+            <i aria-hidden="true" style="@Styles?.DismissIcon" class="bit-tag-dsi @dismissIcon?.GetCssClasses() @Classes?.DismissIcon" />
         </button>
     }
-</div>
+</span>

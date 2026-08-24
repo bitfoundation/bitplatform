@@ -32,17 +32,6 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
     public BitColor? Color { get; set; }
 
     /// <summary>
-    /// The icon to show inside the tag using custom CSS classes for external icon libraries.
-    /// Takes precedence over <see cref="IconName"/> when both are set.
-    /// </summary>
-    public BitIconInfo? Icon { get; set; }
-
-    /// <summary>
-    /// The icon to show inside the tag.
-    /// </summary>
-    public string? IconName { get; set; }
-
-    /// <summary>
     /// The icon to use for the dismiss button using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="DismissIconName"/> when both are set.
     /// </summary>
@@ -54,9 +43,56 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
     public string? DismissIconName { get; set; }
 
     /// <summary>
+    /// The accessible name and the tooltip of the dismiss button.
+    /// </summary>
+    public string? DismissLabel { get; set; }
+
+    /// <summary>
+    /// Stretches the tag to fill the width of whatever holds it.
+    /// </summary>
+    public bool? FullWidth { get; set; }
+
+    /// <summary>
+    /// Hides the checkmark a selected tag shows in front of its content.
+    /// </summary>
+    public bool? HideSelectedIcon { get; set; }
+
+    /// <summary>
+    /// The icon to show inside the tag using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="IconName"/> when both are set.
+    /// </summary>
+    public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
+    /// The icon to show inside the tag.
+    /// </summary>
+    public string? IconName { get; set; }
+
+    /// <summary>
+    /// Keeps the content of the tag on a single line and ends it with an ellipsis where it does not fit.
+    /// </summary>
+    public bool? NoWrap { get; set; }
+
+    /// <summary>
     /// Reverses the direction flow of the content of the tag.
     /// </summary>
     public bool? Reversed { get; set; }
+
+    /// <summary>
+    /// The icon of the checkmark a selected tag shows, using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="SelectedIconName"/> when both are set.
+    /// </summary>
+    public BitIconInfo? SelectedIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon of the checkmark a selected tag shows, from the built-in Fluent UI icons.
+    /// </summary>
+    public string? SelectedIconName { get; set; }
+
+    /// <summary>
+    /// The corner shape of the tag.
+    /// </summary>
+    public BitTagShape? Shape { get; set; }
 
     /// <summary>
     /// The size of the tag.
@@ -85,7 +121,7 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
     /// this object, if those properties have not already been set on the <see cref="BitTag"/>.
     /// </summary>
     /// <remarks>
-    /// Only properties that have a value set and have not already been set on the <paramref name="bitTag"/> will be updated. 
+    /// Only properties that have a value set and have not already been set on the <paramref name="bitTag"/> will be updated.
     /// This method does not overwrite existing values on <paramref name="bitTag"/>.
     /// </remarks>
     /// <param name="bitTag">
@@ -107,6 +143,8 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
         if (Color.HasValue && bitTag.HasNotBeenSet(nameof(Color)))
         {
             bitTag.Color = Color.Value;
+
+            bitTag.ClassBuilder.Reset();
         }
 
         if (DismissIcon is not null && bitTag.HasNotBeenSet(nameof(DismissIcon)))
@@ -119,6 +157,23 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
             bitTag.DismissIconName = DismissIconName;
         }
 
+        if (DismissLabel.HasValue() && bitTag.HasNotBeenSet(nameof(DismissLabel)))
+        {
+            bitTag.DismissLabel = DismissLabel;
+        }
+
+        if (FullWidth.HasValue && bitTag.HasNotBeenSet(nameof(FullWidth)))
+        {
+            bitTag.FullWidth = FullWidth.Value;
+
+            bitTag.ClassBuilder.Reset();
+        }
+
+        if (HideSelectedIcon.HasValue && bitTag.HasNotBeenSet(nameof(HideSelectedIcon)))
+        {
+            bitTag.HideSelectedIcon = HideSelectedIcon.Value;
+        }
+
         if (Icon is not null && bitTag.HasNotBeenSet(nameof(Icon)))
         {
             bitTag.Icon = Icon;
@@ -129,9 +184,33 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
             bitTag.IconName = IconName;
         }
 
+        if (NoWrap.HasValue && bitTag.HasNotBeenSet(nameof(NoWrap)))
+        {
+            bitTag.NoWrap = NoWrap.Value;
+
+            bitTag.ClassBuilder.Reset();
+        }
+
         if (Reversed.HasValue && bitTag.HasNotBeenSet(nameof(Reversed)))
         {
             bitTag.Reversed = Reversed.Value;
+
+            bitTag.ClassBuilder.Reset();
+        }
+
+        if (SelectedIcon is not null && bitTag.HasNotBeenSet(nameof(SelectedIcon)))
+        {
+            bitTag.SelectedIcon = SelectedIcon;
+        }
+
+        if (SelectedIconName.HasValue() && bitTag.HasNotBeenSet(nameof(SelectedIconName)))
+        {
+            bitTag.SelectedIconName = SelectedIconName;
+        }
+
+        if (Shape.HasValue && bitTag.HasNotBeenSet(nameof(Shape)))
+        {
+            bitTag.Shape = Shape.Value;
 
             bitTag.ClassBuilder.Reset();
         }
@@ -146,6 +225,8 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
         if (Styles is not null && bitTag.HasNotBeenSet(nameof(Styles)))
         {
             bitTag.Styles = Styles;
+
+            bitTag.StyleBuilder.Reset();
         }
 
         if (Text.HasValue() && bitTag.HasNotBeenSet(nameof(Text)))
