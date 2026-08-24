@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Globalization;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// A Message displays errors, warnings, or important information. For example, if a file failed to upload an error message should appear.
@@ -19,6 +21,7 @@ public partial class BitMessage : BitComponentBase
     private readonly Action _onPauseAutoDismiss;
     private readonly Action _onResumeAutoDismiss;
     private readonly Func<KeyboardEventArgs, Task> _onRootKeyDown;
+    private readonly RenderFragment _renderTitle;
 
 
 
@@ -27,6 +30,7 @@ public partial class BitMessage : BitComponentBase
         _onPauseAutoDismiss = PauseAutoDismiss;
         _onResumeAutoDismiss = ResumeAutoDismiss;
         _onRootKeyDown = HandleOnKeyDown;
+        _renderTitle = RenderTitle;
     }
 
 
@@ -46,11 +50,24 @@ public partial class BitMessage : BitComponentBase
     /// Enables the auto-dismiss feature and sets the time to automatically call the OnDismiss callback.
     /// </summary>
     /// <remarks>
-    /// The countdown only runs while <see cref="OnDismiss"/> has a handler, and it is held for as long as the
-    /// pointer is over the message or the focus is inside it, so the message cannot vanish while it is being
+    /// The countdown only runs while the message can be dismissed at all - that is, while <see cref="OnDismiss"/>
+    /// has a handler or <see cref="Dismissible"/> is set - and while the message is enabled. It is held for as long
+    /// as the pointer is over the message or the focus is inside it, so the message cannot vanish while it is being
     /// read or acted upon (WCAG 2.2.1 Timing Adjustable). Assigning a different value re-arms the countdown.
     /// </remarks>
     [Parameter] public TimeSpan? AutoDismissTime { get; set; }
+
+    /// <summary>
+    /// Moves the focus to the message as soon as it is rendered.
+    /// </summary>
+    /// <remarks>
+    /// A message that reports the outcome of something the reader just did is worth being taken to, but moving
+    /// the focus is also an interruption: reserve it for the messages that have to be acted upon, and leave the
+    /// rest to be announced by the live region. The root is made focusable
+    /// (<c>tabindex="-1"</c>) while no explicit <see cref="BitComponentBase.TabIndex"/> is given, so the focus has
+    /// somewhere to land.
+    /// </remarks>
+    [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
     /// The content of message.
@@ -112,6 +129,28 @@ public partial class BitMessage : BitComponentBase
     [Parameter] public string DismissAriaLabel { get; set; } = "Dismiss";
 
     /// <summary>
+    /// Determines whether the message has been dismissed, which is two-way bindable. A dismissed message renders nothing.
+    /// </summary>
+    /// <remarks>
+    /// The message only sets this itself while it owns its dismissal - that is, while <see cref="Dismissible"/> is
+    /// set or this parameter is bound - so a message that only reports the dismissal through <see cref="OnDismiss"/>
+    /// keeps being rendered until its owner takes it off the page, the way it always has. Setting it back to
+    /// <c>false</c> brings the message back and re-arms its <see cref="AutoDismissTime"/> countdown.
+    /// </remarks>
+    [Parameter, TwoWayBound, CallOnSet(nameof(HandleDismissedChanged))]
+    public bool Dismissed { get; set; }
+
+    /// <summary>
+    /// Renders the dismiss button and lets the message dismiss itself, without an <see cref="OnDismiss"/> handler
+    /// having to take it off the page.
+    /// </summary>
+    /// <remarks>
+    /// Dismissing sets <see cref="Dismissed"/>, so the message stops rendering on its own, and still invokes
+    /// <see cref="OnDismiss"/> for whoever needs to know about it.
+    /// </remarks>
+    [Parameter] public bool Dismissible { get; set; }
+
+    /// <summary>
     /// The icon for the dismiss button using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="DismissIconName"/> when both are set.
     /// </summary>
@@ -143,7 +182,8 @@ public partial class BitMessage : BitComponentBase
     /// Invokes the <see cref="OnDismiss"/> callback when the Escape key is pressed while the focus is inside the message.
     /// </summary>
     /// <remarks>
-    /// The shortcut is only wired up while <see cref="OnDismiss"/> has a handler. Since the message itself is not
+    /// The shortcut is only wired up while the message can be dismissed at all - that is, while
+    /// <see cref="OnDismiss"/> has a handler or <see cref="Dismissible"/> is set. Since the message itself is not
     /// focusable by default, set <see cref="BitComponentBase.TabIndex"/> to <c>0</c> to let a keyboard user reach it
     /// without first landing on the dismiss button or one of the action buttons.
     /// </remarks>
@@ -219,6 +259,18 @@ public partial class BitMessage : BitComponentBase
     [Parameter] public BitIconInfo? Icon { get; set; }
 
     /// <summary>
+    /// The text that says out loud what the icon of the message means, for readers who never see it.
+    /// </summary>
+    /// <remarks>
+    /// The icon itself is decorative markup and is hidden from assistive technology, so the severity it stands for
+    /// is lost unless the text of the message says it too. Where it does not - a bare "Your session expires in 5
+    /// minutes." on a Warning message - set this to a word like "Warning": it is rendered invisibly at the start of
+    /// the announced region, so the announcement leads with it. Leave it unset where the message already reads as
+    /// what it is, so the announcement is not padded with a word that adds nothing.
+    /// </remarks>
+    [Parameter] public string? IconAriaLabel { get; set; }
+
+    /// <summary>
     /// Gets or sets the name of the icon to display from the built-in Fluent UI icons.
     /// </summary>
     /// <remarks>
@@ -234,6 +286,17 @@ public partial class BitMessage : BitComponentBase
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
+    /// The custom template to render in place of the icon of the message, which takes precedence over
+    /// <see cref="Icon"/> and <see cref="IconName"/>.
+    /// </summary>
+    /// <remarks>
+    /// Use it where the leading glyph is more than an icon font can carry - a spinner while something is still
+    /// running, an avatar, an inline image. It renders inside the same icon container, so it keeps the spacing and
+    /// the alignment of the icon it replaces, and it is hidden from assistive technology just as the icon is.
+    /// </remarks>
+    [Parameter] public RenderFragment? IconTemplate { get; set; }
+
+    /// <summary>
     /// Determines if the message is multi-lined. If false, and the text overflows over buttons or to another line, it is clipped.
     /// </summary>
     [Parameter] public bool Multiline { get; set; }
@@ -241,7 +304,23 @@ public partial class BitMessage : BitComponentBase
     /// <summary>
     ///  Whether the message has a dismiss button and its callback. If null, dismiss button won't show.
     /// </summary>
+    /// <remarks>
+    /// Taking the message off the page is left to this callback. Use <see cref="Dismissible"/> instead - on its own
+    /// or alongside this one - to have the message do that itself.
+    /// </remarks>
     [Parameter] public EventCallback OnDismiss { get; set; }
+
+    /// <summary>
+    /// Callback invoked before the message is dismissed, letting the dismissal be cancelled.
+    /// </summary>
+    /// <remarks>
+    /// Set <c>Cancel</c> on the provided <see cref="BitMessageDismissArgs"/> to keep the message where it is, and
+    /// read its <c>Reason</c> to tell the dismiss button, the Escape key, the countdown and a
+    /// <see cref="DismissAsync()"/> call apart - refusing to let a countdown take away a message that has not been
+    /// read yet is not the same as refusing the button the reader just pressed. Since the callback is awaited, it
+    /// can also run asynchronous work like a confirmation prompt.
+    /// </remarks>
+    [Parameter] public EventCallback<BitMessageDismissArgs> OnDismissing { get; set; }
 
     /// <summary>
     /// Custom role to apply to the message text.
@@ -251,6 +330,16 @@ public partial class BitMessage : BitComponentBase
     /// (Warning, SevereWarning and Error) announce as <c>alert</c>, every other color as <c>status</c>.
     /// </remarks>
     [Parameter] public string? Role { get; set; }
+
+    /// <summary>
+    /// Renders a bar along the bottom edge of the message that runs down as its <see cref="AutoDismissTime"/> does.
+    /// </summary>
+    /// <remarks>
+    /// It turns the countdown into something the reader can see coming instead of having the message vanish out of
+    /// nowhere, and it holds exactly where the countdown holds - while the pointer is over the message or the focus
+    /// is inside it. It only renders where there is a countdown to show.
+    /// </remarks>
+    [Parameter] public bool ShowAutoDismissProgress { get; set; }
 
     /// <summary>
     /// The size of Message, Possible values: Small | Medium | Large
@@ -279,6 +368,17 @@ public partial class BitMessage : BitComponentBase
     [Parameter] public string? Title { get; set; }
 
     /// <summary>
+    /// The HTML element the title of the message is rendered as. The default is a <c>div</c>.
+    /// </summary>
+    /// <remarks>
+    /// Set it to a heading (<c>h2</c> ... <c>h6</c>) where the message is a section of the page a reader should be
+    /// able to jump to, the way a screen reader's heading list works. Pick the level that fits the outline of the
+    /// page around it rather than the look: the title keeps the type of the message whatever element it is
+    /// rendered as.
+    /// </remarks>
+    [Parameter] public string? TitleElement { get; set; }
+
+    /// <summary>
     /// The custom template to render as the title (heading) of the message, which takes precedence over <see cref="Title"/>.
     /// </summary>
     [Parameter] public RenderFragment? TitleTemplate { get; set; }
@@ -295,6 +395,39 @@ public partial class BitMessage : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitVariant? Variant { get; set; }
+
+
+
+    /// <summary>
+    /// Dismisses the message the same way its dismiss button does: <see cref="OnDismissing"/> gets its say, the
+    /// countdown is stopped, the message takes itself off the page while it owns its dismissal, and
+    /// <see cref="OnDismiss"/> is invoked.
+    /// </summary>
+    public Task DismissAsync() => DismissAsync(BitMessageDismissReason.Programmatic);
+
+    /// <summary>
+    /// Holds the <see cref="AutoDismissTime"/> countdown where it is, the way hovering the message does.
+    /// </summary>
+    /// <remarks>
+    /// The countdown is already held while the pointer is over the message or the focus is inside it; this is for
+    /// holding it over something the message cannot see, such as a menu of its own that opened somewhere else.
+    /// </remarks>
+    public void PauseAutoDismiss() => _isAutoDismissPaused = true;
+
+    /// <summary>
+    /// Lets the <see cref="AutoDismissTime"/> countdown spend its time again after a
+    /// <see cref="PauseAutoDismiss"/>, from wherever it was held.
+    /// </summary>
+    public void ResumeAutoDismiss() => _isAutoDismissPaused = false;
+
+    /// <summary>
+    /// Moves the focus to the message.
+    /// </summary>
+    /// <remarks>
+    /// The focus only lands where there is something to land on, so the message has to be focusable: either give it
+    /// a <see cref="BitComponentBase.TabIndex"/> or set <see cref="AutoFocus"/>, which makes it focusable on its own.
+    /// </remarks>
+    public ValueTask FocusAsync() => Dismissed ? ValueTask.CompletedTask : RootElement.FocusAsync();
 
 
 
@@ -391,6 +524,29 @@ public partial class BitMessage : BitComponentBase
 
     private bool _HasTitle => TitleTemplate is not null || Title.HasValue();
 
+    // The title is written out by hand rather than in the markup because the element it is rendered as is the
+    // consumer's to choose: a plain div by default, a heading where the message is a part of the page a reader
+    // should be able to jump to. The fragment is held in a field rather than rebuilt per render, so the diff
+    // keeps being handed the same delegate and leaves the region alone until something in it actually changes.
+    private void RenderTitle(RenderTreeBuilder builder)
+    {
+        builder.OpenElement(0, TitleElement.HasValue() ? TitleElement! : "div");
+        builder.AddAttribute(1, "style", Styles?.Title);
+        builder.AddAttribute(2, "class", $"bit-msg-ttl {Classes?.Title}");
+        builder.AddAttribute(3, "id", $"{_Id}-ttl");
+
+        if (TitleTemplate is not null)
+        {
+            builder.AddContent(4, TitleTemplate);
+        }
+        else
+        {
+            builder.AddContent(5, Title);
+        }
+
+        builder.CloseElement();
+    }
+
     // Expanded only means anything where there is something folded away to unfold, so it is read through
     // the same condition that decides whether the expander button renders at all.
     private bool _IsExpanded => Truncate && Multiline is false && Expanded;
@@ -399,11 +555,48 @@ public partial class BitMessage : BitComponentBase
     // layout is only opted into when there is actually a title, so a message without one renders as before.
     private bool _IsTitleInline => _HasTitle && Multiline is false && _IsExpanded is false;
 
-    private bool _HasAutoDismiss => OnDismiss.HasDelegate && AutoDismissTime is { } delay && delay > TimeSpan.Zero;
+    // A dismiss button is worth rendering as soon as pressing it would do something: either it is reported to
+    // someone, or the message takes itself off the page.
+    private bool _IsDismissable => OnDismiss.HasDelegate || Dismissible;
 
-    private bool _HandlesEscape => DismissOnEscape && OnDismiss.HasDelegate && IsEnabled;
+    // The message only hides itself where its dismissal was handed to it - through the parameter that asks for it,
+    // or through a binding that follows it. Everything else keeps the previous contract, where OnDismiss reports
+    // the dismissal and its owner decides what to do about it.
+    private bool _OwnsDismissal => Dismissible || DismissedChanged.HasDelegate;
+
+    private bool _HasAutoDismiss => _IsDismissable && IsEnabled && AutoDismissTime is { } delay && delay > TimeSpan.Zero;
+
+    private bool _HandlesEscape => DismissOnEscape && _IsDismissable && IsEnabled;
+
+    // There is nothing to count down where nothing is counting down, so the bar follows the countdown itself
+    // rather than the parameter that asks for it.
+    private bool _ShowsAutoDismissProgress => ShowAutoDismissProgress && _HasAutoDismiss;
+
+    private string? _AutoDismissDuration => _ShowsAutoDismissProgress
+        ? $"animation-duration:{AutoDismissTime!.Value.TotalMilliseconds.ToString(CultureInfo.InvariantCulture)}ms"
+        : null;
 
     private string _ExpanderLabel => Expanded ? CollapseAriaLabel : ExpandAriaLabel;
+
+    // The focus has to have somewhere to land before it can be moved there, and a div is not focusable of its own
+    // accord. An explicit TabIndex is left alone - it was put there on purpose.
+    private string? _TabIndex => TabIndex ?? (AutoFocus ? "-1" : null);
+
+    // A name turns the message into something a screen reader can announce as one unit and step over as one,
+    // which is what a group is for. Without a name there is nothing to announce, and an unnamed group would only
+    // add a boundary to walk in and out of, so the root stays a plain div.
+    private bool _HasRootName => AriaLabel.HasValue() || _HasTitle;
+
+    // A role written on the component itself wins - it was put there on purpose. It is handed back out rather
+    // than left to the splatted attributes: this one is written after them, and an attribute written after the
+    // splat replaces what the splat put there, null included.
+    private string? _RootRole => HtmlAttributes.TryGetValue("role", out var role)
+        ? role?.ToString()
+        : (_HasRootName ? "group" : null);
+
+    // An explicit label wins; otherwise the title of the message is the name of the group, the way the heading
+    // of a section names the section.
+    private string? _RootLabelledBy => (AriaLabel.HasValue() is false && _HasTitle) ? $"{_Id}-ttl" : null;
 
 
 
@@ -434,9 +627,18 @@ public partial class BitMessage : BitComponentBase
         HtmlAttributes[name] = handler;
     }
 
+    // A dismissed message is not on the page any more, and a re-shown one is a new sighting of it, so the countdown
+    // it may carry starts over rather than picking up where the previous showing left off.
+    private void HandleDismissedChanged()
+    {
+        StopAutoDismiss();
+
+        _armedAutoDismissTime = null;
+    }
+
     private void ArmAutoDismiss()
     {
-        var delay = OnDismiss.HasDelegate ? AutoDismissTime : null;
+        var delay = (_IsDismissable && IsEnabled && Dismissed is false) ? AutoDismissTime : null;
 
         if (delay is not { } value || value <= TimeSpan.Zero)
         {
@@ -487,17 +689,41 @@ public partial class BitMessage : BitComponentBase
                 if (_isAutoDismissPaused is false) remaining -= step;
             }
 
-            if (ct.IsCancellationRequested || IsDisposed || OnDismiss.HasDelegate is false) return;
+            if (ct.IsCancellationRequested || IsDisposed || _IsDismissable is false) return;
 
-            await InvokeAsync(OnDismiss.InvokeAsync);
+            await InvokeAsync(() => DismissAsync(BitMessageDismissReason.AutoDismiss));
         }
         catch (OperationCanceledException) { }
         catch (ObjectDisposedException) { }
     }
 
-    private void PauseAutoDismiss() => _isAutoDismissPaused = true;
+    private async Task DismissAsync(BitMessageDismissReason reason)
+    {
+        if (Dismissed) return;
 
-    private void ResumeAutoDismiss() => _isAutoDismissPaused = false;
+        if (OnDismissing.HasDelegate)
+        {
+            var args = new BitMessageDismissArgs(reason);
+
+            await OnDismissing.InvokeAsync(args);
+
+            if (args.Cancel) return;
+        }
+
+        StopAutoDismiss();
+
+        if (_OwnsDismissal)
+        {
+            await AssignDismissed(true);
+
+            // The dismissal can come from the countdown or from a call of its own, neither of which is a render
+            // the component was already going to do, so the re-render is asked for rather than assumed. It goes
+            // through the dispatcher so a call from off the render loop is safe.
+            await InvokeAsync(StateHasChanged);
+        }
+
+        await OnDismiss.InvokeAsync();
+    }
 
     private async Task ToggleExpand()
     {
@@ -510,19 +736,16 @@ public partial class BitMessage : BitComponentBase
     {
         if (IsEnabled is false) return;
 
-        StopAutoDismiss();
-
-        await OnDismiss.InvokeAsync();
+        await DismissAsync(BitMessageDismissReason.Button);
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
         if (_HandlesEscape is false) return;
-        if (e.Key != "Escape") return;
+        // "Esc" is what the older browsers report for the same key.
+        if (e.Key is not ("Escape" or "Esc")) return;
 
-        StopAutoDismiss();
-
-        await OnDismiss.InvokeAsync();
+        await DismissAsync(BitMessageDismissReason.Escape);
     }
 
     private string? GetTextRole()

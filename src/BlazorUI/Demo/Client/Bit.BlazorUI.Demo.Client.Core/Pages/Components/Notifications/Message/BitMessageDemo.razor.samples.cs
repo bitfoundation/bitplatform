@@ -20,6 +20,10 @@ public partial class BitMessageDemo
     <Content>
         Everyone with access to the workspace can see this version now.
     </Content>
+</BitMessage>
+
+<BitMessage Multiline TitleElement=""h3"" Title=""A title that is a heading"" Color=""BitColor.Warning"">
+    Rendered as an <b>h3</b>, so it shows up in the heading list of a screen reader.
 </BitMessage>";
 
     private readonly string example3RazorCode = @"
@@ -97,6 +101,15 @@ private double elevation = 7;";
 private bool isTruncateExpanded;";
 
     private readonly string example8RazorCode = @"
+<BitMessage Dismissible @bind-Dismissed=""isSelfDismissed"" Color=""BitColor.Success"">
+    Self-dismissing message: <strong>Dismissible</strong> needs no handler to disappear.
+</BitMessage>
+
+@if (isSelfDismissed)
+{
+    <BitButton OnClick=""() => isSelfDismissed = false"">Dismissed, click to bring it back</BitButton>
+}
+
 @if (isDismissed is false)
 {
     <BitMessage OnDismiss=""() => isDismissed = true"" Color=""BitColor.SevereWarning"">
@@ -106,18 +119,6 @@ private bool isTruncateExpanded;";
 else
 {
     <BitButton OnClick=""() => isDismissed = false"">Dismissed, click to reset</BitButton>
-}
-
-@if (isAutoDismissed is false)
-{
-    <BitMessage AutoDismissTime=""TimeSpan.FromSeconds(5)"" OnDismiss=""() => isAutoDismissed = true"">
-        Auto-Dismiss option enabled by adding the <strong>AutoDismissTime</strong> parameter alongside OnDismiss.
-        Hover me to hold the countdown.
-    </BitMessage>
-}
-else
-{
-    <BitButton OnClick=""() => isAutoDismissed = false"">Auto-Dismissed, click to reset</BitButton>
 }
 
 @if (isEscapeDismissed is false)
@@ -131,13 +132,76 @@ else
 else
 {
     <BitButton OnClick=""() => isEscapeDismissed = false"">Dismissed by Escape, click to reset</BitButton>
+}
+
+<BitMessage Dismissible
+            DismissOnEscape
+            Color=""BitColor.Warning""
+            OnDismissing=""HandleDismissing""
+            @bind-Dismissed=""isGuardedDismissed"">
+    Guarded by <strong>OnDismissing</strong>: the first attempt is refused, the second one goes through.
+    Attempts so far: <strong>@dismissAttempts</strong>@(lastDismissReason is null ? """" : $"" (last reason: {lastDismissReason})"").
+</BitMessage>
+
+@if (isGuardedDismissed)
+{
+    <BitButton OnClick=""ResetGuardedMessage"">Dismissed, click to reset</BitButton>
 }";
     private readonly string example8CsharpCode = @"
 private bool isDismissed;
-private bool isAutoDismissed;
-private bool isEscapeDismissed;";
+private bool isSelfDismissed;
+private bool isEscapeDismissed;
+
+private int dismissAttempts;
+private bool isGuardedDismissed;
+private BitMessageDismissReason? lastDismissReason;
+
+private void HandleDismissing(BitMessageDismissArgs args)
+{
+    dismissAttempts++;
+    lastDismissReason = args.Reason;
+
+    // The first attempt is refused; the next one goes through.
+    args.Cancel = dismissAttempts < 2;
+}
+
+private void ResetGuardedMessage()
+{
+    dismissAttempts = 0;
+    lastDismissReason = null;
+    isGuardedDismissed = false;
+}";
 
     private readonly string example9RazorCode = @"
+@if (isAutoDismissed is false)
+{
+    <BitMessage AutoDismissTime=""TimeSpan.FromSeconds(5)"" OnDismiss=""() => isAutoDismissed = true"">
+        Auto-Dismiss option enabled by adding the <strong>AutoDismissTime</strong> parameter alongside OnDismiss.
+        Hover me to hold the countdown.
+    </BitMessage>
+}
+else
+{
+    <BitButton OnClick=""() => isAutoDismissed = false"">Auto-Dismissed, click to reset</BitButton>
+}
+
+<BitMessage Dismissible
+            ShowAutoDismissProgress
+            Color=""BitColor.Info""
+            AutoDismissTime=""TimeSpan.FromSeconds(10)""
+            @bind-Dismissed=""isProgressDismissed"">
+    Ten seconds, drawn along the bottom edge. Hover me and the bar stops with the countdown.
+</BitMessage>
+
+@if (isProgressDismissed)
+{
+    <BitButton OnClick=""() => isProgressDismissed = false"">Auto-Dismissed, click to restart</BitButton>
+}";
+    private readonly string example9CsharpCode = @"
+private bool isAutoDismissed;
+private bool isProgressDismissed;";
+
+    private readonly string example10RazorCode = @"
 <BitMessage>
     <Actions>
         <BitButton Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"" IconName=""@BitIconName.Up"" />
@@ -149,20 +213,29 @@ private bool isEscapeDismissed;";
     </Content>
 </BitMessage>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitMessage Color=""BitColor.Info"" HideIcon>Info (default) Message.</BitMessage>
 <BitMessage Color=""BitColor.Success"" HideIcon>Success Message.</BitMessage>
 <BitMessage Color=""BitColor.Warning"" HideIcon>Warning Message.</BitMessage>
 <BitMessage Color=""BitColor.SevereWarning"" HideIcon>SevereWarning Message.</BitMessage>
 <BitMessage Color=""BitColor.Error"" HideIcon>Error Message.</BitMessage>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitMessage Color=""BitColor.Success"" IconName=""@BitIconName.CheckMark"">
     Message with a custom icon.
 </BitMessage>
 
 <BitMessage Color=""BitColor.Warning"" OnDismiss=""() => {}"" DismissIconName=""@BitIconName.Blocked2Solid"">
     Message with a custom dismiss icon.
+</BitMessage>
+
+<BitMessage Color=""BitColor.Info"">
+    <IconTemplate>
+        <BitSpinnerLoading CustomSize=""20"" CustomColor=""currentcolor"" />
+    </IconTemplate>
+    <Content>
+        Message with a spinner in place of its icon, through <strong>IconTemplate</strong>.
+    </Content>
 </BitMessage>
 
 <BitMessage Truncate Color=""BitColor.Warning""
@@ -181,12 +254,15 @@ private bool isEscapeDismissed;";
     begins here, in this quiet moment where everything is possible.
 </BitMessage>";
 
-    private readonly string example12RazorCode = @"
-<BitMessage Square Color=""BitColor.SevereWarning"" OnDismiss=""() => {}"">
-    Scheduled maintenance starts at 02:00 UTC. Save your work before then.
-</BitMessage>";
-
     private readonly string example13RazorCode = @"
+<div style=""overflow:hidden;border-radius:0.25rem;border:1px solid var(--bit-clr-brd-sec)"">
+    <BitMessage Square Color=""BitColor.SevereWarning"" OnDismiss=""() => {}"">
+        Scheduled maintenance starts at 02:00 UTC. Save your work before then.
+    </BitMessage>
+    <div style=""padding:1rem"">The content of the page sits below the banner.</div>
+</div>";
+
+    private readonly string example14RazorCode = @"
 @if (isWarningDismissed is false)
 {
     <BitMessage Truncate OnDismiss=""() => isWarningDismissed = true"" Color=""BitColor.Warning"">
@@ -243,11 +319,43 @@ else
 {
     <BitButton OnClick=""() => isErrorDismissed = false"">Dismissed, click to reset</BitButton>
 }";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private bool isErrorDismissed;
 private bool isWarningDismissed;";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
+<BitMessage Color=""BitColor.Error"" IconAriaLabel=""Error"">
+    The payment could not be authorized. Announced as ""Error: The payment could not be authorized.""
+</BitMessage>
+
+<BitMessage Color=""BitColor.Error"" Role=""status"">
+    An error-colored message that reports no error, announced politely as a status.
+</BitMessage>
+
+<BitMessage Color=""BitColor.Info"" Role=""none"">
+    Part of the page rather than news about it: not announced at all.
+</BitMessage>";
+
+    private readonly string example16RazorCode = @"
+<BitButton OnClick=""() => isAutoFocusDismissed = false"">Show an auto-focused message</BitButton>
+
+<BitMessage AutoFocus
+            Dismissible
+            Color=""BitColor.SevereWarning""
+            @bind-Dismissed=""isAutoFocusDismissed"">
+    This message took the focus when it appeared. Press <strong>Tab</strong> to reach its dismiss button.
+</BitMessage>
+
+<BitMessage @ref=""focusableMessage"" TabIndex=""0"" Color=""BitColor.Info"">
+    A message with a <strong>TabIndex</strong> can be focused on demand.
+</BitMessage>
+
+<BitButton OnClick=""() => focusableMessage!.FocusAsync()"">Focus the message above</BitButton>";
+    private readonly string example16CsharpCode = @"
+private BitMessage? focusableMessage;
+private bool isAutoFocusDismissed = true;";
+
+    private readonly string example17RazorCode = @"
 <BitMessage Color=""BitColor.Primary"">Primary.</BitMessage>
 <BitMessage Color=""BitColor.Secondary"">Secondary.</BitMessage>
 <BitMessage Color=""BitColor.Tertiary"">Tertiary.</BitMessage>
@@ -257,9 +365,11 @@ private bool isWarningDismissed;";
 <BitMessage Color=""BitColor.SevereWarning"">SevereWarning.</BitMessage>
 <BitMessage Color=""BitColor.Error"">Error.</BitMessage>
 
-<BitMessage Color=""BitColor.PrimaryBackground"">PrimaryBackground.</BitMessage>
-<BitMessage Color=""BitColor.SecondaryBackground"">SecondaryBackground.</BitMessage>
-<BitMessage Color=""BitColor.TertiaryBackground"">TertiaryBackground.</BitMessage>
+<div style=""background:var(--bit-clr-fg-sec);padding:1rem"">
+    <BitMessage Color=""BitColor.PrimaryBackground"">PrimaryBackground.</BitMessage>
+    <BitMessage Color=""BitColor.SecondaryBackground"">SecondaryBackground.</BitMessage>
+    <BitMessage Color=""BitColor.TertiaryBackground"">TertiaryBackground.</BitMessage>
+</div>
 
 <BitMessage Color=""BitColor.PrimaryForeground"">PrimaryForeground.</BitMessage>
 <BitMessage Color=""BitColor.SecondaryForeground"">SecondaryForeground.</BitMessage>
@@ -268,7 +378,7 @@ private bool isWarningDismissed;";
 <BitMessage Color=""BitColor.SecondaryBorder"">SecondaryBorder.</BitMessage>
 <BitMessage Color=""BitColor.TertiaryBorder"">TertiaryBorder.</BitMessage>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example18RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitMessage Color=""BitColor.Info"" Icon=""@(""fa-solid fa-circle-info"")"">
@@ -310,12 +420,12 @@ private bool isWarningDismissed;";
     begins here, in this quiet moment where everything is possible.
 </BitMessage>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitMessage Size=""BitSize.Small"" Color=""BitColor.Primary"">Small</BitMessage>
 <BitMessage Size=""BitSize.Medium"" Color=""BitColor.Secondary"">Medium</BitMessage>
 <BitMessage Size=""BitSize.Large"" Color=""BitColor.Tertiary"">Large</BitMessage>";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example20RazorCode = @"
 <style>
     .custom-class {
         padding: 1rem;
@@ -432,7 +542,7 @@ private bool isWarningDismissed;";
     begins here, in this quiet moment where everything is possible.
 </BitMessage>";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example21RazorCode = @"
 <BitMessage Dir=""BitDir.Rtl"" Color=""BitColor.Info"">
     پیام خبری (پیش فرض). <BitLink Href=""https://bitplatform.dev"">به وبسایت ما سر بزنید.</BitLink>
 </BitMessage>

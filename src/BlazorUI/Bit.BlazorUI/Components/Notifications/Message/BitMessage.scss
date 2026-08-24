@@ -97,8 +97,27 @@
     }
 }
 
-.bit-msg-ttl {
+// Said by a screen reader as the first thing in the announced region, and never seen: the icon it stands for is
+// hidden from assistive technology, and this text is hidden from everyone else.
+.bit-msg-ilb {
+    border: 0;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
     overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
+// The title carries the type of the message whatever element it is rendered as, so a heading brings its
+// outline level to the page without bringing the browser's default type and margins with it.
+.bit-msg-ttl {
+    margin: 0;
+    overflow: hidden;
+    font-size: inherit;
+    line-height: inherit;
     text-overflow: ellipsis;
     font-weight: $tg-fw-semibold;
 }
@@ -118,10 +137,13 @@
     white-space: normal;
 }
 
+// On a single-line message the actions share the line with the content, so they are held to the height of the
+// line rather than being allowed to grow it. The cap follows the size of the message, but never falls below the
+// height of a control: what goes in here is buttons, and they keep their own default size whatever the message does.
 .bit-msg-act {
     display: flex;
-    max-height: spacing(4);
     justify-content: flex-end;
+    max-height: var(--bit-msg-act-maxheight);
 }
 
 // Once the actions have a row of their own they are no longer competing with the content for the line,
@@ -143,8 +165,8 @@
     cursor: pointer;
     align-items: center;
     justify-content: center;
-    min-width: $siz-ctrl-md;
-    min-height: $siz-ctrl-md;
+    min-width: var(--bit-msg-btn-size);
+    min-height: var(--bit-msg-btn-size);
     color: var(--bit-msg-clr);
     border-radius: $shp-radius-button;
     background-color: transparent;
@@ -169,7 +191,59 @@
 
 .bit-msg-exi,
 .bit-msg-dmi {
-    font-size: $tg-fs-2xs;
+    font-size: var(--bit-msg-btn-fontsize);
+}
+
+// The countdown of the auto-dismiss feature, made visible. It runs off the same two states the countdown
+// itself is held by - the pointer being over the message and the focus being inside it - so the two never
+// disagree about how much time is left.
+.bit-msg-prg {
+    width: 100%;
+    flex: 0 0 auto;
+    overflow: hidden;
+    height: var(--bit-msg-track-size);
+    background-color: translucent(currentcolor, 16%);
+    border-end-start-radius: $shp-radius-surface;
+    border-end-end-radius: $shp-radius-surface;
+}
+
+.bit-msg-sqr .bit-msg-prg {
+    border-end-start-radius: $shp-radius-none;
+    border-end-end-radius: $shp-radius-none;
+}
+
+.bit-msg-prb {
+    width: 100%;
+    height: 100%;
+    transform-origin: left;
+    background-color: currentcolor;
+    animation-name: bit-msg-countdown;
+    animation-fill-mode: forwards;
+    animation-timing-function: linear;
+}
+
+.bit-rtl .bit-msg-prb {
+    transform-origin: right;
+}
+
+.bit-msg:focus-within .bit-msg-prb {
+    animation-play-state: paused;
+}
+
+@media (hover: hover) {
+    .bit-msg:hover .bit-msg-prb {
+        animation-play-state: paused;
+    }
+}
+
+@keyframes bit-msg-countdown {
+    from {
+        transform: scaleX(1);
+    }
+
+    to {
+        transform: scaleX(0);
+    }
 }
 
 .bit-msg-fil {
@@ -219,11 +293,17 @@
     }
 }
 
+// The size classes scale the type, the icon, the inset and the two round buttons of the message together, so a
+// small message is not left carrying medium-sized buttons.
 .bit-msg-sm {
     --bit-msg-margin: #{spacing(0.5)};
     --bit-msg-fontsize: #{$tg-fs-xs};
     --bit-msg-ico-margin: #{spacing(1)};
     --bit-msg-ico-fontsize: #{$siz-icon-sm};
+    --bit-msg-btn-size: #{$siz-ctrl-sm};
+    --bit-msg-btn-fontsize: #{$tg-fs-2xs};
+    --bit-msg-act-maxheight: #{$siz-ctrl-md};
+    --bit-msg-track-size: #{$siz-track-sm};
 }
 
 .bit-msg-md {
@@ -231,6 +311,10 @@
     --bit-msg-fontsize: #{$tg-fs-sm};
     --bit-msg-ico-margin: #{spacing(1.2)};
     --bit-msg-ico-fontsize: #{$siz-icon-md};
+    --bit-msg-btn-size: #{$siz-ctrl-md};
+    --bit-msg-btn-fontsize: #{$tg-fs-2xs};
+    --bit-msg-act-maxheight: #{$siz-ctrl-md};
+    --bit-msg-track-size: #{$siz-track-md};
 }
 
 .bit-msg-lg {
@@ -238,4 +322,8 @@
     --bit-msg-fontsize: #{$tg-fs-md};
     --bit-msg-ico-margin: #{spacing(2)};
     --bit-msg-ico-fontsize: #{$siz-icon-lg};
+    --bit-msg-btn-size: #{$siz-ctrl-lg};
+    --bit-msg-btn-fontsize: #{$tg-fs-xs};
+    --bit-msg-act-maxheight: #{$siz-ctrl-lg};
+    --bit-msg-track-size: #{$siz-track-lg};
 }

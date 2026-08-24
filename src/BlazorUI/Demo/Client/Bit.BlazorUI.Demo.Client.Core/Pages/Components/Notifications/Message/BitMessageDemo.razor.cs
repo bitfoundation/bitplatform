@@ -29,6 +29,13 @@ public partial class BitMessageDemo
         },
         new()
         {
+            Name = "AutoFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Moves the focus to the message as soon as it is rendered. The root is made focusable (tabindex=\"-1\") while no explicit TabIndex is given.",
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -93,6 +100,27 @@ public partial class BitMessageDemo
         },
         new()
         {
+            Name = "Dismissed",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines whether the message has been dismissed, which is two-way bindable. A dismissed message renders nothing, and setting it back to false brings the message back and re-arms its AutoDismissTime countdown. The message only sets it itself while Dismissible is set or the parameter is bound.",
+        },
+        new()
+        {
+            Name = "DismissedChanged",
+            Type = "EventCallback<bool>",
+            DefaultValue = "null",
+            Description = "The callback that is called when the Dismissed value changes, for subscribing to the change without binding to Dismissed.",
+        },
+        new()
+        {
+            Name = "Dismissible",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the dismiss button and lets the message dismiss itself by setting Dismissed, without an OnDismiss handler having to take it off the page.",
+        },
+        new()
+        {
             Name = "DismissIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -114,7 +142,7 @@ public partial class BitMessageDemo
             Name = "DismissOnEscape",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Invokes the OnDismiss callback when the Escape key is pressed while the focus is inside the message. Only wired up while OnDismiss has a handler.",
+            Description = "Dismisses the message when the Escape key is pressed while the focus is inside it. Only wired up while the message can be dismissed at all - that is, while OnDismiss has a handler or Dismissible is set.",
         },
         new()
         {
@@ -136,6 +164,13 @@ public partial class BitMessageDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Determines whether the truncated content of the message is expanded, which is two-way bindable. Only meaningful together with Truncate.",
+        },
+        new()
+        {
+            Name = "ExpandedChanged",
+            Type = "EventCallback<bool>",
+            DefaultValue = "null",
+            Description = "The callback that is called when the Expanded value changes, for subscribing to the change without binding to Expanded.",
         },
         new()
         {
@@ -173,12 +208,26 @@ public partial class BitMessageDemo
         },
         new()
         {
+            Name = "IconAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text that says out loud what the icon of the message means, rendered invisibly at the start of the announced region. Set it where the text of the message does not already say what kind of message it is.",
+        },
+        new()
+        {
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
             Description = "Gets or sets the name of the icon to display from the built-in Fluent UI icons. If unset, the icon will be selected automatically based on Color.",
             LinkType = LinkType.Link,
             Href = "https://blazorui.bitplatform.dev/iconography",
+        },
+        new()
+        {
+            Name = "IconTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template to render in place of the icon of the message, which takes precedence over Icon and IconName.",
         },
         new()
         {
@@ -191,14 +240,29 @@ public partial class BitMessageDemo
         {
             Name = "OnDismiss",
             Type = "EventCallback",
-            Description = "Whether the message has a dismiss button and its callback. If null, dismiss button won't show.",
+            Description = "Whether the message has a dismiss button and its callback. If null, dismiss button won't show. Taking the message off the page is left to this callback; use Dismissible to have the message do that itself.",
+        },
+        new()
+        {
+            Name = "OnDismissing",
+            Type = "EventCallback<BitMessageDismissArgs>",
+            Description = "Callback invoked before the message is dismissed, letting the dismissal be cancelled. Set Cancel on the provided args to keep the message where it is, and read its Reason to tell the dismiss button, the Escape key, the countdown and a DismissAsync call apart.",
+            LinkType = LinkType.Link,
+            Href = "#message-dismiss-args",
         },
         new()
         {
             Name = "Role",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Custom role to apply to the message text. If unset, Warning, SevereWarning and Error announce as \"alert\" and every other color as \"status\".",
+            Description = "Custom role to apply to the message text. If unset, Warning, SevereWarning and Error announce as \"alert\" and every other color as \"status\". Set it to \"none\" for a message that should not be announced at all.",
+        },
+        new()
+        {
+            Name = "ShowAutoDismissProgress",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders a bar along the bottom edge of the message that runs down as its AutoDismissTime does, holding wherever the countdown holds. It only renders where there is a countdown to show.",
         },
         new()
         {
@@ -234,6 +298,13 @@ public partial class BitMessageDemo
         },
         new()
         {
+            Name = "TitleElement",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The HTML element the title of the message is rendered as. The default is a div; set it to a heading (h2 ... h6) where the message is a part of the page a reader should be able to jump to.",
+        },
+        new()
+        {
             Name = "TitleTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -254,6 +325,34 @@ public partial class BitMessageDemo
             Description = "The variant of the message.",
             LinkType = LinkType.Link,
             Href = "#variant-enum",
+        },
+    ];
+
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "DismissAsync",
+            Type = "Task",
+            Description = "Dismisses the message the same way its dismiss button does: the countdown is stopped, the message takes itself off the page while it owns its dismissal, and OnDismiss is invoked.",
+        },
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask",
+            Description = "Moves the focus to the message, which has to be focusable for the focus to land: either give it a TabIndex or set AutoFocus.",
+        },
+        new()
+        {
+            Name = "PauseAutoDismiss",
+            Type = "void",
+            Description = "Holds the AutoDismissTime countdown where it is, the way hovering the message does, for holding it over something the message cannot see.",
+        },
+        new()
+        {
+            Name = "ResumeAutoDismiss",
+            Type = "void",
+            Description = "Lets the AutoDismissTime countdown spend its time again after a PauseAutoDismiss, from wherever it was held.",
         },
     ];
 
@@ -448,6 +547,39 @@ public partial class BitMessageDemo
         },
         new()
         {
+            Id = "message-dismiss-reason-enum",
+            Name = "BitMessageDismissReason",
+            Description = "What made the message dismiss, handed to the OnDismissing callback.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Button",
+                    Description = "The dismiss button of the message was pressed.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Escape",
+                    Description = "The Escape key was pressed while the focus was inside the message.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "AutoDismiss",
+                    Description = "The AutoDismissTime countdown of the message ran out.",
+                    Value = "2",
+                },
+                new()
+                {
+                    Name = "Programmatic",
+                    Description = "The DismissAsync method of the message was called.",
+                    Value = "3",
+                },
+            ]
+        },
+        new()
+        {
             Id = "size-enum",
             Name = "BitSize",
             Description = "",
@@ -520,6 +652,13 @@ public partial class BitMessageDemo
                 },
                 new()
                 {
+                    Name = "IconLabel",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the visually hidden icon label of the BitMessage."
+                },
+                new()
+                {
                     Name = "ContentContainer",
                     Type = "string?",
                     DefaultValue = "null",
@@ -581,6 +720,44 @@ public partial class BitMessageDemo
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the dismiss icon of the BitMessage."
                 },
+                new()
+                {
+                    Name = "AutoDismissProgress",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the auto-dismiss progress track of the BitMessage."
+                },
+                new()
+                {
+                    Name = "AutoDismissProgressBar",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the auto-dismiss progress bar of the BitMessage."
+                },
+            ]
+        },
+        new()
+        {
+            Id = "message-dismiss-args",
+            Title = "BitMessageDismissArgs",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Reason",
+                    Type = "BitMessageDismissReason",
+                    DefaultValue = "",
+                    Description = "What made the message dismiss: its dismiss button, the Escape key, the auto-dismiss countdown, or a call to the DismissAsync method.",
+                    LinkType = LinkType.Link,
+                    Href = "#message-dismiss-reason-enum",
+                },
+                new()
+                {
+                    Name = "Cancel",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Set to true to cancel the dismissal and keep the message where it is."
+                },
             ]
         },
         new()
@@ -617,10 +794,35 @@ public partial class BitMessageDemo
 
 
     private bool isDismissed;
+    private bool isSelfDismissed;
     private bool isAutoDismissed;
+    private bool isProgressDismissed;
     private bool isEscapeDismissed;
 
+    private int dismissAttempts;
+    private bool isGuardedDismissed;
+    private BitMessageDismissReason? lastDismissReason;
+
+    private void HandleDismissing(BitMessageDismissArgs args)
+    {
+        dismissAttempts++;
+        lastDismissReason = args.Reason;
+
+        // The first attempt is refused; the next one goes through.
+        args.Cancel = dismissAttempts < 2;
+    }
+
+    private void ResetGuardedMessage()
+    {
+        dismissAttempts = 0;
+        lastDismissReason = null;
+        isGuardedDismissed = false;
+    }
+
     private bool isTruncateExpanded;
+
+    private BitMessage? focusableMessage;
+    private bool isAutoFocusDismissed = true;
 
     private double elevation = 7;
     private bool isErrorDismissed;

@@ -8,8 +8,9 @@
 
 <DemoPage Name="Message"
           SecondaryNames="@(["Alert", "MessageBar"])"
-          Description="An inline message that reports an error, a warning, or something worth knowing - a failed upload, an expiring licence, a saved draft - in place and without interrupting the page. It carries a color and a matching icon for its severity, an optional title, action buttons, and a dismiss button, and it announces itself to screen readers with the urgency its color implies."
+          Description="An inline message that reports an error, a warning, or something worth knowing - a failed upload, an expiring licence, a saved draft - in place and without interrupting the page. It carries a color and a matching icon for its severity, an optional title, action buttons, and a dismiss button that can take the message off the page by itself, on a timer or on demand, and it announces itself to screen readers with the urgency its color implies."
           Parameters="componentParameters"
+          PublicMembers="componentPublicMembers"
           SubEnums="componentSubEnums"
           SubClasses="componentSubClasses"
           GitHubUrl="Notifications/Message/BitMessage.razor"
@@ -30,6 +31,11 @@
             <b>AutoDismissTime</b> is a time limit, so it holds while the pointer is over the message or the focus is
             inside it. Keep it for confirmations that need no answer; anything with an action in it should wait to be
             dismissed by hand.
+            <br /><br />
+            The icon is decorative markup and is hidden from screen readers, so where the text does not say what kind
+            of message this is, say it with <b>IconAriaLabel</b>. And leave <b>AutoFocus</b> for the messages that have
+            to be acted upon: the rest are already announced, and taking the focus away from what the reader was doing
+            is an interruption of its own.
         </BitText>
     </NotesTemplate>
 
@@ -47,7 +53,10 @@
             <div>
                 <b>Title</b> adds a short heading that makes the message scannable, which matters most where
                 several of them stack up. On a single-line message the title leads the content on the same line;
-                on a <b>Multiline</b> one it sits above it. Use <b>TitleTemplate</b> to render markup instead of plain text.
+                on a <b>Multiline</b> one it sits above it. Use <b>TitleTemplate</b> to render markup instead of plain
+                text, and <b>TitleElement</b> to render the title as a heading (<b>h2</b> ... <b>h6</b>) where the
+                message is a part of the page a reader should be able to jump to - the title keeps the type of the
+                message either way.
             </div>
             <br />
             <div class="box">
@@ -65,6 +74,10 @@
                     <Content>
                         Everyone with access to the workspace can see this version now.
                     </Content>
+                </BitMessage>
+
+                <BitMessage Multiline TitleElement="h3" Title="A title that is a heading" Color="BitColor.Warning">
+                    Rendered as an <b>h3</b>, so it shows up in the heading list of a screen reader.
                 </BitMessage>
             </div>
         </DemoExample>
@@ -186,10 +199,23 @@
 
         <DemoExample Title="Dismiss" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>
-                Handing the message an <b>OnDismiss</b> callback is what renders the dismiss button; removing the
-                message from the page is left to that callback. <b>AutoDismissTime</b> fires the same callback on
-                its own after a delay - the countdown holds while the pointer is over the message or the focus is
-                inside it, so it cannot vanish mid-read. <b>DismissOnEscape</b> adds the Escape key as a third way out.
+                <b>Dismissible</b> renders the dismiss button and lets the message take itself off the page; bind
+                <b>Dismissed</b> to follow that from outside, or to put the message back. <b>OnDismiss</b> also
+                renders the button, but only reports the dismissal - leaving the removal to its handler.
+                <b>DismissOnEscape</b> adds the Escape key as a second way out, and <b>OnDismissing</b> gets a say
+                before any of them: cancel it to keep the message where it is, and read its <b>Reason</b> to tell
+                the button, the key, the countdown and a <b>DismissAsync</b> call apart.
+            </div>
+            <br />
+            <div class="box">
+                <BitMessage Dismissible @bind-Dismissed="isSelfDismissed" Color="BitColor.Success">
+                    Self-dismissing message: <strong>Dismissible</strong> needs no handler to disappear.
+                </BitMessage>
+
+                @if (isSelfDismissed)
+                {
+                    <BitButton OnClick="() => isSelfDismissed = false">Dismissed, click to bring it back</BitButton>
+                }
             </div>
             <br />
             @if (isDismissed is false)
@@ -205,6 +231,48 @@
 
             <br/><br/>
 
+            @if (isEscapeDismissed is false)
+            {
+                <BitMessage DismissOnEscape TabIndex="0"
+                            Color="BitColor.Info"
+                            OnDismiss="() => isEscapeDismissed = true">
+                    Focus me (or the dismiss button) and press <strong>Escape</strong> to dismiss.
+                </BitMessage>
+            }
+            else
+            {
+                <BitButton OnClick="() => isEscapeDismissed = false">Dismissed by Escape, click to reset</BitButton>
+            }
+
+            <br /><br />
+
+            <div class="box">
+                <BitMessage Dismissible
+                            DismissOnEscape
+                            Color="BitColor.Warning"
+                            OnDismissing="HandleDismissing"
+                            @bind-Dismissed="isGuardedDismissed">
+                    Guarded by <strong>OnDismissing</strong>: the first attempt is refused, the second one goes through.
+                    Attempts so far: <strong>@dismissAttempts</strong>@(lastDismissReason is null ? "" : $" (last reason: {lastDismissReason})").
+                </BitMessage>
+
+                @if (isGuardedDismissed)
+                {
+                    <BitButton OnClick="ResetGuardedMessage">Dismissed, click to reset</BitButton>
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Auto-dismiss" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                <b>AutoDismissTime</b> dismisses the message on its own once the given time has passed. The countdown
+                is a time limit, so it holds for as long as the pointer is over the message or the focus is inside it
+                and the message cannot vanish mid-read; <b>PauseAutoDismiss</b> and <b>ResumeAutoDismiss</b> hold it
+                over anything else. <b>ShowAutoDismissProgress</b> draws the countdown as a bar along the bottom edge,
+                holding exactly where the countdown holds. Assigning a different time re-arms the countdown, and so
+                does bringing a dismissed message back.
+            </div>
+            <br />
             @if (isAutoDismissed is false)
             {
                 <BitMessage AutoDismissTime="TimeSpan.FromSeconds(5)" OnDismiss="() => isAutoDismissed = true">
@@ -219,21 +287,23 @@
 
             <br /><br />
 
-            @if (isEscapeDismissed is false)
-            {
-                <BitMessage DismissOnEscape TabIndex="0"
+            <div class="box">
+                <BitMessage Dismissible
+                            ShowAutoDismissProgress
                             Color="BitColor.Info"
-                            OnDismiss="() => isEscapeDismissed = true">
-                    Focus me (or the dismiss button) and press <strong>Escape</strong> to dismiss.
+                            AutoDismissTime="TimeSpan.FromSeconds(10)"
+                            @bind-Dismissed="isProgressDismissed">
+                    Ten seconds, drawn along the bottom edge. Hover me and the bar stops with the countdown.
                 </BitMessage>
-            }
-            else
-            {
-                <BitButton OnClick="() => isEscapeDismissed = false">Dismissed by Escape, click to reset</BitButton>
-            }
+
+                @if (isProgressDismissed)
+                {
+                    <BitButton OnClick="() => isProgressDismissed = false">Auto-Dismissed, click to restart</BitButton>
+                }
+            </div>
         </DemoExample>
 
-        <DemoExample Title="Actions" RazorCode="@example9RazorCode" Id="example9">
+        <DemoExample Title="Actions" RazorCode="@example10RazorCode" Id="example10">
             <div>
                 The <b>Actions</b> template holds the controls that let the reader act on the message. A warning or
                 an error should always offer one, so it never becomes a dead end.
@@ -251,7 +321,7 @@
             </BitMessage>
         </DemoExample>
 
-        <DemoExample Title="HideIcon" RazorCode="@example10RazorCode" Id="example10">
+        <DemoExample Title="HideIcon" RazorCode="@example11RazorCode" Id="example11">
             <div>
                 <b>HideIcon</b> drops the severity glyph. Only do this where the surrounding text already
                 says what kind of message it is - the color on its own is not enough to carry that meaning.
@@ -266,11 +336,13 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Icons" RazorCode="@example11RazorCode" Id="example11">
+        <DemoExample Title="Icons" RazorCode="@example12RazorCode" Id="example12">
             <div>
                 Each of the three glyphs of the message can be replaced from the built-in icon set: <b>IconName</b>
                 for the severity icon, <b>DismissIconName</b> for the dismiss button, and
                 <b>ExpandIconName</b> / <b>CollapseIconName</b> for the two states of the truncate expander.
+                <b>IconTemplate</b> goes further and puts arbitrary markup - a spinner, an avatar, an image - in the
+                place of the severity icon.
             </div>
             <br />
             <BitMessage Color="BitColor.Success" IconName="@BitIconName.CheckMark">
@@ -279,6 +351,15 @@
             <br />
             <BitMessage Color="BitColor.Warning" OnDismiss="() => {}" DismissIconName="@BitIconName.Blocked2Solid">
                 Message with a custom dismiss icon.
+            </BitMessage>
+            <br />
+            <BitMessage Color="BitColor.Info">
+                <IconTemplate>
+                    <BitSpinnerLoading CustomSize="20" CustomColor="currentcolor" />
+                </IconTemplate>
+                <Content>
+                    Message with a spinner in place of its icon, through <strong>IconTemplate</strong>.
+                </Content>
             </BitMessage>
             <br /><br />
             <div>
@@ -302,7 +383,7 @@
             </BitMessage>
         </DemoExample>
 
-        <DemoExample Title="Square" RazorCode="@example12RazorCode" Id="example12">
+        <DemoExample Title="Square" RazorCode="@example13RazorCode" Id="example13">
             <div>
                 <b>Square</b> removes the rounded corners so the message can run edge to edge as a page-wide banner,
                 flush against the sides of whatever contains it.
@@ -316,7 +397,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Advanced" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <DemoExample Title="Advanced" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
             <div>
                 The parts of the message combine freely: a truncated message keeps its expander next to the
                 dismiss button, and a multiline one moves the actions to their own row underneath the content.
@@ -389,7 +470,65 @@
             }
         </DemoExample>
 
-        <DemoExample Title="Color" RazorCode="@example14RazorCode" Id="example14">
+        <DemoExample Title="Announcement" RazorCode="@example15RazorCode" Id="example15">
+            <div>
+                A message announces itself: its text sits in a live region whose urgency comes from <b>Color</b> -
+                <b>Warning</b>, <b>SevereWarning</b> and <b>Error</b> interrupt the screen reader as an
+                <b>alert</b>, everything else waits its turn as a <b>status</b>. <b>Role</b> overrides that where
+                the color was chosen for looks rather than for severity, and <b>Role="none"</b> silences the region
+                altogether for a message that is part of the page rather than news about it. The icon is decorative
+                and hidden from screen readers, so <b>IconAriaLabel</b> is what says which kind of message this is
+                where the text does not - it leads the announcement, invisibly. A message that has a name - a
+                <b>Title</b>, or an <b>AriaLabel</b> of its own - is also a named group, so a screen reader can step
+                over it as one unit instead of walking through it line by line.
+            </div>
+            <br />
+            <div class="box">
+                <BitMessage Color="BitColor.Error" IconAriaLabel="Error">
+                    The payment could not be authorized. Announced as "Error: The payment could not be authorized."
+                </BitMessage>
+
+                <BitMessage Color="BitColor.Error" Role="status">
+                    An error-colored message that reports no error, announced politely as a status.
+                </BitMessage>
+
+                <BitMessage Color="BitColor.Info" Role="none">
+                    Part of the page rather than news about it: not announced at all.
+                </BitMessage>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Focus" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+            <div>
+                <b>AutoFocus</b> moves the focus to the message as soon as it is rendered, which takes a keyboard or
+                screen reader user straight to it; the message is made focusable on its own for that, so no
+                <b>TabIndex</b> is needed. Keep it for the messages that have to be acted upon - the rest are already
+                announced by the live region, and moving the focus away from what the reader was doing is an
+                interruption. The same move is available at any time through the <b>FocusAsync</b> method of a
+                captured message.
+            </div>
+            <br />
+            <div class="box">
+                <BitButton OnClick="() => isAutoFocusDismissed = false">Show an auto-focused message</BitButton>
+
+                <BitMessage AutoFocus
+                            Dismissible
+                            Color="BitColor.SevereWarning"
+                            @bind-Dismissed="isAutoFocusDismissed">
+                    This message took the focus when it appeared. Press <strong>Tab</strong> to reach its dismiss button.
+                </BitMessage>
+
+                <br />
+
+                <BitMessage @ref="focusableMessage" TabIndex="0" Color="BitColor.Info">
+                    A message with a <strong>TabIndex</strong> can be focused on demand.
+                </BitMessage>
+
+                <BitButton OnClick="() => focusableMessage!.FocusAsync()">Focus the message above</BitButton>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Color" RazorCode="@example17RazorCode" Id="example17">
             <div>
                 <b>Color</b> sets the palette, the default icon and the urgency of the announcement in one go.
                 The eight semantic colors are the ones to reach for; the background, foreground and border
@@ -423,7 +562,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15">
+        <DemoExample Title="External Icons" RazorCode="@example18RazorCode" Id="example18">
             <div>
                 Every icon of the message also takes a <b>BitIconInfo</b>, which renders whatever CSS classes an
                 external library needs - <b>Icon</b>, <b>DismissIcon</b>, <b>ExpandIcon</b> and <b>CollapseIcon</b>.
@@ -484,7 +623,7 @@
             </BitMessage>
         </DemoExample>
 
-        <DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16">
+        <DemoExample Title="Size" RazorCode="@example19RazorCode" Id="example19">
             <div>
                 <b>Size</b> scales the type, the icon and the inset of the message together.
             </div>
@@ -496,7 +635,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" Id="example17">
+        <DemoExample Title="Style & Class" RazorCode="@example20RazorCode" Id="example20">
             <div>
                 <b>Style</b> and <b>Class</b> land on the root element, while <b>Styles</b> and <b>Classes</b> reach
                 each part of the message on its own - the root, the containers, the icon, the title, the content,
@@ -599,7 +738,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
+        <DemoExample Title="RTL" RazorCode="@example21RazorCode" Id="example21">
             <div>
                 Set <b>Dir</b> to <b>BitDir.Rtl</b> to mirror the message: the icon moves to the right and the
                 expander and dismiss buttons to the left.
