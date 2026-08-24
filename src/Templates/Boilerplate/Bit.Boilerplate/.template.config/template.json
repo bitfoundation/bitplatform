@@ -488,7 +488,8 @@
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Products/**",
                         // Drive ProductController / CategoryController, which this same rule removes.
                         "src/Tests/Features/Products/ProductImageLifecycleTests.cs",
-                        "src/Tests/Features/Categories/CategoryDeleteGuardTests.cs"
+                        "src/Tests/Features/Categories/CategoryDeleteGuardTests.cs",
+                        "src/Tests/Features/Products/AddOrEditProductPageTests.cs"
                     ]
                 },
                 {
@@ -557,6 +558,8 @@
                         "src/Tests/Features/Diagnostics/LoggingConfigurationTests.cs",
                         "src/Tests/Features/Diagnostics/AppInsightsReadinessTests.cs",
                         "src/Tests/Features/Diagnostics/DiagnosticModalVirtualizationTests.cs",
+                        "src/Tests/Features/TemplateConfig/SourceNameLeakTests.cs",
+                        "src/Tests/Features/Products/AddOrEditProductPageTests.cs",
                         "src/Tests/Features/Ads/AdsServiceTests.cs",
                         "src/Tests/Features/Configuration/ClientSettingsValidationTests.cs",
                         "src/Tests/Features/Identity/TrustedOriginsTests.cs",
@@ -667,12 +670,13 @@
                     ]
                 },
                 {
-                    // Both sign in as store-admin@bitplatform.dev, which UserConfiguration only seeds under `multitenant`.
+                    // All sign in as store-admin@bitplatform.dev, which UserConfiguration only seeds under `multitenant`.
                     // The `(module != Admin)` rule above removes them too; this one adds the other half of what they need.
                     "condition": "(advancedTests != true || module != Admin || multitenant != true)",
                     "exclude": [
                         "src/Tests/Features/Products/ProductImageLifecycleTests.cs",
-                        "src/Tests/Features/Categories/CategoryDeleteGuardTests.cs"
+                        "src/Tests/Features/Categories/CategoryDeleteGuardTests.cs",
+                        "src/Tests/Features/Products/AddOrEditProductPageTests.cs"
                     ]
                 },
                 {

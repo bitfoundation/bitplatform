@@ -1261,6 +1261,21 @@
     <data name="DashboardSubtitle" xml:space="preserve">
     <value>داده های تحلیلی شما</value>
   </data>
+    <data name="DeleteCategory" xml:space="preserve">
+    <value>حذف دسته‌بندی</value>
+  </data>
+    <data name="AreYouSureWannaDeleteCategory" xml:space="preserve">
+    <value>آیا مطمئن هستید که می خواهید دسته‌بندی {0} را حذف کنید؟</value>
+  </data>
+    <data name="PresetColors" xml:space="preserve">
+    <value>رنگ‌های پیش‌فرض</value>
+  </data>
+    <data name="ProductCouldNotBeLoaded" xml:space="preserve">
+    <value>این محصول بارگذاری نشد.</value>
+  </data>
+    <data name="TryAgain" xml:space="preserve">
+    <value>تلاش مجدد</value>
+  </data>
     <!--#endif -->
     <!--#if (captcha == "reCaptcha") -->
     <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
@@ -1282,6 +1297,12 @@
   </data>
     <data name="PurchaseSuccessful" xml:space="preserve">
     <value>خرید موفقیت آمیز بود!</value>
+  </data>
+    <data name="NoProductsToShow" xml:space="preserve">
+    <value>در حال حاضر محصولی برای نمایش وجود ندارد.</value>
+  </data>
+    <data name="SearchProducts" xml:space="preserve">
+    <value>جستجوی محصولات</value>
   </data>
     <!--#endif -->
     <data name="Passwordless" xml:space="preserve">

@@ -1,10 +1,16 @@
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
 .color-btn {
     width: 2rem;
     height: 2rem;
     border: none;
-    outline: none;
     cursor: pointer;
     border-radius: 2px;
+
+    &:focus-visible {
+        outline: 2px solid $bit-color-primary;
+        outline-offset: 2px;
+    }
 }
 
 .color-btn--active {

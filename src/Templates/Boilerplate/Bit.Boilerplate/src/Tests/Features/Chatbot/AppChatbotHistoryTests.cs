@@ -53,7 +53,7 @@ public partial class AppChatbotHistoryTests
         var responses = chatbot.GetStreamingChannel();
 
         using var firstMessageCts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
-        var firstMessage = chatbot.ProcessNewMessage(generateFollowUpSuggestions: false, new AiChatMessageRequest { Content = "what is bit platform?" }, httpContext.User, firstMessageCts.Token);
+        var firstMessage = chatbot.ProcessNewMessage(new AiChatMessageRequest { Content = "what is bit platform?" }, httpContext.User, firstMessageCts.Token);
 
         // Reading the first chunk back is what makes the interruption deterministic: the answer is provably half
         // delivered - the user has seen this text - at the moment the message is cancelled.
@@ -75,7 +75,7 @@ public partial class AppChatbotHistoryTests
         chatClient.PauseAfterFirstChunk = null;
         chatClient.StreamingChunks = _ => ["Bit.BlazorUI is a component library."];
 
-        await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false, new AiChatMessageRequest { Content = "and what is Bit.BlazorUI?" }, httpContext.User, TestContext.CancellationToken);
+        await chatbot.ProcessNewMessage(new AiChatMessageRequest { Content = "and what is Bit.BlazorUI?" }, httpContext.User, TestContext.CancellationToken);
 
         var secondConversation = chatClient.ReceivedConversations[1];
 
@@ -109,7 +109,7 @@ public partial class AppChatbotHistoryTests
 
         var responses = chatbot.GetStreamingChannel();
 
-        await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false, new AiChatMessageRequest { Content = "what is bit platform?" }, httpContext.User, TestContext.CancellationToken);
+        await chatbot.ProcessNewMessage(new AiChatMessageRequest { Content = "what is bit platform?" }, httpContext.User, TestContext.CancellationToken);
 
         // Three chunks, then the success marker - the client needs that marker to stop its loader and to keep its
         // response counter in step with the number of user turns.
@@ -118,7 +118,7 @@ public partial class AppChatbotHistoryTests
         Assert.AreEqual("of tools.", await ReadNextResponse(responses, "the third streamed chunk"));
         Assert.AreEqual(SharedAppMessages.MESSAGE_PROCESS_SUCCESS, await ReadNextResponse(responses, "the terminal marker of the completed message"));
 
-        await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false, new AiChatMessageRequest { Content = "and what is Bit.BlazorUI?" }, httpContext.User, TestContext.CancellationToken);
+        await chatbot.ProcessNewMessage(new AiChatMessageRequest { Content = "and what is Bit.BlazorUI?" }, httpContext.User, TestContext.CancellationToken);
 
         var secondConversation = chatClient.ReceivedConversations[1];
 
@@ -169,7 +169,7 @@ public partial class AppChatbotHistoryTests
             ]
         }, signalRConnectionId: "test-connection-id", TestContext.CancellationToken);
 
-        await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false, new AiChatMessageRequest { Content = "are they free?" }, httpContext.User, TestContext.CancellationToken);
+        await chatbot.ProcessNewMessage(new AiChatMessageRequest { Content = "are they free?" }, httpContext.User, TestContext.CancellationToken);
 
         var conversation = chatClient.ReceivedConversations[0];
 
@@ -214,7 +214,7 @@ public partial class AppChatbotHistoryTests
             })]
         }, signalRConnectionId: "test-connection-id", TestContext.CancellationToken);
 
-        await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false, new AiChatMessageRequest { Content = "the newest question" }, httpContext.User, TestContext.CancellationToken);
+        await chatbot.ProcessNewMessage(new AiChatMessageRequest { Content = "the newest question" }, httpContext.User, TestContext.CancellationToken);
 
         var conversation = chatClient.ReceivedConversations[0];
 
@@ -251,8 +251,7 @@ public partial class AppChatbotHistoryTests
         byte[] picture = [0x52, 0x49, 0x46, 0x46]; // "RIFF", where a webp starts.
         await StoreAiChatImage(scope.ServiceProvider, attachmentId, picture);
 
-        await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false,
-                                        new AiChatMessageRequest
+        await chatbot.ProcessNewMessage(new AiChatMessageRequest
                                         {
                                             Content = "what is in this picture?",
                                             AttachmentId = attachmentId
@@ -299,8 +298,7 @@ public partial class AppChatbotHistoryTests
             var attachmentId = Guid.NewGuid();
             await StoreAiChatImage(scope.ServiceProvider, attachmentId, [(byte)turn]);
 
-            await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false,
-                                            new AiChatMessageRequest
+            await chatbot.ProcessNewMessage(new AiChatMessageRequest
                                             {
                                                 Content = turn == 1 ? null : $"picture {turn}",
                                                 AttachmentId = attachmentId
@@ -357,8 +355,7 @@ public partial class AppChatbotHistoryTests
         var chatbot = scope.ServiceProvider.GetRequiredService<AppChatbot>();
         await chatbot.StartChat(new StartChatRequest { ChatMessagesHistory = history }, signalRConnectionId: "test-connection-id", TestContext.CancellationToken);
 
-        await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false,
-                                        new AiChatMessageRequest { Content = "and what did I show you?" },
+        await chatbot.ProcessNewMessage(new AiChatMessageRequest { Content = "and what did I show you?" },
                                         httpContext.User,
                                         TestContext.CancellationToken);
 
@@ -406,8 +403,7 @@ public partial class AppChatbotHistoryTests
         var attachmentId = Guid.NewGuid();
         await StoreAiChatImage(scope.ServiceProvider, attachmentId, [0x52, 0x49, 0x46, 0x46]);
 
-        await chatbot.ProcessNewMessage(generateFollowUpSuggestions: false,
-                                        new AiChatMessageRequest { Content = "what is in this picture?", AttachmentId = attachmentId },
+        await chatbot.ProcessNewMessage(new AiChatMessageRequest { Content = "what is in this picture?", AttachmentId = attachmentId },
                                         httpContext.User,
                                         TestContext.CancellationToken);
 

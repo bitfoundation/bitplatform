@@ -98,7 +98,6 @@ public partial class AppChatbot
     /// Process an incoming message and stream the AI response
     /// </summary>
     public async Task ProcessNewMessage(
-        bool generateFollowUpSuggestions,
         AiChatMessageRequest incomingMessage,
         ClaimsPrincipal? user,
         CancellationToken cancellationToken)
@@ -154,24 +153,6 @@ public partial class AppChatbot
             }
 
             await SendTerminalMarkerToClient(SharedAppMessages.MESSAGE_PROCESS_SUCCESS);
-
-            if (generateFollowUpSuggestions)
-            {
-                try
-                {
-                    var followUpSuggestions = await GenerateFollowUpSuggestions(
-                        incomingMessage.Content ?? string.Empty,
-                        assistantResponse.ToString(),
-                        chatOptions,
-                        cancellationToken);
-
-                    await SendStringToClient(JsonSerializer.Serialize(followUpSuggestions), cancellationToken);
-                }
-                catch (Exception exp)
-                {
-                    try { exceptionHandler.Handle(exp, new() { { "SignalRConnectionId", signalRConnectionId } }); } catch { }
-                }
-            }
         }
         catch (Exception exp) when (exp is OperationCanceledException or ChannelClosedException)
         {
@@ -316,6 +297,7 @@ public partial class AppChatbot
             AIFunctionFactory.Create(SetApplicationTheme),
             AIFunctionFactory.Create(CheckLastError),
             AIFunctionFactory.Create(ClearAppFiles),
+            AIFunctionFactory.Create(SendFollowUpSuggestions),
             //#if (module == "Sales")
             //#if (database == "PostgreSQL" || database == "SqlServer")
             AIFunctionFactory.Create(GetProductRecommendations)
@@ -334,42 +316,6 @@ public partial class AppChatbot
         var chatOptions = new ChatOptions { };
         configuration.GetRequiredSection("AI:ChatOptions").Bind(chatOptions);
         return chatOptions;
-    }
-
-    /// <summary>
-    /// Generate follow-up suggestions based on the conversation
-    /// </summary>
-    private async Task<AiChatFollowUpList> GenerateFollowUpSuggestions(
-        string incomingMessage,
-        string assistantResponse,
-        ChatOptions chatOptions,
-        CancellationToken cancellationToken)
-    {
-        // This would generate a list of follow-up questions/suggestions to keep the conversation going.
-        // You could instead generate that list in previous chat completion call:
-        // 1: Using "tools" or "functions" feature of the model, that would not consider the latest assistant response.
-        // 2: Returning a json object containing the response and follow-up suggestions all together, losing IAsyncEnumerable streaming capability.
-        var followUpSuggestionsAgent = serviceProvider.GetRequiredKeyedService<AIAgent>("FollowUpSuggestionsAgent");
-
-        chatOptions.ResponseFormat = ChatResponseFormat.Json;
-        chatOptions.AdditionalProperties = new() { ["response_format"] = new { type = "json_object" } };
-
-        // The follow-up agent responds in a strict JSON format and must not perform tool round-trips,
-        // so instead of letting it call the GetAppPages tool we inject the list of pages directly as context.
-        var appPagesPrompt = @$"### Available pages (useful for navigation/discovery follow-up suggestions):
-{PageUrls.GetPagesMarkdown()}";
-
-        var followUpItems = await followUpSuggestionsAgent.RunAsync<AiChatFollowUpList>(
-            messages: [
-                new (ChatRole.System, variablesDefault),
-                new (ChatRole.System, appPagesPrompt),
-                new(ChatRole.User, incomingMessage),
-                new(ChatRole.Assistant, assistantResponse)
-            ],
-            cancellationToken: cancellationToken,
-            options: new ChatClientAgentRunOptions(chatOptions));
-
-        return followUpItems.Result ?? new AiChatFollowUpList();
     }
 
     private async Task EnsureSignalRConnectionIdIsPresent()

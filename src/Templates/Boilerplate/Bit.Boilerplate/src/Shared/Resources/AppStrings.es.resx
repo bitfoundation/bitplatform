@@ -1261,6 +1261,21 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="DashboardSubtitle" xml:space="preserve">
     <value>Aquí están tus datos analíticos</value>
   </data>
+    <data name="DeleteCategory" xml:space="preserve">
+    <value>Eliminar categoría</value>
+  </data>
+    <data name="AreYouSureWannaDeleteCategory" xml:space="preserve">
+    <value>¿Estás seguro de que quieres eliminar la categoría {0}?</value>
+  </data>
+    <data name="PresetColors" xml:space="preserve">
+    <value>Colores predefinidos</value>
+  </data>
+    <data name="ProductCouldNotBeLoaded" xml:space="preserve">
+    <value>No se pudo cargar este producto.</value>
+  </data>
+    <data name="TryAgain" xml:space="preserve">
+    <value>Intentar de nuevo</value>
+  </data>
   <!--#endif -->
   <!--#if (captcha == "reCaptcha") -->
   <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
@@ -1282,6 +1297,12 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   </data>
   <data name="PurchaseSuccessful" xml:space="preserve">
     <value>¡Compra exitosa!</value>
+  </data>
+    <data name="NoProductsToShow" xml:space="preserve">
+    <value>No hay productos para mostrar en este momento.</value>
+  </data>
+    <data name="SearchProducts" xml:space="preserve">
+    <value>Buscar productos</value>
   </data>
   <!--#endif -->
   <data name="Passwordless" xml:space="preserve">

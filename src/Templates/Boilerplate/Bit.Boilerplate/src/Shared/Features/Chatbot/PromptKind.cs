@@ -10,10 +10,5 @@ public enum PromptKind
     /// <summary>
     /// Analyzes product images to ensure they meet catalog standards for car products
     /// </summary>
-    AnalyzeProductImage,
-
-    /// <summary>
-    /// Generates follow-up suggestions based on user interactions
-    /// </summary>
-    FollowUpSuggestion
+    AnalyzeProductImage
 }

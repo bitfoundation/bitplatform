@@ -247,33 +247,32 @@ public partial class ODataQuery
 **File**: [`src/Client/Boilerplate.Client.Core/Components/Pages/Products/ProductsPage.razor.cs`](/src/Client/Boilerplate.Client.Core/Components/Pages/Products/ProductsPage.razor.cs)
 
 ```csharp
-private void PrepareGridDataProvider()
+private async Task<BitDataGridReadResult<ProductDto>> LoadProducts(BitDataGridReadRequest req)
 {
-    productsProvider = async req =>
+    var query = new ODataQuery
     {
-        var query = new ODataQuery
-        {
-            Top = req.Count ?? 10,
-            Skip = req.StartIndex,
-            OrderBy = string.Join(", ", req.GetSortByProperties()
-                .Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}"))
-        };
-
-        if (string.IsNullOrEmpty(ProductNameFilter) is false)
-        {
-            query.Filter = $"contains(tolower({nameof(ProductDto.Name)}),'{ProductNameFilter.ToLower()}')";
-        }
-
-        if (string.IsNullOrEmpty(CategoryNameFilter) is false)
-        {
-            query.AndFilter = $"contains(tolower({nameof(ProductDto.CategoryName)}),'{CategoryNameFilter.ToLower()}')";
-        }
-
-        var queriedRequest = productController.WithQuery(query.ToString());
-        var data = await queriedRequest.GetProducts(req.CancellationToken);
-
-        return BitDataGridItemsProviderResult.From(data!.Items!, (int)data!.TotalCount);
+        // req.Take is null when the grid is exporting to CSV/Excel. The server applies no default page size,
+        // so cap it here rather than asking for the whole table.
+        Top = req.Take ?? MaxExportRows,
+        Skip = req.Skip,
+        OrderBy = req.Sorts.Count > 0
+            ? string.Join(", ", req.Sorts.Select(s => $"{s.ColumnId} {(s.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}"))
+            : $"{nameof(ProductDto.Name)} asc"
     };
+
+    // Every value that goes into an OData string literal MUST have its single quotes doubled, or a name
+    // containing an apostrophe terminates the literal and the request fails to parse.
+    var filter = string.Join(" and ", req.Filters
+        .Where(f => string.IsNullOrEmpty(f.Value?.ToString()) is false)
+        .Select(f => $"contains(tolower({f.ColumnId}),'{f.Value!.ToString()!.ToLower().Replace("'", "''")}')"));
+    if (string.IsNullOrEmpty(filter) is false)
+    {
+        query.Filter = filter;
+    }
+
+    var data = await productController.WithQuery(query.ToString()).GetProducts(req.CancellationToken);
+
+    return new BitDataGridReadResult<ProductDto>(data!.Items!, (int)data!.TotalCount);
 }
 ```
 
@@ -362,10 +361,10 @@ public async Task<PagedResponse<CategoryDto>> GetCategories(
 ```csharp
 [ApiController, Route("api/[controller]/[action]"),
     Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
-    Authorize(Policy = AppFeatures.AdminPanel.ManageProductCatalog)]
+    Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Manage)]
 public partial class CategoryController : AppControllerBase, ICategoryController
 {
-    // All methods require PRIVILEGED_ACCESS and ManageProductCatalog permissions
+    // All methods require PRIVILEGED_ACCESS and ProductCatalog_Manage permissions
 }
 ```
 
@@ -602,7 +601,7 @@ public async Task<CategoryDto> Update(CategoryDto dto, CancellationToken cancell
 #### Delete with Business Logic Validation
 ```csharp
 [HttpDelete("{id}/{version}")]
-public async Task Delete(Guid id, string version, CancellationToken cancellationToken)
+public async Task Delete(Guid id, long version, CancellationToken cancellationToken)
 {
     // Business rule: Cannot delete category if it has products
     if (await DbContext.Products.AnyAsync(p => p.CategoryId == id, cancellationToken))
@@ -610,13 +609,14 @@ public async Task Delete(Guid id, string version, CancellationToken cancellation
         throw new BadRequestException(Localizer[nameof(AppStrings.CategoryNotEmpty)]);
     }
 
-    DbContext.Categories.Remove(new() 
-    { 
-        Id = id, 
-        Version = Convert.FromHexString(version) 
-    });
-
-    await DbContext.SaveChangesAsync(cancellationToken);
+    // The Version term makes this an optimistic-concurrency delete: no row is affected when another
+    // user has changed the entity since the client read it.
+    if (await DbContext.Categories
+        .Where(c => c.Id == id && c.Version == version)
+        .ExecuteDeleteAsync(cancellationToken) == 0)
+    {
+        throw new ResourceNotFoundException(Localizer[nameof(AppStrings.CategoryCouldNotBeFound)]);
+    }
 
     await PublishDashboardDataChanged(cancellationToken);
 }
@@ -722,7 +722,7 @@ public interface ICategoryController : IAppController
     Task<CategoryDto> Update(CategoryDto dto, CancellationToken cancellationToken);
 
     [HttpDelete("{id}/{version}")]
-    Task Delete(Guid id, string version, CancellationToken cancellationToken);
+    Task Delete(Guid id, long version, CancellationToken cancellationToken);
 }
 ```
 

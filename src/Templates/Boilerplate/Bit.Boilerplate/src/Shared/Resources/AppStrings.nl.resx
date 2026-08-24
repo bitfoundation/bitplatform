@@ -1261,6 +1261,21 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="DashboardSubtitle" xml:space="preserve">
     <value>Hier is je analysegegevens</value>
   </data>
+    <data name="DeleteCategory" xml:space="preserve">
+    <value>Categorie verwijderen</value>
+  </data>
+    <data name="AreYouSureWannaDeleteCategory" xml:space="preserve">
+    <value>Weet je zeker dat je categorie {0} wilt verwijderen?</value>
+  </data>
+    <data name="PresetColors" xml:space="preserve">
+    <value>Vooraf ingestelde kleuren</value>
+  </data>
+    <data name="ProductCouldNotBeLoaded" xml:space="preserve">
+    <value>Dit product kon niet worden geladen.</value>
+  </data>
+    <data name="TryAgain" xml:space="preserve">
+    <value>Opnieuw proberen</value>
+  </data>
   <!--#endif -->
   <!--#if (captcha == "reCaptcha") -->
   <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
@@ -1282,6 +1297,12 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   </data>
   <data name="PurchaseSuccessful" xml:space="preserve">
     <value>Aankoop succesvol!</value>
+  </data>
+    <data name="NoProductsToShow" xml:space="preserve">
+    <value>Er zijn momenteel geen producten om te tonen.</value>
+  </data>
+    <data name="SearchProducts" xml:space="preserve">
+    <value>Producten zoeken</value>
   </data>
   <!--#endif -->
   <data name="Passwordless" xml:space="preserve">

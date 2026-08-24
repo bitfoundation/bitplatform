@@ -1261,6 +1261,21 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="DashboardSubtitle" xml:space="preserve">
     <value>Hier sind Ihre Analysedaten</value>
   </data>
+    <data name="DeleteCategory" xml:space="preserve">
+    <value>Kategorie löschen</value>
+  </data>
+    <data name="AreYouSureWannaDeleteCategory" xml:space="preserve">
+    <value>Sind Sie sicher, dass Sie die Kategorie {0} löschen möchten?</value>
+  </data>
+    <data name="PresetColors" xml:space="preserve">
+    <value>Voreingestellte Farben</value>
+  </data>
+    <data name="ProductCouldNotBeLoaded" xml:space="preserve">
+    <value>Dieses Produkt konnte nicht geladen werden.</value>
+  </data>
+    <data name="TryAgain" xml:space="preserve">
+    <value>Erneut versuchen</value>
+  </data>
   <!--#endif -->
   <!--#if (captcha == "reCaptcha") -->
   <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
@@ -1282,6 +1297,12 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   </data>
   <data name="PurchaseSuccessful" xml:space="preserve">
     <value>Kauf erfolgreich!</value>
+  </data>
+    <data name="NoProductsToShow" xml:space="preserve">
+    <value>Derzeit sind keine Produkte vorhanden.</value>
+  </data>
+    <data name="SearchProducts" xml:space="preserve">
+    <value>Produkte suchen</value>
   </data>
   <!--#endif -->
   <data name="Passwordless" xml:space="preserve">

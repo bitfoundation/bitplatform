@@ -1261,6 +1261,21 @@
   <data name="DashboardSubtitle" xml:space="preserve">
     <value>यह आपका विश्लेषणात्मक डेटा है</value>
   </data>
+    <data name="DeleteCategory" xml:space="preserve">
+    <value>श्रेणी हटाएं</value>
+  </data>
+    <data name="AreYouSureWannaDeleteCategory" xml:space="preserve">
+    <value>क्या आप निश्चित हैं कि आप श्रेणी {0} को हटाना चाहते हैं?</value>
+  </data>
+    <data name="PresetColors" xml:space="preserve">
+    <value>पूर्व निर्धारित रंग</value>
+  </data>
+    <data name="ProductCouldNotBeLoaded" xml:space="preserve">
+    <value>यह उत्पाद लोड नहीं किया जा सका।</value>
+  </data>
+    <data name="TryAgain" xml:space="preserve">
+    <value>पुनः प्रयास करें</value>
+  </data>
   <!--#endif -->
   <!--#if (captcha == "reCaptcha") -->
   <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
@@ -1282,6 +1297,12 @@
   </data>
   <data name="PurchaseSuccessful" xml:space="preserve">
     <value>क्रय सफल!</value>
+  </data>
+    <data name="NoProductsToShow" xml:space="preserve">
+    <value>अभी दिखाने के लिए कोई उत्पाद नहीं है।</value>
+  </data>
+    <data name="SearchProducts" xml:space="preserve">
+    <value>उत्पाद खोजें</value>
   </data>
   <!--#endif -->
   <data name="Passwordless" xml:space="preserve">

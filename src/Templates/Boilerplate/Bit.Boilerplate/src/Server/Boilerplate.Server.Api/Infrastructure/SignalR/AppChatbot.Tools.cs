@@ -5,6 +5,7 @@ using Boilerplate.Server.Api.Features.Products;
 //#endif
 using ModelContextProtocol.Server;
 using Boilerplate.Shared;
+using Boilerplate.Shared.Features.Chatbot;
 using Boilerplate.Shared.Features.Diagnostic;
 using Boilerplate.Server.Api.Features.Identity;
 using Microsoft.Agents.AI;
@@ -222,6 +223,53 @@ public partial class AppChatbot
         {
             serviceProvider.GetRequiredService<ApiServerExceptionHandler>().Handle(exp);
             return "Failed to retrieve error information from the device.";
+        }
+    }
+
+    /// <summary>
+    /// How many suggestions the panel is willing to show at once. The prompt asks for exactly this many, and a model
+    /// that sends more would push the message box off the screen on a phone.
+    /// </summary>
+    private const int MaxFollowUpSuggestions = 3;
+
+    /// <summary>
+    /// Sends the follow-up suggestions the model wrote to the user's device, where the chat panel shows them as
+    /// buttons under the answer.
+    /// </summary>
+    [Description("Sends short follow-up suggestions (questions or actions the user might pick next) to the user's device, where they are shown as clickable buttons under your answer. Call this exactly once right after every answer you give.")]
+    [McpServerTool(Name = nameof(SendFollowUpSuggestions))]
+    private async Task<string?> SendFollowUpSuggestions(
+        [Required, Description("Exactly 3 short follow-up suggestions, written from the user's perspective, each under 60 characters, in the language of the conversation")] string[] suggestions,
+        CancellationToken cancellationToken = default)
+    {
+        // A model that has nothing to suggest is better off saying so than sending empty buttons the user can press.
+        var followUpSuggestions = (suggestions ?? [])
+            .Where(suggestion => string.IsNullOrWhiteSpace(suggestion) is false)
+            .Select(suggestion => suggestion.Trim())
+            .Take(MaxFollowUpSuggestions)
+            .ToList();
+
+        if (followUpSuggestions.Count is 0)
+            return "No suggestions were sent, because none of them had any text.";
+
+        await EnsureSignalRConnectionIdIsPresent();
+
+        await using var scope = serviceProvider.CreateAsyncScope();
+
+        try
+        {
+            // Published rather than invoked: the panel has nothing to answer with, and waiting on a round trip would
+            // hold up the answer this tool call is part of.
+            await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
+                .Clients.Client(signalRConnectionId!)
+                .Publish(SharedAppMessages.SHOW_FOLLOW_UP_SUGGESTIONS, new AiChatFollowUpList { FollowUpSuggestions = followUpSuggestions }, cancellationToken);
+
+            return $"{followUpSuggestions.Count} follow-up suggestions were sent to the user's device.";
+        }
+        catch (Exception exp)
+        {
+            serviceProvider.GetRequiredService<ApiServerExceptionHandler>().Handle(exp);
+            return "Failed to send follow-up suggestions to the user's device.";
         }
     }
 

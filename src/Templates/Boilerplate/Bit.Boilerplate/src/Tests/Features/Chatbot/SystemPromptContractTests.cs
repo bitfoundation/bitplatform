@@ -34,7 +34,6 @@ public partial class SystemPromptContractTests
     private static string[] AllSeededPrompts =>
     [
         SystemPromptConfiguration.GetInitialSystemPromptMarkdown(),
-        SystemPromptConfiguration.GetFollowUpSuggestionSystemPromptMarkdown(),
         //#if (module == "Sales" || module == "Admin")
         SystemPromptConfiguration.GetAnalyzeProductImageSystemPromptMarkdown()
         //#endif
