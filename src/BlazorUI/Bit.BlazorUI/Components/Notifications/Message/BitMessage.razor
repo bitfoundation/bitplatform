@@ -5,7 +5,9 @@
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()">
+     dir="@Dir?.ToString().ToLower()"
+     tabindex="@TabIndex"
+     aria-label="@AriaLabel">
     <div style="@Styles?.RootContainer" class="bit-msg-rct @Classes?.RootContainer">
         <div style="@Styles?.Container" class="bit-msg-con @Classes?.Container">
             @if (HideIcon is false)
@@ -15,8 +17,25 @@
                 </div>
             }
 
-            <div style="@Styles?.ContentContainer" class="bit-msg-cnc@(_isExpanded ? " bit-msg-cnx": "") @Classes?.ContentContainer" role="@GetTextRole()">
-                <div style="@Styles?.ContentWrapper" class="bit-msg-cnw @Classes?.ContentWrapper">
+            <div style="@Styles?.ContentContainer"
+                 class="bit-msg-cnc@(_IsExpanded ? " bit-msg-cnx": "") @Classes?.ContentContainer"
+                 id="@($"{_Id}-cnt")"
+                 role="@GetTextRole()">
+                <div style="@Styles?.ContentWrapper" class="bit-msg-cnw@(_IsTitleInline ? " bit-msg-cwi" : "") @Classes?.ContentWrapper">
+                    @if (_HasTitle)
+                    {
+                        <div style="@Styles?.Title" class="bit-msg-ttl @Classes?.Title">
+                            @if (TitleTemplate is not null)
+                            {
+                                @TitleTemplate
+                            }
+                            else
+                            {
+                                @Title
+                            }
+                        </div>
+                    }
+
                     <div style="@Styles?.Content" class="bit-msg-cnt@(Multiline ? " bit-msg-mcn" : "") @Classes?.Content">
                         @(Content ?? ChildContent)
                     </div>
@@ -31,19 +50,39 @@
 
         @if (Truncate && Multiline is false)
         {
-            <button style="@Styles?.ExpanderButton" class="bit-msg-exb @Classes?.ExpanderButton" @onclick="ToggleExpand" type="button">
+            <button style="@Styles?.ExpanderButton"
+                    class="bit-msg-exb @Classes?.ExpanderButton"
+                    @onclick="ToggleExpand"
+                    type="button"
+                    title="@_ExpanderLabel"
+                    aria-label="@_ExpanderLabel"
+                    aria-expanded="@(Expanded ? "true" : "false")"
+                    aria-controls="@($"{_Id}-cnt")"
+                    disabled="@(IsEnabled is false)">
                 @{
-                    var expanderIcon = _isExpanded
+                    var expanderIcon = Expanded
                         ? BitIconInfo.From(CollapseIcon, CollapseIconName ?? "DoubleChevronUp")
-                        : BitIconInfo.From(ExpandIcon, ExpandIconName ?? "DoubleChevronUp bit-ico-r180");
+                        : BitIconInfo.From(ExpandIcon, ExpandIconName ?? "DoubleChevronUp");
+                    // The default glyph is the collapse chevron turned over, so the rotation only applies
+                    // while no custom expand icon has been provided - a custom glyph already points down.
+                    var rotateExpander = Expanded is false && ExpandIcon is null && ExpandIconName is null;
+                    var expanderIconClasses = $"{expanderIcon?.GetCssClasses()}{(rotateExpander ? " bit-ico-r180" : "")}";
                 }
-                <i style="@Styles?.ExpanderIcon" class="bit-msg-exi @expanderIcon?.GetCssClasses() @Classes?.ExpanderIcon" aria-hidden="true" />
+                <i style="@Styles?.ExpanderIcon"
+                   class="bit-msg-exi @expanderIconClasses @Classes?.ExpanderIcon"
+                   aria-hidden="true" />
             </button>
         }
 
         @if (OnDismiss.HasDelegate)
         {
-            <button style="@Styles?.DismissButton" class="bit-msg-dmb @Classes?.DismissButton" @onclick="OnDismiss" type="button">
+            <button style="@Styles?.DismissButton"
+                    class="bit-msg-dmb @Classes?.DismissButton"
+                    @onclick="HandleOnDismiss"
+                    type="button"
+                    title="@DismissAriaLabel"
+                    aria-label="@DismissAriaLabel"
+                    disabled="@(IsEnabled is false)">
                 @{
                     var dismissIcon = BitIconInfo.From(DismissIcon, DismissIconName ?? "Cancel");
                 }

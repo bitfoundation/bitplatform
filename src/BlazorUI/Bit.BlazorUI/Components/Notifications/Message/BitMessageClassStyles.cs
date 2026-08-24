@@ -38,6 +38,11 @@ public class BitMessageClassStyles
     public string? ContentWrapper { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the title element of the BitMessage.
+    /// </summary>
+    public string? Title { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the content element of the BitMessage.
     /// </summary>
     public string? Content { get; set; }
@@ -58,12 +63,12 @@ public class BitMessageClassStyles
     public string? ExpanderIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the truncate dismiss button of the BitMessage.
+    /// Custom CSS classes/styles for the dismiss button of the BitMessage.
     /// </summary>
     public string? DismissButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the truncate dismiss icon of the BitMessage.
+    /// Custom CSS classes/styles for the dismiss icon of the BitMessage.
     /// </summary>
     public string? DismissIcon { get; set; }
 }

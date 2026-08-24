@@ -25,7 +25,7 @@ public partial class BitMessageDemo
             Name = "AutoDismissTime",
             Type = "TimeSpan?",
             DefaultValue = "null",
-            Description = "Enables the auto-dismiss feature and sets the time to automatically call the OnDismiss callback.",
+            Description = "Enables the auto-dismiss feature and sets the time to automatically call the OnDismiss callback. The countdown is held while the pointer is over the message or the focus is inside it.",
         },
         new()
         {
@@ -42,6 +42,13 @@ public partial class BitMessageDemo
             Description = "Custom CSS classes for different parts of the BitMessage.",
             LinkType = LinkType.Link,
             Href = "#message-class-styles",
+        },
+        new()
+        {
+            Name = "CollapseAriaLabel",
+            Type = "string",
+            DefaultValue = "\"Collapse\"",
+            Description = "The aria-label and the tooltip of the expander button of the message in Truncate mode while it is expanded.",
         },
         new()
         {
@@ -79,6 +86,13 @@ public partial class BitMessageDemo
         },
         new()
         {
+            Name = "DismissAriaLabel",
+            Type = "string",
+            DefaultValue = "\"Dismiss\"",
+            Description = "The aria-label and the tooltip of the dismiss button of the message.",
+        },
+        new()
+        {
             Name = "DismissIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -97,10 +111,31 @@ public partial class BitMessageDemo
         },
         new()
         {
+            Name = "DismissOnEscape",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Invokes the OnDismiss callback when the Escape key is pressed while the focus is inside the message. Only wired up while OnDismiss has a handler.",
+        },
+        new()
+        {
             Name = "Elevation",
             Type = "int?",
             DefaultValue = "null",
             Description = "Determines the elevation of the message, a scale from 1 to 24.",
+        },
+        new()
+        {
+            Name = "ExpandAriaLabel",
+            Type = "string",
+            DefaultValue = "\"Expand\"",
+            Description = "The aria-label and the tooltip of the expander button of the message in Truncate mode while it is collapsed.",
+        },
+        new()
+        {
+            Name = "Expanded",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines whether the truncated content of the message is expanded, which is two-way bindable. Only meaningful together with Truncate.",
         },
         new()
         {
@@ -163,7 +198,7 @@ public partial class BitMessageDemo
             Name = "Role",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Custom role to apply to the message text.",
+            Description = "Custom role to apply to the message text. If unset, Warning, SevereWarning and Error announce as \"alert\" and every other color as \"status\".",
         },
         new()
         {
@@ -176,12 +211,33 @@ public partial class BitMessageDemo
         },
         new()
         {
+            Name = "Square",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Removes the rounded corners of the message so it can sit flush against the edges of its container as a banner.",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitMessageClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS styles for different parts of the BitMessage.",
             LinkType = LinkType.Link,
             Href = "#message-class-styles",
+        },
+        new()
+        {
+            Name = "Title",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The title (heading) of the message, rendered above the content in multiline mode and ahead of it otherwise.",
+        },
+        new()
+        {
+            Name = "TitleTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template to render as the title (heading) of the message, which takes precedence over Title.",
         },
         new()
         {
@@ -478,6 +534,13 @@ public partial class BitMessageDemo
                 },
                 new()
                 {
+                    Name = "Title",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the title element of the BitMessage."
+                },
+                new()
+                {
                     Name = "Content",
                     Type = "string?",
                     DefaultValue = "null",
@@ -509,14 +572,14 @@ public partial class BitMessageDemo
                     Name = "DismissButton",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the truncate dismiss button of the BitMessage."
+                    Description = "Custom CSS classes/styles for the dismiss button of the BitMessage."
                 },
                 new()
                 {
                     Name = "DismissIcon",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the truncate dismiss icon of the BitMessage."
+                    Description = "Custom CSS classes/styles for the dismiss icon of the BitMessage."
                 },
             ]
         },
@@ -555,6 +618,9 @@ public partial class BitMessageDemo
 
     private bool isDismissed;
     private bool isAutoDismissed;
+    private bool isEscapeDismissed;
+
+    private bool isTruncateExpanded;
 
     private double elevation = 7;
     private bool isErrorDismissed;

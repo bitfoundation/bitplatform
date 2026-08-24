@@ -13,6 +13,22 @@
     border-radius: $shp-radius-surface;
     font-size: var(--bit-msg-fontsize);
     box-shadow: var(--bit-msg-boxshadow);
+
+    // A disabled message stays readable - it is a notice, not a control - but its dismiss and expander
+    // buttons stop responding, so the state cannot be changed while the message is turned off.
+    &.bit-dis {
+        .bit-msg-exb,
+        .bit-msg-dmb {
+            cursor: default;
+            opacity: $opa-dis;
+            pointer-events: none;
+        }
+    }
+}
+
+// Squared off so the message can sit flush against the edges of its container as a banner.
+.bit-msg-sqr {
+    border-radius: $shp-radius-none;
 }
 
 .bit-msg-rct {
@@ -60,6 +76,39 @@
     margin: var(--bit-msg-margin);
 }
 
+// A title on a single-line message shares the line with the content instead of stacking above it, the way
+// a lead-in does. The class is only applied when there is a title, so the column layout above stays the
+// default for every message that has none.
+.bit-msg-cwi {
+    flex-direction: row;
+    align-items: baseline;
+    column-gap: spacing(0.5);
+
+    // The title keeps its width where it can and gives way before the content does, so an over-long one
+    // ellipsizes instead of pushing the content out of the message.
+    > .bit-msg-ttl {
+        flex: 0 1 auto;
+        min-width: 0;
+    }
+
+    > .bit-msg-cnt {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+}
+
+.bit-msg-ttl {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: $tg-fw-semibold;
+}
+
+// A stacked title has a line of its own, so it wraps rather than inheriting the single-line clip of the
+// content container - which is what a multiline message, and an unfolded truncated one, want.
+.bit-msg-cnw:not(.bit-msg-cwi) > .bit-msg-ttl {
+    white-space: normal;
+}
+
 .bit-msg-cnt {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -75,17 +124,47 @@
     justify-content: flex-end;
 }
 
+// Once the actions have a row of their own they are no longer competing with the content for the line,
+// so the single-line cap is lifted and a set too wide for the row wraps instead of being clipped. The inset
+// is logical rather than physical: the row is justified to the end, so the wider side has to follow the
+// direction of the message instead of always sitting on the right.
 .bit-msg-mac {
-    margin: 0 spacing(1.5) spacing(1) spacing(1);
+    flex-wrap: wrap;
+    max-height: none;
+    margin-block: 0 spacing(1);
+    margin-inline: spacing(1) spacing(1.5);
 }
 
 .bit-msg-exb,
 .bit-msg-dmb {
+    border: none;
+    display: flex;
+    flex: 0 0 auto;
     cursor: pointer;
+    align-items: center;
+    justify-content: center;
     min-width: $siz-ctrl-md;
     min-height: $siz-ctrl-md;
     color: var(--bit-msg-clr);
+    border-radius: $shp-radius-button;
     background-color: transparent;
+    transition: background-color $mot-duration-short $mot-easing;
+
+    // The buttons sit on the message's own fill, so the states are tinted from the color already on them
+    // rather than from a palette token - that keeps them legible on all three variants and every role.
+    @media (hover: hover) {
+        &:hover {
+            background-color: translucent(currentcolor, 12%);
+        }
+    }
+
+    &:active {
+        background-color: translucent(currentcolor, 20%);
+    }
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-msg-clr-focus));
+    }
 }
 
 .bit-msg-exi,
@@ -111,6 +190,16 @@
     background-color: transparent;
 }
 
+// The two variants that drop the fill also drop the fill's on-color, so the buttons take the role color
+// the text is already using instead of the color meant to sit on top of it.
+.bit-msg-otl,
+.bit-msg-txt {
+    .bit-msg-exb,
+    .bit-msg-dmb {
+        color: var(--bit-msg-clr-bg);
+    }
+}
+
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
 // The @if keeps each kind's original declaration order. Note: the hand-written sbr/tbr blocks this
 // replaces set --bit-msg-clr to $clr-bg-pri (near-white text on the light brd-sec/brd-ter fills,
@@ -125,6 +214,8 @@
             --bit-msg-clr: #{role($tokens, on)};
             --bit-msg-clr-bg: #{role($tokens, main)};
         }
+
+        --bit-msg-clr-focus: #{role($tokens, focus)};
     }
 }
 

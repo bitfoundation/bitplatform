@@ -1,53 +1,213 @@
-﻿using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
 using Bunit;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Notifications.Message;
 
 [TestClass]
 public class BitMessageTests : BunitTestContext
 {
-    [TestMethod,
-        DataRow(BitColor.Info),
-        DataRow(BitColor.Error),
-        DataRow(BitColor.SevereWarning),
-        DataRow(BitColor.Success),
-        DataRow(BitColor.Warning)
-    ]
-    public void BitMessageShouldTakeCorrectType(BitColor type)
+    private const string LongText = "In the beginning, there is silence - a blank canvas yearning to be filled.";
+
+    // The auto-dismiss callback fires off the render loop, so there is no render for WaitForAssertion to
+    // hang its re-check on. The condition is polled from the test thread instead.
+    private static void WaitUntil(Func<bool> condition, int timeoutMilliseconds = 5000)
+    {
+        var stopwatch = Stopwatch.StartNew();
+
+        while (stopwatch.ElapsedMilliseconds < timeoutMilliseconds)
+        {
+            if (condition()) return;
+
+            Thread.Sleep(20);
+        }
+    }
+
+
+
+    [TestMethod]
+    public void BitMessageShouldRenderTheDefaultStructure()
     {
         var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.Color, type);
+            parameters.AddChildContent("Hello");
         });
 
-        var bitMessage = component.Find(".bit-msg");
+        var root = component.Find(".bit-msg");
 
-        var typeClass = type switch
-        {
-            BitColor.Info => "bit-msg-inf",
-            BitColor.Success => "bit-msg-suc",
-            BitColor.Warning => "bit-msg-wrn",
-            BitColor.SevereWarning => "bit-msg-swr",
-            BitColor.Error => "bit-msg-err",
-            _ => "bit-msg-inf"
-        };
+        Assert.AreEqual("DIV", root.TagName);
+        // The defaults: the Fill variant, the Info color and the Medium size.
+        Assert.IsTrue(root.ClassList.Contains("bit-msg-fil"));
+        Assert.IsTrue(root.ClassList.Contains("bit-msg-inf"));
+        Assert.IsTrue(root.ClassList.Contains("bit-msg-md"));
 
-        Assert.IsTrue(bitMessage.ClassList.Contains(typeClass));
+        Assert.HasCount(1, component.FindAll(".bit-msg-rct"));
+        Assert.HasCount(1, component.FindAll(".bit-msg-con"));
+        Assert.HasCount(1, component.FindAll(".bit-msg-ict"));
+        Assert.HasCount(1, component.FindAll(".bit-msg-cnc"));
+        Assert.HasCount(1, component.FindAll(".bit-msg-cnw"));
+        Assert.AreEqual("Hello", component.Find(".bit-msg-cnt").TextContent.Trim());
 
-        var icon = component.Find(".bit-msg-ict > i");
-
-        Dictionary<BitColor, string> iconMap = new()
-        {
-            [BitColor.Info] = "Info",
-            [BitColor.Warning] = "Info",
-            [BitColor.Error] = "ErrorBadge",
-            [BitColor.SevereWarning] = "Warning",
-            [BitColor.Success] = "Completed"
-        };
-
-        Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconMap[type]}"));
+        // Nothing optional renders on its own.
+        Assert.IsEmpty(component.FindAll(".bit-msg-ttl"));
+        Assert.IsEmpty(component.FindAll(".bit-msg-act"));
+        Assert.IsEmpty(component.FindAll(".bit-msg-exb"));
+        Assert.IsEmpty(component.FindAll(".bit-msg-dmb"));
     }
+
+    [TestMethod]
+    public void BitMessageContentShouldTakePrecedenceOverChildContent()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.AddChildContent("<span>child</span>");
+            parameters.Add(p => p.Content, "<span>content</span>");
+        });
+
+        Assert.AreEqual("content", component.Find(".bit-msg-cnt").TextContent.Trim());
+    }
+
+
+
+    [TestMethod,
+        DataRow(BitColor.Primary, "bit-msg-pri", "Info"),
+        DataRow(BitColor.Secondary, "bit-msg-sec", "Info"),
+        DataRow(BitColor.Tertiary, "bit-msg-ter", "Info"),
+        DataRow(BitColor.Info, "bit-msg-inf", "Info"),
+        DataRow(BitColor.Success, "bit-msg-suc", "Completed"),
+        DataRow(BitColor.Warning, "bit-msg-wrn", "Info"),
+        DataRow(BitColor.SevereWarning, "bit-msg-swr", "Warning"),
+        DataRow(BitColor.Error, "bit-msg-err", "ErrorBadge"),
+        DataRow(BitColor.PrimaryBackground, "bit-msg-pbg", "Info"),
+        DataRow(BitColor.SecondaryBackground, "bit-msg-sbg", "Info"),
+        DataRow(BitColor.TertiaryBackground, "bit-msg-tbg", "Info"),
+        DataRow(BitColor.PrimaryForeground, "bit-msg-pfg", "Info"),
+        DataRow(BitColor.SecondaryForeground, "bit-msg-sfg", "Info"),
+        DataRow(BitColor.TertiaryForeground, "bit-msg-tfg", "Info"),
+        DataRow(BitColor.PrimaryBorder, "bit-msg-pbr", "Info"),
+        DataRow(BitColor.SecondaryBorder, "bit-msg-sbr", "Info"),
+        DataRow(BitColor.TertiaryBorder, "bit-msg-tbr", "Info")
+    ]
+    public void BitMessageShouldTakeCorrectColorAndIcon(BitColor color, string expectedClass, string expectedIcon)
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Color, color);
+        });
+
+        Assert.IsTrue(component.Find(".bit-msg").ClassList.Contains(expectedClass));
+        Assert.IsTrue(component.Find(".bit-msg-ict > i").ClassList.Contains($"bit-icon--{expectedIcon}"));
+    }
+
+    [TestMethod,
+        DataRow(null, "bit-msg-fil"),
+        DataRow(BitVariant.Fill, "bit-msg-fil"),
+        DataRow(BitVariant.Outline, "bit-msg-otl"),
+        DataRow(BitVariant.Text, "bit-msg-txt")
+    ]
+    public void BitMessageShouldRespectVariant(BitVariant? variant, string expectedClass)
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Variant, variant);
+        });
+
+        Assert.IsTrue(component.Find(".bit-msg").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod,
+        DataRow(null, "bit-msg-md"),
+        DataRow(BitSize.Small, "bit-msg-sm"),
+        DataRow(BitSize.Medium, "bit-msg-md"),
+        DataRow(BitSize.Large, "bit-msg-lg")
+    ]
+    public void BitMessageShouldRespectSize(BitSize? size, string expectedClass)
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Size, size);
+        });
+
+        Assert.IsTrue(component.Find(".bit-msg").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitMessageShouldRespectSquare(bool square)
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Square, square);
+        });
+
+        Assert.AreEqual(square, component.Find(".bit-msg").ClassList.Contains("bit-msg-sqr"));
+    }
+
+    [TestMethod,
+        DataRow(BitAlignment.Start, "flex-start"),
+        DataRow(BitAlignment.End, "flex-end"),
+        DataRow(BitAlignment.Center, "center"),
+        DataRow(BitAlignment.SpaceBetween, "space-between"),
+        DataRow(BitAlignment.SpaceAround, "space-around"),
+        DataRow(BitAlignment.SpaceEvenly, "space-evenly"),
+        DataRow(BitAlignment.Baseline, "baseline"),
+        DataRow(BitAlignment.Stretch, "stretch"),
+        DataRow(null, "flex-start")
+    ]
+    public void BitMessageShouldRespectAlignment(BitAlignment? alignment, string expectedValue)
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Alignment, alignment);
+        });
+
+        var style = component.Find(".bit-msg").GetAttribute("style");
+
+        StringAssert.Contains(style, $"--bit-msg-justifycontent:{expectedValue}");
+    }
+
+    [TestMethod,
+        DataRow(1),
+        DataRow(7),
+        DataRow(24)
+    ]
+    public void BitMessageShouldRespectElevationInsideTheScale(int elevation)
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Elevation, elevation);
+        });
+
+        StringAssert.Contains(component.Find(".bit-msg").GetAttribute("style"), $"--bit-msg-boxshadow:var(--bit-shd-{elevation})");
+    }
+
+    [TestMethod,
+        DataRow(null),
+        DataRow(0),
+        DataRow(-1),
+        DataRow(25),
+        DataRow(100)
+    ]
+    public void BitMessageShouldIgnoreElevationOutsideTheScale(int? elevation)
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Elevation, elevation);
+        });
+
+        var style = component.Find(".bit-msg").GetAttribute("style") ?? string.Empty;
+
+        Assert.IsFalse(style.Contains("--bit-msg-boxshadow"));
+    }
+
+
 
     [TestMethod,
         DataRow("Emoji2"),
@@ -65,6 +225,191 @@ public class BitMessageTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMessageIconShouldTakePrecedenceOverIconName()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Emoji2");
+            parameters.Add(p => p.Icon, BitIconInfo.Fa("solid circle-info"));
+        });
+
+        var icon = component.Find(".bit-msg-ict > i");
+
+        Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(icon.ClassList.Contains("fa-circle-info"));
+        Assert.IsFalse(icon.ClassList.Contains("bit-icon--Emoji2"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitMessageShouldRespectHideIcon(bool hideIcon)
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.HideIcon, hideIcon);
+        });
+
+        Assert.HasCount(hideIcon ? 0 : 1, component.FindAll(".bit-msg-ict"));
+    }
+
+    [TestMethod]
+    public void BitMessageIconShouldBeHiddenFromAssistiveTechnology()
+    {
+        var component = RenderComponent<BitMessage>();
+
+        Assert.AreEqual("true", component.Find(".bit-msg-ict").GetAttribute("aria-hidden"));
+    }
+
+
+
+    [TestMethod]
+    public void BitMessageShouldRenderTheTitle()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Title, "Upload failed");
+            parameters.AddChildContent("The file is too large.");
+        });
+
+        Assert.AreEqual("Upload failed", component.Find(".bit-msg-ttl").TextContent.Trim());
+        Assert.AreEqual("The file is too large.", component.Find(".bit-msg-cnt").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitMessageTitleTemplateShouldTakePrecedenceOverTitle()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Title, "plain");
+            parameters.Add(p => p.TitleTemplate, "<b>markup</b>");
+        });
+
+        var title = component.Find(".bit-msg-ttl");
+
+        Assert.AreEqual("markup", title.TextContent.Trim());
+        Assert.HasCount(1, title.QuerySelectorAll("b"));
+    }
+
+    [TestMethod]
+    public void BitMessageWithoutATitleShouldNotOptIntoTheInlineLayout()
+    {
+        var component = RenderComponent<BitMessage>();
+
+        Assert.IsFalse(component.Find(".bit-msg-cnw").ClassList.Contains("bit-msg-cwi"));
+    }
+
+    [TestMethod,
+        // A title shares the line with the content on a single-line message ...
+        DataRow(false, false, true),
+        // ... and stacks above it once the message is allowed to wrap.
+        DataRow(true, false, false),
+        // A truncated message is a single line until it is expanded.
+        DataRow(false, true, true)
+    ]
+    public void BitMessageShouldPlaceTheTitleInlineOnlyOnASingleLine(bool multiline, bool truncate, bool expectedInline)
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Title, "Heads up");
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.Truncate, truncate);
+        });
+
+        Assert.AreEqual(expectedInline, component.Find(".bit-msg-cnw").ClassList.Contains("bit-msg-cwi"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldStackTheTitleOnceTheTruncatedContentIsExpanded()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Title, "Heads up");
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        Assert.IsTrue(component.Find(".bit-msg-cnw").ClassList.Contains("bit-msg-cwi"));
+
+        component.Find(".bit-msg-exb").Click();
+
+        Assert.IsFalse(component.Find(".bit-msg-cnw").ClassList.Contains("bit-msg-cwi"));
+    }
+
+
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitMessageShouldRespectMultiline(bool multiline)
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.AddChildContent(LongText);
+        });
+
+        Assert.AreEqual(multiline, component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-mcn"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldRenderTheActionsInline()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Actions, "<button>Retry</button>");
+        });
+
+        var actions = component.Find(".bit-msg-act");
+
+        Assert.IsFalse(actions.ClassList.Contains("bit-msg-mac"));
+        // Inline actions live inside the root container, next to the content.
+        Assert.AreEqual("bit-msg-rct", actions.ParentElement!.ClassList.First());
+    }
+
+    [TestMethod]
+    public void BitMessageShouldMoveTheActionsToTheirOwnRowInMultilineMode()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, true);
+            parameters.Add(p => p.Actions, "<button>Retry</button>");
+        });
+
+        var actions = component.Find(".bit-msg-act");
+
+        Assert.IsTrue(actions.ClassList.Contains("bit-msg-mac"));
+        // The multiline row is a sibling of the root container, under the message root.
+        Assert.IsTrue(actions.ParentElement!.ClassList.Contains("bit-msg"));
+    }
+
+    [TestMethod,
+        DataRow("<div><button>Action</button></div>")
+    ]
+    public void BitMessageShouldRespectAction(string actions)
+    {
+        var component = RenderComponent<BitMessage>(parameter =>
+        {
+            parameter.Add(p => p.Actions, actions);
+        });
+
+        var actionsTemplate = component.Find(".bit-msg-act").ChildNodes;
+        actionsTemplate.MarkupMatches(actions);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotRenderTheActionsWhenNoneWereGiven()
+    {
+        var component = RenderComponent<BitMessage>();
+
+        Assert.IsEmpty(component.FindAll(".bit-msg-act"));
+    }
+
+
+
+    [TestMethod]
     public void BitMessageDismissButtonShouldWorkCorrect()
     {
         var currentCount = 0;
@@ -78,6 +423,14 @@ public class BitMessageTests : BunitTestContext
         dismissButton.Click();
 
         Assert.AreEqual(1, currentCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotRenderTheDismissButtonWithoutAHandler()
+    {
+        var component = RenderComponent<BitMessage>();
+
+        Assert.IsEmpty(component.FindAll(".bit-msg-dmb"));
     }
 
     [TestMethod,
@@ -97,19 +450,260 @@ public class BitMessageTests : BunitTestContext
         Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
     }
 
-    [TestMethod,
-        DataRow("<div><button>Action</button></div>")
-    ]
-    public void BitMessageShouldRespectAction(string actions)
+    [TestMethod]
+    public void BitMessageDismissIconShouldTakePrecedenceOverDismissIconName()
     {
-        var component = RenderComponent<BitMessage>(parameter =>
+        var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameter.Add(p => p.Actions, actions);
+            parameters.Add(p => p.DismissIconName, "Emoji2");
+            parameters.Add(p => p.DismissIcon, BitIconInfo.Bi("x-circle-fill"));
+            parameters.Add(p => p.OnDismiss, () => { });
         });
 
-        var actionsTemplate = component.Find(".bit-msg-act").ChildNodes;
-        actionsTemplate.MarkupMatches(actions);
+        var icon = component.Find(".bit-msg-dmi");
+
+        Assert.IsTrue(icon.ClassList.Contains("bi"));
+        Assert.IsTrue(icon.ClassList.Contains("bi-x-circle-fill"));
     }
+
+    [TestMethod]
+    public void BitMessageDismissButtonShouldCarryAnAccessibleName()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.OnDismiss, () => { });
+        });
+
+        var button = component.Find(".bit-msg-dmb");
+
+        Assert.AreEqual("button", button.GetAttribute("type"));
+        Assert.AreEqual("Dismiss", button.GetAttribute("aria-label"));
+        Assert.AreEqual("Dismiss", button.GetAttribute("title"));
+        Assert.AreEqual("true", component.Find(".bit-msg-dmi").GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldRespectCustomDismissAriaLabel()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.DismissAriaLabel, "بستن");
+            parameters.Add(p => p.OnDismiss, () => { });
+        });
+
+        Assert.AreEqual("بستن", component.Find(".bit-msg-dmb").GetAttribute("aria-label"));
+    }
+
+
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitMessageShouldRespectTruncate(bool truncate)
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, truncate);
+            parameters.AddChildContent(LongText);
+        });
+
+        Assert.HasCount(truncate ? 1 : 0, component.FindAll(".bit-msg-exb"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotRenderTheExpanderInMultilineMode()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.Add(p => p.Multiline, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-msg-exb"));
+    }
+
+    [TestMethod]
+    public void BitMessageExpanderShouldToggleTheExpandedState()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        var content = component.Find(".bit-msg-cnc");
+        var button = component.Find(".bit-msg-exb");
+
+        Assert.IsFalse(content.ClassList.Contains("bit-msg-cnx"));
+        Assert.AreEqual("false", button.GetAttribute("aria-expanded"));
+        Assert.AreEqual("Expand", button.GetAttribute("aria-label"));
+
+        button.Click();
+
+        Assert.IsTrue(component.Find(".bit-msg-cnc").ClassList.Contains("bit-msg-cnx"));
+        Assert.AreEqual("true", component.Find(".bit-msg-exb").GetAttribute("aria-expanded"));
+        Assert.AreEqual("Collapse", component.Find(".bit-msg-exb").GetAttribute("aria-label"));
+
+        component.Find(".bit-msg-exb").Click();
+
+        Assert.IsFalse(component.Find(".bit-msg-cnc").ClassList.Contains("bit-msg-cnx"));
+    }
+
+    [TestMethod]
+    public void BitMessageExpanderShouldPointAtTheContentItControls()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Id, "the-message");
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        Assert.AreEqual("the-message-cnt", component.Find(".bit-msg-exb").GetAttribute("aria-controls"));
+        Assert.AreEqual("the-message-cnt", component.Find(".bit-msg-cnc").GetAttribute("id"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldRespectCustomExpanderAriaLabels()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.Add(p => p.ExpandAriaLabel, "Show more");
+            parameters.Add(p => p.CollapseAriaLabel, "Show less");
+            parameters.AddChildContent(LongText);
+        });
+
+        Assert.AreEqual("Show more", component.Find(".bit-msg-exb").GetAttribute("aria-label"));
+
+        component.Find(".bit-msg-exb").Click();
+
+        Assert.AreEqual("Show less", component.Find(".bit-msg-exb").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitMessageDefaultExpanderIconShouldBeTheCollapseGlyphTurnedOver()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        var icon = component.Find(".bit-msg-exi");
+
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon--DoubleChevronUp"));
+        Assert.IsTrue(icon.ClassList.Contains("bit-ico-r180"));
+
+        component.Find(".bit-msg-exb").Click();
+
+        var collapseIcon = component.Find(".bit-msg-exi");
+
+        Assert.IsTrue(collapseIcon.ClassList.Contains("bit-icon--DoubleChevronUp"));
+        Assert.IsFalse(collapseIcon.ClassList.Contains("bit-ico-r180"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldRespectCustomExpandAndCollapseIconNames()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.Add(p => p.ExpandIconName, "ChevronDownEnd");
+            parameters.Add(p => p.CollapseIconName, "ChevronUpEnd");
+            parameters.AddChildContent(LongText);
+        });
+
+        var icon = component.Find(".bit-msg-exi");
+
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon--ChevronDownEnd"));
+        // A custom glyph already points the right way, so it is never turned over.
+        Assert.IsFalse(icon.ClassList.Contains("bit-ico-r180"));
+
+        component.Find(".bit-msg-exb").Click();
+
+        Assert.IsTrue(component.Find(".bit-msg-exi").ClassList.Contains("bit-icon--ChevronUpEnd"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldRespectCustomExpandAndCollapseIcons()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.Add(p => p.ExpandIcon, BitIconInfo.Bi("chevron-double-down"));
+            parameters.Add(p => p.CollapseIcon, BitIconInfo.Bi("chevron-double-up"));
+            parameters.AddChildContent(LongText);
+        });
+
+        Assert.IsTrue(component.Find(".bit-msg-exi").ClassList.Contains("bi-chevron-double-down"));
+        Assert.IsFalse(component.Find(".bit-msg-exi").ClassList.Contains("bit-ico-r180"));
+
+        component.Find(".bit-msg-exb").Click();
+
+        Assert.IsTrue(component.Find(".bit-msg-exi").ClassList.Contains("bi-chevron-double-up"));
+    }
+
+    [TestMethod]
+    public void BitMessageExpandedShouldBeTwoWayBindable()
+    {
+        var isExpanded = false;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.Bind(p => p.Expanded, isExpanded, v => isExpanded = v);
+            parameters.AddChildContent(LongText);
+        });
+
+        component.Find(".bit-msg-exb").Click();
+
+        Assert.IsTrue(isExpanded);
+        Assert.IsTrue(component.Find(".bit-msg-cnc").ClassList.Contains("bit-msg-cnx"));
+    }
+
+    [TestMethod]
+    public void BitMessageExpandedShouldBeControllableFromOutside()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        Assert.IsFalse(component.Find(".bit-msg-cnc").ClassList.Contains("bit-msg-cnx"));
+
+        component.Render(parameters => parameters.Add(p => p.Expanded, true));
+
+        Assert.IsTrue(component.Find(".bit-msg-cnc").ClassList.Contains("bit-msg-cnx"));
+        Assert.AreEqual("true", component.Find(".bit-msg-exb").GetAttribute("aria-expanded"));
+    }
+
+
+
+    [TestMethod,
+        DataRow(false, false),
+        DataRow(true, false),
+        DataRow(false, true)
+    ]
+    public void BitMessageShouldIgnoreExpandedWithoutSomethingFoldedAway(bool multiline, bool truncate)
+    {
+        // Expanded is only meaningful where the expander button renders; anywhere else it must not start
+        // rewrapping a message that was asked to stay on one line.
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.Truncate, truncate && multiline);
+            parameters.Add(p => p.Expanded, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        Assert.IsFalse(component.Find(".bit-msg-cnc").ClassList.Contains("bit-msg-cnx"));
+    }
+
+
 
     [TestMethod,
         DataRow("alert", BitColor.Info),
@@ -118,11 +712,16 @@ public class BitMessageTests : BunitTestContext
         DataRow("alert", BitColor.SevereWarning),
         DataRow("alert", BitColor.Error),
 
+        DataRow(null, BitColor.Primary),
+        DataRow(null, BitColor.Secondary),
+        DataRow(null, BitColor.Tertiary),
         DataRow(null, BitColor.Info),
         DataRow(null, BitColor.Success),
         DataRow(null, BitColor.Warning),
         DataRow(null, BitColor.SevereWarning),
         DataRow(null, BitColor.Error),
+        DataRow(null, BitColor.PrimaryBackground),
+        DataRow(null, BitColor.SecondaryBorder),
     ]
     public void BitMessageRoleTest(string role, BitColor type)
     {
@@ -137,6 +736,485 @@ public class BitMessageTests : BunitTestContext
 
         Assert.AreEqual(expectedRole, textEl.GetAttribute("role"));
     }
+
+    [TestMethod]
+    public void BitMessageWithoutAColorShouldAnnouncePolitely()
+    {
+        var component = RenderComponent<BitMessage>();
+
+        Assert.AreEqual("status", component.Find(".bit-msg-cnc").GetAttribute("role"));
+    }
+
+
+
+    [TestMethod]
+    public void BitMessageShouldAutoDismissAfterTheGivenTime()
+    {
+        var dismissCount = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(100));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotAutoDismissWithoutAHandler()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(50));
+        });
+
+        // Nothing to call means nothing to arm, so the pause listeners are not wired up either.
+        Assert.ThrowsExactly<MissingEventHandlerException>(() => component.Find(".bit-msg").MouseEnter());
+    }
+
+    [TestMethod,
+        DataRow(0),
+        DataRow(-1)
+    ]
+    public void BitMessageShouldIgnoreANonPositiveAutoDismissTime(int seconds)
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(seconds));
+            parameters.Add(p => p.OnDismiss, () => { });
+        });
+
+        Assert.ThrowsExactly<MissingEventHandlerException>(() => component.Find(".bit-msg").MouseEnter());
+    }
+
+    [TestMethod]
+    public void BitMessageShouldWireUpThePauseListenersOnlyWhenTheCountdownIsArmed()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
+            parameters.Add(p => p.OnDismiss, () => { });
+        });
+
+        // No exception means the listeners are there; the countdown is long enough not to fire meanwhile.
+        component.Find(".bit-msg").MouseEnter();
+        component.Find(".bit-msg").MouseLeave();
+        component.Find(".bit-msg").FocusIn();
+        component.Find(".bit-msg").FocusOut();
+    }
+
+    [TestMethod]
+    public void BitMessageShouldHoldTheAutoDismissCountdownWhileThePointerIsOverIt()
+    {
+        var dismissCount = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(600));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        component.Find(".bit-msg").MouseEnter();
+
+        // Well past the countdown, but the pointer is holding it.
+        Thread.Sleep(1500);
+        Assert.AreEqual(0, dismissCount);
+
+        component.Find(".bit-msg").MouseLeave();
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotAutoDismissAfterBeingDismissedByHand()
+    {
+        var dismissCount = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(300));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        component.Find(".bit-msg-dmb").Click();
+
+        Assert.AreEqual(1, dismissCount);
+
+        Thread.Sleep(800);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotReviveTheCountdownAfterAManualDismiss()
+    {
+        var dismissCount = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(200));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        component.Find(".bit-msg-dmb").Click();
+
+        // A parameter set after the dismiss must not start the countdown over.
+        component.Render(parameters => parameters.Add(p => p.Color, BitColor.Warning));
+
+        Thread.Sleep(700);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotRestartTheCountdownOnAnUnrelatedRerender()
+    {
+        var dismissCount = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(400));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        // Three parameter sets while the countdown runs; a countdown restarted by any of them would keep
+        // pushing the callback out of reach of the wait below.
+        for (var i = 0; i < 3; i++)
+        {
+            Thread.Sleep(150);
+            component.Render(parameters => parameters.Add(p => p.Class, $"round-{i}"));
+        }
+
+        WaitUntil(() => dismissCount == 1, 1000);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldRearmTheCountdownWhenTheAutoDismissTimeChanges()
+    {
+        var dismissCount = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        Assert.AreEqual(0, dismissCount);
+
+        component.Render(parameters => parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(100)));
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+
+
+    [TestMethod]
+    public void BitMessageShouldDismissOnEscape()
+    {
+        var dismissCount = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.DismissOnEscape, true);
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        component.Find(".bit-msg").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldIgnoreOtherKeysWhenDismissOnEscapeIsOn()
+    {
+        var dismissCount = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.DismissOnEscape, true);
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        component.Find(".bit-msg").KeyDown(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.AreEqual(0, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotListenForKeysWhenDismissOnEscapeIsOff()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.OnDismiss, () => { });
+        });
+
+        Assert.ThrowsExactly<MissingEventHandlerException>(
+            () => component.Find(".bit-msg").KeyDown(new KeyboardEventArgs { Key = "Escape" }));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotListenForKeysWithoutADismissHandler()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.DismissOnEscape, true);
+        });
+
+        Assert.ThrowsExactly<MissingEventHandlerException>(
+            () => component.Find(".bit-msg").KeyDown(new KeyboardEventArgs { Key = "Escape" }));
+    }
+
+
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitMessageShouldRespectIsEnabled(bool isEnabled)
+    {
+        var dismissCount = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Truncate, true);
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+            parameters.AddChildContent(LongText);
+        });
+
+        Assert.AreEqual(isEnabled is false, component.Find(".bit-msg").ClassList.Contains("bit-dis"));
+        Assert.AreEqual(isEnabled is false, component.Find(".bit-msg-dmb").HasAttribute("disabled"));
+        Assert.AreEqual(isEnabled is false, component.Find(".bit-msg-exb").HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotDismissOrExpandWhileDisabled()
+    {
+        var dismissCount = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Truncate, true);
+            parameters.Add(p => p.DismissOnEscape, true);
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+            parameters.AddChildContent(LongText);
+        });
+
+        component.Find(".bit-msg-dmb").Click();
+        component.Find(".bit-msg-exb").Click();
+
+        Assert.AreEqual(0, dismissCount);
+        Assert.IsFalse(component.Find(".bit-msg-cnc").ClassList.Contains("bit-msg-cnx"));
+    }
+
+
+
+    [TestMethod]
+    public void BitMessageShouldRespectAriaLabelAndTabIndex()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "Upload status");
+            parameters.Add(p => p.TabIndex, "0");
+        });
+
+        var root = component.Find(".bit-msg");
+
+        Assert.AreEqual("Upload status", root.GetAttribute("aria-label"));
+        Assert.AreEqual("0", root.GetAttribute("tabindex"));
+    }
+
+    [TestMethod,
+        DataRow(BitDir.Rtl, "rtl"),
+        DataRow(BitDir.Ltr, "ltr"),
+        DataRow(BitDir.Auto, "auto")
+    ]
+    public void BitMessageShouldRespectDir(BitDir dir, string expectedDir)
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+        });
+
+        var root = component.Find(".bit-msg");
+
+        Assert.AreEqual(expectedDir, root.GetAttribute("dir"));
+        Assert.AreEqual(dir == BitDir.Rtl, root.ClassList.Contains("bit-rtl"));
+    }
+
+    [TestMethod,
+        DataRow(BitVisibility.Visible, ""),
+        DataRow(BitVisibility.Hidden, "visibility:hidden"),
+        DataRow(BitVisibility.Collapsed, "display:none")
+    ]
+    public void BitMessageShouldRespectVisibility(BitVisibility visibility, string expectedStyle)
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Visibility, visibility);
+        });
+
+        var style = component.Find(".bit-msg").GetAttribute("style") ?? string.Empty;
+
+        Assert.AreEqual(expectedStyle.Length > 0, style.Contains(expectedStyle) && expectedStyle.Length > 0);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldRespectStyleAndClass()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Style, "color:red");
+            parameters.Add(p => p.Class, "custom-class");
+        });
+
+        var root = component.Find(".bit-msg");
+
+        StringAssert.Contains(root.GetAttribute("style"), "color:red");
+        Assert.IsTrue(root.ClassList.Contains("custom-class"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldRespectClasses()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.Add(p => p.Title, "The title");
+            parameters.Add(p => p.OnDismiss, () => { });
+            parameters.Add(p => p.Actions, "<button>Retry</button>");
+            parameters.Add(p => p.Classes, new BitMessageClassStyles
+            {
+                Root = "cls-root",
+                RootContainer = "cls-rct",
+                Container = "cls-con",
+                IconContainer = "cls-ict",
+                Icon = "cls-ico",
+                ContentContainer = "cls-cnc",
+                ContentWrapper = "cls-cnw",
+                Title = "cls-ttl",
+                Content = "cls-cnt",
+                Actions = "cls-act",
+                ExpanderButton = "cls-exb",
+                ExpanderIcon = "cls-exi",
+                DismissButton = "cls-dmb",
+                DismissIcon = "cls-dmi",
+            });
+            parameters.AddChildContent(LongText);
+        });
+
+        Assert.IsTrue(component.Find(".bit-msg").ClassList.Contains("cls-root"));
+        Assert.IsTrue(component.Find(".bit-msg-rct").ClassList.Contains("cls-rct"));
+        Assert.IsTrue(component.Find(".bit-msg-con").ClassList.Contains("cls-con"));
+        Assert.IsTrue(component.Find(".bit-msg-ict").ClassList.Contains("cls-ict"));
+        Assert.IsTrue(component.Find(".bit-msg-ico").ClassList.Contains("cls-ico"));
+        Assert.IsTrue(component.Find(".bit-msg-cnc").ClassList.Contains("cls-cnc"));
+        Assert.IsTrue(component.Find(".bit-msg-cnw").ClassList.Contains("cls-cnw"));
+        Assert.IsTrue(component.Find(".bit-msg-ttl").ClassList.Contains("cls-ttl"));
+        Assert.IsTrue(component.Find(".bit-msg-cnt").ClassList.Contains("cls-cnt"));
+        Assert.IsTrue(component.Find(".bit-msg-act").ClassList.Contains("cls-act"));
+        Assert.IsTrue(component.Find(".bit-msg-exb").ClassList.Contains("cls-exb"));
+        Assert.IsTrue(component.Find(".bit-msg-exi").ClassList.Contains("cls-exi"));
+        Assert.IsTrue(component.Find(".bit-msg-dmb").ClassList.Contains("cls-dmb"));
+        Assert.IsTrue(component.Find(".bit-msg-dmi").ClassList.Contains("cls-dmi"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldRespectStyles()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.Add(p => p.Title, "The title");
+            parameters.Add(p => p.OnDismiss, () => { });
+            parameters.Add(p => p.Actions, "<button>Retry</button>");
+            parameters.Add(p => p.Styles, new BitMessageClassStyles
+            {
+                Root = "padding:1rem",
+                RootContainer = "margin:1px",
+                Container = "margin:2px",
+                IconContainer = "margin:3px",
+                Icon = "font-size:1rem",
+                ContentContainer = "margin:4px",
+                ContentWrapper = "margin:5px",
+                Title = "color:red",
+                Content = "color:blue",
+                Actions = "gap:1rem",
+                ExpanderButton = "margin:6px",
+                ExpanderIcon = "font-size:2rem",
+                DismissButton = "margin:7px",
+                DismissIcon = "font-size:3rem",
+            });
+            parameters.AddChildContent(LongText);
+        });
+
+        StringAssert.Contains(component.Find(".bit-msg").GetAttribute("style"), "padding:1rem");
+        StringAssert.Contains(component.Find(".bit-msg-rct").GetAttribute("style"), "margin:1px");
+        StringAssert.Contains(component.Find(".bit-msg-con").GetAttribute("style"), "margin:2px");
+        StringAssert.Contains(component.Find(".bit-msg-ict").GetAttribute("style"), "margin:3px");
+        StringAssert.Contains(component.Find(".bit-msg-ico").GetAttribute("style"), "font-size:1rem");
+        StringAssert.Contains(component.Find(".bit-msg-cnc").GetAttribute("style"), "margin:4px");
+        StringAssert.Contains(component.Find(".bit-msg-cnw").GetAttribute("style"), "margin:5px");
+        StringAssert.Contains(component.Find(".bit-msg-ttl").GetAttribute("style"), "color:red");
+        StringAssert.Contains(component.Find(".bit-msg-cnt").GetAttribute("style"), "color:blue");
+        StringAssert.Contains(component.Find(".bit-msg-act").GetAttribute("style"), "gap:1rem");
+        StringAssert.Contains(component.Find(".bit-msg-exb").GetAttribute("style"), "margin:6px");
+        StringAssert.Contains(component.Find(".bit-msg-exi").GetAttribute("style"), "font-size:2rem");
+        StringAssert.Contains(component.Find(".bit-msg-dmb").GetAttribute("style"), "margin:7px");
+        StringAssert.Contains(component.Find(".bit-msg-dmi").GetAttribute("style"), "font-size:3rem");
+    }
+
+    [TestMethod,
+        DataRow("data-test", "the-value"),
+        DataRow("aria-describedby", "some-id")
+    ]
+    public void BitMessageShouldRespectArbitraryHtmlAttributes(string name, string value)
+    {
+        // Arbitrary HTML attributes are captured by BitComponentBase from unmatched parameters, so
+        // supply them as raw component attributes (as real markup would) rather than via the builder,
+        // which rejects unmatched params on components without [Parameter(CaptureUnmatchedValues)].
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitMessage>(0);
+            builder.AddAttribute(1, name, value);
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual(value, component.Find(".bit-msg").GetAttribute(name));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotOverrideAConsumerSuppliedHandler()
+    {
+        var consumerCount = 0;
+
+        // The auto-dismiss hold registers an onmouseenter of its own; an onmouseenter written on the
+        // component has to keep winning.
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitMessage>(0);
+            builder.AddAttribute(1, nameof(BitMessage.AutoDismissTime), TimeSpan.FromSeconds(30));
+            builder.AddAttribute(2, nameof(BitMessage.OnDismiss), EventCallback.Factory.Create(this, () => { }));
+            builder.AddAttribute(3, "onmouseenter", EventCallback.Factory.Create<MouseEventArgs>(this, _ => consumerCount++));
+            builder.CloseComponent();
+        });
+
+        component.Find(".bit-msg").MouseEnter();
+
+        Assert.AreEqual(1, consumerCount);
+    }
+
+
 
     private static string GetRole(BitColor type)
      => type switch

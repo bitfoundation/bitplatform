@@ -4,6 +4,17 @@
     flex-flow: column;
 }
 
+// The Square sample needs an edge to sit flush against, so it is given a framed box to fill.
+.banner-host {
+    overflow: hidden;
+    border-radius: 0.25rem;
+    border: 1px solid var(--bit-clr-brd-sec);
+}
+
+.banner-body {
+    padding: 1rem;
+}
+
 ::deep {
     .custom-class {
         padding: 1rem;
