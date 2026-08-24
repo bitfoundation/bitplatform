@@ -1178,6 +1178,9 @@ async function createAssetsCache(ignoreProgressReport = false) {
     let newCacheKeys = await newCache.keys();
     const firstTime = newCacheKeys.length === 0;
     const passiveFirstTime = self.isPassive && firstTime
+
+    diag('passiveFirstTime:', passiveFirstTime);
+    
     // Passive first install: skip the download and let the page boot immediately (assets
     // lazy-fill as the app fetches them). Only the install run can reach this - the top-up
     // pass returned above - so there is always a page listening for the 'bypass' reply.
@@ -1186,8 +1189,6 @@ async function createAssetsCache(ignoreProgressReport = false) {
         diagGroupEnd();
         return;
     }
-
-    diag('passiveFirstTime:', passiveFirstTime);
 
     let current = 0;
     let total = UNIQUE_ASSETS.length;
