@@ -29,6 +29,12 @@ public partial class BitMessage : BitComponentBase
     private TimeSpan? _armedAutoDismissTime;
     private CancellationTokenSource? _autoDismissCts;
 
+    // A CSS animation keeps its own place in time, so a bar handed a new duration would carry on from
+    // wherever the previous countdown had got to. This counts the countdowns instead, and the bar is
+    // keyed on it, so every re-arming hands the renderer an element it has never seen and the drawing
+    // starts over with the countdown it draws.
+    private int _autoDismissGeneration;
+
     // Held as fields so re-registering them on every parameter set keeps handing the renderer the same
     // delegate instance, which is what lets the diff leave the listener alone.
     private readonly Action _onPointerEnter;
@@ -329,9 +335,24 @@ public partial class BitMessage : BitComponentBase
     [Parameter] public RenderFragment? IconTemplate { get; set; }
 
     /// <summary>
+    /// Caps how many lines the content of the message may wrap over before it is clipped, in
+    /// <see cref="Multiline"/> mode.
+    /// </summary>
+    /// <remarks>
+    /// A multiline message grows with whatever is put in it, which is what makes one long message able to push the
+    /// page around. This holds it to a fixed number of lines and ends the last one with an ellipsis. Pair it with
+    /// <see cref="Truncate"/> to give the reader the expander button that unfolds the rest, the way a truncated
+    /// single-line message has one - without it the text past the cap can only be reached by a screen reader.
+    /// Values below <c>1</c>, and any value at all on a single-line message, leave the message as it was.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public int? MaxLines { get; set; }
+
+    /// <summary>
     /// Determines if the message is multi-lined. If false, and the text overflows over buttons or to another line, it is clipped.
     /// </summary>
-    [Parameter] public bool Multiline { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public bool Multiline { get; set; }
 
     /// <summary>
     ///  Whether the message has a dismiss button and its callback. If null, dismiss button won't show.
@@ -351,6 +372,9 @@ public partial class BitMessage : BitComponentBase
     /// <see cref="DismissAsync()"/> call apart - refusing to let a countdown take away a message that has not been
     /// read yet is not the same as refusing the button the reader just pressed. Since the callback is awaited, it
     /// can also run asynchronous work like a confirmation prompt.
+    /// <br />
+    /// Refusing a countdown keeps the countdown too: the message is given its <see cref="AutoDismissTime"/> over
+    /// again, so it is not left standing there with an exhausted bar and no timer behind it.
     /// </remarks>
     [Parameter] public EventCallback<BitMessageDismissArgs> OnDismissing { get; set; }
 
@@ -420,6 +444,11 @@ public partial class BitMessage : BitComponentBase
     /// If true, a button will render to toggle between a single line view and multiline view.
     /// This parameter is for single line messages with no buttons only in a limited space scenario.
     /// </summary>
+    /// <remarks>
+    /// On a <see cref="Multiline"/> message there is nothing folded away to unfold, so this does nothing on its own
+    /// there; give that message a <see cref="MaxLines"/> cap and the same button appears, unfolding it past the cap
+    /// instead of past the single line.
+    /// </remarks>
     [Parameter] public bool Truncate { get; set; }
 
     /// <summary>
@@ -515,6 +544,10 @@ public partial class BitMessage : BitComponentBase
         // The shadow scale only has the 24 steps the theme declares, so anything outside it would resolve
         // to an undefined custom property and drop the whole declaration.
         StyleBuilder.Register(() => Elevation is >= 1 and <= 24 ? $"--bit-msg-boxshadow:var(--bit-shd-{Elevation.Value})" : string.Empty);
+
+        // Only handed over where the cap is actually read, so a single-line message is not left carrying a
+        // custom property nothing on it looks at.
+        StyleBuilder.Register(() => _HasMaxLines ? $"--bit-msg-maxlines:{MaxLines!.Value.ToString(CultureInfo.InvariantCulture)}" : string.Empty);
     }
 
     protected override void RegisterCssClasses()
@@ -639,9 +672,24 @@ public partial class BitMessage : BitComponentBase
         builder.CloseElement();
     }
 
+    // A cap only holds where the content is allowed to wrap in the first place; on a single line the message
+    // already clips itself to one.
+    private bool _HasMaxLines => Multiline && MaxLines is > 0;
+
+    // Something is folded away either because the message is held to one line, or because it is held to a
+    // number of them - and either way there is a button worth rendering to unfold it.
+    private bool _HasExpander => Truncate && (Multiline is false || _HasMaxLines);
+
     // Expanded only means anything where there is something folded away to unfold, so it is read through
     // the same condition that decides whether the expander button renders at all.
-    private bool _IsExpanded => Truncate && Multiline is false && Expanded;
+    private bool _IsExpanded => _HasExpander && Expanded;
+
+    // The cap holds until the reader unfolds it, and there is nothing to unfold it with unless Truncate
+    // asked for the button, so a capped message without one stays capped.
+    private bool _IsClamped => _HasMaxLines && _IsExpanded is false;
+
+    // Two class names too many for the markup to piece together in an attribute of its own.
+    private string _ContentClass => $"bit-msg-cnt{(Multiline ? " bit-msg-mcn" : "")}{(_IsClamped ? " bit-msg-clp" : "")}";
 
     // A title sits on the same line as the content unless the message has room for a second line. The row
     // layout is only opted into when there is actually a title, so a message without one renders as before.
@@ -768,11 +816,34 @@ public partial class BitMessage : BitComponentBase
         // duration itself changes.
         if (_armedAutoDismissTime == value) return;
 
+        // A countdown that replaces one already under way is a second countdown, and the bar drawing it has to
+        // be handed an element of its own. The very first one is not: it is the one the message was rendered
+        // with, and counting it would leave the markup a generation behind what this field says.
+        StartAutoDismiss(value, restart: _armedAutoDismissTime is not null);
+    }
+
+    private void StartAutoDismiss(TimeSpan value, bool restart)
+    {
         StopAutoDismiss();
+
+        if (restart) _autoDismissGeneration++;
 
         _armedAutoDismissTime = value;
         _autoDismissCts = new CancellationTokenSource();
         _ = AutoDismissAsync(value, _autoDismissCts.Token);
+    }
+
+    // Sends the countdown round again from the beginning, for the same length of time it was armed for.
+    private void RestartAutoDismiss()
+    {
+        if (_armedAutoDismissTime is not { } value) return;
+        if (_CanDismiss is false || IsEnabled is false || Dismissed) return;
+
+        StartAutoDismiss(value, restart: true);
+
+        // The bar is keyed on the countdown it draws, so it is only wound back up by a render - and the dismissal
+        // this came out of is not one the component was already going to do.
+        if (_ShowsAutoDismissProgress) _ = InvokeAsync(StateHasChanged);
     }
 
     // Stops the running countdown but keeps the duration it was started for, which is what tells a later
@@ -830,7 +901,15 @@ public partial class BitMessage : BitComponentBase
 
                 await OnDismissing.InvokeAsync(args);
 
-                if (args.Cancel) return;
+                if (args.Cancel)
+                {
+                    // A refused countdown has still spent all of its time, and its bar has run all the way down
+                    // while the message it belongs to is still on the page. Refusing is keeping the message, not
+                    // taking its countdown away, so the countdown is wound back up and given another round.
+                    if (reason is BitMessageDismissReason.AutoDismiss) RestartAutoDismiss();
+
+                    return;
+                }
             }
 
             StopAutoDismiss();
@@ -966,8 +1045,8 @@ public partial class BitMessage : BitComponentBase
         [BitColor.Tertiary] = "Info",
         [BitColor.Info] = "Info",
         [BitColor.Success] = "Completed",
-        [BitColor.Warning] = "Info",
-        [BitColor.SevereWarning] = "Warning",
+        [BitColor.Warning] = "Warning",
+        [BitColor.SevereWarning] = "WarningSolid",
         [BitColor.Error] = "ErrorBadge",
         [BitColor.PrimaryBackground] = "Info",
         [BitColor.SecondaryBackground] = "Info",

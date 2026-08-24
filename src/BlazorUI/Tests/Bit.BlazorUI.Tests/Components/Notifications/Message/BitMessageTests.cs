@@ -81,8 +81,8 @@ public class BitMessageTests : BunitTestContext
         DataRow(BitColor.Tertiary, "bit-msg-ter", "Info"),
         DataRow(BitColor.Info, "bit-msg-inf", "Info"),
         DataRow(BitColor.Success, "bit-msg-suc", "Completed"),
-        DataRow(BitColor.Warning, "bit-msg-wrn", "Info"),
-        DataRow(BitColor.SevereWarning, "bit-msg-swr", "Warning"),
+        DataRow(BitColor.Warning, "bit-msg-wrn", "Warning"),
+        DataRow(BitColor.SevereWarning, "bit-msg-swr", "WarningSolid"),
         DataRow(BitColor.Error, "bit-msg-err", "ErrorBadge"),
         DataRow(BitColor.PrimaryBackground, "bit-msg-pbg", "Info"),
         DataRow(BitColor.SecondaryBackground, "bit-msg-sbg", "Info"),
@@ -934,6 +934,157 @@ public class BitMessageTests : BunitTestContext
         Assert.IsFalse(component.Find(".bit-msg-cnc").ClassList.Contains("bit-msg-cnx"));
     }
 
+    [TestMethod]
+    public void BitMessageShouldCapTheWrappedContentAtTheGivenNumberOfLines()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, true);
+            parameters.Add(p => p.MaxLines, 3);
+            parameters.AddChildContent(LongText);
+        });
+
+        Assert.IsTrue(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-clp"));
+        StringAssert.Contains(component.Find(".bit-msg").GetAttribute("style"), "--bit-msg-maxlines:3");
+    }
+
+    [TestMethod,
+        // A single-line message already clips itself to one line, so the cap has nothing to add ...
+        DataRow(false, 3),
+        // ... and a cap of no lines at all is not a cap.
+        DataRow(true, 0),
+        DataRow(true, -1)
+    ]
+    public void BitMessageShouldIgnoreAMaxLinesCapThatMeansNothing(bool multiline, int maxLines)
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.MaxLines, maxLines);
+            parameters.AddChildContent(LongText);
+        });
+
+        Assert.IsFalse(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-clp"));
+        Assert.DoesNotContain("--bit-msg-maxlines", component.Find(".bit-msg").GetAttribute("style") ?? string.Empty);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotCapTheContentWithoutBeingAsked()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        Assert.IsFalse(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-clp"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldRenderTheExpanderForACappedMultilineMessage()
+    {
+        // Truncate alone does nothing to a multiline message, but a capped one has something folded away
+        // again - the lines past the cap - so the button that unfolds them is worth rendering.
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, true);
+            parameters.Add(p => p.Truncate, true);
+            parameters.Add(p => p.MaxLines, 2);
+            parameters.AddChildContent(LongText);
+        });
+
+        Assert.HasCount(1, component.FindAll(".bit-msg-exb"));
+        Assert.IsTrue(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-clp"));
+    }
+
+    [TestMethod]
+    public void BitMessageExpanderShouldLiftTheMaxLinesCap()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, true);
+            parameters.Add(p => p.Truncate, true);
+            parameters.Add(p => p.MaxLines, 2);
+            parameters.AddChildContent(LongText);
+        });
+
+        component.Find(".bit-msg-exb").Click();
+
+        Assert.AreEqual("true", component.Find(".bit-msg-exb").GetAttribute("aria-expanded"));
+        Assert.IsFalse(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-clp"));
+
+        component.Find(".bit-msg-exb").Click();
+
+        Assert.IsTrue(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-clp"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldFollowTheMaxLinesCapAfterTheFirstRender()
+    {
+        // The cap is a custom property on the root, which the style builder caches until something resets it -
+        // and both the number and the mode it is read in can change while the message is already on the page.
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, false);
+            parameters.Add(p => p.MaxLines, 3);
+            parameters.AddChildContent(LongText);
+        });
+
+        Assert.DoesNotContain("--bit-msg-maxlines", component.Find(".bit-msg").GetAttribute("style") ?? string.Empty);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Multiline, true);
+            parameters.Add(p => p.MaxLines, 3);
+            parameters.AddChildContent(LongText);
+        });
+
+        StringAssert.Contains(component.Find(".bit-msg").GetAttribute("style"), "--bit-msg-maxlines:3");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Multiline, true);
+            parameters.Add(p => p.MaxLines, 5);
+            parameters.AddChildContent(LongText);
+        });
+
+        StringAssert.Contains(component.Find(".bit-msg").GetAttribute("style"), "--bit-msg-maxlines:5");
+    }
+
+    [TestMethod]
+    public void BitMessageShouldKeepTheCustomContentClassAlongsideTheCap()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, true);
+            parameters.Add(p => p.MaxLines, 2);
+            parameters.Add(p => p.Classes, new BitMessageClassStyles { Content = "cls-cnt" });
+            parameters.AddChildContent(LongText);
+        });
+
+        var content = component.Find(".bit-msg-cnt");
+
+        Assert.IsTrue(content.ClassList.Contains("bit-msg-mcn"));
+        Assert.IsTrue(content.ClassList.Contains("bit-msg-clp"));
+        Assert.IsTrue(content.ClassList.Contains("cls-cnt"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldKeepTheMaxLinesCapWithoutAnExpander()
+    {
+        // Expanded is only followed where a button asked for it; a capped message with no Truncate stays capped.
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, true);
+            parameters.Add(p => p.MaxLines, 2);
+            parameters.Add(p => p.Expanded, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-msg-exb"));
+        Assert.IsTrue(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-clp"));
+    }
+
 
 
     [TestMethod,
@@ -1273,6 +1424,59 @@ public class BitMessageTests : BunitTestContext
         // A cancelled dismissal is not a dismissal: the message stays, and nobody is told it went.
         Assert.AreEqual(0, dismissCount);
         Assert.HasCount(1, component.FindAll(".bit-msg"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldGiveARefusedCountdownItsTimeOverAgain()
+    {
+        // A refused countdown has still spent all of its time, so leaving it dead would leave the message
+        // standing there with an exhausted bar and nothing behind it. It is wound back up instead.
+        var attempts = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Dismissible, true);
+            parameters.Add(p => p.ShowAutoDismissProgress, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(300));
+            parameters.Add<BitMessageDismissArgs>(p => p.OnDismissing, args =>
+            {
+                if (args.Reason is BitMessageDismissReason.AutoDismiss) attempts++;
+                args.Cancel = true;
+            });
+        });
+
+        WaitUntil(() => attempts >= 2);
+
+        Assert.IsTrue(attempts >= 2, $"the countdown was expected to come round again, but it ran {attempts} time(s)");
+        Assert.HasCount(1, component.FindAll(".bit-msg"));
+        Assert.HasCount(1, component.FindAll(".bit-msg-prb"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldLeaveTheCountdownAloneWhenAPressOfTheButtonIsRefused()
+    {
+        // Refusing the button the reader pressed says nothing about the countdown, which keeps the time it has
+        // left and takes the message away when it runs out.
+        var dismissed = false;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Dismissible, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(400));
+            parameters.Add(p => p.OnDismiss, () => dismissed = true);
+            parameters.Add<BitMessageDismissArgs>(p => p.OnDismissing, args =>
+            {
+                args.Cancel = args.Reason is BitMessageDismissReason.Button;
+            });
+        });
+
+        component.Find(".bit-msg-dmb").Click();
+
+        Assert.IsFalse(dismissed);
+
+        WaitUntil(() => dismissed);
+
+        Assert.IsTrue(dismissed, "the countdown was expected to survive the refused press of the button");
     }
 
     [TestMethod]

@@ -1,4 +1,4 @@
-@import "../../../Styles/functions.scss";
+﻿@import "../../../Styles/functions.scss";
 
 .bit-msg {
     width: 100%;
@@ -144,6 +144,37 @@
     white-space: normal;
 }
 
+// The cap on how many lines a wrapping message may spend. It replaces the single-line ellipsis of the rule
+// above with the one the line box itself ends on, so the clip reads the same way at any number of lines.
+// The prefixed pair is the recipe every engine already understands, and the standard property is written
+// after it so an engine implementing the shorthand takes that one instead of being left on the legacy box.
+.bit-msg-clp {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--bit-msg-maxlines);
+    line-clamp: var(--bit-msg-maxlines);
+}
+
+// A link is painted in the theme's link color, which is picked to sit on the page background rather than on
+// the amber or the red of a message. Inside one it takes the color already carrying the message and keeps the
+// underline, which is what tells it apart from the text around it without leaning on color at all. A disabled
+// link is left with the color that says so.
+.bit-msg-ttl,
+.bit-msg-cnt {
+    a:not(.bit-dis),
+    .bit-lnk:not(.bit-dis) {
+        color: inherit;
+        text-decoration: underline;
+
+        &:hover,
+        &:focus,
+        &:active {
+            color: inherit;
+        }
+    }
+}
+
 // On a single-line message the actions share the line with the content, so they are held to the height of the
 // line rather than being allowed to grow it. The cap follows the size of the message, but never falls below the
 // height of a control: what goes in here is buttons, and they keep their own default size whatever the message does.
@@ -256,6 +287,29 @@
 
     to {
         transform: scaleX(0);
+    }
+}
+
+// forced-colors: Windows High Contrast repaints every surface from one system pair, which takes the tint out
+// of the two round buttons - their hover fill turns into an opaque block of the very color their glyph is
+// drawn in - and leaves the countdown bar indistinguishable from the track it runs down. Both are painted
+// back with the system colors that still carry a meaning there.
+@media (forced-colors: active) {
+    .bit-msg-exb,
+    .bit-msg-dmb {
+        &:hover,
+        &:active {
+            color: HighlightText;
+            background-color: Highlight;
+        }
+    }
+
+    .bit-msg-prg {
+        background-color: Canvas;
+    }
+
+    .bit-msg-prb {
+        background-color: Highlight;
     }
 }
 

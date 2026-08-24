@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 @if (Dismissed is false)
@@ -50,7 +50,7 @@
                                 @_renderTitle
                             }
 
-                            <div style="@Styles?.Content" class="bit-msg-cnt@(Multiline ? " bit-msg-mcn" : "") @Classes?.Content">
+                            <div style="@Styles?.Content" class="@_ContentClass @Classes?.Content">
                                 @(Content ?? ChildContent)
                             </div>
                         }
@@ -63,7 +63,7 @@
                 <div style="@Styles?.Actions" class="bit-msg-act @Classes?.Actions">@Actions</div>
             }
 
-            @if (Truncate && Multiline is false)
+            @if (_HasExpander)
             {
                 <button style="@Styles?.ExpanderButton"
                         class="bit-msg-exb @Classes?.ExpanderButton"
@@ -118,7 +118,8 @@
             @* The bar is the countdown made visible, and the countdown itself is already announced by nothing:
                it is a time limit that holds on hover and focus, so there is nothing here for a reader to act on. *@
             <div style="@Styles?.AutoDismissProgress" class="bit-msg-prg @Classes?.AutoDismissProgress" aria-hidden="true">
-                <div style="@JoinStyles(_AutoDismissDuration, Styles?.AutoDismissProgressBar)"
+                <div @key="_autoDismissGeneration"
+                     style="@JoinStyles(_AutoDismissDuration, Styles?.AutoDismissProgressBar)"
                      class="bit-msg-prb@(_isAutoDismissPaused ? " bit-msg-pau" : "") @Classes?.AutoDismissProgressBar"></div>
             </div>
         }

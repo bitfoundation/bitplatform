@@ -6,14 +6,14 @@ public partial class BitMessageDemo
 <BitMessage>This is a Message.</BitMessage>";
 
     private readonly string example2RazorCode = @"
-<BitMessage Title=""Heads up"" Color=""BitColor.Info"">Your session expires in 5 minutes.</BitMessage>
+<BitMessage Title=""Heads up"">Your session expires in 5 minutes.</BitMessage>
 
-<BitMessage Multiline Title=""Upload failed"" Color=""BitColor.Error"" OnDismiss=""() => {}"">
+<BitMessage Multiline Title=""Upload failed"" OnDismiss=""() => {}"">
     The file <b>report-2024.xlsx</b> could not be uploaded because it exceeds the 25 MB limit.
     Compress the file or split it into parts and try again.
 </BitMessage>
 
-<BitMessage Multiline Color=""BitColor.Success"">
+<BitMessage Multiline>
     <TitleTemplate>
         Saved to <BitLink Href=""https://bitplatform.dev"">your workspace</BitLink>
     </TitleTemplate>
@@ -22,42 +22,20 @@ public partial class BitMessageDemo
     </Content>
 </BitMessage>
 
-<BitMessage Multiline TitleElement=""h3"" Title=""A title that is a heading"" Color=""BitColor.Warning"">
+<BitMessage Multiline TitleElement=""h3"" Title=""A title that is a heading"">
     Rendered as an <b>h3</b>, so it shows up in the heading list of a screen reader.
 </BitMessage>";
 
     private readonly string example3RazorCode = @"
-<BitMessage Color=""BitColor.Primary"" Variant=""BitVariant.Fill"">Primary.</BitMessage>
-<BitMessage Color=""BitColor.Secondary"" Variant=""BitVariant.Fill"">Secondary.</BitMessage>
-<BitMessage Color=""BitColor.Tertiary"" Variant=""BitVariant.Fill"">Tertiary.</BitMessage>
-<BitMessage Color=""BitColor.Info"" Variant=""BitVariant.Fill"">Info.</BitMessage>
-<BitMessage Color=""BitColor.Success"" Variant=""BitVariant.Fill"">Success.</BitMessage>
-<BitMessage Color=""BitColor.Warning"" Variant=""BitVariant.Fill"">Warning.</BitMessage>
-<BitMessage Color=""BitColor.SevereWarning"" Variant=""BitVariant.Fill"">SevereWarning.</BitMessage>
-<BitMessage Color=""BitColor.Error"" Variant=""BitVariant.Fill"">Error.</BitMessage>
+<BitMessage Variant=""BitVariant.Fill"">Filled</BitMessage>
 
-<BitMessage Color=""BitColor.Primary"" Variant=""BitVariant.Outline"">Primary.</BitMessage>
-<BitMessage Color=""BitColor.Secondary"" Variant=""BitVariant.Outline"">Secondary.</BitMessage>
-<BitMessage Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"">Tertiary.</BitMessage>
-<BitMessage Color=""BitColor.Info"" Variant=""BitVariant.Outline"">Info.</BitMessage>
-<BitMessage Color=""BitColor.Success"" Variant=""BitVariant.Outline"">Success.</BitMessage>
-<BitMessage Color=""BitColor.Warning"" Variant=""BitVariant.Outline"">Warning.</BitMessage>
-<BitMessage Color=""BitColor.SevereWarning"" Variant=""BitVariant.Outline"">SevereWarning.</BitMessage>
-<BitMessage Color=""BitColor.Error"" Variant=""BitVariant.Outline"">Error.</BitMessage>
-
-<BitMessage Color=""BitColor.Primary"" Variant=""BitVariant.Text"">Primary.</BitMessage>
-<BitMessage Color=""BitColor.Secondary"" Variant=""BitVariant.Text"">Secondary.</BitMessage>
-<BitMessage Color=""BitColor.Tertiary"" Variant=""BitVariant.Text"">Tertiary.</BitMessage>
-<BitMessage Color=""BitColor.Info"" Variant=""BitVariant.Text"">Info.</BitMessage>
-<BitMessage Color=""BitColor.Success"" Variant=""BitVariant.Text"">Success.</BitMessage>
-<BitMessage Color=""BitColor.Warning"" Variant=""BitVariant.Text"">Warning.</BitMessage>
-<BitMessage Color=""BitColor.SevereWarning"" Variant=""BitVariant.Text"">SevereWarning.</BitMessage>
-<BitMessage Color=""BitColor.Error"" Variant=""BitVariant.Text"">Error.</BitMessage>";
+<BitMessage Variant=""BitVariant.Outline"">Outlined</BitMessage>
+<BitMessage Variant=""BitVariant.Text"">Texted</BitMessage>";
 
     private readonly string example4RazorCode = @"
-<BitMessage Alignment=""BitAlignment.Start"" Color=""BitColor.Primary"">Start</BitMessage>
-<BitMessage Alignment=""BitAlignment.Center"" Color=""BitColor.Secondary"">Center</BitMessage>
-<BitMessage Alignment=""BitAlignment.End"" Color=""BitColor.Tertiary"">End</BitMessage>";
+<BitMessage Alignment=""BitAlignment.Start"">Start</BitMessage>
+<BitMessage Alignment=""BitAlignment.Center"">Center</BitMessage>
+<BitMessage Alignment=""BitAlignment.End"">End</BitMessage>";
 
     private readonly string example5RazorCode = @"
 <BitMessage Elevation=""(int)elevation"">Elevated Message</BitMessage>
@@ -67,7 +45,7 @@ public partial class BitMessageDemo
 private double elevation = 7;";
 
     private readonly string example6RazorCode = @"
-<BitMessage Multiline Color=""BitColor.Success"">
+<BitMessage Multiline>
     In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits
     to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
     possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
@@ -79,10 +57,23 @@ private double elevation = 7;";
     opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
     idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
     begins here, in this quiet moment where everything is possible.
+</BitMessage>
+
+<BitMessage Multiline MaxLines=""2"" Title=""Storage almost full"">
+    Your workspace is using 19.4 GB of its 20 GB. New uploads will start to fail once the limit is
+    reached, and shared links to files already in the workspace will keep working. Remove the files you
+    no longer need, or move them to an archive, to free the space back up.
+</BitMessage>
+
+<BitMessage Multiline Truncate MaxLines=""2"" Title=""Import failed"">
+    Fourteen of the 320 rows could not be imported because their <b>Email</b> column was empty or held a
+    value the address parser did not recognize. Every other row was imported and is already visible in
+    the contacts list. Download the report to see which rows were left out, fix them in place, and run
+    the import again - the rows that went through the first time are skipped rather than duplicated.
 </BitMessage>";
 
     private readonly string example7RazorCode = @"
-<BitMessage Truncate Color=""BitColor.Warning"" @bind-Expanded=""isTruncateExpanded"">
+<BitMessage Truncate @bind-Expanded=""isTruncateExpanded"">
     In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits
     to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
     possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
@@ -112,7 +103,7 @@ private bool isTruncateExpanded;
 private BitMessage? truncatedMessage;";
 
     private readonly string example8RazorCode = @"
-<BitMessage Dismissible @bind-Dismissed=""isSelfDismissed"" Color=""BitColor.Success"">
+<BitMessage Dismissible @bind-Dismissed=""isSelfDismissed"">
     Self-dismissing message: <strong>Dismissible</strong> needs no handler to disappear.
 </BitMessage>
 
@@ -123,7 +114,7 @@ private BitMessage? truncatedMessage;";
 
 @if (isDismissed is false)
 {
-    <BitMessage OnDismiss=""() => isDismissed = true"" Color=""BitColor.SevereWarning"">
+    <BitMessage OnDismiss=""() => isDismissed = true"">
         Dismiss option enabled by adding <strong>OnDismiss</strong> parameter.
     </BitMessage>
 }
@@ -134,9 +125,7 @@ else
 
 @if (isEscapeDismissed is false)
 {
-    <BitMessage DismissOnEscape TabIndex=""0""
-                Color=""BitColor.Info""
-                OnDismiss=""() => isEscapeDismissed = true"">
+    <BitMessage DismissOnEscape TabIndex=""0"" OnDismiss=""() => isEscapeDismissed = true"">
         Focus me (or the dismiss button) and press <strong>Escape</strong> to dismiss.
     </BitMessage>
 }
@@ -147,7 +136,6 @@ else
 
 <BitMessage Dismissible
             DismissOnEscape
-            Color=""BitColor.Warning""
             OnDismissing=""HandleDismissing""
             @bind-Dismissed=""isGuardedDismissed"">
     Guarded by <strong>OnDismissing</strong>: the first attempt is refused, the second one goes through.
@@ -157,11 +145,27 @@ else
 @if (isGuardedDismissed)
 {
     <BitButton OnClick=""ResetGuardedMessage"">Dismissed, click to reset</BitButton>
+}
+
+<BitMessage @ref=""dismissableMessage"" Dismissible @bind-Dismissed=""isMethodDismissed"">
+    Dismissed from the outside by <strong>DismissAsync</strong>, which goes through
+    <strong>OnDismissing</strong> and stops the countdown just as the button does.
+</BitMessage>
+
+@if (isMethodDismissed)
+{
+    <BitButton OnClick=""() => isMethodDismissed = false"">Dismissed, click to bring it back</BitButton>
+}
+else
+{
+    <BitButton OnClick=""() => dismissableMessage!.DismissAsync()"">Dismiss the message above</BitButton>
 }";
     private readonly string example8CsharpCode = @"
 private bool isDismissed;
 private bool isSelfDismissed;
 private bool isEscapeDismissed;
+private bool isMethodDismissed;
+private BitMessage? dismissableMessage;
 
 private int dismissAttempts;
 private bool isGuardedDismissed;
@@ -198,7 +202,6 @@ else
 
 <BitMessage Dismissible
             ShowAutoDismissProgress
-            Color=""BitColor.Info""
             AutoDismissTime=""TimeSpan.FromSeconds(10)""
             @bind-Dismissed=""isProgressDismissed"">
     Ten seconds, drawn along the bottom edge. Hover me and the bar stops with the countdown.
@@ -211,7 +214,6 @@ else
 
 <BitMessage @ref=""pausableMessage""
             ShowAutoDismissProgress
-            Color=""BitColor.Warning""
             AutoDismissTime=""TimeSpan.FromSeconds(15)""
             @bind-Dismissed=""isPausedDismissed"">
     Fifteen seconds, and no dismiss button: a message bound through <strong>Dismissed</strong> alone
@@ -235,33 +237,48 @@ private BitMessage? pausableMessage;";
 
     private readonly string example10RazorCode = @"
 <BitMessage>
-    <Actions>
-        <BitButton Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"" IconName=""@BitIconName.Up"" />
-        &nbsp;
-        <BitButton Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"" IconName=""@BitIconName.Down"" />
-    </Actions>
     <Content>
-        Message with single line and action buttons.
+        A draft of this page was recovered from your last session.
     </Content>
+    <Actions>
+        <BitButton Size=""BitSize.Small"" Color=""BitColor.PrimaryBackground"">Restore</BitButton>
+    </Actions>
+</BitMessage>
+
+<BitMessage Multiline Title=""Connection lost"" OnDismiss=""() => {}"">
+    <Content>
+        The last three changes could not be saved because the server could not be reached. They are
+        kept on this device and will be sent as soon as the connection is back.
+    </Content>
+    <Actions>
+        <BitButton Color=""BitColor.PrimaryBackground"">Retry now</BitButton>
+        <BitButton Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBackground"">Work offline</BitButton>
+    </Actions>
+</BitMessage>
+
+<BitMessage>
+    <Content>
+        Message with single line and icon-only action buttons.
+    </Content>
+    <Actions>
+        <BitButton AriaLabel=""Previous message"" Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"" IconName=""@BitIconName.Up"" />
+        <BitButton AriaLabel=""Next message"" Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"" IconName=""@BitIconName.Down"" />
+    </Actions>
 </BitMessage>";
 
     private readonly string example11RazorCode = @"
-<BitMessage Color=""BitColor.Info"" HideIcon>Info (default) Message.</BitMessage>
-<BitMessage Color=""BitColor.Success"" HideIcon>Success Message.</BitMessage>
-<BitMessage Color=""BitColor.Warning"" HideIcon>Warning Message.</BitMessage>
-<BitMessage Color=""BitColor.SevereWarning"" HideIcon>SevereWarning Message.</BitMessage>
-<BitMessage Color=""BitColor.Error"" HideIcon>Error Message.</BitMessage>";
+<BitMessage HideIcon>Icon hidden</BitMessage>";
 
     private readonly string example12RazorCode = @"
-<BitMessage Color=""BitColor.Success"" IconName=""@BitIconName.CheckMark"">
+<BitMessage IconName=""@BitIconName.CheckMark"">
     Message with a custom icon.
 </BitMessage>
 
-<BitMessage Color=""BitColor.Warning"" OnDismiss=""() => {}"" DismissIconName=""@BitIconName.Blocked2Solid"">
+<BitMessage OnDismiss=""() => {}"" DismissIconName=""@BitIconName.Blocked2Solid"">
     Message with a custom dismiss icon.
 </BitMessage>
 
-<BitMessage Color=""BitColor.Info"">
+<BitMessage>
     <IconTemplate>
         <BitSpinnerLoading CustomSize=""20"" CustomColor=""currentcolor"" />
     </IconTemplate>
@@ -270,9 +287,7 @@ private BitMessage? pausableMessage;";
     </Content>
 </BitMessage>
 
-<BitMessage Truncate Color=""BitColor.Warning""
-            ExpandIconName=""@BitIconName.ChevronDownEnd""
-            CollapseIconName=""@BitIconName.ChevronUpEnd"">
+<BitMessage Truncate ExpandIconName=""@BitIconName.ChevronDownEnd"" CollapseIconName=""@BitIconName.ChevronUpEnd"">
     In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits
     to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
     possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
@@ -288,7 +303,7 @@ private BitMessage? pausableMessage;";
 
     private readonly string example13RazorCode = @"
 <div style=""overflow:hidden;border-radius:0.25rem;border:1px solid var(--bit-clr-brd-sec)"">
-    <BitMessage Square Color=""BitColor.SevereWarning"" OnDismiss=""() => {}"">
+    <BitMessage Square OnDismiss=""() => {}"">
         Scheduled maintenance starts at 02:00 UTC. Save your work before then.
     </BitMessage>
     <div style=""padding:1rem"">The content of the page sits below the banner.</div>
@@ -297,7 +312,7 @@ private BitMessage? pausableMessage;";
     private readonly string example14RazorCode = @"
 @if (isWarningDismissed is false)
 {
-    <BitMessage Truncate OnDismiss=""() => isWarningDismissed = true"" Color=""BitColor.Warning"">
+    <BitMessage Truncate OnDismiss=""() => isWarningDismissed = true"">
         <Content>
             In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits
             to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
@@ -312,10 +327,8 @@ private BitMessage? pausableMessage;";
             begins here, in this quiet moment where everything is possible.
         </Content>
         <Actions>
-            <div style=""display:flex;align-items:center;gap:4px;min-height:32px"">
-                <button>Yes</button>
-                <button>No</button>
-            </div>
+            <BitButton Size=""BitSize.Small"" Color=""BitColor.PrimaryBackground"">Retry</BitButton>
+            <BitButton Size=""BitSize.Small"" Color=""BitColor.PrimaryBackground"">Details</BitButton>
         </Actions>
     </BitMessage>
 }
@@ -326,7 +339,7 @@ else
 
 @if (isErrorDismissed is false)
 {
-    <BitMessage Multiline Title=""Something went wrong"" OnDismiss=""() => isErrorDismissed = true"" Color=""BitColor.Error"">
+    <BitMessage Multiline Title=""Something went wrong"" OnDismiss=""() => isErrorDismissed = true"">
         <Content>
             In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits
             to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
@@ -356,24 +369,21 @@ private bool isErrorDismissed;
 private bool isWarningDismissed;";
 
     private readonly string example15RazorCode = @"
-<BitMessage Color=""BitColor.Error"" IconAriaLabel=""Error"">
+<BitMessage IconAriaLabel=""Error"">
     The payment could not be authorized. Announced as ""Error: The payment could not be authorized.""
 </BitMessage>
 
-<BitMessage Color=""BitColor.Error"" Role=""status"">
+<BitMessage Role=""status"">
     An error-colored message that reports no error, announced politely as a status.
 </BitMessage>
 
-<BitMessage Color=""BitColor.Info"" Role=""none"">
+<BitMessage Role=""none"">
     Part of the page rather than news about it: not announced at all.
 </BitMessage>
 
 <BitButton OnClick=""() => isDelayedDismissed = false"">Show a delayed-announcement message</BitButton>
 
-<BitMessage DelayedAnnouncement
-            Dismissible
-            Color=""BitColor.Success""
-            @bind-Dismissed=""isDelayedDismissed"">
+<BitMessage DelayedAnnouncement Dismissible @bind-Dismissed=""isDelayedDismissed"">
     Announced reliably: the live region reached the page one render before this text landed in it.
 </BitMessage>";
     private readonly string example15CsharpCode = @"

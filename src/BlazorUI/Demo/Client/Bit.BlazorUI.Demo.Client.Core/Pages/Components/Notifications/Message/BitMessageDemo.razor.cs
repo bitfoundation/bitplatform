@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Notifications.Message;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Notifications.Message;
 
 public partial class BitMessageDemo
 {
@@ -238,6 +238,13 @@ public partial class BitMessageDemo
         },
         new()
         {
+            Name = "MaxLines",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Caps how many lines the content of the message may wrap over in Multiline mode, ending the last of them in an ellipsis. Pair it with Truncate to give the reader the expander button that unfolds the rest.",
+        },
+        new()
+        {
             Name = "Multiline",
             Type = "bool",
             DefaultValue = "false",
@@ -253,7 +260,7 @@ public partial class BitMessageDemo
         {
             Name = "OnDismissing",
             Type = "EventCallback<BitMessageDismissArgs>",
-            Description = "Callback invoked before the message is dismissed, letting the dismissal be cancelled. Set Cancel on the provided args to keep the message where it is, and read its Reason to tell the dismiss button, the Escape key, the countdown and a DismissAsync call apart.",
+            Description = "Callback invoked before the message is dismissed, letting the dismissal be cancelled. Set Cancel on the provided args to keep the message where it is, and read its Reason to tell the dismiss button, the Escape key, the countdown and a DismissAsync call apart. Refusing a countdown gives the message its AutoDismissTime over again.",
             LinkType = LinkType.Link,
             Href = "#message-dismiss-args",
         },
@@ -322,7 +329,7 @@ public partial class BitMessageDemo
             Name = "Truncate",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines if the message text is truncated. If true, a button will render to toggle between a single line view and multiline view. This parameter is for single line messages with no buttons only in a limited space scenario.",
+            Description = "Determines if the message text is truncated. If true, a button will render to toggle between a single line view and multiline view. This parameter is for single line messages with no buttons only in a limited space scenario. On a Multiline message it unfolds the content past the MaxLines cap instead, and does nothing without one.",
         },
         new()
         {
@@ -825,6 +832,8 @@ public partial class BitMessageDemo
     private bool isPausedDismissed;
     private BitMessage? pausableMessage;
     private bool isEscapeDismissed;
+    private bool isMethodDismissed;
+    private BitMessage? dismissableMessage;
     private bool isDelayedDismissed = true;
 
     private int dismissAttempts;
