@@ -8,10 +8,10 @@
        from assistive technologies while it is set - otherwise "5" and "5 unread messages" are both announced. *@
     var hasDescription = Description.HasValue();
 
-    @* A badge that is a button is what a screen reader lands on, and an icon-only or dot one carries no text
-       to be named by, so the label moves onto the button itself. It stays on the root everywhere else: on a
-       plain badge there is nothing else to carry it, and a description already names the button on its own. *@
-    var labelOnBadge = AriaLabel.HasValue() && _isBadgeVisible && OnClick.HasDelegate && hasDescription is false;
+    @* A badge that is a button or a link is what a screen reader lands on, and an icon-only or dot one carries
+       no text to be named by, so the label moves onto that control itself. It stays on the root everywhere
+       else: on a plain badge there is nothing else to carry it, and a description already names the control. *@
+    var labelOnBadge = AriaLabel.HasValue() && _isBadgeVisible && _isClickable && hasDescription is false;
 
     RenderFragment badgeContent =
         @<text>
@@ -28,7 +28,7 @@
                           style="@Styles?.Content"
                           class="bit-bdg-con @Classes?.Content">@ContentTemplate</span>
                 }
-                else if (_content.HasValue())
+                else if (_content.HasValue() && _isZeroSuppressed is false)
                 {
                     <span aria-hidden="@(hasDescription ? "true" : null)"
                           style="@Styles?.Content"
@@ -72,15 +72,38 @@
         <span style="@Styles?.BadgeWrapper"
               class="bit-bdg-wrp @(ChildContent is null || Inline ? "bit-bdg-stl" : null) @Classes?.BadgeWrapper"
               aria-hidden="@(_hasOwnLiveRegion ? "true" : null)">
-            @if (OnClick.HasDelegate)
+            @if (Href.HasValue())
+            {
+                @* A badge that leads somewhere is a real link: it comes with the context menu, the middle click,
+                   the status bar and the announcement that every anchor of the page comes with, none of which a
+                   click handler on a span can reproduce. A disabled one keeps neither the href nor the focus. *@
+                <a @onclick="HandleOnClick"
+                   @onclick:stopPropagation="true"
+                   @onclick:preventDefault="@(IsEnabled is false)"
+                   style="@Styles?.Badge"
+                   class="bit-bdg-ctn bit-bdg-clk @_bumpClass @Classes?.Badge"
+                   href="@(IsEnabled ? Href : null)"
+                   rel="@_rel"
+                   target="@Target"
+                   title="@Title"
+                   tabindex="@(IsEnabled ? TabIndex : "-1")"
+                   aria-disabled="@(IsEnabled ? null : "true")"
+                   aria-label="@(labelOnBadge ? AriaLabel : null)"
+                   aria-live="@(Live ? "polite" : null)"
+                   aria-atomic="@(Live ? "true" : null)">
+                    @badgeContent
+                </a>
+            }
+            else if (OnClick.HasDelegate)
             {
                 @* A badge that does something is a real button: it comes with the keyboard, the focus ring and the
                    disabled semantics that a span with an onclick handler would each have to reimplement. *@
                 <button @onclick="HandleOnClick"
                         @onclick:stopPropagation="true"
                         style="@Styles?.Badge"
-                        class="bit-bdg-ctn bit-bdg-clk @Classes?.Badge"
+                        class="bit-bdg-ctn bit-bdg-clk @_bumpClass @Classes?.Badge"
                         type="button"
+                        title="@Title"
                         tabindex="@TabIndex"
                         disabled="@(IsEnabled is false)"
                         aria-label="@(labelOnBadge ? AriaLabel : null)"
@@ -91,7 +114,7 @@
             }
             else
             {
-                <span style="@Styles?.Badge" class="bit-bdg-ctn @Classes?.Badge">
+                <span style="@Styles?.Badge" class="bit-bdg-ctn @_bumpClass @Classes?.Badge" title="@Title">
                     @badgeContent
                 </span>
             }

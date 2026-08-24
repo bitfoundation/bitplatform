@@ -29,6 +29,12 @@
     margin: 0;
     cursor: default;
     text-decoration: none;
+    // The badge scales in as it lands on the page, so a counter that turns up while the page stays open is
+    // noticed instead of simply being there. It reads a motion duration rather than a loop factor, so it
+    // collapses to nothing as soon as the reader asks for reduced motion. The `scale` property is used
+    // rather than a transform, which the offsets below already own through `translate`.
+    animation: bit-bdg-anm $mot-duration-short $mot-easing-decelerate;
+    transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
     font-family: $tg-font-family;
     font-weight: $tg-fw-semibold;
     letter-spacing: $tg-ctrl-letter-spacing;
@@ -104,9 +110,53 @@
         @include focus-ring(var(--bit-bdg-clr-fcs, #{$clr-pri-focus}));
     }
 
-    &:disabled {
+    // WCAG asks a pointer target to be at least 24x24, and a dot badge or a small counter is well under it.
+    // The hit area is grown by a pseudo-element centred on the badge rather than by padding, so the badge
+    // keeps the size it is meant to have and only becomes easier to hit. The floor is the absolute one of
+    // the success criterion rather than a decision of the design system, so it is not read from a token.
+    &::before {
+        content: "";
+        top: 50%;
+        left: 50%;
+        position: absolute;
+        translate: -50% -50%;
+        width: max(100%, 24px);
+        height: max(100%, 24px);
+    }
+
+    // A button carries the disabled state itself; an anchor has no such state, so the link badge reports it
+    // through aria-disabled and both are taken out of the pointer here.
+    &:disabled,
+    &[aria-disabled="true"] {
         cursor: default;
         pointer-events: none;
+    }
+}
+
+@keyframes bit-bdg-anm {
+    from {
+        opacity: 0;
+        scale: 0.6;
+    }
+
+    to {
+        opacity: 1;
+        scale: 1;
+    }
+}
+
+// The badge answers a change of the content it is already showing with a short bump, so a counter ticking
+// over while the page stays open is noticed rather than silently different. The two classes are the same
+// animation: an animation restarts only when the class carrying it changes, so the component alternates them
+// on every change (see _bumpClass).
+.bit-bdg-bm1,
+.bit-bdg-bm2 {
+    animation: bit-bdg-bmp-anm $mot-duration-short $mot-easing;
+}
+
+@keyframes bit-bdg-bmp-anm {
+    50% {
+        scale: 1.2;
     }
 }
 

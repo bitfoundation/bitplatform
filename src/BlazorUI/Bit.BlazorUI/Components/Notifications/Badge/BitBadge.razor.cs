@@ -5,22 +5,43 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitBadge : BitComponentBase
 {
+    private bool? _bump;
     private string? _content;
+    private string? _rel;
     private bool _isZeroContent;
 
-    // A template is content of its own, so a stale numeric Content of zero next to it is not what the badge
-    // is showing and must not take the badge off the page.
-    private bool _isBadgeVisible => Hidden is false && (ShowZero || ContentTemplate is not null || _isZeroContent is false);
+    // A counter that ticks over while the page stays open answers the change with a short bump. A keyframe
+    // animation only restarts when the class carrying it changes, so the two classes alternate; the class is
+    // unset until the first change, which leaves a badge arriving on the page to its entry animation alone.
+    private string? _bumpClass => _bump switch { true => "bit-bdg-bm1", false => "bit-bdg-bm2", _ => null };
+
+    // A glyph and a template are content of their own rather than a number, so an emptied counter next to
+    // them is not what the badge is showing and must not take the badge off the page.
+    private bool _hasOwnContent => Dot is false && (ContentTemplate is not null || Icon is not null || IconName.HasValue());
+
+    // ShowZero takes an emptied counter off the badge; whatever else the badge holds stays on it.
+    private bool _isZeroSuppressed => _isZeroContent && ShowZero is false;
+
+    // A badge is on the page while it has something to report - a mark, a number, a glyph, a template or a
+    // text alternative - so a badge given none of them is not rendered as an empty pill on top of its child.
+    private bool _isBadgeVisible => Hidden is false
+                                 && (_isZeroSuppressed is false || _hasOwnContent)
+                                 && (Dot || _hasOwnContent || _content.HasValue() || Description.HasValue());
+
+    // A badge that navigates or does something of its own is the control a screen reader lands on and the
+    // element a keyboard user reaches, whichever of the two it is built from.
+    private bool _isClickable => Href.HasValue() || OnClick.HasDelegate;
 
     // A live region only announces what changes inside it, so it has to be on the page before the change
     // happens: a region inserted together with its own text is announced by nothing. The badge comes and
-    // goes with the count, so the region cannot live inside it - unless the badge is a button, which is
-    // focusable and therefore cannot be hidden from assistive technologies the way the rest of the badge is.
-    // That case keeps the region where it is, and this one moves it out to the root.
-    private bool _hasOwnLiveRegion => Live && OnClick.HasDelegate is false;
+    // goes with the count, so the region cannot live inside it - unless the badge is a button or a link,
+    // which is focusable and therefore cannot be hidden from assistive technologies the way the rest of
+    // the badge is. That case keeps the region where it is, and this one moves it out to the root.
+    private bool _hasOwnLiveRegion => Live && _isClickable is false;
 
-    // What the badge stands for in words: the description when there is one, and the counter itself otherwise.
-    private string? _liveText => Description.HasValue() ? Description : (Dot ? null : _content);
+    // What the badge stands for in words: the description when there is one, and the counter itself
+    // otherwise - unless that counter is an emptied one the badge is no longer showing.
+    private string? _liveText => Description.HasValue() ? Description : (Dot || _isZeroSuppressed ? null : _content);
 
 
 
@@ -59,7 +80,7 @@ public partial class BitBadge : BitComponentBase
     /// Content you want inside the badge.
     /// </summary>
     /// <remarks>
-    /// An integral number is capped by <see cref="Max"/> and, when it is zero, hidden by <see cref="ShowZero"/>.
+    /// A number is capped by <see cref="Max"/> and, when it is zero, hidden by <see cref="ShowZero"/>.
     /// A string is rendered as it is, and any other value is rendered through its <c>ToString()</c>.
     /// <br />
     /// For markup rather than text, use <see cref="ContentTemplate"/>.
@@ -110,6 +131,23 @@ public partial class BitBadge : BitComponentBase
     /// A hidden badge is removed from the DOM while its child content keeps rendering.
     /// </remarks>
     [Parameter] public bool Hidden { get; set; }
+
+    /// <summary>
+    /// The URL the badge navigates to, which also turns the badge into a link.
+    /// </summary>
+    /// <remarks>
+    /// A badge that leads somewhere is a real anchor: it is focusable, it is activated with the Enter key,
+    /// it offers the context menu and the middle click every link on the page offers, and a screen reader
+    /// announces it as a link. Use it for a counter that opens what it counts - an inbox, a cart, a list of
+    /// alerts - and <see cref="OnClick"/> for one that acts on the page it is already on. The two can be set
+    /// together, in which case the handler runs and the navigation still happens.
+    /// <br />
+    /// While <c>IsEnabled</c> is false the href is dropped and the badge is taken out of the tab order, so a
+    /// disabled link cannot be followed by either the pointer or the keyboard.
+    /// </remarks>
+    [Parameter]
+    [CallOnSet(nameof(OnSetHrefAndRel))]
+    public string? Href { get; set; }
 
     /// <summary>
     /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
@@ -177,7 +215,8 @@ public partial class BitBadge : BitComponentBase
     /// Max value to display when content is an integral number.
     /// </summary>
     /// <remarks>
-    /// A content above it renders as the max followed by a plus sign, for example <c>99+</c>.
+    /// A content above it renders as the max followed by a plus sign, for example <c>99+</c>. It reads every
+    /// numeric type, integral or fractional, and leaves everything else the badge is given untouched.
     /// </remarks>
     [Parameter]
     [CallOnSet(nameof(OnSetContentAndMax))]
@@ -205,8 +244,12 @@ public partial class BitBadge : BitComponentBase
     /// </summary>
     /// <remarks>
     /// While it is set the badge is focusable and can be activated with the keyboard, and it stops being so
-    /// as soon as <c>IsEnabled</c> is false. A badge with no handler never takes focus: it is a label on the
-    /// element it belongs to, and that element is what a keyboard user reaches.
+    /// as soon as <c>IsEnabled</c> is false. A badge with no handler and no <see cref="Href"/> never takes
+    /// focus: it is a label on the element it belongs to, and that element is what a keyboard user reaches.
+    /// <br />
+    /// A control needs a name, so a badge that carries no text of its own - a <see cref="Dot"/> or an
+    /// icon-only badge - should be given a <see cref="Description"/> or an <c>AriaLabel</c> as soon as it
+    /// becomes one.
     /// </remarks>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
@@ -245,6 +288,19 @@ public partial class BitBadge : BitComponentBase
     public bool Pulse { get; set; }
 
     /// <summary>
+    /// The relationship between the current document and the linked one, rendered as the rel attribute of
+    /// the anchor the badge becomes while <see cref="Href"/> is set.
+    /// </summary>
+    /// <remarks>
+    /// With no value of its own, a badge opening in a new browsing context (<see cref="Target"/> of
+    /// <c>_blank</c>) gets <c>rel="noopener"</c> on its own, which is what keeps the opened page from
+    /// reaching back into this one.
+    /// </remarks>
+    [Parameter]
+    [CallOnSet(nameof(OnSetHrefAndRel))]
+    public BitLinkRels? Rel { get; set; }
+
+    /// <summary>
     /// Reverses the direction flow of the content of the badge, which puts the icon after the content.
     /// <br />
     /// The default value is <strong>false</strong>.
@@ -267,8 +323,9 @@ public partial class BitBadge : BitComponentBase
     /// Turn it off for a counter that should disappear once it is emptied, which saves keeping a
     /// <see cref="Hidden"/> flag of your own next to the count.
     /// <br />
-    /// Only an integral <see cref="Content"/> counts as zero: a string is rendered as it is, and a
-    /// <see cref="ContentTemplate"/> is content of its own that keeps the badge on the page either way.
+    /// Only a numeric <see cref="Content"/> counts as zero, and a string is rendered as it is. An icon or a
+    /// <see cref="ContentTemplate"/> is content of its own, so it keeps the badge on the page and only the
+    /// emptied number is taken off it.
     /// </remarks>
     [Parameter] public bool ShowZero { get; set; } = true;
 
@@ -282,6 +339,24 @@ public partial class BitBadge : BitComponentBase
     /// Custom CSS styles for different parts of the BitBadge.
     /// </summary>
     [Parameter] public BitBadgeClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// The browsing context the <see cref="Href"/> of the badge is opened in, for example <c>_blank</c>.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetHrefAndRel))]
+    public string? Target { get; set; }
+
+    /// <summary>
+    /// The tooltip to show when the mouse is placed on the badge.
+    /// </summary>
+    /// <remarks>
+    /// It is rendered on the badge itself rather than on the child content underneath it, which is what makes
+    /// it the place to spell out what the badge shortens: the exact count behind a <see cref="Max"/> of
+    /// <c>99+</c>, or the reading behind an icon. A title is not a text alternative, so what a screen reader
+    /// should hear still belongs in <see cref="Description"/>.
+    /// </remarks>
+    [Parameter] public string? Title { get; set; }
 
     /// <summary>
     /// The visual variant of the badge.
@@ -399,6 +474,8 @@ public partial class BitBadge : BitComponentBase
 
     private void OnSetContentAndMax()
     {
+        var previousContent = _content;
+
         _isZeroContent = false;
 
         if (Content is null)
@@ -409,11 +486,13 @@ public partial class BitBadge : BitComponentBase
         {
             _content = stringContent;
         }
-        else if (TryGetInteger(Content, out var number))
+        else if (TryGetNumber(Content, out var number))
         {
             _isZeroContent = number == 0;
 
-            _content = (Max.HasValue && number > Max.Value) ? $"{Max.Value}+" : number.ToString();
+            // A capped count is reported as the max it went past; anything else is printed the way the value
+            // itself prints, so a fraction keeps its separator and a localized digit set keeps its digits.
+            _content = (Max.HasValue && number > Max.Value) ? $"{Max.Value}+" : Content.ToString();
         }
         else
         {
@@ -421,14 +500,39 @@ public partial class BitBadge : BitComponentBase
             // through its own ToString() instead of silently dropping out of the badge.
             _content = Content.ToString();
         }
+
+        // Only a change of what the badge is already showing is worth a bump: the first pass through here
+        // happens before the badge is on the page, and it is the entry animation that reports its arrival.
+        if (IsRendered && _content != previousContent)
+        {
+            _bump = _bump is not true;
+        }
+    }
+
+    private void OnSetHrefAndRel()
+    {
+        if (Href.HasNoValue() || Href!.StartsWith('#'))
+        {
+            _rel = null;
+            return;
+        }
+
+        if (Rel.HasValue)
+        {
+            _rel = BitLinkRelUtils.GetRels(Rel.Value);
+            return;
+        }
+
+        // protects against reverse-tabnabbing when opening the link in a new browsing context
+        _rel = Target == "_blank" ? "noopener" : null;
     }
 
     /// <summary>
-    /// Reads any of the integral numeric types as a long, which is what <see cref="Max"/> and the zero check
-    /// compare against. An unsigned value too large for a long is left to be rendered as plain text: it is
-    /// beyond every max a badge can be given anyway.
+    /// Reads any of the numeric types as a decimal, which is what <see cref="Max"/> and the zero check
+    /// compare against. Anything else - and a floating-point value that is not a finite number a decimal can
+    /// hold - is left to be rendered as plain text instead of being counted.
     /// </summary>
-    private static bool TryGetInteger(object value, out long result)
+    private static bool TryGetNumber(object value, out decimal result)
     {
         switch (value)
         {
@@ -439,10 +543,29 @@ public partial class BitBadge : BitComponentBase
             case sbyte sbyteValue: result = sbyteValue; return true;
             case ushort ushortValue: result = ushortValue; return true;
             case uint uintValue: result = uintValue; return true;
-            case ulong ulongValue when ulongValue <= long.MaxValue: result = (long)ulongValue; return true;
+            case ulong ulongValue: result = ulongValue; return true;
             case nint nintValue: result = nintValue; return true;
-            case nuint nuintValue when nuintValue <= long.MaxValue: result = (long)nuintValue; return true;
+            case nuint nuintValue: result = nuintValue; return true;
+            case decimal decimalValue: result = decimalValue; return true;
+            case float floatValue: return TryGetFiniteNumber(floatValue, out result);
+            case double doubleValue: return TryGetFiniteNumber(doubleValue, out result);
             default: result = 0; return false;
         }
+    }
+
+    /// <summary>
+    /// Reads a floating-point value as a decimal while it is a finite number inside the range of one. A NaN,
+    /// an infinity and a value beyond that range are not counts, so they are left to be printed as they are.
+    /// </summary>
+    private static bool TryGetFiniteNumber(double value, out decimal result)
+    {
+        if (double.IsFinite(value) && value > (double)decimal.MinValue && value < (double)decimal.MaxValue)
+        {
+            result = (decimal)value;
+            return true;
+        }
+
+        result = 0;
+        return false;
     }
 }

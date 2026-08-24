@@ -41,7 +41,7 @@ public partial class BitBadgeDemo
             Name = "Content",
             Type = "object?",
             DefaultValue = "null",
-            Description = "Content you want inside the badge. An integral number is capped by Max and hidden by ShowZero when it is zero, a string is rendered as it is, and any other value is rendered through its ToString()."
+            Description = "Content you want inside the badge. A number is capped by Max and hidden by ShowZero when it is zero, a string is rendered as it is, and any other value is rendered through its ToString(). A badge given no content, no icon and no template at all is not rendered."
         },
         new()
         {
@@ -70,6 +70,13 @@ public partial class BitBadgeDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "The visibility of the badge. A hidden badge is removed from the DOM while its child content keeps rendering."
+        },
+        new()
+        {
+            Name = "Href",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The URL the badge navigates to, which also turns the badge into a link: an anchor that is focusable, offers the context menu and the middle click, and is announced as a link. While IsEnabled is false the href is dropped and the badge leaves the tab order."
         },
         new()
         {
@@ -156,6 +163,15 @@ public partial class BitBadgeDemo
         },
         new()
         {
+            Name = "Rel",
+            Type = "BitLinkRels?",
+            DefaultValue = "null",
+            Description = "The relationship between the current document and the one the Href of the badge leads to. With no value of its own, a badge opening in a new browsing context gets rel=\"noopener\" automatically.",
+            LinkType = LinkType.Link,
+            Href = "#link-rels-enum"
+        },
+        new()
+        {
             Name = "Reversed",
             Type = "bool",
             DefaultValue = "false",
@@ -175,7 +191,7 @@ public partial class BitBadgeDemo
             Name = "ShowZero",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Renders the badge when its content is the number zero. Turn it off for a counter that should disappear once it is emptied. Only an integral Content counts as zero: a string is rendered as it is, and a ContentTemplate keeps the badge on the page either way."
+            Description = "Renders the badge when its content is the number zero. Turn it off for a counter that should disappear once it is emptied. Only a numeric Content counts as zero, and a string is rendered as it is. An icon or a ContentTemplate is content of its own, so it keeps the badge on the page and only the emptied number is taken off it."
         },
         new()
         {
@@ -194,6 +210,20 @@ public partial class BitBadgeDemo
             Description = "Custom CSS styles for different parts of the BitBadge.",
             LinkType = LinkType.Link,
             Href = "#badge-class-styles"
+        },
+        new()
+        {
+            Name = "Target",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The browsing context the Href of the badge is opened in, for example _blank."
+        },
+        new()
+        {
+            Name = "Title",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The tooltip to show when the mouse is placed on the badge. It is rendered on the badge itself rather than on the child content underneath it, which makes it the place to spell out what the badge shortens - the exact count behind a Max of 99+. A title is not a text alternative, so what a screen reader should hear belongs in Description."
         },
         new()
         {
@@ -484,6 +514,93 @@ public partial class BitBadgeDemo
                 }
             ]
         },
+        new()
+        {
+            Id = "link-rels-enum",
+            Name = "BitLinkRels",
+            Description = "The rel attribute defines the relationship between a linked resource and the current document.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Alternate",
+                    Value = "1",
+                    Description = "Provides a link to an alternate representation of the document. (i.e. print page, translated or mirror)"
+                },
+                new()
+                {
+                    Name = "Author",
+                    Value = "2",
+                    Description = "Provides a link to the author of the document."
+                },
+                new()
+                {
+                    Name = "Bookmark",
+                    Value = "4",
+                    Description = "Permanent URL used for bookmarking."
+                },
+                new()
+                {
+                    Name = "External",
+                    Value = "8",
+                    Description = "Indicates that the referenced document is not part of the same site as the current document."
+                },
+                new()
+                {
+                    Name = "Help",
+                    Value = "16",
+                    Description = "Provides a link to a help document."
+                },
+                new()
+                {
+                    Name = "License",
+                    Value = "32",
+                    Description = "Provides a link to licensing information for the document."
+                },
+                new()
+                {
+                    Name = "Next",
+                    Value = "64",
+                    Description = "Provides a link to the next document in the series."
+                },
+                new()
+                {
+                    Name = "NoFollow",
+                    Value = "128",
+                    Description = @"Links to an unendorsed document, like a paid link. (""NoFollow"" is used by Google, to specify that the Google search spider should not follow that link)"
+                },
+                new()
+                {
+                    Name = "NoOpener",
+                    Value = "256",
+                    Description = "Requires that any browsing context created by following the hyperlink must not have an opener browsing context."
+                },
+                new()
+                {
+                    Name = "NoReferrer",
+                    Value = "512",
+                    Description = "Makes the referrer unknown. No referrer header will be included when the user clicks the hyperlink."
+                },
+                new()
+                {
+                    Name = "Prev",
+                    Value = "1024",
+                    Description = "The previous document in a selection."
+                },
+                new()
+                {
+                    Name = "Search",
+                    Value = "2048",
+                    Description = "Links to a search tool for the document."
+                },
+                new()
+                {
+                    Name = "Tag",
+                    Value = "4096",
+                    Description = "A tag (keyword) for the current document."
+                }
+            ]
+        },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -677,7 +794,7 @@ public partial class BitBadgeDemo
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
 
-<BitBadge Max=""99"" Content=""12345L"">
+<BitBadge Max=""99"" Content=""12345L"" Title=""12345 unread messages"">
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>";
 
@@ -832,6 +949,18 @@ private bool hidden;";
 private int counter;";
 
     private readonly string example17RazorCode = @"
+<BitBadge Inline Content=""7"" Href=""#example17"" AriaLabel=""7 new items"">
+    <BitText Typography=""BitTypography.Body1"">Inbox</BitText>
+</BitBadge>
+
+<BitBadge Content=""@(""Docs"")"" Color=""BitColor.Info"" Variant=""BitVariant.Outline"" Href=""https://blazorui.bitplatform.dev"" Target=""_blank"" />
+
+<BitBadge Content=""@(""Source"")"" Color=""BitColor.Secondary"" IconName=""@BitIconName.OpenInNewWindow""
+          Href=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"" Rel=""BitLinkRels.NoFollow | BitLinkRels.NoReferrer"" />
+
+<BitBadge Content=""@(""Disabled"")"" Href=""https://bitplatform.dev"" IsEnabled=""false"" />";
+
+    private readonly string example18RazorCode = @"
 <BitBadge Content=""unread"" Description=""@($""{unread} unread messages"")"" Live>
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
@@ -841,10 +970,10 @@ private int counter;";
 </BitBadge>
 
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => unread++"">Receive a message</BitButton>";
-    private readonly string example17CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 private int unread = 3;";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitBadge Content=""84"" Color=""BitColor.Primary"">
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
@@ -1041,7 +1170,7 @@ private int unread = 3;";
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitBadge Content=""4"" Icon=""@BitIconInfo.Css(""fa-solid fa-heart"")"" Variant=""BitVariant.Fill"">
@@ -1062,7 +1191,7 @@ private int unread = 3;";
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <BitBadge Content=""84"" Size=""BitSize.Small"" Variant=""BitVariant.Fill"">
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
@@ -1093,7 +1222,7 @@ private int unread = 3;";
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example22RazorCode = @"
 <style>
     .custom-class {
         border-radius: 1rem;
@@ -1138,6 +1267,15 @@ private int unread = 3;";
 </BitBadge>
 
 
+<BitBadge Content=""84"" Style=""--bit-bdg-clr: rebeccapurple; --bit-bdg-clr-txt: white;"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+
+<BitBadge Inline Content=""84"" Style=""--bit-bdg-gap: 1rem;"">
+    <BitText Typography=""BitTypography.Body1"">Wider gap</BitText>
+</BitBadge>
+
+
 <BitBadge Content=""84"" IconName=""@BitIconName.Info""
           Styles=""@(new() { Root = ""color: tomato;"",
                             Badge = ""border-radius: unset;"",
@@ -1155,7 +1293,7 @@ private int unread = 3;";
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example23RazorCode = @"
 <BitBadge Dir=""BitDir.Rtl"" Content=""63"" Position=""BitPosition.TopEnd"">
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>

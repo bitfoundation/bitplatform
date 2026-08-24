@@ -11,7 +11,10 @@ public class BitBadgeTests : BunitTestContext
     [TestMethod]
     public void BitBadgeShouldRenderExpectedElement()
     {
-        var component = RenderComponent<BitBadge>();
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+        });
 
         var root = component.Find(".bit-bdg");
 
@@ -23,6 +26,66 @@ public class BitBadgeTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitBadgeShouldNotRenderABadgeWithNothingToShow()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.AddChildContent("<span class=\"child\">child</span>");
+        });
+
+        // A badge with no content, no icon, no template, no description and no dot has nothing to report, so
+        // it is not rendered as an empty mark on top of its child - which keeps rendering either way.
+        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.AreEqual(1, component.FindAll(".child").Count);
+        Assert.IsNotNull(component.Find(".bit-bdg"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldNotRenderAnEmptyStringContent()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, string.Empty);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldRenderForADotOrAnIconOrATemplateOrADescriptionAlone()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Dot, true);
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-bdg-ctn").Count);
+
+        component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Emoji");
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-bdg-ctn").Count);
+
+        component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.ContentTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"tpl\">new</span>")));
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-bdg-ctn").Count);
+
+        component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Description, "Online");
+        });
+
+        // A description is content of its own for assistive technologies, so dropping the badge would drop
+        // the only thing it had to say.
+        Assert.AreEqual(1, component.FindAll(".bit-bdg-ctn").Count);
+    }
+
+    [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
     public void BitBadgeShouldRespectHidden(bool hidden)
@@ -30,6 +93,7 @@ public class BitBadgeTests : BunitTestContext
         var component = RenderComponent<BitBadge>(parameters =>
         {
             parameters.Add(p => p.Hidden, hidden);
+            parameters.Add(p => p.Content, 5);
         });
 
         var badgeContainers = component.FindAll(".bit-bdg-ctn");
@@ -628,7 +692,10 @@ public class BitBadgeTests : BunitTestContext
     [TestMethod]
     public void BitBadgeShouldRenderASpanWhenItHasNoClickHandler()
     {
-        var component = RenderComponent<BitBadge>();
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+        });
 
         var badge = component.Find(".bit-bdg-ctn");
 
@@ -642,6 +709,7 @@ public class BitBadgeTests : BunitTestContext
     {
         var component = RenderComponent<BitBadge>(parameters =>
         {
+            parameters.Add(p => p.Content, 5);
             parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
         });
 
@@ -658,6 +726,7 @@ public class BitBadgeTests : BunitTestContext
     {
         var component = RenderComponent<BitBadge>(parameters =>
         {
+            parameters.Add(p => p.Content, 5);
             parameters.Add(p => p.IsEnabled, false);
             parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
         });
@@ -673,6 +742,7 @@ public class BitBadgeTests : BunitTestContext
     {
         var component = RenderComponent<BitBadge>(parameters =>
         {
+            parameters.Add(p => p.Content, 5);
             parameters.Add(p => p.TabIndex, "3");
             parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
         });
@@ -689,6 +759,7 @@ public class BitBadgeTests : BunitTestContext
 
         var component = RenderComponent<BitBadge>(parameters =>
         {
+            parameters.Add(p => p.Content, 5);
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, (MouseEventArgs e) => clicked = true));
         });
@@ -1224,5 +1295,455 @@ public class BitBadgeTests : BunitTestContext
         component.Find(".bit-bdg").Click();
 
         Assert.IsTrue(hostClicked);
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldKeepAnIconWhenTheEmptiedCountIsTakenOffIt()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 0);
+            parameters.Add(p => p.ShowZero, false);
+            parameters.Add(p => p.IconName, "Emoji");
+        });
+
+        // An icon is content of its own rather than a number, so ShowZero takes the emptied count off the
+        // badge and leaves the glyph - and the badge - where they are.
+        Assert.AreEqual(1, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-bdg-ico").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-bdg-con").Count);
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldKeepATemplateWhenTheEmptiedCountIsTakenOffIt()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 0);
+            parameters.Add(p => p.ShowZero, false);
+            parameters.Add(p => p.ContentTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"tpl\">new</span>")));
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.AreEqual(1, component.FindAll(".tpl").Count);
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldNotAnnounceAnEmptiedCountItIsNoLongerShowing()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Live, true);
+            parameters.Add(p => p.Content, 0);
+            parameters.Add(p => p.ShowZero, false);
+            parameters.Add(p => p.IconName, "Emoji");
+        });
+
+        // The badge is still on the page for its icon, but the zero it stopped showing is not what the live
+        // region reports.
+        Assert.AreEqual(string.Empty, component.Find(".bit-bdg-lvr").TextContent);
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldCapAFractionalContent()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Max, 99);
+            parameters.Add(p => p.Content, 123.45);
+        });
+
+        Assert.AreEqual("99+", component.Find(".bit-bdg-con").TextContent);
+
+        component.Render(parameters => parameters.Add(p => p.Content, 123.45m));
+
+        Assert.AreEqual("99+", component.Find(".bit-bdg-con").TextContent);
+
+        component.Render(parameters => parameters.Add(p => p.Content, 123.45f));
+
+        Assert.AreEqual("99+", component.Find(".bit-bdg-con").TextContent);
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldRenderAnUncappedFractionalContentAsItPrints()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Max, 99);
+            parameters.Add(p => p.Content, 12.5);
+        });
+
+        // A fraction below the max is not a capped count, so it keeps the separator of the current culture
+        // rather than being rounded into an integer.
+        Assert.AreEqual(12.5.ToString(), component.Find(".bit-bdg-con").TextContent);
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldRespectShowZeroForAFractionalZero()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.ShowZero, false);
+            parameters.Add(p => p.Content, 0.0);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+
+        component.Render(parameters => parameters.Add(p => p.Content, 0m));
+
+        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+
+        component.Render(parameters => parameters.Add(p => p.Content, 0.5));
+
+        Assert.AreEqual(1, component.FindAll(".bit-bdg-ctn").Count);
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldNotCountANonFiniteNumber()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Max, 99);
+            parameters.Add(p => p.Content, double.NaN);
+        });
+
+        // A NaN is no count at all: it is neither capped nor read as a zero, and it is printed as it is.
+        Assert.AreEqual(double.NaN.ToString(), component.Find(".bit-bdg-con").TextContent);
+
+        component.Render(parameters => parameters.Add(p => p.Content, double.PositiveInfinity));
+
+        Assert.AreEqual(double.PositiveInfinity.ToString(), component.Find(".bit-bdg-con").TextContent);
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldCapAnUnsignedContentBeyondTheRangeOfALong()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Max, 99);
+            parameters.Add(p => p.Content, ulong.MaxValue);
+        });
+
+        Assert.AreEqual("99+", component.Find(".bit-bdg-con").TextContent);
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldRenderAnAnchorWhenItHasAnHref()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Href, "/inbox");
+        });
+
+        var badge = component.Find(".bit-bdg-ctn");
+
+        Assert.AreEqual("A", badge.TagName);
+        Assert.IsTrue(badge.ClassList.Contains("bit-bdg-clk"));
+        Assert.AreEqual("/inbox", badge.GetAttribute("href"));
+        Assert.IsNull(badge.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitBadgeHrefShouldWinOverTheButton()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Href, "/inbox");
+            parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        // A badge that leads somewhere is a link even when it also does something on the way there: the
+        // navigation is what cannot be reproduced by a handler on a button.
+        Assert.AreEqual("A", component.Find(".bit-bdg-ctn").TagName);
+        Assert.AreEqual(0, component.FindAll("button").Count);
+    }
+
+    [TestMethod]
+    public void BitBadgeAnchorShouldRespectTargetAndRel()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Target, "_blank");
+        });
+
+        var badge = component.Find(".bit-bdg-ctn");
+
+        Assert.AreEqual("_blank", badge.GetAttribute("target"));
+
+        // a link opening in a new browsing context protects itself from reverse-tabnabbing on its own
+        Assert.AreEqual("noopener", badge.GetAttribute("rel"));
+
+        component.Render(parameters => parameters.Add(p => p.Rel, BitLinkRels.NoFollow | BitLinkRels.NoReferrer));
+
+        Assert.AreEqual("nofollow noreferrer", component.Find(".bit-bdg-ctn").GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitBadgeAnchorShouldNotAddARelToAnAnchorOnlyHref()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Href, "#section");
+            parameters.Add(p => p.Target, "_blank");
+        });
+
+        Assert.IsNull(component.Find(".bit-bdg-ctn").GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitBadgeAnchorShouldRespectTabIndex()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Href, "/inbox");
+            parameters.Add(p => p.TabIndex, "3");
+        });
+
+        Assert.AreEqual("3", component.Find(".bit-bdg-ctn").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitBadgeAnchorShouldDropItsHrefWhenTheBadgeIsNotEnabled()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Href, "/inbox");
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        var badge = component.Find(".bit-bdg-ctn");
+
+        // An anchor has no disabled state of its own, so a disabled link badge loses the href it would
+        // follow, leaves the tab order and reports itself as disabled instead.
+        Assert.IsFalse(badge.HasAttribute("href"));
+        Assert.AreEqual("-1", badge.GetAttribute("tabindex"));
+        Assert.AreEqual("true", badge.GetAttribute("aria-disabled"));
+        Assert.IsTrue(component.Find(".bit-bdg").ClassList.Contains("bit-dis"));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitBadgeAnchorOnClickBehaviorDependsOnIsEnabled(bool isEnabled)
+    {
+        var clicked = false;
+
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Href, "/inbox");
+            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, (MouseEventArgs e) => clicked = true));
+        });
+
+        component.Find(".bit-bdg-ctn").Click();
+
+        Assert.AreEqual(isEnabled, clicked);
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldMoveTheAriaLabelOntoItsAnchor()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Href, "/inbox");
+            parameters.Add(p => p.AriaLabel, "5 unread messages");
+        });
+
+        // The link is what a screen reader lands on, so it is the link that carries the name.
+        Assert.AreEqual("5 unread messages", component.Find(".bit-bdg-ctn").GetAttribute("aria-label"));
+        Assert.IsNull(component.Find(".bit-bdg").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitBadgeAnchorShouldKeepItsLiveRegionInsideItself()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Live, true);
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Href, "/inbox");
+        });
+
+        // A link is focusable, so it cannot be hidden from assistive technologies the way the rest of the
+        // badge is: the region stays on the link itself rather than moving out to the root.
+        Assert.AreEqual(0, component.FindAll(".bit-bdg-lvr").Count);
+
+        var badge = component.Find(".bit-bdg-ctn");
+
+        Assert.AreEqual("polite", badge.GetAttribute("aria-live"));
+        Assert.AreEqual("true", badge.GetAttribute("aria-atomic"));
+        Assert.IsNull(component.Find(".bit-bdg-wrp").GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitBadgeHiddenShouldWinOverADescriptionAlone()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Hidden, true);
+            parameters.Add(p => p.Description, "Online");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-bdg-vhd").Count);
+    }
+
+    [TestMethod]
+    public void BitBadgeAnchorShouldCarryItsDescriptionAndHideTheVisibleContentFromIt()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Href, "/inbox");
+            parameters.Add(p => p.Description, "5 unread messages");
+        });
+
+        Assert.AreEqual("5 unread messages", component.Find(".bit-bdg-vhd").TextContent);
+        Assert.AreEqual("true", component.Find(".bit-bdg-con").GetAttribute("aria-hidden"));
+
+        // A description names the link on its own, so the label stays where it was rather than replacing it.
+        Assert.IsNull(component.Find(".bit-bdg-ctn").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldNotBumpOnItsFirstRender()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Max, 99);
+            parameters.Add(p => p.Content, 5);
+        });
+
+        var badge = component.Find(".bit-bdg-ctn");
+
+        // A badge arriving on the page reports itself with its entry animation; the bump is for a count that
+        // changes once the badge is already there.
+        Assert.IsFalse(badge.ClassList.Contains("bit-bdg-bm1"));
+        Assert.IsFalse(badge.ClassList.Contains("bit-bdg-bm2"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldBumpOnEveryChangeOfTheContentItShows()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Content, 6));
+
+        // An animation restarts only when the class carrying it changes, so the two classes alternate: the
+        // badge has to land on the other one at every change for the bump to play again.
+        Assert.IsTrue(component.Find(".bit-bdg-ctn").ClassList.Contains("bit-bdg-bm1"));
+
+        component.Render(parameters => parameters.Add(p => p.Content, 7));
+
+        Assert.IsTrue(component.Find(".bit-bdg-ctn").ClassList.Contains("bit-bdg-bm2"));
+        Assert.IsFalse(component.Find(".bit-bdg-ctn").ClassList.Contains("bit-bdg-bm1"));
+
+        component.Render(parameters => parameters.Add(p => p.Content, 8));
+
+        Assert.IsTrue(component.Find(".bit-bdg-ctn").ClassList.Contains("bit-bdg-bm1"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldNotBumpWhenWhatItShowsStaysTheSame()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Max, 99);
+            parameters.Add(p => p.Content, 100);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Content, 200));
+
+        // Both counts are capped to the same 99+, so nothing the reader can see has changed.
+        Assert.IsFalse(component.Find(".bit-bdg-ctn").ClassList.Contains("bit-bdg-bm1"));
+        Assert.IsFalse(component.Find(".bit-bdg-ctn").ClassList.Contains("bit-bdg-bm2"));
+
+        component.Render(parameters => parameters.Add(p => p.Max, 999));
+
+        // ... and lifting the max above the count does change it, so that is a bump.
+        Assert.IsTrue(component.Find(".bit-bdg-ctn").ClassList.Contains("bit-bdg-bm1"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldRenderTheTitleOnTheBadgeItself()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Max, 99);
+            parameters.Add(p => p.Content, 12345);
+            parameters.Add(p => p.Title, "12345 unread messages");
+        });
+
+        // The tooltip belongs to the badge rather than to the child content underneath it, which is what lets
+        // it spell out the count the cap shortened.
+        Assert.AreEqual("12345 unread messages", component.Find(".bit-bdg-ctn").GetAttribute("title"));
+        Assert.IsNull(component.Find(".bit-bdg").GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitBadgeButtonAndAnchorShouldRenderTheTitleToo()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Title, "five");
+            parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        Assert.AreEqual("five", component.Find(".bit-bdg-ctn").GetAttribute("title"));
+
+        component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Title, "five");
+            parameters.Add(p => p.Href, "/inbox");
+        });
+
+        Assert.AreEqual("five", component.Find(".bit-bdg-ctn").GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldNotRenderATitleAttributeWithoutATitle()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+        });
+
+        Assert.IsFalse(component.Find(".bit-bdg-ctn").HasAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitBadgeAnchorClickShouldNotReachWhatTheBadgeSitsOn()
+    {
+        var hostClicked = false;
+
+        var component = Context.Render(builder =>
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "class", "host");
+            builder.AddAttribute(2, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => hostClicked = true));
+            builder.OpenComponent<BitBadge>(3);
+            builder.AddAttribute(4, nameof(BitBadge.Content), 5);
+            builder.AddAttribute(5, nameof(BitBadge.Href), "/inbox");
+            builder.CloseComponent();
+            builder.CloseElement();
+        });
+
+        component.Find(".bit-bdg-ctn").Click();
+
+        Assert.IsFalse(hostClicked);
     }
 }
