@@ -8,7 +8,19 @@ public partial class BitBadge : BitComponentBase
     private string? _content;
     private bool _isZeroContent;
 
-    private bool _isBadgeVisible => Hidden is false && (ShowZero || _isZeroContent is false);
+    // A template is content of its own, so a stale numeric Content of zero next to it is not what the badge
+    // is showing and must not take the badge off the page.
+    private bool _isBadgeVisible => Hidden is false && (ShowZero || ContentTemplate is not null || _isZeroContent is false);
+
+    // A live region only announces what changes inside it, so it has to be on the page before the change
+    // happens: a region inserted together with its own text is announced by nothing. The badge comes and
+    // goes with the count, so the region cannot live inside it - unless the badge is a button, which is
+    // focusable and therefore cannot be hidden from assistive technologies the way the rest of the badge is.
+    // That case keeps the region where it is, and this one moves it out to the root.
+    private bool _hasOwnLiveRegion => Live && OnClick.HasDelegate is false;
+
+    // What the badge stands for in words: the description when there is one, and the counter itself otherwise.
+    private string? _liveText => Description.HasValue() ? Description : (Dot ? null : _content);
 
 
 
@@ -27,6 +39,8 @@ public partial class BitBadge : BitComponentBase
     /// <remarks>
     /// When it is not set the badge has nothing to overlay, so it renders standalone: in the normal flow
     /// of the page, at its own size, with <see cref="Position"/> and <see cref="Overlap"/> no longer applying.
+    /// <br />
+    /// To keep the child content and still lay the badge out beside it rather than over it, use <see cref="Inline"/>.
     /// </remarks>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -57,6 +71,10 @@ public partial class BitBadge : BitComponentBase
     /// <summary>
     /// The custom template to render inside the badge, in place of <see cref="Content"/>.
     /// </summary>
+    /// <remarks>
+    /// A template is content of its own, so neither <see cref="Max"/> nor <see cref="ShowZero"/> reads it:
+    /// the badge shows what the template renders and stays on the page while it is set.
+    /// </remarks>
     [Parameter] public RenderFragment? ContentTemplate { get; set; }
 
     /// <summary>
@@ -122,6 +140,23 @@ public partial class BitBadge : BitComponentBase
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
+    /// Lays the badge out next to its child content in the normal flow of the page instead of over it.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// An overlaid badge has to stay small enough not to bury the element underneath it. An inline one is
+    /// given room of its own, which is what a counter at the end of a navigation item or a status next to a
+    /// heading is built from.
+    /// <br />
+    /// <see cref="Overlap"/> stops applying, and of <see cref="Position"/> only the side is read: the Start
+    /// and Left families put the badge before the child content, every other one after it. <see cref="OffsetX"/>
+    /// and <see cref="OffsetY"/> keep nudging the badge from wherever the row leaves it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Inline { get; set; }
+
+    /// <summary>
     /// Announces the badge to assistive technologies whenever its content changes, by turning it into a
     /// polite live region.
     /// <br />
@@ -130,6 +165,11 @@ public partial class BitBadge : BitComponentBase
     /// <remarks>
     /// Turn it on for a count that updates while the page stays open (an inbox, a cart) and off for one that
     /// only reflects what is already on the screen, since every change of a live region interrupts the reader.
+    /// <br />
+    /// The region is kept on the page whether or not the badge itself is, so a counter that appears, changes
+    /// and disappears is announced every time, and the badge is hidden from assistive technologies while it
+    /// is on so nothing is announced twice. A badge that is a button keeps the region inside itself instead,
+    /// since a focusable element cannot be hidden from a screen reader.
     /// </remarks>
     [Parameter] public bool Live { get; set; }
 
@@ -226,6 +266,9 @@ public partial class BitBadge : BitComponentBase
     /// <remarks>
     /// Turn it off for a counter that should disappear once it is emptied, which saves keeping a
     /// <see cref="Hidden"/> flag of your own next to the count.
+    /// <br />
+    /// Only an integral <see cref="Content"/> counts as zero: a string is rendered as it is, and a
+    /// <see cref="ContentTemplate"/> is content of its own that keeps the badge on the page either way.
     /// </remarks>
     [Parameter] public bool ShowZero { get; set; } = true;
 
@@ -278,6 +321,8 @@ public partial class BitBadge : BitComponentBase
 
         ClassBuilder.Register(() => Dot ? "bit-bdg-dot" : string.Empty);
 
+        ClassBuilder.Register(() => Inline ? "bit-bdg-inl" : string.Empty);
+
         ClassBuilder.Register(() => Overlap ? "bit-bdg-orp" : string.Empty);
 
         ClassBuilder.Register(() => Bordered ? "bit-bdg-brd" : string.Empty);
@@ -303,7 +348,10 @@ public partial class BitBadge : BitComponentBase
             BitPosition.BottomRight => "bit-bdg-brg",
             BitPosition.BottomStart => "bit-bdg-bst",
             BitPosition.BottomEnd => "bit-bdg-ben",
-            _ => "bit-bdg-trg"
+            // An overlaid badge has always landed on the physical top right by default and stays there. An
+            // inline one reads only the side of the position, and a side that is left unsaid should follow
+            // the direction of writing rather than pin the badge to the leading edge in right-to-left.
+            _ => Inline ? "bit-bdg-ten" : "bit-bdg-trg"
         });
 
         ClassBuilder.Register(() => Shape switch
@@ -392,6 +440,8 @@ public partial class BitBadge : BitComponentBase
             case ushort ushortValue: result = ushortValue; return true;
             case uint uintValue: result = uintValue; return true;
             case ulong ulongValue when ulongValue <= long.MaxValue: result = (long)ulongValue; return true;
+            case nint nintValue: result = nintValue; return true;
+            case nuint nuintValue when nuintValue <= long.MaxValue: result = (long)nuintValue; return true;
             default: result = 0; return false;
         }
     }

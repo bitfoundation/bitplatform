@@ -64,8 +64,11 @@
     line-height: 1;
 }
 
-// The text alternative of the badge: read by assistive technologies, taken out of the layout for everyone else.
-.bit-bdg-vhd {
+// The text alternative of the badge and its live region: read by assistive technologies, taken out of the
+// layout for everyone else. They stay in the render tree rather than being display:none, which would take
+// them out of the accessibility tree along with the layout.
+.bit-bdg-vhd,
+.bit-bdg-lvr {
     border: 0;
     padding: 0;
     width: 1px;
@@ -75,7 +78,6 @@
     position: absolute;
     white-space: nowrap;
     clip-path: inset(50%);
-    clip: rect(0 0 0 0);
 }
 
 // A badge with a click handler is a button, so it takes the pointer back from the overlay layer and
@@ -401,6 +403,30 @@
         .bit-bdg-ctn {
             top: calc(100% - #{spacing(1.5)});
             inset-inline-start: calc(100% - #{spacing(1.5)});
+        }
+    }
+}
+
+// An inline badge is laid out next to its child rather than over it, so the root becomes the row that holds
+// the two and the badge itself falls back to the standalone rules below.
+.bit-bdg-inl {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--bit-bdg-gap, #{spacing(0.75)});
+
+    // Only the side of the position is left to read. The Start family follows the direction of writing on
+    // its own, and the physical Left and Right ones are pinned to a side by restating them in right-to-left.
+    &:is(.bit-bdg-tst, .bit-bdg-cst, .bit-bdg-bst, .bit-bdg-tlf, .bit-bdg-clf, .bit-bdg-blf) {
+        flex-direction: row-reverse;
+    }
+
+    &.bit-rtl {
+        &:is(.bit-bdg-tlf, .bit-bdg-clf, .bit-bdg-blf) {
+            flex-direction: row;
+        }
+
+        &:is(.bit-bdg-trg, .bit-bdg-crg, .bit-bdg-brg) {
+            flex-direction: row-reverse;
         }
     }
 }

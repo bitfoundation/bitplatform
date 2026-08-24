@@ -2,10 +2,10 @@
 
 <PageOutlet Url="components/badge"
             Title="Badge"
-            Description="Badge component is a small overlay that reports a count, a state or a plain dot on the element it belongs to." />
+            Description="Badge component is a small marker that reports a count, a state or a plain dot on the element it belongs to, over it or beside it." />
 
 <DemoPage Name="Badge"
-          Description="Badge is the small marker that sits on another element and reports what is waiting behind it. It takes a number, a string, an icon or a template, caps a count at a max, hides itself when that count reaches zero, or drops its content altogether and becomes a dot. It anchors to any of fifteen positions around its child - physical or direction-aware - and can be nudged, overlapped, ringed against a busy background or given a pulse while something is in progress. It renders standalone when there is nothing to overlay, turns into a real keyboard-operable button as soon as it is given a click handler, and carries a text alternative so that what it says visually also reaches a screen reader."
+          Description="Badge is the small marker that sits on another element and reports what is waiting behind it. It takes a number, a string, an icon or a template, caps a count at a max, hides itself when that count reaches zero, or drops its content altogether and becomes a dot. It anchors to any of fifteen positions around its child - physical or direction-aware - and can be nudged, overlapped, ringed against a busy background or given a pulse while something is in progress. It can also step out of the overlay and sit beside its child in the flow, or stand entirely on its own where there is nothing to overlay. It turns into a real keyboard-operable button as soon as it is given a click handler, and carries a text alternative and a live region so that what it says visually also reaches a screen reader."
           Parameters="componentParameters"
           SubEnums="componentSubEnums"
           SubClasses="componentSubClasses"
@@ -96,8 +96,8 @@
     <DemoExample Title="Dot" RazorCode="@example4RazorCode" Id="example4">
         <div>
             <b>Dot</b> shrinks the badge to a plain mark and drops its content and its icon. Use it when the fact that something changed matters more than how much of it there is.
-            The dot scales with the <BitLink Href="#example19">Size</BitLink> of the badge, and since it says nothing on its own, give it a
-            <BitLink Href="#example16">Description</BitLink> so its meaning is not carried by color alone.
+            The dot scales with the <BitLink Href="#example20">Size</BitLink> of the badge, and since it says nothing on its own, give it a
+            <BitLink Href="#example17">Description</BitLink> so its meaning is not carried by color alone.
         </div>
         <br /><br />
         <div class="example-content">
@@ -143,7 +143,7 @@
     <DemoExample Title="ShowZero" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>
             A counter that reaches zero has nothing left to report. <b>ShowZero</b> is <code>true</code> by default, so the zero is rendered; set it to <code>false</code> and the
-            badge disappears on its own, which saves keeping a <BitLink Href="#example14">Hidden</BitLink> flag of your own next to the count.
+            badge disappears on its own, which saves keeping a <BitLink Href="#example15">Hidden</BitLink> flag of your own next to the count.
         </div>
         <br /><br />
         <div class="example-content">
@@ -166,6 +166,7 @@
         <div>
             Beyond a number, the badge takes a string, an icon (<b>IconName</b> or <b>Icon</b>), both together, or - when text is not enough - a <b>ContentTemplate</b> of your own markup.
             <b>Reversed</b> flips the order of the icon and the content. Any other value of <b>Content</b> is rendered through its own <code>ToString()</code>.
+            A template is content of its own, so it is what the badge shows and what keeps it on the page: neither <b>Max</b> nor <BitLink Href="#example6">ShowZero</BitLink> reads it.
         </div>
         <br /><br />
         <div>String content</div><br />
@@ -203,7 +204,7 @@
     <DemoExample Title="Position" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <div>
             <b>Position</b> anchors the badge to one of the fifteen points around its child. The Left and Right ones are physical and stay where they are in
-            <BitLink Href="#example21">right-to-left</BitLink>, while the Start and End ones follow the direction of writing and swap sides with it.
+            <BitLink Href="#example22">right-to-left</BitLink>, while the Start and End ones follow the direction of writing and swap sides with it.
         </div>
         <br />
         <div class="example-content" style="margin-left:1rem">
@@ -277,7 +278,7 @@
     <DemoExample Title="Pulse" RazorCode="@example12RazorCode" Id="example12">
         <div>
             <b>Pulse</b> sends a ring expanding out of the badge and fading, for a state that is still going: a sync in flight, a device connecting, a live stream.
-            The ring is decorative - it slows down rather than stops when the reader asks for reduced motion - so pair it with a <BitLink Href="#example16">Description</BitLink> when the state itself matters.
+            The ring is decorative - it slows down rather than stops when the reader asks for reduced motion - so pair it with a <BitLink Href="#example17">Description</BitLink> when the state itself matters.
         </div>
         <br /><br />
         <div class="example-content">
@@ -299,6 +300,7 @@
         <div>
             With no child content there is nothing to overlay, so the badge renders standalone: in the normal flow of the page, at its own size, with Position and Overlap
             no longer applying. That is how a badge is used inside a table cell, a list row or a heading, where it labels the line it is on rather than an element it sits over.
+            To keep the child content and still lay the badge out beside it, use <BitLink Href="#example14">Inline</BitLink>.
         </div>
         <br /><br />
         <div class="example-content">
@@ -310,7 +312,34 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Hidden" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+    <DemoExample Title="Inline" RazorCode="@example14RazorCode" Id="example14">
+        <div>
+            <b>Inline</b> keeps the child content and lays the badge out beside it instead of over it, so the badge is given room of its own rather than having to stay small
+            enough not to bury what it sits on. That is the counter at the end of a navigation item, the status next to a heading, the total after a tab label.
+            <b>Overlap</b> stops applying and only the side of <BitLink Href="#example8">Position</BitLink> is read: the Start and Left families put the badge before the
+            child, every other one after it.
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitBadge Inline Content="24">
+                <BitText Typography="BitTypography.Body1">Inbox</BitText>
+            </BitBadge>
+
+            <BitBadge Inline Content="3" Color="BitColor.Error" Position="BitPosition.CenterStart">
+                <BitText Typography="BitTypography.Body1">Alerts</BitText>
+            </BitBadge>
+
+            <BitBadge Inline Dot Color="BitColor.Success" Position="BitPosition.CenterStart" Description="Operational">
+                <BitText Typography="BitTypography.Body1">Build server</BitText>
+            </BitBadge>
+
+            <BitBadge Inline Content="@("Beta")" Color="BitColor.Info" Variant="BitVariant.Outline" Shape="BitBadgeShape.Rounded">
+                <BitText Typography="BitTypography.Body1">Reports</BitText>
+            </BitBadge>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Hidden" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
         <div>
             <b>Hidden</b> removes the badge from the DOM while its child keeps rendering, for a marker you control yourself.
             When what you are hiding is an empty counter, <BitLink Href="#example6">ShowZero</BitLink> does it without a flag.
@@ -323,10 +352,11 @@
         </BitBadge>
     </DemoExample>
 
-    <DemoExample Title="Events" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+    <DemoExample Title="Events" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
         <div>
             Giving the badge an <b>OnClick</b> handler turns it into a real button: it takes the pointer back from the element underneath it, answers to hover and to the
-            Enter and Space keys, and shows a focus ring. Without a handler the badge never takes focus - it is a label on the element it belongs to, and that element is
+            Enter and Space keys, and shows a focus ring. The click stops there rather than carrying on to whatever the badge is sitting on, so a badge over a button is
+            its own target. Without a handler the badge never takes focus and lets every pointer through - it is a label on the element it belongs to, and that element is
             what a keyboard user reaches. Disabling the badge takes it out of the tab order and stops the handler.
         </div>
         <br /><br />
@@ -341,12 +371,13 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Accessibility" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+    <DemoExample Title="Accessibility" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
         <div>
             A badge says what it says visually, and a number or a colored dot reaches a screen reader as nothing at all. <b>Description</b> is its text alternative: it is
             rendered into the badge for assistive technologies only, and the visible content is hidden from them so the two are never announced twice.
-            <b>Live</b> turns the badge into a polite live region, so a count that changes while the page stays open is announced as it changes - keep it off for a count
-            that only mirrors what is already on the screen.
+            <b>Live</b> adds a polite live region, so a count that changes while the page stays open is announced as it changes - keep it off for a count that only mirrors
+            what is already on the screen. The region is kept on the page whether or not the badge itself is, which is what makes a counter that appears, changes and then
+            <BitLink Href="#example6">disappears</BitLink> announced every time: a live region inserted together with its own text is announced by nothing.
         </div>
         <br /><br />
         <div class="example-content">
@@ -362,7 +393,7 @@
         <BitButton Variant="BitVariant.Outline" OnClick="() => unread++">Receive a message</BitButton>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="Color" RazorCode="@example18RazorCode" Id="example18">
         <div>
             <b>Color</b> picks the role the badge is painted in. The eight semantic roles carry a meaning - Error for something that needs attention, Success for something
             that went through - while the background, foreground and border roles are the neutral surfaces of the theme, for a badge that should not shout.
@@ -621,7 +652,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="External Icons" RazorCode="@example19RazorCode" Id="example19">
         <div>Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>Icon</b> parameter.</div>
         <div>See the <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> section in the parameters table for usage.</div>
 
@@ -652,7 +683,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="Size" RazorCode="@example20RazorCode" Id="example20">
         <div>
             <b>Size</b> sets the height, the type size and the inset of the badge, and the diameter of a <BitLink Href="#example4">dot</BitLink> along with them.
             A counter is never narrower than it is tall, so a single digit stays a circle at every size.
@@ -698,10 +729,10 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example20RazorCode" Id="example20">
+    <DemoExample Title="Style & Class" RazorCode="@example21RazorCode" Id="example21">
         <div>
             <b>Style</b> and <b>Class</b> land on the root of the component - the box that wraps the child content - while <b>Styles</b> and <b>Classes</b> reach every part of it
-            on its own: the root, the wrapper the badge is positioned inside of, the badge itself, its icon, its content and its visually hidden description.
+            on its own: the root, the wrapper the badge is positioned inside of, the badge itself, its icon, its content, its visually hidden description and its live region.
         </div>
         <br /><br />
         <div>Component's Style & Class:</div><br />
@@ -735,7 +766,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example21RazorCode" Id="example21">
+    <DemoExample Title="RTL" RazorCode="@example22RazorCode" Id="example22">
         <div>
             Use BitBadge in right-to-left (RTL). The Start and End positions follow the direction of writing and move to the other side of the child with it, while the
             Left and Right ones stay where they are. An icon and its content swap sides along with the layout.

@@ -31,4 +31,10 @@ public class BitBadgeClassStyles
     /// Custom CSS classes/styles for the visually hidden description of the BitBadge.
     /// </summary>
     public string? Description { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the visually hidden live region of the BitBadge, rendered while
+    /// <see cref="BitBadge.Live"/> is on and the badge is not a button.
+    /// </summary>
+    public string? LiveRegion { get; set; }
 }

@@ -48,7 +48,7 @@ public partial class BitBadgeDemo
             Name = "ContentTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom template to render inside the badge, in place of Content."
+            Description = "The custom template to render inside the badge, in place of Content. A template is content of its own, so neither Max nor ShowZero reads it."
         },
         new()
         {
@@ -91,10 +91,17 @@ public partial class BitBadgeDemo
         },
         new()
         {
+            Name = "Inline",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lays the badge out next to its child content in the normal flow of the page instead of over it. Overlap stops applying and only the side of Position is read: the Start and Left families put the badge before the child content, every other one after it."
+        },
+        new()
+        {
             Name = "Live",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Announces the badge to assistive technologies whenever its content changes, by turning it into a polite live region."
+            Description = "Announces the badge to assistive technologies whenever its content changes, by turning it into a polite live region. The region is kept on the page whether or not the badge itself is, so a counter that appears, changes and disappears is announced every time."
         },
         new()
         {
@@ -168,7 +175,7 @@ public partial class BitBadgeDemo
             Name = "ShowZero",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Renders the badge when its content is the number zero. Turn it off for a counter that should disappear once it is emptied."
+            Description = "Renders the badge when its content is the number zero. Turn it off for a counter that should disappear once it is emptied. Only an integral Content counts as zero: a string is rendered as it is, and a ContentTemplate keeps the badge on the page either way."
         },
         new()
         {
@@ -529,6 +536,13 @@ public partial class BitBadgeDemo
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the visually hidden description of the BitBadge."
                },
+               new()
+               {
+                   Name = "LiveRegion",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the visually hidden live region of the BitBadge, rendered while Live is on and the badge is not a button."
+               },
             ]
         },
         new()
@@ -749,15 +763,15 @@ private List<BitDropdownItem<BitPosition>> badgePositionList = Enum.GetValues(ty
 
     private readonly string example11RazorCode = @"
 <BitBadge Dot Color=""BitColor.Success"" Position=""BitPosition.BottomEnd"" Overlap Description=""Online"">
-    <BitImage Src=""/images/persona-female.png"" Width=""4rem"" Style=""border-radius:50%"" Alt=""Avatar"" />
+    <BitImage Src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" Width=""4rem"" Style=""border-radius:50%"" Alt=""Avatar"" />
 </BitBadge>
 
 <BitBadge Dot Bordered Color=""BitColor.Success"" Position=""BitPosition.BottomEnd"" Overlap Description=""Online"">
-    <BitImage Src=""/images/persona-female.png"" Width=""4rem"" Style=""border-radius:50%"" Alt=""Avatar"" />
+    <BitImage Src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" Width=""4rem"" Style=""border-radius:50%"" Alt=""Avatar"" />
 </BitBadge>
 
 <BitBadge Content=""8"" Bordered Overlap>
-    <BitImage Src=""/images/persona-female.png"" Width=""4rem"" Style=""border-radius:50%"" Alt=""Avatar"" />
+    <BitImage Src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" Width=""4rem"" Style=""border-radius:50%"" Alt=""Avatar"" />
 </BitBadge>";
 
     private readonly string example12RazorCode = @"
@@ -781,15 +795,32 @@ private List<BitDropdownItem<BitPosition>> badgePositionList = Enum.GetValues(ty
 <BitBadge Dot Color=""BitColor.Warning"" Description=""Degraded"" />";
 
     private readonly string example14RazorCode = @"
+<BitBadge Inline Content=""24"">
+    <BitText Typography=""BitTypography.Body1"">Inbox</BitText>
+</BitBadge>
+
+<BitBadge Inline Content=""3"" Color=""BitColor.Error"" Position=""BitPosition.CenterStart"">
+    <BitText Typography=""BitTypography.Body1"">Alerts</BitText>
+</BitBadge>
+
+<BitBadge Inline Dot Color=""BitColor.Success"" Position=""BitPosition.CenterStart"" Description=""Operational"">
+    <BitText Typography=""BitTypography.Body1"">Build server</BitText>
+</BitBadge>
+
+<BitBadge Inline Content=""@(""Beta"")"" Color=""BitColor.Info"" Variant=""BitVariant.Outline"" Shape=""BitBadgeShape.Rounded"">
+    <BitText Typography=""BitTypography.Body1"">Reports</BitText>
+</BitBadge>";
+
+    private readonly string example15RazorCode = @"
 <BitToggle @bind-Value=""hidden"" Label=""Hide the badge"" />
 
 <BitBadge Hidden=""hidden"" Content=""63"">
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private bool hidden;";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitBadge Content=""counter"" OnClick=""() => counter++"">
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
@@ -797,10 +828,10 @@ private bool hidden;";
 <BitBadge Content=""counter"" OnClick=""() => counter++"" IsEnabled=""false"">
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>";
-    private readonly string example15CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private int counter;";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitBadge Content=""unread"" Description=""@($""{unread} unread messages"")"" Live>
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
@@ -810,10 +841,10 @@ private int counter;";
 </BitBadge>
 
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => unread++"">Receive a message</BitButton>";
-    private readonly string example16CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 private int unread = 3;";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitBadge Content=""84"" Color=""BitColor.Primary"">
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
@@ -1010,7 +1041,7 @@ private int unread = 3;";
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitBadge Content=""4"" Icon=""@BitIconInfo.Css(""fa-solid fa-heart"")"" Variant=""BitVariant.Fill"">
@@ -1031,7 +1062,7 @@ private int unread = 3;";
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitBadge Content=""84"" Size=""BitSize.Small"" Variant=""BitVariant.Fill"">
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
@@ -1062,7 +1093,7 @@ private int unread = 3;";
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <style>
     .custom-class {
         border-radius: 1rem;
@@ -1124,7 +1155,7 @@ private int unread = 3;";
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example22RazorCode = @"
 <BitBadge Dir=""BitDir.Rtl"" Content=""63"" Position=""BitPosition.TopEnd"">
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>

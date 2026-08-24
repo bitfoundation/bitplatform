@@ -8,6 +8,11 @@
        from assistive technologies while it is set - otherwise "5" and "5 unread messages" are both announced. *@
     var hasDescription = Description.HasValue();
 
+    @* A badge that is a button is what a screen reader lands on, and an icon-only or dot one carries no text
+       to be named by, so the label moves onto the button itself. It stays on the root everywhere else: on a
+       plain badge there is nothing else to carry it, and a description already names the button on its own. *@
+    var labelOnBadge = AriaLabel.HasValue() && _isBadgeVisible && OnClick.HasDelegate && hasDescription is false;
+
     RenderFragment badgeContent =
         @<text>
             @if (Dot is false)
@@ -42,27 +47,43 @@
       id="@_Id"
       style="@StyleBuilder.Value"
       class="@ClassBuilder.Value"
-      aria-label="@AriaLabel"
+      aria-label="@(labelOnBadge ? null : AriaLabel)"
       dir="@Dir?.ToString().ToLower()">
 
     @ChildContent
 
+    @if (_hasOwnLiveRegion)
+    {
+        @* The live region of the badge, kept on the page whether or not the badge itself is, so that a
+           counter appearing, changing and disappearing is announced every time rather than only while the
+           badge happens to already be there. The badge is hidden from assistive technologies below, so the
+           text is carried here once and never announced twice. *@
+        <span style="@Styles?.LiveRegion"
+              class="bit-bdg-lvr @Classes?.LiveRegion"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true">@(_isBadgeVisible ? _liveText : null)</span>
+    }
+
     @if (_isBadgeVisible)
     {
-        @* Without child content there is nothing to overlay, so the wrapper drops out of the overlay layer and
-           the badge is laid out in the flow as a standalone one. *@
+        @* Without child content there is nothing to overlay, and an inline badge is asked not to; either way
+           the wrapper drops out of the overlay layer and the badge is laid out in the flow instead. *@
         <span style="@Styles?.BadgeWrapper"
-              class="bit-bdg-wrp @(ChildContent is null ? "bit-bdg-stl" : null) @Classes?.BadgeWrapper">
+              class="bit-bdg-wrp @(ChildContent is null || Inline ? "bit-bdg-stl" : null) @Classes?.BadgeWrapper"
+              aria-hidden="@(_hasOwnLiveRegion ? "true" : null)">
             @if (OnClick.HasDelegate)
             {
                 @* A badge that does something is a real button: it comes with the keyboard, the focus ring and the
                    disabled semantics that a span with an onclick handler would each have to reimplement. *@
                 <button @onclick="HandleOnClick"
+                        @onclick:stopPropagation="true"
                         style="@Styles?.Badge"
                         class="bit-bdg-ctn bit-bdg-clk @Classes?.Badge"
                         type="button"
                         tabindex="@TabIndex"
                         disabled="@(IsEnabled is false)"
+                        aria-label="@(labelOnBadge ? AriaLabel : null)"
                         aria-live="@(Live ? "polite" : null)"
                         aria-atomic="@(Live ? "true" : null)">
                     @badgeContent
@@ -70,9 +91,7 @@
             }
             else
             {
-                <span style="@Styles?.Badge"
-                      class="bit-bdg-ctn @Classes?.Badge"
-                      role="@(Live ? "status" : null)">
+                <span style="@Styles?.Badge" class="bit-bdg-ctn @Classes?.Badge">
                     @badgeContent
                 </span>
             }

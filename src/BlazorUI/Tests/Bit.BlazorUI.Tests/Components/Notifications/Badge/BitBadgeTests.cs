@@ -709,6 +709,35 @@ public class BitBadgeTests : BunitTestContext
 
         Assert.AreEqual("Inbox", component.Find(".bit-bdg").GetAttribute("aria-label"));
     }
+
+    [TestMethod]
+    public void BitBadgeShouldMoveTheAriaLabelOntoItsButton()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "TestIcon");
+            parameters.Add(p => p.AriaLabel, "Inbox");
+            parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        Assert.AreEqual("Inbox", component.Find(".bit-bdg-ctn").GetAttribute("aria-label"));
+        Assert.IsNull(component.Find(".bit-bdg").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldKeepTheAriaLabelOnItsRootWhenTheButtonHasADescription()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "TestIcon");
+            parameters.Add(p => p.AriaLabel, "Inbox");
+            parameters.Add(p => p.Description, "5 unread messages");
+            parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        Assert.AreEqual("Inbox", component.Find(".bit-bdg").GetAttribute("aria-label"));
+        Assert.IsNull(component.Find(".bit-bdg-ctn").GetAttribute("aria-label"));
+    }
 
     [TestMethod]
     public void BitBadgeShouldRenderTheDescriptionAndHideTheVisibleContentFromIt()
@@ -750,9 +779,114 @@ public class BitBadgeTests : BunitTestContext
             parameters.Add(p => p.Live, live);
         });
 
-        var badge = component.Find(".bit-bdg-ctn");
+        Assert.AreEqual(live ? 1 : 0, component.FindAll(".bit-bdg-lvr").Count);
 
-        Assert.AreEqual(live ? "status" : null, badge.GetAttribute("role"));
+        // The visual badge is hidden from assistive technologies while the live region carries its text,
+        // so the count is never announced twice.
+        Assert.AreEqual(live ? "true" : null, component.Find(".bit-bdg-wrp").GetAttribute("aria-hidden"));
+
+        if (live is false) return;
+
+        var region = component.Find(".bit-bdg-lvr");
+
+        Assert.AreEqual("status", region.GetAttribute("role"));
+        Assert.AreEqual("polite", region.GetAttribute("aria-live"));
+        Assert.AreEqual("true", region.GetAttribute("aria-atomic"));
+        Assert.AreEqual("5", region.TextContent);
+    }
+
+    [TestMethod]
+    public void BitBadgeLiveRegionShouldPreferTheDescription()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Live, true);
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Description, "5 unread messages");
+        });
+
+        Assert.AreEqual("5 unread messages", component.Find(".bit-bdg-lvr").TextContent);
+    }
+
+    [TestMethod]
+    public void BitBadgeLiveRegionShouldCarryNoTextForAContentlessDot()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Dot, true);
+            parameters.Add(p => p.Live, true);
+            parameters.Add(p => p.Content, 5);
+        });
+
+        // A dot shows nothing, so there is nothing to read out of it either; only a description gives it a voice.
+        Assert.AreEqual(string.Empty, component.Find(".bit-bdg-lvr").TextContent);
+    }
+
+    [TestMethod]
+    public void BitBadgeLiveRegionShouldOutliveTheBadgeItself()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Live, true);
+            parameters.Add(p => p.Content, 0);
+            parameters.Add(p => p.ShowZero, false);
+        });
+
+        // The badge is gone, but the region a screen reader listens to has to already be on the page when
+        // the count comes back - otherwise the change it is meant to announce is what creates it.
+        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.AreEqual(string.Empty, component.Find(".bit-bdg-lvr").TextContent);
+
+        component.Render(parameters => parameters.Add(p => p.Content, 3));
+
+        Assert.AreEqual(1, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.AreEqual("3", component.Find(".bit-bdg-lvr").TextContent);
+    }
+
+    [TestMethod]
+    public void BitBadgeLiveRegionShouldFollowTheContent()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Live, true);
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Max, 9);
+        });
+
+        Assert.AreEqual("5", component.Find(".bit-bdg-lvr").TextContent);
+
+        component.Render(parameters => parameters.Add(p => p.Content, 50));
+
+        Assert.AreEqual("9+", component.Find(".bit-bdg-lvr").TextContent);
+    }
+
+    [TestMethod]
+    public void BitBadgeButtonShouldKeepItsLiveRegionInsideItself()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Live, true);
+            parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        // A focusable element cannot be hidden from a screen reader, so a clickable badge announces itself
+        // rather than being spoken for by a region next to it.
+        Assert.AreEqual(0, component.FindAll(".bit-bdg-lvr").Count);
+        Assert.IsNull(component.Find(".bit-bdg-wrp").GetAttribute("aria-hidden"));
+        Assert.AreEqual("polite", component.Find(".bit-bdg-ctn").GetAttribute("aria-live"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldNotRenderALiveRegionWithoutLive()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-bdg-lvr").Count);
+        Assert.IsNull(component.Find(".bit-bdg-wrp").GetAttribute("aria-hidden"));
     }
 
     [TestMethod]
@@ -891,5 +1025,204 @@ public class BitBadgeTests : BunitTestContext
         });
 
         Assert.AreEqual("the-badge", component.Find(".bit-bdg").GetAttribute("id"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldRespectLiveRegionClassAndStyle()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Live, true);
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Classes, new BitBadgeClassStyles { LiveRegion = "custom-live" });
+            parameters.Add(p => p.Styles, new BitBadgeClassStyles { LiveRegion = "color: red;" });
+        });
+
+        var region = component.Find(".bit-bdg-lvr");
+
+        Assert.IsTrue(region.ClassList.Contains("custom-live"));
+        Assert.AreEqual("color: red;", region.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitBadgeShouldRespectInline(bool inline)
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Inline, inline);
+            parameters.Add(p => p.Content, 5);
+            parameters.AddChildContent("<span class=\"child\">child</span>");
+        });
+
+        Assert.AreEqual(inline, component.Find(".bit-bdg").ClassList.Contains("bit-bdg-inl"));
+
+        // An inline badge is laid out in the flow next to its child, which is the same layer a standalone
+        // badge lands in - so it drops out of the overlay wrapper exactly the way that one does.
+        Assert.AreEqual(inline, component.Find(".bit-bdg-wrp").ClassList.Contains("bit-bdg-stl"));
+    }
+
+    [TestMethod]
+    public void BitBadgeInlineShouldKeepRenderingItsChildContent()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Inline, true);
+            parameters.Add(p => p.Content, 5);
+            parameters.AddChildContent("<span class=\"child\">child</span>");
+        });
+
+        Assert.AreEqual(1, component.FindAll(".child").Count);
+        Assert.AreEqual("5", component.Find(".bit-bdg-con").TextContent);
+    }
+
+    [TestMethod]
+    public void BitBadgeInlineShouldToggleAtRuntime()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.AddChildContent("<span class=\"child\">child</span>");
+        });
+
+        Assert.IsFalse(component.Find(".bit-bdg").ClassList.Contains("bit-bdg-inl"));
+
+        component.Render(parameters => parameters.Add(p => p.Inline, true));
+
+        Assert.IsTrue(component.Find(".bit-bdg").ClassList.Contains("bit-bdg-inl"));
+        Assert.IsTrue(component.Find(".bit-bdg-wrp").ClassList.Contains("bit-bdg-stl"));
+    }
+
+    [TestMethod]
+    public void BitBadgeInlineShouldDefaultToTheEndOfTheWritingDirection()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Inline, true);
+            parameters.Add(p => p.Content, 5);
+        });
+
+        // An overlaid badge defaults to the physical top right, but an inline one reads only the side, and a
+        // physical right would pin it to the leading edge of a right-to-left line.
+        Assert.IsTrue(component.Find(".bit-bdg").ClassList.Contains("bit-bdg-ten"));
+        Assert.IsFalse(component.Find(".bit-bdg").ClassList.Contains("bit-bdg-trg"));
+
+        component.Render(parameters => parameters.Add(p => p.Inline, false));
+
+        Assert.IsTrue(component.Find(".bit-bdg").ClassList.Contains("bit-bdg-trg"));
+    }
+
+    [TestMethod]
+    public void BitBadgeInlineShouldStillRespectAnExplicitPosition()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Inline, true);
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Position, BitPosition.CenterStart);
+        });
+
+        Assert.IsTrue(component.Find(".bit-bdg").ClassList.Contains("bit-bdg-cst"));
+    }
+
+    [TestMethod]
+    public void BitBadgeStandaloneShouldStayStandaloneWhateverInlineSays()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Inline, false);
+            parameters.Add(p => p.Content, 5);
+        });
+
+        Assert.IsTrue(component.Find(".bit-bdg-wrp").ClassList.Contains("bit-bdg-stl"));
+    }
+
+    [TestMethod]
+    public void BitBadgeShowZeroShouldNotHideAContentTemplate()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 0);
+            parameters.Add(p => p.ShowZero, false);
+            parameters.Add(p => p.ContentTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"tpl\">new</span>")));
+        });
+
+        // The template is what the badge is showing, so an unrelated numeric Content of zero next to it is
+        // not an empty counter and must not take the badge off the page.
+        Assert.AreEqual(1, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.AreEqual(1, component.FindAll(".tpl").Count);
+    }
+
+    [TestMethod]
+    public void BitBadgeHiddenShouldStillWinOverAContentTemplate()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Hidden, true);
+            parameters.Add(p => p.ContentTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"tpl\">new</span>")));
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldCapTheNativeIntegerContentTypes()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Max, 99);
+            parameters.Add(p => p.Content, (nint)1000);
+        });
+
+        Assert.AreEqual("99+", component.Find(".bit-bdg-con").TextContent);
+
+        component.Render(parameters => parameters.Add(p => p.Content, (nuint)1000));
+
+        Assert.AreEqual("99+", component.Find(".bit-bdg-con").TextContent);
+    }
+
+    [TestMethod]
+    public void BitBadgeShowZeroShouldHideANativeIntegerZero()
+    {
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.ShowZero, false);
+            parameters.Add(p => p.Content, (nint)0);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+    }
+
+    [TestMethod]
+    public void BitBadgeClickShouldNotReachWhatTheBadgeSitsOn()
+    {
+        var badgeClicked = false;
+        var hostClicked = false;
+
+        var component = Context.Render(builder =>
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "class", "host");
+            builder.AddAttribute(2, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => hostClicked = true));
+            builder.OpenComponent<BitBadge>(3);
+            builder.AddAttribute(4, nameof(BitBadge.Content), 5);
+            builder.AddAttribute(5, nameof(BitBadge.OnClick), EventCallback.Factory.Create<MouseEventArgs>(this, () => badgeClicked = true));
+            builder.CloseComponent();
+            builder.CloseElement();
+        });
+
+        component.Find(".bit-bdg-ctn").Click();
+
+        // A badge that does something of its own is its own target: the click stops there rather than also
+        // firing whatever it is sitting on.
+        Assert.IsTrue(badgeClicked);
+        Assert.IsFalse(hostClicked);
+
+        // ... and the assertion above is only worth anything because a click anywhere else inside the badge
+        // does reach the host.
+        component.Find(".bit-bdg").Click();
+
+        Assert.IsTrue(hostClicked);
     }
 }
