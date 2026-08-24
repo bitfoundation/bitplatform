@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
   <!-- 
@@ -433,6 +433,12 @@
   </data>
   <data name="SystemPromptsSubTitle" xml:space="preserve">
     <value>在此查看聊天机器人的系统提示。</value>
+  </data>
+  <data name="PromptKindSupport" xml:space="preserve">
+    <value>支持</value>
+  </data>
+  <data name="PromptKindAnalyzeProductImage" xml:space="preserve">
+    <value>分析产品图片</value>
   </data>
   <data name="PushNotificationJob" xml:space="preserve">
     <value>推送通知作业</value>
@@ -1142,6 +1148,12 @@
   </data>
   <data name="DeleteTodoItem" xml:space="preserve">
     <value>删除待办事项</value>
+  </data>
+  <data name="SortAscending" xml:space="preserve">
+    <value>升序排序</value>
+  </data>
+  <data name="SortDescending" xml:space="preserve">
+    <value>降序排序</value>
   </data>
   <!--#endif -->
   <!--#if (module == "Admin" || module == "Sales") -->

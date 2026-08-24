@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
   <!-- 
@@ -433,6 +433,12 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   </data>
   <data name="SystemPromptsSubTitle" xml:space="preserve">
     <value>Bekijk hier de systeem prompts voor de chatbot.</value>
+  </data>
+  <data name="PromptKindSupport" xml:space="preserve">
+    <value>Ondersteuning</value>
+  </data>
+  <data name="PromptKindAnalyzeProductImage" xml:space="preserve">
+    <value>Productafbeelding analyseren</value>
   </data>
   <data name="PushNotificationJob" xml:space="preserve">
     <value>Push-melding taak</value>
@@ -1142,6 +1148,12 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   </data>
   <data name="DeleteTodoItem" xml:space="preserve">
     <value>Taakitem verwijderen</value>
+  </data>
+  <data name="SortAscending" xml:space="preserve">
+    <value>Oplopend sorteren</value>
+  </data>
+  <data name="SortDescending" xml:space="preserve">
+    <value>Aflopend sorteren</value>
   </data>
   <!--#endif -->
   <!--#if (module == "Admin" || module == "Sales") -->

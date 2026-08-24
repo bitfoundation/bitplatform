@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
   <!-- 
@@ -433,6 +433,12 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   </data>
   <data name="SystemPromptsSubTitle" xml:space="preserve">
     <value>Ver las instrucciones del sistema para el chatbot aquí.</value>
+  </data>
+  <data name="PromptKindSupport" xml:space="preserve">
+    <value>Soporte</value>
+  </data>
+  <data name="PromptKindAnalyzeProductImage" xml:space="preserve">
+    <value>Analizar la imagen del producto</value>
   </data>
   <data name="PushNotificationJob" xml:space="preserve">
     <value>Trabajo de notificaciones push</value>
@@ -1142,6 +1148,12 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   </data>
   <data name="DeleteTodoItem" xml:space="preserve">
     <value>Eliminar elemento de tarea</value>
+  </data>
+  <data name="SortAscending" xml:space="preserve">
+    <value>Orden ascendente</value>
+  </data>
+  <data name="SortDescending" xml:space="preserve">
+    <value>Orden descendente</value>
   </data>
   <!--#endif -->
   <!--#if (module == "Admin" || module == "Sales") -->

@@ -38,7 +38,7 @@
                               Class="todo-search"
                               OnChange="SearchTodoItems"
                               Immediate DebounceTime="300"
-                              Accent="BitColorKind.Secondary"
+                              Background="BitColorKind.Secondary"
                               OnClear="@(() => SearchTodoItems(""))"
                               Placeholder="@Localizer[nameof(AppStrings.TodoSearchPlaceholder)]" />
                 <BitStack Class="todo-sort" Gap="2px" Horizontal AutoSize>
@@ -46,7 +46,7 @@
                                  DefaultValue="nameof(AppStrings.Alphabetical)"
                                  TItem="BitDropdownOption<string>" TValue="string"
                                  OnSelectItem="(BitDropdownOption<string> item) => SortTodoItems(item.Value)"
-                                 Styles="@(new() { Container="height:32px;background-color:var(--bit-clr-bg-sec)" })">
+                                 Styles="@(new() { Container=$"height:32px;background-color:var({BitCss.Var.Color.Background.Secondary.Main})" })">
                         <Options>
                             <BitDropdownOption Text="@Localizer[nameof(AppStrings.Alphabetical)]" Value="nameof(AppStrings.Alphabetical)" />
                             <BitDropdownOption Text="@Localizer[nameof(AppStrings.Date)]" Value="nameof(AppStrings.Date)" />
@@ -56,7 +56,9 @@
                         </CaretDownTemplate>
                     </BitDropdown>
                     <BitButton IconOnly Color="BitColor.SecondaryBackground" Style="height:32px;"
-                               OnClick="() => { isDescendingSort = !isDescendingSort; FilterViewTodoItems(); }"
+                               Title="@(isDescendingSort ? Localizer[nameof(AppStrings.SortAscending)] : Localizer[nameof(AppStrings.SortDescending)])"
+                               AriaLabel="@(isDescendingSort ? Localizer[nameof(AppStrings.SortAscending)] : Localizer[nameof(AppStrings.SortDescending)])"
+                               OnClick="WrapHandled(() => { isDescendingSort = !isDescendingSort; FilterViewTodoItems(); })"
                                IconName="@(isDescendingSort ? BitIconName.SortDown : BitIconName.SortUp)" />
                 </BitStack>
             </BitStack>
@@ -69,8 +71,8 @@
             }
             else
             {
-                <BitPullToRefresh OnRefresh="async() => await LoadTodoItems(false)" ScrollerSelector=".todo-list" Style="width:100%">
-                    <BitBasicList Items="viewTodoItems" EnableVirtualization Class="todo-list">
+                <BitPullToRefresh OnRefresh="WrapHandled(async () => await LoadTodoItems(false))" ScrollerSelector=".todo-list" Style="width:100%">
+                    <BitBasicList Items="viewTodoItems" Virtualize ItemSize="90" Class="todo-list">
                         <EmptyContent>
                             <BitStack Alignment="BitAlignment.Center" Style="padding:1rem;">
                                 <BitImage Src="/_content/Boilerplate.Client.Core/images/backgrounds/empty-todo-list-bg.svg" />

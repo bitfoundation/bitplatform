@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
   <!-- 
@@ -433,6 +433,12 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   </data>
   <data name="SystemPromptsSubTitle" xml:space="preserve">
     <value>Afficher les instructions système pour le chatbot ici.</value>
+  </data>
+  <data name="PromptKindSupport" xml:space="preserve">
+    <value>Assistance</value>
+  </data>
+  <data name="PromptKindAnalyzeProductImage" xml:space="preserve">
+    <value>Analyser l&apos;image du produit</value>
   </data>
   <data name="PushNotificationJob" xml:space="preserve">
     <value>Tâche de notification push</value>
@@ -1142,6 +1148,12 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   </data>
   <data name="DeleteTodoItem" xml:space="preserve">
     <value>Supprimer l'élément de tâche</value>
+  </data>
+  <data name="SortAscending" xml:space="preserve">
+    <value>Trier par ordre croissant</value>
+  </data>
+  <data name="SortDescending" xml:space="preserve">
+    <value>Trier par ordre décroissant</value>
   </data>
   <!--#endif -->
   <!--#if (module == "Admin" || module == "Sales") -->

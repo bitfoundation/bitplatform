@@ -5,7 +5,11 @@ namespace Boilerplate.Client.Core.Components.Common;
 /// A tip of the hat to the open-source projects, tools, and services this app is built with.
 /// It also doubles as the third-party attribution / license notice required by many of those licenses.
 /// The lists below mirror the actual dependencies of the generated project: entries wrapped in the
-/// template's conditional markers (e.g. //if (redis == true)) only ship when the matching option is selected.
+/// template's conditional markers only ship when the matching option is selected. The marker is spelled `//if` in
+/// this sentence on purpose: the template engine scans every line for the literal hash-if text with no idea that it
+/// might be inside a doc comment, so writing it correctly here would open a conditional with no matching endif and
+/// abort generation - which the NoFileMayCarryALiteralHashIf... guard test enforces. Copy the real spelling from any
+/// entry below instead.
 /// No localization on purpose: product names and license identifiers are proper nouns that stay in English.
 /// </summary>
 public partial class Acknowledgements
@@ -13,7 +17,7 @@ public partial class Acknowledgements
     /// <param name="Name">Product/library display name.</param>
     /// <param name="Url">Official website (falls back to the repository when there is no distinct homepage).</param>
     /// <param name="Repo">Public source repository, or null for closed-source products.</param>
-    /// <param name="License">SPDX license identifier (or a short human phrase for multi/every-non-SPDX licenses).</param>
+    /// <param name="License">SPDX license identifier, or a short phrase when the package is multi-licensed or its license has no SPDX identifier.</param>
     private record Dependency(string Name, string? Url, string? Repo, string License);
 
     /// <summary>
@@ -41,7 +45,7 @@ public partial class Acknowledgements
         new("Microsoft Agent Framework", "https://learn.microsoft.com/agent-framework", "https://github.com/microsoft/agent-framework", "MIT"),
         //#endif
         //#if (redis == true)
-        new("Redis", "https://redis.io", "https://github.com/redis/redis", "AGPL-3.0-only"),
+        new("Redis", "https://redis.io/legal/licenses", "https://github.com/redis/redis", "RSALv2 / SSPLv1 / AGPL-3.0"),
         new("StackExchange.Redis", "https://stackexchange.github.io/StackExchange.Redis", "https://github.com/StackExchange/StackExchange.Redis", "MIT"),
         //#endif
         //#if (database == "SqlServer")
@@ -107,6 +111,13 @@ public partial class Acknowledgements
         new("Model Context Protocol (C# SDK)", "https://modelcontextprotocol.io", "https://github.com/modelcontextprotocol/csharp-sdk", "MIT"),
         new("Azure SignalR Service", "https://azure.microsoft.com/products/signalr-service", "https://github.com/Azure/azure-signalr", "MIT"),
         //#endif
+        // Third-party scripts that run in the visitor's own browser, so they belong here rather than in Deployment.
+        //#if (captcha == "reCaptcha")
+        new("Google reCAPTCHA", "https://developers.google.com/recaptcha", null, "Proprietary"),
+        //#endif
+        //#if (ads == true)
+        new("Google Ad Manager", "https://admanager.google.com", null, "Proprietary"),
+        //#endif
     ];
 
     /// <summary>
@@ -121,9 +132,10 @@ public partial class Acknowledgements
         new("esbuild", "https://esbuild.github.io", "https://github.com/evanw/esbuild", "MIT"),
         new("Dart Sass", "https://sass-lang.com/dart-sass", "https://github.com/sass/dart-sass", "MIT"),
         new("FakeItEasy", "https://fakeiteasy.github.io", "https://github.com/FakeItEasy/FakeItEasy", "MIT"),
+        new("bUnit", "https://bunit.dev", "https://github.com/bUnit-dev/bUnit", "MIT"),
         new("EF Core Tools (dotnet-ef)", "https://learn.microsoft.com/ef/core/cli/dotnet", "https://github.com/dotnet/efcore", "MIT"),
-        new("Microsoft.Extensions.TimeProvider.Testing", "https://github.com/dotnet/extensions", "https://github.com/dotnet/extensions", "MIT"),
         //#if (advancedTests == true)
+        new("Microsoft.Extensions.TimeProvider.Testing", "https://github.com/dotnet/extensions", "https://github.com/dotnet/extensions", "MIT"),
         new("Otp.NET", "https://github.com/kspearrin/Otp.NET", "https://github.com/kspearrin/Otp.NET", "MIT"),
         //#endif
     ];
@@ -133,6 +145,7 @@ public partial class Acknowledgements
     /// </summary>
     private static readonly Dependency[] IdeExtensions =
     [
+        new("GitHub Copilot", "https://marketplace.visualstudio.com/items?itemName=GitHub.copilot", null, "Proprietary"),
         new("GitHub Copilot Chat", "https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat", "https://github.com/microsoft/vscode-copilot-chat", "MIT"),
         new("C# (ms-dotnettools.csharp)", "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp", "https://github.com/dotnet/vscode-csharp", "MIT"),
         new("C# Dev Kit", "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit", null, "Proprietary"),

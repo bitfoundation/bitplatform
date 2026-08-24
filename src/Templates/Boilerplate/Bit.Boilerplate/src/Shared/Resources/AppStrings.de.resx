@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
   <!-- 
@@ -433,6 +433,12 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   </data>
   <data name="SystemPromptsSubTitle" xml:space="preserve">
     <value>Hier können Sie die Systemprompts für den Chatbot ansehen.</value>
+  </data>
+  <data name="PromptKindSupport" xml:space="preserve">
+    <value>Support</value>
+  </data>
+  <data name="PromptKindAnalyzeProductImage" xml:space="preserve">
+    <value>Produktbild analysieren</value>
   </data>
   <data name="PushNotificationJob" xml:space="preserve">
     <value>Push-Benachrichtigungsjob</value>
@@ -1142,6 +1148,12 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   </data>
   <data name="DeleteTodoItem" xml:space="preserve">
     <value>Todo-Element löschen</value>
+  </data>
+  <data name="SortAscending" xml:space="preserve">
+    <value>Aufsteigend sortieren</value>
+  </data>
+  <data name="SortDescending" xml:space="preserve">
+    <value>Absteigend sortieren</value>
   </data>
   <!--#endif -->
   <!--#if (module == "Admin" || module == "Sales") -->

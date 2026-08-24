@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
     <!-- 
@@ -433,6 +433,12 @@
   </data>
     <data name="SystemPromptsSubTitle" xml:space="preserve">
     <value>این‌جا میتونید پرامپت‌های سیستمی مورد استفاده چت بات رو مشاهده کنید</value>
+  </data>
+  <data name="PromptKindSupport" xml:space="preserve">
+    <value>پشتیبانی</value>
+  </data>
+  <data name="PromptKindAnalyzeProductImage" xml:space="preserve">
+    <value>تحلیل تصویر محصول</value>
   </data>
     <data name="PushNotificationJob" xml:space="preserve">
     <value>عملیات ارسال پوش نوتیفیکیشن</value>
@@ -1142,6 +1148,12 @@
   </data>
     <data name="DeleteTodoItem" xml:space="preserve">
     <value>حذف کار</value>
+  </data>
+  <data name="SortAscending" xml:space="preserve">
+    <value>مرتب‌سازی صعودی</value>
+  </data>
+  <data name="SortDescending" xml:space="preserve">
+    <value>مرتب‌سازی نزولی</value>
   </data>
     <!--#endif -->
     <!--#if (module == "Admin" || module == "Sales") -->
