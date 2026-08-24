@@ -21,4 +21,14 @@ public class BitBadgeClassStyles
     /// Custom CSS classes/styles for the icon of the BitBadge.
     /// </summary>
     public string? Icon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the content of the BitBadge.
+    /// </summary>
+    public string? Content { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the visually hidden description of the BitBadge.
+    /// </summary>
+    public string? Description { get; set; }
 }

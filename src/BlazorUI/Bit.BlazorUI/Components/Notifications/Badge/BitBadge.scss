@@ -11,6 +11,9 @@
     }
 }
 
+// The overlay layer the badge is positioned inside of. It covers the child content rather than
+// sitting next to it, so it lets every pointer through to the child underneath; only a badge that
+// is a button takes its clicks back (see .bit-bdg-clk).
 .bit-bdg-wrp {
     top: 0;
     width: 100%;
@@ -23,24 +26,135 @@
 }
 
 .bit-bdg-ctn {
+    margin: 0;
     cursor: default;
+    text-decoration: none;
+    font-family: $tg-font-family;
     font-weight: $tg-fw-semibold;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    line-height: 1;
+    white-space: nowrap;
     gap: spacing(0.5);
     position: absolute;
     align-items: center;
-    pointer-events: all;
+    justify-content: center;
+    pointer-events: none;
     display: inline-flex;
     box-sizing: border-box;
     width: var(--bit-bdg-width);
     height: var(--bit-bdg-height);
+    // A counter is only ever as wide as it is tall until a second digit pushes it wider, which is what
+    // keeps a single digit a circle instead of an upright oval.
+    min-width: var(--bit-bdg-width, var(--bit-bdg-height));
     padding: var(--bit-bdg-padding);
     border-width: $shp-border-width;
     border-style: $shp-border-style;
     color: var(--bit-bdg-cnt-clr-txt);
     font-size: var(--bit-bdg-fontsize);
-    border-radius: var(--bit-bdg-boradius);
+    border-radius: var(--bit-bdg-radius);
     border-color: var(--bit-bdg-cnt-clr-brd);
     background-color: var(--bit-bdg-cnt-clr-bg);
+    translate: var(--bit-bdg-ofs-x, 0) var(--bit-bdg-ofs-y, 0);
+}
+
+// An icon from an external library brings a type size of its own; inside a badge it is the badge that
+// sets the scale, so the glyph is normalized back to the size of the label it sits next to.
+.bit-bdg-ico {
+    font-size: 1em;
+    line-height: 1;
+}
+
+// The text alternative of the badge: read by assistive technologies, taken out of the layout for everyone else.
+.bit-bdg-vhd {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+    clip: rect(0 0 0 0);
+}
+
+// A badge with a click handler is a button, so it takes the pointer back from the overlay layer and
+// answers to hover, active and focus like every other control of the library.
+.bit-bdg-clk {
+    cursor: pointer;
+    appearance: none;
+    pointer-events: auto;
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: var(--bit-bdg-cnt-clr-brd-hover, var(--bit-bdg-cnt-clr-brd));
+            background-color: var(--bit-bdg-cnt-clr-bg-hover, var(--bit-bdg-cnt-clr-bg));
+        }
+    }
+
+    &:active {
+        border-color: var(--bit-bdg-cnt-clr-brd-active, var(--bit-bdg-cnt-clr-brd));
+        background-color: var(--bit-bdg-cnt-clr-bg-active, var(--bit-bdg-cnt-clr-bg));
+    }
+
+    &:focus-visible {
+        z-index: 1;
+        @include focus-ring(var(--bit-bdg-clr-fcs, #{$clr-pri-focus}));
+    }
+
+    &:disabled {
+        cursor: default;
+        pointer-events: none;
+    }
+}
+
+.bit-bdg-rvs {
+    .bit-bdg-ctn {
+        flex-direction: row-reverse;
+    }
+}
+
+// The ring is painted behind the badge in the color of the page, so a badge landing on an avatar or a
+// picture keeps an edge of its own instead of dissolving into whatever is underneath it.
+.bit-bdg-brd {
+    .bit-bdg-ctn {
+        box-shadow: 0 0 0 $shp-border-width-thick var(--bit-bdg-clr-ring, #{$clr-bg-pri});
+    }
+
+    // The ring above is a box-shadow of its own, so the focus indicator has to be restated here to win it back.
+    .bit-bdg-clk:focus-visible {
+        @include focus-ring(var(--bit-bdg-clr-fcs, #{$clr-pri-focus}));
+    }
+}
+
+// A ring expanding out of the badge and fading, for a state that is still going. It loops, so it takes the
+// loop factor rather than a motion duration: under a reduced-motion preference it slows down instead of
+// collapsing to nothing (see the motion notes in theme-variables.scss).
+.bit-bdg-pls {
+    // A ring rather than a disc: it is painted over the badge, so anything solid would hide the count
+    // underneath it as it grows.
+    .bit-bdg-ctn::after {
+        content: "";
+        inset: 0;
+        position: absolute;
+        box-sizing: border-box;
+        pointer-events: none;
+        border-radius: inherit;
+        border: $shp-border-width $shp-border-style var(--bit-bdg-clr);
+        animation: bit-bdg-pls-anm calc(1.2s * #{$mot-loop-factor}) $mot-easing-decelerate infinite;
+    }
+}
+
+@keyframes bit-bdg-pls-anm {
+    0% {
+        opacity: 0.7;
+        transform: scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(2);
+    }
 }
 
 
@@ -118,7 +232,7 @@
 
 .bit-bdg-ten {
     --bit-bdg-alitems: flex-start;
-    --bit-bdg-juscontent: flex-start;
+    --bit-bdg-juscontent: flex-end;
 
     .bit-bdg-ctn {
         top: auto;
@@ -137,6 +251,7 @@
 
 .bit-bdg-clf {
     --bit-bdg-alitems: center;
+    --bit-bdg-juscontent: flex-start;
 
     .bit-bdg-ctn {
         right: calc(100% - #{spacing(0.5)});
@@ -171,7 +286,7 @@
 
 .bit-bdg-cst {
     --bit-bdg-alitems: center;
-    --bit-bdg-juscontent: flex-end;
+    --bit-bdg-juscontent: flex-start;
 
     .bit-bdg-ctn {
         inset-inline-end: calc(100% - #{spacing(0.5)});
@@ -290,6 +405,24 @@
     }
 }
 
+// A badge with nothing to overlay drops out of the overlay layer and is laid out in the flow instead.
+.bit-bdg-stl {
+    width: auto;
+    height: auto;
+    position: static;
+    display: inline-flex;
+    pointer-events: auto;
+}
+
+// The insets every position block sets on the badge have nothing left to anchor to once the wrapper is
+// no longer stretched over a child, so they are undone here. The leading .bit-bdg carries this rule to
+// the weight of the heaviest of them - the .bit-bdg-<pos>.bit-bdg-orp pair - which it then wins on order.
+.bit-bdg .bit-bdg-stl .bit-bdg-ctn {
+    inset: auto;
+    position: relative;
+    pointer-events: auto;
+}
+
 
 .bit-bdg-fil {
     --bit-bdg-clr-bg-dis: var(--bit-bdg-clr-dis);
@@ -297,6 +430,10 @@
     --bit-bdg-cnt-clr-bg: var(--bit-bdg-clr);
     --bit-bdg-cnt-clr-brd: var(--bit-bdg-clr);
     --bit-bdg-cnt-clr-txt: var(--bit-bdg-clr-txt);
+    --bit-bdg-cnt-clr-bg-hover: var(--bit-bdg-clr-hover);
+    --bit-bdg-cnt-clr-brd-hover: var(--bit-bdg-clr-hover);
+    --bit-bdg-cnt-clr-bg-active: var(--bit-bdg-clr-active);
+    --bit-bdg-cnt-clr-brd-active: var(--bit-bdg-clr-active);
 }
 
 .bit-bdg-otl {
@@ -305,6 +442,10 @@
     --bit-bdg-clr-brd-dis: var(--bit-bdg-clr-dis);
     --bit-bdg-cnt-clr-txt: var(--bit-bdg-clr);
     --bit-bdg-cnt-clr-brd: var(--bit-bdg-clr);
+    --bit-bdg-cnt-clr-bg-hover: var(--bit-bdg-clr-light);
+    --bit-bdg-cnt-clr-brd-hover: var(--bit-bdg-clr-hover);
+    --bit-bdg-cnt-clr-bg-active: var(--bit-bdg-clr-light-hover);
+    --bit-bdg-cnt-clr-brd-active: var(--bit-bdg-clr-active);
 }
 
 .bit-bdg-txt {
@@ -313,44 +454,71 @@
     --bit-bdg-clr-bg-dis: transparent;
     --bit-bdg-clr-brd-dis: transparent;
     --bit-bdg-cnt-clr-txt: var(--bit-bdg-clr);
+    --bit-bdg-cnt-clr-bg-hover: var(--bit-bdg-clr-light);
+    --bit-bdg-cnt-clr-brd-hover: transparent;
+    --bit-bdg-cnt-clr-bg-active: var(--bit-bdg-clr-light-hover);
+    --bit-bdg-cnt-clr-brd-active: transparent;
 }
 
 
-// Role classes are generated from the shared $bit-semantic-color-roles map (see color-role-maps.scss).
-@each $role, $tokens in $bit-semantic-color-roles {
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
     .bit-bdg-#{$role} {
         --bit-bdg-clr: #{role($tokens, main)};
         --bit-bdg-clr-txt: #{role($tokens, on)};
         --bit-bdg-clr-dis: #{role($tokens, dis)};
         --bit-bdg-clr-dis-text: #{role($tokens, dis-text)};
+        --bit-bdg-clr-hover: #{role($tokens, hover)};
+        --bit-bdg-clr-active: #{role($tokens, active)};
+        --bit-bdg-clr-light: #{role($tokens, light)};
+        --bit-bdg-clr-light-hover: #{role($tokens, light-hover)};
+        --bit-bdg-clr-fcs: #{role($tokens, focus)};
     }
 }
 
 
 .bit-bdg-sm {
     --bit-bdg-height: #{spacing(2)};
-    --bit-bdg-boradius: #{$shp-radius-full};
     --bit-bdg-padding: 0 #{spacing(0.5)};
     --bit-bdg-fontsize: #{$tg-fs-xs};
+    --bit-bdg-dotsize: #{spacing(1)};
 }
 
 .bit-bdg-md {
     --bit-bdg-height: #{spacing(2.5)};
     --bit-bdg-fontsize: #{$tg-fs-sm};
-    --bit-bdg-boradius: #{$shp-radius-full};
     --bit-bdg-padding: 0 #{spacing(0.75)};
+    --bit-bdg-dotsize: #{spacing(1.125)};
 }
 
 .bit-bdg-lg {
     --bit-bdg-height: #{spacing(3)};
     --bit-bdg-padding: 0 #{spacing(1)};
-    --bit-bdg-boradius: #{$shp-radius-full};
     --bit-bdg-fontsize: #{$tg-fs-md};
+    --bit-bdg-dotsize: #{spacing(1.5)};
 }
 
+
+// The corner of the badge. Circular is the pill a counter is expected to be, Rounded takes the corner the
+// theme gives its controls, and Square drops it altogether. They follow the size blocks so the radius is
+// not undone by a size class that comes after them.
+.bit-bdg-cir {
+    --bit-bdg-radius: #{$shp-radius-full};
+}
+
+.bit-bdg-rnd {
+    --bit-bdg-radius: #{$shp-radius-control};
+}
+
+.bit-bdg-sqr {
+    --bit-bdg-radius: #{$shp-radius-none};
+}
+
+
+// A dot carries no content, so it is a square of its own size at every shape and every variant.
 .bit-bdg-dot {
     --bit-bdg-padding: 0;
-    --bit-bdg-boradius: #{$shp-radius-full};
-    --bit-bdg-width: #{spacing(1.125)};
-    --bit-bdg-height: #{spacing(1.125)};
+    --bit-bdg-radius: #{$shp-radius-full};
+    --bit-bdg-width: var(--bit-bdg-dotsize);
+    --bit-bdg-height: var(--bit-bdg-dotsize);
 }

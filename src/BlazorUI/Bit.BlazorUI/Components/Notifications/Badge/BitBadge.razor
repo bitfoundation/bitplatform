@@ -1,32 +1,81 @@
 @namespace Bit.BlazorUI
 @inherits BitComponentBase
 
+@{
+    var icon = BitIconInfo.From(Icon, IconName);
+
+    @* A description is the badge's text alternative, so the glyph and the number it stands in for are hidden
+       from assistive technologies while it is set - otherwise "5" and "5 unread messages" are both announced. *@
+    var hasDescription = Description.HasValue();
+
+    RenderFragment badgeContent =
+        @<text>
+            @if (Dot is false)
+            {
+                @if (icon is not null)
+                {
+                    <i aria-hidden="true" style="@Styles?.Icon" class="bit-bdg-ico @icon.GetCssClasses() @Classes?.Icon" />
+                }
+
+                @if (ContentTemplate is not null)
+                {
+                    <span aria-hidden="@(hasDescription ? "true" : null)"
+                          style="@Styles?.Content"
+                          class="bit-bdg-con @Classes?.Content">@ContentTemplate</span>
+                }
+                else if (_content.HasValue())
+                {
+                    <span aria-hidden="@(hasDescription ? "true" : null)"
+                          style="@Styles?.Content"
+                          class="bit-bdg-con @Classes?.Content">@_content</span>
+                }
+            }
+
+            @if (hasDescription)
+            {
+                <span style="@Styles?.Description" class="bit-bdg-vhd @Classes?.Description">@Description</span>
+            }
+        </text>;
+}
+
 <span @ref="RootElement" @attributes="HtmlAttributes"
       id="@_Id"
       style="@StyleBuilder.Value"
       class="@ClassBuilder.Value"
+      aria-label="@AriaLabel"
       dir="@Dir?.ToString().ToLower()">
 
     @ChildContent
 
-    @if (Hidden is false)
+    @if (_isBadgeVisible)
     {
-        <span style="@Styles?.BadgeWrapper" class="bit-bdg-wrp @Classes?.BadgeWrapper">
-            <span style="@Styles?.Badge" class="bit-bdg-ctn @Classes?.Badge" @onclick="HandleOnClick">
-                @if (Dot is false)
-                {
-                    var icon = BitIconInfo.From(Icon, IconName);
-                    if (icon is not null)
-                    {
-                        <i style="@Styles?.Icon" class="@icon.GetCssClasses() @Classes?.Icon" />
-                    }
-
-                    if (_content.HasValue())
-                    {
-                        @_content
-                    }
-                }
-            </span>
+        @* Without child content there is nothing to overlay, so the wrapper drops out of the overlay layer and
+           the badge is laid out in the flow as a standalone one. *@
+        <span style="@Styles?.BadgeWrapper"
+              class="bit-bdg-wrp @(ChildContent is null ? "bit-bdg-stl" : null) @Classes?.BadgeWrapper">
+            @if (OnClick.HasDelegate)
+            {
+                @* A badge that does something is a real button: it comes with the keyboard, the focus ring and the
+                   disabled semantics that a span with an onclick handler would each have to reimplement. *@
+                <button @onclick="HandleOnClick"
+                        style="@Styles?.Badge"
+                        class="bit-bdg-ctn bit-bdg-clk @Classes?.Badge"
+                        type="button"
+                        tabindex="@TabIndex"
+                        disabled="@(IsEnabled is false)"
+                        aria-live="@(Live ? "polite" : null)"
+                        aria-atomic="@(Live ? "true" : null)">
+                    @badgeContent
+                </button>
+            }
+            else
+            {
+                <span style="@Styles?.Badge"
+                      class="bit-bdg-ctn @Classes?.Badge"
+                      role="@(Live ? "status" : null)">
+                    @badgeContent
+                </span>
+            }
         </span>
     }
 </span>

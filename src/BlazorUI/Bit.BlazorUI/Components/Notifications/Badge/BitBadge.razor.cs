@@ -6,12 +6,28 @@ namespace Bit.BlazorUI;
 public partial class BitBadge : BitComponentBase
 {
     private string? _content;
+    private bool _isZeroContent;
+
+    private bool _isBadgeVisible => Hidden is false && (ShowZero || _isZeroContent is false);
 
 
 
     /// <summary>
+    /// Draws a ring around the badge in the color of the page behind it, so it stays legible over a busy
+    /// child such as an avatar or an image.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Bordered { get; set; }
+
+    /// <summary>
     /// Child content of component, the content that the badge will apply to.
     /// </summary>
+    /// <remarks>
+    /// When it is not set the badge has nothing to overlay, so it renders standalone: in the normal flow
+    /// of the page, at its own size, with <see cref="Position"/> and <see cref="Overlap"/> no longer applying.
+    /// </remarks>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
@@ -26,21 +42,55 @@ public partial class BitBadge : BitComponentBase
     public BitColor? Color { get; set; }
 
     /// <summary>
-    /// Content you want inside the badge. Supported types are string and integer.
+    /// Content you want inside the badge.
     /// </summary>
-    [Parameter] 
+    /// <remarks>
+    /// An integral number is capped by <see cref="Max"/> and, when it is zero, hidden by <see cref="ShowZero"/>.
+    /// A string is rendered as it is, and any other value is rendered through its <c>ToString()</c>.
+    /// <br />
+    /// For markup rather than text, use <see cref="ContentTemplate"/>.
+    /// </remarks>
+    [Parameter]
     [CallOnSet(nameof(OnSetContentAndMax))]
     public object? Content { get; set; }
 
     /// <summary>
-    /// Reduces the size of the badge and hide any of its content.
+    /// The custom template to render inside the badge, in place of <see cref="Content"/>.
     /// </summary>
+    [Parameter] public RenderFragment? ContentTemplate { get; set; }
+
+    /// <summary>
+    /// The text alternative of the badge for assistive technologies, for example "5 unread messages".
+    /// </summary>
+    /// <remarks>
+    /// A badge conveys its meaning visually - through a number, a glyph or the color of a dot - and none of
+    /// that reaches a screen reader on its own. This renders the given text into the badge, visible only to
+    /// assistive technologies, and hides the visual content from them so the two are not announced twice.
+    /// <br />
+    /// It is what makes a <see cref="Dot"/> badge accessible at all, since a dot has no content to announce.
+    /// </remarks>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>
+    /// Reduces the size of the badge and hide any of its content.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// Use a dot when the fact that something changed matters more than how much of it there is.
+    /// Pair it with a <see cref="Description"/> so the change is not carried by color alone.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Dot { get; set; }
 
     /// <summary>
     /// The visibility of the badge.
+    /// <br />
+    /// The default value is <strong>false</strong>.
     /// </summary>
+    /// <remarks>
+    /// A hidden badge is removed from the DOM while its child content keeps rendering.
+    /// </remarks>
     [Parameter] public bool Hidden { get; set; }
 
     /// <summary>
@@ -72,28 +122,112 @@ public partial class BitBadge : BitComponentBase
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Max value to display when content is integer type.
+    /// Announces the badge to assistive technologies whenever its content changes, by turning it into a
+    /// polite live region.
+    /// <br />
+    /// The default value is <strong>false</strong>.
     /// </summary>
+    /// <remarks>
+    /// Turn it on for a count that updates while the page stays open (an inbox, a cart) and off for one that
+    /// only reflects what is already on the screen, since every change of a live region interrupts the reader.
+    /// </remarks>
+    [Parameter] public bool Live { get; set; }
+
+    /// <summary>
+    /// Max value to display when content is an integral number.
+    /// </summary>
+    /// <remarks>
+    /// A content above it renders as the max followed by a plus sign, for example <c>99+</c>.
+    /// </remarks>
     [Parameter]
     [CallOnSet(nameof(OnSetContentAndMax))]
     public int? Max { get; set; }
 
     /// <summary>
-    /// Button click event if set.
+    /// Moves the badge along the horizontal axis by the given CSS length, on top of its <see cref="Position"/>.
     /// </summary>
+    /// <remarks>
+    /// A positive value moves the badge to the right in both directions of writing, since the offset is a
+    /// nudge for a specific child rather than a part of the layout.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? OffsetX { get; set; }
+
+    /// <summary>
+    /// Moves the badge along the vertical axis by the given CSS length, on top of its <see cref="Position"/>.
+    /// A positive value moves the badge down.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public string? OffsetY { get; set; }
+
+    /// <summary>
+    /// The click event of the badge, which also turns the badge into a button.
+    /// </summary>
+    /// <remarks>
+    /// While it is set the badge is focusable and can be activated with the keyboard, and it stops being so
+    /// as soon as <c>IsEnabled</c> is false. A badge with no handler never takes focus: it is a label on the
+    /// element it belongs to, and that element is what a keyboard user reaches.
+    /// </remarks>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
     /// Overlaps the badge on top of the child content.
+    /// <br />
+    /// The default value is <strong>false</strong>.
     /// </summary>
+    /// <remarks>
+    /// Turn it on for a child with a rounded outline, such as an avatar, where a badge sitting on the bounding
+    /// box leaves a visible gap.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Overlap { get; set; }
 
     /// <summary>
     /// The position of the badge.
     /// </summary>
+    /// <remarks>
+    /// The Left/Right positions are physical and stay where they are in right-to-left, while the Start/End
+    /// ones follow the direction of writing.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitPosition? Position { get; set; }
+
+    /// <summary>
+    /// Renders an expanding ring around the badge to report that something is in progress.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// The ring is decorative: it slows down rather than stops under a reduced-motion preference, and it
+    /// carries no meaning of its own, so pair it with a <see cref="Description"/> when the state matters.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Pulse { get; set; }
+
+    /// <summary>
+    /// Reverses the direction flow of the content of the badge, which puts the icon after the content.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Reversed { get; set; }
+
+    /// <summary>
+    /// The corner shape of the badge.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitBadgeShape? Shape { get; set; }
+
+    /// <summary>
+    /// Renders the badge when its content is the number zero.
+    /// <br />
+    /// The default value is <strong>true</strong>.
+    /// </summary>
+    /// <remarks>
+    /// Turn it off for a counter that should disappear once it is emptied, which saves keeping a
+    /// <see cref="Hidden"/> flag of your own next to the count.
+    /// </remarks>
+    [Parameter] public bool ShowZero { get; set; } = true;
 
     /// <summary>
     /// The size of badge, Possible values: Small | Medium | Large
@@ -130,12 +264,27 @@ public partial class BitBadge : BitComponentBase
             BitColor.Warning => "bit-bdg-wrn",
             BitColor.SevereWarning => "bit-bdg-swr",
             BitColor.Error => "bit-bdg-err",
+            BitColor.PrimaryBackground => "bit-bdg-pbg",
+            BitColor.SecondaryBackground => "bit-bdg-sbg",
+            BitColor.TertiaryBackground => "bit-bdg-tbg",
+            BitColor.PrimaryForeground => "bit-bdg-pfg",
+            BitColor.SecondaryForeground => "bit-bdg-sfg",
+            BitColor.TertiaryForeground => "bit-bdg-tfg",
+            BitColor.PrimaryBorder => "bit-bdg-pbr",
+            BitColor.SecondaryBorder => "bit-bdg-sbr",
+            BitColor.TertiaryBorder => "bit-bdg-tbr",
             _ => "bit-bdg-pri"
         });
 
         ClassBuilder.Register(() => Dot ? "bit-bdg-dot" : string.Empty);
 
         ClassBuilder.Register(() => Overlap ? "bit-bdg-orp" : string.Empty);
+
+        ClassBuilder.Register(() => Bordered ? "bit-bdg-brd" : string.Empty);
+
+        ClassBuilder.Register(() => Pulse ? "bit-bdg-pls" : string.Empty);
+
+        ClassBuilder.Register(() => Reversed ? "bit-bdg-rvs" : string.Empty);
 
         ClassBuilder.Register(() => Position switch
         {
@@ -155,6 +304,14 @@ public partial class BitBadge : BitComponentBase
             BitPosition.BottomStart => "bit-bdg-bst",
             BitPosition.BottomEnd => "bit-bdg-ben",
             _ => "bit-bdg-trg"
+        });
+
+        ClassBuilder.Register(() => Shape switch
+        {
+            BitBadgeShape.Circular => "bit-bdg-cir",
+            BitBadgeShape.Rounded => "bit-bdg-rnd",
+            BitBadgeShape.Square => "bit-bdg-sqr",
+            _ => "bit-bdg-cir"
         });
 
         ClassBuilder.Register(() => Size switch
@@ -177,6 +334,10 @@ public partial class BitBadge : BitComponentBase
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => OffsetX.HasValue() ? $"--bit-bdg-ofs-x:{OffsetX}" : string.Empty);
+
+        StyleBuilder.Register(() => OffsetY.HasValue() ? $"--bit-bdg-ofs-y:{OffsetY}" : string.Empty);
     }
 
 
@@ -190,24 +351,48 @@ public partial class BitBadge : BitComponentBase
 
     private void OnSetContentAndMax()
     {
-        if (Content is string stringContent)
+        _isZeroContent = false;
+
+        if (Content is null)
+        {
+            _content = null;
+        }
+        else if (Content is string stringContent)
         {
             _content = stringContent;
         }
-        else if (Content is int numberContent)
+        else if (TryGetInteger(Content, out var number))
         {
-            if (Max.HasValue && numberContent > Max)
-            {
-                _content = Max + "+";
-            }
-            else
-            {
-                _content = numberContent.ToString();
-            }
+            _isZeroContent = number == 0;
+
+            _content = (Max.HasValue && number > Max.Value) ? $"{Max.Value}+" : number.ToString();
         }
         else
         {
-            _content = null;
+            // Anything the badge cannot count is still something it can print, so it is rendered
+            // through its own ToString() instead of silently dropping out of the badge.
+            _content = Content.ToString();
+        }
+    }
+
+    /// <summary>
+    /// Reads any of the integral numeric types as a long, which is what <see cref="Max"/> and the zero check
+    /// compare against. An unsigned value too large for a long is left to be rendered as plain text: it is
+    /// beyond every max a badge can be given anyway.
+    /// </summary>
+    private static bool TryGetInteger(object value, out long result)
+    {
+        switch (value)
+        {
+            case int intValue: result = intValue; return true;
+            case long longValue: result = longValue; return true;
+            case short shortValue: result = shortValue; return true;
+            case byte byteValue: result = byteValue; return true;
+            case sbyte sbyteValue: result = sbyteValue; return true;
+            case ushort ushortValue: result = ushortValue; return true;
+            case uint uintValue: result = uintValue; return true;
+            case ulong ulongValue when ulongValue <= long.MaxValue: result = (long)ulongValue; return true;
+            default: result = 0; return false;
         }
     }
 }
