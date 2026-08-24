@@ -1,60 +1,110 @@
 @namespace Bit.BlazorUI
 @inherits BitComponentBase
 
+@* The root is a labelled region rather than a bare box: it is a landmark the screen reader user can jump to,
+   and the one place the notifications of the page live. It is rendered even while it holds nothing, so a
+   snack bar that arrives later lands inside a container the assistive technology is already watching. *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
+     role="region"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value"
+     aria-label="@_RootAriaLabel"
      dir="@Dir?.ToString().ToLower()">
 
     @foreach (var item in _items)
     {
         <div @key="item.Id"
-             style="@Styles?.Container @item.CssStyle"
-             class="bit-snb-itm @GetItemClasses(item) @Classes?.Container @item.CssClass">
-            <div style="@Styles?.Header" class="bit-snb-hdr @Classes?.Header">
-                @if (Persistent is false && item.Persistent is false)
-                {
-                    <button @onclick="() => Dismiss(item)"
-                            type="button"
-                            style="@Styles?.DismissButton"
-                            class="bit-snb-cbt @Classes?.DismissButton">
-                        @{
-                            var dismissIcon = BitIconInfo.From(DismissIcon, DismissIconName ?? "Cancel");
-                        }
-                        <i style="@Styles?.DismissIcon" class="@dismissIcon?.GetCssClasses() @Classes?.DismissIcon" />
-                    </button>
-                }
+             role="@GetItemRole(item)"
+             aria-live="@GetItemAriaLive(item)"
+             aria-atomic="@GetItemAriaAtomic(item)"
+             style="@JoinStyles(Styles?.Container, item.CssStyle)"
+             class="bit-snb-itm @GetItemClasses(item) @Classes?.Container @item.CssClass"
+             @onclick="() => HandleItemClick(item)"
+             @onkeydown="e => HandleItemKeyDown(e, item)"
+             @onmouseover="() => HandleHoverStart(item)"
+             @onmouseout="() => HandleHoverEnd(item)"
+             @onfocusin="() => HandleHoverStart(item)"
+             @onfocusout="() => HandleHoverEnd(item)">
 
-                @if (TitleTemplate is not null)
-                {
-                    @TitleTemplate(item.Title)
-                }
-                else if (item.Title.HasValue())
-                {
-                    <label title="@item.Title"
-                           style="@Styles?.Title"
-                           class="bit-snb-ttl @(Multiline ? "" : "bit-snb-elp") @Classes?.Title">
-                        @item.Title
-                    </label>
-                }
-            </div>
-
-            @if (BodyTemplate is not null)
+            @if (Template is not null)
             {
-                @BodyTemplate(item.Body ?? string.Empty)
+                @Template(item)
             }
-            else if (item.Body.HasValue())
+            else
             {
-                <div style="@Styles?.Body"
-                     class="bit-snb-bdy @(Multiline ? "" : "bit-snb-elp") @Classes?.Body">
-                    @item.Body
+                @* The dismiss button comes last in the DOM although it is drawn at the inline end of the header,
+                   so a screen reader reads the notification before it reaches the button that throws it away,
+                   and the Tab order does the same. *@
+                <div style="@Styles?.Header" class="bit-snb-hdr @Classes?.Header">
+                    @if (ShowIcon && item.HideIcon is false)
+                    {
+                        <div style="@Styles?.IconContainer" class="bit-snb-ict @Classes?.IconContainer" aria-hidden="true">
+                            <i style="@Styles?.Icon" class="bit-snb-ico @GetIcon(item)?.GetCssClasses() @Classes?.Icon" />
+                        </div>
+                    }
+
+                    @if (TitleTemplate is not null)
+                    {
+                        @TitleTemplate(item.Title)
+                    }
+                    else if (item.Title.HasValue())
+                    {
+                        @* The tooltip is what a title cut off with an ellipsis is read in full from, so it is only
+                           there while the title really is being cut off - on a wrapping title it would be a
+                           duplicate of text that is already all on screen. *@
+                        <div title="@(Multiline ? null : item.Title)"
+                             style="@Styles?.Title"
+                             class="bit-snb-ttl @(Multiline ? "" : "bit-snb-elp") @Classes?.Title">
+                            @item.Title
+                        </div>
+                    }
+
+                    @if (IsDismissible(item))
+                    {
+                        <button @ref="_dismissButtons[item.Id]"
+                                @onclick="() => HandleDismissClick(item)" @onclick:stopPropagation
+                                type="button"
+                                title="@_DismissAriaLabel"
+                                aria-label="@_DismissAriaLabel"
+                                style="@Styles?.DismissButton"
+                                class="bit-snb-cbt @Classes?.DismissButton">
+                            @{
+                                var dismissIcon = BitIconInfo.From(DismissIcon, DismissIconName ?? "Cancel");
+                            }
+                            <i aria-hidden="true" style="@Styles?.DismissIcon" class="@dismissIcon?.GetCssClasses() @Classes?.DismissIcon" />
+                        </button>
+                    }
                 </div>
+
+                @if (BodyTemplate is not null)
+                {
+                    @BodyTemplate(item.Body ?? string.Empty)
+                }
+                else if (item.Body.HasValue())
+                {
+                    <div style="@Styles?.Body"
+                         class="bit-snb-bdy @(Multiline ? "" : "bit-snb-elp") @Classes?.Body">
+                        @item.Body
+                    </div>
+                }
+
+                @if (item.Actions is not null || ActionsTemplate is not null)
+                {
+                    <div style="@Styles?.Actions" class="bit-snb-act @Classes?.Actions">
+                        @(item.Actions ?? ActionsTemplate!(item))
+                    </div>
+                }
             }
 
-            @if (AutoDismiss)
+            @if (ShowProgressBar(item))
             {
-                <span style="animation-duration:@GetDuration(); @Styles?.ProgressBar"
+                @* The bar is the countdown made visible, and the countdown is already spelled out by the text of
+                   the notification and by its dismiss button, so it carries nothing of its own for a screen
+                   reader to read out. *@
+                <span @key="(item.Id, item._generation)"
+                      aria-hidden="true"
+                      style="@JoinStyles(GetDuration(item), Styles?.ProgressBar)"
                       class="bit-snb-prb @Classes?.ProgressBar">
                 </span>
             }

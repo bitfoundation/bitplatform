@@ -1,4 +1,4 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-snb {
     width: 100%;
@@ -10,30 +10,88 @@
     z-index: $zindex-snackbar;
     max-width: calc(100% - spacing(1));
 
-    @keyframes bit-snackbar-progress-animation {
-        from {
-            width: 0;
-        }
+    // The duration of the enter/exit animation of the items. TransitionDuration arrives inline as the -full
+    // token and the animations read this derived one, following the -full pattern of motion.fluent.scss, so
+    // the reduced-motion query below can still collapse a duration that was set inline. The fallback is the
+    // default of the parameter.
+    --bit-snb-dur: var(--bit-snb-dur-full, 200ms);
 
-        to {
-            width: 100%;
-        }
+    // The direction an item enters from, so a snack bar at the top of the screen slides down out of the edge
+    // it is pinned to and one at the bottom slides up out of its own. Re-pointed by the position classes.
+    --bit-snb-ent: bit-snb-ent-b;
+}
+
+// 0.01ms instead of 0ms for the same reason as in motion.fluent.scss: a zero-duration animation never fires
+// its animationend event.
+@media (prefers-reduced-motion: reduce) {
+    .bit-snb {
+        --bit-snb-dur: 0.01ms;
     }
+}
+
+// The shared .bit-fam opt-out (BitComponentBase.ForceAnimation) only re-points the --bit-mot-* tokens, so the
+// snack bar's own token is restored here, both for a snack bar that sets ForceAnimation itself and for one
+// sitting inside an opted-out subtree.
+.bit-snb.bit-fam,
+.bit-fam .bit-snb {
+    --bit-snb-dur: var(--bit-snb-dur-full, 200ms);
 }
 
 .bit-snb-itm {
     display: flex;
-    gap: spacing(1);
-    width: fit-content;
+    max-width: 100%;
     position: relative;
+    width: fit-content;
     pointer-events: all;
-    padding: spacing(1.25);
-    color: var(--bit-snb-fg);
+    box-sizing: border-box;
     flex-flow: column nowrap;
-    border-radius: $shp-radius-popup;
+    gap: var(--bit-snb-gap);
+    padding: var(--bit-snb-pad);
     justify-content: space-between;
+    border-radius: $shp-radius-popup;
     box-shadow: $box-shadow-snackbar;
-    background-color: var(--bit-snb-bg);
+    animation: var(--bit-snb-ent) var(--bit-snb-dur) $mot-easing-decelerate;
+}
+
+// The item is kept in the DOM for TransitionDuration after it was dismissed so this can play, and the
+// forwards fill keeps it at its end state for the rest of that time instead of snapping back into view.
+.bit-snb-itm.bit-snb-dsm {
+    animation: bit-snb-exi var(--bit-snb-dur) $mot-easing-accelerate forwards;
+}
+
+.bit-snb-clk {
+    cursor: pointer;
+}
+
+@keyframes bit-snb-ent-b {
+    from {
+        opacity: 0;
+        transform: translateY(spacing(1.5));
+    }
+}
+
+@keyframes bit-snb-ent-t {
+    from {
+        opacity: 0;
+        transform: translateY(spacing(-1.5));
+    }
+}
+
+@keyframes bit-snb-exi {
+    to {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+}
+
+@keyframes bit-snackbar-progress-animation {
+    from {
+        width: 0;
+    }
+
+    to {
+        width: 100%;
+    }
 }
 
 .bit-snb-prb {
@@ -42,28 +100,53 @@
     position: absolute;
     height: spacing(0.5);
     inset-inline-start: 0;
+    animation-fill-mode: forwards;
     animation-timing-function: linear;
-    background-color: var(--bit-snb-fg);
+    background-color: currentColor;
     animation-name: bit-snackbar-progress-animation;
+}
+
+// The bar is the countdown drawn out, so it holds wherever it had got to while the countdown itself is held
+// back - by the pointer or the focus being inside the item, or by the page being hidden.
+.bit-snb-pau > .bit-snb-prb {
+    animation-play-state: paused;
 }
 
 .bit-snb-hdr {
     display: flex;
-    gap: spacing(1.25);
+    flex-direction: row;
     align-items: flex-start;
-    flex-direction: row-reverse;
+    gap: var(--bit-snb-hdr-gap);
     justify-content: space-between;
 }
 
+.bit-snb-ict {
+    display: flex;
+    align-items: center;
+}
+
+.bit-snb-ico {
+    font-size: var(--bit-snb-ico-fs);
+}
+
 .bit-snb-ttl {
-    font-weight: $tg-fw-medium;
-    font-size: $tg-fs-md;
+    min-width: 0;
+    flex-grow: 1;
     overflow-wrap: anywhere;
+    font-weight: $tg-fw-medium;
+    font-size: var(--bit-snb-ttl-fs);
 }
 
 .bit-snb-bdy {
     overflow-wrap: anywhere;
-    font-size: $tg-fs-xs;
+    font-size: var(--bit-snb-bdy-fs);
+}
+
+.bit-snb-act {
+    display: flex;
+    flex-flow: row wrap;
+    gap: var(--bit-snb-gap);
+    justify-content: flex-end;
 }
 
 .bit-snb-elp {
@@ -73,10 +156,31 @@
 }
 
 .bit-snb-cbt {
+    display: flex;
+    flex-shrink: 0;
     cursor: pointer;
-    color: var(--bit-snb-fg);
-    background-color: inherit;
+    color: inherit;
+    align-items: center;
+    justify-content: center;
+    margin-inline-start: auto;
+    background-color: transparent;
     border-radius: $shp-radius-popup;
+    // The glyph alone is a target of about 16px, well under what a finger can be expected to hit; the button is
+    // given the height of a control of the same size class so the whole of it is the target (WCAG 2.5.8).
+    min-width: var(--bit-snb-cbt-size);
+    min-height: var(--bit-snb-cbt-size);
+
+    > i {
+        font-size: var(--bit-snb-ico-fs);
+    }
+
+    // The ring is drawn in the item's own foreground rather than through the shared focus-ring mixin: the
+    // button sits on a surface whose color the item picks, and only a ring in the color the item already
+    // contrasts against is guaranteed to stay perceivable on all of them (WCAG 2.4.7).
+    &:focus-visible {
+        outline: $shp-focus-ring-width solid currentColor;
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+    }
 }
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
@@ -89,10 +193,73 @@
     }
 }
 
+.bit-snb-fil {
+    color: var(--bit-snb-fg);
+    background-color: var(--bit-snb-bg);
+}
+
+// A snack bar floats over whatever the page is showing, so the two variants that give up the filled
+// background take the neutral surface rather than transparency - the text of a notification has to stay
+// readable over the content it covers.
+.bit-snb-otl {
+    color: var(--bit-snb-bg);
+    border-color: var(--bit-snb-bg);
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+    background-color: $clr-bg-pri;
+}
+
+.bit-snb-txt {
+    color: var(--bit-snb-bg);
+    background-color: $clr-bg-pri;
+}
+
+// forced-colors: the fill that tells a snack bar apart from the page it floats over is stripped in High Contrast
+// mode, and so is the elevation that would have stood in for it, which would leave the item's text sitting on the
+// page's own background. A border in the system text color is what keeps it a surface of its own.
+@media (forced-colors: active) {
+    .bit-snb-itm {
+        border-width: $shp-border-width;
+        border-style: $shp-border-style;
+        border-color: CanvasText;
+    }
+}
+
+.bit-snb-sm {
+    --bit-snb-gap: #{spacing(0.75)};
+    --bit-snb-pad: #{spacing(1)};
+    --bit-snb-hdr-gap: #{spacing(1)};
+    --bit-snb-ttl-fs: #{$tg-fs-sm};
+    --bit-snb-bdy-fs: #{$tg-fs-2xs};
+    --bit-snb-ico-fs: #{$siz-icon-sm};
+    --bit-snb-cbt-size: #{$siz-ctrl-sm};
+}
+
+.bit-snb-md {
+    --bit-snb-gap: #{spacing(1)};
+    --bit-snb-pad: #{spacing(1.25)};
+    --bit-snb-hdr-gap: #{spacing(1.25)};
+    --bit-snb-ttl-fs: #{$tg-fs-md};
+    --bit-snb-bdy-fs: #{$tg-fs-xs};
+    --bit-snb-ico-fs: #{$siz-icon-md};
+    --bit-snb-cbt-size: #{$siz-ctrl-md};
+}
+
+.bit-snb-lg {
+    --bit-snb-gap: #{spacing(1.25)};
+    --bit-snb-pad: #{spacing(1.5)};
+    --bit-snb-hdr-gap: #{spacing(1.5)};
+    --bit-snb-ttl-fs: #{$tg-fs-lg};
+    --bit-snb-bdy-fs: #{$tg-fs-sm};
+    --bit-snb-ico-fs: #{$siz-icon-lg};
+    --bit-snb-cbt-size: #{$siz-ctrl-lg};
+}
+
 
 .bit-snb-tst {
     top: spacing(1);
     inset-inline: spacing(1);
+    --bit-snb-ent: bit-snb-ent-t;
 }
 
 .bit-snb-tcn {
@@ -100,12 +267,14 @@
     top: spacing(1);
     align-items: center;
     transform: translateX(-50%);
+    --bit-snb-ent: bit-snb-ent-t;
 }
 
 .bit-snb-ten {
     top: spacing(1);
     align-items: flex-end;
     inset-inline: spacing(1);
+    --bit-snb-ent: bit-snb-ent-t;
 }
 
 .bit-snb-bst {
