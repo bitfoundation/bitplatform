@@ -489,7 +489,7 @@ public static partial class BswupScriptCatalog
     private static readonly EventDoc[] _eventDocs =
     [
         new("downloadStarted", "{ version, firstInstall }",
-            "The worker began downloading assets. firstInstall says whether this is the initial install (the only case that owns the screen) or a background update."),
+            "The worker began downloading assets. firstInstall says whether this is the initial install (nothing of the app is on screen yet) or a background update downloading behind a running app - the case ShowOnUpdate keeps the built-in splash out of, if it should not paint over that app."),
         new("downloadProgress", "{ percent (0-100), index (1-based), asset: { url, reqUrl, hash }, firstInstall }",
             "One asset finished. This is what drives a progress bar; percent is already a percentage, not a fraction."),
         new("downloadFinished", "{ reload(), cleanup(), firstInstall }",

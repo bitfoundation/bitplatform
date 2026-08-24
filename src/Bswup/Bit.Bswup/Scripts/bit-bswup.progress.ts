@@ -282,8 +282,15 @@
                             // and offer a manual retry wired to data.reload - the original
                             // reject-recovery behavior, now also covering a silent stall. On a
                             // clean resolve (first install completing) hide the splash instead.
+                            // A background update under ShowOnUpdate="false" is the exception:
+                            // that flag exists so the overlay never paints over a running app,
+                            // and a stalled auto-reload is no reason to break it - recovery there
+                            // surfaces the button alone, which lives OUTSIDE #bit-bswup precisely
+                            // so it can appear without the overlay. The strict === false check
+                            // matches downloadProgress: an absent flag keeps the old reveal.
+                            const revealOnStall = !(showOnUpdate_ === false && data.firstInstall === false);
                             autoReloadWithFallback(data.reload, () => {
-                                bswupEl && (bswupEl.style.display = 'block');
+                                revealOnStall && bswupEl && (bswupEl.style.display = 'block');
                                 showReloadButton(data.reload);
                             }, () => {
                                 hideApp_ && appEl && (appEl.style.display = appElOriginalDisplay);

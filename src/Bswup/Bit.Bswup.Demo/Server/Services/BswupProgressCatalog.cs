@@ -31,7 +31,7 @@ public static class BswupProgressCatalog
             Parameters = BuildParameters(),
             Elements =
             [
-                new() { Id = "bit-bswup", Role = "The splash overlay itself. Hidden by bit-bswup.progress.css until a first install reveals it." },
+                new() { Id = "bit-bswup", Role = "The splash overlay itself. Hidden by bit-bswup.progress.css until a download reveals it - a first install, or a background update unless ShowOnUpdate is false." },
                 new() { Id = "bit-bswup-progress-bar", Role = "The bar whose width (and aria-valuenow) is set from the download percentage." },
                 new() { Id = "bit-bswup-percent", Role = "Text node written as `${percent}%`." },
                 new() { Id = "bit-bswup-assets", Role = "List the downloaded assets are prepended to, when ShowAssets is on." },
@@ -39,7 +39,7 @@ public static class BswupProgressCatalog
                 new() { Id = "bit-bswup-error-message", Role = "The human-readable message of the failure." },
                 new() { Id = "bit-bswup-error-details", Role = "The structured detail of the failure (reason, url, hash)." },
                 new() { Id = "bit-bswup-error-retry", Role = "Retries the install." },
-                new() { Id = "bit-bswup-reload", Role = "The update-ready button, and with AutoReload off the only way a finished update surfaces. Rendered OUTSIDE the overlay, so it can appear without revealing the splash - which is what an update already staged at page load needs (it never produced a progress event to reveal it).", RenderedByComponent = true },
+                new() { Id = "bit-bswup-reload", Role = "The update-ready button, and with AutoReload off the only way a finished update surfaces. Rendered OUTSIDE the overlay, so it can appear while the overlay stays hidden - which is what an update already staged at page load needs (it never produced a progress event to reveal the splash), and what ShowOnUpdate=\"false\" needs on every update.", RenderedByComponent = true },
                 new() { Id = "bit-bswup-reload-status", Role = "A visually hidden role=\"status\" region: revealing a display:none button is silent for screen readers, so the announcement rides here.", RenderedByComponent = true },
             ],
             RuntimeConfig = "BitBswupProgress.config({ autoReload, showLogs, showAssets, hideApp, autoHide, showOnUpdate }) - each value overrides the matching parameter for the rest of the session.",

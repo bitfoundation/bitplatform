@@ -429,6 +429,38 @@ describe('background-update progress', () => {
         expect(ctx.elements['bit-bswup-reload'].style.display).toBe('block');
         expect(ctx.elements['bit-bswup'].style.display).not.toBe('block');
     });
+
+    // The stalled-auto-reload recovery reveals the splash so the manual retry is not offered on
+    // a blank page - but under ShowOnUpdate="false" the whole point is that the overlay never
+    // paints over a running app, and a stall is no reason to break that. The button alone is
+    // enough there: it lives outside the overlay.
+    it('recovers a stalled background auto-reload without revealing the splash under ShowOnUpdate="false"', async () => {
+        const ctx = progressPage({
+            elements: { ...fullSplash, 'bit-bswup': { ...SPLASH, 'data-bit-bswup-show-on-update': 'false' } },
+            clampLongTimers: true,
+        });
+
+        ctx.window.bitBswupHandler('DOWNLOAD_FINISHED', { firstInstall: false, reload: () => new Promise(() => { }) }); // never settles
+
+        await waitFor(() => ctx.elements['bit-bswup-reload'].style.display === 'block',
+            'the fallback timer to reveal the reload button');
+        expect(ctx.elements['bit-bswup'].style.display).not.toBe('block');
+    });
+
+    // The same recovery on a FIRST install still reveals the splash: there is no running app to
+    // protect, and the retry button would otherwise sit alone on an empty page.
+    it('still reveals the splash when a stalled first install recovers under ShowOnUpdate="false"', async () => {
+        const ctx = progressPage({
+            elements: { ...fullSplash, 'bit-bswup': { ...SPLASH, 'data-bit-bswup-show-on-update': 'false' } },
+            clampLongTimers: true,
+        });
+
+        ctx.window.bitBswupHandler('DOWNLOAD_FINISHED', { firstInstall: true, reload: () => new Promise(() => { }) });
+
+        await waitFor(() => ctx.elements['bit-bswup-reload'].style.display === 'block',
+            'the fallback timer to reveal the reload button');
+        expect(ctx.elements['bit-bswup'].style.display).toBe('block');
+    });
 });
 
 // The reload button is display:none, which removes it from the accessibility tree entirely -

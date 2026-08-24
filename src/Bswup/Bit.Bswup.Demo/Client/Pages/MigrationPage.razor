@@ -9,11 +9,10 @@
 </p>
 
 <h2>Action items</h2>
-<Callout Type="warning" Title="Check these four things">
-    <p><strong>1. Updates no longer auto-reload.</strong> <code>BswupProgress.AutoReload</code> now defaults to <code>false</code> - updates announce themselves through the reload button. Set <code>AutoReload="true"</code> to restore the old behavior.</p>
-    <p><strong>2. Blocked URLs answer 403.</strong> <code>prohibitedUrls</code> matches are answered with <code>403 Forbidden</code> (previously <code>405</code>). Code detecting a blocked URL by status must check for <code>403</code>.</p>
-    <p><strong>3. String entries now take effect.</strong> Strings in the URL-matching lists (<code>assetsInclude</code>, <code>assetsExclude</code>, <code>prohibitedUrls</code>, <code>serverHandledUrls</code>, <code>serverRenderedUrls</code>) are now matched literally as substrings. Previous releases silently <em>ignored</em> them - audit any strings sitting in those lists, because they take effect for the first time after upgrading.</p>
-    <p><strong>4. Hand-written splash markup needs one edit.</strong> Move <code>&lt;button id="bit-bswup-reload"&gt;</code> <em>outside</em> the <code>#bit-bswup</code> overlay (and give it a <code>z-index</code>), optionally adding a visually-hidden <code>&lt;span id="bit-bswup-reload-status" role="status"&gt;</code> next to it. The built-in handling no longer reveals the overlay for updates, so a button left inside it would never become visible. The <code>BswupProgress</code> component ships this layout already.</p>
+<Callout Type="warning" Title="Check these three things">
+    <p><strong>1. Blocked URLs answer 403.</strong> <code>prohibitedUrls</code> matches are answered with <code>403 Forbidden</code> (previously <code>405</code>). Code detecting a blocked URL by status must check for <code>403</code>.</p>
+    <p><strong>2. String entries now take effect.</strong> Strings in the URL-matching lists (<code>assetsInclude</code>, <code>assetsExclude</code>, <code>prohibitedUrls</code>, <code>serverHandledUrls</code>, <code>serverRenderedUrls</code>) are now matched literally as substrings. Previous releases silently <em>ignored</em> them - audit any strings sitting in those lists, because they take effect for the first time after upgrading.</p>
+    <p><strong>3. Hand-written splash markup needs one edit.</strong> Move <code>&lt;button id="bit-bswup-reload"&gt;</code> <em>outside</em> the <code>#bit-bswup</code> overlay (and give it a <code>z-index</code>), optionally adding a visually-hidden <code>&lt;span id="bit-bswup-reload-status" role="status"&gt;</code> next to it. The overlay is not always revealed when an update finishes - an update already staged at page load never produced a progress event to reveal it, and <code>ShowOnUpdate="false"</code> suppresses the reveal outright - so a button left inside it would stay invisible in exactly the cases it is needed. The <code>BswupProgress</code> component ships this layout already.</p>
 </Callout>
 
 <h2>Behavior changes</h2>
