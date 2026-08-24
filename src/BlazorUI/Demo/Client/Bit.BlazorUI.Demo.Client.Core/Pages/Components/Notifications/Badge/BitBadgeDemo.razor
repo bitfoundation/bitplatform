@@ -186,7 +186,7 @@
         </BitBadge>
         <br /><br /><br /><br />
         <div>Icon and content, and the same pair reversed</div><br />
-        <div class="example-content">
+        <div class="example-content" style="gap:5rem">
             <BitBadge Content="@("Sent")" IconName="@BitIconName.CheckMark" Color="BitColor.Success">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
@@ -827,18 +827,24 @@
             Left and Right ones stay where they are. An icon and its content swap sides along with the layout.
         </div>
         <br /><br />
-        <div dir="rtl" class="example-content">
-            <BitBadge Dir="BitDir.Rtl" Content="63" Position="BitPosition.TopEnd">
+        <div dir="rtl">
+            <div class="example-content" style="gap:4rem">
+                <BitBadge Dir="BitDir.Rtl" Content="63" Position="BitPosition.TopEnd">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+
+                <BitBadge Dir="BitDir.Rtl" Content="63" Position="BitPosition.TopStart">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+            </div>
+
+            <br/>
+
+            <BitBadge Dir="BitDir.Rtl" Content="@("جدید")" IconName="@BitIconName.CheckMark" Color="BitColor.Success" Position="BitPosition.BottomEnd">
                 <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
             </BitBadge>
 
-            <BitBadge Dir="BitDir.Rtl" Content="63" Position="BitPosition.TopStart">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
-
-            <BitBadge Dir="BitDir.Rtl" Content="@("جدید")" IconName="@BitIconName.CheckMark" Color="BitColor.Success" Position="BitPosition.BottomStart">
-                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
-            </BitBadge>
+            <br/><br/><br/>
 
             <BitBadge Dir="BitDir.Rtl" Content="@("پیش‌نویس")" Color="BitColor.Tertiary" />
         </div>
