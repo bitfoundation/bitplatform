@@ -1164,6 +1164,9 @@
     <data name="Of" xml:space="preserve">
     <value>में से</value>
   </data>
+    <data name="TryAgain" xml:space="preserve">
+    <value>पुनः प्रयास करें</value>
+  </data>
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>प्रशासक पैनल</value>
@@ -1273,9 +1276,6 @@
     <data name="ProductCouldNotBeLoaded" xml:space="preserve">
     <value>यह उत्पाद लोड नहीं किया जा सका।</value>
   </data>
-    <data name="TryAgain" xml:space="preserve">
-    <value>पुनः प्रयास करें</value>
-  </data>
   <!--#endif -->
   <!--#if (captcha == "reCaptcha") -->
   <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
@@ -1303,6 +1303,9 @@
   </data>
     <data name="SearchProducts" xml:space="preserve">
     <value>उत्पाद खोजें</value>
+  </data>
+    <data name="ProductsCouldNotBeLoaded" xml:space="preserve">
+    <value>उत्पाद लोड नहीं किए जा सके।</value>
   </data>
   <!--#endif -->
   <data name="Passwordless" xml:space="preserve">

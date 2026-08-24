@@ -1164,6 +1164,9 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <data name="Of" xml:space="preserve">
     <value>av</value>
   </data>
+    <data name="TryAgain" xml:space="preserve">
+    <value>Försök igen</value>
+  </data>
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>Adminpanel</value>
@@ -1273,9 +1276,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <data name="ProductCouldNotBeLoaded" xml:space="preserve">
     <value>Produkten kunde inte laddas.</value>
   </data>
-    <data name="TryAgain" xml:space="preserve">
-    <value>Försök igen</value>
-  </data>
   <!--#endif -->
   <!--#if (captcha == "reCaptcha") -->
   <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
@@ -1303,6 +1303,9 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   </data>
     <data name="SearchProducts" xml:space="preserve">
     <value>Sök produkter</value>
+  </data>
+    <data name="ProductsCouldNotBeLoaded" xml:space="preserve">
+    <value>Produkterna kunde inte laddas.</value>
   </data>
   <!--#endif -->
   <data name="Passwordless" xml:space="preserve">

@@ -18,6 +18,17 @@
         </BitStack>
     </BitCard>
 }
+else if (loadFailed)
+{
+    <BitCard FullWidth>
+        <BitStack HorizontalAlign="BitAlignment.Center" Gap="1rem">
+            <BitText Typography="BitTypography.Subtitle1">@Localizer[nameof(AppStrings.ProductsCouldNotBeLoaded)]</BitText>
+            <BitButton AutoLoading ButtonType="BitButtonType.Button" OnClick="WrapHandled(LoadAsync)">
+                @Localizer[nameof(AppStrings.TryAgain)]
+            </BitButton>
+        </BitStack>
+    </BitCard>
+}
 else if (carouselProducts?.Any() is not true)
 {
     <BitCard FullWidth>

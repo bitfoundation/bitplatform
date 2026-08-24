@@ -1164,6 +1164,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="Of" xml:space="preserve">
     <value>of</value>
   </data>
+    <data name="TryAgain" xml:space="preserve">
+    <value>Try again</value>
+  </data>
     <!--#if (module == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
     <value>Admin panel</value>
@@ -1273,9 +1276,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="ProductCouldNotBeLoaded" xml:space="preserve">
     <value>This product could not be loaded.</value>
   </data>
-    <data name="TryAgain" xml:space="preserve">
-    <value>Try again</value>
-  </data>
     <!--#endif -->
     <!--#if (captcha == "reCaptcha") -->
     <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
@@ -1303,6 +1303,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="SearchProducts" xml:space="preserve">
     <value>Search products</value>
+  </data>
+    <data name="ProductsCouldNotBeLoaded" xml:space="preserve">
+    <value>Products could not be loaded.</value>
   </data>
     <!--#endif -->
     <data name="Passwordless" xml:space="preserve">

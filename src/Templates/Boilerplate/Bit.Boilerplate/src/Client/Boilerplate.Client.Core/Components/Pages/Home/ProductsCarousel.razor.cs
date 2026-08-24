@@ -7,6 +7,7 @@ public partial class ProductsCarousel
     [AutoInject] private IProductViewController productViewController = default!;
 
 
+    private bool loadFailed;
     private bool isLoading = true;
     private IEnumerable<ProductDto>? carouselProducts;
 
@@ -14,6 +15,15 @@ public partial class ProductsCarousel
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
+
+        await LoadAsync();
+    }
+
+    // A failed request and an empty catalogue are different things, and the carousel must not show one as the other.
+    private async Task LoadAsync()
+    {
+        loadFailed = false;
+        isLoading = true;
 
         try
         {
@@ -27,6 +37,7 @@ public partial class ProductsCarousel
         }
         catch (Exception exp)
         {
+            loadFailed = true;
             ExceptionHandler.Handle(exp);
         }
         finally

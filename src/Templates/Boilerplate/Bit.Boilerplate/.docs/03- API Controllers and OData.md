@@ -251,9 +251,7 @@ private async Task<BitDataGridReadResult<ProductDto>> LoadProducts(BitDataGridRe
 {
     var query = new ODataQuery
     {
-        // req.Take is null when the grid is exporting to CSV/Excel. The server applies no default page size,
-        // so cap it here rather than asking for the whole table.
-        Top = req.Take ?? MaxExportRows,
+        Top = req.Take, // null when exporting (CSV/Excel) so the server returns every matching row.
         Skip = req.Skip,
         OrderBy = req.Sorts.Count > 0
             ? string.Join(", ", req.Sorts.Select(s => $"{s.ColumnId} {(s.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}"))

@@ -1164,6 +1164,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="Of" xml:space="preserve">
     <value>van</value>
   </data>
+    <data name="TryAgain" xml:space="preserve">
+    <value>Opnieuw proberen</value>
+  </data>
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>Admin-paneel</value>
@@ -1273,9 +1276,6 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="ProductCouldNotBeLoaded" xml:space="preserve">
     <value>Dit product kon niet worden geladen.</value>
   </data>
-    <data name="TryAgain" xml:space="preserve">
-    <value>Opnieuw proberen</value>
-  </data>
   <!--#endif -->
   <!--#if (captcha == "reCaptcha") -->
   <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
@@ -1303,6 +1303,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   </data>
     <data name="SearchProducts" xml:space="preserve">
     <value>Producten zoeken</value>
+  </data>
+    <data name="ProductsCouldNotBeLoaded" xml:space="preserve">
+    <value>Producten konden niet worden geladen.</value>
   </data>
   <!--#endif -->
   <data name="Passwordless" xml:space="preserve">

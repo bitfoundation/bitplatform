@@ -1164,6 +1164,9 @@
     <data name="Of" xml:space="preserve">
     <value>از</value>
   </data>
+    <data name="TryAgain" xml:space="preserve">
+    <value>تلاش مجدد</value>
+  </data>
     <!--#if (module == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
     <value>پنل ادمین</value>
@@ -1273,9 +1276,6 @@
     <data name="ProductCouldNotBeLoaded" xml:space="preserve">
     <value>این محصول بارگذاری نشد.</value>
   </data>
-    <data name="TryAgain" xml:space="preserve">
-    <value>تلاش مجدد</value>
-  </data>
     <!--#endif -->
     <!--#if (captcha == "reCaptcha") -->
     <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
@@ -1303,6 +1303,9 @@
   </data>
     <data name="SearchProducts" xml:space="preserve">
     <value>جستجوی محصولات</value>
+  </data>
+    <data name="ProductsCouldNotBeLoaded" xml:space="preserve">
+    <value>محصولات بارگذاری نشدند.</value>
   </data>
     <!--#endif -->
     <data name="Passwordless" xml:space="preserve">

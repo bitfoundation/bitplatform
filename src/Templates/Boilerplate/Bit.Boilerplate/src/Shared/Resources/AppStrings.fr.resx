@@ -1164,6 +1164,9 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="Of" xml:space="preserve">
     <value>sur</value>
   </data>
+    <data name="TryAgain" xml:space="preserve">
+    <value>Réessayer</value>
+  </data>
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>Panneau d'administration</value>
@@ -1273,9 +1276,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="ProductCouldNotBeLoaded" xml:space="preserve">
     <value>Ce produit n'a pas pu être chargé.</value>
   </data>
-    <data name="TryAgain" xml:space="preserve">
-    <value>Réessayer</value>
-  </data>
   <!--#endif -->
   <!--#if (captcha == "reCaptcha") -->
   <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
@@ -1303,6 +1303,9 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   </data>
     <data name="SearchProducts" xml:space="preserve">
     <value>Rechercher des produits</value>
+  </data>
+    <data name="ProductsCouldNotBeLoaded" xml:space="preserve">
+    <value>Les produits n'ont pas pu être chargés.</value>
   </data>
   <!--#endif -->
   <data name="Passwordless" xml:space="preserve">
