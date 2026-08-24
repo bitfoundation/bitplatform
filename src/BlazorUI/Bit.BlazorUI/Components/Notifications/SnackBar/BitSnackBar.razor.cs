@@ -9,19 +9,33 @@ namespace Bit.BlazorUI;
 /// or one of the per-color shortcuts on it. Each call returns the <see cref="BitSnackBarItem"/> that stands for
 /// the notification, which is the handle to close, update, pause or resume it later.
 /// <br />
-/// Each item announces itself to assistive technology through a live region whose politeness follows its color -
-/// the colors that report a problem interrupt the screen reader, the rest wait for a pause - so a snack bar is
-/// heard as well as seen. The auto-dismiss countdown pauses while the pointer or the keyboard focus is inside the
-/// item (and, with <see cref="PauseOnPageHidden"/>, while the page is in a hidden tab), so a notification is never
-/// taken away from someone who is still reading or acting on it.
+/// Each item is announced to assistive technology through one of two live regions the host keeps in the page from
+/// its first render, with the politeness that follows its color - the colors that report a problem interrupt the
+/// screen reader, the rest wait for a pause - so a snack bar is heard as well as seen. The auto-dismiss countdown
+/// pauses while the pointer or the keyboard focus is inside the item (and, with <see cref="PauseOnPageHidden"/>,
+/// while the page is in a hidden tab), so a notification is never taken away from someone who is still reading or
+/// acting on it.
 /// </remarks>
 public partial class BitSnackBar : BitComponentBase
 {
     private readonly List<BitSnackBarItem> _items = [];
+    private readonly List<BitSnackBarItem> _queue = [];
     private readonly Dictionary<Guid, ElementReference> _dismissButtons = [];
 
     private BitPageVisibility? _pageVisibility;
+    private NavigationManager? _navigationManager;
     private bool _pageHidden;
+
+    // One counter per region rather than one shared between them: the counter keys the element that carries the
+    // text, and re-keying the region an announcement did not touch would replace an element whose content had not
+    // changed - which is exactly what a live region announces.
+    private int _announceSequence;
+    private int _politeGeneration;
+    private int _assertiveGeneration;
+    private string? _politeText;
+    private string? _assertiveText;
+    private Guid? _politeItemId;
+    private Guid? _assertiveItemId;
 
     /// <summary>
     /// The service provider of the component, used to resolve the optional page visibility utility.
@@ -77,6 +91,16 @@ public partial class BitSnackBar : BitComponentBase
     [Parameter] public BitSnackBarClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// Closes every snack bar item as soon as the app navigates somewhere else.
+    /// </summary>
+    /// <remarks>
+    /// A notification is about the page it was raised on, and one that outlives that page is read as being about
+    /// the next one. Turning this on needs nothing but the router the app already has; in a host without a
+    /// <c>NavigationManager</c> the items simply stay as they would otherwise.
+    /// </remarks>
+    [Parameter] public bool ClearOnNavigation { get; set; }
+
+    /// <summary>
     /// The accessible label of the dismiss button (default is "Close").
     /// </summary>
     /// <remarks>
@@ -116,6 +140,18 @@ public partial class BitSnackBar : BitComponentBase
     [Parameter] public bool DismissOnClick { get; set; }
 
     /// <summary>
+    /// Prevents rendering the dismiss button of every snack bar item.
+    /// </summary>
+    /// <remarks>
+    /// Unlike <see cref="Persistent"/> this only takes the button away: the items still count down, still answer
+    /// the Escape key and still take part in <see cref="DismissOnClick"/>. Use it where the notification carries
+    /// its own way out - an action button, or a countdown short enough that a second way out would only be noise -
+    /// and never on a host whose items neither auto-dismiss nor offer one, which would leave them there for good.
+    /// A single item can drop its button on its own through <see cref="BitSnackBarItem.HideDismiss"/>.
+    /// </remarks>
+    [Parameter] public bool HideDismiss { get; set; }
+
+    /// <summary>
     /// Prevents rendering the countdown progress bar of the auto-dismissing snack bars.
     /// </summary>
     [Parameter] public bool HideProgress { get; set; }
@@ -143,10 +179,22 @@ public partial class BitSnackBar : BitComponentBase
     /// The maximum number of snack bar items to show at once.
     /// </summary>
     /// <remarks>
-    /// Showing a new item while the cap is already reached dismisses the oldest one to make room for it, so a burst
-    /// of notifications cannot grow into a wall that covers the page. Unset (or zero and below) means no cap.
+    /// A burst of notifications cannot grow into a wall that covers the page: what happens to the item that does
+    /// not fit is up to <see cref="OverflowBehavior"/>, which by default dismisses the oldest one to make room
+    /// for it. Unset (or zero and below) means no cap.
     /// </remarks>
     [Parameter] public int? MaxItems { get; set; }
+
+    /// <summary>
+    /// The maximum width of the snack bar items.
+    /// </summary>
+    /// <remarks>
+    /// Any CSS length is accepted, and the stack never grows past the width of the screen whatever this says.
+    /// Unset, an item is as wide as its longest line needs, which on a wide screen is a line too long to be read
+    /// comfortably - a notification of any length is worth capping at a readable measure.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? MaxWidth { get; set; }
 
     /// <summary>
     /// Enables the multiline mode of both title and body.
@@ -163,8 +211,24 @@ public partial class BitSnackBar : BitComponentBase
     [Parameter] public bool NewestOnTop { get; set; }
 
     /// <summary>
+    /// The distance of the stack from the edges of the screen (default is 8px).
+    /// </summary>
+    /// <remarks>
+    /// Any CSS length is accepted. This is what keeps a snack bar clear of the chrome the app already has at that
+    /// edge - a bottom app bar, a cookie banner, the safe area of a phone.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? Offset { get; set; }
+
+    /// <summary>
     /// Callback for when any snack bar is dismissed, reporting the item that was dismissed.
     /// </summary>
+    /// <remarks>
+    /// The <see cref="BitSnackBarItem.DismissReason"/> of the item tells what took it away, so a callback can
+    /// treat a notification the user threw away differently from one that simply ran out of time. An item that was
+    /// still waiting in the queue when it was closed or cleared is reported here too, without ever having reported
+    /// an <see cref="OnShow"/>.
+    /// </remarks>
     [Parameter] public EventCallback<BitSnackBarItem> OnDismiss { get; set; }
 
     /// <summary>
@@ -175,7 +239,23 @@ public partial class BitSnackBar : BitComponentBase
     /// <summary>
     /// Callback for when a new snack bar item is shown.
     /// </summary>
+    /// <remarks>
+    /// An item held back by <see cref="BitSnackBarOverflowBehavior.Queue"/> reports this when it reaches the
+    /// screen rather than when it was handed to <c>Show</c>.
+    /// </remarks>
     [Parameter] public EventCallback<BitSnackBarItem> OnShow { get; set; }
+
+    /// <summary>
+    /// What happens to a new snack bar item that arrives while <see cref="MaxItems"/> is already reached
+    /// (default is dismissing the oldest one).
+    /// </summary>
+    /// <remarks>
+    /// Dismissing the oldest keeps the newest news on screen and is right for a stream of status updates;
+    /// <see cref="BitSnackBarOverflowBehavior.Queue"/> shows every item in turn and is right where none of them
+    /// may be missed; <see cref="BitSnackBarOverflowBehavior.Skip"/> drops the new one and is right where the
+    /// items are interchangeable. This has no effect while <see cref="MaxItems"/> is unset.
+    /// </remarks>
+    [Parameter] public BitSnackBarOverflowBehavior OverflowBehavior { get; set; }
 
     /// <summary>
     /// Pauses the auto-dismiss countdown while the pointer or the keyboard focus is inside a snack bar item
@@ -195,6 +275,9 @@ public partial class BitSnackBar : BitComponentBase
     /// A notification that counts down in a background tab is gone before the tab is ever looked at again. Turning
     /// this on holds the countdown until the page is visible, which needs the bit BlazorUI services to be registered
     /// (<c>AddBitBlazorUIServices</c>); without them the snack bar carries on counting down as it would otherwise.
+    /// <br />
+    /// This follows the Page Visibility API, so it covers a tab in the background and a minimized window, but not a
+    /// window that is still on screen while another app has the keyboard focus.
     /// </remarks>
     [Parameter] public bool PauseOnPageHidden { get; set; }
 
@@ -202,9 +285,11 @@ public partial class BitSnackBar : BitComponentBase
     /// Makes the snack bar non-dismissible in UI and removes the dismiss button.
     /// </summary>
     /// <remarks>
-    /// A persistent snack bar also opts out of the auto-dismiss countdown, so it stays until the code that opened it
-    /// closes it through <see cref="Close(BitSnackBarItem)"/>. A single item can be made persistent on its own
-    /// through <see cref="BitSnackBarItem.Persistent"/>.
+    /// A persistent snack bar also opts out of the auto-dismiss countdown and of the Escape key, so it stays until
+    /// the code that opened it closes it through <see cref="Close(BitSnackBarItem)"/>. A single item can be made
+    /// persistent on its own through <see cref="BitSnackBarItem.Persistent"/>.
+    /// <br />
+    /// To take the button away without also taking the countdown away, use <see cref="HideDismiss"/> instead.
     /// </remarks>
     [Parameter] public bool Persistent { get; set; }
 
@@ -218,8 +303,12 @@ public partial class BitSnackBar : BitComponentBase
     /// Skips showing a new snack bar while an identical one is already on screen.
     /// </summary>
     /// <remarks>
-    /// Two items count as identical when their title, body and color all match. The <c>Show</c> call then returns the
-    /// item that is already showing rather than a new one, so the caller still has a handle to it.
+    /// Two items count as identical when their title, body and color all match, and an item whose exit animation is
+    /// already playing matches nothing. The <c>Show</c> call then returns the item that is already showing rather
+    /// than a new one, so the caller still has a handle to it; that item's auto-dismiss countdown starts over - the
+    /// second event is news too, and a notification that vanished a moment after it was repeated would be read as
+    /// the first one being over rather than as both having happened - and its
+    /// <see cref="BitSnackBarItem.DuplicateCount"/> goes up, which is what a template can show the repeat with.
     /// </remarks>
     [Parameter] public bool PreventDuplicates { get; set; }
 
@@ -232,6 +321,15 @@ public partial class BitSnackBar : BitComponentBase
     /// <see cref="BitSnackBarItem.Role"/>.
     /// </remarks>
     [Parameter] public string? Role { get; set; }
+
+    /// <summary>
+    /// Draws the countdown progress bar depleting from full to empty instead of filling from empty to full.
+    /// </summary>
+    /// <remarks>
+    /// A depleting bar reads as the time the notification has left, a filling one as how far it has got through
+    /// its lifetime. Both are in wide use; pick the one that matches the other timers of the app.
+    /// </remarks>
+    [Parameter] public bool ReverseProgress { get; set; }
 
     /// <summary>
     /// Renders a leading icon in each snack bar item, chosen from its color unless one is provided.
@@ -292,6 +390,16 @@ public partial class BitSnackBar : BitComponentBase
     /// </remarks>
     public IReadOnlyList<BitSnackBarItem> Items => [.. _items];
 
+    /// <summary>
+    /// The snack bar items that are waiting for a slot under <see cref="BitSnackBarOverflowBehavior.Queue"/>,
+    /// in the order they will be shown.
+    /// </summary>
+    /// <remarks>
+    /// Like <see cref="Items"/> this is a snapshot. It is empty unless <see cref="MaxItems"/> is set and
+    /// <see cref="OverflowBehavior"/> is <see cref="BitSnackBarOverflowBehavior.Queue"/>.
+    /// </remarks>
+    public IReadOnlyList<BitSnackBarItem> PendingItems => [.. _queue];
+
 
 
     /// <summary>
@@ -349,9 +457,13 @@ public partial class BitSnackBar : BitComponentBase
     /// Shows a new snackbar.
     /// </summary>
     /// <remarks>
-    /// Showing an item that is already showing is a no-op that returns it unchanged, and so is showing a duplicate of
-    /// one while <see cref="PreventDuplicates"/> is enabled - in which case the item that is already showing comes
-    /// back instead of the new one.
+    /// Showing an item that is already showing (or already waiting in the queue) is a no-op that returns it
+    /// unchanged, and so is showing a duplicate of one while <see cref="PreventDuplicates"/> is enabled - in which
+    /// case the item that is already showing comes back instead of the new one, with its countdown started over.
+    /// <br />
+    /// An item that does not fit under <see cref="MaxItems"/> is dealt with by <see cref="OverflowBehavior"/>:
+    /// it may be held back until a slot frees up, or dropped, in which case the returned item never reaches the
+    /// screen and no <see cref="OnShow"/> is reported for it.
     /// </remarks>
     public async Task<BitSnackBarItem> Show(BitSnackBarItem item)
     {
@@ -363,34 +475,54 @@ public partial class BitSnackBar : BitComponentBase
 
         await InvokeAsync(async () =>
         {
-            if (_items.Contains(item)) return;
+            if (_items.Contains(item) || _queue.Contains(item)) return;
 
             if (PreventDuplicates)
             {
-                var duplicate = _items.Find(i => i.Title == item.Title && i.Body == item.Body && i.Color == item.Color);
+                var duplicate = _items.Find(i => IsDuplicate(i, item)) ?? _queue.Find(i => IsDuplicate(i, item));
                 if (duplicate is not null)
                 {
                     shown = duplicate;
+
+                    // Suppressing the repeat keeps the page from filling with the same notification, but the thing
+                    // did happen again; the item that stands for all of them counts how many.
+                    duplicate.DuplicateCount++;
+
+                    // The repeat is news of its own, so the notification that stands for it is given its full
+                    // lifetime back rather than being left to run out on the clock of the first one.
+                    if (_items.Contains(duplicate))
+                    {
+                        StartCountdown(duplicate);
+                        Announce(duplicate);
+                        StateHasChanged();
+                    }
+
                     return;
                 }
             }
 
-            await TrimToMaxItems();
-
-            if (NewestOnTop)
+            if (IsFull())
             {
-                _items.Insert(0, item);
+                switch (OverflowBehavior)
+                {
+                    case BitSnackBarOverflowBehavior.Queue:
+                        // An item that was dismissed before and is being shown again is waiting to arrive now,
+                        // not gone: what took it away last time is no longer what it is.
+                        item.DismissReason = null;
+                        item.DuplicateCount = 0;
+                        _queue.Add(item);
+                        return;
+
+                    case BitSnackBarOverflowBehavior.Skip:
+                        return;
+
+                    default:
+                        await TrimToMaxItems();
+                        break;
+                }
             }
-            else
-            {
-                _items.Add(item);
-            }
 
-            StartCountdown(item);
-
-            StateHasChanged();
-
-            await OnShow.InvokeAsync(item);
+            await AddItem(item);
         });
 
         return shown;
@@ -401,12 +533,27 @@ public partial class BitSnackBar : BitComponentBase
     /// </summary>
     /// <remarks>
     /// The returned task completes once the item has left the DOM, which is after its exit animation
-    /// (<see cref="TransitionDuration"/>) has played.
+    /// (<see cref="TransitionDuration"/>) has played. An item that is still waiting in the queue is taken out of
+    /// it instead, and never reaches the screen.
     /// </remarks>
-    public Task Close(BitSnackBarItem item) => InvokeAsync(() => DismissAsync(item, animate: true));
+    public Task Close(BitSnackBarItem item) => InvokeAsync(async () =>
+    {
+        if (item is not null && _queue.Remove(item))
+        {
+            item.DismissReason = BitSnackBarDismissReason.Programmatic;
+
+            StateHasChanged();
+
+            await ReportDismissed(item);
+
+            return;
+        }
+
+        await DismissAsync(item!, animate: true, reason: BitSnackBarDismissReason.Programmatic);
+    });
 
     /// <summary>
-    /// Closes every snackbar item that is currently showing.
+    /// Closes every snackbar item that is currently showing, and drops everything that was waiting in the queue.
     /// </summary>
     /// <remarks>
     /// The items are taken away at once rather than one exit animation after another, so clearing a full stack does
@@ -414,9 +561,19 @@ public partial class BitSnackBar : BitComponentBase
     /// </remarks>
     public Task Clear() => InvokeAsync(async () =>
     {
+        var queued = _queue.ToArray();
+        _queue.Clear();
+
         foreach (var item in _items.ToArray())
         {
-            await DismissAsync(item, animate: false);
+            await DismissAsync(item, animate: false, reason: BitSnackBarDismissReason.Clear);
+        }
+
+        foreach (var item in queued)
+        {
+            item.DismissReason = BitSnackBarDismissReason.Clear;
+
+            await ReportDismissed(item);
         }
     });
 
@@ -425,13 +582,23 @@ public partial class BitSnackBar : BitComponentBase
     /// </summary>
     /// <remarks>
     /// This is how a notification is turned into the report of what it was waiting for: keep the item a call to
-    /// <c>Show</c> returned, set its title, body and color to the outcome, then hand it back here.
+    /// <c>Show</c> returned, set its title, body and color to the outcome, then hand it back here. The new text is
+    /// announced again, so the outcome is heard as well as seen.
+    /// <br />
+    /// The restarted countdown starts held back if anything is still holding it - the pointer or the keyboard focus
+    /// inside the item, a hidden page, or a <see cref="Pause(BitSnackBarItem)"/> that has not been released.
     /// </remarks>
     public Task Update(BitSnackBarItem item) => InvokeAsync(() =>
     {
-        if (item is null || _items.Contains(item) is false) return;
+        // An item whose exit animation is playing is past being updated: giving it a countdown it will never spend
+        // and announcing text nobody will see would only be noise.
+        if (item is null || item._dismissing || _items.Contains(item) is false) return;
 
         StartCountdown(item);
+
+        // The text of the item has changed, which is a new thing to say - a notification that turned from
+        // "Uploading..." into "Upload failed" has to be heard again, not only seen again.
+        Announce(item);
 
         StateHasChanged();
     });
@@ -439,8 +606,17 @@ public partial class BitSnackBar : BitComponentBase
     /// <summary>
     /// Pauses the auto-dismiss countdown of a snackbar item.
     /// </summary>
+    /// <remarks>
+    /// This is a hold of its own rather than the same one the pointer takes, so a countdown held back from code
+    /// is not let go again by the pointer happening to leave the item. Only <see cref="Resume(BitSnackBarItem)"/>
+    /// releases it.
+    /// </remarks>
     public Task Pause(BitSnackBarItem item) => InvokeAsync(() =>
     {
+        if (item is null) return;
+
+        item._held = true;
+
         if (PauseItem(item)) StateHasChanged();
     });
 
@@ -454,6 +630,10 @@ public partial class BitSnackBar : BitComponentBase
     /// </remarks>
     public Task Resume(BitSnackBarItem item) => InvokeAsync(() =>
     {
+        if (item is null) return;
+
+        item._held = false;
+
         if (ResumeItem(item)) StateHasChanged();
     });
 
@@ -485,11 +665,53 @@ public partial class BitSnackBar : BitComponentBase
         // directly, so the reduced-motion collapse in the stylesheet can still shorten it (an inline duration
         // would be out of reach of any media query).
         StyleBuilder.Register(() => FormattableString.Invariant($"--bit-snb-dur-full:{Math.Max(0, TransitionDuration)}ms"));
+
+        StyleBuilder.Register(() => Offset.HasValue() ? $"--bit-snb-off:{Offset}" : string.Empty);
+
+        StyleBuilder.Register(() => MaxWidth.HasValue() ? $"--bit-snb-max-w:{MaxWidth}" : string.Empty);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        if (_queue.Count == 0) return;
+
+        // Raising MaxItems (or dropping the cap) frees slots that nothing is going to dismiss its way into, so the
+        // items that were held back for one take them here instead of waiting for a dismissal that never comes.
+        if (OverflowBehavior == BitSnackBarOverflowBehavior.Queue)
+        {
+            await PromoteFromQueue();
+            return;
+        }
+
+        // Queueing is no longer how overflow is dealt with, so what was waiting is dealt with the new way rather
+        // than held for a slot nobody is going to free.
+        var waiting = _queue.ToArray();
+
+        _queue.Clear();
+
+        foreach (var item in waiting)
+        {
+            await Show(item);
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender && ClearOnNavigation)
+        {
+            // Resolved through the provider rather than injected for the same reason as the page visibility
+            // utility: a snack bar has to keep working in a host that has no router at all.
+            _navigationManager = _serviceProvider?.GetService(typeof(NavigationManager)) as NavigationManager;
+
+            if (_navigationManager is not null)
+            {
+                _navigationManager.LocationChanged += HandleLocationChanged;
+            }
+        }
 
         if (PauseOnPageHidden is false || _pageVisibility is not null) return;
 
@@ -511,6 +733,23 @@ public partial class BitSnackBar : BitComponentBase
     private string _RootAriaLabel => AriaLabel ?? "Notifications";
 
     private bool IsDismissible(BitSnackBarItem item) => Persistent is false && item.Persistent is false;
+
+    private bool ShowDismissButton(BitSnackBarItem item)
+    {
+        return IsDismissible(item) && HideDismiss is false && item.HideDismiss is false;
+    }
+
+    // An item whose exit animation is playing is on its way out, so a new notification identical to it is news
+    // rather than a repeat - matching it would drop the new one and leave nothing on screen.
+    private static bool IsDuplicate(BitSnackBarItem left, BitSnackBarItem right)
+    {
+        return left._dismissing is false
+            && left.Title == right.Title
+            && left.Body == right.Body
+            && left.Color == right.Color;
+    }
+
+    private bool IsFull() => MaxItems is int max && max > 0 && _items.Count(i => i._dismissing is false) >= max;
 
     private TimeSpan GetAutoDismissTime(BitSnackBarItem item)
     {
@@ -540,21 +779,111 @@ public partial class BitSnackBar : BitComponentBase
         return item.Color is BitColor.Warning or BitColor.SevereWarning or BitColor.Error ? "alert" : "status";
     }
 
-    // The politeness follows the role rather than being declared beside it, and a role that is not a live one at all
-    // (a custom "presentation" or "none", say) gets no aria-live, so asking for such a role really does opt the item
-    // out of being announced instead of leaving a live region behind under a non-live role.
-    private string? GetItemAriaLive(BitSnackBarItem item) => GetItemRole(item) switch
+    // The politeness of the announcement follows the role rather than being declared beside it, and a role that is
+    // not a live one at all (a custom "presentation" or "none", say) is announced by neither region, so asking for
+    // such a role really does opt the item out of being announced.
+    private string? GetAnnouncePoliteness(BitSnackBarItem item) => GetItemRole(item) switch
     {
         "alert" => "assertive",
         "status" or "log" => "polite",
         _ => null
     };
 
-    private string? GetItemAriaAtomic(BitSnackBarItem item) => GetItemAriaLive(item) is null ? null : "true";
+    private string? GetAnnounceText(BitSnackBarItem item)
+    {
+        if (item.AnnounceText is not null) return item.AnnounceText;
+
+        if (item.Title.HasValue() is false) return item.Body;
+        if (item.Body.HasValue() is false) return item.Title;
+
+        // The stop is what makes a screen reader read the two as two sentences rather than running the body
+        // straight on from the title.
+        return $"{item.Title}. {item.Body}";
+    }
+
+    // Placing the text into a region that has been in the page since the first render is what makes it heard;
+    // the generation is what makes the same text heard twice, since a region whose content did not change has
+    // nothing for the screen reader to notice.
+    private void Announce(BitSnackBarItem item)
+    {
+        var politeness = GetAnnouncePoliteness(item);
+        if (politeness is null) return;
+
+        var text = GetAnnounceText(item);
+        if (text.HasValue() is false) return;
+
+        _announceSequence++;
+
+        if (politeness == "assertive")
+        {
+            _assertiveText = text;
+            _assertiveItemId = item.Id;
+            _assertiveGeneration++;
+        }
+        else
+        {
+            _politeText = text;
+            _politeItemId = item.Id;
+            _politeGeneration++;
+        }
+
+        _ = ClearAnnouncementLaterAsync(_announceSequence);
+    }
+
+    // Once the announcement has been made there is nothing left for it to do, and text left behind in the region
+    // would be read a second time by anyone going through the page with a virtual cursor - the item it belongs to
+    // is right there saying the same thing. A second is long enough for every screen reader to have picked it up.
+    private async Task ClearAnnouncementLaterAsync(int sequence)
+    {
+        try
+        {
+            await Task.Delay(_AnnouncementLifetime);
+
+            if (IsDisposed) return;
+
+            await InvokeAsync(() =>
+            {
+                // Only the announcement that is still the latest one takes its own text back out; an older one
+                // whose region has since been written to again has nothing left of its own to clear.
+                if (_announceSequence != sequence) return;
+                if (_politeText is null && _assertiveText is null) return;
+
+                // Taking the text away removes the element that carried it, and a live region says nothing about
+                // what left it - only about what arrives.
+                _politeText = null;
+                _politeItemId = null;
+                _assertiveText = null;
+                _assertiveItemId = null;
+
+                StateHasChanged();
+            });
+        }
+        catch (ObjectDisposedException) { }
+        catch (Exception ex) { await DispatchSafelyAsync(ex); }
+    }
+
+    // The announcement of an item that has left is taken back out, so what a screen reader user finds while
+    // reading through the region is what is on screen rather than the last thing that was said there.
+    private void ClearAnnouncement(BitSnackBarItem item)
+    {
+        if (_politeItemId == item.Id)
+        {
+            _politeText = null;
+            _politeItemId = null;
+        }
+
+        if (_assertiveItemId == item.Id)
+        {
+            _assertiveText = null;
+            _assertiveItemId = null;
+        }
+    }
 
     private BitIconInfo? GetIcon(BitSnackBarItem item)
     {
-        return BitIconInfo.From(item.Icon ?? Icon, item.IconName ?? IconName ?? _IconMap[item.Color ?? BitColor.Info]);
+        var iconName = _IconMap.TryGetValue(item.Color ?? BitColor.Info, out var mapped) ? mapped : _IconMap[BitColor.Info];
+
+        return BitIconInfo.From(item.Icon ?? Icon, item.IconName ?? IconName ?? iconName);
     }
 
     private bool IsClickable(BitSnackBarItem item)
@@ -612,6 +941,43 @@ public partial class BitSnackBar : BitComponentBase
 
 
 
+    private async Task AddItem(BitSnackBarItem item)
+    {
+        item.DismissReason = null;
+        item.DuplicateCount = 0;
+
+        if (NewestOnTop)
+        {
+            _items.Insert(0, item);
+        }
+        else
+        {
+            _items.Add(item);
+        }
+
+        StartCountdown(item);
+
+        Announce(item);
+
+        StateHasChanged();
+
+        await OnShow.InvokeAsync(item);
+    }
+
+    // A slot has freed up, so whatever was held back for one takes it. The items go in the order they were handed
+    // over - the point of queueing rather than dropping is that none of them is missed and none of them arrives
+    // out of turn.
+    private async Task PromoteFromQueue()
+    {
+        while (_queue.Count > 0 && IsFull() is false)
+        {
+            var next = _queue[0];
+            _queue.RemoveAt(0);
+
+            await AddItem(next);
+        }
+    }
+
     private async Task TrimToMaxItems()
     {
         if (MaxItems is not int max || max <= 0) return;
@@ -628,13 +994,17 @@ public partial class BitSnackBar : BitComponentBase
 
             if (oldest is null) break;
 
-            await DismissAsync(oldest, animate: false);
+            await DismissAsync(oldest, animate: false, reason: BitSnackBarDismissReason.Overflow);
 
             if (_items.Contains(oldest)) break;
         }
     }
 
-    private async Task DismissAsync(BitSnackBarItem item, bool animate, bool focusNext = false)
+    private async Task DismissAsync(
+        BitSnackBarItem item,
+        bool animate,
+        BitSnackBarDismissReason reason,
+        bool focusNext = false)
     {
         if (item is null || _items.Contains(item) is false) return;
         if (item._dismissing) return;
@@ -656,9 +1026,12 @@ public partial class BitSnackBar : BitComponentBase
         item._dismissing = false;
 
         // An element taken out from under the pointer does not always report the pointer leaving it, so the hover
-        // state is cleared here rather than left to say the item is being read after it is gone - which would start
-        // the next countdown of a re-shown item paused with nothing to let it go.
+        // and focus states are cleared here rather than left to say the item is being read after it is gone - which
+        // would start the next countdown of a re-shown item paused with nothing to let it go.
         item._hovered = false;
+        item._focused = false;
+        item._held = false;
+        item._enterPending = false;
 
         var index = _items.IndexOf(item);
 
@@ -666,58 +1039,134 @@ public partial class BitSnackBar : BitComponentBase
 
         _dismissButtons.Remove(item.Id);
 
+        ClearAnnouncement(item);
+
+        item.DismissReason = reason;
+
         StateHasChanged();
 
         if (focusNext) await FocusNeighbourAsync(index);
 
+        await ReportDismissed(item);
+
+        // The slot this item held is free now, so whatever was queued for one moves in - after the callbacks, so
+        // the code watching the host sees the item leave before it sees the next one arrive.
+        await PromoteFromQueue();
+    }
+
+    private async Task ReportDismissed(BitSnackBarItem item)
+    {
         if (item.OnDismiss is not null) await item.OnDismiss(item);
 
         await OnDismiss.InvokeAsync(item);
     }
 
     // A dismiss button that removes itself leaves the keyboard focus on nothing, which sends the next Tab back to
-    // the top of the page. Handing the focus to the item that took its place - or, for the last one in the stack,
-    // to the one before it - keeps a run of dismissals reachable from the keyboard.
-    private ValueTask FocusNeighbourAsync(int index)
+    // the top of the page. Handing the focus to the nearest item that still offers a dismiss button - the one that
+    // took its place, or, failing that, the closest one before it - keeps a run of dismissals reachable from the
+    // keyboard.
+    private async Task FocusNeighbourAsync(int index)
     {
-        if (_items.Count == 0) return ValueTask.CompletedTask;
+        for (var offset = 0; offset < _items.Count; offset++)
+        {
+            if (TryPick(index + offset, out var forward))
+            {
+                await FocusAsync(forward);
+                return;
+            }
 
-        var neighbour = index < _items.Count ? _items[index] : _items[^1];
+            if (TryPick(index - offset - 1, out var backward))
+            {
+                await FocusAsync(backward);
+                return;
+            }
+        }
 
-        // An item that has no dismiss button of its own has nothing here to focus, and the reference kept for it
-        // would be pointing at an element that is no longer in the DOM.
-        if (IsDismissible(neighbour) is false) return ValueTask.CompletedTask;
+        bool TryPick(int at, out ElementReference reference)
+        {
+            reference = default;
 
-        if (_dismissButtons.TryGetValue(neighbour.Id, out var reference) is false) return ValueTask.CompletedTask;
+            if (at < 0 || at >= _items.Count) return false;
 
-        return reference.Context is null ? ValueTask.CompletedTask : reference.FocusAsync();
+            // An item that has no dismiss button of its own has nothing here to focus, and the reference kept for
+            // it would be pointing at an element that is no longer in the DOM.
+            if (ShowDismissButton(_items[at]) is false) return false;
+
+            if (_dismissButtons.TryGetValue(_items[at].Id, out reference) is false) return false;
+
+            return reference.Context is not null;
+        }
+
+        // The reference can still be stale - an item whose dismiss button was taken away by a parameter change
+        // keeps the one it was given - and reaching for an element the browser no longer has is not worth failing
+        // a dismissal over.
+        static async Task FocusAsync(ElementReference reference)
+        {
+            try
+            {
+                await reference.FocusAsync();
+            }
+            // JSException and ObjectDisposedException both derive from this one.
+            catch (InvalidOperationException) { }
+        }
     }
 
     private async Task HandleItemClick(BitSnackBarItem item)
     {
+        // A control inside the item turned the Enter into a click of its own, which is this one: the key has been
+        // answered and the key-up must not answer it a second time.
+        item._enterPending = false;
+
         if (item.OnClick is not null) await item.OnClick(item);
 
         await OnItemClick.InvokeAsync(item);
 
         if (DismissOnClick && IsDismissible(item))
         {
-            await DismissAsync(item, animate: true);
+            await DismissAsync(item, animate: true, reason: BitSnackBarDismissReason.Click);
         }
     }
 
     // The dismiss button and the Escape key hand the focus on to the next item, which the public Close does not:
     // the code that closes a snack bar of its own accord has no reason to take the focus away from wherever the
     // user has it.
-    private Task HandleDismissClick(BitSnackBarItem item) => DismissAsync(item, animate: true, focusNext: true);
+    private Task HandleDismissClick(BitSnackBarItem item)
+    {
+        // The dismiss button keeps its click to itself, so the Enter that pressed it is answered here and nowhere
+        // else - the item must not also be reported as clicked.
+        item._enterPending = false;
+
+        return DismissAsync(item, animate: true, reason: BitSnackBarDismissReason.DismissButton, focusNext: true);
+    }
 
     private Task HandleItemKeyDown(KeyboardEventArgs e, BitSnackBarItem item)
     {
+        // A clickable item is a control, and a control that only answers the pointer is out of reach of anyone
+        // working from the keyboard (WCAG 2.1.1). It carries a tab stop of its own for the same reason.
+        //
+        // The key is only noted here, not answered: this handler also sees the keys pressed on whatever the item
+        // holds, and a control of its own turns Enter into a click that arrives before the key is released. What
+        // is left unanswered by the time of the key-up was pressed on the item itself.
+        if (e.Key is "Enter" && IsClickable(item))
+        {
+            item._enterPending = true;
+        }
+
         // Escape is what closes the thing that has the focus, and while the focus is inside a snack bar that
-        // thing is the snack bar. Only the items that offer a dismiss button answer it, so the key never takes
+        // thing is the snack bar. Only the items that can be dismissed at all answer it, so the key never takes
         // away a persistent notification the app is keeping on screen on purpose.
         if (e.Key != "Escape" || IsDismissible(item) is false) return Task.CompletedTask;
 
-        return DismissAsync(item, animate: true, focusNext: true);
+        return DismissAsync(item, animate: true, reason: BitSnackBarDismissReason.Escape, focusNext: true);
+    }
+
+    private Task HandleItemKeyUp(KeyboardEventArgs e, BitSnackBarItem item)
+    {
+        if (e.Key != "Enter" || item._enterPending is false) return Task.CompletedTask;
+
+        item._enterPending = false;
+
+        return HandleItemClick(item);
     }
 
     private void HandleHoverStart(BitSnackBarItem item)
@@ -737,6 +1186,44 @@ public partial class BitSnackBar : BitComponentBase
         item._hovered = false;
 
         ResumeItem(item);
+    }
+
+    // The pointer and the keyboard are tracked apart rather than through one flag: focus moving between the
+    // controls inside an item reports leaving it before it reports entering it again, and a single flag would let
+    // that hand-off run the countdown of an item the pointer had never left.
+    private void HandleFocusStart(BitSnackBarItem item)
+    {
+        if (PauseOnHover is false) return;
+
+        item._focused = true;
+
+        PauseItem(item);
+    }
+
+    private void HandleFocusEnd(BitSnackBarItem item)
+    {
+        item._focused = false;
+
+        // A key held down while the focus moves away never reports its release here, so the note it left is
+        // dropped rather than answered by the next key-up the item happens to see.
+        item._enterPending = false;
+
+        ResumeItem(item);
+    }
+
+    private void HandleLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs args)
+    {
+        _ = ClearInBackgroundAsync();
+    }
+
+    private async Task ClearInBackgroundAsync()
+    {
+        try
+        {
+            await Clear();
+        }
+        catch (ObjectDisposedException) { }
+        catch (Exception ex) { await DispatchSafelyAsync(ex); }
     }
 
     private Task HandlePageVisibilityChange(bool hidden)
@@ -768,9 +1255,9 @@ public partial class BitSnackBar : BitComponentBase
 
         item._remaining = GetAutoDismissTime(item);
 
-        // A countdown handed to an item that is already being read - the pointer inside it, or the page in a hidden
-        // tab - starts held back rather than running down behind the reader's back.
-        if (_pageHidden || item._hovered)
+        // A countdown handed to an item that is already being read - the pointer or the keyboard focus inside it,
+        // or the page in a hidden tab - starts held back rather than running down behind the reader's back.
+        if (IsHeldBack(item))
         {
             item._paused = true;
             return;
@@ -791,7 +1278,7 @@ public partial class BitSnackBar : BitComponentBase
 
             if (cts.IsCancellationRequested || IsDisposed) return;
 
-            await InvokeAsync(() => DismissAsync(item, animate: true));
+            await InvokeAsync(() => DismissAsync(item, animate: true, reason: BitSnackBarDismissReason.Timeout));
         }
         catch (OperationCanceledException) { }
         catch (ObjectDisposedException) { }
@@ -807,7 +1294,7 @@ public partial class BitSnackBar : BitComponentBase
     {
         try
         {
-            await InvokeAsync(() => DismissAsync(item, animate: true));
+            await InvokeAsync(() => DismissAsync(item, animate: true, reason: BitSnackBarDismissReason.Timeout));
         }
         catch (ObjectDisposedException) { }
         catch (Exception ex) { await DispatchSafelyAsync(ex); }
@@ -837,6 +1324,12 @@ public partial class BitSnackBar : BitComponentBase
         cts.Dispose();
     }
 
+    // A countdown is held back for as long as any one reason to hold it back stands, so the page coming back into
+    // view does not let go of an item the pointer is still inside, the pointer leaving does not let go of one the
+    // keyboard focus is still inside or one the code asked to hold, and none of them lets go of an item whose page
+    // is still hidden.
+    private bool IsHeldBack(BitSnackBarItem item) => _pageHidden || item._hovered || item._focused || item._held;
+
     private bool PauseItem(BitSnackBarItem item)
     {
         if (item is null || item._paused || item._dismissing) return false;
@@ -859,10 +1352,7 @@ public partial class BitSnackBar : BitComponentBase
     {
         if (item is null || item._paused is false || item._dismissing) return false;
 
-        // A countdown is held back for as long as any one reason to hold it back stands, so the page coming back
-        // into view does not let go of an item the pointer is still inside, and the pointer leaving does not let go
-        // of one whose page is still hidden.
-        if (_pageHidden || item._hovered) return false;
+        if (IsHeldBack(item)) return false;
 
         item._paused = false;
 
@@ -894,15 +1384,29 @@ public partial class BitSnackBar : BitComponentBase
             _pageVisibility = null;
         }
 
+        if (_navigationManager is not null)
+        {
+            _navigationManager.LocationChanged -= HandleLocationChanged;
+            _navigationManager = null;
+        }
+
         foreach (var item in _items)
         {
             CancelCountdown(item);
         }
 
+        // The host is going away with its items, so nothing it was holding on their behalf is worth keeping: the
+        // element references in particular would otherwise point at a DOM that is no longer there.
+        _items.Clear();
+        _queue.Clear();
+        _dismissButtons.Clear();
+
         await base.DisposeAsync(disposing);
     }
 
 
+
+    private static readonly TimeSpan _AnnouncementLifetime = TimeSpan.FromSeconds(1);
 
     private static readonly Dictionary<BitColor, string> _IconMap = new()
     {

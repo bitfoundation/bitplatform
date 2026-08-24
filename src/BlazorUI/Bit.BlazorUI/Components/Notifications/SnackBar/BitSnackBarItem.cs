@@ -20,6 +20,17 @@ public class BitSnackBarItem
     public readonly Guid Id = Guid.NewGuid();
 
     /// <summary>
+    /// What a screen reader is told when this snack bar item arrives, instead of its title and body.
+    /// </summary>
+    /// <remarks>
+    /// The host announces every item through a live region that is already in the page, which is what makes a
+    /// notification heard as well as seen. Set this where the announcement should not be the text on screen -
+    /// an item rendered by a <see cref="BitSnackBar.Template"/> whose text lives elsewhere, or one whose title
+    /// is an abbreviation that has to be spelled out. An empty string leaves the item unannounced.
+    /// </remarks>
+    public string? AnnounceText { get; set; }
+
+    /// <summary>
     /// The content of the action area of this snack bar item, rendered under its body.
     /// </summary>
     /// <remarks>
@@ -65,6 +76,28 @@ public class BitSnackBarItem
     public string? CssStyle { get; set; }
 
     /// <summary>
+    /// How many further times this notification was raised while it was already on screen, counted by
+    /// <see cref="BitSnackBar.PreventDuplicates"/>.
+    /// </summary>
+    /// <remarks>
+    /// Zero for an item that was raised once. Suppressing a repeat keeps the page from filling with the same
+    /// notification, but it also hides that the thing happened again; this is what the item that stands for all of
+    /// them can show ("Failed to save (3)"), through a <see cref="BitSnackBar.TitleTemplate"/> or a
+    /// <see cref="BitSnackBar.Template"/>. The count is reset each time the item is shown afresh.
+    /// </remarks>
+    public int DuplicateCount { get; internal set; }
+
+    /// <summary>
+    /// What took this snack bar item off the screen, set by the host just before the dismiss callbacks run.
+    /// </summary>
+    /// <remarks>
+    /// This is <c>null</c> until the item has been dismissed, so a callback shared between several kinds of
+    /// notification can tell an item the user threw away from one that simply ran out of time - the difference
+    /// between "the user has seen this" and "this may have been missed".
+    /// </remarks>
+    public BitSnackBarDismissReason? DismissReason { get; internal set; }
+
+    /// <summary>
     /// An arbitrary payload to carry along with the snack bar item.
     /// </summary>
     /// <remarks>
@@ -72,6 +105,16 @@ public class BitSnackBarItem
     /// (the entity the notification is about, a correlation id, ...) without a lookup table on the consumer side.
     /// </remarks>
     public object? Data { get; set; }
+
+    /// <summary>
+    /// Prevents rendering the dismiss button of this specific snack bar item.
+    /// </summary>
+    /// <remarks>
+    /// Unlike <see cref="Persistent"/> this only takes the button away: the item still counts down, still answers
+    /// the Escape key and still takes part in <see cref="BitSnackBar.DismissOnClick"/>. It is for the notification
+    /// whose whole point is the action it carries, where a second way out would only be noise.
+    /// </remarks>
+    public bool HideDismiss { get; set; }
 
     /// <summary>
     /// Prevents rendering the leading icon of this specific snack bar item.
@@ -123,8 +166,10 @@ public class BitSnackBarItem
     /// Makes this specific snack bar item non-dismissible and removes its dismiss button.
     /// </summary>
     /// <remarks>
-    /// A persistent item also opts out of the auto-dismiss countdown and of its progress bar, so it stays until
-    /// the code that opened it closes it through <see cref="BitSnackBar.Close(BitSnackBarItem)"/>.
+    /// A persistent item also opts out of the auto-dismiss countdown, of its progress bar and of the Escape key,
+    /// so it stays until the code that opened it closes it through <see cref="BitSnackBar.Close(BitSnackBarItem)"/>.
+    /// <br />
+    /// To take the button away without also taking the countdown away, use <see cref="HideDismiss"/> instead.
     /// </remarks>
     public bool Persistent { get; set; }
 
@@ -155,7 +200,10 @@ public class BitSnackBarItem
     internal CancellationTokenSource? _cts;
     internal bool _paused;
     internal bool _hovered;
+    internal bool _focused;
+    internal bool _held;
     internal bool _dismissing;
+    internal bool _enterPending;
     internal TimeSpan _remaining;
     internal DateTimeOffset _dueAt;
 

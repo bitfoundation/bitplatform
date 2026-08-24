@@ -12,20 +12,39 @@
      aria-label="@_RootAriaLabel"
      dir="@Dir?.ToString().ToLower()">
 
+    @* A live region only announces what is put into one that the screen reader was already watching: an element
+       that arrives with its text already in it is, for most of them, silent. So the announcement is not made by
+       the item at all - these two regions are here from the first render, empty, and the text of an arriving item
+       is placed into whichever of them matches how loudly it asked to be heard. The items themselves carry
+       aria-live="off" so the same notification is not also announced a second time by its own element. *@
+    <div class="bit-snb-lvr" aria-live="polite" aria-atomic="true">
+        @if (_politeText.HasValue())
+        {
+            <span @key="_politeGeneration">@_politeText</span>
+        }
+    </div>
+    <div class="bit-snb-lvr" aria-live="assertive" aria-atomic="true">
+        @if (_assertiveText.HasValue())
+        {
+            <span @key="_assertiveGeneration">@_assertiveText</span>
+        }
+    </div>
+
     @foreach (var item in _items)
     {
         <div @key="item.Id"
              role="@GetItemRole(item)"
-             aria-live="@GetItemAriaLive(item)"
-             aria-atomic="@GetItemAriaAtomic(item)"
+             aria-live="off"
+             tabindex="@(IsClickable(item) ? "0" : null)"
              style="@JoinStyles(Styles?.Container, item.CssStyle)"
              class="bit-snb-itm @GetItemClasses(item) @Classes?.Container @item.CssClass"
              @onclick="() => HandleItemClick(item)"
              @onkeydown="e => HandleItemKeyDown(e, item)"
-             @onmouseover="() => HandleHoverStart(item)"
-             @onmouseout="() => HandleHoverEnd(item)"
-             @onfocusin="() => HandleHoverStart(item)"
-             @onfocusout="() => HandleHoverEnd(item)">
+             @onkeyup="e => HandleItemKeyUp(e, item)"
+             @onmouseenter="() => HandleHoverStart(item)"
+             @onmouseleave="() => HandleHoverEnd(item)"
+             @onfocusin="() => HandleFocusStart(item)"
+             @onfocusout="() => HandleFocusEnd(item)">
 
             @if (Template is not null)
             {
@@ -46,7 +65,7 @@
 
                     @if (TitleTemplate is not null)
                     {
-                        @TitleTemplate(item.Title)
+                        @TitleTemplate(item.Title ?? string.Empty)
                     }
                     else if (item.Title.HasValue())
                     {
@@ -60,7 +79,7 @@
                         </div>
                     }
 
-                    @if (IsDismissible(item))
+                    @if (ShowDismissButton(item))
                     {
                         <button @ref="_dismissButtons[item.Id]"
                                 @onclick="() => HandleDismissClick(item)" @onclick:stopPropagation
@@ -83,7 +102,10 @@
                 }
                 else if (item.Body.HasValue())
                 {
-                    <div style="@Styles?.Body"
+                    @* Same reasoning as the title: a body kept to one line keeps the rest of its text in a tooltip
+                       so it is still reachable, and a wrapping one has nothing left to put there. *@
+                    <div title="@(Multiline ? null : item.Body)"
+                         style="@Styles?.Body"
                          class="bit-snb-bdy @(Multiline ? "" : "bit-snb-elp") @Classes?.Body">
                         @item.Body
                     </div>
@@ -105,7 +127,7 @@
                 <span @key="(item.Id, item._generation)"
                       aria-hidden="true"
                       style="@JoinStyles(GetDuration(item), Styles?.ProgressBar)"
-                      class="bit-snb-prb @Classes?.ProgressBar">
+                      class="bit-snb-prb @(ReverseProgress ? "bit-snb-rvp" : null) @Classes?.ProgressBar">
                 </span>
             }
         </div>
