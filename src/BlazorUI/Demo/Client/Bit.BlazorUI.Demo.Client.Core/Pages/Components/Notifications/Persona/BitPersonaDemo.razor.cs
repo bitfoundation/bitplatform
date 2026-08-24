@@ -52,10 +52,26 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Name = "AllowPhoneInitials",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether initials are derived from names that carry no letters at all - a phone number, an order id, a project named after a number sequence. Such a name otherwise falls back to the coin icon.",
+        },
+        new()
+        {
             Name = "AutoCoinColor",
             Type = "bool",
             DefaultValue = "false",
             Description = "If true, automatically generates a stable coin background color derived from CoinColorSeed, ImageInitials or PrimaryText. Only takes effect when CoinColor is not explicitly set.",
+        },
+        new()
+        {
+            Name = "AutoCoinColors",
+            Type = "IEnumerable<BitColor>?",
+            DefaultValue = "null",
+            Description = "The colors AutoCoinColor is allowed to pick from, in place of the built-in set. An empty or null value falls back to the built-in set.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
         },
         new()
         {
@@ -151,6 +167,13 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Name = "ImageFadeIn",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Fades the picture in once it has loaded, instead of letting it appear the instant the last byte arrives.",
+        },
+        new()
+        {
             Name = "ImageInitials",
             Type = "string?",
             DefaultValue = "null",
@@ -199,6 +222,13 @@ public partial class BitPersonaDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Url to the image to use, should be a square aspect ratio and big enough to fit in the image area.",
+        },
+        new()
+        {
+            Name = "Inactive",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Marks the persona as one of the people a view is not about, which shrinks its coin slightly and fades it back. Ignored while Active is true.",
         },
         new()
         {
@@ -327,10 +357,33 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Name = "Shape",
+            Type = "BitPersonaShape?",
+            DefaultValue = "null",
+            Description = "The outline of the coin: a circle, a rounded square or a sharp one. Supersedes Squared, and wins over it when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#shape-enum",
+        },
+        new()
+        {
             Name = "ShowInitialsUntilImageLoads",
             Type = "bool",
             DefaultValue = "false",
             Description = "If true renders the initials while the image is loading. This only applies when an imageUrl is provided. The initials sit behind the picture and are covered the moment it arrives.",
+        },
+        new()
+        {
+            Name = "ShowOverflowTooltip",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether each of the four detail texts carries itself as a native tooltip, for reading the part of it that the row had to clip.",
+        },
+        new()
+        {
+            Name = "ShowSecondaryText",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows the secondary text at every size, including the small ones that normally leave no room for it.",
         },
         new()
         {
@@ -376,7 +429,7 @@ public partial class BitPersonaDemo
             Name = "Squared",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, renders the coin with a square shape instead of the default circular shape.",
+            Description = "If true, renders the coin with a rounded square shape instead of the default circular shape. This is the shorthand for Shape=Rounded; a Shape of its own takes precedence over it.",
         },
         new()
         {
@@ -820,6 +873,33 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Id = "shape-enum",
+            Name = "BitPersonaShape",
+            Description = "The outline of the coin of a BitPersona.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Circular",
+                    Description = "A circle, which is the shape a picture of a person is shown in.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Rounded",
+                    Description = "A square with the rounded corners of a control, which is the shape most design systems reserve for entities - teams, rooms, service accounts - rather than people.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Square",
+                    Description = "A square with sharp corners, for a tile or a logo that has to fill the coin edge to edge.",
+                    Value = "2",
+                },
+            ]
+        },
+        new()
+        {
             Id = "active-appearance-enum",
             Name = "BitPersonaActiveAppearance",
             Description = "Determines how the coin of a BitPersona is decorated while the persona is active.",
@@ -902,6 +982,8 @@ public partial class BitPersonaDemo
     private int imageLoadCount = 0;
     private int imageErrorCount = 0;
     private bool isDetailsShown = true;
+
+    private readonly BitColor[] _coinColors = [BitColor.Primary, BitColor.Info, BitColor.Tertiary];
 
     private readonly Dictionary<BitPersonaPresence, BitIconInfo> _icons = new()
     {

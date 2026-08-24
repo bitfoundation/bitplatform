@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 @{
@@ -7,6 +7,7 @@
     var presenceTitle = hasPresence ? GetPresenceTitle() : null;
     var presenceLabel = hasPresence ? GetPresenceLabel() : null;
     var isCoinClickable = OnImageClick.HasDelegate;
+    var hasCoinOverlay = HasImageOverlay;
 
     @* What fills the coin when there is no picture in it: the initials, or - when a name gives none, or an
        icon was asked for instead - a glyph, so the coin is never left blank. It is worked out here rather
@@ -28,7 +29,11 @@
         }
         else
         {
+            @* The name is already announced from the details beside the coin, so the pair of letters standing
+               in for it is not read out again on top of it. Where there is no name to announce, they are all
+               a reader has and stay in the accessibility tree. *@
             coinFallback = @<span style="@Styles?.Initials"
+                                  aria-hidden="@(PrimaryText.HasValue() ? "true" : null)"
                                   class="bit-prs-ini @GetInitialsFitClass(initials) @Classes?.Initials">@initials</span>;
         }
     }
@@ -39,8 +44,10 @@
     @<text>
         @* What covers the coin while it is hovered or focused. It belongs to the click rather than to the
            picture: a coin carrying initials, an icon or the unknown glyph is every bit as clickable as one
-           carrying a photo, and owes the pointer the same affordance. *@
-        @if (isCoinClickable)
+           carrying a photo, and owes the pointer the same affordance. A coin given neither a text nor a
+           template for it has nothing to reveal and gets no veil, which is what a coin that opens a profile
+           rather than offering to change the picture is left as. *@
+        @if (hasCoinOverlay)
         {
             <span style="@Styles?.ImageOverlay" class="bit-prs-imo @Classes?.ImageOverlay">
                 @if (ImageOverlayTemplate is not null)
@@ -85,7 +92,7 @@
                      height="@dimension"
                      sizes="@ImageSizes"
                      srcset="@ImageSrcSet"
-                     class="bit-prs-img @Classes?.Image"
+                     class="bit-prs-img @(ImageFadeIn ? "bit-prs-ifi" : null) @Classes?.Image"
                      loading="@ImageLoading?.ToString().ToLower()"
                      style="@Styles?.Image" />
             }
@@ -143,13 +150,18 @@
                 else
                 {
                     <div style="@GetImageContainerStyle()"
-                         class="@GetImageContainerClass()">
+                         class="@GetImageContainerClass()"
+                         role="@GetCoinRole()"
+                         aria-label="@GetCoinLabel()">
                         @coinContent
                     </div>
                 }
 
                 @if (OnActionClick.HasDelegate)
                 {
+                    @* The action button sits at the foot of the coin and the presence dot in its trailing
+                       corner, so a persona that offers to change the picture can still say whether the
+                       person is around. *@
                     @if (ActionTemplate is not null)
                     {
                         @ActionTemplate
@@ -173,7 +185,8 @@
                         </button>
                     }
                 }
-                else if (hasPresence)
+
+                @if (hasPresence)
                 {
                     <div role="img"
                          title="@presenceTitle"
@@ -199,7 +212,7 @@
         <div style="@Styles?.DetailsContainer" class="bit-prs-det @Classes?.DetailsContainer">
             @if (PrimaryTextTemplate is not null || PrimaryText.HasValue())
             {
-                <div title="@PrimaryText"
+                <div title="@(ShowOverflowTooltip ? PrimaryText : null)"
                      style="@Styles?.PrimaryTextContainer"
                      class="bit-prs-ptx @Classes?.PrimaryTextContainer">
                     @if (PrimaryTextTemplate is not null)
@@ -214,7 +227,7 @@
             }
             @if (SecondaryTextTemplate is not null || SecondaryText.HasValue())
             {
-                <div title="@SecondaryText"
+                <div title="@(ShowOverflowTooltip ? SecondaryText : null)"
                      style="@Styles?.SecondaryTextContainer"
                      class="bit-prs-stx @Classes?.SecondaryTextContainer">
                     @if (SecondaryTextTemplate is not null)
@@ -229,7 +242,7 @@
             }
             @if (TertiaryTextTemplate is not null || TertiaryText.HasValue())
             {
-                <div title="@TertiaryText"
+                <div title="@(ShowOverflowTooltip ? TertiaryText : null)"
                      style="@Styles?.TertiaryTextContainer"
                      class="bit-prs-ttx @Classes?.TertiaryTextContainer">
                     @if (TertiaryTextTemplate is not null)
@@ -244,7 +257,7 @@
             }
             @if (OptionalTextTemplate is not null || OptionalText.HasValue())
             {
-                <div title="@OptionalText"
+                <div title="@(ShowOverflowTooltip ? OptionalText : null)"
                      style="@Styles?.OptionalTextContainer"
                      class="bit-prs-otx @Classes?.OptionalTextContainer">
                     @if (OptionalTextTemplate is not null)

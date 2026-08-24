@@ -330,8 +330,10 @@ public class BitPersonaTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitPersonaActionButtonShouldTakeThePlaceOfThePresence()
+    public void BitPersonaActionButtonShouldNotDisplaceThePresence()
     {
+        // The action button sits at the foot of the coin and the presence dot in its trailing corner, so a
+        // persona that offers to change the picture can still say whether the person is around.
         var component = RenderComponent<BitPersona>(parameters =>
         {
             parameters.Add(p => p.Presence, BitPersonaPresence.Online);
@@ -339,7 +341,21 @@ public class BitPersonaTests : BunitTestContext
         });
 
         Assert.IsNotEmpty(component.FindAll(".bit-prs-abt"));
-        Assert.IsEmpty(component.FindAll(".bit-prs-pre"));
+        Assert.IsNotEmpty(component.FindAll(".bit-prs-pre"));
+    }
+
+    [TestMethod]
+    public void BitPersonaActionTemplateShouldNotDisplaceThePresenceEither()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Presence, BitPersonaPresence.Away);
+            parameters.Add(p => p.OnActionClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+            parameters.Add(p => p.ActionTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class='custom-action'>go</span>")));
+        });
+
+        Assert.IsNotEmpty(component.FindAll(".custom-action"));
+        Assert.IsNotEmpty(component.FindAll(".bit-prs-pre"));
     }
 
     [TestMethod,
@@ -774,18 +790,29 @@ public class BitPersonaTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-prs").ClassList.Contains(expectedClass));
     }
 
-    [TestMethod]
-    public void BitPersonaAutoCoinColorShouldApplyAColorClassFromKnownPalette()
+    // The auto coin color is a stability contract: a given name has to keep the same color across
+    // releases, so the DJB2 mapping over the built-in palette is pinned here rather than only being
+    // checked for membership - a swapped hash would repaint every existing persona silently.
+    [TestMethod,
+        DataRow("Saleh Khafan", "bit-prs-ter"),
+        DataRow("Xafan Salina", "bit-prs-suc"),
+        DataRow("Saleh Xafan", "bit-prs-inf"),
+        DataRow("Design Team", "bit-prs-wrn"),
+        DataRow("u-1024", "bit-prs-sec"),
+        DataRow("AB", "bit-prs-err")
+    ]
+    public void BitPersonaAutoCoinColorShouldApplyTheHashedColorOfTheName(string name, string expectedClass)
     {
         var component = RenderComponent<BitPersona>(parameters =>
         {
             parameters.Add(p => p.AutoCoinColor, true);
-            parameters.Add(p => p.PrimaryText, "Xafan Salina");
+            parameters.Add(p => p.PrimaryText, name);
         });
 
-        var persona = component.Find(".bit-prs");
+        var classList = component.Find(".bit-prs").ClassList;
 
-        Assert.IsTrue(_autoCoinColorClasses.Any(c => persona.ClassList.Contains(c)));
+        Assert.IsTrue(classList.Contains(expectedClass), $"Expected {expectedClass} on: {string.Join(' ', classList)}");
+        Assert.AreEqual(1, _autoCoinColorClasses.Count(classList.Contains));
     }
 
     [TestMethod]
@@ -2024,6 +2051,432 @@ public class BitPersonaTests : BunitTestContext
         Assert.IsTrue(persona.ClassList.Contains("bit-rtl"));
     }
 
+
+
+    [TestMethod,
+        DataRow(null, false, null),
+        DataRow(null, true, "bit-prs-sqr"),
+        DataRow(BitPersonaShape.Circular, false, null),
+        DataRow(BitPersonaShape.Circular, true, null),
+        DataRow(BitPersonaShape.Rounded, false, "bit-prs-sqr"),
+        DataRow(BitPersonaShape.Square, false, "bit-prs-sqs")
+    ]
+    public void BitPersonaShapeShouldApplyItsClassAndSupersedeSquared(BitPersonaShape? shape, bool squared, string? expectedClass)
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Shape, shape);
+            parameters.Add(p => p.Squared, squared);
+        });
+
+        var classList = component.Find(".bit-prs").ClassList;
+
+        if (expectedClass is null)
+        {
+            Assert.IsFalse(classList.Contains("bit-prs-sqr"));
+            Assert.IsFalse(classList.Contains("bit-prs-sqs"));
+        }
+        else
+        {
+            Assert.IsTrue(classList.Contains(expectedClass));
+        }
+    }
+
+    [TestMethod]
+    public void BitPersonaSharpSquareShouldKeepEveryNudgeTheRoundedSquareTunes()
+    {
+        // The sharp square is the rounded one with its corners taken back, so it carries both classes: the
+        // presence insets and everything else the rounded coin retunes are keyed off the first of them.
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Shape, BitPersonaShape.Square);
+        });
+
+        var classList = component.Find(".bit-prs").ClassList;
+
+        Assert.IsTrue(classList.Contains("bit-prs-sqr"));
+        Assert.IsTrue(classList.Contains("bit-prs-sqs"));
+    }
+
+    [TestMethod]
+    public void BitPersonaShapeShouldNudgeThePresenceOutWithACustomCoinSize()
+    {
+        // The nudge follows the shape, not the legacy flag it used to be asked for with.
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Shape, BitPersonaShape.Square);
+            parameters.Add(p => p.CoinSize, 120);
+            parameters.Add(p => p.Presence, BitPersonaPresence.Online);
+        });
+
+        var style = component.Find(".bit-prs-pre").GetAttribute("style");
+
+        Assert.Contains("--bit-prs-presence-inset:-10px;", style);
+    }
+
+    [TestMethod,
+        DataRow("+1 (555) 016 7788", "17"),
+        DataRow("1234567890", "1"),
+        DataRow("42 Tower", "4T")
+    ]
+    public void BitPersonaAllowPhoneInitialsShouldDeriveInitialsFromNumbers(string primaryText, string expectedInitials)
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, primaryText);
+            parameters.Add(p => p.AllowPhoneInitials, true);
+        });
+
+        Assert.AreEqual(expectedInitials, component.Find(".bit-prs-ini").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitPersonaAllowPhoneInitialsShouldStillYieldNothingWithoutAnyCharacterToTake()
+    {
+        // Turning it on says the numbers are the name; it does not conjure initials out of punctuation.
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "...");
+            parameters.Add(p => p.AllowPhoneInitials, true);
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-prs-ini"));
+        Assert.IsNotEmpty(component.FindAll(".bit-prs-cic"));
+    }
+
+    [TestMethod]
+    public void BitPersonaShouldStillFallBackToTheIconForANumericNameByDefault()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "+1 (555) 016 7788");
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-prs-ini"));
+        Assert.IsNotEmpty(component.FindAll(".bit-prs-cic"));
+    }
+
+    [TestMethod]
+    public void BitPersonaAutoCoinColorsShouldReplaceTheBuiltInPalette()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.AutoCoinColor, true);
+            parameters.Add(p => p.AutoCoinColors, [BitColor.SevereWarning]);
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+        });
+
+        var classList = component.Find(".bit-prs").ClassList;
+
+        Assert.IsTrue(classList.Contains("bit-prs-swr"));
+        Assert.IsFalse(_autoCoinColorClasses.Any(classList.Contains));
+    }
+
+    [TestMethod]
+    public void BitPersonaAutoCoinColorsShouldStayStableForTheSameSeed()
+    {
+        BitColor[] palette = [BitColor.Primary, BitColor.Success, BitColor.Error, BitColor.SevereWarning];
+
+        string ColorOf(string name)
+        {
+            var component = RenderComponent<BitPersona>(parameters =>
+            {
+                parameters.Add(p => p.AutoCoinColor, true);
+                parameters.Add(p => p.AutoCoinColors, palette);
+                parameters.Add(p => p.PrimaryText, name);
+            });
+
+            return component.Find(".bit-prs").ClassList
+                            .First(c => c is "bit-prs-pri" or "bit-prs-suc" or "bit-prs-err" or "bit-prs-swr");
+        }
+
+        Assert.AreEqual(ColorOf("Saleh Khafan"), ColorOf("Saleh Khafan"));
+    }
+
+    [TestMethod]
+    public void BitPersonaEmptyAutoCoinColorsShouldFallBackToTheBuiltInPalette()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.AutoCoinColor, true);
+            parameters.Add(p => p.AutoCoinColors, []);
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+        });
+
+        var classList = component.Find(".bit-prs").ClassList;
+
+        Assert.IsTrue(_autoCoinColorClasses.Any(classList.Contains));
+    }
+
+    [TestMethod]
+    public void BitPersonaAutoCoinColorsShouldTakeTheirFirstEntryWithoutAnythingToHash()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.AutoCoinColor, true);
+            parameters.Add(p => p.AutoCoinColors, [BitColor.SevereWarning, BitColor.Success]);
+        });
+
+        Assert.IsTrue(component.Find(".bit-prs").ClassList.Contains("bit-prs-swr"));
+    }
+
+    [TestMethod]
+    public void BitPersonaCoinColorShouldStillTakePrecedenceOverACustomAutoPalette()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.AutoCoinColor, true);
+            parameters.Add(p => p.AutoCoinColors, [BitColor.SevereWarning]);
+            parameters.Add(p => p.CoinColor, BitColor.Success);
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+        });
+
+        var classList = component.Find(".bit-prs").ClassList;
+
+        Assert.IsTrue(classList.Contains("bit-prs-suc"));
+        Assert.IsFalse(classList.Contains("bit-prs-swr"));
+    }
+
+    [TestMethod]
+    public void BitPersonaInactiveShouldApplyItsClass()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Inactive, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-prs").ClassList.Contains("bit-prs-ina"));
+    }
+
+    [TestMethod]
+    public void BitPersonaInactiveShouldStandDownForAnActivePersona()
+    {
+        // A persona cannot be both the one a view is about and one of the others.
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Active, true);
+            parameters.Add(p => p.Inactive, true);
+        });
+
+        var classList = component.Find(".bit-prs").ClassList;
+
+        Assert.IsTrue(classList.Contains("bit-prs-arg"));
+        Assert.IsFalse(classList.Contains("bit-prs-ina"));
+    }
+
+    [TestMethod]
+    public void BitPersonaInactiveShouldBeIgnoredOnSize8WhichHasNoCoinToPushBack()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Size, BitPersonaSize.Size8);
+            parameters.Add(p => p.Inactive, true);
+        });
+
+        Assert.IsFalse(component.Find(".bit-prs").ClassList.Contains("bit-prs-ina"));
+    }
+
+    [TestMethod]
+    public void BitPersonaShowSecondaryTextShouldApplyItsClass()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Size, BitPersonaSize.Size24);
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+            parameters.Add(p => p.SecondaryText, "Developer");
+            parameters.Add(p => p.ShowSecondaryText, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-prs").ClassList.Contains("bit-prs-sst"));
+        Assert.AreEqual("Developer", component.Find(".bit-prs-stx").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitPersonaShouldNotClaimTheShowSecondaryTextClassByDefault()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.SecondaryText, "Developer");
+        });
+
+        Assert.IsFalse(component.Find(".bit-prs").ClassList.Contains("bit-prs-sst"));
+    }
+
+    [TestMethod]
+    public void BitPersonaImageFadeInShouldMarkTheImageForTheFade()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.ImageUrl, "some-image.png");
+            parameters.Add(p => p.ImageFadeIn, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-prs-img").ClassList.Contains("bit-prs-ifi"));
+    }
+
+    [TestMethod]
+    public void BitPersonaImageShouldCarryNoFadeClassWithoutImageFadeIn()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.ImageUrl, "some-image.png");
+        });
+
+        Assert.IsFalse(component.Find(".bit-prs-img").ClassList.Contains("bit-prs-ifi"));
+    }
+
+    [TestMethod]
+    public void BitPersonaImageFadeInShouldNotBeHungOffTheLoadEvent()
+    {
+        // The fade is an animation, not a state waiting on a load: a statically rendered page has nothing
+        // attached to fire that event, and a prerendered one can have the picture in the cache before it
+        // does - either of which would have left the coin hidden for good behind a fade that never ran.
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.ImageUrl, "some-image.png");
+            parameters.Add(p => p.ImageFadeIn, true);
+        });
+
+        var before = component.Find(".bit-prs-img").ClassList.ToArray();
+
+        component.Find("img").TriggerEvent("onload", new ProgressEventArgs());
+
+        CollectionAssert.AreEquivalent(before, component.Find(".bit-prs-img").ClassList.ToArray());
+    }
+
+    [TestMethod]
+    public void BitPersonaClickableCoinShouldNotBeVeiledByAnEmptyOverlay()
+    {
+        // A coin given no overlay text and no template of its own has nothing to reveal, and a bare tinted
+        // veil over the picture says less than leaving it alone.
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.ImageUrl, "some-image.png");
+            parameters.Add(p => p.ImageOverlayText, "");
+            parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-prs-imo"));
+        Assert.IsNotEmpty(component.FindAll("button.bit-prs-cne"));
+    }
+
+    [TestMethod]
+    public void BitPersonaEmptyOverlayTextShouldStillLeaveTheCoinButtonNamed()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+            parameters.Add(p => p.ImageOverlayText, "");
+            parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        Assert.AreEqual("Saleh Khafan", component.Find("button.bit-prs-cne").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitPersonaInitialsShouldNotBeAnnouncedOnTopOfTheName()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+        });
+
+        Assert.AreEqual("true", component.Find(".bit-prs-ini").GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitPersonaInitialsShouldStayReadableWhenTheyAreAllThereIs()
+    {
+        // With no name beside the coin the pair of letters is all a reader has, so it stays in the tree.
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.ImageInitials, "SK");
+        });
+
+        Assert.IsNull(component.Find(".bit-prs-ini").GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitPersonaCoinOnlyWithAnActionButtonShouldNameTheCoinItself()
+    {
+        // The root cannot claim the image role here - it would take the action button out of the tree with
+        // everything else - so the coin carries the name instead of the persona going unnamed.
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+            parameters.Add(p => p.HidePersonaDetails, true);
+            parameters.Add(p => p.OnActionClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        var coin = component.Find(".bit-prs-cne");
+
+        Assert.AreEqual("img", coin.GetAttribute("role"));
+        Assert.AreEqual("Saleh Khafan", coin.GetAttribute("aria-label"));
+        Assert.IsNull(component.Find(".bit-prs").GetAttribute("role"));
+        Assert.IsNotEmpty(component.FindAll(".bit-prs-abt"));
+    }
+
+    [TestMethod]
+    public void BitPersonaNamedCoinShouldPreferAnExplicitAriaLabel()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+            parameters.Add(p => p.AriaLabel, "The author of this message");
+            parameters.Add(p => p.HidePersonaDetails, true);
+            parameters.Add(p => p.OnActionClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        Assert.AreEqual("The author of this message", component.Find(".bit-prs-cne").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitPersonaCoinShouldNotClaimTheImageRoleWhileItsDetailsAreVisible()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+            parameters.Add(p => p.OnActionClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        Assert.IsNull(component.Find(".bit-prs-cne").GetAttribute("role"));
+        Assert.IsNull(component.Find(".bit-prs-cne").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitPersonaShowOverflowTooltipShouldBeOnByDefault()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "PrimaryText");
+            parameters.Add(p => p.SecondaryText, "SecondaryText");
+            parameters.Add(p => p.TertiaryText, "TertiaryText");
+            parameters.Add(p => p.OptionalText, "OptionalText");
+        });
+
+        Assert.AreEqual("PrimaryText", component.Find(".bit-prs-ptx").GetAttribute("title"));
+        Assert.AreEqual("SecondaryText", component.Find(".bit-prs-stx").GetAttribute("title"));
+        Assert.AreEqual("TertiaryText", component.Find(".bit-prs-ttx").GetAttribute("title"));
+        Assert.AreEqual("OptionalText", component.Find(".bit-prs-otx").GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitPersonaShowOverflowTooltipShouldDropEveryDetailTooltip()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "PrimaryText");
+            parameters.Add(p => p.SecondaryText, "SecondaryText");
+            parameters.Add(p => p.TertiaryText, "TertiaryText");
+            parameters.Add(p => p.OptionalText, "OptionalText");
+            parameters.Add(p => p.ShowOverflowTooltip, false);
+        });
+
+        Assert.IsNull(component.Find(".bit-prs-ptx").GetAttribute("title"));
+        Assert.IsNull(component.Find(".bit-prs-stx").GetAttribute("title"));
+        Assert.IsNull(component.Find(".bit-prs-ttx").GetAttribute("title"));
+        Assert.IsNull(component.Find(".bit-prs-otx").GetAttribute("title"));
+    }
 
 
     private static readonly string[] _autoCoinColorClasses =

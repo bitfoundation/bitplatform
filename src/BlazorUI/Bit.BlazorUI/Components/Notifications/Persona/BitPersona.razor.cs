@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 using ErrorEventArgs = Microsoft.AspNetCore.Components.Web.ErrorEventArgs;
 
@@ -61,6 +61,16 @@ public partial class BitPersona : BitComponentBase
     public BitPersonaActiveAppearance? ActiveAppearance { get; set; }
 
     /// <summary>
+    /// Whether initials are derived from names that carry no letters at all - a phone number, an order id,
+    /// a project named after a number sequence.
+    /// </summary>
+    /// <remarks>
+    /// Two arbitrary numerals abbreviate into nothing a reader can recognize, so such a name is normally
+    /// left to the coin icon instead. Turn this on where the numbers are the name.
+    /// </remarks>
+    [Parameter] public bool AllowPhoneInitials { get; set; }
+
+    /// <summary>
     /// If true, automatically generates a coin background color derived from the person's name or initials.
     /// When set, this takes effect only when <see cref="CoinColor"/> is not explicitly provided.
     /// </summary>
@@ -70,6 +80,17 @@ public partial class BitPersona : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool AutoCoinColor { get; set; }
+
+    /// <summary>
+    /// The colors <see cref="AutoCoinColor"/> is allowed to pick from, in place of the built-in set.
+    /// </summary>
+    /// <remarks>
+    /// A palette of one pins every persona to that color; a palette that leaves out the semantic colors
+    /// keeps a list of people from reading as a list of statuses. An empty or null value falls back to the
+    /// built-in set.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public IEnumerable<BitColor>? AutoCoinColors { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitPersona component.
@@ -139,6 +160,11 @@ public partial class BitPersona : BitComponentBase
     /// <summary>
     /// Whether to not render persona details, and just render the persona image/initials.
     /// </summary>
+    /// <remarks>
+    /// The coin that is left carries the name for anyone who cannot see it, on its own where nothing else
+    /// can claim it. <see cref="BitPersonaSize.Size8"/> is the exception: it has no coin at all, so hiding
+    /// its details would leave nothing to render, and they are kept.
+    /// </remarks>
     [Parameter] public bool HidePersonaDetails { get; set; }
 
     /// <summary>
@@ -158,6 +184,17 @@ public partial class BitPersona : BitComponentBase
     /// draggable, decoding, fetchpriority - are set.
     /// </remarks>
     [Parameter] public Dictionary<string, object> ImageAttributes { get; set; } = [];
+
+    /// <summary>
+    /// Fades the picture in as it is painted, instead of letting it appear from nothing.
+    /// </summary>
+    /// <remarks>
+    /// A list of faces that pops in one picture at a time reads as flicker; fading them in turns the same
+    /// arrival into something the eye can follow. The fade is an animation rather than a state hung off the
+    /// load event, which is what keeps a picture that was already in the cache - or a page that was rendered
+    /// statically, and has no handler to fire that event at all - from being left hidden for good.
+    /// </remarks>
+    [Parameter] public bool ImageFadeIn { get; set; }
 
     /// <summary>
     /// The user's initials to display in the image area when there is no image.
@@ -210,6 +247,18 @@ public partial class BitPersona : BitComponentBase
     [Parameter, ResetClassBuilder]
     [CallOnSet(nameof(OnSetImageSource))]
     public string? ImageUrl { get; set; }
+
+    /// <summary>
+    /// Marks the persona as one of the people a view is not about, which shrinks its coin slightly and
+    /// fades it back.
+    /// </summary>
+    /// <remarks>
+    /// This is the counterpart of <see cref="Active"/>: in a call grid it is what everyone who is not
+    /// speaking looks like. It is ignored while <see cref="Active"/> is true, since a persona cannot be
+    /// both at once.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Inactive { get; set; }
 
     /// <summary>
     /// Callback for the persona custom action.
@@ -371,6 +420,16 @@ public partial class BitPersona : BitComponentBase
     [Parameter] public RenderFragment? SecondaryTextTemplate { get; set; }
 
     /// <summary>
+    /// The outline of the coin: a circle, a rounded square or a sharp one. The default is a circle.
+    /// </summary>
+    /// <remarks>
+    /// This supersedes <see cref="Squared"/>, which is the same thing said with a flag and can only reach
+    /// <see cref="BitPersonaShape.Rounded"/>. When both are set, this one wins.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitPersonaShape? Shape { get; set; }
+
+    /// <summary>
     /// If true renders the initials while the image is loading. This only applies when an imageUrl is provided.
     /// </summary>
     /// <remarks>
@@ -380,14 +439,38 @@ public partial class BitPersona : BitComponentBase
     [Parameter] public bool ShowInitialsUntilImageLoads { get; set; }
 
     /// <summary>
+    /// Whether each of the four detail texts carries itself as a native tooltip, for reading the part of it
+    /// that the row had to clip. The default is true.
+    /// </summary>
+    /// <remarks>
+    /// A tooltip repeating a name that was never clipped is noise, so turn this off where the rows are known
+    /// to be wide enough for what goes in them.
+    /// </remarks>
+    [Parameter] public bool ShowOverflowTooltip { get; set; } = true;
+
+    /// <summary>
+    /// Shows the secondary text at every size, including the small ones that normally leave no room for it.
+    /// </summary>
+    /// <remarks>
+    /// The second line is otherwise reserved for <see cref="BitPersonaSize.Size40"/> and up. This is what a
+    /// compact list of people with a role or an address under each name reaches for.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool ShowSecondaryText { get; set; }
+
+    /// <summary>
     /// Decides the size of the control.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitPersonaSize Size { get; set; } = BitPersonaSize.Size48;
 
     /// <summary>
-    /// If true, renders the coin with a square shape instead of the default circular shape.
+    /// If true, renders the coin with a rounded square shape instead of the default circular shape.
     /// </summary>
+    /// <remarks>
+    /// This is the shorthand for <see cref="BitPersonaShape.Rounded"/>. Set <see cref="Shape"/> instead to
+    /// reach the sharp square as well; a <see cref="Shape"/> of its own takes precedence over this.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Squared { get; set; }
 
@@ -462,30 +545,17 @@ public partial class BitPersona : BitComponentBase
 
         ClassBuilder.Register(() => HasImage ? "bit-prs-him" : string.Empty);
 
-        ClassBuilder.Register(() => Size is BitPersonaSize.Size8 ? string.Empty : CoinColor switch
-        {
-            BitColor.Primary => "bit-prs-pri",
-            BitColor.Secondary => "bit-prs-sec",
-            BitColor.Tertiary => "bit-prs-ter",
-            BitColor.Info => "bit-prs-inf",
-            BitColor.Success => "bit-prs-suc",
-            BitColor.Warning => "bit-prs-wrn",
-            BitColor.SevereWarning => "bit-prs-swr",
-            BitColor.Error => "bit-prs-err",
-            BitColor.PrimaryBackground => "bit-prs-pbg",
-            BitColor.SecondaryBackground => "bit-prs-sbg",
-            BitColor.TertiaryBackground => "bit-prs-tbg",
-            BitColor.PrimaryForeground => "bit-prs-pfg",
-            BitColor.SecondaryForeground => "bit-prs-sfg",
-            BitColor.TertiaryForeground => "bit-prs-tfg",
-            BitColor.PrimaryBorder => "bit-prs-pbr",
-            BitColor.SecondaryBorder => "bit-prs-sbr",
-            BitColor.TertiaryBorder => "bit-prs-tbr",
-            null when AutoCoinColor => GetAutoCoinColorClass(),
-            _ => "bit-prs-inf"
-        });
+        ClassBuilder.Register(() => Size is BitPersonaSize.Size8 ? string.Empty
+                                  : CoinColor is not null ? GetCoinColorClass(CoinColor.Value)
+                                  : AutoCoinColor ? GetAutoCoinColorClass()
+                                  : "bit-prs-inf");
 
-        ClassBuilder.Register(() => Squared ? "bit-prs-sqr" : null);
+        ClassBuilder.Register(() => GetShape() switch
+        {
+            BitPersonaShape.Rounded => "bit-prs-sqr",
+            BitPersonaShape.Square => "bit-prs-sqr bit-prs-sqs",
+            _ => string.Empty
+        });
 
         ClassBuilder.Register(() => (Active && Size is not BitPersonaSize.Size8) ? ActiveAppearance switch
         {
@@ -493,6 +563,10 @@ public partial class BitPersona : BitComponentBase
             BitPersonaActiveAppearance.RingShadow => "bit-prs-ars",
             _ => "bit-prs-arg"
         } : string.Empty);
+
+        ClassBuilder.Register(() => (Inactive && Active is false && Size is not BitPersonaSize.Size8) ? "bit-prs-ina" : string.Empty);
+
+        ClassBuilder.Register(() => ShowSecondaryText ? "bit-prs-sst" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -501,6 +575,11 @@ public partial class BitPersona : BitComponentBase
     }
 
 
+
+    /// <summary>
+    /// The shape actually in force, which <see cref="Squared"/> can only ever ask for the rounded square of.
+    /// </summary>
+    private BitPersonaShape GetShape() => Shape ?? (Squared ? BitPersonaShape.Rounded : BitPersonaShape.Circular);
 
     private string? GetPresentationClass()
     {
@@ -525,7 +604,7 @@ public partial class BitPersona : BitComponentBase
         string? inset = null;
         // The dot keeps the same share of the coin a size class gives it, so a custom coin size stays in proportion.
         var presentationSize = CoinSize.Value / 4D;
-        if (Squared)
+        if (GetShape() is not BitPersonaShape.Circular)
         {
             // Retuned as the knob the stylesheet reads rather than as a side of its own, so the nudge follows
             // the dot to whichever corner the writing direction and Reversed between them put it in.
@@ -597,14 +676,52 @@ public partial class BitPersona : BitComponentBase
         };
     }
 
-    private static readonly string[] _autoCoinColorClasses = ["bit-prs-pri", "bit-prs-sec", "bit-prs-ter", "bit-prs-suc", "bit-prs-wrn", "bit-prs-err", "bit-prs-inf"];
+    private static string GetCoinColorClass(BitColor color) => color switch
+    {
+        BitColor.Primary => "bit-prs-pri",
+        BitColor.Secondary => "bit-prs-sec",
+        BitColor.Tertiary => "bit-prs-ter",
+        BitColor.Info => "bit-prs-inf",
+        BitColor.Success => "bit-prs-suc",
+        BitColor.Warning => "bit-prs-wrn",
+        BitColor.SevereWarning => "bit-prs-swr",
+        BitColor.Error => "bit-prs-err",
+        BitColor.PrimaryBackground => "bit-prs-pbg",
+        BitColor.SecondaryBackground => "bit-prs-sbg",
+        BitColor.TertiaryBackground => "bit-prs-tbg",
+        BitColor.PrimaryForeground => "bit-prs-pfg",
+        BitColor.SecondaryForeground => "bit-prs-sfg",
+        BitColor.TertiaryForeground => "bit-prs-tfg",
+        BitColor.PrimaryBorder => "bit-prs-pbr",
+        BitColor.SecondaryBorder => "bit-prs-sbr",
+        BitColor.TertiaryBorder => "bit-prs-tbr",
+        _ => "bit-prs-inf"
+    };
+
+    /// <summary>
+    /// The colors a hashed coin is picked from when the caller names none: the accent and the semantic
+    /// colors, which are the ones every preset repaints and every scheme keeps legible.
+    /// </summary>
+    private static readonly BitColor[] _defaultAutoCoinColors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary,
+        BitColor.Success, BitColor.Warning, BitColor.Error, BitColor.Info
+    ];
 
     private string GetAutoCoinColorClass()
     {
+        // Taken as it comes where it already is a list, so the common case of an array or a List<> passed
+        // in by the caller costs nothing to read.
+        var palette = (AutoCoinColors as IReadOnlyList<BitColor>) ?? AutoCoinColors?.ToArray();
+        if (palette is null || palette.Count == 0) palette = _defaultAutoCoinColors;
+
         var text = (CoinColorSeed.HasValue() ? CoinColorSeed
                   : ImageInitials.HasValue() ? ImageInitials
                   : PrimaryText)?.Trim() ?? string.Empty;
-        if (text.HasNoValue()) return "bit-prs-inf";
+
+        // Nothing to hash is not a color of its own: a persona with no name yet takes the first of the
+        // palette, which for the built-in set is the same neutral the component defaults to anyway.
+        if (text.HasNoValue()) return GetCoinColorClass(ReferenceEquals(palette, _defaultAutoCoinColors) ? BitColor.Info : palette[0]);
 
         // Stable DJB2 hash - not affected by .NET's randomized GetHashCode
         uint hash = 5381;
@@ -613,7 +730,7 @@ public partial class BitPersona : BitComponentBase
             hash = ((hash << 5) + hash) + c;
         }
 
-        return _autoCoinColorClasses[hash % (uint)_autoCoinColorClasses.Length];
+        return GetCoinColorClass(palette[(int)(hash % (uint)palette.Count)]);
     }
 
     /// <summary>
@@ -659,7 +776,7 @@ public partial class BitPersona : BitComponentBase
     {
         if (ImageInitials.HasValue()) return ImageInitials!;
 
-        return CalculateInitials(PrimaryText, Dir == BitDir.Rtl);
+        return CalculateInitials(PrimaryText, Dir == BitDir.Rtl, AllowPhoneInitials);
     }
 
     /// <summary>
@@ -674,7 +791,7 @@ public partial class BitPersona : BitComponentBase
     /// rest of the industry settled on: two words give first and last, three skip the middle one, and anything
     /// else gives the first alone.
     /// </remarks>
-    private static string CalculateInitials(string? text, bool isRtl)
+    private static string CalculateInitials(string? text, bool isRtl, bool allowPhoneInitials)
     {
         if (text.HasNoValue()) return string.Empty;
 
@@ -691,8 +808,9 @@ public partial class BitPersona : BitComponentBase
         if (cleaned.Length == 0) return string.Empty;
 
         // A phone number, an order id, a row key: digits abbreviate into nothing a reader can recognize,
-        // so the coin falls back to its icon instead of showing two arbitrary numerals.
-        if (cleaned.Any(char.IsLetter) is false) return string.Empty;
+        // so the coin falls back to its icon instead of showing two arbitrary numerals - unless the caller
+        // says the numbers are the name.
+        if (allowPhoneInitials is false && cleaned.Any(char.IsLetter) is false) return string.Empty;
 
         var words = cleaned.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         if (words.Length == 0) return string.Empty;
@@ -872,6 +990,27 @@ public partial class BitPersona : BitComponentBase
     private bool IsCoinOnly => HidePersonaDetails && Size is not BitPersonaSize.Size8 && HasInteractiveCoin is false;
 
     /// <summary>
+    /// Whether there is anything for the overlay to say. A clickable coin that has been given no text and no
+    /// template of its own has nothing to reveal, and a bare tinted veil over the picture says less than
+    /// leaving it alone - such a coin is a plain button, not one that offers to change the picture.
+    /// </summary>
+    private bool HasImageOverlay => OnImageClick.HasDelegate && (ImageOverlayTemplate is not null || ImageOverlayText.HasValue());
+
+    /// <summary>
+    /// Whether the coin has to carry a name of its own, which is the case where the details are hidden and
+    /// the root cannot claim the image role because an action button beside the coin has to stay reachable.
+    /// </summary>
+    private bool IsCoinNamed => HidePersonaDetails
+                             && Size is not BitPersonaSize.Size8
+                             && OnImageClick.HasDelegate is false
+                             && OnActionClick.HasDelegate
+                             && (AriaLabel.HasValue() || PrimaryText.HasValue());
+
+    private string? GetCoinRole() => IsCoinNamed ? "img" : null;
+
+    private string? GetCoinLabel() => IsCoinNamed ? (AriaLabel.HasValue() ? AriaLabel : PrimaryText) : null;
+
+    /// <summary>
     /// The accessible name of a coin that is also a button. It says what activating it does, and - where the
     /// details are hidden and nothing else says so - who it belongs to.
     /// </summary>
@@ -879,14 +1018,19 @@ public partial class BitPersona : BitComponentBase
     {
         if (OnImageClick.HasDelegate is false) return null;
 
-        // A template of one's own in the overlay is free to leave the text empty, and a button with nothing
-        // to announce is a button nobody can tell apart from the next one - the name of the person is what
-        // is left to call it after.
-        if (ImageOverlayText.HasNoValue()) return PrimaryText;
+        // A label given by hand names the persona better than the name being displayed does, and is the only
+        // thing left to call the coin after where there is no name being displayed at all.
+        var name = AriaLabel.HasValue() ? AriaLabel : PrimaryText;
 
-        if (HidePersonaDetails is false || PrimaryText.HasNoValue()) return ImageOverlayText;
+        // A template of one's own in the overlay is free to leave the text empty, and so is a coin that only
+        // opens a profile rather than offering to change the picture - and a button with nothing to announce
+        // is a button nobody can tell apart from the next one, so the name of the person is what is left to
+        // call it after.
+        if (ImageOverlayText.HasNoValue()) return name;
 
-        return $"{PrimaryText}, {ImageOverlayText}";
+        if (HidePersonaDetails is false || name.HasNoValue()) return ImageOverlayText;
+
+        return $"{name}, {ImageOverlayText}";
     }
 
     /// <summary>

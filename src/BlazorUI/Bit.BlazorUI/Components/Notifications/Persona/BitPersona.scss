@@ -1,4 +1,4 @@
-@import "../../../Styles/functions.scss";
+﻿@import "../../../Styles/functions.scss";
 
 .bit-prs {
     display: flex;
@@ -40,6 +40,11 @@
     --bit-prs-ring-gap: #{rem2(2px)};
     --bit-prs-ring-width: #{rem2(2px)};
     --bit-prs-ring-gap-clr: #{$clr-bg-pri};
+    // How far back an inactive persona is pushed. Neither of these is a design-system decision the theme
+    // publishes - the opacity is not the disabled one, and the scale is a proportion of the coin rather
+    // than a step of any ramp - so they are this component's own knobs, retunable by a preset.
+    --bit-prs-inactive-opacity: 0.8;
+    --bit-prs-inactive-scale: 0.875;
     --bit-prs-flex-direction: row;
     flex-direction: var(--bit-prs-flex-direction);
 
@@ -133,6 +138,29 @@
     .bit-prs-imc {
         border-radius: $shp-radius-control;
     }
+
+    .bit-prs-imo {
+        border-radius: $shp-radius-control;
+    }
+}
+
+// The sharp square is the rounded one with its corners taken back: it keeps every nudge the rounded coin
+// tunes, and restates nothing but the radius.
+.bit-prs-sqs {
+    .bit-prs-imc,
+    .bit-prs-imo {
+        border-radius: $shp-radius-none;
+    }
+}
+
+// An inactive persona is pushed back rather than dimmed out: it keeps its colors and its place in the row,
+// and only stops being the one the eye lands on first.
+.bit-prs-ina {
+    .bit-prs-cin {
+        opacity: var(--bit-prs-inactive-opacity);
+        transform: scale(var(--bit-prs-inactive-scale));
+        transition: opacity $mot-duration-short $mot-easing, transform $mot-duration-short $mot-easing;
+    }
 }
 
 .bit-prs-imo {
@@ -159,6 +187,9 @@
     transition: opacity $mot-duration-short $mot-easing, visibility $mot-duration-short $mot-easing;
     color: var(--bit-prs-coin-clr-txt);
     background-color: var(--bit-prs-coin-clr-bg);
+    // The coin the component draws clips the overlay for it, but a coin filled by a template is not clipped
+    // by anything - and a square veil over a round picture is worse than no veil at all.
+    border-radius: $shp-radius-full;
 }
 
 .bit-prs-ini {
@@ -184,6 +215,28 @@
     height: 100%;
     display: block;
     object-fit: cover;
+}
+
+// The picture is faded in as it is painted. Deliberately an animation rather than a state the component
+// toggles off the load event: an animation always ends where it says it does, while a load event is a thing
+// that can simply not arrive - a statically rendered page has no handler attached to fire one, and a
+// prerendered one can have the picture in the cache before it does - and either of those would have left the
+// coin hidden for good behind an image that never faded in.
+@keyframes bit-prs-fade-in-anm {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.bit-prs-ifi {
+    animation-name: bit-prs-fade-in-anm;
+    animation-duration: $mot-duration;
+    animation-fill-mode: both;
+    animation-timing-function: $mot-easing-decelerate;
 }
 
 .bit-prs-pre {
@@ -413,6 +466,10 @@
 .bit-prs-s24 {
     gap: spacing(1);
     --bit-prs-action-size: #{spacing(2.5)};
+    // The ring is a proportion of the coin, not a constant: 2px around a 24px coin is a stripe, and 2px
+    // around a 120px one is a hairline.
+    --bit-prs-ring-gap: #{rem2(1.5px)};
+    --bit-prs-ring-width: #{rem2(1.5px)};
 
     // The smallest square coins are barely wider than the dot, so it stays where the circle put it.
     &.bit-prs-sqr {
@@ -439,6 +496,8 @@
 .bit-prs-s32 {
     gap: spacing(1);
     --bit-prs-action-size: #{spacing(3)};
+    --bit-prs-ring-gap: #{rem2(1.5px)};
+    --bit-prs-ring-width: #{rem2(1.5px)};
 
     &.bit-prs-sqr {
         --bit-prs-presence-inset: #{spacing(-0.25)};
@@ -570,6 +629,8 @@
 
 .bit-prs-s72 {
     gap: spacing(2);
+    --bit-prs-ring-gap: #{rem2(3px)};
+    --bit-prs-ring-width: #{rem2(3px)};
 
     .bit-prs-imc {
         aspect-ratio: 1;
@@ -610,6 +671,8 @@
 
 .bit-prs-s100 {
     gap: spacing(2);
+    --bit-prs-ring-gap: #{rem2(4px)};
+    --bit-prs-ring-width: #{rem2(4px)};
 
     .bit-prs-imc {
         aspect-ratio: 1;
@@ -652,6 +715,8 @@
 
 .bit-prs-s120 {
     gap: spacing(2);
+    --bit-prs-ring-gap: #{rem2(4px)};
+    --bit-prs-ring-width: #{rem2(4px)};
 
     .bit-prs-imc {
         aspect-ratio: 1;
@@ -689,6 +754,25 @@
 
     &.bit-prs-sqr {
         --bit-prs-presence-inset: #{spacing(-1.5)};
+    }
+}
+
+// The second line is normally reserved for the sizes with room for it, and ShowSecondaryText is what asks
+// for it anyway. It has to sit after every size class to outrank the display:none they set, and it restates
+// the type the small sizes never had a second line to size.
+.bit-prs-sst {
+    .bit-prs-stx {
+        display: block;
+        font-weight: $tg-fw-regular;
+    }
+
+    &.bit-prs-s8 .bit-prs-stx {
+        font-size: $tg-fs-2xs;
+    }
+
+    &.bit-prs-s24 .bit-prs-stx,
+    &.bit-prs-s32 .bit-prs-stx {
+        font-size: $tg-fs-xs;
     }
 }
 
