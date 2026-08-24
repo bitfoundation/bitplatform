@@ -8,7 +8,7 @@
 
 <DemoPage Name="Message"
           SecondaryNames="@(["Alert", "MessageBar"])"
-          Description="An inline message that reports an error, a warning, or something worth knowing - a failed upload, an expiring licence, a saved draft - in place and without interrupting the page. It carries a color and a matching icon for its severity, an optional title, action buttons, and a dismiss button that can take the message off the page by itself, on a timer or on demand, and it announces itself to screen readers with the urgency its color implies."
+          Description="An inline message that reports an error, a warning, or something worth knowing - a failed upload, an expiring licence, a saved draft - in place and without interrupting the page. It carries a color and a matching icon for its severity, an optional title, action buttons, a fold that keeps a long text on one line, and a dismiss button that can take the message off the page by itself, on a timer or on demand, and it announces itself to screen readers with the urgency its color implies."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubEnums="componentSubEnums"
@@ -36,6 +36,10 @@
             of message this is, say it with <b>IconAriaLabel</b>. And leave <b>AutoFocus</b> for the messages that have
             to be acted upon: the rest are already announced, and taking the focus away from what the reader was doing
             is an interruption of its own.
+            <br /><br />
+            A live region only announces what changes inside it, so a message that appears with its text already in
+            place is a change of nothing and several screen readers stay silent about it: give the ones that answer
+            something the reader just did a <b>DelayedAnnouncement</b>.
         </BitText>
     </NotesTemplate>
 
@@ -177,7 +181,9 @@
             <div>
                 <b>Truncate</b> clips the content to a single line and adds a button that unfolds it, for a message
                 that has to fit in a tight space. It is ignored when <b>Multiline</b> is set. The expanded state is
-                two-way bindable through <b>Expanded</b>, so it can be driven from outside as well.
+                two-way bindable through <b>Expanded</b>, so it can be driven from outside as well, and the
+                <b>ExpandAsync</b>, <b>CollapseAsync</b> and <b>ToggleExpandAsync</b> methods do the same on a
+                captured message without a binding to keep.
             </div>
             <br />
             <BitMessage Truncate Color="BitColor.Warning" @bind-Expanded="isTruncateExpanded">
@@ -195,6 +201,18 @@
             </BitMessage>
             <br />
             <BitToggle Label="Expanded" @bind-Value="isTruncateExpanded" />
+            <br /><br />
+            <BitMessage @ref="truncatedMessage" Truncate Color="BitColor.Info">
+                Driven by its methods rather than by a binding. In the beginning, there is silence-a blank canvas
+                yearning to be filled, a quiet space where creativity waits to awaken. These words are temporary,
+                standing in place of ideas yet to come, a glimpse into the infinite possibilities that lie ahead.
+            </BitMessage>
+            <br />
+            <BitButton OnClick="() => truncatedMessage!.ExpandAsync()">Expand</BitButton>
+            &nbsp;
+            <BitButton OnClick="() => truncatedMessage!.CollapseAsync()">Collapse</BitButton>
+            &nbsp;
+            <BitButton OnClick="() => truncatedMessage!.ToggleExpandAsync()">Toggle</BitButton>
         </DemoExample>
 
         <DemoExample Title="Dismiss" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
@@ -202,7 +220,8 @@
                 <b>Dismissible</b> renders the dismiss button and lets the message take itself off the page; bind
                 <b>Dismissed</b> to follow that from outside, or to put the message back. <b>OnDismiss</b> also
                 renders the button, but only reports the dismissal - leaving the removal to its handler.
-                <b>DismissOnEscape</b> adds the Escape key as a second way out, and <b>OnDismissing</b> gets a say
+                <b>DismissOnEscape</b> adds the Escape key as a second way out - it works wherever dismissing would do
+                something, a <b>Dismissed</b> binding on its own included, and <b>OnDismissing</b> gets a say
                 before any of them: cancel it to keep the message where it is, and read its <b>Reason</b> to tell
                 the button, the key, the countdown and a <b>DismissAsync</b> call apart.
             </div>
@@ -268,9 +287,10 @@
                 <b>AutoDismissTime</b> dismisses the message on its own once the given time has passed. The countdown
                 is a time limit, so it holds for as long as the pointer is over the message or the focus is inside it
                 and the message cannot vanish mid-read; <b>PauseAutoDismiss</b> and <b>ResumeAutoDismiss</b> hold it
-                over anything else. <b>ShowAutoDismissProgress</b> draws the countdown as a bar along the bottom edge,
-                holding exactly where the countdown holds. Assigning a different time re-arms the countdown, and so
-                does bringing a dismissed message back.
+                over anything else, and the bar holds with them. <b>ShowAutoDismissProgress</b> draws the countdown as
+                a bar along the bottom edge, holding exactly where the countdown holds. The countdown runs wherever
+                dismissing would do something - an <b>OnDismiss</b> handler, <b>Dismissible</b>, or a <b>Dismissed</b>
+                binding on its own. Assigning a different time re-arms it, and so does bringing a dismissed message back.
             </div>
             <br />
             @if (isAutoDismissed is false)
@@ -299,6 +319,32 @@
                 @if (isProgressDismissed)
                 {
                     <BitButton OnClick="() => isProgressDismissed = false">Auto-Dismissed, click to restart</BitButton>
+                }
+            </div>
+
+            <br /><br />
+
+            <div class="box">
+                <BitMessage @ref="pausableMessage"
+                            ShowAutoDismissProgress
+                            Color="BitColor.Warning"
+                            AutoDismissTime="TimeSpan.FromSeconds(15)"
+                            @bind-Dismissed="isPausedDismissed">
+                    Fifteen seconds, and no dismiss button: a message bound through <strong>Dismissed</strong> alone
+                    counts down all the same. Hold it from outside with the buttons below.
+                </BitMessage>
+
+                @if (isPausedDismissed)
+                {
+                    <BitButton OnClick="() => isPausedDismissed = false">Auto-Dismissed, click to restart</BitButton>
+                }
+                else
+                {
+                    <div>
+                        <BitButton OnClick="() => pausableMessage!.PauseAutoDismiss()">Pause</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="() => pausableMessage!.ResumeAutoDismiss()">Resume</BitButton>
+                    </div>
                 }
             </div>
         </DemoExample>
@@ -470,7 +516,7 @@
             }
         </DemoExample>
 
-        <DemoExample Title="Announcement" RazorCode="@example15RazorCode" Id="example15">
+        <DemoExample Title="Announcement" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
             <div>
                 A message announces itself: its text sits in a live region whose urgency comes from <b>Color</b> -
                 <b>Warning</b>, <b>SevereWarning</b> and <b>Error</b> interrupt the screen reader as an
@@ -480,7 +526,13 @@
                 and hidden from screen readers, so <b>IconAriaLabel</b> is what says which kind of message this is
                 where the text does not - it leads the announcement, invisibly. A message that has a name - a
                 <b>Title</b>, or an <b>AriaLabel</b> of its own - is also a named group, so a screen reader can step
-                over it as one unit instead of walking through it line by line.
+                over it as one unit instead of walking through it line by line. A live region only announces what
+                changes inside it, so a region that arrives with its text already in place is a change of nothing and
+                several screen readers stay silent: <b>DelayedAnnouncement</b> puts the region on the page one render
+                ahead of the text, which is what makes the announcement reliable for a message that appears in answer
+                to something the reader just did. The dismiss and expander buttons borrow the title of the
+                message as their description, so a page full of them is not a page full of buttons all called
+                "Dismiss".
             </div>
             <br />
             <div class="box">
@@ -494,6 +546,17 @@
 
                 <BitMessage Color="BitColor.Info" Role="none">
                     Part of the page rather than news about it: not announced at all.
+                </BitMessage>
+            </div>
+            <br />
+            <div class="box">
+                <BitButton OnClick="() => isDelayedDismissed = false">Show a delayed-announcement message</BitButton>
+
+                <BitMessage DelayedAnnouncement
+                            Dismissible
+                            Color="BitColor.Success"
+                            @bind-Dismissed="isDelayedDismissed">
+                    Announced reliably: the live region reached the page one render before this text landed in it.
                 </BitMessage>
             </div>
         </DemoExample>
@@ -625,7 +688,8 @@
 
         <DemoExample Title="Size" RazorCode="@example19RazorCode" Id="example19">
             <div>
-                <b>Size</b> scales the type, the icon and the inset of the message together.
+                <b>Size</b> scales the type, the icon, the inset, the two round buttons and the countdown track of the
+                message together, so a small message is not left carrying medium-sized buttons.
             </div>
             <br />
             <div class="box">
@@ -638,8 +702,8 @@
         <DemoExample Title="Style & Class" RazorCode="@example20RazorCode" Id="example20">
             <div>
                 <b>Style</b> and <b>Class</b> land on the root element, while <b>Styles</b> and <b>Classes</b> reach
-                each part of the message on its own - the root, the containers, the icon, the title, the content,
-                the actions, and the two buttons.
+                each part of the message on its own - the root, the containers, the icon, the title, the content, the
+                actions, the two buttons, and the track and bar of the auto-dismiss countdown.
             </div>
             <br />
             <div>

@@ -34,21 +34,26 @@
                      id="@($"{_Id}-cnt")"
                      role="@GetTextRole()">
                     <div style="@Styles?.ContentWrapper" class="bit-msg-cnw@(_IsTitleInline ? " bit-msg-cwi" : "") @Classes?.ContentWrapper">
-                        @if (IconAriaLabel.HasValue())
+                        @* A live region announces what changes inside it, so a delayed announcement leaves it empty
+                           for one render and hands it the text on the next one, once it is already on the page. *@
+                        @if (_IsAnnounced)
                         {
-                            @* The icon is decorative markup, so what it stands for is said here instead - inside the
-                               announced region and ahead of everything else in it, but out of sight and out of flow. *@
-                            <span style="@Styles?.IconLabel" class="bit-msg-ilb @Classes?.IconLabel">@IconAriaLabel</span>
-                        }
+                            if (IconAriaLabel.HasValue())
+                            {
+                                @* The icon is decorative markup, so what it stands for is said here instead - inside the
+                                   announced region and ahead of everything else in it, but out of sight and out of flow. *@
+                                <span style="@Styles?.IconLabel" class="bit-msg-ilb @Classes?.IconLabel">@IconAriaLabel</span>
+                            }
 
-                        @if (_HasTitle)
-                        {
-                            @_renderTitle
-                        }
+                            if (_HasTitle)
+                            {
+                                @_renderTitle
+                            }
 
-                        <div style="@Styles?.Content" class="bit-msg-cnt@(Multiline ? " bit-msg-mcn" : "") @Classes?.Content">
-                            @(Content ?? ChildContent)
-                        </div>
+                            <div style="@Styles?.Content" class="bit-msg-cnt@(Multiline ? " bit-msg-mcn" : "") @Classes?.Content">
+                                @(Content ?? ChildContent)
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
@@ -67,6 +72,7 @@
                         title="@_ExpanderLabel"
                         aria-label="@_ExpanderLabel"
                         aria-expanded="@(Expanded ? "true" : "false")"
+                        aria-describedby="@_ButtonDescribedBy"
                         aria-controls="@($"{_Id}-cnt")"
                         disabled="@(IsEnabled is false)">
                     @{
@@ -92,6 +98,7 @@
                         type="button"
                         title="@DismissAriaLabel"
                         aria-label="@DismissAriaLabel"
+                        aria-describedby="@_ButtonDescribedBy"
                         disabled="@(IsEnabled is false)">
                     @{
                         var dismissIcon = BitIconInfo.From(DismissIcon, DismissIconName ?? "Cancel");
@@ -112,7 +119,7 @@
                it is a time limit that holds on hover and focus, so there is nothing here for a reader to act on. *@
             <div style="@Styles?.AutoDismissProgress" class="bit-msg-prg @Classes?.AutoDismissProgress" aria-hidden="true">
                 <div style="@JoinStyles(_AutoDismissDuration, Styles?.AutoDismissProgressBar)"
-                     class="bit-msg-prb @Classes?.AutoDismissProgressBar"></div>
+                     class="bit-msg-prb@(_isAutoDismissPaused ? " bit-msg-pau" : "") @Classes?.AutoDismissProgressBar"></div>
             </div>
         }
     </div>

@@ -1832,4 +1832,427 @@ public class BitMessageTests : BunitTestContext
          BitColor.Error or BitColor.SevereWarning or BitColor.Warning => "alert",
          _ => "status",
      };
+
+    [TestMethod]
+    public void BitMessageShouldAutoDismissWhenOnlyTheDismissedBindingOwnsIt()
+    {
+        // Dismissing does something here without a button being involved: the binding takes the message off the
+        // page, so the countdown has somewhere to go and must run.
+        var isDismissed = false;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Bind(p => p.Dismissed, isDismissed, v => isDismissed = v);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(100));
+            parameters.AddChildContent("Hello");
+        });
+
+        // A binding is not a reason to offer a button - it is the outside that dismisses this message.
+        Assert.IsEmpty(component.FindAll(".bit-msg-dmb"));
+
+        WaitUntil(() => isDismissed);
+
+        Assert.IsTrue(isDismissed);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldDismissOnEscapeWhenOnlyTheDismissedBindingOwnsIt()
+    {
+        var isDismissed = false;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Bind(p => p.Dismissed, isDismissed, v => isDismissed = v);
+            parameters.Add(p => p.DismissOnEscape, true);
+            parameters.AddChildContent("Hello");
+        });
+
+        component.Find(".bit-msg").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsTrue(isDismissed);
+        Assert.IsEmpty(component.FindAll(".bit-msg"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldWireUpThePauseListenersForADismissedBindingAlone()
+    {
+        var isDismissed = false;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Bind(p => p.Dismissed, isDismissed, v => isDismissed = v);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
+            parameters.AddChildContent("Hello");
+        });
+
+        // No exception means the countdown is armed and holds like any other.
+        component.Find(".bit-msg").MouseEnter();
+        component.Find(".bit-msg").MouseLeave();
+    }
+
+
+
+    [TestMethod]
+    public void BitMessageShouldRenderTheTextOnASecondRenderWhileTheAnnouncementIsDelayed()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.DelayedAnnouncement, true);
+            parameters.Add(p => p.Title, "Saved");
+            parameters.AddChildContent("Hello");
+        });
+
+        // The live region arrives first and the text lands in it on the render that follows, which is the whole
+        // point: a region that appears with its text already in it is a change of nothing to announce.
+        Assert.AreEqual(2, component.RenderCount);
+        Assert.HasCount(1, component.FindAll(".bit-msg-cnc"));
+        Assert.AreEqual("Hello", component.Find(".bit-msg-cnt").TextContent.Trim());
+        Assert.AreEqual("Saved", component.Find(".bit-msg-ttl").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitMessageShouldRenderTheTextRightAwayWithoutADelayedAnnouncement()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.AddChildContent("Hello");
+        });
+
+        Assert.AreEqual(1, component.RenderCount);
+        Assert.AreEqual("Hello", component.Find(".bit-msg-cnt").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitMessageShouldDelayTheAnnouncementAgainForEachShowing()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.DelayedAnnouncement, true);
+            parameters.Add(p => p.Dismissible, true);
+            parameters.AddChildContent("Hello");
+        });
+
+        component.Find(".bit-msg-dmb").Click();
+
+        Assert.IsEmpty(component.FindAll(".bit-msg"));
+
+        component.Render(parameters => parameters.Add(p => p.Dismissed, false));
+
+        // A re-shown message is a new sighting of it, so its text is handed to the region a second time.
+        Assert.AreEqual("Hello", component.Find(".bit-msg-cnt").TextContent.Trim());
+    }
+
+
+
+    [TestMethod]
+    public void BitMessageDismissButtonShouldBorrowTheTitleAsItsDescription()
+    {
+        // Every message on a page has the same "Dismiss" on its button, so the title is what tells them apart.
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Dismissible, true);
+            parameters.Add(p => p.Title, "Upload failed");
+            parameters.AddChildContent("Hello");
+        });
+
+        Assert.AreEqual(component.Find(".bit-msg-ttl").Id, component.Find(".bit-msg-dmb").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitMessageDismissButtonShouldNotBeDescribedByAnAbsentTitle()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Dismissible, true);
+            parameters.AddChildContent("Hello");
+        });
+
+        Assert.IsNull(component.Find(".bit-msg-dmb").GetAttribute("aria-describedby"));
+    }
+
+
+
+    [TestMethod]
+    public void BitMessageShouldHoldTheCountdownBarThroughItsPublicApi()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Dismissible, true);
+            parameters.Add(p => p.ShowAutoDismissProgress, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
+            parameters.AddChildContent("Hello");
+        });
+
+        Assert.IsFalse(component.Find(".bit-msg-prb").ClassList.Contains("bit-msg-pau"));
+
+        component.Instance.PauseAutoDismiss();
+
+        // The bar has to hold where the countdown holds, or the two disagree about how much time is left.
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-msg-prb").ClassList.Contains("bit-msg-pau")));
+
+        component.Instance.ResumeAutoDismiss();
+
+        component.WaitForAssertion(() => Assert.IsFalse(component.Find(".bit-msg-prb").ClassList.Contains("bit-msg-pau")));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldHoldTheCountdownBarWhileThePointerIsOverIt()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Dismissible, true);
+            parameters.Add(p => p.ShowAutoDismissProgress, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
+            parameters.AddChildContent("Hello");
+        });
+
+        component.Find(".bit-msg").MouseEnter();
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-msg-prb").ClassList.Contains("bit-msg-pau")));
+
+        component.Find(".bit-msg").MouseLeave();
+
+        component.WaitForAssertion(() => Assert.IsFalse(component.Find(".bit-msg-prb").ClassList.Contains("bit-msg-pau")));
+    }
+
+
+
+    [TestMethod]
+    public async Task BitMessageShouldExpandAndCollapseThroughItsPublicMethods()
+    {
+        var isExpanded = false;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.Bind(p => p.Expanded, isExpanded, v => isExpanded = v);
+            parameters.AddChildContent(LongText);
+        });
+
+        await component.InvokeAsync(() => component.Instance.ExpandAsync());
+
+        Assert.IsTrue(isExpanded);
+        Assert.IsTrue(component.Find(".bit-msg-cnc").ClassList.Contains("bit-msg-cnx"));
+
+        await component.InvokeAsync(() => component.Instance.CollapseAsync());
+
+        Assert.IsFalse(isExpanded);
+        Assert.IsFalse(component.Find(".bit-msg-cnc").ClassList.Contains("bit-msg-cnx"));
+
+        await component.InvokeAsync(() => component.Instance.ToggleExpandAsync());
+
+        Assert.IsTrue(isExpanded);
+        Assert.AreEqual("true", component.Find(".bit-msg-exb").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public async Task BitMessageShouldExpandThroughItsPublicMethodsWhileDisabled()
+    {
+        // The button is turned off with the message, but a call is the consumer's own doing rather than the
+        // reader's, so it goes through the way DismissAsync does.
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.AddChildContent(LongText);
+        });
+
+        await component.InvokeAsync(() => component.Instance.ExpandAsync());
+
+        Assert.IsTrue(component.Find(".bit-msg-cnc").ClassList.Contains("bit-msg-cnx"));
+    }
+
+
+
+    [TestMethod]
+    public void BitMessageShouldTakeTheFocusWhileAutoFocusing()
+    {
+        // The autofocus attribute alone is only honoured while the element is being inserted, so the move is
+        // made by hand as well - which is what covers a message brought back into markup already on the page.
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.AddChildContent("Hello");
+        });
+
+        Assert.IsGreaterThan(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotTakeTheFocusWithoutAutoFocus()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.AddChildContent("Hello");
+        });
+
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldTakeTheFocusAgainForEachShowing()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.Dismissible, true);
+            parameters.AddChildContent("Hello");
+        });
+
+        var focusCount = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count;
+
+        component.Find(".bit-msg-dmb").Click();
+        component.Render(parameters => parameters.Add(p => p.Dismissed, false));
+
+        Assert.AreEqual(focusCount + 1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+
+    [TestMethod]
+    public void BitMessageShouldKeepTheCountdownHeldWhileTheFocusIsStillInsideIt()
+    {
+        var dismissCount = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+            parameters.AddChildContent("Hello");
+        });
+
+        component.Find(".bit-msg").MouseEnter();
+        component.Find(".bit-msg").FocusIn();
+
+        // Letting go of one of the reasons to hold the countdown is not letting go of the others.
+        component.Find(".bit-msg").MouseLeave();
+
+        Thread.Sleep(400);
+
+        Assert.AreEqual(0, dismissCount);
+
+        component.Find(".bit-msg").FocusOut();
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldKeepTheCountdownBarHeldWhileTheFocusIsStillInsideIt()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Dismissible, true);
+            parameters.Add(p => p.ShowAutoDismissProgress, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
+            parameters.AddChildContent("Hello");
+        });
+
+        component.Find(".bit-msg").MouseEnter();
+        component.Find(".bit-msg").FocusIn();
+        component.Find(".bit-msg").MouseLeave();
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-msg-prb").ClassList.Contains("bit-msg-pau")));
+
+        component.Find(".bit-msg").FocusOut();
+
+        component.WaitForAssertion(() => Assert.IsFalse(component.Find(".bit-msg-prb").ClassList.Contains("bit-msg-pau")));
+    }
+
+    [TestMethod]
+    public async Task BitMessageShouldDismissOnlyOnceWhileAnAwaitedGuardIsStillRunning()
+    {
+        // OnDismissing is awaited, so a second attempt arriving while the first is still asking would otherwise
+        // run a dismissal of its own alongside it and report the same dismissal twice.
+        var dismissCount = 0;
+        var gate = new TaskCompletionSource();
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Dismissible, true);
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+            parameters.Add<BitMessageDismissArgs>(p => p.OnDismissing, async _ => await gate.Task);
+        });
+
+        var first = component.InvokeAsync(() => component.Instance.DismissAsync());
+        var second = component.InvokeAsync(() => component.Instance.DismissAsync());
+
+        gate.SetResult();
+
+        await first;
+        await second;
+
+        Assert.AreEqual(1, dismissCount);
+        Assert.IsEmpty(component.FindAll(".bit-msg"));
+    }
+
+    [TestMethod]
+    public void BitMessageExpanderButtonShouldBorrowTheTitleAsItsDescription()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.Add(p => p.Title, "Details");
+            parameters.AddChildContent(LongText);
+        });
+
+        Assert.AreEqual(component.Find(".bit-msg-ttl").Id, component.Find(".bit-msg-exb").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitMessageExpanderButtonShouldNotBeDescribedByAnAbsentTitle()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        Assert.IsNull(component.Find(".bit-msg-exb").GetAttribute("aria-describedby"));
+    }
+
+
+    [TestMethod]
+    public void BitMessageShouldNotCarryAStaleHoldIntoTheNextShowing()
+    {
+        var dismissCount = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Dismissible, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+            parameters.AddChildContent("Hello");
+        });
+
+        // Held by the pointer, then taken off the page by hand: no mouseleave is ever coming for that hold, so
+        // keeping it would leave the next showing counting down forever.
+        component.Find(".bit-msg").MouseEnter();
+        component.Find(".bit-msg-dmb").Click();
+
+        Assert.IsEmpty(component.FindAll(".bit-msg"));
+
+        component.Render(parameters => parameters.Add(p => p.Dismissed, false));
+
+        WaitUntil(() => dismissCount == 2);
+
+        Assert.AreEqual(2, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotDrawACountdownWhileItIsDisabled()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Dismissible, true);
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.ShowAutoDismissProgress, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(10));
+            parameters.AddChildContent("Hello");
+        });
+
+        // A turned-off message has no countdown running, so there is nothing to draw.
+        Assert.IsEmpty(component.FindAll(".bit-msg-prg"));
+    }
+
 }

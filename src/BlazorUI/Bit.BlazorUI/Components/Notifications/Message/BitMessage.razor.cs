@@ -11,15 +11,30 @@ public partial class BitMessage : BitComponentBase
     // or focusing the message can hold it (WCAG 2.2.1 Timing Adjustable). This is the length of one step.
     private static readonly TimeSpan _AutoDismissTick = TimeSpan.FromMilliseconds(250);
 
-    // Written from the render loop and read from the countdown task, so the read has to see the write.
+    // The countdown is held by three things at once - the pointer, the focus and a call of its own - and letting
+    // go of one of them is not letting go of the others, so each is tracked apart and the flag the countdown task
+    // reads is derived from all three. That flag is written from the render loop and read from the task, so the
+    // read has to see the write.
     private volatile bool _isAutoDismissPaused;
+    private bool _isPointerOver;
+    private bool _isFocusInside;
+    private bool _isPausedByApi;
+
+    // A dismissal can be awaited on the way out, which leaves room for a second one to start alongside it.
+    private bool _isDismissing;
+
+    // Latched for the length of one showing of the message, and cleared when it is dismissed or brought back.
+    private bool _autoFocusDone;
+    private bool _isAnnounced;
     private TimeSpan? _armedAutoDismissTime;
     private CancellationTokenSource? _autoDismissCts;
 
     // Held as fields so re-registering them on every parameter set keeps handing the renderer the same
     // delegate instance, which is what lets the diff leave the listener alone.
-    private readonly Action _onPauseAutoDismiss;
-    private readonly Action _onResumeAutoDismiss;
+    private readonly Action _onPointerEnter;
+    private readonly Action _onPointerLeave;
+    private readonly Action _onFocusIn;
+    private readonly Action _onFocusOut;
     private readonly Func<KeyboardEventArgs, Task> _onRootKeyDown;
     private readonly RenderFragment _renderTitle;
 
@@ -27,8 +42,10 @@ public partial class BitMessage : BitComponentBase
 
     public BitMessage()
     {
-        _onPauseAutoDismiss = PauseAutoDismiss;
-        _onResumeAutoDismiss = ResumeAutoDismiss;
+        _onPointerEnter = HandlePointerEnter;
+        _onPointerLeave = HandlePointerLeave;
+        _onFocusIn = HandleFocusIn;
+        _onFocusOut = HandleFocusOut;
         _onRootKeyDown = HandleOnKeyDown;
         _renderTitle = RenderTitle;
     }
@@ -50,10 +67,11 @@ public partial class BitMessage : BitComponentBase
     /// Enables the auto-dismiss feature and sets the time to automatically call the OnDismiss callback.
     /// </summary>
     /// <remarks>
-    /// The countdown only runs while the message can be dismissed at all - that is, while <see cref="OnDismiss"/>
-    /// has a handler or <see cref="Dismissible"/> is set - and while the message is enabled. It is held for as long
-    /// as the pointer is over the message or the focus is inside it, so the message cannot vanish while it is being
-    /// read or acted upon (WCAG 2.2.1 Timing Adjustable). Assigning a different value re-arms the countdown.
+    /// The countdown only runs while dismissing the message would do something at all - that is, while
+    /// <see cref="OnDismiss"/> has a handler, <see cref="Dismissible"/> is set, or <see cref="Dismissed"/> is bound
+    /// - and while the message is enabled. It is held for as long as the pointer is over the message or the focus
+    /// is inside it, so the message cannot vanish while it is being read or acted upon (WCAG 2.2.1 Timing
+    /// Adjustable). Assigning a different value re-arms the countdown.
     /// </remarks>
     [Parameter] public TimeSpan? AutoDismissTime { get; set; }
 
@@ -124,6 +142,19 @@ public partial class BitMessage : BitComponentBase
     [Parameter] public RenderFragment? Content { get; set; }
 
     /// <summary>
+    /// Holds the content of the message back for one render, so its live region is already on the page when the
+    /// text lands in it.
+    /// </summary>
+    /// <remarks>
+    /// A live region announces what changes inside it, so a region that arrives with its text already in place is
+    /// a change of nothing and several screen readers stay silent. Setting this renders the region empty first and
+    /// fills it on the very next render, which is what makes the announcement reliable for a message that appears
+    /// in answer to something the reader just did. It costs the message one frame, so leave it off where the
+    /// message is part of the page from the start and there is nothing to announce anyway.
+    /// </remarks>
+    [Parameter] public bool DelayedAnnouncement { get; set; }
+
+    /// <summary>
     /// The aria-label and the tooltip of the dismiss button of the message.
     /// </summary>
     [Parameter] public string DismissAriaLabel { get; set; } = "Dismiss";
@@ -182,10 +213,11 @@ public partial class BitMessage : BitComponentBase
     /// Invokes the <see cref="OnDismiss"/> callback when the Escape key is pressed while the focus is inside the message.
     /// </summary>
     /// <remarks>
-    /// The shortcut is only wired up while the message can be dismissed at all - that is, while
-    /// <see cref="OnDismiss"/> has a handler or <see cref="Dismissible"/> is set. Since the message itself is not
-    /// focusable by default, set <see cref="BitComponentBase.TabIndex"/> to <c>0</c> to let a keyboard user reach it
-    /// without first landing on the dismiss button or one of the action buttons.
+    /// The shortcut is only wired up while dismissing the message would do something at all - that is, while
+    /// <see cref="OnDismiss"/> has a handler, <see cref="Dismissible"/> is set, or <see cref="Dismissed"/> is bound.
+    /// Since the message itself is not focusable by default, set <see cref="BitComponentBase.TabIndex"/> to
+    /// <c>0</c> to let a keyboard user reach it without first landing on the dismiss button or one of the action
+    /// buttons.
     /// </remarks>
     [Parameter] public bool DismissOnEscape { get; set; }
 
@@ -406,19 +438,49 @@ public partial class BitMessage : BitComponentBase
     public Task DismissAsync() => DismissAsync(BitMessageDismissReason.Programmatic);
 
     /// <summary>
+    /// Unfolds the truncated content of the message, the way its expander button does.
+    /// </summary>
+    /// <remarks>
+    /// Only meaningful together with <see cref="Truncate"/>. A binding on <see cref="Expanded"/> follows the call
+    /// just as it follows a press of the button.
+    /// </remarks>
+    public Task ExpandAsync() => SetExpandedAsync(true);
+
+    /// <summary>
+    /// Folds the truncated content of the message back into a single line, the way its expander button does.
+    /// </summary>
+    public Task CollapseAsync() => SetExpandedAsync(false);
+
+    /// <summary>
+    /// Turns the truncated content of the message over: unfolds it while it is folded, folds it while it is not.
+    /// </summary>
+    public Task ToggleExpandAsync() => SetExpandedAsync(Expanded is false);
+
+    /// <summary>
     /// Holds the <see cref="AutoDismissTime"/> countdown where it is, the way hovering the message does.
     /// </summary>
     /// <remarks>
     /// The countdown is already held while the pointer is over the message or the focus is inside it; this is for
-    /// holding it over something the message cannot see, such as a menu of its own that opened somewhere else.
+    /// holding it over something the message cannot see, such as a menu of its own that opened somewhere else. The
+    /// hold lasts as long as any one of the three reasons for it does, and the countdown bar holds with it.
     /// </remarks>
-    public void PauseAutoDismiss() => _isAutoDismissPaused = true;
+    public void PauseAutoDismiss()
+    {
+        _isPausedByApi = true;
+
+        RefreshAutoDismissHold();
+    }
 
     /// <summary>
     /// Lets the <see cref="AutoDismissTime"/> countdown spend its time again after a
     /// <see cref="PauseAutoDismiss"/>, from wherever it was held.
     /// </summary>
-    public void ResumeAutoDismiss() => _isAutoDismissPaused = false;
+    public void ResumeAutoDismiss()
+    {
+        _isPausedByApi = false;
+
+        RefreshAutoDismissHold();
+    }
 
     /// <summary>
     /// Moves the focus to the message.
@@ -515,9 +577,39 @@ public partial class BitMessage : BitComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (firstRender is false) return;
+        if (firstRender)
+        {
+            ArmAutoDismiss();
+        }
 
-        ArmAutoDismiss();
+        await HandleAutoFocus();
+
+        HandleDelayedAnnouncement();
+    }
+
+
+
+    // The autofocus attribute is only honoured while the element is being inserted, which leaves out the message
+    // brought back by a Dismissed binding into markup that is already on the page. The move is made once per
+    // showing: the latch is cleared when the message is dismissed, so a re-shown message is taken to again.
+    private async Task HandleAutoFocus()
+    {
+        if (AutoFocus is false || Dismissed || _autoFocusDone) return;
+
+        _autoFocusDone = true;
+
+        await RootElement.FocusAsync();
+    }
+
+    // A live region announces what changes inside it, so the text is handed to it one render after the region
+    // itself reaches the page rather than arriving with it. Like the focus, it is done once per showing.
+    private void HandleDelayedAnnouncement()
+    {
+        if (DelayedAnnouncement is false || Dismissed || _isAnnounced) return;
+
+        _isAnnounced = true;
+
+        StateHasChanged();
     }
 
 
@@ -564,17 +656,32 @@ public partial class BitMessage : BitComponentBase
     // the dismissal and its owner decides what to do about it.
     private bool _OwnsDismissal => Dismissible || DismissedChanged.HasDelegate;
 
-    private bool _HasAutoDismiss => _IsDismissable && IsEnabled && AutoDismissTime is { } delay && delay > TimeSpan.Zero;
+    // Whether dismissing would do anything at all: it is reported to someone, or the message takes itself off the
+    // page. Rendering the dismiss button is the narrower question - a message driven through a Dismissed binding
+    // alone is taken off the page from outside and needs no button of its own, yet its countdown and its Escape
+    // key still have something to do.
+    private bool _CanDismiss => _IsDismissable || _OwnsDismissal;
 
-    private bool _HandlesEscape => DismissOnEscape && _IsDismissable && IsEnabled;
+    private bool _HasAutoDismiss => _CanDismiss && IsEnabled && AutoDismissTime is { } delay && delay > TimeSpan.Zero;
+
+    private bool _HandlesEscape => DismissOnEscape && _CanDismiss && IsEnabled;
 
     // There is nothing to count down where nothing is counting down, so the bar follows the countdown itself
     // rather than the parameter that asks for it.
     private bool _ShowsAutoDismissProgress => ShowAutoDismissProgress && _HasAutoDismiss;
 
+    // The text is held back only while a delayed announcement was asked for and the render that puts the live
+    // region on the page has not happened yet.
+    private bool _IsAnnounced => DelayedAnnouncement is false || _isAnnounced;
+
     private string? _AutoDismissDuration => _ShowsAutoDismissProgress
         ? $"animation-duration:{AutoDismissTime!.Value.TotalMilliseconds.ToString(CultureInfo.InvariantCulture)}ms"
         : null;
+
+    // Every message on a page has the same "Dismiss" and the same "Expand" on its buttons, which is nothing to
+    // tell them apart by. Where the message has a title of its own the buttons borrow it as their description, so
+    // each of them is announced as the one belonging to that message.
+    private string? _ButtonDescribedBy => _HasTitle ? $"{_Id}-ttl" : null;
 
     private string _ExpanderLabel => Expanded ? CollapseAriaLabel : ExpandAriaLabel;
 
@@ -607,10 +714,10 @@ public partial class BitMessage : BitComponentBase
     {
         if (_HasAutoDismiss)
         {
-            AddHandler("onmouseenter", _onPauseAutoDismiss);
-            AddHandler("onmouseleave", _onResumeAutoDismiss);
-            AddHandler("onfocusin", _onPauseAutoDismiss);
-            AddHandler("onfocusout", _onResumeAutoDismiss);
+            AddHandler("onmouseenter", _onPointerEnter);
+            AddHandler("onmouseleave", _onPointerLeave);
+            AddHandler("onfocusin", _onFocusIn);
+            AddHandler("onfocusout", _onFocusOut);
         }
 
         if (_HandlesEscape)
@@ -633,12 +740,21 @@ public partial class BitMessage : BitComponentBase
     {
         StopAutoDismiss();
 
+        // A message that is not on the page has no pointer over it and no focus inside it, and nothing is going to
+        // report that it left: the holds are dropped here so a re-shown message does not start out held forever.
+        _isPointerOver = false;
+        _isFocusInside = false;
+        _isPausedByApi = false;
+        _isAutoDismissPaused = false;
+
         _armedAutoDismissTime = null;
+        _autoFocusDone = false;
+        _isAnnounced = false;
     }
 
     private void ArmAutoDismiss()
     {
-        var delay = (_IsDismissable && IsEnabled && Dismissed is false) ? AutoDismissTime : null;
+        var delay = (_CanDismiss && IsEnabled && Dismissed is false) ? AutoDismissTime : null;
 
         if (delay is not { } value || value <= TimeSpan.Zero)
         {
@@ -663,8 +779,9 @@ public partial class BitMessage : BitComponentBase
     // parameter set that this message has had its countdown and is not owed another one.
     private void StopAutoDismiss()
     {
-        _isAutoDismissPaused = false;
-
+        // The holds are left alone: the pointer being over the message and the focus being inside it are facts
+        // about the page rather than about this countdown, and they are just as true of the next one. What clears
+        // them is the message going away, where no mouseleave is ever coming to do it (see HandleDismissedChanged).
         if (_autoDismissCts is null) return;
 
         _autoDismissCts.Cancel();
@@ -689,7 +806,7 @@ public partial class BitMessage : BitComponentBase
                 if (_isAutoDismissPaused is false) remaining -= step;
             }
 
-            if (ct.IsCancellationRequested || IsDisposed || _IsDismissable is false) return;
+            if (ct.IsCancellationRequested || IsDisposed || _CanDismiss is false) return;
 
             await InvokeAsync(() => DismissAsync(BitMessageDismissReason.AutoDismiss));
         }
@@ -699,30 +816,99 @@ public partial class BitMessage : BitComponentBase
 
     private async Task DismissAsync(BitMessageDismissReason reason)
     {
-        if (Dismissed) return;
+        // OnDismissing is awaited, so a second press of the button - or a countdown running out while a
+        // confirmation prompt is still open - would otherwise start a dismissal of its own alongside the first.
+        if (Dismissed || _isDismissing) return;
 
-        if (OnDismissing.HasDelegate)
+        _isDismissing = true;
+
+        try
         {
-            var args = new BitMessageDismissArgs(reason);
+            if (OnDismissing.HasDelegate)
+            {
+                var args = new BitMessageDismissArgs(reason);
 
-            await OnDismissing.InvokeAsync(args);
+                await OnDismissing.InvokeAsync(args);
 
-            if (args.Cancel) return;
+                if (args.Cancel) return;
+            }
+
+            StopAutoDismiss();
+
+            if (_OwnsDismissal)
+            {
+                await AssignDismissed(true);
+
+                // The dismissal can come from the countdown or from a call of its own, neither of which is a render
+                // the component was already going to do, so the re-render is asked for rather than assumed. It goes
+                // through the dispatcher so a call from off the render loop is safe.
+                await InvokeAsync(StateHasChanged);
+            }
+
+            await OnDismiss.InvokeAsync();
         }
-
-        StopAutoDismiss();
-
-        if (_OwnsDismissal)
+        finally
         {
-            await AssignDismissed(true);
-
-            // The dismissal can come from the countdown or from a call of its own, neither of which is a render
-            // the component was already going to do, so the re-render is asked for rather than assumed. It goes
-            // through the dispatcher so a call from off the render loop is safe.
-            await InvokeAsync(StateHasChanged);
+            _isDismissing = false;
         }
+    }
 
-        await OnDismiss.InvokeAsync();
+    private void HandlePointerEnter()
+    {
+        _isPointerOver = true;
+
+        RefreshAutoDismissHold();
+    }
+
+    private void HandlePointerLeave()
+    {
+        _isPointerOver = false;
+
+        RefreshAutoDismissHold();
+    }
+
+    private void HandleFocusIn()
+    {
+        _isFocusInside = true;
+
+        RefreshAutoDismissHold();
+    }
+
+    private void HandleFocusOut()
+    {
+        _isFocusInside = false;
+
+        RefreshAutoDismissHold();
+    }
+
+    // The pointer leaving a message the focus is still inside of is not a reason to let the countdown go, so the
+    // hold lasts as long as any one of the three reasons for it does. The bar that draws the countdown is held by
+    // the same flag, so the two never disagree about how much time is left - and a call from outside the render
+    // loop has to ask for the render that shows it, which the pointer and focus listeners would have got for free.
+    private void RefreshAutoDismissHold()
+    {
+        var paused = _isPointerOver || _isFocusInside || _isPausedByApi;
+
+        if (_isAutoDismissPaused == paused) return;
+
+        _isAutoDismissPaused = paused;
+
+        // The flag is what the countdown task reads, and it has just been written. The render is only owed to the
+        // bar that draws the countdown, so a message without one is not re-rendered on every hover of it.
+        if (IsDisposed || _ShowsAutoDismissProgress is false) return;
+
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    // Only meaningful together with Truncate, and it goes through the same assignment the expander button does,
+    // so a binding on Expanded follows a call just as it follows a press of the button.
+    private async Task SetExpandedAsync(bool expanded)
+    {
+        if (Expanded == expanded) return;
+
+        await AssignExpanded(expanded);
+
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task ToggleExpand()

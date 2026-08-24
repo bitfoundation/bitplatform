@@ -26,6 +26,13 @@
     }
 }
 
+
+// The root is focusable while it carries a TabIndex or an AutoFocus, so a keyboard user can land on the message
+// itself - and has to be able to see that they did.
+.bit-msg:focus-visible {
+    @include focus-ring(var(--bit-msg-clr-focus));
+}
+
 // Squared off so the message can sit flush against the edges of its container as a banner.
 .bit-msg-sqr {
     border-radius: $shp-radius-none;
@@ -220,6 +227,12 @@
     animation-name: bit-msg-countdown;
     animation-fill-mode: forwards;
     animation-timing-function: linear;
+}
+
+// Held where the countdown is held. The pointer and the focus are handled by the two rules above without a round
+// trip, and this class carries the hold that PauseAutoDismiss asks for, which the browser knows nothing about.
+.bit-msg-prb.bit-msg-pau {
+    animation-play-state: paused;
 }
 
 .bit-rtl .bit-msg-prb {

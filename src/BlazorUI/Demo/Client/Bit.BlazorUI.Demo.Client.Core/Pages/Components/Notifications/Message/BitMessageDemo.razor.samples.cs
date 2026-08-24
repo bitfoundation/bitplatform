@@ -96,9 +96,20 @@ private double elevation = 7;";
     begins here, in this quiet moment where everything is possible.
 </BitMessage>
 
-<BitToggle Label=""Expanded"" @bind-Value=""isTruncateExpanded"" />";
+<BitToggle Label=""Expanded"" @bind-Value=""isTruncateExpanded"" />
+
+<BitMessage @ref=""truncatedMessage"" Truncate Color=""BitColor.Info"">
+    Driven by its methods rather than by a binding. In the beginning, there is silence-a blank canvas
+    yearning to be filled, a quiet space where creativity waits to awaken. These words are temporary,
+    standing in place of ideas yet to come, a glimpse into the infinite possibilities that lie ahead.
+</BitMessage>
+
+<BitButton OnClick=""() => truncatedMessage!.ExpandAsync()"">Expand</BitButton>
+<BitButton OnClick=""() => truncatedMessage!.CollapseAsync()"">Collapse</BitButton>
+<BitButton OnClick=""() => truncatedMessage!.ToggleExpandAsync()"">Toggle</BitButton>";
     private readonly string example7CsharpCode = @"
-private bool isTruncateExpanded;";
+private bool isTruncateExpanded;
+private BitMessage? truncatedMessage;";
 
     private readonly string example8RazorCode = @"
 <BitMessage Dismissible @bind-Dismissed=""isSelfDismissed"" Color=""BitColor.Success"">
@@ -196,10 +207,31 @@ else
 @if (isProgressDismissed)
 {
     <BitButton OnClick=""() => isProgressDismissed = false"">Auto-Dismissed, click to restart</BitButton>
+}
+
+<BitMessage @ref=""pausableMessage""
+            ShowAutoDismissProgress
+            Color=""BitColor.Warning""
+            AutoDismissTime=""TimeSpan.FromSeconds(15)""
+            @bind-Dismissed=""isPausedDismissed"">
+    Fifteen seconds, and no dismiss button: a message bound through <strong>Dismissed</strong> alone
+    counts down all the same. Hold it from outside with the buttons below.
+</BitMessage>
+
+@if (isPausedDismissed)
+{
+    <BitButton OnClick=""() => isPausedDismissed = false"">Auto-Dismissed, click to restart</BitButton>
+}
+else
+{
+    <BitButton OnClick=""() => pausableMessage!.PauseAutoDismiss()"">Pause</BitButton>
+    <BitButton OnClick=""() => pausableMessage!.ResumeAutoDismiss()"">Resume</BitButton>
 }";
     private readonly string example9CsharpCode = @"
 private bool isAutoDismissed;
-private bool isProgressDismissed;";
+private bool isProgressDismissed;
+private bool isPausedDismissed;
+private BitMessage? pausableMessage;";
 
     private readonly string example10RazorCode = @"
 <BitMessage>
@@ -334,7 +366,18 @@ private bool isWarningDismissed;";
 
 <BitMessage Color=""BitColor.Info"" Role=""none"">
     Part of the page rather than news about it: not announced at all.
+</BitMessage>
+
+<BitButton OnClick=""() => isDelayedDismissed = false"">Show a delayed-announcement message</BitButton>
+
+<BitMessage DelayedAnnouncement
+            Dismissible
+            Color=""BitColor.Success""
+            @bind-Dismissed=""isDelayedDismissed"">
+    Announced reliably: the live region reached the page one render before this text landed in it.
 </BitMessage>";
+    private readonly string example15CsharpCode = @"
+private bool isDelayedDismissed = true;";
 
     private readonly string example16RazorCode = @"
 <BitButton OnClick=""() => isAutoFocusDismissed = false"">Show an auto-focused message</BitButton>

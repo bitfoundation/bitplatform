@@ -25,7 +25,7 @@ public partial class BitMessageDemo
             Name = "AutoDismissTime",
             Type = "TimeSpan?",
             DefaultValue = "null",
-            Description = "Enables the auto-dismiss feature and sets the time to automatically call the OnDismiss callback. The countdown is held while the pointer is over the message or the focus is inside it.",
+            Description = "Enables the auto-dismiss feature and sets the time to automatically dismiss the message. It runs wherever dismissing would do something - an OnDismiss handler, Dismissible, or a Dismissed binding - and is held while the pointer is over the message, the focus is inside it, or PauseAutoDismiss was called.",
         },
         new()
         {
@@ -93,6 +93,13 @@ public partial class BitMessageDemo
         },
         new()
         {
+            Name = "DelayedAnnouncement",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Holds the content of the message back for one render, so its live region is already on the page when the text lands in it, which is what makes the announcement reliable.",
+        },
+        new()
+        {
             Name = "DismissAriaLabel",
             Type = "string",
             DefaultValue = "\"Dismiss\"",
@@ -142,7 +149,7 @@ public partial class BitMessageDemo
             Name = "DismissOnEscape",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Dismisses the message when the Escape key is pressed while the focus is inside it. Only wired up while the message can be dismissed at all - that is, while OnDismiss has a handler or Dismissible is set.",
+            Description = "Dismisses the message when the Escape key is pressed while the focus is inside it. Only wired up while dismissing would do something - that is, while OnDismiss has a handler, Dismissible is set, or Dismissed is bound.",
         },
         new()
         {
@@ -332,9 +339,21 @@ public partial class BitMessageDemo
     [
         new()
         {
+            Name = "CollapseAsync",
+            Type = "Task",
+            Description = "Folds the truncated content of the message back into a single line, the way its expander button does.",
+        },
+        new()
+        {
             Name = "DismissAsync",
             Type = "Task",
             Description = "Dismisses the message the same way its dismiss button does: the countdown is stopped, the message takes itself off the page while it owns its dismissal, and OnDismiss is invoked.",
+        },
+        new()
+        {
+            Name = "ExpandAsync",
+            Type = "Task",
+            Description = "Unfolds the truncated content of the message, the way its expander button does.",
         },
         new()
         {
@@ -353,6 +372,12 @@ public partial class BitMessageDemo
             Name = "ResumeAutoDismiss",
             Type = "void",
             Description = "Lets the AutoDismissTime countdown spend its time again after a PauseAutoDismiss, from wherever it was held.",
+        },
+        new()
+        {
+            Name = "ToggleExpandAsync",
+            Type = "Task",
+            Description = "Turns the truncated content of the message over: unfolds it while it is folded, folds it while it is not.",
         },
     ];
 
@@ -797,7 +822,10 @@ public partial class BitMessageDemo
     private bool isSelfDismissed;
     private bool isAutoDismissed;
     private bool isProgressDismissed;
+    private bool isPausedDismissed;
+    private BitMessage? pausableMessage;
     private bool isEscapeDismissed;
+    private bool isDelayedDismissed = true;
 
     private int dismissAttempts;
     private bool isGuardedDismissed;
@@ -820,6 +848,7 @@ public partial class BitMessageDemo
     }
 
     private bool isTruncateExpanded;
+    private BitMessage? truncatedMessage;
 
     private BitMessage? focusableMessage;
     private bool isAutoFocusDismissed = true;
