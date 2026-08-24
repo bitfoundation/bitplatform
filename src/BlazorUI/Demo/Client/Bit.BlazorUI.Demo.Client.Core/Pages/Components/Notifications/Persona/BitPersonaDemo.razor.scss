@@ -28,6 +28,12 @@
         font-style: italic;
     }
 
+    .tinted-box {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        background-color: var(--bit-clr-bg-ter);
+    }
+
     .width-box {
         width: 20rem;
         padding: 0.5rem;

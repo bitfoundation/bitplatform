@@ -44,7 +44,8 @@
             status, and <strong>PresenceTitles</strong> replaces those names - and the tooltip - with your
             own wording, one entry per status; <strong>PresenceTitle</strong> does the same for a single
             persona. <strong>PresenceIconNames</strong> puts a glyph inside the dot, which the sizes below
-            40px have no room for.
+            40px have no room for, and <strong>PresenceIconName</strong> does the same for a persona that
+            only ever shows the one status.
         </div>
         <br />
         <BitPersona PrimaryText="Xafan Salina"
@@ -101,6 +102,15 @@
                     SecondaryText="Software Engineer"
                     Presence="BitPersonaPresence.Online"
                     PresenceIconNames="_iconNames"
+                    Size="BitPersonaSize.Size100"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>A single status, without a map of all eight (<b>PresenceIconName</b>):</div>
+        <br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Out of office"
+                    Presence="BitPersonaPresence.OutOfOffice"
+                    PresenceIconName="@BitIconName.Airplane"
                     Size="BitPersonaSize.Size100"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <br /><br /><br /><br />
@@ -241,7 +251,10 @@
             <strong>Active</strong> points at the one person a view is about - whoever is speaking, whoever
             wrote the message being read - without moving them out of the list they belong to.
             <strong>ActiveAppearance</strong> picks how: a <strong>Ring</strong> in the coin color, a
-            <strong>Shadow</strong> under the coin, or <strong>RingShadow</strong> for both.
+            <strong>Shadow</strong> under the coin, or <strong>RingShadow</strong> for both. The ring is
+            separated from the coin by a gap cut in the page color; a persona sitting on a surface of its
+            own retunes that gap with the <b>--bit-prs-ring-gap-clr</b> variable, and its width with
+            <b>--bit-prs-ring-gap</b> and <b>--bit-prs-ring-width</b>.
         </div>
         <br />
         <BitPersona PrimaryText="Xafan Salina"
@@ -269,6 +282,23 @@
                     SecondaryText="RingShadow"
                     Size="BitPersonaSize.Size72"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>On a surface of its own, with the gap cut in that surface instead of the page:</div>
+        <br />
+        <div class="tinted-box">
+            <BitPersona Active
+                        PrimaryText="Xafan Salina"
+                        SecondaryText="Default gap color"
+                        Size="BitPersonaSize.Size72"
+                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+            <br /><br />
+            <BitPersona Active
+                        PrimaryText="Xafan Salina"
+                        SecondaryText="Retuned gap color"
+                        Size="BitPersonaSize.Size72"
+                        Style="--bit-prs-ring-gap-clr: var(--bit-clr-bg-ter);"
+                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        </div>
     </DemoExample>
 
     <DemoExample Title="Action" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
@@ -278,8 +308,9 @@
             <strong>ActionTemplate</strong> replaces it outright. <strong>OnImageClick</strong> turns the
             whole coin into a button instead: it reveals the overlay labelled by
             <strong>ImageOverlayText</strong>, takes the focus, and answers Enter and Space the way it
-            answers a click. The action button takes the corner the presence dot would have used, so a persona
-            shows one or the other.
+            answers a click. The overlay belongs to the click rather than to the picture, so a coin carrying
+            initials, an icon or the unknown glyph reveals it just the same. The action button takes the
+            place the presence dot would have used, so a persona shows one or the other.
         </div>
         <br />
         <div>Action button (hover, or tab to it, at the bottom of the coin):</div>
@@ -308,6 +339,14 @@
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <br />
         <p>Image Click Count: @imageClickCount</p>
+        <br /><br /><br /><br />
+        <div>A clickable coin with no picture in it reveals the same overlay:</div>
+        <br />
+        <BitPersona PrimaryText="Saleh Khafan"
+                    SecondaryText="Developer"
+                    Size="BitPersonaSize.Size120"
+                    ImageOverlayText="Add photo"
+                    OnImageClick="() => imageClickCount++" />
         <br /><br /><br /><br />
         <div>A whole action of your own (<b>ActionTemplate</b>):</div>
         <br />
@@ -405,7 +444,7 @@
                     ImageAlt="Xafan Salina smiling at the camera"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"
                     ImageSizes="72px"
-                    ImageSrcSet="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png 1x, /_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png 2x" />
+                    ImageSrcSet="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female-72.png 72w, /_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png 96w" />
     </DemoExample>
 
     <DemoExample Title="Templates" RazorCode="@example14RazorCode" Id="example14">
@@ -780,14 +819,21 @@
     <DemoExample Title="RTL" RazorCode="@example22RazorCode" Id="example22">
         <div>
             Set <strong>Dir</strong> to <strong>Rtl</strong> to lay the persona out right to left. The coin
-            moves to the right of the texts, the presence dot moves with it, and the two initials swap
-            places so they read in the right order.
+            moves to the right of the texts and the presence dot moves with it. A pair of Latin initials is
+            written back to front so that the layout reads them in the right order, while initials taken
+            from a right-to-left name are already in that order and are left as they are.
         </div>
         <br />
         <div dir="rtl">
             <BitPersona Dir="BitDir.Rtl"
                         PrimaryText="صالح یوسف نژاد"
                         SecondaryText="مهندس نرم افزار"
+                        Presence="BitPersonaPresence.Online"
+                        Size="@BitPersonaSize.Size56" />
+            <br /><br />
+            <BitPersona Dir="BitDir.Rtl"
+                        PrimaryText="Saleh Khafan"
+                        SecondaryText="یک نام لاتین"
                         Presence="BitPersonaPresence.Online"
                         Size="@BitPersonaSize.Size56" />
             <br /><br />

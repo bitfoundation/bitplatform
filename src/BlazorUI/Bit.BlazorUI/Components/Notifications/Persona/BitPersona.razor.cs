@@ -13,6 +13,7 @@ public partial class BitPersona : BitComponentBase
 {
     private bool _isLoaded;
     private bool _hasError;
+    private bool _preventCoinKeyDownDefault;
 
 
 
@@ -192,13 +193,19 @@ public partial class BitPersona : BitComponentBase
     /// <summary>
     /// A set of image source URLs for different display densities or sizes (maps to the img srcset attribute).
     /// </summary>
-    [Parameter] public string? ImageSrcSet { get; set; }
+    /// <remarks>
+    /// Changing it starts a fresh load the same way changing <see cref="ImageUrl"/> does, so a coin that had
+    /// fallen back to its initials is given the new candidates rather than being left on the old verdict.
+    /// </remarks>
+    [Parameter]
+    [CallOnSet(nameof(OnSetImageSource))]
+    public string? ImageSrcSet { get; set; }
 
     /// <summary>
     /// Url to the image to use, should be a square aspect ratio and big enough to fit in the image area.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    [CallOnSet(nameof(OnSetImageUrl))]
+    [CallOnSet(nameof(OnSetImageSource))]
     public string? ImageUrl { get; set; }
 
     /// <summary>
@@ -241,6 +248,28 @@ public partial class BitPersona : BitComponentBase
     /// Presence of the person to display - will not display presence if undefined.
     /// </summary>
     [Parameter] public BitPersonaPresence Presence { get; set; }
+
+    /// <summary>
+    /// The icon rendered inside the presence dot of the current <see cref="Presence"/>.
+    /// </summary>
+    /// <remarks>
+    /// This is the single-status counterpart of <see cref="PresenceIcons"/>, for a persona that only ever
+    /// shows one status and has no reason to carry a map of all of them. A matching entry in
+    /// <see cref="PresenceIcons"/> or <see cref="PresenceIconNames"/> takes precedence over it, and
+    /// <see cref="PresenceIcon"/> itself takes precedence over <see cref="PresenceIconName"/>.
+    /// The two smallest coins have no room for a glyph and show none.
+    /// </remarks>
+    [Parameter] public BitIconInfo? PresenceIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon rendered inside the presence dot of the current <see cref="Presence"/>.
+    /// </summary>
+    /// <remarks>
+    /// This is a convenience property for specifying an icon from the built-in icon set.
+    /// If <see cref="PresenceIcon"/> is specified, this property is ignored and the value of
+    /// <see cref="PresenceIcon"/> will be used instead.
+    /// </remarks>
+    [Parameter] public string? PresenceIconName { get; set; }
 
     /// <summary>
     /// The icons to be used for the presence status with <see cref="BitIconInfo"/>.
@@ -513,7 +542,9 @@ public partial class BitPersona : BitComponentBase
             return BitIconInfo.Bit(iconName!);
         }
 
-        return null;
+        // The single-status pair is what a persona that only ever shows one status reaches for instead of
+        // declaring a map of all eight, so it answers only where the map had nothing to say.
+        return BitIconInfo.From(PresenceIcon, PresenceIconName);
     }
 
     /// <summary>
@@ -643,7 +674,35 @@ public partial class BitPersona : BitComponentBase
 
         if (second.Length == 0) return first;
 
-        return isRtl ? $"{second}{first}" : $"{first}{second}";
+        // Writing the pair back to front is what puts it in reading order inside a right-to-left layout -
+        // but only for initials that are themselves left-to-right, which the bidi algorithm lays out left
+        // to right wherever they sit. Initials taken from a right-to-left name are already laid out from
+        // the right, and reversing those would undo the very order it is here to produce.
+        var reverse = isRtl && IsRtlText(first) is false && IsRtlText(second) is false;
+
+        return reverse ? $"{second}{first}" : $"{first}{second}";
+    }
+
+    /// <summary>
+    /// Whether a text element is written in a right-to-left script.
+    /// </summary>
+    /// <remarks>
+    /// .NET does not publish the bidirectional class of a character, so the question is answered from the
+    /// Unicode blocks that carry the right-to-left scripts: Hebrew through Arabic Extended-A, and the two
+    /// Arabic presentation form blocks.
+    /// </remarks>
+    private static bool IsRtlText(string text)
+    {
+        foreach (var c in text)
+        {
+            // Hebrew through Arabic Extended-A.
+            if (c is >= (char)0x0590 and <= (char)0x08FF) return true;
+            // The two Arabic presentation form blocks.
+            if (c is >= (char)0xFB1D and <= (char)0xFDFF) return true;
+            if (c is >= (char)0xFE70 and <= (char)0xFEFF) return true;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -731,7 +790,11 @@ public partial class BitPersona : BitComponentBase
 
     private string? GetImageContainerClass()
     {
-        var klass = $"{(CoinTemplate is null ? "bit-prs-imc" : null)} {GetCoinClass()} {Classes?.ImageContainer}".Trim();
+        // bit-prs-cne is on the coin whatever fills it, while bit-prs-imc is only on the coin the component
+        // draws itself. Everything about the element as a control - the pointer, the focus ring, the overlay
+        // it reveals - is hung off the first, so a coin filled by a template is as reachable as any other;
+        // everything about how the coin looks stays on the second, which a template has taken over.
+        var klass = $"bit-prs-cne {(CoinTemplate is null ? "bit-prs-imc" : null)} {GetCoinClass()} {Classes?.ImageContainer}".Trim();
         return klass.HasValue() ? klass : null;
     }
 
@@ -774,6 +837,11 @@ public partial class BitPersona : BitComponentBase
     {
         if (OnImageClick.HasDelegate is false) return null;
 
+        // A template of one's own in the overlay is free to leave the text empty, and a button with nothing
+        // to announce is a button nobody can tell apart from the next one - the name of the person is what
+        // is left to call it after.
+        if (ImageOverlayText.HasNoValue()) return PrimaryText;
+
         if (HidePersonaDetails is false || PrimaryText.HasNoValue()) return ImageOverlayText;
 
         return $"{PrimaryText}, {ImageOverlayText}";
@@ -794,7 +862,15 @@ public partial class BitPersona : BitComponentBase
         return _hasError || (ShowInitialsUntilImageLoads && _isLoaded is false);
     }
 
-    private string? GetRootRole() => IsCoinOnly ? "img" : null;
+    /// <summary>
+    /// The role of a persona that shows nothing but its coin.
+    /// </summary>
+    /// <remarks>
+    /// The role is only claimed where there is a name to go with it. An image role with nothing to announce
+    /// is worse than no role at all: it makes everything inside the persona presentational and then has
+    /// nothing of its own to put in their place.
+    /// </remarks>
+    private string? GetRootRole() => IsCoinOnly && GetRootAriaLabel().HasValue() ? "img" : null;
 
     /// <summary>
     /// The name of a persona that shows nothing but its coin. The presence dot is folded into it rather than
@@ -833,6 +909,10 @@ public partial class BitPersona : BitComponentBase
     /// </summary>
     private async Task HandleImageKeyDown(KeyboardEventArgs e)
     {
+        // Space scrolls the page by default, which is not what activating the coin is meant to do. Kept
+        // key-scoped so Tab, Enter and everything else the coin does not claim still behave normally.
+        _preventCoinKeyDownDefault = IsEnabled && OnImageClick.HasDelegate && e.Key is " " or "Spacebar";
+
         if (IsEnabled is false) return;
         if (OnImageClick.HasDelegate is false) return;
         if (e.Key is not ("Enter" or " " or "Spacebar")) return;
@@ -859,7 +939,7 @@ public partial class BitPersona : BitComponentBase
         await OnImageLoad.InvokeAsync(e);
     }
 
-    private void OnSetImageUrl()
+    private void OnSetImageSource()
     {
         _hasError = false;
         _isLoaded = false;

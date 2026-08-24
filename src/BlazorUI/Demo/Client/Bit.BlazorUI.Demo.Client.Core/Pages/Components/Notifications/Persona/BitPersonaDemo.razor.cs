@@ -253,6 +253,22 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Name = "PresenceIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon rendered inside the presence dot of the current Presence, for a persona that shows a single status and needs no map of all of them. A matching entry of PresenceIcons or PresenceIconNames takes precedence over it.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "PresenceIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the icon rendered inside the presence dot of the current Presence. Ignored when PresenceIcon is set.",
+        },
+        new()
+        {
             Name = "PresenceIcons",
             Type = "Dictionary<BitPersonaPresence, BitIconInfo>?",
             DefaultValue = "null",

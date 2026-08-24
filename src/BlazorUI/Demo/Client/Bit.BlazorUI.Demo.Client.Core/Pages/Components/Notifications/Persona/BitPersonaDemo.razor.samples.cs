@@ -75,6 +75,15 @@ public partial class BitPersonaDemo
             ImageUrl=""/images/persona/persona-female.png"" />
 
 
+<div>A single status, without a map of all eight (PresenceIconName)</div>
+<BitPersona PrimaryText=""Xafan Salina""
+            SecondaryText=""Out of office""
+            Presence=""BitPersonaPresence.OutOfOffice""
+            PresenceIconName=""@BitIconName.Airplane""
+            Size=""BitPersonaSize.Size100""
+            ImageUrl=""/images/persona/persona-female.png"" />
+
+
 <div>Named for the reader (PresenceTitles)</div>
 <BitPersona PrimaryText=""Xafan Salina""
             SecondaryText=""Software Engineer""
@@ -211,7 +220,24 @@ private readonly Dictionary<BitPersonaPresence, string> _presenceTitles = new()
             PrimaryText=""Xafan Salina""
             SecondaryText=""RingShadow""
             Size=""BitPersonaSize.Size72""
-            ImageUrl=""/images/persona/persona-female.png"" />";
+            ImageUrl=""/images/persona/persona-female.png"" />
+
+
+<div>On a surface of its own, with the gap cut in that surface instead of the page</div>
+<div class=""tinted-box"">
+    <BitPersona Active
+                PrimaryText=""Xafan Salina""
+                SecondaryText=""Default gap color""
+                Size=""BitPersonaSize.Size72""
+                ImageUrl=""/images/persona/persona-female.png"" />
+
+    <BitPersona Active
+                PrimaryText=""Xafan Salina""
+                SecondaryText=""Retuned gap color""
+                Size=""BitPersonaSize.Size72""
+                Style=""--bit-prs-ring-gap-clr: var(--bit-clr-bg-ter);""
+                ImageUrl=""/images/persona/persona-female.png"" />
+</div>";
 
     private readonly string example9RazorCode = @"
 <BitPersona PrimaryText=""Xafan Salina""
@@ -234,6 +260,12 @@ private readonly Dictionary<BitPersonaPresence, string> _presenceTitles = new()
             OnImageClick=""() => imageClickCount++""
             ImageUrl=""/images/persona/persona-female.png"" />
 <p>Image Click Count: @imageClickCount</p>
+
+<BitPersona PrimaryText=""Saleh Khafan""
+            SecondaryText=""Developer""
+            Size=""BitPersonaSize.Size120""
+            ImageOverlayText=""Add photo""
+            OnImageClick=""() => imageClickCount++"" />
 
 <BitPersona PrimaryText=""Xafan Salina""
             SecondaryText=""Software Engineer""
@@ -300,7 +332,7 @@ private int imageErrorCount = 0;";
             ImageAlt=""Xafan Salina smiling at the camera""
             ImageUrl=""/images/persona/persona-female.png""
             ImageSizes=""72px""
-            ImageSrcSet=""/images/persona/persona-female.png 1x, /images/persona/persona-female.png 2x"" />";
+            ImageSrcSet=""/images/persona/persona-female-72.png 72w, /images/persona/persona-female.png 96w"" />";
 
     private readonly string example14RazorCode = @"
 <style>
@@ -607,6 +639,12 @@ private bool isDetailsShown = true;";
     <BitPersona Dir=""BitDir.Rtl""
                 PrimaryText=""صالح یوسف نژاد""
                 SecondaryText=""مهندس نرم افزار""
+                Presence=""BitPersonaPresence.Online""
+                Size=""@BitPersonaSize.Size56"" />
+
+    <BitPersona Dir=""BitDir.Rtl""
+                PrimaryText=""Saleh Khafan""
+                SecondaryText=""یک نام لاتین""
                 Presence=""BitPersonaPresence.Online""
                 Size=""@BitPersonaSize.Size56"" />
 

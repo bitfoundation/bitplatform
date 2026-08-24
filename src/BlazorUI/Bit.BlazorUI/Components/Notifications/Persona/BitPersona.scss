@@ -22,6 +22,7 @@
     --bit-prs-presence-glyph-sm: #{rem2(4px)};
     --bit-prs-presence-glyph-md: #{rem2(6.8px)};
     --bit-prs-initials-lg: #{rem2(42px)};
+    --bit-prs-initials-xl: #{rem2(48px)};
     // How far the presence dot hangs off the coin. One knob, read by all four of the positions the dot
     // can take (the two writing directions crossed with the two reading orders), so the square coin -
     // whose corner sits further out than the circle's - retunes it once per size instead of restating
@@ -30,9 +31,12 @@
     // The ring the dot is cut out of. A dot on a colored surface wants the ring to match that surface
     // rather than the border color the default draws, which is what this is here to be retuned to.
     --bit-prs-presence-brd-clr: #{$clr-brd-sec};
-    // The active ring: the gap between the coin and the ring, and the ring itself.
+    // The active ring: the gap between the coin and the ring, the ring itself, and the color the gap is
+    // cut in. The gap reads as the page showing through, so a persona on a surface of its own retunes it
+    // to that surface rather than being left with a stripe of the page color across it.
     --bit-prs-ring-gap: #{rem2(2px)};
     --bit-prs-ring-width: #{rem2(2px)};
+    --bit-prs-ring-gap-clr: #{$clr-bg-pri};
     --bit-prs-flex-direction: row;
     flex-direction: var(--bit-prs-flex-direction);
 
@@ -64,6 +68,9 @@
     font-weight: $tg-fw-regular;
     position: relative;
     font-size: $tg-fs-sm;
+    // The coin is a fixed size, not a share of the row: without this a long name in a narrow container
+    // squashes it into an ellipse instead of ellipsizing the text it belongs to.
+    flex-shrink: 0;
 }
 
 .bit-prs-imc {
@@ -126,6 +133,9 @@
 
 .bit-prs-ini {
     text-transform: uppercase;
+    // A pair of letters standing in for a face is not text to be copied: without this, double-clicking a
+    // persona - or dragging across a list of them - selects the initials instead of doing nothing.
+    user-select: none;
 }
 
 .bit-prs-img {
@@ -204,13 +214,18 @@
     transform: translateX(-50%);
     font-family: $tg-font-family;
     background-color: transparent;
-    padding-inline-start: spacing(0.5);
     transition: color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
             color: $clr-fg-pri-hover;
         }
+    }
+
+    // Where there is no pointer there is no hover to reveal the button with, and a control that can only
+    // be found by hovering is a control a touch device never shows at all.
+    @media (hover: none) {
+        color: $clr-fg-pri;
     }
 
     // The button is invisible until it is reached, so reaching it with the keyboard has to reveal it too -
@@ -226,8 +241,16 @@
     margin: 0 spacing(0.5);
 }
 
+// The coin as an element, whatever fills it. The overlay is positioned against this rather than against the
+// coin the component draws, so a coin filled by a template carries it too.
+.bit-prs-cne {
+    position: relative;
+}
+
 .bit-prs-iac {
-    .bit-prs-imc {
+    // Hung off the coin element rather than off the coin the component draws: a clickable coin filled by a
+    // template is reached, focused and hovered on exactly the same terms as any other.
+    .bit-prs-cne {
         cursor: pointer;
 
         @media (hover: hover) {
@@ -256,7 +279,7 @@
 // the coin reads as lifted out of whatever it sits on rather than merely outlined.
 .bit-prs-arg {
     .bit-prs-imc {
-        box-shadow: 0 0 0 var(--bit-prs-ring-gap) #{$clr-bg-pri},
+        box-shadow: 0 0 0 var(--bit-prs-ring-gap) var(--bit-prs-ring-gap-clr),
                     0 0 0 calc(var(--bit-prs-ring-gap) + var(--bit-prs-ring-width)) var(--bit-prs-coin-clr-bg);
     }
 }
@@ -269,7 +292,7 @@
 
 .bit-prs-ars {
     .bit-prs-imc {
-        box-shadow: 0 0 0 var(--bit-prs-ring-gap) #{$clr-bg-pri},
+        box-shadow: 0 0 0 var(--bit-prs-ring-gap) var(--bit-prs-ring-gap-clr),
                     0 0 0 calc(var(--bit-prs-ring-gap) + var(--bit-prs-ring-width)) var(--bit-prs-coin-clr-bg),
                     $box-shadow-card;
     }
@@ -588,7 +611,7 @@
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(15);
-        font-size: var(--bit-prs-initials-lg);
+        font-size: var(--bit-prs-initials-xl);
     }
 
     .bit-prs-pre {
