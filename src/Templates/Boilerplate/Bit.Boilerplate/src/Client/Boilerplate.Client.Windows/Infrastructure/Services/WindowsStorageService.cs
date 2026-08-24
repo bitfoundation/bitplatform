@@ -5,13 +5,14 @@
 // IStorageServiceContractTests pins the behaviour all four must share.
 
 using System.IO.IsolatedStorage;
+using System.Collections.Concurrent;
 
 namespace Boilerplate.Client.Windows.Infrastructure.Services;
 
 public partial class WindowsStorageService : IStorageService
 {
     private Dictionary<string, string?>? persistentStorage;
-    private readonly Dictionary<string, string?> tempStorage = [];
+    private readonly ConcurrentDictionary<string, string?> tempStorage = [];
 
     public async ValueTask<bool> IsPersistent(string key)
     {
@@ -32,7 +33,7 @@ public partial class WindowsStorageService : IStorageService
 
     public async ValueTask RemoveItem(string key)
     {
-        tempStorage.Remove(key);
+        tempStorage.TryRemove(key, out _);
 
         persistentStorage ??= await Restore();
 
@@ -51,7 +52,7 @@ public partial class WindowsStorageService : IStorageService
         // write would be shadowed by the temporary value it supersedes.
         if (persistent)
         {
-            tempStorage.Remove(key);
+            tempStorage.TryRemove(key, out _);
             persistentStorage[key] = value;
             await Save(persistentStorage);
         }

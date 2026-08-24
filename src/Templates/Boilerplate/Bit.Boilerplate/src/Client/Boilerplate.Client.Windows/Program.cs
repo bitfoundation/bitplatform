@@ -67,7 +67,7 @@ public partial class Program
         {
             Application.Restart();
         });
-        _ = pubSubService.Subscribe(ClientAppMessages.PAGE_DATA_CHANGED, async args =>
+        pubSubHandlerReferenceToKeepAlive = pubSubService.Subscribe(ClientAppMessages.PAGE_DATA_CHANGED, async args =>
         {
             var (title, _, __) = ((string? title, string?, bool))args!;
             await form.InvokeAsync(() =>
@@ -112,8 +112,12 @@ public partial class Program
 
         blazorWebView.BlazorWebViewInitialized += delegate
         {
-            blazorWebView.WebView.CoreWebView2.PermissionRequested += async (sender, args) =>
+            blazorWebView.WebView.CoreWebView2.PermissionRequested += (sender, args) =>
             {
+                if (args.PermissionKind is not (CoreWebView2PermissionKind.Microphone
+                             or CoreWebView2PermissionKind.ClipboardRead
+                             or CoreWebView2PermissionKind.Notifications)) return;
+
                 args.Handled = true;
                 args.State = CoreWebView2PermissionState.Allow;
             };
@@ -151,4 +155,9 @@ public partial class Program
     }
 
     public static IServiceProvider? Services { get; private set; }
+
+    /// <summary>
+    /// Strong root for the PAGE_DATA_CHANGED subscription, which PubSubService itself only holds weakly.
+    /// </summary>
+    private static Action? pubSubHandlerReferenceToKeepAlive;
 }
