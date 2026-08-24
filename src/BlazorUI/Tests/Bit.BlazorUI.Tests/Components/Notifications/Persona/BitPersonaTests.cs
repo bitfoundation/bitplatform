@@ -918,6 +918,51 @@ public class BitPersonaTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPersonaTwoInitialsShouldNotBeShrunkToFitTheCoin()
+    {
+        // Two is what the coin is sized for, and what deriving initials from a name can ever produce.
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+        });
+
+        var initials = component.Find(".bit-prs-ini");
+
+        Assert.IsFalse(initials.ClassList.Contains("bit-prs-in3"));
+        Assert.IsFalse(initials.ClassList.Contains("bit-prs-in4"));
+    }
+
+    [TestMethod,
+        DataRow("SKH", "bit-prs-in3"),
+        DataRow("SKHN", "bit-prs-in4"),
+        DataRow("SKHNM", "bit-prs-in4")
+    ]
+    public void BitPersonaLongInitialsShouldBeShrunkToFitTheCoin(string imageInitials, string expectedClass)
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.ImageInitials, imageInitials);
+        });
+
+        Assert.IsTrue(component.Find(".bit-prs-ini").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitPersonaInitialsShouldBeMeasuredInTextElementsRatherThanChars()
+    {
+        // Two emoji are four chars but take the room of two letters, so they are not shrunk as four would be.
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.ImageInitials, "\U0001F600\U0001F601");
+        });
+
+        var initials = component.Find(".bit-prs-ini");
+
+        Assert.IsFalse(initials.ClassList.Contains("bit-prs-in3"));
+        Assert.IsFalse(initials.ClassList.Contains("bit-prs-in4"));
+    }
+
+    [TestMethod]
     public void BitPersonaImageInitialsShouldBeUsedVerbatim()
     {
         var component = RenderComponent<BitPersona>(parameters =>
@@ -1084,6 +1129,37 @@ public class BitPersonaTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPersonaImageSrcSetAloneShouldStillBeAPicture()
+    {
+        // A set of candidates is as much a picture as a single url is - the img element needs only one of
+        // the two to have something to fetch, so a coin given only candidates must not fall back to initials.
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+            parameters.Add(p => p.ImageSrcSet, "img-1x.png 1x, img-2x.png 2x");
+        });
+
+        Assert.IsNotEmpty(component.FindAll(".bit-prs-img"));
+        Assert.IsEmpty(component.FindAll(".bit-prs-ini"));
+        Assert.IsTrue(component.Find(".bit-prs").ClassList.Contains("bit-prs-him"));
+    }
+
+    [TestMethod]
+    public void BitPersonaImageSrcSetAloneShouldStillFallBackToTheInitialsOnError()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+            parameters.Add(p => p.ImageSrcSet, "img-1x.png 1x, img-2x.png 2x");
+        });
+
+        component.Find(".bit-prs-img").TriggerEvent("onerror", new ErrorEventArgs());
+
+        Assert.IsEmpty(component.FindAll(".bit-prs-img"));
+        Assert.AreEqual("SK", component.Find(".bit-prs-ini").TextContent);
+    }
+
+    [TestMethod]
     public void BitPersonaImageSizesAttributeShouldBeSet()
     {
         var component = RenderComponent<BitPersona>(parameters =>
@@ -1201,40 +1277,61 @@ public class BitPersonaTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitPersonaImageShouldBeHiddenUntilLoaded()
+    public void BitPersonaImageShouldNeverBeHeldBackWaitingForItsLoadEvent()
     {
+        // A statically rendered page has no handler attached to fire the load event at all, and a prerendered
+        // one can have the picture in the cache before it does - so a coin that hides its picture until the
+        // event arrives is a coin that can stay empty for good.
         var component = RenderComponent<BitPersona>(parameters =>
         {
             parameters.Add(p => p.ImageUrl, "some-image.png");
         });
 
         var img = component.Find(".bit-prs-img");
-        Assert.IsTrue(img.GetAttribute("style")?.Contains("opacity:0") ?? false);
+
+        Assert.IsFalse(img.GetAttribute("style")?.Contains("opacity:0") ?? false);
 
         img.TriggerEvent("onload", new ProgressEventArgs());
 
-        img = component.Find(".bit-prs-img");
-        Assert.IsFalse(img.GetAttribute("style")?.Contains("opacity:0") ?? false);
+        Assert.IsFalse(component.Find(".bit-prs-img").GetAttribute("style")?.Contains("opacity:0") ?? false);
     }
 
     [TestMethod]
-    public void BitPersonaImageShouldBeHiddenAgainWhenImageUrlChanges()
+    public void BitPersonaImageStylesShouldReachTheImageUntouched()
     {
         var component = RenderComponent<BitPersona>(parameters =>
         {
+            parameters.Add(p => p.ImageUrl, "some-image.png");
+            parameters.Add(p => p.Styles, new BitPersonaClassStyles { Image = "filter:grayscale(1);" });
+        });
+
+        Assert.AreEqual("filter:grayscale(1);", component.Find(".bit-prs-img").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitPersonaShouldShowTheInitialsAgainWhenImageUrlChanges()
+    {
+        // The new picture has its own load to wait for, so a coin told to show its initials until then has to
+        // put them back rather than keep standing on the verdict the old picture gave.
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+            parameters.Add(p => p.ShowInitialsUntilImageLoads, true);
             parameters.Add(p => p.ImageUrl, "image-1.png");
         });
 
         component.Find(".bit-prs-img").TriggerEvent("onload", new ProgressEventArgs());
 
-        Assert.IsFalse(component.Find(".bit-prs-img").GetAttribute("style")?.Contains("opacity:0") ?? false);
+        Assert.IsEmpty(component.FindAll(".bit-prs-ini"));
 
         component.Render(parameters =>
         {
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+            parameters.Add(p => p.ShowInitialsUntilImageLoads, true);
             parameters.Add(p => p.ImageUrl, "image-2.png");
         });
 
-        Assert.IsTrue(component.Find(".bit-prs-img").GetAttribute("style")?.Contains("opacity:0") ?? false);
+        Assert.AreEqual("SK", component.Find(".bit-prs-ini").TextContent);
     }
 
     [TestMethod]
@@ -1262,7 +1359,7 @@ public class BitPersonaTests : BunitTestContext
         });
 
         Assert.IsNotEmpty(component.FindAll(".bit-prs-img"));
-        Assert.IsTrue(component.Find(".bit-prs-img").GetAttribute("style")?.Contains("opacity:0") ?? false);
+        Assert.AreEqual("image-2.png 1x, image-2@2x.png 2x", component.Find(".bit-prs-img").GetAttribute("srcset"));
     }
 
     [TestMethod]
@@ -1410,8 +1507,8 @@ public class BitPersonaTests : BunitTestContext
 
         var coin = component.Find(".bit-prs-cne");
 
-        Assert.AreEqual("button", coin.GetAttribute("role"));
-        Assert.AreEqual("0", coin.GetAttribute("tabindex"));
+        Assert.AreEqual("BUTTON", coin.TagName);
+        Assert.AreEqual("button", coin.GetAttribute("type"));
         Assert.IsNotEmpty(component.FindAll(".bit-prs-cne > .bit-prs-imo"));
     }
 
@@ -1427,8 +1524,12 @@ public class BitPersonaTests : BunitTestContext
         var coin = component.Find(".bit-prs-imc");
 
         Assert.IsTrue(component.Find(".bit-prs").ClassList.Contains("bit-prs-iac"));
-        Assert.AreEqual("button", coin.GetAttribute("role"));
-        Assert.AreEqual("0", coin.GetAttribute("tabindex"));
+        // A real button rather than a div dressed as one: the role, the focus, the keyboard and the disabled
+        // state all come from the browser instead of being emulated.
+        Assert.AreEqual("BUTTON", coin.TagName);
+        Assert.AreEqual("button", coin.GetAttribute("type"));
+        Assert.IsNull(coin.GetAttribute("role"));
+        Assert.IsNull(coin.GetAttribute("tabindex"));
         Assert.AreEqual("Change photo", coin.GetAttribute("aria-label"));
     }
 
@@ -1439,6 +1540,7 @@ public class BitPersonaTests : BunitTestContext
 
         var coin = component.Find(".bit-prs-imc");
 
+        Assert.AreEqual("DIV", coin.TagName);
         Assert.IsNull(coin.GetAttribute("role"));
         Assert.IsNull(coin.GetAttribute("tabindex"));
         Assert.IsNull(coin.GetAttribute("aria-label"));
@@ -1460,39 +1562,6 @@ public class BitPersonaTests : BunitTestContext
         Assert.AreEqual(1, clicked);
     }
 
-    [TestMethod,
-        DataRow("Enter"),
-        DataRow(" ")
-    ]
-    public void BitPersonaClickableCoinShouldAnswerTheKeyboard(string key)
-    {
-        var clicked = 0;
-
-        var component = RenderComponent<BitPersona>(parameters =>
-        {
-            parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => clicked++));
-        });
-
-        component.Find(".bit-prs-imc").KeyDown(new KeyboardEventArgs { Key = key });
-
-        Assert.AreEqual(1, clicked);
-    }
-
-    [TestMethod]
-    public void BitPersonaClickableCoinShouldIgnoreOtherKeys()
-    {
-        var clicked = 0;
-
-        var component = RenderComponent<BitPersona>(parameters =>
-        {
-            parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => clicked++));
-        });
-
-        component.Find(".bit-prs-imc").KeyDown(new KeyboardEventArgs { Key = "a" });
-
-        Assert.AreEqual(0, clicked);
-    }
-
     [TestMethod]
     public void BitPersonaDisabledCoinShouldBeOutOfTheTabOrderAndInert()
     {
@@ -1506,16 +1575,18 @@ public class BitPersonaTests : BunitTestContext
 
         var coin = component.Find(".bit-prs-imc");
 
-        Assert.AreEqual("-1", coin.GetAttribute("tabindex"));
+        // A disabled button is out of the tab order, unclickable and unannounced as an action, all of it
+        // from the one attribute rather than from a tabindex and an aria-disabled kept in step by hand.
+        Assert.IsTrue(coin.HasAttribute("disabled"));
+        Assert.IsNull(coin.GetAttribute("tabindex"));
 
         coin.Click();
-        coin.KeyDown(new KeyboardEventArgs { Key = "Enter" });
 
         Assert.AreEqual(0, clicked);
     }
 
     [TestMethod]
-    public void BitPersonaDisabledCoinShouldBeMarkedDisabledForAssistiveTechnology()
+    public void BitPersonaDisabledCoinShouldDropTheDisabledAttributeWhenItIsEnabledAgain()
     {
         var component = RenderComponent<BitPersona>(parameters =>
         {
@@ -1523,7 +1594,7 @@ public class BitPersonaTests : BunitTestContext
             parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
         });
 
-        Assert.AreEqual("true", component.Find(".bit-prs-imc").GetAttribute("aria-disabled"));
+        Assert.IsTrue(component.Find(".bit-prs-imc").HasAttribute("disabled"));
 
         component.Render(parameters =>
         {
@@ -1531,7 +1602,7 @@ public class BitPersonaTests : BunitTestContext
             parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
         });
 
-        Assert.IsNull(component.Find(".bit-prs-imc").GetAttribute("aria-disabled"));
+        Assert.IsFalse(component.Find(".bit-prs-imc").HasAttribute("disabled"));
     }
 
     [TestMethod]
@@ -1546,6 +1617,8 @@ public class BitPersonaTests : BunitTestContext
 
         var coin = component.Find(".bit-prs-imc");
 
+        Assert.AreEqual("DIV", coin.TagName);
+        Assert.IsFalse(coin.HasAttribute("disabled"));
         Assert.IsNull(coin.GetAttribute("aria-disabled"));
         Assert.IsNull(coin.GetAttribute("role"));
     }
@@ -1765,9 +1838,29 @@ public class BitPersonaTests : BunitTestContext
 
         var style = component.Find(".bit-prs-pre").GetAttribute("style");
 
-        // The offset is a logical inset so it follows the writing direction rather than pinning to the right.
-        Assert.IsTrue(style!.Contains("inset-inline-end:-5px"));
-        Assert.IsTrue(style.Contains("bottom:-5px"));
+        // Retuned as the knob the stylesheet reads rather than as a side of its own, so the nudge follows the
+        // dot to whichever of the four corners the writing direction and Reversed between them put it in.
+        Assert.IsTrue(style!.Contains("--bit-prs-presence-inset:-5px"));
+        Assert.IsFalse(style.Contains("inset-inline-end:"));
+    }
+
+    [TestMethod]
+    public void BitPersonaSquaredPresenceNudgeShouldFollowAReversedPersona()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.CoinSize, 60);
+            parameters.Add(p => p.Squared, true);
+            parameters.Add(p => p.Reversed, true);
+            parameters.Add(p => p.Presence, BitPersonaPresence.Online);
+        });
+
+        var style = component.Find(".bit-prs-pre").GetAttribute("style");
+
+        // Reversed moves the dot to the other corner in the stylesheet; a nudge written as one named side
+        // would have stayed behind on the corner the dot no longer sits in.
+        Assert.IsTrue(style!.Contains("--bit-prs-presence-inset:-5px"));
+        Assert.IsTrue(component.Find(".bit-prs").ClassList.Contains("bit-prs-rvs"));
     }
 
     [TestMethod]

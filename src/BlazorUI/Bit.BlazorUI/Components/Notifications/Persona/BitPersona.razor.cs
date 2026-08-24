@@ -13,7 +13,6 @@ public partial class BitPersona : BitComponentBase
 {
     private bool _isLoaded;
     private bool _hasError;
-    private bool _preventCoinKeyDownDefault;
 
 
 
@@ -197,13 +196,17 @@ public partial class BitPersona : BitComponentBase
     /// Changing it starts a fresh load the same way changing <see cref="ImageUrl"/> does, so a coin that had
     /// fallen back to its initials is given the new candidates rather than being left on the old verdict.
     /// </remarks>
-    [Parameter]
+    [Parameter, ResetClassBuilder]
     [CallOnSet(nameof(OnSetImageSource))]
     public string? ImageSrcSet { get; set; }
 
     /// <summary>
     /// Url to the image to use, should be a square aspect ratio and big enough to fit in the image area.
     /// </summary>
+    /// <remarks>
+    /// A coin given nothing but <see cref="ImageSrcSet"/> is still a coin with a picture in it: the browser
+    /// picks one of the candidates, and this is only the source it falls back to.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     [CallOnSet(nameof(OnSetImageSource))]
     public string? ImageUrl { get; set; }
@@ -217,8 +220,8 @@ public partial class BitPersona : BitComponentBase
     /// Callback for when the image clicked.
     /// </summary>
     /// <remarks>
-    /// Assigning it turns the coin into a button: it takes the focus, and Enter and Space activate it the
-    /// way a click does.
+    /// Assigning it renders the coin as a real button element, so it is announced as one, takes the focus,
+    /// answers Enter and Space, and goes inert with the rest of the persona when it is disabled.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public EventCallback<MouseEventArgs> OnImageClick { get; set; }
@@ -235,7 +238,7 @@ public partial class BitPersona : BitComponentBase
 
     /// <summary>
     /// Optional text to display, usually a custom message set.
-    /// The optional text will only be shown when using size100.
+    /// The optional text will only be shown when using size100 or size120.
     /// </summary>
     [Parameter] public string? OptionalText { get; set; }
 
@@ -370,6 +373,10 @@ public partial class BitPersona : BitComponentBase
     /// <summary>
     /// If true renders the initials while the image is loading. This only applies when an imageUrl is provided.
     /// </summary>
+    /// <remarks>
+    /// The initials sit behind the picture rather than beside it, so they are covered the moment it arrives -
+    /// and an image element with nothing in it yet paints nothing, which is what lets them show through.
+    /// </remarks>
     [Parameter] public bool ShowInitialsUntilImageLoads { get; set; }
 
     /// <summary>
@@ -391,7 +398,7 @@ public partial class BitPersona : BitComponentBase
 
     /// <summary>
     /// Tertiary text to display, usually the status of the user.
-    /// The tertiary text will only be shown when using size72 or size100.
+    /// The tertiary text will only be shown when using size72, size100 or size120.
     /// </summary>
     [Parameter] public string? TertiaryText { get; set; }
 
@@ -453,7 +460,7 @@ public partial class BitPersona : BitComponentBase
 
         ClassBuilder.Register(() => OnImageClick.HasDelegate ? "bit-prs-iac" : string.Empty);
 
-        ClassBuilder.Register(() => ImageUrl.HasValue() ? "bit-prs-him" : string.Empty);
+        ClassBuilder.Register(() => HasImage ? "bit-prs-him" : string.Empty);
 
         ClassBuilder.Register(() => Size is BitPersonaSize.Size8 ? string.Empty : CoinColor switch
         {
@@ -515,15 +522,16 @@ public partial class BitPersona : BitComponentBase
     {
         if (CoinSize is null or <= 0) return Styles?.Presence;
 
-        string? position = null;
+        string? inset = null;
         // The dot keeps the same share of the coin a size class gives it, so a custom coin size stays in proportion.
         var presentationSize = CoinSize.Value / 4D;
         if (Squared)
         {
-            var presentationPosition = presentationSize / 3D;
-            position = FormattableString.Invariant($"inset-inline-end:-{presentationPosition}px;bottom:-{presentationPosition}px;");
+            // Retuned as the knob the stylesheet reads rather than as a side of its own, so the nudge follows
+            // the dot to whichever corner the writing direction and Reversed between them put it in.
+            inset = FormattableString.Invariant($"--bit-prs-presence-inset:-{presentationSize / 3D}px;");
         }
-        return FormattableString.Invariant($"width:{presentationSize}px;height:{presentationSize}px;{position}{Styles?.Presence?.Trim(';')}");
+        return FormattableString.Invariant($"width:{presentationSize}px;height:{presentationSize}px;{inset}{Styles?.Presence?.Trim(';')}");
     }
 
     /// <summary>
@@ -620,6 +628,31 @@ public partial class BitPersona : BitComponentBase
         if (initials.HasValue()) return null;
 
         return BitIconInfo.Bit("Contact");
+    }
+
+    /// <summary>
+    /// The class that shrinks a set of initials too long for the coin it has to fit in.
+    /// </summary>
+    /// <remarks>
+    /// Two initials are what the coin is sized for, and what deriving them from a name can ever produce -
+    /// but <see cref="ImageInitials"/> is passed through verbatim, and three or four letters at the coin's
+    /// own font size are simply clipped by it. The steps are in em, so they follow every size class and any
+    /// custom <see cref="CoinSize"/> without being restated per size.
+    /// </remarks>
+    private static string? GetInitialsFitClass(string initials)
+    {
+        if (initials.HasNoValue()) return null;
+
+        // Counted in text elements rather than in chars: an emoji is two chars, and a letter carrying a
+        // combining mark is two more, and neither takes the room of two letters.
+        var length = new StringInfo(initials).LengthInTextElements;
+
+        return length switch
+        {
+            <= 2 => null,
+            3 => "bit-prs-in3",
+            _ => "bit-prs-in4"
+        };
     }
 
     private string GetInitials()
@@ -820,6 +853,15 @@ public partial class BitPersona : BitComponentBase
     private bool HasInteractiveCoin => OnImageClick.HasDelegate || OnActionClick.HasDelegate;
 
     /// <summary>
+    /// Whether there is a picture to put in the coin.
+    /// </summary>
+    /// <remarks>
+    /// A set of candidates in <see cref="ImageSrcSet"/> is a picture as much as a single
+    /// <see cref="ImageUrl"/> is - the img element needs only one of the two to have something to fetch.
+    /// </remarks>
+    private bool HasImage => ImageUrl.HasValue() || ImageSrcSet.HasValue();
+
+    /// <summary>
     /// Whether the persona has no visible text of its own, in which case the coin is the whole of it and has
     /// to carry a name for anyone who cannot see it.
     /// </summary>
@@ -857,7 +899,7 @@ public partial class BitPersona : BitComponentBase
         if (Unknown) return false;
         if (CoinTemplate is not null) return false;
 
-        if (ImageUrl.HasNoValue()) return true;
+        if (HasImage is false) return true;
 
         return _hasError || (ShowInitialsUntilImageLoads && _isLoaded is false);
     }
@@ -903,23 +945,6 @@ public partial class BitPersona : BitComponentBase
         await OnImageClick.InvokeAsync(e);
     }
 
-    /// <summary>
-    /// Enter and Space on the focused coin do what a click does, which is what turning a div into a button owes
-    /// the keyboard.
-    /// </summary>
-    private async Task HandleImageKeyDown(KeyboardEventArgs e)
-    {
-        // Space scrolls the page by default, which is not what activating the coin is meant to do. Kept
-        // key-scoped so Tab, Enter and everything else the coin does not claim still behave normally.
-        _preventCoinKeyDownDefault = IsEnabled && OnImageClick.HasDelegate && e.Key is " " or "Spacebar";
-
-        if (IsEnabled is false) return;
-        if (OnImageClick.HasDelegate is false) return;
-        if (e.Key is not ("Enter" or " " or "Spacebar")) return;
-
-        await OnImageClick.InvokeAsync(new MouseEventArgs());
-    }
-
     private async Task HandleOnError(ErrorEventArgs e)
     {
         _hasError = true;
@@ -930,6 +955,13 @@ public partial class BitPersona : BitComponentBase
         await OnImageError.InvokeAsync(e);
     }
 
+    /// <remarks>
+    /// The load is watched for the sake of <see cref="ShowInitialsUntilImageLoads"/> and of
+    /// <see cref="OnImageLoad"/>, and for nothing else: the picture itself is never held back until this
+    /// arrives. A statically rendered page has no handler attached to fire it at all, and a prerendered one
+    /// can have the picture in the cache before it does - either of which would have left a coin hidden for
+    /// good behind a load event that was never coming.
+    /// </remarks>
     private async Task HandleOnLoad(ProgressEventArgs e)
     {
         _isLoaded = true;

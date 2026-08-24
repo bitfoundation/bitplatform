@@ -28,9 +28,73 @@
         }
         else
         {
-            coinFallback = @<span style="@Styles?.Initials" class="bit-prs-ini @Classes?.Initials">@initials</span>;
+            coinFallback = @<span style="@Styles?.Initials"
+                                  class="bit-prs-ini @GetInitialsFitClass(initials) @Classes?.Initials">@initials</span>;
         }
     }
+
+    @* What goes inside the coin, written once because the coin itself is two different elements: a button
+       when there is something to do with it, and a plain box when there is not. *@
+    RenderFragment coinContent =
+    @<text>
+        @* What covers the coin while it is hovered or focused. It belongs to the click rather than to the
+           picture: a coin carrying initials, an icon or the unknown glyph is every bit as clickable as one
+           carrying a photo, and owes the pointer the same affordance. *@
+        @if (isCoinClickable)
+        {
+            <span style="@Styles?.ImageOverlay" class="bit-prs-imo @Classes?.ImageOverlay">
+                @if (ImageOverlayTemplate is not null)
+                {
+                    @ImageOverlayTemplate
+                }
+                else
+                {
+                    <span style="@Styles?.ImageOverlayText" class="@Classes?.ImageOverlayText">@ImageOverlayText</span>
+                }
+            </span>
+        }
+
+        @if (Unknown)
+        {
+            var unknownIconInfo = BitIconInfo.From(UnknownIcon, UnknownIconName ?? "Help");
+
+            <i aria-hidden="true"
+               style="@Styles?.UnknownIcon"
+               class="bit-prs-cic @unknownIconInfo?.GetCssClasses() @Classes?.UnknownIcon" />
+        }
+        else if (HasImage || CoinTemplate is not null)
+        {
+            @* Only an image has a load to wait for and a load to fail: a coin template paints itself,
+               so nothing is ever left showing behind it. *@
+            @coinFallback
+
+            if (CoinTemplate is not null)
+            {
+                @CoinTemplate
+            }
+            else if (_hasError is false)
+            {
+                var dimension = GetPersonaImageDimension();
+
+                <img @attributes="ImageAttributes"
+                     @onload="HandleOnLoad"
+                     @onerror="HandleOnError"
+                     src="@ImageUrl"
+                     alt="@(ImageAlt ?? string.Empty)"
+                     width="@dimension"
+                     height="@dimension"
+                     sizes="@ImageSizes"
+                     srcset="@ImageSrcSet"
+                     class="bit-prs-img @Classes?.Image"
+                     loading="@ImageLoading?.ToString().ToLower()"
+                     style="@Styles?.Image" />
+            }
+        }
+        else
+        {
+            @coinFallback
+        }
+    </text>;
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -61,73 +125,28 @@
             }
             else
             {
-                <div style="@GetImageContainerStyle()"
-                     class="@GetImageContainerClass()"
-                     role="@(isCoinClickable ? "button" : null)"
-                     tabindex="@(isCoinClickable ? (IsEnabled ? "0" : "-1") : null)"
-                     aria-disabled="@(isCoinClickable && IsEnabled is false ? "true" : null)"
-                     aria-label="@GetCoinButtonLabel()"
-                     @onclick="HandleImageClick"
-                     @onkeydown="HandleImageKeyDown"
-                     @onkeydown:preventDefault="_preventCoinKeyDownDefault">
-                    @* What covers the coin while it is hovered or focused. It belongs to the click rather than
-                       to the picture: a coin carrying initials, an icon or the unknown glyph is every bit as
-                       clickable as one carrying a photo, and owes the pointer the same affordance. *@
-                    @if (isCoinClickable)
-                    {
-                        <div style="@Styles?.ImageOverlay" class="bit-prs-imo @Classes?.ImageOverlay">
-                            @if (ImageOverlayTemplate is not null)
-                            {
-                                @ImageOverlayTemplate
-                            }
-                            else
-                            {
-                                <span style="@Styles?.ImageOverlayText" class="@Classes?.ImageOverlayText">@ImageOverlayText</span>
-                            }
-                        </div>
-                    }
-
-                    @if (Unknown)
-                    {
-                        var unknownIconInfo = BitIconInfo.From(UnknownIcon, UnknownIconName ?? "Help");
-
-                        <i aria-hidden="true"
-                           style="@Styles?.UnknownIcon"
-                           class="bit-prs-cic @unknownIconInfo?.GetCssClasses() @Classes?.UnknownIcon" />
-                    }
-                    else if (ImageUrl.HasValue() || CoinTemplate is not null)
-                    {
-                        @* Only an image has a load to wait for and a load to fail: a coin template paints itself,
-                           so nothing is ever left showing behind it. *@
-                        @coinFallback
-
-                        if (CoinTemplate is not null)
-                        {
-                            @CoinTemplate
-                        }
-                        else if (_hasError is false)
-                        {
-                            var dimension = GetPersonaImageDimension();
-
-                            <img @attributes="ImageAttributes"
-                                 @onload="HandleOnLoad"
-                                 @onerror="HandleOnError"
-                                 src="@ImageUrl"
-                                 alt="@(ImageAlt ?? string.Empty)"
-                                 width="@dimension"
-                                 height="@dimension"
-                                 sizes="@ImageSizes"
-                                 srcset="@ImageSrcSet"
-                                 class="bit-prs-img @Classes?.Image"
-                                 loading="@ImageLoading?.ToString().ToLower()"
-                                 style="@($"{(_isLoaded ? null : "opacity:0;")}{Styles?.Image}")" />
-                        }
-                    }
-                    else
-                    {
-                        @coinFallback
-                    }
-                </div>
+                @* A coin with something to do is a button and nothing else: the browser gives it the role,
+                   the focus, the Enter and Space keys and the disabled state that emulating one by hand can
+                   only approximate - Space in particular scrolls the page before a hand-rolled coin ever
+                   sees it. A coin with nothing to do stays the plain box it is. *@
+                @if (isCoinClickable)
+                {
+                    <button type="button"
+                            style="@GetImageContainerStyle()"
+                            class="@GetImageContainerClass()"
+                            disabled="@(IsEnabled is false)"
+                            aria-label="@GetCoinButtonLabel()"
+                            @onclick="HandleImageClick">
+                        @coinContent
+                    </button>
+                }
+                else
+                {
+                    <div style="@GetImageContainerStyle()"
+                         class="@GetImageContainerClass()">
+                        @coinContent
+                    </div>
+                }
 
                 @if (OnActionClick.HasDelegate)
                 {

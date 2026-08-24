@@ -127,6 +127,10 @@ private readonly Dictionary<BitPersonaPresence, string> _presenceTitles = new()
 
 <BitPersona PrimaryText=""Saleh Khafan"" SecondaryText=""ImageInitials"" ImageInitials=""SK!"" Size=""BitPersonaSize.Size72"" />
 
+<BitPersona PrimaryText=""Saleh Khafan"" SecondaryText=""Three letters, stepped down to fit"" ImageInitials=""SKH"" Size=""BitPersonaSize.Size72"" />
+
+<BitPersona PrimaryText=""Saleh Khafan"" SecondaryText=""Four letters, stepped down further"" ImageInitials=""SKHN"" Size=""BitPersonaSize.Size72"" />
+
 
 <BitPersona PrimaryText=""Saleh Khafan""
             SecondaryText=""Broken image url""
@@ -331,6 +335,13 @@ private int imageErrorCount = 0;";
             Size=""BitPersonaSize.Size72""
             ImageAlt=""Xafan Salina smiling at the camera""
             ImageUrl=""/images/persona/persona-female.png""
+            ImageSizes=""72px""
+            ImageSrcSet=""/images/persona/persona-female-72.png 72w, /images/persona/persona-female.png 96w"" />
+
+
+<BitPersona PrimaryText=""Xafan Salina""
+            SecondaryText=""Software Engineer""
+            Size=""BitPersonaSize.Size72""
             ImageSizes=""72px""
             ImageSrcSet=""/images/persona/persona-female-72.png 72w, /images/persona/persona-female.png 96w"" />";
 

@@ -28,6 +28,9 @@
     // whose corner sits further out than the circle's - retunes it once per size instead of restating
     // every position it is used in.
     --bit-prs-presence-inset: #{spacing(-0.25)};
+    // The action button sits inside the coin container, so on the smallest coins it is nearly as wide as
+    // the coin itself and hangs out of the row. One knob, retuned by the size classes that need it smaller.
+    --bit-prs-action-size: #{spacing(4)};
     // The ring the dot is cut out of. A dot on a colored surface wants the ring to match that surface
     // rather than the border color the default draws, which is what this is here to be retuned to.
     --bit-prs-presence-brd-clr: #{$clr-brd-sec};
@@ -71,6 +74,26 @@
     // The coin is a fixed size, not a share of the row: without this a long name in a narrow container
     // squashes it into an ellipse instead of ellipsizing the text it belongs to.
     flex-shrink: 0;
+}
+
+// The coin as an element, whatever fills it and whatever element it is. A coin with something to do is a
+// real button, which arrives carrying the browser's own idea of what a button looks like - so the button is
+// stripped back to a box here, before the rules below dress it as a coin. It sits above them for that
+// reason: everything the coin is comes after, and wins.
+.bit-prs-cne {
+    margin: 0;
+    padding: 0;
+    border: none;
+    position: relative;
+    color: inherit;
+    appearance: none;
+    text-align: center;
+    font-size: inherit;
+    font-style: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    background-color: transparent;
 }
 
 .bit-prs-imc {
@@ -124,6 +147,13 @@
     visibility: hidden;
     justify-content: center;
     font-size: $tg-fs-sm;
+    // The overlay is the size of the coin and no larger, so what it says has to be kept inside it rather
+    // than allowed to spill across the row the coin sits in.
+    overflow: hidden;
+    line-height: 1.2;
+    text-align: center;
+    box-sizing: border-box;
+    padding-inline: spacing(0.5);
     // Faded rather than switched on: display cannot be animated, and visibility keeps the overlay out of
     // the accessibility tree and out of the way of the pointer while it is away.
     transition: opacity $mot-duration-short $mot-easing, visibility $mot-duration-short $mot-easing;
@@ -138,8 +168,18 @@
     user-select: none;
 }
 
+// The coin is sized for the two initials a name can yield, and clips anything longer. Initials passed in
+// by hand are not held to that, so they are stepped down to fit instead of being cut off. The steps are in
+// em, which is the coin's own font size, so they follow every size class and any custom coin size.
+.bit-prs-in3 {
+    font-size: 0.72em;
+}
+
+.bit-prs-in4 {
+    font-size: 0.55em;
+}
+
 .bit-prs-img {
-    opacity: 1;
     width: 100%;
     height: 100%;
     display: block;
@@ -200,11 +240,11 @@
     display: flex;
     cursor: pointer;
     font-weight: $tg-fw-regular;
-    width: spacing(4);
     background: unset;
     color: transparent;
-    height: spacing(4);
     position: absolute;
+    width: var(--bit-prs-action-size);
+    height: var(--bit-prs-action-size);
     text-align: center;
     align-items: center;
     text-decoration: none;
@@ -239,12 +279,6 @@
 
 .bit-prs-aic {
     margin: 0 spacing(0.5);
-}
-
-// The coin as an element, whatever fills it. The overlay is positioned against this rather than against the
-// coin the component draws, so a coin filled by a template carries it too.
-.bit-prs-cne {
-    position: relative;
 }
 
 .bit-prs-iac {
@@ -378,10 +412,15 @@
 
 .bit-prs-s24 {
     gap: spacing(1);
+    --bit-prs-action-size: #{spacing(2.5)};
 
     // The smallest square coins are barely wider than the dot, so it stays where the circle put it.
     &.bit-prs-sqr {
         --bit-prs-presence-inset: #{spacing(-0.25)};
+    }
+
+    .bit-prs-abt {
+        font-size: $tg-fs-2xs;
     }
 
     .bit-prs-imc {
@@ -399,9 +438,14 @@
 
 .bit-prs-s32 {
     gap: spacing(1);
+    --bit-prs-action-size: #{spacing(3)};
 
     &.bit-prs-sqr {
         --bit-prs-presence-inset: #{spacing(-0.25)};
+    }
+
+    .bit-prs-abt {
+        font-size: $tg-fs-xs;
     }
 
     .bit-prs-imc {
@@ -419,6 +463,7 @@
 
 .bit-prs-s40 {
     gap: spacing(1.5);
+    --bit-prs-action-size: #{spacing(3.5)};
 
     .bit-prs-imc {
         aspect-ratio: 1;

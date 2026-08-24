@@ -132,7 +132,8 @@
             those words is taken off first - a parenthesized aside, punctuation, an address written for a
             machine - and a name that has no letters in it at all, a phone number for instance, yields the
             person icon instead of two arbitrary numerals. <strong>ImageInitials</strong> overrides all of
-            it with exactly what you pass.
+            it with exactly what you pass - and since the coin is sized for the two letters a name can
+            yield, anything longer is stepped down to fit rather than clipped by it.
         </div>
         <br />
         <BitPersona PrimaryText="Saleh Khafan" SecondaryText="Two words" Size="BitPersonaSize.Size72" />
@@ -144,6 +145,10 @@
         <BitPersona PrimaryText="carlos.slattery@@contoso.com" SecondaryText="An address, not a name" Size="BitPersonaSize.Size72" />
         <br /><br />
         <BitPersona PrimaryText="Saleh Khafan" SecondaryText="ImageInitials" ImageInitials="SK!" Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona PrimaryText="Saleh Khafan" SecondaryText="Three letters, stepped down to fit" ImageInitials="SKH" Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona PrimaryText="Saleh Khafan" SecondaryText="Four letters, stepped down further" ImageInitials="SKHN" Size="BitPersonaSize.Size72" />
         <br /><br /><br /><br />
         <div><b>ShowInitialsUntilImageLoads</b> fills the coin while the picture is on its way, and the initials stay when it never arrives:</div>
         <br />
@@ -307,10 +312,11 @@
             the coin - <strong>ActionIconName</strong> and <strong>ActionButtonTitle</strong> dress it, and
             <strong>ActionTemplate</strong> replaces it outright. <strong>OnImageClick</strong> turns the
             whole coin into a button instead: it reveals the overlay labelled by
-            <strong>ImageOverlayText</strong>, takes the focus, and answers Enter and Space the way it
-            answers a click. The overlay belongs to the click rather than to the picture, so a coin carrying
-            initials, an icon or the unknown glyph reveals it just the same. The action button takes the
-            place the presence dot would have used, so a persona shows one or the other.
+            <strong>ImageOverlayText</strong>, and is a real button element - announced as one, focusable,
+            and answering Enter and Space without the page scrolling underneath it. The overlay belongs to
+            the click rather than to the picture, so a coin carrying initials, an icon or the unknown glyph
+            reveals it just the same. The action button takes the place the presence dot would have used, so
+            a persona shows one or the other.
         </div>
         <br />
         <div>Action button (hover, or tab to it, at the bottom of the coin):</div>
@@ -384,9 +390,10 @@
     <DemoExample Title="Image events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>
             <strong>OnImageLoad</strong> and <strong>OnImageError</strong> report what became of the
-            picture. The coin hides the image until it has loaded, so a half-painted picture is never
-            shown, and it falls back to the initials by itself when the load fails - the callbacks are
-            there for logging it, or for reaching for a second source.
+            picture. The coin falls back to the initials by itself when the load fails, so the callbacks are
+            there for logging it, or for reaching for a second source. The picture itself is never held back
+            waiting for the load event: a statically rendered page has nothing attached to fire one, and a
+            prerendered page can have the picture in the cache before it does.
         </div>
         <br />
         <BitPersona PrimaryText="Xafan Salina"
@@ -433,9 +440,11 @@
         <div>
             <strong>ImageSrcSet</strong> offers the browser several copies of the picture and
             <strong>ImageSizes</strong> tells it how much room the coin will take, so a retina screen gets
-            the sharp copy and a phone does not download it. <strong>ImageAlt</strong> describes the
-            picture itself; leave it unset and the picture is marked decorative, since the name beside it
-            already says who this is.
+            the sharp copy and a phone does not download it. A set of candidates is a picture in its own
+            right: <strong>ImageUrl</strong> is only the source the browser falls back to, and a coin given
+            nothing but candidates still shows one instead of dropping to its initials.
+            <strong>ImageAlt</strong> describes the picture itself; leave it unset and the picture is marked
+            decorative, since the name beside it already says who this is.
         </div>
         <br />
         <BitPersona PrimaryText="Xafan Salina"
@@ -443,6 +452,14 @@
                     Size="BitPersonaSize.Size72"
                     ImageAlt="Xafan Salina smiling at the camera"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"
+                    ImageSizes="72px"
+                    ImageSrcSet="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female-72.png 72w, /_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png 96w" />
+        <br /><br /><br /><br />
+        <div>Candidates alone, with no <b>ImageUrl</b> behind them:</div>
+        <br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    Size="BitPersonaSize.Size72"
                     ImageSizes="72px"
                     ImageSrcSet="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female-72.png 72w, /_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png 96w" />
     </DemoExample>

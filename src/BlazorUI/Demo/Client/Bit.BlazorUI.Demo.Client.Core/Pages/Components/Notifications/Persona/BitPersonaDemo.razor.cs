@@ -191,7 +191,7 @@ public partial class BitPersonaDemo
             Name = "ImageSrcSet",
             Type = "string?",
             DefaultValue = "null",
-            Description = "A set of image source URLs for different display densities or sizes. Maps to the HTML img srcset attribute.",
+            Description = "A set of image source URLs for different display densities or sizes. Maps to the HTML img srcset attribute. A coin given nothing but this still shows a picture: ImageUrl is only the source the browser falls back to.",
         },
         new()
         {
@@ -212,7 +212,7 @@ public partial class BitPersonaDemo
             Name = "OnImageClick",
             Type = "EventCallback<MouseEventArgs>",
             DefaultValue = "null",
-            Description = "Callback for when the image clicked.",
+            Description = "Callback for when the image clicked. Assigning it renders the coin as a real button element, so it is announced as one, takes the focus, answers Enter and Space, and goes inert with the rest of the persona when it is disabled.",
         },
         new()
         {
@@ -233,7 +233,7 @@ public partial class BitPersonaDemo
             Name = "OptionalText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Optional text to display, usually a custom message set. The optional text will only be shown when using size100.",
+            Description = "Optional text to display, usually a custom message set. The optional text will only be shown when using size100 or size120.",
         },
         new()
         {
@@ -330,7 +330,7 @@ public partial class BitPersonaDemo
             Name = "ShowInitialsUntilImageLoads",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true renders the initials while the image is loading. This only applies when an imageUrl is provided.",
+            Description = "If true renders the initials while the image is loading. This only applies when an imageUrl is provided. The initials sit behind the picture and are covered the moment it arrives.",
         },
         new()
         {
@@ -392,7 +392,7 @@ public partial class BitPersonaDemo
             Name = "TertiaryText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Tertiary text to display, usually the status of the user. The tertiary text will only be shown when using size72 or size100.",
+            Description = "Tertiary text to display, usually the status of the user. The tertiary text will only be shown when using size72, size100 or size120.",
         },
         new()
         {
