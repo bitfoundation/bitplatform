@@ -103,7 +103,7 @@ public static partial class MauiProgram
 
             if (AppPlatform.IsWindows)
             {
-                builder.Logging.AddEventLog(options => configuration.GetRequiredSection("Logging:EventLog").Bind(options));
+                builder.Logging.AddEventLog(options => configuration.Bind("Logging:EventLog", options));
             }
 
             services.AddOptions<ClientMauiSettings>()
@@ -119,7 +119,7 @@ public static partial class MauiProgram
 #elif Mac
             services.AddClientMauiProjectMacCatalystServices(builder.Configuration);
 #elif Windows
-        services.AddClientMauiProjectWindowsServices(builder.Configuration);
+            services.AddClientMauiProjectWindowsServices(builder.Configuration);
 #endif
             //+:cnd:noEmit
         }

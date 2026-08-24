@@ -125,17 +125,21 @@ public static partial class MauiProgram
 
             webView.EnsureCoreWebView2Async()
                 .AsTask()
-                .ContinueWith(async _ =>
+                .ContinueWith(initialization =>
                 {
-                    await Application.Current!.Dispatcher.DispatchAsync(() =>
+                    if (initialization.IsFaulted)
                     {
-                        webView.CoreWebView2.PermissionRequested += async (sender, args) =>
-                        {
-                            args.Handled = true;
-                            args.State = Microsoft.Web.WebView2.Core.CoreWebView2PermissionState.Allow;
-                        };
+                        // Otherwise the failure is only ever seen as an unobserved task exception minutes later,
+                        // and the continuation below would go on to dereference a null CoreWebView2.
+                        LogException(initialization.Exception, reportedBy: nameof(webView.EnsureCoreWebView2Async));
+                        return;
+                    }
+
+                    _ = Application.Current!.Dispatcher.DispatchAsync(() =>
+                    {
+                        webView.CoreWebView2.PermissionRequested += HandlePermissionRequested;
                     });
-                });
+                }, TaskScheduler.Default);
 
 #elif iOS || Mac
             webView.NavigationDelegate = new CustomWKNavigationDelegate();
@@ -202,6 +206,27 @@ public static partial class MauiProgram
                 decisionHandler.Invoke(WKNavigationActionPolicy.Allow, preferences);
             }
         }
+    }
+#endif
+
+#if Windows
+    /// <summary>
+    /// Answers one permission kind and leaves the rest to WebView2's own prompt.
+    /// <para>
+    /// The android head takes the same position deliberately (see AppWebChromeClient.OnPermissionRequest): an allow
+    /// list of one, widened a resource at a time. Answering every kind with Allow and setting Handled suppresses
+    /// that prompt, so camera, geolocation and clipboard-read would be granted silently to any script running in
+    /// the page - including third party scripts such as the ad SDK, which runs in the app's own origin.
+    /// </para>
+    /// </summary>
+    private static void HandlePermissionRequested(object? sender, Microsoft.Web.WebView2.Core.CoreWebView2PermissionRequestedEventArgs args)
+    {
+        if (args.PermissionKind is not (Microsoft.Web.WebView2.Core.CoreWebView2PermissionKind.Microphone
+                             or Microsoft.Web.WebView2.Core.CoreWebView2PermissionKind.ClipboardRead
+                             or Microsoft.Web.WebView2.Core.CoreWebView2PermissionKind.Notifications)) return;
+
+        args.Handled = true;
+        args.State = Microsoft.Web.WebView2.Core.CoreWebView2PermissionState.Allow;
     }
 #endif
 

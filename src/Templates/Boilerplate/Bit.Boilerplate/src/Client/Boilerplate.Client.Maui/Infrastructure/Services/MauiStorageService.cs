@@ -4,11 +4,13 @@
 // - src/Tests/Infrastructure/Services/TestStorageService.cs
 // IStorageServiceContractTests pins the behaviour all four must share.
 
+using System.Collections.Concurrent;
+
 namespace Boilerplate.Client.Maui.Infrastructure.Services;
 
 public partial class MauiStorageService : IStorageService
 {
-    private readonly Dictionary<string, string?> tempStorage = [];
+    private readonly ConcurrentDictionary<string, string?> tempStorage = [];
 
     public async ValueTask<string?> GetItem(string key)
     {
@@ -24,7 +26,7 @@ public partial class MauiStorageService : IStorageService
     public async ValueTask RemoveItem(string key)
     {
         Preferences.Remove(key);
-        tempStorage.Remove(key);
+        tempStorage.TryRemove(key, out _);
     }
 
     public async ValueTask SetItem(string key, string? value, bool persistent = true)
@@ -34,7 +36,7 @@ public partial class MauiStorageService : IStorageService
         // entry is only the default), a temporary write would be shadowed by the persistent value it supersedes.
         if (persistent)
         {
-            tempStorage.Remove(key);
+            tempStorage.TryRemove(key, out _);
             Preferences.Set(key, value);
         }
         else

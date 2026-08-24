@@ -209,7 +209,7 @@ jobs:
           path: src/Client/Boilerplate.Client.Maui/bin/Release/net10.0-android/*-Signed.*
 
   build_blazor_hybrid_iOS:
-    name: build blazor hybrid (iOS-macOS)
+    name: build blazor hybrid (iOS)
     runs-on: macOS-26
     environment: ${{ inputs.ENV_NAME }}
 
