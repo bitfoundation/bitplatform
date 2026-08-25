@@ -20,6 +20,18 @@ public class BitSnackBarItem
     public readonly Guid Id = Guid.NewGuid();
 
     /// <summary>
+    /// What a screen reader is told when this snack bar item arrives, in place of its title and body.
+    /// </summary>
+    /// <remarks>
+    /// The host announces every item through a live region that was already on the page, which is the only kind a
+    /// screen reader reliably watches. What it says is this text, or the title and body of the item when this is
+    /// unset. Set it where what is on screen does not read well out of context ("Deleted" alone), or where the item
+    /// is drawn by a template and has no title and body to read - such an item is otherwise left to announce
+    /// itself, which is less reliable.
+    /// </remarks>
+    public string? AnnouncementText { get; set; }
+
+    /// <summary>
     /// The content of the action area of this snack bar item, rendered under its body.
     /// </summary>
     /// <remarks>
@@ -72,6 +84,26 @@ public class BitSnackBarItem
     /// (the entity the notification is about, a correlation id, ...) without a lookup table on the consumer side.
     /// </remarks>
     public object? Data { get; set; }
+
+    /// <summary>
+    /// What took this snack bar item off the screen, or <c>null</c> while it is still showing.
+    /// </summary>
+    /// <remarks>
+    /// Written by the host before the dismiss callbacks run, so <see cref="OnDismiss"/> and
+    /// <see cref="BitSnackBar.OnDismiss"/> can both read it, and cleared again when the item is shown - so this
+    /// being null is the same question as "is this item still up".
+    /// </remarks>
+    public BitSnackBarDismissReason? DismissReason { get; internal set; }
+
+    /// <summary>
+    /// Prevents rendering the dismiss button of this specific snack bar item, without making it persistent.
+    /// </summary>
+    /// <remarks>
+    /// The item still goes away on its own and still answers Escape, a swipe and a
+    /// <see cref="BitSnackBar.Close(BitSnackBarItem)"/> - it just has no button of its own. Use
+    /// <see cref="Persistent"/> where the item must not be dismissed at all.
+    /// </remarks>
+    public bool HideDismissButton { get; set; }
 
     /// <summary>
     /// Prevents rendering the leading icon of this specific snack bar item.
@@ -153,11 +185,32 @@ public class BitSnackBarItem
     /// what was left of it) and resume it later without leaking a callback into a component that is already gone.
     /// </remarks>
     internal CancellationTokenSource? _cts;
+    internal bool _announced;
     internal bool _paused;
+
+    /// <summary>
+    /// Whether the countdown was held back by a <see cref="BitSnackBar.Pause(BitSnackBarItem)"/> call rather than
+    /// by the pointer or by the page.
+    /// </summary>
+    /// <remarks>
+    /// A hold the code asked for is only let go by the code: without this, the pointer leaving the item - or the
+    /// page coming back into view - would let go of a countdown the app is deliberately keeping stopped.
+    /// </remarks>
+    internal bool _userPaused;
+
     internal bool _hovered;
     internal bool _dismissing;
     internal TimeSpan _remaining;
     internal DateTimeOffset _dueAt;
+
+    /// <summary>
+    /// Completes once the item has actually left, for the callers that arrive while its exit animation is playing.
+    /// </summary>
+    /// <remarks>
+    /// A second request to dismiss an item that is already leaving does nothing, but the caller is still owed the
+    /// wait: without this a <c>Clear</c> would come back with the item still in the DOM.
+    /// </remarks>
+    internal TaskCompletionSource? _dismissSignal;
 
     /// <summary>
     /// Counts the countdowns this item has been given, and keys the progress bar that draws the current one.

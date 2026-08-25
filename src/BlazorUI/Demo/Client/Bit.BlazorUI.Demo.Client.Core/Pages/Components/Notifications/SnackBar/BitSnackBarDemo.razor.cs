@@ -75,10 +75,24 @@ public partial class BitSnackBarDemo
         },
         new()
         {
+            Name = "HideDismissButton",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Prevents rendering the dismiss button of the snack bar items, without making them persistent: the item still counts down, still answers Escape and a swipe, and still takes a Close - it just has no button of its own.",
+        },
+        new()
+        {
             Name = "HideProgress",
             Type = "bool",
             DefaultValue = "false",
             Description = "Prevents rendering the countdown progress bar of the auto-dismissing snack bars.",
+        },
+        new()
+        {
+            Name = "Hotkey",
+            Type = "string[]?",
+            DefaultValue = "null",
+            Description = "The keyboard shortcut that moves the focus to the snack bar region, as a list of KeyboardEvent.code values with the modifiers written as altKey, ctrlKey, shiftKey and metaKey (so [\"F8\"] or [\"KeyT\", \"altKey\"]). A notification is at the end of the document and takes itself away again, so this is what makes the content inside one reachable from the keyboard at all.",
         },
         new()
         {
@@ -143,6 +157,22 @@ public partial class BitSnackBarDemo
         },
         new()
         {
+            Name = "Offset",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The distance the stack keeps from the edges of the screen, as any CSS length (default is the theme's own inset). This is what a page with a fixed app bar or a bottom navigation moves its notifications clear of.",
+        },
+        new()
+        {
+            Name = "Overflow",
+            Type = "BitSnackBarOverflow",
+            DefaultValue = "BitSnackBarOverflow.DismissOldest",
+            Description = "What to do with a new snack bar item that arrives while MaxItems is already reached: dismiss the oldest to make room for it, or queue it until there is room.",
+            LinkType = LinkType.Link,
+            Href = "#overflow-enum",
+        },
+        new()
+        {
             Name = "PauseOnHover",
             Type = "bool",
             DefaultValue = "true",
@@ -154,6 +184,13 @@ public partial class BitSnackBarDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Pauses the auto-dismiss countdown of every snack bar item while the page is hidden, so a notification is not spent in a background tab. Needs the bit BlazorUI services to be registered (AddBitBlazorUIServices).",
+        },
+        new()
+        {
+            Name = "PauseOnWindowBlur",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Pauses the auto-dismiss countdown of every snack bar item while the window does not have the focus. A window another one is covering is not hidden, so the page visibility API says nothing about it. Needs the bit BlazorUI services to be registered (AddBitBlazorUIServices).",
         },
         new()
         {
@@ -183,7 +220,7 @@ public partial class BitSnackBarDemo
             Name = "Role",
             Type = "string?",
             DefaultValue = "null",
-            Description = "A custom ARIA role for every snack bar item, overriding the one its color implies. By default the colors that report a problem are announced as an alert and the rest as a status.",
+            Description = "A custom ARIA role for every snack bar item, overriding the one its color implies. By default the colors that report a problem are announced as an alert and the rest as a status. The role picks the live region the item is announced through, and one that is not a live role (presentation, say) opts the item out of being announced.",
         },
         new()
         {
@@ -209,6 +246,20 @@ public partial class BitSnackBarDemo
             DefaultValue = "null",
             LinkType = LinkType.Link,
             Href = "#class-styles",
+        },
+        new()
+        {
+            Name = "SwipeToDismiss",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lets a snack bar item be dragged out of the way with the pointer, in either inline direction, which is how a notification is thrown away on a touch screen. A persistent item is not swipeable. Needs the bit BlazorUI script to be on the page.",
+        },
+        new()
+        {
+            Name = "SwipeThreshold",
+            Type = "int",
+            DefaultValue = "50",
+            Description = "How far a snack bar item has to be dragged before it is dismissed, in pixels. A drag that stops short of it springs the item back where it was.",
         },
         new()
         {
@@ -288,6 +339,84 @@ public partial class BitSnackBarDemo
                     Name = "BottomEnd",
                     Description = "Bottom of the screen, at the inline end (the default).",
                     Value = "5",
+                },
+            ]
+        },
+        new()
+        {
+            Id = "overflow-enum",
+            Name = "BitSnackBarOverflow",
+            Description = "Determines what the snack bar does with a new item that arrives while MaxItems is already reached.",
+            Items =
+            [
+                new()
+                {
+                    Name = "DismissOldest",
+                    Description = "Dismisses the oldest item on screen to make room for the new one. This is the default.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Queue",
+                    Description = "Holds the new item back and shows it as soon as one of the items on screen leaves.",
+                    Value = "1",
+                },
+            ]
+        },
+        new()
+        {
+            Id = "dismiss-reason-enum",
+            Name = "BitSnackBarDismissReason",
+            Description = "Reports what took a snack bar item off the screen, on BitSnackBarItem.DismissReason.",
+            Items =
+            [
+                new()
+                {
+                    Name = "DismissButton",
+                    Description = "The dismiss button of the item was activated.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Escape",
+                    Description = "The Escape key was pressed while the focus was inside the item.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Click",
+                    Description = "The item was clicked while its host had DismissOnClick enabled.",
+                    Value = "2",
+                },
+                new()
+                {
+                    Name = "Swipe",
+                    Description = "The item was swiped away.",
+                    Value = "3",
+                },
+                new()
+                {
+                    Name = "Timeout",
+                    Description = "The auto-dismiss countdown of the item ran out.",
+                    Value = "4",
+                },
+                new()
+                {
+                    Name = "Close",
+                    Description = "Close was called for the item.",
+                    Value = "5",
+                },
+                new()
+                {
+                    Name = "Clear",
+                    Description = "Clear was called on the host.",
+                    Value = "6",
+                },
+                new()
+                {
+                    Name = "MaxItems",
+                    Description = "The item was the oldest one on screen when a newer one needed the room MaxItems caps.",
+                    Value = "7",
                 },
             ]
         },
@@ -597,6 +726,13 @@ public partial class BitSnackBarDemo
                 },
                 new()
                 {
+                    Name = "AnnouncementText",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "What a screen reader is told when this item arrives, in place of its title and body. Set it where what is on screen does not read well out of context, or where the item is drawn by a template and has no title and body to read."
+                },
+                new()
+                {
                     Name = "AutoDismissTime",
                     Type = "TimeSpan?",
                     DefaultValue = "null",
@@ -638,6 +774,22 @@ public partial class BitSnackBarDemo
                     Type = "object?",
                     DefaultValue = "null",
                     Description = "An arbitrary payload to carry along with the snack bar item. Nothing in the component reads it; it is a place to keep whatever the callbacks of the item need."
+                },
+                new()
+                {
+                    Name = "DismissReason",
+                    Type = "BitSnackBarDismissReason?",
+                    DefaultValue = "null",
+                    Description = "What took this snack bar item off the screen, or null while it is still showing. Written before the dismiss callbacks run, so both of them see it, and cleared again when the item is shown.",
+                    LinkType = LinkType.Link,
+                    Href = "#dismiss-reason-enum",
+                },
+                new()
+                {
+                    Name = "HideDismissButton",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Prevents rendering the dismiss button of this specific snack bar item, without making it persistent."
                 },
                 new()
                 {
@@ -714,6 +866,15 @@ public partial class BitSnackBarDemo
         },
         new()
         {
+            Name = "Queued",
+            Type = "IReadOnlyList<BitSnackBarItem>",
+            DefaultValue = "[]",
+            Description = "The snack bar items that are waiting for room on screen, oldest first. Only ever holds anything while MaxItems caps the stack and Overflow is Queue.",
+            LinkType = LinkType.Link,
+            Href = "#snackbar-item",
+        },
+        new()
+        {
             Name = "Info",
             Type = "Task<BitSnackBarItem> Info(string title, string? body = \"\", bool persistent = false, TimeSpan? autoDismissTime = null)",
             Description = "Shows a new snackbar with Info color.",
@@ -772,7 +933,7 @@ public partial class BitSnackBarDemo
         {
             Name = "Close",
             Type = "Task Close(BitSnackBarItem item)",
-            Description = "Closes a snackbar item. The returned task completes once the item has left the DOM, which is after its exit animation has played.",
+            Description = "Closes a snackbar item. The returned task completes once the item has left the DOM, which is after its exit animation has played. An item that is still waiting for room is taken out of the queue instead, without its dismiss callbacks - it was never shown.",
             LinkType = LinkType.Link,
             Href = "#snackbar-item",
         },
@@ -780,7 +941,7 @@ public partial class BitSnackBarDemo
         {
             Name = "Clear",
             Type = "Task Clear()",
-            Description = "Closes every snackbar item that is currently showing.",
+            Description = "Closes every snackbar item that is currently showing, and drops whatever is waiting for room. The returned task completes once nothing is left, including the items whose exit animation was already playing.",
         },
         new()
         {
@@ -794,7 +955,7 @@ public partial class BitSnackBarDemo
         {
             Name = "Pause",
             Type = "Task Pause(BitSnackBarItem item)",
-            Description = "Pauses the auto-dismiss countdown of a snackbar item.",
+            Description = "Pauses the auto-dismiss countdown of a snackbar item. A hold the code asked for is only let go by Resume: the pointer leaving the item, or the page coming back into view, does not let go of it.",
             LinkType = LinkType.Link,
             Href = "#snackbar-item",
         },
@@ -805,6 +966,12 @@ public partial class BitSnackBarDemo
             Description = "Resumes the auto-dismiss countdown of a snackbar item that was paused.",
             LinkType = LinkType.Link,
             Href = "#snackbar-item",
+        },
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask FocusAsync()",
+            Description = "Moves the keyboard focus to the snack bar region, which is what puts the next Tab inside the notifications. This is what Hotkey does, offered on its own for an app with a shortcut registry of its own.",
         },
     ];
 
@@ -817,6 +984,7 @@ public partial class BitSnackBarDemo
     }
 
 
+    private string offset = "";
     private BitSnackBar positionRef = default!;
     private BitSnackBarPosition position = BitSnackBarPosition.BottomEnd;
     private async Task OpenPositionSnackBar()
@@ -849,6 +1017,12 @@ public partial class BitSnackBarDemo
     private BitSnackBarItem? persistentItem;
     private BitSnackBar persistentRef = default!;
     private BitSnackBar perItemPersistentRef = default!;
+    private BitSnackBar noDismissButtonRef = default!;
+
+    private async Task OpenNoDismissButton()
+    {
+        await noDismissButtonRef.Show("Message archived", "It goes away on its own in 6 seconds.", BitColor.Success);
+    }
 
     private async Task OpenPersistentSnackBar()
     {
@@ -879,10 +1053,30 @@ public partial class BitSnackBarDemo
     }
 
 
+    private string? swipeResult;
+    private BitSnackBar swipeRef = default!;
+
+    private async Task OpenSwipe()
+    {
+        await swipeRef.Info("Drag me away", "A drag of 60 pixels or more takes this off the screen.");
+    }
+
+    private void HandleSwipeDismiss(BitSnackBarItem item)
+    {
+        swipeResult = $"{item.Title} ({item.DismissReason})";
+        StateHasChanged();
+    }
+
+
     private int stackingCounter;
     private bool newestOnTop;
     private bool preventDuplicates;
     private BitSnackBar stackingRef = default!;
+    private BitSnackBarOverflow overflow = BitSnackBarOverflow.DismissOldest;
+
+    // The counts below are the snack bar's own, and a countdown that dismisses an item re-renders it rather than
+    // this page, so they only keep up because the snack bar reports what it did.
+    private void HandleStackingChange(BitSnackBarItem item) => StateHasChanged();
 
     private async Task OpenStacking()
     {
@@ -989,7 +1183,7 @@ public partial class BitSnackBarDemo
 
     private void HandleOnShow(BitSnackBarItem item) => Log($"OnShow: {item.Title}");
 
-    private void HandleOnDismiss(BitSnackBarItem item) => Log($"OnDismiss: {item.Title}");
+    private void HandleOnDismiss(BitSnackBarItem item) => Log($"OnDismiss: {item.Title} ({item.DismissReason})");
 
     private void HandleOnItemClick(BitSnackBarItem item) => Log($"OnItemClick: {item.Title}");
 
@@ -1047,6 +1241,27 @@ public partial class BitSnackBarDemo
     }
 
     private async Task ClearAll() => await controlRef.Clear();
+
+
+    private BitSnackBar hotkeyRef = default!;
+
+    private async Task OpenHotkey()
+    {
+        await hotkeyRef.Info("Report ready", "Press F8 to jump here, then Tab to the action.");
+    }
+
+    private async Task FocusSnackBars() => await hotkeyRef.FocusAsync();
+
+    private async Task OpenAnnouncement()
+    {
+        await hotkeyRef.Show(new BitSnackBarItem
+        {
+            Title = "Deleted",
+            Body = "report.pdf",
+            Color = BitColor.Warning,
+            AnnouncementText = "report.pdf was deleted. Press F8 to undo."
+        });
+    }
 
 
     private BitDir direction;

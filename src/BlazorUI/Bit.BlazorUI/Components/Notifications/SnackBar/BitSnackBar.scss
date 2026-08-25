@@ -8,7 +8,17 @@
     pointer-events: none;
     flex-flow: column nowrap;
     z-index: $zindex-snackbar;
-    max-width: calc(100% - spacing(1));
+    // The stack is inset from the edge it is pinned to on both sides, so the room it gives up is twice the inset.
+    max-width: calc(100% - 2 * var(--bit-snb-off));
+
+    // The widest a notification is allowed to get. A snack bar floats over the page, so left to itself a long
+    // body would stretch it across a desktop screen into a line nobody reads to the end of; this is the same
+    // order of magnitude as the 568dp cap Material gives a snack bar.
+    --bit-snb-max-w: 36rem;
+
+    // How far the stack keeps from the edges it is pinned to. Re-pointed inline by the Offset parameter, which is
+    // what a page with a fixed app bar or a bottom navigation moves its notifications clear of.
+    --bit-snb-off: #{spacing(1)};
 
     // The duration of the enter/exit animation of the items. TransitionDuration arrives inline as the -full
     // token and the animations read this derived one, following the -full pattern of motion.fluent.scss, so
@@ -37,9 +47,26 @@
     --bit-snb-dur: var(--bit-snb-dur-full, 200ms);
 }
 
+// The live regions the notifications are announced through. They are there for a screen reader only - taken out
+// of the flow so the stack is laid out as if they were not there, and clipped rather than hidden, because
+// display:none or visibility:hidden would take them out of the accessibility tree along with everything they say.
+.bit-snb-ann {
+    top: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    border: none;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    inset-inline-start: 0;
+    clip-path: inset(50%);
+    clip: rect(0 0 0 0);
+}
+
 .bit-snb-itm {
     display: flex;
-    max-width: 100%;
     position: relative;
     width: fit-content;
     pointer-events: all;
@@ -50,17 +77,53 @@
     justify-content: space-between;
     border-radius: $shp-radius-popup;
     box-shadow: $box-shadow-snackbar;
+    max-width: min(100%, var(--bit-snb-max-w));
     animation: var(--bit-snb-ent) var(--bit-snb-dur) $mot-easing-decelerate;
+    // The horizontal half of the gesture belongs to the swipe (SwipeToDismiss) rather than to the browser, while
+    // a vertical drag stays the page's scroll. Declared unconditionally so the item never changes behaviour
+    // under a pointer that is already down on it.
+    touch-action: pan-y;
+    // A drag that is let go short of the threshold springs the item back, and this is what carries it. The
+    // script clears it for the duration of the drag itself, so the item keeps up with the pointer.
+    transition: transform var(--bit-snb-dur) $mot-easing, opacity var(--bit-snb-dur) $mot-easing;
+    // The countdown bar is pinned to the bottom edge and its own corners are square, so without this it would
+    // paint over the two rounded corners of the surface it sits in.
+    overflow: hidden;
 }
 
 // The item is kept in the DOM for TransitionDuration after it was dismissed so this can play, and the
 // forwards fill keeps it at its end state for the rest of that time instead of snapping back into view.
+// It stops answering the pointer as soon as it starts leaving: a click on something that is fading out is
+// meant for whatever is behind it, and it must not run the click handlers of a notification that is gone.
 .bit-snb-itm.bit-snb-dsm {
+    pointer-events: none;
     animation: bit-snb-exi var(--bit-snb-dur) $mot-easing-accelerate forwards;
+}
+
+// An item that was thrown away carries on the way it was thrown - the swipe script has already put the
+// transform and the opacity on it - so the exit animation, which would override both and snap it back to where
+// it started before fading, steps aside.
+.bit-snb-itm[data-bit-snb-swiped].bit-snb-dsm {
+    animation: none;
 }
 
 .bit-snb-clk {
     cursor: pointer;
+
+    // A clickable item is a tab stop of its own, so it needs a focus indicator of its own. Drawn in the item's
+    // own foreground for the same reason as the dismiss button's: it is the one color guaranteed to stay
+    // perceivable on every surface an item can take (WCAG 2.4.7).
+    &:focus-visible {
+        outline: $shp-focus-ring-width solid currentcolor;
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+    }
+}
+
+// The region itself is not in the Tab order - it is only ever focused by the Hotkey or by FocusAsync, as the
+// waypoint the next Tab starts from - and it is a full-width invisible container, so a ring drawn around it
+// would outline nothing the eye can connect to a notification.
+.bit-snb:focus {
+    outline: none;
 }
 
 @keyframes bit-snb-ent-b {
@@ -102,7 +165,7 @@
     inset-inline-start: 0;
     animation-fill-mode: forwards;
     animation-timing-function: linear;
-    background-color: currentColor;
+    background-color: currentcolor;
     animation-name: bit-snackbar-progress-animation;
 }
 
@@ -178,7 +241,7 @@
     // button sits on a surface whose color the item picks, and only a ring in the color the item already
     // contrasts against is guaranteed to stay perceivable on all of them (WCAG 2.4.7).
     &:focus-visible {
-        outline: $shp-focus-ring-width solid currentColor;
+        outline: $shp-focus-ring-width solid currentcolor;
         outline-offset: calc(-1 * #{$shp-focus-ring-width});
     }
 }
@@ -257,40 +320,40 @@
 
 
 .bit-snb-tst {
-    top: spacing(1);
-    inset-inline: spacing(1);
+    top: var(--bit-snb-off);
+    inset-inline: var(--bit-snb-off);
     --bit-snb-ent: bit-snb-ent-t;
 }
 
 .bit-snb-tcn {
     left: 50%;
-    top: spacing(1);
+    top: var(--bit-snb-off);
     align-items: center;
     transform: translateX(-50%);
     --bit-snb-ent: bit-snb-ent-t;
 }
 
 .bit-snb-ten {
-    top: spacing(1);
+    top: var(--bit-snb-off);
     align-items: flex-end;
-    inset-inline: spacing(1);
+    inset-inline: var(--bit-snb-off);
     --bit-snb-ent: bit-snb-ent-t;
 }
 
 .bit-snb-bst {
-    bottom: spacing(1);
-    inset-inline: spacing(1);
+    bottom: var(--bit-snb-off);
+    inset-inline: var(--bit-snb-off);
 }
 
 .bit-snb-bcn {
     left: 50%;
-    bottom: spacing(1);
+    bottom: var(--bit-snb-off);
     align-items: center;
     transform: translateX(-50%);
 }
 
 .bit-snb-ben {
-    bottom: spacing(1);
+    bottom: var(--bit-snb-off);
     align-items: flex-end;
-    inset-inline: spacing(1);
+    inset-inline: var(--bit-snb-off);
 }
