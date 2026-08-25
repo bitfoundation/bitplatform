@@ -1,5 +1,6 @@
 ﻿@import '../../../../Styles/abstracts/_functions.scss';
 
+// Written literally inside the HeaderTemplate of the Templates example, so the scope attribute lands on it.
 .custom-header {
     gap: 1rem;
     flex-grow: 1;
@@ -14,4 +15,28 @@
 
 .custom-desc {
     color: brown;
+}
+
+// Handed to the component as Class/Classes, so it renders on markup of the component's own and needs ::deep
+// to reach past the scope; the anchor is the plain wrapper div each of those examples is written inside.
+::deep {
+    .example-content {
+        gap: 0.5rem;
+        display: flex;
+        flex-flow: column;
+    }
+
+    .custom-class {
+        border-color: blueviolet;
+        background-color: blanchedalmond;
+    }
+
+    .custom-acd-title {
+        color: tomato;
+        font-style: italic;
+    }
+
+    .custom-acd-content {
+        color: darkslateblue;
+    }
 }

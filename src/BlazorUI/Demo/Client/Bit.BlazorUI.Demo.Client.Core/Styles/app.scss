@@ -292,7 +292,7 @@ html, body, .site-content, pre, .table-view, .side-rail {
     // way down for the reason at the top of this block: an accordion the *section* holds is prose,
     // where the one a BitAccordion demo renders inside its preview is the subject, and a descendant
     // selector cannot tell the two apart.
-    > .bit-acd > .bit-acd-cnt > .bit-acd-con > * + * {
+    > .bit-acd > .bit-acd-cnt > .bit-acd-cwr > .bit-acd-con > * + * {
         margin-top: $doc-space-sm;
     }
 

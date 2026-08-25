@@ -13,22 +13,77 @@
     border-radius: $shp-radius-surface;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
-    &.bit-dis {
-        color: $clr-fg-dis;
-        background-color: $clr-bg-dis;
+    // The duration of the expand/collapse transition. TransitionDuration arrives inline as the -full token
+    // and everything below reads this derived one, following the -full pattern of motion.fluent.scss, so the
+    // reduced-motion query can still collapse a duration that was set inline. Without one it falls back to
+    // the theme's own long duration, which the global stylesheet already collapses on its own.
+    --bit-acd-dur: var(--bit-acd-dur-full, #{$mot-duration-long});
 
+    // Every rule that reaches from the root into a part of the accordion is chained down through the header
+    // line or through the content container, because an accordion can hold another accordion: a plain
+    // descendant selector here would hand the state of the outer one - disabled, expanded, borderless, the
+    // side its expander sits on - to every accordion nested inside its panel.
+    &.bit-dis > .bit-acd-hwr {
         .bit-acd-ttl,
         .bit-acd-des {
             color: $clr-fg-dis;
         }
+
+        .bit-acd-hdr {
+            cursor: default;
+        }
+    }
+
+    &.bit-dis {
+        color: $clr-fg-dis;
+        background-color: $clr-bg-dis;
     }
 }
+
+// 0.01ms instead of 0ms for the same reason as in motion.fluent.scss: a zero-duration transition never fires
+// its transitionend event.
+@media (prefers-reduced-motion: reduce) {
+    .bit-acd {
+        --bit-acd-dur: 0.01ms;
+    }
+}
+
+// The shared .bit-fam opt-out (BitComponentBase.ForceAnimation) only re-points the --bit-mot-* tokens, so the
+// accordion's own token is restored here, both for an accordion that sets ForceAnimation itself and for one
+// sitting inside an opted-out subtree.
+.bit-acd.bit-fam,
+.bit-fam .bit-acd {
+    --bit-acd-dur: var(--bit-acd-dur-full, #{$mot-duration-long});
+}
+
+
+.bit-acd-sm {
+    --bit-acd-pad: #{spacing(1)};
+    --bit-acd-ttl-fontsize: #{$tg-fs-sm};
+    --bit-acd-fontsize: #{$tg-fs-xs};
+    --bit-acd-icn-fontsize: #{$siz-icon-sm};
+}
+
+.bit-acd-md {
+    --bit-acd-pad: #{spacing(1.5)};
+    --bit-acd-ttl-fontsize: #{$tg-fs-md};
+    --bit-acd-fontsize: #{$tg-fs-sm};
+    --bit-acd-icn-fontsize: #{$siz-icon-md};
+}
+
+.bit-acd-lg {
+    --bit-acd-pad: #{spacing(2)};
+    --bit-acd-ttl-fontsize: #{$tg-fs-lg};
+    --bit-acd-fontsize: #{$tg-fs-md};
+    --bit-acd-icn-fontsize: #{$siz-icon-lg};
+}
+
 
 .bit-acd-nbd {
     border: none;
     background-color: $clr-bg-sec;
 
-    .bit-acd-cnt {
+    > .bit-acd-cnt {
         background-color: $clr-bg-sec;
     }
 }
@@ -68,14 +123,34 @@
 }
 
 
+// The header line: the heading takes all of the width it can, so the toggle stays the whole header, and the
+// actions - which have to stay outside both the button and the heading - sit beside it.
+.bit-acd-hwr {
+    display: flex;
+    align-items: center;
+}
+
+.bit-acd-hed {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+// The width and the box are spelled out because a button sizes to its content even as a block-level box,
+// and the type tokens because a button does not inherit the font of the page either - without them the
+// description beside the title would be drawn in the browser's own button font.
 .bit-acd-hdr {
+    width: 100%;
     display: flex;
     cursor: pointer;
     text-align: start;
     color: $clr-fg-pri;
     align-items: center;
-    padding: spacing(1.5);
+    box-sizing: border-box;
+    font-weight: $tg-fw-regular;
+    font-size: var(--bit-acd-fontsize);
+    font-family: $tg-font-family;
     background-color: transparent;
+    padding: var(--bit-acd-pad);
 
     // Full-bleed inside the accordion's rounded border, so an inset outline is used instead of
     // the focus-ring mixin's outset shadow (which would poke past the component edge); the width
@@ -86,19 +161,47 @@
     }
 }
 
+.bit-acd-act {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    padding-inline-end: var(--bit-acd-pad);
+}
+
+.bit-acd-ico {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    font-size: var(--bit-acd-icn-fontsize);
+    margin-inline-end: spacing(1);
+}
+
 .bit-acd-eiw {
-    transition: all $mot-duration-long $mot-easing 0ms;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    transition: transform var(--bit-acd-dur) $mot-easing 0ms;
+}
+
+// The expander leads the header instead of closing it. The order lives on the icon rather than on the
+// content beside it, so a header that carries an Icon keeps that one first among what is left.
+.bit-acd-sei > .bit-acd-hwr {
+    .bit-acd-eiw {
+        order: -1;
+    }
 }
 
 .bit-acd-eic {
     display: flex;
     align-items: center;
+    font-size: var(--bit-acd-icn-fontsize);
     margin: 0 spacing(0.625);
 }
 
 .bit-acd-wrp {
     flex-grow: 1;
     display: flex;
+    min-width: 0;
     gap: spacing(1);
     flex-wrap: wrap;
     line-height: 1.5;
@@ -107,7 +210,7 @@
 
 .bit-acd-ttl {
     font-weight: $tg-fw-semibold;
-    font-size: $tg-fs-md;
+    font-size: var(--bit-acd-ttl-fontsize);
 }
 
 .bit-acd-des {
@@ -115,27 +218,66 @@
     color: $clr-fg-sec;
 }
 
-.bit-acd-con {
-    height: auto;
-    overflow: hidden;
-    padding: 0 spacing(1.5);
-    transition: all $mot-duration-long $mot-easing 0ms;
 
-    // The content region is keyboard-focusable (tabindex=0); same inset outline as the header.
+// The collapse animates a grid track between 0fr and 1fr, which is the one cross-browser way to transition
+// to the intrinsic height of the content: a max-height of 0 cannot be interpolated towards the `none` an
+// expanded panel needs, so the old animation only ever jumped. The row is the outer element, the clipping
+// the middle one, and the padding the inner one - a border box can never be shorter than its own padding,
+// so padding on either of the first two would leave a collapsed panel that tall.
+.bit-acd-cnt {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--bit-acd-dur) $mot-easing 0ms;
+}
+
+.bit-acd-exp > .bit-acd-cnt {
+    grid-template-rows: 1fr;
+}
+
+.bit-acd-cwr {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.bit-acd-con {
+    padding: 0 var(--bit-acd-pad);
+    // Opening: the panel is shown at once and the fade and the padding carry the rest of the way. The
+    // matching transition of the collapsed state below is what holds the hiding back until the panel has
+    // finished closing - a transition is read off the state that is being moved to, so the two directions
+    // are declared apart.
+    transition: opacity var(--bit-acd-dur) $mot-easing 0ms,
+                padding-block var(--bit-acd-dur) $mot-easing 0ms,
+                visibility 0s linear 0ms;
+
+    // The content region is focusable only while it scrolls (MaxHeight); same inset outline as the header.
     &:focus-visible {
         outline: #{$shp-focus-ring-width} solid $clr-pri-focus;
         outline-offset: calc(-1 * #{$shp-focus-ring-width});
     }
 }
 
+// A collapsed panel is clipped to nothing, but clipping alone leaves it in the accessibility tree and in the
+// tab order, so a link inside a closed accordion still answers Tab and still gets read out. `visibility`
+// takes it out of both, and - unlike `display: none` - it can be held back by a transition delay, so the
+// panel is still on screen for the whole of the closing animation and only leaves once it is over.
 .bit-acd-cco {
     opacity: 0;
-    max-height: 0;
-    margin: spacing(-1.5) 0;
+    visibility: hidden;
+    padding-block: 0;
+    transition: opacity var(--bit-acd-dur) $mot-easing 0ms,
+                padding-block var(--bit-acd-dur) $mot-easing 0ms,
+                visibility 0s linear var(--bit-acd-dur);
 }
 
 .bit-acd-cex {
     opacity: 1;
-    height: auto;
-    margin: spacing(1.5) 0;
+    padding-block: var(--bit-acd-pad);
+}
+
+// A content that is taller than its MaxHeight scrolls inside the accordion. The maximum sits on the scrolling
+// element itself rather than on the grid row, so the row still animates to whatever height the content ends
+// up with.
+.bit-acd-mxh > .bit-acd-cnt > .bit-acd-cwr > .bit-acd-con {
+    overflow-y: auto;
+    max-height: var(--bit-acd-max-h);
 }
