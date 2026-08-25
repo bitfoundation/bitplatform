@@ -3,6 +3,16 @@
 .bit-smr {
     display: block;
     --bit-smr-bg-clr: #{$clr-bg-ter};
+    // The sizing properties are inherited, and a Template is built out of shimmers of its own - so a height,
+    // a gap, a last-line width, a corner or a show delay set on the outer one would otherwise land on every
+    // shimmer inside it that did not set its own. Resetting them to the guaranteed-invalid value here sends
+    // each var() back to its fallback on every nested root, while the inline style that publishes them still
+    // wins on the element that was actually given the parameter.
+    --bit-smr-hgt: initial;
+    --bit-smr-gap: initial;
+    --bit-smr-llw: initial;
+    --bit-smr-rad: initial;
+    --bit-smr-dly: initial;
 
     @keyframes bit-smr-anim-wave {
         0% {
@@ -45,6 +55,14 @@
 
         100% {
             opacity: 1;
+        }
+    }
+
+    // Holds the covered content on the page for as long as the animation runs, which is what lets the cover
+    // arrive over content that is still there instead of over a box that has already gone blank.
+    @keyframes bit-smr-anim-uncover {
+        0%, 100% {
+            visibility: visible;
         }
     }
 }
@@ -123,6 +141,43 @@
     width: $siz-ctrl-min-width;
 }
 
+// A stack of lines laid out inline is still a stack: inline-block would take the flex container away from it
+// and with it the gap between the lines, so the inline one is an inline flex container instead.
+.bit-smr-mln.bit-smr-inl {
+    display: inline-flex;
+}
+
+// The cover is laid over content that is on the page but out of sight, so the box is the content's and not
+// the placeholder's: the width, the height and the aspect ratio the shape would have imposed are handed back,
+// and what is left of the shape is the corner the wrapper draws.
+.bit-smr-ovl {
+    width: auto;
+    height: auto;
+    aspect-ratio: auto;
+    position: relative;
+
+    > .bit-smr-wrp {
+        inset: 0;
+        height: auto;
+        position: absolute;
+    }
+}
+
+// The fallback width of an inline placeholder is one shape's answer to a question the cover no longer asks,
+// and it is written at two classes above, so taking it back takes two here as well.
+.bit-smr-ovl.bit-smr-inl {
+    width: auto;
+}
+
+// Out of sight, out of the tab order and out of the accessibility tree, but still taking up the room it will
+// take once it is shown - which is the whole point of covering content rather than standing in for it.
+// It is held visible for as long as the cover takes to arrive - a ShowDelay plus the fade of the cover
+// itself - so a response that lands inside that window never blanks the box it was refreshing.
+.bit-smr-cvd {
+    visibility: hidden;
+    animation: bit-smr-anim-uncover calc(var(--bit-smr-dly, 0ms) + #{$mot-duration-long}) linear;
+}
+
 .bit-smr-cnt {
     animation-fill-mode: both;
     animation-duration: $mot-duration-long;
@@ -145,6 +200,7 @@
     overflow: hidden;
     position: relative;
     animation-fill-mode: both;
+
     // Held at zero opacity for as long as ShowDelay asks for, so a call that finishes inside that window is
     // never followed by a flash of grey. The fill mode is what keeps the box invisible during the wait.
     animation-delay: var(--bit-smr-dly, 0ms);

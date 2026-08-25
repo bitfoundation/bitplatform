@@ -5,6 +5,14 @@
 /// </summary>
 public partial class BitShimmer : BitComponentBase
 {
+    // What the markup actually swaps on. It follows Loaded exactly unless a MinShowTime is holding a
+    // placeholder that has already been seen on the page for the rest of its shortest life.
+    private bool _loaded;
+    // The moment the current wait began, which is what MinShowTime and ShowDelay are both measured from.
+    // Null until there has been a wait at all, so a shimmer that starts out loaded holds nothing back.
+    private long? _waitStart;
+    private CancellationTokenSource? _holdCts;
+
     // Circle is the older spelling of Shape.Circle and stays the fallback for a component that was written
     // before the shape had a name of its own; an explicit Shape always wins over it.
     private BitShimmerShape _shape => Shape ?? (Circle ? BitShimmerShape.Circle : BitShimmerShape.Rounded);
@@ -13,7 +21,13 @@ public partial class BitShimmer : BitComponentBase
     private BitShimmerAnimation _animation => Animation ?? (Pulse ? BitShimmerAnimation.Pulse : BitShimmerAnimation.Wave);
 
     // A circle is one shape rather than a stack of lines, and a count below one is not a stack either.
-    private int _lineCount => _shape == BitShimmerShape.Circle ? 1 : Math.Max(1, Lines);
+    // An overlay is one shape as well: it covers a box whose size the content underneath already decides,
+    // and a stack of bars inside that box would be a second layout rather than a cover for the first.
+    private int _lineCount => Overlay || _shape == BitShimmerShape.Circle ? 1 : Math.Max(1, Lines);
+
+    // A template draws the placeholder itself, which an overlay cannot let it do: the cover has to be the one
+    // box laid over the content, so the template is left to the in-place placeholder it was written for.
+    private bool _hasTemplate => Template is not null && Overlay is false;
 
     // The region is only worth having while there is something for it to say. It stays on the page across the
     // swap either way, so whichever of the two texts is missing simply empties it rather than removing it.
@@ -24,6 +38,17 @@ public partial class BitShimmer : BitComponentBase
         BitPoliteness.Off => "off",
         BitPoliteness.Assertive => "assertive",
         _ => "polite"
+    };
+
+    // The role is paired with the politeness rather than fixed: status carries an implicit polite live region
+    // and alert an assertive one, so pinning status onto an assertive region would state one urgency in the
+    // role and the opposite in aria-live - which is exactly the conflicting pair screen readers resolve
+    // differently from one another.
+    private string? _liveRole => Politeness switch
+    {
+        BitPoliteness.Off => null,
+        BitPoliteness.Assertive => "alert",
+        _ => "status"
     };
 
     private string _animationClass => _animation switch
@@ -139,7 +164,8 @@ public partial class BitShimmer : BitComponentBase
     /// The animation delay value in ms.
     /// </summary>
     /// <remarks>
-    /// This is the pause before each loop of the animation, not the wait before the placeholder itself appears -
+    /// This is the CSS <c>animation-delay</c> of the animation: it postpones the start of the first loop, and
+    /// the loops that follow it run back to back. It is not the wait before the placeholder itself appears -
     /// that one is <see cref="ShowDelay"/>.
     /// </remarks>
     [Parameter]
@@ -173,7 +199,8 @@ public partial class BitShimmer : BitComponentBase
     /// <br />
     /// With more than one line it is the height of each single line, not of the stack.
     /// <br />
-    /// Left unset, the height comes from <see cref="Size"/>.
+    /// Left unset, the height comes from <see cref="Size"/>, and an <see cref="Overlay"/> takes it from the
+    /// content it covers instead.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? Height { get; set; }
@@ -190,6 +217,9 @@ public partial class BitShimmer : BitComponentBase
     /// <br />
     /// A <see cref="Height"/> of <c>1em</c> keeps it exactly as tall as the type it sits in, whatever that
     /// type turns out to be.
+    /// <br />
+    /// The root is rendered as a <c>span</c> rather than a <c>div</c> while it is inline, so a placeholder
+    /// standing in the middle of a paragraph is phrasing content and the paragraph stays in one piece.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Inline { get; set; }
@@ -227,7 +257,8 @@ public partial class BitShimmer : BitComponentBase
     /// Each line takes the <see cref="Height"/> of a single line and they are separated by <see cref="Gap"/>,
     /// with the last one shortened to <see cref="LastLineWidth"/>.
     /// <br />
-    /// A <see cref="BitShimmerShape.Circle"/> is a single shape rather than a stack, so it ignores this.
+    /// A <see cref="BitShimmerShape.Circle"/> is a single shape rather than a stack, so it ignores this, and
+    /// so does an <see cref="Overlay"/>, which is one box laid over the whole of the content it covers.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public int Lines { get; set; } = 1;
@@ -239,9 +270,13 @@ public partial class BitShimmer : BitComponentBase
     /// </summary>
     /// <remarks>
     /// The placeholder and the content are never on the page at the same time: the content replaces the
-    /// placeholder and fades in, and the sizing of the placeholder is dropped with it.
+    /// placeholder and fades in, and the sizing of the placeholder is dropped with it - unless the shimmer
+    /// <see cref="Overlay"/>s its content, where the two are on the page together and only one is shown.
+    /// <br />
+    /// The swap follows this parameter at once, except where <see cref="MinShowTime"/> is holding a
+    /// placeholder that has only just appeared.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool Loaded { get; set; }
 
     /// <summary>
@@ -252,6 +287,36 @@ public partial class BitShimmer : BitComponentBase
     /// Keep it short - "Loaded" - and let the content itself say the rest.
     /// </remarks>
     [Parameter] public string? LoadedLabel { get; set; }
+
+    /// <summary>
+    /// The shortest time in ms a placeholder that has been seen stays on the page.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="ShowDelay"/> keeps a fast response from ever showing a placeholder; this keeps a response
+    /// that lands just after one has appeared from taking it away again in the same breath, which reads as a
+    /// flicker rather than as loading. The two are the two halves of the same answer, and this one is measured
+    /// from the moment the placeholder appears, so the wait as a whole is at most the delay plus this.
+    /// <br />
+    /// Nothing is held back if the response arrives before the placeholder was ever shown.
+    /// </remarks>
+    [Parameter] public int? MinShowTime { get; set; }
+
+    /// <summary>
+    /// Draws the placeholder over the content instead of in place of it.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// The content is rendered but not shown, so the box keeps the size of the thing it is waiting on and the
+    /// page never reflows as the placeholder is swapped out. This is what a section that is being refreshed
+    /// wants - the layout is already known - while content arriving for the first time, whose size is not,
+    /// is better served by the placeholder standing in for it.
+    /// <br />
+    /// The cover is one box over the whole content, so <see cref="Lines"/> and <see cref="Template"/> no longer
+    /// apply and the size comes from the content rather than from <see cref="Height"/>.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Overlay { get; set; }
 
     /// <summary>
     /// How urgently the live region of the shimmer interrupts a screen reader.
@@ -277,6 +342,19 @@ public partial class BitShimmer : BitComponentBase
     public bool Pulse { get; set; }
 
     /// <summary>
+    /// The corner radius of the placeholder, as a CSS length.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Shape"/> already carries the three radii a placeholder usually wants; this is for the corner
+    /// that has to match a surface of its own - a card, a thumbnail, a control with a radius the theme does not
+    /// have a name for - and it wins over the shape wherever both are set.
+    /// <br />
+    /// A <see cref="BitShimmerShape.Circle"/> is round by construction, so it ignores this.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? Radius { get; set; }
+
+    /// <summary>
     /// The shape of the placeholder the shimmer draws.
     /// <br />
     /// The default value is <strong>Rounded</strong>.
@@ -299,6 +377,9 @@ public partial class BitShimmer : BitComponentBase
     /// The wait is held in CSS rather than in a timer, so it costs no render and works under static server-side
     /// rendering. It delays the appearance of the placeholder only - the animation of a placeholder already on
     /// the page is timed by <see cref="Delay"/>.
+    /// <br />
+    /// <see cref="MinShowTime"/> is its other half: this one keeps a placeholder from being shown too soon,
+    /// that one from being taken away too soon after it has been.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public int? ShowDelay { get; set; }
@@ -328,6 +409,9 @@ public partial class BitShimmer : BitComponentBase
     /// its own shape and size, which is how a card or a list row is drawn.
     /// <br />
     /// <see cref="ShowDelay"/> still applies, so a whole templated skeleton is held back as one.
+    /// <br />
+    /// An <see cref="Overlay"/> is a single box laid over the content rather than a layout of its own, so it
+    /// leaves the template to the in-place placeholder it was written for.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public RenderFragment? Template { get; set; }
@@ -349,6 +433,104 @@ public partial class BitShimmer : BitComponentBase
 
     protected override string RootElementClass => "bit-smr";
 
+    protected override void OnParametersSet()
+    {
+        if (Loaded is false)
+        {
+            // A wait that is starting is one the placeholder is measured from; a wait already under way keeps
+            // the moment it started, so a rerender in the middle of one does not push its shortest life out.
+            _waitStart ??= Environment.TickCount64;
+            CancelHold();
+            SetLoaded(false);
+        }
+        else if (_loaded is false && _holdCts is null)
+        {
+            var shown = ShowDelay ?? 0;
+            var elapsed = _waitStart.HasValue ? Environment.TickCount64 - _waitStart.Value : 0;
+            var remaining = _waitStart.HasValue ? shown + (MinShowTime ?? 0) - elapsed : 0;
+
+            // Nothing is held back for a placeholder that was never seen - the response beat the ShowDelay
+            // that was holding it back - nor for one that has already lived out its shortest life.
+            if (MinShowTime.HasValue is false || elapsed < shown || remaining <= 0)
+            {
+                _waitStart = null;
+                SetLoaded(true);
+            }
+            else
+            {
+                HoldPlaceholder((int)remaining);
+            }
+        }
+
+        base.OnParametersSet();
+    }
+
+    // The swap is what the class and the style builders are keyed on, so a swap that is deferred defers their
+    // reset with it: the ResetClassBuilder on the parameter fires when the parameter changes, which is not
+    // necessarily when the placeholder goes away.
+    private void SetLoaded(bool value)
+    {
+        if (_loaded == value) return;
+
+        _loaded = value;
+
+        ClassBuilder.Reset();
+        StyleBuilder.Reset();
+    }
+
+    private void HoldPlaceholder(int duration)
+    {
+        var cts = _holdCts = new CancellationTokenSource();
+
+        _ = HoldPlaceholderAsync(duration, cts);
+    }
+
+    private async Task HoldPlaceholderAsync(int duration, CancellationTokenSource cts)
+    {
+        try
+        {
+            await Task.Delay(duration, cts.Token);
+
+            if (cts.IsCancellationRequested || IsDisposed) return;
+
+            await InvokeAsync(() =>
+            {
+                if (cts.IsCancellationRequested || IsDisposed) return;
+
+                _holdCts = null;
+
+                // The response the wait was held for may have been taken back in the meantime, in which case
+                // the placeholder is still the right thing to be showing and there is nothing to swap.
+                if (Loaded is false) return;
+
+                _waitStart = null;
+                SetLoaded(true);
+                StateHasChanged();
+            });
+        }
+        catch (OperationCanceledException) { }
+        finally
+        {
+            cts.Dispose();
+        }
+    }
+
+    private void CancelHold()
+    {
+        if (_holdCts is null) return;
+
+        _holdCts.Cancel();
+        _holdCts.Dispose();
+        _holdCts = null;
+    }
+
+    protected override ValueTask DisposeAsync(bool disposing)
+    {
+        CancelHold();
+
+        return base.DisposeAsync(disposing);
+    }
+
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
@@ -357,10 +539,14 @@ public partial class BitShimmer : BitComponentBase
 
         // The height is published as a custom property rather than being set on the root: with more than one
         // line it is each line that has to read it, and once the content is in it is nobody's business at all.
-        StyleBuilder.Register(() => Height.HasValue() ? $"--bit-smr-hgt:{Height}" : string.Empty);
-        StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-smr-gap:{Gap}" : string.Empty);
-        StyleBuilder.Register(() => LastLineWidth.HasValue() ? $"--bit-smr-llw:{LastLineWidth}" : string.Empty);
-        StyleBuilder.Register(() => ShowDelay.HasValue ? $"--bit-smr-dly:{ShowDelay}ms" : string.Empty);
+        // The four of them are dropped after the swap for the same reason the sizing classes are - what the
+        // content is laid out by is the page - and a custom property that is not published is also one that
+        // cannot be inherited by the shimmers a Template is built out of.
+        StyleBuilder.Register(() => _loaded is false && Height.HasValue() ? $"--bit-smr-hgt:{Height}" : string.Empty);
+        StyleBuilder.Register(() => _loaded is false && Gap.HasValue() ? $"--bit-smr-gap:{Gap}" : string.Empty);
+        StyleBuilder.Register(() => _loaded is false && LastLineWidth.HasValue() ? $"--bit-smr-llw:{LastLineWidth}" : string.Empty);
+        StyleBuilder.Register(() => _loaded is false && Radius.HasValue() ? $"--bit-smr-rad:{Radius}" : string.Empty);
+        StyleBuilder.Register(() => _loaded is false && ShowDelay.HasValue ? $"--bit-smr-dly:{ShowDelay}ms" : string.Empty);
     }
 
     protected override void RegisterCssClasses()
@@ -372,9 +558,9 @@ public partial class BitShimmer : BitComponentBase
         // it brings boxes of its own, and a height meant for a single bar would crop the whole skeleton. What
         // the root keeps in that case is the entry animation - and with it the ShowDelay that holds the
         // skeleton back as one.
-        ClassBuilder.Register(() => Loaded
+        ClassBuilder.Register(() => _loaded
                                   ? "bit-smr-ldd"
-                                  : Template is not null
+                                  : _hasTemplate
                                     ? "bit-smr-tpl"
                                     : _shape switch
                                     {
@@ -384,7 +570,12 @@ public partial class BitShimmer : BitComponentBase
                                         _ => "bit-smr-lin"
                                     });
 
-        ClassBuilder.Register(() => Loaded is false && Template is null && _lineCount > 1 ? "bit-smr-mln" : string.Empty);
+        // The cover takes its box from the content it is laid over, so it comes after the shape class and
+        // hands back the width and the height the shape would otherwise have imposed - the corner it draws
+        // is all that is left of the shape.
+        ClassBuilder.Register(() => _loaded is false && Overlay ? "bit-smr-ovl" : string.Empty);
+
+        ClassBuilder.Register(() => _loaded is false && _hasTemplate is false && _lineCount > 1 ? "bit-smr-mln" : string.Empty);
 
         ClassBuilder.Register(() => Inline ? "bit-smr-inl" : string.Empty);
 

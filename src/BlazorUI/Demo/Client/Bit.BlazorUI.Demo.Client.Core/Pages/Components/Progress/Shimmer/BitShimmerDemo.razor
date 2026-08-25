@@ -6,7 +6,7 @@
 
 <DemoPage Name="Shimmer"
           SecondaryNames="@(["Skeleton"])"
-          Description="Shimmer is a temporary placeholder for content that has not arrived yet, so a page can lay itself out before its data is in rather than blocking on it. It draws a rounded bar, a square, a pill or a circle, stacks itself into a paragraph of lines with a shortened last one, and animates with a wave, a pulse, a fade or nothing at all. Any layout beyond that is built from a template of shimmers of its own. It holds itself back for a moment so a fast response never flashes a placeholder, swaps to the real content with a fade once it is loaded, and carries a live region so a screen reader is told when the wait is over."
+          Description="Shimmer is a temporary placeholder for content that has not arrived yet, so a page can lay itself out before its data is in rather than blocking on it. It draws a rounded bar, a square, a pill or a circle at any corner radius, stacks itself into a paragraph of lines with a shortened last one, and animates with a wave, a pulse, a fade or nothing at all. Any layout beyond that is built from a template of shimmers of its own, and content that is already on the page is covered rather than stood in for. It holds itself back for a moment so a fast response never flashes a placeholder and stays a moment longer so one landing just afterwards never flickers, swaps to the real content with a fade once it is loaded, and carries a live region so a screen reader is told when the wait is over."
           Parameters="componentParameters"
           SubEnums="componentSubEnums"
           SubClasses="componentSubClasses"
@@ -15,11 +15,11 @@
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>
             A shimmer with nothing set is a single rounded bar that takes the full width of its container and the height of its
-            <BitLink Href="#example12">Size</BitLink>, with the wave sweeping across it. That is the whole component: everything else on this page
+            <BitLink Href="#example14">Size</BitLink>, with the wave sweeping across it. That is the whole component: everything else on this page
             shapes it, stacks it, retimes it or fills it in.
             <br /><br />
             <b>Width</b> and <b>Height</b> take any CSS length. The height sizes the placeholder only - once the content is
-            <BitLink Href="#example7">loaded</BitLink> it decides its own height, so the box never crops what it was standing in for - while the
+            <BitLink Href="#example8">loaded</BitLink> it decides its own height, so the box never crops what it was standing in for - while the
             width stays with the component, which keeps a placeholder and the content that replaces it in the same column.
         </div>
         <br />
@@ -58,7 +58,27 @@
         </BitStack>
     </DemoExample>
 
-    <DemoExample Title="Lines" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Radius" RazorCode="@example3RazorCode" Id="example3">
+        <div>
+            <BitLink Href="#example2">Shape</BitLink> carries the three corners a placeholder usually wants, and <b>Radius</b> is for the one it does
+            not: a card, a thumbnail or a control whose corner the theme has no name for. It takes any CSS length, it wins over the shape wherever
+            both are set, and a circle is round by construction so it ignores it.
+            <br /><br />
+            Match it to the corner of the surface the content will be drawn on - a placeholder whose corner disagrees with the card that replaces it
+            is the one part of a skeleton a reader notices.
+        </div>
+        <br /><br />
+        <div>Radius="0.25rem"</div>
+        <BitShimmer Height="2rem" Radius="0.25rem" />
+        <br />
+        <div>Radius="1rem"</div>
+        <BitShimmer Height="2rem" Radius="1rem" />
+        <br />
+        <div>Radius="0" (over a Pill, which it wins over)</div>
+        <BitShimmer Height="2rem" Shape="BitShimmerShape.Pill" Radius="0" />
+    </DemoExample>
+
+    <DemoExample Title="Lines" RazorCode="@example4RazorCode" Id="example4">
         <div>
             <b>Lines</b> stacks the shimmer into a paragraph: each line takes the single-line <b>Height</b>, the lines are separated by
             <b>Gap</b>, and the last one is shortened to <b>LastLineWidth</b> - 60% by default, because the last line of a paragraph rarely
@@ -77,7 +97,7 @@
         <BitShimmer Lines="3" Height="1.5rem" Gap="0.25rem" LastLineWidth="100%" />
     </DemoExample>
 
-    <DemoExample Title="Animation" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Animation" RazorCode="@example5RazorCode" Id="example5">
         <div>
             <b>Animation</b> is how the placeholder tells the reader that something is still on its way. <b>Wave</b> (default) sweeps a band of the
             highlight color across the box and turns around on a right-to-left page; <b>Pulse</b> breathes between full and reduced opacity, which
@@ -109,19 +129,25 @@
         <BitShimmer Height="3rem" Duration="5000" Delay="1000" />
     </DemoExample>
 
-    <DemoExample Title="ShowDelay" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="ShowDelay & MinShowTime" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>
             A response that arrives in a few hundred milliseconds turns a placeholder into a flash of grey that is worse than no placeholder at all.
             <b>ShowDelay</b> holds the shimmer back for that long, so a fast call finishes without one ever being seen while a slow call still gets
             the placeholder it needs. The wait is held in CSS rather than in a timer, so it costs no render and works under static server-side rendering.
             <br /><br />
-            Press each button and watch the pair: the first one starts shimmering immediately either way, the second only ever does when
-            the wait is real. It delays the appearance of the placeholder only - the pace of the animation itself is
-            <BitLink Href="#example4">Duration and Delay</BitLink>.
+            <b>MinShowTime</b> is the other half of the same answer: a response landing just after the placeholder has appeared would take it away in
+            the same breath, which reads as a flicker rather than as loading, so a placeholder that has been seen stays for at least this long. It is
+            measured from the moment the placeholder appears, so the whole wait is at most the delay plus this, and nothing is held back for a
+            placeholder that was never shown.
+            <br /><br />
+            Press each button and watch the three: the first starts shimmering immediately whatever happens, the second only when the wait is real,
+            and the third also refuses to blink - the middle button is the case the pair is written for. Both time the placeholder rather than its
+            animation, whose pace is <BitLink Href="#example5">Duration and Delay</BitLink>.
         </div>
         <br /><br />
         <BitStack Horizontal Wrap>
             <BitButton OnClick="() => SimulateLoading(300)">Fast response (300ms)</BitButton>
+            <BitButton OnClick="() => SimulateLoading(1200)">Just after the delay (1.2s)</BitButton>
             <BitButton OnClick="() => SimulateLoading(3000)">Slow response (3s)</BitButton>
         </BitStack>
         <br />
@@ -130,22 +156,28 @@
         <br />
         <div>ShowDelay="1000"</div>
         <BitShimmer Loaded="@isDelayLoaded" ShowDelay="1000" Height="1.5rem">The response is in.</BitShimmer>
+        <br />
+        <div>ShowDelay="1000" MinShowTime="1000"</div>
+        <BitShimmer Loaded="@isDelayLoaded" ShowDelay="1000" MinShowTime="1000" Height="1.5rem">The response is in.</BitShimmer>
     </DemoExample>
 
-    <DemoExample Title="Inline" RazorCode="@example6RazorCode" Id="example6">
+    <DemoExample Title="Inline" RazorCode="@example7RazorCode" Id="example7">
         <div>
             A shimmer is a block by default and takes the full width of its container, which is what a placeholder standing in for a paragraph or a
             card wants. <b>Inline</b> lays it out in the flow of a line of text instead, so a single value that is still loading can hold its place in
             a sentence. An inline shimmer takes the width it is given and falls back to the minimum width of a control without one, and a
             <b>Height</b> of <b>1em</b> keeps it exactly as tall as the type it sits in whatever that type turns out to be.
+            <br /><br />
+            The root is rendered as a <b>span</b> rather than a <b>div</b> while it is inline, so a placeholder standing in the middle of a
+            paragraph is phrasing content and the paragraph stays in one piece.
         </div>
         <br /><br />
-        <div>
+        <p>
             The plan costs <BitShimmer Inline Width="4rem" Height="1em" /> per month and renews on <BitShimmer Inline Width="6rem" Height="1em" />.
-        </div>
+        </p>
     </DemoExample>
 
-    <DemoExample Title="Loaded" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <DemoExample Title="Loaded" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <div>
             <b>Loaded</b> is the switch between the placeholder and the real thing: the two are never on the page at the same time, and the content
             fades in as it replaces the shimmer. The content is <b>ChildContent</b>, or <b>Content</b> under the same name as a template parameter.
@@ -160,11 +192,45 @@
         <BitToggleButton @bind-IsChecked="@isDataLoaded" Text="Toggle shimmer" />
     </DemoExample>
 
-    <DemoExample Title="Template" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoExample Title="Overlay" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>
+            A placeholder normally stands in for content that is not there yet, so the box it draws is a guess at the size of what is coming.
+            <b>Overlay</b> is the other case: the content is already on the page and is being refreshed, its size is therefore known, and the
+            shimmer is laid over it rather than in place of it. The content stays in the layout - out of sight, out of the tab order and out of
+            reach of a screen reader - so nothing moves when the placeholder goes away.
+            <br /><br />
+            The cover is one box over the whole of the content, so <BitLink Href="#example4">Lines</BitLink> and
+            <BitLink Href="#example10">Template</BitLink> no longer apply and the size comes from the content rather than from <b>Height</b>.
+            <BitLink Href="#example6">ShowDelay</BitLink> still does, and it holds the content on the page while it waits, so a refresh that
+            returns quickly never blanks the box it was covering.
+        </div>
+        <br /><br />
+        <div>Overlay</div>
+        <BitShimmer Overlay Loaded="@isOverlayLoaded" Radius="0.5rem">
+            <BitCard Style="width:18rem">
+                <BitText Typography="BitTypography.H6">Monthly revenue</BitText>
+                <BitText Typography="BitTypography.H3">$48,120</BitText>
+                <BitText Typography="BitTypography.Caption1">Up 12% on the previous month.</BitText>
+            </BitCard>
+        </BitShimmer>
+        <br />
+        <div>In place, for comparison</div>
+        <BitShimmer Loaded="@isOverlayLoaded" Height="8rem" Width="18rem" Radius="0.5rem">
+            <BitCard Style="width:18rem">
+                <BitText Typography="BitTypography.H6">Monthly revenue</BitText>
+                <BitText Typography="BitTypography.H3">$48,120</BitText>
+                <BitText Typography="BitTypography.Caption1">Up 12% on the previous month.</BitText>
+            </BitCard>
+        </BitShimmer>
+        <br />
+        <BitToggleButton @bind-IsChecked="@isOverlayLoaded" Text="Toggle shimmer" />
+    </DemoExample>
+
+    <DemoExample Title="Template" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
             Anything more than a bar, a circle or a stack of lines is drawn as a <b>Template</b>: a layout of shimmers of its own, each with its own
             shape and size, arranged the way the content will be. The template replaces the placeholder entirely, so the shape, the line count and the
-            animation of the outer shimmer no longer apply - but <BitLink Href="#example5">ShowDelay</BitLink> still does, which holds the whole
+            animation of the outer shimmer no longer apply - but <BitLink Href="#example6">ShowDelay</BitLink> still does, which holds the whole
             skeleton back as one rather than letting its parts appear separately.
         </div>
         <br /><br />
@@ -195,7 +261,7 @@
         <BitToggleButton @bind-IsChecked="@isContentLoaded" Text="Toggle shimmer" />
     </DemoExample>
 
-    <DemoExample Title="Accessibility" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoExample Title="Accessibility" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>
             A placeholder is a visual stand-in and says nothing on its own, so the shimmer marks itself <b>aria-busy</b> while it waits and hides its
             empty boxes from assistive technologies - a card built from a dozen of them is not read out as a dozen empty groups.
@@ -217,10 +283,10 @@
         <BitToggleButton @bind-IsChecked="@isAccessibleLoaded" Text="Toggle shimmer" />
     </DemoExample>
 
-    <DemoExample Title="Background" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="Background" RazorCode="@example12RazorCode" Id="example12">
         <div>
             <b>Background</b> is the resting color of the placeholder - the box the animation plays over - while
-            <BitLink Href="#example11">Color</BitLink> is the color of the animated part itself. Keep the two close together: a placeholder is not
+            <BitLink Href="#example13">Color</BitLink> is the color of the animated part itself. Keep the two close together: a placeholder is not
             content, and a high-contrast pair reads as something the page is actually showing.
         </div>
         <br /><br />
@@ -276,10 +342,10 @@
         <BitShimmer Height="2rem" Background="BitColor.TertiaryBorder" />
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="Color" RazorCode="@example13RazorCode" Id="example13">
         <div>
             <b>Color</b> paints the animated part of the shimmer - the wave band, or the block the pulse and the fade play on - in any of the general
-            colors of bit BlazorUI, over the resting <BitLink Href="#example10">Background</BitLink> of the placeholder.
+            colors of bit BlazorUI, over the resting <BitLink Href="#example12">Background</BitLink> of the placeholder.
         </div>
         <br /><br />
         <div>Primary</div>
@@ -334,7 +400,7 @@
         <BitShimmer Height="1rem" Color="BitColor.TertiaryBorder" />
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="Size" RazorCode="@example14RazorCode" Id="example14">
         <div>
             <b>Size</b> is the default height of a line and the default diameter of a circle, so a placeholder can be scaled to the type around it
             without a length being written out. An explicit <b>Height</b> or <b>Width</b> always wins over it.
@@ -359,11 +425,12 @@
         </BitStack>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" Id="example15">
         <div>
             Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.
             <b>Style</b> and <b>Class</b> reach the root element, while <b>Styles</b> and <b>Classes</b> reach each part of the component by name -
-            the root, the wrapper of every line, the animated part inside it, the content that replaces them and the live region that speaks for them.
+            the root, the wrapper of every line, the animated part inside it, the content that replaces them - or that they cover - and the live
+            region that speaks for them.
             A custom gradient on the shimmer is how a color pair outside the general roles is set.
         </div>
         <br /><br />
@@ -383,7 +450,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
         <div>
             Use <b>Dir="BitDir.Rtl"</b> to render the shimmer in a right-to-left layout. The wave sweeps with the reading direction, so it comes in
             from the right, and a stack of lines shortens its last one from the right as well.

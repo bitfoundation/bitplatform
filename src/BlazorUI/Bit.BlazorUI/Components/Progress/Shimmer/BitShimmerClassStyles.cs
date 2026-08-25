@@ -10,6 +10,10 @@ public class BitShimmerClassStyles
     /// <summary>
     /// Custom CSS classes/styles for the content of the BitShimmer.
     /// </summary>
+    /// <remarks>
+    /// The same box holds the content an <see cref="BitShimmer.Overlay"/> covers, so a shimmer that covers its
+    /// content rather than standing in for it is reached by these as well.
+    /// </remarks>
     public string? Content { get; set; }
 
     /// <summary>

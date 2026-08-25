@@ -133,6 +133,20 @@ public partial class BitShimmerDemo
         },
         new()
         {
+            Name = "MinShowTime",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The shortest time in ms a placeholder that has been seen stays on the page. ShowDelay keeps a fast response from ever showing a placeholder; this keeps a response landing just after one has appeared from taking it away in the same breath, which reads as a flicker rather than as loading. It is measured from the moment the placeholder appears, and nothing is held back for a placeholder that was never shown."
+        },
+        new()
+        {
+            Name = "Overlay",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Draws the placeholder over the content instead of in place of it, so the box keeps the size of the thing it is waiting on and the page never reflows as the placeholder is swapped out. The cover is one box over the whole content, so Lines and Template no longer apply and the size comes from the content rather than from Height."
+        },
+        new()
+        {
             Name = "Politeness",
             Type = "BitPoliteness",
             DefaultValue = "BitPoliteness.Polite",
@@ -146,6 +160,13 @@ public partial class BitShimmerDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Changes the animation type of the shimmer to pulse. This is the short spelling of Animation=\"BitShimmerAnimation.Pulse\", which wins over it when both are set.",
+        },
+        new()
+        {
+            Name = "Radius",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The corner radius of the placeholder, as a CSS length. Shape already carries the three radii a placeholder usually wants; this is for the corner that has to match a surface of its own, and it wins over the shape wherever both are set. A circle is round by construction, so it ignores this."
         },
         new()
         {
@@ -217,7 +238,7 @@ public partial class BitShimmerDemo
                    Name = "Content",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the content of the BitShimmer."
+                   Description = "Custom CSS classes/styles for the content of the BitShimmer. The same box holds the content an Overlay covers."
                },
                new()
                {
@@ -485,16 +506,33 @@ public partial class BitShimmerDemo
 
     private bool isContentLoaded;
 
+    private bool isOverlayLoaded;
+
     private bool isAccessibleLoaded;
 
     private bool isDelayLoaded = true;
 
+    // Each click restarts the wait, so the delay of the click before it must not be allowed to land and
+    // report the component as loaded while the newer one is still running.
+    private CancellationTokenSource? delayCts;
+
     private async Task SimulateLoading(int duration)
     {
+        delayCts?.Cancel();
+        delayCts?.Dispose();
+        var cts = delayCts = new CancellationTokenSource();
+
         isDelayLoaded = false;
         StateHasChanged();
 
-        await Task.Delay(duration);
+        try
+        {
+            await Task.Delay(duration, cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
 
         isDelayLoaded = true;
     }
@@ -521,13 +559,20 @@ public partial class BitShimmerDemo
 </BitStack>";
 
     private readonly string example3RazorCode = @"
+<BitShimmer Height=""2rem"" Radius=""0.25rem"" />
+
+<BitShimmer Height=""2rem"" Radius=""1rem"" />
+
+<BitShimmer Height=""2rem"" Shape=""BitShimmerShape.Pill"" Radius=""0"" />";
+
+    private readonly string example4RazorCode = @"
 <BitShimmer Lines=""3"" Height=""0.75rem"" />
 
 <BitShimmer Lines=""4"" Height=""0.5rem"" Gap=""1rem"" LastLineWidth=""35%"" />
 
 <BitShimmer Lines=""3"" Height=""1.5rem"" Gap=""0.25rem"" LastLineWidth=""100%"" />";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitShimmer Height=""3rem"" />
 
 <BitStack Horizontal Alignment=""BitAlignment.Center"">
@@ -541,41 +586,78 @@ public partial class BitShimmerDemo
 
 <BitShimmer Height=""3rem"" Duration=""5000"" Delay=""1000"" />";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitButton OnClick=""() => SimulateLoading(300)"">Fast response (300ms)</BitButton>
+<BitButton OnClick=""() => SimulateLoading(1200)"">Just after the delay (1.2s)</BitButton>
 <BitButton OnClick=""() => SimulateLoading(3000)"">Slow response (3s)</BitButton>
 
 <BitShimmer Loaded=""@isDelayLoaded"" Height=""1.5rem"">The response is in.</BitShimmer>
 
-<BitShimmer Loaded=""@isDelayLoaded"" ShowDelay=""1000"" Height=""1.5rem"">The response is in.</BitShimmer>";
-    private readonly string example5CsharpCode = @"
+<BitShimmer Loaded=""@isDelayLoaded"" ShowDelay=""1000"" Height=""1.5rem"">The response is in.</BitShimmer>
+
+<BitShimmer Loaded=""@isDelayLoaded"" ShowDelay=""1000"" MinShowTime=""1000"" Height=""1.5rem"">The response is in.</BitShimmer>";
+    private readonly string example6CsharpCode = @"
 private bool isDelayLoaded = true;
+
+private CancellationTokenSource? delayCts;
 
 private async Task SimulateLoading(int duration)
 {
+    delayCts?.Cancel();
+    delayCts?.Dispose();
+    var cts = delayCts = new CancellationTokenSource();
+
     isDelayLoaded = false;
     StateHasChanged();
 
-    await Task.Delay(duration);
+    try
+    {
+        await Task.Delay(duration, cts.Token);
+    }
+    catch (OperationCanceledException)
+    {
+        return;
+    }
 
     isDelayLoaded = true;
 }";
 
-    private readonly string example6RazorCode = @"
-<div>
-    The plan costs <BitShimmer Inline Width=""4rem"" Height=""1em"" /> per month and renews on <BitShimmer Inline Width=""6rem"" Height=""1em"" />.
-</div>";
-
     private readonly string example7RazorCode = @"
+<p>
+    The plan costs <BitShimmer Inline Width=""4rem"" Height=""1em"" /> per month and renews on <BitShimmer Inline Width=""6rem"" Height=""1em"" />.
+</p>";
+
+    private readonly string example8RazorCode = @"
 <BitShimmer Loaded=""@isDataLoaded"" Height=""1.5rem"">
     Content loaded successfully.
 </BitShimmer>
 
 <BitToggleButton @bind-IsChecked=""@isDataLoaded"" Text=""Toggle shimmer"" />";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private bool isDataLoaded;";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
+<BitShimmer Overlay Loaded=""@isOverlayLoaded"" Radius=""0.5rem"">
+    <BitCard Style=""width:18rem"">
+        <BitText Typography=""BitTypography.H6"">Monthly revenue</BitText>
+        <BitText Typography=""BitTypography.H3"">$48,120</BitText>
+        <BitText Typography=""BitTypography.Caption1"">Up 12% on the previous month.</BitText>
+    </BitCard>
+</BitShimmer>
+
+<BitShimmer Loaded=""@isOverlayLoaded"" Height=""8rem"" Width=""18rem"" Radius=""0.5rem"">
+    <BitCard Style=""width:18rem"">
+        <BitText Typography=""BitTypography.H6"">Monthly revenue</BitText>
+        <BitText Typography=""BitTypography.H3"">$48,120</BitText>
+        <BitText Typography=""BitTypography.Caption1"">Up 12% on the previous month.</BitText>
+    </BitCard>
+</BitShimmer>
+
+<BitToggleButton @bind-IsChecked=""@isOverlayLoaded"" Text=""Toggle shimmer"" />";
+    private readonly string example9CsharpCode = @"
+private bool isOverlayLoaded;";
+
+    private readonly string example10RazorCode = @"
 <BitShimmer Loaded=""@isContentLoaded"" Width=""15rem"">
     <Content>
         <BitImage Height=""8rem"" Alt=""bit logo""
@@ -601,10 +683,10 @@ private bool isDataLoaded;";
 </BitShimmer>
 
 <BitToggleButton @bind-IsChecked=""@isContentLoaded"" Text=""Toggle shimmer"" />";
-    private readonly string example8CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private bool isContentLoaded;";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitShimmer Loaded=""@isAccessibleLoaded""
             Label=""Loading your profile""
             LoadedLabel=""Profile loaded""
@@ -614,10 +696,10 @@ private bool isContentLoaded;";
 </BitShimmer>
 
 <BitToggleButton @bind-IsChecked=""@isAccessibleLoaded"" Text=""Toggle shimmer"" />";
-    private readonly string example9CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private bool isAccessibleLoaded;";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitShimmer Height=""2rem"" Background=""BitColor.Primary"" />
 <BitShimmer Height=""2rem"" Background=""BitColor.Secondary"" />
 <BitShimmer Height=""2rem"" Background=""BitColor.Tertiary"" />
@@ -636,7 +718,7 @@ private bool isAccessibleLoaded;";
 <BitShimmer Height=""2rem"" Background=""BitColor.SecondaryBorder"" />
 <BitShimmer Height=""2rem"" Background=""BitColor.TertiaryBorder"" />";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitShimmer Height=""1rem"" Color=""BitColor.Primary"" />
 <BitShimmer Height=""1rem"" Color=""BitColor.Secondary"" />
 <BitShimmer Height=""1rem"" Color=""BitColor.Tertiary"" />
@@ -655,7 +737,7 @@ private bool isAccessibleLoaded;";
 <BitShimmer Height=""1rem"" Color=""BitColor.SecondaryBorder"" />
 <BitShimmer Height=""1rem"" Color=""BitColor.TertiaryBorder"" />";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitStack Horizontal Alignment=""BitAlignment.Center"">
     <BitShimmer Circle Size=""BitSize.Small"" />
     <BitShimmer Size=""BitSize.Small"" />
@@ -671,7 +753,7 @@ private bool isAccessibleLoaded;";
     <BitShimmer Size=""BitSize.Large"" />
 </BitStack>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example15RazorCode = @"
 <style>
     .custom-class {
         box-shadow: aqua 0 0 1rem 0.5rem;
@@ -701,7 +783,7 @@ private bool isAccessibleLoaded;";
                                                           Shimmer=""custom-shimmer"",
                                                           ShimmerWrapper = ""custom-wrapper"" })"" />";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitShimmer Dir=""BitDir.Rtl"" Lines=""3"" Height=""1rem"" />
 
 <BitStack Horizontal Alignment=""BitAlignment.Center"" Dir=""BitDir.Rtl"">

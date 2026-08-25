@@ -1,4 +1,6 @@
-﻿using Bunit;
+﻿using System;
+using System.Threading;
+using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -179,6 +181,49 @@ public class BitShimmerTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-smr").ClassList.Contains("bit-smr-crl"));
         Assert.IsFalse(component.Find(".bit-smr").ClassList.Contains("bit-smr-lin"));
+    }
+
+
+    // ----------------------------------------------------------------- radius
+
+    [TestMethod]
+    public void BitShimmerShouldRespectRadius()
+    {
+        var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.Radius, "0.75rem"));
+
+        Assert.IsTrue(component.Find(".bit-smr").GetAttribute("style").Contains("--bit-smr-rad:0.75rem"));
+    }
+
+    [TestMethod]
+    public void BitShimmerRadiusShouldBePublishedOverTheShapeThatCarriesOneOfItsOwn()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Shape, BitShimmerShape.Pill);
+            parameters.Add(p => p.Radius, "0");
+        });
+
+        var root = component.Find(".bit-smr");
+
+        // The shape still names the corner it would draw; the radius lands on the style attribute, which is
+        // where it wins over the class that names it.
+        Assert.IsTrue(root.ClassList.Contains("bit-smr-pil"));
+        Assert.IsTrue(root.GetAttribute("style").Contains("--bit-smr-rad:0"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldChangeTheRadiusAfterARerender()
+    {
+        var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.Radius, "0.25rem"));
+
+        Assert.IsTrue(component.Find(".bit-smr").GetAttribute("style").Contains("--bit-smr-rad:0.25rem"));
+
+        component.Render(parameters => parameters.Add(p => p.Radius, "1rem"));
+
+        var style = component.Find(".bit-smr").GetAttribute("style");
+
+        Assert.IsTrue(style.Contains("--bit-smr-rad:1rem"));
+        Assert.IsFalse(style.Contains("--bit-smr-rad:0.25rem"));
     }
 
 
@@ -445,6 +490,132 @@ public class BitShimmerTests : BunitTestContext
     }
 
 
+    // ----------------------------------------------------------------- min show time
+
+    [TestMethod]
+    public void BitShimmerShouldNotHoldBackAPlaceholderThatWasNeverShown()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.ShowDelay, 10_000);
+            parameters.Add(p => p.MinShowTime, 10_000);
+            parameters.AddChildContent("Loaded content");
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Loaded, true));
+
+        // The response beat the delay that was holding the placeholder back, so there was never a placeholder
+        // for a shortest life to apply to.
+        Assert.IsTrue(component.Find(".bit-smr").ClassList.Contains("bit-smr-ldd"));
+        Assert.AreEqual(0, component.FindAll(".bit-smr-wrp").Count);
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldNotHoldBackAnythingWithoutAMinShowTime()
+    {
+        var component = RenderComponent<BitShimmer>(parameters => parameters.AddChildContent("Loaded content"));
+
+        component.Render(parameters => parameters.Add(p => p.Loaded, true));
+
+        Assert.IsTrue(component.Find(".bit-smr").ClassList.Contains("bit-smr-ldd"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldNotHoldBackAShimmerThatStartsOutLoaded()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.MinShowTime, 10_000);
+            parameters.Add(p => p.Loaded, true);
+            parameters.AddChildContent("Loaded content");
+        });
+
+        Assert.IsTrue(component.Find(".bit-smr").ClassList.Contains("bit-smr-ldd"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldKeepThePlaceholderForItsMinShowTime()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.MinShowTime, 1000);
+            parameters.AddChildContent("Loaded content");
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Loaded, true));
+
+        // The response landed while the placeholder was still living out its shortest life, so the swap waits.
+        Assert.IsFalse(component.Find(".bit-smr").ClassList.Contains("bit-smr-ldd"));
+        Assert.AreEqual(1, component.FindAll(".bit-smr-wrp").Count);
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-smr").ClassList.Contains("bit-smr-ldd")),
+                                   TimeSpan.FromSeconds(5));
+
+        Assert.AreEqual(0, component.FindAll(".bit-smr-wrp").Count);
+        Assert.IsTrue(component.Find(".bit-smr-cnt").TextContent.Contains("Loaded content"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldSayThatItIsStillBusyWhileTheSwapIsHeldBack()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.MinShowTime, 1000);
+            parameters.Add(p => p.Label, "Loading");
+            parameters.Add(p => p.LoadedLabel, "Loaded");
+            parameters.AddChildContent("Loaded content");
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Loaded, true));
+
+        // What the shimmer reports is what it is showing, so the live region and aria-busy are held back with
+        // the swap rather than announcing a wait that is still on the page as over.
+        Assert.AreEqual("true", component.Find(".bit-smr").GetAttribute("aria-busy"));
+        Assert.AreEqual("Loading", component.Find(".bit-smr-vhd").TextContent);
+
+        component.WaitForAssertion(() => Assert.AreEqual("Loaded", component.Find(".bit-smr-vhd").TextContent),
+                                   TimeSpan.FromSeconds(5));
+
+        Assert.IsNull(component.Find(".bit-smr").GetAttribute("aria-busy"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldDropAHeldBackSwapThatIsTakenBackBeforeItLands()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.MinShowTime, 1000);
+            parameters.AddChildContent("Loaded content");
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Loaded, true));
+        component.Render(parameters => parameters.Add(p => p.Loaded, false));
+
+        // The response was taken back while the shortest life was still running, so the placeholder is what
+        // the shimmer should still be showing when the hold would have expired.
+        Thread.Sleep(1400);
+
+        Assert.IsFalse(component.Find(".bit-smr").ClassList.Contains("bit-smr-ldd"));
+        Assert.AreEqual(1, component.FindAll(".bit-smr-wrp").Count);
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldStopHoldingThePlaceholderOnceItHasLivedItsMinShowTimeOut()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.MinShowTime, 100);
+            parameters.AddChildContent("Loaded content");
+        });
+
+        Thread.Sleep(300);
+
+        component.Render(parameters => parameters.Add(p => p.Loaded, true));
+
+        // The placeholder outlived its shortest life before the response even landed, so nothing is held back.
+        Assert.IsTrue(component.Find(".bit-smr").ClassList.Contains("bit-smr-ldd"));
+    }
+
 
     // ----------------------------------------------------------------- inline
 
@@ -456,6 +627,53 @@ public class BitShimmerTests : BunitTestContext
         var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.Inline, inline));
 
         Assert.AreEqual(inline, component.Find(".bit-smr").ClassList.Contains("bit-smr-inl"));
+    }
+
+    [TestMethod]
+    [DataRow(true, "span")]
+    [DataRow(false, "div")]
+    public void BitShimmerShouldRenderARootThatBelongsWhereItIsPut(bool inline, string expectedTag)
+    {
+        var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.Inline, inline));
+
+        // A placeholder standing in a line of text is phrasing content: a div there would be closed out of the
+        // paragraph around it by the HTML parser, taking the sentence apart.
+        Assert.AreEqual(expectedTag, component.Find(".bit-smr").TagName.ToLower());
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldKeepEverythingButTheTagAcrossTheTwoRoots()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Inline, true);
+            parameters.Add(p => p.Id, "inline-shimmer");
+            parameters.Add(p => p.AriaLabel, "Loading the price");
+            parameters.Add(p => p.Width, "4rem");
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+        });
+
+        var root = component.Find(".bit-smr");
+
+        Assert.AreEqual("inline-shimmer", root.GetAttribute("id"));
+        Assert.AreEqual("Loading the price", root.GetAttribute("aria-label"));
+        Assert.AreEqual("true", root.GetAttribute("aria-busy"));
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        Assert.IsTrue(root.GetAttribute("style").Contains("width:4rem"));
+        Assert.IsNotNull(component.Find(".bit-smr-wrp"));
+        Assert.IsNotNull(component.Find(".bit-smr-anm"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldChangeTheRootTagAfterARerender()
+    {
+        var component = RenderComponent<BitShimmer>();
+
+        Assert.AreEqual("div", component.Find(".bit-smr").TagName.ToLower());
+
+        component.Render(parameters => parameters.Add(p => p.Inline, true));
+
+        Assert.AreEqual("span", component.Find(".bit-smr").TagName.ToLower());
     }
 
 
@@ -535,6 +753,40 @@ public class BitShimmerTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-smr-ldd"));
         Assert.IsFalse(root.ClassList.Contains("bit-smr-lin"));
         Assert.IsFalse(root.ClassList.Contains("bit-smr-mln"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldStopPublishingThePlaceholderSizingOnceItIsLoaded()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Height, "5rem");
+            parameters.Add(p => p.Gap, "1rem");
+            parameters.Add(p => p.LastLineWidth, "35%");
+            parameters.Add(p => p.Radius, "0.5rem");
+            parameters.Add(p => p.ShowDelay, 750);
+            parameters.AddChildContent("Loaded content");
+        });
+
+        var style = component.Find(".bit-smr").GetAttribute("style") ?? string.Empty;
+
+        Assert.IsTrue(style.Contains("--bit-smr-hgt:5rem"));
+        Assert.IsTrue(style.Contains("--bit-smr-gap:1rem"));
+        Assert.IsTrue(style.Contains("--bit-smr-llw:35%"));
+        Assert.IsTrue(style.Contains("--bit-smr-rad:0.5rem"));
+        Assert.IsTrue(style.Contains("--bit-smr-dly:750ms"));
+
+        component.Render(parameters => parameters.Add(p => p.Loaded, true));
+
+        style = component.Find(".bit-smr").GetAttribute("style") ?? string.Empty;
+
+        // The properties are inherited, so leaving them on a loaded shimmer would hand the sizing of a
+        // placeholder that is gone to every shimmer the content it made room for happens to contain.
+        Assert.IsFalse(style.Contains("--bit-smr-hgt"));
+        Assert.IsFalse(style.Contains("--bit-smr-gap"));
+        Assert.IsFalse(style.Contains("--bit-smr-llw"));
+        Assert.IsFalse(style.Contains("--bit-smr-rad"));
+        Assert.IsFalse(style.Contains("--bit-smr-dly"));
     }
 
     [TestMethod]
@@ -672,6 +924,139 @@ public class BitShimmerTests : BunitTestContext
     }
 
 
+    // ----------------------------------------------------------------- overlay
+
+    [TestMethod]
+    public void BitShimmerShouldCoverTheContentInsteadOfStandingInForIt()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Overlay, true);
+            parameters.AddChildContent("<span>Covered content</span>");
+        });
+
+        var root = component.Find(".bit-smr");
+
+        // The content is on the page, keeping the box the size of what is being waited on, and the placeholder
+        // is laid over it rather than in place of it.
+        Assert.IsTrue(root.ClassList.Contains("bit-smr-ovl"));
+        Assert.IsNotNull(component.Find(".bit-smr-cvd"));
+        Assert.IsTrue(component.Markup.Contains("Covered content"));
+        Assert.AreEqual(1, component.FindAll(".bit-smr-wrp").Count);
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldNotCoverAnythingWhileItIsNotAnOverlay()
+    {
+        var component = RenderComponent<BitShimmer>(parameters => parameters.AddChildContent("<span>Covered content</span>"));
+
+        Assert.AreEqual(0, component.FindAll(".bit-smr-cvd").Count);
+        Assert.IsFalse(component.Find(".bit-smr").ClassList.Contains("bit-smr-ovl"));
+        Assert.IsFalse(component.Markup.Contains("Covered content"));
+    }
+
+    [TestMethod]
+    public void BitShimmerOverlayShouldRespectTheContentAlias()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Overlay, true);
+            parameters.Add(p => p.Content, (RenderFragment)(builder => builder.AddContent(0, "Covered content")));
+        });
+
+        Assert.IsTrue(component.Find(".bit-smr-cvd").TextContent.Contains("Covered content"));
+    }
+
+    [TestMethod]
+    public void BitShimmerOverlayShouldBeOneBoxOverTheWholeOfTheContent()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Overlay, true);
+            parameters.Add(p => p.Lines, 4);
+            parameters.AddChildContent("Covered content");
+        });
+
+        // A cover is one box over content whose size is already known, so the stack of lines is not one of the
+        // two layouts the box would then have.
+        Assert.AreEqual(1, component.FindAll(".bit-smr-wrp").Count);
+        Assert.IsFalse(component.Find(".bit-smr").ClassList.Contains("bit-smr-mln"));
+    }
+
+    [TestMethod]
+    public void BitShimmerOverlayShouldLeaveTheTemplateToTheInPlacePlaceholder()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Overlay, true);
+            parameters.Add(p => p.Template, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "div");
+                builder.AddAttribute(1, "class", "custom-template");
+                builder.CloseElement();
+            }));
+            parameters.AddChildContent("Covered content");
+        });
+
+        var root = component.Find(".bit-smr");
+
+        Assert.AreEqual(0, component.FindAll(".custom-template").Count);
+        Assert.IsFalse(root.ClassList.Contains("bit-smr-tpl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-smr-ovl"));
+        Assert.AreEqual(1, component.FindAll(".bit-smr-wrp").Count);
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldUncoverTheContentOnceItIsLoaded()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Overlay, true);
+            parameters.AddChildContent("Covered content");
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-smr-cvd").Count);
+
+        component.Render(parameters => parameters.Add(p => p.Loaded, true));
+
+        var root = component.Find(".bit-smr");
+
+        Assert.AreEqual(0, component.FindAll(".bit-smr-cvd").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-smr-wrp").Count);
+        Assert.IsFalse(root.ClassList.Contains("bit-smr-ovl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-smr-ldd"));
+        Assert.IsTrue(component.Find(".bit-smr-cnt").TextContent.Contains("Covered content"));
+    }
+
+    [TestMethod]
+    public void BitShimmerOverlayShouldStillReportThatItIsBusy()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Overlay, true);
+            parameters.AddChildContent("Covered content");
+        });
+
+        Assert.AreEqual("true", component.Find(".bit-smr").GetAttribute("aria-busy"));
+    }
+
+    [TestMethod]
+    public void BitShimmerOverlayShouldRespectTheContentClassAndStyle()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Overlay, true);
+            parameters.Add(p => p.Classes, new BitShimmerClassStyles { Content = "custom-content" });
+            parameters.Add(p => p.Styles, new BitShimmerClassStyles { Content = "color:tomato" });
+            parameters.AddChildContent("Covered content");
+        });
+
+        var covered = component.Find(".bit-smr-cvd");
+
+        Assert.IsTrue(covered.ClassList.Contains("custom-content"));
+        Assert.AreEqual("color:tomato", covered.GetAttribute("style"));
+    }
+
 
     // ----------------------------------------------------------------- colors
 
@@ -806,7 +1191,7 @@ public class BitShimmerTests : BunitTestContext
     [TestMethod]
     [DataRow(BitPoliteness.Off, "off", null)]
     [DataRow(BitPoliteness.Polite, "polite", "status")]
-    [DataRow(BitPoliteness.Assertive, "assertive", "status")]
+    [DataRow(BitPoliteness.Assertive, "assertive", "alert")]
     public void BitShimmerShouldRespectPoliteness(BitPoliteness politeness, string expectedAriaLive, string expectedRole)
     {
         var component = RenderComponent<BitShimmer>(parameters =>
@@ -819,7 +1204,8 @@ public class BitShimmerTests : BunitTestContext
 
         Assert.AreEqual(expectedAriaLive, region.GetAttribute("aria-live"));
 
-        // The status role carries a politeness of its own, so a region asked to stay silent drops it.
+        // Both roles carry a politeness of their own, so the one that is rendered is the one that agrees with
+        // aria-live - and a region asked to stay silent drops the role along with the live region it implies.
         Assert.AreEqual(expectedRole, region.GetAttribute("role"));
     }
 
