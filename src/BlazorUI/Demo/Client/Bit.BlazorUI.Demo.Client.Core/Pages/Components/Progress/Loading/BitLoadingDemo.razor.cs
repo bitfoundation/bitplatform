@@ -2,6 +2,7 @@
 
 public partial class BitLoadingDemo
 {
+    private bool _isPaused;
     private bool _isWorking;
     private bool _isOverlayOpen;
 
@@ -67,7 +68,7 @@ public partial class BitLoadingDemo
             Name = "Delay",
             Type = "int",
             DefaultValue = "0",
-            Description = "How long, in milliseconds, the loading component waits before it renders anything at all, so that a quick task never makes it flash up and vanish again. Read once, when the component is first created.",
+            Description = "How long, in milliseconds, the loading component waits before it renders anything at all, so that a quick task never makes it flash up and vanish again. Changing the value opens the window again from the new length.",
         },
         new()
         {
@@ -101,6 +102,13 @@ public partial class BitLoadingDemo
         },
         new()
         {
+            Name = "Paused",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Holds the animation of the loading component at the frame it had reached instead of running it. The drawing keeps its shape and its place in the layout, so only the movement stops.",
+        },
+        new()
+        {
             Name = "Role",
             Type = "string?",
             DefaultValue = "null",
@@ -130,6 +138,13 @@ public partial class BitLoadingDemo
             Description = "Custom CSS styles for different parts of the loading component.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
+        },
+        new()
+        {
+            Name = "Thickness",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The thickness, in px, of the stroke the loading component is drawn with. Only the loaders drawn with a stroke read it - BitRingLoading, BitDualRingLoading, BitRippleLoading, BitXboxLoading and BitSpinnerLoading - and it does not scale with Size. Zero and negative values are ignored.",
         }
     ];
 
@@ -433,6 +448,17 @@ public partial class BitLoadingDemo
 <BitRingLoading Label=""4x"" Speed=""4"" />";
 
     private readonly string example6RazorCode = @"
+<BitToggleButton @bind-IsChecked=""_isPaused"" Text=""@(_isPaused ? ""Resume"" : ""Pause"")"" />
+
+<BitRingLoading Label=""Ring"" Paused=""_isPaused"" />
+
+<BitBarsLoading Label=""Bars"" Paused=""_isPaused"" />
+
+<BitHourglassLoading Label=""Hourglass"" Paused=""_isPaused"" />";
+    private readonly string example6CsharpCode = @"
+private bool _isPaused;";
+
+    private readonly string example7RazorCode = @"
 <BitButton OnClick=""StartWork"" IsEnabled=""@(_isWorking is false)"">Run a 1.5s task</BitButton>
 
 @if (_isWorking)
@@ -444,7 +470,7 @@ public partial class BitLoadingDemo
     @* The task is over before the delay elapses, so this one never renders at all. *@
     <BitSpinnerLoading Delay=""3000"" />
 }";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private bool _isWorking;
 
 private async Task StartWork()
@@ -454,7 +480,23 @@ private async Task StartWork()
     _isWorking = false;
 }";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
+<BitRingLoading Label=""Default"" />
+
+<BitRingLoading Label=""Thickness=2"" Thickness=""2"" />
+
+<BitRingLoading Label=""Thickness=12"" Thickness=""12"" />
+
+
+<BitSpinnerLoading Label=""Spinner"" Thickness=""10"" />
+
+<BitDualRingLoading Label=""DualRing"" Thickness=""2"" />
+
+<BitRippleLoading Label=""Ripple"" Thickness=""8"" />
+
+<BitXboxLoading Label=""Xbox"" Thickness=""6"" />";
+
+    private readonly string example9RazorCode = @"
 <div>
     Fetching the latest results
     <BitRingLoading Inline CustomSize=""16"" CustomColor=""currentColor"" />
@@ -468,7 +510,7 @@ private async Task StartWork()
     </BitStack>
 </BitButton>";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example10RazorCode = @"
 <div class=""overlay-host"">
     <BitButton OnClick=""StartOverlayWork"" IsEnabled=""@(_isOverlayOpen is false)"">Load the panel</BitButton>
     <div>This panel is what the overlay covers.</div>
@@ -477,7 +519,7 @@ private async Task StartWork()
         <BitRingLoading Label=""Loading your data..."" Color=""BitColor.PrimaryBackground"" />
     </BitOverlay>
 </div>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private bool _isOverlayOpen;
 
 private async Task StartOverlayWork()
@@ -487,7 +529,7 @@ private async Task StartOverlayWork()
     _isOverlayOpen = false;
 }";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example11RazorCode = @"
 @* role=""status"" aria-live=""polite"" and a visually hidden ""Loading"" by default. *@
 <BitSpinnerLoading />
 
@@ -500,7 +542,7 @@ private async Task StartOverlayWork()
 @* Interrupts the screen reader rather than waiting for it. *@
 <BitSpinnerLoading Label=""Signing you out"" AriaLive=""assertive"" />";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitBarsLoading Label=""Primary"" Color=""BitColor.Primary"" />
 
 <BitCircleLoading Label=""Secondary"" Color=""BitColor.Secondary"" />
@@ -530,7 +572,7 @@ private async Task StartOverlayWork()
     <BitSpinnerLoading Label=""currentColor"" CustomColor=""currentColor"" />
 </div>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitXboxLoading Label=""Small"" Size=""BitSize.Small"" />
 
 <BitXboxLoading Label=""Medium"" Size=""BitSize.Medium"" />
@@ -541,7 +583,7 @@ private async Task StartOverlayWork()
 
 <BitXboxLoading Label=""Custom (24)"" CustomSize=""24"" />";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitRingLoading Label=""Style"" Style=""padding:1rem;border:1px solid gray;border-radius:8px"" />
 
 <BitRingLoading Label=""Class"" Class=""custom-class"" />
@@ -561,12 +603,17 @@ private async Task StartOverlayWork()
                                    Child = ""custom-child"",
                                    Label = ""custom-label"" })"" />";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example15RazorCode = @"
 <div dir=""rtl"">
     <BitRingLoading Dir=""BitDir.Rtl"" Label=""شروع"" LabelPosition=""BitLabelPosition.Start"" />
 
     <BitRingLoading Dir=""BitDir.Rtl"" Label=""پایان"" LabelPosition=""BitLabelPosition.End"" />
 
     <BitRingLoading Dir=""BitDir.Rtl"" Label=""در حال بارگذاری"" LabelPosition=""BitLabelPosition.Bottom"" />
+
+    @* The two loaders whose motion travels across the box are mirrored, so they run toward the end of the line. *@
+    <BitEllipsisLoading Dir=""BitDir.Rtl"" Label=""نقطه‌ها"" />
+
+    <BitRollingSquareLoading Dir=""BitDir.Rtl"" Label=""مربع"" />
 </div>";
 }

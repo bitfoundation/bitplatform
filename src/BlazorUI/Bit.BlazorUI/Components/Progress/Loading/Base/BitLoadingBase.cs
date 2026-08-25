@@ -20,6 +20,7 @@ public abstract class BitLoadingBase : BitComponentBase
 
 
 
+    private int _delayInEffect;
     private CancellationTokenSource? _delayCts;
 
     /// <summary>
@@ -84,7 +85,9 @@ public abstract class BitLoadingBase : BitComponentBase
     /// back for that long: if the work finishes first, the component is removed before the delay elapses and
     /// nothing was ever shown; if it does not, the loader appears as usual.
     /// <br />
-    /// The delay is read once, when the component is first initialized.
+    /// Changing the value opens the window again from the new length, and setting it back to zero lets the
+    /// component through at once, so a loader kept in the document across several waits can be held back for
+    /// each of them without being re-created.
     /// </remarks>
     [Parameter] public int Delay { get; set; }
 
@@ -124,6 +127,22 @@ public abstract class BitLoadingBase : BitComponentBase
     /// The custom content of the label of the loading component.
     /// </summary>
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the animation of the loading component is held where it is
+    /// instead of running.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// The drawing keeps its shape and its place in the layout, so pausing and resuming never makes the
+    /// surface around it jump; it is the movement alone that stops, at whichever frame it had reached.
+    /// <br />
+    /// A paused loader still says that work is under way, so reach for this only where that remains true and
+    /// the movement is what has to stop - a wait that has stalled behind a retry, a page whose animations are
+    /// held while it is captured - and remove the component outright once the work is over.
+    /// </remarks>
+    [Parameter, ResetClassBuilder] public bool Paused { get; set; }
 
     /// <summary>
     /// Gets or sets the ARIA role of the root element of the loading component.
@@ -167,6 +186,24 @@ public abstract class BitLoadingBase : BitComponentBase
     /// Custom CSS styles for different parts of the loading component.
     /// </summary>
     [Parameter, ResetStyleBuilder] public BitLoadingClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// Gets or sets the thickness, in px, of the stroke the loading component is drawn with.
+    /// <br />
+    /// The default value is <strong>null</strong>, which keeps the thickness the drawing was authored with.
+    /// </summary>
+    /// <remarks>
+    /// Only the loaders drawn with a stroke read it - <see cref="BitRingLoading"/>,
+    /// <see cref="BitDualRingLoading"/>, <see cref="BitRippleLoading"/>, <see cref="BitXboxLoading"/> and
+    /// <see cref="BitSpinnerLoading"/> - and the rest, whose shapes are filled rather than stroked, are left
+    /// as they are. Every one of them draws the stroke inside its own outline, so a thicker one never grows
+    /// the footprint of the component past the size it was given.
+    /// <br />
+    /// It is a literal number of pixels rather than a ratio, so it does not scale with <see cref="Size"/> or
+    /// <see cref="CustomSize"/> - a hairline stays a hairline whatever the loader is sized at. Zero and
+    /// negative values are ignored.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder] public int? Thickness { get; set; }
 
 
 
@@ -232,6 +269,12 @@ public abstract class BitLoadingBase : BitComponentBase
                     LabelTemplate = labelTemplate;
                     parametersDictionary.Remove(parameter.Key);
                     break;
+                case nameof(Paused):
+                    var paused = (bool)parameter.Value!;
+                    if (Paused != paused) ClassBuilder.Reset();
+                    Paused = paused;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
                 case nameof(Role):
                     Role = (string?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
@@ -252,6 +295,12 @@ public abstract class BitLoadingBase : BitComponentBase
                     var styles = (BitLoadingClassStyles?)parameter.Value;
                     if (Styles != styles) StyleBuilder.Reset();
                     Styles = styles;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+                case nameof(Thickness):
+                    var thickness = (int?)parameter.Value;
+                    if (Thickness != thickness) StyleBuilder.Reset();
+                    Thickness = thickness;
                     parametersDictionary.Remove(parameter.Key);
                     break;
             }
@@ -282,7 +331,12 @@ public abstract class BitLoadingBase : BitComponentBase
     /// decorative loader is given none at all, since aria-live makes a live region of an element whatever
     /// its role, and the whole point of the decorative case is that it announces nothing.
     /// </summary>
-    internal string? _AriaLive => AriaLive ?? PassedThrough("aria-live") ?? (_IsDecorative ? null : "polite");
+    /// <remarks>
+    /// The decorative case wins over a politeness that was asked for explicitly, as a parameter or as a
+    /// passed-through attribute: the two contradict each other, and the role is the one that says what the
+    /// loader is for. It is the same call <see cref="_ScreenReaderText"/> makes about the fallback text.
+    /// </remarks>
+    internal string? _AriaLive => _IsDecorative ? null : (AriaLive ?? PassedThrough("aria-live") ?? "polite");
 
     /// <summary>The writing direction of the root element, resolved the same way as <see cref="_Role"/>.</summary>
     internal string? _Dir => Dir?.ToString().ToLower() ?? PassedThrough("dir");
@@ -304,7 +358,14 @@ public abstract class BitLoadingBase : BitComponentBase
     internal bool _IsDecorative => _Role is "none" or "presentation";
 
     /// <summary>The text a labelless loader announces - see <see cref="DefaultLoadingText"/>.</summary>
-    internal string? _ScreenReaderText => (_HasVisibleLabel || _IsDecorative) ? null : (AriaLabel ?? DefaultLoadingText);
+    /// <remarks>
+    /// It stands down for a passed-through 'aria-label' as well as for a visible one: that attribute stays on
+    /// the root as the accessible name of the live region and is what a screen reader reads there, so the
+    /// hidden text underneath it would never be reached anyway.
+    /// </remarks>
+    internal string? _ScreenReaderText => (_HasVisibleLabel || _IsDecorative || PassedThrough("aria-label") is not null)
+                                          ? null
+                                          : (AriaLabel ?? DefaultLoadingText);
 
     private string? PassedThrough(string attribute)
     {
@@ -324,17 +385,31 @@ public abstract class BitLoadingBase : BitComponentBase
     /// </remarks>
     protected virtual int OriginalSize => 80;
 
-    protected override void OnInitialized()
+    protected override void OnParametersSet()
     {
-        base.OnInitialized();
+        base.OnParametersSet();
 
         // Held back rather than hidden: a loader that is not in the document cannot flash up and vanish again
         // for work that turned out to be quick. See Delay.
+        if (Delay == _delayInEffect) return;
+
+        _delayInEffect = Delay;
+
+        _delayCts?.Cancel();
+        _delayCts?.Dispose();
+        _delayCts = null;
+
+        // A window that is opened again starts over from the new length, and one that is taken away lets the
+        // component through at once rather than leaving it stuck behind a delay it no longer has.
         if (Delay > 0)
         {
             _IsDelayed = true;
             _delayCts = new CancellationTokenSource();
             _ = WaitOutDelayAsync(_delayCts.Token);
+        }
+        else
+        {
+            _IsDelayed = false;
         }
     }
 
@@ -343,6 +418,8 @@ public abstract class BitLoadingBase : BitComponentBase
         ClassBuilder.Register(() => "bit-ldn");
 
         ClassBuilder.Register(() => Inline ? "bit-ldn-inl" : string.Empty);
+
+        ClassBuilder.Register(() => Paused ? "bit-ldn-pau" : string.Empty);
 
         ClassBuilder.Register(() => LabelPosition switch
         {
@@ -388,6 +465,11 @@ public abstract class BitLoadingBase : BitComponentBase
 
         StyleBuilder.Register(() => $"--bit-ldn-size:{GetSize()}px");
         StyleBuilder.Register(() => $"--bit-ldn-font-size:{Format(GetFontSize())}px");
+
+        // Left unset rather than given the authored value, so that every stroke keeps reading its own
+        // fallback - the one the drawing was measured at, which is neither shared between the loaders nor
+        // the same at every size.
+        StyleBuilder.Register(() => Thickness > 0 ? $"--bit-ldn-stroke:{Thickness}px" : null);
 
         // Scales the loop factor the stylesheet already carries rather than replacing it, so the calmer speed
         // a reduced-motion environment asks for - and the full speed ForceAnimation puts back - both survive

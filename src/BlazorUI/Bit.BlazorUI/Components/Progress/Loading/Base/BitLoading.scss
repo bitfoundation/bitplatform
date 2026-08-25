@@ -24,6 +24,17 @@
     vertical-align: middle;
 }
 
+// Paused holds every animation of the drawing at the frame it had reached rather than removing it, so
+// the shape and the space it takes up are exactly what they were and nothing around it moves. The
+// pseudo-elements are named on their own because several loaders draw their moving parts with ::before
+// and ::after, which a plain descendant selector never reaches.
+.bit-ldn-pau,
+.bit-ldn-pau *,
+.bit-ldn-pau *::before,
+.bit-ldn-pau *::after {
+    animation-play-state: paused;
+}
+
 .bit-ldn-lbl {
     font-size: var(--bit-ldn-font-size);
 }

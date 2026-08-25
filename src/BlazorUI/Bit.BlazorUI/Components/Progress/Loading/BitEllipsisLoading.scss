@@ -63,3 +63,10 @@
         transform: scale(0);
     }
 }
+
+// The dots travel toward the end of the line rather than always to the right, so that the motion runs
+// with the reading direction the way an indeterminate progress bar does. Mirroring the whole box is what
+// does it: the drawing is symmetrical, so nothing but the direction of the travel changes.
+.bit-rtl .bit-ldn-elp-ccn {
+    transform: scaleX(-1);
+}

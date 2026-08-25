@@ -2,10 +2,10 @@
 
 <PageOutlet Url="components/loading"
             Title="Loading"
-            Description="Eighteen pure-CSS loading animations sharing one API: theme colors, sizes, a label on any side, an animation speed, a delay, and an announced live region." />
+            Description="Eighteen pure-CSS loading animations sharing one API: theme colors, sizes, stroke thickness, a label on any side, an animation speed, a pause, a delay, and an announced live region." />
 
 <DemoPage Name="Loading"
-          Description="A family of eighteen loading animations - spinners, dots, bars and shapes - that all share the same API. Each one is pure CSS: a theme color or a custom one, three sizes or a size in pixels, an optional label on any of the four sides, a speed multiplier, a delay that keeps a loader from flashing up for work that turns out to be quick, and a live region so the wait is announced rather than only drawn."
+          Description="A family of eighteen loading animations - spinners, dots, bars and shapes - that all share the same API. Each one is pure CSS: a theme color or a custom one, three sizes or a size in pixels, a stroke thickness for the ones drawn with a line, an optional label on any of the four sides, a speed multiplier, a pause, a delay that keeps a loader from flashing up for work that turns out to be quick, and a live region so the wait is announced rather than only drawn."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -15,7 +15,7 @@
         <BitText Element="p">
             A loading component reports that work is under way without saying how much of it is left, which
             is what suits a wait of roughly one to ten seconds. Below about three hundred milliseconds show
-            nothing at all - hold the loader back with <BitLink Href="#example6">Delay</BitLink> rather than
+            nothing at all - hold the loader back with <BitLink Href="#example7">Delay</BitLink> rather than
             letting it flash up and vanish. When the surface being filled has a shape that is already known,
             a <BitLink Href="/components/shimmer">BitShimmer</BitLink> placeholder reads better than a
             spinner; and once the work can report its own progress - or runs well past ten seconds - a
@@ -114,9 +114,9 @@
             <div>
                 <b>Label</b> is what turns a spinning shape into a status message, and it is also what a screen
                 reader announces in place of the default text described under
-                <BitLink Href="#example9">Accessibility</BitLink>. Prefer something specific and present-tense -
+                <BitLink Href="#example11">Accessibility</BitLink>. Prefer something specific and present-tense -
                 "Uploading photos..." says far more than "Loading" - and keep it to a few words: the label
-                scales with the <BitLink Href="#example11">Size</BitLink> of the loader, so a sentence quickly
+                scales with the <BitLink Href="#example13">Size</BitLink> of the loader, so a sentence quickly
                 grows wider than the drawing it sits under.
             </div>
             <br /><br />
@@ -134,7 +134,7 @@
             <div>
                 <b>LabelPosition</b> puts the label on any of the four sides of the drawing. <b>Top</b> is the
                 default. <b>Start</b> and <b>End</b> follow the direction of the writing and swap sides in a
-                <BitLink Href="#example13">right-to-left</BitLink> layout, while <b>Top</b> and <b>Bottom</b>
+                <BitLink Href="#example15">right-to-left</BitLink> layout, while <b>Top</b> and <b>Bottom</b>
                 stay where they are.
             </div>
             <br /><br />
@@ -210,14 +210,41 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Delay" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <DemoExample Title="Paused" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>Paused</b> holds the animation at the frame it had reached instead of removing it. The drawing
+                keeps its shape and its place in the layout, so pausing and resuming never makes the surface
+                around it jump, and the live region stays exactly as it was - it is the movement alone that
+                stops. A paused loader still says that work is under way, so reach for it only where that
+                remains true and the movement is what has to stop: a wait that has stalled behind a retry, or a
+                page whose animations are held while it is captured. Once the work is over, remove the component
+                rather than pausing it.
+            </div>
+            <br /><br />
+            <BitToggleButton @bind-IsChecked="_isPaused" Text="@(_isPaused ? "Resume" : "Pause")" />
+            <br /><br />
+            <div class="container">
+                <div class="wrapper">
+                    <BitRingLoading Label="Ring" Paused="_isPaused" />
+                </div>
+                <div class="wrapper">
+                    <BitBarsLoading Label="Bars" Paused="_isPaused" />
+                </div>
+                <div class="wrapper">
+                    <BitHourglassLoading Label="Hourglass" Paused="_isPaused" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Delay" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 Work that finishes inside a few hundred milliseconds reads as instant, and a loader that flashes
                 up and vanishes again inside that window is more distracting than no loader at all.
                 <b>Delay</b> holds the component back for that many milliseconds before it renders anything: if
                 the work finishes first, the loader is removed before the delay elapses and nothing was ever
-                shown; if it does not, the loader appears as usual. The delay is read once, when the component
-                is first created, so re-mount it rather than changing the number to restart the window.
+                shown; if it does not, the loader appears as usual. Changing the number opens the window again
+                from the new length, and setting it back to zero lets the loader through at once, so one kept
+                in the document across several waits can be held back for each of them without being re-created.
             </div>
             <br /><br />
             <BitButton OnClick="StartWork" IsEnabled="@(_isWorking is false)">Run a 1.5s task</BitButton>
@@ -247,12 +274,57 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Inline" RazorCode="@example7RazorCode" Id="example7">
+        <DemoExample Title="Thickness" RazorCode="@example8RazorCode" Id="example8">
+            <div>
+                <b>Thickness</b> sets the width, in pixels, of the stroke the drawing is made of. Only the
+                loaders drawn with a stroke read it - <b>BitRingLoading</b>, <b>BitDualRingLoading</b>,
+                <b>BitRippleLoading</b>, <b>BitXboxLoading</b> and <b>BitSpinnerLoading</b> - and the rest,
+                whose shapes are filled rather than stroked, are left as they are. Each of them draws the
+                stroke inside its own outline, so a thicker one never grows the footprint of the component past
+                the <BitLink Href="#example13">size</BitLink> it was given.
+            </div>
+            <br />
+            <div>
+                It is a literal number of pixels rather than a ratio, so it does not scale with <b>Size</b>: a
+                hairline stays a hairline whatever the loader is sized at, which is what lets a 16px inline
+                loader and an 88px one on an empty page read as the same weight of line. Zero and negative
+                values are ignored, and leaving it unset keeps the thickness each drawing was authored with.
+            </div>
+            <br /><br />
+            <div class="container">
+                <div class="wrapper">
+                    <BitRingLoading Label="Default" />
+                </div>
+                <div class="wrapper">
+                    <BitRingLoading Label="Thickness=2" Thickness="2" />
+                </div>
+                <div class="wrapper">
+                    <BitRingLoading Label="Thickness=12" Thickness="12" />
+                </div>
+            </div>
+            <br />
+            <div class="container">
+                <div class="wrapper">
+                    <BitSpinnerLoading Label="Spinner" Thickness="10" />
+                </div>
+                <div class="wrapper">
+                    <BitDualRingLoading Label="DualRing" Thickness="2" />
+                </div>
+                <div class="wrapper">
+                    <BitRippleLoading Label="Ripple" Thickness="8" />
+                </div>
+                <div class="wrapper">
+                    <BitXboxLoading Label="Xbox" Thickness="6" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Inline" RazorCode="@example9RazorCode" Id="example9">
             <div>
                 A loader is a block of its own by default, sized in pixels and centred on its own line.
                 <b>Inline</b> lays it out as an inline box aligned to the middle of the current line instead, so
                 it can sit inside a sentence, a button, a table cell or a heading without pushing anything onto
-                a new line. Pair it with a small <BitLink Href="#example11">CustomSize</BitLink> and with
+                a new line. Pair it with a small <BitLink Href="#example13">CustomSize</BitLink> and with
                 <code>CustomColor="currentColor"</code>, which takes the color of the text around it.
             </div>
             <br /><br />
@@ -270,7 +342,7 @@
             </BitButton>
         </DemoExample>
 
-        <DemoExample Title="Overlay" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <DemoExample Title="Overlay" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
                 A wait that has to block the surface behind it is a loader inside a
                 <BitLink Href="/components/overlay">BitOverlay</BitLink>: the overlay dims what is underneath and
@@ -290,7 +362,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Accessibility" RazorCode="@example9RazorCode" Id="example9">
+        <DemoExample Title="Accessibility" RazorCode="@example11RazorCode" Id="example11">
             <div>
                 A spinning shape says nothing on its own, so the root element is a live region: it carries
                 <code>role="status"</code> and <code>aria-live="polite"</code>, and its text is announced when
@@ -331,7 +403,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Color" RazorCode="@example10RazorCode" Id="example10">
+        <DemoExample Title="Color" RazorCode="@example12RazorCode" Id="example12">
             <div>
                 <b>Color</b> paints the whole drawing in one of the theme's roles, so a loader re-skins with the
                 rest of the library when the theme or the color scheme changes. <b>CustomColor</b> takes any
@@ -388,7 +460,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Size" RazorCode="@example11RazorCode" Id="example11">
+        <DemoExample Title="Size" RazorCode="@example13RazorCode" Id="example13">
             <div>
                 <b>Size</b> offers the three sizes shared across the library - <b>Small</b> (40px),
                 <b>Medium</b> (64px, the default) and <b>Large</b> (88px) - and <b>CustomSize</b> takes any
@@ -416,7 +488,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
+        <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" Id="example14">
             <div>
                 <b>Style</b> and <b>Class</b> land on the root of the component - the box that holds the drawing
                 and the label - while <b>Styles</b> and <b>Classes</b> reach every part of it on its own: the
@@ -424,8 +496,10 @@
                 hidden text a labelless loader announces. The loader also reads a handful of CSS variables off
                 its root, for what no parameter covers: <code>--bit-ldn-color</code> for the color of the
                 drawing, <code>--bit-ldn-size</code> for its size in pixels, <code>--bit-ldn-font-size</code>
-                for the label, and <code>--bit-ldn-mot-factor</code> for the factor every duration and delay
-                inside it is multiplied by, which is what <BitLink Href="#example5">Speed</BitLink> writes over.
+                for the label, <code>--bit-ldn-stroke</code> for the width of the stroke, which is what
+                <BitLink Href="#example8">Thickness</BitLink> writes over, and
+                <code>--bit-ldn-mot-factor</code> for the factor every duration and delay inside it is
+                multiplied by, which is what <BitLink Href="#example5">Speed</BitLink> writes over.
             </div>
             <br /><br />
             <div>Component's Style & Class:</div><br />
@@ -463,11 +537,18 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+        <DemoExample Title="RTL" RazorCode="@example15RazorCode" Id="example15">
             <div>
-                Use BitLoading in right-to-left (RTL). The animations are symmetrical, so what the direction
-                changes is the label: <b>Start</b> and <b>End</b> follow the direction of the writing and move
-                to the other side of the drawing with it, while <b>Top</b> and <b>Bottom</b> stay where they are.
+                Use BitLoading in right-to-left (RTL). Most of the animations turn about their own centre and
+                look the same either way, so what the direction usually changes is the label: <b>Start</b> and
+                <b>End</b> follow the direction of the writing and move to the other side of the drawing with
+                it, while <b>Top</b> and <b>Bottom</b> stay where they are.
+            </div>
+            <br />
+            <div>
+                The two loaders whose motion actually travels across the box - the ellipsis, whose dots march
+                along, and the rolling square - are mirrored instead, so that they run toward the end of the
+                line the way an indeterminate progress bar does rather than always to the right.
             </div>
             <br /><br />
             <div class="container" dir="rtl">
@@ -479,6 +560,12 @@
                 </div>
                 <div class="wrapper">
                     <BitRingLoading Dir="BitDir.Rtl" Label="در حال بارگذاری" LabelPosition="BitLabelPosition.Bottom" />
+                </div>
+                <div class="wrapper">
+                    <BitEllipsisLoading Dir="BitDir.Rtl" Label="نقطه‌ها" />
+                </div>
+                <div class="wrapper">
+                    <BitRollingSquareLoading Dir="BitDir.Rtl" Label="مربع" />
                 </div>
             </div>
         </DemoExample>

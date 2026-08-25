@@ -9,5 +9,5 @@ public class BitSpinnerLoadingTests : BitLoadingTestsBase<BitSpinnerLoading>
 
     protected override int ChildCount => 12;
 
-    protected override string[] ScaledVariables => ["--bit-ldn-spn-3", "--bit-ldn-spn-6", "--bit-ldn-spn-18", "--bit-ldn-spn-37", "--bit-ldn-spn-40"];
+    protected override string[] ScaledVariables => ["--bit-ldn-spn-3", "--bit-ldn-spn-6", "--bit-ldn-spn-18", "--bit-ldn-spn-40"];
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Text.RegularExpressions;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -133,6 +134,19 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         Assert.HasCount(0, component.FindAll(".bit-ldn-srt"));
     }
 
+    [TestMethod]
+    public void ShouldPreferTheLabelTemplateOverTheLabel()
+    {
+        var component = RenderComponent<TLoading>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Loading...");
+            parameters.Add(p => p.LabelTemplate, (RenderFragment)(b => b.AddMarkupContent(0, "<span class=\"tmpl\">tmpl</span>")));
+        });
+
+        Assert.AreEqual("tmpl", component.Find(".tmpl").TextContent);
+        Assert.HasCount(0, component.FindAll(".bit-ldn-lbl"));
+    }
+
     [TestMethod,
         DataRow(null, "bit-ldn-ltp"),
         DataRow(BitLabelPosition.Top, "bit-ldn-ltp"),
@@ -184,6 +198,28 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
     }
 
     [TestMethod]
+    public void ShouldAnnounceNothingWhenDecorativeEvenWithAnExplicitAriaLive()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<TLoading>(0);
+            builder.AddAttribute(1, nameof(BitLoadingBase.Role), "none");
+            builder.AddAttribute(2, nameof(BitLoadingBase.AriaLive), "assertive");
+            builder.AddAttribute(3, "aria-live", "polite");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-ldn");
+        Assert.AreEqual("none", root.GetAttribute("role"));
+
+        // A politeness and a decorative role contradict each other, and the role is the one that says what
+        // the loader is for - so neither the parameter nor the passed-through attribute revives the live
+        // region here, exactly as neither revives the hidden fallback text.
+        Assert.IsNull(root.GetAttribute("aria-live"));
+        Assert.HasCount(0, component.FindAll(".bit-ldn-srt"));
+    }
+
+    [TestMethod]
     public void ShouldLetAPassedThroughRoleAndAriaLiveWin()
     {
         // Arbitrary HTML attributes are captured by BitComponentBase from unmatched parameters, so
@@ -200,6 +236,23 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         var root = component.Find(".bit-ldn");
         Assert.AreEqual("alert", root.GetAttribute("role"));
         Assert.AreEqual("off", root.GetAttribute("aria-live"));
+    }
+
+    [TestMethod]
+    public void ShouldLetAPassedThroughAriaLabelNameTheLiveRegionInsteadOfTheFallbackText()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<TLoading>(0);
+            builder.AddAttribute(1, "aria-label", "Fetching your orders");
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("Fetching your orders", component.Find(".bit-ldn").GetAttribute("aria-label"));
+
+        // The accessible name of the live region is what is read there, so the hidden text underneath it
+        // would never be reached - and rendering it anyway is what used to hand a screen reader both.
+        Assert.HasCount(0, component.FindAll(".bit-ldn-srt"));
     }
 
     [TestMethod,
@@ -346,6 +399,77 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         StringAssert.DoesNotMatch(StyleOf(component), new Regex("--bit-ldn-mot-factor"));
     }
 
+    [TestMethod,
+        DataRow(1, "1"),
+        DataRow(6, "6"),
+        DataRow(12, "12")]
+    public void ShouldHonorThickness(int thickness, string expected)
+    {
+        var component = RenderComponent<TLoading>(parameters =>
+        {
+            parameters.Add(p => p.Thickness, thickness);
+        });
+
+        StringAssert.Contains(StyleOf(component), $"--bit-ldn-stroke:{expected}px");
+    }
+
+    [TestMethod]
+    public void ShouldNotScaleTheThicknessWithTheSize()
+    {
+        // A literal number of pixels, so that a hairline stays a hairline whatever the loader is sized at.
+        var component = RenderComponent<TLoading>(parameters =>
+        {
+            parameters.Add(p => p.Thickness, 6);
+            parameters.Add(p => p.Size, BitSize.Small);
+        });
+
+        StringAssert.Contains(StyleOf(component), "--bit-ldn-stroke:6px");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Thickness, 6);
+            parameters.Add(p => p.Size, BitSize.Large);
+        });
+
+        StringAssert.Contains(StyleOf(component), "--bit-ldn-stroke:6px");
+    }
+
+    [TestMethod,
+        DataRow(null),
+        DataRow(0),
+        DataRow(-1)]
+    public void ShouldIgnoreAnUnusableThickness(int? thickness)
+    {
+        // Left unset rather than zeroed, so every stroke falls back to the width it was authored at.
+        var component = RenderComponent<TLoading>(parameters =>
+        {
+            parameters.Add(p => p.Thickness, thickness);
+        });
+
+        StringAssert.DoesNotMatch(StyleOf(component), new Regex("--bit-ldn-stroke"));
+    }
+
+    [TestMethod]
+    public void ShouldRespectPaused()
+    {
+        var component = RenderComponent<TLoading>(parameters =>
+        {
+            parameters.Add(p => p.Paused, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-pau"));
+
+        // The drawing is held, never removed: the component keeps its structure and its live region.
+        Assert.HasCount(1, component.FindAll($".{ContainerClass}"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Paused, false);
+        });
+
+        Assert.IsFalse(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-pau"));
+    }
+
     [TestMethod]
     public void ShouldRespectInline()
     {
@@ -379,6 +503,62 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         var component = RenderComponent<TLoading>();
 
         Assert.HasCount(1, component.FindAll(".bit-ldn"));
+    }
+
+    [TestMethod]
+    public void ShouldOpenTheDelayWindowAgainWhenTheDelayChanges()
+    {
+        var component = RenderComponent<TLoading>();
+
+        Assert.HasCount(1, component.FindAll(".bit-ldn"));
+
+        // A loader kept in the document across several waits is held back for each of them, rather than
+        // being stuck with whatever delay it happened to be created with.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Delay, 100);
+        });
+
+        Assert.AreEqual(string.Empty, component.Markup.Trim());
+
+        component.WaitForAssertion(() => Assert.HasCount(1, component.FindAll(".bit-ldn")), TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public void ShouldLetTheComponentThroughWhenTheDelayIsTakenAway()
+    {
+        var component = RenderComponent<TLoading>(parameters =>
+        {
+            parameters.Add(p => p.Delay, 10_000);
+        });
+
+        Assert.AreEqual(string.Empty, component.Markup.Trim());
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Delay, 0);
+        });
+
+        Assert.HasCount(1, component.FindAll(".bit-ldn"));
+    }
+
+    [TestMethod]
+    public void ShouldNotShowTheLoadingOfAnAbandonedDelayWindow()
+    {
+        var component = RenderComponent<TLoading>(parameters =>
+        {
+            parameters.Add(p => p.Delay, 50);
+        });
+
+        // The first window is cancelled by the second, so the one that elapses is the one in effect.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Delay, 10_000);
+        });
+
+        Thread.Sleep(250);
+
+        Assert.AreEqual(string.Empty, component.Markup.Trim());
     }
 
     [TestMethod,
@@ -566,6 +746,8 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.Speed, 2d);
             parameters.Add(p => p.Inline, true);
             parameters.Add(p => p.Delay, 0);
+            parameters.Add(p => p.Paused, true);
+            parameters.Add(p => p.Thickness, 6);
             parameters.Add(p => p.Role, "status");
             parameters.Add(p => p.AriaLive, "polite");
         });
@@ -574,7 +756,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         // to end up on the root as stray attributes such as classes="Bit.BlazorUI.BitLoadingClassStyles".
         var stray = component.Find(".bit-ldn").Attributes
                              .Select(a => a.Name.ToLowerInvariant())
-                             .Where(name => name is "classes" or "styles" or "speed" or "inline" or "delay" or "arialive")
+                             .Where(name => name is "classes" or "styles" or "speed" or "inline" or "delay" or "paused" or "thickness" or "arialive")
                              .ToArray();
 
         Assert.HasCount(0, stray);

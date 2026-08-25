@@ -11,7 +11,7 @@
     border-radius: 50%;
     display: inline-block;
     animation: bit-ldn-xbx-anm linear infinite;
-    border: var(--bit-ldn-xbx-3) $shp-border-style transparent;
+    border: var(--bit-ldn-stroke, var(--bit-ldn-xbx-3)) $shp-border-style transparent;
     border-top-color: var(--bit-ldn-color);
 }
 
