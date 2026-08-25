@@ -1,32 +1,33 @@
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// Reports what took a <see cref="BitSnackBarItem"/> off the screen.
+/// Tells what took a <see cref="BitSnackBarItem"/> off the screen, reported through
+/// <see cref="BitSnackBarItem.DismissReason"/> to the dismiss callbacks.
 /// </summary>
-/// <remarks>
-/// The reason is written to <see cref="BitSnackBarItem.DismissReason"/> before the dismiss callbacks run, so a
-/// handler can tell a notification the user acted on apart from one that simply ran out of time - which is the
-/// difference between "the undo was offered and declined" and "the undo was never seen".
-/// </remarks>
 public enum BitSnackBarDismissReason
 {
     /// <summary>
-    /// The dismiss button of the item was activated.
+    /// The code that opened the item closed it through <see cref="BitSnackBar.Close(BitSnackBarItem)"/>.
+    /// </summary>
+    Programmatic,
+
+    /// <summary>
+    /// The user pressed the dismiss button of the item.
     /// </summary>
     DismissButton,
 
     /// <summary>
-    /// The Escape key was pressed while the focus was inside the item.
+    /// The user pressed the Escape key while the focus was inside the item.
     /// </summary>
     Escape,
 
     /// <summary>
-    /// The item was clicked while its host had <see cref="BitSnackBar.DismissOnClick"/> enabled.
+    /// The user clicked the item while <see cref="BitSnackBar.DismissOnClick"/> was enabled.
     /// </summary>
     Click,
 
     /// <summary>
-    /// The item was swiped away.
+    /// The user swiped the item away while <see cref="BitSnackBar.SwipeToDismiss"/> was enabled.
     /// </summary>
     Swipe,
 
@@ -36,17 +37,12 @@ public enum BitSnackBarDismissReason
     Timeout,
 
     /// <summary>
-    /// <see cref="BitSnackBar.Close(BitSnackBarItem)"/> was called for the item.
+    /// The item was taken away to make room for a newer one under <see cref="BitSnackBar.MaxItems"/>.
     /// </summary>
-    Close,
+    Overflow,
 
     /// <summary>
-    /// <see cref="BitSnackBar.Clear"/> was called on the host.
+    /// The host was emptied through <see cref="BitSnackBar.Clear"/>.
     /// </summary>
     Clear,
-
-    /// <summary>
-    /// The item was the oldest one on screen when a newer one needed the room <see cref="BitSnackBar.MaxItems"/> caps.
-    /// </summary>
-    MaxItems,
 }

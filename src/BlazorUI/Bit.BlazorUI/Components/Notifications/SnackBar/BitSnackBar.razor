@@ -15,21 +15,21 @@
      aria-label="@_RootAriaLabel"
      dir="@Dir?.ToString().ToLower()">
 
-    @* The two announcers are the live regions of the snack bar. They are rendered once and stay, because a live
-       region has to already be on the page when its content changes for a screen reader to be watching it - an
-       element that arrives carrying its own aria-live is the case assistive technology is least reliable about.
-       Each announcement is appended as a child of its own rather than replacing the text of the region, so
-       aria-atomic is off and the same message twice in a row is still read twice. *@
-    <div class="bit-snb-ann" role="status" aria-live="polite" aria-atomic="false">
-        @foreach (var announcement in _politeAnnouncements)
+    @* A live region only announces what is put into one that the screen reader was already watching: an element
+       that arrives with its text already in it is, for most of them, silent. So the announcement is not made by
+       the item at all - these two regions are here from the first render, empty, and the text of an arriving item
+       is placed into whichever of them matches how loudly it asked to be heard. The items themselves carry
+       aria-live="off" so the same notification is not also announced a second time by its own element. *@
+    <div class="bit-snb-lvr" aria-live="polite" aria-atomic="true">
+        @if (_politeText.HasValue())
         {
-            <div @key="announcement.Id">@announcement.Text</div>
+            <span @key="_politeGeneration">@_politeText</span>
         }
     </div>
-    <div class="bit-snb-ann" role="alert" aria-live="assertive" aria-atomic="false">
-        @foreach (var announcement in _assertiveAnnouncements)
+    <div class="bit-snb-lvr" aria-live="assertive" aria-atomic="true">
+        @if (_assertiveText.HasValue())
         {
-            <div @key="announcement.Id">@announcement.Text</div>
+            <span @key="_assertiveGeneration">@_assertiveText</span>
         }
     </div>
 
@@ -39,18 +39,18 @@
            away, so a persistent one does not even follow the pointer. *@
         <div @key="item.Id"
              role="@GetItemRole(item)"
-             tabindex="@GetItemTabIndex(item)"
              data-bit-snb-id="@(IsDismissible(item) ? item.Id.ToString() : null)"
-             aria-live="@GetItemAriaLive(item)"
-             aria-atomic="@GetItemAriaAtomic(item)"
+             aria-live="off"
+             tabindex="@(IsClickable(item) ? "0" : null)"
              style="@JoinStyles(Styles?.Container, item.CssStyle)"
              class="bit-snb-itm @GetItemClasses(item) @Classes?.Container @item.CssClass"
              @onclick="() => HandleItemClick(item)"
              @onkeydown="e => HandleItemKeyDown(e, item)"
+             @onkeyup="e => HandleItemKeyUp(e, item)"
              @onmouseenter="() => HandleHoverStart(item)"
              @onmouseleave="() => HandleHoverEnd(item)"
-             @onfocusin="() => HandleHoverStart(item)"
-             @onfocusout="() => HandleHoverEnd(item)">
+             @onfocusin="() => HandleFocusStart(item)"
+             @onfocusout="() => HandleFocusEnd(item)">
 
             @if (Template is not null)
             {
@@ -71,7 +71,7 @@
 
                     @if (TitleTemplate is not null)
                     {
-                        @TitleTemplate(item.Title)
+                        @TitleTemplate(item.Title ?? string.Empty)
                     }
                     else if (item.Title.HasValue())
                     {
@@ -85,15 +85,10 @@
                         </div>
                     }
 
-                    @if (ShowsDismissButton(item))
+                    @if (ShowDismissButton(item))
                     {
-                        @* The keydown is stopped here for the same reason the click is: the button answers Enter
-                           and Space itself, and letting those reach the item would activate a clickable item at
-                           the same time as the button that takes it away. Escape is handed on by hand, because
-                           it is the item it belongs to rather than the button. *@
                         <button @ref="_dismissButtons[item.Id]"
                                 @onclick="() => HandleDismissClick(item)" @onclick:stopPropagation
-                                @onkeydown="e => HandleDismissKeyDown(e, item)" @onkeydown:stopPropagation
                                 type="button"
                                 title="@_DismissAriaLabel"
                                 aria-label="@_DismissAriaLabel"
@@ -113,8 +108,8 @@
                 }
                 else if (item.Body.HasValue())
                 {
-                    @* Same as the title: a body that is being cut off keeps its full text in a tooltip, and one
-                       that wraps has nothing to put there that is not already on screen. *@
+                    @* Same reasoning as the title: a body kept to one line keeps the rest of its text in a tooltip
+                       so it is still reachable, and a wrapping one has nothing left to put there. *@
                     <div title="@(Multiline ? null : item.Body)"
                          style="@Styles?.Body"
                          class="bit-snb-bdy @(Multiline ? "" : "bit-snb-elp") @Classes?.Body">
@@ -138,7 +133,7 @@
                 <span @key="(item.Id, item._generation)"
                       aria-hidden="true"
                       style="@JoinStyles(GetDuration(item), Styles?.ProgressBar)"
-                      class="bit-snb-prb @Classes?.ProgressBar">
+                      class="bit-snb-prb @(ReverseProgress ? "bit-snb-rvp" : null) @Classes?.ProgressBar">
                 </span>
             }
         </div>

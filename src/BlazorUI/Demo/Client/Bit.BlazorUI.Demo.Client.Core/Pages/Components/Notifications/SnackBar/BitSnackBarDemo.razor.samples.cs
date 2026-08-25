@@ -13,15 +13,7 @@ private async Task OpenBasicSnackBar()
 }";
 
     private readonly string example2RazorCode = @"
-<BitSnackBar @ref=""positionRef"" Position=""position"" Offset=""@offset""
-             AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(3)"" />
-
-<BitChoiceGroup @bind-Value=""offset"" Label=""Offset"" Horizontal
-                TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
-    <BitChoiceGroupOption Text=""Default"" Value=""@("""")"" />
-    <BitChoiceGroupOption Text=""2rem"" Value=""@(""2rem"")"" />
-    <BitChoiceGroupOption Text=""4rem"" Value=""@(""4rem"")"" />
-</BitChoiceGroup>
+<BitSnackBar @ref=""positionRef"" Position=""position"" Offset=""@offset"" />
 
 <BitChoiceGroup @bind-Value=""position"" Label=""Position"" Horizontal
                 TItem=""BitChoiceGroupOption<BitSnackBarPosition>"" TValue=""BitSnackBarPosition"">
@@ -33,19 +25,30 @@ private async Task OpenBasicSnackBar()
     <BitChoiceGroupOption Text=""BottomEnd"" Value=""BitSnackBarPosition.BottomEnd"" />
 </BitChoiceGroup>
 
+<BitChoiceGroup @bind-Value=""offset"" Label=""Offset"" Horizontal
+                TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
+    <BitChoiceGroupOption Text=""8px (default)"" Value=""@(""8px"")"" />
+    <BitChoiceGroupOption Text=""2rem"" Value=""@(""2rem"")"" />
+    <BitChoiceGroupOption Text=""4rem"" Value=""@(""4rem"")"" />
+</BitChoiceGroup>
+
 <BitButton OnClick=""OpenPositionSnackBar"">Open SnackBar</BitButton>";
     private readonly string example2CsharpCode = @"
-private string offset = """";
+private string offset = ""8px"";
 private BitSnackBar positionRef = default!;
 private BitSnackBarPosition position = BitSnackBarPosition.BottomEnd;
 private async Task OpenPositionSnackBar()
 {
-    await positionRef.Info($""{position}"", ""This snack bar is pinned to the selected position."");
+    await positionRef.Info($""{position}"", $""Pinned to the selected position, {offset} from the edges."");
 }";
 
     private readonly string example3RazorCode = @"
-<BitSnackBar @ref=""autoDismissRef"" AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(5)"" PauseOnPageHidden PauseOnWindowBlur />
+<BitSnackBar @ref=""autoDismissRef"" AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(5)""
+             PauseOnPageHidden PauseOnWindowBlur />
 <BitButton OnClick=""OpenAutoDismiss"">Hover me to pause the countdown</BitButton>
+
+<BitSnackBar @ref=""reverseProgressRef"" AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(5)"" ReverseProgress />
+<BitButton OnClick=""OpenReverseProgress"">Draining progress bar</BitButton>
 
 <BitSnackBar @ref=""noProgressRef"" AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(5)"" HideProgress />
 <BitButton OnClick=""OpenNoProgress"">No progress bar</BitButton>
@@ -56,10 +59,16 @@ private async Task OpenPositionSnackBar()
 private BitSnackBar autoDismissRef = default!;
 private BitSnackBar noProgressRef = default!;
 private BitSnackBar perItemTimeRef = default!;
+private BitSnackBar reverseProgressRef = default!;
 
 private async Task OpenAutoDismiss()
 {
     await autoDismissRef.Info(""Dismissing in 5 seconds"", ""Hover over me and the countdown holds."");
+}
+
+private async Task OpenReverseProgress()
+{
+    await reverseProgressRef.Info(""Dismissing in 5 seconds"", ""The bar drains as the time runs out."");
 }
 
 private async Task OpenNoProgress()
@@ -81,23 +90,13 @@ private async Task OpenPerItemTime()
 <BitSnackBar @ref=""perItemPersistentRef"" AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(3)"" />
 <BitButton OnClick=""OpenMixedPersistence"">Open one of each</BitButton>
 
-<BitSnackBar @ref=""noDismissButtonRef"" AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(6)"" HideDismissButton>
-    <ActionsTemplate Context=""item"">
-        <BitButton Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground""
-                   OnClick=""() => noDismissButtonRef.Close(item)"">Undo</BitButton>
-    </ActionsTemplate>
-</BitSnackBar>
-<BitButton OnClick=""OpenNoDismissButton"">Action instead of a button</BitButton>";
+<BitSnackBar @ref=""hideDismissRef"" HideDismiss AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(5)"" />
+<BitButton OnClick=""OpenHideDismiss"">No dismiss button</BitButton>";
     private readonly string example4CsharpCode = @"
 private BitSnackBarItem? persistentItem;
 private BitSnackBar persistentRef = default!;
+private BitSnackBar hideDismissRef = default!;
 private BitSnackBar perItemPersistentRef = default!;
-private BitSnackBar noDismissButtonRef = default!;
-
-private async Task OpenNoDismissButton()
-{
-    await noDismissButtonRef.Show(""Message archived"", ""It goes away on its own in 6 seconds."", BitColor.Success);
-}
 
 private async Task OpenPersistentSnackBar()
 {
@@ -125,6 +124,11 @@ private async Task OpenMixedPersistence()
         Color = BitColor.Warning,
         Persistent = true
     });
+}
+
+private async Task OpenHideDismiss()
+{
+    await hideDismissRef.Info(""No way out but the clock"", ""This item has no dismiss button, but it still counts down."");
 }";
 
     private readonly string example5RazorCode = @"
@@ -148,30 +152,35 @@ private void HandleSwipeDismiss(BitSnackBarItem item)
 }";
 
     private readonly string example6RazorCode = @"
-<BitSnackBar @ref=""stackingRef"" MaxItems=""3"" Overflow=""overflow""
-             NewestOnTop=""newestOnTop"" PreventDuplicates=""preventDuplicates""
-             AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(3)""
+<BitSnackBar @ref=""stackingRef"" MaxItems=""3"" NewestOnTop=""newestOnTop"" PreventDuplicates=""preventDuplicates""
+             OverflowBehavior=""overflowBehavior"" AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(4)""
              OnShow=""HandleStackingChange"" OnDismiss=""HandleStackingChange"" />
+
+<BitChoiceGroup @bind-Value=""overflowBehavior"" Label=""Overflow behavior"" Horizontal
+                TItem=""BitChoiceGroupOption<BitSnackBarOverflowBehavior>"" TValue=""BitSnackBarOverflowBehavior"">
+    <BitChoiceGroupOption Text=""DismissOldest"" Value=""BitSnackBarOverflowBehavior.DismissOldest"" />
+    <BitChoiceGroupOption Text=""Queue"" Value=""BitSnackBarOverflowBehavior.Queue"" />
+    <BitChoiceGroupOption Text=""Skip"" Value=""BitSnackBarOverflowBehavior.Skip"" />
+</BitChoiceGroup>
 
 <BitToggle @bind-Value=""newestOnTop"" Label=""Newest on top"" Inline />
 <BitToggle @bind-Value=""preventDuplicates"" Label=""Prevent duplicates"" Inline />
 
-<BitChoiceGroup @bind-Value=""overflow"" Label=""Overflow"" Horizontal
-                TItem=""BitChoiceGroupOption<BitSnackBarOverflow>"" TValue=""BitSnackBarOverflow"">
-    <BitChoiceGroupOption Text=""DismissOldest"" Value=""BitSnackBarOverflow.DismissOldest"" />
-    <BitChoiceGroupOption Text=""Queue"" Value=""BitSnackBarOverflow.Queue"" />
-</BitChoiceGroup>
-
 <BitButton OnClick=""OpenStacking"">Show (max 3)</BitButton>
 <BitButton OnClick=""OpenDuplicate"">Show a duplicate</BitButton>
 
-<div>Showing: <b>@stackingRef?.Items.Count</b> Queued: <b>@stackingRef?.Queued.Count</b></div>";
+<div>
+    Showing: <b>@stackingRef?.Items.Count</b>
+    Waiting: <b>@stackingRef?.PendingItems.Count</b>
+    Repeats suppressed: <b>@duplicateItem?.DuplicateCount</b>
+</div>";
     private readonly string example6CsharpCode = @"
 private int stackingCounter;
 private bool newestOnTop;
 private bool preventDuplicates;
 private BitSnackBar stackingRef = default!;
-private BitSnackBarOverflow overflow = BitSnackBarOverflow.DismissOldest;
+private BitSnackBarItem? duplicateItem;
+private BitSnackBarOverflowBehavior overflowBehavior;
 
 private void HandleStackingChange(BitSnackBarItem item) => StateHasChanged();
 
@@ -183,7 +192,7 @@ private async Task OpenStacking()
 
 private async Task OpenDuplicate()
 {
-    await stackingRef.Info(""Duplicate"", ""Showing this twice only adds one while PreventDuplicates is on."");
+    duplicateItem = await stackingRef.Info(""Duplicate"", ""Showing this twice only adds one while PreventDuplicates is on."");
 }";
 
     private readonly string example7RazorCode = @"
@@ -257,20 +266,27 @@ private async Task Undo(BitSnackBarItem item)
 }";
 
     private readonly string example9RazorCode = @"
-<BitSnackBar @ref=""singleLineRef"" />
-<BitButton OnClick=""OpenSingleLine"">Single line</BitButton>
+<BitSnackBar @ref=""uncappedRef"" />
+<BitButton OnClick=""OpenUncapped"">Uncapped</BitButton>
 
-<BitSnackBar @ref=""multilineRef"" Multiline />
-<BitButton OnClick=""OpenMultiline"">Multiline</BitButton>";
+<BitSnackBar @ref=""singleLineRef"" MaxWidth=""20rem"" />
+<BitButton OnClick=""OpenSingleLine"">Single line, capped at 20rem</BitButton>
+
+<BitSnackBar @ref=""multilineRef"" Multiline MaxWidth=""20rem"" />
+<BitButton OnClick=""OpenMultiline"">Multiline, capped at 20rem</BitButton>";
     private readonly string example9CsharpCode = @"
+private BitSnackBar uncappedRef = default!;
 private BitSnackBar singleLineRef = default!;
 private BitSnackBar multilineRef = default!;
 
+private const string LongTitle = ""A title that is also too long to fit on one line"";
 private const string LongBody = ""This body is long enough that it does not fit on a single line, so it is either cut off with an ellipsis or wrapped over as many lines as it needs."";
 
-private async Task OpenSingleLine() => await singleLineRef.Info(""A title that is also too long to fit on one line"", LongBody);
+private async Task OpenUncapped() => await uncappedRef.Info(LongTitle, LongBody);
 
-private async Task OpenMultiline() => await multilineRef.Info(""A title that is also too long to fit on one line"", LongBody);";
+private async Task OpenSingleLine() => await singleLineRef.Info(LongTitle, LongBody);
+
+private async Task OpenMultiline() => await multilineRef.Info(LongTitle, LongBody);";
 
     private readonly string example10RazorCode = @"
 <BitSnackBar @ref=""titleTemplateRef"">
@@ -330,7 +346,7 @@ private async Task OpenFullTemplate()
 }";
 
     private readonly string example11RazorCode = @"
-<BitSnackBar @ref=""eventsRef"" DismissOnClick
+<BitSnackBar @ref=""eventsRef"" DismissOnClick AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(6)""
              OnShow=""HandleOnShow"" OnDismiss=""HandleOnDismiss"" OnItemClick=""HandleOnItemClick"" />
 <BitButton OnClick=""OpenEvents"">Open SnackBar</BitButton>
 
@@ -358,7 +374,7 @@ private void HandleOnItemClick(BitSnackBarItem item) => Log($""OnItemClick: {ite
 
 private async Task OpenEvents()
 {
-    await eventsRef.Info($""Notification {eventLogs.Count + 1}"", ""Click me and I report the click, then dismiss."");
+    await eventsRef.Info($""Notification {eventLogs.Count + 1}"", ""Click me, close me or wait - the reason is reported."");
 }";
 
     private readonly string example12RazorCode = @"
@@ -422,7 +438,14 @@ private async Task ResumeAll()
 private async Task ClearAll() => await controlRef.Clear();";
 
     private readonly string example13RazorCode = @"
-<BitSnackBar @ref=""hotkeyRef"" Hotkey=""@([""""F8""""])"" AriaLabel=""Notifications (F8)""
+<BitSnackBar @ref=""a11yRef"" ShowIcon AriaLabel=""Demo notifications"" DismissAriaLabel=""Dismiss notification"" />
+
+<BitButton OnClick=""OpenPoliteA11y"">Polite (status)</BitButton>
+<BitButton OnClick=""OpenAssertiveA11y"">Assertive (alert)</BitButton>
+<BitButton OnClick=""OpenAnnounceText"">Custom announcement</BitButton>
+<BitButton OnClick=""OpenSilentA11y"">Unannounced</BitButton>
+
+<BitSnackBar @ref=""hotkeyRef"" Hotkey=""@([""F8""])"" AriaLabel=""Notifications (F8)""
              AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(30)"" ShowIcon>
     <ActionsTemplate Context=""item"">
         <BitButton Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground""
@@ -430,9 +453,42 @@ private async Task ClearAll() => await controlRef.Clear();";
     </ActionsTemplate>
 </BitSnackBar>
 <BitButton OnClick=""OpenHotkey"">Open, then press F8</BitButton>
-<BitButton OnClick=""FocusSnackBars"">Focus the region from code</BitButton>
-<BitButton OnClick=""OpenAnnouncement"">Custom announcement</BitButton>";
+<BitButton OnClick=""FocusSnackBars"">Focus the region from code</BitButton>";
     private readonly string example13CsharpCode = @"
+private BitSnackBar a11yRef = default!;
+
+private async Task OpenPoliteA11y()
+{
+    await a11yRef.Success(""Saved"", ""A screen reader hears this at the next pause in what it is saying."");
+}
+
+private async Task OpenAssertiveA11y()
+{
+    await a11yRef.Error(""Save failed"", ""A problem interrupts the screen reader instead of waiting."");
+}
+
+private async Task OpenAnnounceText()
+{
+    await a11yRef.Show(new BitSnackBarItem
+    {
+        Title = ""ETA 5m"",
+        Body = ""Sync in progress."",
+        Color = BitColor.Info,
+        AnnounceText = ""Estimated time of arrival: five minutes. Sync in progress.""
+    });
+}
+
+private async Task OpenSilentA11y()
+{
+    await a11yRef.Show(new BitSnackBarItem
+    {
+        Title = ""Seen but not heard"",
+        Body = ""A role that is not a live one leaves the item unannounced."",
+        Color = BitColor.Warning,
+        Role = ""presentation""
+    });
+}
+
 private BitSnackBar hotkeyRef = default!;
 
 private async Task OpenHotkey()
@@ -440,18 +496,7 @@ private async Task OpenHotkey()
     await hotkeyRef.Info(""Report ready"", ""Press F8 to jump here, then Tab to the action."");
 }
 
-private async Task FocusSnackBars() => await hotkeyRef.FocusAsync();
-
-private async Task OpenAnnouncement()
-{
-    await hotkeyRef.Show(new BitSnackBarItem
-    {
-        Title = ""Deleted"",
-        Body = ""report.pdf"",
-        Color = BitColor.Warning,
-        AnnouncementText = ""report.pdf was deleted. Press F8 to undo.""
-    });
-}";
+private async Task FocusSnackBars() => await hotkeyRef.FocusAsync();";
 
     private readonly string example14RazorCode = @"
 <BitSnackBar @ref=""customizationRef""
@@ -462,6 +507,7 @@ private async Task OpenAnnouncement()
              Position=""basicSnackBarPosition""
              Multiline=""basicSnackBarMultiline""
              AutoDismiss=""basicSnackBarAutoDismiss""
+             TransitionDuration=""customTransitionDuration""
              AutoDismissTime=""TimeSpan.FromSeconds(basicSnackBarDismissSeconds)"" />
 
 <BitButton OnClick=""OpenCustomizationSnackBar"">Show</BitButton>
@@ -515,6 +561,7 @@ private async Task OpenAnnouncement()
 
 <BitToggle @bind-Value=""basicSnackBarAutoDismiss"" Label=""Auto Dismiss"" Inline />
 <BitNumberField @bind-Value=""basicSnackBarDismissSeconds"" IsEnabled=""basicSnackBarAutoDismiss"" Step=""1"" Min=""1"" Label=""Dismiss Time (based on second)"" />
+<BitNumberField @bind-Value=""customTransitionDuration"" Step=""50"" Min=""0"" Max=""2000"" Label=""Transition Duration (ms)"" />
 
 <BitToggle @bind-Value=""basicSnackBarMultiline"" Label=""Multiline"" Inline />
 <BitToggle @bind-Value=""customShowIcon"" Label=""Show Icon"" Inline />
@@ -527,6 +574,7 @@ private bool customShowIcon;
 private bool basicSnackBarMultiline;
 private bool basicSnackBarAutoDismiss;
 private int basicSnackBarDismissSeconds = 3;
+private int customTransitionDuration = 200;
 private BitSnackBar customizationRef = default!;
 private BitSize customSize = BitSize.Medium;
 private BitVariant customVariant = BitVariant.Fill;
