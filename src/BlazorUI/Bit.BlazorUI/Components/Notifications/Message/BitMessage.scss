@@ -1,4 +1,4 @@
-@import "../../../Styles/functions.scss";
+﻿@import "../../../Styles/functions.scss";
 
 .bit-msg {
     width: 100%;
@@ -13,6 +13,29 @@
     border-radius: $shp-radius-surface;
     font-size: var(--bit-msg-fontsize);
     box-shadow: var(--bit-msg-boxshadow);
+
+    // A disabled message stays readable - it is a notice, not a control - but its dismiss and expander
+    // buttons stop responding, so the state cannot be changed while the message is turned off.
+    &.bit-dis {
+        .bit-msg-exb,
+        .bit-msg-dmb {
+            cursor: default;
+            opacity: $opa-dis;
+            pointer-events: none;
+        }
+    }
+}
+
+
+// The root is focusable while it carries a TabIndex or an AutoFocus, so a keyboard user can land on the message
+// itself - and has to be able to see that they did.
+.bit-msg:focus-visible {
+    @include focus-ring(var(--bit-msg-clr-focus));
+}
+
+// Squared off so the message can sit flush against the edges of its container as a banner.
+.bit-msg-sqr {
+    border-radius: $shp-radius-none;
 }
 
 .bit-msg-rct {
@@ -60,6 +83,58 @@
     margin: var(--bit-msg-margin);
 }
 
+// A title on a single-line message shares the line with the content instead of stacking above it, the way
+// a lead-in does. The class is only applied when there is a title, so the column layout above stays the
+// default for every message that has none.
+.bit-msg-cwi {
+    flex-direction: row;
+    align-items: baseline;
+    column-gap: spacing(0.5);
+
+    // The title keeps its width where it can and gives way before the content does, so an over-long one
+    // ellipsizes instead of pushing the content out of the message.
+    > .bit-msg-ttl {
+        flex: 0 1 auto;
+        min-width: 0;
+    }
+
+    > .bit-msg-cnt {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+}
+
+// Said by a screen reader as the first thing in the announced region, and never seen: the icon it stands for is
+// hidden from assistive technology, and this text is hidden from everyone else.
+.bit-msg-ilb {
+    border: 0;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
+// The title carries the type of the message whatever element it is rendered as, so a heading brings its
+// outline level to the page without bringing the browser's default type and margins with it.
+.bit-msg-ttl {
+    margin: 0;
+    overflow: hidden;
+    font-size: inherit;
+    line-height: inherit;
+    text-overflow: ellipsis;
+    font-weight: $tg-fw-semibold;
+}
+
+// A stacked title has a line of its own, so it wraps rather than inheriting the single-line clip of the
+// content container - which is what a multiline message, and an unfolded truncated one, want.
+.bit-msg-cnw:not(.bit-msg-cwi) > .bit-msg-ttl {
+    white-space: normal;
+}
+
 .bit-msg-cnt {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -69,28 +144,176 @@
     white-space: normal;
 }
 
-.bit-msg-act {
-    display: flex;
-    max-height: spacing(4);
-    justify-content: flex-end;
+// The cap on how many lines a wrapping message may spend. It replaces the single-line ellipsis of the rule
+// above with the one the line box itself ends on, so the clip reads the same way at any number of lines.
+// The prefixed pair is the recipe every engine already understands, and the standard property is written
+// after it so an engine implementing the shorthand takes that one instead of being left on the legacy box.
+.bit-msg-clp {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--bit-msg-maxlines);
+    line-clamp: var(--bit-msg-maxlines);
 }
 
+// A link is painted in the theme's link color, which is picked to sit on the page background rather than on
+// the amber or the red of a message. Inside one it takes the color already carrying the message and keeps the
+// underline, which is what tells it apart from the text around it without leaning on color at all. A disabled
+// link is left with the color that says so.
+.bit-msg-ttl,
+.bit-msg-cnt {
+    a:not(.bit-dis),
+    .bit-lnk:not(.bit-dis) {
+        color: inherit;
+        text-decoration: underline;
+
+        &:hover,
+        &:focus,
+        &:active {
+            color: inherit;
+        }
+    }
+}
+
+// On a single-line message the actions share the line with the content, so they are held to the height of the
+// line rather than being allowed to grow it. The cap follows the size of the message, but never falls below the
+// height of a control: what goes in here is buttons, and they keep their own default size whatever the message does.
+// The inset keeps the last of them off the edge of the message where nothing follows it, and apart from the round
+// buttons where something does; it is logical, so it follows the direction of the message.
+.bit-msg-act {
+    display: flex;
+    justify-content: flex-end;
+    margin-inline-end: spacing(0.5);
+    max-height: var(--bit-msg-act-maxheight);
+}
+
+// Once the actions have a row of their own they are no longer competing with the content for the line,
+// so the single-line cap is lifted and a set too wide for the row wraps instead of being clipped. The inset
+// is logical rather than physical: the row is justified to the end, so the wider side has to follow the
+// direction of the message instead of always sitting on the right.
 .bit-msg-mac {
-    margin: 0 spacing(1.5) spacing(1) spacing(1);
+    flex-wrap: wrap;
+    max-height: none;
+    margin-block: 0 spacing(1);
+    margin-inline: spacing(1) spacing(1.5);
 }
 
 .bit-msg-exb,
 .bit-msg-dmb {
+    border: none;
+    display: flex;
+    flex: 0 0 auto;
     cursor: pointer;
-    min-width: $siz-ctrl-md;
-    min-height: $siz-ctrl-md;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--bit-msg-btn-size);
+    min-height: var(--bit-msg-btn-size);
     color: var(--bit-msg-clr);
+    border-radius: $shp-radius-button;
     background-color: transparent;
+    transition: background-color $mot-duration-short $mot-easing;
+
+    // The buttons sit on the message's own fill, so the states are tinted from the color already on them
+    // rather than from a palette token - that keeps them legible on all three variants and every role.
+    @media (hover: hover) {
+        &:hover {
+            background-color: translucent(currentcolor, 12%);
+        }
+    }
+
+    &:active {
+        background-color: translucent(currentcolor, 20%);
+    }
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-msg-clr-focus));
+    }
 }
 
 .bit-msg-exi,
 .bit-msg-dmi {
-    font-size: $tg-fs-2xs;
+    font-size: var(--bit-msg-btn-fontsize);
+}
+
+// The countdown of the auto-dismiss feature, made visible. It runs off the same two states the countdown
+// itself is held by - the pointer being over the message and the focus being inside it - so the two never
+// disagree about how much time is left.
+.bit-msg-prg {
+    width: 100%;
+    flex: 0 0 auto;
+    overflow: hidden;
+    height: var(--bit-msg-track-size);
+    background-color: translucent(currentcolor, 16%);
+    border-end-start-radius: $shp-radius-surface;
+    border-end-end-radius: $shp-radius-surface;
+}
+
+.bit-msg-sqr .bit-msg-prg {
+    border-end-start-radius: $shp-radius-none;
+    border-end-end-radius: $shp-radius-none;
+}
+
+.bit-msg-prb {
+    width: 100%;
+    height: 100%;
+    transform-origin: left;
+    background-color: currentcolor;
+    animation-name: bit-msg-countdown;
+    animation-fill-mode: forwards;
+    animation-timing-function: linear;
+}
+
+// Held where the countdown is held. The pointer and the focus are handled by the two rules above without a round
+// trip, and this class carries the hold that PauseAutoDismiss asks for, which the browser knows nothing about.
+.bit-msg-prb.bit-msg-pau {
+    animation-play-state: paused;
+}
+
+.bit-rtl .bit-msg-prb {
+    transform-origin: right;
+}
+
+.bit-msg:focus-within .bit-msg-prb {
+    animation-play-state: paused;
+}
+
+@media (hover: hover) {
+    .bit-msg:hover .bit-msg-prb {
+        animation-play-state: paused;
+    }
+}
+
+@keyframes bit-msg-countdown {
+    from {
+        transform: scaleX(1);
+    }
+
+    to {
+        transform: scaleX(0);
+    }
+}
+
+// forced-colors: Windows High Contrast repaints every surface from one system pair, which takes the tint out
+// of the two round buttons - their hover fill turns into an opaque block of the very color their glyph is
+// drawn in - and leaves the countdown bar indistinguishable from the track it runs down. Both are painted
+// back with the system colors that still carry a meaning there.
+@media (forced-colors: active) {
+    .bit-msg-exb,
+    .bit-msg-dmb {
+        &:hover,
+        &:active {
+            color: HighlightText;
+            background-color: Highlight;
+        }
+    }
+
+    .bit-msg-prg {
+        background-color: Canvas;
+    }
+
+    .bit-msg-prb {
+        background-color: Highlight;
+    }
 }
 
 .bit-msg-fil {
@@ -111,6 +334,16 @@
     background-color: transparent;
 }
 
+// The two variants that drop the fill also drop the fill's on-color, so the buttons take the role color
+// the text is already using instead of the color meant to sit on top of it.
+.bit-msg-otl,
+.bit-msg-txt {
+    .bit-msg-exb,
+    .bit-msg-dmb {
+        color: var(--bit-msg-clr-bg);
+    }
+}
+
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
 // The @if keeps each kind's original declaration order. Note: the hand-written sbr/tbr blocks this
 // replaces set --bit-msg-clr to $clr-bg-pri (near-white text on the light brd-sec/brd-ter fills,
@@ -125,14 +358,22 @@
             --bit-msg-clr: #{role($tokens, on)};
             --bit-msg-clr-bg: #{role($tokens, main)};
         }
+
+        --bit-msg-clr-focus: #{role($tokens, focus)};
     }
 }
 
+// The size classes scale the type, the icon, the inset and the two round buttons of the message together, so a
+// small message is not left carrying medium-sized buttons.
 .bit-msg-sm {
     --bit-msg-margin: #{spacing(0.5)};
     --bit-msg-fontsize: #{$tg-fs-xs};
     --bit-msg-ico-margin: #{spacing(1)};
     --bit-msg-ico-fontsize: #{$siz-icon-sm};
+    --bit-msg-btn-size: #{$siz-ctrl-sm};
+    --bit-msg-btn-fontsize: #{$tg-fs-2xs};
+    --bit-msg-act-maxheight: #{$siz-ctrl-md};
+    --bit-msg-track-size: #{$siz-track-sm};
 }
 
 .bit-msg-md {
@@ -140,6 +381,10 @@
     --bit-msg-fontsize: #{$tg-fs-sm};
     --bit-msg-ico-margin: #{spacing(1.2)};
     --bit-msg-ico-fontsize: #{$siz-icon-md};
+    --bit-msg-btn-size: #{$siz-ctrl-md};
+    --bit-msg-btn-fontsize: #{$tg-fs-2xs};
+    --bit-msg-act-maxheight: #{$siz-ctrl-md};
+    --bit-msg-track-size: #{$siz-track-md};
 }
 
 .bit-msg-lg {
@@ -147,4 +392,8 @@
     --bit-msg-fontsize: #{$tg-fs-md};
     --bit-msg-ico-margin: #{spacing(2)};
     --bit-msg-ico-fontsize: #{$siz-icon-lg};
+    --bit-msg-btn-size: #{$siz-ctrl-lg};
+    --bit-msg-btn-fontsize: #{$tg-fs-xs};
+    --bit-msg-act-maxheight: #{$siz-ctrl-lg};
+    --bit-msg-track-size: #{$siz-track-lg};
 }

@@ -1,487 +1,939 @@
-@page "/components/message"
+﻿@page "/components/message"
 @page "/components/messagebar"
 @page "/components/message-bar"
 
 <PageOutlet Url="components/message"
             Title="Message"
-            Description="A Message displays errors, warnings, or important information. For example, if a file failed to upload an error message should appear." />
+            Description="An inline message that reports an error, a warning, or something worth knowing, in place and without interrupting the page." />
 
 <DemoPage Name="Message"
           SecondaryNames="@(["Alert", "MessageBar"])"
-          Description="A Message displays errors, warnings, or important information. For example, if a file failed to upload an error message should appear."
+          Description="An inline message that reports an error, a warning, or something worth knowing - a failed upload, an expiring licence, a saved draft - in place and without interrupting the page. It carries a color and a matching icon for its severity, an optional title, action buttons, a fold that holds a long text to one line or to a set number of them, and a dismiss button that can take the message off the page by itself, on a timer or on demand, and it announces itself to screen readers with the urgency its color implies."
           Parameters="componentParameters"
+          PublicMembers="componentPublicMembers"
           SubEnums="componentSubEnums"
           SubClasses="componentSubClasses"
           GitHubUrl="Notifications/Message/BitMessage.razor"
           GitHubDemoUrl="Notifications/Message/BitMessageDemo.razor">
-    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <BitMessage>This is a Message.</BitMessage>
-    </DemoExample>
+    <NotesTemplate>
+        <BitText>
+            <b>Color</b> is what makes a Message a notice rather than a box of text: it picks the palette, the
+            default icon, and the urgency of the announcement. <BitTag Color="BitColor.SecondaryBackground">Warning</BitTag>,
+            <BitTag Color="BitColor.SecondaryBackground">SevereWarning</BitTag> and
+            <BitTag Color="BitColor.SecondaryBackground">Error</BitTag> are announced as an
+            <BitTag Color="BitColor.SecondaryBackground">alert</BitTag>, which interrupts a screen reader;
+            everything else is announced politely as a <BitTag Color="BitColor.SecondaryBackground">status</BitTag>.
+            Override that with <b>Role</b> where the color is chosen for looks rather than for severity, and with
+            <b>Politeness</b> where the role is right but the urgency is not.
+            <br /><br />
+            Never let the color carry the meaning on its own - the text has to say what happened - and never leave a
+            warning or an error without a way forward: give it an <b>Actions</b> button or a link that resolves it.
+            <br /><br />
+            <b>AutoDismissTime</b> is a time limit, so it holds while a mouse or a pen rests on the message or the
+            focus is inside it. Keep it for confirmations that need no answer; anything with an action in it should
+            wait to be dismissed by hand.
+            <br /><br />
+            The icon is decorative markup and is hidden from screen readers, so where the text does not say what kind
+            of message this is, say it with <b>IconAriaLabel</b>. And leave <b>AutoFocus</b> for the messages that have
+            to be acted upon: the rest are already announced, and taking the focus away from what the reader was doing
+            is an interruption of its own.
+            <br /><br />
+            A live region only announces what changes inside it, so a message that appears with its text already in
+            place is a change of nothing and several screen readers stay silent about it: give the ones that answer
+            something the reader just did a <b>DelayedAnnouncement</b>.
+            <br /><br />
+            A message that takes itself off the page takes the focus with it if the dismiss button was carrying it,
+            which leaves a keyboard user back at the top of the document. Where that matters, put the focus somewhere
+            deliberate from <b>OnDismiss</b> - the control the message was about, or the next message in the stack.
+        </BitText>
+    </NotesTemplate>
 
-    <DemoExample Title="Color" RazorCode="@example2RazorCode" Id="example2">
-        <div class="box">
-            <BitMessage Color="BitColor.Primary">Primary.</BitMessage>
-            <BitMessage Color="BitColor.Secondary">Secondary.</BitMessage>
-            <BitMessage Color="BitColor.Tertiary">Tertiary.</BitMessage>
-            <BitMessage Color="BitColor.Info">Info (default).</BitMessage>
-            <BitMessage Color="BitColor.Success">Success.</BitMessage>
-            <BitMessage Color="BitColor.Warning">Warning.</BitMessage>
-            <BitMessage Color="BitColor.SevereWarning">SevereWarning.</BitMessage>
-            <BitMessage Color="BitColor.Error">Error.</BitMessage>
-        </div>
-        <div style="background:var(--bit-clr-fg-sec);padding:1rem;margin: 1rem 0;">
-            <div class="box">
-                <BitMessage Color="BitColor.PrimaryBackground">PrimaryBackground.</BitMessage>
-                <BitMessage Color="BitColor.SecondaryBackground">SecondaryBackground.</BitMessage>
-                <BitMessage Color="BitColor.TertiaryBackground">TertiaryBackground.</BitMessage>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>
+                A Message needs nothing but its content. It fills the width of its container, picks the
+                <b>Info</b> color by default, and renders the icon that goes with that color.
             </div>
-        </div>
-        <div class="box">
-            <BitMessage Color="BitColor.PrimaryForeground">PrimaryForeground.</BitMessage>
-            <BitMessage Color="BitColor.SecondaryForeground">SecondaryForeground.</BitMessage>
-            <BitMessage Color="BitColor.TertiaryForeground">TertiaryForeground.</BitMessage>
-            <BitMessage Color="BitColor.PrimaryBorder">PrimaryBorder.</BitMessage>
-            <BitMessage Color="BitColor.SecondaryBorder">SecondaryBorder.</BitMessage>
-            <BitMessage Color="BitColor.TertiaryBorder">TertiaryBorder.</BitMessage>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Variant" RazorCode="@example3RazorCode" Id="example3">
-        <div class="box">
-            <div><b>Fill</b> (default):</div>
-            <BitMessage Color="BitColor.Primary" Variant="BitVariant.Fill">Primary.</BitMessage>
-            <BitMessage Color="BitColor.Secondary" Variant="BitVariant.Fill">Secondary.</BitMessage>
-            <BitMessage Color="BitColor.Tertiary" Variant="BitVariant.Fill">Tertiary.</BitMessage>
-            <BitMessage Color="BitColor.Info" Variant="BitVariant.Fill">Info.</BitMessage>
-            <BitMessage Color="BitColor.Success" Variant="BitVariant.Fill">Success.</BitMessage>
-            <BitMessage Color="BitColor.Warning" Variant="BitVariant.Fill">Warning.</BitMessage>
-            <BitMessage Color="BitColor.SevereWarning" Variant="BitVariant.Fill">SevereWarning.</BitMessage>
-            <BitMessage Color="BitColor.Error" Variant="BitVariant.Fill">Error.</BitMessage>
-        </div>
-        <br /><br /><br />
-        <div class="box">
-            <div><b>Outline</b>:</div>
-            <BitMessage Color="BitColor.Primary" Variant="BitVariant.Outline">Primary.</BitMessage>
-            <BitMessage Color="BitColor.Secondary" Variant="BitVariant.Outline">Secondary.</BitMessage>
-            <BitMessage Color="BitColor.Tertiary" Variant="BitVariant.Outline">Tertiary.</BitMessage>
-            <BitMessage Color="BitColor.Info" Variant="BitVariant.Outline">Info.</BitMessage>
-            <BitMessage Color="BitColor.Success" Variant="BitVariant.Outline">Success.</BitMessage>
-            <BitMessage Color="BitColor.Warning" Variant="BitVariant.Outline">Warning.</BitMessage>
-            <BitMessage Color="BitColor.SevereWarning" Variant="BitVariant.Outline">SevereWarning.</BitMessage>
-            <BitMessage Color="BitColor.Error" Variant="BitVariant.Outline">Error.</BitMessage>
-        </div>
-        <br /><br /><br />
-        <div class="box">
-            <div><b>Text</b>:</div>
-            <BitMessage Color="BitColor.Primary" Variant="BitVariant.Text">Primary.</BitMessage>
-            <BitMessage Color="BitColor.Secondary" Variant="BitVariant.Text">Secondary.</BitMessage>
-            <BitMessage Color="BitColor.Tertiary" Variant="BitVariant.Text">Tertiary.</BitMessage>
-            <BitMessage Color="BitColor.Info" Variant="BitVariant.Text">Info.</BitMessage>
-            <BitMessage Color="BitColor.Success" Variant="BitVariant.Text">Success.</BitMessage>
-            <BitMessage Color="BitColor.Warning" Variant="BitVariant.Text">Warning.</BitMessage>
-            <BitMessage Color="BitColor.SevereWarning" Variant="BitVariant.Text">SevereWarning.</BitMessage>
-            <BitMessage Color="BitColor.Error" Variant="BitVariant.Text">Error.</BitMessage>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Alignment" RazorCode="@example4RazorCode" Id="example4">
-        <div class="box">
-            <BitMessage Alignment="BitAlignment.Start" Color="BitColor.Primary">Start</BitMessage>
-            <BitMessage Alignment="BitAlignment.Center" Color="BitColor.Secondary">Center</BitMessage>
-            <BitMessage Alignment="BitAlignment.End" Color="BitColor.Tertiary">End</BitMessage>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Elevation" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-        <div class="box">
-            <BitMessage Elevation="(int)elevation">Elevated Message</BitMessage>
-
             <br />
-            <BitSlider Label="Elevation" Min="0" Max="24" Step="1" @bind-Value="elevation" />
-        </div>
-    </DemoExample>
+            <BitMessage>This is a Message.</BitMessage>
+        </DemoExample>
 
-    <DemoExample Title="Multiline" RazorCode="@example6RazorCode" Id="example6">
-        <div><b>Multiline</b> parameter makes the content to be rendered in multiple lines.</div>
-        <br />
-        <BitMessage Multiline Color="BitColor.Success">
-            In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits 
-            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
-            possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
-            vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
-            shaped into meaning, and the emotions ready to resonate with every reader.
+        <DemoExample Title="Title" RazorCode="@example2RazorCode" Id="example2">
+            <div>
+                <b>Title</b> adds a short heading that makes the message scannable, which matters most where
+                several of them stack up. On a single-line message the title leads the content on the same line;
+                on a <b>Multiline</b> one it sits above it. Use <b>TitleTemplate</b> to render markup instead of plain
+                text, and <b>TitleElement</b> to render the title as a heading (<b>h2</b> ... <b>h6</b>) where the
+                message is a part of the page a reader should be able to jump to - the title keeps the type of the
+                message either way.
+            </div>
             <br />
-            In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
-            each word has the power to transform into something extraordinary. Here lies the start of something new, an 
-            opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
-            idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
-            begins here, in this quiet moment where everything is possible.
-        </BitMessage>
-    </DemoExample>
+            <div class="box">
+                <BitMessage Title="Heads up">Your session expires in 5 minutes.</BitMessage>
 
-    <DemoExample Title="Truncate" RazorCode="@example7RazorCode" Id="example7">
-        <div>
-            <b>Truncate</b> parameter cut the overflowed content at the end of the single line Message.
-            Truncation is not available if you use multiline and should be used sparingly.
-        </div>
-        <br />
-        <BitMessage Truncate Color="BitColor.Warning">
-            In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits 
-            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
-            possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
-            vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
-            shaped into meaning, and the emotions ready to resonate with every reader.
+                <BitMessage Multiline Title="Upload failed" OnDismiss="() => {}">
+                    The file <b>report-2024.xlsx</b> could not be uploaded because it exceeds the 25 MB limit.
+                    Compress the file or split it into parts and try again.
+                </BitMessage>
+
+                <BitMessage Multiline>
+                    <TitleTemplate>
+                        Saved to <BitLink Href="https://bitplatform.dev">your workspace</BitLink>
+                    </TitleTemplate>
+                    <Content>
+                        Everyone with access to the workspace can see this version now.
+                    </Content>
+                </BitMessage>
+
+                <BitMessage Multiline TitleElement="h3" Title="A title that is a heading">
+                    Rendered as an <b>h3</b>, so it shows up in the heading list of a screen reader.
+                </BitMessage>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Variant" RazorCode="@example3RazorCode" Id="example3">
+            <div>
+                <b>Variant</b> chooses how much of the color the message spends: <b>Fill</b> (the default) paints the
+                whole surface, <b>Outline</b> keeps only the border, and <b>Text</b> drops both and tints the text alone.
+            </div>
             <br />
-            In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
-            each word has the power to transform into something extraordinary. Here lies the start of something new-an 
-            opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
-            idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
-            begins here, in this quiet moment where everything is possible.
-        </BitMessage>
-    </DemoExample>
+            <div class="box">
+                <div><b>Fill</b> (default):</div>
+                <BitMessage Variant="BitVariant.Fill">Filled</BitMessage>
+            </div>
+            <br /><br />
+            <div class="box">
+                <div><b>Outline</b>:</div>
+                <BitMessage Variant="BitVariant.Outline">Outlined</BitMessage>
+            </div>
+            <br /><br />
+            <div class="box">
+                <div><b>Text</b>:</div>
+                <BitMessage Variant="BitVariant.Text">Texted</BitMessage>
+            </div>
+        </DemoExample>
 
-    <DemoExample Title="Dismiss" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-        @if (isDismissed is false)
-        {
-            <BitMessage OnDismiss="() => isDismissed = true" Color="BitColor.SevereWarning">
-                Dismiss option enabled by adding <strong>OnDismiss</strong> parameter.
+        <DemoExample Title="Alignment" RazorCode="@example4RazorCode" Id="example4">
+            <div>
+                <b>Alignment</b> places the icon and the content along the width of the message. It only shows
+                when the content is narrower than the message, which is the case for a short single-line notice.
+            </div>
+            <br />
+            <div class="box">
+                <BitMessage Alignment="BitAlignment.Start">Start</BitMessage>
+                <BitMessage Alignment="BitAlignment.Center">Center</BitMessage>
+                <BitMessage Alignment="BitAlignment.End">End</BitMessage>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Elevation" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>Elevation</b> lifts the message off the page with one of the 24 shadow steps of the theme.
+                Values outside the <b>1</b> to <b>24</b> range leave the message flat.
+            </div>
+            <br />
+            <div class="box">
+                <BitMessage Elevation="(int)elevation">Elevated Message</BitMessage>
+
+                <br />
+                <BitSlider Label="Elevation" Min="0" Max="24" Step="1" @bind-Value="elevation" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Multiline" RazorCode="@example6RazorCode" Id="example6">
+            <div>
+                <b>Multiline</b> lets the content wrap over as many lines as it needs instead of being clipped to one,
+                and moves the action buttons to a row of their own underneath it. <b>MaxLines</b> puts a ceiling back
+                on that, so one long message cannot push the rest of the page down: the content stops at the given
+                number of lines and the last of them ends in an ellipsis. Add <b>Truncate</b> alongside it and the same
+                expander button a truncated single-line message carries appears, unfolding the message past the cap.
+            </div>
+            <br />
+            <BitMessage Multiline>
+                In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits
+                to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+                vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+                shaped into meaning, and the emotions ready to resonate with every reader.
+                <br />
+                In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+                each word has the power to transform into something extraordinary. Here lies the start of something new, an
+                opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+                idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+                begins here, in this quiet moment where everything is possible.
             </BitMessage>
-        }
-        else
-        {
-            <BitButton OnClick="() => isDismissed = false">Dismissed, click to reset</BitButton>
-        }
-
-        <br/><br/>
-        
-        @if (isAutoDismissed is false)
-        {
-            <BitMessage AutoDismissTime="TimeSpan.FromSeconds(5)" OnDismiss="() => isAutoDismissed = true">
-                Auto-Dismiss option enabled by adding the <strong>AutoDismissTime</strong> parameter alongside OnDismiss.
-            </BitMessage>
-        }
-        else
-        {
-            <BitButton OnClick="() => isAutoDismissed = false">Auto-Dismissed, click to reset</BitButton>
-        }
-    </DemoExample>
-
-    <DemoExample Title="Actions" RazorCode="@example9RazorCode" Id="example9">
-        <BitMessage>
-            <Actions>
-                <BitButton Variant="BitVariant.Text" Color="BitColor.Tertiary" IconName="@BitIconName.Up" />
-                &nbsp;
-                <BitButton Variant="BitVariant.Text" Color="BitColor.Tertiary" IconName="@BitIconName.Down" />
-            </Actions>
-            <Content>
-                Message with single line and action buttons.
-            </Content>
-        </BitMessage>
-    </DemoExample>
-
-    <DemoExample Title="HideIcon" RazorCode="@example10RazorCode" Id="example10">
-        <div class="box">
-            <div>HideIcon parameter removes the icon:</div>
-            <BitMessage Color="BitColor.Info" HideIcon>Info (default) Message.</BitMessage>
-            <BitMessage Color="BitColor.Success" HideIcon>Success Message.</BitMessage>
-            <BitMessage Color="BitColor.Warning" HideIcon>Warning Message.</BitMessage>
-            <BitMessage Color="BitColor.SevereWarning" HideIcon>SevereWarning Message.</BitMessage>
-            <BitMessage Color="BitColor.Error" HideIcon>Error Message.</BitMessage>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Icons" RazorCode="@example11RazorCode" Id="example11">
-        <BitMessage Color="BitColor.Success" IconName="@BitIconName.CheckMark">
-            Message with a custom icon.
-        </BitMessage>
-        <br />
-        <BitMessage Color="BitColor.Warning" OnDismiss="() => {}" DismissIconName="@BitIconName.Blocked2Solid">
-            Message with a custom dismiss icon.
-        </BitMessage>
-        <br /><br />
-        <div>
-            Message with custom expand and collapse icon.<br />
-        </div>
-        <br />
-        <BitMessage Truncate Color="BitColor.Warning"
-                    ExpandIconName="@BitIconName.ChevronDownEnd"
-                    CollapseIconName="@BitIconName.ChevronUpEnd">
-            In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits 
-            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
-            possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
-            vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
-            shaped into meaning, and the emotions ready to resonate with every reader.
+            <br /><br />
+            <div>Held to two lines by <b>MaxLines</b>:</div>
             <br />
-            In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
-            each word has the power to transform into something extraordinary. Here lies the start of something new-an 
-            opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
-            idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
-            begins here, in this quiet moment where everything is possible.
-        </BitMessage>
-    </DemoExample>
-
-    <DemoExample Title="Advanced" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
-        <div>
-            <b>Truncate</b> with <b>OnDismiss</b> and <b>Actions</b>.
-        </div>
-        <br />
-        @if (isWarningDismissed is false)
-        {
-            <BitMessage Truncate OnDismiss="() => isWarningDismissed = true" Color="BitColor.Warning">
-                <Content>
-                    In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits 
-                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
-                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
-                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
-                    shaped into meaning, and the emotions ready to resonate with every reader.
-                    <br />
-                    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
-                    each word has the power to transform into something extraordinary. Here lies the start of something new-an 
-                    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
-                    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
-                    begins here, in this quiet moment where everything is possible.
-                </Content>
-                <Actions>
-                    <div style="display:flex;align-items:center;gap:4px;min-height:32px">
-                        <button>Yes</button>
-                        <button>No</button>
-                    </div>
-                </Actions>
+            <BitMessage Multiline MaxLines="2" Title="Storage almost full">
+                Your workspace is using 19.4 GB of its 20 GB. New uploads will start to fail once the limit is
+                reached, and shared links to files already in the workspace will keep working. Remove the files you
+                no longer need, or move them to an archive, to free the space back up.
             </BitMessage>
-        }
-        else
-        {
-            <BitButton OnClick="() => isWarningDismissed = false">Dismissed, click to reset</BitButton>
+            <br /><br />
+            <div>The same cap with <b>Truncate</b>, which adds the button that unfolds it:</div>
             <br />
-        }
-        <br /><br />
-        <div>
-            <b>Multiline</b> with <b>OnDismiss</b> and <b>Actions</b>.
-        </div>
-        <br />
-        @if (isErrorDismissed is false)
-        {
-            <BitMessage Multiline OnDismiss="() => isErrorDismissed = true" Color="BitColor.Error">
-                <Content>
-                    In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits 
-                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
-                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
-                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
-                    shaped into meaning, and the emotions ready to resonate with every reader.
-                    <br />
-                    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
-                    each word has the power to transform into something extraordinary. Here lies the start of something new-an 
-                    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
-                    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
-                    begins here, in this quiet moment where everything is possible.
-                </Content>
-                <Actions>
-                    <BitButton Color="BitColor.PrimaryBackground">Yes</BitButton>
+            <BitMessage Multiline Truncate MaxLines="2" Title="Import failed">
+                Fourteen of the 320 rows could not be imported because their <b>Email</b> column was empty or held a
+                value the address parser did not recognize. Every other row was imported and is already visible in
+                the contacts list. Download the report to see which rows were left out, fix them in place, and run
+                the import again - the rows that went through the first time are skipped rather than duplicated.
+            </BitMessage>
+        </DemoExample>
+
+        <DemoExample Title="Truncate" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <b>Truncate</b> clips the content to a single line and adds a button that unfolds it, for a message
+                that has to fit in a tight space. On a <b>Multiline</b> message there is nothing folded away for it
+                to unfold, so it does nothing there on its own - pair it with <b>MaxLines</b> and it unfolds the
+                message past that cap instead. The expanded state is
+                two-way bindable through <b>Expanded</b>, so it can be driven from outside as well, and the
+                <b>ExpandAsync</b>, <b>CollapseAsync</b> and <b>ToggleExpandAsync</b> methods do the same on a
+                captured message without a binding to keep.
+            </div>
+            <br />
+            <BitMessage Truncate @bind-Expanded="isTruncateExpanded">
+                In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits
+                to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+                vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+                shaped into meaning, and the emotions ready to resonate with every reader.
+                <br />
+                In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+                each word has the power to transform into something extraordinary. Here lies the start of something new-an
+                opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+                idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+                begins here, in this quiet moment where everything is possible.
+            </BitMessage>
+            <br />
+            <BitToggle Label="Expanded" @bind-Value="isTruncateExpanded" />
+            <br /><br />
+            <BitMessage @ref="truncatedMessage" Truncate Color="BitColor.Info">
+                Driven by its methods rather than by a binding. In the beginning, there is silence-a blank canvas
+                yearning to be filled, a quiet space where creativity waits to awaken. These words are temporary,
+                standing in place of ideas yet to come, a glimpse into the infinite possibilities that lie ahead.
+            </BitMessage>
+            <br />
+            <BitButton OnClick="() => truncatedMessage!.ExpandAsync()">Expand</BitButton>
+            &nbsp;
+            <BitButton OnClick="() => truncatedMessage!.CollapseAsync()">Collapse</BitButton>
+            &nbsp;
+            <BitButton OnClick="() => truncatedMessage!.ToggleExpandAsync()">Toggle</BitButton>
+        </DemoExample>
+
+        <DemoExample Title="Dismiss" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                <b>Dismissible</b> renders the dismiss button and lets the message take itself off the page; bind
+                <b>Dismissed</b> to follow that from outside, or to put the message back. <b>OnDismiss</b> also
+                renders the button, but only reports the dismissal - leaving the removal to its handler.
+                <b>DismissOnEscape</b> adds the Escape key as a second way out - it works wherever dismissing would do
+                something, a <b>Dismissed</b> binding on its own included, and <b>OnDismissing</b> gets a say
+                before any of them: cancel it to keep the message where it is, and read its <b>Reason</b> to tell
+                the button, the key, the countdown and a <b>DismissAsync</b> call apart. <b>DismissAsync</b> is that
+                same dismissal on demand, for a message that is taken away by something other than its own button.
+            </div>
+
+            <br />
+
+            <BitMessage Dismissible @bind-Dismissed="isSelfDismissed">
+                Self-dismissing message: <strong>Dismissible</strong> needs no handler to disappear.
+            </BitMessage>
+
+            @if (isSelfDismissed)
+            {
+                <BitButton OnClick="() => isSelfDismissed = false">Dismissed, click to bring it back</BitButton>
+                <br />
+            }
+            
+            <br />
+
+            @if (isDismissed is false)
+            {
+                <BitMessage OnDismiss="() => isDismissed = true">
+                    Dismiss option enabled by adding <strong>OnDismiss</strong> parameter.
+                </BitMessage>
+            }
+            else
+            {
+                <BitButton OnClick="() => isDismissed = false">Dismissed, click to reset</BitButton>
+                <br />
+            }
+
+            <br/>
+
+            @if (isEscapeDismissed is false)
+            {
+                <BitMessage DismissOnEscape TabIndex="0" OnDismiss="() => isEscapeDismissed = true">
+                    Focus me (or the dismiss button) and press <strong>Escape</strong> to dismiss.
+                </BitMessage>
+            }
+            else
+            {
+                <BitButton OnClick="() => isEscapeDismissed = false">Dismissed by Escape, click to reset</BitButton>
+                <br />
+            }
+
+            <br />
+
+            <BitMessage Dismissible
+                        DismissOnEscape
+                        OnDismissing="HandleDismissing"
+                        @bind-Dismissed="isGuardedDismissed">
+                Guarded by <strong>OnDismissing</strong>: the first attempt is refused, the second one goes through.
+                Attempts so far: <strong>@dismissAttempts</strong>@(lastDismissReason is null ? "" : $" (last reason: {lastDismissReason})").
+            </BitMessage>
+
+            @if (isGuardedDismissed)
+            {
+                <BitButton OnClick="ResetGuardedMessage">Dismissed, click to reset</BitButton>
+                <br />
+            }
+
+            <br />
+
+            <BitMessage @ref="dismissableMessage" Dismissible @bind-Dismissed="isMethodDismissed">
+                Dismissed from the outside by <strong>DismissAsync</strong>, which goes through
+                <strong>OnDismissing</strong> and stops the countdown just as the button does.
+            </BitMessage>
+
+            <br />
+
+            @if (isMethodDismissed)
+            {
+                <BitButton OnClick="() => isMethodDismissed = false">Dismissed, click to bring it back</BitButton>
+            }
+            else
+            {
+                <BitButton OnClick="() => dismissableMessage!.DismissAsync()">Dismiss the message above</BitButton>
+            }
+        </DemoExample>
+
+        <DemoExample Title="Auto-dismiss" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                <b>AutoDismissTime</b> dismisses the message on its own once the given time has passed. The countdown
+                is a time limit, so it holds for as long as a pointer that can rest on the message - a mouse or a pen,
+                never a touch, which is over as soon as it began - is over it, or the focus is inside it, and the
+                message cannot vanish mid-read; <b>PauseAutoDismiss</b> and <b>ResumeAutoDismiss</b> hold it
+                over anything else, and the bar holds with them. <b>ShowAutoDismissProgress</b> draws the countdown as
+                a bar along the bottom edge, holding exactly where the countdown holds. The countdown runs wherever
+                dismissing would do something - an <b>OnDismiss</b> handler, <b>Dismissible</b>, or a <b>Dismissed</b>
+                binding on its own. Assigning a different time re-arms it, and so does bringing a dismissed message back
+                - and so does refusing one through <b>OnDismissing</b>, which gives the message its time over again
+                rather than leaving it standing there with an exhausted bar.
+            </div>
+
+            <br /><br />
+
+            @if (isAutoDismissed is false)
+            {
+                <BitMessage AutoDismissTime="TimeSpan.FromSeconds(5)" OnDismiss="() => isAutoDismissed = true">
+                    Auto-Dismiss option enabled by adding the <strong>AutoDismissTime</strong> parameter alongside OnDismiss.
+                    Hover me to hold the countdown.
+                </BitMessage>
+            }
+            else
+            {
+                <BitButton OnClick="() => isAutoDismissed = false">Auto-Dismissed, click to reset</BitButton>
+            }
+
+            <br /><br />
+
+            <BitMessage Dismissible
+                        ShowAutoDismissProgress
+                        AutoDismissTime="TimeSpan.FromSeconds(10)"
+                        @bind-Dismissed="isProgressDismissed">
+                Ten seconds, drawn along the bottom edge. Hover me and the bar stops with the countdown.
+            </BitMessage>
+
+            @if (isProgressDismissed)
+            {
+                <br />
+                <BitButton OnClick="() => isProgressDismissed = false">Auto-Dismissed, click to restart</BitButton>
+            }
+
+            <br /><br />
+
+            <BitMessage @ref="pausableMessage"
+                        ShowAutoDismissProgress
+                        AutoDismissTime="TimeSpan.FromSeconds(15)"
+                        @bind-Dismissed="isPausedDismissed">
+                Fifteen seconds, and no dismiss button: a message bound through <strong>Dismissed</strong> alone
+                counts down all the same. Hold it from outside with the buttons below.
+            </BitMessage>
+
+            <br />
+
+            @if (isPausedDismissed)
+            {
+                <BitButton OnClick="() => isPausedDismissed = false">Auto-Dismissed, click to restart</BitButton>
+            }
+            else
+            {
+                <div>
+                    <BitButton OnClick="() => pausableMessage!.PauseAutoDismiss()">Pause</BitButton>
                     &nbsp;
-                    <BitButton Color="BitColor.PrimaryBackground">No</BitButton>
-                </Actions>
-            </BitMessage>
-        }
-        else
-        {
-            <BitButton OnClick="() => isErrorDismissed = false">Dismissed, click to reset</BitButton>
-        }
-    </DemoExample>
+                    <BitButton OnClick="() => pausableMessage!.ResumeAutoDismiss()">Resume</BitButton>
+                </div>
+            }
+        </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example13RazorCode" Id="example13">
-        <div class="box">
-            <BitMessage Size="BitSize.Small" Color="BitColor.Primary">Small</BitMessage>
-            <BitMessage Size="BitSize.Medium" Color="BitColor.Secondary">Medium</BitMessage>
-            <BitMessage Size="BitSize.Large" Color="BitColor.Tertiary">Large</BitMessage>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="External Icons" RazorCode="@example14RazorCode" Id="example14">
-        <div>
-            Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>Icon</b> parameter.
-        </div>
-        
-        <br />
-
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
-
-        <BitMessage Color="BitColor.Info" Icon="@("fa-solid fa-circle-info")">
-            FontAwesome message (Icon="@("fa-solid fa-circle-info")")
-        </BitMessage>
-        
-        <br />
-
-        <BitMessage Color="BitColor.Success" Icon="@BitIconInfo.Css("fa-solid fa-circle-check")">
-            FontAwesome success (Icon="@BitIconInfo.Css("fa-solid fa-circle-check")")
-        </BitMessage>
-        
-        <br />
-        
-        <BitMessage Color="BitColor.Warning" OnDismiss="() => {}"
-                    DismissIcon="@BitIconInfo.Fa("solid xmark")">
-            FontAwesome dismiss icon (DismissIcon="@BitIconInfo.Fa("solid xmark")")
-        </BitMessage>
-        
-        <br /><br />
-        
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-        
-        <BitMessage Color="BitColor.Info" Icon="@BitIconInfo.Css("bi bi-info-circle-fill")">
-            Bootstrap message (Icon="@BitIconInfo.Css("bi bi-info-circle-fill")")
-        </BitMessage>
-        
-        <br />
-        
-        <BitMessage Color="BitColor.Success" Icon="@BitIconInfo.Bi("check-circle-fill")">
-            Bootstrap success (Icon="@BitIconInfo.Bi("check-circle-fill")")
-        </BitMessage>
-        
-        <br />
-        
-        <BitMessage Truncate Color="BitColor.Warning"
-                    ExpandIcon="@BitIconInfo.Bi("chevron-double-down")"
-                    CollapseIcon="@BitIconInfo.Bi("chevron-double-up")">
-            In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits 
-            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
-            possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
-            vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
-            shaped into meaning, and the emotions ready to resonate with every reader.
+        <DemoExample Title="Actions" RazorCode="@example10RazorCode" Id="example10">
+            <div>
+                The <b>Actions</b> template holds the controls that let the reader act on the message, and a warning
+                or an error should always offer one so it never becomes a dead end. On a single-line message they
+                share the line with the content; a <b>Multiline</b> one gives them a row of their own underneath it,
+                where a set too wide for the row wraps instead of being clipped. They sit outside the region the
+                message announces itself through, so an icon-only action needs an <b>AriaLabel</b> of its own.
+            </div>
             <br />
-            In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
-            each word has the power to transform into something extraordinary. Here lies the start of something new-an 
-            opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
-            idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
-            begins here, in this quiet moment where everything is possible.
-        </BitMessage>
-    </DemoExample>
+            <div class="box">
+                <BitMessage>
+                    <Content>
+                        A draft of this page was recovered from your last session.
+                    </Content>
+                    <Actions>
+                        <BitButton Size="BitSize.Small" Color="BitColor.PrimaryBackground">Restore</BitButton>
+                    </Actions>
+                </BitMessage>
 
-    <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" Id="example15">
-        <div>
-            <div>Component's Style & Class:</div>
-            <br />
-            <BitMessage Multiline 
-                        OnDismiss="() => {}"
-                        Color="BitColor.Info" 
-                        Style="padding:8px;color:red;">
-                <b>Styled Message.</b>
-                In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits 
-                to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
-                possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
-                vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
-                shaped into meaning, and the emotions ready to resonate with every reader.
                 <br />
-                In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
-                each word has the power to transform into something extraordinary. Here lies the start of something new-an 
-                opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
-                idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
-                begins here, in this quiet moment where everything is possible.
-            </BitMessage>
-            <br />
-            <BitMessage Truncate 
-                        Class="custom-class"
-                        Color="BitColor.Success">
-                <b>Classed Message.</b>
-                In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits 
-                to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
-                possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
-                vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
-                shaped into meaning, and the emotions ready to resonate with every reader.
+
+                <BitMessage Multiline Title="Connection lost" OnDismiss="() => {}">
+                    <Content>
+                        The last three changes could not be saved because the server could not be reached. They are
+                        kept on this device and will be sent as soon as the connection is back.
+                    </Content>
+                    <Actions>
+                        <BitButton Color="BitColor.PrimaryBackground">Retry now</BitButton>
+                        &nbsp;
+                        <BitButton Variant="BitVariant.Text" Color="BitColor.PrimaryBackground">Work offline</BitButton>
+                    </Actions>
+                </BitMessage>
+
                 <br />
-                In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
-                each word has the power to transform into something extraordinary. Here lies the start of something new-an 
-                opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
-                idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
-                begins here, in this quiet moment where everything is possible.
+
+                <BitMessage>
+                    <Content>
+                        Message with single line and icon-only action buttons.
+                    </Content>
+                    <Actions>
+                        <BitButton AriaLabel="Previous message" Variant="BitVariant.Text" Color="BitColor.Tertiary" IconName="@BitIconName.Up" />
+                        &nbsp;
+                        <BitButton AriaLabel="Next message" Variant="BitVariant.Text" Color="BitColor.Tertiary" IconName="@BitIconName.Down" />
+                    </Actions>
+                </BitMessage>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="HideIcon" RazorCode="@example11RazorCode" Id="example11">
+            <div>
+                <b>HideIcon</b> drops the severity glyph. Only do this where the surrounding text already
+                says what kind of message it is - the color on its own is not enough to carry that meaning.
+            </div>
+            <br />
+            <div class="box">
+                <BitMessage HideIcon>Icon hidden</BitMessage>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Icons" RazorCode="@example12RazorCode" Id="example12">
+            <div>
+                Each of the three glyphs of the message can be replaced from the built-in icon set: <b>IconName</b>
+                for the severity icon, <b>DismissIconName</b> for the dismiss button, and
+                <b>ExpandIconName</b> / <b>CollapseIconName</b> for the two states of the truncate expander.
+                <b>IconTemplate</b> goes further and puts arbitrary markup - a spinner, an avatar, an image - in the
+                place of the severity icon.
+            </div>
+            <br />
+            <BitMessage IconName="@BitIconName.CheckMark">
+                Message with a custom icon.
             </BitMessage>
             <br />
+            <BitMessage OnDismiss="() => {}" DismissIconName="@BitIconName.Blocked2Solid">
+                Message with a custom dismiss icon.
+            </BitMessage>
             <br />
-            <br />
-            <div><b>Styles</b> & <b>Classes</b>:</div>
-            <br />
-            <BitMessage Multiline
-                        OnDismiss="() => {}" 
-                        Color="BitColor.Warning" 
-                        Styles="@(new() { Root="padding:1rem",
-                                          IconContainer="line-height:1.25",
-                                          Content="color:blueviolet",
-                                          ContentContainer="margin:0 10px",
-                                          DismissIcon="font-size:1rem",
-                                          Actions="justify-content:center;gap:1rem" })">
+            <BitMessage>
+                <IconTemplate>
+                    <BitSpinnerLoading CustomSize="20" CustomColor="currentcolor" />
+                </IconTemplate>
                 <Content>
-                    <b>Styles.</b>
-                    In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits 
-                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
-                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
-                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
+                    Message with a spinner in place of its icon, through <strong>IconTemplate</strong>.
+                </Content>
+            </BitMessage>
+            <br /><br />
+            <div>
+                Message with custom expand and collapse icon.<br />
+            </div>
+            <br />
+            <BitMessage Truncate ExpandIconName="@BitIconName.ChevronDownEnd" CollapseIconName="@BitIconName.ChevronUpEnd">
+                In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits
+                to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+                vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+                shaped into meaning, and the emotions ready to resonate with every reader.
+                <br />
+                In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+                each word has the power to transform into something extraordinary. Here lies the start of something new-an
+                opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+                idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+                begins here, in this quiet moment where everything is possible.
+            </BitMessage>
+        </DemoExample>
+
+        <DemoExample Title="Square" RazorCode="@example13RazorCode" Id="example13">
+            <div>
+                <b>Square</b> removes the rounded corners so the message can run edge to edge as a page-wide banner,
+                flush against the sides of whatever contains it.
+            </div>
+            <br />
+            <div class="banner-host">
+                <BitMessage Square OnDismiss="() => {}">
+                    Scheduled maintenance starts at 02:00 UTC. Save your work before then.
+                </BitMessage>
+                <div class="banner-body">The content of the page sits below the banner.</div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Advanced" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+            <div>
+                The parts of the message combine freely: a truncated message keeps its expander next to the
+                dismiss button, and a multiline one moves the actions to their own row underneath the content.
+            </div>
+            <br />
+            <div>
+                <b>Truncate</b> with <b>OnDismiss</b> and <b>Actions</b>.
+            </div>
+            <br />
+            @if (isWarningDismissed is false)
+            {
+                <BitMessage Truncate OnDismiss="() => isWarningDismissed = true">
+                    <Content>
+                        In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits
+                        to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                        possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+                        vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+                        shaped into meaning, and the emotions ready to resonate with every reader.
+                        <br />
+                        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+                        each word has the power to transform into something extraordinary. Here lies the start of something new-an
+                        opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+                        idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+                        begins here, in this quiet moment where everything is possible.
+                    </Content>
+                    <Actions>
+                        <BitButton Size="BitSize.Small" Color="BitColor.PrimaryBackground">Retry</BitButton>
+                        &nbsp;
+                        <BitButton Size="BitSize.Small" Color="BitColor.PrimaryBackground">Details</BitButton>
+                    </Actions>
+                </BitMessage>
+            }
+            else
+            {
+                <BitButton OnClick="() => isWarningDismissed = false">Dismissed, click to reset</BitButton>
+                <br />
+            }
+            <br /><br />
+            <div>
+                <b>Multiline</b> with <b>Title</b>, <b>OnDismiss</b> and <b>Actions</b>.
+            </div>
+            <br />
+            @if (isErrorDismissed is false)
+            {
+                <BitMessage Multiline Title="Something went wrong" OnDismiss="() => isErrorDismissed = true">
+                    <Content>
+                        In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits
+                        to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                        possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+                        vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+                        shaped into meaning, and the emotions ready to resonate with every reader.
+                        <br />
+                        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+                        each word has the power to transform into something extraordinary. Here lies the start of something new-an
+                        opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+                        idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+                        begins here, in this quiet moment where everything is possible.
+                    </Content>
+                    <Actions>
+                        <BitButton Color="BitColor.PrimaryBackground">Yes</BitButton>
+                        &nbsp;
+                        <BitButton Color="BitColor.PrimaryBackground">No</BitButton>
+                    </Actions>
+                </BitMessage>
+            }
+            else
+            {
+                <BitButton OnClick="() => isErrorDismissed = false">Dismissed, click to reset</BitButton>
+            }
+        </DemoExample>
+
+        <DemoExample Title="Announcement" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+            <div>
+                A message announces itself: its text sits in a live region whose urgency comes from <b>Color</b> -
+                <b>Warning</b>, <b>SevereWarning</b> and <b>Error</b> interrupt the screen reader as an
+                <b>alert</b>, everything else waits its turn as a <b>status</b>. <b>Role</b> overrides that where
+                the color was chosen for looks rather than for severity, and <b>Role="none"</b> silences the region
+                altogether for a message that is part of the page rather than news about it. <b>Politeness</b> splits
+                the two apart where they have to be: it writes the urgency on its own, leaving the role where it was,
+                for the alert that should not cut in and the status that has to be heard at once. The icon is
+                decorative and hidden from screen readers, so <b>IconAriaLabel</b> is what says which kind of message
+                this is where the text does not - it leads the announcement, invisibly. A message that has a name - a
+                <b>Title</b>, or an <b>AriaLabel</b> of its own - is also a named group, so a screen reader can step
+                over it as one unit instead of walking through it line by line. A live region only announces what
+                changes inside it, so a region that arrives with its text already in place is a change of nothing and
+                several screen readers stay silent: <b>DelayedAnnouncement</b> puts the region on the page one render
+                ahead of the text, which is what makes the announcement reliable for a message that appears in answer
+                to something the reader just did. The dismiss and expander buttons borrow the title of the
+                message as their description, so a page full of them is not a page full of buttons all called
+                "Dismiss".
+            </div>
+            <br />
+            <div class="box">
+                <BitMessage Color="BitColor.Error" IconAriaLabel="Error">
+                    The payment could not be authorized. Announced as "Error: The payment could not be authorized."
+                </BitMessage>
+
+                <BitMessage Color="BitColor.Error" Role="status">
+                    An error-colored message that reports no error, announced politely as a status.
+                </BitMessage>
+
+                <BitMessage Color="BitColor.Error" Role="none">
+                    Part of the page rather than news about it: not announced at all.
+                </BitMessage>
+
+                <BitMessage Color="BitColor.Error" Politeness="BitPoliteness.Polite">
+                    An error worth reporting but not worth interrupting for: still an <b>alert</b>, announced politely.
+                </BitMessage>
+
+                <BitMessage Color="BitColor.Success" Politeness="BitPoliteness.Assertive">
+                    A success the reader has to hear about at once: still a <b>status</b>, announced assertively.
+                </BitMessage>
+            </div>
+            <br />
+            <div class="box">
+                <BitButton OnClick="() => isDelayedDismissed = false">Show a delayed-announcement message</BitButton>
+
+                <BitMessage DelayedAnnouncement Dismissible @bind-Dismissed="isDelayedDismissed">
+                    Announced reliably: the live region reached the page one render before this text landed in it.
+                </BitMessage>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Focus" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+            <div>
+                <b>AutoFocus</b> moves the focus to the message as soon as it is rendered, which takes a keyboard or
+                screen reader user straight to it; the message is made focusable on its own for that, so no
+                <b>TabIndex</b> is needed. Keep it for the messages that have to be acted upon - the rest are already
+                announced by the live region, and moving the focus away from what the reader was doing is an
+                interruption. The same move is available at any time through the <b>FocusAsync</b> method of a
+                captured message. A message the focus can reach - through <b>AutoFocus</b> or a <b>TabIndex</b> -
+                also points at its own text as its description, so landing on it says what it says: a live region
+                is announced when it changes, not when it is reached.
+            </div>
+            <br />
+            <div class="box">
+                <BitButton OnClick="() => isAutoFocusDismissed = false">Show an auto-focused message</BitButton>
+
+                <BitMessage AutoFocus
+                            Dismissible
+                            Color="BitColor.SevereWarning"
+                            @bind-Dismissed="isAutoFocusDismissed">
+                    This message took the focus when it appeared. Press <strong>Tab</strong> to reach its dismiss button.
+                </BitMessage>
+
+                <br />
+
+                <BitMessage @ref="focusableMessage" TabIndex="0" Color="BitColor.Info">
+                    A message with a <strong>TabIndex</strong> can be focused on demand.
+                </BitMessage>
+
+                <BitButton OnClick="() => focusableMessage!.FocusAsync()">Focus the message above</BitButton>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+            <div>
+                A disabled message keeps saying what it says - it is a notice, not a control, so its text stays at
+                full contrast and is still announced. What <b>IsEnabled</b> turns off is everything that would change
+                it: the dismiss and expander buttons are dimmed and stop responding, the <b>Escape</b> key stops
+                dismissing, and no <b>AutoDismissTime</b> countdown is started, so a disabled message cannot slip
+                away while it is out of reach. Enabling it again arms the countdown from the beginning. The public
+                methods are left alone - a message turned off in the interface can still be dismissed or unfolded by
+                the code that owns it.
+            </div>
+            <br />
+            <div class="box">
+                <BitMessage IsEnabled="isMessageEnabled"
+                            Truncate
+                            Dismissible
+                            DismissOnEscape
+                            ShowAutoDismissProgress
+                            Color="BitColor.Warning"
+                            Title="Licence expiring"
+                            AutoDismissTime="TimeSpan.FromSeconds(10)"
+                            @bind-Dismissed="isDisabledSampleDismissed">
+                    Your licence runs out in 14 days. Renew it before then to keep the shared workspaces open to
+                    everyone who is using them today.
+                </BitMessage>
+
+                <BitToggle Label="IsEnabled" @bind-Value="isMessageEnabled" />
+
+                @if (isDisabledSampleDismissed)
+                {
+                    <BitButton OnClick="() => isDisabledSampleDismissed = false">Dismissed, click to bring it back</BitButton>
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Color" RazorCode="@example18RazorCode" Id="example18">
+            <div>
+                <b>Color</b> sets the palette, the default icon and the urgency of the announcement in one go.
+                The eight semantic colors are the ones to reach for; the background, foreground and border
+                colors are there for a message that has to match a surface rather than report a severity.
+            </div>
+            <br />
+            <div class="box">
+                <BitMessage Color="BitColor.Primary">Primary.</BitMessage>
+                <BitMessage Color="BitColor.Secondary">Secondary.</BitMessage>
+                <BitMessage Color="BitColor.Tertiary">Tertiary.</BitMessage>
+                <BitMessage Color="BitColor.Info">Info (default).</BitMessage>
+                <BitMessage Color="BitColor.Success">Success.</BitMessage>
+                <BitMessage Color="BitColor.Warning">Warning.</BitMessage>
+                <BitMessage Color="BitColor.SevereWarning">SevereWarning.</BitMessage>
+                <BitMessage Color="BitColor.Error">Error.</BitMessage>
+            </div>
+            <div style="background:var(--bit-clr-fg-sec);padding:1rem;margin: 1rem 0;">
+                <div class="box">
+                    <BitMessage Color="BitColor.PrimaryBackground">PrimaryBackground.</BitMessage>
+                    <BitMessage Color="BitColor.SecondaryBackground">SecondaryBackground.</BitMessage>
+                    <BitMessage Color="BitColor.TertiaryBackground">TertiaryBackground.</BitMessage>
+                </div>
+            </div>
+            <div class="box">
+                <BitMessage Color="BitColor.PrimaryForeground">PrimaryForeground.</BitMessage>
+                <BitMessage Color="BitColor.SecondaryForeground">SecondaryForeground.</BitMessage>
+                <BitMessage Color="BitColor.TertiaryForeground">TertiaryForeground.</BitMessage>
+                <BitMessage Color="BitColor.PrimaryBorder">PrimaryBorder.</BitMessage>
+                <BitMessage Color="BitColor.SecondaryBorder">SecondaryBorder.</BitMessage>
+                <BitMessage Color="BitColor.TertiaryBorder">TertiaryBorder.</BitMessage>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="External Icons" RazorCode="@example19RazorCode" Id="example19">
+            <div>
+                Every icon of the message also takes a <b>BitIconInfo</b>, which renders whatever CSS classes an
+                external library needs - <b>Icon</b>, <b>DismissIcon</b>, <b>ExpandIcon</b> and <b>CollapseIcon</b>.
+                Use the <b>Fa</b>, <b>Bi</b> and <b>Css</b> helpers, or pass the classes as a plain string.
+            </div>
+
+            <br />
+
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+            <BitMessage Color="BitColor.Info" Icon="@("fa-solid fa-circle-info")">
+                FontAwesome message (Icon="@("fa-solid fa-circle-info")")
+            </BitMessage>
+
+            <br />
+
+            <BitMessage Color="BitColor.Success" Icon="@BitIconInfo.Css("fa-solid fa-circle-check")">
+                FontAwesome success (Icon="@BitIconInfo.Css("fa-solid fa-circle-check")")
+            </BitMessage>
+
+            <br />
+
+            <BitMessage Color="BitColor.Warning" OnDismiss="() => {}"
+                        DismissIcon="@BitIconInfo.Fa("solid xmark")">
+                FontAwesome dismiss icon (DismissIcon="@BitIconInfo.Fa("solid xmark")")
+            </BitMessage>
+
+            <br /><br />
+
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+            <BitMessage Color="BitColor.Info" Icon="@BitIconInfo.Css("bi bi-info-circle-fill")">
+                Bootstrap message (Icon="@BitIconInfo.Css("bi bi-info-circle-fill")")
+            </BitMessage>
+
+            <br />
+
+            <BitMessage Color="BitColor.Success" Icon="@BitIconInfo.Bi("check-circle-fill")">
+                Bootstrap success (Icon="@BitIconInfo.Bi("check-circle-fill")")
+            </BitMessage>
+
+            <br />
+
+            <BitMessage Truncate Color="BitColor.Warning"
+                        ExpandIcon="@BitIconInfo.Bi("chevron-double-down")"
+                        CollapseIcon="@BitIconInfo.Bi("chevron-double-up")">
+                In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits
+                to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+                vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+                shaped into meaning, and the emotions ready to resonate with every reader.
+                <br />
+                In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+                each word has the power to transform into something extraordinary. Here lies the start of something new-an
+                opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+                idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+                begins here, in this quiet moment where everything is possible.
+            </BitMessage>
+        </DemoExample>
+
+        <DemoExample Title="Size" RazorCode="@example20RazorCode" Id="example20">
+            <div>
+                <b>Size</b> scales the type, the icon, the inset, the two round buttons and the countdown track of the
+                message together, so a small message is not left carrying medium-sized buttons.
+            </div>
+            <br />
+            <div class="box">
+                <BitMessage Size="BitSize.Small" Color="BitColor.Primary">Small</BitMessage>
+                <BitMessage Size="BitSize.Medium" Color="BitColor.Secondary">Medium</BitMessage>
+                <BitMessage Size="BitSize.Large" Color="BitColor.Tertiary">Large</BitMessage>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example21RazorCode" Id="example21">
+            <div>
+                <b>Style</b> and <b>Class</b> land on the root element, while <b>Styles</b> and <b>Classes</b> reach
+                each part of the message on its own - the root, the containers, the icon, the title, the content, the
+                actions, the two buttons, and the track and bar of the auto-dismiss countdown.
+            </div>
+            <br />
+            <div>
+                <div>Component's Style & Class:</div>
+                <br />
+                <BitMessage Multiline
+                            OnDismiss="() => {}"
+                            Color="BitColor.Info"
+                            Style="padding:8px;color:red;">
+                    <b>Styled Message.</b>
+                    In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits
+                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
                     shaped into meaning, and the emotions ready to resonate with every reader.
                     <br />
-                    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
-                    each word has the power to transform into something extraordinary. Here lies the start of something new-an 
-                    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
-                    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
+                    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+                    each word has the power to transform into something extraordinary. Here lies the start of something new-an
+                    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+                    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
                     begins here, in this quiet moment where everything is possible.
-                </Content>
-                <Actions>
-                    <BitButton Variant="BitVariant.Text">Ok</BitButton>
-                    <BitButton Variant="BitVariant.Text">Cancel</BitButton>
-                </Actions>
-            </BitMessage>
+                </BitMessage>
+                <br />
+                <BitMessage Truncate
+                            Class="custom-class"
+                            Color="BitColor.Success">
+                    <b>Classed Message.</b>
+                    In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits
+                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+                    shaped into meaning, and the emotions ready to resonate with every reader.
+                    <br />
+                    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+                    each word has the power to transform into something extraordinary. Here lies the start of something new-an
+                    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+                    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+                    begins here, in this quiet moment where everything is possible.
+                </BitMessage>
+                <br />
+                <br />
+                <br />
+                <div><b>Styles</b> & <b>Classes</b>:</div>
+                <br />
+                <BitMessage Multiline
+                            Title="Styled title"
+                            OnDismiss="() => {}"
+                            Color="BitColor.Warning"
+                            Styles="@(new() { Root="padding:1rem",
+                                              IconContainer="line-height:1.25",
+                                              Title="color:darkred",
+                                              Content="color:blueviolet",
+                                              ContentContainer="margin:0 10px",
+                                              DismissIcon="font-size:1rem",
+                                              Actions="justify-content:center;gap:1rem" })">
+                    <Content>
+                        <b>Styles.</b>
+                        In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits
+                        to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                        possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+                        vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+                        shaped into meaning, and the emotions ready to resonate with every reader.
+                        <br />
+                        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+                        each word has the power to transform into something extraordinary. Here lies the start of something new-an
+                        opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+                        idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+                        begins here, in this quiet moment where everything is possible.
+                    </Content>
+                    <Actions>
+                        <BitButton Variant="BitVariant.Text">Ok</BitButton>
+                        <BitButton Variant="BitVariant.Text">Cancel</BitButton>
+                    </Actions>
+                </BitMessage>
+                <br />
+                <BitMessage Truncate
+                            OnDismiss="() => {}"
+                            Color="BitColor.SevereWarning"
+                            Classes="@(new() { Icon="custom-icon",
+                                               Content="custom-content",
+                                               ExpanderIcon="custom-expander-icon",
+                                               DismissIcon="custom-dismiss-icon" })">
+                    <b>Classes.</b>
+                    In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits
+                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+                    shaped into meaning, and the emotions ready to resonate with every reader.
+                    <br />
+                    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+                    each word has the power to transform into something extraordinary. Here lies the start of something new-an
+                    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+                    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+                    begins here, in this quiet moment where everything is possible.
+                </BitMessage>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example22RazorCode" Id="example22">
+            <div>
+                Set <b>Dir</b> to <b>BitDir.Rtl</b> to mirror the message: the icon moves to the right and the
+                expander and dismiss buttons to the left.
+            </div>
             <br />
-            <BitMessage Truncate
-                        OnDismiss="() => {}" 
-                        Color="BitColor.SevereWarning" 
-                        Classes="@(new() { Icon="custom-icon",
-                                           Content="custom-content",
-                                           ExpanderIcon="custom-expander-icon",
-                                           DismissIcon="custom-dismiss-icon" })">
-                <b>Classes.</b>
-                In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits 
-                to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
-                possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
-                vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
-                shaped into meaning, and the emotions ready to resonate with every reader.
-                <br />
-                In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
-                each word has the power to transform into something extraordinary. Here lies the start of something new-an 
-                opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
-                idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
-                begins here, in this quiet moment where everything is possible.
-            </BitMessage>
-        </div>
-    </DemoExample>
+            <div class="box">
+                <BitMessage Dir="BitDir.Rtl" Color="BitColor.Info">
+                    پیام خبری (پیش فرض). <BitLink Href="https://bitplatform.dev">به وبسایت ما سر بزنید.</BitLink>
+                </BitMessage>
 
-    <DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
-        <div class="box">
-            <BitMessage Dir="BitDir.Rtl" Color="BitColor.Info">
-                پیام خبری (پیش فرض). <BitLink Href="https://bitplatform.dev">به وبسایت ما سر بزنید.</BitLink>
-            </BitMessage>
+                <BitMessage Dir="BitDir.Rtl" Color="BitColor.Success" Truncate OnDismiss="() => {}">
+                    پیام موفق. <BitLink Href="https://bitplatform.dev">به وبسایت ما سر بزنید.</BitLink>
+                    لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
+                    چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است
+                    و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+                    کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها
+                    شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
+                </BitMessage>
 
-            <BitMessage Dir="BitDir.Rtl" Color="BitColor.Success" Truncate OnDismiss="() => {}">
-                پیام موفق. <BitLink Href="https://bitplatform.dev">به وبسایت ما سر بزنید.</BitLink>
-                لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
-                چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است
-                و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
-                کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها
-                شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
-            </BitMessage>
+                <BitMessage Dir="BitDir.Rtl" Color="BitColor.Warning" Multiline OnDismiss="() => {}" Title="پیام هشدار">
+                    <BitLink Href="https://bitplatform.dev">به وبسایت ما سر بزنید.</BitLink>
+                    <br />
+                    لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
+                    چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است
+                    و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+                    کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها
+                    شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
+                </BitMessage>
 
-            <BitMessage Dir="BitDir.Rtl" Color="BitColor.Warning" Multiline OnDismiss="() => {}">
-                پیام هشدار. <BitLink Href="https://bitplatform.dev">به وبسایت ما سر بزنید.</BitLink>
-                <br />
-                لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
-                چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است
-                و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
-                کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها
-                شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
-            </BitMessage>
+                <BitMessage Dir="BitDir.Rtl" Color="BitColor.SevereWarning">
+                    پیام هشدار شدید. <BitLink Href="https://bitplatform.dev">به وبسایت ما سر بزنید.</BitLink>
+                </BitMessage>
 
-            <BitMessage Dir="BitDir.Rtl" Color="BitColor.SevereWarning">
-                پیام هشدار شدید. <BitLink Href="https://bitplatform.dev">به وبسایت ما سر بزنید.</BitLink>
-            </BitMessage>
-
-            <BitMessage Dir="BitDir.Rtl" Color="BitColor.Error">
-                پیام خطا. <BitLink Href="https://bitplatform.dev">به وبسایت ما سر بزنید.</BitLink>
-            </BitMessage>
-        </div>
-    </DemoExample>
+                <BitMessage Dir="BitDir.Rtl" Color="BitColor.Error">
+                    پیام خطا. <BitLink Href="https://bitplatform.dev">به وبسایت ما سر بزنید.</BitLink>
+                </BitMessage>
+            </div>
+        </DemoExample>
+    </Examples>
 </DemoPage>

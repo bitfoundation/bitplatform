@@ -28,6 +28,11 @@ public class BitMessageClassStyles
     public string? Icon { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the visually hidden icon label of the BitMessage.
+    /// </summary>
+    public string? IconLabel { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the content container of the BitMessage.
     /// </summary>
     public string? ContentContainer { get; set; }
@@ -36,6 +41,11 @@ public class BitMessageClassStyles
     /// Custom CSS classes/styles for the content wrapper element of the BitMessage.
     /// </summary>
     public string? ContentWrapper { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the title element of the BitMessage.
+    /// </summary>
+    public string? Title { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the content element of the BitMessage.
@@ -58,12 +68,22 @@ public class BitMessageClassStyles
     public string? ExpanderIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the truncate dismiss button of the BitMessage.
+    /// Custom CSS classes/styles for the dismiss button of the BitMessage.
     /// </summary>
     public string? DismissButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the truncate dismiss icon of the BitMessage.
+    /// Custom CSS classes/styles for the dismiss icon of the BitMessage.
     /// </summary>
     public string? DismissIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the auto-dismiss progress track of the BitMessage.
+    /// </summary>
+    public string? AutoDismissProgress { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the auto-dismiss progress bar of the BitMessage.
+    /// </summary>
+    public string? AutoDismissProgressBar { get; set; }
 }
