@@ -507,6 +507,37 @@ private readonly BitColor[] _coinColors = [BitColor.Primary, BitColor.Info, BitC
 </div>";
 
     private readonly string example18RazorCode = @"
+<BitPersona Href=""/components/persona""
+            PrimaryText=""Xafan Salina""
+            SecondaryText=""Opens this page""
+            Presence=""BitPersonaPresence.Online""
+            Size=""BitPersonaSize.Size72""
+            ImageUrl=""/images/persona/persona-female.png"" />
+
+<BitPersona Href=""https://github.com/bitfoundation/bitplatform""
+            Target=""_blank""
+            PrimaryText=""bit platform""
+            SecondaryText=""Opens in a new tab""
+            CoinIconName=""@BitIconName.Globe""
+            Size=""BitPersonaSize.Size72"" />
+
+<BitPersona Href=""/components/persona""
+            ImageOverlayText=""View profile""
+            OnImageClick=""() => imageClickCount++""
+            PrimaryText=""Xafan Salina""
+            SecondaryText=""Software Engineer""
+            Size=""BitPersonaSize.Size72""
+            ImageUrl=""/images/persona/persona-female.png"" />
+<p>Image Click Count: @imageClickCount</p>
+
+<BitPersona Href=""/components/persona""
+            IsEnabled=""false""
+            PrimaryText=""Xafan Salina""
+            SecondaryText=""Disabled""
+            Size=""BitPersonaSize.Size72""
+            ImageUrl=""/images/persona/persona-female.png"" />";
+
+    private readonly string example19RazorCode = @"
 <BitPersona PrimaryText=""Primary"" CoinColor=""BitColor.Primary"" />
 <BitPersona PrimaryText=""Secondary"" CoinColor=""BitColor.Secondary"" />
 <BitPersona PrimaryText=""Tertiary"" CoinColor=""BitColor.Tertiary"" />
@@ -527,7 +558,7 @@ private readonly BitColor[] _coinColors = [BitColor.Primary, BitColor.Info, BitC
 <BitPersona PrimaryText=""SecondaryBorder"" CoinColor=""BitColor.SecondaryBorder"" />
 <BitPersona PrimaryText=""TertiaryBorder"" CoinColor=""BitColor.TertiaryBorder"" />";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitPersona PrimaryText=""Xafan Salina""
@@ -583,7 +614,7 @@ private readonly BitColor[] _coinColors = [BitColor.Primary, BitColor.Info, BitC
             PresenceIcons=""_icons""
             Size=""BitPersonaSize.Size100""
             ImageUrl=""/images/persona/persona-female.png"" />";
-    private readonly string example19CsharpCode = @"
+    private readonly string example20CsharpCode = @"
 private readonly Dictionary<BitPersonaPresence, BitIconInfo> _icons = new()
 {
     { BitPersonaPresence.Offline, BitIconInfo.Bi(""wifi-off"") },
@@ -594,7 +625,7 @@ private readonly Dictionary<BitPersonaPresence, BitIconInfo> _icons = new()
     { BitPersonaPresence.Busy, BitIconInfo.Bi(""exclamation-circle-fill"") },
 };";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <BitCheckbox @bind-Value=""isDetailsShown"" Label=""Include BitPersona details"" />
 
 <BitPersona PrimaryText=""Xafan Salina""
@@ -686,10 +717,10 @@ private readonly Dictionary<BitPersonaPresence, BitIconInfo> _icons = new()
             ShowSecondaryText
             HidePersonaDetails=""!isDetailsShown""
             ImageUrl=""/images/persona/persona-female.png"" />";
-    private readonly string example20CsharpCode = @"
+    private readonly string example21CsharpCode = @"
 private bool isDetailsShown = true;";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example22RazorCode = @"
 <style>
     .custom-class {
         padding: 1rem;
@@ -730,7 +761,7 @@ private bool isDetailsShown = true;";
             Classes=""@(new() { ImageContainer = ""custom-img-container"",
                                PrimaryTextContainer = ""custom-primary-text"" })"" />";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example23RazorCode = @"
 <div dir=""rtl"">
     <BitPersona Dir=""BitDir.Rtl""
                 PrimaryText=""صالح یوسف نژاد""

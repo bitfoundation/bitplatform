@@ -153,6 +153,13 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Name = "Href",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The url the coin navigates to, which renders it as a link (an anchor element) instead of a plain box.",
+        },
+        new()
+        {
             Name = "ImageAlt",
             Type = "string?",
             DefaultValue = "null",
@@ -410,6 +417,13 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Name = "Rel",
+            Type = "BitLinkRels?",
+            DefaultValue = "null",
+            Description = "Sets the rel attribute of the coin when Href renders it as a link. When it is not set and Target is _blank, rel=\"noopener\" is added automatically.",
+        },
+        new()
+        {
             Name = "Reversed",
             Type = "bool",
             DefaultValue = "false",
@@ -439,6 +453,13 @@ public partial class BitPersonaDemo
             Description = "Custom CSS styles for different parts of the BitPersona component.",
             Href = "#persona-class-styles",
             LinkType = LinkType.Link
+        },
+        new()
+        {
+            Name = "Target",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Sets the target attribute of the coin when Href renders it as a link.",
         },
         new()
         {

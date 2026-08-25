@@ -2,11 +2,11 @@
 
 <PageOutlet Url="components/persona"
             Title="Persona"
-            Description="The Persona is a visual representation of a person: their picture or initials, the name and details beside it, and the presence dot that says whether they are around." />
+            Description="The Persona is a visual representation of a person: their picture or initials, the name and details beside it, the presence dot that says whether they are around, and a coin that can be a button or a link." />
 
 <DemoPage Name="Persona"
           SecondaryNames="@(["Avatar"])"
-          Description="The Persona shows who someone is. Its coin holds their picture, or the initials derived from their name, or an icon when there is neither, in nine sizes from a bare presence dot up to 120px and in any custom size beside them. Up to four lines of detail sit next to the coin, each of them a text or a template of your own, and the size decides how many of them there is room for. A presence dot marks availability across eight statuses, carrying a glyph and a name of your choosing; the coin can be a circle, a rounded square or a sharp one, filled, outlined or bare, colored from the palette or from a stable hash of the person's identity, ringed while they are the one a view is about and pushed back while they are not, and turned into a button that reveals an overlay for changing the picture."
+          Description="The Persona shows who someone is. Its coin holds their picture, or the initials derived from their name, or an icon when there is neither, in nine sizes from a bare presence dot up to 120px and in any custom size beside them. Up to four lines of detail sit next to the coin, each of them a text or a template of your own, and the size decides how many of them there is room for. A presence dot marks availability across eight statuses, carrying a glyph and a name of your choosing; the coin can be a circle, a rounded square or a sharp one, filled, outlined or bare, colored from the palette or from a stable hash of the person's identity, ringed while they are the one a view is about and pushed back while they are not, and turned into a button that reveals an overlay for changing the picture or into a link that opens their profile."
           Parameters="componentParameters"
           SubEnums="componentSubEnums"
           SubClasses="componentSubClasses"
@@ -43,9 +43,11 @@
             are not reachable, each in its own way. The dot names itself to screen readers after its
             status, and <strong>PresenceTitles</strong> replaces those names - and the tooltip - with your
             own wording, one entry per status; <strong>PresenceTitle</strong> does the same for a single
-            persona. <strong>PresenceIconNames</strong> puts a glyph inside the dot, which the sizes below
-            40px have no room for, and <strong>PresenceIconName</strong> does the same for a persona that
-            only ever shows the one status.
+            persona. <strong>PresenceIconNames</strong> puts a glyph inside the dot, and
+            <strong>PresenceIconName</strong> does the same for a persona that only ever shows the one
+            status. The dot is a quarter of the coin, so a coin under 40px across - by its
+            <strong>Size</strong> or by a custom <strong>CoinSize</strong> - has no room left for a glyph and
+            shows none.
         </div>
         <br />
         <BitPersona PrimaryText="Xafan Salina"
@@ -362,7 +364,9 @@
             and answering Enter and Space without the page scrolling underneath it. The overlay belongs to
             the click rather than to the picture, so a coin carrying initials, an icon or the unknown glyph
             reveals it just the same. The action button sits at the foot of the coin and the presence dot in
-            its trailing corner, so a persona can carry both.
+            its trailing corner, so a persona can carry both. <strong>TabIndex</strong> reaches whichever
+            control the coin has become, and <strong>Href</strong> makes it a link rather than a button -
+            see <a href="#example18">Link</a>.
         </div>
         <br />
         <div>Action button (hover, or tab to it, at the bottom of the coin):</div>
@@ -666,7 +670,59 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="Link" RazorCode="@example18RazorCode" Id="example18">
+        <div>
+            <strong>Href</strong> turns the coin into a real link, which is what an avatar that opens a
+            profile is: it is announced as a link, answers Enter, and can be opened in a new tab, copied or
+            previewed the way every other link on the page can - none of which a coin that only runs a
+            handler can offer. <strong>Target</strong> picks the browsing context it opens in, and setting it
+            to <b>_blank</b> adds <b>rel="noopener"</b> of its own accord unless a <strong>Rel</strong> of
+            your own says otherwise. A coin that only navigates takes no <em>Edit image</em> veil - it is not
+            offering to change the picture - so it is named after the person instead; pass
+            <strong>ImageOverlayText</strong> to put one back. <strong>OnImageClick</strong> still fires
+            alongside the navigation where both are given, and a disabled persona drops the href rather than
+            pretending to be a link that goes nowhere.
+        </div>
+        <br />
+        <BitPersona Href="/components/persona"
+                    PrimaryText="Xafan Salina"
+                    SecondaryText="Opens this page"
+                    Presence="BitPersonaPresence.Online"
+                    Size="BitPersonaSize.Size72"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>In a new tab, with <b>rel="noopener"</b> added for you:</div>
+        <br />
+        <BitPersona Href="https://github.com/bitfoundation/bitplatform"
+                    Target="_blank"
+                    PrimaryText="bit platform"
+                    SecondaryText="Opens in a new tab"
+                    CoinIconName="@BitIconName.Globe"
+                    Size="BitPersonaSize.Size72" />
+        <br /><br /><br /><br />
+        <div>With a veil of its own (<b>ImageOverlayText</b>) and a click handler beside the navigation:</div>
+        <br />
+        <BitPersona Href="/components/persona"
+                    ImageOverlayText="View profile"
+                    OnImageClick="() => imageClickCount++"
+                    PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    Size="BitPersonaSize.Size72"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br />
+        <p>Image Click Count: @imageClickCount</p>
+        <br /><br /><br /><br />
+        <div>A disabled link coin keeps its place but goes nowhere:</div>
+        <br />
+        <BitPersona Href="/components/persona"
+                    IsEnabled="false"
+                    PrimaryText="Xafan Salina"
+                    SecondaryText="Disabled"
+                    Size="BitPersonaSize.Size72"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example19RazorCode" Id="example19">
         <div>
             <strong>CoinColor</strong> paints the coin from the general palette. It is what the initials,
             the coin icon and the overlay are drawn against, so the pairing of background and foreground
@@ -713,7 +769,7 @@
         <BitPersona PrimaryText="TertiaryBorder" CoinColor="BitColor.TertiaryBorder" />
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+    <DemoExample Title="External Icons" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
         <div>
             Every icon of the persona - the action button, the presence glyphs, the coin icon and the
             unknown coin - accepts a <strong>BitIconInfo</strong> beside its name, which is what lets an
@@ -789,7 +845,7 @@
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+    <DemoExample Title="Size" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
         <div>
             <strong>Size</strong> runs from <strong>Size8</strong>, which is a presence dot and a name and
             no coin at all, up to <strong>Size120</strong>. The size also decides how many of the four
@@ -797,9 +853,10 @@
             <strong>ShowSecondaryText</strong> puts the second line back on the sizes that leave no room for
             it, which is what a compact list of people with a role under each name wants.
             <strong>CoinSize</strong> overrides the coin with a pixel size of your own, and scales the
-            initials and the presence dot along with it. <strong>HidePersonaDetails</strong> drops the
-            texts and leaves the coin alone, which then names itself after the primary text for anyone who
-            cannot see it.
+            initials, the presence dot and the glyph inside it along with it. <strong>HidePersonaDetails</strong>
+            drops the texts and leaves the coin alone, which then names itself after the primary text for
+            anyone who cannot see it - and a persona given no texts at all drops the column of its own
+            accord, so the coin is not left trailing the gap that would have sat between them.
         </div>
         <br />
         <BitCheckbox @bind-Value="isDetailsShown" Label="Include BitPersona details" />
@@ -907,7 +964,7 @@
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
     </DemoExample>
 
-    <DemoExample Title="Style &amp; Class" RazorCode="@example21RazorCode" Id="example21">
+    <DemoExample Title="Style &amp; Class" RazorCode="@example22RazorCode" Id="example22">
         <div>
             <strong>Style</strong> and <strong>Class</strong> reach the root element, while
             <strong>Styles</strong> and <strong>Classes</strong> reach every part of the persona by name -
@@ -938,7 +995,7 @@
                                        PrimaryTextContainer = "custom-primary-text" })" />
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example22RazorCode" Id="example22">
+    <DemoExample Title="RTL" RazorCode="@example23RazorCode" Id="example23">
         <div>
             Set <strong>Dir</strong> to <strong>Rtl</strong> to lay the persona out right to left. The coin
             moves to the right of the texts and the presence dot moves with it. A pair of Latin initials is

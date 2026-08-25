@@ -79,12 +79,18 @@
     // The coin is a fixed size, not a share of the row: without this a long name in a narrow container
     // squashes it into an ellipse instead of ellipsizing the text it belongs to.
     flex-shrink: 0;
+    // What carries the coin between the foreground and the background of a view - the speaker changing in a
+    // call grid. It is declared here rather than on the class that pushes the coin back, because a rule that
+    // only exists while the coin is pushed back is a rule that has already been taken away by the time it
+    // comes forward again: the way out would animate and the way back would jump.
+    transition: opacity $mot-duration-short $mot-easing, transform $mot-duration-short $mot-easing;
 }
 
 // The coin as an element, whatever fills it and whatever element it is. A coin with something to do is a
-// real button, which arrives carrying the browser's own idea of what a button looks like - so the button is
-// stripped back to a box here, before the rules below dress it as a coin. It sits above them for that
-// reason: everything the coin is comes after, and wins.
+// real button or a real link, either of which arrives carrying the browser's own idea of what it looks like -
+// the button's chrome, the link's color and underline - so both are stripped back to a box here, before the
+// rules below dress them as a coin. It sits above them for that reason: everything the coin is comes after,
+// and wins.
 .bit-prs-cne {
     margin: 0;
     padding: 0;
@@ -98,6 +104,7 @@
     font-family: inherit;
     font-weight: inherit;
     letter-spacing: inherit;
+    text-decoration: none;
     background-color: transparent;
 }
 
@@ -159,7 +166,6 @@
     .bit-prs-cin {
         opacity: var(--bit-prs-inactive-opacity);
         transform: scale(var(--bit-prs-inactive-scale));
-        transition: opacity $mot-duration-short $mot-easing, transform $mot-duration-short $mot-easing;
     }
 }
 
@@ -185,6 +191,11 @@
     // Faded rather than switched on: display cannot be animated, and visibility keeps the overlay out of
     // the accessibility tree and out of the way of the pointer while it is away.
     transition: opacity $mot-duration-short $mot-easing, visibility $mot-duration-short $mot-easing;
+    // The overlay says what activating the coin does; it is not a thing to activate of its own. Left
+    // hit-testable it would swallow the clicks meant for what lies under it - the coin itself, and the
+    // action button at the foot of the coin, which the overlay covers exactly and which nobody could reach
+    // with a pointer once the hover that reveals the overlay had already happened.
+    pointer-events: none;
     color: var(--bit-prs-coin-clr-txt);
     background-color: var(--bit-prs-coin-clr-bg);
     // The coin the component draws clips the overlay for it, but a coin filled by a template is not clipped

@@ -6,7 +6,8 @@
     var presenceIcon = hasPresence ? GetPresenceIcon() : null;
     var presenceTitle = hasPresence ? GetPresenceTitle() : null;
     var presenceLabel = hasPresence ? GetPresenceLabel() : null;
-    var isCoinClickable = OnImageClick.HasDelegate;
+    var isCoinLink = Href.HasValue();
+    var isCoinClickable = HasClickableCoin;
     var hasCoinOverlay = HasImageOverlay;
 
     @* What fills the coin when there is no picture in it: the initials, or - when a name gives none, or an
@@ -132,16 +133,36 @@
             }
             else
             {
-                @* A coin with something to do is a button and nothing else: the browser gives it the role,
-                   the focus, the Enter and Space keys and the disabled state that emulating one by hand can
-                   only approximate - Space in particular scrolls the page before a hand-rolled coin ever
-                   sees it. A coin with nothing to do stays the plain box it is. *@
-                @if (isCoinClickable)
+                @* A coin with something to do is a real control and nothing else: the browser gives it the
+                   role, the focus, the keys and the disabled state that emulating one by hand can only
+                   approximate - Space in particular scrolls the page before a hand-rolled coin ever sees it.
+                   Which control it is follows what activating it does: a coin that goes somewhere is an
+                   anchor, so it is announced as a link and can be opened in a new tab, copied or previewed
+                   the way every other link on the page can; a coin that runs a handler is a button. A coin
+                   with nothing to do stays the plain box it is. *@
+                @if (isCoinLink)
+                {
+                    @* An anchor cannot be disabled, so a disabled one is stripped of the href that made it a
+                       link and taken out of the tab order by hand. *@
+                    <a style="@GetImageContainerStyle()"
+                       class="@GetImageContainerClass()"
+                       href="@(IsEnabled ? Href : null)"
+                       rel="@_rel"
+                       target="@Target"
+                       tabindex="@(IsEnabled ? TabIndex : "-1")"
+                       aria-label="@GetCoinButtonLabel()"
+                       aria-disabled="@(IsEnabled ? null : "true")"
+                       @onclick="HandleImageClick">
+                        @coinContent
+                    </a>
+                }
+                else if (isCoinClickable)
                 {
                     <button type="button"
                             style="@GetImageContainerStyle()"
                             class="@GetImageContainerClass()"
                             disabled="@(IsEnabled is false)"
+                            tabindex="@TabIndex"
                             aria-label="@GetCoinButtonLabel()"
                             @onclick="HandleImageClick">
                         @coinContent
@@ -205,10 +226,12 @@
         </div>
     }
 
-    @if (HidePersonaDetails is false || Size is BitPersonaSize.Size8)
+    @* A row that has nothing in it is left out rather than rendered empty: the details column spreads its
+       rows apart, and an empty one would take a share of that space and push the rest off center. The column
+       itself goes the same way when every one of its rows has gone - an empty one still claims the gap the
+       row keeps between the coin and the texts, and leaves the coin trailing a strip of blank space. *@
+    @if (RendersDetails)
     {
-        @* A row that has nothing in it is left out rather than rendered empty: the details column spreads its
-           rows apart, and an empty one would take a share of that space and push the rest off center. *@
         <div style="@Styles?.DetailsContainer" class="bit-prs-det @Classes?.DetailsContainer">
             @if (PrimaryTextTemplate is not null || PrimaryText.HasValue())
             {

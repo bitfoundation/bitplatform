@@ -1471,6 +1471,26 @@ public class BitPersonaTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPersonaShowInitialsUntilImageLoadsShouldKeepTheInitialsBehindAFadingPicture()
+    {
+        // Taking them away the moment the load lands, with the fade only just begun, leaves a flash of an
+        // empty coin in the place of the very thing they were rendered to spare the reader.
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Xafan Salina");
+            parameters.Add(p => p.ImageUrl, "some-image.png");
+            parameters.Add(p => p.ShowInitialsUntilImageLoads, true);
+            parameters.Add(p => p.ImageFadeIn, true);
+        });
+
+        Assert.IsNotEmpty(component.FindAll(".bit-prs-ini"));
+
+        component.Find(".bit-prs-img").TriggerEvent("onload", new ProgressEventArgs());
+
+        Assert.IsNotEmpty(component.FindAll(".bit-prs-ini"));
+    }
+
+    [TestMethod]
     public void BitPersonaShowInitialsUntilImageLoadsShouldBeIgnoredForACoinTemplate()
     {
         // A coin template paints itself and reports no load, so the initials behind it would never go away.
@@ -2476,6 +2496,429 @@ public class BitPersonaTests : BunitTestContext
         Assert.IsNull(component.Find(".bit-prs-stx").GetAttribute("title"));
         Assert.IsNull(component.Find(".bit-prs-ttx").GetAttribute("title"));
         Assert.IsNull(component.Find(".bit-prs-otx").GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitPersonaShouldNotRenderAnEmptyDetailsColumn()
+    {
+        // The persona lays its coin and its details out as a row with a gap between them, so a column with
+        // nothing in it would still claim that gap and leave the coin trailing a strip of blank space.
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.ImageUrl, "some-image.png");
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-prs-det"));
+        Assert.IsNotEmpty(component.FindAll(".bit-prs-cin"));
+    }
+
+    [TestMethod]
+    public void BitPersonaShouldRenderTheDetailsColumnForAnyOneRow()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.OptionalText, "Available at 4:00pm");
+        });
+
+        Assert.IsNotEmpty(component.FindAll(".bit-prs-det"));
+    }
+
+    [TestMethod]
+    public void BitPersonaShouldRenderTheDetailsColumnForATemplateAlone()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.TertiaryTextTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span>status</span>")));
+        });
+
+        Assert.IsNotEmpty(component.FindAll(".bit-prs-det"));
+    }
+
+    [TestMethod]
+    public void BitPersonaSize8ShouldNotRenderAnEmptyDetailsColumnEither()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Size, BitPersonaSize.Size8);
+            parameters.Add(p => p.Presence, BitPersonaPresence.Online);
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-prs-det"));
+        Assert.IsNotEmpty(component.FindAll(".bit-prs-pre"));
+    }
+
+    [TestMethod]
+    public void BitPersonaHrefShouldRenderTheCoinAsALink()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Href, "/profile/1024");
+            parameters.Add(p => p.PrimaryText, "Xafan Salina");
+        });
+
+        var coin = component.Find(".bit-prs-cne");
+
+        // An anchor is what gives the coin the link role, the Enter key, and the open-in-a-new-tab, copy and
+        // preview a hand-rolled control can only approximate.
+        Assert.AreEqual("A", coin.TagName);
+        Assert.AreEqual("/profile/1024", coin.GetAttribute("href"));
+        Assert.IsTrue(component.Find(".bit-prs").ClassList.Contains("bit-prs-iac"));
+    }
+
+    [TestMethod]
+    public void BitPersonaCoinShouldStayAButtonWithoutAnHref()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        Assert.AreEqual("BUTTON", component.Find(".bit-prs-cne").TagName);
+    }
+
+    [TestMethod]
+    public void BitPersonaLinkCoinShouldCarryItsTargetAndAutomaticRel()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Target, "_blank");
+        });
+
+        var coin = component.Find(".bit-prs-cne");
+
+        Assert.AreEqual("_blank", coin.GetAttribute("target"));
+        // protects against reverse-tabnabbing when opening the link in a new browsing context
+        Assert.AreEqual("noopener", coin.GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitPersonaLinkCoinRelShouldTakePrecedenceOverTheAutomaticOne()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Target, "_blank");
+            parameters.Add(p => p.Rel, BitLinkRels.NoFollow | BitLinkRels.NoReferrer);
+        });
+
+        Assert.AreEqual("nofollow noreferrer", component.Find(".bit-prs-cne").GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitPersonaLinkCoinShouldTakeNoRelForAHashOnlyHref()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Href, "#top");
+            parameters.Add(p => p.Target, "_blank");
+        });
+
+        Assert.IsNull(component.Find(".bit-prs-cne").GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitPersonaDisabledLinkCoinShouldGoNowhereAndLeaveTheTabOrder()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Href, "/profile/1024");
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        var coin = component.Find(".bit-prs-cne");
+
+        // An anchor cannot be disabled, so it is stripped of the href that made it a link instead of being
+        // left as one that pretends to go somewhere.
+        Assert.IsNull(coin.GetAttribute("href"));
+        Assert.AreEqual("-1", coin.GetAttribute("tabindex"));
+        Assert.AreEqual("true", coin.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitPersonaDisabledLinkCoinShouldNotInvokeOnImageClick()
+    {
+        var clicks = 0;
+
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Href, "/profile/1024");
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => clicks++));
+        });
+
+        component.Find(".bit-prs-cne").Click();
+
+        Assert.AreEqual(0, clicks);
+    }
+
+    [TestMethod]
+    public void BitPersonaLinkCoinShouldStillInvokeOnImageClick()
+    {
+        var clicks = 0;
+
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Href, "/profile/1024");
+            parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => clicks++));
+        });
+
+        component.Find(".bit-prs-cne").Click();
+
+        Assert.AreEqual(1, clicks);
+    }
+
+    [TestMethod]
+    public void BitPersonaLinkCoinShouldNotBeVeiledByTheDefaultOverlayText()
+    {
+        // A coin that navigates somewhere is not offering to change the picture, so the default "Edit image"
+        // is not put over it - and the coin is named after the person instead.
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Href, "/profile/1024");
+            parameters.Add(p => p.PrimaryText, "Xafan Salina");
+            parameters.Add(p => p.ImageUrl, "some-image.png");
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-prs-imo"));
+        Assert.AreEqual("Xafan Salina", component.Find(".bit-prs-cne").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitPersonaLinkCoinShouldTakeAnOverlayTextOfItsOwn()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Href, "/profile/1024");
+            parameters.Add(p => p.PrimaryText, "Xafan Salina");
+            parameters.Add(p => p.ImageOverlayText, "View profile");
+        });
+
+        Assert.AreEqual("View profile", component.Find(".bit-prs-imo").TextContent.Trim());
+        Assert.AreEqual("View profile", component.Find(".bit-prs-cne").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitPersonaLinkCoinShouldTakeAnOverlayTemplateOfItsOwn()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Href, "/profile/1024");
+            parameters.Add(p => p.ImageOverlayTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span>open</span>")));
+        });
+
+        Assert.AreEqual("open", component.Find(".bit-prs-imo").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitPersonaClickableCoinShouldStillBeVeiledByTheDefaultOverlayText()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+            parameters.Add(p => p.PrimaryText, "Xafan Salina");
+        });
+
+        Assert.AreEqual("Edit image", component.Find(".bit-prs-imo").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitPersonaLinkCoinShouldNotClaimTheImageRoleForTheRootOrTheCoin()
+    {
+        // role="img" would make everything inside the persona presentational, and the link in there would
+        // stop being reachable.
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Href, "/profile/1024");
+            parameters.Add(p => p.HidePersonaDetails, true);
+            parameters.Add(p => p.PrimaryText, "Xafan Salina");
+        });
+
+        Assert.IsNull(component.Find(".bit-prs").GetAttribute("role"));
+        Assert.AreEqual("A", component.Find(".bit-prs-cne").TagName);
+    }
+
+    [TestMethod]
+    public void BitPersonaTabIndexShouldReachAButtonCoin()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+            parameters.Add(p => p.TabIndex, "3");
+        });
+
+        Assert.AreEqual("3", component.Find(".bit-prs-cne").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitPersonaTabIndexShouldReachALinkCoin()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Href, "/profile/1024");
+            parameters.Add(p => p.TabIndex, "3");
+        });
+
+        Assert.AreEqual("3", component.Find(".bit-prs-cne").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitPersonaLabelledPersonaShouldClaimAGroupRoleWhileItsDetailsAreVisible()
+    {
+        // A bare div is a generic element, and a label on one of those is ignored by the very readers it was
+        // written for - so the root takes the role that lets a label stand for the set of things inside it.
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Xafan Salina");
+            parameters.Add(p => p.SecondaryText, "Software Engineer");
+            parameters.Add(p => p.AriaLabel, "Xafan Salina, software engineer, online");
+        });
+
+        var persona = component.Find(".bit-prs");
+
+        Assert.AreEqual("group", persona.GetAttribute("role"));
+        Assert.AreEqual("Xafan Salina, software engineer, online", persona.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitPersonaShouldStillClaimTheImageRoleWhenTheCoinIsAllThereIs()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.HidePersonaDetails, true);
+            parameters.Add(p => p.PrimaryText, "Xafan Salina");
+            parameters.Add(p => p.AriaLabel, "The author of this message");
+        });
+
+        Assert.AreEqual("img", component.Find(".bit-prs").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitPersonaShouldClaimNoRoleWithoutALabelOfAnyKind()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Xafan Salina");
+        });
+
+        Assert.IsNull(component.Find(".bit-prs").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitPersonaPresenceGlyphShouldFollowACustomCoinSizeUpwards()
+    {
+        // The dot is a quarter of the coin, so a size class that has no room for a glyph gains one as soon as
+        // a custom coin size gives the dot something to draw in.
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Size, BitPersonaSize.Size24);
+            parameters.Add(p => p.CoinSize, 96);
+            parameters.Add(p => p.Presence, BitPersonaPresence.Online);
+            parameters.Add(p => p.PresenceIconName, "SkypeCircleCheck");
+        });
+
+        Assert.IsNotEmpty(component.FindAll(".bit-prs-pre > i"));
+    }
+
+    [TestMethod]
+    public void BitPersonaPresenceGlyphShouldFollowACustomCoinSizeDownwards()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Size, BitPersonaSize.Size120);
+            parameters.Add(p => p.CoinSize, 24);
+            parameters.Add(p => p.Presence, BitPersonaPresence.Online);
+            parameters.Add(p => p.PresenceIconName, "SkypeCircleCheck");
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-prs-pre > i"));
+    }
+
+    [TestMethod]
+    public void BitPersonaCoinSizeShouldScaleThePresenceGlyphToo()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.CoinSize, 64);
+            parameters.Add(p => p.Presence, BitPersonaPresence.Online);
+        });
+
+        // Sized off the dot rather than off the type ramp, the same proportion the size classes keep between
+        // the two: a 16px dot in a 64px coin, and a glyph well inside it.
+        Assert.IsTrue(component.Find(".bit-prs-pre").GetAttribute("style")!.Contains("font-size:9.6px"));
+    }
+
+    [TestMethod]
+    public void BitPersonaCoinSizeShouldNotScaleTheSize8PresenceDot()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Size, BitPersonaSize.Size8);
+            parameters.Add(p => p.CoinSize, 64);
+            parameters.Add(p => p.Presence, BitPersonaPresence.Online);
+            parameters.Add(p => p.PrimaryText, "Xafan Salina");
+        });
+
+        // The smallest size has no coin for a custom size to override - the dot stands in for one, in the
+        // flow of the row, and keeps the size the stylesheet gives it.
+        Assert.IsNull(component.Find(".bit-prs-pre").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitPersonaSize8ShouldHaveNoCoinForAnHrefToTurnIntoALink()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Size, BitPersonaSize.Size8);
+            parameters.Add(p => p.Href, "/profile/1024");
+            parameters.Add(p => p.PrimaryText, "Xafan Salina");
+            parameters.Add(p => p.Presence, BitPersonaPresence.Online);
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-prs-cne"));
+    }
+
+    [TestMethod]
+    public void BitPersonaLinkCoinShouldStillCarryAnActionButton()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Href, "/profile/1024");
+            parameters.Add(p => p.OnActionClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        Assert.AreEqual("A", component.Find(".bit-prs-cne").TagName);
+        Assert.IsNotEmpty(component.FindAll(".bit-prs-abt"));
+    }
+
+    [TestMethod]
+    public void BitPersonaCoinClassListShouldCarryNoEmptyEntries()
+    {
+        // A coin filled by a template drops the class that dresses the box the component draws, and the hole
+        // it leaves must not be written out as a stray gap in the class attribute.
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.CoinTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class='custom-coin'>coin</span>")));
+        });
+
+        var klass = component.Find(".bit-prs-cne").GetAttribute("class");
+
+        Assert.AreEqual("bit-prs-cne bit-prs-fil", klass);
+    }
+
+    [TestMethod]
+    public void BitPersonaImageDimensionsShouldFollowACustomCoinSize()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.CoinSize, 150);
+            parameters.Add(p => p.ImageUrl, "some-image.png");
+        });
+
+        var image = component.Find(".bit-prs-img");
+
+        Assert.AreEqual("150", image.GetAttribute("width"));
+        Assert.AreEqual("150", image.GetAttribute("height"));
     }
 
 

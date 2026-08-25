@@ -11,6 +11,7 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitPersona : BitComponentBase
 {
+    private string? _rel;
     private bool _isLoaded;
     private bool _hasError;
 
@@ -166,6 +167,19 @@ public partial class BitPersona : BitComponentBase
     /// its details would leave nothing to render, and they are kept.
     /// </remarks>
     [Parameter] public bool HidePersonaDetails { get; set; }
+
+    /// <summary>
+    /// The url the coin navigates to, which renders it as a link instead of a plain box.
+    /// </summary>
+    /// <remarks>
+    /// This is what an avatar that opens a profile is: a real anchor element, so it is announced as a link,
+    /// answers Enter, and can be opened in a new tab, copied or previewed the way every other link on the
+    /// page can. <see cref="OnImageClick"/> still fires alongside it where both are given, and a disabled
+    /// persona drops the href rather than pretending to be a link that goes nowhere.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    [CallOnSet(nameof(OnSetHrefAndRel))]
+    public string? Href { get; set; }
 
     /// <summary>
     /// Alt text for the image to use. default is empty string.
@@ -404,6 +418,18 @@ public partial class BitPersona : BitComponentBase
     [Parameter] public RenderFragment? PrimaryTextTemplate { get; set; }
 
     /// <summary>
+    /// The relationship the <see cref="Href"/> link bears to the current document (maps to the anchor's rel attribute).
+    /// </summary>
+    /// <remarks>
+    /// When it is not set and <see cref="Target"/> is <c>_blank</c>, <c>rel="noopener"</c> is added of its own
+    /// accord, which is what keeps the page the coin opens from reaching back into the one it was opened from.
+    /// It is ignored for an empty or hash-only <see cref="Href"/>.
+    /// </remarks>
+    [Parameter]
+    [CallOnSet(nameof(OnSetHrefAndRel))]
+    public BitLinkRels? Rel { get; set; }
+
+    /// <summary>
     /// Reverses the texts and image location.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -435,6 +461,8 @@ public partial class BitPersona : BitComponentBase
     /// <remarks>
     /// The initials sit behind the picture rather than beside it, so they are covered the moment it arrives -
     /// and an image element with nothing in it yet paints nothing, which is what lets them show through.
+    /// A picture that is being faded in with <see cref="ImageFadeIn"/> keeps them for the length of the fade,
+    /// since a fade that begins over an empty coin is the flash this was meant to spare the reader.
     /// </remarks>
     [Parameter] public bool ShowInitialsUntilImageLoads { get; set; }
 
@@ -478,6 +506,17 @@ public partial class BitPersona : BitComponentBase
     /// Custom CSS styles for different parts of the BitPersona component.
     /// </summary>
     [Parameter] public BitPersonaClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// The browsing context the <see cref="Href"/> link opens in (maps to the anchor's target attribute).
+    /// </summary>
+    /// <remarks>
+    /// Setting it to <c>_blank</c> also adds <c>rel="noopener"</c> unless a <see cref="Rel"/> of its own says
+    /// otherwise.
+    /// </remarks>
+    [Parameter]
+    [CallOnSet(nameof(OnSetHrefAndRel))]
+    public string? Target { get; set; }
 
     /// <summary>
     /// Tertiary text to display, usually the status of the user.
@@ -541,7 +580,7 @@ public partial class BitPersona : BitComponentBase
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => OnImageClick.HasDelegate ? "bit-prs-iac" : string.Empty);
+        ClassBuilder.Register(() => HasClickableCoin ? "bit-prs-iac" : string.Empty);
 
         ClassBuilder.Register(() => HasImage ? "bit-prs-him" : string.Empty);
 
@@ -599,6 +638,7 @@ public partial class BitPersona : BitComponentBase
 
     private string? GetPresentationStyle()
     {
+        if (Size is BitPersonaSize.Size8) return Styles?.Presence;
         if (CoinSize is null or <= 0) return Styles?.Presence;
 
         string? inset = null;
@@ -610,17 +650,27 @@ public partial class BitPersona : BitComponentBase
             // the dot to whichever corner the writing direction and Reversed between them put it in.
             inset = FormattableString.Invariant($"--bit-prs-presence-inset:-{presentationSize / 3D}px;");
         }
-        return FormattableString.Invariant($"width:{presentationSize}px;height:{presentationSize}px;{inset}{Styles?.Presence?.Trim(';')}");
+
+        // The glyph is sized off the dot rather than off the type ramp, the same proportion the size classes
+        // keep between the two, so a custom coin size does not leave it at whatever the size class had set.
+        var glyphSize = presentationSize * 0.6;
+
+        return FormattableString.Invariant($"width:{presentationSize}px;height:{presentationSize}px;font-size:{glyphSize:0.##}px;{inset}{Styles?.Presence?.Trim(';')}");
     }
 
     /// <summary>
-    /// The glyph inside the presence dot, which the two smallest coins have no room for.
+    /// The glyph inside the presence dot, which the smallest coins have no room for.
     /// </summary>
+    /// <remarks>
+    /// The dot is a quarter of the coin and the glyph has to stay well inside the dot, so under a 40px coin
+    /// there is nothing left to draw in. It is measured off the coin actually rendered rather than off the
+    /// size class, which is what lets a coin given a custom <see cref="CoinSize"/> earn a glyph - or lose one.
+    /// </remarks>
     private BitIconInfo? GetPresenceIcon()
     {
         if (Presence is BitPersonaPresence.None) return null;
 
-        if (Size is BitPersonaSize.Size8 or BitPersonaSize.Size24 or BitPersonaSize.Size32) return null;
+        if (GetCoinDiameter() < 40) return null;
 
         if (PresenceIcons?.TryGetValue(Presence, out var icon) is true && icon is not null) return icon;
 
@@ -915,29 +965,37 @@ public partial class BitPersona : BitComponentBase
     }
 
     /// <summary>
-    /// The value of the width and height attributes of the coin image, which HTML takes as bare pixel counts.
+    /// The diameter of the coin in pixels, which is the size class unless a custom
+    /// <see cref="CoinSize"/> has taken it over.
     /// </summary>
-    private string GetPersonaImageDimension()
+    /// <remarks>
+    /// The smallest size has no coin for a custom size to override, so it keeps the diameter of the presence
+    /// dot that stands in for one.
+    /// </remarks>
+    private int GetCoinDiameter()
     {
-        if (CoinSize is > 0)
-        {
-            return CoinSize.Value.ToString(CultureInfo.InvariantCulture);
-        }
+        if (Size is BitPersonaSize.Size8) return 8;
+
+        if (CoinSize is > 0) return CoinSize.Value;
 
         return Size switch
         {
-            BitPersonaSize.Size8 => "8",
-            BitPersonaSize.Size24 => "24",
-            BitPersonaSize.Size32 => "32",
-            BitPersonaSize.Size40 => "40",
-            BitPersonaSize.Size48 => "48",
-            BitPersonaSize.Size56 => "56",
-            BitPersonaSize.Size72 => "72",
-            BitPersonaSize.Size100 => "100",
-            BitPersonaSize.Size120 => "120",
-            _ => "48"
+            BitPersonaSize.Size24 => 24,
+            BitPersonaSize.Size32 => 32,
+            BitPersonaSize.Size40 => 40,
+            BitPersonaSize.Size48 => 48,
+            BitPersonaSize.Size56 => 56,
+            BitPersonaSize.Size72 => 72,
+            BitPersonaSize.Size100 => 100,
+            BitPersonaSize.Size120 => 120,
+            _ => 48
         };
     }
+
+    /// <summary>
+    /// The value of the width and height attributes of the coin image, which HTML takes as bare pixel counts.
+    /// </summary>
+    private string GetPersonaImageDimension() => GetCoinDiameter().ToString(CultureInfo.InvariantCulture);
 
     private string? GetImageContainerClass()
     {
@@ -945,8 +1003,9 @@ public partial class BitPersona : BitComponentBase
         // draws itself. Everything about the element as a control - the pointer, the focus ring, the overlay
         // it reveals - is hung off the first, so a coin filled by a template is as reachable as any other;
         // everything about how the coin looks stays on the second, which a template has taken over.
-        var klass = $"bit-prs-cne {(CoinTemplate is null ? "bit-prs-imc" : null)} {GetCoinClass()} {Classes?.ImageContainer}".Trim();
-        return klass.HasValue() ? klass : null;
+        string?[] classes = ["bit-prs-cne", CoinTemplate is null ? "bit-prs-imc" : null, GetCoinClass(), Classes?.ImageContainer];
+
+        return string.Join(' ', classes.Where(c => c.HasValue()));
     }
 
     private string? GetImageContainerStyle()
@@ -966,9 +1025,15 @@ public partial class BitPersona : BitComponentBase
     }
 
     /// <summary>
+    /// Whether the coin itself is something to activate - a button when there is a handler for it, a link
+    /// when there is somewhere for it to go.
+    /// </summary>
+    private bool HasClickableCoin => OnImageClick.HasDelegate || Href.HasValue();
+
+    /// <summary>
     /// Whether the coin is something to operate rather than only something to look at.
     /// </summary>
-    private bool HasInteractiveCoin => OnImageClick.HasDelegate || OnActionClick.HasDelegate;
+    private bool HasInteractiveCoin => HasClickableCoin || OnActionClick.HasDelegate;
 
     /// <summary>
     /// Whether there is a picture to put in the coin.
@@ -994,7 +1059,24 @@ public partial class BitPersona : BitComponentBase
     /// template of its own has nothing to reveal, and a bare tinted veil over the picture says less than
     /// leaving it alone - such a coin is a plain button, not one that offers to change the picture.
     /// </summary>
-    private bool HasImageOverlay => OnImageClick.HasDelegate && (ImageOverlayTemplate is not null || ImageOverlayText.HasValue());
+    /// <remarks>
+    /// A coin that is only a link is one of those: it navigates somewhere rather than offering to change the
+    /// picture, so the default text - which says it does - is not put over it. A text or a template named by
+    /// the caller still is.
+    /// </remarks>
+    private bool HasImageOverlay
+    {
+        get
+        {
+            if (HasClickableCoin is false) return false;
+
+            if (ImageOverlayTemplate is not null) return true;
+
+            if (ImageOverlayText.HasNoValue()) return false;
+
+            return OnImageClick.HasDelegate || HasNotBeenSet(nameof(ImageOverlayText)) is false;
+        }
+    }
 
     /// <summary>
     /// Whether the coin has to carry a name of its own, which is the case where the details are hidden and
@@ -1002,7 +1084,7 @@ public partial class BitPersona : BitComponentBase
     /// </summary>
     private bool IsCoinNamed => HidePersonaDetails
                              && Size is not BitPersonaSize.Size8
-                             && OnImageClick.HasDelegate is false
+                             && HasClickableCoin is false
                              && OnActionClick.HasDelegate
                              && (AriaLabel.HasValue() || PrimaryText.HasValue());
 
@@ -1011,27 +1093,51 @@ public partial class BitPersona : BitComponentBase
     private string? GetCoinLabel() => IsCoinNamed ? (AriaLabel.HasValue() ? AriaLabel : PrimaryText) : null;
 
     /// <summary>
-    /// The accessible name of a coin that is also a button. It says what activating it does, and - where the
-    /// details are hidden and nothing else says so - who it belongs to.
+    /// The accessible name of a coin that is also a button or a link. It says what activating it does, and -
+    /// where the details are hidden and nothing else says so - who it belongs to.
     /// </summary>
     private string? GetCoinButtonLabel()
     {
-        if (OnImageClick.HasDelegate is false) return null;
+        if (HasClickableCoin is false) return null;
 
         // A label given by hand names the persona better than the name being displayed does, and is the only
         // thing left to call the coin after where there is no name being displayed at all.
         var name = AriaLabel.HasValue() ? AriaLabel : PrimaryText;
 
-        // A template of one's own in the overlay is free to leave the text empty, and so is a coin that only
-        // opens a profile rather than offering to change the picture - and a button with nothing to announce
-        // is a button nobody can tell apart from the next one, so the name of the person is what is left to
-        // call it after.
-        if (ImageOverlayText.HasNoValue()) return name;
+        // What activating the coin does is only worth saying where the veil says it. A coin given no overlay
+        // text, or one that navigates somewhere rather than offering to change the picture, has nothing of
+        // its own to announce - and a control nobody can tell apart from the next one is worse than one named
+        // after the person it belongs to.
+        var action = HasImageOverlay ? ImageOverlayText : null;
 
-        if (HidePersonaDetails is false || name.HasNoValue()) return ImageOverlayText;
+        if (action.HasNoValue()) return name;
 
-        return $"{name}, {ImageOverlayText}";
+        if (HidePersonaDetails is false || name.HasNoValue()) return action;
+
+        return $"{name}, {action}";
     }
+
+    /// <summary>
+    /// Whether any of the four rows has something to put in it.
+    /// </summary>
+    /// <remarks>
+    /// A details column with nothing in it is not rendered at all rather than rendered empty: the persona
+    /// lays its coin and its details out as a row with a gap between them, and an empty column would still
+    /// claim that gap and leave the coin trailing a strip of blank space it never asked for.
+    /// </remarks>
+    private bool HasDetails => PrimaryTextTemplate is not null || PrimaryText.HasValue()
+                            || SecondaryTextTemplate is not null || SecondaryText.HasValue()
+                            || TertiaryTextTemplate is not null || TertiaryText.HasValue()
+                            || OptionalTextTemplate is not null || OptionalText.HasValue();
+
+    /// <summary>
+    /// Whether the details column is rendered beside the coin.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="BitPersonaSize.Size8"/> is the exception to <see cref="HidePersonaDetails"/>: it has no coin
+    /// at all, so hiding its details would leave nothing to render, and they are kept.
+    /// </remarks>
+    private bool RendersDetails => (HidePersonaDetails is false || Size is BitPersonaSize.Size8) && HasDetails;
 
     /// <summary>
     /// Whether anything is going to be shown in place of a picture, which is the only reason to work out what
@@ -1045,18 +1151,33 @@ public partial class BitPersona : BitComponentBase
 
         if (HasImage is false) return true;
 
-        return _hasError || (ShowInitialsUntilImageLoads && _isLoaded is false);
+        // The fallback sits behind the picture, so a picture that is still fading in has it showing through
+        // what has not been painted yet - and taking it away the moment the load lands, with the fade only
+        // just begun, leaves a flash of an empty coin in its place. It stays for a fading picture instead,
+        // covered by it as it arrives rather than pulled out from under it.
+        return _hasError || (ShowInitialsUntilImageLoads && (_isLoaded is false || ImageFadeIn));
     }
 
     /// <summary>
-    /// The role of a persona that shows nothing but its coin.
+    /// The role the root claims so that the name it carries is read at all.
     /// </summary>
     /// <remarks>
-    /// The role is only claimed where there is a name to go with it. An image role with nothing to announce
-    /// is worse than no role at all: it makes everything inside the persona presentational and then has
-    /// nothing of its own to put in their place.
+    /// A persona that shows nothing but its coin is an image of the person, and says so. One that shows its
+    /// details is a set of related things - the picture, the name, the status - and takes the role that lets
+    /// a label stand for the set: a bare div is a generic element, and a label on one of those is ignored by
+    /// the very readers it was written for.
+    /// <para>
+    /// Either role is only claimed where there is a name to go with it. An image role with nothing to
+    /// announce is worse than no role at all: it makes everything inside the persona presentational and then
+    /// has nothing of its own to put in their place.
+    /// </para>
     /// </remarks>
-    private string? GetRootRole() => IsCoinOnly && GetRootAriaLabel().HasValue() ? "img" : null;
+    private string? GetRootRole()
+    {
+        if (GetRootAriaLabel().HasNoValue()) return null;
+
+        return IsCoinOnly ? "img" : "group";
+    }
 
     /// <summary>
     /// The name of a persona that shows nothing but its coin. The presence dot is folded into it rather than
@@ -1121,5 +1242,23 @@ public partial class BitPersona : BitComponentBase
         _isLoaded = false;
 
         StateHasChanged();
+    }
+
+    private void OnSetHrefAndRel()
+    {
+        if (Href.HasNoValue() || Href!.StartsWith('#'))
+        {
+            _rel = null;
+            return;
+        }
+
+        if (Rel.HasValue)
+        {
+            _rel = BitLinkRelUtils.GetRels(Rel.Value);
+            return;
+        }
+
+        // protects against reverse-tabnabbing when opening the link in a new browsing context
+        _rel = Target == "_blank" ? "noopener" : null;
     }
 }
