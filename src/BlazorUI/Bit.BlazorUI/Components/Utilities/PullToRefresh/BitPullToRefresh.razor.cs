@@ -146,7 +146,20 @@ public partial class BitPullToRefresh : BitComponentBase
         if (firstRender)
         {
             _dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitPullToRefreshSetup(UniqueId, RootElement, _loadingRef, ScrollerElement, ScrollerSelector, Trigger, Factor, Margin, Threshold, _dotnetObj);
+
+            try
+            {
+                await _js.BitPullToRefreshSetup(UniqueId, RootElement, _loadingRef, ScrollerElement, ScrollerSelector, Trigger, Factor, Margin, Threshold, _dotnetObj);
+            }
+            catch
+            {
+                // The setup didn't complete, so JS never registered this id and never took ownership of the
+                // reference - and the JS dispose silently no-ops for an unknown id, so DisposeAsync can't
+                // release it either. Release it here, then rethrow so the original failure still surfaces.
+                _dotnetObj.Dispose();
+                _dotnetObj = null;
+                throw;
+            }
         }
 
         await base.OnAfterRenderAsync(firstRender);

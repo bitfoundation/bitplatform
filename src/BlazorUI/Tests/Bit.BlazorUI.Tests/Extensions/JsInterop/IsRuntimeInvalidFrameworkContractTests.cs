@@ -123,7 +123,36 @@ public class IsRuntimeInvalidFrameworkContractTests
             }
         }
 
-        var type = assembly.GetTypes().SingleOrDefault(t => t.Name == typeName);
+        // IsRuntimeInvalid matches these runtimes by simple Type.Name, so the lookup mirrors that instead of
+        // pinning a namespace. GetTypes() throws when a type in the assembly references a dependency this test
+        // project doesn't carry, so fall back to the types that did load; the contract can still be verified
+        // from those, and a genuinely unloadable target is reported as inconclusive below.
+        Type[] candidates;
+        var partiallyLoaded = false;
+        try
+        {
+            candidates = assembly.GetTypes();
+        }
+        catch (ReflectionTypeLoadException ex)
+        {
+            candidates = ex.Types.Where(t => t is not null).ToArray()!;
+            partiallyLoaded = true;
+        }
+
+        // Not SingleOrDefault: a duplicate simple name in a future framework version would throw
+        // InvalidOperationException instead of reporting the ambiguity, and every match satisfies the
+        // name-based contract that IsRuntimeInvalid relies on, so the first one is enough to verify it.
+        var type = candidates.FirstOrDefault(t => t.Name == typeName);
+
+        if (type is null && partiallyLoaded)
+        {
+            // The target is among the types that failed to load, so its absence says nothing about the
+            // contract. Report inconclusive, as above for a missing assembly, rather than failing.
+            Assert.Inconclusive(
+                $"Skipped: '{typeName}' could not be loaded from '{assemblyName}' in this test environment, " +
+                "so the IsRuntimeInvalid reflection contract for it can't be verified here.");
+        }
+
         Assert.IsNotNull(type,
             $"Could not find framework runtime '{typeName}' in assembly '{assemblyName}'. " +
             "Ensure the test project references the matching ASP.NET Core Components package.");

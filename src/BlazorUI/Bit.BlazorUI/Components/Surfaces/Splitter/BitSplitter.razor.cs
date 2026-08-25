@@ -164,13 +164,18 @@ public partial class BitSplitter : BitComponentBase
         // the drag already ended and leave the splitter stuck in permanent drag mode.
         var token = unchecked(++_dragToken);
 
+        // Capture the orientation before the first await: Vertical is a parameter and can flip while the
+        // probes are in flight, which would otherwise store height measurements into the width baselines
+        // (or vice versa) because the branch below re-reads the parameter.
+        var vertical = Vertical;
+
         // Probe only the measurements needed for the active orientation and keep the nullable result.
         // A null measurement means the JS size probe failed; defaulting it to 0 would create an invalid
         // baseline for pane resizing, so abort the drag instead of starting from a bogus size.
         double first;
         double second;
 
-        if (Vertical)
+        if (vertical)
         {
             var firstHeight = await _js.BitSplitterGetSplitterHeight(_firstPanelRef);
             var secondHeight = await _js.BitSplitterGetSplitterHeight(_secondPanelRef);
@@ -193,9 +198,11 @@ public partial class BitSplitter : BitComponentBase
 
         // The drag ended (or a newer one started) while the probes were in flight, so these measurements are
         // stale: publishing them would either resurrect a finished drag or clobber the newer drag's baseline.
-        if (_dragToken != token) return;
+        // An orientation change has the same effect - the panes were reset and re-laid out, so the sizes just
+        // measured no longer describe the current axis.
+        if (_dragToken != token || vertical != Vertical) return;
 
-        if (Vertical)
+        if (vertical)
         {
             _initialFirstPanelHeight = first;
             _initialSecondPanelHeight = second;

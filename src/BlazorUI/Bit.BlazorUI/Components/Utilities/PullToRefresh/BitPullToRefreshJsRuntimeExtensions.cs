@@ -14,7 +14,12 @@ internal static class BitPullToRefreshJsRuntimeExtensions
                                                                     int threshold,
                                                                     DotNetObjectReference<BitPullToRefresh> dotnetObjectReference)
     {
-        return jsRuntime.FastInvokeVoid("BitBlazorUI.PullToRefresh.setup", id, anchor, loading, scrollerElement, scrollerSelector, trigger, factor, margin, threshold, dotnetObjectReference);
+        // Deliberately not on the FastInvoke path, for the same reason as the dispose call below:
+        // FastInvokeVoid swallows JSException on the in-process (WASM) runtime, which would hide a failed
+        // setup. A failed setup means JS never registered the refresher and so never took ownership of the
+        // DotNetObjectReference, and the JS dispose then silently no-ops for an unknown id - so the failure
+        // has to surface for BitPullToRefresh to release the reference itself instead of leaking it.
+        return jsRuntime.InvokeVoid("BitBlazorUI.PullToRefresh.setup", id, anchor, loading, scrollerElement, scrollerSelector, trigger, factor, margin, threshold, dotnetObjectReference);
     }
 
     // Deliberately not on the FastInvoke path: FastInvokeVoid swallows JSException on the in-process (WASM)
