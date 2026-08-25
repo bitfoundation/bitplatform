@@ -1,12 +1,21 @@
 ﻿using System.Reflection;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using static Bit.BlazorUI.JsInteropConstants;
 
 namespace Bit.BlazorUI;
 
 public static class IJSRuntimeExtensions
 {
+    /// <summary>
+    /// The set of <see cref="DynamicallyAccessedMemberTypes"/> required to preserve the JSON metadata of types
+    /// that are serialized/deserialized across JS interop, so they survive trimming.
+    /// </summary>
+    /// <remarks>
+    /// Kept as a public member of this class for source compatibility with consumers that reference it;
+    /// <see cref="JsInteropConstants.JsonSerialized"/> is the single definition of the value.
+    /// </remarks>
+    public const DynamicallyAccessedMemberTypes JsonSerialized = JsInteropConstants.JsonSerialized;
+
     // Cache the per-runtime-type "is this runtime invalid?" probe. The probe is resolved once per
     // concrete IJSRuntime type via reflection (the framework exposes no public API for this) and
     // reused thereafter, so the reflection cost is paid once rather than on every interop call.

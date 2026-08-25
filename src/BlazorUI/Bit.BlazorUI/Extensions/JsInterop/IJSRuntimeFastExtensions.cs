@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
-using static Bit.BlazorUI.JsInteropConstants;
 
 namespace Bit.BlazorUI;
 
@@ -26,6 +25,16 @@ namespace Bit.BlazorUI;
 [SuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Interop arguments are JSON-serializable types owned by the framework/components; the JSON metadata they require is preserved by the [DynamicallyAccessedMembers(JsonSerialized)] annotations on the generic overloads and by the component models themselves, so the void path is safe to invoke under trimming.", Scope = "member", Target = "~M:Bit.BlazorUI.IJSRuntimeFastExtensions.FastInvokeVoid(Microsoft.JSInterop.IJSRuntime,System.String,System.Threading.CancellationToken,System.Object[])~System.Threading.Tasks.ValueTask")]
 public static class IJSRuntimeFastExtensions
 {
+    /// <summary>
+    /// The set of <see cref="DynamicallyAccessedMemberTypes"/> required to preserve the JSON metadata of types
+    /// that are serialized/deserialized across JS interop, so they survive trimming.
+    /// </summary>
+    /// <remarks>
+    /// Kept as a public member of this class for source compatibility with consumers that reference it;
+    /// <see cref="JsInteropConstants.JsonSerialized"/> is the single definition of the value.
+    /// </remarks>
+    public const DynamicallyAccessedMemberTypes JsonSerialized = JsInteropConstants.JsonSerialized;
+
 
     /// <summary>
     /// Optional handler for errors swallowed by the fast (in-process) invocation path on Blazor WebAssembly,

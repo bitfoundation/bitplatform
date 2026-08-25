@@ -6,6 +6,7 @@
 public partial class BitSplitter : BitComponentBase
 {
     private bool _isDragging;
+    private int _dragToken;
     private double _initialPosition;
     private double _initialFirstPanelWidth;
     private double _initialSecondPanelWidth;
@@ -157,9 +158,18 @@ public partial class BitSplitter : BitComponentBase
 
     private async Task OnDraggingStart(double position)
     {
+        // Claim a token for this drag attempt. The size probes below are awaited, and on the async interop
+        // paths (Server/Hybrid) a pointerup/pointerleave can run OnDraggingEnd while they are in flight.
+        // OnDraggingEnd bumps the token, so a stale continuation here can't latch _isDragging back on after
+        // the drag already ended and leave the splitter stuck in permanent drag mode.
+        var token = unchecked(++_dragToken);
+
         // Probe only the measurements needed for the active orientation and keep the nullable result.
         // A null measurement means the JS size probe failed; defaulting it to 0 would create an invalid
         // baseline for pane resizing, so abort the drag instead of starting from a bogus size.
+        double first;
+        double second;
+
         if (Vertical)
         {
             var firstHeight = await _js.BitSplitterGetSplitterHeight(_firstPanelRef);
@@ -167,8 +177,8 @@ public partial class BitSplitter : BitComponentBase
 
             if (firstHeight is null || secondHeight is null) return;
 
-            _initialFirstPanelHeight = firstHeight.Value;
-            _initialSecondPanelHeight = secondHeight.Value;
+            first = firstHeight.Value;
+            second = secondHeight.Value;
         }
         else
         {
@@ -177,8 +187,23 @@ public partial class BitSplitter : BitComponentBase
 
             if (firstWidth is null || secondWidth is null) return;
 
-            _initialFirstPanelWidth = firstWidth.Value;
-            _initialSecondPanelWidth = secondWidth.Value;
+            first = firstWidth.Value;
+            second = secondWidth.Value;
+        }
+
+        // The drag ended (or a newer one started) while the probes were in flight, so these measurements are
+        // stale: publishing them would either resurrect a finished drag or clobber the newer drag's baseline.
+        if (_dragToken != token) return;
+
+        if (Vertical)
+        {
+            _initialFirstPanelHeight = first;
+            _initialSecondPanelHeight = second;
+        }
+        else
+        {
+            _initialFirstPanelWidth = first;
+            _initialSecondPanelWidth = second;
         }
 
         _isDragging = true;
@@ -212,6 +237,9 @@ public partial class BitSplitter : BitComponentBase
 
     private async Task OnDraggingEnd()
     {
+        // Invalidate any OnDraggingStart still awaiting its size probes so it can't re-enable dragging.
+        unchecked { _dragToken++; }
+
         _isDragging = false;
         ClassBuilder.Reset();
 
