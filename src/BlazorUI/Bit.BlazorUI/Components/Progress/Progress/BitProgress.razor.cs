@@ -25,7 +25,8 @@ public partial class BitProgress : BitComponentBase
 
     /// <summary>
     /// How far the progress has to advance, in percentage points, before it is announced again.
-    /// Completion is always announced, whatever the step divides into.
+    /// Completion is always announced, whatever the step divides into. The first observed value,
+    /// including 100%, is recorded without announcement. A zero or negative value is treated as 25.
     /// </summary>
     [Parameter] public double AnnounceStep { get; set; } = 25;
 

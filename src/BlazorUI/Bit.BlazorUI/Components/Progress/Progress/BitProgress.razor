@@ -1,6 +1,22 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
+@{
+    @* The percentage readout is the same markup in four places - header, circular, inside and
+       outside - and only the wrapper class changes. *@
+    RenderFragment PercentReadout(string wrapperClass) =>
+        @<div style="@Styles?.PercentNumber" class="@wrapperClass @Classes?.PercentNumber">
+            @if (PercentNumberTemplate is not null)
+            {
+                @PercentNumberTemplate(_Percent)
+            }
+            else
+            {
+                <bdi class="bit-prb-pnm">@FormatPercent(_Percent)</bdi>
+            }
+        </div>;
+}
+
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@_RootStyle"
@@ -30,16 +46,7 @@
 
             @if (_IsPercentNumberTop)
             {
-                <div style="@Styles?.PercentNumber" class="@_PercentNumberClass @Classes?.PercentNumber">
-                    @if (PercentNumberTemplate is not null)
-                    {
-                        @PercentNumberTemplate(_Percent)
-                    }
-                    else
-                    {
-                        <bdi class="bit-prb-pnm">@FormatPercent(_Percent)</bdi>
-                    }
-                </div>
+                @PercentReadout(_PercentNumberClass)
             }
         </div>
     }
@@ -89,16 +96,7 @@
 
             @if (_ShowsPercentNumber)
             {
-                <div style="@Styles?.PercentNumber" class="bit-prb-ctx @Classes?.PercentNumber">
-                    @if (PercentNumberTemplate is not null)
-                    {
-                        @PercentNumberTemplate(_Percent)
-                    }
-                    else
-                    {
-                        <bdi class="bit-prb-pnm">@FormatPercent(_Percent)</bdi>
-                    }
-                </div>
+                @PercentReadout("bit-prb-ctx")
             }
         }
         else
@@ -124,16 +122,7 @@
                    progressbar are presentational. *@
                 @if (_ShowsPercentNumber && _IsPercentNumberInside)
                 {
-                    <div style="@Styles?.PercentNumber" class="@_PercentNumberClass @Classes?.PercentNumber">
-                        @if (PercentNumberTemplate is not null)
-                        {
-                            @PercentNumberTemplate(_Percent)
-                        }
-                        else
-                        {
-                            <bdi class="bit-prb-pnm">@FormatPercent(_Percent)</bdi>
-                        }
-                    </div>
+                    @PercentReadout(_PercentNumberClass)
                 }
             </div>
         }
@@ -141,16 +130,7 @@
 
     @if (Circular is false && _ShowsPercentNumber && _IsPercentNumberInside is false && _IsPercentNumberTop is false)
     {
-        <div style="@Styles?.PercentNumber" class="@_PercentNumberClass @Classes?.PercentNumber">
-            @if (PercentNumberTemplate is not null)
-            {
-                @PercentNumberTemplate(_Percent)
-            }
-            else
-            {
-                <bdi class="bit-prb-pnm">@FormatPercent(_Percent)</bdi>
-            }
-        </div>
+        @PercentReadout(_PercentNumberClass)
     }
 
     @if (_HasDescription)

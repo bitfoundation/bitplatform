@@ -16,7 +16,7 @@ public partial class BitProgressDemo
             Name = "AnnounceStep",
             Type = "double",
             DefaultValue = "25",
-            Description = "How far the progress has to advance, in percentage points, before it is announced again. Completion is always announced, whatever the step divides into.",
+            Description = "How far the progress has to advance, in percentage points, before it is announced again. Completion is always announced, whatever the step divides into. The first observed value, including 100%, is recorded without announcement. A zero or negative value is treated as 25.",
         },
         new()
         {

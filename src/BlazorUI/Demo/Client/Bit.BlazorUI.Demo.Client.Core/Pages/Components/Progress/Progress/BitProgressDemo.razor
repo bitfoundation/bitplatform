@@ -422,10 +422,12 @@
                 A screen reader is not told that a progress bar moved unless something says so.
                 <b>AnnounceProgress</b> adds a polite live region that reports the progress as it advances, and
                 <b>AnnounceStep</b> is how far it has to move first - 25 percentage points by default, so a long
-                operation speaks four times instead of a hundred. Completion is always announced. What is said is
+                operation speaks four times instead of a hundred. A zero or negative step is treated as 25.
+                Completion is always announced. What is said is
                 <b>AriaValueText</b> when it is set, otherwise the percentage in the <b>PercentNumberFormat</b>,
                 prefixed by the <b>Label</b>. Nothing is announced while the progress is indeterminate, and the very
-                first value is taken as the starting point rather than as an advance.
+                first value - including 100% - is recorded without announcement, as the starting point rather than
+                as an advance.
             </div>
             <br />
             <BitSlider @bind-Value="announcedPercent" Max="100" />
