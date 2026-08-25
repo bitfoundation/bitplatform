@@ -485,16 +485,22 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
     }
 
     [TestMethod]
-    public void ShouldRenderNothingUntilTheDelayElapses()
+    public void ShouldHoldTheContentBackUntilTheDelayElapses()
     {
         var component = RenderComponent<TLoading>(parameters =>
         {
             parameters.Add(p => p.Delay, 100);
         });
 
-        Assert.AreEqual(string.Empty, component.Markup.Trim());
+        // The root stays mounted through the window as an empty live region - text landing in a region
+        // that is already in the document is what a screen reader reliably announces - and only the
+        // content waits, so nothing can still flash up for work that turned out to be quick.
+        var root = component.Find(".bit-ldn");
+        Assert.AreEqual(0, root.ChildElementCount);
+        Assert.AreEqual("status", root.GetAttribute("role"));
+        Assert.AreEqual("polite", root.GetAttribute("aria-live"));
 
-        component.WaitForAssertion(() => Assert.HasCount(1, component.FindAll(".bit-ldn")), TimeSpan.FromSeconds(5));
+        component.WaitForAssertion(() => Assert.AreNotEqual(0, component.Find(".bit-ldn").ChildElementCount), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -519,9 +525,9 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.Delay, 100);
         });
 
-        Assert.AreEqual(string.Empty, component.Markup.Trim());
+        Assert.AreEqual(0, component.Find(".bit-ldn").ChildElementCount);
 
-        component.WaitForAssertion(() => Assert.HasCount(1, component.FindAll(".bit-ldn")), TimeSpan.FromSeconds(5));
+        component.WaitForAssertion(() => Assert.AreNotEqual(0, component.Find(".bit-ldn").ChildElementCount), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -532,14 +538,14 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.Delay, 10_000);
         });
 
-        Assert.AreEqual(string.Empty, component.Markup.Trim());
+        Assert.AreEqual(0, component.Find(".bit-ldn").ChildElementCount);
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Delay, 0);
         });
 
-        Assert.HasCount(1, component.FindAll(".bit-ldn"));
+        Assert.AreNotEqual(0, component.Find(".bit-ldn").ChildElementCount);
     }
 
     [TestMethod]
@@ -558,7 +564,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
 
         Thread.Sleep(250);
 
-        Assert.AreEqual(string.Empty, component.Markup.Trim());
+        Assert.AreEqual(0, component.Find(".bit-ldn").ChildElementCount);
     }
 
     [TestMethod,

@@ -60,7 +60,7 @@ public partial class BitLoadingDemo
             Name = "Delay",
             Type = "int",
             DefaultValue = "0",
-            Description = "How long, in milliseconds, the loading component waits before it renders anything at all, so that a quick task never makes it flash up and vanish again. Changing the value opens the window again from the new length.",
+            Description = "How long, in milliseconds, the loading component waits before it shows anything, so that a quick task never makes it flash up and vanish again. Changing the value opens the window again from the new length.",
         },
         new()
         {

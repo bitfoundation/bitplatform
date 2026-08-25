@@ -19,6 +19,7 @@
     height: var(--bit-ldn-spn-18);
     background: var(--bit-ldn-color);
     width: var(--bit-ldn-stroke, var(--bit-ldn-spn-6));
+
     // Centred against the box rather than offset by a measured amount, so that a bar made thicker or
     // thinner by Thickness still turns about the middle of the drawing instead of drifting off it.
     left: calc((var(--bit-ldn-size) - var(--bit-ldn-stroke, var(--bit-ldn-spn-6))) / 2);

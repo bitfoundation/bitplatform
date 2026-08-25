@@ -7,6 +7,11 @@ namespace Bit.BlazorUI;
 /// </summary>
 public abstract class BitLoadingBase : BitComponentBase
 {
+    private int _delayInEffect;
+    private CancellationTokenSource? _delayCts;
+
+
+
     /// <summary>
     /// The text a screen reader announces for a loading component that shows no visible label.
     /// </summary>
@@ -18,15 +23,11 @@ public abstract class BitLoadingBase : BitComponentBase
     /// </remarks>
     internal const string DefaultLoadingText = "Loading";
 
-
-
-    private int _delayInEffect;
-    private CancellationTokenSource? _delayCts;
-
     /// <summary>
-    /// Whether the component is still inside its <see cref="Delay"/> window, and therefore renders nothing at all.
+    /// Whether the component is still inside its <see cref="Delay"/> window, and therefore holds its content
+    /// back, leaving the root an empty live region.
     /// </summary>
-    internal bool _IsDelayed;
+    internal bool IsDelayed;
 
 
 
@@ -75,15 +76,17 @@ public abstract class BitLoadingBase : BitComponentBase
     [Parameter, ResetStyleBuilder] public int? CustomSize { get; set; }
 
     /// <summary>
-    /// Gets or sets how long, in milliseconds, the loading component waits before it renders anything at all.
+    /// Gets or sets how long, in milliseconds, the loading component waits before it shows anything.
     /// <br />
     /// The default value is <strong>0</strong>, which renders it immediately.
     /// </summary>
     /// <remarks>
     /// Work that finishes in a few hundred milliseconds reads as instant, and a loader that flashes up and
-    /// vanishes again inside that window is more distracting than no loader at all. A delay holds the component
+    /// vanishes again inside that window is more distracting than no loader at all. A delay holds the content
     /// back for that long: if the work finishes first, the component is removed before the delay elapses and
-    /// nothing was ever shown; if it does not, the loader appears as usual.
+    /// nothing was ever shown; if it does not, the loader appears as usual. Only the content is held back -
+    /// the root stays in the document as an empty live region, so the announcement described on
+    /// <see cref="Role"/> still lands reliably when the delay elapses.
     /// <br />
     /// Changing the value opens the window again from the new length, and setting it back to zero lets the
     /// component through at once, so a loader kept in the document across several waits can be held back for
@@ -389,7 +392,7 @@ public abstract class BitLoadingBase : BitComponentBase
     {
         base.OnParametersSet();
 
-        // Held back rather than hidden: a loader that is not in the document cannot flash up and vanish again
+        // Held back rather than hidden: content that is not in the document cannot flash up and vanish again
         // for work that turned out to be quick. See Delay.
         if (Delay == _delayInEffect) return;
 
@@ -403,13 +406,13 @@ public abstract class BitLoadingBase : BitComponentBase
         // component through at once rather than leaving it stuck behind a delay it no longer has.
         if (Delay > 0)
         {
-            _IsDelayed = true;
+            IsDelayed = true;
             _delayCts = new CancellationTokenSource();
             _ = WaitOutDelayAsync(_delayCts.Token);
         }
         else
         {
-            _IsDelayed = false;
+            IsDelayed = false;
         }
     }
 
@@ -520,7 +523,7 @@ public abstract class BitLoadingBase : BitComponentBase
 
         if (IsDisposed || token.IsCancellationRequested) return;
 
-        _IsDelayed = false;
+        IsDelayed = false;
 
         await InvokeAsync(StateHasChanged);
     }
