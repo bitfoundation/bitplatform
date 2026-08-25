@@ -39,6 +39,11 @@ public class BitTagClassStyles
     public string? Image { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the trailing icon of the BitTag, which is rendered after the label.
+    /// </summary>
+    public string? SecondaryIcon { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the root element of the BitTag while it is selected.
     /// </summary>
     public string? Selected { get; set; }

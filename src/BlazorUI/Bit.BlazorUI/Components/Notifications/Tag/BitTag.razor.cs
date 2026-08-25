@@ -25,6 +25,16 @@ public partial class BitTag : BitComponentBase
     private string _dismissLabel => DismissLabel
                                  ?? (Text.HasValue() ? Format(DismissLabelFormat ?? "Remove {0}", Text!) : "Dismiss");
 
+    private static readonly Dictionary<BitNavAriaCurrent, string> _AriaCurrentMap = new()
+    {
+        [BitNavAriaCurrent.Page] = "page",
+        [BitNavAriaCurrent.Step] = "step",
+        [BitNavAriaCurrent.Location] = "location",
+        [BitNavAriaCurrent.Time] = "time",
+        [BitNavAriaCurrent.Date] = "date",
+        [BitNavAriaCurrent.True] = "true"
+    };
+
 
 
     /// <summary>
@@ -39,6 +49,20 @@ public partial class BitTag : BitComponentBase
     public BitTagParams? CascadingParameters { get; set; }
 
 
+
+    /// <summary>
+    /// What a selected tag that is a link reports itself as through <c>aria-current</c>.
+    /// <br />
+    /// The default value is <strong>BitNavAriaCurrent.True</strong>.
+    /// </summary>
+    /// <remarks>
+    /// It only ever reaches the anchor a tag becomes while <see cref="Href"/> is set, and only while
+    /// <see cref="Selected"/> is true - a tag that is a button reports its selection through
+    /// <c>aria-pressed</c> instead. Set it to <c>Page</c> for a tag standing for the page the reader is
+    /// already on, which is what tells a screen reader that this one of a set of links is the destination
+    /// rather than merely a highlighted one.
+    /// </remarks>
+    [Parameter] public BitNavAriaCurrent AriaCurrent { get; set; } = BitNavAriaCurrent.True;
 
     /// <summary>
     /// The detailed description of the tag for the benefit of screen readers, rendered into a visually
@@ -56,9 +80,11 @@ public partial class BitTag : BitComponentBase
     /// </summary>
     /// <remarks>
     /// It replaces <see cref="Text"/> and <see cref="SecondaryText"/> only; an <see cref="Icon"/>, an
-    /// <see cref="IconUrl"/> and the checkmark of a selected tag keep rendering before it, so a template
-    /// does not have to reproduce them. It is also where anything that belongs after the label goes - a
-    /// trailing glyph, a count - since the template is laid out in the same row as the icon that precedes it.
+    /// <see cref="IconUrl"/>, the checkmark of a selected tag and a <see cref="SecondaryIcon"/> all keep
+    /// rendering around it, so a template does not have to reproduce them. Use
+    /// <see cref="PrefixTemplate"/> and <see cref="SuffixTemplate"/> for markup that belongs beside the label
+    /// rather than in place of it, which leaves the two lines of the label to <see cref="Text"/> and
+    /// <see cref="SecondaryText"/>.
     /// </remarks>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -201,6 +227,10 @@ public partial class BitTag : BitComponentBase
     /// <remarks>
     /// The picture sits next to a label that already says what the tag is, so it is decorative by default
     /// and renders with an empty alt. Set this only where the picture says something the label does not.
+    /// <br />
+    /// It reaches nothing but that picture, which only renders while no <see cref="Icon"/> and no
+    /// <see cref="IconName"/> has taken its place - a tag showing a glyph is named by its label or by its
+    /// <c>AriaLabel</c>, never by this.
     /// </remarks>
     [Parameter] public string? IconAlt { get; set; }
 
@@ -297,6 +327,19 @@ public partial class BitTag : BitComponentBase
     [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
 
     /// <summary>
+    /// Custom markup rendered at the head of the tag, ahead of the icon or the picture.
+    /// </summary>
+    /// <remarks>
+    /// It is added to the head of the tag rather than put in place of anything, so an <see cref="Icon"/>, an
+    /// <see cref="IconUrl"/> and the checkmark of a selected tag all keep rendering alongside it. Use it for
+    /// what the leading slot needs that a glyph or a picture cannot be - an avatar with initials, a colored
+    /// dot, a flag. It lives inside whatever the tag became, so it is part of the same target the pointer
+    /// and the keyboard activate; putting a control of its own in there is putting a control inside a
+    /// button, which is a control no assistive technology can reach.
+    /// </remarks>
+    [Parameter] public RenderFragment? PrefixTemplate { get; set; }
+
+    /// <summary>
     /// The relationship between the current document and the linked one, rendered as the rel attribute of the
     /// anchor the tag becomes while <see cref="Href"/> is set.
     /// </summary>
@@ -313,11 +356,35 @@ public partial class BitTag : BitComponentBase
     /// Reverses the direction flow of the content of the tag.
     /// </summary>
     /// <remarks>
-    /// The icon moves after the label and the dismiss button to the head of the tag, which is the mirror of
-    /// the default order rather than a change of the writing direction; for the latter, use <c>Dir</c>.
+    /// Everything the tag lays out in a row swaps ends with it: the icon and the label, the trailing
+    /// <see cref="SecondaryIcon"/>, the two templates and the dismiss button. It is the mirror of the
+    /// default order rather than a change of the writing direction; for the latter, use <c>Dir</c>.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Reversed { get; set; }
+
+    /// <summary>
+    /// The trailing icon of the tag, using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="SecondaryIconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// It is rendered after the label - and after a <see cref="ChildContent"/> - and before the dismiss
+    /// button, inside whatever the tag becomes, so it is part of the same target the pointer and the
+    /// keyboard activate rather than a control of its own. <see cref="Reversed"/> mirrors it along with the
+    /// rest of the row. Like the leading icon it is decorative and hidden from assistive technologies, so
+    /// whatever it says has to be said in the label or in the <c>AriaLabel</c> as well.
+    /// </remarks>
+    [Parameter] public BitIconInfo? SecondaryIcon { get; set; }
+
+    /// <summary>
+    /// The name of the trailing icon of the tag, from the built-in Fluent UI icons.
+    /// </summary>
+    /// <remarks>
+    /// Use it for the glyph that closes the tag rather than opening it - the chevron of a chip that drops a
+    /// menu, the arrow of one that leads somewhere - and <see cref="IconName"/> for the one that names what
+    /// the tag stands for. For external icon libraries, use <see cref="SecondaryIcon"/> instead.
+    /// </remarks>
+    [Parameter] public string? SecondaryIconName { get; set; }
 
     /// <summary>
     /// The secondary text of the tag, rendered under the <see cref="Text"/> in a quieter type.
@@ -376,6 +443,17 @@ public partial class BitTag : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
+
+    /// <summary>
+    /// Custom markup rendered at the end of the tag, after the trailing <see cref="SecondaryIcon"/> and
+    /// before the dismiss button.
+    /// </summary>
+    /// <remarks>
+    /// The mirror of <see cref="PrefixTemplate"/>, and subject to the same rules: it is added rather than
+    /// substituted, it lives inside whatever the tag became, and it names nothing on its own. Use it for a
+    /// count, a second avatar, a status dot - and <see cref="SecondaryIcon"/> where a glyph is all it is.
+    /// </remarks>
+    [Parameter] public RenderFragment? SuffixTemplate { get; set; }
 
     /// <summary>
     /// Stops the click of the tag from bubbling any further up the DOM.
@@ -520,7 +598,8 @@ public partial class BitTag : BitComponentBase
     /// <remarks>
     /// It focuses whatever the tag offers the keyboard: the anchor or the button it becomes while it is a
     /// control, the dismiss button of a tag that only has one, and the root of a tag that is neither - which
-    /// a browser only takes while a <c>TabIndex</c> has been given to it.
+    /// is exactly the case where the <c>TabIndex</c> of the tag lands on that root, so a plain tag given one
+    /// can be focused and a plain tag without one cannot.
     /// <br />
     /// This is what a list of dismissible tags moves the focus on with after removing one of them: a focus
     /// left on an element that is gone falls back to the document, and the keyboard user loses their place.

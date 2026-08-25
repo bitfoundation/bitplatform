@@ -1,8 +1,13 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 @{
     var icon = BitIconInfo.From(Icon, IconName);
+
+    @* The glyph that closes the tag rather than opening it: the chevron of a chip that drops a menu, the
+       arrow of one that leads somewhere, the count of what it stands for. It sits after the label and
+       before the dismiss button, and it mirrors with the rest of the row when the tag is reversed. *@
+    var secondaryIcon = BitIconInfo.From(SecondaryIcon, SecondaryIconName);
 
     @* The checkmark of a selected tag, which is what makes a filter chip readable as picked rather than
        as merely a different color - a state carried by color alone is one a reader cannot see. *@
@@ -17,10 +22,14 @@
        and only stays on the root when there is no control to carry it. *@
     var labelOnRoot = _isInteractive is false;
 
+    @* The picture only renders where there is no icon to take its place, so an alt only names the tag where
+       both of those hold - an IconAlt sitting next to an Icon names nothing and must not be taken for a name. *@
+    var pictureIsNamed = icon is null && IconUrl.HasValue() && IconAlt.HasValue();
+
     @* aria-label on an element with no role of its own is not guaranteed to be announced, so a static tag
        with nothing to read - an icon-only or a picture-only one - carries its name as text no one can see
-       instead. A tag that has words in it is already named by them. *@
-    var hiddenLabel = labelOnRoot && AriaLabel.HasValue() && hasLabel is false && ChildContent is null && IconAlt.HasNoValue();
+       instead. A tag that has words in it, or a picture the alt already names, is named without it. *@
+    var hiddenLabel = labelOnRoot && AriaLabel.HasValue() && hasLabel is false && ChildContent is null && pictureIsNamed is false;
 
     var describedById = AriaDescription.HasValue() ? $"{_Id}-dsc" : null;
 
@@ -30,6 +39,14 @@
     var splattedLabel = HtmlAttributes.TryGetValue("aria-label", out var sal) ? sal?.ToString() : null;
     var splattedTitle = HtmlAttributes.TryGetValue("title", out var stl) ? stl?.ToString() : null;
     var splattedDescribedBy = HtmlAttributes.TryGetValue("aria-describedby", out var sdb) ? sdb?.ToString() : null;
+    var splattedTabIndex = HtmlAttributes.TryGetValue("tabindex", out var sti) ? sti?.ToString() : null;
+
+    @* A tag that is a control carries its tab index on that control, and a dismissible one on its button, so
+       the root only takes it where there is nothing else inside the tag to take it - which is the one case
+       where a TabIndex is what makes a plain tag reachable at all, and what FocusAsync then has to focus.
+       A disabled tag is out of the tab order whatever was asked for. *@
+    var tabIndexOnRoot = _isInteractive is false && OnDismiss.HasDelegate is false;
+    var rootTabIndex = tabIndexOnRoot && IsEnabled ? (TabIndex ?? splattedTabIndex) : splattedTabIndex;
 
     var rootDescribedBy = labelOnRoot && describedById is not null
                         ? (splattedDescribedBy.HasValue() ? $"{describedById} {splattedDescribedBy}" : describedById)
@@ -47,6 +64,15 @@
             @if (selectedIcon is not null)
             {
                 <i aria-hidden="true" style="@Styles?.SelectedIcon" class="bit-tag-sic @selectedIcon.GetCssClasses() @Classes?.SelectedIcon" />
+            }
+
+            @if (PrefixTemplate is not null)
+            {
+                @* The outermost leading position, ahead of the icon rather than in place of it: whatever the
+                   tag needs there that a glyph or a picture cannot be - an avatar with initials, a colored
+                   dot, a flag. It is not a slot the tag names anything by, so what it says has to be said in
+                   the label or in the AriaLabel as well. *@
+                @PrefixTemplate
             }
 
             @if (icon is not null)
@@ -78,6 +104,19 @@
                     }
                 </span>
             }
+
+            @if (secondaryIcon is not null)
+            {
+                <i aria-hidden="true" style="@Styles?.SecondaryIcon" class="bit-tag-sci @secondaryIcon.GetCssClasses() @Classes?.SecondaryIcon" />
+            }
+
+            @if (SuffixTemplate is not null)
+            {
+                @* The mirror of the prefix: the outermost trailing position, after the trailing glyph and
+                   still inside whatever the tag became, so it is part of the same target rather than a
+                   control of its own. A count, a second avatar, a progress dot. *@
+                @SuffixTemplate
+            }
         </text>;
 }
 
@@ -88,7 +127,15 @@
       class="@ClassBuilder.Value"
       aria-label="@(labelOnRoot ? AriaLabel ?? splattedLabel : splattedLabel)"
       aria-describedby="@rootDescribedBy"
+      tabindex="@rootTabIndex"
       dir="@Dir?.ToString().ToLower()">
+    @if (hiddenLabel)
+    {
+        @* Ahead of the content rather than after it: this is the name of the tag, and a name read after the
+           button that removes the tag is a name that arrives too late to say what was removed. *@
+        <span class="bit-tag-vhd">@AriaLabel</span>
+    }
+
     @if (_isLink)
     {
         @* A tag that leads somewhere is a real anchor: it comes with the context menu, the middle click, the
@@ -107,7 +154,7 @@
            download="@Download"
            tabindex="@(IsEnabled ? TabIndex : "-1")"
            aria-disabled="@(IsEnabled ? null : "true")"
-           aria-current="@(Selected ? "true" : null)"
+           aria-current="@(Selected ? _AriaCurrentMap[AriaCurrent] : null)"
            aria-label="@(labelOnRoot ? null : AriaLabel)"
            aria-describedby="@describedById">@content</a>
     }
@@ -152,11 +199,6 @@
                 aria-label="@_dismissLabel">
             <i aria-hidden="true" style="@Styles?.DismissIcon" class="bit-tag-dsi @dismissIcon?.GetCssClasses() @Classes?.DismissIcon" />
         </button>
-    }
-
-    @if (hiddenLabel)
-    {
-        <span class="bit-tag-vhd">@AriaLabel</span>
     }
 
     @if (describedById is not null)

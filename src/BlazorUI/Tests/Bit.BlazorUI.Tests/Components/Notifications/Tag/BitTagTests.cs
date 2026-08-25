@@ -1853,4 +1853,520 @@ public class BitTagTests : BunitTestContext
         Assert.IsFalse(root.ClassList.Contains("bit-tag-suc"));
         Assert.AreEqual("Own", component.Find(".bit-tag-tex").TextContent);
     }
+
+    [TestMethod]
+    public void BitTagShouldRenderTheTrailingIconWhenSecondaryIconNameProvided()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Status");
+            parameters.Add(p => p.SecondaryIconName, "ChevronDown");
+        });
+
+        var icon = component.Find(".bit-tag-sci");
+
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon--ChevronDown"));
+        // the same as the leading one: the label between them already says what the tag is
+        Assert.AreEqual("true", icon.GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldRenderTheTrailingIconWhenSecondaryIconProvided()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Status");
+            parameters.Add(p => p.SecondaryIcon, BitIconInfo.Fa("solid chevron-down"));
+        });
+
+        var icon = component.Find(".bit-tag-sci");
+
+        Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(icon.ClassList.Contains("fa-chevron-down"));
+    }
+
+    [TestMethod]
+    public void BitTagSecondaryIconShouldTakePrecedenceOverSecondaryIconName()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Status");
+            parameters.Add(p => p.SecondaryIcon, BitIconInfo.Css("custom-chevron"));
+            parameters.Add(p => p.SecondaryIconName, "ChevronDown");
+        });
+
+        var icon = component.Find(".bit-tag-sci");
+
+        Assert.IsTrue(icon.ClassList.Contains("custom-chevron"));
+        Assert.IsFalse(icon.ClassList.Contains("bit-icon--ChevronDown"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldNotRenderATrailingIconWithoutOne()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Status");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-tag-sci").Count);
+    }
+
+    [TestMethod]
+    public void BitTagTrailingIconShouldRenderAfterTheLabelInsideTheContent()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Status");
+            parameters.Add(p => p.IconName, "Filter");
+            parameters.Add(p => p.SecondaryIconName, "ChevronDown");
+        });
+
+        var children = component.Find(".bit-tag-cnt").Children;
+
+        // it is part of the same target the pointer and the keyboard activate, laid out after the label
+        Assert.AreEqual(3, children.Length);
+        Assert.IsTrue(children[0].ClassList.Contains("bit-tag-icn"));
+        Assert.IsTrue(children[1].ClassList.Contains("bit-tag-lbl"));
+        Assert.IsTrue(children[2].ClassList.Contains("bit-tag-sci"));
+    }
+
+    [TestMethod]
+    public void BitTagTrailingIconShouldRenderAfterAChildContentToo()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.AddChildContent("<span class=\"template\">Custom</span>");
+            parameters.Add(p => p.SecondaryIconName, "ChevronDown");
+        });
+
+        var children = component.Find(".bit-tag-cnt").Children;
+
+        Assert.AreEqual(2, children.Length);
+        Assert.IsTrue(children[0].ClassList.Contains("template"));
+        Assert.IsTrue(children[1].ClassList.Contains("bit-tag-sci"));
+    }
+
+    [TestMethod]
+    public void BitTagTrailingIconShouldStayInsideTheControlAndBeforeTheDismissButton()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Status");
+            parameters.Add(p => p.SecondaryIconName, "ChevronDown");
+            parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+            parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        var button = component.Find("button.bit-tag-cnt");
+
+        // inside the control rather than beside it: a glyph that is part of what the tag activates
+        Assert.IsNotNull(button.QuerySelector(".bit-tag-sci"));
+        Assert.IsNull(component.Find(".bit-tag-cls").QuerySelector(".bit-tag-sci"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldRespectSecondaryIconClassesAndStyles()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Status");
+            parameters.Add(p => p.SecondaryIconName, "ChevronDown");
+            parameters.Add(p => p.Classes, new BitTagClassStyles { SecondaryIcon = "custom-secondary-icon" });
+            parameters.Add(p => p.Styles, new BitTagClassStyles { SecondaryIcon = "color: tomato" });
+        });
+
+        var icon = component.Find(".bit-tag-sci");
+
+        Assert.IsTrue(icon.ClassList.Contains("custom-secondary-icon"));
+        Assert.AreEqual("color: tomato", icon.GetAttribute("style"));
+    }
+
+
+    [TestMethod]
+    public void BitTagShouldCarryTheTabIndexOnItsRootWhenNothingInsideCanTakeIt()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.TabIndex, "0");
+        });
+
+        // a plain tag has no control inside it, so the tab index is what makes the tag itself reachable
+        Assert.AreEqual("0", component.Find(".bit-tag").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldNotCarryATabIndexOnItsRootWithoutOne()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+        });
+
+        // a label takes no focus at all unless it was asked for
+        Assert.IsFalse(component.Find(".bit-tag").HasAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldNotCarryATabIndexOnItsRootWhileItIsAControl()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.TabIndex, "0");
+            parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        // the control carries it instead, so the tag is one tab stop rather than two
+        Assert.IsFalse(component.Find(".bit-tag").HasAttribute("tabindex"));
+        Assert.AreEqual("0", component.Find("button.bit-tag-cnt").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldNotCarryATabIndexOnItsRootWhileItIsDismissible()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.TabIndex, "0");
+            parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        Assert.IsFalse(component.Find(".bit-tag").HasAttribute("tabindex"));
+        Assert.AreEqual("0", component.Find(".bit-tag-cls").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldDropTheTabIndexOfItsRootWhileDisabled()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.TabIndex, "0");
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        Assert.IsFalse(component.Find(".bit-tag").HasAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldKeepATabIndexPassedThroughHtmlAttributes()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitTag>(0);
+            builder.AddAttribute(1, nameof(BitTag.Text), "Design");
+            builder.AddAttribute(2, "tabindex", "3");
+            builder.CloseComponent();
+        });
+
+        // an attribute written after the splat takes a null one off the element altogether, so what came in
+        // through the attributes has to survive a tag that has no tab index of its own
+        Assert.AreEqual("3", component.Find(".bit-tag").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitTagTabIndexShouldWinOverTheOnePassedThroughHtmlAttributes()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitTag>(0);
+            builder.AddAttribute(1, nameof(BitTag.Text), "Design");
+            builder.AddAttribute(2, nameof(BitTag.TabIndex), "0");
+            builder.AddAttribute(3, "tabindex", "3");
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("0", component.Find(".bit-tag").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public async Task BitTagFocusAsyncShouldFocusTheRootOfAPlainTagGivenATabIndex()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.TabIndex, "0");
+        });
+
+        await component.Instance.FocusAsync();
+
+        Assert.AreEqual("0", component.Find(".bit-tag").GetAttribute("tabindex"));
+    }
+
+
+    [TestMethod]
+    [DataRow(BitNavAriaCurrent.Page, "page")]
+    [DataRow(BitNavAriaCurrent.Step, "step")]
+    [DataRow(BitNavAriaCurrent.Location, "location")]
+    [DataRow(BitNavAriaCurrent.Date, "date")]
+    [DataRow(BitNavAriaCurrent.Time, "time")]
+    [DataRow(BitNavAriaCurrent.True, "true")]
+    public void BitTagSelectedLinkShouldRespectAriaCurrent(BitNavAriaCurrent ariaCurrent, string expected)
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Docs");
+            parameters.Add(p => p.Href, "/docs");
+            parameters.Add(p => p.Selected, true);
+            parameters.Add(p => p.AriaCurrent, ariaCurrent);
+        });
+
+        Assert.AreEqual(expected, component.Find("a.bit-tag-cnt").GetAttribute("aria-current"));
+    }
+
+    [TestMethod]
+    public void BitTagAriaCurrentShouldNotReachAButtonTag()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Only mine");
+            parameters.Add(p => p.Selected, true);
+            parameters.Add(p => p.AriaCurrent, BitNavAriaCurrent.Page);
+            parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        var button = component.Find("button.bit-tag-cnt");
+
+        // a button reports its selection through aria-pressed; aria-current belongs to a link
+        Assert.IsFalse(button.HasAttribute("aria-current"));
+    }
+
+    [TestMethod]
+    public void BitTagAriaCurrentShouldNotReachAnUnselectedLink()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Docs");
+            parameters.Add(p => p.Href, "/docs");
+            parameters.Add(p => p.AriaCurrent, BitNavAriaCurrent.Page);
+        });
+
+        Assert.IsFalse(component.Find("a.bit-tag-cnt").HasAttribute("aria-current"));
+    }
+
+
+    [TestMethod]
+    public void BitTagHiddenLabelShouldBeAnnouncedBeforeTheDismissButton()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Pinned");
+            parameters.Add(p => p.AriaLabel, "Pinned to the top");
+            parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        var children = component.Find(".bit-tag").Children;
+
+        // the name of the tag ahead of the button that removes it: a name read afterwards arrives too late
+        // to say what it was that got removed
+        Assert.IsTrue(children[0].ClassList.Contains("bit-tag-vhd"));
+        Assert.AreEqual("Pinned to the top", children[0].TextContent);
+        Assert.IsTrue(children[1].ClassList.Contains("bit-tag-cnt"));
+        Assert.IsTrue(children[2].ClassList.Contains("bit-tag-cls"));
+    }
+
+
+    [TestMethod]
+    public void BitTagShouldApplyTheRemainingCascadingParametersFromBitParams()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitTagParams
+            {
+                IconUrl = "/images/avatar.png",
+                IconAlt = "Cascaded alt",
+                SecondaryText = "Cascaded secondary",
+                SecondaryIconName = "ChevronDown",
+                AriaCurrent = BitNavAriaCurrent.Page
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitTag>(0);
+                builder.AddAttribute(1, nameof(BitTag.Text), "Cascaded");
+                builder.AddAttribute(2, nameof(BitTag.Href), "/docs");
+                builder.AddAttribute(3, nameof(BitTag.Selected), true);
+                builder.CloseComponent();
+            });
+        });
+
+        Assert.AreEqual("/images/avatar.png", component.Find(".bit-tag-img").GetAttribute("src"));
+        Assert.AreEqual("Cascaded alt", component.Find(".bit-tag-img").GetAttribute("alt"));
+        Assert.AreEqual("Cascaded secondary", component.Find(".bit-tag-stx").TextContent);
+        Assert.IsTrue(component.Find(".bit-tag-sci").ClassList.Contains("bit-icon--ChevronDown"));
+        Assert.AreEqual("page", component.Find("a.bit-tag-cnt").GetAttribute("aria-current"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldApplyTheCascadingSecondaryIconFromBitParams()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitTagParams { SecondaryIcon = BitIconInfo.Bi("chevron-down") }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitTag>(0);
+                builder.AddAttribute(1, nameof(BitTag.Text), "Cascaded");
+                builder.CloseComponent();
+            });
+        });
+
+        Assert.IsTrue(component.Find(".bit-tag-sci").ClassList.Contains("bi-chevron-down"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldStillCarryAHiddenLabelWhenAnIconAltNamesNoPicture()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Pinned");
+            parameters.Add(p => p.IconAlt, "unused");
+            parameters.Add(p => p.AriaLabel, "Pinned to the top");
+        });
+
+        // the picture only renders where there is no icon to take its place, so an alt sitting next to an
+        // icon names nothing and must not be taken for the name of the tag
+        Assert.AreEqual(0, component.FindAll(".bit-tag-img").Count);
+        Assert.AreEqual("Pinned to the top", component.Find(".bit-tag-vhd").TextContent);
+    }
+
+    [TestMethod]
+    public void BitTagShouldStillCarryAHiddenLabelForAnUnnamedPicture()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.IconUrl, "/images/avatar.png");
+            parameters.Add(p => p.AriaLabel, "Annie Lindqvist");
+        });
+
+        // a decorative picture carries an empty alt, so it names nothing either
+        Assert.AreEqual("Annie Lindqvist", component.Find(".bit-tag-vhd").TextContent);
+    }
+
+    [TestMethod]
+    public void BitTagShouldRenderThePrefixTemplateAtTheHeadOfTheContent()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Alex");
+            parameters.Add(p => p.IconName, "Contact");
+            parameters.Add(p => p.PrefixTemplate, "<span class=\"prefix\">AP</span>");
+        });
+
+        var children = component.Find(".bit-tag-cnt").Children;
+
+        // added to the head rather than put in place of the icon, which keeps rendering after it
+        Assert.AreEqual(3, children.Length);
+        Assert.IsTrue(children[0].ClassList.Contains("prefix"));
+        Assert.IsTrue(children[1].ClassList.Contains("bit-tag-icn"));
+        Assert.IsTrue(children[2].ClassList.Contains("bit-tag-lbl"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldRenderTheSuffixTemplateAtTheEndOfTheContent()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Open issues");
+            parameters.Add(p => p.SecondaryIconName, "ChevronDown");
+            parameters.Add(p => p.SuffixTemplate, "<span class=\"suffix\">24</span>");
+        });
+
+        var children = component.Find(".bit-tag-cnt").Children;
+
+        Assert.AreEqual(3, children.Length);
+        Assert.IsTrue(children[0].ClassList.Contains("bit-tag-lbl"));
+        Assert.IsTrue(children[1].ClassList.Contains("bit-tag-sci"));
+        Assert.IsTrue(children[2].ClassList.Contains("suffix"));
+    }
+
+    [TestMethod]
+    public void BitTagPrefixTemplateShouldKeepTheCheckmarkOfASelectedTagAheadOfIt()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Picked");
+            parameters.Add(p => p.Selected, true);
+            parameters.Add(p => p.PrefixTemplate, "<span class=\"prefix\">AP</span>");
+        });
+
+        var children = component.Find(".bit-tag-cnt").Children;
+
+        // the checkmark is the state of the tag rather than part of its content, so it stays outermost
+        Assert.IsTrue(children[0].ClassList.Contains("bit-tag-sic"));
+        Assert.IsTrue(children[1].ClassList.Contains("prefix"));
+    }
+
+    [TestMethod]
+    public void BitTagPrefixAndSuffixTemplatesShouldRenderAroundAChildContent()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.PrefixTemplate, "<span class=\"prefix\">AP</span>");
+            parameters.AddChildContent("<span class=\"template\">Custom</span>");
+            parameters.Add(p => p.SuffixTemplate, "<span class=\"suffix\">24</span>");
+        });
+
+        var children = component.Find(".bit-tag-cnt").Children;
+
+        Assert.AreEqual(3, children.Length);
+        Assert.IsTrue(children[0].ClassList.Contains("prefix"));
+        Assert.IsTrue(children[1].ClassList.Contains("template"));
+        Assert.IsTrue(children[2].ClassList.Contains("suffix"));
+    }
+
+    [TestMethod]
+    public void BitTagPrefixAndSuffixTemplatesShouldStayInsideTheControlAndBeforeTheDismissButton()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+            parameters.Add(p => p.PrefixTemplate, "<span class=\"prefix\">AP</span>");
+            parameters.Add(p => p.SuffixTemplate, "<span class=\"suffix\">24</span>");
+            parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+            parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        var button = component.Find("button.bit-tag-cnt");
+
+        // part of the same target the pointer and the keyboard activate rather than siblings of it
+        Assert.IsNotNull(button.QuerySelector(".prefix"));
+        Assert.IsNotNull(button.QuerySelector(".suffix"));
+        Assert.IsNull(component.Find(".bit-tag-cls").QuerySelector(".suffix"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldNotRenderTheTemplatesWithoutThem()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Design");
+        });
+
+        Assert.AreEqual(1, component.Find(".bit-tag-cnt").Children.Length);
+    }
+
+    [TestMethod]
+    public void BitTagPrefixTemplateShouldNotStopTheTagFromCarryingAHiddenLabel()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "Annie Lindqvist");
+            parameters.Add(p => p.PrefixTemplate, "<span class=\"prefix\">AL</span>");
+        });
+
+        // the slot names nothing on its own, so a tag with no words in it still needs its name carried
+        Assert.AreEqual("Annie Lindqvist", component.Find(".bit-tag-vhd").TextContent);
+    }
 }

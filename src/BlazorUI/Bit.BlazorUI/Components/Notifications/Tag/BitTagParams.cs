@@ -22,6 +22,11 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
 
 
     /// <summary>
+    /// What a selected tag that is a link reports itself as through aria-current.
+    /// </summary>
+    public BitNavAriaCurrent? AriaCurrent { get; set; }
+
+    /// <summary>
     /// The detailed description of the tag for the benefit of screen readers, rendered into a visually
     /// hidden element the tag points at with aria-describedby.
     /// </summary>
@@ -82,9 +87,19 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
     public BitIconInfo? Icon { get; set; }
 
     /// <summary>
+    /// The text alternative of the IconUrl picture of the tag.
+    /// </summary>
+    public string? IconAlt { get; set; }
+
+    /// <summary>
     /// The icon to show inside the tag.
     /// </summary>
     public string? IconName { get; set; }
+
+    /// <summary>
+    /// The URL of a picture to show in place of the icon of the tag.
+    /// </summary>
+    public string? IconUrl { get; set; }
 
     /// <summary>
     /// Keeps the content of the tag on a single line and ends it with an ellipsis where it does not fit.
@@ -100,6 +115,22 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
     /// Reverses the direction flow of the content of the tag.
     /// </summary>
     public bool? Reversed { get; set; }
+
+    /// <summary>
+    /// The trailing icon of the tag, using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="SecondaryIconName"/> when both are set.
+    /// </summary>
+    public BitIconInfo? SecondaryIcon { get; set; }
+
+    /// <summary>
+    /// The name of the trailing icon of the tag, from the built-in Fluent UI icons.
+    /// </summary>
+    public string? SecondaryIconName { get; set; }
+
+    /// <summary>
+    /// The secondary text of the tag, rendered under its text in a quieter type.
+    /// </summary>
+    public string? SecondaryText { get; set; }
 
     /// <summary>
     /// The icon of the checkmark a selected tag shows, using custom CSS classes for external icon libraries.
@@ -171,6 +202,11 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitTag);
 
+        if (AriaCurrent.HasValue && bitTag.HasNotBeenSet(nameof(AriaCurrent)))
+        {
+            bitTag.AriaCurrent = AriaCurrent.Value;
+        }
+
         if (AriaDescription.HasValue() && bitTag.HasNotBeenSet(nameof(AriaDescription)))
         {
             bitTag.AriaDescription = AriaDescription;
@@ -232,9 +268,19 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
             bitTag.Icon = Icon;
         }
 
+        if (IconAlt.HasValue() && bitTag.HasNotBeenSet(nameof(IconAlt)))
+        {
+            bitTag.IconAlt = IconAlt;
+        }
+
         if (IconName.HasValue() && bitTag.HasNotBeenSet(nameof(IconName)))
         {
             bitTag.IconName = IconName;
+        }
+
+        if (IconUrl.HasValue() && bitTag.HasNotBeenSet(nameof(IconUrl)))
+        {
+            bitTag.IconUrl = IconUrl;
         }
 
         if (NoWrap.HasValue && bitTag.HasNotBeenSet(nameof(NoWrap)))
@@ -259,6 +305,21 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
             bitTag.Reversed = Reversed.Value;
 
             bitTag.ClassBuilder.Reset();
+        }
+
+        if (SecondaryIcon is not null && bitTag.HasNotBeenSet(nameof(SecondaryIcon)))
+        {
+            bitTag.SecondaryIcon = SecondaryIcon;
+        }
+
+        if (SecondaryIconName.HasValue() && bitTag.HasNotBeenSet(nameof(SecondaryIconName)))
+        {
+            bitTag.SecondaryIconName = SecondaryIconName;
+        }
+
+        if (SecondaryText.HasValue() && bitTag.HasNotBeenSet(nameof(SecondaryText)))
+        {
+            bitTag.SecondaryText = SecondaryText;
         }
 
         if (SelectedIcon is not null && bitTag.HasNotBeenSet(nameof(SelectedIcon)))

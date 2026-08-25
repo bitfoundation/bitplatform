@@ -6,6 +6,15 @@ public partial class BitTagDemo
     [
         new()
         {
+            Name = "AriaCurrent",
+            Type = "BitNavAriaCurrent",
+            DefaultValue = "BitNavAriaCurrent.True",
+            Description = "What a selected tag that is a link reports itself as through aria-current. It only ever reaches the anchor the tag becomes while Href is set - a tag that is a button reports its selection through aria-pressed instead.",
+            LinkType = LinkType.Link,
+            Href = "#nav-aria-current-enum"
+        },
+        new()
+        {
             Name = "AriaDescription",
             Type = "string?",
             DefaultValue = "null",
@@ -16,7 +25,7 @@ public partial class BitTagDemo
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Child content of component, the content that the tag will apply to. It replaces the Text and the SecondaryText only; an icon, an image and the checkmark of a selected tag keep rendering before it, and it is laid out in the same row as them, so it is also where anything belonging after the label goes."
+            Description = "Child content of component, the content that the tag will apply to. It replaces the Text and the SecondaryText only; an icon, an image, the checkmark of a selected tag and a trailing SecondaryIcon all keep rendering around it. Use the PrefixTemplate and the SuffixTemplate for markup that belongs beside the label rather than in place of it."
         },
         new()
         {
@@ -174,6 +183,13 @@ public partial class BitTagDemo
         },
         new()
         {
+            Name = "PrefixTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom markup rendered at the head of the tag, ahead of the icon or the picture. It is added rather than substituted, so an icon, an image and the checkmark of a selected tag all keep rendering alongside it."
+        },
+        new()
+        {
             Name = "Rel",
             Type = "BitLinkRels?",
             DefaultValue = "null",
@@ -186,7 +202,25 @@ public partial class BitTagDemo
             Name = "Reversed",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Reverses the direction flow of the content of the tag, which moves the icon after the label and the dismiss button to the head of the tag."
+            Description = "Reverses the direction flow of the content of the tag: the icon, the label, the trailing SecondaryIcon, the two templates and the dismiss button all swap ends with it."
+        },
+        new()
+        {
+            Name = "SecondaryIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The trailing icon of the tag, rendered after the label and before the dismiss button, using custom CSS classes for external icon libraries. Takes precedence over SecondaryIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
+            Name = "SecondaryIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the trailing icon of the tag, from the built-in Fluent UI icons. It is rendered after the label and before the dismiss button, inside whatever the tag became, and it mirrors with the rest of the row when the tag is Reversed.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
         },
         new()
         {
@@ -260,6 +294,13 @@ public partial class BitTagDemo
             Description = "Custom CSS styles for different parts of the tag.",
             LinkType = LinkType.Link,
             Href = "#tag-class-styles"
+        },
+        new()
+        {
+            Name = "SuffixTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom markup rendered at the end of the tag, after the trailing SecondaryIcon and before the dismiss button. The mirror of the PrefixTemplate, and subject to the same rules."
         },
         new()
         {
@@ -362,6 +403,13 @@ public partial class BitTagDemo
                },
                new()
                {
+                   Name = "SecondaryIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the trailing icon of the BitTag, which is rendered after the label."
+               },
+               new()
+               {
                    Name = "Selected",
                    Type = "string?",
                    DefaultValue = "null",
@@ -446,6 +494,51 @@ public partial class BitTagDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
+        new()
+        {
+            Id = "nav-aria-current-enum",
+            Name = "BitNavAriaCurrent",
+            Description = "Defines the value of the aria-current attribute reported by a selected link.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Page",
+                    Description="Represents the current page within a set of pages.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Step",
+                    Description="Represents the current step within a process.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Location",
+                    Description="Represents the current location within an environment or context.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Date",
+                    Description="Represents the current date within a collection of dates.",
+                    Value="3",
+                },
+                new()
+                {
+                    Name= "Time",
+                    Description="Represents the current time within a set of times.",
+                    Value="4",
+                },
+                new()
+                {
+                    Name= "True",
+                    Description="Represents the current item within a set, without saying which kind of set it is.",
+                    Value="5",
+                }
+            ]
+        },
         new()
         {
             Id = "color-enum",
@@ -774,6 +867,8 @@ public partial class BitTagDemo
         focusTags = ["Design", "Research", "Docs"];
     }
 
+    private BitTag? plainFocusTag;
+
     private void ToggleFilter(string filter, bool selected)
     {
         if (selected)
@@ -813,7 +908,15 @@ public partial class BitTagDemo
     private readonly string example4RazorCode = @"
 <BitTag Text=""Calendar"" IconName=""@BitIconName.Calendar"" />
 <BitTag Text=""Reversed"" IconName=""@BitIconName.Calendar"" Reversed />
-<BitTag IconName=""@BitIconName.Pinned"" AriaLabel=""Pinned"" />";
+<BitTag IconName=""@BitIconName.Pinned"" AriaLabel=""Pinned"" />
+
+<BitTag Text=""Status"" SecondaryIconName=""@BitIconName.ChevronDown"" Variant=""BitVariant.Outline"" OnClick=""() => { }"" />
+
+<BitTag Text=""Read the docs"" IconName=""@BitIconName.Documentation"" SecondaryIconName=""@BitIconName.OpenInNewWindow""
+        Color=""BitColor.Info"" Href=""https://blazorui.bitplatform.dev"" Target=""_blank"" />
+
+<BitTag Text=""Both ends reversed"" IconName=""@BitIconName.Tag"" SecondaryIconName=""@BitIconName.ChevronDown""
+        Color=""BitColor.Success"" Variant=""BitVariant.Outline"" Reversed />";
 
     private readonly string example5RazorCode = @"
 <BitTag Text=""Annie Lindqvist"" IconUrl=""/images/persona-female.png"" Variant=""BitVariant.Outline"" />
@@ -889,7 +992,10 @@ private int cardClickCount;";
 <BitTag Text=""Logo"" IconName=""@BitIconName.Download"" Color=""BitColor.Success"" Variant=""BitVariant.Outline""
         Href=""/images/bit-logo-blue.png"" Download=""bit-logo.png"" />
 
-<BitTag Text=""Disabled"" Href=""https://bitplatform.dev"" IsEnabled=""false"" />";
+<BitTag Text=""Disabled"" Href=""https://bitplatform.dev"" IsEnabled=""false"" />
+
+<BitTag Text=""This page"" Href=""#example9"" Selected AriaCurrent=""BitNavAriaCurrent.Page""
+        Color=""BitColor.Info"" Variant=""BitVariant.Outline"" />";
 
     private readonly string example10RazorCode = @"
 @foreach (var filter in filters)
@@ -955,6 +1061,24 @@ private void ToggleFilter(string filter, bool selected)
 
 <BitTag IconName=""@BitIconName.Filter"" Color=""BitColor.Info"" OnClick=""() => { }"">
     Status<BitIcon IconName=""@BitIconName.ChevronDown"" />
+</BitTag>
+
+<BitTag Text=""Alex Parker"" SecondaryText=""Product designer"" Variant=""BitVariant.Outline"" Size=""BitSize.Large"">
+    <PrefixTemplate>
+        <span class=""example-initials"">AP</span>
+    </PrefixTemplate>
+</BitTag>
+
+<BitTag Text=""Open issues"" Color=""BitColor.Warning"" Variant=""BitVariant.Outline"">
+    <SuffixTemplate>
+        <span class=""example-count"">24</span>
+    </SuffixTemplate>
+</BitTag>
+
+<BitTag Text=""Deploying"" Color=""BitColor.Success"" SecondaryIconName=""@BitIconName.ChevronRight"" OnClick=""() => { }"">
+    <PrefixTemplate>
+        <BitRollerLoading CustomSize=""16"" Color=""BitColor.TertiaryBackground"" />
+    </PrefixTemplate>
 </BitTag>";
 
     private readonly string example12RazorCode = @"
@@ -969,7 +1093,10 @@ private void ToggleFilter(string filter, bool selected)
     private readonly string example13RazorCode = @"
 <BitTag FullWidth Text=""Full width"" IconName=""@BitIconName.Tag"" Variant=""BitVariant.Outline"" />
 
-<BitTag FullWidth Text=""Full width and dismissible"" IconName=""@BitIconName.Tag"" Color=""BitColor.Info"" OnDismiss=""() => { }"" />";
+<BitTag FullWidth Text=""Full width and dismissible"" IconName=""@BitIconName.Tag"" Color=""BitColor.Info"" OnDismiss=""() => { }"" />
+
+<BitTag FullWidth Text=""Full width with a trailing glyph"" IconName=""@BitIconName.Tag"" Color=""BitColor.Success""
+        Variant=""BitVariant.Outline"" SecondaryIconName=""@BitIconName.ChevronRight"" OnClick=""() => { }"" />";
 
     private readonly string example14RazorCode = @"
 @foreach (var tag in focusTags)
@@ -981,7 +1108,10 @@ private void ToggleFilter(string filter, bool selected)
             OnDismiss=""() => DismissFocusTag(tag)"" />
 }
 
-<BitButton Variant=""BitVariant.Outline"" IsEnabled=""@(focusTags.Count < 3)"" OnClick=""ResetFocusTags"">Reset</BitButton>";
+<BitButton Variant=""BitVariant.Outline"" IsEnabled=""@(focusTags.Count < 3)"" OnClick=""ResetFocusTags"">Reset</BitButton>
+
+<BitTag @ref=""plainFocusTag"" Text=""A plain tag with a TabIndex"" TabIndex=""0"" Variant=""BitVariant.Outline"" />
+<BitButton Variant=""BitVariant.Outline"" OnClick=""() => plainFocusTag?.FocusAsync()"">Focus it</BitButton>";
     private readonly string example14CsharpCode = @"
 private List<string> focusTags = [""Design"", ""Research"", ""Docs""];
 private readonly Dictionary<string, BitTag> focusTagRefs = [];
@@ -1007,7 +1137,9 @@ private async Task DismissFocusTag(string tag)
 private void ResetFocusTags()
 {
     focusTags = [""Design"", ""Research"", ""Docs""];
-}";
+}
+
+private BitTag? plainFocusTag;";
 
     private readonly string example15RazorCode = @"
 <BitTag IconName=""@BitIconName.Filter"" AriaLabel=""Show the filters"" OnClick=""() => { }"" />
@@ -1128,6 +1260,7 @@ private bool isOnlyMine;";
 <BitTag Text=""Dismiss"" Icon=""@BitIconInfo.Fa(""solid tag"")"" DismissIcon=""@BitIconInfo.Fa(""solid xmark"")"" OnDismiss=""() => { }"" />
 
 <BitTag Text=""Selected"" Icon=""@BitIconInfo.Fa(""solid star"")"" SelectedIcon=""@BitIconInfo.Fa(""solid check"")"" Selected />
+<BitTag Text=""Trailing"" Icon=""@BitIconInfo.Fa(""solid filter"")"" SecondaryIcon=""@BitIconInfo.Fa(""solid chevron-down"")"" />
 
 
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
@@ -1142,7 +1275,8 @@ private bool isOnlyMine;";
 
 <BitTag Text=""Dismiss"" Icon=""@BitIconInfo.Bi(""tag-fill"")"" DismissIcon=""@BitIconInfo.Bi(""x-lg"")"" OnDismiss=""() => { }"" />
 
-<BitTag Text=""Selected"" Icon=""@BitIconInfo.Bi(""star-fill"")"" SelectedIcon=""@BitIconInfo.Bi(""check-lg"")"" Selected />";
+<BitTag Text=""Selected"" Icon=""@BitIconInfo.Bi(""star-fill"")"" SelectedIcon=""@BitIconInfo.Bi(""check-lg"")"" Selected />
+<BitTag Text=""Trailing"" Icon=""@BitIconInfo.Bi(""funnel-fill"")"" SecondaryIcon=""@BitIconInfo.Bi(""chevron-down"")"" />";
 
     private readonly string example18RazorCode = @"
 <BitTag Text=""Small"" IconName=""@BitIconName.Calendar"" Size=""BitSize.Small"" Variant=""BitVariant.Fill"" />

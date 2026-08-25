@@ -85,6 +85,14 @@
     }
 }
 
+// A plain tag is not a control, but a TabIndex given to one still puts it in the tab sequence, and anything
+// that takes focus has to show that it has it. The same inset outline as the content, and for the same
+// reason: the root clips whatever is drawn outside the corner it draws.
+.bit-tag:focus-visible {
+    outline: $shp-focus-ring-width solid currentcolor;
+    outline-offset: calc(-1 * #{$shp-focus-ring-width});
+}
+
 // The label block: the text of the tag and, under it, whatever qualifies it.
 .bit-tag-lbl {
     min-width: 0;
@@ -110,6 +118,7 @@
 // An icon from an external library brings a type size of its own; inside a tag it is the tag that sets the
 // scale, so the glyph is normalized back to the size of the label it sits next to.
 .bit-tag-icn,
+.bit-tag-sci,
 .bit-tag-sic,
 .bit-tag-dsi {
     flex-shrink: 0;
@@ -176,6 +185,13 @@
 .bit-tag-flw {
     width: 100%;
     display: flex;
+
+    // A tag that has been stretched has room its content does not fill, and that room belongs to the label:
+    // it is what pushes a trailing glyph to the far end of the chip instead of leaving it stranded against
+    // the words. A tag hugging its content has no such room, so this only ever applies to a stretched one.
+    .bit-tag-lbl {
+        flex: 1 1 auto;
+    }
 }
 
 // The dismiss glyph is well under the 24 CSS pixels WCAG 2.2 asks of a pointer target, and a tag is too
@@ -395,6 +411,7 @@
 
     // currentcolor is the forced text color here, which a selected tag has opted out of, so the ring is
     // pinned to the system highlight for both.
+    .bit-tag:focus-visible,
     .bit-tag-int:focus-visible,
     .bit-tag-cls:focus-visible {
         outline-color: Highlight;

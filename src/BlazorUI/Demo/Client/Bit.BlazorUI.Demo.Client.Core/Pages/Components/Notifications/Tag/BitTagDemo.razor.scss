@@ -37,3 +37,26 @@
         background-color: deeppink;
     }
 }
+
+// The two demo slots of the Template section: an initials avatar in the leading one and a counter in the
+// trailing one. Both are sized off the tag's own type so they scale with whatever size the tag is set to.
+.example-initials {
+    width: 2em;
+    height: 2em;
+    display: flex;
+    flex-shrink: 0;
+    font-size: 0.75em;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bit-clr-bg-ter);
+}
+
+.example-count {
+    flex-shrink: 0;
+    font-size: 0.85em;
+    padding: 0.1em 0.5em;
+    border-radius: 999px;
+    background-color: var(--bit-clr-bg-ter);
+}
+
