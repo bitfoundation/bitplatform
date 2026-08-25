@@ -381,11 +381,20 @@ private int imageErrorCount = 0;";
             ImageAttributes=""@(new() { { ""draggable"", ""false"" }, { ""decoding"", ""async"" } })""
             ImageUrl=""/images/persona/persona-female.png"" />
 
-<BitPersona ImageFadeIn
-            PrimaryText=""Xafan Salina""
-            SecondaryText=""Faded in""
-            Size=""BitPersonaSize.Size72""
-            ImageUrl=""/images/persona/persona-female.png"" />";
+<BitButton Size=""BitSize.Small"" Variant=""BitVariant.Outline"" OnClick=""() => isFadeInPersonaShown = !isFadeInPersonaShown"">
+    @(isFadeInPersonaShown ? ""Hide"" : ""Show"")
+</BitButton>
+
+@if (isFadeInPersonaShown)
+{
+    <BitPersona ImageFadeIn
+                PrimaryText=""Xafan Salina""
+                SecondaryText=""Faded in""
+                Size=""BitPersonaSize.Size72""
+                ImageUrl=""/images/persona/persona-female.png"" />
+}";
+    private readonly string example12CsharpCode = @"
+private bool isFadeInPersonaShown = true;";
 
     private readonly string example13RazorCode = @"
 <BitPersona PrimaryText=""Xafan Salina""

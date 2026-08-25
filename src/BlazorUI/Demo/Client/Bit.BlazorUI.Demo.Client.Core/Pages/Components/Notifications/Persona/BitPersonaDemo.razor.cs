@@ -1003,6 +1003,7 @@ public partial class BitPersonaDemo
     private int imageLoadCount = 0;
     private int imageErrorCount = 0;
     private bool isDetailsShown = true;
+    private bool isFadeInPersonaShown = true;
 
     private readonly BitColor[] _coinColors = [BitColor.Primary, BitColor.Info, BitColor.Tertiary];
 

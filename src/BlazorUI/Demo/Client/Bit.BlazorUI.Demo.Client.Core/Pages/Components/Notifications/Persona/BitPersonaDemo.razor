@@ -476,7 +476,7 @@
         <p>Image Error Count: @imageErrorCount</p>
     </DemoExample>
 
-    <DemoExample Title="Image loading" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="Image loading" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
             <strong>ImageLoading</strong> decides when the browser fetches the picture: <strong>Lazy</strong>
             holds off until it is nearly in view, which is what a long list of people wants, and
@@ -500,13 +500,20 @@
                     ImageAttributes="@(new() { { "draggable", "false" }, { "decoding", "async" } })"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <br /><br /><br /><br />
-        <div>Faded in on arrival (<b>ImageFadeIn</b>) - reload the page to watch it:</div>
+        <div>Faded in on arrival (<b>ImageFadeIn</b>) - hide the persona and show it again to watch the fade:</div>
         <br />
-        <BitPersona ImageFadeIn
-                    PrimaryText="Xafan Salina"
-                    SecondaryText="Faded in"
-                    Size="BitPersonaSize.Size72"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" OnClick="() => isFadeInPersonaShown = !isFadeInPersonaShown">
+            @(isFadeInPersonaShown ? "Hide" : "Show")
+        </BitButton>
+        <br /><br />
+        @if (isFadeInPersonaShown)
+        {
+            <BitPersona ImageFadeIn
+                        PrimaryText="Xafan Salina"
+                        SecondaryText="Faded in"
+                        Size="BitPersonaSize.Size72"
+                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        }
     </DemoExample>
 
     <DemoExample Title="Responsive image" RazorCode="@example13RazorCode" Id="example13">
