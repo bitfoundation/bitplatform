@@ -4,20 +4,12 @@ public partial class BitLoadingDemo
 {
     private bool _isPaused;
     private bool _isWorking;
-    private bool _isOverlayOpen;
 
     private async Task StartWork()
     {
         _isWorking = true;
         await Task.Delay(1500);
         _isWorking = false;
-    }
-
-    private async Task StartOverlayWork()
-    {
-        _isOverlayOpen = true;
-        await Task.Delay(3000);
-        _isOverlayOpen = false;
     }
 
 
@@ -511,25 +503,6 @@ private async Task StartWork()
 </BitButton>";
 
     private readonly string example10RazorCode = @"
-<div class=""overlay-host"">
-    <BitButton OnClick=""StartOverlayWork"" IsEnabled=""@(_isOverlayOpen is false)"">Load the panel</BitButton>
-    <div>This panel is what the overlay covers.</div>
-
-    <BitOverlay @bind-IsOpen=""_isOverlayOpen"" Class=""overlay"" AbsolutePosition NoAutoClose>
-        <BitRingLoading Label=""Loading your data..."" Color=""BitColor.PrimaryBackground"" />
-    </BitOverlay>
-</div>";
-    private readonly string example10CsharpCode = @"
-private bool _isOverlayOpen;
-
-private async Task StartOverlayWork()
-{
-    _isOverlayOpen = true;
-    await Task.Delay(3000);
-    _isOverlayOpen = false;
-}";
-
-    private readonly string example11RazorCode = @"
 @* role=""status"" aria-live=""polite"" and a visually hidden ""Loading"" by default. *@
 <BitSpinnerLoading />
 
@@ -542,7 +515,7 @@ private async Task StartOverlayWork()
 @* Interrupts the screen reader rather than waiting for it. *@
 <BitSpinnerLoading Label=""Signing you out"" AriaLive=""assertive"" />";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitBarsLoading Label=""Primary"" Color=""BitColor.Primary"" />
 
 <BitCircleLoading Label=""Secondary"" Color=""BitColor.Secondary"" />
@@ -572,7 +545,7 @@ private async Task StartOverlayWork()
     <BitSpinnerLoading Label=""currentColor"" CustomColor=""currentColor"" />
 </div>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitXboxLoading Label=""Small"" Size=""BitSize.Small"" />
 
 <BitXboxLoading Label=""Medium"" Size=""BitSize.Medium"" />
@@ -583,7 +556,7 @@ private async Task StartOverlayWork()
 
 <BitXboxLoading Label=""Custom (24)"" CustomSize=""24"" />";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitRingLoading Label=""Style"" Style=""padding:1rem;border:1px solid gray;border-radius:8px"" />
 
 <BitRingLoading Label=""Class"" Class=""custom-class"" />
@@ -603,7 +576,7 @@ private async Task StartOverlayWork()
                                    Child = ""custom-child"",
                                    Label = ""custom-label"" })"" />";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example14RazorCode = @"
 <div dir=""rtl"">
     <BitRingLoading Dir=""BitDir.Rtl"" Label=""شروع"" LabelPosition=""BitLabelPosition.Start"" />
 

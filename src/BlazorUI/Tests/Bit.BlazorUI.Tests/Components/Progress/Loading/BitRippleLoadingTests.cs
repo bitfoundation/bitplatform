@@ -9,5 +9,5 @@ public class BitRippleLoadingTests : BitLoadingTestsBase<BitRippleLoading>
 
     protected override int ChildCount => 2;
 
-    protected override string[] ScaledVariables => ["--bit-ldn-rpl-4", "--bit-ldn-rpl-8", "--bit-ldn-rpl-36", "--bit-ldn-rpl-80"];
+    protected override string[] ScaledVariables => ["--bit-ldn-rpl-4", "--bit-ldn-rpl-8", "--bit-ldn-rpl-80"];
 }

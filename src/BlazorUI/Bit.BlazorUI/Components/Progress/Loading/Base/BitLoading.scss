@@ -14,6 +14,20 @@
     // which already slows under reduced motion and is restored by ForceAnimation, and stays a knob a
     // consumer can override on a single loader - which is what the Speed parameter writes over it.
     --bit-ldn-mot-factor: #{$mot-loop-factor};
+
+    // Paused holds every animation of the drawing at the frame it had reached rather than removing it, so
+    // the shape and the space it takes up are exactly what they were and nothing around it moves. The
+    // pseudo-elements are named on their own because several loaders draw their moving parts with ::before
+    // and ::after, which a plain descendant selector never reaches. The root class is doubled up because
+    // every loader declares its animation with the shorthand, which implicitly resets the play state to
+    // running - and those rules are bundled after this file, so at equal specificity they would win the
+    // cascade and the pause would never take.
+    &.bit-ldn-pau,
+    &.bit-ldn-pau *,
+    &.bit-ldn-pau *::before,
+    &.bit-ldn-pau *::after {
+        animation-play-state: paused;
+    }
 }
 
 // An inline loader sits in a line of text, a button or a table cell instead of taking a line of its
@@ -22,17 +36,6 @@
 .bit-ldn-inl {
     display: inline-flex;
     vertical-align: middle;
-}
-
-// Paused holds every animation of the drawing at the frame it had reached rather than removing it, so
-// the shape and the space it takes up are exactly what they were and nothing around it moves. The
-// pseudo-elements are named on their own because several loaders draw their moving parts with ::before
-// and ::after, which a plain descendant selector never reaches.
-.bit-ldn-pau,
-.bit-ldn-pau *,
-.bit-ldn-pau *::before,
-.bit-ldn-pau *::after {
-    animation-play-state: paused;
 }
 
 .bit-ldn-lbl {

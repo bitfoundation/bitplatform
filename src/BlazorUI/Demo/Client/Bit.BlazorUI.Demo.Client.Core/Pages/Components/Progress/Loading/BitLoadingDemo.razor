@@ -114,9 +114,9 @@
             <div>
                 <b>Label</b> is what turns a spinning shape into a status message, and it is also what a screen
                 reader announces in place of the default text described under
-                <BitLink Href="#example11">Accessibility</BitLink>. Prefer something specific and present-tense -
+                <BitLink Href="#example10">Accessibility</BitLink>. Prefer something specific and present-tense -
                 "Uploading photos..." says far more than "Loading" - and keep it to a few words: the label
-                scales with the <BitLink Href="#example13">Size</BitLink> of the loader, so a sentence quickly
+                scales with the <BitLink Href="#example12">Size</BitLink> of the loader, so a sentence quickly
                 grows wider than the drawing it sits under.
             </div>
             <br /><br />
@@ -134,7 +134,7 @@
             <div>
                 <b>LabelPosition</b> puts the label on any of the four sides of the drawing. <b>Top</b> is the
                 default. <b>Start</b> and <b>End</b> follow the direction of the writing and swap sides in a
-                <BitLink Href="#example15">right-to-left</BitLink> layout, while <b>Top</b> and <b>Bottom</b>
+                <BitLink Href="#example14">right-to-left</BitLink> layout, while <b>Top</b> and <b>Bottom</b>
                 stay where they are.
             </div>
             <br /><br />
@@ -281,7 +281,7 @@
                 <b>BitRippleLoading</b>, <b>BitXboxLoading</b> and <b>BitSpinnerLoading</b> - and the rest,
                 whose shapes are filled rather than stroked, are left as they are. Each of them draws the
                 stroke inside its own outline, so a thicker one never grows the footprint of the component past
-                the <BitLink Href="#example13">size</BitLink> it was given.
+                the <BitLink Href="#example12">size</BitLink> it was given.
             </div>
             <br />
             <div>
@@ -324,7 +324,7 @@
                 A loader is a block of its own by default, sized in pixels and centred on its own line.
                 <b>Inline</b> lays it out as an inline box aligned to the middle of the current line instead, so
                 it can sit inside a sentence, a button, a table cell or a heading without pushing anything onto
-                a new line. Pair it with a small <BitLink Href="#example13">CustomSize</BitLink> and with
+                a new line. Pair it with a small <BitLink Href="#example12">CustomSize</BitLink> and with
                 <code>CustomColor="currentColor"</code>, which takes the color of the text around it.
             </div>
             <br /><br />
@@ -342,27 +342,7 @@
             </BitButton>
         </DemoExample>
 
-        <DemoExample Title="Overlay" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-            <div>
-                A wait that has to block the surface behind it is a loader inside a
-                <BitLink Href="/components/overlay">BitOverlay</BitLink>: the overlay dims what is underneath and
-                takes the pointer, and <b>AbsolutePosition</b> confines it to the panel it sits in - a container
-                with a relative position - rather than the whole page. <b>NoAutoClose</b> keeps a stray click from
-                dismissing work that is still running, and <b>AutoToggleScroll</b> stops the page scrolling behind
-                a full-screen one. Give the loader a <b>Label</b> so the wait is announced rather than only drawn,
-                and pick a <b>Color</b> that reads against the dimmed backdrop.
-            </div>
-            <br /><br />
-            <div class="overlay-host">
-                <BitButton OnClick="StartOverlayWork" IsEnabled="@(_isOverlayOpen is false)">Load the panel</BitButton>
-                <div>This panel is what the overlay covers.</div>
-                <BitOverlay @bind-IsOpen="_isOverlayOpen" Class="overlay" AbsolutePosition NoAutoClose>
-                    <BitRingLoading Label="Loading your data..." Color="BitColor.PrimaryBackground" />
-                </BitOverlay>
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Accessibility" RazorCode="@example11RazorCode" Id="example11">
+        <DemoExample Title="Accessibility" RazorCode="@example10RazorCode" Id="example10">
             <div>
                 A spinning shape says nothing on its own, so the root element is a live region: it carries
                 <code>role="status"</code> and <code>aria-live="polite"</code>, and its text is announced when
@@ -403,7 +383,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Color" RazorCode="@example12RazorCode" Id="example12">
+        <DemoExample Title="Color" RazorCode="@example11RazorCode" Id="example11">
             <div>
                 <b>Color</b> paints the whole drawing in one of the theme's roles, so a loader re-skins with the
                 rest of the library when the theme or the color scheme changes. <b>CustomColor</b> takes any
@@ -412,7 +392,7 @@
                 <b>Color</b> is left unset, since a theme role always wins over a literal color.
             </div>
             <br /><br />
-            <div>Theme colors:</div><br />
+            <div><b>Theme colors</b>:</div><br />
             <div class="container">
                 <div class="wrapper">
                     <BitBarsLoading Label="Primary" Color="BitColor.Primary" />
@@ -440,7 +420,7 @@
                 </div>
             </div>
             <br /><br />
-            <div>Custom colors:</div><br />
+            <div><b>Custom colors</b>:</div><br />
             <div class="container">
                 <div class="wrapper">
                     <BitBarsLoading Label="brown" CustomColor="brown" />
@@ -460,7 +440,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Size" RazorCode="@example13RazorCode" Id="example13">
+        <DemoExample Title="Size" RazorCode="@example12RazorCode" Id="example12">
             <div>
                 <b>Size</b> offers the three sizes shared across the library - <b>Small</b> (40px),
                 <b>Medium</b> (64px, the default) and <b>Large</b> (88px) - and <b>CustomSize</b> takes any
@@ -488,7 +468,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" Id="example14">
+        <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" Id="example13">
             <div>
                 <b>Style</b> and <b>Class</b> land on the root of the component - the box that holds the drawing
                 and the label - while <b>Styles</b> and <b>Classes</b> reach every part of it on its own: the
@@ -537,7 +517,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example15RazorCode" Id="example15">
+        <DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
             <div>
                 Use BitLoading in right-to-left (RTL). Most of the animations turn about their own centre and
                 look the same either way, so what the direction usually changes is the label: <b>Start</b> and
