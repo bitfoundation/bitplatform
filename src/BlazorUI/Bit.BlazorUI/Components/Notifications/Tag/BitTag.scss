@@ -1,21 +1,26 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// The root of the tag is only the shape and the paint: the rule, the corner, the colors and the height. What
+// is inside it is laid out by .bit-tag-cnt, which is the element that becomes an anchor or a button when the
+// tag is one - the padding lives there so that the whole chip, edge to edge, is what the pointer activates
+// rather than only the words in the middle of it.
 .bit-tag {
     line-height: 1;
-    gap: spacing(1);
     overflow: hidden;
-    align-items: center;
+    max-width: 100%;
+    align-items: stretch;
     display: inline-flex;
+    box-sizing: border-box;
     font-family: $tg-font-family;
     font-weight: $tg-font-weight;
     border-style: $shp-border-style;
     border-width: $shp-border-width;
-    border-radius: $shp-radius-chip;
-    padding: var(--bit-tag-pad-y) var(--bit-tag-pad-x);
+    border-radius: var(--bit-tag-radius);
     font-size: var(--bit-tag-fontsize);
     min-height: var(--bit-tag-minheight);
     letter-spacing: $tg-ctrl-letter-spacing;
     text-transform: $tg-ctrl-text-transform;
+    transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     &.bit-dis {
         cursor: default;
@@ -24,8 +29,169 @@
     }
 }
 
+// The content of the tag. It is the same box whether the tag is a label, a link or a button, so the three
+// read identically and the type is not reset by the user agent stylesheet of a button.
+.bit-tag-cnt {
+    min-width: 0;
+    border: none;
+    flex: 1 1 auto;
+    display: flex;
+    color: inherit;
+    font: inherit;
+    text-align: inherit;
+    align-items: center;
+    box-sizing: border-box;
+    text-decoration: none;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    gap: var(--bit-tag-gap);
+    background-color: transparent;
+    padding: var(--bit-tag-pad-y) var(--bit-tag-pad-x);
+}
+
+// A tag that is a link or a button answers the pointer, the keyboard and the focus like every other control
+// of the library. The background it paints is its own rather than the root's, so the dismiss button standing
+// next to it keeps a hover state of its own instead of lighting up with it.
+.bit-tag-int {
+    cursor: pointer;
+    appearance: none;
+    user-select: none;
+    transition: background-color $mot-duration-short $mot-easing;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: var(--bit-tag-clr-hover-bg);
+        }
+    }
+
+    &:active {
+        background-color: var(--bit-tag-clr-active-bg);
+    }
+
+    // An inset outline rather than the shared focus ring: the root clips its content to the corner it draws,
+    // so a ring painted outside the element would be cut off by it. Drawn in the color of the label, which is
+    // the one color guaranteed to contrast with whatever the tag is painted in.
+    &:focus-visible {
+        outline: $shp-focus-ring-width solid currentcolor;
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+    }
+
+    // A button carries the disabled state itself; an anchor has no such state, so the link tag reports it
+    // through aria-disabled and both are taken out of the pointer here.
+    &:disabled,
+    &[aria-disabled="true"] {
+        cursor: default;
+        pointer-events: none;
+    }
+}
+
+// A plain tag is not a control, but a TabIndex given to one still puts it in the tab sequence, and anything
+// that takes focus has to show that it has it. The same inset outline as the content, and for the same
+// reason: the root clips whatever is drawn outside the corner it draws.
+.bit-tag:focus-visible {
+    outline: $shp-focus-ring-width solid currentcolor;
+    outline-offset: calc(-1 * #{$shp-focus-ring-width});
+}
+
+// The label block: the text of the tag and, under it, whatever qualifies it.
+.bit-tag-lbl {
+    min-width: 0;
+    display: flex;
+    text-align: start;
+    flex-direction: column;
+    gap: var(--bit-tag-lbl-gap);
+    justify-content: center;
+}
+
+// The second line is set one step smaller and at the regular weight, and the first is lifted to semibold to
+// answer it. Neither is dimmed: the two lines sit on the same painted chip as the label, where an opacity
+// would blend the text into the color underneath it and take the contrast with it.
+.bit-tag-lbl:has(> .bit-tag-stx) > .bit-tag-tex {
+    font-weight: $tg-fw-semibold;
+}
+
+.bit-tag-stx {
+    font-weight: $tg-fw-regular;
+    font-size: var(--bit-tag-stx-fontsize);
+}
+
+// An icon from an external library brings a type size of its own; inside a tag it is the tag that sets the
+// scale, so the glyph is normalized back to the size of the label it sits next to.
+.bit-tag-icn,
+.bit-tag-sci,
+.bit-tag-sic,
+.bit-tag-dsi {
+    flex-shrink: 0;
+    line-height: 1;
+    font-size: 1em;
+}
+
+// The picture of what the tag stands for. It is cropped to a circle the height of the label, so a portrait of
+// any aspect ratio reads as an avatar rather than as a stretched thumbnail.
+.bit-tag-img {
+    flex-shrink: 0;
+    object-fit: cover;
+    width: var(--bit-tag-imgsize);
+    height: var(--bit-tag-imgsize);
+    border-radius: $shp-radius-full;
+}
+
+// The name and the description a screen reader is given where the tag itself has no words to carry them:
+// an aria-label on an element with no role of its own is not guaranteed to be announced, and a description
+// has to live somewhere in the DOM to be pointed at. Taken out of the layout without being taken out of the
+// accessibility tree, which display:none or visibility:hidden would both do.
+.bit-tag-vhd {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
 .bit-tag-rvs {
     flex-direction: row-reverse;
+
+    .bit-tag-cnt {
+        flex-direction: row-reverse;
+    }
+
+    // The dismiss button has moved to the head of the tag, so the inset that keeps it off the rule moves with
+    // it. Logical properties follow the direction of writing rather than the reversed row, so the two paddings
+    // are simply swapped back here.
+    .bit-tag-cls {
+        padding-inline: var(--bit-tag-pad-x) #{spacing(0.375)};
+    }
+}
+
+// A tag that has a width of its own to protect keeps its content on one line and ends it with an ellipsis.
+// Every box between the root and the text has to be allowed to shrink for the ellipsis to ever appear.
+.bit-tag-nwr {
+    .bit-tag-cnt {
+        white-space: nowrap;
+    }
+
+    .bit-tag-tex,
+    .bit-tag-stx {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+}
+
+.bit-tag-flw {
+    width: 100%;
+    display: flex;
+
+    // A tag that has been stretched has room its content does not fill, and that room belongs to the label:
+    // it is what pushes a trailing glyph to the far end of the chip instead of leaving it stranded against
+    // the words. A tag hugging its content has no such room, so this only ever applies to a stretched one.
+    .bit-tag-lbl {
+        flex: 1 1 auto;
+    }
 }
 
 // The dismiss glyph is well under the 24 CSS pixels WCAG 2.2 asks of a pointer target, and a tag is too
@@ -36,12 +202,41 @@
     display: flex;
     color: inherit;
     cursor: pointer;
+    flex-shrink: 0;
+    appearance: none;
+    user-select: none;
     align-items: center;
     align-self: stretch;
     box-sizing: border-box;
-    padding: 0 spacing(0.375);
     background-color: transparent;
     font-size: var(--bit-tag-fontsize);
+    padding-inline: #{spacing(0.375)} var(--bit-tag-pad-x);
+    transition: background-color $mot-duration-short $mot-easing;
+
+    // The button sits on a chip that is already painted in the color of the tag, so it answers the pointer by
+    // deepening that paint rather than by taking a color of its own - which would be the one color the tag is
+    // not wearing.
+    @media (hover: hover) {
+        &:hover {
+            background-color: var(--bit-tag-clr-hover-bg);
+        }
+    }
+
+    &:active {
+        background-color: var(--bit-tag-clr-active-bg);
+    }
+
+    // The same inset outline as the content, and for the same reason: the root clips whatever is drawn
+    // outside its corner.
+    &:focus-visible {
+        outline: $shp-focus-ring-width solid currentcolor;
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+    }
+
+    &:disabled {
+        cursor: default;
+        pointer-events: none;
+    }
 }
 
 
@@ -49,6 +244,17 @@
     color: var(--bit-tag-clr-txt);
     border-color: var(--bit-tag-clr);
     background-color: var(--bit-tag-clr);
+
+    // A filled tag is already wearing the role color, so it answers the pointer by deepening it. The overlay
+    // is composited from the label color so that it works over every role, including the neutral ones whose
+    // hover slot is not a deeper version of themselves.
+    --bit-tag-clr-hover-bg: #{translucent(var(--bit-tag-clr-txt), 12%)};
+    --bit-tag-clr-active-bg: #{translucent(var(--bit-tag-clr-txt), 20%)};
+
+    &.bit-tag-sel {
+        border-color: var(--bit-tag-clr-active);
+        background-color: var(--bit-tag-clr-active);
+    }
 
     &.bit-dis {
         color: var(--bit-tag-clr-dis-text);
@@ -61,6 +267,17 @@
     color: var(--bit-tag-clr);
     border-color: var(--bit-tag-clr);
     background-color: transparent;
+    --bit-tag-clr-hover-bg: var(--bit-tag-clr-light);
+    --bit-tag-clr-active-bg: var(--bit-tag-clr-light-hover);
+
+    &.bit-tag-sel {
+        background-color: var(--bit-tag-clr-light);
+
+        // A selected chip is already wearing its hover color, so the pointer has to take it one step further -
+        // otherwise a filter chip looks inert for as long as it is picked.
+        --bit-tag-clr-hover-bg: var(--bit-tag-clr-light-hover);
+        --bit-tag-clr-active-bg: var(--bit-tag-clr-light-active);
+    }
 
     &.bit-dis {
         color: var(--bit-tag-clr-dis-text);
@@ -73,6 +290,17 @@
     color: var(--bit-tag-clr);
     border-color: transparent;
     background-color: transparent;
+    --bit-tag-clr-hover-bg: var(--bit-tag-clr-light);
+    --bit-tag-clr-active-bg: var(--bit-tag-clr-light-hover);
+
+    &.bit-tag-sel {
+        background-color: var(--bit-tag-clr-light);
+
+        // A selected chip is already wearing its hover color, so the pointer has to take it one step further -
+        // otherwise a filter chip looks inert for as long as it is picked.
+        --bit-tag-clr-hover-bg: var(--bit-tag-clr-light-hover);
+        --bit-tag-clr-active-bg: var(--bit-tag-clr-light-active);
+    }
 
     &.bit-dis {
         color: var(--bit-tag-clr-dis-text);
@@ -88,6 +316,10 @@
         --bit-tag-clr-txt: #{role($tokens, on)};
         --bit-tag-clr-dis: #{role($tokens, dis)};
         --bit-tag-clr-dis-text: #{role($tokens, dis-text)};
+        --bit-tag-clr-active: #{role($tokens, active)};
+        --bit-tag-clr-light: #{role($tokens, light)};
+        --bit-tag-clr-light-hover: #{role($tokens, light-hover)};
+        --bit-tag-clr-light-active: #{role($tokens, light-active)};
     }
 }
 
@@ -98,22 +330,109 @@
 // a pill in Cupertino, 8px in Material - and a rounder corner eats into the inline inset. Half the control
 // padding is the chip's share of it: a tag is a label, not a button.
 .bit-tag-sm {
+    --bit-tag-gap: #{spacing(0.750)};
+    --bit-tag-lbl-gap: #{spacing(0.125)};
     --bit-tag-fontsize: #{$tg-fs-xs};
+    --bit-tag-stx-fontsize: #{$tg-fs-2xs};
+    --bit-tag-imgsize: #{spacing(1.750)};
     --bit-tag-pad-y: #{spacing(0.250)};
     --bit-tag-pad-x: calc(#{$siz-ctrl-pad-x-sm} / 2);
     --bit-tag-minheight: #{spacing(2.25)};
 }
 
 .bit-tag-md {
+    --bit-tag-gap: #{spacing(1)};
+    --bit-tag-lbl-gap: #{spacing(0.125)};
     --bit-tag-fontsize: #{$tg-fs-sm};
+    --bit-tag-stx-fontsize: #{$tg-fs-xs};
+    --bit-tag-imgsize: #{spacing(2)};
     --bit-tag-pad-y: #{spacing(0.375)};
     --bit-tag-pad-x: calc(#{$siz-ctrl-pad-x-md} / 2);
     --bit-tag-minheight: #{spacing(2.75)};
 }
 
 .bit-tag-lg {
+    --bit-tag-gap: #{spacing(1)};
+    --bit-tag-lbl-gap: #{spacing(0.250)};
     --bit-tag-fontsize: #{$tg-fs-md};
+    --bit-tag-stx-fontsize: #{$tg-fs-sm};
+    --bit-tag-imgsize: #{spacing(2.5)};
     --bit-tag-pad-y: #{spacing(0.500)};
     --bit-tag-pad-x: calc(#{$siz-ctrl-pad-x-lg} / 2);
     --bit-tag-minheight: #{spacing(3.5)};
+}
+
+
+// The corner of the tag. Rounded takes the chip corner of the theme, which is what keeps a tag in the same
+// visual language as the chips a TagsInput or a multi-select Dropdown draws; Circular pins it to a pill and
+// Square drops it altogether. They follow the size blocks so the radius is not undone by a size class.
+.bit-tag-rnd {
+    --bit-tag-radius: #{$shp-radius-chip};
+}
+
+.bit-tag-cir {
+    --bit-tag-radius: #{$shp-radius-full};
+}
+
+.bit-tag-sqr {
+    --bit-tag-radius: #{$shp-radius-none};
+}
+
+
+// A forced-colors mode throws away every color the tag paints, which would leave the three variants
+// indistinguishable from one another, the selected state invisible and the disabled one looking enabled.
+// The rule and the states are re-established here in system colors, which are the only ones such a mode keeps.
+@media (forced-colors: active) {
+    .bit-tag {
+        border-color: ButtonText;
+    }
+
+    // The text variant carries no rule of its own in any other mode either.
+    .bit-tag-txt {
+        border-color: transparent;
+    }
+
+    // A picked filter chip is the one state that has to survive: it opts out of the forced palette and
+    // paints itself in the selection colors of the system instead.
+    .bit-tag-sel {
+        forced-color-adjust: none;
+        color: HighlightText;
+        border-color: Highlight;
+        background-color: Highlight;
+    }
+
+    // Opting out of the forced palette takes the content and the dismiss button out of it with it, so their
+    // hover and active backgrounds would be painted in the authored colors again - over the system highlight
+    // the selected tag has just taken, and under the HighlightText the label is now wearing. Both states are
+    // pinned back to the highlight, which leaves the pairing readable and the chip picked throughout.
+    .bit-tag-sel {
+        .bit-tag-int,
+        .bit-tag-cls {
+            @media (hover: hover) {
+                &:hover {
+                    background-color: Highlight;
+                }
+            }
+
+            &:active {
+                background-color: Highlight;
+            }
+        }
+    }
+
+    // The disabled state comes last and takes the paint of a selected tag off with it, since GrayText on the
+    // system highlight is the one pairing of these colors that cannot be read.
+    .bit-tag.bit-dis {
+        color: GrayText;
+        border-color: GrayText;
+        background-color: Canvas;
+    }
+
+    // currentcolor is the forced text color here, which a selected tag has opted out of, so the ring is
+    // pinned to the system highlight for both.
+    .bit-tag:focus-visible,
+    .bit-tag-int:focus-visible,
+    .bit-tag-cls:focus-visible {
+        outline-color: Highlight;
+    }
 }

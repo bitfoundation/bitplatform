@@ -1,51 +1,404 @@
-@page "/components/tag"
+﻿@page "/components/tag"
 
 <PageOutlet Url="components/tag"
             Title="Tag"
-            Description="Tag component provides a visual representation of an attribute, person, or asset." />
+            Description="Tag component is the compact chip that stands for an attribute, a person or an asset - labelled, iconed, dismissible, selectable, and clickable or linkable when it leads somewhere." />
 
 <DemoPage Name="Tag"
           SecondaryNames="@(["Chip"])"
-          Description="Tag component provides a visual representation of an attribute, person, or asset."
+          Description="Tag is the compact chip that stands for an attribute, a person or an asset. It takes a label, a second line under it, an icon or a picture at its head and a second glyph at its end, and comes in three variants, three sizes and three corner shapes across the whole color palette. Give it a dismiss handler and it grows a close button that answers the pointer, the keyboard and the Delete key, and that names the tag it removes; give it a click handler or a URL and it becomes a real button or a real anchor rather than an element that merely reacts to a click; bind its Selected value and it becomes a filter chip that reports its own state to assistive technologies. It wraps onto as many lines as its content needs, truncates to a single one or stretches to the width of whatever holds it, and it can be focused from code - which is what a list of dismissible tags needs once one of them is gone."
           Parameters="componentParameters"
+          PublicMembers="componentPublicMembers"
           SubEnums="componentSubEnums"
           SubClasses="componentSubClasses"
           GitHubUrl="Notifications/Tag/BitTag.razor"
           GitHubDemoUrl="Notifications/Tag/BitTagDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <BitTag Text="Basic tag" />
+        <div>
+            <b>Text</b> is what the tag says. On its own the tag is a label rather than a control: it takes no focus, it reacts to nothing,
+            and it is a plain inline element that sits inside a sentence without breaking the line it is on. Everything else on this page is
+            something added on top of that - a glyph, a dismiss button, a click handler, a URL, a selection.
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitTag Text="Basic tag" />
+            <BitTag Text="Design" Color="BitColor.Info" />
+            <BitTag Text="Archived" Color="BitColor.Tertiary" Variant="BitVariant.Outline" />
+        </div>
     </DemoExample>
 
     <DemoExample Title="Variant" RazorCode="@example2RazorCode" Id="example2">
-        <div>The tag offers three variants: Fill (default), Outline, and Text.</div>
-        <br />
-        <BitTag Text="Fill" Variant="BitVariant.Fill" />&nbsp;
-        <BitTag Text="Outline" Variant="BitVariant.Outline" />&nbsp;
-        <BitTag Text="Text" Variant="BitVariant.Text" />
+        <div>
+            The tag offers three variants: <b>Fill</b> (default) paints the whole chip in the role color, <b>Outline</b> keeps only the rule
+            and the label, and <b>Text</b> drops the rule too and leaves the label alone. A disabled tag keeps its variant and swaps the role
+            color for the disabled one.
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitTag Text="Fill" Variant="BitVariant.Fill" />
+            <BitTag Text="Outline" Variant="BitVariant.Outline" />
+            <BitTag Text="Text" Variant="BitVariant.Text" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitTag Text="Fill" Variant="BitVariant.Fill" IsEnabled="false" />
+            <BitTag Text="Outline" Variant="BitVariant.Outline" IsEnabled="false" />
+            <BitTag Text="Text" Variant="BitVariant.Text" IsEnabled="false" />
+        </div>
     </DemoExample>
 
-    <DemoExample Title="Icon" RazorCode="@example3RazorCode" Id="example3">
-        <div>Display an icon within a BitTag to represent its content visually.</div>
-        <br />
-        <BitTag Text="Calendar icon" IconName="@BitIconName.Calendar" />
+    <DemoExample Title="Shape" RazorCode="@example3RazorCode" Id="example3">
+        <div>
+            <b>Shape</b> is the corner of the tag. <b>Rounded</b> (default) takes the chip corner of the current theme, which is what keeps a
+            tag in the same visual language as the chips a <BitLink Href="/components/tags-input">TagsInput</BitLink> or a multi-select
+            <BitLink Href="/components/dropdown">Dropdown</BitLink> draws in its field; <b>Circular</b> pins it to a pill and <b>Square</b>
+            drops the radius altogether, whatever the theme says.
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitTag Text="Rounded" Shape="BitTagShape.Rounded" />
+            <BitTag Text="Circular" Shape="BitTagShape.Circular" />
+            <BitTag Text="Square" Shape="BitTagShape.Square" />
+        </div>
     </DemoExample>
 
-    <DemoExample Title="Dismiss" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <div>Use the OnDismiss feature in BitTag to provide a close button for the tag content.</div>
-        <br />
-        @if (isDismissed is false)
-        {
-            <BitTag IconName="@BitIconName.AlarmClock" Text="Dismiss me" OnDismiss="() => isDismissed = true" />
-        }
-        <br />
-        <br />
-        <BitButton IsEnabled="isDismissed" Variant="BitVariant.Outline" OnClick="() => isDismissed = false">
-            Dismissed, click to reset
-        </BitButton>
+    <DemoExample Title="Icon" RazorCode="@example4RazorCode" Id="example4">
+        <div>
+            <b>IconName</b> puts a glyph at the head of the tag, which is what lets a row of tags be told apart at a glance rather than read
+            one by one. <b>SecondaryIconName</b> puts one at the other end, after the label and before the dismiss button, for the glyph that
+            closes the tag rather than opening it - the chevron of a chip that drops a menu, the arrow of one that leads somewhere. It sits
+            inside whatever the tag became, so it is part of the same target the pointer and the keyboard activate rather than a control of
+            its own. Both glyphs are decorative - they are hidden from assistive technologies, since the label between them already says what
+            the tag is - and both are normalized to the size of that label, so an icon from any library sits on the same line as the words.
+            <b>Reversed</b> mirrors the order of the whole tag, which swaps the two ends over.
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitTag Text="Calendar" IconName="@BitIconName.Calendar" />
+            <BitTag Text="Reversed" IconName="@BitIconName.Calendar" Reversed />
+            <BitTag IconName="@BitIconName.Pinned" AriaLabel="Pinned" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitTag Text="Status" SecondaryIconName="@BitIconName.ChevronDown" Variant="BitVariant.Outline" OnClick="() => { }" />
+            <BitTag Text="Read the docs" IconName="@BitIconName.Documentation" SecondaryIconName="@BitIconName.OpenInNewWindow"
+                    Color="BitColor.Info" Href="https://blazorui.bitplatform.dev" Target="_blank" />
+            <BitTag Text="Both ends reversed" IconName="@BitIconName.Tag" SecondaryIconName="@BitIconName.ChevronDown"
+                    Color="BitColor.Success" Variant="BitVariant.Outline" Reversed />
+        </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example5RazorCode" Id="example5">
-        <div>Offering a range of specialized color variants, providing visual cues for specific actions or states within your application.</div>
+    <DemoExample Title="Image" RazorCode="@example5RazorCode" Id="example5">
+        <div>
+            <b>IconUrl</b> puts a picture where the glyph would go - the avatar of the person the tag stands for, a flag, a logo. It is cropped
+            to a circle the height of the label, so a portrait of any aspect ratio reads as an avatar, and it is only rendered while no
+            <b>Icon</b> or <b>IconName</b> is set, since the two occupy the same place. The picture is decorative next to the name beside it,
+            so it carries an empty alt unless <b>IconAlt</b> says otherwise - as on the third tag below, where the label says what the
+            state is and only the picture says whose it is.
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitTag Text="Annie Lindqvist" IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" Variant="BitVariant.Outline" />
+            <BitTag Text="Annie Lindqvist" SecondaryText="Software engineer" IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" Color="BitColor.Tertiary" Size="BitSize.Large" />
+            <BitTag Text="Awaiting review" IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" IconAlt="Assigned to Annie Lindqvist" Color="BitColor.Warning" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Secondary text" RazorCode="@example6RazorCode" Id="example6">
+        <div>
+            <b>SecondaryText</b> adds a second line under the label, for what qualifies the tag rather than what names it - the role under a
+            person, the count under a category, the unit under a value. It is set one step smaller and at the regular weight, and the line
+            above it is lifted to semibold to answer it; neither is dimmed, since an opacity over a painted chip takes the contrast with it.
+            Keep it short: a tag is a label, not a card.
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitTag Text="Alex Parker" SecondaryText="Product designer" IconName="@BitIconName.Contact" Variant="BitVariant.Outline" />
+            <BitTag Text="Storage" SecondaryText="12.4 GB used" Color="BitColor.Info" Size="BitSize.Large" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Dismiss" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <div>
+            Setting <b>OnDismiss</b> grows a close button at the end of the tag. It is a real button standing next to the content rather than
+            inside it, so it takes focus of its own, it is activated with Enter and Space, and a click on it never reaches the tag's own
+            <BitLink Href="#example8">OnClick</BitLink>. It can also be triggered with the <b>Delete</b> or the <b>Backspace</b> key from
+            anywhere inside the tag, which is what a keyboard user reaches for once the pointer has shown them the button.
+            <b>DismissIconName</b> and <b>DismissIcon</b> change the glyph, and <b>DismissLabel</b> its accessible name and tooltip.
+            With no label of its own the button is named after the tag it takes away - "Remove Design" - rather than being one of a row of
+            buttons all called "Dismiss", which names none of them. <b>DismissLabelFormat</b> is what changes that wording for a whole list
+            at once and what translates it, since the default is English; <b>DismissLabel</b> replaces the name of a single tag outright.
+            The tag never removes itself: what the handler does with the dismissal is up to the app, and
+            <BitLink Href="#example14">FocusAsync</BitLink> is what puts the keyboard back on the list afterwards.
+        </div>
+        <br /><br />
+        <div class="example-content">
+            @foreach (var tag in dismissibleTags)
+            {
+                <BitTag Text="@tag"
+                        IconName="@BitIconName.Tag"
+                        Variant="BitVariant.Outline"
+                        OnDismiss="() => dismissibleTags.Remove(tag)" />
+            }
+            <BitTag Text="Custom glyph" Color="BitColor.Error" DismissIconName="@BitIconName.ChromeClose"
+                    DismissLabel="Clear the custom glyph tag" OnDismiss="() => { }" />
+            <BitTag Text="Formatted label" Color="BitColor.Info" DismissLabelFormat="Take the {0} tag off the list" OnDismiss="() => { }" />
+            <BitTag Text="Disabled" IsEnabled="false" OnDismiss="() => { }" />
+        </div>
+        <br /><br />
+        <BitButton Variant="BitVariant.Outline" IsEnabled="@(dismissibleTags.Count < 3)" OnClick="ResetDismissibleTags">Reset</BitButton>
+    </DemoExample>
+
+    <DemoExample Title="Click" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>
+            Setting <b>OnClick</b> turns the tag into a real <code>button</code>: it enters the tab order, it is activated with Enter and
+            Space, it answers hover and press with a shade of its own color, and it wears a focus ring - none of which a click handler on a
+            plain element reproduces. Disabling the tag disables that button, so it can be reached by neither the pointer nor the keyboard.
+            A control needs a name, so a tag that carries no words of its own needs an <b>AriaLabel</b> as soon as it becomes one.
+            <b>StopPropagation</b> keeps the click inside the tag, for a tag that sits in something else that reacts to one - a row, a card,
+            a list item - where activating the tag should not also activate what holds it.
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitTag Text="Add to filters" IconName="@BitIconName.Add" OnClick="() => clickCount++" />
+            <BitTag Text="Outline" Variant="BitVariant.Outline" Color="BitColor.Info" OnClick="() => clickCount++" />
+            <BitTag Text="Click then dismiss" Variant="BitVariant.Text" Color="BitColor.Success"
+                    OnClick="() => clickCount++" OnDismiss="() => dismissCount++" />
+            <BitTag Text="Disabled" IsEnabled="false" OnClick="() => clickCount++" />
+        </div>
+        <br /><br />
+        <div class="example-card" @onclick="() => cardClickCount++">
+            The card counts every click that reaches it. The second tag stops its own.
+            <br /><br />
+            <BitTag Text="Bubbles" Variant="BitVariant.Outline" OnClick="() => clickCount++" />
+            &nbsp;
+            <BitTag Text="Stops" Variant="BitVariant.Outline" Color="BitColor.Info" StopPropagation OnClick="() => clickCount++" />
+        </div>
+        <br />
+        <div>Clicked <b>@clickCount</b> times, dismissed <b>@dismissCount</b> times, card clicked <b>@cardClickCount</b> times.</div>
+    </DemoExample>
+
+    <DemoExample Title="Link" RazorCode="@example9RazorCode" Id="example9">
+        <div>
+            <b>Href</b> turns the tag into a real anchor, for a tag that opens what it stands for rather than acting on the page it is already
+            on. It brings everything a click handler cannot: the context menu, the middle click, the address in the status bar and the
+            announcement of a link. <b>Target</b> picks the browsing context it opens in and <b>Rel</b> the relationship to the linked
+            document - a tag opening in a new tab with no Rel of its own is given <code>rel="noopener"</code>, which keeps the opened page from
+            reaching back into this one. <b>OnClick</b> can be set alongside it, in which case the handler runs and the navigation still
+            happens. <b>Download</b> turns the tag into one that saves what it points at instead of navigating to it, taking its value as the
+            suggested file name. Disabling the tag drops the href and takes it out of the tab order. A <b>Selected</b> link reports itself
+            through <code>aria-current</code>, and <b>AriaCurrent</b> is what that says: leave it at <b>True</b> for the picked one of a set of
+            filters, and set it to <b>Page</b> for a tag standing for the page the reader is already on.
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitTag Text="Iconography" IconName="@BitIconName.Ribbon" Href="/iconography" Variant="BitVariant.Outline" />
+            <BitTag Text="Docs" Color="BitColor.Info" Href="https://blazorui.bitplatform.dev" Target="_blank" />
+            <BitTag Text="Source" Color="BitColor.Secondary" IconName="@BitIconName.OpenInNewWindow"
+                    Href="https://github.com/bitfoundation/bitplatform" Target="_blank" Rel="BitLinkRels.NoFollow | BitLinkRels.NoReferrer" />
+            <BitTag Text="Logo" IconName="@BitIconName.Download" Color="BitColor.Success" Variant="BitVariant.Outline"
+                    Href="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" Download="bit-logo.png" />
+            <BitTag Text="Disabled" Href="https://bitplatform.dev" IsEnabled="false" />
+            <BitTag Text="This page" Href="#example9" Selected AriaCurrent="BitNavAriaCurrent.Page"
+                    Color="BitColor.Info" Variant="BitVariant.Outline" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Selection" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>
+            Binding <b>Selected</b> - or setting <b>OnChange</b> - turns the tag into a filter chip: a toggle button that flips its own state
+            on every activation and reports it to assistive technologies through <code>aria-pressed</code>, so a screen reader announces it as
+            pressed or not pressed rather than leaving the state to color alone. A selected tag deepens its paint and shows a checkmark in
+            front of its content; <b>SelectedIconName</b> changes that glyph and <b>HideSelectedIcon</b> removes it.
+            Set <b>Selected</b> without either callback and it is a static "this one is picked" state the app drives on its own, and one the
+            tag is not allowed to change; <b>DefaultSelected</b> is the other half of that - a tag that keeps its own selection, with no field
+            in the app behind it. <b>OnChanging</b> runs before every change and can call it off, which is what a filter that has to be
+            confirmed - or saved - before it applies needs. A selected tag that is a <BitLink Href="#example9">link</BitLink> reports itself
+            as <code>aria-current</code> instead, since <code>aria-pressed</code> belongs to a button and would say nothing on an anchor.
+        </div>
+        <br /><br />
+        <div class="example-content">
+            @foreach (var filter in filters)
+            {
+                <BitTag Text="@filter"
+                        Variant="BitVariant.Outline"
+                        Color="BitColor.Info"
+                        Selected="selectedFilters.Contains(filter)"
+                        SelectedChanged="v => ToggleFilter(filter, v)" />
+            }
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitTag Text="Checkmark hidden" Selected="@isPinned" SelectedChanged="v => isPinned = v" HideSelectedIcon />
+            <BitTag Text="Custom glyph" IconName="@BitIconName.FavoriteStar" Color="BitColor.Warning" Variant="BitVariant.Text"
+                    SelectedIconName="@BitIconName.FavoriteStarFill" Selected="@isStarred" SelectedChanged="v => isStarred = v" />
+            <BitTag Text="Static selection" Selected Color="BitColor.Success" />
+            <BitTag Text="Current link" Selected Href="#example10" Color="BitColor.Info" Variant="BitVariant.Outline" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitTag Text="Keeps its own state" DefaultSelected="false" Variant="BitVariant.Outline" Color="BitColor.Tertiary" />
+            <BitTag Text="Asks first" DefaultSelected="false" Color="BitColor.Warning"
+                    OnChanging="args => args.Cancel = allowSelectionChange is false" />
+            <BitToggle @bind-Value="allowSelectionChange" Label="Allow the change" Inline />
+        </div>
+        <br /><br />
+        <div>Selected: <b>@(selectedFilters.Count == 0 ? "none" : string.Join(", ", selectedFilters))</b></div>
+    </DemoExample>
+
+    <DemoExample Title="Template" RazorCode="@example11RazorCode" Id="example11">
+        <div>
+            <b>ChildContent</b> replaces the label of the tag with markup of your own. It replaces the text only: an icon, a picture, the
+            checkmark of a selected tag and a trailing <BitLink Href="#example4">SecondaryIcon</BitLink> all keep rendering around it, so a
+            template does not have to reproduce them.
+            <br /><br />
+            <b>PrefixTemplate</b> and <b>SuffixTemplate</b> are the other half of that: markup added beside the label rather than in place of
+            it, at the very head and the very end of the tag. They are what the leading and trailing slots need when a glyph is not enough -
+            an avatar with initials, a colored dot, a count - and they leave the two lines of the label to <b>Text</b> and
+            <b>SecondaryText</b>. All three live inside whatever the tag became, so they are part of the same target the pointer and the
+            keyboard activate; that is also why a control of your own does not belong in them - a control inside a button is one no assistive
+            technology can reach - and why nothing in them names the tag, which is still the job of the label or the <b>AriaLabel</b>.
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitTag>
+                <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
+                    <BitLabel>Custom content</BitLabel>
+                    <BitRollerLoading CustomSize="24" Color="BitColor.Tertiary" />
+                </BitStack>
+            </BitTag>
+            <BitTag IconName="@BitIconName.Contact" Variant="BitVariant.Outline" Color="BitColor.Tertiary">
+                <b>Alex</b>&nbsp;<span style="opacity:0.7">(owner)</span>
+            </BitTag>
+            <BitTag IconName="@BitIconName.Filter" Color="BitColor.Info" OnClick="() => { }">
+                Status<BitIcon IconName="@BitIconName.ChevronDown" />
+            </BitTag>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitTag Text="Alex Parker" SecondaryText="Product designer" Variant="BitVariant.Outline" Size="BitSize.Large">
+                <PrefixTemplate>
+                    <span class="example-initials">AP</span>
+                </PrefixTemplate>
+            </BitTag>
+            <BitTag Text="Open issues" Color="BitColor.Warning" Variant="BitVariant.Outline">
+                <SuffixTemplate>
+                    <span class="example-count">24</span>
+                </SuffixTemplate>
+            </BitTag>
+            <BitTag Text="Deploying" Color="BitColor.Success" SecondaryIconName="@BitIconName.ChevronRight" OnClick="() => { }">
+                <PrefixTemplate>
+                    <BitRollerLoading CustomSize="16" Color="BitColor.TertiaryBackground" />
+                </PrefixTemplate>
+            </BitTag>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Truncation" RazorCode="@example12RazorCode" Id="example12">
+        <div>
+            A tag wraps onto as many lines as its content needs by default, which is what keeps a long label readable.
+            <b>NoWrap</b> keeps it on a single line and ends it with an ellipsis wherever it does not fit, for a layout that has a width of its
+            own to protect - a row of filters, a cell of a grid. Pair it with a <b>Title</b> so the part that was cut off is still reachable:
+            a truncated label a reader cannot recover is a label that says nothing.
+        </div>
+        <br /><br />
+        <div class="example-content" style="max-width: 22rem">
+            <BitTag Text="A tag with a label long enough to wrap onto a second line" Variant="BitVariant.Outline" />
+        </div>
+        <br /><br />
+        <div class="example-content" style="max-width: 22rem">
+            <BitTag NoWrap
+                    IconName="@BitIconName.Tag"
+                    Variant="BitVariant.Outline"
+                    Text="A tag with a label long enough to wrap onto a second line"
+                    Title="A tag with a label long enough to wrap onto a second line" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Full width" RazorCode="@example13RazorCode" Id="example13">
+        <div>
+            <b>FullWidth</b> stretches the tag to the width of whatever holds it instead of letting it shrink to its content. Use it for a tag
+            standing on a line of its own - in a narrow side panel, or as a row of a stacked list - where a chip hugging its label leaves the
+            line looking unfinished. The dismiss button stays at the end of the tag as it grows, and so does a trailing
+            <BitLink Href="#example4">SecondaryIcon</BitLink>: the room a stretched tag gains belongs to the label, which is what pushes a
+            trailing glyph to the far end rather than leaving it stranded against the words.
+        </div>
+        <br /><br />
+        <div>
+            <BitTag FullWidth Text="Full width" IconName="@BitIconName.Tag" Variant="BitVariant.Outline" />
+            <br />
+            <BitTag FullWidth Text="Full width and dismissible" IconName="@BitIconName.Tag" Color="BitColor.Info" OnDismiss="() => { }" />
+            <br />
+            <BitTag FullWidth Text="Full width with a trailing glyph" IconName="@BitIconName.Tag" Color="BitColor.Success"
+                    Variant="BitVariant.Outline" SecondaryIconName="@BitIconName.ChevronRight" OnClick="() => { }" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Focus" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <div>
+            <b>FocusAsync</b> gives the keyboard focus to whatever the tag offers it: the anchor or the button it becomes while it is a
+            control, and the dismiss button of a tag that has only that. A list of dismissible tags is what needs it - the focus left on a
+            tag that has just been removed falls back to the top of the document, and the keyboard user loses their place in the list.
+            Removing a tag below moves the focus onto the tag that took its place, or onto the last one when the end of the list goes.
+            A tag that is neither a control nor dismissible has nothing inside it to focus, so a <b>TabIndex</b> given to that one lands on the
+            tag itself - which is what puts a plain tag in the tab sequence and what <b>FocusAsync</b> then focuses. Without one a plain tag
+            stays what it is: a label, which takes no focus at all.
+        </div>
+        <br /><br />
+        <div class="example-content">
+            @foreach (var tag in focusTags)
+            {
+                <BitTag @key="tag"
+                        @ref="focusTagRefs[tag]"
+                        Text="@tag"
+                        IconName="@BitIconName.Tag"
+                        Variant="BitVariant.Outline"
+                        OnDismiss="() => DismissFocusTag(tag)" />
+            }
+        </div>
+        <br /><br />
+        <BitButton Variant="BitVariant.Outline" IsEnabled="@(focusTags.Count < 3)" OnClick="ResetFocusTags">Reset</BitButton>
+        <br /><br />
+        <div class="example-content">
+            <BitTag @ref="plainFocusTag" Text="A plain tag with a TabIndex" TabIndex="0" Variant="BitVariant.Outline" />
+            <BitButton Variant="BitVariant.Outline" OnClick="() => plainFocusTag?.FocusAsync()">Focus it</BitButton>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Accessibility" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+        <div>
+            A plain tag is a label, so it takes no focus and needs no name of its own - the words in it are the name. Everything that makes it
+            a control changes that: an <BitLink Href="#example8">OnClick</BitLink>, an <BitLink Href="#example9">Href</BitLink> or a
+            <BitLink Href="#example10">selection</BitLink> turns it into a real button or anchor, and a control needs a name, so
+            <b>AriaLabel</b> moves onto that control and is what an icon-only tag has to be given before it becomes one. On a tag that is
+            not a control and has no words in it either, the same label is carried as text no one can see, since an aria-label on an element
+            with no role of its own is not something every screen reader reads.
+            <b>AriaDescription</b> adds what is said after that name - why a filter is unavailable, what dismissing will do - and lands on
+            whichever element carries the name.
+            The dismiss button is a control of its own, already named after the tag it removes; <b>DismissLabelFormat</b> translates that
+            name and <b>DismissLabel</b> replaces it where it needs to say something else.
+            Icons and pictures inside the tag are hidden from assistive technologies, since the label beside them already says what the tag is,
+            and a selected tag reports its state through <code>aria-pressed</code> - or, when it is a link, through the
+            <code>aria-current</code> that <b>AriaCurrent</b> spells out - rather than through color alone. A tag that is neither a control nor
+            dismissible has nothing inside it to focus, so the <b>TabIndex</b> of that one lands on the tag itself and is what puts a plain tag
+            in the tab sequence.
+            The tag also keeps its rule, its selection and its disabled state in a forced-colors mode, where every color it paints is discarded.
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitTag IconName="@BitIconName.Filter" AriaLabel="Show the filters" OnClick="() => { }" />
+            <BitTag IconName="@BitIconName.Pinned" AriaLabel="Pinned to the top" Variant="BitVariant.Outline" />
+            <BitTag Text="Design" DismissLabel="Remove the Design tag" Variant="BitVariant.Outline" OnDismiss="() => { }" />
+            <BitTag Text="Only mine" Selected="@isOnlyMine" SelectedChanged="v => isOnlyMine = v" Variant="BitVariant.Outline"
+                    AriaDescription="Shows only the items you own" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example16RazorCode" Id="example16">
+        <div>
+            Offering a range of specialized color variants, providing visual cues for specific actions or states within your application.
+            Every role pairs with all three variants, and the disabled state of each is the disabled slot of the same role rather than a flat grey.
+        </div>
         <br />
         <BitTag Text="Primary" IconName="@BitIconName.Calendar" Color="BitColor.Primary" Variant="BitVariant.Fill" />&nbsp;
         <BitTag Text="Primary" IconName="@BitIconName.Calendar" Color="BitColor.Primary" Variant="BitVariant.Outline" />&nbsp;
@@ -143,35 +496,14 @@
         <BitTag IsEnabled="false" Text="TertiaryBorder" IconName="@BitIconName.Calendar" Color="BitColor.TertiaryBorder" />
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example6RazorCode" Id="example6">
-        <div>Offering a range of specialized color variants, providing visual cues for specific actions or states within your application.</div>
-        <br />
-        <BitTag Text="Small" IconName="@BitIconName.Calendar" Size="BitSize.Small" Variant="BitVariant.Fill" />&nbsp;
-        <BitTag Text="Small" IconName="@BitIconName.Calendar" Size="BitSize.Small" Variant="BitVariant.Outline" />&nbsp;
-        <BitTag Text="Small" IconName="@BitIconName.Calendar" Size="BitSize.Small" Variant="BitVariant.Text" />
-        <br /><br />
-        <BitTag Text="Medium" IconName="@BitIconName.Calendar" Size="BitSize.Medium" Variant="BitVariant.Fill" />&nbsp;
-        <BitTag Text="Medium" IconName="@BitIconName.Calendar" Size="BitSize.Medium" Variant="BitVariant.Outline" />&nbsp;
-        <BitTag Text="Medium" IconName="@BitIconName.Calendar" Size="BitSize.Medium" Variant="BitVariant.Text" />
-        <br /><br />
-        <BitTag Text="Large" IconName="@BitIconName.Calendar" Size="BitSize.Large" Variant="BitVariant.Fill" />&nbsp;
-        <BitTag Text="Large" IconName="@BitIconName.Calendar" Size="BitSize.Large" Variant="BitVariant.Outline" />&nbsp;
-        <BitTag Text="Large" IconName="@BitIconName.Calendar" Size="BitSize.Large" Variant="BitVariant.Text" />
-    </DemoExample>
-
-    <DemoExample Title="Template" RazorCode="@example7RazorCode" Id="example7">
-        <div>Customize the content inside BitTag using a template with different elements and components.</div>
-        <br />
-        <BitTag>
-            <BitStack Horizontal Gap="0.5rem" Style="padding-inline: 0.5rem;">
-                <BitLabel>Custom content</BitLabel>
-                <BitRollerLoading CustomSize="32" Color="BitColor.Tertiary" />
-            </BitStack>
-        </BitTag>
-    </DemoExample>
-
-    <DemoExample Title="External Icons" RazorCode="@example8RazorCode" Id="example8">
-        <div>Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>Icon</b> parameter and <b>BitIconInfo</b>.</div>
+    <DemoExample Title="External Icons" RazorCode="@example17RazorCode" Id="example17">
+        <div>
+            Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>Icon</b> parameter and <b>BitIconInfo</b>.
+            A glyph from any of them is normalized back to the size of the label beside it, so it sits on the same line as the words whatever
+            type scale the library it came from brings. <b>SecondaryIcon</b>, <b>DismissIcon</b> and <b>SelectedIcon</b> take the same values,
+            so the trailing glyph, the close button and the checkmark of a selected tag can all come from the same set as the one in front of
+            the label.
+        </div>
 
         <br />
         <br />
@@ -180,48 +512,110 @@
 
         <div>FontAwesome:</div>
         <br />
-        <BitTag Text="House" Icon="@("fa-solid fa-house")" />&nbsp;
-        <BitTag Text="Heart" Icon="@BitIconInfo.Css("fa-solid fa-heart")" />&nbsp;
-        <BitTag Text="GitHub" Icon="@BitIconInfo.Fa("fa-brands fa-github")" />&nbsp;
-        <BitTag Text="Rocket" Icon="@BitIconInfo.Fa("solid rocket")" />
+        <div class="example-content">
+            <BitTag Text="House" Icon="@("fa-solid fa-house")" />
+            <BitTag Text="Heart" Icon="@BitIconInfo.Css("fa-solid fa-heart")" />
+            <BitTag Text="GitHub" Icon="@BitIconInfo.Fa("fa-brands fa-github")" />
+            <BitTag Text="Rocket" Icon="@BitIconInfo.Fa("solid rocket")" />
+            <BitTag Text="Dismiss" Icon="@BitIconInfo.Fa("solid tag")" DismissIcon="@BitIconInfo.Fa("solid xmark")" OnDismiss="() => { }" />
+            <BitTag Text="Selected" Icon="@BitIconInfo.Fa("solid star")" SelectedIcon="@BitIconInfo.Fa("solid check")" Selected />
+            <BitTag Text="Trailing" Icon="@BitIconInfo.Fa("solid filter")" SecondaryIcon="@BitIconInfo.Fa("solid chevron-down")" />
+        </div>
 
-        <br /><br /><br /><br />
+        <br /><br /><br />
 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
 
         <div>Bootstrap:</div>
         <br />
-        <BitTag Text="House" Icon="@("bi bi-house-fill")" />&nbsp;
-        <BitTag Text="Heart" Icon="@BitIconInfo.Css("bi bi-heart-fill")" />&nbsp;
-        <BitTag Text="GitHub" Icon="@BitIconInfo.Bi("github")" />&nbsp;
-        <BitTag Text="Gear" Icon="@BitIconInfo.Bi("gear-fill")" />
+        <div class="example-content">
+            <BitTag Text="House" Icon="@("bi bi-house-fill")" />
+            <BitTag Text="Heart" Icon="@BitIconInfo.Css("bi bi-heart-fill")" />
+            <BitTag Text="GitHub" Icon="@BitIconInfo.Bi("github")" />
+            <BitTag Text="Gear" Icon="@BitIconInfo.Bi("gear-fill")" />
+            <BitTag Text="Dismiss" Icon="@BitIconInfo.Bi("tag-fill")" DismissIcon="@BitIconInfo.Bi("x-lg")" OnDismiss="() => { }" />
+            <BitTag Text="Selected" Icon="@BitIconInfo.Bi("star-fill")" SelectedIcon="@BitIconInfo.Bi("check-lg")" Selected />
+            <BitTag Text="Trailing" Icon="@BitIconInfo.Bi("funnel-fill")" SecondaryIcon="@BitIconInfo.Bi("chevron-down")" />
+        </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" Id="example9">
-        <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
+    <DemoExample Title="Size" RazorCode="@example18RazorCode" Id="example18">
+        <div>
+            Three sizes set the type, the height and the inset of the tag together, so a tag stays a chip at every one of them.
+            The inline inset is taken from the control padding of the current theme rather than from a fixed number, which is what keeps a tag
+            in proportion under a theme whose corner is rounder or whose density is tighter.
+        </div>
+        <br />
+        <BitTag Text="Small" IconName="@BitIconName.Calendar" Size="BitSize.Small" Variant="BitVariant.Fill" />&nbsp;
+        <BitTag Text="Small" IconName="@BitIconName.Calendar" Size="BitSize.Small" Variant="BitVariant.Outline" />&nbsp;
+        <BitTag Text="Small" IconName="@BitIconName.Calendar" Size="BitSize.Small" Variant="BitVariant.Text" />&nbsp;
+        <BitTag Text="Small" IconName="@BitIconName.Calendar" Size="BitSize.Small" Variant="BitVariant.Outline" OnDismiss="() => { }" />
+        <br /><br />
+        <BitTag Text="Medium" IconName="@BitIconName.Calendar" Size="BitSize.Medium" Variant="BitVariant.Fill" />&nbsp;
+        <BitTag Text="Medium" IconName="@BitIconName.Calendar" Size="BitSize.Medium" Variant="BitVariant.Outline" />&nbsp;
+        <BitTag Text="Medium" IconName="@BitIconName.Calendar" Size="BitSize.Medium" Variant="BitVariant.Text" />&nbsp;
+        <BitTag Text="Medium" IconName="@BitIconName.Calendar" Size="BitSize.Medium" Variant="BitVariant.Outline" OnDismiss="() => { }" />
+        <br /><br />
+        <BitTag Text="Large" IconName="@BitIconName.Calendar" Size="BitSize.Large" Variant="BitVariant.Fill" />&nbsp;
+        <BitTag Text="Large" IconName="@BitIconName.Calendar" Size="BitSize.Large" Variant="BitVariant.Outline" />&nbsp;
+        <BitTag Text="Large" IconName="@BitIconName.Calendar" Size="BitSize.Large" Variant="BitVariant.Text" />&nbsp;
+        <BitTag Text="Large" IconName="@BitIconName.Calendar" Size="BitSize.Large" Variant="BitVariant.Outline" OnDismiss="() => { }" />
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+        <div>
+            Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI
+            requirements. <b>Style</b> and <b>Class</b> land on the root of the tag, while <b>Styles</b> and <b>Classes</b> reach every part of
+            it separately - the content box the tag becomes when it is a control, the label, the text, the secondary text, the icon, the image,
+            the selected state and the dismiss button with its glyph.
+        </div>
         <br /><br />
         <div>Component's Style & Class:</div>
         <br />
-        <div>
+        <div class="example-content">
             <BitTag Text="Styled Tag"
                     IconName="@BitIconName.People"
-                    Style="border-radius: 1rem; font-weight:bold" />&nbsp;
+                    Style="border-radius: 1rem; font-weight:bold" />
             <BitTag Text="Classed Tag"
                     IconName="@BitIconName.People"
                     Class="custom-class" Variant="BitVariant.Outline" />
-            <br /><br /><br />
-            <div><b>Styles</b> & <b>Classes</b>:</div>
-            <br />
+        </div>
+        <br /><br />
+        <div><b>Styles</b> & <b>Classes</b>:</div>
+        <br />
+        <div class="example-content">
             <BitTag Text="Styles"
+                    SecondaryText="with a second line"
                     IconName="@BitIconName.People"
                     Styles="@(new() { Root = "border-color: red; background-color: transparent;",
                                       Text = "color: tomato; font-weight: bold;",
+                                      SecondaryText = "color: tomato;",
                                       Icon = "color: tomato;" })" />
-            &nbsp;
             <BitTag Text="Classes"
                     IconName="@BitIconName.People"
                     Classes="@(new() { Root = "custom-root",
                                        Icon = "custom-icon" })" />
+            <BitTag Text="Selected"
+                    Selected="@isStyledSelected"
+                    SelectedChanged="v => isStyledSelected = v"
+                    Classes="@(new() { Selected = "custom-selected" })" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="RTL" RazorCode="@example20RazorCode" Id="example20">
+        <div>
+            Use BitTag in right-to-left (RTL). The icon, the label and the dismiss button all follow the direction of writing and swap sides
+            with it, and so do the insets that keep them off the rule. <b>Reversed</b> stays a mirror of whatever that order is rather than a
+            second way of saying right-to-left, so the two can be combined.
+        </div>
+        <br /><br />
+        <div dir="rtl">
+            <div class="example-content">
+                <BitTag Dir="BitDir.Rtl" Text="برچسب" IconName="@BitIconName.Calendar" />
+                <BitTag Dir="BitDir.Rtl" Text="طراحی" IconName="@BitIconName.Tag" Color="BitColor.Info" Variant="BitVariant.Outline" />
+                <BitTag Dir="BitDir.Rtl" Text="حذف کنید" IconName="@BitIconName.Tag" Color="BitColor.Error" DismissLabelFormat="حذف {0}" OnDismiss="() => { }" />
+                <BitTag Dir="BitDir.Rtl" Text="معکوس" IconName="@BitIconName.Calendar" Color="BitColor.Success" Reversed OnDismiss="() => { }" />
+            </div>
         </div>
     </DemoExample>
 </DemoPage>

@@ -237,7 +237,7 @@ public static class ComponentCatalog
         ["Message"] = "An inline bar for an error, a warning, or something worth knowing.",
         ["Persona"] = "A person: their avatar, name, secondary text and presence.",
         ["SnackBar"] = "A brief, dismissible notification that stacks in a corner of the screen.",
-        ["Tag"] = "A compact chip representing an attribute, a person or an asset.",
+        ["Tag"] = "A compact chip for an attribute, a person or an asset - dismissible, selectable or clickable.",
 
         // Progress
         ["Loading"] = "A set of ready-made loading visuals for any waiting scenario.",
