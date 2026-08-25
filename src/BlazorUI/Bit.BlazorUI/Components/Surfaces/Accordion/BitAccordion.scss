@@ -241,6 +241,7 @@
 
 .bit-acd-con {
     padding: 0 var(--bit-acd-pad);
+
     // Opening: the panel is shown at once and the fade and the padding carry the rest of the way. The
     // matching transition of the collapsed state below is what holds the hiding back until the panel has
     // finished closing - a transition is read off the state that is being moved to, so the two directions
