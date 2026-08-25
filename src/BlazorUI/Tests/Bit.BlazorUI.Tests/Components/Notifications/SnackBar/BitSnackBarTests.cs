@@ -2191,6 +2191,49 @@ public class BitSnackBarTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitSnackBarClickableItemAnswersTheSpaceKeyTest()
+    {
+        var clicked = 0;
+
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.TransitionDuration, 0);
+            parameters.Add(p => p.OnItemClick, (BitSnackBarItem _) => clicked++);
+        });
+
+        await com.Instance.Show("title");
+
+        // Space activates a control the same way Enter does (WCAG 2.1.1), so an item that carries a tab stop of
+        // its own has to answer both.
+        com.Find(".bit-snb-itm").KeyDown(" ");
+
+        Assert.AreEqual(0, clicked);
+
+        com.Find(".bit-snb-itm").KeyUp(" ");
+
+        Assert.AreEqual(1, clicked);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarClickableItemAnswersTheLegacySpacebarKeyTest()
+    {
+        var clicked = 0;
+
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.TransitionDuration, 0);
+            parameters.Add(p => p.OnItemClick, (BitSnackBarItem _) => clicked++);
+        });
+
+        await com.Instance.Show("title");
+
+        com.Find(".bit-snb-itm").KeyDown("Spacebar");
+        com.Find(".bit-snb-itm").KeyUp("Spacebar");
+
+        Assert.AreEqual(1, clicked);
+    }
+
+    [TestMethod]
     public async Task BitSnackBarEnterOnAControlInsideTheItemClicksItOnlyOnceTest()
     {
         var clicked = 0;
@@ -2440,6 +2483,40 @@ public class BitSnackBarTests : BunitTestContext
         com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
 
         Assert.AreEqual(BitSnackBarDismissReason.Clear, item.DismissReason);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarClearOnNavigationTurnedOnAfterTheFirstRenderTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.TransitionDuration, 0));
+
+        await com.Instance.Show("title");
+
+        com.Render(parameters => parameters.Add(p => p.ClearOnNavigation, true));
+
+        Services.GetRequiredService<NavigationManager>().NavigateTo("/somewhere-else");
+
+        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarClearOnNavigationTurnedOffAgainKeepsItsItemsTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.ClearOnNavigation, true);
+            parameters.Add(p => p.TransitionDuration, 0);
+        });
+
+        com.Render(parameters => parameters.Add(p => p.ClearOnNavigation, false));
+
+        await com.Instance.Show("title");
+
+        Services.GetRequiredService<NavigationManager>().NavigateTo("/somewhere-else");
+
+        await Task.Delay(100);
+
+        Assert.AreEqual(1, com.Instance.Items.Count);
     }
 
     [TestMethod]

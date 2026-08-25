@@ -203,7 +203,7 @@ public class BitSnackBarItem
     internal bool _focused;
     internal bool _held;
     internal bool _dismissing;
-    internal bool _enterPending;
+    internal bool _activationPending;
     internal TimeSpan _remaining;
     internal DateTimeOffset _dueAt;
 

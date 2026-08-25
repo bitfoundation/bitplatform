@@ -781,7 +781,10 @@ public partial class BitSnackBar : BitComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (firstRender && ClearOnNavigation)
+        // Not gated by firstRender: the parameter can be turned on later, and a subscription only taken on the
+        // first render would leave it doing nothing. The already-resolved manager is what keeps this from
+        // subscribing twice.
+        if (ClearOnNavigation && _navigationManager is null)
         {
             // Resolved through the provider rather than injected for the same reason as the page visibility
             // utility: a snack bar has to keep working in a host that has no router at all.
@@ -1199,7 +1202,7 @@ public partial class BitSnackBar : BitComponentBase
         item._hovered = false;
         item._focused = false;
         item._held = false;
-        item._enterPending = false;
+        item._activationPending = false;
 
         var index = _items.IndexOf(item);
 
@@ -1281,9 +1284,9 @@ public partial class BitSnackBar : BitComponentBase
 
     private async Task HandleItemClick(BitSnackBarItem item)
     {
-        // A control inside the item turned the Enter into a click of its own, which is this one: the key has been
-        // answered and the key-up must not answer it a second time.
-        item._enterPending = false;
+        // A control inside the item turned the Enter or Space into a click of its own, which is this one: the key
+        // has been answered and the key-up must not answer it a second time.
+        item._activationPending = false;
 
         if (item.OnClick is not null) await item.OnClick(item);
 
@@ -1300,9 +1303,9 @@ public partial class BitSnackBar : BitComponentBase
     // user has it.
     private Task HandleDismissClick(BitSnackBarItem item)
     {
-        // The dismiss button keeps its click to itself, so the Enter that pressed it is answered here and nowhere
-        // else - the item must not also be reported as clicked.
-        item._enterPending = false;
+        // The dismiss button keeps its click to itself, so the Enter or Space that pressed it is answered here and
+        // nowhere else - the item must not also be reported as clicked.
+        item._activationPending = false;
 
         return DismissAsync(item, animate: true, reason: BitSnackBarDismissReason.DismissButton, focusNext: true);
     }
@@ -1313,11 +1316,11 @@ public partial class BitSnackBar : BitComponentBase
         // working from the keyboard (WCAG 2.1.1). It carries a tab stop of its own for the same reason.
         //
         // The key is only noted here, not answered: this handler also sees the keys pressed on whatever the item
-        // holds, and a control of its own turns Enter into a click that arrives before the key is released. What
-        // is left unanswered by the time of the key-up was pressed on the item itself.
-        if (e.Key is "Enter" && IsClickable(item))
+        // holds, and a control of its own turns Enter or Space into a click that arrives before the key is
+        // released. What is left unanswered by the time of the key-up was pressed on the item itself.
+        if ((e.Key is "Enter" or " " or "Spacebar") && IsClickable(item))
         {
-            item._enterPending = true;
+            item._activationPending = true;
         }
 
         // Escape is what closes the thing that has the focus, and while the focus is inside a snack bar that
@@ -1330,9 +1333,11 @@ public partial class BitSnackBar : BitComponentBase
 
     private Task HandleItemKeyUp(KeyboardEventArgs e, BitSnackBarItem item)
     {
-        if (e.Key != "Enter" || item._enterPending is false) return Task.CompletedTask;
+        if (e.Key is not ("Enter" or " " or "Spacebar")) return Task.CompletedTask;
 
-        item._enterPending = false;
+        if (item._activationPending is false) return Task.CompletedTask;
+
+        item._activationPending = false;
 
         return HandleItemClick(item);
     }
@@ -1374,13 +1379,17 @@ public partial class BitSnackBar : BitComponentBase
 
         // A key held down while the focus moves away never reports its release here, so the note it left is
         // dropped rather than answered by the next key-up the item happens to see.
-        item._enterPending = false;
+        item._activationPending = false;
 
         ResumeItem(item);
     }
 
     private void HandleLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs args)
     {
+        // The subscription is taken once and kept, so the parameter is read here as well: turning it off again
+        // leaves the items where they are.
+        if (ClearOnNavigation is false) return;
+
         _ = ClearInBackgroundAsync();
     }
 

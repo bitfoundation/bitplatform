@@ -569,8 +569,10 @@
             leading icon comes first from the right, and the dismiss button keeps to the inline end.
         </div>
         <br />
-        <BitSnackBar @ref="rtlRef" Dir="BitDir.Rtl" ShowIcon Position="BitSnackBarPosition.BottomStart"
+        <BitSnackBar @ref="rtlRef" Dir="BitDir.Rtl" ShowIcon Position="BitSnackBarPosition.BottomEnd"
                      AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(5)" />
-        <BitButton Dir="BitDir.Rtl" OnClick="OpenRtl">نمایش پیام</BitButton>
+        <div dir="rtl">
+            <BitButton Dir="BitDir.Rtl" OnClick="OpenRtl">نمایش پیام</BitButton>
+        </div>
     </DemoExample>
 </DemoPage>
