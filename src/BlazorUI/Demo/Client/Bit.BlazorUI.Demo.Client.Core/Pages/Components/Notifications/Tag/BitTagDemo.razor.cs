@@ -1101,7 +1101,8 @@ private void ToggleFilter(string filter, bool selected)
     private readonly string example14RazorCode = @"
 @foreach (var tag in focusTags)
 {
-    <BitTag @ref=""focusTagRefs[tag]""
+    <BitTag @key=""tag""
+            @ref=""focusTagRefs[tag]""
             Text=""@tag""
             IconName=""@BitIconName.Tag""
             Variant=""BitVariant.Outline""

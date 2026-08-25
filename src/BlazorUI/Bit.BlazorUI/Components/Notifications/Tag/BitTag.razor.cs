@@ -693,7 +693,9 @@ public partial class BitTag : BitComponentBase
             return;
         }
 
-        // protects against reverse-tabnabbing when opening the link in a new browsing context
-        _rel = Target == "_blank" ? "noopener" : null;
+        // protects against reverse-tabnabbing when opening the link in a new browsing context. The target
+        // attribute is matched case-insensitively by the browser, so a "_BLANK" opens the same new context
+        // and has to be recognized here as one.
+        _rel = string.Equals(Target, "_blank", StringComparison.OrdinalIgnoreCase) ? "noopener" : null;
     }
 }

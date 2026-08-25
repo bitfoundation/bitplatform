@@ -401,6 +401,25 @@
         background-color: Highlight;
     }
 
+    // Opting out of the forced palette takes the content and the dismiss button out of it with it, so their
+    // hover and active backgrounds would be painted in the authored colors again - over the system highlight
+    // the selected tag has just taken, and under the HighlightText the label is now wearing. Both states are
+    // pinned back to the highlight, which leaves the pairing readable and the chip picked throughout.
+    .bit-tag-sel {
+        .bit-tag-int,
+        .bit-tag-cls {
+            @media (hover: hover) {
+                &:hover {
+                    background-color: Highlight;
+                }
+            }
+
+            &:active {
+                background-color: Highlight;
+            }
+        }
+    }
+
     // The disabled state comes last and takes the paint of a selected tag off with it, since GrayText on the
     // system highlight is the one pairing of these colors that cannot be read.
     .bit-tag.bit-dis {

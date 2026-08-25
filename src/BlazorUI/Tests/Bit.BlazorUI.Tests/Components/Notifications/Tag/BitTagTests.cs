@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -1404,6 +1405,8 @@ public class BitTagTests : BunitTestContext
         // the element the tag focuses is the control it renders, which is what a list of tags moves the
         // focus onto once one of them is gone
         await component.Instance.FocusAsync();
+
+        AssertFocused(component.Find("button.bit-tag-cnt"));
     }
 
     [TestMethod]
@@ -1416,6 +1419,8 @@ public class BitTagTests : BunitTestContext
         });
 
         await component.Instance.FocusAsync();
+
+        AssertFocused(component.Find("a.bit-tag-cnt"));
     }
 
     [TestMethod]
@@ -1428,6 +1433,8 @@ public class BitTagTests : BunitTestContext
         });
 
         await component.Instance.FocusAsync();
+
+        AssertFocused(component.Find("button.bit-tag-cls"));
     }
 
     [TestMethod]
@@ -1439,6 +1446,21 @@ public class BitTagTests : BunitTestContext
         });
 
         await component.Instance.FocusAsync();
+
+        AssertFocused(component.Find(".bit-tag"));
+    }
+
+    /// <summary>
+    /// The focus of a Blazor element reference goes out as a JS interop call carrying that reference, so what
+    /// FocusAsync actually focused is read back from the recorded call rather than from the DOM - bUnit runs no
+    /// browser and has no focused element of its own.
+    /// </summary>
+    private void AssertFocused(AngleSharp.Dom.IElement expected)
+    {
+        var invocation = Context.JSInterop.Invocations.Last(i => i.Identifier.EndsWith("focus", StringComparison.Ordinal));
+        var reference = (ElementReference)invocation.Arguments[0]!;
+
+        Assert.AreEqual(expected.GetAttribute("blazor:elementreference"), reference.Id);
     }
 
 
@@ -1502,7 +1524,7 @@ public class BitTagTests : BunitTestContext
 
 
     [TestMethod]
-    public void BitTagShouldKeepAnAriaLabelPassedThroughHtmlAttributesWhileItIsAControl()
+    public void BitTagShouldMoveAnAriaLabelPassedThroughHtmlAttributesOntoTheControl()
     {
         var component = Context.Render(builder =>
         {
@@ -1513,9 +1535,10 @@ public class BitTagTests : BunitTestContext
             builder.CloseComponent();
         });
 
-        // the tag writes its own attributes after the splat, so a null one of its own must not take the
-        // app's value off the element with it
-        Assert.AreEqual("From the attributes", component.Find(".bit-tag").GetAttribute("aria-label"));
+        // a splatted name follows the same route as one given through the parameter: onto the control the
+        // reader lands on, and off the wrapper, which has no role of its own to have it announced by
+        Assert.AreEqual("From the attributes", component.Find("button.bit-tag-cnt").GetAttribute("aria-label"));
+        Assert.IsNull(component.Find(".bit-tag").GetAttribute("aria-label"));
     }
 
     [TestMethod]
