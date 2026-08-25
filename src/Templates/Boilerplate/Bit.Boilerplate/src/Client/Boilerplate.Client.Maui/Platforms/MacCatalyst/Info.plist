@@ -28,6 +28,10 @@
         </array>
         <key>NSCameraUsageDescription</key>
         <string>This app uses camera for uploading profile photo using FileUpload component</string>
+        <!--#if (signalR == true)-->
+        <key>NSMicrophoneUsageDescription</key>
+        <string>This app uses the microphone to dictate your message in the AI chat panel</string>
+        <!--#endif-->
         <key>UISupportedInterfaceOrientations</key>
         <array>
             <string>UIInterfaceOrientationPortrait</string>

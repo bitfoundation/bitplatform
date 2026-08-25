@@ -1,22 +1,120 @@
-﻿@import '../Styles/abstracts/_functions.scss';
-@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_docs.scss';
 
+// The "on this page" rail. It is navigation, not content, so it only earns its space on wide
+// screens; the entries themselves are plain BitLinks and get their size and color from BitText.
 .side-rail {
-    top: 5rem;
-    width: 20%;
     overflow: auto;
     position: sticky;
     height: fit-content;
-    padding-bottom: 2rem;
-    list-style-type: none;
-    padding-inline-start: 2rem;
-    max-height: calc(var(--bit-env-win-height) - 65px);
+    flex: 0 0 rem2(240px);
+    padding: 0 $doc-space-md $doc-space-lg;
+    top: calc(var(--demo-header-height) + #{$doc-space-md});
+    max-height: calc(#{$bit-env-window-height} - var(--demo-header-height) - #{$doc-space-xl});
 
     @include lt-xl {
         display: none;
     }
+}
+
+// The floating button that stands in for the rail once it is hidden. It only exists on the
+// screens where the rail does not, so the two can never show together. It sits quietly at the
+// top-end corner, just below the app header, where the rail itself would have started.
+.side-rail-fab {
+    display: none;
+
+    @include lt-xl {
+        z-index: 10;
+        display: block;
+        position: fixed;
+        inset-inline-end: $doc-space-xl;
+        top: calc(var(--demo-header-height) + #{$doc-space-2xs} + #{$bit-env-inset-top});
+    }
+
+    @include lt-md {
+        inset-inline-end: $doc-space-md;
+    }
+}
+
+// The panel reuses the rail's content. BitPanel's container clips overflow without scrolling it,
+// so the nav fills the panel and owns the scrolling itself; the thin width plus the scrollbar
+// color inherited from the page keep it consistent with the rest of the docs chrome.
+.side-rail-panel {
+    height: 100%;
+    display: block;
+    overflow: hidden auto;
+    scrollbar-width: thin;
+    padding: $doc-space-md;
+}
+
+// Quiet by design: a small outlined circle whose only extra chrome is the page background behind
+// it, so the icon stays legible over whatever scrolls underneath.
+::deep .side-rail-fab-btn {
+    width: rem2(34px);
+    height: rem2(34px);
+    border-radius: 50%;
+    box-shadow: $bit-box-shadow-card;
+    background-color: $bit-color-background-primary;
+    border: rem2(1px) solid $bit-color-border-secondary;
+}
+
+// The rail's own label. A plain element rather than a BitText so it carries this file's scope
+// attribute and needs no ::deep to reach.
+.side-rail-label {
+    margin: 0;
+    @include doc-eyebrow;
+}
+
+// The hairline is the rail's spine: it ties the entries together and, being the only rule in the
+// margin, marks the column as secondary without adding another box to the page. The list itself
+// is a BitStack (Element="ul"), so only what a stack cannot express stays here, in ::deep because
+// the stack's root element does not carry this file's scope attribute.
+::deep .side-rail-list {
+    padding: 0;
+    list-style: none;
+    margin: $doc-space-2xs 0 0;
+    border-inline-start: rem2(2px) solid $bit-color-border-secondary;
 
     li {
-        margin-bottom: 0.5rem;
+        position: relative;
+        overflow-wrap: anywhere;
+        padding: rem2(3px) $doc-space-xs;
+    }
+
+    // An example belongs to the section above it, so it is indented under it rather than listed as
+    // one more peer. Without this a component page's rail is one flat run of twenty entries with no
+    // hint that "Basic" and "API" are different kinds of thing.
+    li.nested {
+        padding-inline-start: $doc-space-md;
+    }
+
+    .side-rail-link {
+        transition: color $bit-motion-duration-short $bit-motion-easing;
+
+        &:hover {
+            color: $bit-color-foreground-primary;
+        }
+    }
+
+    // The current section: its entry takes the primary color and some weight, and its stretch of
+    // the spine lights up in the same color - drawn as an overlay on the list's own hairline so
+    // active and inactive entries keep exactly the same geometry.
+    li.active {
+        &::before {
+            content: '';
+            top: 0;
+            bottom: 0;
+            position: absolute;
+            width: rem2(2px);
+            inset-inline-start: rem2(-2px);
+            background-color: $bit-color-primary;
+        }
+
+        .side-rail-link {
+            color: $bit-color-primary;
+
+            * {
+                font-weight: $bit-typography-fw-semibold;
+            }
+        }
     }
 }

@@ -1,15 +1,32 @@
 ﻿@import "../../../Styles/functions.scss";
 @import "../../../Styles/media-queries.scss";
+@import "../../../Styles/color-role-maps.scss";
+
+// The default size, declared as a mixin so both the root element and the callout - which is moved out to
+// the body while it is open and therefore inherits nothing from the root - can fall back to it.
+@mixin tpc-size-medium {
+    --bit-tpc-inp-h: #{$siz-ctrl-md};
+    --bit-tpc-inp-fs: #{$tg-fs-sm};
+    --bit-tpc-lbl-fs: #{$tg-fs-sm};
+    --bit-tpc-cell-size: #{spacing(3.75)};
+    --bit-tpc-cell-fs: #{$tg-fs-lg};
+    --bit-tpc-ico-fs: #{$tg-fs-xs};
+    --bit-tpc-sep-fs: #{$tg-fs-xl};
+    --bit-tpc-ampm-fs: #{$tg-fs-sm};
+    --bit-tpc-act-fs: #{$tg-fs-sm};
+}
 
 .bit-tpc {
     margin: 0;
     padding: 0;
     box-shadow: none;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     position: relative;
     box-sizing: border-box;
-    font-size: spacing(2.25);
+    font-size: $tg-fs-lg;
     font-family: $tg-font-family;
+
+    @include tpc-size-medium;
 
     &.bit-dis {
         .bit-tpc-lbl,
@@ -41,16 +58,20 @@
         .bit-tpc-icn {
             border-color: $clr-err;
         }
-    }
 
-    &.bit-rtl {
-    }
-}
+        &.bit-tpc-und .bit-tpc-wrp {
+            // Underlined variant drops the icon border, so surface the error cue on the
+            // underline itself to keep the invalid state visible before focus.
+            border-bottom-color: $clr-err;
+        }
 
-.bit-tpc-cal.bit-tpc-rtl {
-    .bit-tpc-cbn {
-        left: 0;
-        right: unset;
+        &.bit-tpc-foc:not(.bit-tpc-und) .bit-tpc-icn {
+            @include focus-ring($clr-err-focus);
+        }
+
+        &.bit-tpc-und.bit-tpc-foc .bit-tpc-icn {
+            @include focus-underline-ring($clr-err-focus);
+        }
     }
 }
 
@@ -58,10 +79,10 @@
     margin: 0;
     display: block;
     box-shadow: none;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     box-sizing: border-box;
     padding: spacing(0.5) 0;
-    font-size: spacing(1.75);
+    font-size: var(--bit-tpc-lbl-fs);
     overflow-wrap: break-word;
     color: $clr-fg-pri;
 }
@@ -75,13 +96,13 @@
     display: flex;
     cursor: pointer;
     box-shadow: none;
-    height: spacing(4);
+    height: var(--bit-tpc-inp-h);
     position: relative;
     align-items: center;
     flex-flow: row nowrap;
     padding: 0 spacing(1);
     box-sizing: border-box;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     background-color: $clr-bg-pri;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
@@ -103,18 +124,20 @@
     border: none;
     cursor: pointer;
     box-shadow: none;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     border-radius: 0;
     box-sizing: border-box;
     text-overflow: ellipsis;
-    font-size: spacing(1.75);
+    font-size: var(--bit-tpc-inp-fs);
     background: none transparent;
     color: $clr-fg-pri;
     font-family: $tg-font-family;
 }
 
+// An input that takes a typed time is a text field, so it carries the caret of one rather than the
+// pointer of the button-like input that only opens the callout.
 .bit-tpc-ein {
-    cursor: default;
+    cursor: text;
 }
 
 .bit-tpc-lic {
@@ -128,14 +151,9 @@
     }
 }
 
-.bit-tpc-foc {
-    .bit-tpc-icn::after {
-        content: "";
-        position: absolute;
-        pointer-events: none;
-        inset: spacing(-0.125);
-        border-radius: $shp-border-radius;
-        border: spacing(0.25) $shp-border-style $clr-pri;
+.bit-tpc-foc:not(.bit-tpc-und) {
+    .bit-tpc-icn {
+        @include focus-ring(var(--bit-tpc-clr-focus));
     }
 }
 
@@ -149,7 +167,7 @@
     .bit-tpc-icn {
         border: none;
         flex: 1 1 0px;
-        text-align: left;
+        text-align: start;
     }
 
     &.bit-dis {
@@ -159,10 +177,8 @@
     }
 
     &.bit-tpc-foc {
-        .bit-tpc-icn::after {
-            border: none;
-            border-radius: 0;
-            border-bottom: spacing(0.25) $shp-border-style $clr-brd-pri;
+        .bit-tpc-icn {
+            @include focus-underline-ring(var(--bit-tpc-clr-focus));
         }
     }
 }
@@ -187,18 +203,20 @@
 .bit-tpc-cal {
     display: none;
     position: fixed;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     outline: transparent;
     box-sizing: border-box;
     z-index: $zindex-callout;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     animation-fill-mode: both;
-    animation-duration: 0.367s;
+    animation-duration: $mot-duration-long;
     font-family: $tg-font-family;
-    box-shadow: $box-shadow-callout;
-    border-radius: $shp-border-radius;
+    box-shadow: $box-shadow-popup;
+    border-radius: $shp-radius-popup;
     animation-name: bit-fade-show, bit-slide-down;
-    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+    animation-timing-function: $mot-easing-decelerate;
+
+    @include tpc-size-medium;
 }
 
 .bit-tpc-cac {
@@ -206,13 +224,14 @@
     height: 100%;
     display: flex;
     outline: none;
+    flex-wrap: wrap;
     box-shadow: none;
     position: relative;
     align-items: center;
     overflow: hidden auto;
     align-content: center;
     justify-content: center;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-popup;
     background-color: $clr-bg-pri;
     padding: spacing(2);
     box-sizing: border-box;
@@ -240,8 +259,35 @@
     justify-content: center;
     align-content: center;
     align-items: center;
-    font-size: spacing(2.5);
+    font-size: var(--bit-tpc-sep-fs);
     font-weight: $tg-font-weight;
+}
+
+.bit-tpc-chd,
+.bit-tpc-cft {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.bit-tpc-chd {
+    margin-bottom: spacing(1);
+}
+
+.bit-tpc-cft {
+    margin-top: spacing(1);
+}
+
+// The announcement of the whole time, which is read but never seen.
+.bit-tpc-lve {
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    border-width: 0;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
 }
 
 .bit-tpc-am-pm {
@@ -259,12 +305,12 @@
     cursor: pointer;
     text-align: center;
     align-items: center;
-    width: spacing(3.75);
+    width: var(--bit-tpc-cell-size);
     box-sizing: border-box;
     justify-content: center;
     -moz-appearance: textfield; // Firefox
     background-color: $clr-bg-pri;
-    font-size: spacing(2.28);
+    font-size: var(--bit-tpc-cell-fs);
     font-weight: $tg-font-weight;
     overflow: hidden;
     aspect-ratio: 1;
@@ -281,9 +327,8 @@
     }
 
     &:focus {
+        @include focus-underline-ring(var(--bit-tpc-clr-focus));
         border: none;
-        border-bottom: $shp-border-width $shp-border-style $clr-brd-pri-active;
-        outline: none;
     }
 }
 
@@ -294,13 +339,13 @@
     overflow: visible;
     position: relative;
     text-align: center;
-    width: spacing(3.75);
+    width: var(--bit-tpc-cell-size);
     outline: transparent;
-    line-height: spacing(3.75);
-    font-size: spacing(1.5);
+    line-height: var(--bit-tpc-cell-size);
+    font-size: var(--bit-tpc-ico-fs);
     background-color: transparent;
     color: $clr-fg-pri;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     aspect-ratio: 1;
 
     @media (hover: hover) {
@@ -331,17 +376,21 @@
             color: $clr-fg-dis;
         }
     }
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-tpc-clr-focus));
+    }
 }
 
 .bit-tpc-bam,
 .bit-tpc-bpm {
-    font-size: spacing(1.8);
+    font-size: var(--bit-tpc-ampm-fs);
     font-weight: $tg-font-weight;
 }
 
 .bit-tpc-bns {
-    color: $clr-pri-text;
-    background-color: $clr-pri;
+    color: var(--bit-tpc-clr-txt);
+    background-color: var(--bit-tpc-clr);
 
     &:disabled {
         background-color: $clr-bg-dis;
@@ -349,21 +398,59 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-pri-hover;
+            background-color: var(--bit-tpc-clr-hover);
         }
     }
 
     &:active {
-        background-color: $clr-pri-active;
+        background-color: var(--bit-tpc-clr-active);
+    }
+}
+
+.bit-tpc-act {
+    width: 100%;
+    display: flex;
+    gap: spacing(1);
+    margin-top: spacing(1);
+    justify-content: flex-end;
+}
+
+.bit-tpc-abn {
+    border: none;
+    cursor: pointer;
+    font-weight: $tg-fw-semibold;
+    color: var(--bit-tpc-clr);
+    font-size: var(--bit-tpc-act-fs);
+    background-color: transparent;
+    font-family: $tg-font-family;
+    padding: spacing(0.75) spacing(1.5);
+    border-radius: $shp-radius-control;
+
+    @media (hover: hover) {
+        &:hover:not(:disabled) {
+            background-color: $clr-bg-pri-hover;
+        }
+    }
+
+    &:active:not(:disabled) {
+        background-color: $clr-bg-pri-active;
+    }
+
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+    }
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-tpc-clr-focus));
     }
 }
 
 .bit-tpc-cbn {
     top: 0;
-    right: 0;
-    display: none;
     aspect-ratio: 1;
     position: absolute;
+    inset-inline-end: 0;
     max-width: spacing(5);
 }
 
@@ -375,6 +462,30 @@
         z-index: unset;
         animation: none;
         position: relative;
+    }
+}
+
+// A read-only picker still shows the time it holds, and it holds it on the same buttons and inputs a
+// picker that can be changed does. The buttons carry the disabled attribute there only to keep them from
+// being pressed, so the look of a switched off control - which the attribute brings along on its own -
+// is taken back off them: nothing on the callout is unavailable, it is only the time that is settled.
+// The class sits on the root and on the callout alike, since the callout leaves the root while it is open.
+.bit-tpc-rdl {
+    .bit-tpc-tbt:disabled {
+        color: $clr-fg-pri;
+
+        i {
+            color: inherit;
+        }
+    }
+
+    .bit-tpc-bns:disabled {
+        color: var(--bit-tpc-clr-txt);
+        background-color: var(--bit-tpc-clr);
+    }
+
+    .bit-tpc-abn:disabled {
+        color: var(--bit-tpc-clr);
     }
 }
 
@@ -396,37 +507,87 @@
         overflow: hidden;
         animation-name: unset;
         transform: translateY(-100%);
-        box-shadow: $box-shadow-callout;
-        transition: transform 200ms ease-out, opacity 100ms linear;
+        box-shadow: $box-shadow-sheet;
+        transition: transform $mot-duration $mot-easing, opacity $mot-duration-short linear;
 
         .bit-tpc-tdv {
-            font-size: spacing(7);
+            font-size: calc(#{$tg-fs-4xl} * 1.75);
         }
 
         .bit-tpc-tin {
             width: 100%;
             min-width: spacing(7);
             max-width: spacing(12);
-            font-size: spacing(5);
+            font-size: calc(#{$tg-fs-4xl} * 1.25);
         }
 
         .bit-tpc-tbt {
             width: 100%;
             min-width: spacing(7);
             max-width: spacing(12);
-            font-size: spacing(3);
+            font-size: $tg-fs-2xl;
         }
 
         .bit-tpc-bam,
         .bit-tpc-bpm {
             width: 100%;
-            font-size: spacing(4);
+            font-size: $tg-fs-4xl;
             margin: spacing(0.25);
         }
 
         .bit-tpc-cbn {
-            display: block;
+            min-width: spacing(4);
             max-width: spacing(5);
         }
     }
+}
+
+// The callout does not sit inside the root element while it is open, so a direction the culture implies -
+// which leaves no dir attribute behind to inherit - has to be restated here. The parts of the time itself
+// keep running left to right (.bit-tpc-tic), so only the order of the sections around them mirrors.
+.bit-tpc-cal.bit-tpc-rtl {
+    direction: rtl;
+}
+
+
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// They are applied to the root element and to the callout alike, since the callout is moved out of
+// the root while it is open and inherits nothing from it.
+@each $role, $tokens in $bit-color-roles {
+    .bit-tpc-#{$role} {
+        --bit-tpc-clr: #{role($tokens, main)};
+        --bit-tpc-clr-txt: #{role($tokens, on)};
+        --bit-tpc-clr-hover: #{role($tokens, hover)};
+        --bit-tpc-clr-active: #{role($tokens, active)};
+        --bit-tpc-clr-focus: #{role($tokens, focus)};
+    }
+}
+
+
+.bit-tpc-sm {
+    --bit-tpc-inp-h: #{$siz-ctrl-sm};
+    --bit-tpc-inp-fs: #{$tg-fs-xs};
+    --bit-tpc-lbl-fs: #{$tg-fs-xs};
+    --bit-tpc-cell-size: #{spacing(3)};
+    --bit-tpc-cell-fs: #{$tg-fs-sm};
+    --bit-tpc-ico-fs: #{$tg-fs-xs};
+    --bit-tpc-sep-fs: #{$tg-fs-md};
+    --bit-tpc-ampm-fs: #{$tg-fs-xs};
+    --bit-tpc-act-fs: #{$tg-fs-xs};
+}
+
+.bit-tpc-md {
+    @include tpc-size-medium;
+}
+
+.bit-tpc-lg {
+    --bit-tpc-inp-h: #{$siz-ctrl-lg};
+    --bit-tpc-inp-fs: #{$tg-fs-md};
+    --bit-tpc-lbl-fs: #{$tg-fs-md};
+    --bit-tpc-cell-size: #{spacing(4.5)};
+    --bit-tpc-cell-fs: #{$tg-fs-xl};
+    --bit-tpc-ico-fs: #{$tg-fs-sm};
+    --bit-tpc-sep-fs: #{$tg-fs-2xl};
+    --bit-tpc-ampm-fs: #{$tg-fs-md};
+    --bit-tpc-act-fs: #{$tg-fs-md};
 }

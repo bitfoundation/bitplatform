@@ -1,3 +1,4 @@
+//+:cnd:noEmit
 namespace Boilerplate.Client.Core.Components.Pages.Settings;
 
 public partial class UpgradeAccountSection
@@ -7,28 +8,35 @@ public partial class UpgradeAccountSection
     [AutoInject] private ILogger<AdsService> logger { get; set; } = default!;
 
 
-    private bool adIsReady;
     private bool adIsShown;
-    private bool showTroubleButton;
+    private AdInitResult? adInitResult;
     private AdWatchResult? watchResult = null;
+    //#if (signalR == true)
+    private bool showTroubleButton;
+    //#endif
 
 
     protected override async Task OnAfterFirstRenderAsync()
     {
         await base.OnAfterFirstRenderAsync();
 
-        _ = Task.Delay(5000).ContinueWith(_ =>
+        //#if (signalR == true)
+        // The check and the assignment run together on the renderer, so an init that completes while this callback
+        // is in flight cannot end with the trouble button shown over a working ad.
+        _ = Task.Delay(5000).ContinueWith(_ => InvokeAsync(() =>
         {
-            if (adIsReady) return;
+            if (adInitResult is not null) return;
 
             showTroubleButton = true;
-            InvokeAsync(StateHasChanged);
-        });
+            StateHasChanged();
+        }));
+        //#endif
 
-        await adsService.Init(clientCoreSettings.AdUnitPath);
+        adInitResult = await adsService.Init(clientCoreSettings.AdUnitPath);
 
-        adIsReady = true;
-        showTroubleButton = false;
+        //#if (signalR == true)
+        showTroubleButton = adInitResult is not AdInitResult.Ready;
+        //#endif
 
         StateHasChanged();
     }
@@ -36,20 +44,24 @@ public partial class UpgradeAccountSection
 
     private async Task WatchAd()
     {
-        if (adIsReady is false || adIsShown) return;
+        if (adInitResult is not AdInitResult.Ready || adIsShown) return;
 
-        _ = Task.Delay(3000).ContinueWith(_ =>
+        //#if (signalR == true)
+        _ = Task.Delay(3000).ContinueWith(_ => InvokeAsync(() =>
         {
             if (watchResult is not null || adIsShown) return;
 
             showTroubleButton = true;
-            InvokeAsync(StateHasChanged);
-        });
+            StateHasChanged();
+        }));
+        //#endif
 
         watchResult = await adsService.Watch();
 
         adIsShown = true;
+        //#if (signalR == true)
         showTroubleButton = false;
+        //#endif
 
         StateHasChanged();
 
@@ -63,9 +75,11 @@ public partial class UpgradeAccountSection
         }
     }
 
+    //#if (signalR == true)
     private async Task HandleAdTrouble()
     {
         logger.LogWarning("User having trouble with ads");
         PubSubService.Publish(ClientAppMessages.AD_HAVE_TROUBLE);
     }
+    //#endif
 }

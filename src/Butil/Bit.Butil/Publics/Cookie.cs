@@ -11,6 +11,7 @@ namespace Bit.Butil;
 /// <br />
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie">https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie</see>
 /// </summary>
+[ButilService(typeof(Cookie))]
 public class Cookie(IJSRuntime js)
 {
     /// <summary>

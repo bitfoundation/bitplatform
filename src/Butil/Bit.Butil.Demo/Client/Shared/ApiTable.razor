@@ -1,0 +1,23 @@
+@* The BlazorUI demo's parameter reference, built the same way: a CSS grid rather than a <table>,
+   so the header row can stay put while the body scrolls inside the frame instead of stretching
+   the page. *@
+
+<section class="page-section" id="api-section">
+    <div class="section-heading">
+        <h2>@Title</h2>
+    </div>
+
+    <div class="table-view api-table" role="table" aria-label="@Title">
+        <div class="th-row" role="row">
+            <div class="th-cell" role="columnheader">Member</div>
+            <div class="th-cell" role="columnheader">Signature</div>
+            <div class="th-cell" role="columnheader">Description</div>
+        </div>
+        @ChildContent
+    </div>
+</section>
+
+@code {
+    [Parameter] public string Title { get; set; } = "API reference";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

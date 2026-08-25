@@ -1,0 +1,78 @@
+﻿@inject IJSRuntime JS
+
+@* The bit platform footer: who makes this, where to go next, and how to reach the team. *@
+
+<footer class="footer">
+    <section>
+        <div>
+            <div class="bit-logo" role="img" aria-label="bit platform"></div>
+            <p class="blurb">
+                Bmotion is part of bit platform &mdash; a platform that simplifies the development
+                process for freelancers and software companies through its clean project templates
+                and easy-to-use one-click build and deployment feature.
+            </p>
+        </div>
+
+        <div class="link-columns">
+            <div class="link-column">
+                <h6>Learn</h6>
+                <a href="/basic">Get started</a>
+                <a href="/springs">Springs</a>
+                <a href="/gestures">Gestures</a>
+                <a href="/accessibility">Accessibility</a>
+            </div>
+
+            <div class="link-column">
+                <h6>Build</h6>
+                <a href="/programmatic">Programmatic API</a>
+                <a href="/layout">Layout animations</a>
+                <a href="/scroll">Scroll timelines</a>
+                <a href="/mcp-server">MCP server</a>
+            </div>
+
+            <div class="link-column">
+                <h6>Project</h6>
+                <a href="https://github.com/bitfoundation" target="_blank" rel="noopener noreferrer">GitHub org</a>
+                <a href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener noreferrer">Repository</a>
+                <a href="https://github.com/bitfoundation/bitplatform/issues" target="_blank" rel="noopener noreferrer">Issues</a>
+                <button type="button" class="go-to-top" @onclick="GoToTop">
+                    <Icon Path="@Icons.ArrowUp" />
+                    Back to top
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="address-info">
+            <a class="address" target="_blank" rel="noopener noreferrer" href="https://maps.app.goo.gl/W8vtWHQ13YhYpksy6">Sixmastraat 15, 8932 PA Leeuwarden,</a>
+            <div class="country">Netherlands</div>
+            <a class="tel" href="tel:+31684207362">+31 6 84207362</a>
+        </div>
+
+        <div>
+            <div class="social-link-group">
+                <a class="social-link twitter-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on X (Twitter)" href="https://twitter.com/bitplatformhq"></a>
+                <a class="social-link github-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on GitHub" href="https://github.com/bitfoundation/bitplatform"></a>
+                <a class="social-link youtube-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on YouTube" href="https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog"></a>
+                <a class="social-link linkedin-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on LinkedIn" href="https://www.linkedin.com/company/bitplatformhq"></a>
+            </div>
+            <div class="copy-right-txt">Copyright &copy; 2026 bit platform &middot; All rights reserved</div>
+        </div>
+    </section>
+</footer>
+
+@code {
+    private async Task GoToTop()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("bmScrollToTop");
+        }
+        catch
+        {
+            // Scrolling back up is a convenience the page already offers through the scrollbar;
+            // if the script is unavailable there is nothing worth telling the reader about.
+        }
+    }
+}

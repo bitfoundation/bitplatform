@@ -1,6 +1,3 @@
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Shared.Features.Identity.Dtos;
-
 namespace Boilerplate.Client.Core.Components.Pages.Settings;
 
 public partial class SessionsSection
@@ -44,10 +41,17 @@ public partial class SessionsSection
 
             var userSessions = await userController.GetUserSessions(CurrentCancellationToken);
             otherSessions = userSessions.Where(s => s.Id != currentSessionId).ToArray();
-            currentSession = userSessions.Single(s => s.Id == currentSessionId);
+
+            currentSession = userSessions.SingleOrDefault(s => s.Id == currentSessionId);
+
+            if (currentSession is null)
+            {
+                SnackBarService.Warning(Localizer[nameof(AppStrings.SessionNoLongerValidMessage)]);
+            }
 
             maxPrivilegedSessionsCount = user.GetClaimValue<int>(AppClaimTypes.MAX_PRIVILEGED_SESSIONS);
-            hasUnlimitedPrivilegedSessions = user.HasClaim(AppClaimTypes.MAX_PRIVILEGED_SESSIONS, "-1");
+            hasUnlimitedPrivilegedSessions = user.HasClaim(AppClaimTypes.MAX_PRIVILEGED_SESSIONS,
+                AppClaimTypes.UNLIMITED_PRIVILEGED_SESSIONS.ToString(CultureInfo.InvariantCulture));
             currentPrivilegedSessionsCount = userSessions.Count(us => us.Privileged);
         }
         catch (KnownException e)

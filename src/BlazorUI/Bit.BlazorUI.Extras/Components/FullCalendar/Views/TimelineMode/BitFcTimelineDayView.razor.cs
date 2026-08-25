@@ -30,6 +30,11 @@ public partial class BitFcTimelineDayView
     private int? _dragHour;
     private int? _dragMinute;
 
+    // The slots exist only as add/drop targets, so a read-only timeline must not expose a focusable
+    // no-op button per half hour and resource. A null attribute value is omitted from the markup.
+    private string? _slotRole => State.ReadOnly ? null : "button";
+    private string? _slotTabIndex => State.ReadOnly ? null : "0";
+
     private RenderFragment RenderLanes(List<List<BitFullCalendarEvent>> lanes) => builder =>
     {
         var inv = System.Globalization.CultureInfo.InvariantCulture;
@@ -78,6 +83,9 @@ public partial class BitFcTimelineDayView
 
     private async Task OnSlotClickAsync(string resourceId, int hour, int minute)
     {
+        if (State.ReadOnly)
+            return;
+
         if (OnAddClick.HasDelegate)
         {
             var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(State.SelectedDate, hour, minute);
@@ -101,8 +109,12 @@ public partial class BitFcTimelineDayView
             await OnSlotClickAsync(resourceId, hour, minute);
     }
 
-    private string SlotAriaLabel(string rowLabel, int hour, int minute)
+    private string? SlotAriaLabel(string rowLabel, int hour, int minute)
     {
+        // The slot is inert in read-only mode, so it carries no label to announce.
+        if (State.ReadOnly)
+            return null;
+
         var start = State.SelectedDate.Date.AddHours(hour).AddMinutes(minute);
         return $"{Texts.AddEventHoverHint}, {rowLabel}, {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat, State.Culture)}";
     }

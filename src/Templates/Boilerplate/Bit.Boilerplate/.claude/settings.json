@@ -1,0 +1,14 @@
+{
+    "enableAllProjectMcpServers": true,
+    "env": {
+        "DOTNET_NOLOGO": "1"
+    },
+    "permissions": {
+        "allow": [
+            "mcp__DeepWiki",
+            "mcp__bitBlazorUI",
+            "mcp__MicrosoftLearn",
+            "mcp__playwright"
+        ]
+    }
+}

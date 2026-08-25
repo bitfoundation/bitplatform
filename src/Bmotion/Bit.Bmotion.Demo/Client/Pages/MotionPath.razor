@@ -1,0 +1,315 @@
+@page "/motion-path"
+
+<PageTitle>Motion path - Bit.Bmotion</PageTitle>
+
+<h1>Motion path and SVG</h1>
+
+<p class="page-intro">
+    Three things you can do with a path that you cannot do with <code>x</code> and <code>y</code>:
+    send an element <strong>along</strong> it, <strong>draw</strong> it stroke by stroke, and
+    <strong>morph</strong> it into another shape. All three are ordinary properties on
+    <code>Bm.To</code> - no separate SVG API, and the element you animate is the plain markup you
+    already wrote. A fourth needs no path at all: <strong>Bm.Arc</strong> curves the line between
+    wherever the element is and wherever it is going.
+</p>
+
+<div class="demo-section">
+    <h2>Curving the journey</h2>
+    <p>
+        Animating <code>x</code> and <code>y</code> together moves an element in a straight line,
+        which is exactly what nothing in the physical world does. <strong>Bm.Arc</strong> bends that
+        line: pass it as a transition's <code>path</code> and the two axes are driven together along
+        a curve instead of independently. There is no <code>d</code> string to write - the curve is
+        generated from the two endpoints, so it survives either of them moving.
+    </p>
+    <p>
+        <strong>strength</strong> sets how far it bends (as a fraction of the distance travelled),
+        <strong>peak</strong> moves where it crests, <strong>direction</strong> picks the side, and
+        <strong>rotate</strong> turns the element to follow the tangent - which is the difference
+        between a box sliding along a curve and a card being thrown.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack arc-stage">
+            <span class="demo-label">straight line</span>
+            <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
+                     Transition="Bm.Tween(1.1, BmEase.InOut)">
+                <div class="box box-sm arc-start" />
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack arc-stage">
+            <span class="demo-label">arc &middot; strength 0.6</span>
+            <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
+                     Transition="Bm.Tween(1.1, BmEase.InOut, path: Bm.Arc(strength: 0.6))">
+                <div class="box box-sm arc-start" />
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack arc-stage">
+            <span class="demo-label">arc &middot; rotate 1</span>
+            <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
+                     Transition="Bm.Tween(1.1, BmEase.InOut, path: Bm.Arc(strength: 0.6, rotate: 1))">
+                <div class="box box-sm arc-start arc-card">&#9992;</div>
+            </Bmotion>
+        </div>
+    </div>
+
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="@(() => _thrown = !_thrown)">@(_thrown ? "Send back" : "Throw")</button>
+    </div>
+
+    <CodeSnippet Code="@_arcCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Travel along a path</h2>
+    <p>
+        Set <strong>offsetPath</strong> once and animate <strong>offsetDistance</strong> from
+        <code>0%</code> to <code>100%</code>. Because both are real CSS properties, the browser owns
+        the curve - the motion stays smooth at any duration and needs no per-frame maths, which
+        hand-animating <code>x</code> and <code>y</code> along the same arc would.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card path-stage">
+            <div class="mpath-stage">
+                <svg viewBox="0 0 300 180" class="mpath-guide" aria-hidden="true">
+                    <path d="M20,150 C80,20 220,20 280,150" fill="none"
+                          style="stroke:var(--bm-primary)" stroke-width="2" stroke-dasharray="4 4" />
+                </svg>
+                <Bmotion Initial="_initial"
+                         Animate="@(_on ? _travel : _initial)"
+                         Transition="Bm.Tween(2.0, BmEase.InOut)">
+                    <div class="dot" />
+                </Bmotion>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="@(() => _on = !_on)">@(_on ? "Rewind" : "Travel")</button>
+    </div>
+
+    <CodeSnippet Code="@_code" />
+</div>
+
+<div class="demo-section">
+    <h2>Drawing a path</h2>
+    <p>
+        Animating <strong>pathLength</strong> from <code>0</code> to <code>1</code> draws a stroke
+        on, as though it were being written. It works by animating the dash pattern, and the
+        normalised <code>0..1</code> coordinate space that makes it readable comes from a
+        <code>pathLength="1"</code> attribute that <strong>Bmotion injects for you</strong> on
+        drawable SVG elements - so the same numbers mean the same thing whether the shape is 40
+        units long or 4000. <code>pathOffset</code> slides the visible run along the shape and
+        <code>pathSpacing</code> sets the gap between repeats, which together give you a chasing
+        dash without a keyframe in sight.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">pathLength 0 → 1</span>
+            <svg viewBox="0 0 200 120" class="draw-svg">
+                <Bmotion Initial="Bm.To(pathLength: 0)"
+                         Animate="Bm.To(pathLength: 1)"
+                         Transition="Bm.Tween(2.2, BmEase.InOut, repeat: BmRepeat.Mirror())">
+                    <path d="M20,100 C50,10 90,110 120,50 C140,10 175,30 185,90"
+                          fill="none" style="stroke:var(--bm-primary)" stroke-width="6" stroke-linecap="round" />
+                </Bmotion>
+            </svg>
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">pathOffset &middot; a chasing dash</span>
+            <svg viewBox="0 0 200 120" class="draw-svg">
+                <Bmotion Animate="Bm.To(pathLength: 0.25, pathOffset: [0, 1])"
+                         Transition="Bm.Tween(2.4, BmEase.Linear, repeat: BmRepeat.Forever)">
+                    <circle cx="100" cy="60" r="42"
+                            fill="none" style="stroke:var(--bm-secondary)" stroke-width="6" stroke-linecap="round" />
+                </Bmotion>
+            </svg>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_drawCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Morphing a shape</h2>
+    <p>
+        Animate the path's <strong>d</strong> attribute and the control points interpolate directly -
+        with one condition: the two paths need the <strong>same command structure</strong>. Both
+        shapes below are <code>M</code> plus four cubic segments, so every point has a counterpart
+        to travel to. Paths that do not line up snap to the target instead of morphing, which is a
+        good reason to author the two variants together rather than reach for a converter.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card">
+            <svg viewBox="0 0 200 200" width="200" height="200">
+                <Bmotion Animate="@(_morph ? _blobB : _blobA)"
+                         Transition="Bm.Spring(stiffness: 120, damping: 14)">
+                    <path d="M100 30 C140 30 170 60 170 100 C170 140 140 170 100 170 C60 170 30 140 30 100 C30 60 60 30 100 30"
+                          fill="url(#morphGrad)" />
+                </Bmotion>
+                <defs>
+                    <linearGradient id="morphGrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" style="stop-color:var(--bm-primary)" />
+                        <stop offset="1" style="stop-color:var(--bm-secondary)" />
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+    </div>
+
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="@(() => _morph = !_morph)">Morph</button>
+    </div>
+
+    <CodeSnippet Code="@_morphCode" />
+</div>
+
+<style>
+    .path-stage { min-height: 13.75rem; }
+
+    /* Fixed-size stage so the SVG guide (viewBox 0 0 300 180) and the dot's pixel-based
+       offset-path share one coordinate system, and position:relative keeps the absolutely
+       positioned SVG contained within the card. */
+    .mpath-stage {
+        position: relative;
+        width: 300px;
+        height: 180px;
+        max-width: 100%;
+        margin: 0 auto;
+    }
+
+    .mpath-guide { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .35; }
+
+    .dot {
+        width: 1.5rem;
+        height: 1.5rem;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+    }
+
+    .draw-svg { width: 100%; max-width: 200px; height: 120px; }
+
+    /* The arc samples travel 150px right and 40px down, so the stage has to hold that journey
+       without reflowing - the box starts pinned to the top-left of the space it has to cross. */
+    .arc-stage { justify-content: flex-start; min-height: 11rem; }
+    .arc-start { align-self: flex-start; }
+
+    .arc-card { font-size: 1.25rem; color: #fff; }
+</style>
+
+@code {
+    private bool _on;
+    private bool _morph;
+    private bool _thrown;
+
+    private static readonly BmProps _initial =
+        Bm.To(offsetPath: "path('M20,150 C80,20 220,20 280,150')", offsetDistance: "0%");
+    private static readonly BmProps _travel = Bm.To(offsetDistance: "100%");
+
+    // Same command structure (M + 4 cubic segments) so the control points interpolate smoothly.
+    private static readonly BmProps _blobA = Bm.To(d: "M100 30 C140 30 170 60 170 100 C170 140 140 170 100 170 C60 170 30 140 30 100 C30 60 60 30 100 30");
+    private static readonly BmProps _blobB = Bm.To(d: "M100 50 C130 20 180 70 150 100 C180 130 130 180 100 150 C70 180 20 130 50 100 C20 70 70 20 100 50");
+
+    private const string _code = """
+        @using Bit.Bmotion
+
+        @* offsetPath is set once; only offsetDistance animates. Both are real CSS
+           properties, so the browser owns the curve. *@
+        <Bmotion Initial="_initial"
+                 Animate="@(_on ? _travel : _initial)"
+                 Transition="Bm.Tween(2.0, BmEase.InOut)">
+            <div class="dot" />
+        </Bmotion>
+
+        @code {
+            private bool _on;
+
+            static readonly BmProps _initial =
+                Bm.To(offsetPath: "path('M20,150 C80,20 220,20 280,150')", offsetDistance: "0%");
+            static readonly BmProps _travel = Bm.To(offsetDistance: "100%");
+        }
+        """;
+
+    private const string _drawCode = """
+        @using Bit.Bmotion
+
+        @* pathLength 0 → 1 draws the stroke on. Bmotion injects pathLength="1" onto the
+           <path> for you, so 0..1 means the same thing whatever the shape's real length. *@
+        <svg viewBox="0 0 200 120">
+            <Bmotion Initial="Bm.To(pathLength: 0)"
+                     Animate="Bm.To(pathLength: 1)"
+                     Transition="Bm.Tween(2.2, BmEase.InOut, repeat: BmRepeat.Mirror())">
+                <path d="M20,100 C50,10 90,110 120,50 C140,10 175,30 185,90"
+                      fill="none" stroke="#1276C6" stroke-width="6" stroke-linecap="round" />
+            </Bmotion>
+        </svg>
+
+        @* A quarter-length run whose offset loops: a chasing dash with no keyframes.
+           pathSpacing sets the gap between repeats of the visible run. *@
+        <svg viewBox="0 0 200 120">
+            <Bmotion Animate="Bm.To(pathLength: 0.25, pathOffset: [0, 1])"
+                     Transition="Bm.Tween(2.4, BmEase.Linear, repeat: BmRepeat.Forever)">
+                <circle cx="100" cy="60" r="42"
+                        fill="none" stroke="#FD7F36" stroke-width="6" stroke-linecap="round" />
+            </Bmotion>
+        </svg>
+        """;
+
+    private const string _morphCode = """
+        @using Bit.Bmotion
+
+        @* Put the <path> directly inside the Bmotion - it is the first root element, so it
+           is the one that gets animated. *@
+        <svg viewBox="0 0 200 200">
+            <Bmotion Animate="@(_morph ? _blobB : _blobA)" Transition="Bm.Spring(stiffness: 120, damping: 14)">
+                <path d="M100 30 C140 30 ..." fill="…" />
+            </Bmotion>
+        </svg>
+
+        @code {
+            private bool _morph;
+
+            // Same command structure (M + 4 cubic segments) in both, so every control point
+            // has a counterpart to travel to. Mismatched paths snap instead of morphing.
+            static readonly BmProps _blobA = Bm.To(d: "M100 30 C140 30 170 60 170 100 …");
+            static readonly BmProps _blobB = Bm.To(d: "M100 50 C130 20 180 70 150 100 …");
+        }
+        """;
+
+    private const string _arcCode = """
+        @using Bit.Bmotion
+
+        @* Straight line: x and y are interpolated independently, which is the only
+           thing two separate interpolations can describe. *@
+        <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
+                 Transition="Bm.Tween(1.1, BmEase.InOut)">
+            <div class="box" />
+        </Bmotion>
+
+        @* Same target, curved: `path` couples the two axes onto one journey. No `d`
+           string - the curve is derived from the two endpoints. *@
+        <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
+                 Transition="Bm.Tween(1.1, BmEase.InOut, path: Bm.Arc(strength: 0.6))">
+            <div class="box" />
+        </Bmotion>
+
+        @* rotate: 1 turns the element along the tangent, so it banks into the curve. *@
+        <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
+                 Transition="Bm.Tween(1.1, BmEase.InOut, path: Bm.Arc(strength: 0.6, rotate: 1))">
+            <div class="box">&#9992;</div>
+        </Bmotion>
+
+        @* The timing is still the transition's, so a spring on a path arcs AND overshoots:
+           Bm.Spring(bounce: 0.4, duration: 0.9, path: Bm.Arc(strength: 0.8)) *@
+
+        @code {
+            private bool _thrown;
+        }
+        """;
+}

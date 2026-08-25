@@ -1,4 +1,4 @@
-﻿(BitBlazorUI as any).version = (window as any)['bit-blazorui version'] = '10.5.0';
+﻿(BitBlazorUI as any).version = (window as any)['bit-blazorui version'] = '10.6.0-pre-02';
 
 interface DotNetObject {
     invokeMethod<T>(methodIdentifier: string, ...args: any[]): T;
@@ -12,6 +12,13 @@ window.addEventListener('scroll', (e: Event) => {
 
     const target = e.target as HTMLElement;
     if (target?.id && target.id == currentCallout.scrollContainerId) return;
+
+    // A scroll that started inside the callout itself is the user reading it, not the page moving out
+    // from under it, so it must not dismiss it. The named scroll container above is the part a component
+    // measures and caps; anything else the content scrolls - a callout capped with a max height, a
+    // scrollable the consumer put in it - is covered here.
+    if (target && currentCallout.calloutId &&
+        document.getElementById(currentCallout.calloutId)?.contains(target)) return;
 
     // On touch devices (notably iOS) focusing an input shows the virtual keyboard, which fires a
     // scroll event as the browser brings the field into view. That should not dismiss an open

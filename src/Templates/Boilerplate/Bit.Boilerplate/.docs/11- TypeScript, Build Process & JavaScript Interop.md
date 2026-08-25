@@ -26,7 +26,7 @@ SCSS is compiled to CSS during the same build pipeline. You'll also learn how to
     "compilerOptions": {
         "strict": true,
         "target": "ES2019",
-        "module": "es2015",
+        "module": "ESNext",
         "noEmit": true,
         // ...
     }
@@ -38,7 +38,7 @@ SCSS is compiled to CSS during the same build pipeline. You'll also learn how to
 - **`noEmit: true`**: TypeScript only performs type-checking and does **not** generate any `.js` output files. The actual bundling is handled by esbuild.
 - **`strict: true`**: Enables all strict type-checking options for better code quality
 - **`target: "ES2019"`**: Sets the type-checking language level to ES2019
-- **`module: "es2015"`**: Uses ES2015 module system (import/export)
+- **`module: "ESNext"`**: Uses the latest ES module system (import/export)
 - **`lib: ["DOM", "DOM.Iterable", "ES2019"]`**: Includes DOM, DOM Iterable, and ES2019 API type definitions
 - **`moduleResolution: "bundler"`**: Uses bundler-style module resolution (compatible with esbuild)
 
@@ -54,9 +54,9 @@ SCSS is compiled to CSS during the same build pipeline. You'll also learn how to
 ```json
 {
     "devDependencies": {
-        "esbuild": "0.27.0",
-        "sass": "1.94.0",
-        "typescript": "5.9.3"
+        "esbuild": "0.28.2",
+        "sass": "1.102.0",
+        "typescript": "7.0.2"
     }
 }
 ```
@@ -103,14 +103,14 @@ The `.csproj` file defines custom MSBuild targets that run automatically during 
 ### Step 1: InstallNodejsDependencies
 
 ```xml
-<Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
+<Target Name="InstallNodejsDependencies">
     <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
 </Target>
 ```
 
 **What it does:**
 - Runs `npm install` to install all packages from `package.json`
-- Only runs when `package.json` changes (incremental build optimization)
+- Only runs when `package.json` or `package-lock.json` changes (incremental build optimization)
 - Creates `node_modules` folder with all dependencies
 
 ### Step 2: BuildJavaScript
@@ -262,9 +262,9 @@ After running the commands, your `package.json` should look like this:
         "uuid": "^11.0.3"
     },
     "devDependencies": {
-        "esbuild": "0.27.0",
-        "sass": "1.94.0",
-        "typescript": "5.9.3",
+        "esbuild": "0.28.2",
+        "sass": "1.102.0",
+        "typescript": "7.0.2",
         "@types/uuid": "^10.0.0"
     }
 }

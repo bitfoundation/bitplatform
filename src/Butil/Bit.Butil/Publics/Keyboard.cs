@@ -15,6 +15,7 @@ namespace Bit.Butil;
 /// down, not when it is released. Matching is by the physical key (<c>KeyboardEvent.code</c>),
 /// not the produced character.
 /// </remarks>
+[ButilService(typeof(Keyboard))]
 public class Keyboard(IJSRuntime js) : IAsyncDisposable
 {
     internal const string InvokeMethodName = nameof(InvokeKeyboard);

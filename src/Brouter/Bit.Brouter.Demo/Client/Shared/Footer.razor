@@ -1,0 +1,92 @@
+@* The site footer, in two bands: a wide one carrying the bit mark, what the project is, and the
+   link columns; then a rule, under which sit the organization's contact details, the social row
+   and the license line. *@
+
+<footer class="bb-footer">
+    <div class="bb-footer-main">
+        <div class="bb-footer-brand">
+            <div class="bb-footer-logo"></div>
+            <p class="bb-footer-tagline">
+                Brouter is a modern, declarative, nestable router for Blazor: async guards, data
+                loaders with stale-while-revalidate caching, keep-alive, view transitions and
+                compile-time-safe URLs. This site is itself a Blazor app, routed by Brouter.
+            </p>
+            <div class="bb-footer-badges">
+                <span class="bb-badge">MIT</span>
+                <span class="bb-badge">net8.0</span>
+                <span class="bb-badge">net9.0</span>
+                <span class="bb-badge">net10.0</span>
+            </div>
+        </div>
+
+        <div class="bb-footer-links">
+            <nav class="bb-footer-col" aria-label="Documentation links">
+                <p class="bb-footer-col-title">Learn</p>
+                <BrouterLink Href="/docs/getting-started">Getting started</BrouterLink>
+                <BrouterLink Href="/docs/navigation-pipeline">How a navigation works</BrouterLink>
+                <BrouterLink Href="/docs/route-templates">Route templates</BrouterLink>
+                <BrouterLink Href="/docs/data-loading">Data loading</BrouterLink>
+                <BrouterLink Href="/docs/migration">Migration guide</BrouterLink>
+            </nav>
+
+            <nav class="bb-footer-col" aria-label="Reference links">
+                <p class="bb-footer-col-title">Reference</p>
+                <BrouterLink Href="/docs/api">API reference</BrouterLink>
+                <BrouterLink Href="/docs/recipes">Recipes</BrouterLink>
+                <BrouterLink Href="/docs/faq">FAQ &amp; troubleshooting</BrouterLink>
+                <BrouterLink Href="/docs/performance">Performance</BrouterLink>
+                <BrouterLink Href="/docs/typed-routes">Typed routes</BrouterLink>
+            </nav>
+
+            <nav class="bb-footer-col" aria-label="Explore links">
+                <p class="bb-footer-col-title">Explore</p>
+                <BrouterLink Href="/playground">Playground</BrouterLink>
+                <BrouterLink Href="/docs/view-transitions">View transitions</BrouterLink>
+                <BrouterLink Href="/docs/lifecycle">Keep-alive &amp; lifecycle</BrouterLink>
+                <BrouterLink Href="/docs/mcp">MCP server</BrouterLink>
+            </nav>
+
+            <nav class="bb-footer-col" aria-label="Community links">
+                <p class="bb-footer-col-title">Community</p>
+                <a href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener noreferrer">GitHub</a>
+                <a href="https://github.com/bitfoundation/bitplatform/issues" target="_blank" rel="noopener noreferrer">Issues</a>
+                <a href="https://www.nuget.org/packages/Bit.Brouter" target="_blank" rel="noopener noreferrer">NuGet package</a>
+                <a href="https://bitplatform.dev" target="_blank" rel="noopener noreferrer">bit platform</a>
+            </nav>
+        </div>
+    </div>
+
+    <div class="bb-footer-bottom">
+        <div class="bb-footer-address">
+            <a class="bb-address" target="_blank" rel="noopener noreferrer" href="https://maps.app.goo.gl/W8vtWHQ13YhYpksy6">Sixmastraat 15, 8932 PA Leeuwarden,</a>
+            <div class="bb-country">Netherlands</div>
+            <a class="bb-tel" href="tel:+31684207362">+31 6 84207362</a>
+        </div>
+
+        <div class="bb-footer-social-block">
+            <div class="bb-social-links">
+                <a class="bb-social-link bb-twitter-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on X (Twitter)" href="https://twitter.com/bitplatformhq"></a>
+                <a class="bb-social-link bb-github-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on GitHub" href="https://github.com/bitfoundation/bitplatform"></a>
+                <a class="bb-social-link bb-youtube-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on YouTube" href="https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog"></a>
+                <a class="bb-social-link bb-linkedin-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on LinkedIn" href="https://www.linkedin.com/company/bitplatformhq"></a>
+            </div>
+            <div class="bb-copyright">
+                MIT licensed · part of the
+                <a href="https://bitplatform.dev" target="_blank" rel="noopener noreferrer">bit platform</a> project
+            </div>
+        </div>
+
+        <button type="button" class="bb-go-to-top" @onclick="GoToTop">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="12" y1="19" x2="12" y2="5" /><polyline points="5 12 12 5 19 12" />
+            </svg>
+            Back to top
+        </button>
+    </div>
+</footer>
+
+@code {
+    [Inject] private IJSRuntime jsRuntime { get; set; } = default!;
+
+    private async Task GoToTop() => await jsRuntime.InvokeVoidAsync("bitBrouterSite.goToTop");
+}

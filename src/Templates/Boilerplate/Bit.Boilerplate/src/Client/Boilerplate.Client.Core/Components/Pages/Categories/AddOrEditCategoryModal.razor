@@ -26,6 +26,8 @@
                            Variant="BitVariant.Text"
                            IconName="@BitIconName.Cancel"
                            Color="BitColor.SecondaryBackground"
+                           Title="@Localizer[nameof(AppStrings.Close)]"
+                           AriaLabel="@Localizer[nameof(AppStrings.Close)]"
                            OnClick="() => isOpen = false" />
             </BitStack>
             <BitCard FullSize>
@@ -38,14 +40,17 @@
                                       Placeholder="@Localizer[nameof(AppStrings.EnterCategoryName)]" />
                         <ValidationMessage For="() => category.Name" />
                         <br />
-                        <BitLabel For="catColorInput">@Localizer[nameof(AppStrings.Color)]</BitLabel>
+                        <BitLabel>@Localizer[nameof(AppStrings.Color)]</BitLabel>
 
                         <BitStack>
-                            <BitStack Horizontal>
+                            <BitStack Horizontal role="group" aria-label="@Localizer[nameof(AppStrings.PresetColors)]">
                                 @foreach (var color in new[] { "#FFCD56", "#FF6384", "#4BC0C0", "#FF9124", "#2B88D8", "#C7E0F4" })
                                 {
                                     <button @onclick="() => SetCategoryColor(color)"
                                             type="button"
+                                            title="@color"
+                                            aria-label="@color"
+                                            aria-pressed="@(category.Color == color ? "true" : "false")"
                                             style="background-color: @color"
                                             class="color-btn @(category.Color == color ? "color-btn--active" : null)" />
                                 }
@@ -61,9 +66,7 @@
                             @if (isColorPickerOpen)
                             {
                                 <div class="color-picker-container">
-                                    <BitColorPicker @bind-Color="category.Color" Id="catColorInput" ShowPreview="true">
-                                        @Localizer[nameof(AppStrings.DefaultColorPicker)]
-                                    </BitColorPicker>
+                                    <BitColorPicker @bind-Color="category.Color" ShowPreview="true" />
                                 </div>
                             }
                         </BitStack>

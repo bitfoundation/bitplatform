@@ -1,0 +1,493 @@
+@page "/gestures"
+
+<PageTitle>Gestures - Bit.Bmotion</PageTitle>
+
+<h1>Gestures</h1>
+
+<p class="page-intro">
+    Gesture states are <strong>overlays</strong>, not replacements. <code>WhileHover</code>,
+    <code>WhileTap</code>, <code>WhileFocus</code>, <code>WhileDrag</code> and
+    <code>WhileInView</code> layer on top of whatever <code>Animate</code> is currently showing and
+    revert themselves the moment the gesture ends - so you never write the "back to normal"
+    animation, and overlapping gestures resolve without any state of your own.
+</p>
+
+<div class="demo-section">
+    <h2>Hover and tap</h2>
+    <p>
+        The two workhorses. Both take an ordinary target, so anything animatable is fair game -
+        here a lift with a coloured shadow, and a press that scales down. Tap is
+        <strong>keyboard-accessible out of the box</strong>: give the element focus and
+        <kbd>Enter</kbd> or <kbd>Space</kbd> presses and releases it exactly like a pointer,
+        <code>WhileTap</code> included. Natively focusable elements get this for free; anything
+        else needs <code>tabindex="0"</code>, as the first stage does.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">Hover to lift &middot; tab to it and press <kbd>Space</kbd></span>
+            <Bmotion Animate="Bm.To(scale: 1)"
+                    WhileHover='Bm.To(scale: 1.15, y: -6, boxShadow: "0 20px 40px rgba(18,118,198,.5)")'
+                    WhileTap="Bm.To(scale: 0.92)"
+                    Transition="Bm.Spring(stiffness: 400, damping: 25)">
+                <div class="box" role="button" tabindex="0" aria-label="Hover and tap sample" />
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">A real button, unchanged</span>
+            <Bmotion Animate="Bm.To(scale: 1)"
+                    WhileHover='Bm.To(scale: 1.07, backgroundColor: "#0B6AB4")'
+                    WhileTap="Bm.To(scale: 0.95)"
+                    Transition="Bm.Tween(0.15)">
+                <button class="btn-bm">Animated button</button>
+            </Bmotion>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_hoverTapCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Focus</h2>
+    <p>
+        <strong>WhileFocus</strong> plays while the element or any of its descendants holds focus.
+        It is the accessible half of a hover effect: keyboard users get the same affordance pointer
+        users do, without a second code path.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">Tab into the field</span>
+            <Bmotion Animate="Bm.To(scale: 1)"
+                    WhileFocus='Bm.To(scale: 1.03, borderColor: "#1276C6")'
+                    Transition="Bm.Tween(0.2)">
+                <input class="focus-input" placeholder="Click or tab to focus…" type="text" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_focusCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Pan</h2>
+    <p>
+        A pan is a pointer drag <em>reported</em> rather than applied: <code>OnPan</code> hands you
+        a <strong>BmPanInfo</strong> - the pointer position, the delta since the last event, the
+        total offset since the gesture began and the current velocity in pixels per second - and
+        leaves the element where it is. That is the hook for building your own drag behaviour
+        (a custom slider, a swipe-to-dismiss threshold) on top of the same gesture plumbing
+        <code>Drag</code> uses.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">Drag across the box - it does not move</span>
+            <Bmotion WhileHover="Bm.To(scale: 1.05)"
+                    OnPanStart="@(() => { _panning = true; })"
+                    OnPan="HandlePan"
+                    OnPanEnd="@(() => { _panning = false; })">
+                <div class="box" />
+            </Bmotion>
+            <div class="readout">
+                <div>offset&nbsp; x @Format(_panOffset.X) &middot; y @Format(_panOffset.Y)</div>
+                <div>velocity x @Format(_panVelocity.X) &middot; y @Format(_panVelocity.Y)</div>
+                <div>@(_panning ? "panning…" : "idle")</div>
+            </div>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_panCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Gesture events</h2>
+    <p>
+        Every gesture also reports itself as a callback, so an animation can be paired with real
+        work. Note the ordering below: <code>TapCancel</code> fires instead of <code>Tap</code> when
+        the pointer leaves the element before release - which is what makes a press cancellable, and
+        why you should act on <code>OnTap</code> rather than <code>OnTapStart</code>.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">Press, then release off the box to cancel</span>
+            <Bmotion WhileHover="Bm.To(scale: 1.1)"
+                    WhileTap="Bm.To(scale: 0.9)"
+                    OnHoverStart="@(() => AddEvent("HoverStart"))"
+                    OnHoverEnd="@(() => AddEvent("HoverEnd"))"
+                    OnTapStart="@(() => AddEvent("TapStart"))"
+                    OnTap="@(() => AddEvent("Tap"))"
+                    OnTapCancel="@(() => AddEvent("TapCancel"))">
+                <div class="box" role="button" tabindex="0" aria-label="Gesture event sample" />
+            </Bmotion>
+            <div class="readout event-log">
+                @if (_events.Count == 0)
+                {
+                    <div>No events yet.</div>
+                }
+                @foreach (var e in Enumerable.Reverse(_events))
+                {
+                    <div>@e</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_eventsCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Nested gestures</h2>
+    <p>
+        Pointer gestures bubble, so a tappable button inside a tappable card presses both. That is
+        usually right - a card that reacts to being pressed anywhere feels alive - but not when the
+        inner control has its own meaning. <strong>GesturePropagation="false"</strong> on the child
+        stops its tap and pan from reaching gesture-enabled ancestors, exactly as
+        <code>DragPropagation</code> does for drag. Press each button and watch the card behind it.
+    </p>
+    <p>
+        Hover is unaffected either way: <code>pointerenter</code> and <code>pointerleave</code> do
+        not bubble, so a child's hover was never its parent's problem.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">propagates (default)</span>
+            <Bmotion WhileTap="Bm.To(scale: 0.96, rotate: -1)">
+                <div class="nest-card">
+                    <Bmotion WhileTap="Bm.To(scale: 0.88)">
+                        <button class="nest-btn" type="button">Press me</button>
+                    </Bmotion>
+                </div>
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">GesturePropagation="false"</span>
+            <Bmotion WhileTap="Bm.To(scale: 0.96, rotate: -1)">
+                <div class="nest-card">
+                    <Bmotion WhileTap="Bm.To(scale: 0.88)" GesturePropagation="false">
+                        <button class="nest-btn" type="button">Press me</button>
+                    </Bmotion>
+                </div>
+            </Bmotion>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_propagationCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Owning the transform string</h2>
+    <p>
+        Bmotion composes one <code>transform</code> from every animated component, in a fixed order.
+        <strong>TransformTemplate</strong> hands that string back to you before it is written -
+        useful when the element already needs a transform of its own that the animation must not
+        clobber. The classic case is an element centred on its own anchor with
+        <code>translate(-50%, -50%)</code>: leave it in the CSS and the animation overwrites it,
+        so put it in the template instead and it survives every frame.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack pin-stage align-start">
+            <span class="demo-label">without a template - the pin slips</span>
+            <Bmotion Animate="@(_pinned ? Bm.To(scale: 1.6) : Bm.To(scale: 1))"
+                     Transition="Bm.Spring(stiffness: 250, damping: 18)">
+                <div class="pin" />
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack pin-stage align-start">
+            <span class="demo-label">template keeps it centred</span>
+            <Bmotion Animate="@(_pinned ? Bm.To(scale: 1.6) : Bm.To(scale: 1))"
+                     TransformTemplate="@(( _, generated) => $"translate(-50%, -50%) {generated}")"
+                     Transition="Bm.Spring(stiffness: 250, damping: 18)">
+                <div class="pin" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="@(() => _pinned = !_pinned)">@(_pinned ? "Shrink" : "Grow")</button>
+    </div>
+
+    <CodeSnippet Code="@_templateCode" />
+</div>
+
+<style>
+    .nest-card {
+        display: flex;
+        padding: 1.5rem;
+        cursor: pointer;
+        border-radius: 12px;
+        align-items: center;
+        justify-content: center;
+        background: var(--bm-accent-soft);
+        border: 1px solid var(--bm-accent-line);
+    }
+
+    /* Filled with the accent rather than with the accent-to-secondary gradient the boxes use: this
+       one carries a word, and white does not clear 4.5:1 over the light half of that gradient. The
+       gradient is decoration here; the label is not. */
+    .nest-btn {
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        padding: .6rem 1.1rem;
+        border-radius: 8px;
+        color: var(--bm-primary-text);
+        background: var(--bm-primary);
+    }
+
+    /* A fixed stage with a marked centre, so "the pin slipped off its anchor" is visible rather
+       than something you have to take on faith. */
+    .pin-stage { position: relative; min-height: 11rem; }
+
+    .pin {
+        top: 50%;
+        left: 50%;
+        width: 2.5rem;
+        height: 2.5rem;
+        position: absolute;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+    }
+</style>
+
+<style>
+    .focus-input {
+        width: 15rem;
+        outline: none;
+        padding: .5rem 1rem;
+        color: var(--bm-text);
+        background: var(--bm-surface);
+        border: 2px solid var(--bm-border);
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: .875rem;
+    }
+
+    /* A quiet, fixed-height panel so a live readout under a stage never resizes the stage. */
+    .readout {
+        width: 100%;
+        font-size: .78rem;
+        line-height: 1.6;
+        text-align: center;
+        font-family: var(--demo-font-mono);
+        color: var(--bm-muted);
+    }
+
+    .event-log { max-height: 7.5rem; overflow: auto; }
+</style>
+
+@code {
+    private readonly List<string> _events = [];
+
+    private bool _pinned;
+    private bool _panning;
+    private BmPoint _panOffset = new();
+    private BmPoint _panVelocity = new();
+
+    private void HandlePan(BmPanInfo info)
+    {
+        _panOffset = info.Offset;
+        _panVelocity = info.Velocity;
+    }
+
+    private static string Format(double value)
+        => value.ToString("F0", System.Globalization.CultureInfo.InvariantCulture);
+
+    void AddEvent(string name)
+    {
+        _events.Add($"[{DateTime.Now:HH:mm:ss.ff}] {name}");
+        // Only the last 8 entries are ever shown; trim the rest so a long session can't grow this list unbounded.
+        if (_events.Count > 8)
+            _events.RemoveRange(0, _events.Count - 8);
+        StateHasChanged();
+    }
+
+    private const string _hoverTapCode = """
+        @using Bit.Bmotion
+
+        <style>
+            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
+            .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+            .demo-card {
+                background: var(--bm-card); border: 1px solid var(--bm-border);
+                border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .box {
+                width: 80px; height: 80px; border-radius: 10px;
+                background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+            }
+            .btn-bm {
+                background: var(--bm-primary); color: var(--bm-primary-text); border: none; border-radius: 8px;
+                padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
+            }
+        </style>
+
+        <div class="demo-row">
+            <div class="demo-card">
+                @* Gesture states layer over Animate and revert themselves - there is no
+                   "back to normal" animation to write. tabindex makes the div tappable by
+                   keyboard: Enter/Space press and release it exactly like a pointer. *@
+                <Bmotion Animate="Bm.To(scale: 1)"
+                        WhileHover='Bm.To(scale: 1.15, y: -6, boxShadow: "0 20px 40px rgba(18,118,198,.5)")'
+                        WhileTap="Bm.To(scale: 0.92)"
+                        Transition="Bm.Spring(stiffness: 400, damping: 25)">
+                    <div class="box" role="button" tabindex="0" aria-label="Hover and tap sample" />
+                </Bmotion>
+            </div>
+
+            <div class="demo-card">
+                @* Wrapping a real <button> keeps every native affordance it already had. *@
+                <Bmotion Animate="Bm.To(scale: 1)"
+                        WhileHover='Bm.To(scale: 1.07, backgroundColor: "#0B6AB4")'
+                        WhileTap="Bm.To(scale: 0.95)"
+                        Transition="Bm.Tween(0.15)">
+                    <button class="btn-bm">Animated button</button>
+                </Bmotion>
+            </div>
+        </div>
+        """;
+
+    private const string _focusCode = """
+        @using Bit.Bmotion
+
+        <style>
+            :root { --bm-primary: #1276C6; --bm-text: #1A1A1A; --bm-border: #E0E0E0; }
+            .focus-input {
+                width: 15rem; outline: none; padding: .5rem 1rem; border-radius: 8px;
+                color: var(--bm-text); border: 2px solid var(--bm-border);
+            }
+        </style>
+
+        @* WhileFocus is the accessible half of a hover effect: it also fires when a
+           descendant takes focus, so wrapping a whole field group works too. *@
+        <Bmotion Animate="Bm.To(scale: 1)"
+                 WhileFocus='Bm.To(scale: 1.03, borderColor: "#1276C6")'
+                 Transition="Bm.Tween(0.2)">
+            <input class="focus-input" placeholder="Click or tab to focus…" type="text" />
+        </Bmotion>
+        """;
+
+    private const string _panCode = """
+        @using Bit.Bmotion
+
+        @* A pan is reported, not applied: the element stays put and you decide what the
+           movement means. Offset is the total since the gesture started; Velocity is in
+           pixels per second, which is what you threshold on for swipe-to-dismiss. *@
+        <Bmotion OnPanStart="@(() => _panning = true)"
+                 OnPan="HandlePan"
+                 OnPanEnd="@(() => _panning = false)">
+            <div class="box" />
+        </Bmotion>
+
+        <p>offset @_offset.X / @_offset.Y · velocity @_velocity.X / @_velocity.Y</p>
+
+        @code {
+            private bool _panning;
+            private BmPoint _offset = new();
+            private BmPoint _velocity = new();
+
+            private void HandlePan(BmPanInfo info)
+            {
+                _offset = info.Offset;       // total distance since the pan started
+                _velocity = info.Velocity;   // px/sec - also available: info.Point, info.Delta
+            }
+        }
+        """;
+
+    private const string _eventsCode = """
+        @using Bit.Bmotion
+
+        <style>
+            :root { --bm-primary: #1276C6; --bm-secondary: #FD7F36; --bm-muted: #525252; }
+            .box {
+                width: 80px; height: 80px; border-radius: 10px;
+                background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+            }
+            .event-log { font-size: .8rem; color: var(--bm-muted); max-height: 120px; overflow: auto; }
+        </style>
+
+        @* TapCancel fires instead of Tap when the pointer leaves before release - which is
+           why the action belongs on OnTap, not OnTapStart. *@
+        <Bmotion WhileHover="Bm.To(scale: 1.1)"
+                 WhileTap="Bm.To(scale: 0.9)"
+                 OnHoverStart="@(() => AddEvent("HoverStart"))"
+                 OnHoverEnd="@(() => AddEvent("HoverEnd"))"
+                 OnTapStart="@(() => AddEvent("TapStart"))"
+                 OnTap="@(() => AddEvent("Tap"))"
+                 OnTapCancel="@(() => AddEvent("TapCancel"))">
+            <div class="box" role="button" tabindex="0" aria-label="Gesture event sample" />
+        </Bmotion>
+
+        <div class="event-log">
+            @foreach (var e in Enumerable.Reverse(_events))
+            {
+                <div>@e</div>
+            }
+        </div>
+
+        @code {
+            private readonly List<string> _events = [];
+
+            void AddEvent(string name)
+            {
+                _events.Add($"[{DateTime.Now:HH:mm:ss.ff}] {name}");
+                // Only the last 8 entries are ever shown; trim the rest so a long session
+                // can't grow this list unbounded.
+                if (_events.Count > 8)
+                    _events.RemoveRange(0, _events.Count - 8);
+                StateHasChanged();
+            }
+        }
+        """;
+
+    private const string _propagationCode = """
+        @using Bit.Bmotion
+
+        @* Default: pointer gestures bubble, so pressing the button also presses the card. *@
+        <Bmotion WhileTap="Bm.To(scale: 0.96, rotate: -1)">
+            <div class="card">
+                <Bmotion WhileTap="Bm.To(scale: 0.88)">
+                    <button type="button">Press me</button>
+                </Bmotion>
+            </div>
+        </Bmotion>
+
+        @* GesturePropagation="false" keeps the press to the button - the tap/pan counterpart
+           of DragPropagation. Hover is unaffected: pointerenter/leave never bubbled. *@
+        <Bmotion WhileTap="Bm.To(scale: 0.96, rotate: -1)">
+            <div class="card">
+                <Bmotion WhileTap="Bm.To(scale: 0.88)" GesturePropagation="false">
+                    <button type="button">Press me</button>
+                </Bmotion>
+            </div>
+        </Bmotion>
+        """;
+
+    private const string _templateCode = """
+        @using Bit.Bmotion
+
+        <style>
+            /* Centred on its own anchor. An animated transform would overwrite this... */
+            .pin { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        </style>
+
+        @* ...so move it into the template, where it is re-applied on every frame in front of
+           whatever the animation composed. The template receives the element's live transform
+           components and the string Bmotion would otherwise have written. *@
+        <Bmotion Animate="@(_pinned ? Bm.To(scale: 1.6) : Bm.To(scale: 1))"
+                 TransformTemplate="@((_, generated) => $"translate(-50%, -50%) {generated}")"
+                 Transition="Bm.Spring(stiffness: 250, damping: 18)">
+            <div class="pin" />
+        </Bmotion>
+
+        @* It also reorders: CSS applies transforms right to left, so this rotates first. *@
+        @* TransformTemplate="@((c, _) => $"rotate({c.GetValueOrDefault("rotate")}deg) translateX({c.GetValueOrDefault("x")}px)")" *@
+
+        @code {
+            private bool _pinned;
+        }
+        """;
+}

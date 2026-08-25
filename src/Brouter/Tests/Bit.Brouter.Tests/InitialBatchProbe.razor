@@ -1,0 +1,14 @@
+@* Records whether the routed content already existed at the first dispatcher yield after this
+   component initialized. Declared BEFORE the <Brouter> in its host, so this component initializes
+   first and its yield continuation is queued ahead of any continuation the router might post: it
+   therefore runs right after the mount's first render-queue drain - the moment the first batch
+   would be painted - and observes whether that batch already contained the matched content (new
+   single-batch boot) or an empty router (the old two-batch mount, i.e. the prerender flash). *@
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Yield();
+        InitialMountState.ContentPresentAtFirstYield = InitialMountState.ContentInstances > 0;
+    }
+}

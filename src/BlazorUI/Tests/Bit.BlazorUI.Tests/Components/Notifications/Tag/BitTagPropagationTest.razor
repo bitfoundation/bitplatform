@@ -1,0 +1,12 @@
+@* A BitTag inside a clickable container, so what a click on the tag does to that container can be observed. *@
+<div id="container" @onclick="() => ContainerClickCount++">
+    <BitTag Text="A tag" StopPropagation="StopPropagation" OnClick="() => TagClickCount++" />
+</div>
+
+@code {
+    [Parameter] public bool StopPropagation { get; set; }
+
+    public int TagClickCount { get; set; }
+
+    public int ContainerClickCount { get; set; }
+}

@@ -1,10 +1,24 @@
-using Boilerplate.Server.Api.Features.Identity.Models;
+//+:cnd:noEmit
+//#if (multitenant == true)
+using Boilerplate.Server.Api.Features.Tenants;
+//#endif
 
 namespace Boilerplate.Server.Api.Features.PushNotification;
 
 public class PushNotificationSubscription
 {
     public int Id { get; set; }
+
+    //#if (multitenant == true)
+    /// <summary>
+    /// The tenant this device last subscribed from, so that a broadcast can reach a device with no
+    /// <see cref="UserSession"/> to carry one - which is what an anonymous visitor's row is.
+    /// </summary>
+    public Guid TenantId { get; set; }
+
+    [ForeignKey(nameof(TenantId))]
+    public Tenant? Tenant { get; set; }
+    //#endif
 
     [Required]
     public string? DeviceId { get; set; }

@@ -1,0 +1,3710 @@
+/* ============================================================================
+   Bit.Butil - documentation and live-demo site
+   ----------------------------------------------------------------------------
+   Built on Microsoft's Fluent 2 design language, hand-written rather than
+   pulled in as a component library: this site documents Bit.Butil, which is an
+   interop library, and taking a UI suite as a dependency to draw its chrome
+   would make the sample harder to read than the thing it samples.
+
+   So the token layer below is Fluent 2's own, under Fluent 2's own names -
+   colorNeutralBackground1, borderRadiusMedium, curveEasyEase, shadow8 - rather
+   than a private vocabulary that only looks like it. A rule anywhere in this
+   file resolves to one of them, which is what makes "is this really Fluent 2?"
+   a question you can answer by reading section 1 instead of auditing 2,000
+   lines of hex.
+
+   Layout
+     1  Tokens - primitives, light theme, dark theme, shape/motion/type/space
+     2  Base and reset
+     3  App shell
+     4  Header
+     5  Site search
+     6  Navigation panel
+     7  Page chrome - header, sections, demo stage, status pages
+     8  Code panes
+     9  Message bars (callouts)
+    10  Data grids
+    11  Demo console
+    12  Controls - buttons, fields, chips
+    13  "On this page" rail
+    14  Footer
+    15  Home page
+    16  Doc pager
+    17  Browser-support matrix
+    18  Animation stage
+    19  MCP playground
+    20  Blazor error UI
+    21  Responsive
+    22  Print
+   ============================================================================ */
+
+
+/* ---------------------------------------------------------------------------
+   1. Tokens
+   ---------------------------------------------------------------------------
+   Light is the default palette on :root and the dark palette is scoped to any
+   element carrying bit-theme="dark" - the descendant-twin selector Bit.BlazorUI
+   uses, so MainLayout can stamp the attribute on its own wrapper and re-theme
+   the tree through custom-property inheritance. No interop is needed to reach
+   the document element, which also means the prerendered HTML arrives themed.
+   --------------------------------------------------------------------------- */
+
+/* 1a. Brand ramp. Theme-independent: the two themes pick different rungs of it
+       rather than redefining it, which is exactly how Fluent 2 works and why a
+       re-brand is sixteen values in one block. */
+:root {
+    --colorBrandRamp10: #061724;
+    --colorBrandRamp20: #082338;
+    --colorBrandRamp30: #0A2E4A;
+    --colorBrandRamp40: #0C3B5E;
+    --colorBrandRamp50: #0E4775;
+    --colorBrandRamp60: #0F548C;
+    --colorBrandRamp70: #115EA3;
+    --colorBrandRamp80: #0F6CBD;
+    --colorBrandRamp90: #2886DE;
+    --colorBrandRamp100: #479EF5;
+    --colorBrandRamp110: #62ABF5;
+    --colorBrandRamp120: #77B7F7;
+    --colorBrandRamp130: #96C6FA;
+    --colorBrandRamp140: #B4D6FA;
+    --colorBrandRamp150: #CFE4FA;
+    --colorBrandRamp160: #EBF3FC;
+}
+
+/* 1b. Light theme */
+:root,
+:root [bit-theme="light"] {
+    color-scheme: light;
+
+    /* neutral foreground */
+    --colorNeutralForeground1: #242424;
+    --colorNeutralForeground2: #424242;
+    --colorNeutralForeground3: #616161;
+    --colorNeutralForeground4: #707070;
+    --colorNeutralForegroundDisabled: #BDBDBD;
+    --colorNeutralForegroundInverted: #FFFFFF;
+    --colorNeutralForegroundOnBrand: #FFFFFF;
+
+    /* neutral background */
+    --colorNeutralBackground1: #FFFFFF;
+    --colorNeutralBackground1Hover: #F5F5F5;
+    --colorNeutralBackground1Pressed: #E0E0E0;
+    --colorNeutralBackground2: #FAFAFA;
+    --colorNeutralBackground3: #F5F5F5;
+    --colorNeutralBackground4: #F0F0F0;
+    --colorNeutralBackground5: #EBEBEB;
+    --colorNeutralBackground6: #E6E6E6;
+    --colorNeutralBackgroundDisabled: #F0F0F0;
+    --colorSubtleBackgroundHover: #F5F5F5;
+    --colorSubtleBackgroundPressed: #E0E0E0;
+    --colorBackgroundOverlay: rgba(0, 0, 0, 0.4);
+
+    /* neutral stroke */
+    --colorNeutralStroke1: #D1D1D1;
+    --colorNeutralStroke1Hover: #C7C7C7;
+    --colorNeutralStroke2: #E0E0E0;
+    --colorNeutralStroke3: #F0F0F0;
+    --colorNeutralStrokeAccessible: #616161;
+    --colorNeutralStrokeDisabled: #E0E0E0;
+
+    /* brand */
+    --colorBrandBackground: var(--colorBrandRamp80);
+    --colorBrandBackgroundHover: var(--colorBrandRamp70);
+    --colorBrandBackgroundPressed: var(--colorBrandRamp60);
+    --colorBrandBackground2: var(--colorBrandRamp160);
+    --colorBrandBackgroundInvertedHover: var(--colorBrandRamp160);
+    --colorBrandForeground1: var(--colorBrandRamp80);
+    --colorBrandForegroundLink: var(--colorBrandRamp80);
+    --colorBrandForegroundLinkHover: var(--colorBrandRamp70);
+    --colorBrandForegroundLinkPressed: var(--colorBrandRamp60);
+    --colorBrandStroke1: var(--colorBrandRamp80);
+    --colorBrandStroke2: var(--colorBrandRamp140);
+
+    /* status palettes - Fluent 2's green / dark-orange / red families */
+    --colorPaletteGreenForeground1: #0E700E;
+    --colorPaletteGreenBackground1: #F1FAF1;
+    --colorPaletteGreenBorder1: #9FD89F;
+    --colorPaletteDarkOrangeForeground1: #BC4B09;
+    --colorPaletteDarkOrangeBackground1: #FFF9F5;
+    --colorPaletteDarkOrangeBorder1: #FDCFB4;
+    --colorPaletteRedForeground1: #B10E1C;
+    --colorPaletteRedBackground1: #FDF3F4;
+    --colorPaletteRedBorder1: #F1BBBC;
+    --colorStatusDangerBackground1: #FDF3F4;
+    --colorStatusDangerForeground1: #B10E1C;
+    --colorStatusDangerBorder1: #EEACB2;
+    --colorStatusDangerBackground3: #C50F1F;
+    --colorStatusDangerForegroundInverted: #FFFFFF;
+
+    /* focus - Fluent 2's dual ring: a light inner hairline under a dark outer one,
+       so the indicator survives whatever surface it lands on. */
+    --colorStrokeFocus1: #FFFFFF;
+    --colorStrokeFocus2: #000000;
+
+    /* the recessed surface a code pane sits on */
+    --colorCodeBackground: #F8F8F8;
+    --colorCodeStroke: #E5E5E5;
+
+    /* Syntax tokens. Not Fluent - Fluent has no opinion about code - so this is the light palette
+       every developer already reads a diff in: the one a reader has no learning to do for. Every
+       entry clears 4.5:1 against the surface above, the tightest being the keyword red at 5.0, so
+       no token is legible only to a reader who can pick the hue out. */
+    --codeComment: #5F6672;
+    --codeKeyword: #CF222E;
+    --codeString: #0A3069;
+    --codeNumber: #0550AE;
+    --codeFunction: #7A34C4;
+    --codeType: #8A4400;
+    --codeTag: #116329;
+    --codeAttrName: #0550AE;
+    --codeAttrValue: #0A3069;
+    --codeMeta: #7A34C4;
+    --codePunct: #57606A;
+
+    /* elevation */
+    --shadow2: 0 0 2px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.14);
+    --shadow4: 0 0 2px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.14);
+    --shadow8: 0 0 2px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.14);
+    --shadow16: 0 0 2px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.14);
+    --shadow28: 0 0 8px rgba(0, 0, 0, 0.20), 0 14px 28px rgba(0, 0, 0, 0.24);
+    --shadow64: 0 0 8px rgba(0, 0, 0, 0.20), 0 32px 64px rgba(0, 0, 0, 0.24);
+}
+
+/* 1c. Dark theme. Not a filter over the light one: Fluent 2 publishes a second
+       set of assignments, and the neutral ramp inverts by role rather than by
+       lightness - background1 is the raised card at #292929 while the canvas
+       behind it is the darker background3. */
+:root [bit-theme="dark"] {
+    color-scheme: dark;
+
+    --colorNeutralForeground1: #FFFFFF;
+    --colorNeutralForeground2: #D6D6D6;
+    --colorNeutralForeground3: #ADADAD;
+    --colorNeutralForeground4: #999999;
+    --colorNeutralForegroundDisabled: #5C5C5C;
+    --colorNeutralForegroundInverted: #242424;
+    --colorNeutralForegroundOnBrand: #FFFFFF;
+
+    --colorNeutralBackground1: #292929;
+    --colorNeutralBackground1Hover: #3D3D3D;
+    --colorNeutralBackground1Pressed: #1F1F1F;
+    --colorNeutralBackground2: #1F1F1F;
+    --colorNeutralBackground3: #141414;
+    --colorNeutralBackground4: #0A0A0A;
+    --colorNeutralBackground5: #000000;
+    --colorNeutralBackground6: #383838;
+    --colorNeutralBackgroundDisabled: #141414;
+    --colorSubtleBackgroundHover: #383838;
+    --colorSubtleBackgroundPressed: #2E2E2E;
+    --colorBackgroundOverlay: rgba(0, 0, 0, 0.5);
+
+    --colorNeutralStroke1: #666666;
+    --colorNeutralStroke1Hover: #757575;
+    --colorNeutralStroke2: #525252;
+    --colorNeutralStroke3: #3D3D3D;
+    --colorNeutralStrokeAccessible: #ADADAD;
+    --colorNeutralStrokeDisabled: #424242;
+
+    --colorBrandBackground: var(--colorBrandRamp70);
+    --colorBrandBackgroundHover: var(--colorBrandRamp80);
+    --colorBrandBackgroundPressed: var(--colorBrandRamp60);
+    --colorBrandBackground2: var(--colorBrandRamp20);
+    --colorBrandBackgroundInvertedHover: var(--colorBrandRamp30);
+    --colorBrandForeground1: var(--colorBrandRamp100);
+    --colorBrandForegroundLink: var(--colorBrandRamp100);
+    --colorBrandForegroundLinkHover: var(--colorBrandRamp110);
+    --colorBrandForegroundLinkPressed: var(--colorBrandRamp90);
+    --colorBrandStroke1: var(--colorBrandRamp100);
+    --colorBrandStroke2: var(--colorBrandRamp50);
+
+    --colorPaletteGreenForeground1: #54B054;
+    --colorPaletteGreenBackground1: #052505;
+    --colorPaletteGreenBorder1: #0E700E;
+    --colorPaletteDarkOrangeForeground1: #E9835E;
+    --colorPaletteDarkOrangeBackground1: #411200;
+    --colorPaletteDarkOrangeBorder1: #DA3B01;
+    --colorPaletteRedForeground1: #E37D80;
+    --colorPaletteRedBackground1: #3B0509;
+    --colorPaletteRedBorder1: #BC2F32;
+    --colorStatusDangerBackground1: #3B0509;
+    --colorStatusDangerForeground1: #E37D80;
+    --colorStatusDangerBorder1: #BC2F32;
+    --colorStatusDangerBackground3: #DC626D;
+    --colorStatusDangerForegroundInverted: #1F1F1F;
+
+    --colorStrokeFocus1: #000000;
+    --colorStrokeFocus2: #FFFFFF;
+
+    --colorCodeBackground: #1B1B1B;
+    --colorCodeStroke: #3D3D3D;
+
+    /* The dark counterparts. Same hue per category as the light set, so a reader switching themes
+       is not relearning which colour means "string" - re-pitched rather than re-assigned, because
+       the light palette's saturations go to mud on a near-black surface. */
+    --codeComment: #8B949E;
+    --codeKeyword: #FF7B72;
+    --codeString: #A5D6FF;
+    --codeNumber: #79C0FF;
+    --codeFunction: #D2A8FF;
+    --codeType: #FFA657;
+    --codeTag: #7EE787;
+    --codeAttrName: #79C0FF;
+    --codeAttrValue: #A5D6FF;
+    --codeMeta: #D2A8FF;
+    --codePunct: #A0A7B0;
+
+    /* Fluent's dark elevation is the same geometry at heavier alphas: a shadow has
+       less to work with when the surface under it is already near-black. */
+    --shadow2: 0 0 2px rgba(0, 0, 0, 0.24), 0 1px 2px rgba(0, 0, 0, 0.28);
+    --shadow4: 0 0 2px rgba(0, 0, 0, 0.24), 0 2px 4px rgba(0, 0, 0, 0.28);
+    --shadow8: 0 0 2px rgba(0, 0, 0, 0.24), 0 4px 8px rgba(0, 0, 0, 0.28);
+    --shadow16: 0 0 2px rgba(0, 0, 0, 0.24), 0 8px 16px rgba(0, 0, 0, 0.28);
+    --shadow28: 0 0 8px rgba(0, 0, 0, 0.40), 0 14px 28px rgba(0, 0, 0, 0.48);
+    --shadow64: 0 0 8px rgba(0, 0, 0, 0.40), 0 32px 64px rgba(0, 0, 0, 0.48);
+}
+
+/* 1d. Shape, stroke, motion, type and space. Theme-independent in Fluent 2, so
+       unlike the palettes above they are declared once.
+
+       The radii are the part a Fluent 1 site gets wrong most visibly: 2px reads
+       as "square with a rounding error", while Fluent 2's 4px on controls and
+       8px on surfaces is the shape people recognise from Windows 11. */
+:root {
+    --borderRadiusNone: 0;
+    --borderRadiusSmall: 2px;
+    --borderRadiusMedium: 4px;
+    --borderRadiusLarge: 6px;
+    --borderRadiusXLarge: 8px;
+    --borderRadiusCircular: 10000px;
+
+    --strokeWidthThin: 1px;
+    --strokeWidthThick: 2px;
+    --strokeWidthThicker: 3px;
+    --strokeWidthThickest: 4px;
+
+    --durationUltraFast: 50ms;
+    --durationFaster: 100ms;
+    --durationFast: 150ms;
+    --durationNormal: 200ms;
+    --durationGentle: 250ms;
+    --durationSlow: 300ms;
+    --durationSlower: 400ms;
+
+    --curveAccelerateMid: cubic-bezier(1, 0, 1, 1);
+    --curveDecelerateMid: cubic-bezier(0, 0, 0, 1);
+    --curveDecelerateMax: cubic-bezier(0.1, 0.9, 0.2, 1);
+    --curveEasyEase: cubic-bezier(0.33, 0, 0.67, 1);
+    --curveEasyEaseMax: cubic-bezier(0.8, 0, 0.2, 1);
+    --curveLinear: cubic-bezier(0, 0, 1, 1);
+
+    /* Segoe UI Variable is Fluent 2's typeface and ships with Windows 11; the
+       optical sizes degrade to plain Segoe UI and then to the platform's own UI
+       font. Nothing is downloaded - a documentation site that blocks its first
+       paint on a webfont has spent its budget in the wrong place. */
+    --fontFamilyBase: "Segoe UI Variable Text", "Segoe UI Variable", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    --fontFamilyDisplay: "Segoe UI Variable Display", "Segoe UI Variable", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    --fontFamilyMonospace: "Cascadia Mono", "Cascadia Code", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+    --fontWeightRegular: 400;
+    --fontWeightMedium: 500;
+    --fontWeightSemibold: 600;
+    --fontWeightBold: 700;
+
+    --fontSizeBase100: 0.625rem;  /* 10 */
+    --fontSizeBase200: 0.75rem;   /* 12 */
+    --fontSizeBase300: 0.875rem;  /* 14 - the body size of every Fluent surface */
+    --fontSizeBase400: 1rem;      /* 16 */
+    --fontSizeBase500: 1.25rem;   /* 20 */
+    --fontSizeBase600: 1.5rem;    /* 24 */
+    --fontSizeHero700: 1.75rem;   /* 28 */
+    --fontSizeHero800: 2rem;      /* 32 */
+    --fontSizeHero900: 2.5rem;    /* 40 */
+    --fontSizeHero1000: 4.25rem;  /* 68 */
+
+    --lineHeightBase100: 0.875rem;
+    --lineHeightBase200: 1rem;
+    --lineHeightBase300: 1.25rem;
+    --lineHeightBase400: 1.375rem;
+    --lineHeightBase500: 1.75rem;
+    --lineHeightBase600: 2rem;
+    --lineHeightHero700: 2.25rem;
+    --lineHeightHero800: 2.5rem;
+    --lineHeightHero900: 3.25rem;
+    --lineHeightHero1000: 5.75rem;
+
+    --spacingXXS: 0.125rem;  /* 2 */
+    --spacingXS: 0.25rem;    /* 4 */
+    --spacingSNudge: 0.375rem;
+    --spacingS: 0.5rem;      /* 8 */
+    --spacingMNudge: 0.625rem;
+    --spacingM: 0.75rem;     /* 12 */
+    --spacingL: 1rem;        /* 16 */
+    --spacingXL: 1.25rem;    /* 20 */
+    --spacingXXL: 1.5rem;    /* 24 */
+    --spacingXXXL: 2rem;     /* 32 */
+
+    /* The shell's own measurements. 56px is Fluent's command-bar height; the
+       body of a docs page is capped at a reading measure rather than at the
+       column, so a wide screen widens the margins and not the sentences. */
+    --headerHeight: 3.5rem;
+    --navWidth: 17rem;
+    --railWidth: 15rem;
+    --contentWidth: 84rem;
+
+    /* Published rather than written into the rules below because more than one
+       rule has to agree on them: the code pane's own metrics. */
+    --codeFontSize: 0.8125rem;
+    --codeLineHeight: 1.6;
+    --codePad: 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    /* 0.01ms rather than 0: a zero-duration transition never fires transitionend. */
+    :root {
+        --durationUltraFast: 0.01ms;
+        --durationFaster: 0.01ms;
+        --durationFast: 0.01ms;
+        --durationNormal: 0.01ms;
+        --durationGentle: 0.01ms;
+        --durationSlow: 0.01ms;
+        --durationSlower: 0.01ms;
+    }
+
+    /* The duration tokens do not reach scroll-behavior, so the smooth scroll set
+       below - which every in-page anchor and the footer's "Back to top" trigger -
+       has to be turned off here too. */
+    html,
+    body {
+        scroll-behavior: auto;
+    }
+}
+
+/* 1e. The bit BlazorUI slot bridge.
+
+       Bit.BlazorUI's components read their colours from these names. Nothing in
+       this file uses them - the rules below speak Fluent 2 - but a page that
+       drops a real BitButton or BitDatePicker into a demo gets one themed to
+       match the site instead of to the library's defaults, and it inherits the
+       site's dark mode for free. Mapped, not copied: they follow whatever the
+       two blocks above say. */
+:root,
+:root [bit-theme="light"],
+:root [bit-theme="dark"] {
+    --bit-clr-pri: var(--colorBrandBackground);
+    --bit-clr-pri-hover: var(--colorBrandBackgroundHover);
+    --bit-clr-pri-active: var(--colorBrandBackgroundPressed);
+    --bit-clr-pri-text: var(--colorNeutralForegroundOnBrand);
+    --bit-clr-pri-dis: var(--colorNeutralBackgroundDisabled);
+    --bit-clr-pri-dis-text: var(--colorNeutralForegroundDisabled);
+    --bit-clr-sec: var(--colorPaletteDarkOrangeForeground1);
+    --bit-clr-inf: var(--colorNeutralForeground3);
+    --bit-clr-suc: var(--colorPaletteGreenForeground1);
+    --bit-clr-wrn: var(--colorPaletteDarkOrangeForeground1);
+    --bit-clr-err: var(--colorPaletteRedForeground1);
+    --bit-clr-fg-pri: var(--colorNeutralForeground1);
+    --bit-clr-fg-sec: var(--colorNeutralForeground2);
+    --bit-clr-fg-ter: var(--colorNeutralForeground3);
+    --bit-clr-fg-dis: var(--colorNeutralForegroundDisabled);
+    --bit-clr-bg-pri: var(--colorNeutralBackground1);
+    --bit-clr-bg-sec: var(--colorNeutralBackground3);
+    --bit-clr-bg-ter: var(--colorNeutralBackground4);
+    --bit-clr-bg-dis: var(--colorNeutralBackgroundDisabled);
+    --bit-clr-bg-overlay: var(--colorBackgroundOverlay);
+    --bit-clr-brd-pri: var(--colorNeutralStrokeAccessible);
+    --bit-clr-brd-sec: var(--colorNeutralStroke1);
+    --bit-clr-brd-ter: var(--colorNeutralStroke2);
+    --bit-clr-brd-dis: var(--colorNeutralStrokeDisabled);
+    --bit-shp-brd-radius: var(--borderRadiusMedium);
+    --bit-shp-brd-width: var(--strokeWidthThin);
+    --bit-mot-duration: var(--durationNormal);
+    --bit-mot-easing: var(--curveEasyEase);
+}
+
+
+/* ---------------------------------------------------------------------------
+   2. Base
+   --------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    -webkit-text-size-adjust: none;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    scroll-behavior: smooth;
+}
+
+/* One place, rather than a scroll-margin on every anchorable element: the sticky
+   command bar is the only thing an in-page jump can land behind. */
+html {
+    scroll-padding-top: calc(var(--headerHeight) + var(--spacingXXL));
+}
+
+body {
+    font-family: var(--fontFamilyBase);
+    font-size: var(--fontSizeBase400);
+    line-height: 1.5;
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorNeutralBackground3);
+}
+
+/* The theme lives on the app wrapper, so body - which is outside it - would keep
+   the light default behind the overscroll area. */
+body:has([bit-theme="dark"]) {
+    background-color: #141414;
+}
+
+/* Scoped to the docs chrome rather than declared on * : the scrollbars inside a
+   live demo belong to whatever that demo renders. */
+html,
+body,
+.site-content,
+.nav-panel-items,
+.side-rail,
+pre,
+.table-view {
+    scrollbar-width: thin;
+    scrollbar-color: var(--colorNeutralStroke1) transparent;
+}
+
+h1, h2, h3, h4, h5, h6, p {
+    margin: 0;
+}
+
+/* Fluent 2's type ramp, mapped onto the heading levels this site uses: Title1
+   for a page, Subtitle1 for a section, Subtitle2 for an example. Display cuts
+   are optically sized for large text, so they are asked for above 24px only. */
+h1 {
+    font-family: var(--fontFamilyDisplay);
+    font-weight: var(--fontWeightSemibold);
+    font-size: var(--fontSizeHero800);
+    line-height: var(--lineHeightHero800);
+    letter-spacing: -0.01em;
+}
+
+h2 {
+    font-weight: var(--fontWeightSemibold);
+    font-size: var(--fontSizeBase500);
+    line-height: var(--lineHeightBase500);
+}
+
+h3 {
+    font-weight: var(--fontWeightSemibold);
+    font-size: var(--fontSizeBase400);
+    line-height: var(--lineHeightBase400);
+}
+
+/* FocusOnNavigate moves focus to the h1 after each navigation for screen
+   readers; the visual ring would otherwise box the heading on every page. */
+h1:focus {
+    outline: none;
+}
+
+a {
+    color: var(--colorBrandForegroundLink);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--colorBrandForegroundLinkHover);
+    text-decoration: underline;
+}
+
+a:active {
+    color: var(--colorBrandForegroundLinkPressed);
+}
+
+code, kbd, pre, samp {
+    font-family: var(--fontFamilyMonospace);
+}
+
+svg {
+    flex: none;
+    display: block;
+}
+
+/* Fluent 2's focus indicator is two rings, not one: a hairline in the theme's
+   own inverse under a 2px ring in its foreground. One of the two always has
+   contrast, whatever surface the control happens to sit on - which a single
+   ring in the brand colour does not, on a brand-coloured button.
+
+   Declared on the chrome rather than globally, for the same reason the BlazorUI
+   demo does it: inside a live demo the focus ring belongs to whatever the sample
+   renders, and a second outline over it would show a reader something Butil does
+   not actually do. */
+.header a:focus-visible,
+.header button:focus-visible,
+.header input:focus-visible,
+.nav-panel a:focus-visible,
+.nav-panel input:focus-visible,
+.side-rail a:focus-visible,
+.footer a:focus-visible,
+.footer button:focus-visible,
+.page-section a:focus-visible,
+.doc-pager-link:focus-visible,
+.feature-card:focus-visible,
+.hero-actions a:focus-visible,
+.copy-btn:focus-visible,
+.anchor:focus-visible {
+    outline: var(--strokeWidthThick) solid var(--colorStrokeFocus2);
+    outline-offset: var(--strokeWidthThin);
+    box-shadow: 0 0 0 var(--strokeWidthThin) var(--colorStrokeFocus1);
+    border-radius: var(--borderRadiusMedium);
+}
+
+
+/* Text for a reader that cannot see the picture: off-screen to the eye, in the
+   reading order to everything else. Not display:none and not visibility:hidden -
+   both of those take it out of the accessibility tree along with the layout. */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    clip-path: inset(50%);
+    border: 0;
+}
+
+
+/* ---------------------------------------------------------------------------
+   3. App shell
+   --------------------------------------------------------------------------- */
+
+.app-root {
+    width: 100%;
+    min-height: 100%;
+    display: flex;
+    flex-flow: column nowrap;
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorNeutralBackground3);
+}
+
+.layout {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+}
+
+.main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-flow: column nowrap;
+    min-height: calc(100vh - var(--headerHeight));
+}
+
+.site-content {
+    flex: 1;
+    width: 100%;
+    position: relative;
+    background-color: var(--colorNeutralBackground3);
+}
+
+/* The content column and the "on this page" rail sit side by side under one
+   width cap, so the prose stays centred whether or not the rail is showing. */
+.page-wrapper {
+    width: 100%;
+    display: flex;
+    margin: 0 auto;
+    align-items: flex-start;
+    max-width: var(--contentWidth);
+}
+
+/* min-width:0 is what lets a wide table or a long code line scroll inside the
+   column instead of stretching it and pushing the rail off screen. */
+.page-container {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+    padding: var(--spacingXXXL) var(--spacingXXXL) 4rem;
+}
+
+
+/* ---------------------------------------------------------------------------
+   4. Header
+   ---------------------------------------------------------------------------
+   Fluent's command bar: one 56px band of 32px controls on the 4px grid, over a
+   translucent surface so the content scrolling under it stays legible as motion
+   rather than reading as a second page.
+   --------------------------------------------------------------------------- */
+
+.header {
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    position: sticky;
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    background-color: color-mix(in srgb, var(--colorNeutralBackground1) 80%, transparent);
+    border-bottom: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+}
+
+/* Blur is a compositing cost the browser pays on every scrolled frame, and it
+   buys nothing where the platform cannot do it: fall back to the opaque surface
+   rather than to a see-through bar. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .header {
+        background-color: var(--colorNeutralBackground1);
+    }
+}
+
+.header .container {
+    display: flex;
+    margin: 0 auto;
+    gap: var(--spacingL);
+    align-items: center;
+    padding: 0 var(--spacingL);
+    justify-content: space-between;
+    min-height: var(--headerHeight);
+}
+
+.header .container.home-page {
+    max-width: var(--contentWidth);
+}
+
+.header .header-start,
+.header .header-end {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+}
+
+.header .header-start {
+    gap: var(--spacingS);
+}
+
+.header .header-end {
+    gap: var(--spacingXS);
+}
+
+/* The mark and the name are one target, which is also what keeps it past 44px
+   on a phone once the name itself is hidden. */
+.header .brand {
+    display: flex;
+    flex: none;
+    gap: var(--spacingS);
+    align-items: center;
+    padding: var(--spacingXS) var(--spacingS);
+    margin-inline-end: var(--spacingS);
+    border-radius: var(--borderRadiusMedium);
+    color: var(--colorNeutralForeground1);
+    transition: background-color var(--durationFaster) var(--curveEasyEase);
+}
+
+.header .brand:hover {
+    text-decoration: none;
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorSubtleBackgroundHover);
+}
+
+.header .brand-mark {
+    width: 1.75rem;
+    height: 1.75rem;
+    flex: none;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url('../images/bit-logo-light.svg');
+}
+
+[bit-theme="dark"] .header .brand-mark {
+    background-image: url('../images/bit-logo-dark.svg');
+}
+
+.header .brand-name {
+    font-size: var(--fontSizeBase400);
+    font-weight: var(--fontWeightSemibold);
+    line-height: var(--lineHeightBase400);
+    letter-spacing: -0.005em;
+    white-space: nowrap;
+}
+
+.header-nav {
+    display: flex;
+    min-width: 0;
+    gap: var(--spacingXXS);
+    align-items: center;
+}
+
+/* Fluent's tab: the selected one is marked by a rule under it rather than by a
+   fill, so switching pages never moves the label. */
+.header .link {
+    display: flex;
+    position: relative;
+    align-items: center;
+    white-space: nowrap;
+    min-height: 2rem;
+    font-size: var(--fontSizeBase300);
+    line-height: var(--lineHeightBase300);
+    padding: var(--spacingS) var(--spacingM);
+    color: var(--colorNeutralForeground2);
+    border-radius: var(--borderRadiusMedium);
+    transition: color var(--durationFaster) var(--curveEasyEase),
+                background-color var(--durationFaster) var(--curveEasyEase);
+}
+
+.header .link:hover {
+    text-decoration: none;
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorSubtleBackgroundHover);
+}
+
+.header .link:active {
+    background-color: var(--colorSubtleBackgroundPressed);
+}
+
+.header .link.active {
+    font-weight: var(--fontWeightSemibold);
+    color: var(--colorNeutralForeground1);
+}
+
+.header .link.active::after {
+    content: "";
+    position: absolute;
+    left: var(--spacingM);
+    right: var(--spacingM);
+    bottom: 0;
+    height: var(--strokeWidthThick);
+    border-radius: var(--borderRadiusCircular);
+    background-color: var(--colorBrandStroke1);
+}
+
+/* Fluent's subtle icon button: no fill and no border at rest, the whole 32px box
+   as the target, and a wash on hover. Used for the theme switch, the two
+   outbound links and the small-screen menu, so they read as one row of controls
+   rather than as four unrelated widgets. */
+.icon-btn {
+    display: inline-flex;
+    flex: none;
+    padding: 0;
+    margin: 0;
+    width: 2rem;
+    height: 2rem;
+    min-height: 2rem;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background-color: transparent;
+    color: var(--colorNeutralForeground2);
+    border-radius: var(--borderRadiusMedium);
+    transition: color var(--durationFaster) var(--curveEasyEase),
+                background-color var(--durationFaster) var(--curveEasyEase);
+}
+
+.icon-btn:hover {
+    text-decoration: none;
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorSubtleBackgroundHover);
+}
+
+.icon-btn:active {
+    background-color: var(--colorSubtleBackgroundPressed);
+}
+
+/* The octocat is drawn as a mask rather than a picture so the mark takes the
+   colour of the control it sits in; a coloured asset could not follow the theme
+   or the hover. The glyph only spans ~87% of its viewBox, hence the mask size. */
+.header .github-btn {
+    background-color: transparent;
+}
+
+.header .github-btn::before {
+    content: "";
+    width: 1.25rem;
+    height: 1.25rem;
+    background-color: currentColor;
+    -webkit-mask: url('../images/github-mark.svg') center / 1.4375rem 1.4375rem no-repeat;
+    mask: url('../images/github-mark.svg') center / 1.4375rem 1.4375rem no-repeat;
+}
+
+.header .menu-btn {
+    display: none;
+}
+
+/* The page is prerendered on the server and inert until the WebAssembly runtime
+   takes over, so the bar says so rather than letting clicks silently do nothing. */
+.hydrating {
+    gap: var(--spacingSNudge);
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    white-space: nowrap;
+    font-size: var(--fontSizeBase200);
+    line-height: var(--lineHeightBase200);
+    padding: var(--spacingXS) var(--spacingS);
+    color: var(--colorNeutralForeground2);
+    background-color: var(--colorNeutralBackground3);
+    border-radius: var(--borderRadiusCircular);
+    border: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+}
+
+.hydrating i {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background-color: var(--colorBrandStroke1);
+    /* A looping animation, so it must not collapse under reduced motion - it is
+       the only signal that the runtime is still loading. */
+    animation: hydrating-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes hydrating-pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+}
+
+
+/* ---------------------------------------------------------------------------
+   5. Site search
+   ---------------------------------------------------------------------------
+   A 32px field that lines up with the buttons beside it: the magnifier inset at
+   its start, the shortcut hint at its end, and the hits hanging off the bar as a
+   floating list.
+   --------------------------------------------------------------------------- */
+
+.header-search {
+    flex: none;
+    display: flex;
+    min-width: 0;
+    position: relative;
+    align-items: center;
+    margin-inline-end: var(--spacingXS);
+}
+
+.header-search-icon {
+    top: 50%;
+    left: var(--spacingS);
+    position: absolute;
+    pointer-events: none;
+    transform: translateY(-50%);
+    color: var(--colorNeutralForeground3);
+}
+
+/* Padded at both ends so a long query scrolls under the magnifier and the hint
+   rather than behind either of them. */
+.header-search input {
+    width: 13rem;
+    height: 2rem;
+    min-height: 2rem;
+    padding: 0 3.5rem 0 2rem;
+    font-size: var(--fontSizeBase300);
+    background-color: var(--colorNeutralBackground3);
+    border-color: transparent;
+    border-bottom-color: var(--colorNeutralStrokeAccessible);
+    transition: border-color var(--durationFaster) var(--curveEasyEase),
+                background-color var(--durationFaster) var(--curveEasyEase),
+                width var(--durationNormal) var(--curveDecelerateMid);
+}
+
+.header-search input:hover {
+    border-color: transparent;
+    border-bottom-color: var(--colorNeutralStrokeAccessible);
+    background-color: var(--colorNeutralBackground4);
+}
+
+.header-search input:focus {
+    width: 17rem;
+    background-color: var(--colorNeutralBackground1);
+}
+
+/* The hint is decoration over an interactive control: it must not eat the click
+   that would otherwise land on the input and focus it. */
+.search-hint {
+    top: 50%;
+    right: var(--spacingXS);
+    position: absolute;
+    pointer-events: none;
+    transform: translateY(-50%);
+    padding: 0 var(--spacingXS);
+    border: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+    border-radius: var(--borderRadiusMedium);
+    background-color: var(--colorNeutralBackground1);
+    color: var(--colorNeutralForeground3);
+    font-family: var(--fontFamilyBase);
+    font-size: var(--fontSizeBase200);
+    line-height: 1.25rem;
+    white-space: nowrap;
+}
+
+/* A focused field is being typed into - the reminder of how to get there has
+   done its job. */
+.header-search input:focus + .search-hint {
+    opacity: 0;
+}
+
+/* Fluent's flyout: a transient surface, so unlike every card on this site it
+   really does float - the elevation here is information rather than decoration. */
+.header-search-results {
+    right: 0;
+    margin: 0;
+    z-index: 1300;
+    width: 26rem;
+    max-width: 88vw;
+    padding: var(--spacingXS);
+    list-style: none;
+    position: absolute;
+    top: calc(100% + var(--spacingS));
+    max-height: 70vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow16);
+    background-color: var(--colorNeutralBackground1);
+    border-radius: var(--borderRadiusXLarge);
+    border: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+}
+
+.header-search-results li {
+    gap: var(--spacingM);
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+    padding: var(--spacingS) var(--spacingM);
+    border-radius: var(--borderRadiusMedium);
+    transition: background-color var(--durationFaster) var(--curveEasyEase);
+}
+
+.header-search-results li:hover,
+.header-search-results li.active {
+    background-color: var(--colorSubtleBackgroundHover);
+}
+
+.header-search-result-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.header-search-result-title {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: var(--fontSizeBase300);
+    line-height: var(--lineHeightBase300);
+    font-weight: var(--fontWeightSemibold);
+    color: var(--colorNeutralForeground1);
+}
+
+/* One line, clipped: the summary is here to separate two APIs whose names look
+   alike, not to be read in full before choosing. */
+.header-search-result-summary {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: var(--fontSizeBase200);
+    line-height: var(--lineHeightBase200);
+    color: var(--colorNeutralForeground3);
+}
+
+.header-search-result-group {
+    flex: none;
+    font-size: var(--fontSizeBase100);
+    line-height: var(--lineHeightBase100);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--colorNeutralForeground3);
+}
+
+.header-search-results li.header-search-empty {
+    cursor: default;
+    display: block;
+    font-size: var(--fontSizeBase300);
+    color: var(--colorNeutralForeground3);
+}
+
+.header-search-results li.header-search-empty:hover {
+    background-color: transparent;
+}
+
+
+/* ---------------------------------------------------------------------------
+   6. Navigation panel
+   --------------------------------------------------------------------------- */
+
+.nav-panel {
+    z-index: 900;
+    flex: none;
+    display: flex;
+    position: sticky;
+    flex-flow: column nowrap;
+    width: var(--navWidth);
+    top: var(--headerHeight);
+    height: calc(100vh - var(--headerHeight));
+    background-color: var(--colorNeutralBackground1);
+    border-inline-end: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+}
+
+.nav-panel-search {
+    flex: none;
+    padding: var(--spacingM);
+}
+
+.nav-filter {
+    display: flex;
+    position: relative;
+    align-items: center;
+}
+
+.nav-filter-icon {
+    left: var(--spacingS);
+    position: absolute;
+    pointer-events: none;
+    color: var(--colorNeutralForeground3);
+}
+
+.nav-filter input {
+    width: 100%;
+    height: 2rem;
+    padding-inline-start: 2rem;
+    font-size: var(--fontSizeBase300);
+    background-color: var(--colorNeutralBackground3);
+    border-color: transparent;
+    border-bottom-color: var(--colorNeutralStrokeAccessible);
+}
+
+.nav-filter input:hover {
+    border-color: transparent;
+    border-bottom-color: var(--colorNeutralStrokeAccessible);
+    background-color: var(--colorNeutralBackground4);
+}
+
+.nav-filter input:focus {
+    border-bottom-color: var(--colorBrandStroke1);
+    background-color: var(--colorNeutralBackground1);
+}
+
+.nav-panel-items {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 var(--spacingM) var(--spacingXXL);
+    overscroll-behavior: contain;
+}
+
+/* Sticky, because a sixty-six item list scrolled to its middle otherwise gives no
+   answer to "which part of the platform am I looking at". */
+.nav-panel-group {
+    top: 0;
+    z-index: 1;
+    display: flex;
+    gap: var(--spacingS);
+    position: sticky;
+    align-items: center;
+    margin: var(--spacingL) 0 var(--spacingXS);
+    padding: var(--spacingXS) var(--spacingS);
+    font-size: var(--fontSizeBase200);
+    line-height: var(--lineHeightBase200);
+    font-weight: var(--fontWeightSemibold);
+    color: var(--colorNeutralForeground3);
+    background-color: var(--colorNeutralBackground1);
+}
+
+.nav-panel-group svg {
+    color: var(--colorNeutralForeground4);
+}
+
+/* Fluent's NavItem: a flush block with a transparent inline-start indicator that
+   the selected state lights up, so selecting an item never shifts the text. */
+.nav-panel-item {
+    display: flex;
+    width: 100%;
+    position: relative;
+    gap: var(--spacingS);
+    cursor: pointer;
+    align-items: center;
+    font-size: var(--fontSizeBase300);
+    line-height: var(--lineHeightBase300);
+    min-height: 2rem;
+    padding: var(--spacingSNudge) var(--spacingM);
+    text-decoration: none;
+    color: var(--colorNeutralForeground2);
+    border-radius: var(--borderRadiusMedium);
+    transition: background-color var(--durationFaster) var(--curveEasyEase),
+                color var(--durationFaster) var(--curveEasyEase);
+}
+
+.nav-panel-item:hover {
+    text-decoration: none;
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorSubtleBackgroundHover);
+}
+
+.nav-panel-item:active {
+    background-color: var(--colorSubtleBackgroundPressed);
+}
+
+.nav-panel-item.active {
+    font-weight: var(--fontWeightSemibold);
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorSubtleBackgroundHover);
+}
+
+.nav-panel-item.active::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    top: 20%;
+    bottom: 20%;
+    width: var(--strokeWidthThicker);
+    border-radius: var(--borderRadiusCircular);
+    background-color: var(--colorBrandStroke1);
+}
+
+.nav-panel-empty {
+    padding: var(--spacingL) var(--spacingM);
+    font-size: var(--fontSizeBase300);
+    color: var(--colorNeutralForeground3);
+}
+
+.nav-panel-foot {
+    flex: none;
+    padding: var(--spacingS) var(--spacingL);
+    font-size: var(--fontSizeBase200);
+    line-height: var(--lineHeightBase200);
+    color: var(--colorNeutralForeground3);
+    border-top: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+}
+
+/* Off-canvas below the lg breakpoint, where the header's menu button takes over. */
+.nav-scrim {
+    display: none;
+}
+
+
+/* ---------------------------------------------------------------------------
+   7. Page chrome
+   --------------------------------------------------------------------------- */
+
+.page-header {
+    margin-bottom: var(--spacingXXL);
+    overflow-wrap: anywhere;
+}
+
+.breadcrumb {
+    display: flex;
+    gap: var(--spacingXS);
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: var(--spacingS);
+    font-size: var(--fontSizeBase200);
+    line-height: var(--lineHeightBase200);
+}
+
+.breadcrumb a {
+    color: var(--colorNeutralForeground3);
+}
+
+.breadcrumb a:hover {
+    color: var(--colorBrandForegroundLinkHover);
+}
+
+.breadcrumb-sep {
+    display: flex;
+    color: var(--colorNeutralForeground4);
+}
+
+.page-header .eyebrow,
+.eyebrow {
+    font-size: var(--fontSizeBase200);
+    line-height: var(--lineHeightBase200);
+    font-weight: var(--fontWeightSemibold);
+    color: var(--colorNeutralForeground3);
+}
+
+/* Prose about an API is full of unspaced identifiers, and one of those longer
+   than the column would push the page sideways. */
+.page-lead {
+    margin-top: var(--spacingM);
+    font-size: var(--fontSizeBase400);
+    line-height: 1.6;
+    overflow-wrap: break-word;
+    color: var(--colorNeutralForeground2);
+}
+
+.page-header-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacingM);
+    margin-top: var(--spacingL);
+}
+
+.inject-chip {
+    font-size: var(--fontSizeBase200);
+    line-height: 1.25rem;
+    padding: var(--spacingXS) var(--spacingS);
+    color: var(--colorNeutralForeground2);
+    background-color: var(--colorNeutralBackground1);
+    border-radius: var(--borderRadiusMedium);
+    border: var(--strokeWidthThin) solid var(--colorNeutralStroke1);
+}
+
+.mdn-link {
+    display: inline-flex;
+    gap: var(--spacingXS);
+    align-items: center;
+    font-size: var(--fontSizeBase300);
+}
+
+/* The page's sections are Fluent cards: the raised surface, an 8px radius, a
+   hairline and no shadow. Repeated a dozen times down a documentation page,
+   stacked shadows read as noise long before they read as depth, so the stroke is
+   the only separation and elevation is kept for things that really do float. */
+.page-section {
+    width: 100%;
+    padding: var(--spacingXXXL);
+    margin-bottom: var(--spacingXXL);
+    color: var(--colorNeutralForeground2);
+    background-color: var(--colorNeutralBackground1);
+    border-radius: var(--borderRadiusXLarge);
+    border: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+}
+
+.page-section:last-child {
+    margin-bottom: 0;
+}
+
+.section-heading {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacingS) var(--spacingL);
+    align-items: baseline;
+    padding-bottom: var(--spacingM);
+    margin-bottom: var(--spacingXL);
+    overflow-wrap: anywhere;
+    justify-content: space-between;
+    border-bottom: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+}
+
+.section-heading h2,
+.section-heading h3 {
+    min-width: 0;
+    display: flex;
+    gap: var(--spacingS);
+    align-items: center;
+    overflow-wrap: anywhere;
+    font-size: var(--fontSizeBase500);
+    line-height: var(--lineHeightBase500);
+    color: var(--colorNeutralForeground1);
+}
+
+/* Revealed on hover for a mouse, but always in the tab order and always visible
+   once focused - a keyboard reader has no way to hover a heading. */
+.section-heading .anchor {
+    display: inline-flex;
+    padding: var(--spacingXXS);
+    color: var(--colorNeutralForeground4);
+    border-radius: var(--borderRadiusSmall);
+    opacity: 0;
+    transition: opacity var(--durationFaster) var(--curveEasyEase),
+                color var(--durationFaster) var(--curveEasyEase);
+}
+
+.section-heading:hover .anchor,
+.section-heading .anchor:focus-visible {
+    opacity: 1;
+}
+
+.section-heading .anchor:hover {
+    color: var(--colorBrandForegroundLinkHover);
+}
+
+/* The API member(s) a section documents. An outlined tag rather than a filled
+   pill: it is metadata about the heading, not a second heading.
+
+   It names every member the section covers, so on a page like Location the tag
+   is a sentence-long run of them. Kept unbreakable it is wider than a phone, and
+   nothing between it and the viewport clips: the width escapes the card and
+   turns into a horizontal scroll on the whole document, which is what drags the
+   header and the footer off to one side. So it wraps inside the heading instead,
+   and only breaks mid-name when a single name is wider than the card. */
+.badge {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    font-weight: var(--fontWeightMedium);
+    font-size: var(--fontSizeBase200);
+    line-height: 1.25rem;
+    overflow-wrap: anywhere;
+    padding: 0 var(--spacingS);
+    font-family: var(--fontFamilyMonospace);
+    color: var(--colorNeutralForeground3);
+    background-color: var(--colorNeutralBackground3);
+    border-radius: var(--borderRadiusMedium);
+    border: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+}
+
+.section-desc {
+    margin-bottom: var(--spacingL);
+    font-size: var(--fontSizeBase300);
+    line-height: 1.6;
+    overflow-wrap: break-word;
+    color: var(--colorNeutralForeground2);
+}
+
+/* The stage a demo is shown on: the canvas colour, so a sample reads as a hole
+   cut in the card rather than as another card stacked on it. */
+.demo-area {
+    width: 100%;
+    overflow: auto;
+    position: relative;
+    padding: var(--spacingXXL);
+    margin-top: var(--spacingL);
+    background-color: var(--colorNeutralBackground3);
+    border-radius: var(--borderRadiusLarge);
+    border: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+}
+
+/* On a page of prose and source listings, the one region that really runs is
+   worth marking as such - which is the claim the home page makes about the site. */
+.demo-area-tag {
+    display: inline-flex;
+    gap: var(--spacingSNudge);
+    align-items: center;
+    margin-bottom: var(--spacingL);
+    font-size: var(--fontSizeBase100);
+    line-height: var(--lineHeightBase100);
+    font-weight: var(--fontWeightSemibold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--colorNeutralForeground3);
+}
+
+.demo-area-tag i {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 50%;
+    background-color: var(--colorPaletteGreenForeground1);
+}
+
+
+/* A dead end is the one page that has to offer a way out of itself, so it gets
+   its own furniture rather than borrowing the page header's. */
+.status-page {
+    max-width: 44rem;
+    padding: var(--spacingXXXL) 0;
+}
+
+.status-code {
+    display: inline-flex;
+    gap: var(--spacingS);
+    align-items: center;
+    margin-bottom: var(--spacingL);
+    padding: var(--spacingXS) var(--spacingM);
+    font-size: var(--fontSizeBase200);
+    line-height: var(--lineHeightBase200);
+    font-weight: var(--fontWeightSemibold);
+    font-family: var(--fontFamilyMonospace);
+    color: var(--colorNeutralForeground2);
+    background-color: var(--colorNeutralBackground1);
+    border-radius: var(--borderRadiusCircular);
+    border: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+}
+
+.status-page h1 {
+    font-size: var(--fontSizeHero900);
+    line-height: var(--lineHeightHero900);
+}
+
+.status-page .page-lead {
+    margin-bottom: var(--spacingXXL);
+}
+
+.status-links {
+    display: grid;
+    gap: var(--spacingM);
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+
+.status-link {
+    display: flex;
+    gap: var(--spacingM);
+    align-items: center;
+    padding: var(--spacingM) var(--spacingL);
+    text-decoration: none;
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorNeutralBackground1);
+    border-radius: var(--borderRadiusXLarge);
+    border: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+    transition: border-color var(--durationFaster) var(--curveEasyEase),
+                box-shadow var(--durationFaster) var(--curveEasyEase);
+}
+
+.status-link:hover {
+    text-decoration: none;
+    color: var(--colorNeutralForeground1);
+    border-color: var(--colorBrandStroke2);
+    box-shadow: var(--shadow4);
+}
+
+.status-link svg {
+    color: var(--colorBrandForeground1);
+}
+
+.status-link-text {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.status-link-title {
+    font-size: var(--fontSizeBase300);
+    line-height: var(--lineHeightBase300);
+    font-weight: var(--fontWeightSemibold);
+}
+
+.status-link-desc {
+    font-size: var(--fontSizeBase200);
+    line-height: var(--lineHeightBase200);
+    color: var(--colorNeutralForeground3);
+}
+
+
+/* The element a demo operates on: the box that gets scrolled, observed, resized,
+   pointer-captured or thrown fullscreen. The outline is what makes it findable on
+   the page, and it is drawn in the brand stroke rather than in a colour of its
+   own - these boxes appear on six pages, and six hand-picked indigos is how a
+   documentation site stops looking like one site.
+
+   The surface is stated rather than inherited because one of them really does go
+   fullscreen: an element promoted to the top layer is painted over the browser's
+   own black backdrop, and a transparent panel there is a panel you cannot read. */
+.demo-box {
+    max-width: 20rem;
+    padding: var(--spacingM) var(--spacingL);
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorNeutralBackground1);
+    border-radius: var(--borderRadiusXLarge);
+    border: var(--strokeWidthThick) solid var(--colorBrandStroke1);
+}
+
+/* Dashed where the box is a container the reader is meant to look inside, rather
+   than a target they are meant to act on. */
+.demo-box.dashed {
+    border-style: dashed;
+    border-width: var(--strokeWidthThin);
+}
+
+/* A marker inside an observed container - the thing whose visibility or mutation
+   the demo is reporting on. Green because it is the element the reader is being
+   asked to watch for, which is the one place on these pages a second hue earns
+   its keep. */
+.demo-marker {
+    padding: var(--spacingS) var(--spacingL);
+    text-align: center;
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorPaletteGreenBackground1);
+    border-radius: var(--borderRadiusLarge);
+    border: var(--strokeWidthThick) solid var(--colorPaletteGreenBorder1);
+}
+
+/* The same marker as a row in a list of them. */
+.demo-marker.compact {
+    margin-top: var(--spacingXS);
+    padding: var(--spacingXS) var(--spacingS);
+    text-align: start;
+    font-size: var(--fontSizeBase300);
+    border-width: var(--strokeWidthThin);
+}
+
+/* A video surface letterboxes whatever it is handed, and the bars are black in
+   both themes - that is the medium rather than the theme. */
+.demo-video {
+    width: 100%;
+    max-width: 100%;
+    margin-top: var(--spacingL);
+    background-color: #000;
+    border-radius: var(--borderRadiusLarge);
+}
+
+
+/* Prose furniture a page may reach for directly. The demo pages are written in
+   plain HTML, so a list of results or a preview element inside a sample has no
+   component to inherit from - without these it would arrive at the browser's own
+   16px defaults in the middle of a 14px card. */
+.page-section ul,
+.page-section ol {
+    margin: var(--spacingS) 0;
+    padding-inline-start: var(--spacingXL);
+    font-size: var(--fontSizeBase300);
+    line-height: 1.6;
+    color: var(--colorNeutralForeground2);
+}
+
+.page-section li + li {
+    margin-top: var(--spacingXS);
+}
+
+.page-section li::marker {
+    color: var(--colorNeutralForeground4);
+}
+
+/* A camera preview, a recording or a generated image is as big as its source, and
+   the pages that show one should not each have to remember to cap it. */
+.page-section img,
+.page-section video,
+.page-section canvas,
+.page-section audio {
+    max-width: 100%;
+}
+
+.page-section img,
+.page-section video,
+.page-section canvas {
+    height: auto;
+    border-radius: var(--borderRadiusLarge);
+}
+
+
+/* ---------------------------------------------------------------------------
+   8. Code panes
+   --------------------------------------------------------------------------- */
+
+.code-holder {
+    margin-top: var(--spacingL);
+    overflow: hidden;
+    background-color: var(--colorCodeBackground);
+    border-radius: var(--borderRadiusLarge);
+    border: var(--strokeWidthThin) solid var(--colorCodeStroke);
+}
+
+/* The bar names the language and holds the copy button, which keeps the button
+   out of the code: resting on the pane it covered the end of the opening line on
+   exactly the snippets - one-liners - where that line is the whole sample. */
+.code-bar {
+    display: flex;
+    gap: var(--spacingS);
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacingXS) var(--spacingXS) var(--spacingXS) var(--codePad);
+    background-color: var(--colorNeutralBackground4);
+    border-bottom: var(--strokeWidthThin) solid var(--colorCodeStroke);
+}
+
+.code-lang {
+    font-size: var(--fontSizeBase100);
+    line-height: var(--lineHeightBase100);
+    font-weight: var(--fontWeightSemibold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--colorNeutralForeground3);
+}
+
+.copy-btn {
+    display: inline-flex;
+    flex: none;
+    gap: var(--spacingXS);
+    min-height: 1.75rem;
+    padding: 0 var(--spacingS);
+    cursor: pointer;
+    align-items: center;
+    white-space: nowrap;
+    font-family: var(--fontFamilyBase);
+    font-size: var(--fontSizeBase200);
+    line-height: var(--lineHeightBase200);
+    font-weight: var(--fontWeightMedium);
+    border: none;
+    color: var(--colorNeutralForeground2);
+    background-color: transparent;
+    border-radius: var(--borderRadiusMedium);
+    transition: color var(--durationFaster) var(--curveEasyEase),
+                background-color var(--durationFaster) var(--curveEasyEase);
+}
+
+.copy-btn:hover {
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorSubtleBackgroundHover);
+}
+
+.copy-btn.copied,
+.copy-btn.failed {
+    pointer-events: none;
+}
+
+.copy-btn.copied {
+    color: var(--colorPaletteGreenForeground1);
+}
+
+.copy-btn.failed {
+    color: var(--colorPaletteRedForeground1);
+}
+
+pre {
+    margin: 0;
+    width: 100%;
+    display: block;
+    overflow: auto;
+    direction: ltr;
+    line-height: var(--codeLineHeight);
+    font-size: var(--codeFontSize);
+    max-height: 32rem;
+    font-family: var(--fontFamilyMonospace);
+    padding: var(--codePad);
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorCodeBackground);
+    /* Tabs in a C# sample are one indent step, not eight columns of it. */
+    tab-size: 4;
+}
+
+pre code {
+    line-height: var(--codeLineHeight);
+    font-family: var(--fontFamilyMonospace);
+}
+
+/* The token colours Client/Services/SyntaxHighlighter.cs paints with. Everything the scanner did
+   not recognise inherits the pane's own foreground, so an unsupported language, or a construct a
+   rule missed, comes out as ordinary code text rather than as a hole in the sample. */
+.tok-com { color: var(--codeComment); }
+.tok-kw { color: var(--codeKeyword); }
+.tok-str,
+.tok-atv { color: var(--codeString); }
+.tok-num,
+.tok-lit { color: var(--codeNumber); }
+.tok-fn { color: var(--codeFunction); }
+.tok-typ { color: var(--codeType); }
+.tok-tag { color: var(--codeTag); }
+.tok-atn,
+.tok-key,
+.tok-var { color: var(--codeAttrName); }
+.tok-meta { color: var(--codeMeta); }
+.tok-punc,
+.tok-op { color: var(--codePunct); }
+
+/* Markdown is the one language whose markup means "render this differently", so it is the one
+   place a token gets a weight or a slant. It costs nothing to a reader who cannot see them: this
+   is a listing of the source, not a rendering of it, so the ** and the # are still on the page. */
+.tok-head {
+    color: var(--codeFunction);
+    font-weight: var(--fontWeightSemibold);
+}
+
+.tok-strong { font-weight: var(--fontWeightSemibold); }
+.tok-em { font-style: italic; }
+
+
+/* ---------------------------------------------------------------------------
+   9. Message bars
+   ---------------------------------------------------------------------------
+   Fluent 2's MessageBar: the intent's own tint, its own border and its own icon.
+   The wording and the glyph carry the intent as well as the hue does, so the bar
+   still says which of the four it is in a monochrome print.
+   --------------------------------------------------------------------------- */
+
+.callout {
+    display: flex;
+    gap: var(--spacingM);
+    margin: var(--spacingXXL) 0;
+    padding: var(--spacingM) var(--spacingL);
+    font-size: var(--fontSizeBase300);
+    line-height: 1.6;
+    color: var(--colorNeutralForeground2);
+    background-color: var(--colorNeutralBackground3);
+    border-radius: var(--borderRadiusLarge);
+    border: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+}
+
+.callout strong {
+    display: block;
+    font-weight: var(--fontWeightSemibold);
+    margin-bottom: var(--spacingXXS);
+    color: var(--colorNeutralForeground1);
+}
+
+.callout-icon {
+    flex: none;
+    display: flex;
+    padding-top: 0.0625rem;
+}
+
+.callout.info {
+    background-color: var(--colorBrandBackground2);
+    border-color: var(--colorBrandStroke2);
+}
+
+.callout.info .callout-icon {
+    color: var(--colorBrandForeground1);
+}
+
+.callout.success {
+    background-color: var(--colorPaletteGreenBackground1);
+    border-color: var(--colorPaletteGreenBorder1);
+}
+
+.callout.success .callout-icon {
+    color: var(--colorPaletteGreenForeground1);
+}
+
+.callout.warning {
+    background-color: var(--colorPaletteDarkOrangeBackground1);
+    border-color: var(--colorPaletteDarkOrangeBorder1);
+}
+
+.callout.warning .callout-icon {
+    color: var(--colorPaletteDarkOrangeForeground1);
+}
+
+.callout.error {
+    background-color: var(--colorPaletteRedBackground1);
+    border-color: var(--colorPaletteRedBorder1);
+}
+
+.callout.error .callout-icon {
+    color: var(--colorPaletteRedForeground1);
+}
+
+
+/* ---------------------------------------------------------------------------
+   10. Data grids
+   ---------------------------------------------------------------------------
+   Fluent's DataGrid, built as a CSS grid rather than a <table> so the header row
+   can stay put while the body scrolls inside the frame instead of stretching the
+   page. The ARIA roles are on the elements, so it is still a table to a reader.
+   --------------------------------------------------------------------------- */
+
+/* The single column is declared rather than left to `auto`, which would size
+   itself to the widest row and let a long description set the frame's width
+   instead of the frame setting the description's. */
+.table-view {
+    width: 100%;
+    overflow: auto;
+    max-height: 34rem;
+    border-spacing: 0;
+    display: inline-grid;
+    grid-template-columns: minmax(0, 1fr);
+    border-radius: var(--borderRadiusLarge);
+    border: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+}
+
+.th-row {
+    top: 0;
+    width: 100%;
+    z-index: 1;
+    display: flex;
+    position: sticky;
+    min-height: 2.75rem;
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorNeutralBackground3);
+    border-bottom: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+}
+
+.tdata-row {
+    width: 100%;
+    display: flex;
+    min-width: max-content;
+    border-bottom: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+    transition: background-color var(--durationFaster) var(--curveEasyEase);
+}
+
+.tdata-row:hover {
+    background-color: var(--colorSubtleBackgroundHover);
+}
+
+.tdata-row:last-child {
+    border-bottom: none;
+}
+
+/* The Navigation page marks which history entry is the one on screen. A left
+   edge rather than a fill, so it still reads as "this row" once :hover paints
+   the background of a different one. */
+.tdata-row.current {
+    box-shadow: inset var(--strokeWidthThicker) 0 0 0 var(--colorBrandStroke1);
+    background-color: var(--colorSubtleBackgroundHover);
+}
+
+.th-cell {
+    display: flex;
+    overflow: hidden;
+    min-height: 100%;
+    text-align: left;
+    align-items: center;
+    padding: var(--spacingM);
+    text-overflow: ellipsis;
+    justify-content: flex-start;
+    background-color: transparent;
+    font-size: var(--fontSizeBase200);
+    line-height: var(--lineHeightBase200);
+    font-weight: var(--fontWeightSemibold);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--colorNeutralForeground3);
+}
+
+.td-cell {
+    display: flex;
+    overflow: hidden;
+    text-align: left;
+    line-height: 1.6;
+    padding: var(--spacingM);
+    white-space: normal;
+    font-size: var(--fontSizeBase200);
+    overflow-wrap: break-word;
+    align-items: flex-start;
+    justify-content: flex-start;
+    color: var(--colorNeutralForeground2);
+    font-family: var(--fontFamilyMonospace);
+}
+
+/* Fluent's own grid sizes its columns in fixed rem widths because a component's
+   parameter table has four narrow ones. This one has three, and the last is a
+   sentence: fixing its width would push the text under a horizontal scrollbar on
+   the very screens that have room for it. So the first two are fixed and the
+   description takes what is left, with a floor on the row that turns into a
+   scroll only once the frame really is too narrow for all three. */
+.api-table .th-row,
+.api-table .tdata-row {
+    min-width: 44rem;
+}
+
+.api-table .th-cell:nth-child(1),
+.api-table .td-cell:nth-child(1) {
+    flex: 0 0 11rem;
+}
+
+.api-table .th-cell:nth-child(2),
+.api-table .td-cell:nth-child(2) {
+    flex: 0 0 18rem;
+}
+
+.api-table .th-cell:nth-child(3),
+.api-table .td-cell:nth-child(3) {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.api-table .td-cell:nth-child(1) {
+    font-weight: var(--fontWeightSemibold);
+    color: var(--colorNeutralForeground1);
+}
+
+.api-table .td-cell:nth-child(2) code {
+    color: var(--colorNeutralForeground2);
+}
+
+.api-table .td-cell:nth-child(3) {
+    font-family: var(--fontFamilyBase);
+    font-size: var(--fontSizeBase300);
+}
+
+
+/* ---------------------------------------------------------------------------
+   11. Demo console
+   --------------------------------------------------------------------------- */
+
+.demo-console {
+    margin-top: var(--spacingXXL);
+    overflow: hidden;
+    background-color: var(--colorCodeBackground);
+    border-radius: var(--borderRadiusLarge);
+    border: var(--strokeWidthThin) solid var(--colorCodeStroke);
+}
+
+/* A console inside a demo area belongs to that demo: tighter spacing and a
+   shorter body than a standalone one. */
+.demo-area .demo-console {
+    margin-top: var(--spacingL);
+}
+
+.demo-area .demo-console-body {
+    max-height: 13rem;
+}
+
+.demo-console-head {
+    display: flex;
+    gap: var(--spacingMNudge);
+    align-items: center;
+    padding: var(--spacingXS) var(--spacingXS) var(--spacingXS) var(--spacingM);
+    background-color: var(--colorNeutralBackground4);
+    border-bottom: var(--strokeWidthThin) solid var(--colorCodeStroke);
+}
+
+.demo-console-head .label {
+    font-size: var(--fontSizeBase100);
+    line-height: var(--lineHeightBase100);
+    font-weight: var(--fontWeightSemibold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--colorNeutralForeground3);
+}
+
+.demo-console-head .clear-btn {
+    all: unset;
+    cursor: pointer;
+    margin-left: auto;
+    font-family: var(--fontFamilyBase);
+    font-weight: var(--fontWeightMedium);
+    font-size: var(--fontSizeBase200);
+    line-height: 1.75rem;
+    padding: 0 var(--spacingS);
+    color: var(--colorNeutralForeground3);
+    border-radius: var(--borderRadiusMedium);
+    transition: color var(--durationFaster) var(--curveEasyEase),
+                background-color var(--durationFaster) var(--curveEasyEase);
+}
+
+.demo-console-head .clear-btn:hover {
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorSubtleBackgroundHover);
+}
+
+.demo-console-head .clear-btn:focus-visible {
+    outline: var(--strokeWidthThick) solid var(--colorStrokeFocus2);
+    outline-offset: var(--strokeWidthThin);
+    box-shadow: 0 0 0 var(--strokeWidthThin) var(--colorStrokeFocus1);
+}
+
+.demo-console-body {
+    max-height: 19rem;
+    overflow-y: auto;
+    padding: var(--spacingS) var(--spacingM);
+    font-size: var(--fontSizeBase200);
+    line-height: 1.6;
+    font-family: var(--fontFamilyMonospace);
+}
+
+.demo-console-body .empty {
+    font-style: italic;
+    color: var(--colorNeutralForeground3);
+}
+
+.demo-console-body .line {
+    display: flex;
+    gap: var(--spacingM);
+    padding: var(--spacingXXS) 0;
+    border-bottom: var(--strokeWidthThin) dotted var(--colorNeutralStroke3);
+}
+
+.demo-console-body .line:last-child {
+    border-bottom: none;
+}
+
+.demo-console-body .ts {
+    flex: none;
+    color: var(--colorNeutralForeground4);
+}
+
+.demo-console-body .msg {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
+
+.demo-console-body .line.log .msg { color: var(--colorNeutralForeground1); }
+.demo-console-body .line.info .msg { color: var(--colorBrandForeground1); }
+.demo-console-body .line.success .msg { color: var(--colorPaletteGreenForeground1); }
+.demo-console-body .line.warn .msg { color: var(--colorPaletteDarkOrangeForeground1); }
+.demo-console-body .line.error .msg { color: var(--colorPaletteRedForeground1); }
+
+
+/* ---------------------------------------------------------------------------
+   12. Controls
+   ---------------------------------------------------------------------------
+   The demo pages are written in plain HTML - a page about the Clipboard API
+   should read as the clipboard sample, not as a tour of a component library - so
+   the native controls take Fluent 2's geometry here instead: the 4px radius, the
+   32px control height, the brand fill, and the 100ms colour transition its own
+   Button uses.
+   --------------------------------------------------------------------------- */
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacingS);
+    align-items: center;
+    margin-top: var(--spacingM);
+}
+
+button {
+    display: inline-flex;
+    gap: var(--spacingS);
+    cursor: pointer;
+    text-align: start;
+    align-items: center;
+    justify-content: center;
+    min-height: 2rem;
+    font-size: var(--fontSizeBase300);
+    line-height: var(--lineHeightBase300);
+    padding: var(--spacingXS) var(--spacingM);
+    font-family: var(--fontFamilyBase);
+    font-weight: var(--fontWeightSemibold);
+    color: var(--colorNeutralForegroundOnBrand);
+    background-color: var(--colorBrandBackground);
+    border-radius: var(--borderRadiusMedium);
+    border: var(--strokeWidthThin) solid transparent;
+    transition: color var(--durationFaster) var(--curveEasyEase),
+                border-color var(--durationFaster) var(--curveEasyEase),
+                background-color var(--durationFaster) var(--curveEasyEase);
+}
+
+button:hover {
+    color: var(--colorNeutralForegroundOnBrand);
+    background-color: var(--colorBrandBackgroundHover);
+}
+
+button:active {
+    background-color: var(--colorBrandBackgroundPressed);
+}
+
+button:focus-visible {
+    outline: var(--strokeWidthThick) solid var(--colorStrokeFocus2);
+    outline-offset: var(--strokeWidthThin);
+    box-shadow: 0 0 0 var(--strokeWidthThin) var(--colorStrokeFocus1);
+}
+
+button:disabled {
+    cursor: default;
+    pointer-events: none;
+    color: var(--colorNeutralForegroundDisabled);
+    background-color: var(--colorNeutralBackgroundDisabled);
+    border-color: var(--colorNeutralStrokeDisabled);
+}
+
+/* Fluent's Secondary appearance: the neutral surface with a real border, not a
+   ghost - a page with eight of these needs them to read as buttons at a glance. */
+button.secondary {
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorNeutralBackground1);
+    border-color: var(--colorNeutralStroke1);
+}
+
+button.secondary:hover {
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorNeutralBackground1Hover);
+    border-color: var(--colorNeutralStroke1Hover);
+}
+
+button.secondary:active {
+    background-color: var(--colorNeutralBackground1Pressed);
+}
+
+button.secondary:disabled {
+    color: var(--colorNeutralForegroundDisabled);
+    background-color: var(--colorNeutralBackgroundDisabled);
+    border-color: var(--colorNeutralStrokeDisabled);
+}
+
+button.danger {
+    color: var(--colorStatusDangerForegroundInverted);
+    background-color: var(--colorStatusDangerBackground3);
+    border-color: transparent;
+}
+
+button.danger:hover {
+    background-color: color-mix(in srgb, var(--colorStatusDangerBackground3) 88%, black);
+}
+
+button.danger:active {
+    background-color: color-mix(in srgb, var(--colorStatusDangerBackground3) 76%, black);
+}
+
+button.danger:disabled {
+    color: var(--colorNeutralForegroundDisabled);
+    background-color: var(--colorNeutralBackgroundDisabled);
+    border-color: var(--colorNeutralStrokeDisabled);
+}
+
+/* Fluent's Input: a hairline on three sides and an accessible-contrast rule
+   under it, which thickens into the brand colour on focus. */
+input,
+select,
+textarea {
+    max-width: 100%;
+    min-height: 2rem;
+    outline: none;
+    font-size: var(--fontSizeBase300);
+    line-height: var(--lineHeightBase300);
+    font-weight: var(--fontWeightRegular);
+    padding: var(--spacingXS) var(--spacingS);
+    font-family: var(--fontFamilyBase);
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorNeutralBackground1);
+    border-radius: var(--borderRadiusMedium);
+    border: var(--strokeWidthThin) solid var(--colorNeutralStroke1);
+    border-bottom-color: var(--colorNeutralStrokeAccessible);
+    transition: border-color var(--durationFaster) var(--curveEasyEase);
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+    border-color: var(--colorNeutralStroke1Hover);
+    border-bottom-color: var(--colorNeutralStrokeAccessible);
+}
+
+/* Fluent's focused field grows a second pixel of bottom rule in the brand colour.
+   It is drawn as an inset shadow rather than as a thicker border, because a
+   border that grows takes a pixel out of the content box - which on a fixed-height
+   control such as the one in the command bar nudges the text it contains. */
+input:focus,
+select:focus,
+textarea:focus {
+    border-bottom-color: var(--colorBrandStroke1);
+    box-shadow: inset 0 calc(-1 * var(--strokeWidthThin)) 0 0 var(--colorBrandStroke1);
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+    color: var(--colorNeutralForegroundDisabled);
+    background-color: var(--colorNeutralBackgroundDisabled);
+    border-color: var(--colorNeutralStrokeDisabled);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--colorNeutralForeground3);
+}
+
+/* The three that the browser draws itself. accent-color is all the theming they
+   need, and the field chrome above - the border, the bottom rule, the focus
+   shadow - would only fight the native rendering. */
+input[type="checkbox"],
+input[type="radio"] {
+    min-height: 0;
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--colorBrandBackground);
+}
+
+input[type="checkbox"]:focus,
+input[type="radio"]:focus,
+input[type="range"] {
+    padding: 0;
+    border: none;
+    box-shadow: none;
+    background: none;
+    accent-color: var(--colorBrandBackground);
+}
+
+input[type="range"]:hover,
+input[type="range"]:focus {
+    padding: 0;
+    border: none;
+    box-shadow: none;
+}
+
+input[type="color"] {
+    padding: var(--spacingXXS);
+    min-width: 3rem;
+}
+
+input[type="file"] {
+    padding: var(--spacingSNudge) var(--spacingS);
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacingXS);
+    margin-top: var(--spacingM);
+}
+
+.field-label {
+    font-size: var(--fontSizeBase300);
+    line-height: var(--lineHeightBase300);
+    font-weight: var(--fontWeightSemibold);
+    color: var(--colorNeutralForeground1);
+}
+
+.field-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacingL);
+}
+
+.field-row .field {
+    flex: 1;
+    min-width: 11.25rem;
+}
+
+.stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacingXXL);
+}
+
+/* A checkbox and its wording are one control, so they sit on one line rather
+   than inheriting .field's stacked label-over-input arrangement. */
+label.check {
+    display: flex;
+    gap: var(--spacingS);
+    font-size: var(--fontSizeBase300);
+    align-items: center;
+    color: var(--colorNeutralForeground1);
+}
+
+.kbd {
+    display: inline-block;
+    font-size: var(--fontSizeBase200);
+    line-height: 1.125rem;
+    padding: 0 var(--spacingSNudge);
+    font-family: var(--fontFamilyMonospace);
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorNeutralBackground3);
+    border-radius: var(--borderRadiusMedium);
+    border: var(--strokeWidthThin) solid var(--colorNeutralStroke1);
+    border-bottom-width: var(--strokeWidthThick);
+}
+
+.swatch {
+    display: inline-block;
+    width: 2.25rem;
+    height: 2.25rem;
+    vertical-align: middle;
+    border-radius: var(--borderRadiusMedium);
+    border: var(--strokeWidthThin) solid var(--colorNeutralStroke1);
+}
+
+
+/* ---------------------------------------------------------------------------
+   13. "On this page" rail
+   ---------------------------------------------------------------------------
+   Navigation, not content, so it only earns its space on wide screens. The
+   hairline is its spine: it ties the entries together and, being the only rule
+   in the margin, marks the column as secondary without adding another box.
+   --------------------------------------------------------------------------- */
+
+.side-rail {
+    top: var(--headerHeight);
+    overflow: auto;
+    position: sticky;
+    height: fit-content;
+    flex: 0 0 var(--railWidth);
+    padding: var(--spacingXXXL) var(--spacingXXL) var(--spacingXXL) 0;
+    max-height: calc(100vh - var(--headerHeight));
+}
+
+.side-rail-title {
+    font-size: var(--fontSizeBase200);
+    line-height: var(--lineHeightBase200);
+    font-weight: var(--fontWeightSemibold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--colorNeutralForeground3);
+}
+
+.side-rail-list {
+    padding: 0;
+    list-style: none;
+    margin: var(--spacingM) 0 0;
+    border-inline-start: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+}
+
+.side-rail-list li {
+    position: relative;
+    padding: var(--spacingXXS) 0 var(--spacingXXS) var(--spacingM);
+    overflow-wrap: anywhere;
+}
+
+.side-rail-list a {
+    display: block;
+    font-size: var(--fontSizeBase300);
+    line-height: var(--lineHeightBase300);
+    padding: var(--spacingXS) 0;
+    text-decoration: none;
+    color: var(--colorNeutralForeground3);
+    transition: color var(--durationFaster) var(--curveEasyEase);
+}
+
+.side-rail-list a:hover {
+    text-decoration: none;
+    color: var(--colorBrandForegroundLinkHover);
+}
+
+
+/* ---------------------------------------------------------------------------
+   14. Footer
+   --------------------------------------------------------------------------- */
+
+.footer {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    color: var(--colorNeutralForeground2);
+    background-color: var(--colorNeutralBackground1);
+    border-top: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+}
+
+.footer section {
+    width: 100%;
+    position: relative;
+    max-width: var(--contentWidth);
+    padding: var(--spacingXXXL) var(--spacingXXL);
+}
+
+.footer-main {
+    display: grid;
+    gap: var(--spacingXXXL);
+    align-items: start;
+    grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
+    padding-top: 3.5rem !important;
+    padding-bottom: 3rem !important;
+}
+
+.footer-bar {
+    display: flex;
+    gap: var(--spacingL);
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: var(--spacingL) !important;
+    padding-bottom: var(--spacingL) !important;
+    border-top: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+}
+
+.footer a {
+    text-decoration: none;
+    color: var(--colorNeutralForeground2);
+    font-size: var(--fontSizeBase300);
+    line-height: 1.75rem;
+}
+
+.footer a:hover {
+    color: var(--colorBrandForegroundLinkHover);
+    text-decoration: underline;
+}
+
+.footer .bit-logo {
+    width: 2rem;
+    height: 1.6875rem;
+    margin-bottom: var(--spacingL);
+    background-size: contain;
+    background-position: left center;
+    background-repeat: no-repeat;
+    background-image: url('../images/bit-logo-light.svg');
+}
+
+[bit-theme="dark"] .footer .bit-logo {
+    background-image: url('../images/bit-logo-dark.svg');
+}
+
+.footer .tagline {
+    max-width: 30rem;
+    font-size: var(--fontSizeBase300);
+    line-height: 1.7;
+    color: var(--colorNeutralForeground3);
+}
+
+.footer .link-groups {
+    display: grid;
+    gap: var(--spacingXXL);
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+}
+
+.footer .link-group {
+    display: flex;
+    min-width: 0;
+    flex-flow: column nowrap;
+}
+
+.footer .link-group-title {
+    font-size: var(--fontSizeBase300);
+    line-height: var(--lineHeightBase300);
+    font-weight: var(--fontWeightSemibold);
+    margin-bottom: var(--spacingS);
+    color: var(--colorNeutralForeground1);
+}
+
+.footer .go-to-top {
+    min-height: 2rem;
+    font-weight: var(--fontWeightMedium);
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorNeutralBackground1);
+    border-color: var(--colorNeutralStroke1);
+}
+
+.footer .go-to-top:hover {
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorNeutralBackground1Hover);
+    border-color: var(--colorNeutralStroke1Hover);
+}
+
+.footer .social-link-group {
+    display: flex;
+    gap: var(--spacingS);
+    margin-top: var(--spacingL);
+    align-items: center;
+}
+
+/* The four marks are the same subtle icon button as the ones in the command bar.
+   The assets are white-filled glyphs, so they are used as a mask rather than as a
+   picture: painted as an image the glyph would stay white and need a permanently
+   dark chip under it, which is a light-theme decision baked into an asset. As a
+   mask the alpha is all that is read and the colour is the button's own, so the
+   mark follows the theme and the hover like every other icon on the page. */
+.footer .social-link {
+    display: inline-flex;
+    width: 2rem;
+    height: 2rem;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--borderRadiusMedium);
+    color: var(--colorNeutralForeground3);
+    transition: color var(--durationFaster) var(--curveEasyEase),
+                background-color var(--durationFaster) var(--curveEasyEase);
+}
+
+.footer .social-link::before {
+    content: "";
+    width: 1.125rem;
+    height: 1.125rem;
+    background-color: currentColor;
+    -webkit-mask: var(--social-glyph) center / contain no-repeat;
+    mask: var(--social-glyph) center / contain no-repeat;
+}
+
+.footer .social-link:hover {
+    color: var(--colorBrandForeground1);
+    background-color: var(--colorSubtleBackgroundHover);
+}
+
+.footer .twitter-link { --social-glyph: url('../images/footer/twitter-icon.svg'); }
+.footer .github-link { --social-glyph: url('../images/footer/github-icon.svg'); }
+.footer .youtube-link { --social-glyph: url('../images/footer/youtube-icon.svg'); }
+.footer .linkedin-link { --social-glyph: url('../images/footer/linkedin-icon.svg'); }
+
+.footer .copy-right-txt {
+    line-height: 1.5;
+    font-size: var(--fontSizeBase200);
+    color: var(--colorNeutralForeground3);
+}
+
+
+/* ---------------------------------------------------------------------------
+   15. Home page
+   ---------------------------------------------------------------------------
+   The one page with no nav panel. The hero is a two-column split and the second
+   column is the argument: a Blazor developer's objection to reaching for a
+   browser API is the interop it costs, so the page answers it with the code
+   rather than with an adjective.
+   --------------------------------------------------------------------------- */
+
+.hero {
+    width: 100%;
+    padding: 4.5rem var(--spacingXXL) 4rem;
+    background-color: var(--colorNeutralBackground1);
+    border-bottom: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+    /* A wash of the brand behind the pitch. Two stops of a very low-alpha mix
+       rather than a picture: it costs nothing, it follows the theme, and it
+       cannot fight the text on top of it the way an image would. */
+    background-image:
+        radial-gradient(70rem 30rem at 12% -20%, color-mix(in srgb, var(--colorBrandBackground) 12%, transparent), transparent 70%),
+        radial-gradient(50rem 26rem at 92% 0%, color-mix(in srgb, var(--colorBrandBackground) 7%, transparent), transparent 70%);
+}
+
+.hero-inner {
+    display: grid;
+    margin: 0 auto;
+    gap: 3rem;
+    align-items: center;
+    max-width: var(--contentWidth);
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+}
+
+.hero-copy {
+    min-width: 0;
+}
+
+.hero-eyebrow {
+    display: inline-flex;
+    gap: var(--spacingSNudge);
+    align-items: center;
+    margin-bottom: var(--spacingL);
+    padding: var(--spacingXS) var(--spacingM);
+    font-size: var(--fontSizeBase200);
+    line-height: var(--lineHeightBase200);
+    font-weight: var(--fontWeightSemibold);
+    color: var(--colorBrandForeground1);
+    background-color: var(--colorBrandBackground2);
+    border-radius: var(--borderRadiusCircular);
+    border: var(--strokeWidthThin) solid var(--colorBrandStroke2);
+}
+
+.hero-title {
+    font-family: var(--fontFamilyDisplay);
+    font-weight: var(--fontWeightBold);
+    font-size: 3rem;
+    line-height: 1.1;
+    letter-spacing: -0.022em;
+    color: var(--colorNeutralForeground1);
+}
+
+/* The accent phrase takes its colour from the brand tokens, so it follows the
+   theme rather than pinning the page to one palette. */
+.hero-title-accent {
+    color: transparent;
+    background-clip: text;
+    -webkit-background-clip: text;
+    background-image: linear-gradient(96deg, var(--colorBrandForeground1), var(--colorBrandRamp120));
+}
+
+/* A gradient clipped to text is invisible to a forced-colours mode, which
+   replaces the fill and leaves nothing behind. */
+@media (forced-colors: active) {
+    .hero-title-accent {
+        color: LinkText;
+        background-image: none;
+        -webkit-text-fill-color: LinkText;
+    }
+}
+
+.hero-subtitle {
+    max-width: 46ch;
+    margin-top: var(--spacingXL);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: var(--colorNeutralForeground2);
+}
+
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacingM);
+    margin-top: var(--spacingXXXL);
+}
+
+/* Fluent's Large button size. */
+.hero-actions a {
+    display: inline-flex;
+    gap: var(--spacingS);
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    font-size: var(--fontSizeBase400);
+    padding: var(--spacingS) var(--spacingXL);
+    text-decoration: none;
+    font-weight: var(--fontWeightSemibold);
+    border-radius: var(--borderRadiusMedium);
+    border: var(--strokeWidthThin) solid transparent;
+    transition: color var(--durationFaster) var(--curveEasyEase),
+                border-color var(--durationFaster) var(--curveEasyEase),
+                background-color var(--durationFaster) var(--curveEasyEase);
+}
+
+.hero-actions a:hover {
+    text-decoration: none;
+}
+
+.hero-actions .btn-primary {
+    color: var(--colorNeutralForegroundOnBrand);
+    background-color: var(--colorBrandBackground);
+}
+
+.hero-actions .btn-primary:hover {
+    color: var(--colorNeutralForegroundOnBrand);
+    background-color: var(--colorBrandBackgroundHover);
+}
+
+.hero-actions .btn-primary:active {
+    background-color: var(--colorBrandBackgroundPressed);
+}
+
+.hero-actions .btn-ghost {
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorNeutralBackground1);
+    border-color: var(--colorNeutralStroke1);
+}
+
+.hero-actions .btn-ghost:hover {
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorNeutralBackground1Hover);
+    border-color: var(--colorNeutralStroke1Hover);
+}
+
+.hero-install {
+    max-width: 24rem;
+}
+
+.hero-pane {
+    min-width: 0;
+}
+
+/* The hero's two panes are the one place a code block is the subject rather than
+   a supporting listing, so they are the one place it is allowed to float. */
+.hero-pane .code-holder,
+.hero-install .code-holder {
+    box-shadow: var(--shadow8);
+    background-color: var(--colorNeutralBackground1);
+}
+
+.hero-pane pre {
+    max-height: none;
+    font-size: 0.8125rem;
+}
+
+.home-container {
+    width: 100%;
+    margin: 0 auto;
+    max-width: var(--contentWidth);
+    padding: 0 var(--spacingXXL) 4rem;
+}
+
+/* Straddling the seam between the hero band and the canvas: the four numbers are
+   a summary of the pitch above them, not the opening of the catalogue below. */
+.hero-stats {
+    display: grid;
+    gap: var(--strokeWidthThin);
+    margin: -2rem 0 var(--spacingXXXL);
+    overflow: hidden;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    background-color: var(--colorNeutralStroke2);
+    border-radius: var(--borderRadiusXLarge);
+    border: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+    box-shadow: var(--shadow4);
+}
+
+.hero-stat {
+    display: flex;
+    gap: var(--spacingXXS);
+    padding: var(--spacingXL);
+    flex-flow: column nowrap;
+    background-color: var(--colorNeutralBackground1);
+}
+
+.hero-stat-value {
+    font-family: var(--fontFamilyDisplay);
+    font-weight: var(--fontWeightSemibold);
+    font-size: var(--fontSizeBase600);
+    line-height: var(--lineHeightBase600);
+    color: var(--colorBrandForeground1);
+}
+
+.hero-stat-label {
+    font-size: var(--fontSizeBase200);
+    line-height: var(--lineHeightBase200);
+    color: var(--colorNeutralForeground3);
+}
+
+.home-pillars {
+    display: grid;
+    gap: var(--spacingXXL);
+    margin-bottom: var(--spacingXXXL);
+    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+}
+
+.pillar {
+    padding: var(--spacingXXL);
+    background-color: var(--colorNeutralBackground1);
+    border-radius: var(--borderRadiusXLarge);
+    border: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+}
+
+.pillar-icon {
+    display: inline-flex;
+    width: 2.5rem;
+    height: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--spacingM);
+    color: var(--colorBrandForeground1);
+    background-color: var(--colorBrandBackground2);
+    border-radius: var(--borderRadiusLarge);
+}
+
+.pillar h2 {
+    margin-bottom: var(--spacingS);
+    font-size: var(--fontSizeBase400);
+    line-height: var(--lineHeightBase400);
+    color: var(--colorNeutralForeground1);
+}
+
+.pillar p {
+    font-size: var(--fontSizeBase300);
+    line-height: 1.6;
+    color: var(--colorNeutralForeground2);
+}
+
+.home-catalogue-head {
+    margin: 3rem 0 var(--spacingXXL);
+}
+
+.home-catalogue-head h2 {
+    font-family: var(--fontFamilyDisplay);
+    font-size: var(--fontSizeHero700);
+    line-height: var(--lineHeightHero700);
+    letter-spacing: -0.01em;
+    color: var(--colorNeutralForeground1);
+}
+
+.home-catalogue-head p {
+    margin-top: var(--spacingS);
+    font-size: var(--fontSizeBase300);
+    line-height: 1.6;
+    color: var(--colorNeutralForeground3);
+}
+
+.home-group {
+    margin-top: var(--spacingXXXL);
+}
+
+/* Sticky under the command bar: scrolling a catalogue of sixty-six cards, the
+   answer to "which group is this" should never require scrolling back. */
+.home-group-title {
+    top: var(--headerHeight);
+    z-index: 2;
+    display: flex;
+    position: sticky;
+    gap: var(--spacingM);
+    align-items: center;
+    margin-bottom: var(--spacingL);
+    padding: var(--spacingM) 0;
+    font-size: var(--fontSizeBase500);
+    line-height: var(--lineHeightBase500);
+    font-weight: var(--fontWeightSemibold);
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorNeutralBackground3);
+    border-bottom: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+}
+
+.home-group-icon {
+    display: inline-flex;
+    width: 1.75rem;
+    height: 1.75rem;
+    align-items: center;
+    justify-content: center;
+    color: var(--colorBrandForeground1);
+    background-color: var(--colorBrandBackground2);
+    border-radius: var(--borderRadiusMedium);
+}
+
+.home-group-count {
+    margin-inline-start: auto;
+    font-size: var(--fontSizeBase200);
+    line-height: var(--lineHeightBase200);
+    font-weight: var(--fontWeightRegular);
+    color: var(--colorNeutralForeground3);
+}
+
+.card-grid {
+    display: grid;
+    gap: var(--spacingL);
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+}
+
+.feature-card {
+    display: flex;
+    gap: var(--spacingS);
+    padding: var(--spacingL);
+    flex-direction: column;
+    text-decoration: none;
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorNeutralBackground1);
+    border-radius: var(--borderRadiusXLarge);
+    border: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+    transition: border-color var(--durationFaster) var(--curveEasyEase),
+                box-shadow var(--durationFaster) var(--curveEasyEase),
+                background-color var(--durationFaster) var(--curveEasyEase);
+}
+
+.feature-card:hover {
+    text-decoration: none;
+    color: var(--colorNeutralForeground1);
+    border-color: var(--colorBrandStroke2);
+    box-shadow: var(--shadow4);
+}
+
+.feature-card .name {
+    display: flex;
+    gap: var(--spacingS);
+    align-items: center;
+    justify-content: space-between;
+    font-weight: var(--fontWeightSemibold);
+    font-size: var(--fontSizeBase300);
+    line-height: var(--lineHeightBase300);
+}
+
+/* Slides in on hover rather than being there all along: sixty-six arrows at rest
+   is a page of chevrons, one arrow under the cursor is an affordance. */
+.feature-card-go {
+    color: var(--colorBrandForeground1);
+    opacity: 0;
+    transform: translateX(-0.25rem);
+    transition: opacity var(--durationFaster) var(--curveEasyEase),
+                transform var(--durationFaster) var(--curveDecelerateMid);
+}
+
+.feature-card:hover .feature-card-go,
+.feature-card:focus-visible .feature-card-go {
+    opacity: 1;
+    transform: none;
+}
+
+.feature-card .desc {
+    flex: 1;
+    font-size: var(--fontSizeBase200);
+    line-height: 1.55;
+    color: var(--colorNeutralForeground3);
+}
+
+.feature-card-foot {
+    display: flex;
+    gap: var(--spacingXS);
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: var(--spacingXXS);
+}
+
+
+/* ---------------------------------------------------------------------------
+   16. Doc pager
+   ---------------------------------------------------------------------------
+   Sequential navigation at the foot of every documentation page. Two cards on
+   one row, pushed to opposite edges: the direction reads first in the small
+   line, the destination in the line under it, so a reader scanning down the page
+   hits "Next" before the title it belongs to.
+   --------------------------------------------------------------------------- */
+
+.doc-pager {
+    display: flex;
+    gap: var(--spacingL);
+    margin-top: 3rem;
+    padding-top: var(--spacingXXL);
+    justify-content: space-between;
+    border-top: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+}
+
+/* Only present when there is no previous page, purely to keep "Next" on the right. */
+.doc-pager-spacer {
+    flex: 1 1 0;
+}
+
+.doc-pager-link {
+    flex: 1 1 0;
+    display: flex;
+    gap: var(--spacingM);
+    max-width: 22rem;
+    align-items: center;
+    padding: var(--spacingM) var(--spacingL);
+    text-decoration: none;
+    background-color: var(--colorNeutralBackground1);
+    border-radius: var(--borderRadiusXLarge);
+    border: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+    transition: border-color var(--durationFaster) var(--curveEasyEase),
+                box-shadow var(--durationFaster) var(--curveEasyEase);
+}
+
+.doc-pager-link:hover {
+    text-decoration: none;
+    border-color: var(--colorBrandStroke2);
+    box-shadow: var(--shadow4);
+}
+
+.doc-pager-arrow {
+    display: flex;
+    flex: none;
+    color: var(--colorNeutralForeground3);
+}
+
+.doc-pager-text {
+    display: flex;
+    min-width: 0;
+    gap: var(--spacingXXS);
+    flex-direction: column;
+}
+
+.doc-pager-link.next {
+    text-align: right;
+    justify-content: flex-end;
+}
+
+.doc-pager-link.next .doc-pager-text {
+    align-items: flex-end;
+}
+
+.doc-pager-dir {
+    font-size: var(--fontSizeBase200);
+    line-height: var(--lineHeightBase200);
+    color: var(--colorNeutralForeground3);
+}
+
+.doc-pager-title {
+    font-size: var(--fontSizeBase300);
+    font-weight: var(--fontWeightSemibold);
+    line-height: var(--lineHeightBase300);
+    color: var(--colorBrandForegroundLink);
+}
+
+
+/* ---------------------------------------------------------------------------
+   17. Browser-support matrix
+   ---------------------------------------------------------------------------
+   The chips are deliberately flat rather than filled: a table of sixty-six rows
+   with sixty-six coloured pills reads as decoration, so only the state that
+   should stop a reader - a narrow engine, an experimental API, a missing feature
+   - gets any colour at all.
+   --------------------------------------------------------------------------- */
+
+.support-table .th-row,
+.support-table .tdata-row {
+    min-width: 48rem;
+}
+
+.support-table .th-cell:nth-child(1),
+.support-table .td-cell:nth-child(1) {
+    flex: 0 0 15rem;
+}
+
+.support-table .th-cell:nth-child(2),
+.support-table .td-cell:nth-child(2) {
+    flex: 0 0 11rem;
+}
+
+.support-table .th-cell:nth-child(3),
+.support-table .td-cell:nth-child(3) {
+    flex: 1 1 auto;
+    min-width: 0;
+    flex-wrap: wrap;
+    gap: var(--spacingXS);
+}
+
+.support-table .th-cell:nth-child(4),
+.support-table .td-cell:nth-child(4) {
+    flex: 0 0 9rem;
+}
+
+.support-table .td-cell {
+    align-items: center;
+    font-family: var(--fontFamilyBase);
+    font-size: var(--fontSizeBase300);
+}
+
+.support-table .td-cell a {
+    font-weight: var(--fontWeightSemibold);
+    text-decoration: none;
+    color: var(--colorNeutralForeground1);
+}
+
+.support-table .td-cell a:hover {
+    color: var(--colorBrandForegroundLinkHover);
+}
+
+.support-chip,
+.need-chip,
+.live-chip {
+    display: inline-block;
+    font-size: var(--fontSizeBase100);
+    line-height: 1.125rem;
+    white-space: nowrap;
+    padding: 0 var(--spacingSNudge);
+    font-family: var(--fontFamilyMonospace);
+    color: var(--colorNeutralForeground3);
+    border-radius: var(--borderRadiusMedium);
+    border: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+}
+
+.support-chip.broad {
+    color: var(--colorPaletteGreenForeground1);
+    border-color: var(--colorPaletteGreenBorder1);
+    background-color: var(--colorPaletteGreenBackground1);
+}
+
+.support-chip.partial {
+    color: var(--colorNeutralForeground2);
+}
+
+/* Not a support level at all - the five Overview pages are prose. Neutral, so it
+   sits in the same slot on a card without claiming anything about engines. */
+.support-chip.guide {
+    color: var(--colorNeutralForeground3);
+    background-color: var(--colorNeutralBackground3);
+}
+
+.support-chip.narrow {
+    color: var(--colorPaletteDarkOrangeForeground1);
+    border-color: var(--colorPaletteDarkOrangeBorder1);
+    background-color: var(--colorPaletteDarkOrangeBackground1);
+}
+
+.need-chip.none {
+    color: var(--colorNeutralForeground4);
+}
+
+.need-chip.warn {
+    color: var(--colorPaletteDarkOrangeForeground1);
+    border-color: var(--colorPaletteDarkOrangeBorder1);
+}
+
+.live-chip.yes {
+    color: var(--colorPaletteGreenForeground1);
+    border-color: var(--colorPaletteGreenBorder1);
+}
+
+.live-chip.no {
+    color: var(--colorPaletteRedForeground1);
+    border-color: var(--colorPaletteRedBorder1);
+}
+
+/* "Not checked" and "no check to run" are both absences, so neither gets a
+   border competing with the rows that carry a real verdict. The text still has
+   to be readable though - the disabled foreground is reserved for controls that
+   really are inert, which is the one case WCAG's contrast floor exempts, and
+   this is a word a reader is meant to read. */
+.live-chip.unknown,
+.live-chip.na {
+    color: var(--colorNeutralForeground3);
+    border-color: transparent;
+}
+
+.support-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacingXXL);
+    margin-top: var(--spacingL);
+    padding: var(--spacingL);
+    background-color: var(--colorNeutralBackground1);
+    border-radius: var(--borderRadiusLarge);
+    border: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+}
+
+.support-summary-item {
+    display: flex;
+    gap: var(--spacingXXS);
+    flex-direction: column;
+}
+
+.support-summary-label {
+    font-size: var(--fontSizeBase100);
+    line-height: var(--lineHeightBase100);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--colorNeutralForeground3);
+}
+
+.support-summary-value {
+    font-size: var(--fontSizeBase200);
+    font-family: var(--fontFamilyMonospace);
+    color: var(--colorNeutralForeground1);
+}
+
+.support-summary-value.ok {
+    color: var(--colorPaletteGreenForeground1);
+}
+
+.support-summary-value.no {
+    color: var(--colorPaletteRedForeground1);
+}
+
+
+/* ---------------------------------------------------------------------------
+   18. Animation stage
+   ---------------------------------------------------------------------------
+   The animation page needs somewhere for its target to travel through. The stage
+   reserves that width up front so starting an animation never reflows the
+   section around it, and overflow is hidden so a translate that overshoots
+   cannot widen the page.
+   --------------------------------------------------------------------------- */
+
+.anim-stage {
+    display: flex;
+    overflow: hidden;
+    min-height: 5.5rem;
+    align-items: center;
+    padding: var(--spacingL);
+    background-color: var(--colorNeutralBackground1);
+    border-radius: var(--borderRadiusLarge);
+    border: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+}
+
+.anim-target {
+    display: flex;
+    width: 5rem;
+    height: 3.5rem;
+    flex: 0 0 auto;
+    font-size: var(--fontSizeBase200);
+    font-weight: var(--fontWeightSemibold);
+    align-items: center;
+    justify-content: center;
+    color: var(--colorNeutralForegroundOnBrand);
+    background-color: var(--colorBrandBackground);
+    border-radius: var(--borderRadiusMedium);
+}
+
+
+/* ---------------------------------------------------------------------------
+   19. MCP playground
+   ---------------------------------------------------------------------------
+   The MCP page shows both halves of a call, so its unit is a pair of code panes
+   rather than a demo area with a console under it. Side by side while there is
+   room for two columns of JSON, stacked when there is not - a request folded into
+   forty-character lines is worse than one below the other.
+   --------------------------------------------------------------------------- */
+
+.mcp-endpoints {
+    display: flex;
+    gap: var(--spacingM);
+    flex-wrap: wrap;
+    margin-top: var(--spacingM);
+    font-size: var(--fontSizeBase300);
+    align-items: center;
+}
+
+.mcp-endpoints > div {
+    display: flex;
+    gap: var(--spacingSNudge);
+    align-items: center;
+}
+
+.mcp-exchange {
+    display: flex;
+    gap: var(--spacingM);
+    margin-top: var(--spacingL);
+    flex-direction: column;
+}
+
+.mcp-meta {
+    display: flex;
+    gap: var(--spacingS);
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.mcp-endpoint {
+    font-size: var(--fontSizeBase200);
+    color: var(--colorNeutralForeground3);
+    font-family: var(--fontFamilyMonospace);
+    word-break: break-all;
+}
+
+/* The status, the method and the timing read as one strip of facts about the
+   call; the two that can say "this went wrong" are the only coloured ones. */
+.mcp-chip {
+    font-size: var(--fontSizeBase100);
+    line-height: 1.125rem;
+    padding: 0 var(--spacingS);
+    white-space: nowrap;
+    font-family: var(--fontFamilyMonospace);
+    color: var(--colorNeutralForeground2);
+    background-color: var(--colorNeutralBackground3);
+    border-radius: var(--borderRadiusMedium);
+    border: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+}
+
+.mcp-chip.ok {
+    color: var(--colorPaletteGreenForeground1);
+    border-color: var(--colorPaletteGreenBorder1);
+    background-color: var(--colorPaletteGreenBackground1);
+}
+
+.mcp-chip.bad {
+    color: var(--colorPaletteRedForeground1);
+    border-color: var(--colorPaletteRedBorder1);
+    background-color: var(--colorPaletteRedBackground1);
+}
+
+.mcp-panes {
+    display: grid;
+    gap: var(--spacingM);
+    grid-template-columns: 1fr 1fr;
+}
+
+.mcp-pane {
+    display: flex;
+    min-width: 0;
+    gap: var(--spacingXS);
+    flex-direction: column;
+}
+
+/* Bounded, and scrolling inside itself: a response is as long as it is, and the
+   next section should not be a page-scroll away because of one of them. */
+.mcp-pane .code-holder pre {
+    overflow: auto;
+    max-height: 22rem;
+}
+
+.mcp-idle {
+    margin-top: var(--spacingL);
+    font-size: var(--fontSizeBase300);
+    color: var(--colorNeutralForeground3);
+}
+
+.mcp-tool-desc {
+    margin-top: var(--spacingM);
+}
+
+.mcp-tools {
+    margin-top: var(--spacingL);
+}
+
+/* Sized the way the API table is, and for the same reason: a row is max-content
+   wide by default, so a column holding a sentence would push the row into a
+   horizontal scroll instead of wrapping. The name and the button are fixed; the
+   description takes what is left. */
+.mcp-tools .th-row,
+.mcp-tools .tdata-row {
+    min-width: 40rem;
+}
+
+.mcp-tools .th-cell:nth-child(1),
+.mcp-tools .td-cell:nth-child(1) {
+    flex: 0 0 13rem;
+}
+
+/* A cell is a flex row by default, which put the tool's name and its argument list
+   side by side and left the name breaking mid-identifier to make room. They are a
+   name and its qualification, so they stack. */
+.mcp-tools .td-cell:nth-child(1) {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.mcp-tools .th-cell:nth-child(2),
+.mcp-tools .td-cell:nth-child(2) {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: var(--fontSizeBase300);
+    font-family: var(--fontFamilyBase);
+}
+
+.mcp-tools .th-cell:nth-child(3),
+.mcp-tools .td-cell:nth-child(3) {
+    flex: 0 0 6.5rem;
+}
+
+.mcp-tools .td-cell:nth-child(1) code {
+    word-break: break-all;
+}
+
+/* The name column carries the tool's arguments and its annotations under the
+   name itself. Kept to a second line rather than a column of their own: they are
+   qualifications of the name, and the description column is the one that has to
+   keep the width it has. */
+.mcp-tools .mcp-tool-meta {
+    display: flex;
+    flex-wrap: wrap;
+    row-gap: var(--spacingXS);
+    column-gap: var(--spacingSNudge);
+    align-items: center;
+    margin-top: var(--spacingXS);
+}
+
+.mcp-tools .mcp-args {
+    font-size: var(--fontSizeBase100);
+    color: var(--colorNeutralForeground3);
+    font-family: var(--fontFamilyMonospace);
+    overflow-wrap: anywhere;
+}
+
+/* The values a completion came back with. They arrive on every keystroke, so the
+   row wraps and grows rather than scrolling: a list that moves under the cursor
+   is harder to read than a tall one. */
+.mcp-completions {
+    row-gap: var(--spacingSNudge);
+}
+
+
+/* ---------------------------------------------------------------------------
+   20. Blazor error UI
+   --------------------------------------------------------------------------- */
+
+#blazor-error-ui {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1400;
+    padding: var(--spacingM) var(--spacingXL);
+    font-family: var(--fontFamilyBase);
+    font-size: var(--fontSizeBase300);
+    color: var(--colorStatusDangerForegroundInverted);
+    background-color: var(--colorStatusDangerBackground3);
+    box-shadow: var(--shadow28);
+}
+
+#blazor-error-ui .reload {
+    margin-left: var(--spacingM);
+    color: var(--colorStatusDangerForegroundInverted);
+    text-decoration: underline;
+}
+
+#blazor-error-ui .dismiss {
+    float: right;
+    cursor: pointer;
+}
+
+
+/* ---------------------------------------------------------------------------
+   21. Responsive
+   ---------------------------------------------------------------------------
+   Fluent's own breakpoints: xxl 1920, xl 1366, lg 1024, md 640, sm 480.
+   --------------------------------------------------------------------------- */
+
+/* The rail is the first thing to go: it is a convenience, and the column it
+   costs is one the prose can use. */
+@media (max-width: 85.375rem) { /* 1366 */
+    .side-rail {
+        display: none;
+    }
+}
+
+@media (max-width: 64rem) { /* lg: 1024 */
+    /* Two columns of JSON below this width are two columns of wrapped fragments;
+       one after the other keeps each line readable. */
+    .mcp-panes {
+        grid-template-columns: 1fr;
+    }
+
+    .header .container {
+        gap: var(--spacingS);
+        padding: 0 var(--spacingM);
+    }
+
+    .header .menu-btn {
+        display: inline-flex;
+    }
+
+    /* Wide enough that the placeholder and a typed query still have room: the
+       field spends 5.5rem of its width on the padding that keeps text clear of
+       the magnifier and the shortcut hint. */
+    .header-search input {
+        width: 11rem;
+    }
+
+    .header-search input:focus {
+        width: 14rem;
+    }
+
+    .demo-area {
+        padding: var(--spacingL);
+    }
+
+    /* Off canvas: the panel slides over the content and a scrim catches the click
+       that closes it, which is the move the header's menu button makes. Both
+       start below the header rather than over it - the button that opened the
+       drawer stays on screen to close it again, and the reader can still see
+       where they are.
+
+       visibility, not just the transform: a panel parked off the left edge is
+       still in the focus order, so tabbing from the header would walk the whole
+       link list before reaching the page. It is transitioned rather than set
+       outright because visibility interpolates discretely in favour of
+       "visible" - the panel stays painted for the whole slide-out and only
+       disappears once it has left, while opening reveals it immediately. */
+    .nav-panel {
+        left: 0;
+        bottom: 0;
+        height: auto;
+        position: fixed;
+        z-index: 1100;
+        visibility: hidden;
+        top: var(--headerHeight);
+        transform: translateX(-100%);
+        box-shadow: var(--shadow28);
+        transition: transform var(--durationNormal) var(--curveDecelerateMid),
+                    visibility var(--durationNormal) var(--curveDecelerateMid);
+    }
+
+    .nav-panel.open {
+        transform: none;
+        visibility: visible;
+    }
+
+    .nav-scrim {
+        display: block;
+        position: fixed;
+        inset: var(--headerHeight) 0 0 0;
+        z-index: 1050;
+        background-color: var(--colorBackgroundOverlay);
+    }
+
+    .page-container {
+        padding: var(--spacingXXL) var(--spacingXXL) 3rem;
+    }
+
+    /* The pitch and the sample stack, in that order: the claim, then the
+       evidence. */
+    .hero {
+        padding: 3rem var(--spacingXXL);
+    }
+
+    .hero-inner {
+        gap: var(--spacingXXXL);
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .hero-title {
+        font-size: 2.75rem;
+    }
+
+    .hero-install,
+    .hero-pane {
+        max-width: none;
+    }
+
+    .footer-main {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 48rem) { /* 768 */
+    .hero-stats {
+        margin-top: -1.5rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 40rem) { /* md: 640 */
+    .header .brand-name,
+    .header-nav {
+        display: none;
+    }
+
+    .header .brand {
+        margin-inline-end: 0;
+    }
+
+    .header .header-end {
+        flex: 1;
+        gap: var(--spacingXXS);
+        justify-content: flex-end;
+    }
+
+    /* There is nothing to grow into on focus any more, and a phone has no Ctrl
+       key for the hint to advertise. */
+    .header-search {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .header-search input,
+    .header-search input:focus {
+        width: 100%;
+        padding-right: var(--spacingS);
+        transition: border-color var(--durationFaster) var(--curveEasyEase);
+    }
+
+    .search-hint {
+        display: none;
+    }
+
+    /* The row is already full at this width, so the chip keeps its dot - the part
+       that says something is still happening - and drops the word. */
+    .hydrating span {
+        display: none;
+    }
+
+    .page-container {
+        padding: var(--spacingXXL) var(--spacingL) var(--spacingXXXL);
+    }
+
+    .page-section {
+        padding: var(--spacingXL);
+    }
+
+    .home-container {
+        padding: 0 var(--spacingL) var(--spacingXXXL);
+    }
+
+    .hero {
+        padding: var(--spacingXXXL) var(--spacingL);
+    }
+
+    .footer section {
+        padding-left: var(--spacingL);
+        padding-right: var(--spacingL);
+    }
+
+    /* Fluent drops the ramp a step on small screens; these are its values. */
+    h1 {
+        font-size: var(--fontSizeBase600);
+        line-height: var(--lineHeightBase600);
+    }
+
+    h2 {
+        font-size: var(--fontSizeBase400);
+        line-height: var(--lineHeightBase400);
+    }
+
+    .hero-title {
+        font-size: 2.125rem;
+        line-height: 1.15;
+    }
+
+    .hero-subtitle {
+        font-size: var(--fontSizeBase400);
+    }
+
+    .home-catalogue-head h2 {
+        font-size: var(--fontSizeBase600);
+        line-height: var(--lineHeightBase600);
+    }
+
+    .section-heading h2 {
+        font-size: var(--fontSizeBase400);
+        line-height: var(--lineHeightBase400);
+    }
+
+    /* Below md the frame is narrower than any one of the grid's three columns, so
+       a row that scrolled sideways would keep two thirds of every member behind a
+       gesture. The row becomes a block instead - name, then signature, then the
+       sentence - which is the same reading order taken down the page rather than
+       across it. The header row has nothing left to label once the cells are
+       stacked, and the frame stops scrolling in its own right: the rows are as
+       wide as the card now, so the page scroll is the only one left. */
+    .api-table .th-row {
+        display: none;
+    }
+
+    .table-view {
+        max-height: none;
+    }
+
+    .api-table .tdata-row {
+        min-width: 0;
+        padding: var(--spacingS) 0;
+        flex-flow: column nowrap;
+    }
+
+    .api-table .td-cell:nth-child(1),
+    .api-table .td-cell:nth-child(2),
+    .api-table .td-cell:nth-child(3) {
+        flex: none;
+        width: 100%;
+        padding: var(--spacingXXS) var(--spacingM);
+    }
+
+    /* The support matrix stacks for the same reason, with one difference: its
+       cells are chips rather than sentences, so the four of them wrap onto one
+       line under the API name instead of taking a line each. */
+    .support-table .th-row {
+        display: none;
+    }
+
+    .support-table .tdata-row {
+        min-width: 0;
+        padding: var(--spacingS) 0;
+        flex-flow: row wrap;
+        align-items: center;
+    }
+
+    .support-table .td-cell:nth-child(1) {
+        flex: none;
+        width: 100%;
+    }
+
+    .support-table .td-cell:nth-child(2),
+    .support-table .td-cell:nth-child(3),
+    .support-table .td-cell:nth-child(4) {
+        flex: none;
+        width: auto;
+        padding: var(--spacingXXS) var(--spacingSNudge);
+    }
+
+    /* The name column has to give when the viewport cannot hold three columns. */
+    .mcp-tools .th-row,
+    .mcp-tools .tdata-row {
+        min-width: 0;
+    }
+
+    .mcp-tools .th-cell:nth-child(1),
+    .mcp-tools .td-cell:nth-child(1) {
+        flex: 0 0 9rem;
+    }
+
+    /* Two pager cards side by side leave room for neither title, so they become
+       one column - and the spacer that only existed to hold the right-hand card
+       in place is dead weight. */
+    .doc-pager {
+        flex-direction: column;
+    }
+
+    .doc-pager-link {
+        max-width: none;
+    }
+
+    .doc-pager-spacer {
+        display: none;
+    }
+}
+
+@media (max-width: 30rem) { /* sm: 480 */
+    .hero-stats {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .card-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .footer-bar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+
+/* ---------------------------------------------------------------------------
+   22. Print
+   ---------------------------------------------------------------------------
+   A documentation page is a thing people print and paste into a review. What
+   they want on paper is the prose, the samples and the API tables - not the
+   navigation they cannot click, and not a code block clipped at 32rem with the
+   rest of the sample behind a scrollbar that does not exist on paper.
+   --------------------------------------------------------------------------- */
+
+@media print {
+    .header,
+    .nav-panel,
+    .nav-scrim,
+    .side-rail,
+    .doc-pager,
+    .footer,
+    .copy-btn,
+    #blazor-error-ui {
+        display: none !important;
+    }
+
+    .app-root,
+    .site-content,
+    .page-section,
+    .demo-area,
+    .code-holder,
+    pre {
+        background: #FFFFFF !important;
+        color: #000000 !important;
+        box-shadow: none !important;
+    }
+
+    /* The token colours are set on the spans themselves, so blacking out the pre would leave
+       them behind. A printed sample goes monochrome: paper has no dark theme, cheap printers
+       dither mid-tones into mush, and the code's structure never depended on hue anyway. */
+    pre [class^="tok-"] {
+        color: #000000 !important;
+    }
+
+    .page-container {
+        padding: 0;
+    }
+
+    pre,
+    .table-view,
+    .demo-console-body {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    .page-section {
+        break-inside: avoid;
+        border-color: #CCCCCC !important;
+    }
+
+    a {
+        color: #000000 !important;
+        text-decoration: underline;
+    }
+}

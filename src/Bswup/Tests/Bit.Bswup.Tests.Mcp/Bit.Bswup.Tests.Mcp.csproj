@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <!-- EnableMSTestRunner builds the test host into the assembly itself, and it only generates
+             that entry point for an executable project - as a library the runner never runs. -->
+        <OutputType>Exe</OutputType>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MSTest" Version="4.3.3" />
+        <!-- Hosts the real Server project in-process, so the protocol tests drive the same
+             pipeline (routing, rate limiter, MCP transport) a deployment runs. -->
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.11" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.Bswup.Demo\Server\Bit.Bswup.Demo.Server.csproj" />
+    </ItemGroup>
+
+</Project>

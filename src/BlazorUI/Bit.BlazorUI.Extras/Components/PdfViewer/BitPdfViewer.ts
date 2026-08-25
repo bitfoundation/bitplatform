@@ -777,8 +777,8 @@
             const style = document.createElement("style");
             style.id = "bit-pdv-search-style";
             style.textContent =
-                "::highlight(bit-pdv-search){background:var(--bit-clr-wrn,#ffe066);color:var(--bit-clr-wrn-text,#000)}" +
-                "::highlight(bit-pdv-search-current){background:var(--bit-clr-swr,#ff8f00);color:var(--bit-clr-swr-text,#000)}";
+                "::highlight(bit-pdv-search){background:var(--bit-clr-wrn,#EDAE12);color:var(--bit-clr-wrn-text,#141414)}" +
+                "::highlight(bit-pdv-search-current){background:var(--bit-clr-swr,#CE4207);color:var(--bit-clr-swr-text,#FFFFFF)}";
             document.head.appendChild(style);
         }
 

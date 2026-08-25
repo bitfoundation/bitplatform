@@ -1,7 +1,4 @@
 //+:cnd:noEmit
-using System.Reflection;
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Shared.Features.Identity.Dtos;
 //#if (multitenant == true)
 using Boilerplate.Shared.Features.Tenants;
 using Boilerplate.Shared.Features.Tenants.Dtos;
@@ -63,7 +60,10 @@ public partial class MainLayout : IAsyncDisposable
             // dependencies, its value remains null. 
             // Even though Server.Web and Server.Api may be deployed on different servers, 
             // we can still assume that if the client is displaying a pre-rendered result, it is online.
-            IsOnline ??= IsOnline ?? inPrerenderSession is true ? true : null;
+            if (inPrerenderSession)
+            {
+                IsOnline ??= true;
+            }
 
             authManager.AuthenticationStateChanged += AuthManager_AuthenticationStateChanged;
 
@@ -157,6 +157,7 @@ public partial class MainLayout : IAsyncDisposable
         }
     }
 
+    private ClaimsPrincipal? lastAuthUser;
     private async Task SetCurrentUser(Task<AuthenticationState> task)
     {
         var authUser = (await task).User;
@@ -176,7 +177,7 @@ public partial class MainLayout : IAsyncDisposable
         }
         else
         {
-            if (authUser.GetUserId() != currentUser?.Id)
+            if (currentUser is null || authUser.IsTheSame(lastAuthUser) is false)
             {
                 currentUser = await userController.GetCurrentUser(getCurrentUserCts.Token);
             }
@@ -185,6 +186,8 @@ public partial class MainLayout : IAsyncDisposable
             await SetCurrentTenantIfNeeded(authUser.GetTenantId(), getCurrentUserCts.Token);
             //#endif
         }
+
+        lastAuthUser = authUser;
     }
 
     //#if (multitenant == true)

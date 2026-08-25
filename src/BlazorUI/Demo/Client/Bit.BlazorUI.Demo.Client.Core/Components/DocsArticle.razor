@@ -1,0 +1,87 @@
+﻿@inherits AppComponentBase
+
+@* The shell every documentation page that is not a component demo is built from: the same two
+   columns, the same opening, the same "on this page" rail and the same closing block as a component
+   page, so moving between the guides and the API reference never feels like changing sites.
+   DemoPage builds the identical shell for the ~110 component pages. *@
+<div class="doc-shell">
+    <article class="doc-main">
+
+        <header class="doc-head">
+            @if (Eyebrow.HasValue())
+            {
+                <p class="doc-eyebrow">@Eyebrow</p>
+            }
+
+            <BitStack Horizontal Wrap AutoHeight Gap="1rem" VerticalAlign="BitAlignment.Baseline">
+                <BitText Element="h1" Class="doc-title" Typography="BitTypography.H1" Color="BitColor.PrimaryForeground">@Title</BitText>
+                @Badges
+            </BitStack>
+
+            @if (Lead.HasValue() || LeadTemplate is not null)
+            {
+                <div class="doc-lead">
+                    @if (LeadTemplate is not null)
+                    {
+                        @LeadTemplate
+                    }
+                    else
+                    {
+                        <BitText Element="p" Typography="BitTypography.Subtitle1" Color="BitColor.SecondaryForeground">@Lead</BitText>
+                    }
+                </div>
+            }
+
+            @if (Actions is not null)
+            {
+                <div class="doc-head-actions">
+                    <BitStack Horizontal Wrap AutoHeight Gap="0.75rem" VerticalAlign="BitAlignment.Center">
+                        @Actions
+                    </BitStack>
+                </div>
+            }
+        </header>
+
+        @ChildContent
+
+        @if (GitHubUrl.HasValue())
+        {
+            <DocFeedback DocsPagePath="@GitHubUrl" />
+        }
+
+    </article>
+
+    @if (HideSideRail is false)
+    {
+        <SideRail />
+    }
+</div>
+
+@code {
+    /// <summary>The small label above the title - the section of the site this page belongs to.</summary>
+    [Parameter] public string? Eyebrow { get; set; }
+
+    [Parameter, EditorRequired] public string Title { get; set; } = default!;
+
+    /// <summary>The lead paragraph: what this page is, in one or two sentences.</summary>
+    [Parameter] public string? Lead { get; set; }
+
+    [Parameter] public RenderFragment? LeadTemplate { get; set; }
+
+    /// <summary>Tags rendered beside the title - a package name, a status.</summary>
+    [Parameter] public RenderFragment? Badges { get; set; }
+
+    /// <summary>Buttons under the lead - the page's calls to action.</summary>
+    [Parameter] public RenderFragment? Actions { get; set; }
+
+    /// <summary>
+    /// The page's path under Pages/, which turns into the "review / edit this page" links of the
+    /// closing block. Omitted means no closing block.
+    /// </summary>
+    [Parameter] public string? GitHubUrl { get; set; }
+
+    /// <summary>For a page whose content is one continuous thing with nothing to index.</summary>
+    [Parameter] public bool HideSideRail { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

@@ -1,6 +1,11 @@
-@* The `MainLayout` does not support Blazor Static SSR.  
-   Therefore, `App.razor` passes this layout to `Routes.razor`, where it is used as the layout in `<LayoutView />`,  
-   as long as `@rendermode` is null for pages marked with `@attribute [ExcludeFromInteractiveRouting]`. *@
+@* The `MainLayout` does not support Blazor Static SSR.
+   Therefore, `App.razor` passes this layout to `Routes.razor`, where `<LayoutView />` uses it whenever
+   `@rendermode` is null. That happens in two cases:
+   - `WebAppRender:BlazorMode` is `BlazorSsr`, which applies to the WHOLE app - every page renders with this
+     layout, so the app has no header, nav or menu at all. That is what "no interactivity" costs.
+   - a page is marked `@attribute [ExcludeFromInteractiveRouting]`, which is the supported way to add a
+     static SSR page to an otherwise interactive app. No page in this template uses it yet; this layout is
+     what makes it work when one does. *@
 
 @inherits LayoutComponentBase
 

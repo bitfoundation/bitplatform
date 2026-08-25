@@ -12,7 +12,7 @@
                 </BitText>
             </BitStack>
 
-            @if (isLoading)
+            @if (isLoading && hasLoadedOnce is false)
             {
                 <BitGridLoading Style="padding:2rem" />
             }

@@ -32,8 +32,10 @@
     box-sizing: border-box;
     z-index: $zindex-callout;
     animation-fill-mode: both;
-    animation-duration: 0.367s;
+    animation-duration: $mot-duration-long;
     background-color: $clr-bg-pri;
+    border-radius: $shp-radius-popup;
+    box-shadow: $box-shadow-popup;
     animation-name: bit-fade-show, bit-slide-down;
-    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+    animation-timing-function: $mot-easing-decelerate;
 }

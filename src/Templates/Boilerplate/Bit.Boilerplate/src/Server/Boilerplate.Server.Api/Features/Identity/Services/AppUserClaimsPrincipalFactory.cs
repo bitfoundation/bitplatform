@@ -1,6 +1,4 @@
 using System.IdentityModel.Tokens.Jwt;
-using Boilerplate.Server.Api.Infrastructure.Services;
-using Boilerplate.Server.Api.Features.Identity.Models;
 
 namespace Boilerplate.Server.Api.Features.Identity.Services;
 
@@ -50,36 +48,56 @@ public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsS
     }
 
     /// <summary>
-    /// Retrieves additional claims from Keycloak and adds them to the user's claims, if the user has been externally authenticated via Keycloak.
-    /// It also prevents disabled/deleted keycloak users from accessing the application by throwing an UnauthorizedException.
+    /// The following claims are managed by the server and should not be overridden by Keycloak claims.
+    /// <para>
+    /// <see cref="AppClaimTypes.FEATURES"/> deliberately does NOT belong here: granting features from the identity
+    /// provider is the point of the Keycloak integration. Only claims the server has already computed for this very
+    /// session belong here - the filter below drops the incoming claim by TYPE, so anything listed can never be
+    /// federated.
+    /// </para>
+    /// </summary>
+    private static readonly string[] serverManagedClaimTypes =
+    [
+        AppClaimTypes.SESSION_ID,
+        AppClaimTypes.PRIVILEGED_SESSION,
+        AppClaimTypes.ELEVATED_SESSION,
+        AppClaimTypes.MAX_PRIVILEGED_SESSIONS,
+        //#if (multitenant == true)
+        AppClaimTypes.TENANT_ID,
+        //#endif
+        ClaimTypes.NameIdentifier,
+        "iss", "aud", "exp", "nbf", "iat", "jti"
+    ];
+
+    /// <summary>
+    /// Retrieves additional claims from Keycloak and adds them to the user's claims, if the user is backed by Keycloak.
+    /// It also prevents disabled/deleted keycloak users from accessing the application by throwing an UnauthorizedException,
+    /// but only once the cached keycloak access token has expired (See <see cref="GetKeycloakAccessToken"/>).
     /// </summary>
     private async Task RetrieveKeycloakClaims(User user, ClaimsIdentity aspnetCoreIdentityClaims)
     {
-        if (aspnetCoreIdentityClaims.HasClaim(AppClaimTypes.METHOD, "External") is false)
-            return; // User was not authenticated via Keycloak
-
         var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"] ?? configuration["Authentication:Keycloak:KeycloakUrl"];
-        if (string.IsNullOrEmpty(keycloakBaseUrl) is false)
-        {
-            var keycloakRefreshToken = await UserManager.GetAuthenticationTokenAsync(user, "Keycloak", "refresh_token");
-            if (string.IsNullOrEmpty(keycloakRefreshToken) is false)
-            {
-                var realm = configuration["Authentication:Keycloak:Realm"] ?? throw new InvalidOperationException("Authentication:Keycloak:Realm configuration is required");
-                string? keycloakAccessToken = await GetKeycloakAccessToken(user, keycloakRefreshToken, realm);
-                var handler = new JwtSecurityTokenHandler();
-                var parsedKeycloakAccessToken = handler.ReadJwtToken(keycloakAccessToken);
-                var keycloakClaims = parsedKeycloakAccessToken.Claims
-                    .Select(claim => new Claim(
-                        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.TryGetValue(claim.Type, out var mapped)
-                            ? mapped
-                            : claim.Type,
-                        claim.Value))
-                    .ToList();
+        if (string.IsNullOrEmpty(keycloakBaseUrl))
+            return; // Keycloak is not configured for this deployment.
 
-                foreach (var claim in keycloakClaims.Where(c => aspnetCoreIdentityClaims.HasClaim(c.Type, c.Value) is false))
-                    aspnetCoreIdentityClaims.AddClaim(claim);
-            }
-        }
+        var keycloakRefreshToken = await UserManager.GetAuthenticationTokenAsync(user, "Keycloak", "refresh_token");
+        if (string.IsNullOrEmpty(keycloakRefreshToken)) return;
+
+        var realm = configuration["Authentication:Keycloak:Realm"] ?? throw new InvalidOperationException("Authentication:Keycloak:Realm configuration is required");
+        string? keycloakAccessToken = await GetKeycloakAccessToken(user, keycloakRefreshToken, realm);
+        var handler = new JwtSecurityTokenHandler();
+        var parsedKeycloakAccessToken = handler.ReadJwtToken(keycloakAccessToken);
+        var keycloakClaims = parsedKeycloakAccessToken.Claims
+            .Select(claim => new Claim(
+                JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.TryGetValue(claim.Type, out var mapped)
+                    ? mapped
+                    : claim.Type,
+                claim.Value))
+            .Where(claim => serverManagedClaimTypes.Contains(claim.Type) is false)
+            .ToList();
+
+        foreach (var claim in keycloakClaims.Where(c => aspnetCoreIdentityClaims.HasClaim(c.Type, c.Value) is false))
+            aspnetCoreIdentityClaims.AddClaim(claim);
     }
 
     private async Task<string> GetKeycloakAccessToken(User user, string? keycloakRefreshToken, string realm)

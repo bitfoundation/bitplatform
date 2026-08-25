@@ -1,6 +1,4 @@
 using FluentEmail.Core;
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Server.Api.Infrastructure.Services;
 
 namespace System.Text.Json;
 
@@ -15,8 +13,12 @@ public static class JsonSerializerOptionsExtensions
 
             options.AllowTrailingCommas = true;
             options.PropertyNameCaseInsensitive = true;
-            options.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
             options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+
+            foreach (var converter in AppJsonContext.Default.Options.Converters)
+            {
+                options.Converters.Add(converter);
+            }
 
             options.TypeInfoResolverChain.AddRange([AppJsonContext.Default,
                 IdentityJsonContext.Default,

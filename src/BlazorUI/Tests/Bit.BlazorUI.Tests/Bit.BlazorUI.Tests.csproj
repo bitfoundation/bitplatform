@@ -4,6 +4,9 @@
     
     <PropertyGroup>
         <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <!-- Matches the referenced Bit.BlazorUI projects: Debug builds/runs the tests on the latest TFM
+             only, CI passes -p:BuildAllTfms=true to cover net9.0 and net8.0 as well. -->
+        <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' And '$(BuildAllTfms)' != 'true' ">net10.0</TargetFrameworks>
         <IsPackable>false</IsPackable>
         <LangVersion>14.0</LangVersion>
         <Nullable>enable</Nullable>
@@ -13,6 +16,16 @@
 
     <ItemGroup>
       <Compile Include="..\..\Bit.BlazorUI\Components\Inputs\ColorPicker\BitInternalColor.cs" Link="Components\Inputs\ColorPicker\BitInternalColor.cs" />
+      <!-- The color model reads CSS color keywords through this table, so the linked copy above needs
+           its own copy of it rather than the library's internal one. -->
+      <Compile Include="..\..\Bit.BlazorUI\Components\Inputs\ColorPicker\BitCssNamedColors.cs" Link="Components\Inputs\ColorPicker\BitCssNamedColors.cs" />
+      <!-- Compile-linked so the derivation tests can verify OKLCH lightness/hue invariants with
+           the exact same conversion the library derives with (same pattern as BitInternalColor). -->
+      <Compile Include="..\..\Bit.BlazorUI\Utils\Theme\BitThemeOklch.cs" Link="Utils\Theme\BitThemeOklch.cs" />
+      <!-- Same pattern: the seed factory treats this transcription of the packaged stylesheets as the
+           source of truth for "the Fluent palette", so BitThemeFluentPaletteContractTests has to be
+           able to compare it against those stylesheets without opening the type up to the world. -->
+      <Compile Include="..\..\Bit.BlazorUI\Utils\Theme\BitThemeFluentPalettes.cs" Link="Utils\Theme\BitThemeFluentPalettes.cs" />
       <Compile Include="..\..\Bit.BlazorUI\Extensions\EnumExtensions.cs" Link="Extensions\EnumExtensions.cs" />
       <Compile Include="..\..\Bit.BlazorUI\Extensions\StringExtensions.cs" Link="Extensions\StringExtensions.cs" />
       <!-- Compile-linked so BitPdfOpCodeTests can pin the internal enum's contiguous
@@ -21,11 +34,22 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="bunit" Version="2.7.2" />
-        <PackageReference Include="MSTest" Version="4.3.0" />
+        <PackageReference Include="bunit" Version="2.9.0" />
+        <PackageReference Include="MSTest" Version="4.3.3" />
         <!-- Used by FastInvokeSyncContractTests to parse C# sources (Roslyn) when resolving the
              const-string identifiers passed to FastInvoke call sites. -->
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
+    </ItemGroup>
+
+    <!-- IsRuntimeInvalid probes framework-internal members of these assemblies reflectively and
+         silently falls back to "valid" when they are missing. The references below exist solely so
+         IJSRuntimeExtensionsProbeContractTests can pin those internals per target framework and fail
+         loudly on a .NET upgrade that reshapes them. -->
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.WebView" Version="8.0.29" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.WebView" Version="9.0.18" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.WebView" Version="10.0.11" />
     </ItemGroup>
 
     <ItemGroup>
@@ -36,6 +60,35 @@
 
     <ItemGroup>
         <None Include="..\..\Bit.BlazorUI\Styles\theme-variables.scss" Link="theme-variables.scss">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <!-- Full library Styles tree for the reverse token-contract test: every mapper-emitted
+             bit token (CSS custom property) must be declared or consumed somewhere in these stylesheets. -->
+        <None Include="..\..\Bit.BlazorUI\Styles\**\*.scss" Link="theme-styles\%(RecursiveDir)%(Filename)%(Extension)">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <!-- The Fluent 2, Material and Cupertino design-system presets ship with Bit.BlazorUI.Extras
+             (see BitExtraThemePresets), but they are stylesheets of the same theming system: the palette,
+             contrast and token-contract tests read every packaged preset out of one theme-styles tree,
+             so they are linked in beside the core ones. -->
+        <None Include="..\..\Bit.BlazorUI.Extras\Styles\Fluent2\*.scss" Link="theme-styles\Fluent2\%(Filename)%(Extension)">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\Bit.BlazorUI.Extras\Styles\Material\*.scss" Link="theme-styles\Material\%(Filename)%(Extension)">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\Bit.BlazorUI.Extras\Styles\Cupertino\*.scss" Link="theme-styles\Cupertino\%(Filename)%(Extension)">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <!-- The accent runtime client hardcodes the attribute, store and flag values that
+             BitAccentColorNames / BitAccentColorPersistence declare on the C# side; the two are wired
+             together by nothing but those literals, so BitAccentColorNamesContractTests reads the
+             TypeScript source itself to fail on a drift. BitTheme.ts rides along because the accent
+             cookie's max-age is documented to match the theme cookie's. -->
+        <None Include="..\..\Bit.BlazorUI.Extras\Components\AccentColorSwitcher\BitAccentColor.ts" Link="ts-sources\BitAccentColor.ts">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\Bit.BlazorUI\Utils\Theme\BitTheme.ts" Link="ts-sources\BitTheme.ts">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>

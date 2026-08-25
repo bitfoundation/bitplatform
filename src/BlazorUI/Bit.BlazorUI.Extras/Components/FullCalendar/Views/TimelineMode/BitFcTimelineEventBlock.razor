@@ -34,14 +34,14 @@
     }
 
     var blockStyle = $"{colorStyleVar}{widthOverride}transform:translateX({translateXPx.ToString("F2", inv)}px);";
-    var canResize = PixelsPerMinute > 0;
+    var canResize = PixelsPerMinute > 0 && !State.ReadOnly;
 }
 
 <div class="bit-bfc-timeline-event @colorClass @(passThrough ? "bit-bfc-timeline-event-pass-through" : "") @resizeClasses"
      style="@blockStyle"
      role="button"
      tabindex="0"
-     draggable="true"
+     draggable="@(State.ReadOnly ? "false" : "true")"
      title="@BitFullCalendarHelpers.BuildEventTooltip(Event, State.Use24HourFormat, State.Culture)"
      @ondragstart="OnDragStart"
      @ondragend="OnDragEnd"

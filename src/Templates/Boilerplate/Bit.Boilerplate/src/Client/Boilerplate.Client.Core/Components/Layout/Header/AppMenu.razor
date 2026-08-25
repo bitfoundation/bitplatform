@@ -4,6 +4,7 @@
 <section>
     <BitDropMenu Transparent @bind-IsOpen="isOpen" Responsive
                  OnDismiss="OnDropMenuDismiss"
+                 AriaLabel="@AccountMenuLabel"
                  Classes="@(new() { Callout = "app-menu-callout" })">
         <Template>
             <BitIcon IconName="@BitIconName.ChevronDown" Size="BitSize.Small" Color="BitColor.Info" Class="menu-chevron" />
@@ -39,7 +40,7 @@
                             <Authorized>
                                 <BitPersona Class="persona"
                                             ImageUrl="@ProfileImageUrl"
-                                            OnImageClick="GoToProfile"
+                                            OnImageClick="WrapHandled(GoToProfile)"
                                             Size="BitPersonaSize.Size48"
                                             PrimaryText="@CurrentUser?.DisplayName"
                                             SecondaryText="@(CurrentUser?.Email ?? CurrentUser?.PhoneNumber)"
@@ -51,7 +52,7 @@
 
                                 <BitSeparator />
 
-                                <BitActionButton IconName="@BitIconName.Contact" Href="@($"{PageUrls.Settings}/{PageUrls.SettingsSections.Profile}")" FullWidth OnClick="() => isOpen = false">
+                                <BitActionButton IconName="@BitIconName.Contact" Href="@($"{PageUrls.Settings}/{PageUrls.SettingsSections.Profile}")" FullWidth OnClick="CloseMenu">
                                     @Localizer[nameof(AppStrings.ProfileTitle)]
                                 </BitActionButton>
                             </Authorized>
@@ -103,18 +104,23 @@
 
                         <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
                             <BitActionButton Style="flex-grow:1"
-                                             OnClick="ToggleTheme"
+                                             OnClick="WrapHandled(ToggleTheme)"
                                              IconName="@(CurrentTheme == AppThemeType.Light ? BitIconName.Sunny : BitIconName.ClearNight)">
                                 @(CurrentTheme == AppThemeType.Light ? Localizer[nameof(AppStrings.Light)] : Localizer[nameof(AppStrings.Dark)])
                             </BitActionButton>
-                            <BitToggle OnChange="ToggleTheme" Value="CurrentTheme == AppThemeType.Light" ValueChanged="v => { }" />
+                            @* One-way bound on purpose: the theme lives in ThemeService, so the switch only reports the click. *@
+                            <BitToggle AriaLabel="@ThemeToggleLabel"
+                                       OnChange="WrapHandled(ToggleTheme)"
+                                       Value="CurrentTheme == AppThemeType.Light" />
                         </BitStack>
+                        
+                        <BitAccentColorSwitcher Class="accent-color-switcher" />
 
                         <AuthorizeView>
                             <BitActionButton FullWidth
                                              Color="BitColor.Error"
                                              IconName="@BitIconName.SignOut"
-                                             OnClick="() => { isSignOutConfirmOpen = true; isOpen = false; }">
+                                             OnClick="() => { isSignOutConfirmOpen = true; CloseMenu(); }">
                                 @Localizer[nameof(AppStrings.SignOut)]
                             </BitActionButton>
                         </AuthorizeView>
@@ -134,7 +140,7 @@
 
                         <BitChoiceGroup Items="cultures" NoCircle Style="width:100%"
                                         DefaultValue="@CultureInfo.CurrentUICulture.Name"
-                                        OnChange="async (string? c) => await OnCultureChanged(c)"
+                                        OnChange="WrapHandled((string? c) => OnCultureChanged(c))"
                                         Styles="@(new() { ItemLabel = "flex-grow:1" })">
                             <ItemTemplate Context="item">
                                 <BitStack Horizontal VerticalAlign="BitAlignment.Center" Style="cursor:pointer">
@@ -165,14 +171,22 @@
 
                             <BitChoiceGroup Items="tenants" NoCircle Style="width:100%"
                                             DefaultValue="@currentTenantId"
-                                            OnChange="async (string? t) => await OnTenantChanged(t)"
+                                            OnChange="WrapHandled((string? t) => OnTenantChanged(t))"
                                             Styles="@(new() { ItemLabel = "flex-grow:1" })">
                                 <ItemTemplate Context="item">
                                     <BitStack Horizontal VerticalAlign="BitAlignment.Center" Style="cursor:pointer">
-                                        <BitIcon IconName="@BitIconName.Org" Size="BitSize.Small" Color="BitColor.Info" />
+                                        <BitIcon Size="BitSize.Small"
+                                                 IconName="@(IsPendingInvitation(item.Value) ? BitIconName.Mail : BitIconName.Org)"
+                                                 Color="@(IsPendingInvitation(item.Value) ? BitColor.Warning : BitColor.Info)" />
                                         <BitText Typography="BitTypography.Body1" Style="@(item.IsSelected ? "font-weight:bold" : "")">
                                             @item.Text
                                         </BitText>
+                                        @if (IsPendingInvitation(item.Value))
+                                        {
+                                            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">
+                                                @Localizer[nameof(AppStrings.PendingInvitation)]
+                                            </BitText>
+                                        }
                                     </BitStack>
                                 </ItemTemplate>
                             </BitChoiceGroup>
@@ -180,7 +194,7 @@
                             <BitSeparator />
                         }
 
-                        <BitActionButton IconName="@BitIconName.Settings" FullWidth Href="@PageUrls.ManageMyTenants" OnClick="() => isOpen = false">
+                        <BitActionButton IconName="@BitIconName.Settings" FullWidth Href="@PageUrls.ManageMyTenants" OnClick="CloseMenu">
                             @Localizer[nameof(AppStrings.ManageMyTenants)]
                         </BitActionButton>
                     </BitStack>

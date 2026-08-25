@@ -11,6 +11,7 @@ namespace Bit.Butil;
 /// Wraps the <see href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition">SpeechRecognition</see>
 /// API (Web Speech, prefixed as <c>webkitSpeechRecognition</c> on Chromium).
 /// </summary>
+[ButilService(typeof(SpeechRecognition))]
 public class SpeechRecognition(IJSRuntime js) : IAsyncDisposable
 {
     internal const string ResultMethodName = nameof(InvokeSpeechRecognitionResult);

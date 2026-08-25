@@ -6,12 +6,22 @@
     <File Path="../global.json" />
     <File Path="README.md" />
   </Folder>
-  <Folder Name="/Demo/">
-    <Project Path="Demo/Bit.Butil.Demo.Core/Bit.Butil.Demo.Core.csproj" />
-    <Project Path="Demo/Bit.Butil.Demo.Maui/Bit.Butil.Demo.Maui.csproj">
+  <Folder Name="/Samples/">
+    <Project Path="Samples/Bit.Butil.Samples.Core/Bit.Butil.Samples.Core.csproj" />
+    <Project Path="Samples/Bit.Butil.Samples.Maui/Bit.Butil.Samples.Maui.csproj">
       <Deploy />
     </Project>
-    <Project Path="Demo/Bit.Butil.Demo.Web/Bit.Butil.Demo.Web.csproj" />
+    <Project Path="Samples/Bit.Butil.Samples.Web/Bit.Butil.Samples.Web.csproj" />
+  </Folder>
+  <Folder Name="/Bit.Butil.Demo/">
+    <Project Path="Bit.Butil.Demo/Client/Bit.Butil.Demo.Client.csproj" />
+    <Project Path="Bit.Butil.Demo/Server/Bit.Butil.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj" />
+    <Project Path="tests/Bit.Butil.Tests.Manual/Bit.Butil.Tests.Manual.csproj" />
+    <Project Path="tests/Bit.Butil.Tests.Mcp/Bit.Butil.Tests.Mcp.csproj" />
   </Folder>
   <Project Path="Bit.Butil/Bit.Butil.csproj" />
+  <Project Path="Bit.Butil.Build/Bit.Butil.Build.csproj" />
 </Solution>

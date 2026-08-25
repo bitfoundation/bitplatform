@@ -23,6 +23,22 @@ public partial class _BitBreadcrumbItemDemo
         new() { Text = "Item 4", Href = "/components/breadcrumb", IsSelected = true }
     ];
 
+    private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithTarget =
+    [
+        new() { Text = "Item 1", Href = "/components/breadcrumb" },
+        new() { Text = "Item 2", Href = "/components/breadcrumb" },
+        new() { Text = "bit BlazorUI", Href = "https://blazorui.bitplatform.dev", Target = "_blank", Title = "Opens the bit BlazorUI website in a new tab" },
+        new() { Text = "Item 4", Href = "/components/breadcrumb", IsSelected = true }
+    ];
+
+    private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithLongText =
+    [
+        new() { Text = "Very long folder name 1", Href = "/components/breadcrumb", Title = "Very long folder name 1" },
+        new() { Text = "Very long folder name 2", Href = "/components/breadcrumb", Title = "Very long folder name 2" },
+        new() { Text = "Very long folder name 3", Href = "/components/breadcrumb", Title = "Very long folder name 3" },
+        new() { Text = "Very long folder name 4", Href = "/components/breadcrumb", Title = "Very long folder name 4", IsSelected = true }
+    ];
+
     private readonly List<BitBreadcrumbItem> BreadcrumbItemsWitIcon =
     [
         new() { Text = "Item 1", Href = "/components/breadcrumb", IconName = BitIconName.AdminELogoInverse32 },

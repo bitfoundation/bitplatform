@@ -1,7 +1,11 @@
 //+:cnd:noEmit
+// [mirror] blazor hybrid DI registrations, logging and OpenTelemetry setup - keep in sync with:
+// - src/Client/Boilerplate.Client.Maui/MauiProgram.Services.cs
+
 using OpenTelemetry;
 using OpenTelemetry.Resources;
 using System.Diagnostics.Metrics;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 //#if (appInsights == true)
 using Azure.Monitor.OpenTelemetry.Exporter;
@@ -25,6 +29,7 @@ public static partial class Program
             services.AddScoped<SharedExceptionHandler>(sp => sp.GetRequiredService<ClientExceptionHandlerBase>());
 
             services.AddScoped<IAppUpdateService, WindowsAppUpdateService>();
+            services.AddScoped<IPermissionService, WindowsPermissionService>();
             services.AddScoped<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
 
             services.AddScoped<HttpClient>(sp =>
@@ -45,10 +50,7 @@ public static partial class Program
 
             ClientWindowsSettings settings = new();
             configuration.Bind(settings);
-            services.AddSingleton(sp =>
-            {
-                return settings;
-            });
+            services.AddSingleton(sp => sp.GetRequiredService<IOptions<ClientWindowsSettings>>().Value);
             services.AddSingleton(ITelemetryContext.Current!);
             //#if (notification == true)
             services.AddSingleton<IPushNotificationService, WindowsPushNotificationService>();

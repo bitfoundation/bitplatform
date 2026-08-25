@@ -1,0 +1,7 @@
+@* The unmatched attributes of a component are collected by its generated SetParametersAsync, which the
+   parameter builder of bUnit bypasses, so they have to be written on the markup of a host component. *@
+<BitNav TItem="BitNavItem" Items="Items" data-test="the-value" title="the-title" />
+
+@code {
+    [Parameter] public IList<BitNavItem> Items { get; set; } = new List<BitNavItem>();
+}

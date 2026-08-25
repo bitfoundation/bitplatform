@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
   <!-- 
@@ -174,8 +174,159 @@
   <data name="TooManyRequestsException" xml:space="preserve">
     <value>طلبات كثيرة جدًا</value>
   </data>
-  <data name="ServerConnectionException" xml:space="preserve">
+  <data name="TransientException" xml:space="preserve">
     <value>تعذر الاتصال بالخادم</value>
+  </data>
+  <!-- Bit.BlazorUI messages -->
+  <data name="DataGridEmptyText" xml:space="preserve">
+    <value>لا توجد سجلات للعرض.</value>
+  </data>
+  <data name="DataGridLoadingText" xml:space="preserve">
+    <value>جارٍ التحميل…</value>
+  </data>
+  <data name="DataGridActionsText" xml:space="preserve">
+    <value>الإجراءات</value>
+  </data>
+  <data name="DataGridAddRowText" xml:space="preserve">
+    <value>+ إضافة</value>
+  </data>
+  <data name="DataGridClearFiltersText" xml:space="preserve">
+    <value>مسح عوامل التصفية</value>
+  </data>
+  <data name="DataGridExportCsvText" xml:space="preserve">
+    <value>تصدير CSV</value>
+  </data>
+  <data name="DataGridExportExcelText" xml:space="preserve">
+    <value>تصدير Excel</value>
+  </data>
+  <data name="DataGridColumnsText" xml:space="preserve">
+    <value>الأعمدة</value>
+  </data>
+  <data name="DataGridEditText" xml:space="preserve">
+    <value>تعديل</value>
+  </data>
+  <data name="DataGridDeleteText" xml:space="preserve">
+    <value>حذف</value>
+  </data>
+  <data name="DataGridSaveText" xml:space="preserve">
+    <value>حفظ</value>
+  </data>
+  <data name="DataGridCancelText" xml:space="preserve">
+    <value>إلغاء</value>
+  </data>
+  <data name="DataGridSelectAllLabel" xml:space="preserve">
+    <value>تحديد الكل</value>
+  </data>
+  <data name="DataGridSelectRowLabel" xml:space="preserve">
+    <value>تحديد الصف</value>
+  </data>
+  <data name="DataGridSelectRowFormat" xml:space="preserve">
+    <value>تحديد الصف: {0}</value>
+  </data>
+  <data name="DataGridFilterPlaceholder" xml:space="preserve">
+    <value>تصفية…</value>
+  </data>
+  <data name="DataGridFilterByFormat" xml:space="preserve">
+    <value>تصفية حسب {0}</value>
+  </data>
+  <data name="DataGridFilterAllText" xml:space="preserve">
+    <value>الكل</value>
+  </data>
+  <data name="DataGridFilterOperatorLabel" xml:space="preserve">
+    <value>عامل التصفية لـ {0}</value>
+  </data>
+  <data name="DataGridFilterOpContains" xml:space="preserve">
+    <value>يحتوي على</value>
+  </data>
+  <data name="DataGridFilterOpDoesNotContain" xml:space="preserve">
+    <value>لا يحتوي على</value>
+  </data>
+  <data name="DataGridFilterOpStartsWith" xml:space="preserve">
+    <value>يبدأ بـ</value>
+  </data>
+  <data name="DataGridFilterOpEndsWith" xml:space="preserve">
+    <value>ينتهي بـ</value>
+  </data>
+  <data name="DataGridBooleanTrueText" xml:space="preserve">
+    <value>صحيح</value>
+  </data>
+  <data name="DataGridBooleanFalseText" xml:space="preserve">
+    <value>خطأ</value>
+  </data>
+  <data name="DataGridGroupByFormat" xml:space="preserve">
+    <value>تجميع حسب {0}</value>
+  </data>
+  <data name="DataGridUngroupByFormat" xml:space="preserve">
+    <value>إلغاء التجميع حسب {0}</value>
+  </data>
+  <data name="DataGridExpandGroupFormat" xml:space="preserve">
+    <value>توسيع المجموعة {0}: {1}</value>
+  </data>
+  <data name="DataGridCollapseGroupFormat" xml:space="preserve">
+    <value>طي المجموعة {0}: {1}</value>
+  </data>
+  <data name="DataGridPagerRangeFormat" xml:space="preserve">
+    <value>{0}–{1} من {2}</value>
+  </data>
+  <data name="DataGridPagerPageFormat" xml:space="preserve">
+    <value>الصفحة {0} من {1}</value>
+  </data>
+  <data name="DataGridPerPageFormat" xml:space="preserve">
+    <value>{0} / صفحة</value>
+  </data>
+  <data name="DataGridRowsPerPageLabel" xml:space="preserve">
+    <value>الصفوف لكل صفحة</value>
+  </data>
+  <data name="DataGridFirstPageLabel" xml:space="preserve">
+    <value>الصفحة الأولى</value>
+  </data>
+  <data name="DataGridPreviousPageLabel" xml:space="preserve">
+    <value>الصفحة السابقة</value>
+  </data>
+  <data name="DataGridNextPageLabel" xml:space="preserve">
+    <value>الصفحة التالية</value>
+  </data>
+  <data name="DataGridLastPageLabel" xml:space="preserve">
+    <value>الصفحة الأخيرة</value>
+  </data>
+  <data name="DataGridEndOfResultsText" xml:space="preserve">
+    <value>- نهاية النتائج -</value>
+  </data>
+  <data name="DataGridToggleDetailsLabel" xml:space="preserve">
+    <value>إظهار/إخفاء التفاصيل</value>
+  </data>
+  <data name="DataGridToggleChildrenLabel" xml:space="preserve">
+    <value>إظهار/إخفاء العناصر الفرعية</value>
+  </data>
+  <data name="DataGridReorderRowTitle" xml:space="preserve">
+    <value>اسحب لإعادة الترتيب، أو ركّز واستخدم مفاتيح الأسهم لنقل هذا الصف</value>
+  </data>
+  <data name="DataGridReorderRowLabel" xml:space="preserve">
+    <value>إعادة ترتيب الصف. اضغط على السهم لأعلى أو لأسفل لنقل هذا الصف.</value>
+  </data>
+  <data name="DataGridInvalidValueError" xml:space="preserve">
+    <value>قيمة غير صالحة لـ {0}.</value>
+  </data>
+  <data name="DataGridAnnouncementSortedAscending" xml:space="preserve">
+    <value>مرتب حسب {0} تصاعديًا</value>
+  </data>
+  <data name="DataGridAnnouncementSortedDescending" xml:space="preserve">
+    <value>مرتب حسب {0} تنازليًا</value>
+  </data>
+  <data name="DataGridAnnouncementSortCleared" xml:space="preserve">
+    <value>تمت إزالة الترتيب حسب {0}</value>
+  </data>
+  <data name="DataGridAnnouncementFiltered" xml:space="preserve">
+    <value>تم تطبيق التصفية على {0}</value>
+  </data>
+  <data name="DataGridAnnouncementFilterCleared" xml:space="preserve">
+    <value>تم مسح التصفية على {0}</value>
+  </data>
+  <data name="DataGridAnnouncementPage" xml:space="preserve">
+    <value>الصفحة {0} من {1}</value>
+  </data>
+  <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
+    <value>تم حذف الصف</value>
   </data>
   <!-- Boilerplate strings -->
   <data name="Active" xml:space="preserve">
@@ -260,12 +411,34 @@
   <data name="Ok" xml:space="preserve">
     <value>موافق</value>
   </data>
+    <!-- Identity pages -->
+    <data name="Close" xml:space="preserve">
+    <value>إغلاق</value>
+  </data>
+    <data name="SignInWithPasskeyButtonText" xml:space="preserve">
+    <value>تسجيل الدخول باستخدام مفتاح مرور</value>
+  </data>
+    <data name="OpenGmail" xml:space="preserve">
+    <value>فتح Gmail</value>
+  </data>
+    <data name="OpenOutlook" xml:space="preserve">
+    <value>فتح Outlook</value>
+  </data>
+    <data name="AgreeToTermsMessage" xml:space="preserve">
+    <value>بالتسجيل، أنت توافق على</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SystemPromptsTitle" xml:space="preserve">
     <value>تلقينات النظام</value>
   </data>
   <data name="SystemPromptsSubTitle" xml:space="preserve">
     <value>عرض تلقينات النظام للدردشة الآلية هنا</value>
+  </data>
+  <data name="PromptKindSupport" xml:space="preserve">
+    <value>الدعم</value>
+  </data>
+  <data name="PromptKindAnalyzeProductImage" xml:space="preserve">
+    <value>تحليل صورة المنتج</value>
   </data>
   <data name="PushNotificationJob" xml:space="preserve">
     <value>مهمة إشعارات الدفع</value>
@@ -976,6 +1149,12 @@
   <data name="DeleteTodoItem" xml:space="preserve">
     <value>حذف عنصر المهمة</value>
   </data>
+  <data name="SortAscending" xml:space="preserve">
+    <value>ترتيب تصاعدي</value>
+  </data>
+  <data name="SortDescending" xml:space="preserve">
+    <value>ترتيب تنازلي</value>
+  </data>
   <!--#endif -->
   <!--#if (module == "Admin" || module == "Sales") -->
   <data name="CategoryCouldNotBeFound" xml:space="preserve">
@@ -996,6 +1175,9 @@
   </data>
     <data name="Of" xml:space="preserve">
     <value>من</value>
+  </data>
+    <data name="TryAgain" xml:space="preserve">
+    <value>حاول مرة أخرى</value>
   </data>
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
@@ -1094,6 +1276,18 @@
   <data name="DashboardSubtitle" xml:space="preserve">
     <value>إليك بيانات التحليل الخاصة بك</value>
   </data>
+    <data name="DeleteCategory" xml:space="preserve">
+    <value>حذف الفئة</value>
+  </data>
+    <data name="AreYouSureWannaDeleteCategory" xml:space="preserve">
+    <value>هل أنت متأكد من رغبتك في حذف الفئة {0}؟</value>
+  </data>
+    <data name="PresetColors" xml:space="preserve">
+    <value>ألوان جاهزة</value>
+  </data>
+    <data name="ProductCouldNotBeLoaded" xml:space="preserve">
+    <value>تعذر تحميل هذا المنتج.</value>
+  </data>
   <!--#endif -->
   <!--#if (captcha == "reCaptcha") -->
   <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
@@ -1115,6 +1309,15 @@
   </data>
   <data name="PurchaseSuccessful" xml:space="preserve">
     <value>تم الشراء بنجاح!</value>
+  </data>
+    <data name="NoProductsToShow" xml:space="preserve">
+    <value>لا توجد منتجات لعرضها في الوقت الحالي.</value>
+  </data>
+    <data name="SearchProducts" xml:space="preserve">
+    <value>البحث عن المنتجات</value>
+  </data>
+    <data name="ProductsCouldNotBeLoaded" xml:space="preserve">
+    <value>تعذر تحميل المنتجات.</value>
   </data>
   <!--#endif -->
   <data name="Passwordless" xml:space="preserve">
@@ -1141,12 +1344,66 @@
   <data name="Send" xml:space="preserve">
     <value>إرسال</value>
   </data>
+  <data name="AccentColorApply" xml:space="preserve">
+    <value>تطبيق لون التمييز {0}</value>
+  </data>
   <data name="Canceled" xml:space="preserve">
     <value>ملغى</value>
   </data>
   <!--#if (signalR == true) -->
   <data name="AiChatPanelTitle" xml:space="preserve">
     <value>لوحة الدردشة بالذكاء الاصطناعي</value>
+  </data>
+  <data name="AiChatPanelDictate" xml:space="preserve">
+    <value>أملِ رسالتك</value>
+  </data>
+  <data name="AiChatPanelStopDictation" xml:space="preserve">
+    <value>إيقاف الإملاء</value>
+  </data>
+  <data name="AiChatPanelDictation" xml:space="preserve">
+    <value>الإملاء</value>
+  </data>
+  <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
+    <value>تم حظر الوصول إلى الميكروفون. اسمح به لهذا الموقع لكي تتمكن من الإملاء.</value>
+  </data>
+  <data name="AiChatPanelDictationStopped" xml:space="preserve">
+    <value>توقف الإملاء: {0}</value>
+  </data>
+  <data name="AiChatPanelReadAloud" xml:space="preserve">
+    <value>القراءة بصوت عالٍ</value>
+  </data>
+  <data name="AiChatPanelStopReading" xml:space="preserve">
+    <value>إيقاف القراءة</value>
+  </data>
+  <data name="AiChatPanelTranscribing" xml:space="preserve">
+    <value>جارٍ تحويل ما قلته إلى نص</value>
+  </data>
+  <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
+    <value>الوقت المتبقي قبل توقف الإملاء</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
+    <value>الميزات الصوتية تتطلب حساباً</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInMessage" xml:space="preserve">
+    <value>الإملاء والقراءة بصوت عالٍ يعملان على الخادم. سجّل الدخول مرة واحدة لتتمكن من إملاء رسائلك وسماع الردود.</value>
+  </data>
+  <data name="AiChatPanelAttachImage" xml:space="preserve">
+    <value>إرفاق صورة</value>
+  </data>
+  <data name="AiChatPanelImageTooLarge" xml:space="preserve">
+    <value>حجم الصورة أكبر من 10 ميجابايت.</value>
+  </data>
+  <data name="AiChatPanelOnlyImagesAllowed" xml:space="preserve">
+    <value>يمكن إرفاق الصور فقط.</value>
+  </data>
+  <data name="AiChatPanelAttachmentFailed" xml:space="preserve">
+    <value>تعذّر إرفاق الصورة.</value>
+  </data>
+  <data name="AiChatPanelImageSignInTitle" xml:space="preserve">
+    <value>إرفاق الصور يتطلب حساباً</value>
+  </data>
+  <data name="AiChatPanelImageSignInMessage" xml:space="preserve">
+    <value>سجّل الدخول لإرسال صورة مع رسالتك.</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>مرحبًا{0}! أنا هنا لجعل تجربة التطبيق رائعة! هل لديك سؤال أو تحتاج مساعدة؟</value>
@@ -1173,6 +1430,12 @@
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>اكتب رسالة...</value>
   </data>
+    <data name="AiChatPanelMaximize" xml:space="preserve">
+    <value>تكبير</value>
+  </data>
+  <data name="AiChatPanelRestore" xml:space="preserve">
+    <value>استعادة</value>
+  </data>
   <!--#endif -->
   <!--#if (ads == true) -->
   <data name="Upgrade" xml:space="preserve">
@@ -1189,6 +1452,9 @@
   </data>
   <data name="UpgradeFailMessage" xml:space="preserve">
     <value>فشلت ترقية الحساب.</value>
+  </data>
+  <data name="UpgradeAdNotAvailableMessage" xml:space="preserve">
+    <value>لا تتوفر إعلانات في الوقت الحالي. يرجى المحاولة مرة أخرى لاحقاً.</value>
   </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>تواجه مشكلة في مشاهدة الإعلان؟</value>
@@ -1331,6 +1597,9 @@
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>لا يمكنك إزالة مستخدم SuperAdmin هذا</value>
   </data>
+  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
+    <value>لا يمكنك إنهاء جلسات هذا المستخدم المسؤول</value>
+  </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>لا يمكنك إزالة جلساتك الحالية</value>
   </data>
@@ -1355,6 +1624,9 @@
   <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>رابط الصفحة</value>
   </data>
+  <data name="InvalidPageUrl" xml:space="preserve">
+    <value>يجب أن يكون عنوان الصفحة عنوانًا نسبيًا داخل التطبيق، مثل /products.</value>
+  </data>
   <data name="YouAreNotAuthorized" xml:space="preserve">
     <value>غير مصرح لك</value>
   </data>
@@ -1373,7 +1645,84 @@
   <data name="ImageNotCarError" xml:space="preserve">
     <value>الصورة المقدمة لا تحتوي على سيارة.</value>
   </data>
-    <!--#if (multitenant == true) -->
+      <data name="AddUserToGroupTitle" xml:space="preserve">
+    <value>إضافة {0} إلى مجموعة المستخدمين هذه</value>
+  </data>
+  <data name="RemoveUserFromGroupTitle" xml:space="preserve">
+    <value>إزالة {0} من مجموعة المستخدمين هذه</value>
+  </data>
+  <data name="GrantFeatureTitle" xml:space="preserve">
+    <value>منح {0}</value>
+  </data>
+  <data name="RevokeFeatureTitle" xml:space="preserve">
+    <value>إلغاء {0}</value>
+  </data>
+  <data name="GrantAllGroupFeaturesTitle" xml:space="preserve">
+    <value>منح جميع خصائص {0}</value>
+  </data>
+  <data name="RevokeAllGroupFeaturesTitle" xml:space="preserve">
+    <value>إلغاء جميع خصائص {0}</value>
+  </data>
+  <data name="RefreshSelectedUserGroupTitle" xml:space="preserve">
+    <value>تحديث مجموعة المستخدمين المحددة</value>
+  </data>
+  <data name="RefreshSelectedUserTitle" xml:space="preserve">
+    <value>تحديث المستخدم المحدد</value>
+  </data>
+  <data name="NoMatchingUserSessionMessage" xml:space="preserve">
+    <value>لا توجد جلسة تطابق بحثك.</value>
+  </data>
+  <data name="TfaVerificationCodeRequiredMessage" xml:space="preserve">
+    <value>أدخل الرمز المكوّن من 6 أرقام من تطبيق المصادقة.</value>
+  </data>
+  <data name="TfaOpenInAuthenticatorAppTitle" xml:space="preserve">
+    <value>فتح هذا الحساب في تطبيق المصادقة</value>
+  </data>
+  <data name="TfaQrCodeAlt" xml:space="preserve">
+    <value>رمز QR لإعداد تطبيق المصادقة</value>
+  </data>
+  <data name="SessionNoLongerValidMessage" xml:space="preserve">
+    <value>لم تعد هذه الجلسة صالحة. يرجى تسجيل الدخول مرة أخرى.</value>
+  </data>
+  <data name="RevokeSessionTitle" xml:space="preserve">
+    <value>إلغاء هذه الجلسة</value>
+  </data>
+  <data name="ImageMaxSizeErrorMessage" xml:space="preserve">
+    <value>يجب ألا يزيد حجم الصورة عن {0}.</value>
+  </data>
+  <data name="OnlyImageFilesAllowedErrorMessage" xml:space="preserve">
+    <value>يمكن استخدام ملفات الصور فقط</value>
+  </data>
+  <data name="SamePhoneNumberErrorMessage" xml:space="preserve">
+    <value>هذا هو رقم هاتفك بالفعل. أدخل رقمًا مختلفًا.</value>
+  </data>
+  <data name="SameEmailErrorMessage" xml:space="preserve">
+    <value>هذا هو بريدك الإلكتروني بالفعل. أدخل بريدًا مختلفًا.</value>
+  </data>
+  <data name="MoreTabsTitle" xml:space="preserve">
+    <value>علامات تبويب أخرى</value>
+  </data>
+  <data name="OpenNavigationMenuTitle" xml:space="preserve">
+    <value>فتح قائمة التنقل</value>
+  </data>
+  <data name="AccountMenuTitle" xml:space="preserve">
+    <value>قائمة الحساب</value>
+  </data>
+  <data name="SwitchToDarkThemeTitle" xml:space="preserve">
+    <value>التبديل إلى المظهر الداكن</value>
+  </data>
+  <data name="SwitchToLightThemeTitle" xml:space="preserve">
+    <value>التبديل إلى المظهر الفاتح</value>
+  </data>
+  <!--#if (signalR == true) -->
+  <data name="SignalRConnectionId" xml:space="preserve">
+    <value>SignalRConnectionId</value>
+  </data>
+  <data name="ReadUserSessionLogsTitle" xml:space="preserve">
+    <value>قراءة سجلات جلسة المستخدم</value>
+  </data>
+  <!--#endif -->
+  <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>المستأجر</value>
   </data>
@@ -1425,6 +1774,9 @@
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>اسم المستأجر '{0}' مستخدم بالفعل.</value>
   </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>اسم المستأجر '{0}' محجوز ولا يمكن استخدامه.</value>
+  </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>لم يتم العثور على المستأجر.</value>
   </data>
@@ -1449,6 +1801,9 @@
     <data name="DuplicateTenantDomain" xml:space="preserve">
     <value>النطاق '{0}' مستخدم بالفعل.</value>
   </data>
+    <data name="ReservedTenantDomain" xml:space="preserve">
+    <value>النطاق '{0}' محجوز ولا يمكن استخدامه.</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>لم تقم بتحديد أي مستأجر بعد. بدّل إلى أحد مستأجريك أو أنشئ مستأجرًا جديدًا للبدء.</value>
   </data>
@@ -1470,5 +1825,14 @@
     <data name="Inactive" xml:space="preserve">
     <value>غير نشط</value>
   </data>
-    <!--#endif-->
+      <data name="DeclineInvitation" xml:space="preserve">
+    <value>رفض الدعوة</value>
+  </data>
+  <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
+    <value>رفض الدعوة إلى {0}؟ لا يمكن التراجع عن هذا الإجراء - ستحتاج إلى دعوة جديدة للانضمام.</value>
+  </data>
+  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
+    <value>تم رفض الدعوة.</value>
+  </data>
+  <!--#endif-->
 </root>

@@ -1,5 +1,4 @@
 //+:cnd:noEmit
-using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Shared.Features.Identity;
 
@@ -10,7 +9,6 @@ namespace Boilerplate.Shared.Features.Identity;
   AllowTrailingCommas = true,
   PropertyNameCaseInsensitive = true,
   GenerationMode = JsonSourceGenerationMode.Default,
-  DictionaryKeyPolicy = JsonKnownNamingPolicy.CamelCase,
   PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase
 )]
 [JsonSerializable(typeof(UserDto))]

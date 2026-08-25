@@ -1,18 +1,27 @@
-﻿@page "/components/basiclist"
+@page "/components/basiclist"
 @page "/components/basic-list"
 
 <PageOutlet Url="components/basiclist"
             Title="BasicList"
-            Description="BitBasicList provides a base component for rendering large sets of items. It’s agnostic of layout, the tile component used, and selection management." />
+            Description="BitBasicList renders a set of items of any size into a scrolling region: a template per row, an optional header and footer, virtualization that keeps only the visible rows in the DOM, an items provider that fetches a region at a time, and a LoadMore mode that pages through the set by a button or by scrolling." />
 
 <DemoPage Name="BasicList"
-          Description="BitBasicList provides a base component for rendering large sets of items. It’s agnostic of layout, the tile component used, and selection management."
+          Description="BitBasicList renders a list of items into a scrolling region, one RowTemplate per item, and stays agnostic of the layout, of the tile the row is built from and of selection management. The items either come from a collection or from an ItemsProvider that is called for a region at a time. Virtualize keeps only the rows around the visible region in the DOM, so a set of any size costs the same to render, while LoadMore pages through the set instead, appending a page per click of its button or, with AutoLoad, per scroll to the end of the loaded ones."
           Parameters="componentParameters"
+          PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
           GitHubUrl="Lists/BasicList/BitBasicList.razor"
           GitHubDemoUrl="Lists/BasicList/BitBasicListDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-        <div>Explore the essential use of BitBasicList, displaying a simple list of people.</div><br />
+        <div>
+            A list is a collection of <b>Items</b> and a <b>RowTemplate</b> that turns one item into its row. The
+            root element scrolls on its own, so the list keeps whatever height it is given instead of pushing the
+            page down. Without a template each item is rendered as its own text, which is all a list of plain
+            values needs.
+        </div>
+        <br />
+        <div>With a RowTemplate:</div>
+        <br />
         <BitBasicList Items="fewPeople" Style="border: 1px #a19f9d solid; border-radius: 4px;">
             <RowTemplate Context="person">
                 <div style="padding: 5px 20px; margin: 10px; background-color: #75737329;">
@@ -20,10 +29,96 @@
                 </div>
             </RowTemplate>
         </BitBasicList>
+        <br /><br />
+        <div>Without a RowTemplate (each item renders as its own text):</div>
+        <br />
+        <BitBasicList Items="fruits" Style="border: 1px #a19f9d solid; border-radius: 4px; height: 150px;" />
     </DemoExample>
 
-    <DemoExample Title="Virtualization" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-        <div>Experience BasicList with virtualization enabled to efficiently render large lists.</div><br />
+    <DemoExample Title="Empty content" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <div>
+            <b>EmptyContent</b> is what the list shows in place of its rows while it holds no items. It covers every
+            mode of the list, so a virtualized list and a list fed by an items provider that came back with nothing
+            say the same thing a plain one does. Without it an empty list simply renders nothing.
+        </div>
+        <br />
+        <BitBasicList Items="emptyPeople" Style="border: 1px #a19f9d solid; border-radius: 4px; height: 150px;">
+            <RowTemplate Context="person">
+                <div style="padding: 5px 20px; margin: 10px; background-color: #75737329;">
+                    Name: <strong>@person.FirstName</strong>
+                </div>
+            </RowTemplate>
+            <EmptyContent>
+                <BitStack Alignment="BitAlignment.Center" Style="height: 150px;">
+                    <BitIcon IconName="@BitIconName.SearchIssue" Size="BitSize.Large" />
+                    <BitText Typography="BitTypography.Body1">Nobody to show here yet.</BitText>
+                </BitStack>
+            </EmptyContent>
+        </BitBasicList>
+    </DemoExample>
+
+    <DemoExample Title="Header & Footer" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <div>
+            <b>HeaderTemplate</b> and <b>FooterTemplate</b> render above and below the rows, inside the scrolling
+            region of the list, so they scroll along with the items rather than staying pinned. That makes them the
+            place for a title, a count, a summary or a call to action that belongs to the list itself; give the
+            header a <code>position: sticky</code> style to keep it in view while the rows scroll past it.
+        </div>
+        <br />
+        <BitBasicList Items="fewPeople" Style="border: 1px #a19f9d solid; border-radius: 4px; height: 300px;">
+            <HeaderTemplate>
+                <BitStack Horizontal HorizontalAlign="BitAlignment.SpaceBetween" Style="padding: 0.5rem 1rem; background: #75737329; position: sticky; top: 0;">
+                    <BitText Typography="BitTypography.Subtitle1">People</BitText>
+                    <BitTag Color="BitColor.Info">@fewPeople.Count</BitTag>
+                </BitStack>
+            </HeaderTemplate>
+            <RowTemplate Context="person">
+                <div style="padding: 5px 20px; margin: 10px; background-color: #75737329;">
+                    Name: <strong>@person.FirstName</strong>
+                </div>
+            </RowTemplate>
+            <FooterTemplate>
+                <BitStack Alignment="BitAlignment.Center" Style="padding: 0.5rem;">
+                    <BitText Typography="BitTypography.Caption1">- end of the list -</BitText>
+                </BitStack>
+            </FooterTemplate>
+        </BitBasicList>
+    </DemoExample>
+
+    <DemoExample Title="Loading" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <div>
+            <b>Loading</b> shows the <b>LoadingTemplate</b> in place of the rows, which is what a list whose items
+            are still on their way from the surrounding page needs. The list also raises this state on its own while
+            the first page of a LoadMore list or the items of a plain ItemsProvider list are being fetched, and it
+            reports every change of it through <b>OnLoadingChange</b>.
+        </div>
+        <br />
+        <BitToggleButton @bind-IsChecked="isLoading" Text="@(isLoading ? "Stop loading" : "Start loading")" />
+        <br /><br />
+        <BitBasicList Items="fewPeople" Loading="isLoading" Style="border: 1px #a19f9d solid; border-radius: 4px; height: 200px;">
+            <RowTemplate Context="person">
+                <div style="padding: 5px 20px; margin: 10px; background-color: #75737329;">
+                    Name: <strong>@person.FirstName</strong>
+                </div>
+            </RowTemplate>
+            <LoadingTemplate>
+                <BitStack Horizontal Alignment="BitAlignment.Center">
+                    <BitRollingSquareLoading />
+                    <BitText>Fetching people...</BitText>
+                </BitStack>
+            </LoadingTemplate>
+        </BitBasicList>
+    </DemoExample>
+
+    <DemoExample Title="Virtualization" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <div>
+            <b>Virtualize</b> renders only the rows around the visible region and holds the rest of the scroll range
+            open with a spacer, so a list of thousands of items costs about as much as a list of a screenful. Tell it
+            how tall a row is through <b>ItemSize</b> (50px by default): the value is what the scroll range and the
+            number of rows to render are calculated from, so a value far off the real height leaves a gap or renders
+            more rows than needed. Virtualization is vertical only.
+        </div>
+        <br />
         <BitBasicList Virtualize
                       Items="lotsOfPeople"
                       Style="border: 1px #a19f9d solid; border-radius: 4px;">
@@ -40,8 +135,14 @@
         </BitBasicList>
     </DemoExample>
 
-    <DemoExample Title="OverscanCount" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-        <div>Experience BitBasicList with overscan count and virtualization for improved scrolling performance.</div><br />
+    <DemoExample Title="OverscanCount" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <div>
+            <b>OverscanCount</b> is how many extra rows are rendered before and after the visible region (3 by
+            default). Those rows are already in the DOM by the time the scrolling reaches them, so a higher value
+            trades memory and render work for fewer blank frames during a fast scroll. This example also raises
+            <b>ItemSize</b> to 300 to match the taller rows it renders.
+        </div>
+        <br />
         <BitBasicList Virtualize
                       ItemSize="300"
                       OverscanCount="5"
@@ -60,8 +161,16 @@
         </BitBasicList>
     </DemoExample>
 
-    <DemoExample Title="ItemsProvider" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <div>Utilize BitBasicList with an ItemsProvider for displaying data and custom placeholders.</div><br />
+    <DemoExample Title="ItemsProvider" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <div>
+            An <b>ItemsProvider</b> is called for the region the list is about to show, with a StartIndex, a Count
+            and a CancellationToken, and answers with those items and the total count of the whole set - that total
+            is what sizes the scroll range. Rows whose items have not arrived yet render the
+            <b>VirtualizePlaceholder</b>. Scrolling asks for a new region far more often than the regions differ, so
+            the calls are debounced by <b>ItemsProviderDelay</b> (100ms by default; set it to 0 for a provider that
+            answers from memory).
+        </div>
+        <br />
         <BitBasicList Virtualize
                       ItemSize="83"
                       TItem="ProductDto"
@@ -84,38 +193,54 @@
         </BitBasicList>
     </DemoExample>
 
-    <DemoExample Title="Grouped ItemsProvider" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-        <div>See BitBasicList with an ItemsProvider, categorizing and displaying data for products and categories.</div><br />
+    <DemoExample Title="Grouped ItemsProvider" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>
+            The list has one row type, so grouping is a matter of what the items are: a provider that returns
+            headings and entries in one flat sequence, and a RowTemplate that renders each kind differently. That
+            keeps the virtualization intact - the headings scroll and are recycled exactly like the entries - which
+            a separate list per group could not do.
+        </div>
+        <br />
         <BitBasicList Virtualize
-                      ItemSize="83"
+                      ItemSize="32"
                       TItem="CategoryOrProductDto"
                       ItemsProvider="categoriesAndProductsProvider"
                       Style="border: 1px #a19f9d solid; border-radius: 4px;">
+            @* Every row and the placeholder are 32px tall on purpose: the virtualization sizes its scroll
+               region by a single item size, so rows of differing heights keep it correcting that size on
+               every render and never let the list settle. *@
             <RowTemplate Context="catOrProd">
                 @if (catOrProd.IsProduct)
                 {
-                    <div @key="@($"{catOrProd.CategoryId}-{catOrProd.ProductId}")" style="border-bottom: 1px #8a8886 solid; padding: 5px 10px; display:flex; flex-flow:row;">
-                        <div style="width:184px;">Name: <strong>@catOrProd.Name</strong></div>
+                    <div @key="@($"{catOrProd.CategoryId}-{catOrProd.ProductId}")" style="height: 32px; box-sizing: border-box; border-bottom: 1px #8a8886 solid; padding: 5px 10px; display: flex; flex-flow: row; align-items: center; white-space: nowrap; overflow: hidden;">
+                        <div style="width: 240px; overflow: hidden; text-overflow: ellipsis;">Name: <strong>@catOrProd.Name</strong></div>
                         <div>Price: <strong>@catOrProd.Price</strong></div>
                     </div>
                 }
                 else
                 {
-                    <div @key="catOrProd.CategoryId" style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; background-color: #75737329;">
+                    <div @key="catOrProd.CategoryId" style="height: 32px; box-sizing: border-box; border-bottom: 1px #8a8886 solid; padding: 5px 20px; display: flex; align-items: center; white-space: nowrap; overflow: hidden; background-color: #75737329;">
                         <div>@catOrProd.Name</div>
                     </div>
                 }
             </RowTemplate>
             <VirtualizePlaceholder>
-                <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px;">
+                <div style="height: 32px; box-sizing: border-box; border-bottom: 1px #8a8886 solid; padding: 5px 20px; display: flex; align-items: center;">
                     Loading...
                 </div>
             </VirtualizePlaceholder>
         </BitBasicList>
     </DemoExample>
 
-    <DemoExample Title="LoadMore" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-        <div>See the LoadMore feature of the BitBasicList in action.</div><br />
+    <DemoExample Title="LoadMore" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>
+            <b>LoadMore</b> renders one page of <b>LoadMoreSize</b> items at a time and appends the next one on each
+            click of the button below them. The button carries the <b>LoadMoreText</b> label, or a
+            <b>LoadMoreTemplate</b> of your own whose context tells it whether a page is being loaded at that moment.
+            It disappears once every page has been loaded - a page shorter than the one asked for is the last one, so
+            a provider that runs out never costs an extra empty round trip.
+        </div>
+        <br />
         <div>Basic LoadMore:</div><br />
         <BitBasicList LoadMore
                       Items="fewPeople"
@@ -167,17 +292,18 @@
             </RowTemplate>
         </BitBasicList>
         <br /><br /><br /><br />
-        <div>ItemsProvider LoadMore:</div><br />
+        <div>ItemsProvider LoadMore (with OnLoadMore reporting the loaded count):</div><br />
         <BitBasicList LoadMore
                       ItemsProvider="loadMoreProvider"
+                      OnLoadMore="c => loadedCount = c"
                       Style="border: 1px #a19f9d solid; border-radius: 4px; height: 250px;">
             <RowTemplate Context="person">
                 <div @key="person.Id" style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
                     Full Name: <b>@person.FirstName @person.LastName</b>
                 </div>
             </RowTemplate>
-            <LoadMoreTemplate Context="isLoading">
-                @if (isLoading is false)
+            <LoadMoreTemplate Context="isLoadingMore">
+                @if (isLoadingMore is false)
                 {
                     <BitStack FitHeight Horizontal Alignment="BitAlignment.Center" Style="padding:1rem;cursor:pointer">
                         <BitIcon IconName="@BitIconName.Download" />
@@ -193,7 +319,9 @@
                 }
             </LoadMoreTemplate>
         </BitBasicList>
-        <br /><br /><br /><br />
+        <br />
+        <div>Loaded so far: <b>@loadedCount</b></div>
+        <br /><br /><br />
         <div>Virtualize & ItemsProvider LoadMore:</div><br />
         <BitBasicList LoadMore
                       Virtualize
@@ -204,8 +332,8 @@
                     Full Name: <b>@person.FirstName @person.LastName</b>
                 </div>
             </RowTemplate>
-            <LoadMoreTemplate Context="isLoading">
-                @if (isLoading is false)
+            <LoadMoreTemplate Context="isLoadingMore">
+                @if (isLoadingMore is false)
                 {
                     <BitStack FitHeight Horizontal Alignment="BitAlignment.Center" Style="padding:1rem;cursor:pointer">
                         <BitIcon IconName="@BitIconName.Download" />
@@ -223,10 +351,85 @@
         </BitBasicList>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-        <div>Empower customization by setting styles and classes, allowing tailored design modifications to suit specific UI requirements.</div><br />
+    <DemoExample Title="AutoLoad" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>
+            <b>AutoLoad</b> turns the LoadMore mode into an infinite scrolling list: a marker sitting after the last
+            loaded item is watched, and the next page is asked for as soon as it comes into view.
+            <b>AutoLoadThreshold</b> moves that moment earlier by the given number of pixels, so the page is already
+            on its way before the end is reached. The LoadMore element keeps being rendered - it is the marker - so
+            give it a LoadMoreTemplate of a spinner rather than of a button here.
+        </div>
+        <br />
+        <BitBasicList LoadMore
+                      AutoLoad
+                      AutoLoadThreshold="150"
+                      ItemsProvider="autoLoadProvider"
+                      Style="border: 1px #a19f9d solid; border-radius: 4px; height: 300px;">
+            <RowTemplate Context="person">
+                <div @key="person.Id" style="padding: 5px 20px; margin: 10px; background-color: #75737329;">
+                    Full Name: <b>@person.FirstName @person.LastName</b>
+                </div>
+            </RowTemplate>
+            <LoadMoreTemplate>
+                <BitStack FitHeight Horizontal Alignment="BitAlignment.Center" Style="padding:1rem">
+                    <BitRollingSquareLoading />
+                    <BitText>Loading more people...</BitText>
+                </BitStack>
+            </LoadMoreTemplate>
+        </BitBasicList>
+    </DemoExample>
+
+    <DemoExample Title="Horizontal" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <div>
+            <b>Horizontal</b> lays the rows out side by side and scrolls the list sideways, which suits a strip of
+            cards or thumbnails. Virtualization measures a vertical scroll region, so this parameter is ignored while
+            <b>Virtualize</b> is on.
+        </div>
+        <br />
+        <BitBasicList Horizontal Items="fewPeople" Style="border: 1px #a19f9d solid; border-radius: 4px;">
+            <RowTemplate Context="person">
+                <div style="width: 150px; margin: 10px; padding: 10px; text-align: center; background-color: #75737329;">
+                    <div><strong>@person.FirstName</strong></div>
+                    <div>@person.Job</div>
+                </div>
+            </RowTemplate>
+        </BitBasicList>
+    </DemoExample>
+
+    <DemoExample Title="Scrolling & refreshing" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <div>
+            A reference to the list gives access to its methods: <b>ScrollToStartAsync</b>,
+            <b>ScrollToEndAsync</b>, <b>ScrollToOffsetAsync</b> and <b>ScrollToIndexAsync</b> move the scroll
+            position (optionally animated), and <b>RefreshDataAsync</b> reloads the items - which is also how a list
+            bound to a collection that is mutated in place, rather than replaced, is told to notice. In LoadMore mode
+            <b>LoadMoreAsync</b> loads the next page the same way the button does.
+        </div>
+        <br />
+        <BitStack Horizontal Wrap>
+            <BitButton OnClick="() => listRef?.ScrollToStartAsync(true) ?? Task.CompletedTask">Scroll to start</BitButton>
+            <BitButton OnClick="() => listRef?.ScrollToEndAsync(true) ?? Task.CompletedTask">Scroll to end</BitButton>
+            <BitButton OnClick="() => listRef?.ScrollToIndexAsync(50, true) ?? Task.CompletedTask">Scroll to #51</BitButton>
+            <BitButton OnClick="AddPerson">Add a person</BitButton>
+        </BitStack>
+        <br />
+        <BitBasicList @ref="listRef" Items="mutablePeople" Style="border: 1px #a19f9d solid; border-radius: 4px; height: 250px;">
+            <RowTemplate Context="person">
+                <div style="padding: 5px 20px; margin: 10px; background-color: #75737329;">
+                    <strong>@person.Id</strong> - @person.FirstName
+                </div>
+            </RowTemplate>
+        </BitBasicList>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <div>
+            <b>Style</b> and <b>Class</b> apply to the root element, while <b>Styles</b> and <b>Classes</b> reach the
+            individual parts of the list - its root, header, footer, loading container, and the button and the text
+            of its LoadMore mode.
+        </div>
+        <br />
+        <div>Style & Class:</div><br />
         <BitBasicList Virtualize
-                      Role="list"
                       Items="lotsOfPeople"
                       Class="custom-class"
                       Style="border: 1px #a19f9d solid; border-radius: 4px;">
@@ -238,10 +441,28 @@
                 </div>
             </RowTemplate>
         </BitBasicList>
+        <br /><br />
+        <div>Styles:</div><br />
+        <BitBasicList LoadMore
+                      Items="fewPeople"
+                      Styles="@(new() { Root = "border: 1px solid tomato; border-radius: 4px; height: 250px;",
+                                        Header = "padding: 0.5rem 1rem; font-weight: bold; background: tomato; color: white;",
+                                        LoadMoreText = "color: tomato; font-weight: bold;" })">
+            <HeaderTemplate>People</HeaderTemplate>
+            <RowTemplate Context="person">
+                <div style="padding: 5px 20px; margin: 10px; background-color: #75737329;">
+                    Name: <strong>@person.FirstName</strong>
+                </div>
+            </RowTemplate>
+        </BitBasicList>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-        <div>Use BitBasicList in right-to-left (RTL).</div><br />
+    <DemoExample Title="RTL" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <div>
+            Setting <b>Dir</b> to <b>Rtl</b> flips the direction of the list and everything it renders, including its
+            header, footer and LoadMore button.
+        </div>
+        <br />
         <BitBasicList Dir="BitDir.Rtl" Items="fewPeopleRtl" Style="border: 1px #a19f9d solid; border-radius: 4px;">
             <RowTemplate Context="person">
                 <div style="padding: 5px 20px; margin: 10px; background-color: #75737329;">

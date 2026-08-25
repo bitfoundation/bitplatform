@@ -5,8 +5,11 @@ public partial class MainLayout
 
     public static readonly List<BitNavItem> NavItems =
     [
-        new() { Text = "Overview", Url = "/overview", AdditionalUrls = ["/components"] },
+        new() { Text = "Overview", Url = "/overview" },
         new() { Text = "Getting started", Url = "/getting-started" },
+        // The searchable index of the whole library. It used to share a route with Overview, which
+        // meant the site had a "Docs" page and a "Components" page that were the same page.
+        new() { Text = "All components", Url = "/components", Description = "Catalog, Gallery, Index" },
         new()
         {
             Text = "Buttons",
@@ -159,7 +162,6 @@ public partial class MainLayout
                 new() { Text = "AppShell", Url = "/components/appshell" },
                 new() { Text = "Chart", Url = "/components/chart" },
                 new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"] },
-                new() { Text = "QuickGrid", Url = "/components/quickgrid", AdditionalUrls = ["/components/quick-grid"] },
                 new() { Text = "ErrorBoundary", Url = "/components/errorboundary" },
                 new() { Text = "Flag", Url = "/components/flag" },
                 new() { Text = "FullCalendar", Url = "/components/fullcalendar", Description = "Scheduler" },
@@ -185,15 +187,24 @@ public partial class MainLayout
             ChildItems =
             [
                 new() { Text = "ChartLegacy", Url = "/components/legacy/chart" },
-                new() { Text = "DataGridLegacy", Url = "/components/legacy/datagrid" },
+                new() { Text = "DataGridLegacy", Url = "/components/legacy/datagrid", AdditionalUrls = ["/components/quickgrid", "/components/quick-grid"] },
                 new() { Text = "MarkdownEditorLegacy", Url = "/components/legacy/markdowneditor" },
                 new() { Text = "MarkdownViewerLegacy", Url = "/components/legacy/markdownviewer" },
                 new() { Text = "PdfReaderLegacy", Url = "/components/legacy/pdfreader" },
                 new() { Text = "RichTextEditorLegacy", Url = "/components/legacy/richtexteditor" },
             ]
         },
+        new()
+        {
+            Text = "Theming",
+            ChildItems =
+            [
+                new() { Text = "Theming", Url = "/theming", Description = "Theme, DesignTokens, Dark, Light" },
+                new() { Text = "AccentColorSwitcher", Url = "/components/accentcolorswitcher", Description = "Accent, Brand, Theming" },
+                new() { Text = "ThemeSwitcher", Url = "/components/themeswitcher", Description = "DesignSystem, DarkMode, Theming" },
+            ]
+        },
         new() { Text = "Iconography", Url = "/iconography" },
-        new() { Text = "Theming", Url = "/theming" },
     ];
 }
 

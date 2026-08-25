@@ -1,0 +1,175 @@
+@page "/network-information"
+@implements IAsyncDisposable
+@inject Bit.Butil.NetworkInformation networkInformation
+@inject Bit.Butil.Window window
+
+<PageTitle>NetworkInformation - Bit.Butil</PageTitle>
+
+<PageHeader Category="Network & Workers"
+            Title="NetworkInformation"
+            Lead="Read the device's connection type, speed estimates and data-saver preference from navigator.connection - plus the universally available navigator.onLine - in a single typed snapshot."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/NetworkInformation"
+            InjectAs="NetworkInformation networkInformation" />
+
+<div class="stack">
+
+    <Callout Type="warning" Title="Chromium-centric details">
+        <code>navigator.connection</code> ships in Chromium-based browsers; Firefox and Safari do not expose
+        it, so every nullable property of the snapshot (EffectiveType, Type, Downlink, DownlinkMax, Rtt,
+        SaveData) comes back null there. <code>Online</code> is backed by <code>navigator.onLine</code> and
+        works everywhere.
+    </Callout>
+
+    <DemoSection Title="Read the connection status"
+                 Api="GetStatus"
+                 Description="Returns a one-shot snapshot of the network state: online flag, effective connection type (slow-2g, 2g, 3g, 4g), underlying type (wifi, cellular, ethernet, ...), downlink estimates in Mbps, round-trip time in milliseconds and the user's save-data preference. Try it with different throttling profiles in the DevTools Network tab."
+                 Code=@("""
+var status = await networkInformation.GetStatus();
+
+// status.Online         -> true / false
+// status.EffectiveType  -> "slow-2g" | "2g" | "3g" | "4g" | null
+// status.Type           -> "wifi" | "cellular" | "ethernet" | ... | null
+// status.Downlink       -> estimated Mbps, e.g. 10.0
+// status.DownlinkMax    -> maximum advertised Mbps
+// status.Rtt            -> round-trip time in ms
+// status.SaveData       -> true when reduced data usage is requested
+""")>
+        <div class="controls">
+            <button @onclick="ReadStatus">Get status</button>
+        </div>
+        <DemoConsole @ref="statusOutput" Title="status output" />
+    </DemoSection>
+
+    <DemoSection Title="React to connectivity changes"
+                 Api="SubscribeChange"
+                 Description="SubscribeChange delivers a fresh snapshot whenever connectivity shifts, so you never poll GetStatus. It attaches to the window's online and offline events as well as navigator.connection's change, which means it works on every browser - it just won't report quality changes where IsSupported is false. Test it by toggling the Offline checkbox in the DevTools Network tab (or by disabling your network adapter)."
+                 Code=@("""
+private ButilSubscription? subscription;
+
+subscription = await networkInformation.SubscribeChange(status =>
+{
+    if (status.Online)
+    {
+        // back online - refresh data, flush queued work, ...
+    }
+    else
+    {
+        // connection lost - switch the UI to offline mode
+    }
+});
+
+// later
+await subscription.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="Watch">Watch connectivity</button>
+            <button class="secondary" @onclick="Unwatch">Stop watching</button>
+        </div>
+        <DemoConsole @ref="connectivityOutput" Title="connectivity output" />
+    </DemoSection>
+
+    <Callout Type="info" Title="Online is not reachable">
+        <code>Online</code> only means the device has a network attached - a captive portal or a
+        down backend still reports online. Treat a transition as a hint to retry, not as a guarantee
+        that your API is up.
+    </Callout>
+
+    <ApiTable Title="API reference">
+        <ApiMember Name="GetStatus" Signature="ValueTask<NetworkConnectionStatus> GetStatus()" Description="One-shot snapshot of the network state." />
+        <ApiMember Name="SubscribeChange" Signature="ValueTask<ButilSubscription> SubscribeChange(Action<NetworkConnectionStatus> handler)" Description="Calls the handler with a fresh snapshot on every connectivity change. Covers online/offline everywhere, plus connection-quality changes on Chromium." />
+        <ApiMember Name="NetworkConnectionStatus.Online" Signature="bool Online { get; set; }" Description="True when the user-agent considers itself online (navigator.onLine)." />
+        <ApiMember Name="NetworkConnectionStatus.EffectiveType" Signature="string? EffectiveType { get; set; }" Description="Effective connection type: slow-2g, 2g, 3g, 4g, or null." />
+        <ApiMember Name="NetworkConnectionStatus.Type" Signature="string? Type { get; set; }" Description="Underlying connection type: wifi, cellular, ethernet, etc., or null." />
+        <ApiMember Name="NetworkConnectionStatus.Downlink" Signature="double? Downlink { get; set; }" Description="Estimated effective downlink in megabits per second." />
+        <ApiMember Name="NetworkConnectionStatus.DownlinkMax" Signature="double? DownlinkMax { get; set; }" Description="Maximum advertised downlink in megabits per second." />
+        <ApiMember Name="NetworkConnectionStatus.Rtt" Signature="int? Rtt { get; set; }" Description="Round-trip time estimate in milliseconds." />
+        <ApiMember Name="NetworkConnectionStatus.SaveData" Signature="bool? SaveData { get; set; }" Description="True when the user has requested reduced data usage." />
+    </ApiTable>
+
+</div>
+
+@code {
+    private DemoConsole statusOutput = default!;
+    private DemoConsole connectivityOutput = default!;
+    private ButilSubscription? changeSub;
+
+    private async Task ReadStatus()
+    {
+        try
+        {
+            var status = await networkInformation.GetStatus();
+            await statusOutput.Info($"Online: {status.Online}");
+            await statusOutput.Log($"EffectiveType: {status.EffectiveType ?? "null"} | Type: {status.Type ?? "null"}");
+            await statusOutput.Log($"Downlink: {(status.Downlink.HasValue ? status.Downlink.Value + " Mbps" : "null")} | DownlinkMax: {(status.DownlinkMax.HasValue ? status.DownlinkMax.Value + " Mbps" : "null")}");
+            await statusOutput.Log($"Rtt: {(status.Rtt.HasValue ? status.Rtt.Value + " ms" : "null")} | SaveData: {(status.SaveData.HasValue ? status.SaveData.Value.ToString() : "null")}");
+        }
+        catch (Exception ex)
+        {
+            await statusOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task Watch()
+    {
+        try
+        {
+            if (changeSub is not null)
+            {
+                await connectivityOutput.Warn("Already watching.");
+                return;
+            }
+
+            changeSub = await networkInformation.SubscribeChange(status => { _ = InvokeAsync(() => OnConnectivityChanged(status)); });
+            await connectivityOutput.Success("Watching connectivity. Toggle Offline in the DevTools Network tab to trigger a change.");
+        }
+        catch (Exception ex)
+        {
+            await connectivityOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task OnConnectivityChanged(NetworkConnectionStatus status)
+    {
+        try
+        {
+            await connectivityOutput.Info($"change → Online: {status.Online} | EffectiveType: {status.EffectiveType ?? "null"} | Downlink: {(status.Downlink.HasValue ? status.Downlink.Value + " Mbps" : "null")}");
+        }
+        catch (Exception ex)
+        {
+            await connectivityOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task Unwatch()
+    {
+        try
+        {
+            if (changeSub is null)
+            {
+                await connectivityOutput.Warn("Not watching.");
+                return;
+            }
+
+            await DisposeSubscriptions();
+            await connectivityOutput.Log("Stopped watching.");
+        }
+        catch (Exception ex)
+        {
+            await connectivityOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task DisposeSubscriptions()
+    {
+        if (changeSub is not null)
+        {
+            await changeSub.DisposeAsync();
+            changeSub = null;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeSubscriptions();
+    }
+}

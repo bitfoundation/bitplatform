@@ -1,0 +1,364 @@
+﻿@page "/visual-viewport"
+@implements IAsyncDisposable
+@inject Bit.Butil.VisualViewport visualViewport
+
+<PageTitle>VisualViewport - Bit.Butil</PageTitle>
+
+<PageHeader Category="Screen & Diagnostics"
+            Title="VisualViewport"
+            Lead="Inspect the visual viewport - the portion of the page the user actually sees - including its offsets, size and pinch-zoom scale, and react to viewport resize and scroll events. Especially useful on mobile, where the on-screen keyboard and pinch-zoom shrink the visible area."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport"
+            InjectAs="VisualViewport visualViewport" />
+
+<div class="stack">
+    <DemoSection Title="Size & scale"
+                 Api="GetWidth / GetHeight / GetScale"
+                 Description="The visual viewport's dimensions in CSS pixels and the current pinch-zoom scaling factor (1 when not zoomed)."
+                 Code=@("""
+var width = await visualViewport.GetWidth();
+var height = await visualViewport.GetHeight();
+var scale = await visualViewport.GetScale();
+""")>
+        <div class="controls">
+            <button @onclick="GetWidth">GetWidth</button>
+            <button @onclick="GetHeight">GetHeight</button>
+            <button @onclick="GetScale">GetScale</button>
+        </div>
+        <DemoConsole @ref="sizeOutput" Title="size output" />
+    </DemoSection>
+
+    <DemoSection Title="Offset from the layout viewport"
+                 Api="GetOffsetLeft / GetOffsetTop"
+                 Description="How far the visual viewport's edges sit from the layout viewport's edges, in CSS pixels. Both are 0 until the user pinch-zooms and pans."
+                 Code=@("""
+var offsetLeft = await visualViewport.GetOffsetLeft();
+var offsetTop = await visualViewport.GetOffsetTop();
+""")>
+        <div class="controls">
+            <button @onclick="GetOffsetLeft">GetOffsetLeft</button>
+            <button @onclick="GetOffsetTop">GetOffsetTop</button>
+        </div>
+        <DemoConsole @ref="offsetOutput" Title="offset output" />
+    </DemoSection>
+
+    <DemoSection Title="Position on the page"
+                 Api="GetPageLeft / GetPageTop"
+                 Description="The visual viewport's coordinates relative to the document origin, in CSS pixels - these grow as the page is scrolled."
+                 Code=@("""
+var pageLeft = await visualViewport.GetPageLeft();
+var pageTop = await visualViewport.GetPageTop();
+""")>
+        <div class="controls">
+            <button @onclick="GetPageLeft">GetPageLeft</button>
+            <button @onclick="GetPageTop">GetPageTop</button>
+        </div>
+        <DemoConsole @ref="positionOutput" Title="page position output" />
+    </DemoSection>
+
+    <DemoSection Title="Resize event"
+                 Api="SubscribeResize"
+                 Description="Fires when the visual viewport is resized - window resize, pinch-zoom, or the on-screen keyboard appearing. Try resizing this window after subscribing."
+                 Code=@("""
+var subscription = await visualViewport.SubscribeResize(() =>
+{
+    // the visual viewport was resized
+});
+
+// later, when no longer needed:
+await subscription.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="SubscribeResize">Subscribe resize</button>
+            <button class="danger" @onclick="UnsubscribeResize">Unsubscribe resize</button>
+        </div>
+        <DemoConsole @ref="resizeOutput" Title="resize event output" />
+    </DemoSection>
+
+    <DemoSection Title="Scroll event"
+                 Api="SubscribeScroll"
+                 Description="Fires when the visual viewport is scrolled. Note that this is the visual viewport, not the document - on desktop it mostly fires while pinch-zoomed."
+                 Code=@("""
+var subscription = await visualViewport.SubscribeScroll(() =>
+{
+    // the visual viewport was scrolled
+});
+
+// later, when no longer needed:
+await subscription.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="SubscribeScroll">Subscribe scroll</button>
+            <button class="danger" @onclick="UnsubscribeScroll">Unsubscribe scroll</button>
+        </div>
+        <DemoConsole @ref="scrollOutput" Title="scroll event output" />
+    </DemoSection>
+
+    <DemoSection Title="Manual listener management"
+                 Api="AddResize / AddScroll / RemoveResize / RemoveScroll / RemoveAllEventHandlers"
+                 Description="If you prefer explicit ids over disposable subscriptions, the Add methods return a Guid that can later be passed to the matching Remove overload, and RemoveAllEventHandlers detaches everything registered on this instance."
+                 Code=@("""
+// register and keep the ids
+var resizeId = await visualViewport.AddResize(OnViewportResized);
+var scrollId = await visualViewport.AddScroll(OnViewportScrolled);
+
+// remove single listeners by id
+await visualViewport.RemoveResize(resizeId);
+await visualViewport.RemoveScroll(scrollId);
+
+// or drop every registered listener at once
+await visualViewport.RemoveAllEventHandlers();
+""") />
+</div>
+
+<Callout Type="info" Title="Visual vs. layout viewport">
+    The layout viewport is what CSS lays the page out against; the visual viewport is the part currently
+    on screen. They only diverge when the user pinch-zooms or an on-screen keyboard appears, which is why
+    the offset and scale demos are best tried on a mobile device.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="GetOffsetLeft" Signature="Task<double> GetOffsetLeft()" Description="Returns the offset of the left edge of the visual viewport from the left edge of the layout viewport, in CSS pixels." />
+    <ApiMember Name="GetOffsetTop" Signature="Task<double> GetOffsetTop()" Description="Returns the offset of the top edge of the visual viewport from the top edge of the layout viewport, in CSS pixels." />
+    <ApiMember Name="GetPageLeft" Signature="Task<double> GetPageLeft()" Description="Returns the x coordinate of the left edge of the visual viewport relative to the initial containing block origin, in CSS pixels." />
+    <ApiMember Name="GetPageTop" Signature="Task<double> GetPageTop()" Description="Returns the y coordinate of the top edge of the visual viewport relative to the initial containing block origin, in CSS pixels." />
+    <ApiMember Name="GetWidth" Signature="Task<double> GetWidth()" Description="Returns the width of the visual viewport, in CSS pixels." />
+    <ApiMember Name="GetHeight" Signature="Task<double> GetHeight()" Description="Returns the height of the visual viewport, in CSS pixels." />
+    <ApiMember Name="GetScale" Signature="Task<double> GetScale()" Description="Returns the pinch-zoom scaling factor applied to the visual viewport." />
+    <ApiMember Name="AddResize" Signature="ValueTask<Guid> AddResize(Action handler)" Description="Registers a handler for the resize event and returns its listener id." />
+    <ApiMember Name="SubscribeResize" Signature="ValueTask<ButilSubscription> SubscribeResize(Action handler)" Description="Subscribe variant of AddResize returning a disposable subscription handle." />
+    <ApiMember Name="RemoveResize" Signature="ValueTask<Guid[]> RemoveResize(Action handler)" Description="Removes resize listeners matched by delegate identity; pass the exact handler instance that was registered." />
+    <ApiMember Name="RemoveResize" Signature="ValueTask RemoveResize(Guid id)" Description="Removes a single resize listener by its id." />
+    <ApiMember Name="AddScroll" Signature="ValueTask<Guid> AddScroll(Action handler)" Description="Registers a handler for the scroll event and returns its listener id." />
+    <ApiMember Name="SubscribeScroll" Signature="ValueTask<ButilSubscription> SubscribeScroll(Action handler)" Description="Subscribe variant of AddScroll returning a disposable subscription handle." />
+    <ApiMember Name="RemoveScroll" Signature="ValueTask<Guid[]> RemoveScroll(Action handler)" Description="Removes scroll listeners matched by delegate identity; pass the exact handler instance that was registered." />
+    <ApiMember Name="RemoveScroll" Signature="ValueTask RemoveScroll(Guid id)" Description="Removes a single scroll listener by its id." />
+    <ApiMember Name="RemoveAllEventHandlers" Signature="ValueTask RemoveAllEventHandlers()" Description="Removes every resize and scroll listener registered on this instance." />
+    <ApiMember Name="InvokeVisualViewport" Signature="void InvokeVisualViewport(Guid id)" Description="JS interop bridge invoked by the browser on resize/scroll events; not intended for application code." />
+    <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Removes all listeners and releases the interop reference." />
+    <ApiMember Name="SubscribeScrollEnd"
+               Signature="ValueTask<ButilSubscription> SubscribeScrollEnd(Action handler)"
+               Description="Fires once when a visual-viewport scroll settles rather than on every frame of it. Prefer this over SubscribeScroll for expensive work. Not implemented in Safari, where the handler never fires." />
+</ApiTable>
+
+@code {
+    private DemoConsole sizeOutput = default!;
+    private DemoConsole offsetOutput = default!;
+    private DemoConsole positionOutput = default!;
+    private DemoConsole resizeOutput = default!;
+    private DemoConsole scrollOutput = default!;
+    private ButilSubscription? resizeSub;
+    private ButilSubscription? scrollSub;
+
+    private async Task GetWidth()
+    {
+        try
+        {
+            await sizeOutput.Success("visualViewport.width →", await visualViewport.GetWidth());
+        }
+        catch (Exception ex)
+        {
+            await sizeOutput.Error("GetWidth failed →", ex.Message);
+        }
+    }
+
+    private async Task GetHeight()
+    {
+        try
+        {
+            await sizeOutput.Success("visualViewport.height →", await visualViewport.GetHeight());
+        }
+        catch (Exception ex)
+        {
+            await sizeOutput.Error("GetHeight failed →", ex.Message);
+        }
+    }
+
+    private async Task GetScale()
+    {
+        try
+        {
+            await sizeOutput.Success("visualViewport.scale →", await visualViewport.GetScale());
+        }
+        catch (Exception ex)
+        {
+            await sizeOutput.Error("GetScale failed →", ex.Message);
+        }
+    }
+
+    private async Task GetOffsetLeft()
+    {
+        try
+        {
+            await offsetOutput.Success("visualViewport.offsetLeft →", await visualViewport.GetOffsetLeft());
+        }
+        catch (Exception ex)
+        {
+            await offsetOutput.Error("GetOffsetLeft failed →", ex.Message);
+        }
+    }
+
+    private async Task GetOffsetTop()
+    {
+        try
+        {
+            await offsetOutput.Success("visualViewport.offsetTop →", await visualViewport.GetOffsetTop());
+        }
+        catch (Exception ex)
+        {
+            await offsetOutput.Error("GetOffsetTop failed →", ex.Message);
+        }
+    }
+
+    private async Task GetPageLeft()
+    {
+        try
+        {
+            await positionOutput.Success("visualViewport.pageLeft →", await visualViewport.GetPageLeft());
+        }
+        catch (Exception ex)
+        {
+            await positionOutput.Error("GetPageLeft failed →", ex.Message);
+        }
+    }
+
+    private async Task GetPageTop()
+    {
+        try
+        {
+            await positionOutput.Success("visualViewport.pageTop →", await visualViewport.GetPageTop());
+        }
+        catch (Exception ex)
+        {
+            await positionOutput.Error("GetPageTop failed →", ex.Message);
+        }
+    }
+
+    private async Task SubscribeResize()
+    {
+        try
+        {
+            if (resizeSub is not null)
+            {
+                await resizeOutput.Warn("Already subscribed to resize.");
+                return;
+            }
+
+            resizeSub = await visualViewport.SubscribeResize(() => _ = OnResized());
+            await resizeOutput.Log("Subscribed to resize - try resizing the window or pinch-zooming.");
+        }
+        catch (Exception ex)
+        {
+            await resizeOutput.Error("Subscribe resize failed →", ex.Message);
+        }
+    }
+
+    private async Task OnResized()
+    {
+        try
+        {
+            var width = await visualViewport.GetWidth();
+            var height = await visualViewport.GetHeight();
+            var scale = await visualViewport.GetScale();
+            await resizeOutput.Info($"Resize → {width:F0} x {height:F0}, scale = {scale:F2}");
+        }
+        catch (Exception ex)
+        {
+            await resizeOutput.Error("Resize handler failed →", ex.Message);
+        }
+    }
+
+    private async Task UnsubscribeResize()
+    {
+        try
+        {
+            if (resizeSub is null)
+            {
+                await resizeOutput.Warn("Not subscribed to resize.");
+                return;
+            }
+
+            await resizeSub.DisposeAsync();
+            resizeSub = null;
+            await resizeOutput.Log("Resize subscription removed.");
+        }
+        catch (Exception ex)
+        {
+            await resizeOutput.Error("Unsubscribe resize failed →", ex.Message);
+        }
+    }
+
+    private async Task SubscribeScroll()
+    {
+        try
+        {
+            if (scrollSub is not null)
+            {
+                await scrollOutput.Warn("Already subscribed to scroll.");
+                return;
+            }
+
+            scrollSub = await visualViewport.SubscribeScroll(() => _ = OnScrolled());
+            await scrollOutput.Log("Subscribed to scroll - pinch-zoom and pan to trigger it.");
+        }
+        catch (Exception ex)
+        {
+            await scrollOutput.Error("Subscribe scroll failed →", ex.Message);
+        }
+    }
+
+    private async Task OnScrolled()
+    {
+        try
+        {
+            var offsetLeft = await visualViewport.GetOffsetLeft();
+            var offsetTop = await visualViewport.GetOffsetTop();
+            await scrollOutput.Info($"Scroll → offset = ({offsetLeft:F0}, {offsetTop:F0})");
+        }
+        catch (Exception ex)
+        {
+            await scrollOutput.Error("Scroll handler failed →", ex.Message);
+        }
+    }
+
+    private async Task UnsubscribeScroll()
+    {
+        try
+        {
+            if (scrollSub is null)
+            {
+                await scrollOutput.Warn("Not subscribed to scroll.");
+                return;
+            }
+
+            await scrollSub.DisposeAsync();
+            scrollSub = null;
+            await scrollOutput.Log("Scroll subscription removed.");
+        }
+        catch (Exception ex)
+        {
+            await scrollOutput.Error("Unsubscribe scroll failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (resizeSub is not null)
+            {
+                await resizeSub.DisposeAsync();
+                resizeSub = null;
+            }
+
+            if (scrollSub is not null)
+            {
+                await scrollSub.DisposeAsync();
+                scrollSub = null;
+            }
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+}

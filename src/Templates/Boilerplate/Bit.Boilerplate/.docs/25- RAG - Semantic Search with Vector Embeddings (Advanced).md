@@ -87,23 +87,23 @@ This works because embeddings capture the **semantic meaning** across languages,
 
 The project supports multiple embedding model providers. You configure them in `appsettings.json` under the `AI` section in the `Boilerplate.Server.Api` project.
 
-### 3.1 LocalTextEmbeddingGenerationService (Default)
+### 3.1 What Ships
 
-**Location**: [`src/Server/Boilerplate.Server.Api/Program.Services.cs`](/src/Server/Boilerplate.Server.Api/Program.Services.cs) (lines 367-372)
+There is **no local, in-process embedding generator**. `Program.Services.cs` registers an
+`IEmbeddingGenerator<string, Embedding<float>>` only when you configure one, in this order:
 
-```csharp
-services.AddEmbeddingGenerator(sp => new LocalTextEmbeddingGenerationService()
-    .AsEmbeddingGenerator())
-    .UseLogging()
-    .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
-```
+1. `AI:OpenAI:EmbeddingApiKey` is set → the OpenAI-compatible generator, against `AI:OpenAI:EmbeddingEndpoint`.
+2. Otherwise `AI:HuggingFace:EmbeddingEndpoint` is set → a Hugging Face Text Embeddings Inference endpoint. The shipped
+   default points at `http://localhost:7000`, which is the container the `AI:HuggingFace` comment in `appsettings.json`
+   tells you how to run - nothing is listening there until you start it.
 
-**Characteristics**:
-- Runs locally without external API calls
-- Generates 384-dimensional vectors
-- Uses a small model that runs on your server
-- **Not recommended for production** due to limited accuracy
-- Good for development and testing
+If neither is configured, no generator is registered at all, so anything that injects one fails to activate. Configure
+one **before** enabling embeddings.
+
+**The vector column's dimensions must match your model's output**, and the shipped `vector(384)` in
+`ProductConfiguration` does not match the shipped default model: `text-embedding-3-small`
+(`AI:OpenAI:EmbeddingModel`) produces **1536**. Change the column to match whichever model you configure - 384 suits a
+small Hugging Face model such as `bge-small-en-v1.5`, 1536 the OpenAI default - before creating the schema.
 
 ### 3.2 Production-Recommended Models
 
@@ -118,23 +118,6 @@ For production environments, you should use more accurate models:
     "EmbeddingEndpoint": "https://models.inference.ai.azure.com"
 }
 ```
-
-- **Models**: `text-embedding-3-small`, `text-embedding-3-large`
-- **Pros**: High accuracy, widely supported
-- **Cons**: Requires API calls, costs per token
-
-#### **Azure OpenAI**
-**Configuration** in `appsettings.json`:
-```json
-"AzureOpenAI": {
-    "EmbeddingModel": "text-embedding-3-small",
-    "EmbeddingApiKey": "your-key",
-    "EmbeddingEndpoint": "https://yourResourceName.openai.azure.com/openai/deployments/yourDeployment"
-}
-```
-
-- **Pros**: Enterprise-grade, compliance, data residency control
-- **Cons**: Requires Azure subscription, costs
 
 #### **Hugging Face Models**
 **Configuration** in `appsettings.json`:
@@ -151,32 +134,34 @@ For production environments, you should use more accurate models:
 
 By default, embeddings are **disabled** in the project. To enable them:
 
-### Step 1: Open AppDbContext.cs
+### Step 1: Flip the switch
 
-**File Location**: [`src/Server/Boilerplate.Server.Api/Infrastructure/Data/AppDbContext.cs`](/src/Server/Boilerplate.Server.Api/Infrastructure/Data/AppDbContext.cs)
+Set `AppDbContext.IsEmbeddingEnabled` to `true`. That single flag decides whether `Product.Embedding` is a real vector
+column or is ignored by the model.
 
-**Current State**:
+**Mind what the flag does when it is `false`.** `ProductEmbeddingService` falls back to a plain name match - and skips
+generating embeddings on write - **only in Development**:
+
 ```csharp
-// This requires SQL Server 2025+
-public static readonly bool IsEmbeddingEnabled = false;
+if (AppDbContext.IsEmbeddingEnabled is false && env.IsDevelopment())
 ```
 
-### Step 2: Change to Enable Embeddings
+That is deliberate: a deployment that reached Staging or Production with the flag off, or with no embedding generator
+configured, is a misconfiguration and is meant to fail loudly rather than quietly serve degraded search results
+nobody notices. So outside Development, treat "embeddings enabled" and "an embedding generator configured" as
+prerequisites, not as options.
 
-**Change to**:
-```csharp
-// This requires SQL Server 2025+
-public static readonly bool IsEmbeddingEnabled = true;
-```
+### Step 2: Meet the database prerequisite
 
-### Step 3: Important Prerequisites
+⚠️ Your database has to support vector search, and which one you need depends on the `database` you generated with:
 
-⚠️ **CRITICAL REQUIREMENT**: Vector embeddings require **SQL Server 2025+** which includes native vector search support.
+- **PostgreSQL**: the `pgvector` extension must be installed in the server. `AppDbContext.OnModelCreating` declares it
+  (`HasPostgresExtension("vector")`), but declaring is not installing - use an image that ships it, e.g.
+  `pgvector/pgvector:pg18`, which is what the Aspire AppHost already uses.
+- **SQL Server**: **SQL Server 2025+**, which is the first version with native vector search.
 
-If you're using an older version of SQL Server:
-- **Option 1**: Upgrade to SQL Server 2025+
-- **Option 2**: Switch to PostgreSQL with the `pgvector` extension
-- **Option 3**: Use a different database with vector support (e.g., Azure Cosmos DB, Qdrant, etc.)
+Neither Sqlite nor MySql has a vector type here, which is why this feature is only generated for the two databases
+above.
 
 ---
 
@@ -211,7 +196,7 @@ else
 
 - **When enabled**: Creates a `vector(384)` column in the database
 - **When disabled**: Ignores the property (no database column created)
-- **Dimensions**: 384 matches the `LocalTextEmbeddingGenerationService` output (adjust for other models)
+- **Dimensions**: must match the output of the model you configured under `AI` - see section 3.1
 
 ### 5.3 ProductEmbeddingService
 
@@ -264,8 +249,10 @@ The `SearchProducts()` method performs semantic search:
 ```csharp
 public async Task<IQueryable<Product>> SearchProducts(string searchQuery, CancellationToken cancellationToken)
 {
-    if (AppDbContext.IsEmbeddingEnabled is false)
-        throw new InvalidOperationException("Embeddings are not enabled.");
+    // In Development only, fall back to a plain name match instead of a vector query.
+    if (AppDbContext.IsEmbeddingEnabled is false && env.IsDevelopment())
+        return dbContext.Products.Where(p => EF.Functions.Like(p.Name, searchQuery));
+
     
     // Generate embedding for the search query
     var embeddedSearchQuery = await embeddingGenerator.GenerateAsync(searchQuery, cancellationToken);

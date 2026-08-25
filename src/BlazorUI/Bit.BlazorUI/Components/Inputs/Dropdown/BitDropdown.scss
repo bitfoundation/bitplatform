@@ -1,6 +1,18 @@
 @import "../../../Styles/functions.scss";
 @import "../../../Styles/media-queries.scss";
 
+// The size of the control and of its callout is driven by these variables so a single size class,
+// applied to the root element and repeated on the callout, resizes every part consistently.
+// A preset that raises the control height (Material 40px, Cupertino 36px) then resizes the trigger,
+// the callout and the rows inside it together.
+@mixin drp-size-medium {
+    --bit-drp-fs: #{$tg-fs-sm};
+    --bit-drp-h: #{$siz-ctrl-md};
+    --bit-drp-lbl-lh: #{spacing(2.75)};
+    --bit-drp-itm-h: #{$siz-item-md};
+    --bit-drp-itm-fs: #{$tg-fs-sm};
+}
+
 .bit-drp {
     width: 100%;
     display: flex;
@@ -10,13 +22,14 @@
     --bit-drp-clr: #{$clr-pri};
     --bit-drp-clr-hover: #{$clr-pri-hover};
     --bit-drp-clr-text: #{$clr-pri-text};
+    @include drp-size-medium;
 
     &.bit-drp-req {
         .bit-drp-lbl {
             &::after {
                 content: " *";
                 color: $clr-req;
-                padding-right: spacing(1.5);
+                padding-inline-end: spacing(1.5);
             }
         }
     }
@@ -31,8 +44,22 @@
             }
 
             &:focus {
-                &::after {
-                    border-color: $clr-err;
+                @include focus-ring($clr-err-focus);
+            }
+        }
+
+        // The borderless and the underlined variants have no box to draw the ring around, so the
+        // invalid state is shown as an underline-shaped, keyboard-only ring instead.
+        &.bit-drp-nbd,
+        &.bit-drp-und {
+            .bit-drp-wrp {
+                &:focus {
+                    outline: none;
+                    box-shadow: none;
+                }
+
+                &:focus-visible {
+                    @include focus-underline-ring($clr-err-focus);
                 }
             }
         }
@@ -54,12 +81,9 @@
             &:focus {
                 color: $clr-fg-dis;
                 border-color: $clr-brd-dis;
-
-                &::after {
-                    width: 0;
-                    height: 0;
-                    border: none;
-                }
+                // Suppress the focus ring while disabled, including the forced-colors outline.
+                outline: none;
+                box-shadow: none;
             }
         }
 
@@ -105,9 +129,40 @@
         }
 
         &:focus {
-            &::after {
-                border: none;
+            // Suppress the global focus ring on the no-border variant; the underline-ring
+            // below still applies for keyboard focus via :focus-visible.
+            outline: none;
+            box-shadow: none;
+        }
+
+        &:focus-visible {
+            // No-border variant: keep the no-border look but use an inset underline-style
+            // ring as a keyboard-only, high-contrast focus cue (WCAG 2.4.7 / 2.4.13).
+            @include focus-underline-ring(var(--bit-drp-clr-focus));
+        }
+    }
+}
+
+// Only a bottom border in place of the box, which is the dense-form variant of the other input
+// components. The keyboard focus cue follows the same shape, so the underline itself carries it.
+.bit-drp-und {
+    .bit-drp-wrp {
+        border-radius: 0;
+        border-width: 0 0 $shp-border-width;
+
+        @media (hover: hover) {
+            &:hover {
+                border-width: 0 0 $shp-border-width;
             }
+        }
+
+        &:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+        &:focus-visible {
+            @include focus-underline-ring(var(--bit-drp-clr-focus));
         }
     }
 }
@@ -118,14 +173,32 @@
     }
 }
 
+.bit-drp-des {
+    display: block;
+    padding-top: spacing(0.5);
+}
+
+// The default description text only. A DescriptionTemplate renders whatever it likes, so styling
+// every span under the container would reach into markup the component knows nothing about.
+.bit-drp-dtx {
+    color: $clr-fg-pri;
+    font-size: $tg-fs-2xs;
+}
+
 .bit-drp-lbl {
     margin: 0;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: $clr-fg-pri;
     box-sizing: border-box;
-    font-size: spacing(1.75);
+    font-size: var(--bit-drp-fs);
     padding: spacing(0.625) 0;
-    line-height: spacing(2.75);
+    line-height: var(--bit-drp-lbl-lh);
+}
+
+// Carries the id the combobox is named by, around the selection display alone. It takes no part in
+// the layout so the chips stay the direct flex items of the text container they were before it.
+.bit-drp-tdp {
+    display: contents;
 }
 
 .bit-drp-wrp {
@@ -135,10 +208,14 @@
     user-select: none;
     color: $clr-fg-sec;
     position: relative;
-    min-height: spacing(4);
+
+    // Centers the content of Prefix/SuffixTemplate; the component's own children opt back
+    // into the full height with align-self: stretch.
+    align-items: center;
+    min-height: var(--bit-drp-h);
     box-sizing: border-box;
     background-color: $clr-bg-pri;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     @media (hover: hover) {
@@ -170,14 +247,7 @@
             color: $clr-fg-pri;
         }
 
-        &::after {
-            content: "";
-            position: absolute;
-            pointer-events: none;
-            inset: spacing(-0.125);
-            border-radius: $shp-border-radius;
-            border: spacing(0.25) $shp-border-style var(--bit-drp-clr);
-        }
+        @include focus-ring(var(--bit-drp-clr-focus));
     }
 }
 
@@ -188,25 +258,43 @@
     outline: none;
     display: block;
     overflow: hidden;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     position: relative;
+    align-self: center;
     white-space: nowrap;
     box-sizing: border-box;
     text-overflow: ellipsis;
-    font-size: spacing(1.75);
-    line-height: spacing(3.75);
-    border-radius: spacing(0.25);
+    font-size: var(--bit-drp-fs);
+    line-height: normal;
+    border-radius: $shp-radius-control;
     padding-inline-start: spacing(1);
+
+    // Centered as a line box of its own rather than as a line box stretched over the control: where
+    // the line box is stretched, the glyphs sit on the half-leading the font's ascent and descent
+    // produce, and no two families put the baseline in the same place - Roboto's ascent minus its
+    // descent falls a pixel short of its cap height at the control font size where Segoe UI's does
+    // not, so the Material trigger read a pixel high while the Fluent one read centered. Trimming the
+    // box down to the cap and the baseline takes the metrics out of it and centers the glyphs
+    // themselves; the symmetric padding is what the overflow clips against, so descenders survive it.
+    @supports (text-box: trim-both cap alphabetic) {
+        text-box: trim-both cap alphabetic;
+        padding-block: 0.35em;
+    }
 }
 
 .bit-drp-sch {
     .bit-drp-tcn {
         height: unset;
         display: flex;
+        align-self: stretch;
         flex-wrap: wrap;
         gap: spacing(0.5);
-        min-height: spacing(4);
-        padding: spacing(1) spacing(3.5) spacing(1) spacing(1);
+        min-height: var(--bit-drp-h);
+
+        // Logical, not physical: the room left at the end is for the icons of the trigger, which sit
+        // where the text ends - on the left of an RTL dropdown.
+        padding-block: spacing(1);
+        padding-inline: spacing(1) spacing(3.5);
     }
 }
 
@@ -214,13 +302,52 @@
     display: flex;
     cursor: default;
     gap: spacing(0.5);
+    align-items: center;
     padding: 0 spacing(0.5);
-    border-radius: spacing(0.25);
+    border-radius: $shp-radius-chip;
     background-color: $clr-bg-sec;
     border: $shp-border-width $shp-border-style $clr-brd-sec;
+}
+
+// Stands for the selected items that did not fit in the chips display.
+.bit-drp-ovf {
+    cursor: default;
+    font-weight: $tg-fw-semibold;
+    color: var(--bit-drp-clr-text);
+    border-color: var(--bit-drp-clr);
+    background-color: var(--bit-drp-clr);
+}
+
+// The glyph a chip can be removed by is far smaller than the 24 CSS pixels WCAG 2.2 asks of a pointer
+// target. The chip is tall enough to carry that on its own, so the button stretches to the chip height
+// and is floored at the target width - the drawn glyph keeps its size, only what answers the pointer
+// around it grows, and it grows inside the chip rather than over the one standing next to it.
+.bit-drp-crb {
+    padding: 0;
+    border: none;
+    display: flex;
+    cursor: pointer;
+    color: inherit;
+    align-items: center;
+    align-self: stretch;
+    justify-content: center;
+    min-width: spacing(3);
+    outline: transparent;
+    border-radius: $shp-radius-control;
+    background-color: transparent;
 
     i {
-        cursor: pointer;
+        font-size: $tg-fs-xs;
+    }
+
+    &:focus-visible {
+        outline: $shp-border-width-thick $shp-border-style var(--bit-drp-clr);
+    }
+
+    @media (hover: hover) {
+        &:hover {
+            color: $clr-fg-pri-hover;
+        }
     }
 }
 
@@ -228,6 +355,7 @@
     display: flex;
     cursor: pointer;
     align-items: center;
+    align-self: stretch;
     padding: 0 spacing(1);
 
     i {
@@ -235,7 +363,7 @@
         width: unset;
         pointer-events: none;
         display: inline-block;
-        font-size: spacing(1.5);
+        font-size: $tg-fs-xs;
         color: $clr-fg-sec;
     }
 }
@@ -245,11 +373,11 @@
     width: 100%;
     display: flex;
     cursor: pointer;
-    text-align: left;
+    text-align: start;
     color: $clr-fg-pri;
     position: relative;
     align-items: center;
-    height: spacing(4.5);
+    height: var(--bit-drp-itm-h);
     padding: 0 spacing(1);
     box-sizing: border-box;
     line-height: spacing(2.5);
@@ -339,14 +467,15 @@
     display: flex;
     flex-shrink: 0;
     align-items: center;
+    align-self: stretch;
     white-space: nowrap;
     padding: 0 spacing(1.25);
-    min-height: spacing(3.75);
+    min-height: var(--bit-drp-h);
     color: $clr-fg-pri;
     background: $clr-bg-sec;
 
     span {
-        font-size: spacing(1.75);
+        font-size: $tg-fs-sm;
         padding-bottom: spacing(0.125);
     }
 }
@@ -357,11 +486,11 @@
     display: flex;
     gap: spacing(1);
     cursor: pointer;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     user-select: none;
     position: relative;
     align-items: center;
-    font-size: spacing(1.75);
+    font-size: var(--bit-drp-fs);
     background-color: transparent;
 }
 
@@ -369,16 +498,16 @@
     display: flex;
     overflow: hidden;
     position: relative;
-    width: spacing(2.5);
-    min-width: spacing(2.5);
+    width: $siz-sel-md;
+    min-width: $siz-sel-md;
     align-items: center;
-    height: spacing(2.5);
+    height: $siz-sel-md;
     box-sizing: border-box;
     justify-content: center;
-    transition-duration: 200ms;
-    border-radius: spacing(0.25);
+    transition-duration: $mot-duration;
+    border-radius: $shp-radius-control;
     transition-property: background, border, border-color;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
+    transition-timing-function: $mot-easing;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     .bit-drp-chm {
@@ -386,10 +515,10 @@
         width: 100%;
         height: 100%;
         display: flex;
-        transition: 0.1s;
+        transition: $mot-duration-short;
         align-items: center;
         justify-content: center;
-        font-size: spacing(1.375);
+        font-size: $tg-fs-xs;
     }
 }
 
@@ -402,20 +531,24 @@
     margin: 0;
     display: flex;
     box-shadow: none;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     border-radius: 0;
-    height: spacing(4);
+    height: var(--bit-drp-h);
     align-items: stretch;
     flex-flow: row nowrap;
     box-sizing: border-box;
-    font-size: spacing(1.75);
+    font-size: var(--bit-drp-fs);
     color: $clr-fg-pri;
     border-style: $shp-border-style;
     border-color: $clr-brd-pri;
     font-family: $tg-font-family;
     border-width: 0 0 $shp-border-width;
     background-color: $clr-bg-pri;
-    padding: spacing(0.125) 0 spacing(0.125) spacing(1);
+
+    // The same logical padding the search box beside it uses, so the text of an RTL panel starts
+    // where its input does rather than against the opposite edge.
+    padding-block: spacing(0.125);
+    padding-inline-start: spacing(1);
 
     @media (hover: hover) {
         &:hover {
@@ -434,13 +567,13 @@
     margin: 0;
     display: flex;
     box-shadow: none;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     border-radius: 0;
-    height: spacing(4);
+    height: var(--bit-drp-h);
     align-items: stretch;
     flex-flow: row nowrap;
     box-sizing: border-box;
-    font-size: spacing(1.75);
+    font-size: var(--bit-drp-fs);
     color: $clr-fg-pri;
     border-style: $shp-border-style;
     border-color: $clr-brd-pri;
@@ -478,7 +611,7 @@
     }
 
     &.bit-drp-shf {
-        border-bottom: spacing(0.25) $shp-border-style var(--bit-drp-clr);
+        border-bottom: $shp-border-width-thick $shp-border-style var(--bit-drp-clr);
 
         .bit-drp-sic {
             width: spacing(0.5);
@@ -491,7 +624,7 @@
         @media (hover: hover) {
             &:hover {
                 border-width: 0 0 $shp-border-width;
-                border-bottom: spacing(0.25) $shp-border-style var(--bit-drp-clr);
+                border-bottom: $shp-border-width-thick $shp-border-style var(--bit-drp-clr);
             }
         }
     }
@@ -503,11 +636,11 @@
     flex-shrink: 0;
     width: spacing(4);
     text-align: center;
-    font-size: spacing(2);
+    font-size: $tg-fs-md;
     flex-direction: column;
     justify-content: center;
     color: var(--bit-drp-clr);
-    transition: width 0.167s ease 0s;
+    transition: width $mot-duration $mot-easing 0s;
 
     i {
         opacity: 1;
@@ -516,7 +649,7 @@
         height: unset;
         display: inline-block;
         color: var(--bit-drp-clr);
-        transition: opacity 0.167s ease 0s;
+        transition: opacity $mot-duration $mot-easing 0s;
     }
 }
 
@@ -545,7 +678,7 @@
     cursor: pointer;
     flex-direction: row;
     align-items: stretch;
-    flex-basis: spacing(4);
+    flex-basis: $siz-ctrl-md;
     margin: spacing(-0.125) 0;
 
     @media (hover: hover) {
@@ -565,8 +698,8 @@
     height: auto;
     border: none;
     cursor: pointer;
-    font-weight: 400;
-    width: spacing(4);
+    font-weight: $tg-fw-regular;
+    width: $siz-ctrl-md;
     user-select: none;
     position: relative;
     text-align: center;
@@ -575,11 +708,15 @@
     text-decoration: none;
     box-sizing: border-box;
     padding: 0 spacing(0.5);
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     color: var(--bit-drp-clr);
     background-color: transparent;
     font-family: $tg-font-family;
-    border-radius: 0 spacing(0.125) spacing(0.125) 0;
+
+    // Only the corners at the end of the search box are rounded, so they are named logically: in an
+    // RTL callout the button sits at the other end and it is the other two corners that are its own.
+    border-start-end-radius: $shp-radius-control;
+    border-end-end-radius: $shp-radius-control;
 
     span {
         height: 100%;
@@ -595,7 +732,7 @@
         height: spacing(2);
         text-align: center;
         margin: 0 spacing(0.5);
-        font-size: spacing(1.5);
+        font-size: $tg-fs-xs;
         line-height: spacing(2);
         color: $clr-fg-pri;
     }
@@ -615,9 +752,11 @@
 .bit-drp-clr,
 .bit-drp-cai {
     display: flex;
-    right: spacing(3.5);
     width: spacing(3.75);
-    height: spacing(3.75);
+
+    // Follows the height of the dropdown like Prefix/Suffix do, so the button fills the trigger
+    // in every size instead of only in the medium one.
+    height: var(--bit-drp-h);
     justify-content: center;
     background-color: $clr-bg-sec;
 
@@ -631,59 +770,74 @@
 .bit-drp-cal {
     display: none;
     position: fixed;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     overflow: hidden;
     box-sizing: border-box;
     z-index: $zindex-callout;
-    font-size: spacing(1.75);
+    font-size: var(--bit-drp-fs);
     animation-fill-mode: both;
-    animation-duration: 0.367s;
-    box-shadow: $box-shadow-callout;
-    border-radius: $shp-border-radius;
+    @include drp-size-medium;
+
+    animation-duration: $mot-duration-long;
+    box-shadow: $box-shadow-popup;
+    border-radius: $shp-radius-popup;
     background-color: $clr-bg-pri;
     animation-name: bit-fade-show, bit-slide-down;
-    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+    animation-timing-function: $mot-easing-decelerate;
 }
 
 .bit-drp-scn {
     overflow: hidden auto;
-    max-height: spacing(88.875);
+    max-height: $siz-popup-max-height;
+}
+
+// The wrapper is the direct child of the scroll container, so it is the element that can stick; the
+// header itself has a transparent background, which the wrapper has to make opaque or the items would
+// scroll through it. The stacking context keeps it above the items that pass underneath.
+.bit-drp-sth .bit-drp-ihw {
+    top: 0;
+    z-index: 1;
+    position: sticky;
+    background-color: $clr-bg-pri;
 }
 
 .bit-drp-ihd {
     width: 100%;
     color: var(--bit-drp-clr);
     cursor: default;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     user-select: none;
-    height: spacing(4.5);
+    height: var(--bit-drp-itm-h);
     padding: 0 spacing(1);
     box-sizing: border-box;
-    font-size: spacing(1.875);
-    line-height: spacing(4.5);
+    font-size: var(--bit-drp-itm-fs);
+    line-height: var(--bit-drp-itm-h);
     background: none transparent;
 }
 
-.bit-drp-itm {
+// The row that offers to create an item out of the typed text is one of the list to look at and to
+// reach, so it takes the layout of an item; only the styling of the commit target sets it apart.
+.bit-drp-itm,
+.bit-drp-dyn {
     width: 100%;
     display: flex;
     gap: spacing(1);
     cursor: pointer;
     overflow: hidden;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     text-align: start;
     user-select: none;
     position: relative;
     color: $clr-fg-pri;
     white-space: nowrap;
     align-items: center;
-    height: spacing(4.5);
+    height: var(--bit-drp-itm-h);
     outline: transparent;
     padding: 0 spacing(1);
     text-decoration: none;
     box-sizing: border-box;
     text-overflow: ellipsis;
-    font-size: spacing(1.875);
+    font-size: var(--bit-drp-itm-fs);
     line-height: spacing(2.5);
     background-color: transparent;
     border: $shp-border-width $shp-border-style transparent;
@@ -695,16 +849,63 @@
     }
 }
 
-    .bit-drp-itm[disabled] {
-        cursor: default;
-        color: $clr-fg-dis;
+.bit-drp-itm[disabled] {
+    cursor: default;
+    color: $clr-fg-dis;
 
-        @media (hover: hover) {
-            &:hover {
-                background-color: transparent;
-            }
+    // The item text carries its own color, so it has to follow the disabled state explicitly.
+    .bit-drp-itx {
+        color: $clr-fg-dis;
+    }
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: transparent;
         }
     }
+}
+
+// The item a commit of the text typed into the ComboBox would take. It is shown the way hovering it
+// would, plus a rule down its leading edge, so that what Enter is about to select can be seen before it
+// is pressed instead of only afterwards.
+.bit-drp-itm.bit-drp-ctg,
+.bit-drp-dyn.bit-drp-ctg,
+.bit-drp-iwr.bit-drp-ctg {
+    background-color: $clr-bg-pri-hover;
+    box-shadow: inset $shp-border-width-thick 0 0 0 var(--bit-drp-clr);
+}
+
+// A box-shadow has no logical form, so the bar marking the commit target has to be moved to the
+// other edge by hand for the callout to keep pointing at the items from the side the text starts on.
+.bit-drp-rtl {
+    .bit-drp-itm.bit-drp-ctg,
+    .bit-drp-dyn.bit-drp-ctg,
+    .bit-drp-iwr.bit-drp-ctg {
+        box-shadow: inset calc(-1 * $shp-border-width-thick) 0 0 0 var(--bit-drp-clr);
+    }
+}
+
+// The matched part of an item text while a search is active.
+.bit-drp-hlt {
+    font-weight: $tg-fw-semibold;
+    border-radius: $shp-radius-popup;
+    color: var(--bit-drp-clr-text);
+    background-color: var(--bit-drp-clr);
+}
+
+// Announces the number of items the current search produced, for screen reader users who cannot see
+// the list shrink as they type. Kept out of view but not out of the accessibility tree.
+.bit-drp-lvr {
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    border: none;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
 
 .bit-drp-sel {
     background-color: $clr-bg-sec;
@@ -718,24 +919,164 @@
 
 .bit-drp-sep {
     width: 100%;
-    height: spacing(0.125);
+    height: $siz-divider;
     background-color: $clr-bg-sec;
+}
+
+// The hint that the typed text is still too short to filter by, which sits above the (unfiltered)
+// items rather than in place of them, so it is set apart from them instead of looking like one.
+.bit-drp-shn {
+    cursor: default;
+    user-select: none;
+    text-align: start;
+    font-style: italic;
+    color: $clr-fg-sec;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    padding: spacing(1) spacing(1.5);
+    font-size: calc(var(--bit-drp-fs) * 0.85);
+}
+
+.bit-drp-emp {
+    display: flex;
+    cursor: default;
+    text-align: center;
+    user-select: none;
+    color: $clr-fg-sec;
+    align-items: center;
+    box-sizing: border-box;
+    justify-content: center;
+    overflow-wrap: break-word;
+    font-size: var(--bit-drp-fs);
+    min-height: var(--bit-drp-itm-h);
+    padding: spacing(1) spacing(1.5);
+}
+
+.bit-drp-ldc {
+    display: flex;
+    cursor: default;
+    gap: spacing(1);
+    user-select: none;
+    color: $clr-fg-sec;
+    align-items: center;
+    height: var(--bit-drp-itm-h);
+    padding: 0 spacing(1);
+    box-sizing: border-box;
+    justify-content: center;
+    font-size: var(--bit-drp-fs);
+}
+
+.bit-drp-spn {
+    width: 1em;
+    height: 1em;
+    flex-shrink: 0;
+    border-radius: 50%;
+    box-sizing: border-box;
+    border-color: $clr-brd-sec;
+    border-width: $siz-spinner-stroke;
+    border-style: $shp-border-style;
+    border-top-color: var(--bit-drp-clr);
+    animation: bit-drp-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
+}
+
+@keyframes bit-drp-spinner-animation {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+// Read-only keeps the dropdown focusable and its callout browsable, but nothing inside it can be
+// changed, so none of the parts should advertise an interaction that gets silently ignored.
+.bit-drp-rol {
+    .bit-drp-wrp {
+        cursor: default;
+    }
+
+    .bit-drp-itm,
+    .bit-drp-iwr,
+    .bit-drp-mcn {
+        cursor: default;
+    }
+
+    @media (hover: hover) {
+        .bit-drp-itm:hover,
+        .bit-drp-iwr:hover {
+            background-color: transparent;
+        }
+
+        .bit-drp-iwr:hover .bit-drp-chm {
+            opacity: 0;
+        }
+
+        .bit-drp-iwr.bit-drp-chd:hover {
+            background-color: $clr-bg-sec;
+
+            .bit-drp-chm {
+                opacity: 1;
+            }
+        }
+
+        .bit-drp-sel:hover {
+            background-color: $clr-bg-sec;
+        }
+    }
+}
+
+.bit-drp-sac {
+    border-bottom: $shp-border-width $shp-border-style $clr-brd-sec;
+}
+
+.bit-drp-sai {
+    .bit-drp-chb {
+        border-color: var(--bit-drp-clr);
+
+        .bit-drp-chm {
+            opacity: 0;
+        }
+
+        &::after {
+            inset: 0;
+            content: "";
+            margin: auto;
+            position: absolute;
+            width: spacing(1.25);
+            height: spacing(1.25);
+            border-radius: $shp-radius-control;
+            background-color: var(--bit-drp-clr);
+        }
+    }
+
+    @media (hover: hover) {
+        &:hover {
+            .bit-drp-chb {
+                border-color: var(--bit-drp-clr-hover);
+
+                .bit-drp-chm {
+                    opacity: 0;
+                }
+
+                &::after {
+                    background-color: var(--bit-drp-clr-hover);
+                }
+            }
+        }
+    }
 }
 
 .bit-drp-cls {
     border: none;
     cursor: pointer;
-    font-weight: 400;
-    width: spacing(4);
-    height: spacing(4);
+    font-weight: $tg-fw-regular;
+    width: $siz-ctrl-md;
+    height: $siz-ctrl-md;
     text-align: center;
     display: inline-block;
     text-decoration: none;
     box-sizing: border-box;
     padding: 0 spacing(0.5);
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     margin-inline-start: auto;
-    border-radius: spacing(0.25);
+    border-radius: $shp-radius-control;
     background-color: transparent;
     color: $clr-fg-pri;
 
@@ -781,9 +1122,9 @@
         width: spacing(34);
         animation-name: unset;
         transform: translateX(100%);
-        box-shadow: $box-shadow-callout;
+        box-shadow: $box-shadow-sheet;
         padding: spacing(3) spacing(2.5);
-        transition: transform 200ms ease-out, opacity 100ms linear;
+        transition: transform $mot-duration $mot-easing, opacity $mot-duration-short linear;
 
         .bit-drp-rlc {
             display: flex;
@@ -801,104 +1142,142 @@
 }
 
 
+.bit-drp-sm {
+    --bit-drp-fs: #{$tg-fs-xs};
+    --bit-drp-h: #{$siz-ctrl-sm};
+    --bit-drp-lbl-lh: #{spacing(2.5)};
+    --bit-drp-itm-h: #{$siz-item-sm};
+    --bit-drp-itm-fs: #{$tg-fs-xs};
+}
+
+.bit-drp-md {
+    @include drp-size-medium;
+}
+
+.bit-drp-lg {
+    --bit-drp-fs: #{$tg-fs-md};
+    --bit-drp-h: #{$siz-ctrl-lg};
+    --bit-drp-lbl-lh: #{spacing(3)};
+    --bit-drp-itm-h: #{$siz-item-lg};
+    --bit-drp-itm-fs: #{$tg-fs-md};
+}
+
+
 .bit-drp-pri {
     --bit-drp-clr: #{$clr-pri};
     --bit-drp-clr-hover: #{$clr-pri-hover};
     --bit-drp-clr-text: #{$clr-pri-text};
+    --bit-drp-clr-focus: #{$clr-pri-focus};
 }
 
 .bit-drp-sec {
     --bit-drp-clr: #{$clr-sec};
     --bit-drp-clr-hover: #{$clr-sec-hover};
     --bit-drp-clr-text: #{$clr-sec-text};
+    --bit-drp-clr-focus: #{$clr-sec-focus};
 }
 
 .bit-drp-ter {
     --bit-drp-clr: #{$clr-ter};
     --bit-drp-clr-hover: #{$clr-ter-hover};
     --bit-drp-clr-text: #{$clr-ter-text};
+    --bit-drp-clr-focus: #{$clr-ter-focus};
 }
 
 .bit-drp-inf {
     --bit-drp-clr: #{$clr-inf};
     --bit-drp-clr-hover: #{$clr-inf-hover};
     --bit-drp-clr-text: #{$clr-inf-text};
+    --bit-drp-clr-focus: #{$clr-inf-focus};
 }
 
 .bit-drp-suc {
     --bit-drp-clr: #{$clr-suc};
     --bit-drp-clr-hover: #{$clr-suc-hover};
     --bit-drp-clr-text: #{$clr-suc-text};
+    --bit-drp-clr-focus: #{$clr-suc-focus};
 }
 
 .bit-drp-wrn {
     --bit-drp-clr: #{$clr-wrn};
     --bit-drp-clr-hover: #{$clr-wrn-hover};
     --bit-drp-clr-text: #{$clr-wrn-text};
+    --bit-drp-clr-focus: #{$clr-wrn-focus};
 }
 
 .bit-drp-swr {
     --bit-drp-clr: #{$clr-swr};
     --bit-drp-clr-hover: #{$clr-swr-hover};
     --bit-drp-clr-text: #{$clr-swr-text};
+    --bit-drp-clr-focus: #{$clr-swr-focus};
 }
 
 .bit-drp-err {
     --bit-drp-clr: #{$clr-err};
     --bit-drp-clr-hover: #{$clr-err-hover};
     --bit-drp-clr-text: #{$clr-err-text};
+    --bit-drp-clr-focus: #{$clr-err-focus};
 }
 
 .bit-drp-pbg {
     --bit-drp-clr: #{$clr-bg-pri};
     --bit-drp-clr-hover: #{$clr-bg-pri-hover};
     --bit-drp-clr-text: #{$clr-fg-pri};
+    --bit-drp-clr-focus: #{$clr-bg-pri-focus};
 }
 
 .bit-drp-sbg {
     --bit-drp-clr: #{$clr-bg-sec};
     --bit-drp-clr-hover: #{$clr-bg-sec-hover};
     --bit-drp-clr-text: #{$clr-fg-sec};
+    --bit-drp-clr-focus: #{$clr-bg-sec-focus};
 }
 
 .bit-drp-tbg {
     --bit-drp-clr: #{$clr-bg-ter};
     --bit-drp-clr-hover: #{$clr-bg-ter-hover};
     --bit-drp-clr-text: #{$clr-fg-ter};
+    --bit-drp-clr-focus: #{$clr-bg-ter-focus};
 }
 
 .bit-drp-pfg {
     --bit-drp-clr: #{$clr-fg-pri};
     --bit-drp-clr-hover: #{$clr-fg-pri-hover};
     --bit-drp-clr-text: #{$clr-bg-pri};
+    --bit-drp-clr-focus: #{$clr-fg-pri-focus};
 }
 
 .bit-drp-sfg {
     --bit-drp-clr: #{$clr-fg-sec};
     --bit-drp-clr-hover: #{$clr-fg-sec-hover};
     --bit-drp-clr-text: #{$clr-bg-sec};
+    --bit-drp-clr-focus: #{$clr-fg-sec-focus};
 }
 
 .bit-drp-tfg {
     --bit-drp-clr: #{$clr-fg-ter};
     --bit-drp-clr-hover: #{$clr-fg-ter-hover};
     --bit-drp-clr-text: #{$clr-bg-ter};
+    --bit-drp-clr-focus: #{$clr-fg-ter-focus};
 }
 
 .bit-drp-pbr {
     --bit-drp-clr: #{$clr-brd-pri};
     --bit-drp-clr-hover: #{$clr-brd-pri-hover};
     --bit-drp-clr-text: #{$clr-fg-pri};
+    --bit-drp-clr-focus: #{$clr-brd-pri-focus};
 }
 
 .bit-drp-sbr {
     --bit-drp-clr: #{$clr-brd-sec};
     --bit-drp-clr-hover: #{$clr-brd-sec-hover};
     --bit-drp-clr-text: #{$clr-fg-sec};
+    --bit-drp-clr-focus: #{$clr-brd-sec-focus};
 }
 
 .bit-drp-tbr {
     --bit-drp-clr: #{$clr-brd-ter};
     --bit-drp-clr-hover: #{$clr-brd-ter-hover};
     --bit-drp-clr-text: #{$clr-fg-ter};
+    --bit-drp-clr-focus: #{$clr-brd-ter-focus};
 }

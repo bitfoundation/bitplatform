@@ -1,11 +1,12 @@
 //+:cnd:noEmit
 using System.Net;
 using System.Net.Mail;
+using ImageMagick;
+using Boilerplate.Server.Api.Features.Identity;
 //#if (signalR == true)
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
 using Boilerplate.Shared.Features.Chatbot;
-using Boilerplate.Server.Api.Infrastructure.SignalR;
 //#endif
 //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
 using System.ClientModel.Primitives;
@@ -20,7 +21,6 @@ using Microsoft.OpenApi;
 using Microsoft.Identity.Web;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Net.Http.Headers;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Twilio;
@@ -31,6 +31,7 @@ using FluentStorage;
 using FluentEmail.Core;
 using FluentStorage.Storage;
 using Hangfire.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 //#if (redis == true)
 using StackExchange.Redis;
 using Hangfire.Redis.StackExchange;
@@ -42,20 +43,15 @@ using AdsPush.Abstraction;
 //#if (filesStorage == "AzureBlobStorage")
 using Azure.Storage.Blobs;
 //#endif
-using Boilerplate.Server.Api.Features.Identity.Models;
-using Boilerplate.Server.Api.Features.Identity.Services;
 using Medallion.Threading;
 //#if (offlineDb == true)
 using CommunityToolkit.Datasync.Server;
 //#endif
-using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Server.Api.Features.Statistics;
 using Boilerplate.Shared.Infrastructure.Resources;
-using Boilerplate.Server.Api.Infrastructure.RequestPipeline;
 //#if (notification == true)
 using Boilerplate.Server.Api.Features.PushNotification;
 //#endif
-using Boilerplate.Server.Api.Infrastructure.Services;
 //#if (module == "Sales" || module == "Admin")
 using Boilerplate.Server.Api.Features.Products;
 //#endif
@@ -78,10 +74,13 @@ public static partial class Program
         ServerApiSettings appSettings = new();
         configuration.Bind(appSettings);
 
+        ConfigureImageMagickResourceLimits();
+
         services.AddScoped<IdentityEmailService>();
         services.AddScoped<EmailServiceJobsRunner>();
         services.AddScoped<PhoneService>();
         services.AddScoped<PhoneServiceJobsRunner>();
+        services.AddScoped<UserSessionsCleanupJobRunner>();
         //#if (signalR == true)
         // Add MCP server with chatbot tools
         services.AddMcpServer()
@@ -178,10 +177,16 @@ public static partial class Program
 
         // Register distributed lock factory
         //#if (redis == true)
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
         services.AddTransient(sp => new DistributedLockFactory((string lockKey) =>
         {
             return new Medallion.Threading.Redis.RedisDistributedLock(lockKey, sp.GetRequiredKeyedService<IConnectionMultiplexer>("redis-persistent").GetDatabase());
         }));
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
         //#else
         services.AddTransient(sp => new DistributedLockFactory((string lockKey) =>
         {
@@ -227,7 +232,8 @@ public static partial class Program
                     .AllowCredentials();
             });
         });
-        services.AddRateLimiter();
+
+        services.AddRateLimiter(options => options.AddAppRateLimitPolicies());
 
         services.AddSingleton(sp =>
         {
@@ -275,6 +281,7 @@ public static partial class Program
         var signalRBuilder = services.AddSignalR(options =>
         {
             options.EnableDetailedErrors = env.IsDevelopment();
+            configuration.GetRequiredSection("HubOptions").Bind(options);
         }).AddJsonProtocol(options => options.PayloadSerializerOptions.ApplyDefaultOptions());
 
         if (string.IsNullOrEmpty(configuration["Azure:SignalR:ConnectionString"]) is false)
@@ -285,6 +292,9 @@ public static partial class Program
             });
         }
         //#if (redis == true)
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
         else
         {
             // Use Redis as SignalR backplane for scaling out across multiple server instances
@@ -293,21 +303,26 @@ public static partial class Program
                 options.Configuration.ChannelPrefix = RedisChannel.Literal("Boilerplate:SignalR:");
             });
         }
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
         //#endif
         //#endif
 
         //#if (database == "PostgreSQL")
-        var dataSourceBuilder = new Npgsql.NpgsqlDataSourceBuilder(configuration.GetRequiredConnectionString("postgresdb"));
-        dataSourceBuilder.UseVector();
-        dataSourceBuilder.EnableDynamicJson();
-        var dataSource = dataSourceBuilder.Build();
-        services.AddSingleton(dataSource);
+        services.AddSingleton(_ =>
+        {
+            var dataSourceBuilder = new Npgsql.NpgsqlDataSourceBuilder(configuration.GetRequiredConnectionString("postgresdb"));
+            dataSourceBuilder.UseVector();
+            dataSourceBuilder.EnableDynamicJson();
+            return dataSourceBuilder.Build();
+        });
         //#endif
 
         services.AddDbContextPool<AppDbContext>(AddDbContext);
         services.AddPooledDbContextFactory<AppDbContext>(AddDbContext);
 
-        void AddDbContext(DbContextOptionsBuilder options)
+        void AddDbContext(IServiceProvider sp, DbContextOptionsBuilder options)
         {
             options.EnableSensitiveDataLogging(env.IsDevelopment())
                 .EnableDetailedErrors(env.IsDevelopment());
@@ -338,7 +353,7 @@ public static partial class Program
                     errorNumbersToAdd: null);
             });
             //#elif (database == "PostgreSQL")
-            options.UseNpgsql(dataSource, dbOptions =>
+            options.UseNpgsql(sp.GetRequiredService<Npgsql.NpgsqlDataSource>(), dbOptions =>
             {
                 dbOptions.UseVector();
                 dbOptions.SetPostgresVersion(18, 0);
@@ -396,14 +411,15 @@ public static partial class Program
                 var isAuthorizedAction = context.Description.ActionDescriptor.EndpointMetadata.Any(em => em is AuthorizeAttribute);
                 var isODataEnabledAction = context.Description.ActionDescriptor.FilterDescriptors.Any(f => f.Filter is EnableQueryAttribute);
 
-                operation.Parameters = [new OpenApiParameter()
+                operation.Parameters ??= [];
+                operation.Parameters.Add(new OpenApiParameter()
                 {
                     In = ParameterLocation.Header,
                     Name = HeaderNames.Authorization,
                     Example = "Bearer XXX.YYY...",
                     Description = "Get your JWT token by signin-in through Identity/SignIn endpoint",
                     Required = isAuthorizedAction
-                }];
+                });
 
                 if (isODataEnabledAction)
                 {
@@ -423,7 +439,8 @@ public static partial class Program
 
         services.AddDataProtection()
             .PersistKeysToDbContext<AppDbContext>()
-            .ProtectKeysWithCertificate(AppCertificateService.GetAppCertificate(configuration));
+            .ProtectKeysWithCertificate(AppCertificateService.GetActiveAppCertificate(configuration))
+            .UnprotectKeysWithAnyCertificate(AppCertificateService.GetAllAppCertificates(configuration));
 
         AddIdentity(builder);
 
@@ -432,12 +449,12 @@ public static partial class Program
         fluentEmailServiceBuilder.AddSmtpSender(() =>
         {
             var smtpConnectionString = configuration.GetRequiredConnectionString("smtp")!;
-            var endpoint = new Uri(GetConnectionStringValue(smtpConnectionString, "Endpoint", "localhost"));
+            var endpoint = new Uri(GetConnectionStringValue(smtpConnectionString, "Endpoint", "smtp://localhost:25"));
             var host = endpoint.Host;
             var port = endpoint.Port is -1 ? 25 : endpoint.Port;
             var userName = GetConnectionStringValue(smtpConnectionString, "UserName", string.Empty);
             var password = GetConnectionStringValue(smtpConnectionString, "Password", string.Empty);
-            var enableSsl = GetConnectionStringValue(smtpConnectionString, "EnableSsl", port == 465 || port == 587 ? "true" : "false") is not "false";
+            var enableSsl = GetConnectionStringValue(smtpConnectionString, "EnableSsl", port == 465 || port == 587 ? "true" : "false").Equals("false", StringComparison.OrdinalIgnoreCase) is false;
 
             SmtpClient smtpClient = new(host, port)
             {
@@ -489,6 +506,8 @@ public static partial class Program
 
         });
 
+        // ServerDomain (the WebAuthn RP ID) is resolved PER REQUEST from GetWebAppUrl(), which honours a
+        // caller-supplied origin. See ".docs/24 - Security note" for what that means for Blazor Hybrid passkeys.
         services.AddScoped(sp =>
         {
             var webAppUrl = sp.GetRequiredService<IHttpContextAccessor>()
@@ -548,6 +567,36 @@ public static partial class Program
             .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
             // .UseDistributedCache()
         }
+
+        //#if (signalR == true)
+        // Speech in and speech out for the AI chat panel (See ChatbotController.TranscribeSpeech / SynthesizeSpeech).
+        // They are Microsoft.Extensions.AI abstractions rather than the browser's Web Speech api, so a phone's web
+        // view, a home-screen pwa and the MAUI app all behave the same - Web Speech is missing or crippled in most
+        // of them. Each one is optional on its own: with no key the corresponding button is never offered.
+#pragma warning disable MEAI001 // ISpeechToTextClient and ITextToSpeechClient are still experimental.
+        if (string.IsNullOrEmpty(appSettings.AI?.OpenAI?.SpeechToTextApiKey) is false)
+        {
+            services.AddSpeechToTextClient(sp => new OpenAI.Audio.AudioClient(model: appSettings.AI.OpenAI.SpeechToTextModel, credential: new(appSettings.AI.OpenAI.SpeechToTextApiKey), options: new()
+            {
+                Endpoint = appSettings.AI.OpenAI.SpeechToTextEndpoint,
+                Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
+            }).AsISpeechToTextClient())
+            .UseLogging()
+            .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
+        }
+
+        if (string.IsNullOrEmpty(appSettings.AI?.OpenAI?.TextToSpeechApiKey) is false)
+        {
+            services.AddTextToSpeechClient(sp => new OpenAI.Audio.AudioClient(model: appSettings.AI.OpenAI.TextToSpeechModel, credential: new(appSettings.AI.OpenAI.TextToSpeechApiKey), options: new()
+            {
+                Endpoint = appSettings.AI.OpenAI.TextToSpeechEndpoint,
+                Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
+            }).AsITextToSpeechClient())
+            .UseLogging()
+            .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
+        }
+#pragma warning restore MEAI001
+        //#endif
         //#endif
 
         // Configure Hangfire to use Redis for persistent background job storage
@@ -556,13 +605,19 @@ public static partial class Program
             if (appSettings.Hangfire?.UseIsolatedStorage is not true)
             {
                 //#if (redis == true)
+                //#if (IsInsideProjectTemplate == true)
+                /*
+                //#endif
                 hangfireConfiguration.UseRedisStorage(sp.GetRequiredKeyedService<IConnectionMultiplexer>("redis-persistent"), new RedisStorageOptions
                 {
                     Prefix = "Boilerplate:Hangfire:",
                     Db = 1, // Use a dedicated Redis database for Hangfire
                 });
+                //#if (IsInsideProjectTemplate == true)
+                */
+                //#endif
                 //#else
-                hangfireConfiguration.UseEFCoreStorage(AddDbContext, new()
+                hangfireConfiguration.UseEFCoreStorage(optionsBuilder => AddDbContext(sp, optionsBuilder), new()
                 {
                     Schema = "jobs",
                     QueuePollInterval = new TimeSpan(0, 0, 1)
@@ -628,9 +683,11 @@ public static partial class Program
             return result;
         }
 
+        //#if (module == "Sales" || module == "Admin")
         builder.AddAIAgent("AnalyzeProductImageAgent", (sp, _) => sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: GetSystemPrompt(PromptKind.AnalyzeProductImage, sp),
                     name: "AnalyzeProductImageAgent",
                     description: "Analyzes product images to ensure they meet catalog standards for car products"), lifetime: ServiceLifetime.Scoped);
+        //#endif
 
         builder.AddAIAgent("SupportAgent", (sp, _) =>
         {
@@ -639,14 +696,6 @@ public static partial class Program
             return sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: GetSystemPrompt(PromptKind.Support, sp),
                     name: "SupportAgent",
                     description: "Provides support and assistance to users", tools: [.. aiFunctions]);
-        }, lifetime: ServiceLifetime.Scoped);
-
-        builder.AddAIAgent("FollowUpSuggestionsAgent", (sp, _) =>
-        {
-            var aiFunctions = sp.GetRequiredService<AppChatbot>().GetAIFunctions();
-            return sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: GetSystemPrompt(PromptKind.FollowUpSuggestion, sp),
-                    name: "FollowUpSuggestionsAgent",
-                    description: "Generates follow-up suggestions based on user interactions", tools: [.. aiFunctions]);
         }, lifetime: ServiceLifetime.Scoped);
     }
     //#endif
@@ -658,7 +707,6 @@ public static partial class Program
         var env = builder.Environment;
         ServerApiSettings appSettings = new();
         configuration.Bind(appSettings);
-        var identityOptions = appSettings.Identity;
 
         services.AddIdentity<User, Features.Identity.Models.Role>()
             .AddEntityFrameworkStores<AppDbContext>()
@@ -795,13 +843,22 @@ public static partial class Program
         services.ConfigureHttpClientFactoryForExternalIdentityProviders();
     }
 
+    /// <summary>
+    /// Reads a single `key=value` entry out of a `;`-separated connection string.
+    /// Trimming and the case-insensitive comparison are required, not cosmetic: connection strings are commonly
+    /// written with a space after the separator, and a plain ordinal StartsWith on an untrimmed segment makes
+    /// every key after the first invisible - which silently drops SMTP credentials rather than failing loudly.
+    /// Only the FIRST '=' is consumed, so values containing '=' (e.g. base64 padding) survive intact.
+    /// </summary>
     private static string GetConnectionStringValue(string connectionString, string key, string? defaultValue = null)
     {
+        var prefix = $"{key}=";
         var parts = connectionString.Split(';');
         foreach (var part in parts)
         {
-            if (part.StartsWith($"{key}="))
-                return part[$"{key}=".Length..];
+            var trimmedPart = part.Trim();
+            if (trimmedPart.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                return trimmedPart[prefix.Length..];
         }
         return defaultValue ?? throw new ArgumentException($"Invalid connection string: '{key}' not found.");
     }
@@ -816,8 +873,12 @@ public static partial class Program
         var healthChecksBuilder = builder.AddDefaultHealthChecks()
             .AddDbContextCheck<AppDbContext>()
             .AddHangfire(setup => setup.MinimumAvailableServers = 1)
-            .AddCheck<UserProfileImagesStorageHealthCheck>("userProfileImages")
-            .AddCheck<TwilioHealthCheck>("sms");
+            // These two reach a remote dependency, so they are bounded and they report Degraded rather than Unhealthy.
+            // `/health` is the readiness contract (See MapAppHealthChecks), and Degraded keeps it at 200: an object
+            // storage hiccup or an SMS provider outage must not pull every otherwise healthy instance out of the load
+            // balancer rotation. The status is still visible in `/healthz`.
+            .AddCheck<UserProfileImagesStorageHealthCheck>("userProfileImages", failureStatus: HealthStatus.Degraded, timeout: TimeSpan.FromSeconds(5))
+            .AddCheck<TwilioHealthCheck>("sms", failureStatus: HealthStatus.Degraded, timeout: TimeSpan.FromSeconds(5));
 
         //#if (cloudflare == true)
         // Cloudflare Cache Purge API
@@ -825,7 +886,7 @@ public static partial class Program
         {
             var cloudflareApiToken = appSettings.Cloudflare.ApiToken;
             healthChecksBuilder.AddUrlGroup(
-                new Uri($"https://api.cloudflare.com/client/v4/zones/{appSettings.Cloudflare.ZoneId}"),
+                appSettings.Cloudflare.ZoneIds.Select(zoneId => new Uri($"https://api.cloudflare.com/client/v4/zones/{zoneId}")),
                 name: "cloudflare",
                 tags: [],
                 configureClient: (_, client) =>
@@ -848,5 +909,27 @@ public static partial class Program
         }
 
         return builder;
+    }
+
+    /// <summary>
+    /// Configures global ImageMagick resource limits to prevent denial-of-service (DoS) attacks from untrusted image uploads.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// ImageMagick defaults to machine-derived resource caps (e.g., using physical RAM, 2x memory map, 4x memory area, and unlimited disk space).
+    /// Malicious or unusually large uploads (e.g., a small 6MB PNG declaring 30,000x30,000 pixel dimensions) can force Magick.NET to 
+    /// allocate gigabytes of pixel data in memory or exhaust temporary disk space.
+    /// </para>
+    /// <para>
+    /// Because Magick.NET-Q16 allocates 2 bytes per channel, explicit bounds are applied to width, height, area, memory, and disk usage.
+    /// </para>
+    /// </remarks>
+    private static void ConfigureImageMagickResourceLimits()
+    {
+        ResourceLimits.Memory = 256 * 1024 * 1024;    // 256 MB pixel cache before spilling
+        ResourceLimits.Disk = 1024 * 1024 * 1024;     // 1 GB, instead of MagickResourceInfinity
+        ResourceLimits.Width = 16384;
+        ResourceLimits.Height = 16384;
+        ResourceLimits.Area = 16384 * 16384;
     }
 }

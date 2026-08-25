@@ -13,6 +13,7 @@ namespace Bit.Butil;
 /// tone, master gain). Build a richer node graph in JS and call into it via interop when you
 /// need granular control.
 /// </remarks>
+[ButilService(typeof(WebAudio))]
 public class WebAudio(IJSRuntime js) : IAsyncDisposable
 {
     /// <summary>True when the runtime exposes <c>AudioContext</c>.</summary>

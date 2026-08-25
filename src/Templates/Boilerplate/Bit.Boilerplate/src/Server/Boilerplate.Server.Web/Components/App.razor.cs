@@ -2,13 +2,11 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Rendering;
-using Boilerplate.Client.Core.Infrastructure.Services;
 
 namespace Boilerplate.Server.Web.Components;
 
 public partial class App
 {
-    private static readonly IComponentRenderMode noPrerenderBlazorWebAssembly = new InteractiveWebAssemblyRenderMode(prerender: false);
     [CascadingParameter] public HttpContext HttpContext { get; set; } = default!;
 
     [AutoInject] ServerWebSettings serverWebSettings = default!;

@@ -1,0 +1,63 @@
+@inject Bit.Butil.Window window
+
+<footer class="footer">
+    <section class="footer-main">
+        <div class="footer-about">
+            <div class="bit-logo" role="img" aria-label="bit platform"></div>
+            <p class="tagline">
+                Bit.Butil is part of bit platform - a platform that simplifies the development
+                process for freelancers and software companies through its clean project templates
+                and easy-to-use one-click build and deployment feature.
+            </p>
+            <div class="social-link-group">
+                <a class="social-link twitter-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on X (Twitter)" href="https://twitter.com/bitplatformhq"></a>
+                <a class="social-link github-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on GitHub" href="https://github.com/bitfoundation/bitplatform"></a>
+                <a class="social-link youtube-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on YouTube" href="https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog"></a>
+                <a class="social-link linkedin-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on LinkedIn" href="https://www.linkedin.com/company/bitplatformhq"></a>
+            </div>
+        </div>
+
+        <div class="link-groups">
+            <nav class="link-group" aria-label="Documentation">
+                <span class="link-group-title">Documentation</span>
+                <a href="getting-started">Getting started</a>
+                <a href="render-modes">Render modes</a>
+                <a href="browser-support">Browser support</a>
+                <a href="troubleshooting">Troubleshooting</a>
+                <a href="mcp-server">MCP server</a>
+            </nav>
+
+            <nav class="link-group" aria-label="Popular APIs">
+                <span class="link-group-title">Popular APIs</span>
+                <a href="window">Window</a>
+                <a href="storage">Local &amp; Session Storage</a>
+                <a href="clipboard">Clipboard</a>
+                <a href="crypto">Crypto</a>
+                <a href="geolocation">Geolocation</a>
+            </nav>
+
+            <nav class="link-group" aria-label="Project">
+                <span class="link-group-title">Project</span>
+                <a href="https://www.nuget.org/packages/Bit.Butil" target="_blank" rel="noopener noreferrer">NuGet package</a>
+                <a href="https://github.com/bitfoundation" target="_blank" rel="noopener noreferrer">GitHub org</a>
+                <a href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener noreferrer">GitHub repo</a>
+                <a href="https://github.com/bitfoundation/bitplatform/issues" target="_blank" rel="noopener noreferrer">Report an issue</a>
+            </nav>
+        </div>
+    </section>
+
+    <section class="footer-bar">
+        <div class="copy-right-txt">Copyright © @DateTime.Now.Year bit platform | All Rights Reserved</div>
+
+        @* Dogfooding, like the theme switch: the scroll goes through Bit.Butil's own Window
+           wrapper rather than an href="#" that would also push a history entry. *@
+        <button class="go-to-top" @onclick="GoToTop">
+            <Icon Name="arrow-up" Size="16" />
+            <span>Back to top</span>
+        </button>
+    </section>
+</footer>
+
+@code {
+    private async Task GoToTop() => await window.Scroll(0, 0);
+}

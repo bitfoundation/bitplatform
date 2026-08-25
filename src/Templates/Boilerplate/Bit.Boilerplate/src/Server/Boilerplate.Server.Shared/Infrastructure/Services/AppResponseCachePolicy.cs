@@ -13,6 +13,34 @@ namespace Boilerplate.Server.Shared.Infrastructure.Services;
 public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings settings) : IOutputCachePolicy
 {
     /// <summary>
+    /// The header a CDN reads the cache-tags of a response from. Cloudflare associates them with the cached object
+    /// and strips the header before the response reaches the visitor.
+    /// </summary>
+    public const string CacheTagHeaderName = "Cache-Tag";
+
+    /// <summary>
+    /// CDN rejects a longer cache-tag in a purge call.
+    /// </summary>
+    private const int MaxCacheTagLength = 1024;
+
+    /// <summary>
+    /// The tag both the ASP.NET Core output cache entry and the CDN edge entry are stored under, so that a single
+    /// <c>ResponseCacheService.PurgeCache("/product/5")</c> invalidates both.
+    /// </summary>
+    public static string CreateCacheTag(string relativePath)
+    {
+        var path = new Uri(CacheTagBaseUri, relativePath).AbsolutePath;
+
+        return path.ToLowerInvariant().Replace(",", "%2c");
+    }
+
+    /// <summary>
+    /// Only there to let <see cref="CreateCacheTag"/> canonicalize a relative path through <see cref="Uri"/>; the host
+    /// is never part of a tag.
+    /// </summary>
+    private static readonly Uri CacheTagBaseUri = new("http://localhost");
+
+    /// <summary>
     /// Updates the <see cref="OutputCacheContext"/> before the cache middleware is invoked.
     /// At that point the cache middleware can still be enabled or disabled for the request.
     /// </summary>
@@ -34,7 +62,7 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
         context.CacheVaryByRules.HeaderNames = new[] { HeaderNames.Origin, "X-Origin" };
         if (CultureInfoManager.InvariantGlobalization is false)
         {
-            context.CacheVaryByRules.VaryByValues.Add("Culture", CultureInfo.CurrentUICulture.Name);
+            context.CacheVaryByRules.VaryByValues.Add("Culture", FormattableString.Invariant($"{CultureInfo.CurrentCulture.Name}|{CultureInfo.CurrentUICulture.Name}"));
         }
 
         //#if (multitenant == true)
@@ -42,16 +70,20 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
         // and tenant scoped entities are filtered by that tenant (See AppDbContext.ConfigureTenantAwareEntity). Without this
         // rule two users of different tenants on the same host would share a single entry, so a UserAgnostic endpoint like
         // ProductViewController would serve one tenant's rows to another.
-        if (context.HttpContext.User.GetTenantId() is Guid currentTenantId)
+        var currentTenantId = context.HttpContext.User.GetTenantId();
+        if (currentTenantId is not null)
         {
-            context.CacheVaryByRules.VaryByValues.Add("Tenant", currentTenantId.ToString());
+            context.CacheVaryByRules.VaryByValues.Add("Tenant", currentTenantId.Value.ToString());
         }
         //#endif
 
-        // Path only, without the query string: ResponseCacheService.PurgeCache is always called with bare paths ("/product/5"),
-        // while QueryKeys = "*" gives every query string variant its own entry. Tagging those with their full PathAndQuery would
-        // leave /product/5?utm_source=x unpurgeable for the rest of its lifetime.
-        var requestPath = new Uri(context.HttpContext.Request.GetUri().GetUrlWithoutCulture()).AbsolutePath.ToLowerInvariant();
+        // The bare path, with neither the culture nor the query string in it, because ResponseCacheService.PurgeCache is
+        // always called with bare paths ("/product/5") while the dimensions above each give a request its own entry:
+        // QueryKeys = "*" splits by query string, VaryByValues["Culture"] splits by culture, and /fa-IR/product/5 is a
+        // different path from /en-US/product/5 to begin with. Tagging an entry with any of that would leave
+        // /product/5?utm_source=x - or the whole Persian half of the site - unpurgeable for the rest of its lifetime.
+        // One tag for all of them means one purge clears every variant of the page, which is the point.
+        var cacheTag = CreateCacheTag(new Uri(context.HttpContext.Request.GetUri().GetUrlWithoutCulture()).AbsolutePath);
 
         var sharedMaxAge = responseCacheAtt.SharedMaxAge == -1 ? responseCacheAtt.MaxAge : responseCacheAtt.SharedMaxAge;
 
@@ -74,10 +106,27 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
 
         if (context.HttpContext.User.IsAuthenticated() && responseCacheAtt.UserAgnostic is false)
         {
-            // See UserAgnostic's comment.
+            // See UserAgnostic's comment. The private caches are no more per-user than the shared ones: one browser
+            // profile and one running app each span every user who signs in on that device, and both key on the URL.
+            // So a body that depends on who asked for it may not carry a client max-age either.
             edgeCacheTtl = -1;
             outputCacheTtl = -1;
+            clientCacheTtl = -1;
         }
+
+        //#if (multitenant == true)
+        if (currentTenantId is not null)
+        {
+            // The Tenant rule above is a VaryByValues entry, and that is an output cache concept: it never becomes a
+            // response header, so the output cache is the only cache that can see it. Every other cache keys on the
+            // URL, which for an authenticated caller is identical across tenants - a CDN would hand tenant A's body
+            // to tenant B, and the browser's own cache would replay it to whoever signs in next on that profile,
+            // across a restart. Anonymous callers are unaffected: their tenant comes from the host, so it is already
+            // in the URL, and that is the traffic these caches exist for.
+            clientCacheTtl = -1;
+            edgeCacheTtl = -1;
+        }
+        //#endif
 
         if (context.HttpContext.IsBlazorPageContext() && CultureInfoManager.InvariantGlobalization is false)
         {
@@ -88,10 +137,39 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
             clientCacheTtl = -1;
         }
 
-        if (context.HttpContext.Request.IsLightHouseRequest())
+        if (context.HttpContext.IsBlazorPageContext() &&
+            (context.HttpContext.Request.IsLightHouseRequest() || context.HttpContext.Request.IsCrawlerClient()))
         {
+            // These callers get a DIFFERENT document: App.razor omits every script tag for them, so a benchmark is not
+            // charged for the blazor bundle and a crawler is not handed one it has no use for. Nothing in the cache key
+            // varies by user agent (See CacheVaryByRules above), so storing that response would hand the next ordinary
+            // visitor a page with no scripts - a shell that can never boot. Their responses are therefore theirs alone:
+            // never written to the output cache, never offered to a CDN.
+            // The page check is part of the condition because the script omission only happens in App.razor: every other
+            // cacheable endpoint - the sitemaps, llms.txt, products.xml, the api - produces the same bytes for every
+            // user agent, and those are the documents crawlers request most, so excluding them would mean the one caller
+            // the 7 day sitemap cache exists for is the one caller never served from it.
             edgeCacheTtl = -1;
             outputCacheTtl = -1;
+        }
+
+        if (cacheTag.Length > MaxCacheTagLength)
+        {
+            // The tag is what ResponseCacheService purges the edge entry by, and a tag this long cannot be passed to
+            // the purge API, so the entry would stay on the edge until it expired on its own. An edge entry that can
+            // never be invalidated is worse than no edge entry at all. The output cache is not affected: it holds the
+            // whole tag and is purged in process.
+            edgeCacheTtl = -1;
+        }
+
+        if (clientCacheTtl == -1 && edgeCacheTtl == -1 && outputCacheTtl == -1)
+        {
+            // Neither block below runs for this response, so nothing would tell caches anything at all - while one of
+            // the reasons above may be that it must not be SHARED (an authenticated caller on an endpoint that is not
+            // UserAgnostic), and a directive-less 200 is free to be stored by a shared cache on the way out. When a
+            // client ttl IS set, the header below already says `private` next to its max-age, so this covers only the
+            // case where no Cache-Control is written at all.
+            context.HttpContext.Response.GetTypedHeaders().CacheControl = new() { Private = true };
         }
 
         // Edge - Client Cache
@@ -104,19 +182,31 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
                 MaxAge = clientCacheTtl == -1 ? null : TimeSpan.FromSeconds(clientCacheTtl),
                 SharedMaxAge = edgeCacheTtl == -1 ? null : TimeSpan.FromSeconds(edgeCacheTtl)
             };
-            context.HttpContext.Response.Headers.Remove("Pragma");
             // Note: a CDN may ignore this. Cloudflare, for one, does not consider Vary in caching decisions unless the
             // header is Accept-Encoding or a Cache Rules Vary setting naming origin/x-origin has been configured on the
             // zone. Without that rule the edge keeps a single variant per URL and hands it to callers of every origin.
             context.HttpContext.Response.Headers.Append(HeaderNames.Vary, "Origin, X-Origin");
 
+            if (edgeCacheTtl > 0)
+            {
+                // What ResponseCacheService.PurgeCache purges the edge entry by. Unlike a purge by URL, a purge by tag
+                // reaches every query string variant the URL was cached under and every hostname of the zone in a
+                // single API call, which also keeps the purge within the rate limit of Cloudflare's free plan.
+                context.HttpContext.Response.Headers[CacheTagHeaderName] = cacheTag;
+            }
+
             context.HttpContext.Response.OnStarting(static state =>
             {
                 var response = (HttpResponse)state;
 
+                response.Headers.Remove("Pragma");
+
                 if (IsResponseCacheable(response) is false)
                 {
                     response.GetTypedHeaders().CacheControl = new() { NoStore = true, Private = true };
+                    // Nothing is going to be cached under it, and a CDN that does not consume the header would
+                    // otherwise pass it on to the visitor.
+                    response.Headers.Remove(CacheTagHeaderName);
                 }
 
                 return Task.CompletedTask;
@@ -126,7 +216,7 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
         // ASP.NET Core Output Cache
         if (outputCacheTtl > 0)
         {
-            context.Tags.Add(requestPath);
+            context.Tags.Add(cacheTag);
             context.AllowCacheLookup = true;
             context.AllowCacheStorage = true;
             context.ResponseExpirationTimeSpan = TimeSpan.FromSeconds(outputCacheTtl);

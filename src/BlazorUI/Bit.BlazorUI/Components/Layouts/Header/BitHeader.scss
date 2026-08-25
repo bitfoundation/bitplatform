@@ -1,31 +1,331 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
+// The z-index is left without a position of its own on purpose: it only takes effect once one of the
+// position modifiers below applies it, so a header in the normal flow never becomes a stacking context
+// that would clamp an overlay opened from inside it.
 .bit-hdr {
     display: flex;
     flex-shrink: 0;
     z-index: $zindex-base;
-    color: $clr-fg-pri;
+    box-sizing: border-box;
     line-height: $tg-line-height;
     font-weight: $tg-font-weight;
     font-family: $tg-font-family;
-    background-color: $clr-bg-pri;
 
-    &.bit-dis {
-        color: $clr-fg-dis;
-    }
+    // The uncolored header keeps the plain page surface it always had: the Fill variant below resolves
+    // --bit-hdr-bg/-on to these, and the borderless variants resolve --bit-hdr-fg/-brd to the neutral
+    // foreground and border of the theme, so a header with no Color set never turns invisible.
+    --bit-hdr-bg: #{$clr-bg-pri};
+    --bit-hdr-on: #{$clr-fg-pri};
+    --bit-hdr-fg: #{$clr-fg-pri};
+    --bit-hdr-brd: #{$clr-brd-pri};
+    --bit-hdr-bg-dis: #{$clr-bg-pri};
+    --bit-hdr-fg-dis: #{$clr-fg-dis};
+
+    // Medium is the historical spacing of the header and stays the default when no Size is set.
+    --bit-hdr-padding: #{spacing(1)} #{spacing(3)};
 }
 
+// The content sits in its own box so the paddings can be themed, removed (NoGutter) and targeted by
+// Classes/Styles.Container. The paddings live on this box rather than as margins because a 100% wide
+// item with side margins is wider than the header that holds it, which overflows the page horizontally.
 .bit-hdr-gut {
     width: 100%;
     display: flex;
     position: relative;
-    align-items: center;
-    margin: 0.5rem 1.5rem;
+    box-sizing: border-box;
+    padding: var(--bit-hdr-padding);
+
+    // MaxWidth caps the content alone and centers it, so the background, the border and the shadow of the
+    // header still run edge to edge while its content lines up with a page body centered in the same column.
+    margin-inline: auto;
+    max-width: var(--bit-hdr-max-width, none);
+    gap: var(--bit-hdr-gap, 0);
+    flex-wrap: var(--bit-hdr-wrap, nowrap);
+    align-items: var(--bit-hdr-align, center);
+    justify-content: var(--bit-hdr-justify, normal);
+
+    // align-content only does anything once the content wraps, where it packs the lines the same way
+    // align-items packs a single one, so a wrapped header stays aligned the way it was asked to be.
+    align-content: var(--bit-hdr-align, center);
 }
 
+
+.bit-hdr-fil {
+    color: var(--bit-hdr-on);
+    background-color: var(--bit-hdr-bg);
+
+    &.bit-dis {
+        color: var(--bit-hdr-fg-dis);
+        background-color: var(--bit-hdr-bg-dis);
+    }
+}
+
+.bit-hdr-otl {
+    color: var(--bit-hdr-fg);
+    background-color: transparent;
+    border: $shp-border-width $shp-border-style var(--bit-hdr-brd);
+
+    &.bit-dis {
+        color: var(--bit-hdr-fg-dis);
+        border-color: var(--bit-hdr-fg-dis);
+    }
+}
+
+.bit-hdr-txt {
+    color: var(--bit-hdr-fg);
+    background-color: transparent;
+
+    &.bit-dis {
+        color: var(--bit-hdr-fg-dis);
+    }
+}
+
+// A header pinned over scrolling content reads better as frosted glass than as a solid slab: the
+// background keeps enough alpha to stay legible while the blur keeps what passes behind it from
+// showing through as noise. Only Fill has a background to soften, and the two class selector keeps
+// this ahead of the plain variant rule. Where backdrop-filter is unsupported the background simply
+// stays translucent, which still reads as intended.
+.bit-hdr-trs.bit-hdr-fil {
+    backdrop-filter: blur(rem2(12px));
+    -webkit-backdrop-filter: blur(rem2(12px));
+    background-color: translucent(var(--bit-hdr-bg), 72%);
+
+    &.bit-dis {
+        background-color: translucent(var(--bit-hdr-bg-dis), 72%);
+    }
+}
+
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// The border and the text of the borderless variants take the main color of the role, so an Outline
+// header reads as that role even though its background stays transparent.
+@each $role, $tokens in $bit-color-roles {
+    .bit-hdr-#{$role} {
+        --bit-hdr-bg: #{role($tokens, main)};
+        --bit-hdr-on: #{role($tokens, on)};
+        --bit-hdr-fg: #{role($tokens, main)};
+        --bit-hdr-brd: #{role($tokens, main)};
+        --bit-hdr-bg-dis: #{role($tokens, dis)};
+        --bit-hdr-fg-dis: #{role($tokens, dis-text)};
+    }
+}
+
+
+.bit-hdr-sm {
+    --bit-hdr-padding: #{spacing(0.5)} #{spacing(2)};
+}
+
+.bit-hdr-md {
+    --bit-hdr-padding: #{spacing(1)} #{spacing(3)};
+}
+
+.bit-hdr-lg {
+    --bit-hdr-padding: #{spacing(1.5)} #{spacing(4)};
+}
+
+.bit-hdr-ngt {
+    --bit-hdr-padding: 0;
+}
+
+
+.bit-hdr-srt {
+    --bit-hdr-justify: flex-start;
+}
+
+.bit-hdr-end {
+    --bit-hdr-justify: flex-end;
+}
+
+.bit-hdr-cnt {
+    --bit-hdr-justify: center;
+}
+
+.bit-hdr-sbt {
+    --bit-hdr-justify: space-between;
+}
+
+.bit-hdr-sar {
+    --bit-hdr-justify: space-around;
+}
+
+.bit-hdr-sev {
+    --bit-hdr-justify: space-evenly;
+}
+
+// The cross axis: VerticalAlign, plus the two members of BitAlignment that say nothing about how a
+// line distributes its free space and so act here instead.
+.bit-hdr-vst {
+    --bit-hdr-align: flex-start;
+}
+
+.bit-hdr-ved {
+    --bit-hdr-align: flex-end;
+}
+
+.bit-hdr-vcn {
+    --bit-hdr-align: center;
+}
+
+.bit-hdr-bsl {
+    --bit-hdr-align: baseline;
+}
+
+.bit-hdr-str {
+    --bit-hdr-align: stretch;
+}
+
+
+.bit-hdr-wrp {
+    --bit-hdr-wrap: wrap;
+}
+
+
+// A header pinned to the top of the viewport sits under the status bar / notch of a mobile device, so
+// the safe area is added to its own padding. env() resolves to the 0px fallback everywhere else, which
+// leaves the header untouched on a device with no inset.
+// A fixed header spans the whole viewport, so it also runs into the side insets of a notched device held
+// in landscape. Those two are physical rather than logical - the notch does not move to the other side in
+// an RTL page - so they are spelled left and right instead of inline-start and inline-end.
 .bit-hdr-fix {
     top: 0;
     left: 0;
     right: 0;
     position: fixed;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+}
+
+.bit-hdr-stk {
+    position: sticky;
+    inset-block-start: 0;
+    padding-top: env(safe-area-inset-top, 0px);
+}
+
+// Pinned to its container rather than to the page, so there is no device edge above it and no safe
+// area to make room for: the inset belongs to the two positions that really sit at the top of the screen.
+.bit-hdr-abs {
+    top: 0;
+    left: 0;
+    right: 0;
+    position: absolute;
+}
+
+
+.bit-hdr-brd {
+    border-block-end: $shp-border-width $shp-border-style var(--bit-hdr-brd);
+}
+
+// The shadow is cast downwards, towards the content the header covers. It is tinted with the primary
+// foreground color so it stays readable in a dark theme, where a black shadow over a dark surface is
+// invisible.
+.bit-hdr-elv {
+    box-shadow: $box-shadow-appbar-top;
+}
+
+// A shadow that only shows up once the page has been scrolled has to arrive gradually, or the header
+// snaps from flat to lifted on the very first pixel of a scroll.
+.bit-hdr-esc {
+    transition: box-shadow $mot-duration $mot-easing;
+}
+
+
+.bit-hdr-anm {
+    will-change: transform;
+    transition: transform $mot-duration $mot-easing;
+}
+
+// Both a transform and a shadow can be in flight on the same header, so the two transitions are
+// merged rather than left to override one another.
+.bit-hdr-anm.bit-hdr-esc {
+    transition: transform $mot-duration $mot-easing, box-shadow $mot-duration $mot-easing;
+}
+
+// translateY is used rather than a top offset so the slide runs on the compositor, and it hides the
+// header in both directions without any RTL specific rule.
+.bit-hdr-hdn {
+    transform: translateY(-100%);
+}
+
+
+// The shortcut past the header. It is a real link in the tab order at all times and only takes up room
+// once it is focused, so it costs a sighted user nothing and saves a keyboard user the whole bar.
+// The clip pattern is used rather than a transform because a header in the normal flow has no edge of
+// the screen to park the link above. It anchors to .bit-hdr-gut, and being absolutely positioned it is
+// out of the flow, so the flex line of the container lays out the content of the header alone.
+.bit-hdr-skp {
+    top: 0;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    inset-inline-start: 0;
+    clip-path: inset(50%);
+    clip: rect(0 0 0 0);
+
+    &:focus {
+        // z-index keeps the focused link above the content of the header it lands on top of.
+        z-index: 1;
+        clip: auto;
+        width: auto;
+        height: auto;
+        overflow: visible;
+        clip-path: none;
+        border-radius: $shp-radius-control;
+        color: $clr-pri-text;
+        background-color: $clr-pri;
+        padding: #{spacing(1)} #{spacing(2)};
+    }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+}
+
+
+// A shadow is the only thing separating an Elevated header from the content below it, and forced colors
+// modes drop shadows entirely, so the separation is restored as a border of the system palette there.
+@media (forced-colors: active) {
+    .bit-hdr-elv {
+        border-block-end: $shp-border-width $shp-border-style CanvasText;
+    }
+
+    // Forced colors repaints the header with the system palette, so there is no longer a tinted surface to
+    // soften - and blurring what passes behind it only muddies the content the mode is there to keep crisp.
+    .bit-hdr-trs.bit-hdr-fil {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+}
+
+// On paper there is no viewport to pin anything to: a pinned header would either repeat on every sheet or
+// sit over the content, and a header that happens to be slid out at print time would be missing entirely.
+@media print {
+    .bit-hdr-fix,
+    .bit-hdr-abs,
+    .bit-hdr-stk {
+        position: static;
+        padding-top: 0;
+    }
+
+    .bit-hdr-anm,
+    .bit-hdr-esc {
+        transition: none;
+    }
+
+    .bit-hdr-hdn {
+        transform: none;
+    }
+
+    .bit-hdr-trs.bit-hdr-fil {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
+    // The link only exists for a keyboard user of the live page, and there is nothing to skip to on paper.
+    .bit-hdr-skp {
+        display: none;
+    }
 }

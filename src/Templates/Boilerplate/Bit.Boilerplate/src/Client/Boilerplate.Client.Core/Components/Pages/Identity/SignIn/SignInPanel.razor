@@ -29,7 +29,8 @@
 
                             <BitStack FillContent Gap="2rem">
                                 <BitStack FillContent>
-                                    <BitPivot Alignment="BitAlignment.Center" HeaderOnly OnChange="OnTabChange">
+                                    <BitPivot Alignment="BitAlignment.Center" HeaderOnly OnChange="OnTabChange"
+                                              DefaultSelectedKey="@currentTab.ToString()">
                                         <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Email)]" Key="@SignInPanelTab.Email.ToString()" />
                                         <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Phone)]" Key="@SignInPanelTab.Phone.ToString()" />
                                     </BitPivot>
@@ -68,7 +69,7 @@
                                                     <BitStack Horizontal VerticalAlign="BitAlignment.Center">
                                                         <BitText>@Localizer[nameof(AppStrings.Password)]</BitText>
                                                         <BitSpacer />
-                                                        <BitLink Href="@($"{PageUrls.ForgotPassword}?return-url={Uri.EscapeDataString(GetReturnUrl())}")">@Localizer[nameof(AppStrings.ForgotPasswordLink)]</BitLink>
+                                                        <BitLink Href="@($"{PageUrls.ForgotPassword}?return-url={Uri.EscapeDataString(GetSafeReturnUrl())}")">@Localizer[nameof(AppStrings.ForgotPasswordLink)]</BitLink>
                                                     </BitStack>
                                                 </LabelTemplate>
                                             </BitTextField>
@@ -90,6 +91,8 @@
                                                    IsEnabled="isWaiting is false"
                                                    ButtonType="BitButtonType.Button"
                                                    IconName="@BitIconName.Fingerprint"
+                                                   Title="@Localizer[nameof(AppStrings.SignInWithPasskeyButtonText)]"
+                                                   AriaLabel="@Localizer[nameof(AppStrings.SignInWithPasskeyButtonText)]"
                                                    OnClick="WrapHandled(PasswordlessSignIn)" />
                                     }
                                 </BitStack>
@@ -138,7 +141,7 @@
                                 {
                                     <BitText Align="BitTextAlign.Center" Typography="BitTypography.Body2">
                                         @Localizer[nameof(AppStrings.DontHaveAccountMessage)]
-                                        <BitLink Href="@($"{PageUrls.SignUp}?return-url={Uri.EscapeDataString(GetReturnUrl())}")">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
+                                        <BitLink Href="@($"{PageUrls.SignUp}?return-url={Uri.EscapeDataString(GetSafeReturnUrl())}")">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
                                     </BitText>
                                 }
                             </BitStack>

@@ -1,15 +1,70 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @typeparam TItem
 @typeparam TValue
 
 @{
     var prefix = ChoiceGroup.GetPrefix(Item);
-    var inputId = ChoiceGroup.GetInputId(Item);
+    var suffix = ChoiceGroup.GetSuffix(Item);
+    var inputId = ChoiceGroup.GetInputId(Item, Index);
     var template = ChoiceGroup.GetTemplate(Item);
     var isChecked = ChoiceGroup.GetIsCheckedItem(Item);
+    var description = ChoiceGroup.GetDescription(Item);
+    var descriptionId = $"{inputId}-description";
+
+    // The description element belongs to the built-in item content, so a template that takes the content
+    // over also takes the description over. The description id only joins aria-describedby when the element
+    // it points at is actually rendered, otherwise it would be a dangling reference.
+    var hasDescription = description.HasValue()
+                      && template is null
+                      && ChoiceGroup.ItemTemplate is null
+                      && ChoiceGroup.ItemLabelTemplate is null;
+
+    // The explicit attributes sit after the InputHtmlAttributes splat, so they are what ends up rendered no
+    // matter what (a null even removes the splatted value); the aria values a consumer splatted have to be
+    // carried over here to survive. aria-describedby is a space separated list of IDREFs, so a splatted
+    // value does not replace the description of the item, both get announced. aria-label is a single
+    // string, so the more specific per-item AriaLabel wins over a splatted one.
+    object? splattedDescribedBy = null;
+    ChoiceGroup.InputHtmlAttributes?.TryGetValue("aria-describedby", out splattedDescribedBy);
+    var splattedDescribedByValue = splattedDescribedBy?.ToString();
+    var ariaDescribedBy = hasDescription
+        ? splattedDescribedByValue.HasValue() ? $"{splattedDescribedByValue} {descriptionId}" : descriptionId
+        : splattedDescribedByValue;
+
+    object? splattedAriaLabel = null;
+    ChoiceGroup.InputHtmlAttributes?.TryGetValue("aria-label", out splattedAriaLabel);
+    var ariaLabel = ChoiceGroup.GetAriaLabel(Item) ?? splattedAriaLabel?.ToString();
 }
 
-<div style="@ChoiceGroup.GetItemContainerCssStyles(Item)" class="@ChoiceGroup.GetItemContainerCssClasses(Item)" @attributes="ChoiceGroup.GetItemMarkerAttributes(Item)">
+<div title="@ChoiceGroup.GetTitle(Item)"
+     style="@ChoiceGroup.GetItemContainerCssStyles(Item)"
+     class="@ChoiceGroup.GetItemContainerCssClasses(Item)"
+     @attributes="ChoiceGroup.GetItemMarkerAttributes(Item)">
+    @* A read-only group stays reachable and keeps its value in the submitted form data (that is what
+       separates it from a disabled one), so the inputs are left in the tab order. Cancelling the click is
+       what makes it read-only: the browser routes both a mouse click and a keyboard activation (Space, and
+       the arrow keys that move the selection of a radio group) through a cancelable click, and cancelling
+       it runs the radio's "canceled activation steps", which restore the previous checkedness. *@
+    @* The focus and blur listeners are only attached when a callback is actually subscribed (a default
+       EventCallback renders no listener): every focus move inside the group (each arrow key step is a
+       blur plus a focus) would otherwise dispatch two no-op events to .NET per step. *@
+    <input @ref="_inputElement" @attributes="ChoiceGroup.InputHtmlAttributes"
+           @onclick="e => ChoiceGroup.HandleClick(Item)"
+           @onclick:preventDefault="ChoiceGroup.ReadOnly"
+           @onchange="e => ChoiceGroup.HandleChange(Item)"
+           @onfocus="@(ChoiceGroup.OnFocus.HasDelegate ? EventCallback.Factory.Create<FocusEventArgs>(this, () => ChoiceGroup.HandleFocus(Item)) : default)"
+           @onblur="@(ChoiceGroup.OnBlur.HasDelegate ? EventCallback.Factory.Create<FocusEventArgs>(this, () => ChoiceGroup.HandleBlur(Item)) : default)"
+           type="radio"
+           id="@inputId"
+           checked=@isChecked
+           class="bit-chg-inp"
+           name="@ChoiceGroup.GetName()"
+           required="@ChoiceGroup.Required"
+           aria-label="@ariaLabel"
+           aria-describedby="@ariaDescribedBy"
+           value="@ChoiceGroup.GetValue(Item)?.ToString()"
+           disabled="@(ChoiceGroup.GetIsItemEnabled(Item) is false)" />
+
     <label for="@inputId" style="@ChoiceGroup.Styles?.ItemLabel" class="bit-chg-itl @ChoiceGroup.GetItemLabelCssClasses(Item) @ChoiceGroup.Classes?.ItemLabel">
         @if (template is not null)
         {
@@ -21,7 +76,7 @@
         }
         else
         {
-            @if (prefix is not null)
+            @if (prefix.HasValue())
             {
                 <span style="@ChoiceGroup.Styles?.ItemPrefix" class="@ChoiceGroup.Classes?.ItemPrefix">@prefix</span>
             }
@@ -44,13 +99,12 @@
                 var imageSrc = ChoiceGroup.GetImageSrc(Item);
                 @if (imageSrc.HasValue())
                 {
-                    var imageSize = ChoiceGroup.GetImageSize(Item);
-
                     <div style="@ChoiceGroup.Styles?.ItemImageContainer" class="bit-chg-iic @ChoiceGroup.Classes?.ItemImageContainer">
-                        <div style="@(FormattableString.Invariant($"width:{imageSize.Width}px; height:{imageSize.Height}px;")) @ChoiceGroup.Styles?.ItemImageWrapper"
+                        <div style="@ChoiceGroup.GetImageWrapperCssStyles(Item)"
                              class="bit-chg-iiw @ChoiceGroup.Classes?.ItemImageWrapper">
-                            <img src="@(isChecked? ChoiceGroup.GetSelectedImageSrc(Item) : imageSrc)"
-                                 alt="@ChoiceGroup.GetImageAlt(Item)"
+                            @* An empty alt marks the image as decorative: the text of the item is the accessible name. *@
+                            <img src="@ChoiceGroup.GetImageSrcForState(Item, isChecked)"
+                                 alt="@(ChoiceGroup.GetImageAlt(Item) ?? string.Empty)"
                                  style="@ChoiceGroup.Styles?.ItemImage"
                                  class="@ChoiceGroup.Classes?.ItemImage">
                         </div>
@@ -71,6 +125,17 @@
                 {
                     <div style="@ChoiceGroup.Styles?.ItemTextWrapper" class="bit-chg-itw @ChoiceGroup.Classes?.ItemTextWrapper">
                         <span style="@ChoiceGroup.Styles?.ItemText" class="bit-chg-itx @ChoiceGroup.Classes?.ItemText">@ChoiceGroup.GetText(Item)</span>
+                        @if (description.HasValue())
+                        {
+                            <span id="@descriptionId" style="@ChoiceGroup.Styles?.ItemDescription" class="bit-chg-dsc @ChoiceGroup.Classes?.ItemDescription">@description</span>
+                        }
+                    </div>
+                }
+                else if (description.HasValue())
+                {
+                    <div class="bit-chg-txd">
+                        <span style="@ChoiceGroup.Styles?.ItemText" class="bit-chg-itx @ChoiceGroup.Classes?.ItemText">@ChoiceGroup.GetText(Item)</span>
+                        <span id="@descriptionId" style="@ChoiceGroup.Styles?.ItemDescription" class="bit-chg-dsc @ChoiceGroup.Classes?.ItemDescription">@description</span>
                     </div>
                 }
                 else
@@ -78,19 +143,17 @@
                     <span style="@ChoiceGroup.Styles?.ItemText" class="bit-chg-itx @ChoiceGroup.Classes?.ItemText">@ChoiceGroup.GetText(Item)</span>
                 }
             }
+
+            @* The mirror image of the prefix above: the per item text wins over the template, so a single
+               item can opt out of the shared template with a plain text of its own. *@
+            @if (suffix.HasValue())
+            {
+                <span style="@ChoiceGroup.Styles?.ItemSuffix" class="@ChoiceGroup.Classes?.ItemSuffix">@suffix</span>
+            }
+            else if (ChoiceGroup.ItemSuffixTemplate is not null)
+            {
+                @ChoiceGroup.ItemSuffixTemplate(Item)
+            }
         }
     </label>
-
-    <input @attributes="ChoiceGroup.InputHtmlAttributes"
-           @onclick="e => ChoiceGroup.HandleClick(Item)"
-           @onchange="e => ChoiceGroup.HandleChange(Item)"
-           hidden
-           type="radio"
-           name="@ChoiceGroup.GetName()"
-           id="@inputId"
-           checked=@isChecked
-           required="@ChoiceGroup.Required"
-           aria-label="@ChoiceGroup.GetAriaLabel(Item)"
-           value="@ChoiceGroup.GetValue(Item)?.ToString()"
-           disabled="@(ChoiceGroup.GetIsEnabled(Item) is false)" />
 </div>

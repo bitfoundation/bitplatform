@@ -1,0 +1,187 @@
+@page "/render-modes"
+@inject Bit.Butil.UserAgent userAgent
+@inject Bit.Butil.Location location
+
+<PageTitle>Render modes - Bit.Butil</PageTitle>
+
+<PageHeader Category="Overview"
+            Title="Render modes"
+            Lead="Butil is a bridge to the browser, so where your Blazor component happens to be running decides what it can reach. This page covers all four hosting models, what Butil does during prerendering, and the two knobs - fast invoke and disposal - that matter once you pick one." />
+
+<Callout Type="info" Title="One rule covers most of it">
+    A browser API can only be called once there is a browser. In practice that means: touch Butil from
+    <code>OnAfterRenderAsync</code>, from event handlers, or from anywhere downstream of them - never from
+    <code>OnInitialized</code>/<code>OnParametersSet</code> in an app that prerenders. Everything below is a
+    consequence of that one rule.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Blazor WebAssembly"
+                 Description="The .NET runtime and your component run inside the browser tab, so interop is a direct in-process call and there is no network in the path. This is the only mode where the synchronous fast-invoke path below is available. Register the services in Program.cs and add the script to wwwroot/index.html, before the Blazor script."
+                 Code=@("""
+<!-- wwwroot/index.html -->
+<script src="_content/Bit.Butil/bit-butil.js"></script>
+<script src="_framework/blazor.webassembly.js"></script>
+""")
+                 Language="html" />
+
+    <DemoSection Title="Blazor Server"
+                 Description="Your component runs on the server and every Butil call becomes a message over the SignalR circuit and back. The API surface is identical, but each await is a network round trip - so read a value once and hold on to it rather than re-reading it per render, and prefer the observers (Intersection, Mutation, Resize) and event subscriptions over polling, since those push one message per change instead of one per poll."
+                 Code=@("""
+<!-- Components/App.razor -->
+<script src="_content/Bit.Butil/bit-butil.js"></script>
+<script src="_framework/blazor.server.js"></script>
+""")
+                 Language="html" />
+
+    <DemoSection Title="Blazor Web App (.NET 8 and later)"
+                 Description="A Web App mixes static SSR with interactive islands, which is the mode most likely to surprise you: the same component renders once on the server with no browser at all, then again on the client. Butil is safe in both passes (see prerendering below), but your own logic has to be. This documentation site is a Blazor Web App using InteractiveWebAssembly, so everything you are reading was prerendered first."
+                 Code=@("""
+<!-- Components/App.razor -->
+<head>
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+<body>
+    <Routes @rendermode="InteractiveWebAssembly" />
+
+    <!-- before the Blazor script, so window.BitButil exists by the time the app boots -->
+    <script src="_content/Bit.Butil/bit-butil.js"></script>
+    <script src="_framework/blazor.web.js"></script>
+</body>
+""")
+                 Language="html" />
+
+    <DemoSection Title="Blazor Hybrid (MAUI, WPF, WinForms)"
+                 Description="Components run natively and render into a WebView. Butil reaches the WebView's browser engine - WebView2 on Windows, WKWebView on Apple platforms, Chromium on Android - so what is available follows that engine rather than the desktop browser your users have installed. There is a short window at startup, before the WebView attaches its IPC channel, during which no interop can be issued; Butil detects it and returns safe defaults instead of throwing."
+                 Code=@("""
+<!-- wwwroot/index.html -->
+<script src="_content/Bit.Butil/bit-butil.js"></script>
+<script src="_framework/blazor.webview.js" autostart="false"></script>
+""")
+                 Language="html" />
+
+    <DemoSection Title="Prerendering is handled for you"
+                 Description="During static SSR and prerendering there is no JS runtime, and a raw IJSRuntime call throws. Butil recognises all three not-ready runtimes - the SSR sentinel, a Blazor Server circuit that has not initialised, and a Hybrid WebView that has not attached - and returns a safe default rather than throwing: void calls become no-ops, strings come back empty, arrays come back empty, and everything else comes back as default(T). Your prerender pass renders instead of blowing up."
+                 Code=@("""
+// Safe during prerender - it returns "" on the server pass and the real value in the browser,
+// so the component renders in both, but you cannot tell the two apart from the result alone.
+var theme = await localStorage.GetItem("theme");
+""") />
+
+    <DemoSection Title="...but a default is not an answer"
+                 Description="Because prerender returns an empty value rather than an error, code that branches on the result silently takes the 'empty' branch on the server. Anything whose answer actually matters belongs in OnAfterRenderAsync, guarded by firstRender - that pass only ever runs in the browser. On .NET 9 and later RendererInfo.IsInteractive lets you say the same thing in the markup, which is what the header of this site uses to show its 'loading' hint while WebAssembly boots."
+                 Code=@("""
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    if (firstRender is false) return;
+
+    // The browser is definitely here now.
+    _theme = await localStorage.GetItem("theme") ?? "light";
+    _isMobile = await userAgent.IsMobile();
+
+    StateHasChanged();   // the first render already happened - ask for another
+}
+""") />
+
+    <DemoSection Title="Fast invoke"
+                 Api="BitButil.UseFastInvoke / BitButil.UseNormalInvoke"
+                 Description="On WebAssembly the runtime can call JavaScript synchronously, skipping the task machinery and JSON round trip that the async path pays for. Fast invoke turns that path on for the APIs whose JavaScript is genuinely synchronous - LocalStorage, SessionStorage, Cookie, Console and Location. Anything wrapping a Promise-returning API keeps running asynchronously no matter what this is set to, so turning it on cannot break those calls. It is a process-wide static switch meant to be set once at startup, and on Blazor Server it does nothing at all: there is no in-process runtime to use, so the calls fall back to the async path."
+                 Code=@("""
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+builder.Services.AddBitButilServices();
+
+// Once, at startup, before anything calls into Butil:
+BitButil.UseFastInvoke();
+
+await builder.Build().RunAsync();
+""")>
+        <div class="controls">
+            <button @onclick="DetectRuntime">Detect this page's runtime</button>
+        </div>
+        <DemoConsole @ref="runtimeOutput" Title="runtime detection output" />
+    </DemoSection>
+
+    <DemoSection Title="Disposal and teardown"
+                 Description="Every Butil subscription - DOM events, observers, keyboard shortcuts, media streams, animations - hands back a token whose disposal detaches the underlying listener. Dispose it, or the JavaScript side keeps a reference to your component's delegate for as long as the page lives. Butil's own disposal paths already swallow the three exceptions that teardown legitimately produces (JSDisconnectedException when the circuit is gone, OperationCanceledException when an interop call races the shutdown, ObjectDisposedException when the runtime went first), so disposing during a Blazor Server disconnect is safe."
+                 Code=@("""
+@implements IAsyncDisposable
+
+@code {
+    private ButilSubscription? subscription;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        subscription = await box.SubscribeEvent<ButilMouseEventArgs>(
+            js, ButilEvents.Click, args => { /* ... */ });
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (subscription is not null)
+        {
+            await subscription.DisposeAsync();
+        }
+    }
+}
+""")
+                 Language="razor" />
+
+    <DemoSection Title="Trimming and AOT"
+                 Description="Butil is annotated for trimming, so a published WebAssembly app keeps only the wrappers it actually uses. The one thing to know: the public FastInvoke* extension methods on IJSRuntime carry [RequiresUnreferencedCode] because they serialise arbitrary payloads, so calling them directly from a trimmed app produces a warning at your call site. The Butil classes themselves do not - they only pass trim-safe primitives down that path."
+                 Code=@("""
+<PublishTrimmed>true</PublishTrimmed>
+""")
+                 Language="xml" />
+</div>
+
+<Callout Type="warning" Title="The same call, three different costs">
+    An API that is one microsecond on WebAssembly is a network round trip on Blazor Server and an IPC hop on
+    Hybrid. Code that reads <code>Window.GetInnerWidth()</code> inside a render loop is fine in one mode and
+    unusable in another - subscribe to the resize event and cache the value instead.
+</Callout>
+
+<Callout Type="info" Title="Where to next?">
+    <a href="browser-support">Browser support</a> lists which APIs need a secure context, a permission or a
+    specific engine. <a href="troubleshooting">Troubleshooting</a> covers the errors these rules produce when
+    they are broken.
+</Callout>
+
+<ApiTable Title="Reference">
+    <ApiMember Name="AddBitButilServices" Signature="IServiceCollection AddBitButilServices(this IServiceCollection services)" Description="Registers every Butil class as a scoped service, matching Blazor's one-circuit / one-app-instance-per-user model. Call it in every container that renders your components - including the prerendering host. Services are discovered by reflection rather than a hard-coded list, so a trimmed publish registers only the classes your code injects and drops the rest from the bundle." />
+    <ApiMember Name="AddBitButilServices" Signature="IServiceCollection AddBitButilServices(this IServiceCollection services, Action&lt;BitButilOptions&gt; configure)" Description="Same registration, plus the library's runtime options in one place: BitButilOptions.LazyScripts (bool?), ScriptModulesPath and FastInvoke (bool?). Each maps onto the matching process-wide toggle (UseLazyScripts / UseBundledScripts, UseFastInvoke / UseNormalInvoke); null leaves a toggle as it is. Decides how scripts load and are called, not what a publish contains - see the BitButilLazyScripts and BitButilTrimScripts MSBuild properties for that." />
+    <ApiMember Name="BitButil.UseFastInvoke" Signature="void UseFastInvoke()" Description="Enables the synchronous in-process invoke path for the APIs backed by synchronous JavaScript. WebAssembly only; a no-op elsewhere. Process-wide." />
+    <ApiMember Name="BitButil.UseNormalInvoke" Signature="void UseNormalInvoke()" Description="Disables the fast path again; every call runs asynchronously." />
+    <ApiMember Name="BitButil.UseLazyScripts" Signature="void UseLazyScripts(string? modulesPath = null)" Description="Loads Bit.Butil's JavaScript per module, on first use, instead of from the bit-butil.js bundle: the first call into an API import()s that API's module from _content/Bit.Butil/modules/, so only the JavaScript for the APIs actually called is downloaded and no script tag is needed. Prefer the BitButilLazyScripts MSBuild property, which also keeps the bundle out of the published output; this is the runtime override for hosts where the property cannot be applied. Process-wide, set once at startup." />
+    <ApiMember Name="BitButil.UseBundledScripts" Signature="void UseBundledScripts()" Description="Back to expecting the whole bundle to be loaded by a script tag - the default. It selects the loading mode at runtime: it overrides the runtime effect of BitButilLazyScripts, but cannot restore a bundle that a publish with BitButilLazyScripts=true left out of the output - include and load bit-butil.js yourself before choosing bundled mode. Process-wide." />
+    <ApiMember Name="ButilSubscription" Signature="sealed class ButilSubscription : IAsyncDisposable" Description="The token returned by every Butil event and observer subscription. Disposing detaches the listener; disposal is idempotent and safe during teardown." />
+    <ApiMember Name="ButilSubscription.Id" Signature="Guid Id" Description="The underlying listener id, also accepted by the matching Remove(Guid) API when you want to remove subscriptions in bulk." />
+</ApiTable>
+
+@code {
+    private DemoConsole runtimeOutput = default!;
+
+    private async Task DetectRuntime()
+    {
+        try
+        {
+            // RendererInfo tells you how this component is being rendered; OperatingSystem.IsBrowser()
+            // tells you whether the .NET runtime itself is the browser one, which is what decides
+            // whether fast invoke has an in-process runtime to use.
+            await runtimeOutput.Info("RendererInfo.Name →", RendererInfo.Name);
+            await runtimeOutput.Info("RendererInfo.IsInteractive →", RendererInfo.IsInteractive);
+            await runtimeOutput.Info("OperatingSystem.IsBrowser() →", OperatingSystem.IsBrowser());
+            await runtimeOutput.Info("Fast invoke available here →", OperatingSystem.IsBrowser());
+
+            // And a real Butil call, to show the bridge is live rather than prerendered.
+            await runtimeOutput.Success("Location.GetHost() →", await location.GetHost());
+            await runtimeOutput.Success("UserAgent.IsMobile() →", await userAgent.IsMobile());
+        }
+        catch (Exception ex)
+        {
+            await runtimeOutput.Error("Detection failed →", ex.Message);
+        }
+    }
+}

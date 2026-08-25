@@ -21,13 +21,12 @@ public class AppResponseCacheAttribute : Attribute
     public int SharedMaxAge { get; set; } = -1;
 
     /// <summary>
-    /// If the current request is authenticated, the pre-rendered HTML response might include the user's name, 
-    /// or the JSON content of API calls might be based on the user's roles or tenant. 
-    /// Storing such a response in the browser's private cache is generally not an issue, 
-    /// but caching the response on a CDN's edge or in the output cache of ASP.NET Core 
-    /// could result in serving that response to other users. 
-    /// 
-    /// If you are certain that your page or API is not affected by the user, 
+    /// If the current request is authenticated, the pre-rendered HTML response might include the user's name,
+    /// or the JSON content of API calls might be based on the user's roles or tenant.
+    /// Caching such a response on a CDN's edge or in the output cache of ASP.NET Core
+    /// could result in serving that response to other users.
+    ///
+    /// If you are certain that your page or API is not affected by the user,
     /// you can set this property to true to cache those responses and improve performance.
     /// </summary>
     public bool UserAgnostic { get; set; }

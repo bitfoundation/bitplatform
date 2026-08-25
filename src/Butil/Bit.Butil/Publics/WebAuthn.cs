@@ -6,11 +6,28 @@ using static Bit.Butil.LinkerFlags;
 
 namespace Bit.Butil;
 
+/// <summary>
+/// Passkeys: create a public-key credential and verify an assertion with the Web Authentication API.
+/// <br/>
+/// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API">https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API</see>
+/// </summary>
+[ButilService(typeof(WebAuthn))]
 public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
 {
     private const string STORAGE_KEY = "Butil.WebAuthn.Verify";
 
-
+    /// <summary>True when the runtime exposes <c>window.PublicKeyCredential</c>.</summary>
+    /// <remarks>
+    /// The uniform spelling used by every other Butil class, and the same probe as
+    /// <see cref="IsAvailable"/>. WebAuthn is secure-context only, so this is <c>false</c> on a
+    /// plain <c>http://</c> page even where the engine implements it.
+    /// <br/>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public async Task<bool> IsSupported()
+        => await js.Invoke<bool>("BitButil.webAuthn.isSupported");
 
     /// <summary>
     /// Checks that the WebAuthentication api is available on the client or not.

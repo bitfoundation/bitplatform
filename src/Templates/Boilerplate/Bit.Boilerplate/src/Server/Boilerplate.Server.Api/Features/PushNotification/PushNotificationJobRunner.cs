@@ -5,11 +5,8 @@ using System.Collections.Concurrent;
 using Hangfire.Server;
 using System.Net;
 //#if (signalR == true)
-using Microsoft.AspNetCore.SignalR;
-using Boilerplate.Server.Api.Infrastructure.SignalR;
 using Boilerplate.Shared.Infrastructure.Dtos.SignalR;
 //#endif
-using Boilerplate.Server.Api.Infrastructure.Services;
 
 namespace Boilerplate.Server.Api.Features.PushNotification;
 
@@ -117,12 +114,12 @@ public partial class PushNotificationJobRunner
                 { "FailedItems", failedItems }
             };
 
-            foreach (var (problematicSubscriptionId, errorType, responseStatusCode, exp) in problems.DistinctBy(p => new { p.errorType, p.responseStatusCode })) // DistinctBy to avoid huge error data in case of many same errors
+            foreach (var (problematicSubscriptionId, errorType, responseStatusCode, exp) in problems.DistinctBy(p => new { p.errorType, p.responseStatusCode, ExceptionType = p.exp.GetType() }))
             {
-                errorData[$"Subscription_{problematicSubscriptionId}"] = $"ErrorType: {errorType}, ResponseStatusCode: {responseStatusCode}";
+                errorData[$"Subscription_{problematicSubscriptionId}"] = $"ErrorType: {errorType}, ResponseStatusCode: {responseStatusCode}, Exception: {exp.GetType().Name}: {exp.Message}";
             }
 
-            serverExceptionHandler.Handle(new AggregateException("Failed to send push notifications").WithData(errorData));
+            serverExceptionHandler.Handle(new AggregateException("Failed to send push notifications", problems.Select(p => p.exp)).WithData(errorData));
         }
     }
 }

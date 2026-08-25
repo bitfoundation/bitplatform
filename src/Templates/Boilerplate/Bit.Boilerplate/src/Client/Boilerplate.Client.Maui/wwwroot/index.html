@@ -1,9 +1,22 @@
 <!DOCTYPE html>
-<html bit-theme="dark">
+<!-- [mirror] host page head tags, stylesheet and script list - keep in sync with:
+     - src/Server/Boilerplate.Server.Web/Components/App.razor
+     - src/Client/Boilerplate.Client.Web/wwwroot/index.html
+     [mirror] loading indicator markup and css - keep in sync with:
+     - src/Client/Boilerplate.Client.Core/Components/Common/LoadingComponent.razor
+     - src/Client/Boilerplate.Client.Web/wwwroot/index.html
+-->
+
+<html bit-theme-system bit-theme-persist bit-theme-view-transition>
 <head>
     <base href="/" />
     <meta charset="utf-8" />
-    <meta name="theme-color">
+    <!-- [mirror] The PWA status bar / browser chrome color. These must equal ThemeColors.cs's PrimaryLightBgColor and
+         PrimaryDarkBgColor (the colors the native apps paint their status bar with), so an installed PWA looks like them.
+         The OS media queries only cover the first paint: Scripts/theme.ts rewrites BOTH tags on every theme change, so a
+         theme pinned against the OS wins as well. Keep in sync with: src/Client/Boilerplate.Client.Core/Styles/ThemeColors.cs -->
+    <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0F1318" media="(prefers-color-scheme: dark)">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
     <!--#if (captcha == "reCaptcha")-->
@@ -40,6 +53,10 @@
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
     <link rel="stylesheet" href="_content/Boilerplate.Client.Core/styles/app.css" />
+    <!-- This one physical page is the host for BOTH hybrid heads (Boilerplate.Client.Windows.csproj links it), and
+         each project emits only its own scoped css bundle, so exactly one of the next two lines resolves and the
+         other 404s at every start. That is expected, not a broken asset: neither link can be dropped, because both
+         projects have scoped css of their own. -->
     <link rel="stylesheet" href="Boilerplate.Client.Maui.styles.css" />
     <link rel="stylesheet" href="Boilerplate.Client.Windows.styles.css" />
 
@@ -47,10 +64,10 @@
 
         /* LoadingComponent.razor's body has been copied here due the lack of razor rending support at this stage */
         .bit-lds-grid div {
-            background-color: #123456;
+            background-color: var(--bit-clr-pri, #1276C6);
         }
 
-        .bit-lds-wrapper {
+        .bit-lds-wrapper-nfs {
             top: 50%;
             left: 50%;
             position: absolute;
@@ -143,7 +160,7 @@
 
     <!-- LoadingComponent.razor's body has been copied here due the lack of razor rending support at this stage -->
     <div id="app-container">
-        <div class="bit-lds-wrapper">
+        <div class="bit-lds-wrapper-nfs">
             <div class="bit-lds-grid">
                 <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
             </div>

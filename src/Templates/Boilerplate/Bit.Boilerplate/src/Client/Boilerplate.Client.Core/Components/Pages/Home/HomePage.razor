@@ -38,12 +38,16 @@
         @*#endif*@
 
         @*#if (module == "Sales")*@
+        @*#if (signalR == true)*@
         <BitSearchBox ReadOnly
                       Underlined
                       ShowSearchButton
                       Style="width:80%"
                       Color="BitColor.Secondary"
-                      @onclick="HandleOnSearchBoxClick" />
+                      AriaLabel="@Localizer[nameof(AppStrings.SearchProducts)]"
+                      Placeholder="@Localizer[nameof(AppStrings.SearchProducts)]"
+                      @onclick="WrapHandled(HandleOnSearchBoxClick)" />
+        @*#endif*@
 
         <ProductsCarousel />
         <br />
@@ -63,7 +67,7 @@
                                     <BitRippleLoading />
                                 </BitStack>
                             }
-                            else if (nugetStats is not null)
+                            else if (nugetStats?.Data is { Count: > 0 })
                             {
                                 var data = nugetStats.Data[0];
                                 <BitStack>
@@ -110,13 +114,11 @@
                                     </BitStack>
                                     <BitStack Horizontal>
                                         <BitText>Repo:</BitText>
-                                        @*-:cnd:noEmit*@
                                         <BitLink Target="_blank"
-                                                 Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Templates/Boilerplate">
+                                                 Href="https://github.com/bitfoundation/bitplatform">
                                             <BitImage Alt="bitplatform GitHub stars"
                                                       Src="https://img.shields.io/github/stars/bitfoundation/bitplatform?style=social&label=Github%20%E2%9C%A8" />
                                         </BitLink>
-                                        @*+:cnd:noEmit*@
                                     </BitStack>
                                 </BitStack>
                             }
@@ -143,7 +145,7 @@
                     </BitStack>
                 </BitLink>
                 <BitLink Href="https://www.nuget.org/profiles/bit-foundation" Target="_blank" NoUnderline>
-                    <BitImage Src="https://img.shields.io/badge/packages_download-9M-blue.svg?logo=nuget" Alt="nuget downloads" />
+                    <BitImage Src="https://img.shields.io/badge/packages_download-10M-blue.svg?logo=nuget" Alt="nuget downloads" />
                 </BitLink>
             </BitStack>
         </BitCard>

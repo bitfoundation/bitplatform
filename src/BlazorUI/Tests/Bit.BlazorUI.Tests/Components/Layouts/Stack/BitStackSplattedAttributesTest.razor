@@ -1,0 +1,11 @@
+@* The attributes the stack also writes out itself, handed to it as splatted html attributes instead, so that
+   which of the two ends up on the element can be read back one case at a time. The direction has to be splatted
+   through a dictionary rather than written out, since Razor matches a "dir" attribute to the Dir parameter. *@
+
+<BitStack Class="splatted-dir" @attributes="@_dir" />
+
+<BitStack Class="splatted-role" Element="ul" role="tablist" />
+
+@code {
+    private readonly Dictionary<string, object> _dir = new() { { "dir", "rtl" } };
+}

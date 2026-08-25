@@ -15,6 +15,11 @@ public partial class AppPageData
     {
         base.OnParametersSet();
 
+        Publish();
+    }
+
+    private void Publish()
+    {
         var publishMessage = $"{PageTitle}-{Title}-{SubTitle}-{ShowGoBackButton}";
 
         if (_lastPublishedMessage == publishMessage) return;

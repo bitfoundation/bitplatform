@@ -2,7 +2,6 @@
 using System.Net;
 using Polly.CircuitBreaker;
 using Microsoft.Net.Http.Headers;
-using Microsoft.AspNetCore.Authentication;
 using System.Data.Common;
 
 namespace Boilerplate.Server.Api.Infrastructure.Services;
@@ -13,7 +12,6 @@ public partial class ApiServerExceptionHandler : SharedExceptionHandler, IProble
     [AutoInject] private TimeProvider timeProvider = default!;
     [AutoInject] private ILogger<ApiServerExceptionHandler> logger = default!;
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
-    [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
 
     private static readonly Guid appSessionId = Guid.CreateVersion7();
 
@@ -40,14 +38,14 @@ public partial class ApiServerExceptionHandler : SharedExceptionHandler, IProble
             return;
         }
 
-        await httpContext.Response.WriteAsJsonAsync(problemDetail!, jsonSerializerOptions.GetTypeInfo<AppProblemDetails>(), cancellationToken: httpContext.RequestAborted);
+        await httpContext.Response.WriteAsJsonAsync(problemDetail, cancellationToken: httpContext.RequestAborted);
     }
 
     private void Handle(Exception exception,
         Dictionary<string, object?>? parameters,
         HttpContext? httpContext,
         out int statusCode,
-        out AppProblemDetails? problemDetails)
+        out AppProblemDetails problemDetails)
     {
         var data = new Dictionary<string, object?>()
         {
@@ -72,12 +70,12 @@ public partial class ApiServerExceptionHandler : SharedExceptionHandler, IProble
 
                 if (httpContext.Request.Headers.TryGetValue("X-App-Version", out var appVersionHeaderValue) && appVersionHeaderValue.Any())
                 {
-                    data["ClientAppVersion"] = appVersionHeaderValue.Single();
+                    data["ClientAppVersion"] = appVersionHeaderValue.First();
                 }
 
                 if (httpContext.Request.Headers.TryGetValue("X-App-Platform", out var appPlatformHeaderValues) && appPlatformHeaderValues.Any())
                 {
-                    data["ClientAppPlatform"] = appPlatformHeaderValues.Single();
+                    data["ClientAppPlatform"] = appPlatformHeaderValues.First();
                 }
 
                 data["Instance"] = instance;
@@ -87,7 +85,12 @@ public partial class ApiServerExceptionHandler : SharedExceptionHandler, IProble
                 data["ClientIP"] = httpContext.Connection.RemoteIpAddress;
             }
         }
-        catch (ObjectDisposedException) { /* The HttpContext from IHttpContextAccessor may be disposed at any time if the exception is handled within Task.Run or similar situations. */ }
+        catch (Exception)
+        {
+            // Nothing gathered above is worth losing the error response over. The HttpContext from
+            // IHttpContextAccessor may be disposed at any time if the exception is handled within Task.Run or
+            // similar situations, and a caller-supplied header can always be malformed in a way an accessor rejects.
+        }
 
         var knownException = exception as KnownException;
 
@@ -122,6 +125,10 @@ public partial class ApiServerExceptionHandler : SharedExceptionHandler, IProble
             {
                 logger.LogError(exception, exceptionMessageToLog);
             }
+            else if (IsTransientException(exception))
+            {
+                logger.LogWarning(exception, exceptionMessageToLog);
+            }
             else
             {
                 logger.LogCritical(exception, exceptionMessageToLog);
@@ -138,12 +145,7 @@ public partial class ApiServerExceptionHandler : SharedExceptionHandler, IProble
             Activity.Current?.AddTag("HasTransientException", "true");
         }
 
-        Activity.Current?.SetStatus(ActivityStatusCode.Error, message);
-
-        if (instance is null || traceIdentifier is null)
-        {
-            problemDetails = null;
-        }
+        Activity.Current?.SetStatus(ActivityStatusCode.Error, GetExceptionMessageToLog(exception));
 
         if (exception is KnownException && message == exceptionKey)
         {
@@ -154,11 +156,11 @@ public partial class ApiServerExceptionHandler : SharedExceptionHandler, IProble
         {
             Title = message,
             Status = statusCode,
+            Key = exceptionKey,
             Type = knownException?.GetType().FullName ?? typeof(UnknownException).FullName,
             Instance = instance,
             Extensions = new Dictionary<string, object?>()
             {
-                { "key", exceptionKey },
                 { "traceId", traceIdentifier }
             }
         };
@@ -173,11 +175,11 @@ public partial class ApiServerExceptionHandler : SharedExceptionHandler, IProble
 
         if (exception is ResourceValidationException validationException)
         {
-            problemDetails.Extensions.Add("payload", validationException.Payload);
+            problemDetails.Payload = validationException.Payload;
         }
     }
 
-    public AppProblemDetails? Handle(Exception exp,
+    public AppProblemDetails Handle(Exception exp,
         Dictionary<string, object?>? parameters = null)
     {
         Handle(UnWrapException(exp), parameters, httpContextAccessor.HttpContext, out var _, out var problemDetails);

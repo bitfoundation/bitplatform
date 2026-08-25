@@ -1,0 +1,318 @@
+﻿@page "/service-worker"
+@implements IAsyncDisposable
+@inject Bit.Butil.ServiceWorker serviceWorker
+
+<PageTitle>ServiceWorker - Bit.Butil</PageTitle>
+
+<PageHeader Category="Network & Workers"
+            Title="ServiceWorker"
+            Lead="Register, inspect, update and unregister service workers, and exchange messages with the worker controlling the page - a strongly-typed wrapper over navigator.serviceWorker."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API"
+            InjectAs="ServiceWorker serviceWorker" />
+
+<div class="stack">
+
+    <Callout Type="info" Title="Secure context required">
+        Service workers only run over HTTPS (localhost is exempt). This site ships a minimal demo worker at
+        <code>/sw.js</code> that does no caching - it exists purely so the registration-based APIs on this page
+        (and on the BackgroundSync and Push pages) have something real to register and inspect.
+    </Callout>
+
+    <DemoSection Title="Check support"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes navigator.serviceWorker. Service workers are available in every modern browser, but not in insecure contexts."
+                 Code=@("""
+var supported = await serviceWorker.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupport">Check support</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Register a worker"
+                 Api="Register"
+                 Description="Registers a same-origin worker script and resolves with a snapshot of the created registration. Optional parameters control the scope, the update-via-cache strategy (imports, all or none) and whether the script is loaded as an ES module."
+                 Code=@("""
+var info = await serviceWorker.Register("/sw.js");
+
+// info.IsRegistered   -> true
+// info.Scope          -> e.g. "https://example.com/"
+// info.ActiveState    -> "activated" once the worker is running
+// info.InstallingState / info.WaitingState / info.UpdateViaCache
+""")>
+        <div class="controls">
+            <button @onclick="RegisterWorker">Register /sw.js</button>
+        </div>
+        <DemoConsole @ref="registerOutput" Title="register output" />
+    </DemoSection>
+
+    <DemoSection Title="Inspect and update the registration"
+                 Api="GetRegistration / Update"
+                 Description="GetRegistration returns the registration matching a scope, or the most specific one for the current URL when the scope is omitted; IsRegistered is false when none exists. Update forces the browser to re-fetch the worker script and check for a newer version."
+                 Code=@("""
+var info = await serviceWorker.GetRegistration();
+
+if (info.IsRegistered)
+{
+    await serviceWorker.Update();
+}
+""")>
+        <div class="controls">
+            <button @onclick="InspectRegistration">Get registration</button>
+            <button class="secondary" @onclick="UpdateWorker">Check for updates</button>
+        </div>
+        <DemoConsole @ref="inspectOutput" Title="registration output" />
+    </DemoSection>
+
+    <DemoSection Title="Messaging and controller changes"
+                 Api="PostMessage / SubscribeMessage / SubscribeControllerChange"
+                 Description="PostMessage sends a payload to the worker currently controlling this page and returns false when there is no controller yet. SubscribeMessage receives payloads the worker posts back as JsonElement values, and SubscribeControllerChange fires whenever the controlling worker changes - for example right after the demo worker activates and claims this page. Both return a ButilSubscription; dispose it to detach."
+                 Code=@("""
+var messageSub = await serviceWorker.SubscribeMessage(data =>
+{
+    // data is a JsonElement carrying whatever the worker posted
+});
+
+var controllerSub = await serviceWorker.SubscribeControllerChange(() =>
+{
+    // the page is now controlled by a (new) worker
+});
+
+var delivered = await serviceWorker.PostMessage("hi worker");
+
+await messageSub.DisposeAsync();
+await controllerSub.DisposeAsync();
+""")>
+        <div class="field">
+            <label class="field-label">Message to post</label>
+            <input @bind="swMessage" />
+        </div>
+        <div class="controls">
+            <button @onclick="Subscribe">Subscribe to events</button>
+            <button class="secondary" @onclick="PostToWorker">Post message</button>
+            <button class="secondary" @onclick="Unsubscribe">Unsubscribe</button>
+        </div>
+        <DemoConsole @ref="messagingOutput" Title="messaging output" />
+    </DemoSection>
+
+    <DemoSection Title="Unregister"
+                 Api="Unregister"
+                 Description="Removes the registration matching the given scope, or the current one when omitted, and returns true when a registration was actually removed. Butil never unregisters workers automatically on disposal - the consuming app decides when a worker goes away."
+                 Code=@("""
+var removed = await serviceWorker.Unregister();
+""")>
+        <div class="controls">
+            <button class="danger" @onclick="UnregisterWorker">Unregister</button>
+        </div>
+        <DemoConsole @ref="unregisterOutput" Title="unregister output" />
+    </DemoSection>
+
+</div>
+
+<Callout Type="warning" Title="Registrations outlive the page">
+    A service worker registration persists across reloads and browser restarts until it is unregistered
+    or its script fails to fetch. If you registered the demo worker here, it stays registered for this
+    origin until you press Unregister (or remove it in DevTools, under Application, Service workers).
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes navigator.serviceWorker." />
+    <ApiMember Name="Register" Signature="ValueTask<ServiceWorkerRegistrationInfo> Register(string scriptUrl, string? scope = null, string? updateViaCache = null, bool moduleType = false)" Description="Registers a same-origin service worker script and resolves once the registration is created." />
+    <ApiMember Name="GetRegistration" Signature="ValueTask<ServiceWorkerRegistrationInfo> GetRegistration(string? scope = null)" Description="Returns the registration matching the scope (or the most specific one for the document URL when null)." />
+    <ApiMember Name="Update" Signature="ValueTask Update(string? scope = null)" Description="Forces an update check for a registration." />
+    <ApiMember Name="Unregister" Signature="ValueTask<bool> Unregister(string? scope = null)" Description="Unregisters the worker matching the scope. Returns true when something was removed." />
+    <ApiMember Name="PostMessage" Signature="ValueTask<bool> PostMessage<T>(T message)" Description="Sends the message to the active worker controlling this page. Returns false when no controller exists." />
+    <ApiMember Name="SubscribeMessage" Signature="Task<ButilSubscription> SubscribeMessage(Action<JsonElement> handler)" Description="Subscribes to messages broadcast from the service worker; each payload arrives as a JsonElement." />
+    <ApiMember Name="SubscribeControllerChange" Signature="Task<ButilSubscription> SubscribeControllerChange(Action handler)" Description="Fires when navigator.serviceWorker.controller changes." />
+    <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Detaches every subscription created by this instance. Registrations themselves are left untouched." />
+    <ApiMember Name="InvokeServiceWorkerMessage" Signature="void InvokeServiceWorkerMessage(Guid id, JsonElement data)" Description="Interop plumbing invoked from JavaScript ([JSInvokable]); not intended for direct use." />
+    <ApiMember Name="InvokeServiceWorkerControllerChange" Signature="void InvokeServiceWorkerControllerChange(Guid id)" Description="Interop plumbing invoked from JavaScript ([JSInvokable]); not intended for direct use." />
+    <ApiMember Name="ServiceWorkerRegistrationInfo.IsRegistered" Signature="bool IsRegistered { get; set; }" Description="True when a registration was found or created." />
+    <ApiMember Name="ServiceWorkerRegistrationInfo.Scope" Signature="string Scope { get; set; }" Description="Scope URL the registration applies to." />
+    <ApiMember Name="ServiceWorkerRegistrationInfo.ActiveState" Signature="string? ActiveState { get; set; }" Description="The active worker's state: installing, installed, activating, activated, redundant, or null when none." />
+    <ApiMember Name="ServiceWorkerRegistrationInfo.InstallingState" Signature="string? InstallingState { get; set; }" Description="The installing worker's state, when one is being installed." />
+    <ApiMember Name="ServiceWorkerRegistrationInfo.WaitingState" Signature="string? WaitingState { get; set; }" Description="The waiting worker's state, when an update is queued." />
+    <ApiMember Name="ServiceWorkerRegistrationInfo.UpdateViaCache" Signature="string? UpdateViaCache { get; set; }" Description="Update via cache strategy: imports, all, or none." />
+    <ApiMember Name="GetRegistrations"
+               Signature="ValueTask<ServiceWorkerRegistrationInfo[]> GetRegistrations()"
+               Description="Every registration this origin has, not just the one matching a scope. Useful for cleaning up workers left by an earlier version of an app." />
+    <ApiMember Name="Ready"
+               Signature="ValueTask<ServiceWorkerRegistrationInfo> Ready(int timeoutMs = 10000)"
+               Description="Waits until a worker is active and returns its registration - the point at which PostMessage will actually reach it. Register returns while the worker is still installing. Times out rather than hanging when nothing is registered." />
+</ApiTable>
+
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole registerOutput = default!;
+    private DemoConsole inspectOutput = default!;
+    private DemoConsole messagingOutput = default!;
+    private DemoConsole unregisterOutput = default!;
+    private string swMessage = "Hello from the page!";
+    private ButilSubscription? messageSub;
+    private ButilSubscription? controllerSub;
+
+    private async Task CheckSupport()
+    {
+        try
+        {
+            var supported = await serviceWorker.IsSupported();
+            await supportOutput.Info("navigator.serviceWorker supported:", supported);
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task RegisterWorker()
+    {
+        try
+        {
+            var info = await serviceWorker.Register("/sw.js");
+            await registerOutput.Success($"Registered. Scope: {info.Scope}");
+            await registerOutput.Log($"Active: {info.ActiveState ?? "-"} | Installing: {info.InstallingState ?? "-"} | Waiting: {info.WaitingState ?? "-"} | UpdateViaCache: {info.UpdateViaCache ?? "-"}");
+        }
+        catch (Exception ex)
+        {
+            await registerOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task InspectRegistration()
+    {
+        try
+        {
+            var info = await serviceWorker.GetRegistration();
+            if (info.IsRegistered is false)
+            {
+                await inspectOutput.Warn("No registration found for this page. Press Register first.");
+                return;
+            }
+
+            await inspectOutput.Info($"Scope: {info.Scope}");
+            await inspectOutput.Log($"Active: {info.ActiveState ?? "-"} | Installing: {info.InstallingState ?? "-"} | Waiting: {info.WaitingState ?? "-"} | UpdateViaCache: {info.UpdateViaCache ?? "-"}");
+        }
+        catch (Exception ex)
+        {
+            await inspectOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task UpdateWorker()
+    {
+        try
+        {
+            await serviceWorker.Update();
+            await inspectOutput.Success("Update check triggered - the browser re-fetches /sw.js and compares it byte-for-byte.");
+        }
+        catch (Exception ex)
+        {
+            await inspectOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task Subscribe()
+    {
+        try
+        {
+            if (messageSub is not null && controllerSub is not null)
+            {
+                await messagingOutput.Warn("Already subscribed.");
+                return;
+            }
+
+            messageSub ??= await serviceWorker.SubscribeMessage(data => _ = messagingOutput.Log("Worker message:", data));
+            controllerSub ??= await serviceWorker.SubscribeControllerChange(() => _ = messagingOutput.Info("controllerchange - a (new) worker now controls this page."));
+            await messagingOutput.Success("Subscribed to worker messages and controllerchange. Now register the worker to see the controller change.");
+        }
+        catch (Exception ex)
+        {
+            await messagingOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task PostToWorker()
+    {
+        try
+        {
+            var delivered = await serviceWorker.PostMessage(swMessage);
+            if (delivered)
+            {
+                await messagingOutput.Success("Posted to the controlling worker (check the DevTools console for the worker side).");
+            }
+            else
+            {
+                await messagingOutput.Warn("No controlling worker yet - register /sw.js first; it claims the page on activation.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await messagingOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task Unsubscribe()
+    {
+        try
+        {
+            if (messageSub is null && controllerSub is null)
+            {
+                await messagingOutput.Warn("Nothing to unsubscribe.");
+                return;
+            }
+
+            if (messageSub is not null)
+            {
+                await messageSub.DisposeAsync();
+                messageSub = null;
+            }
+
+            if (controllerSub is not null)
+            {
+                await controllerSub.DisposeAsync();
+                controllerSub = null;
+            }
+
+            await messagingOutput.Log("Unsubscribed.");
+        }
+        catch (Exception ex)
+        {
+            await messagingOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task UnregisterWorker()
+    {
+        try
+        {
+            var removed = await serviceWorker.Unregister();
+            if (removed)
+            {
+                await unregisterOutput.Success("Unregistered.");
+            }
+            else
+            {
+                await unregisterOutput.Warn("Nothing to unregister - no matching registration.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await unregisterOutput.Error(ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (messageSub is not null)
+        {
+            await messageSub.DisposeAsync();
+        }
+
+        if (controllerSub is not null)
+        {
+            await controllerSub.DisposeAsync();
+        }
+    }
+}

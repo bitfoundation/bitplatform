@@ -1,31 +1,89 @@
-@import '../../Styles/abstracts/_bit-css-variables.scss';
+@import '../../Styles/abstracts/_docs.scss';
 
-::deep {
-    .iconography-search-box {
-        max-width: 19rem;
+// The height of one cell of the grid and the gap that follows it. In px, and duplicated by the
+// ICON_CELL_* constants in the code-behind, because the grid is virtualized by row: the virtualizer
+// places rows at absolute pixel offsets, so the row height it is handed - cell plus gap - has to be
+// exactly the height a row occupies here. rem would let a text-zoom move one side of that agreement
+// and not the other. How WIDE a cell is is not settled here: the code-behind divides the measured
+// width by a minimum cell width to get a column count, and the row shares its width out between
+// that many equal columns.
+$icon-cell-height: 68px;
+$icon-cell-gap: 8px;
+
+.icon-browser {
+    display: flex;
+    gap: $doc-space-sm;
+    flex-flow: column nowrap;
+
+    ::deep .iconography-search-box {
+        max-width: rem2(320px);
     }
 
-    .icon-box {
-        margin: 1px;
-        height: auto;
-        width: 5.125rem;
-        min-height: unset;
+    // A fixed-height scroller, and the viewport the virtualizer windows against: the grid is the
+    // one place on this site where the number of nodes, not the layout, is what costs.
+    ::deep .icon-scroller {
+        height: rem2(480px);
+        padding: $doc-space-sm;
+
+        @include doc-surface;
+        @include doc-scrollbar;
+    }
+
+    // One virtualized item. A grid of exactly the column count the code-behind measured, rather
+    // than a row of fixed-width cells, so the last row stays aligned with the ones above it and no
+    // slack is left over on the right - which on a phone, three columns wide, is most of a cell.
+    // Its height is the cell plus the gap that follows it, so the trailing gap sits inside the row
+    // rather than between two absolutely positioned rows, where it would have nothing to push against.
+    ::deep .icon-row {
+        display: grid;
+        gap: $icon-cell-gap;
+        padding-bottom: $icon-cell-gap;
+        grid-template-columns: repeat(var(--icon-cols, 1), minmax(0, 1fr));
+    }
+
+    // The label is revealed on hover and focus rather than always shown: at rest the grid should
+    // read as a sheet of glyphs, which is how an icon is actually recognised. Its box is reserved
+    // either way, so revealing it cannot move anything.
+    ::deep .icon-box {
+        gap: rem2(6px);
+        border: none;
+        display: flex;
         cursor: pointer;
-        padding: 0.5rem;
-        border-radius: $bit-shape-border-radius;
-        transition: background-color 0.15s ease;
+        color: inherit;
+        overflow: hidden;
+        text-align: center;
+        align-items: center;
+        font-family: inherit;
+        justify-content: center;
+        flex-flow: column nowrap;
+        background-color: transparent;
+        height: $icon-cell-height;
+        padding: rem2(8px) rem2(4px);
+        border-radius: $bit-shape-radius-surface;
+        transition: background-color $bit-motion-duration-short $bit-motion-easing;
+
+        > i {
+            flex: none;
+            font-size: rem2(20px);
+            color: $bit-color-foreground-secondary;
+        }
 
         .icon-name {
             opacity: 0;
-            text-align: center;
+            display: block;
+            overflow: hidden;
+            max-height: rem2(26px);
+            line-height: rem2(13px);
             overflow-wrap: anywhere;
+            font-size: $bit-typography-caption2-font-size;
+            font-weight: $bit-typography-caption2-font-weight;
+            transition: opacity $bit-motion-duration-short $bit-motion-easing;
         }
 
         &:hover,
         &:focus-visible,
         &:active,
         &.selected {
-            color: inherit;
             background-color: $bit-color-background-secondary;
 
             .icon-name {
@@ -33,8 +91,15 @@
             }
         }
 
+        // Inset rather than the docs' offset ring: the cells sit a gap apart, so an outward ring
+        // would draw over its neighbours.
+        &:focus-visible {
+            outline: rem2(2px) solid $bit-color-primary;
+            outline-offset: rem2(-2px);
+        }
+
         &.selected {
-            outline: 1px solid $bit-color-border-primary;
+            outline: rem2(1px) solid $bit-color-primary;
         }
     }
 }

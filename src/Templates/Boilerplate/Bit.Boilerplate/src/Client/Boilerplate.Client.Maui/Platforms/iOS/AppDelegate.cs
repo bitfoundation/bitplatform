@@ -1,4 +1,7 @@
 //+:cnd:noEmit
+// [mirror] apple app delegate - keep in sync with:
+// - src/Client/Boilerplate.Client.Maui/Platforms/MacCatalyst/AppDelegate.cs
+
 using UIKit;
 using Foundation;
 //#if (notification == true)

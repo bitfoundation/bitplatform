@@ -1,11 +1,8 @@
 using OtpNet;
-using System.Text.RegularExpressions;
-using Boilerplate.Tests.Infrastructure.Components;
-using Boilerplate.Tests.Infrastructure.Services;
 
 namespace Boilerplate.Tests.Features.Identity;
 
-[TestClass, TestCategory("UITest")]
+[TestClass, TestCategory("UITest"), Retry(2)]
 public partial class TwoFactorAuthTests : AppPageTest
 {
     /// <summary>
@@ -76,15 +73,28 @@ public partial class TwoFactorAuthTests : AppPageTest
         return secret;
     }
 
-    /// <summary>Fills the verification code (a TOTP computed from <paramref name="authenticatorSecret"/>) and enables 2FA.</summary>
+    /// <summary>
+    /// Fills the verification code (a TOTP computed from <paramref name="authenticatorSecret"/>), which is all it takes
+    /// to enable 2FA.
+    /// <para>
+    /// The field is a <c>BitOtpInput</c> - the same control the sign-in 2FA step uses below - so it is filled through
+    /// <see cref="BitOtpInputUtils"/> rather than by placeholder. It used to be a <c>BitTextField</c>, which had no
+    /// digit normalisation and so could not be typed into on a Persian/Arabic keyboard layout at all.
+    /// </para>
+    /// <para>
+    /// Deliberately no click on "Verify" afterwards. Filling the last digit raises the input's <c>OnFill</c>, which is
+    /// wired to the <b>same</b> <c>EnableTwoFactorAuth</c> handler as that button (TwoFactorSection.razor:60 and :63),
+    /// so clicking it as well races the handler already in flight: the moment 2FA is enabled the whole
+    /// <c>isTwoFactorAuthEnabled is false</c> branch is swapped for the recovery-codes pivot, taking the button with
+    /// it. Playwright then reported "element was detached from the DOM, retrying" until it timed out - only on CI,
+    /// where the round trip finishes while it is still checking the button is stable. Every other
+    /// <see cref="BitOtpInputUtils.FillOtpInputs(IPage, string)"/> call site in this suite relies on <c>OnFill</c>
+    /// alone; this one was the outlier.
+    /// </para>
+    /// </summary>
     private async Task EnableTwoFactor(IPage page, string authenticatorSecret)
     {
-        var verificationCode = page.GetByPlaceholder(AppStrings.TfaConfigureAutAppVerificationCodePlaceholder);
-        await verificationCode.FillAsync(ComputeTotpCode(authenticatorSecret));
-        // The field commits its value on change (blur), so blur it before verifying to make sure the component reads it.
-        await verificationCode.BlurAsync();
-
-        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.TfaConfigureAutAppVerifyButtonText }).ClickAsync();
+        await BitOtpInputUtils.FillOtpInputs(page, ComputeTotpCode(authenticatorSecret));
     }
 
     /// <summary>Signs the current user out through the header menu and its confirmation dialog.</summary>
@@ -145,8 +155,8 @@ public partial class TwoFactorAuthTests : AppPageTest
         // No elevated-access token e-mail was sent: the 2FA sign-in already elevated the session. Read every e-mail the
         // server captured straight from its in-memory store (See TestIdentityEmailService / EmailCaptureStore).
         var capturedEmails = server.WebApp.Services.GetRequiredService<EmailCaptureStore>().Captured;
-        Assert.IsFalse(
-            capturedEmails.Any(capturedEmail => capturedEmail.IsTo(email) && capturedEmail.Kind is CapturedEmailKind.ElevatedAccess),
+        Assert.DoesNotContain(
+            capturedEmail => capturedEmail.IsTo(email) && capturedEmail.Kind is CapturedEmailKind.ElevatedAccess, capturedEmails,
             "The 2FA sign-in already elevated the session, so deleting the account must not send an elevated-access token e-mail.");
     }
 

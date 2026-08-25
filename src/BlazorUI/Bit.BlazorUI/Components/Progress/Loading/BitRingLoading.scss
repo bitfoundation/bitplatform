@@ -16,21 +16,21 @@
     margin: var(--bit-ldn-rng-8);
     width: var(--bit-ldn-rng-64);
     height: var(--bit-ldn-rng-64);
-    border: var(--bit-ldn-rng-8) solid var(--bit-ldn-color);
-    animation: bit-ldn-rng-anm 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    border: var(--bit-ldn-rng-8) $shp-border-style var(--bit-ldn-color);
+    animation: bit-ldn-rng-anm calc(1.2s * var(--bit-ldn-mot-factor, 1)) cubic-bezier(0.5, 0, 0.5, 1) infinite;
     border-color: var(--bit-ldn-color) transparent transparent transparent;
 }
 
 .bit-ldn-rng-ch1 {
-    animation-delay: -0.45s;
+    animation-delay: calc(-0.45s * var(--bit-ldn-mot-factor, 1));
 }
 
 .bit-ldn-rng-ch2 {
-    animation-delay: -0.3s;
+    animation-delay: calc(-0.3s * var(--bit-ldn-mot-factor, 1));
 }
 
 .bit-ldn-rng-ch3 {
-    animation-delay: -0.15s;
+    animation-delay: calc(-0.15s * var(--bit-ldn-mot-factor, 1));
 }
 
 @keyframes bit-ldn-rng-anm {

@@ -12,6 +12,7 @@ namespace Bit.Butil;
 /// <br />
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window">https://developer.mozilla.org/en-US/docs/Web/API/Window</see>
 /// </summary>
+[ButilService(typeof(Window))]
 public class Window(IJSRuntime js) : IAsyncDisposable
 {
     private const string ElementName = "window";
@@ -208,6 +209,89 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// </remarks>
     public async Task<bool> IsSecureContext()
         => await js.Invoke<bool>("BitButil.window.isSecureContext");
+
+    /// <summary>
+    /// CSS pixels per device pixel - 2 on a typical "retina" display, and fractional at OS zoom
+    /// levels.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio">https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio</see>
+    /// </summary>
+    /// <remarks>
+    /// Changes when the user zooms or moves the window to another monitor, so read it when you need
+    /// it rather than caching it - or watch for it with a <c>resolution</c> media query through
+    /// <see cref="WatchMatchMedia"/>.
+    /// </remarks>
+    public async Task<double> GetDevicePixelRatio()
+        => await js.Invoke<double>("BitButil.window.devicePixelRatio");
+
+    /// <summary>
+    /// True when the page is cross-origin isolated, which is what unlocks
+    /// <c>SharedArrayBuffer</c> and unthrottled high-resolution timers.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/crossOriginIsolated">https://developer.mozilla.org/en-US/docs/Web/API/Window/crossOriginIsolated</see>
+    /// </summary>
+    /// <remarks>
+    /// Requires the server to send COOP and COEP headers; it can't be turned on from script. Blazor
+    /// WebAssembly multithreading needs this.
+    /// </remarks>
+    public async Task<bool> IsCrossOriginIsolated()
+        => await js.Invoke<bool>("BitButil.window.crossOriginIsolated");
+
+    /// <summary>
+    /// True when this document is running inside a frame rather than as a top-level page.
+    /// </summary>
+    /// <remarks>
+    /// Compares <c>window.self</c> with <c>window.top</c>, which stays legal even when the parent is
+    /// cross-origin. Returns true if the comparison itself is blocked, since only a cross-origin
+    /// embedding can cause that. Pair with <c>Location.GetAncestorOrigins</c> to find out who.
+    /// </remarks>
+    public async Task<bool> IsInIframe()
+        => await js.Invoke<bool>("BitButil.window.isInIframe");
+
+    /// <summary>
+    /// Number of frames (<c>&lt;iframe&gt;</c>/<c>&lt;frame&gt;</c>) directly inside this window.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/length">https://developer.mozilla.org/en-US/docs/Web/API/Window/length</see>
+    /// </summary>
+    public async Task<int> GetFrameCount()
+        => await js.Invoke<int>("BitButil.window.frameCount");
+
+    /// <summary>
+    /// Moves the window so its top-left corner sits at the given screen coordinates.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/moveTo">https://developer.mozilla.org/en-US/docs/Web/API/Window/moveTo</see>
+    /// </summary>
+    /// <remarks>
+    /// Silently ignored for a normal browser tab - browsers only honor this for a window the script
+    /// itself opened via <see cref="Open(string?, string?, string?)"/>, and never for one with
+    /// multiple tabs.
+    /// </remarks>
+    public async Task MoveTo(float x, float y)
+        => await js.InvokeVoid("BitButil.window.moveTo", x, y);
+
+    /// <summary>
+    /// Moves the window by a relative amount. Subject to the same restrictions as <see cref="MoveTo"/>.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/moveBy">https://developer.mozilla.org/en-US/docs/Web/API/Window/moveBy</see>
+    /// </summary>
+    public async Task MoveBy(float x, float y)
+        => await js.InvokeVoid("BitButil.window.moveBy", x, y);
+
+    /// <summary>
+    /// Resizes the window to the given outer size. Subject to the same restrictions as <see cref="MoveTo"/>.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/resizeTo">https://developer.mozilla.org/en-US/docs/Web/API/Window/resizeTo</see>
+    /// </summary>
+    public async Task ResizeTo(float width, float height)
+        => await js.InvokeVoid("BitButil.window.resizeTo", width, height);
+
+    /// <summary>
+    /// Resizes the window by a relative amount. Subject to the same restrictions as <see cref="MoveTo"/>.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/resizeBy">https://developer.mozilla.org/en-US/docs/Web/API/Window/resizeBy</see>
+    /// </summary>
+    public async Task ResizeBy(float width, float height)
+        => await js.InvokeVoid("BitButil.window.resizeBy", width, height);
 
     /// <summary>
     /// Returns the locationbar object. For privacy and interoperability reasons, 

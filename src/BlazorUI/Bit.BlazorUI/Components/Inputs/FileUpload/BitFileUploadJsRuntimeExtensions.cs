@@ -1,9 +1,14 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
 internal static class BitFileUploadJsRuntimeExtensions
 {
+    // The js side of the setup is asynchronous (it reads the image dimensions before it answers), so this
+    // one stays on the regular asynchronous invocation - the fast in-process path would leave it running
+    // and come back with nothing. Invoke still returns default (null) when the runtime can't service
+    // interop, so the result is normalized to an empty array to keep callers (e.g. _files.AddRange(...))
+    // from crashing with ArgumentNullException.
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitFileInfo))]
     internal static async ValueTask<BitFileInfo[]> BitFileUploadSetup(this IJSRuntime jsRuntime,
                                                                      string id,
@@ -11,15 +16,25 @@ internal static class BitFileUploadJsRuntimeExtensions
                                                                      ElementReference element,
                                                                      bool append,
                                                                      string? uploadAddress,
-                                                                     Dictionary<string, string>? uploadRequestHttpHeaders)
+                                                                     Dictionary<string, string>? uploadRequestHttpHeaders,
+                                                                     string? method,
+                                                                     bool withCredentials,
+                                                                     long timeout,
+                                                                     string? fieldName,
+                                                                     bool showPreview,
+                                                                     bool readImageDimensions)
     {
-        // FastInvoke returns default (null) when the runtime can't service interop or a JSON/JS interop
-        // error is swallowed on the in-process (WASM) path, so normalize to an empty array to keep callers
-        // (e.g. _files.AddRange(...)) from crashing with ArgumentNullException.
         const string identifier = "BitBlazorUI.FileUpload.setup";
-        var result = await jsRuntime.FastInvoke<BitFileInfo[]>(identifier, id, dotnetObjectReference, element, append, uploadAddress, uploadRequestHttpHeaders);
+        var result = await jsRuntime.Invoke<BitFileInfo[]>(identifier,
+                                                           id, dotnetObjectReference, element, append, uploadAddress, uploadRequestHttpHeaders,
+                                                           method, withCredentials, timeout, fieldName, showPreview, readImageDimensions);
         jsRuntime.ReportIfUnexpectedNull(identifier, result);
         return result ?? [];
+    }
+
+    internal static ValueTask BitFileUploadRelease(this IJSRuntime jsRuntime, string id, int index)
+    {
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.FileUpload.release", id, index);
     }
 
     internal static ValueTask BitFileUploadUpload(this IJSRuntime jsRuntime,
@@ -28,8 +43,16 @@ internal static class BitFileUploadJsRuntimeExtensions
                                                        long to,
                                                        int index,
                                                        string? uploadUrl,
-                                                       Dictionary<string, string>? httpHeaders)
+                                                       Dictionary<string, string>? httpHeaders,
+                                                       Dictionary<string, string>? formFields)
     {
+        // the optional arguments are only left out when there is nothing to send, so that the
+        // defaults of the JavaScript side keep applying instead of an explicit null overriding them.
+        if (formFields is not null)
+        {
+            return jsRuntime.FastInvokeVoid("BitBlazorUI.FileUpload.upload", id, from, to, index, uploadUrl, httpHeaders ?? [], formFields);
+        }
+
         return (httpHeaders is null ? jsRuntime.FastInvokeVoid("BitBlazorUI.FileUpload.upload", id, from, to, index, uploadUrl)
                                     : jsRuntime.FastInvokeVoid("BitBlazorUI.FileUpload.upload", id, from, to, index, uploadUrl, httpHeaders));
     }
@@ -44,10 +67,17 @@ internal static class BitFileUploadJsRuntimeExtensions
     // reference; a null result means drag/drop was not initialized.
     internal static async ValueTask<IJSObjectReference?> BitFileUploadSetupDragDrop(this IJSRuntime jsRuntime,
                                                                                          ElementReference dragDropZoneElement,
-                                                                                         ElementReference inputFileElement)
+                                                                                         ElementReference inputFileElement,
+                                                                                         string dragClass,
+                                                                                         string? dragStyle,
+                                                                                         bool allowDrop,
+                                                                                         bool allowPaste,
+                                                                                         bool expandDirectories)
     {
         const string identifier = "BitBlazorUI.FileUpload.setupDragDrop";
-        var result = await jsRuntime.FastInvoke<IJSObjectReference>(identifier, dragDropZoneElement, inputFileElement);
+        var result = await jsRuntime.FastInvoke<IJSObjectReference>(identifier,
+                                                                    dragDropZoneElement, inputFileElement, dragClass, dragStyle,
+                                                                    allowDrop, allowPaste, expandDirectories);
         return jsRuntime.ReportIfUnexpectedNull(identifier, result);
     }
 

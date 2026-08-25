@@ -13,6 +13,7 @@ namespace Bit.Butil;
 /// disposal automatically revokes outstanding ones. Call <see cref="Create(byte[], string, bool)"/>
 /// with <c>track: false</c> when you want the URL to outlive disposal and call <see cref="Revoke"/> yourself.
 /// </remarks>
+[ButilService(typeof(ObjectUrls))]
 public class ObjectUrls(IJSRuntime js) : IAsyncDisposable
 {
     private readonly ConcurrentBag<string> _tracked = new();

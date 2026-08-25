@@ -1,6 +1,3 @@
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Shared.Features.Identity.Dtos;
-
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
 public partial class ResetPasswordPage
@@ -111,7 +108,12 @@ public partial class ResetPasswordPage
 
         try
         {
-            var resendModel = new SendResetPasswordTokenRequestDto { Email = model.Email, PhoneNumber = model.PhoneNumber };
+            var resendModel = new SendResetPasswordTokenRequestDto
+            {
+                Email = model.Email,
+                PhoneNumber = model.PhoneNumber,
+                ReturnUrl = ReturnUrlQueryString
+            };
 
             await identityController.SendResetPasswordToken(resendModel, CurrentCancellationToken);
 

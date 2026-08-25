@@ -15,12 +15,12 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
     - name: Checkout source code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
           persist-credentials: false
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
 
@@ -113,8 +113,8 @@ jobs:
     - name: dotnet pack BlazorUI.Icons
       run: dotnet pack src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj --output . --configuration Release
       
-    - name: Generate CSS/JS files Bswup
-      run: dotnet build src/Bswup/Bit.Bswup/Bit.Bswup.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
+    # No "Generate CSS/JS files" pre-step: Bit.Bswup generates its bundles as part of the build
+    # itself (see Bit.Bswup.csproj), so the build below emits them from a clean checkout.
     - name: dotnet build Bswup
       run: dotnet build src/Bswup/Bit.Bswup/Bit.Bswup.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bswup

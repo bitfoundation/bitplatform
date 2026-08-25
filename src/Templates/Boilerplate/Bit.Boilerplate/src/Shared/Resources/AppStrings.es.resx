@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
   <!-- 
@@ -174,8 +174,159 @@
   <data name="TooManyRequestsException" xml:space="preserve">
     <value>Demasiadas solicitudes</value>
   </data>
-  <data name="ServerConnectionException" xml:space="preserve">
+  <data name="TransientException" xml:space="preserve">
     <value>No se puede conectar al servidor.</value>
+  </data>
+  <!-- Bit.BlazorUI messages -->
+  <data name="DataGridEmptyText" xml:space="preserve">
+    <value>No hay registros para mostrar.</value>
+  </data>
+  <data name="DataGridLoadingText" xml:space="preserve">
+    <value>Cargando…</value>
+  </data>
+  <data name="DataGridActionsText" xml:space="preserve">
+    <value>Acciones</value>
+  </data>
+  <data name="DataGridAddRowText" xml:space="preserve">
+    <value>+ Agregar</value>
+  </data>
+  <data name="DataGridClearFiltersText" xml:space="preserve">
+    <value>Borrar filtros</value>
+  </data>
+  <data name="DataGridExportCsvText" xml:space="preserve">
+    <value>Exportar CSV</value>
+  </data>
+  <data name="DataGridExportExcelText" xml:space="preserve">
+    <value>Exportar Excel</value>
+  </data>
+  <data name="DataGridColumnsText" xml:space="preserve">
+    <value>Columnas</value>
+  </data>
+  <data name="DataGridEditText" xml:space="preserve">
+    <value>Editar</value>
+  </data>
+  <data name="DataGridDeleteText" xml:space="preserve">
+    <value>Eliminar</value>
+  </data>
+  <data name="DataGridSaveText" xml:space="preserve">
+    <value>Guardar</value>
+  </data>
+  <data name="DataGridCancelText" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+  <data name="DataGridSelectAllLabel" xml:space="preserve">
+    <value>Seleccionar todo</value>
+  </data>
+  <data name="DataGridSelectRowLabel" xml:space="preserve">
+    <value>Seleccionar fila</value>
+  </data>
+  <data name="DataGridSelectRowFormat" xml:space="preserve">
+    <value>Seleccionar fila: {0}</value>
+  </data>
+  <data name="DataGridFilterPlaceholder" xml:space="preserve">
+    <value>Filtrar…</value>
+  </data>
+  <data name="DataGridFilterByFormat" xml:space="preserve">
+    <value>Filtrar por {0}</value>
+  </data>
+  <data name="DataGridFilterAllText" xml:space="preserve">
+    <value>Todos</value>
+  </data>
+  <data name="DataGridFilterOperatorLabel" xml:space="preserve">
+    <value>Operador de filtro para {0}</value>
+  </data>
+  <data name="DataGridFilterOpContains" xml:space="preserve">
+    <value>Contiene</value>
+  </data>
+  <data name="DataGridFilterOpDoesNotContain" xml:space="preserve">
+    <value>No contiene</value>
+  </data>
+  <data name="DataGridFilterOpStartsWith" xml:space="preserve">
+    <value>Empieza por</value>
+  </data>
+  <data name="DataGridFilterOpEndsWith" xml:space="preserve">
+    <value>Termina en</value>
+  </data>
+  <data name="DataGridBooleanTrueText" xml:space="preserve">
+    <value>Verdadero</value>
+  </data>
+  <data name="DataGridBooleanFalseText" xml:space="preserve">
+    <value>Falso</value>
+  </data>
+  <data name="DataGridGroupByFormat" xml:space="preserve">
+    <value>Agrupar por {0}</value>
+  </data>
+  <data name="DataGridUngroupByFormat" xml:space="preserve">
+    <value>Desagrupar por {0}</value>
+  </data>
+  <data name="DataGridExpandGroupFormat" xml:space="preserve">
+    <value>Expandir grupo {0}: {1}</value>
+  </data>
+  <data name="DataGridCollapseGroupFormat" xml:space="preserve">
+    <value>Contraer grupo {0}: {1}</value>
+  </data>
+  <data name="DataGridPagerRangeFormat" xml:space="preserve">
+    <value>{0}–{1} de {2}</value>
+  </data>
+  <data name="DataGridPagerPageFormat" xml:space="preserve">
+    <value>Página {0} de {1}</value>
+  </data>
+  <data name="DataGridPerPageFormat" xml:space="preserve">
+    <value>{0} / página</value>
+  </data>
+  <data name="DataGridRowsPerPageLabel" xml:space="preserve">
+    <value>Filas por página</value>
+  </data>
+  <data name="DataGridFirstPageLabel" xml:space="preserve">
+    <value>Primera página</value>
+  </data>
+  <data name="DataGridPreviousPageLabel" xml:space="preserve">
+    <value>Página anterior</value>
+  </data>
+  <data name="DataGridNextPageLabel" xml:space="preserve">
+    <value>Página siguiente</value>
+  </data>
+  <data name="DataGridLastPageLabel" xml:space="preserve">
+    <value>Última página</value>
+  </data>
+  <data name="DataGridEndOfResultsText" xml:space="preserve">
+    <value>- Fin de los resultados -</value>
+  </data>
+  <data name="DataGridToggleDetailsLabel" xml:space="preserve">
+    <value>Mostrar u ocultar detalles</value>
+  </data>
+  <data name="DataGridToggleChildrenLabel" xml:space="preserve">
+    <value>Mostrar u ocultar elementos secundarios</value>
+  </data>
+  <data name="DataGridReorderRowTitle" xml:space="preserve">
+    <value>Arrastre para reordenar, o enfoque y use las teclas de flecha para mover esta fila</value>
+  </data>
+  <data name="DataGridReorderRowLabel" xml:space="preserve">
+    <value>Reordenar fila. Pulse Flecha arriba o Flecha abajo para mover esta fila.</value>
+  </data>
+  <data name="DataGridInvalidValueError" xml:space="preserve">
+    <value>Valor no válido para {0}.</value>
+  </data>
+  <data name="DataGridAnnouncementSortedAscending" xml:space="preserve">
+    <value>Ordenado por {0}, ascendente</value>
+  </data>
+  <data name="DataGridAnnouncementSortedDescending" xml:space="preserve">
+    <value>Ordenado por {0}, descendente</value>
+  </data>
+  <data name="DataGridAnnouncementSortCleared" xml:space="preserve">
+    <value>Se quitó la ordenación por {0}</value>
+  </data>
+  <data name="DataGridAnnouncementFiltered" xml:space="preserve">
+    <value>Filtro aplicado en {0}</value>
+  </data>
+  <data name="DataGridAnnouncementFilterCleared" xml:space="preserve">
+    <value>Se borró el filtro en {0}</value>
+  </data>
+  <data name="DataGridAnnouncementPage" xml:space="preserve">
+    <value>Página {0} de {1}</value>
+  </data>
+  <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
+    <value>Fila eliminada</value>
   </data>
   <!-- Boilerplate strings -->
   <data name="Active" xml:space="preserve">
@@ -260,12 +411,34 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="Ok" xml:space="preserve">
     <value>Aceptar</value>
   </data>
+    <!-- Identity pages -->
+    <data name="Close" xml:space="preserve">
+    <value>Cerrar</value>
+  </data>
+    <data name="SignInWithPasskeyButtonText" xml:space="preserve">
+    <value>Iniciar sesión con una clave de acceso</value>
+  </data>
+    <data name="OpenGmail" xml:space="preserve">
+    <value>Abrir Gmail</value>
+  </data>
+    <data name="OpenOutlook" xml:space="preserve">
+    <value>Abrir Outlook</value>
+  </data>
+    <data name="AgreeToTermsMessage" xml:space="preserve">
+    <value>Al registrarte, aceptas nuestros</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SystemPromptsTitle" xml:space="preserve">
     <value>Instrucciones del sistema</value>
   </data>
   <data name="SystemPromptsSubTitle" xml:space="preserve">
     <value>Ver las instrucciones del sistema para el chatbot aquí.</value>
+  </data>
+  <data name="PromptKindSupport" xml:space="preserve">
+    <value>Soporte</value>
+  </data>
+  <data name="PromptKindAnalyzeProductImage" xml:space="preserve">
+    <value>Analizar la imagen del producto</value>
   </data>
   <data name="PushNotificationJob" xml:space="preserve">
     <value>Trabajo de notificaciones push</value>
@@ -976,6 +1149,12 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="DeleteTodoItem" xml:space="preserve">
     <value>Eliminar elemento de tarea</value>
   </data>
+  <data name="SortAscending" xml:space="preserve">
+    <value>Orden ascendente</value>
+  </data>
+  <data name="SortDescending" xml:space="preserve">
+    <value>Orden descendente</value>
+  </data>
   <!--#endif -->
   <!--#if (module == "Admin" || module == "Sales") -->
   <data name="CategoryCouldNotBeFound" xml:space="preserve">
@@ -996,6 +1175,9 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   </data>
     <data name="Of" xml:space="preserve">
     <value>de</value>
+  </data>
+    <data name="TryAgain" xml:space="preserve">
+    <value>Intentar de nuevo</value>
   </data>
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
@@ -1094,6 +1276,18 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="DashboardSubtitle" xml:space="preserve">
     <value>Aquí están tus datos analíticos</value>
   </data>
+    <data name="DeleteCategory" xml:space="preserve">
+    <value>Eliminar categoría</value>
+  </data>
+    <data name="AreYouSureWannaDeleteCategory" xml:space="preserve">
+    <value>¿Estás seguro de que quieres eliminar la categoría {0}?</value>
+  </data>
+    <data name="PresetColors" xml:space="preserve">
+    <value>Colores predefinidos</value>
+  </data>
+    <data name="ProductCouldNotBeLoaded" xml:space="preserve">
+    <value>No se pudo cargar este producto.</value>
+  </data>
   <!--#endif -->
   <!--#if (captcha == "reCaptcha") -->
   <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
@@ -1115,6 +1309,15 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   </data>
   <data name="PurchaseSuccessful" xml:space="preserve">
     <value>¡Compra exitosa!</value>
+  </data>
+    <data name="NoProductsToShow" xml:space="preserve">
+    <value>No hay productos para mostrar en este momento.</value>
+  </data>
+    <data name="SearchProducts" xml:space="preserve">
+    <value>Buscar productos</value>
+  </data>
+    <data name="ProductsCouldNotBeLoaded" xml:space="preserve">
+    <value>No se pudieron cargar los productos.</value>
   </data>
   <!--#endif -->
   <data name="Passwordless" xml:space="preserve">
@@ -1141,12 +1344,66 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="Send" xml:space="preserve">
     <value>Enviar</value>
   </data>
+  <data name="AccentColorApply" xml:space="preserve">
+    <value>Aplicar el color de acento {0}</value>
+  </data>
   <data name="Canceled" xml:space="preserve">
     <value>Cancelado</value>
   </data>
   <!--#if (signalR == true) -->
   <data name="AiChatPanelTitle" xml:space="preserve">
     <value>Panel de chat con IA</value>
+  </data>
+  <data name="AiChatPanelDictate" xml:space="preserve">
+    <value>Dicta tu mensaje</value>
+  </data>
+  <data name="AiChatPanelStopDictation" xml:space="preserve">
+    <value>Detener el dictado</value>
+  </data>
+  <data name="AiChatPanelDictation" xml:space="preserve">
+    <value>Dictado</value>
+  </data>
+  <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
+    <value>El acceso al micrófono está bloqueado. Permítelo para este sitio para poder dictar.</value>
+  </data>
+  <data name="AiChatPanelDictationStopped" xml:space="preserve">
+    <value>Dictado detenido: {0}</value>
+  </data>
+  <data name="AiChatPanelReadAloud" xml:space="preserve">
+    <value>Leer en voz alta</value>
+  </data>
+  <data name="AiChatPanelStopReading" xml:space="preserve">
+    <value>Detener la lectura</value>
+  </data>
+  <data name="AiChatPanelTranscribing" xml:space="preserve">
+    <value>Poniendo por escrito lo que dijiste</value>
+  </data>
+  <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
+    <value>Tiempo restante antes de que se detenga el dictado</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
+    <value>La voz necesita una cuenta</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInMessage" xml:space="preserve">
+    <value>El dictado y la lectura en voz alta funcionan en el servidor. Inicia sesión una vez y podrás hablarle al chat y escuchar su respuesta.</value>
+  </data>
+  <data name="AiChatPanelAttachImage" xml:space="preserve">
+    <value>Adjuntar una imagen</value>
+  </data>
+  <data name="AiChatPanelImageTooLarge" xml:space="preserve">
+    <value>La imagen supera los 10 MB.</value>
+  </data>
+  <data name="AiChatPanelOnlyImagesAllowed" xml:space="preserve">
+    <value>Solo se pueden adjuntar imágenes.</value>
+  </data>
+  <data name="AiChatPanelAttachmentFailed" xml:space="preserve">
+    <value>No se pudo adjuntar la imagen.</value>
+  </data>
+  <data name="AiChatPanelImageSignInTitle" xml:space="preserve">
+    <value>Las imágenes necesitan una cuenta</value>
+  </data>
+  <data name="AiChatPanelImageSignInMessage" xml:space="preserve">
+    <value>Inicia sesión para enviar una imagen junto con tu mensaje.</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>¡Saludos{0}! Estoy aquí para hacer que tu experiencia en la app sea genial. ¿Tienes una pregunta o necesitas ayuda?</value>
@@ -1173,6 +1430,12 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>Escribe un mensaje...</value>
   </data>
+    <data name="AiChatPanelMaximize" xml:space="preserve">
+    <value>Maximizar</value>
+  </data>
+  <data name="AiChatPanelRestore" xml:space="preserve">
+    <value>Restaurar</value>
+  </data>
   <!--#endif -->
   <!--#if (ads == true) -->
   <data name="Upgrade" xml:space="preserve">
@@ -1189,6 +1452,9 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   </data>
   <data name="UpgradeFailMessage" xml:space="preserve">
     <value>Falla al mejorar la cuenta.</value>
+  </data>
+  <data name="UpgradeAdNotAvailableMessage" xml:space="preserve">
+    <value>No hay anuncios disponibles en este momento. Inténtelo de nuevo más tarde.</value>
   </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>¿Tienes problemas para ver el anuncio?</value>
@@ -1331,6 +1597,9 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>No puedes eliminar este usuario SuperAdmin</value>
   </data>
+  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
+    <value>No puedes revocar las sesiones de este usuario SuperAdmin</value>
+  </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>No puedes eliminar tu sesión actual</value>
   </data>
@@ -1355,6 +1624,9 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>URL de la página</value>
   </data>
+  <data name="InvalidPageUrl" xml:space="preserve">
+    <value>La URL de la página debe ser una URL relativa dentro de la aplicación, como /products.</value>
+  </data>
   <data name="YouAreNotAuthorized" xml:space="preserve">
     <value>No estás autorizado</value>
   </data>
@@ -1373,7 +1645,84 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="ImageNotCarError" xml:space="preserve">
     <value>La imagen proporcionada no contiene un automóvil.</value>
   </data>
-    <!--#if (multitenant == true) -->
+      <data name="AddUserToGroupTitle" xml:space="preserve">
+    <value>Agregar a {0} a este grupo de usuarios</value>
+  </data>
+  <data name="RemoveUserFromGroupTitle" xml:space="preserve">
+    <value>Quitar a {0} de este grupo de usuarios</value>
+  </data>
+  <data name="GrantFeatureTitle" xml:space="preserve">
+    <value>Conceder {0}</value>
+  </data>
+  <data name="RevokeFeatureTitle" xml:space="preserve">
+    <value>Revocar {0}</value>
+  </data>
+  <data name="GrantAllGroupFeaturesTitle" xml:space="preserve">
+    <value>Conceder todas las funciones de {0}</value>
+  </data>
+  <data name="RevokeAllGroupFeaturesTitle" xml:space="preserve">
+    <value>Revocar todas las funciones de {0}</value>
+  </data>
+  <data name="RefreshSelectedUserGroupTitle" xml:space="preserve">
+    <value>Actualizar el grupo de usuarios seleccionado</value>
+  </data>
+  <data name="RefreshSelectedUserTitle" xml:space="preserve">
+    <value>Actualizar el usuario seleccionado</value>
+  </data>
+  <data name="NoMatchingUserSessionMessage" xml:space="preserve">
+    <value>Ninguna sesión coincide con tu búsqueda.</value>
+  </data>
+  <data name="TfaVerificationCodeRequiredMessage" xml:space="preserve">
+    <value>Introduce el código de 6 dígitos de tu aplicación de autenticación.</value>
+  </data>
+  <data name="TfaOpenInAuthenticatorAppTitle" xml:space="preserve">
+    <value>Abrir esta cuenta en tu aplicación de autenticación</value>
+  </data>
+  <data name="TfaQrCodeAlt" xml:space="preserve">
+    <value>Código QR para configurar tu aplicación de autenticación</value>
+  </data>
+  <data name="SessionNoLongerValidMessage" xml:space="preserve">
+    <value>Esta sesión ya no es válida. Inicia sesión de nuevo.</value>
+  </data>
+  <data name="RevokeSessionTitle" xml:space="preserve">
+    <value>Revocar esta sesión</value>
+  </data>
+  <data name="ImageMaxSizeErrorMessage" xml:space="preserve">
+    <value>La imagen debe ser de {0} o menos.</value>
+  </data>
+  <data name="OnlyImageFilesAllowedErrorMessage" xml:space="preserve">
+    <value>Solo se pueden usar archivos de imagen</value>
+  </data>
+  <data name="SamePhoneNumberErrorMessage" xml:space="preserve">
+    <value>Ese ya es tu número de teléfono. Introduce uno diferente.</value>
+  </data>
+  <data name="SameEmailErrorMessage" xml:space="preserve">
+    <value>Esa ya es tu dirección de correo electrónico. Introduce otra.</value>
+  </data>
+  <data name="MoreTabsTitle" xml:space="preserve">
+    <value>Más pestañas</value>
+  </data>
+  <data name="OpenNavigationMenuTitle" xml:space="preserve">
+    <value>Abrir el menú de navegación</value>
+  </data>
+  <data name="AccountMenuTitle" xml:space="preserve">
+    <value>Menú de cuenta</value>
+  </data>
+  <data name="SwitchToDarkThemeTitle" xml:space="preserve">
+    <value>Cambiar al tema oscuro</value>
+  </data>
+  <data name="SwitchToLightThemeTitle" xml:space="preserve">
+    <value>Cambiar al tema claro</value>
+  </data>
+  <!--#if (signalR == true) -->
+  <data name="SignalRConnectionId" xml:space="preserve">
+    <value>SignalRConnectionId</value>
+  </data>
+  <data name="ReadUserSessionLogsTitle" xml:space="preserve">
+    <value>Leer los registros de la sesión del usuario</value>
+  </data>
+  <!--#endif -->
+  <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>Inquilino</value>
   </data>
@@ -1425,6 +1774,9 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>El nombre de inquilino '{0}' ya está en uso.</value>
   </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>El nombre de inquilino '{0}' está reservado y no se puede utilizar.</value>
+  </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>No se pudo encontrar el inquilino.</value>
   </data>
@@ -1449,6 +1801,9 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <data name="DuplicateTenantDomain" xml:space="preserve">
     <value>El dominio '{0}' ya está en uso.</value>
   </data>
+    <data name="ReservedTenantDomain" xml:space="preserve">
+    <value>El dominio '{0}' está reservado y no se puede utilizar.</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>Aún no has seleccionado ningún inquilino. Cambia a uno de tus inquilinos o crea uno nuevo para comenzar.</value>
   </data>
@@ -1470,5 +1825,14 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <data name="Inactive" xml:space="preserve">
     <value>Inactivo</value>
   </data>
-    <!--#endif-->
+      <data name="DeclineInvitation" xml:space="preserve">
+    <value>Rechazar invitación</value>
+  </data>
+  <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
+    <value>¿Rechazar la invitación a {0}? Esto no se puede deshacer: necesitarás una nueva invitación para unirte.</value>
+  </data>
+  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
+    <value>Invitación rechazada.</value>
+  </data>
+  <!--#endif-->
 </root>

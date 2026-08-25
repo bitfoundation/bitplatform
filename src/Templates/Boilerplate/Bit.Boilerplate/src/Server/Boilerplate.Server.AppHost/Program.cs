@@ -31,11 +31,7 @@ var s3Storage = builder.AddMinioContainer("s3")
     .WithDataVolume();
 //#endif
 
-// https://aspire.dev/integrations/security/keycloak/
-var keycloak = builder.AddKeycloak("keycloak", 8080)
-    .WithDataVolume()
-    .WithOtlpExporter()
-    .WithRealmImport("./Infrastructure/Realms");
+var keycloak = builder.AddKeycloak();
 
 var serverWebProject = builder.AddProject("serverweb", "../Boilerplate.Server.Web/Boilerplate.Server.Web.csproj")
     .WithExternalHttpEndpoints();
@@ -136,6 +132,19 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
     }
 
     builder.AddMaui(serverWebProject, tunnel);
+
+    // Every container is created from scratch on each run and is destroyed as soon as the app host stops.
+    // Uncommenting the following line keeps them alive and reuses them instead, which makes starting the project
+    // (F5 / `aspire start`) and running the automated tests considerably faster.
+    // The costs are that those containers keep consuming memory even while you're not debugging the project (you can
+    // stop them from Docker Desktop whenever you need those resources back)
+    // Check out the `.docs/20- .NET Aspire.md` file for more details.
+
+    //builder.UsePersistentContainers();
+
+    //#if (IsInsideProjectTemplate == true)
+    builder.UsePersistentContainers();
+    //#endif
 }
 
 await builder

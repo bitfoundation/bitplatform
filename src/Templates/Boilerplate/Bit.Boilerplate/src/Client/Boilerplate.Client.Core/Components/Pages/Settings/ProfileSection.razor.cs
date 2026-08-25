@@ -1,15 +1,11 @@
 //+:cnd:noEmit
-using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Shared.Features.Attachments;
-using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Client.Core.Components.Pages.Settings;
 
 public partial class ProfileSection
 {
     [CascadingParameter] public UserDto? CurrentUser { get; set; }
-
-    [Parameter] public bool Loading { get; set; }
 
 
     [AutoInject] private IUserController userController = default!;
@@ -18,6 +14,7 @@ public partial class ProfileSection
 
     private bool isSaving;
     private bool isUploading;
+    private Guid? seededUserId;
     private BitFileUpload fileUploadRef = default!;
     private readonly EditUserRequestDto editUserDto = new();
 
@@ -28,7 +25,10 @@ public partial class ProfileSection
     {
         base.OnParametersSet();
 
-        CurrentUser?.Patch(editUserDto);
+        if (CurrentUser is null || seededUserId == CurrentUser.Id) return;
+
+        seededUserId = CurrentUser.Id;
+        CurrentUser.Patch(editUserDto);
     }
 
 
@@ -40,8 +40,6 @@ public partial class ProfileSection
 
         try
         {
-            editUserDto.Patch(CurrentUser);
-
             (await userController.Update(editUserDto, CurrentCancellationToken)).Patch(CurrentUser);
 
             PublishUserDataUpdated();
@@ -83,7 +81,11 @@ public partial class ProfileSection
 
     private async Task HandleOnUploadComplete()
     {
-        if (CurrentUser is null) return;
+        if (CurrentUser is null)
+        {
+            isUploading = false;
+            return;
+        }
 
         try
         {
@@ -101,6 +103,11 @@ public partial class ProfileSection
         {
             isUploading = false;
         }
+    }
+
+    private void HandleOnInvalid(BitFileInfo[] files)
+    {
+        SnackBarService.Error(files[0].Message ?? Localizer[nameof(AppStrings.FileUploadFailed)]);
     }
 
     private async Task HandleOnUploadFailed(BitFileInfo fileInfo)

@@ -11,6 +11,7 @@ namespace Bit.Butil;
 /// <c>HttpClient</c> for normal API calls; reach for this when you need progress for big
 /// downloads or fetch-only features (CORS modes, no-cors, etc.).
 /// </summary>
+[ButilService(typeof(Fetch))]
 public class Fetch(IJSRuntime js) : IAsyncDisposable
 {
     internal const string InvokeMethodName = nameof(InvokeFetchProgress);
@@ -35,6 +36,7 @@ public class Fetch(IJSRuntime js) : IAsyncDisposable
     /// <summary>
     /// Sends the request and returns the full response.
     /// </summary>
+    /// <param name="request">The URL, method, headers and body to send.</param>
     /// <param name="onProgress">Optional callback fired as bytes arrive.</param>
     /// <param name="cancellationToken">When triggered, aborts the request.</param>
     [DynamicDependency(nameof(InvokeFetchProgress), typeof(Fetch))]

@@ -1,4 +1,4 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-upl {
     display: flex;
@@ -11,14 +11,15 @@
         border-color: $clr-brd-dis;
         background-color: $clr-bg-dis;
 
-        @media (hover: hover) {
-            &:hover {
-                border-color: $clr-brd-dis;
-            }
-        }
-
-        &:active {
-            background-color: $clr-bg-dis;
+        //the browse button carries the role color while enabled, but a disabled file upload reads as a
+        //neutral form field whatever its role and variant (see the disabled conventions in
+        //theme-variables.scss), so it drops the role colors for the generic disabled trio and stops
+        //answering the pointer. the border and the background are left to the variant blocks below,
+        //since which of the two is painted at all is exactly what the variants disagree on.
+        .bit-upl-lbl {
+            cursor: default;
+            color: $clr-fg-dis;
+            pointer-events: none;
         }
     }
 
@@ -37,35 +38,124 @@
     display: none;
 }
 
+//everything the three variants share; the colors themselves live in the variant blocks right below,
+//which is also why the border is declared without its color here.
 .bit-upl-lbl {
     outline: 0;
     display: flex;
     cursor: pointer;
-    font-weight: 300;
+    font-weight: $tg-fw-light;
     user-select: none;
     align-items: center;
-    font-size: spacing(2);
     justify-content: center;
-    min-height: spacing(4.5);
-    border-radius: spacing(0.5);
-    padding: spacing(0.5) spacing(2);
-    color: $clr-fg-pri;
-    background-color: $clr-bg-pri;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    border-radius: $shp-radius-control;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+    min-height: var(--bit-upl-lbl-height);
+    font-size: var(--bit-upl-lbl-fontsize);
+    padding: var(--bit-upl-lbl-padding);
 
-    @media (hover: hover) {
-        &:hover {
-            border-color: $clr-brd-pri-hover;
+    i {
+        margin-inline-end: spacing(0.625);
+    }
+}
+
+//Fill - the default: a solid block of the role color labelled in the role's on-color.
+.bit-upl-fil {
+    .bit-upl-lbl {
+        color: var(--bit-upl-clr-txt);
+        border-color: var(--bit-upl-clr);
+        background-color: var(--bit-upl-clr);
+
+        @media (hover: hover) {
+            &:hover {
+                border-color: var(--bit-upl-clr-hover);
+                background-color: var(--bit-upl-clr-hover);
+            }
+        }
+
+        &:active {
+            border-color: var(--bit-upl-clr-active);
+            background-color: var(--bit-upl-clr-active);
         }
     }
 
-    &:active {
-        background-color: $clr-bg-pri-active;
+    &.bit-dis .bit-upl-lbl {
+        border-color: $clr-brd-dis;
+        background-color: $clr-bg-dis;
+    }
+}
+
+//Outline: only the rule around the button carries the role color at rest, and it fills in like the Fill
+//variant once a pointer lands on it.
+.bit-upl-otl {
+    .bit-upl-lbl {
+        color: var(--bit-upl-clr);
+        border-color: var(--bit-upl-clr);
+        background-color: transparent;
+
+        @media (hover: hover) {
+            &:hover {
+                color: var(--bit-upl-clr-txt);
+                background-color: var(--bit-upl-clr-hover);
+            }
+        }
+
+        &:active {
+            color: var(--bit-upl-clr-txt);
+            background-color: var(--bit-upl-clr-active);
+        }
     }
 
-    i {
-        padding-right: spacing(0.625);
+    &.bit-dis .bit-upl-lbl {
+        border-color: $clr-brd-dis;
+        background-color: transparent;
     }
+}
+
+//Text: neither rule nor fill at rest, for an uploader that should not outweigh the fields around it.
+.bit-upl-txt {
+    .bit-upl-lbl {
+        color: var(--bit-upl-clr);
+        border-color: transparent;
+        background-color: transparent;
+
+        @media (hover: hover) {
+            &:hover {
+                color: var(--bit-upl-clr-txt);
+                background-color: var(--bit-upl-clr-hover);
+            }
+        }
+
+        &:active {
+            color: var(--bit-upl-clr-txt);
+            background-color: var(--bit-upl-clr-active);
+        }
+    }
+
+    &.bit-dis .bit-upl-lbl {
+        border-color: transparent;
+        background-color: transparent;
+    }
+}
+
+//while a file is dragged over the component the browse button becomes the drop zone, and it does so the
+//same way in every variant: the hover shade of the role fills it, and the rule turns into a dashed one
+//in the on-color - the role color itself would vanish against that fill. the root class is repeated so
+//that the drop state outranks the per-variant :hover rules above, which are otherwise as specific.
+.bit-upl.bit-upl-drg {
+    .bit-upl-lbl {
+        border-style: dashed;
+        color: var(--bit-upl-clr-txt);
+        border-color: var(--bit-upl-clr-txt);
+        background-color: var(--bit-upl-clr-hover);
+    }
+}
+
+.bit-upl-dsc {
+    color: $clr-fg-sec;
+    margin-top: spacing(0.5);
+    font-size: var(--bit-upl-fs-fontsize);
 }
 
 .bit-upl-fl {
@@ -76,14 +166,14 @@
 .bit-upl-itm {
     display: flex;
     overflow: hidden;
-    font-weight: 100;
+    font-weight: $tg-fw-light;
     align-items: center;
     flex-flow: row nowrap;
-    font-size: spacing(1.75);
     margin-top: spacing(0.375);
-    border-radius: spacing(0.625);
+    border-radius: $shp-radius-surface;
     justify-content: space-between;
     color: $clr-fg-pri;
+    font-size: var(--bit-upl-itm-fontsize);
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     @media (hover: hover) {
@@ -114,103 +204,185 @@
 
 .bit-upl-psd {
     .bit-upl-us {
-        color: $clr-pri;
+        color: var(--bit-upl-clr);
     }
 }
 
+.bit-upl-prv {
+    flex-shrink: 0;
+    object-fit: cover;
+    border-radius: $shp-radius-control;
+    width: var(--bit-upl-prv-size);
+    height: var(--bit-upl-prv-size);
+    margin-inline-start: spacing(0.5);
+}
+
 .bit-upl-fic {
+    flex-grow: 1;
     height: 100%;
     display: flex;
+    overflow: hidden;
     cursor: default;
     box-sizing: border-box;
     align-items: flex-start;
     justify-content: center;
     flex-flow: column nowrap;
-    width: calc(100% - #{40px});
     padding: spacing(1) spacing(2);
 }
 
 .bit-upl-fnc {
     width: 100%;
     display: flex;
-
-    i {
-        padding-top: spacing(1);
-    }
+    overflow: hidden;
+    align-items: center;
+    flex-flow: row nowrap;
 }
 
 .bit-upl-fn {
-    height: 100%;
+    width: 100%;
     overflow: hidden;
     white-space: nowrap;
-    padding-top: spacing(1);
     text-overflow: ellipsis;
-    width: calc(100% - #{32px});
 }
 
 .bit-upl-fsc {
     width: 100%;
     display: flex;
+    overflow: hidden;
+    align-items: center;
+    flex-flow: row nowrap;
+    margin-top: spacing(0.25);
+    font-size: var(--bit-upl-fs-fontsize);
 }
 
 .bit-upl-fs {
-    padding-top: spacing(1);
-    margin-right: spacing(1);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    margin-inline-end: spacing(1);
 }
 
 .bit-upl-pct {
-    padding-top: spacing(1);
+    white-space: nowrap;
 }
 
 .bit-upl-pbc {
     width: 100%;
     overflow: hidden;
     height: spacing(0.25);
-    padding-top: spacing(1);
-    padding-bottom: spacing(1);
-    padding-left: spacing(0.25);
+    margin-top: spacing(1);
+    margin-bottom: spacing(0.5);
+    background-color: $clr-bg-sec;
 }
 
-.bit-upl-pbr {
+// named -pgb rather than -pbr so that it cannot collide with the generated PrimaryBorder role class.
+.bit-upl-pgb {
     height: spacing(0.25);
-    transition: width 0.15s linear 0s;
-    background-color: $clr-pri;
+    transition: width $mot-duration $mot-easing 0s;
+    background-color: var(--bit-upl-clr);
 }
 
 .bit-upl-usi {
-    height: 100%;
+    border: 0;
+    padding: 0;
     display: flex;
+    flex-shrink: 0;
     cursor: pointer;
-    width: spacing(4);
+    align-self: stretch;
     align-items: center;
+    color: $clr-fg-pri;
     justify-content: center;
+    background-color: transparent;
+    font-family: $tg-font-family;
+    width: var(--bit-upl-btn-size);
 
     @media (hover: hover) {
         &:hover {
             i {
-                color: $clr-pri;
+                color: var(--bit-upl-clr);
             }
         }
     }
+
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+    }
+
+    i {
+        font-size: var(--bit-upl-ico-fontsize);
+    }
+}
+
+.bit-upl-lvr {
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
 }
 
 .bit-upl-ldg {
     height: 100%;
     display: flex;
-    width: spacing(4);
-    margin-right: spacing(0.5);
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
+    width: var(--bit-upl-btn-size);
 }
 
 .bit-upl-spn {
     border-radius: 50%;
     width: spacing(2);
     height: spacing(2);
-    border-width: spacing(0.2125);
+    border-width: $siz-spinner-stroke;
     border-style: $shp-border-style;
     border-color: $clr-brd-sec;
-    border-top-color: $clr-pri-dark;
-    animation: bit-upl-spinner-animation 1.3s linear infinite;
-    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+    border-top-color: var(--bit-upl-clr);
+    animation: bit-upl-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
+}
+
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-upl-#{$role} {
+        --bit-upl-clr: #{role($tokens, main)};
+        --bit-upl-clr-txt: #{role($tokens, on)};
+        --bit-upl-clr-hover: #{role($tokens, hover)};
+        --bit-upl-clr-active: #{role($tokens, active)};
+    }
+}
+
+.bit-upl-sm {
+    --bit-upl-lbl-height: #{spacing(3.5)};
+    --bit-upl-lbl-fontsize: #{$tg-fs-xs};
+    --bit-upl-lbl-padding: #{spacing(0.25)} #{spacing(1.5)};
+    --bit-upl-itm-fontsize: #{$tg-fs-xs};
+    --bit-upl-fs-fontsize: #{$tg-fs-xs};
+    --bit-upl-prv-size: #{spacing(4)};
+    --bit-upl-btn-size: #{spacing(3.5)};
+    --bit-upl-ico-fontsize: #{$siz-icon-sm};
+}
+
+.bit-upl-md {
+    --bit-upl-lbl-height: #{spacing(4.5)};
+    --bit-upl-lbl-fontsize: #{$tg-fs-sm};
+    --bit-upl-lbl-padding: #{spacing(0.5)} #{spacing(2)};
+    --bit-upl-itm-fontsize: #{$tg-fs-sm};
+    --bit-upl-fs-fontsize: #{$tg-fs-xs};
+    --bit-upl-prv-size: #{spacing(5)};
+    --bit-upl-btn-size: #{spacing(4)};
+    --bit-upl-ico-fontsize: #{$siz-icon-md};
+}
+
+.bit-upl-lg {
+    --bit-upl-lbl-height: #{spacing(5.5)};
+    --bit-upl-lbl-fontsize: #{$tg-fs-md};
+    --bit-upl-lbl-padding: #{spacing(0.75)} #{spacing(2.5)};
+    --bit-upl-itm-fontsize: #{$tg-fs-md};
+    --bit-upl-fs-fontsize: #{$tg-fs-sm};
+    --bit-upl-prv-size: #{spacing(6.5)};
+    --bit-upl-btn-size: #{spacing(5)};
+    --bit-upl-ico-fontsize: #{$siz-icon-lg};
 }

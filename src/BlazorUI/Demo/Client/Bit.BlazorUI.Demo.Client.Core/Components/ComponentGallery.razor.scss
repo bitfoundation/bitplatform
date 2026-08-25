@@ -1,0 +1,127 @@
+﻿@import '../Styles/abstracts/_docs.scss';
+
+// Search and category chips travel together and stay reachable while the reader scrolls a list this
+// long. Sticky rather than fixed, so it releases the moment the gallery ends.
+.gallery-controls {
+    top: var(--demo-header-height);
+    z-index: 5;
+    display: flex;
+    position: sticky;
+    gap: $doc-space-xs;
+    flex-flow: column nowrap;
+    padding-block: $doc-space-sm;
+    background-color: $bit-color-background-secondary;
+}
+
+.gallery-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $doc-space-3xs;
+}
+
+// A chip carries its count, which turns the filter row into a table of contents: the reader can see
+// that Extras holds twenty-one components and Progress three before choosing where to look.
+.gallery-chip {
+    gap: $doc-space-3xs;
+    display: inline-flex;
+    cursor: pointer;
+    align-items: center;
+    white-space: nowrap;
+    padding: rem2(5px) $doc-space-xs;
+    font-size: $bit-typography-fs-xs;
+    color: $bit-color-foreground-secondary;
+    border-radius: $bit-shape-radius-chip;
+    background-color: $bit-color-background-primary;
+    border: rem2(1px) solid $bit-color-border-secondary;
+    transition: color $bit-motion-duration-short $bit-motion-easing,
+                border-color $bit-motion-duration-short $bit-motion-easing,
+                background-color $bit-motion-duration-short $bit-motion-easing;
+
+    &:hover {
+        color: $bit-color-foreground-primary;
+        border-color: $bit-color-border-primary;
+    }
+
+    &:focus-visible {
+        @include doc-focus-ring;
+    }
+
+    &.active {
+        color: $bit-color-primary-text;
+        border-color: $bit-color-primary;
+        background-color: $bit-color-primary;
+    }
+}
+
+.gallery-chip-count {
+    opacity: 0.7;
+    font-size: $bit-typography-fs-2xs;
+    font-variant-numeric: tabular-nums;
+}
+
+// Auto-fill rather than a fixed column count: the grid then holds the same card width whether it is
+// showing three components or twenty-one, instead of stretching three cards across the page.
+.gallery-grid {
+    display: grid;
+    gap: $doc-space-sm;
+    grid-template-columns: repeat(auto-fill, minmax(rem2(232px), 1fr));
+}
+
+.gallery-card {
+    display: flex;
+    min-width: 0;
+    gap: rem2(2px);
+    flex-flow: column nowrap;
+    text-decoration: none;
+    padding: $doc-space-xs $doc-space-sm $doc-space-sm;
+    color: $bit-color-foreground-primary;
+
+    @include doc-surface;
+    @include doc-surface-interactive;
+
+    &:focus-visible {
+        @include doc-focus-ring;
+    }
+}
+
+.gallery-card-name {
+    overflow-wrap: anywhere;
+    font-size: $bit-typography-fs-sm;
+    font-weight: $bit-typography-fw-semibold;
+}
+
+// The names other libraries use for the same thing. Someone looking for a "Switch" or a "Chip"
+// should recognise the card without having to open it.
+.gallery-card-aliases {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    margin-bottom: rem2(2px);
+    font-size: $bit-typography-fs-2xs;
+    color: $bit-color-foreground-tertiary;
+}
+
+.gallery-card-summary {
+    line-height: 1.5;
+    font-size: $bit-typography-fs-xs;
+    color: $bit-color-foreground-secondary;
+}
+
+.gallery-empty {
+    display: flex;
+    text-align: center;
+    gap: $doc-space-2xs;
+    align-items: center;
+    flex-flow: column nowrap;
+    padding: $doc-space-3xl $doc-space-sm;
+
+    @include doc-surface($bit-color-background-primary);
+
+    ::deep .bit-btn {
+        margin-top: $doc-space-sm;
+    }
+}
+
+::deep .gallery-search {
+    max-width: rem2(440px);
+}

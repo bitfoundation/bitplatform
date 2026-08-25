@@ -1,0 +1,255 @@
+@page "/file-reader"
+@inject Bit.Butil.FileReader fileReader
+
+<PageTitle>FileReader - Bit.Butil</PageTitle>
+
+<PageHeader Category="Files & Data"
+            Title="FileReader"
+            Lead="Read the files a user picks in an input element - as metadata, raw bytes, text or data URLs - without touching IJSRuntime or streaming interop yourself."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/FileReader"
+            InjectAs="FileReader fileReader" />
+
+<div class="stack">
+    <DemoSection Title="Inspect selected files"
+                 Api="GetFileInfo / GetFileInfos"
+                 Description="Capture a plain input element as an ElementReference (ref capture) and hand it to FileReader. GetFileInfo returns metadata for one file by index; GetFileInfos returns the whole selection. Metadata arrives as BlobInfo: Name, Type (MIME), Size in bytes and LastModified (Unix epoch milliseconds)."
+                 Code=@("""
+<input type="file" @ref="fileInput" multiple />
+
+@code {
+    private ElementReference fileInput;
+
+    private async Task Inspect()
+    {
+        BlobInfo? first = await fileReader.GetFileInfo(fileInput);
+
+        BlobInfo[] all = await fileReader.GetFileInfos(fileInput);
+        foreach (var info in all)
+        {
+            // info.Name, info.Type, info.Size, info.LastModified
+        }
+    }
+}
+""")
+                 Language="razor">
+        <div class="field">
+            <span class="field-label">Pick one or more files</span>
+            <input type="file" @ref="_infoInput" multiple />
+        </div>
+        <div class="controls">
+            <button @onclick="GetFirstInfo">GetFileInfo (first)</button>
+            <button @onclick="GetAllInfos">GetFileInfos (all)</button>
+        </div>
+        <DemoConsole @ref="infoOutput" Title="file info output" />
+    </DemoSection>
+
+    <DemoSection Title="Read file contents"
+                 Api="ReadAsText / ReadAsBytes"
+                 Description="ReadAsText decodes a file with the given encoding (UTF-8 by default - pass a different one for legacy sources). ReadAsBytes returns the raw byte array, or null when no file exists at the requested index. Both take an optional index into the input's files list."
+                 Code=@("""
+string text = await fileReader.ReadAsText(fileInput);
+
+// non-UTF-8 sources:
+string legacy = await fileReader.ReadAsText(fileInput, index: 0, encoding: "windows-1252");
+
+byte[]? bytes = await fileReader.ReadAsBytes(fileInput);
+""")>
+        <div class="field">
+            <span class="field-label">Pick a file (a small text file works best)</span>
+            <input type="file" @ref="_contentInput" />
+        </div>
+        <div class="controls">
+            <button @onclick="ReadText">ReadAsText</button>
+            <button @onclick="ReadBytes">ReadAsBytes</button>
+        </div>
+        <DemoConsole @ref="contentOutput" Title="file content output" />
+    </DemoSection>
+
+    <DemoSection Title="Data URL previews"
+                 Api="ReadAsDataUrl"
+                 Description="ReadAsDataUrl returns the file as a base-64 data URL (data:image/png;base64,...), which drops straight into an img src attribute for instant previews. Prefer ReadAsBytes when you intend to process the content - base-64 inflates the payload by roughly a third."
+                 Code=@("""
+string dataUrl = await fileReader.ReadAsDataUrl(fileInput);
+
+// <img src="@imagePreviewUrl" /> in the markup
+imagePreviewUrl = dataUrl;
+""")>
+        <div class="field">
+            <span class="field-label">Pick an image</span>
+            <input type="file" accept="image/*" @ref="_previewInput" />
+        </div>
+        <div class="controls">
+            <button @onclick="ReadDataUrl">ReadAsDataUrl</button>
+        </div>
+        @if (_imagePreviewUrl is not null)
+        {
+            <img src="@_imagePreviewUrl" alt="Selected image preview" style="margin-top:1rem;max-width:240px;border-radius:8px" />
+        }
+        <DemoConsole @ref="dataUrlOutput" Title="data URL output" />
+    </DemoSection>
+
+    <DemoSection Title="Reset the selection"
+                 Api="Clear"
+                 Description="Clear resets the input's files list, exactly like the user re-opening the picker and cancelling. Useful after an upload completes or when the same file must be selectable twice in a row (the change event doesn't re-fire for an identical selection)."
+                 Code=@("""
+await fileReader.Clear(fileInput);
+""")>
+        <div class="controls">
+            <button class="secondary" @onclick="ClearAll">Clear all inputs above</button>
+        </div>
+        <DemoConsole @ref="clearOutput" Title="clear output" />
+    </DemoSection>
+</div>
+
+<Callout Type="info" Title="Bytes cross the interop boundary">
+    ReadAsBytes and ReadAsText marshal the whole file content from JavaScript into .NET memory in one
+    call. That is perfect for documents, images and configuration files; for very large files consider
+    uploading directly from the browser instead of round-tripping the bytes through C#.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="GetFileInfo" Signature="ValueTask<BlobInfo?> GetFileInfo(ElementReference inputElement, int index = 0)" Description="Returns metadata for the file at the given index in the input's files list, or null when none exists." />
+    <ApiMember Name="GetFileInfos" Signature="ValueTask<BlobInfo[]> GetFileInfos(ElementReference inputElement)" Description="Returns metadata for every file currently selected in the input." />
+    <ApiMember Name="ReadAsBytes" Signature="ValueTask<byte[]?> ReadAsBytes(ElementReference inputElement, int index = 0)" Description="Reads a single file as raw bytes, or null when no file exists at the index." />
+    <ApiMember Name="ReadAsText" Signature='ValueTask<string> ReadAsText(ElementReference inputElement, int index = 0, string encoding = "utf-8")' Description="Reads a single file as text using the given encoding (UTF-8 by default)." />
+    <ApiMember Name="ReadAsDataUrl" Signature="ValueTask<string> ReadAsDataUrl(ElementReference inputElement, int index = 0)" Description="Reads a single file as a base-64 data URL, ready for use as an img source." />
+    <ApiMember Name="Clear" Signature="ValueTask Clear(ElementReference inputElement)" Description="Clears the input's selection (resets its files list)." />
+    <ApiMember Name="BlobInfo.Name" Signature="string Name" Description="For File objects: the original file name. Empty for plain Blobs." />
+    <ApiMember Name="BlobInfo.Type" Signature="string Type" Description="MIME type (e.g. image/png). Empty when unknown." />
+    <ApiMember Name="BlobInfo.Size" Signature="long Size" Description="Size in bytes." />
+    <ApiMember Name="BlobInfo.LastModified" Signature="long LastModified" Description="Last-modified time as Unix epoch milliseconds. 0 for plain Blobs." />
+</ApiTable>
+
+@code {
+    private DemoConsole infoOutput = default!;
+    private DemoConsole contentOutput = default!;
+    private DemoConsole dataUrlOutput = default!;
+    private DemoConsole clearOutput = default!;
+
+    private ElementReference _infoInput;
+    private ElementReference _contentInput;
+    private ElementReference _previewInput;
+
+    private string? _imagePreviewUrl;
+
+    private async Task GetFirstInfo()
+    {
+        try
+        {
+            var info = await fileReader.GetFileInfo(_infoInput);
+            if (info is null)
+            {
+                await infoOutput.Warn("No file selected.");
+                return;
+            }
+
+            var modified = DateTimeOffset.FromUnixTimeMilliseconds(info.LastModified).LocalDateTime;
+            await infoOutput.Success("GetFileInfo →", $"{info.Name} - {info.Size:N0} bytes, \"{info.Type}\", modified {modified:yyyy-MM-dd HH:mm}");
+        }
+        catch (Exception ex)
+        {
+            await infoOutput.Error("GetFileInfo failed:", ex.Message);
+        }
+    }
+
+    private async Task GetAllInfos()
+    {
+        try
+        {
+            var infos = await fileReader.GetFileInfos(_infoInput);
+            if (infos.Length == 0)
+            {
+                await infoOutput.Warn("No files selected.");
+                return;
+            }
+
+            await infoOutput.Info($"GetFileInfos → {infos.Length} file(s)");
+            foreach (var info in infos)
+            {
+                await infoOutput.Success($"  {info.Name} -", $"{info.Size:N0} bytes, \"{info.Type}\"");
+            }
+        }
+        catch (Exception ex)
+        {
+            await infoOutput.Error("GetFileInfos failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadText()
+    {
+        try
+        {
+            var text = await fileReader.ReadAsText(_contentInput);
+            if (string.IsNullOrEmpty(text))
+            {
+                await contentOutput.Warn("No file selected, or the file is empty.");
+                return;
+            }
+
+            var preview = text.Length > 300 ? text[..300] + "…" : text;
+            await contentOutput.Success("ReadAsText →", preview);
+        }
+        catch (Exception ex)
+        {
+            await contentOutput.Error("ReadAsText failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadBytes()
+    {
+        try
+        {
+            var bytes = await fileReader.ReadAsBytes(_contentInput);
+            if (bytes is null)
+            {
+                await contentOutput.Warn("No file selected.");
+                return;
+            }
+
+            var head = string.Join(" ", bytes.Take(16).Select(b => b.ToString("X2")));
+            await contentOutput.Success("ReadAsBytes →", $"{bytes.Length:N0} bytes. First bytes: {head}");
+        }
+        catch (Exception ex)
+        {
+            await contentOutput.Error("ReadAsBytes failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadDataUrl()
+    {
+        try
+        {
+            var dataUrl = await fileReader.ReadAsDataUrl(_previewInput);
+            if (string.IsNullOrEmpty(dataUrl))
+            {
+                await dataUrlOutput.Warn("No file selected.");
+                return;
+            }
+
+            _imagePreviewUrl = dataUrl.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase) ? dataUrl : null;
+
+            var preview = dataUrl.Length > 120 ? dataUrl[..120] + "…" : dataUrl;
+            await dataUrlOutput.Success("ReadAsDataUrl →", preview);
+        }
+        catch (Exception ex)
+        {
+            await dataUrlOutput.Error("ReadAsDataUrl failed:", ex.Message);
+        }
+    }
+
+    private async Task ClearAll()
+    {
+        try
+        {
+            await fileReader.Clear(_infoInput);
+            await fileReader.Clear(_contentInput);
+            await fileReader.Clear(_previewInput);
+            _imagePreviewUrl = null;
+            await clearOutput.Log("All three inputs cleared.");
+        }
+        catch (Exception ex)
+        {
+            await clearOutput.Error("Clear failed:", ex.Message);
+        }
+    }
+}

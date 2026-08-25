@@ -10,6 +10,7 @@ using Boilerplate.Shared.Features.Products;
 using Boilerplate.Shared.Features.Categories;
 //#endif
 //#if (notification == true)
+using Boilerplate.Shared.Features.PushNotification;
 //#endif
 //#if (signalR == true)
 using Boilerplate.Shared.Features.Chatbot;
@@ -42,7 +43,6 @@ namespace Boilerplate.Shared.Infrastructure.Dtos;
   AllowTrailingCommas = true,
   PropertyNameCaseInsensitive = true,
   GenerationMode = JsonSourceGenerationMode.Default,
-  DictionaryKeyPolicy = JsonKnownNamingPolicy.CamelCase,
   PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase
 
 )]
@@ -87,8 +87,12 @@ namespace Boilerplate.Shared.Infrastructure.Dtos;
 //#if (signalR == true)
 [JsonSerializable(typeof(DiagnosticLogDto[]))]
 [JsonSerializable(typeof(StartChatRequest))]
+[JsonSerializable(typeof(AiChatMessageRequest))]
+[JsonSerializable(typeof(AiChatFollowUpList))]
 [JsonSerializable(typeof(List<SystemPromptDto>))]
 [JsonSerializable(typeof(BackgroundJobProgressDto))]
+[JsonSerializable(typeof(SynthesizeSpeechRequestDto))]
+[JsonSerializable(typeof(TranscribeSpeechResponseDto))]
 //#endif
 public partial class AppJsonContext : JsonSerializerContext
 {

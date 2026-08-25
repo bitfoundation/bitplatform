@@ -1,0 +1,287 @@
+﻿@page "/picture-in-picture"
+@implements IAsyncDisposable
+@inject Bit.Butil.PictureInPicture pip
+@inject Bit.Butil.MediaDevices mediaDevices
+
+<PageTitle>PictureInPicture - Bit.Butil</PageTitle>
+
+<PageHeader Category="Media & Speech"
+            Title="PictureInPicture"
+            Lead="Float a video in a small always-on-top window the user can move anywhere - outside the page, outside the browser - and keep watching while they do something else."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Picture-in-Picture_API"
+            InjectAs="PictureInPicture pip" />
+
+<Callout Type="info" Title="One video, one window, one gesture">
+    Only a <code>&lt;video&gt;</code> can enter picture-in-picture, only one per document at a time,
+    and entering must come from a user gesture such as a click. Leaving does not, which is why
+    <code>Exit</code> can be called from anywhere.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support checks"
+                 Api="IsSupported / IsAvailableFor"
+                 Description="IsSupported is the document-level question - false inside an iframe without the picture-in-picture permissions-policy allowance, even on an engine that implements the API. IsAvailableFor is the per-element one: it is a video, the document allows it, the element has not opted out with disablePictureInPicture, and its metadata has loaded. A video whose source is still loading answers false, so wait for loadedmetadata before offering the button."
+                 Code=@("""
+@inject Bit.Butil.PictureInPicture pip
+
+var supported = await pip.IsSupported();
+var canFloat = await pip.IsAvailableFor(_video);   // <video @ref="_video" />
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+            <button class="secondary" @onclick="CheckAvailable">IsAvailableFor</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Float a video"
+                 Api="Request / Exit / IsActive"
+                 Description="Request moves the element into the floating window and returns false when the browser refuses - no user gesture, no video track yet, or the user dismissed it. Exit brings it back. IsActive answers either 'is anything floating' or, with an element, 'is this the one'."
+                 Code=@("""
+private ElementReference _video;
+
+// from a click handler:
+var entered = await pip.Request(_video);
+
+var floating = await pip.IsActive(_video);
+
+await pip.Exit();
+""")>
+        <div class="controls">
+            <button @onclick="StartCamera">Use my camera</button>
+            <button class="secondary" @onclick="EnterPip">Request</button>
+            <button class="danger" @onclick="ExitPip">Exit</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Status</span>
+            <span>@_status</span>
+        </div>
+        <video @ref="_video" autoplay playsinline muted loop
+               class="demo-video" style="min-height:160px"></video>
+        <DemoConsole @ref="pipOutput" Title="picture-in-picture output" />
+    </DemoSection>
+
+    <DemoSection Title="Follow the window"
+                 Api="Subscribe"
+                 Description="The user can close the floating window themselves at any time, and there is no other way to hear about it - so treat this, rather than a successful Request, as the source of truth for your button state. The floating window's size is only ever reported at the moment of entering; the platform exposes no way to read it back afterwards."
+                 Code=@("""
+private ButilSubscription? _watch;
+
+_watch = await pip.Subscribe(_video, change => InvokeAsync(() =>
+{
+    _floating = change.Active;
+    _windowSize = change.Active ? $"{change.Width}x{change.Height}" : "";
+    StateHasChanged();
+}));
+
+// later:
+await _watch.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="StartWatching">Subscribe</button>
+            <button class="danger" @onclick="StopWatching">Unsubscribe</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Floating</span>
+            <span>@(_floating ? $"yes - window is {_windowSize}" : "no")</span>
+        </div>
+        <DemoConsole @ref="watchOutput" Title="subscription output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="Stop the camera when you're done">
+    This demo borrows your camera so there is something to float. The stream keeps the hardware
+    (and its indicator light) on until it is stopped - leaving this page disposes it, but in your
+    own app that is your job. See <a href="media-devices">MediaDevices</a>.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the document allows picture-in-picture. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="IsAvailableFor"
+               Signature="ValueTask<bool> IsAvailableFor(ElementReference videoElement)"
+               Description="True when this element could enter right now: a video, allowed, not opted out, and its metadata loaded." />
+    <ApiMember Name="Request"
+               Signature="ValueTask<bool> Request(ElementReference videoElement)"
+               Description="Moves the element into the floating window. Requires a user gesture. False when refused or dismissed." />
+    <ApiMember Name="Exit"
+               Signature="ValueTask<bool> Exit()"
+               Description="Closes the floating window. False when nothing was in picture-in-picture. No gesture needed." />
+    <ApiMember Name="IsActive"
+               Signature="ValueTask<bool> IsActive() / IsActive(ElementReference videoElement)"
+               Description="Whether anything in the document is floating, or whether this specific element is the one." />
+    <ApiMember Name="Subscribe"
+               Signature="ValueTask<ButilSubscription> Subscribe(ElementReference videoElement, Action<PictureInPictureChange> handler)"
+               Description="Watches an element entering and leaving, including when the user closes the window themselves." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, detaches any listener whose subscription was never disposed. The floating window is left alone - it is the user's." />
+    <ApiMember Name="PictureInPictureChange"
+               Signature="record (bool Active, int Width, int Height)"
+               Description="Width and Height are the floating window's size while Active, otherwise 0." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole pipOutput = default!;
+    private DemoConsole watchOutput = default!;
+
+    private ElementReference _video;
+    private MediaStreamHandle? _stream;
+    private ButilSubscription? _watch;
+    private string _status = "No video source yet.";
+    private string _windowSize = "";
+    private bool _floating;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await pip.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckAvailable()
+    {
+        try
+        {
+            var available = await pip.IsAvailableFor(_video);
+            if (available)
+            {
+                await supportOutput.Success("IsAvailableFor → true.");
+            }
+            else
+            {
+                await supportOutput.Warn("IsAvailableFor → false. Start the camera first so the video has a track and its metadata has loaded.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsAvailableFor failed →", ex.Message);
+        }
+    }
+
+    private async Task StartCamera()
+    {
+        try
+        {
+            if (_stream is not null)
+            {
+                await _stream.DisposeAsync();
+                _stream = null;
+            }
+
+            _stream = await mediaDevices.GetUserMedia(audio: false, video: true);
+            if (_stream is null)
+            {
+                _status = "Camera denied.";
+                await pipOutput.Warn("GetUserMedia returned null - permission denied or no camera.");
+                return;
+            }
+
+            await _stream.AttachTo(_video);
+            _status = "Camera running - now try Request.";
+            await pipOutput.Success("Camera attached to the video element.");
+        }
+        catch (Exception ex)
+        {
+            await pipOutput.Error("GetUserMedia failed →", ex.Message);
+        }
+    }
+
+    private async Task EnterPip()
+    {
+        try
+        {
+            var entered = await pip.Request(_video);
+            if (entered)
+            {
+                _status = "Floating.";
+                await pipOutput.Success("Request → the video is now in a floating window.");
+            }
+            else
+            {
+                _status = "Request refused.";
+                await pipOutput.Warn("Request → refused. Give the video a source first, and click the button rather than calling it from code.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await pipOutput.Error("Request failed →", ex.Message);
+        }
+    }
+
+    private async Task ExitPip()
+    {
+        try
+        {
+            var exited = await pip.Exit();
+            _status = exited ? "Back in the page." : "Nothing was floating.";
+            await pipOutput.Log("Exit →", exited);
+        }
+        catch (Exception ex)
+        {
+            await pipOutput.Error("Exit failed →", ex.Message);
+        }
+    }
+
+    private async Task StartWatching()
+    {
+        await StopWatching();
+
+        try
+        {
+            _watch = await pip.Subscribe(_video, change => InvokeAsync(async () =>
+            {
+                _floating = change.Active;
+                _windowSize = change.Active ? $"{change.Width}x{change.Height}" : "";
+                await watchOutput.Log(change.Active
+                    ? $"Entered picture-in-picture ({change.Width}x{change.Height})."
+                    : "Left picture-in-picture.");
+                StateHasChanged();
+            }));
+
+            await watchOutput.Success("Subscribe → watching. Try closing the floating window from its own close button.");
+        }
+        catch (Exception ex)
+        {
+            await watchOutput.Error("Subscribe failed →", ex.Message);
+        }
+    }
+
+    private async Task StopWatching()
+    {
+        if (_watch is null) return;
+
+        await _watch.DisposeAsync();
+        _watch = null;
+        await watchOutput.Log("Unsubscribed.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_watch is not null)
+            {
+                await _watch.DisposeAsync();
+                _watch = null;
+            }
+
+            if (_stream is not null)
+            {
+                await _stream.DisposeAsync();
+                _stream = null;
+            }
+        }
+        catch (Exception)
+        {
+            // teardown - the circuit/runtime may already be gone
+        }
+    }
+}

@@ -32,11 +32,17 @@
         <DefineConstants Condition=" '$(InvariantGlobalization)' == 'true' ">$(DefineConstants);InvariantGlobalization</DefineConstants>
         <DefineConstants>$(DefineConstants);$(Environment);$(Configuration)</DefineConstants>
         <DefineConstants Condition="$(Configuration.Contains('Debug'))">$(DefineConstants);DEBUG</DefineConstants>
-        
+
         <HotReloadAutoRestart>true</HotReloadAutoRestart>
         <CompressionEnabled Condition="'$(Environment)' == 'Development'">false</CompressionEnabled>
 
         <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+
+        <WasmFingerprintAssets>false</WasmFingerprintAssets>
+        <StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
+        <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
+
+        <DefaultItemExcludes>$(DefaultItemExcludes);**/App_Data/**</DefaultItemExcludes>
     </PropertyGroup>
     <!--/+:msbuild-conditional:noEmit -->
 
@@ -75,11 +81,9 @@
 
         <PackageReference Include="Bit.CodeAnalyzers" />
         <PackageReference Include="Bit.SourceGenerators" />
-
-        <Watch Remove="*.scss" />
     </ItemGroup>
 
-    <!-- 
+    <!--
     Deletes residual *.razor.css* files (such as .razor.css & .razor.css.map) that are missing a corresponding .razor file in the project before build.
     This is necessary in Blazor projects with Scoped CSS to prevent build errors caused by orphaned razor.css files,
     which may remain after their source razor files are deleted or renamed. For example, if a developer deletes

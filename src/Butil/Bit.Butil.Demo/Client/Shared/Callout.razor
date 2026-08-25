@@ -1,0 +1,48 @@
+﻿@* Fluent 2's MessageBar: an intent icon, a title and a body on a tinted surface bounded by the
+   intent's own border. The intent is carried by the icon and by the wording as well as by the
+   colour, so it survives a monochrome print and a reader who cannot separate the four hues. *@
+
+<div class="callout @Type">
+    <span class="callout-icon" aria-hidden="true">
+        <Icon Name="@Icon" Size="20" />
+    </span>
+    <span class="visually-hidden">@Label:</span>
+    <div class="callout-body">
+        @if (!string.IsNullOrWhiteSpace(Title))
+        {
+            <strong>@Title</strong>
+        }
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    /// <summary>One of: info, warning, success, error.</summary>
+    [Parameter] public string Type { get; set; } = "info";
+
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string Icon => Type switch
+    {
+        "warning" => "warning",
+        "success" => "success",
+        "error" => "error",
+        _ => "info",
+    };
+
+    // No role="alert" or role="status" here, on any intent. A callout on a documentation page is
+    // part of the prose: it is written before the reader arrives and it never changes afterwards,
+    // which is the opposite of what a live region is for. Marking one live would have a screen
+    // reader interrupt itself to read every warning on the page on each SPA navigation, out of the
+    // order the page was written in. The intent still has to reach a reader that cannot see the
+    // tint, so it is said in words the icon is hidden from - in the reading order, where the rest
+    // of the callout is.
+    private string Label => Type switch
+    {
+        "warning" => "Warning",
+        "success" => "Success",
+        "error" => "Important",
+        _ => "Note",
+    };
+}

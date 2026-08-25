@@ -16,11 +16,6 @@
         <StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
         <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
         <WasmEnableSIMD>true</WasmEnableSIMD>
-        <!-- Multi-threaded WebAssembly runtime: lets BitPdfViewer's BackgroundRendering
-             offload parsing/rendering to a worker thread. Requires the hosting server to
-             send the COOP/COEP cross-origin-isolation headers (see the demo server's
-             Middlewares.cs) so the runtime can use SharedArrayBuffer. -->
-        <WasmEnableThreads>true</WasmEnableThreads>
     </PropertyGroup>
 
     <ItemGroup>
@@ -28,11 +23,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.CodeAnalyzers" Version="10.5.0">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="10.6.0-pre-02">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="10.5.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="10.6.0-pre-02">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -48,9 +43,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- Lazily loaded on demand by the Legacy BitChart demo (see BitChartDemo). These assemblies
-             are only needed by the legacy Chart's Newtonsoft.Json serialization, so keeping them out
-             of the initial WASM download reduces the app's startup payload. -->
+        <!-- Lazily loaded on demand by the legacy Chart demo (see BitChartLegacyDemo). These
+             assemblies are only needed by the legacy Chart's Newtonsoft.Json serialization, so
+             keeping them out of the initial WASM download reduces the app's startup payload. -->
         <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
         <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
         <BlazorWebAssemblyLazyLoad Include="System.Data.Common.wasm" />
@@ -61,6 +56,8 @@
         <!-- https://github.com/dotnet/runtime/blob/main/src/mono/wasm/build/WasmApp.Common.targets -->
         <EmccLinkOptimizationFlag>-O3</EmccLinkOptimizationFlag>
         <EmccCompileOptimizationFlag>-O3</EmccCompileOptimizationFlag>
+        <!-- Optimization flag for the AOT'ed assemblies bitcode, which defaults to -O2 in Release and is not covered by EmccCompileOptimizationFlag. -->
+        <WasmBitcodeCompileOptimizationFlag>-O3</WasmBitcodeCompileOptimizationFlag>
     </PropertyGroup>
 
 </Project>

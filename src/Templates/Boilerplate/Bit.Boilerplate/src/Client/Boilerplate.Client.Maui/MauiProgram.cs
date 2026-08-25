@@ -1,9 +1,7 @@
 //+:cnd:noEmit
 using Microsoft.Maui.Platform;
+using Microsoft.Extensions.Options;
 using Microsoft.Maui.LifecycleEvents;
-//#if (notification == true)
-using Plugin.LocalNotification;
-//#endif
 using Boilerplate.Client.Core.Styles;
 using Boilerplate.Client.Maui.Infrastructure.Services;
 using Maui.AppStores;
@@ -100,6 +98,8 @@ public static partial class MauiProgram
 
         var mauiApp = builder.Build();
 
+        mauiApp.Services.GetService<IStartupValidator>()?.Validate();
+
         mauiApp.Services.GetRequiredService<PubSubService>()
             .Subscribe(ClientAppMessages.PAGE_DATA_CHANGED, async (args) =>
             {
@@ -125,23 +125,21 @@ public static partial class MauiProgram
 
             webView.EnsureCoreWebView2Async()
                 .AsTask()
-                .ContinueWith(async _ =>
+                .ContinueWith(initialization =>
                 {
-                    await Application.Current!.Dispatcher.DispatchAsync(() =>
+                    if (initialization.IsFaulted)
                     {
-                        webView.CoreWebView2.PermissionRequested += async (sender, args) =>
-                        {
-                            args.Handled = true;
-                            args.State = Microsoft.Web.WebView2.Core.CoreWebView2PermissionState.Allow;
-                        };
-                        if (AppEnvironment.IsDevelopment() is false)
-                        {
-                            var settings = webView.CoreWebView2.Settings;
-                            settings.IsZoomControlEnabled = false;
-                            settings.AreBrowserAcceleratorKeysEnabled = false;
-                        }
+                        // Otherwise the failure is only ever seen as an unobserved task exception minutes later,
+                        // and the continuation below would go on to dereference a null CoreWebView2.
+                        LogException(initialization.Exception, reportedBy: nameof(webView.EnsureCoreWebView2Async));
+                        return;
+                    }
+
+                    _ = Application.Current!.Dispatcher.DispatchAsync(() =>
+                    {
+                        webView.CoreWebView2.PermissionRequested += HandlePermissionRequested;
                     });
-                });
+                }, TaskScheduler.Default);
 
 #elif iOS || Mac
             webView.NavigationDelegate = new CustomWKNavigationDelegate();
@@ -151,10 +149,9 @@ public static partial class MauiProgram
             webView.ScrollView.Bounces = false;
             webView.Opaque = false;
 
-            if ((DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && DeviceInfo.Current.Version >= new Version(13, 3))
-                || (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Current.Version >= new Version(16, 4)))
+            if (DeviceInfo.Current.Version >= new Version(16, 4))
             {
-                webView.SetValueForKey(NSObject.FromObject(true), new NSString("inspectable"));
+                webView.Inspectable = true;
             }
 #elif Android
             webView.SetBackgroundColor(Android.Graphics.Color.ParseColor(webViewBackgroundColor));
@@ -173,9 +170,16 @@ public static partial class MauiProgram
                 settings.JavaScriptCanOpenWindowsAutomatically =
                 settings.DomStorageEnabled = true;
 
+            Android.Webkit.WebView.SetWebContentsDebuggingEnabled(true);
+
             if (AppEnvironment.IsDevelopment())
             {
                 settings.MixedContentMode = Android.Webkit.MixedContentHandling.AlwaysAllow;
+            }
+
+            if (webView.WebChromeClient is not Platforms.Android.AppWebChromeClient)
+            {
+                webView.SetWebChromeClient(new Platforms.Android.AppWebChromeClient(webView.WebChromeClient));
             }
 
             settings.BlockNetworkLoads = settings.BlockNetworkImage = false;
@@ -202,6 +206,27 @@ public static partial class MauiProgram
                 decisionHandler.Invoke(WKNavigationActionPolicy.Allow, preferences);
             }
         }
+    }
+#endif
+
+#if Windows
+    /// <summary>
+    /// Answers one permission kind and leaves the rest to WebView2's own prompt.
+    /// <para>
+    /// The android head takes the same position deliberately (see AppWebChromeClient.OnPermissionRequest): an allow
+    /// list of one, widened a resource at a time. Answering every kind with Allow and setting Handled suppresses
+    /// that prompt, so camera, geolocation and clipboard-read would be granted silently to any script running in
+    /// the page - including third party scripts such as the ad SDK, which runs in the app's own origin.
+    /// </para>
+    /// </summary>
+    private static void HandlePermissionRequested(object? sender, Microsoft.Web.WebView2.Core.CoreWebView2PermissionRequestedEventArgs args)
+    {
+        if (args.PermissionKind is not (Microsoft.Web.WebView2.Core.CoreWebView2PermissionKind.Microphone
+                             or Microsoft.Web.WebView2.Core.CoreWebView2PermissionKind.ClipboardRead
+                             or Microsoft.Web.WebView2.Core.CoreWebView2PermissionKind.Notifications)) return;
+
+        args.Handled = true;
+        args.State = Microsoft.Web.WebView2.Core.CoreWebView2PermissionState.Allow;
     }
 #endif
 

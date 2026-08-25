@@ -1,0 +1,634 @@
+@page "/e2e-observers"
+@implements IAsyncDisposable
+@inject Bit.Butil.Performance performance
+@inject Bit.Butil.StorageManager storageManager
+@inject Bit.Butil.NetworkInformation networkInformation
+@inject Bit.Butil.BroadcastChannel broadcastChannel
+@inject Bit.Butil.IndexedDb indexedDb
+@inject Bit.Butil.CacheStorage cacheStorage
+@inject Bit.Butil.WebLocks webLocks
+@inject Bit.Butil.ObjectUrls objectUrls
+@inject Bit.Butil.CookieStore cookieStore
+@inject Bit.Butil.Navigator navigator
+@inject Bit.Butil.UserAgent userAgent
+@inject Bit.Butil.Screen screen
+@inject Bit.Butil.Battery battery
+@inject Bit.Butil.Permissions permissions
+@inject Bit.Butil.StorageAccess storageAccess
+@inject Bit.Butil.Window butilWindow
+@inject Bit.Butil.Location butilLocation
+@inject Bit.Butil.Document butilDocument
+@inject Bit.Butil.SpeechSynthesis speechSynthesis
+@inject IJSRuntime js
+
+@*
+    Second deterministic harness, focused on async/observer-based APIs. Same contract as /e2e:
+    every control has a stable id and results land in #status.
+*@
+
+<PageTitle>Butil - E2E Observers</PageTitle>
+
+<h1>Butil E2E Observers</h1>
+
+<div data-testid="status" id="status">@_status</div>
+
+<section>
+    <h3>Performance</h3>
+    <button id="perf-mark-measure" @onclick="PerfMarkMeasure">mark + measure</button>
+    <button id="perf-observer" @onclick="PerfObserver">PerformanceObserver(mark)</button>
+</section>
+
+<section>
+    <h3>Storage Manager + Network</h3>
+    <button id="storage-estimate" @onclick="StorageEstimate">storage.estimate</button>
+    <button id="network-status" @onclick="NetworkStatus">connection status</button>
+</section>
+
+<section>
+    <h3>Observers</h3>
+    <div id="observed-target" @ref="_target" style="width:120px;height:40px;border:1px solid #888;">target</div>
+    <button id="intersection-observe" @onclick="ObserveIntersection">observe intersection</button>
+    <button id="resize-observe" @onclick="ObserveResize">observe resize</button>
+    <button id="resize-trigger" @onclick="TriggerResize">resize target</button>
+    <button id="mutation-observe" @onclick="ObserveMutation">observe mutation</button>
+</section>
+
+<section>
+    <h3>BroadcastChannel</h3>
+    <button id="broadcast-subscribe" @onclick="BroadcastSubscribe">subscribe</button>
+    <button id="broadcast-post" @onclick="BroadcastPost">post</button>
+</section>
+
+<section>
+    <h3>IndexedDB</h3>
+    <button id="idb-roundtrip" @onclick="IndexedDbRoundTrip">open + put + get</button>
+    <button id="idb-advanced" @onclick="IndexedDbAdvanced">ranges + cursors + transactions</button>
+    <button id="idb-migrate" @onclick="IndexedDbMigrate">schema migration</button>
+</section>
+
+<section>
+    <h3>CacheStorage</h3>
+    <button id="cache-roundtrip" @onclick="CacheRoundTrip">putText + match + delete</button>
+</section>
+
+<section>
+    <h3>Web Locks</h3>
+    <button id="lock-run" @onclick="LockRun">acquire + run + release</button>
+</section>
+
+<section>
+    <h3>Object URLs</h3>
+    <button id="objurl-create" @onclick="ObjectUrlCreate">createObjectURL</button>
+</section>
+
+<section>
+    <h3>CookieStore</h3>
+    <button id="cookiestore-roundtrip" @onclick="CookieStoreRoundTrip">set + get + delete</button>
+    <button id="cookiestore-change" @onclick="CookieStoreChangeEvent">subscribe change</button>
+</section>
+
+<section>
+    <h3>Change subscriptions</h3>
+    <button id="subs-attach" @onclick="ChangeSubscriptions">battery + network + permissions</button>
+</section>
+
+<section>
+    <h3>Performance entries</h3>
+    <button id="perf-entries" @onclick="PerfEntries">mark + getEntries + clear</button>
+</section>
+
+<section>
+    <h3>Platform</h3>
+    <button id="nav-info" @onclick="NavInfo">navigator info</button>
+    <button id="ua-extract" @onclick="UaExtract">userAgent.extract</button>
+    <button id="screen-metrics" @onclick="ScreenMetrics">screen metrics</button>
+    <button id="platform-extras" @onclick="PlatformExtras">platform extras</button>
+</section>
+
+@code {
+    private string _status = "ready";
+    private ElementReference _target;
+
+    private ButilSubscription? _intersectionSub;
+    private ButilSubscription? _resizeSub;
+    private ButilSubscription? _mutationSub;
+    private ButilSubscription? _perfObserverSub;
+    private ButilSubscription? _broadcastSub;
+
+    private int _resizeWidth = 120;
+
+    private void Set(string value) { _status = value; StateHasChanged(); }
+
+    // ─── Performance ─────────────────────────────────────────────────────────────
+    private async Task PerfMarkMeasure()
+    {
+        await performance.Mark("butil-e2e-a");
+        await performance.Mark("butil-e2e-b");
+        await performance.Measure("butil-e2e-measure", "butil-e2e-a", "butil-e2e-b");
+        var entries = await performance.GetEntries("butil-e2e-measure", "measure");
+        Set($"perf:measure:{entries.Length > 0}");
+    }
+
+    private async Task PerfObserver()
+    {
+        var tcs = new TaskCompletionSource<bool>();
+        _perfObserverSub = await performance.SubscribeObserver(["mark"], entries =>
+        {
+            if (entries.Length > 0) tcs.TrySetResult(true);
+        }, buffered: false);
+
+        await performance.Mark("butil-e2e-observed-mark");
+
+        var fired = await WaitFor(tcs, 5000);
+        Set($"perf:observer:{fired}");
+    }
+
+    // ─── Storage Manager + Network ───────────────────────────────────────────────
+    private async Task StorageEstimate()
+    {
+        var est = await storageManager.Estimate();
+        // Quota is reported on every evergreen browser; usage may be 0 on a clean origin.
+        Set($"storage:estimate:{est.Quota.HasValue}");
+    }
+
+    private async Task NetworkStatus()
+    {
+        var status = await networkInformation.GetStatus();
+        Set($"network:online:{status.Online}");
+    }
+
+    // ─── Observers ───────────────────────────────────────────────────────────────
+    private async Task ObserveIntersection()
+    {
+        var tcs = new TaskCompletionSource<bool>();
+        _intersectionSub = await _target.ObserveIntersection(js, entries =>
+        {
+            if (entries.Length > 0) tcs.TrySetResult(true);
+        });
+        // The target is on-screen, so the observer fires an initial entry immediately.
+        var fired = await WaitFor(tcs, 5000);
+        Set($"intersection:{fired}");
+    }
+
+    private async Task ObserveResize()
+    {
+        var tcs = new TaskCompletionSource<bool>();
+        _resizeSub = await _target.ObserveResize(js, entries =>
+        {
+            if (entries.Length > 0) tcs.TrySetResult(true);
+        });
+        var fired = await WaitFor(tcs, 5000);
+        Set($"resize:observed:{fired}");
+    }
+
+    private async Task TriggerResize()
+    {
+        _resizeWidth += 40;
+        await _target.SetAttribute("style", $"width:{_resizeWidth}px;height:40px;border:1px solid #888;");
+        Set($"resize:triggered:{_resizeWidth}");
+    }
+
+    private async Task ObserveMutation()
+    {
+        var tcs = new TaskCompletionSource<bool>();
+        _mutationSub = await _target.ObserveMutations(js, records =>
+        {
+            if (records.Length > 0) tcs.TrySetResult(true);
+        }, new MutationObserverOptions { Attributes = true });
+
+        // Mutate an attribute to trigger the observer.
+        await _target.SetAttribute("data-butil", Guid.NewGuid().ToString("N"));
+
+        var fired = await WaitFor(tcs, 5000);
+        Set($"mutation:{fired}");
+    }
+
+    // ─── BroadcastChannel ────────────────────────────────────────────────────────
+    private async Task BroadcastSubscribe()
+    {
+        _broadcastReceived = new TaskCompletionSource<string>();
+        _broadcastSub = await broadcastChannel.Subscribe("butil-e2e-channel", msg =>
+        {
+            _broadcastReceived?.TrySetResult(msg.GetProperty("text").GetString() ?? "");
+        });
+        Set("broadcast:subscribed");
+    }
+
+    private TaskCompletionSource<string>? _broadcastReceived;
+
+    private async Task BroadcastPost()
+    {
+        // Post from a second BroadcastChannel in JS land so the subscriber (which doesn't receive
+        // its own messages) actually fires.
+        await js.InvokeVoidAsync("eval",
+            "(function(){const c=new BroadcastChannel('butil-e2e-channel');c.postMessage({text:'pong'});c.close();})()");
+
+        var received = _broadcastReceived is null ? "" : await WaitForValue(_broadcastReceived, 5000);
+        Set($"broadcast:received:{received}");
+    }
+
+    // ─── IndexedDB ───────────────────────────────────────────────────────────────
+    private async Task IndexedDbRoundTrip()
+    {
+        await using var db = await indexedDb.Open("butil-e2e-db", 1,
+        [
+            new IndexedDbStoreSchema { Name = "items", KeyPath = "id" }
+        ]);
+
+        await db.Put("items", new IdbItem { Id = "k1", Value = "stored" });
+        var item = await db.Get<IdbItem>("items", "k1");
+        Set($"idb:get:{item?.Value}");
+    }
+
+    // Walks the whole extended surface - ranges, cursors, index queries, batched transactions and
+    // binary values - and reports the first check that fails so a red test names the culprit.
+    private async Task IndexedDbAdvanced()
+    {
+        const string dbName = "butil-e2e-adv";
+        const string store = "rows";
+        const string blobs = "blobs";
+        const string index = "by-group";
+
+        await indexedDb.DeleteDatabase(dbName);
+
+        await using var db = await indexedDb.Open(dbName, 1,
+        [
+            new IndexedDbStoreSchema
+            {
+                Name = store,
+                KeyPath = "id",
+                Indexes = [new IndexedDbIndexSchema { Name = index, KeyPath = "group" }]
+            },
+            new IndexedDbStoreSchema { Name = blobs }
+        ]);
+
+        var failure = await RunIdbChecks(db, store, blobs, index);
+        Set(failure is null ? "idb:adv:ok" : $"idb:adv:fail:{failure}");
+    }
+
+    private async Task<string?> RunIdbChecks(IndexedDbHandle db, string store, string blobs, string index)
+    {
+        // 10 rows, ids 1..10, alternating groups - one transaction, so this also exercises Transact.
+        var writes = Enumerable.Range(1, 10)
+            .Select(i => IndexedDbOperation.Put(store, new IdbRow { Id = i, Group = i % 2 == 0 ? "even" : "odd", Text = $"row{i}" }))
+            .ToArray();
+        var keys = await db.Transact(writes, durability: IndexedDbDurability.Relaxed);
+        if (keys.Length != 10 || keys[0].GetInt32() != 1) return "transact-keys";
+
+        if (await db.Count(store) != 10) return "count";
+
+        // Key ranges.
+        var midRange = IndexedDbKeyRange.Bound(3, 6);
+        if ((await db.GetAll<IdbRow>(store, midRange)).Length != 4) return "range-getall";
+        if (await db.Count(store, midRange) != 4) return "range-count";
+        if ((await db.GetAll<IdbRow>(store, IndexedDbKeyRange.Bound(3, 6, lowerOpen: true))).Length != 3) return "range-open";
+        if ((await db.GetAllKeys(store, IndexedDbKeyRange.LowerBound(8))).Length != 3) return "range-keys";
+
+        // Cursors: paging, skipping, and reverse order.
+        var page = await db.GetPage<IdbRow>(store, skip: 2, take: 3);
+        if (page.Length != 3 || page[0].Value!.Id != 3 || page[0].PrimaryKey.GetInt32() != 3) return "page";
+
+        var reverse = await db.GetPage<IdbRow>(store, direction: IndexedDbCursorDirection.Previous, take: 2);
+        if (reverse.Length != 2 || reverse[0].Value!.Id != 10 || reverse[1].Value!.Id != 9) return "page-reverse";
+
+        var rangedPage = await db.GetKeyPage(store, IndexedDbKeyRange.Bound(4, 8), take: 2);
+        if (rangedPage.Length != 2 || rangedPage[0].PrimaryKey.GetInt32() != 4) return "page-range";
+
+        // Index queries.
+        if (await db.CountByIndex(store, index, "even") != 5) return "index-count";
+        if ((await db.GetAllKeysByIndex(store, index, "odd")).Length != 5) return "index-keys";
+        if ((await db.GetKeyByIndex(store, index, "even")).GetInt32() != 2) return "index-getkey";
+
+        var distinct = await db.GetKeyPageByIndex(store, index, direction: IndexedDbCursorDirection.NextUnique);
+        if (distinct.Length != 2) return "index-distinct";
+
+        // Index cursor keys are the index key, not the primary key.
+        var indexPage = await db.GetPageByIndex<IdbRow>(store, index, "even", take: 1);
+        if (indexPage.Length != 1 || indexPage[0].Key.GetString() != "even" || indexPage[0].PrimaryKey.GetInt32() != 2) return "index-page";
+
+        // A rolled-back batch must leave nothing behind: the duplicate Add aborts the whole thing.
+        var rolledBack = false;
+        try
+        {
+            await db.Transact(
+            [
+                IndexedDbOperation.Put(store, new IdbRow { Id = 99, Group = "temp", Text = "should vanish" }),
+                IndexedDbOperation.Add(store, new IdbRow { Id = 1, Group = "temp", Text = "duplicate" })
+            ]);
+        }
+        catch
+        {
+            rolledBack = true;
+        }
+        if (rolledBack is false) return "rollback-not-raised";
+        if (await db.Get<IdbRow>(store, 99) is not null) return "rollback-leaked";
+
+        // Deleting through an index has no native equivalent - it walks a cursor.
+        if (await db.DeleteByIndex(store, index, "odd") != 5) return "index-delete";
+        if (await db.Count(store) != 5) return "index-delete-count";
+
+        // Range delete.
+        await db.Delete(store, IndexedDbKeyRange.LowerBound(8));
+        if (await db.Count(store) != 3) return "range-delete";
+
+        // Binary values bypass JSON entirely.
+        var payload = new byte[] { 1, 2, 3, 250, 251, 252 };
+        await db.PutBytes(blobs, payload, key: "bin");
+        var readBack = await db.GetBytes(blobs, "bin");
+        if (readBack is null || readBack.SequenceEqual(payload) is false) return "bytes";
+
+        // Schema introspection.
+        var storeInfo = await db.GetStoreInfo(store);
+        if (storeInfo is null || storeInfo.KeyPath.SequenceEqual(["id"]) is false || storeInfo.IndexNames.Contains(index) is false) return "store-info";
+
+        var indexInfo = await db.GetIndexInfo(store, index);
+        if (indexInfo is null || indexInfo.KeyPath.SequenceEqual(["group"]) is false || indexInfo.Unique) return "index-info";
+
+        var blobInfo = await db.GetStoreInfo(blobs);
+        if (blobInfo is null || blobInfo.KeyPath.Length != 0) return "blob-store-info";
+
+        if (await db.GetStoreInfo("no-such-store") is not null) return "missing-store-info";
+
+        var info = await db.GetInfo();
+        if (info is null || info.Version != 1 || info.StoreNames.Contains(blobs) is false) return "db-info";
+
+        // Key ordering, straight from the browser.
+        if (await indexedDb.Compare(1, 2) >= 0 || await indexedDb.Compare(2, 2) != 0) return "compare";
+
+        return null;
+    }
+
+    // Opening at a higher version runs the upgrade: a new store and index appear, a dropped index
+    // goes away, and the handle reports the version transition it performed.
+    private async Task IndexedDbMigrate()
+    {
+        const string dbName = "butil-e2e-migrate";
+        const string store = "rows";
+
+        await indexedDb.DeleteDatabase(dbName);
+
+        await using (var v1 = await indexedDb.Open(dbName, 1,
+        [
+            new IndexedDbStoreSchema
+            {
+                Name = store,
+                KeyPath = "id",
+                Indexes = [new IndexedDbIndexSchema { Name = "by-group", KeyPath = "group" }]
+            }
+        ]))
+        {
+            if (v1.WasUpgraded is false) { Set("idb:migrate:fail:v1-not-upgraded"); return; }
+            if (v1.OldVersion != 0) { Set("idb:migrate:fail:v1-oldversion"); return; }
+            await v1.Put(store, new IdbRow { Id = 1, Group = "keep", Text = "survives the migration" });
+        }
+
+        await using var v2 = await indexedDb.Open(dbName, 2,
+        [
+            new IndexedDbStoreSchema
+            {
+                Name = store,
+                KeyPath = "id",
+                Indexes =
+                [
+                    new IndexedDbIndexSchema { Name = "by-group", Drop = true },
+                    new IndexedDbIndexSchema { Name = "by-text", KeyPath = "text", Unique = true }
+                ]
+            },
+            new IndexedDbStoreSchema { Name = "added-in-v2", KeyPath = "id", AutoIncrement = true }
+        ]);
+
+        if (v2.OldVersion != 1 || v2.NewVersion != 2) { Set($"idb:migrate:fail:versions:{v2.OldVersion}->{v2.NewVersion}"); return; }
+        if (v2.StoreNames.Contains("added-in-v2") is false) { Set("idb:migrate:fail:new-store"); return; }
+
+        var storeInfo = await v2.GetStoreInfo(store);
+        if (storeInfo is null || storeInfo.IndexNames.Contains("by-group")) { Set("idb:migrate:fail:index-not-dropped"); return; }
+        if (storeInfo.IndexNames.Contains("by-text") is false) { Set("idb:migrate:fail:index-not-added"); return; }
+
+        var newIndex = await v2.GetIndexInfo(store, "by-text");
+        if (newIndex is null || newIndex.Unique is false) { Set("idb:migrate:fail:index-flags"); return; }
+
+        // Records written before the upgrade must still be there.
+        if (await v2.Get<IdbRow>(store, 1) is null) { Set("idb:migrate:fail:data-lost"); return; }
+
+        // The generated key of an autoIncrement store is only observable through the write's result.
+        var generated = await v2.Put("added-in-v2", new { text = "auto" });
+        if (generated.GetInt32() != 1) { Set($"idb:migrate:fail:autoincrement:{generated}"); return; }
+
+        Set("idb:migrate:ok");
+    }
+
+    // ─── CacheStorage ────────────────────────────────────────────────────────────
+    private async Task CacheRoundTrip()
+    {
+        const string cacheName = "butil-e2e-cache";
+        const string url = "https://butil.e2e/cached-resource";
+        await cacheStorage.PutText(cacheName, url, "hello-cache");
+        var match = await cacheStorage.Match(cacheName, url);
+        var body = match.Found ? System.Text.Encoding.UTF8.GetString(match.Body) : "";
+        var deleted = await cacheStorage.DeleteEntry(cacheName, url);
+        await cacheStorage.Delete(cacheName);
+        Set($"cache:roundtrip:{match.Found}/{body}/{deleted}");
+    }
+
+    // ─── Web Locks ─────────────────────────────────────────────────────────────
+    private async Task LockRun()
+    {
+        var ran = false;
+        var heldExclusively = false;
+        await webLocks.Run("butil-e2e-lock", async () =>
+        {
+            ran = true;
+            var snapshot = await webLocks.Query();
+            heldExclusively = snapshot.Held.Any(l => l.Name == "butil-e2e-lock");
+        });
+        Set($"lock:run:{ran}/{heldExclusively}");
+    }
+
+    // ─── Object URLs ─────────────────────────────────────────────────────────────
+    private async Task ObjectUrlCreate()
+    {
+        var bytes = System.Text.Encoding.UTF8.GetBytes("blob-bytes");
+        var url = await objectUrls.Create(bytes, "text/plain");
+        var ok = url.StartsWith("blob:", StringComparison.Ordinal);
+        await objectUrls.Revoke(url);
+        Set($"objurl:create:{ok}");
+    }
+
+    // ─── CookieStore ─────────────────────────────────────────────────────────────
+    private async Task CookieStoreRoundTrip()
+    {
+        if (!await cookieStore.IsSupported())
+        {
+            Set("cookiestore:unsupported");
+            return;
+        }
+
+        await cookieStore.Set(new CookieStoreItem { Name = "butil-e2e-cs", Value = "csval", Path = "/" });
+        var item = await cookieStore.Get("butil-e2e-cs");
+        await cookieStore.Delete("butil-e2e-cs");
+        Set($"cookiestore:get:{item?.Value}");
+    }
+
+    private TaskCompletionSource<string>? _cookieChanged;
+
+    // The change event is the one thing document.cookie can never give you, so this asserts a real
+    // round trip: subscribe, write, and wait for the browser to report the write back.
+    private async Task CookieStoreChangeEvent()
+    {
+        if (!await cookieStore.IsSupported())
+        {
+            Set("cookiestore:change:unsupported");
+            return;
+        }
+
+        _cookieChanged = new TaskCompletionSource<string>();
+        var sub = await cookieStore.SubscribeChange(change =>
+        {
+            var name = change.Changed.FirstOrDefault()?.Name;
+            if (name == "butil-e2e-change") _cookieChanged?.TrySetResult(name);
+        });
+
+        if (sub is null) { Set("cookiestore:change:no-subscription"); return; }
+
+        try
+        {
+            await cookieStore.Set(new CookieStoreItem { Name = "butil-e2e-change", Value = "v", Path = "/" });
+            var received = await WaitForValue(_cookieChanged, 5000);
+            Set($"cookiestore:change:{(received == "butil-e2e-change" ? "ok" : "timeout")}");
+        }
+        finally
+        {
+            await sub.DisposeAsync();
+            await cookieStore.Delete("butil-e2e-change");
+        }
+    }
+
+    // Battery/network/permission changes can't be provoked from a headless page, so this asserts
+    // the subscription contract instead: attach, get the documented shape back, detach cleanly.
+    private async Task ChangeSubscriptions()
+    {
+        // Battery: a subscription where the API exists, null where it doesn't - never a throw.
+        var batterySupported = await battery.IsSupported();
+        var batterySub = await battery.SubscribeChange(_ => { });
+        if (batterySupported != (batterySub is not null)) { Set("subs:fail:battery-mismatch"); return; }
+        if (batterySub is not null) await batterySub.DisposeAsync();
+
+        // Network: always subscribable, because online/offline exist everywhere.
+        var networkSub = await networkInformation.SubscribeChange(_ => { });
+        await networkSub.DisposeAsync();
+
+        // Permissions: a recognized descriptor reports a real state and hands back a subscription.
+        var (state, permSub) = await permissions.SubscribeChange("geolocation", _ => { });
+        if (state == PermissionState.Unknown || permSub is null) { Set($"subs:fail:permissions:{state}"); return; }
+        await permSub.DisposeAsync();
+
+        // An unrecognized descriptor is Unknown with nothing to dispose.
+        var (bogusState, bogusSub) = await permissions.SubscribeChange("not-a-real-permission", _ => { });
+        if (bogusState != PermissionState.Unknown || bogusSub is not null) { Set("subs:fail:permissions-bogus"); return; }
+
+        Set("subs:ok");
+    }
+
+    // ─── Platform extras ───────────────────────────────────────────────────────
+    private async Task PlatformExtras()
+    {
+        // Newly surfaced getters: assert the plumbing, not specific machine-dependent values.
+        if (await navigator.IsCookieEnabled() is false) { Set("extras:fail:cookieEnabled"); return; }
+
+        var activation = await navigator.GetUserActivation();
+        if (activation is null || activation.HasBeenActive is false) { Set("extras:fail:userActivation"); return; }
+
+        if (await butilWindow.GetDevicePixelRatio() <= 0) { Set("extras:fail:devicePixelRatio"); return; }
+        if (await butilWindow.IsInIframe()) { Set("extras:fail:isInIframe"); return; }
+        if (await butilWindow.GetFrameCount() != 0) { Set("extras:fail:frameCount"); return; }
+        await butilWindow.IsCrossOriginIsolated();   // no COOP/COEP here, so only the call is asserted
+
+        // Top-level page: no ancestors.
+        if ((await butilLocation.GetAncestorOrigins()).Length != 0) { Set("extras:fail:ancestorOrigins"); return; }
+
+        if (await butilDocument.GetReadyState() != "complete") { Set("extras:fail:readyState"); return; }
+        if (string.IsNullOrWhiteSpace(await butilDocument.GetLastModified())) { Set("extras:fail:lastModified"); return; }
+
+        // Screen availLeft/availTop are reported as 0 where unimplemented, so only sanity-check them.
+        if (await screen.GetAvailableLeft() < 0 || await screen.GetAvailableTop() < 0) { Set("extras:fail:screen-avail"); return; }
+
+        if (await speechSynthesis.IsPaused()) { Set("extras:fail:speech-paused"); return; }
+
+        // Chromium reports a per-API usage breakdown; elsewhere it is empty, which is also valid.
+        var estimate = await storageManager.Estimate();
+        if (estimate.UsageDetails is null) { Set("extras:fail:usageDetails"); return; }
+
+        await storageAccess.IsRequestForSupported();   // presence check only - granting needs a real embed
+
+        Set("extras:ok");
+    }
+
+    // ─── Performance entries ───────────────────────────────────────────────────
+    private async Task PerfEntries()
+    {
+        await performance.ClearMarks();
+        await performance.Mark("butil-e2e-entry");
+        var entries = await performance.GetEntries("butil-e2e-entry", "mark");
+        await performance.ClearMarks();
+        var cleared = await performance.GetEntries("butil-e2e-entry", "mark");
+        Set($"perf:entries:{entries.Length > 0}/{cleared.Length == 0}");
+    }
+
+    // ─── Platform ─────────────────────────────────────────────────────────────
+    private async Task NavInfo()
+    {
+        var language = await navigator.GetLanguage();
+        var cores = await navigator.GetHardwareConcurrency();
+        var online = await navigator.IsOnLine();
+        Set($"nav:info:{language.Length > 0 && cores > 0 && online}");
+    }
+
+    private async Task UaExtract()
+    {
+        var props = await userAgent.Extract();
+        var ok = props is not null && !string.IsNullOrEmpty(props.UserAgentValue);
+        Set($"ua:extract:{ok}");
+    }
+
+    private async Task ScreenMetrics()
+    {
+        var width = await screen.GetWidth();
+        var height = await screen.GetHeight();
+        var depth = await screen.GetColorDepth();
+        Set($"screen:metrics:{width > 0 && height > 0 && depth > 0}");
+    }
+
+    private static async Task<bool> WaitFor(TaskCompletionSource<bool> tcs, int timeoutMs)
+    {
+        var completed = await Task.WhenAny(tcs.Task, Task.Delay(timeoutMs));
+        return completed == tcs.Task && tcs.Task.Result;
+    }
+
+    private static async Task<string> WaitForValue(TaskCompletionSource<string> tcs, int timeoutMs)
+    {
+        var completed = await Task.WhenAny(tcs.Task, Task.Delay(timeoutMs));
+        return completed == tcs.Task ? tcs.Task.Result : "";
+    }
+
+    public class IdbItem
+    {
+        public string Id { get; set; } = "";
+        public string Value { get; set; } = "";
+    }
+
+    public class IdbRow
+    {
+        public int Id { get; set; }
+        public string Group { get; set; } = "";
+        public string Text { get; set; } = "";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_intersectionSub is not null) await _intersectionSub.DisposeAsync();
+        if (_resizeSub is not null) await _resizeSub.DisposeAsync();
+        if (_mutationSub is not null) await _mutationSub.DisposeAsync();
+        if (_perfObserverSub is not null) await _perfObserverSub.DisposeAsync();
+        if (_broadcastSub is not null) await _broadcastSub.DisposeAsync();
+    }
+}

@@ -1,0 +1,158 @@
+﻿@page "/getting-started"
+@inject Bit.Butil.Window window
+@inject Bit.Butil.LocalStorage localStorage
+
+<PageTitle>Getting started - Bit.Butil</PageTitle>
+
+<PageHeader Category="Overview"
+            Title="Getting started"
+            Lead="Bit.Butil ships as a single NuGet package plus one script tag. Three steps and every browser API on this site is available as an injectable C# service." />
+
+<DemoSection Title="1. Install the package"
+             Description="Bit.Butil targets .NET 8, 9 and 10, works in Blazor WebAssembly, Blazor Server and Blazor Hybrid (MAUI, WPF, WinForms), and is annotated for trimming."
+             Code=@("dotnet add package Bit.Butil")
+             Language="shell" />
+
+<DemoSection Title="2. Add the script"
+             Description="Add the Butil bridge script to your host page, before the Blazor script - the app boots as soon as that second script runs, so window.BitButil has to exist by then. Which host page it is depends on how you host: index.html for standalone WebAssembly and for Hybrid, Components/App.razor for a Blazor Web App, _Host.cshtml for a classic Blazor Server app. Lazy scripts, below, replace this step entirely."
+             Code=@("""
+<script src="_content/Bit.Butil/bit-butil.js"></script>
+<script src="_framework/blazor.web.js"></script>
+""")
+             Language="html" />
+
+<DemoSection Title="3. Register the services"
+             Description="AddBitButilServices registers every Butil class as a scoped service, matching Blazor's one-circuit / one-app-instance-per-user model. If your app prerenders, register them in the host's container as well: every component is instantiated once on the server for the prerender pass and again in the browser, so anything a page injects has to resolve in both places. Registration is trimming-aware - it discovers the services by reflection, so a published, trimmed app only registers the Butil classes your code actually injects and the rest are removed from your bundle."
+             Code=@("""
+using Bit.Butil;
+
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+builder.Services.AddBitButilServices();
+
+await builder.Build().RunAsync();
+""") />
+
+<DemoSection Title="Use any API"
+             Description="Inject the class you need and call it - no IJSRuntime, no JSON juggling, no hand-written interop. Full IntelliSense included. The one habit worth forming from the start: touch the browser from OnAfterRenderAsync or an event handler, never from OnInitialized, so the code also works under prerendering."
+             Code=@("""
+@inject Bit.Butil.Clipboard clipboard
+@inject Bit.Butil.Crypto crypto
+@inject Bit.Butil.Keyboard keyboard
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        await clipboard.WriteText("Hello from C#!");
+
+        await keyboard.Add(ButilKeyCodes.F10, args => { /* ... */ }, ButilModifiers.Ctrl);
+    }
+}
+""")
+             Language="razor" />
+
+<DemoSection Title="Check that it worked"
+             Description="A round trip through the bridge and back. If this reads and writes without throwing, the script is loaded, the services are registered and the runtime is live - which rules out every setup problem at once. The buttons below run exactly this code on this page."
+             Code=@("""
+await localStorage.SetItem("butil-check", DateTime.Now.ToString("HH:mm:ss"));
+
+var value = await localStorage.GetItem("butil-check");
+var secure = await window.IsSecureContext();
+""")>
+    <div class="controls">
+        <button @onclick="RunCheck">Run the check</button>
+    </div>
+    <DemoConsole @ref="checkOutput" Title="setup check output" />
+</DemoSection>
+
+<DemoSection Title="Optional: tree-shake the JavaScript"
+             Api="BitButilTrimScripts"
+             Description="The bundle behind step 2 covers every API on this site, and a published app can shed the parts it never calls - the JavaScript half of the trimming the C# side already gets. There is nothing to add for it: in a Blazor WebAssembly project a trimmed publish rebuilds bit-butil.js from only the modules the trimmed Bit.Butil.dll still calls, so an app injecting Clipboard, LocalStorage and Window ships around 8 KB of JavaScript instead of 110 KB. It is on by default only there, because that is the one shape where the assembly being trimmed is the assembly calling the served JavaScript. A server that hosts a WebAssembly client keeps its own full copy of the bundle and wants lazy scripts below instead."
+             Code=@("""
+<!-- Nothing to add: it is the default in a WebAssembly project. To opt out: -->
+<PropertyGroup>
+  <BitButilTrimScripts>false</BitButilTrimScripts>
+</PropertyGroup>
+""")
+             Language="xml" />
+
+<DemoSection Title="Optional: lazy scripts"
+             Api="BitButil.UseLazyScripts"
+             Description="The other way to ship only the JavaScript you use, and the one that works in every hosting model, trimmed or not: no script tag at all. The first call into an API imports that API's own module - _content/Bit.Butil/modules/clipboard.js for Clipboard - so the browser downloads the JavaScript for the APIs the app actually calls and nothing else. Each module file is self-contained and safe to load more than once. Set the property in every project that uses Butil, a Blazor Web App's server and client both, and drop the script tag from step 2. The cost is one extra request the first time each API is used."
+             Code=@("""
+<!-- No <script> tag needed anywhere -->
+<PropertyGroup>
+  <BitButilLazyScripts>true</BitButilLazyScripts>
+</PropertyGroup>
+""")
+             Language="xml" />
+
+<DemoSection Title="Optional: the same switches from C#"
+             Api="AddBitButilServices"
+             Description="The registration call takes an options callback carrying the library's runtime toggles: LazyScripts, ScriptModulesPath for when the package's static web assets are served from somewhere else such as a CDN, and FastInvoke. It is the escape hatch for hosts where the csproj is not yours to edit, and it decides only how the scripts load, not what a publish contains. A default publish keeps the bundle and drops the per-module files, so this switch on its own leaves the imports with nothing to fetch - keep the modules with BitButilIncludeScriptModules. Publish-time tree-shaking has no C# counterpart at all, since it happens inside dotnet publish."
+             Code=@("""
+builder.Services.AddBitButilServices(options =>
+{
+    options.LazyScripts = true;                  // or false to insist on the bundle
+    options.ScriptModulesPath = "/cdn/butil/";   // optional, when served elsewhere
+});
+
+// ...and the csproj still has to publish the module files:
+// <BitButilIncludeScriptModules>true</BitButilIncludeScriptModules>
+""") />
+
+<DemoSection Title="Optional: fast invoke"
+             Api="BitButil.UseFastInvoke"
+             Description="On Blazor WebAssembly, APIs backed by synchronous JavaScript (LocalStorage, SessionStorage, Cookie, Console, Location) can skip the async interop machinery entirely. Call it once at startup; asynchronous browser APIs are unaffected, so it cannot break them, and on Blazor Server it is a no-op."
+             Code=@("""
+BitButil.UseFastInvoke();
+
+// switch back at any time:
+BitButil.UseNormalInvoke();
+""") />
+
+<Callout Type="warning" Title="Browser support varies by API">
+    Butil exposes the browser's own capabilities, so each feature is only as available as the underlying
+    web API. Every page links to its MDN reference, and the <a href="browser-support">browser-support page</a>
+    lists which APIs need HTTPS, a permission prompt or a specific engine - and will feature-detect all of
+    them live in whatever browser you are reading this in.
+</Callout>
+
+<Callout Type="info" Title="Where to next?">
+    <a href="render-modes">Render modes</a> covers how Butil behaves under WebAssembly, Server, Hybrid and
+    prerendering - worth ten minutes before you write much. Otherwise, start with the most used APIs:
+    <a href="storage">LocalStorage</a>, <a href="clipboard">Clipboard</a>, <a href="keyboard">Keyboard</a>,
+    <a href="crypto">Crypto</a> and <a href="web-authn">WebAuthn</a>.
+</Callout>
+
+@code {
+    private DemoConsole checkOutput = default!;
+
+    private async Task RunCheck()
+    {
+        try
+        {
+            var stamp = DateTime.Now.ToString("HH:mm:ss");
+
+            await localStorage.SetItem("butil-check", stamp);
+            var value = await localStorage.GetItem("butil-check");
+
+            if (value == stamp)
+            {
+                await checkOutput.Success("Round trip →", $"wrote and read back \"{value}\" - the bridge is live.");
+            }
+            else
+            {
+                await checkOutput.Warn("Round trip →", $"expected \"{stamp}\" but read \"{value}\".");
+            }
+
+            await checkOutput.Info("Window.IsSecureContext() →", await window.IsSecureContext());
+        }
+        catch (Exception ex)
+        {
+            await checkOutput.Error("Check failed →", $"{ex.GetType().Name}: {ex.Message}");
+        }
+    }
+}

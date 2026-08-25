@@ -55,9 +55,9 @@
         @if (otherSessions is not null && otherSessions.Any())
         {
             <br />
-            <BitPullToRefresh OnRefresh="async () => await LoadSessions(false)" ScrollerSelector=".sessions-list" Style="width:100%">
+            <BitPullToRefresh OnRefresh="WrapHandled(async () => await LoadSessions(false))" ScrollerSelector=".sessions-list" Style="width:100%">
                 <BitText>@Localizer[nameof(AppStrings.OtherSessions)]</BitText>
-                <BitBasicList Items="otherSessions" EnableVirtualization Class="sessions-list">
+                <BitBasicList Items="otherSessions" Virtualize ItemSize="120" Class="sessions-list">
                     <RowTemplate Context="session">
                         <BitCard FullWidth Style="margin-bottom:1rem">
                             <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
@@ -72,10 +72,14 @@
                                             CoinVariant="@(session.Privileged ? BitVariant.Fill : BitVariant.Outline)"
                                             ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(session.DeviceInfo)}")" />
                                 <BitSpacer />
-                                <BitButton Color="BitColor.Error"
+                                <BitButton IconOnly
+                                           Color="BitColor.Error"
                                            Variant="BitVariant.Text"
-                                           OnClick="WrapHandled(() => RevokeSession(session))"
-                                           IconName="@(revokingSessionIds.Contains(session.Id) ? BitIconName.Process : BitIconName.Delete)" />
+                                           IconName="@BitIconName.Delete"
+                                           IsLoading="@revokingSessionIds.Contains(session.Id)"
+                                           Title="@Localizer[nameof(AppStrings.RevokeSessionTitle)]"
+                                           AriaLabel="@Localizer[nameof(AppStrings.RevokeSessionTitle)]"
+                                           OnClick="WrapHandled(() => RevokeSession(session))" />
                                 @*#if (signalR == true || notification == true)*@
                                 <BitButton IconOnly
                                            FixedColor

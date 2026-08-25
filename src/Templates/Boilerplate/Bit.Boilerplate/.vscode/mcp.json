@@ -1,21 +1,28 @@
 {
     "servers": {
-        "DeepWiki": {
+        "bitplatform": {
             "type": "http",
-            "url": "https://mcp.deepwiki.com/mcp"
+            "url": "https://bitplatform.dev/mcp"
         },
-        "MicrosoftLearn": {
-            "type": "http",
-            "url": "https://learn.microsoft.com/api/mcp"
-        },
-        "bitBlazorUI": {
-            "type": "http",
-            "url": "https://blazorui.bitplatform.dev/mcp"
+        "aspire": {
+            "type": "stdio",
+            "command": "aspire",
+            "args": [
+                "agent",
+                "mcp"
+            ]
         },
         "playwright": {
             "type": "stdio",
             "command": "npx",
-            "args": ["-y", "@playwright/mcp@latest"]
+            "args": [
+                "-y",
+                "@playwright/mcp@latest",
+                "--output-dir",
+                "${workspaceFolder}/.playwright-mcp",
+                "--output-max-size",
+                "52428800"
+            ]
         }
     }
 }

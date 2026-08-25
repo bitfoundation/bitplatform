@@ -11,14 +11,32 @@ public partial class ODataQuery
 
     public string? Filter { get; set; }
 
+    /// <remarks>
+    /// Both operands are parenthesized: OData binds `and` tighter than `or`, so appending ` and X` to a filter that
+    /// already contains a top-level `or` would re-associate it - `A or B and C` is `A or (B and C)` - and the server
+    /// would silently answer with a superset of the intended rows.
+    /// </remarks>
     public string AndFilter
     {
-        set => Filter = Filter != null ? $"{Filter} and {value}" : value;
+        set
+        {
+            if (string.IsNullOrEmpty(value)) return;
+
+            Filter = string.IsNullOrEmpty(Filter) ? value : $"({Filter}) and ({value})";
+        }
     }
 
+    /// <remarks>
+    /// <inheritdoc cref="AndFilter"/>
+    /// </remarks>
     public string OrFilter
     {
-        set => Filter = Filter != null ? $"{Filter} or {value}" : value;
+        set
+        {
+            if (string.IsNullOrEmpty(value)) return;
+
+            Filter = string.IsNullOrEmpty(Filter) ? value : $"({Filter}) or ({value})";
+        }
     }
 
     public string? OrderBy { get; set; }

@@ -1,11 +1,11 @@
-@* Note: keep in mind that any changes to this file should be exactly applied to the loading implementations *@
-@* of the `index.html` files of the `Client.Web` and `Client.Maui` projects. *@
+@* [mirror] loading indicator markup and css - keep in sync with: *@
+@* - src/Client/Boilerplate.Client.Web/wwwroot/index.html *@
+@* - src/Client/Boilerplate.Client.Maui/wwwroot/index.html *@
 
 <style>
     .bit-lds-wrapper-nfs {
         top: 50%;
         left: 50%;
-        z-index: @zIndex;
         position: absolute;
         transform: translate(-50%, -50%);
     }
@@ -105,7 +105,7 @@
     }
 </style>
 
-<div class="@(FullScreen ? "bit-lds-wrapper-fs" : "bit-lds-wrapper-nfs")">
+<div class="@(FullScreen ? "bit-lds-wrapper-fs" : "bit-lds-wrapper-nfs")" style="@(FullScreen ? null : $"z-index:{zIndex}")">
     <div class="bit-lds-grid">
         <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
     </div>

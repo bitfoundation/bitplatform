@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
     <!-- 
@@ -126,7 +126,7 @@
     <value>مقدار {0} یک آدرس ایمیل معتبر نیست.</value>
   </data>
     <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
-    <value>MaxLengthAttribute must have a Length value that is greater than zero. Use MaxLength() without parameters to indicate that the string or array can have the maximum allowable length.</value>
+    <value>MaxLengthAttribute باید مقدار Length بزرگ‌تر از صفر داشته باشد. برای اینکه مشخص شود رشته یا آرایه می‌تواند بیشترین طول مجاز را داشته باشد، از MaxLength() بدون پارامتر استفاده کنید.</value>
   </data>
     <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>مقدار {0} باید یک نوع رشته یا لیستی با حداقل طول "{1}" باشد.</value>
@@ -174,8 +174,159 @@
     <data name="TooManyRequestsException" xml:space="preserve">
     <value>درخواست های بیش از حد</value>
   </data>
-    <data name="ServerConnectionException" xml:space="preserve">
+    <data name="TransientException" xml:space="preserve">
     <value>قادر به اتصال به سرور نیست.</value>
+  </data>
+    <!-- Bit.BlazorUI messages -->
+    <data name="DataGridEmptyText" xml:space="preserve">
+    <value>رکوردی برای نمایش وجود ندارد.</value>
+  </data>
+    <data name="DataGridLoadingText" xml:space="preserve">
+    <value>در حال بارگذاری…</value>
+  </data>
+    <data name="DataGridActionsText" xml:space="preserve">
+    <value>عملیات</value>
+  </data>
+    <data name="DataGridAddRowText" xml:space="preserve">
+    <value>+ افزودن</value>
+  </data>
+    <data name="DataGridClearFiltersText" xml:space="preserve">
+    <value>پاک کردن فیلترها</value>
+  </data>
+    <data name="DataGridExportCsvText" xml:space="preserve">
+    <value>خروجی CSV</value>
+  </data>
+    <data name="DataGridExportExcelText" xml:space="preserve">
+    <value>خروجی Excel</value>
+  </data>
+    <data name="DataGridColumnsText" xml:space="preserve">
+    <value>ستون‌ها</value>
+  </data>
+    <data name="DataGridEditText" xml:space="preserve">
+    <value>ویرایش</value>
+  </data>
+    <data name="DataGridDeleteText" xml:space="preserve">
+    <value>حذف</value>
+  </data>
+    <data name="DataGridSaveText" xml:space="preserve">
+    <value>ذخیره</value>
+  </data>
+    <data name="DataGridCancelText" xml:space="preserve">
+    <value>انصراف</value>
+  </data>
+    <data name="DataGridSelectAllLabel" xml:space="preserve">
+    <value>انتخاب همه</value>
+  </data>
+    <data name="DataGridSelectRowLabel" xml:space="preserve">
+    <value>انتخاب سطر</value>
+  </data>
+    <data name="DataGridSelectRowFormat" xml:space="preserve">
+    <value>انتخاب سطر: {0}</value>
+  </data>
+    <data name="DataGridFilterPlaceholder" xml:space="preserve">
+    <value>فیلتر…</value>
+  </data>
+    <data name="DataGridFilterByFormat" xml:space="preserve">
+    <value>فیلتر بر اساس {0}</value>
+  </data>
+    <data name="DataGridFilterAllText" xml:space="preserve">
+    <value>همه</value>
+  </data>
+    <data name="DataGridFilterOperatorLabel" xml:space="preserve">
+    <value>عملگر فیلتر برای {0}</value>
+  </data>
+    <data name="DataGridFilterOpContains" xml:space="preserve">
+    <value>شامل</value>
+  </data>
+    <data name="DataGridFilterOpDoesNotContain" xml:space="preserve">
+    <value>شامل نیست</value>
+  </data>
+    <data name="DataGridFilterOpStartsWith" xml:space="preserve">
+    <value>شروع می‌شود با</value>
+  </data>
+    <data name="DataGridFilterOpEndsWith" xml:space="preserve">
+    <value>پایان می‌یابد با</value>
+  </data>
+    <data name="DataGridBooleanTrueText" xml:space="preserve">
+    <value>درست</value>
+  </data>
+    <data name="DataGridBooleanFalseText" xml:space="preserve">
+    <value>نادرست</value>
+  </data>
+    <data name="DataGridGroupByFormat" xml:space="preserve">
+    <value>گروه‌بندی بر اساس {0}</value>
+  </data>
+    <data name="DataGridUngroupByFormat" xml:space="preserve">
+    <value>لغو گروه‌بندی بر اساس {0}</value>
+  </data>
+    <data name="DataGridExpandGroupFormat" xml:space="preserve">
+    <value>باز کردن گروه {0}: {1}</value>
+  </data>
+    <data name="DataGridCollapseGroupFormat" xml:space="preserve">
+    <value>بستن گروه {0}: {1}</value>
+  </data>
+    <data name="DataGridPagerRangeFormat" xml:space="preserve">
+    <value>{0}–{1} از {2}</value>
+  </data>
+    <data name="DataGridPagerPageFormat" xml:space="preserve">
+    <value>صفحه {0} از {1}</value>
+  </data>
+    <data name="DataGridPerPageFormat" xml:space="preserve">
+    <value>{0} / صفحه</value>
+  </data>
+    <data name="DataGridRowsPerPageLabel" xml:space="preserve">
+    <value>سطر در هر صفحه</value>
+  </data>
+    <data name="DataGridFirstPageLabel" xml:space="preserve">
+    <value>صفحه اول</value>
+  </data>
+    <data name="DataGridPreviousPageLabel" xml:space="preserve">
+    <value>صفحه قبل</value>
+  </data>
+    <data name="DataGridNextPageLabel" xml:space="preserve">
+    <value>صفحه بعد</value>
+  </data>
+    <data name="DataGridLastPageLabel" xml:space="preserve">
+    <value>صفحه آخر</value>
+  </data>
+    <data name="DataGridEndOfResultsText" xml:space="preserve">
+    <value>- پایان نتایج -</value>
+  </data>
+    <data name="DataGridToggleDetailsLabel" xml:space="preserve">
+    <value>نمایش/پنهان کردن جزئیات</value>
+  </data>
+    <data name="DataGridToggleChildrenLabel" xml:space="preserve">
+    <value>نمایش/پنهان کردن زیرمجموعه‌ها</value>
+  </data>
+    <data name="DataGridReorderRowTitle" xml:space="preserve">
+    <value>برای تغییر ترتیب بکشید، یا فوکوس کنید و با کلیدهای جهت‌نما این سطر را جابه‌جا کنید</value>
+  </data>
+    <data name="DataGridReorderRowLabel" xml:space="preserve">
+    <value>تغییر ترتیب سطر. برای جابه‌جایی این سطر کلید بالا یا پایین را فشار دهید.</value>
+  </data>
+    <data name="DataGridInvalidValueError" xml:space="preserve">
+    <value>مقدار نامعتبر برای {0}.</value>
+  </data>
+    <data name="DataGridAnnouncementSortedAscending" xml:space="preserve">
+    <value>مرتب‌شده بر اساس {0}، صعودی</value>
+  </data>
+    <data name="DataGridAnnouncementSortedDescending" xml:space="preserve">
+    <value>مرتب‌شده بر اساس {0}، نزولی</value>
+  </data>
+    <data name="DataGridAnnouncementSortCleared" xml:space="preserve">
+    <value>مرتب‌سازی بر اساس {0} حذف شد</value>
+  </data>
+    <data name="DataGridAnnouncementFiltered" xml:space="preserve">
+    <value>فیلتر روی {0} اعمال شد</value>
+  </data>
+    <data name="DataGridAnnouncementFilterCleared" xml:space="preserve">
+    <value>فیلتر روی {0} پاک شد</value>
+  </data>
+    <data name="DataGridAnnouncementPage" xml:space="preserve">
+    <value>صفحه {0} از {1}</value>
+  </data>
+    <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
+    <value>سطر حذف شد</value>
   </data>
     <!-- Boilerplate strings -->
     <data name="Active" xml:space="preserve">
@@ -260,12 +411,34 @@
     <data name="Ok" xml:space="preserve">
     <value>باشه</value>
   </data>
+    <!-- Identity pages -->
+    <data name="Close" xml:space="preserve">
+    <value>بستن</value>
+  </data>
+    <data name="SignInWithPasskeyButtonText" xml:space="preserve">
+    <value>ورود با کلید عبور</value>
+  </data>
+    <data name="OpenGmail" xml:space="preserve">
+    <value>باز کردن Gmail</value>
+  </data>
+    <data name="OpenOutlook" xml:space="preserve">
+    <value>باز کردن Outlook</value>
+  </data>
+    <data name="AgreeToTermsMessage" xml:space="preserve">
+    <value>با ثبت‌نام، شما با موارد زیر موافقت می‌کنید:</value>
+  </data>
     <!--#if (signalR == true) -->
     <data name="SystemPromptsTitle" xml:space="preserve">
     <value>پرامپت‌های سیستمی</value>
   </data>
     <data name="SystemPromptsSubTitle" xml:space="preserve">
     <value>این‌جا میتونید پرامپت‌های سیستمی مورد استفاده چت بات رو مشاهده کنید</value>
+  </data>
+  <data name="PromptKindSupport" xml:space="preserve">
+    <value>پشتیبانی</value>
+  </data>
+  <data name="PromptKindAnalyzeProductImage" xml:space="preserve">
+    <value>تحلیل تصویر محصول</value>
   </data>
     <data name="PushNotificationJob" xml:space="preserve">
     <value>عملیات ارسال پوش نوتیفیکیشن</value>
@@ -748,7 +921,7 @@
     <value>شما میتوانید یک کد جدید در ایمیل یا تلفن خود دریافت کنید.</value>
   </data>
     <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
-    <value>Get code</value>
+    <value>دریافت کد</value>
   </data>
     <data name="TfaResetSharedKeyError" xml:space="preserve">
     <value>تنظیم مجدد کلید مشترک 2fa باید 2fa را غیرفعال کند تا زمانی که یک توکن 2fa بر اساس کلید مشترک جدید تأیید شود.</value>
@@ -976,6 +1149,12 @@
     <data name="DeleteTodoItem" xml:space="preserve">
     <value>حذف کار</value>
   </data>
+  <data name="SortAscending" xml:space="preserve">
+    <value>مرتب‌سازی صعودی</value>
+  </data>
+  <data name="SortDescending" xml:space="preserve">
+    <value>مرتب‌سازی نزولی</value>
+  </data>
     <!--#endif -->
     <!--#if (module == "Admin" || module == "Sales") -->
     <data name="CategoryCouldNotBeFound" xml:space="preserve">
@@ -996,6 +1175,9 @@
   </data>
     <data name="Of" xml:space="preserve">
     <value>از</value>
+  </data>
+    <data name="TryAgain" xml:space="preserve">
+    <value>تلاش مجدد</value>
   </data>
     <!--#if (module == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
@@ -1094,6 +1276,18 @@
     <data name="DashboardSubtitle" xml:space="preserve">
     <value>داده های تحلیلی شما</value>
   </data>
+    <data name="DeleteCategory" xml:space="preserve">
+    <value>حذف دسته‌بندی</value>
+  </data>
+    <data name="AreYouSureWannaDeleteCategory" xml:space="preserve">
+    <value>آیا مطمئن هستید که می خواهید دسته‌بندی {0} را حذف کنید؟</value>
+  </data>
+    <data name="PresetColors" xml:space="preserve">
+    <value>رنگ‌های پیش‌فرض</value>
+  </data>
+    <data name="ProductCouldNotBeLoaded" xml:space="preserve">
+    <value>این محصول بارگذاری نشد.</value>
+  </data>
     <!--#endif -->
     <!--#if (captcha == "reCaptcha") -->
     <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
@@ -1115,6 +1309,15 @@
   </data>
     <data name="PurchaseSuccessful" xml:space="preserve">
     <value>خرید موفقیت آمیز بود!</value>
+  </data>
+    <data name="NoProductsToShow" xml:space="preserve">
+    <value>در حال حاضر محصولی برای نمایش وجود ندارد.</value>
+  </data>
+    <data name="SearchProducts" xml:space="preserve">
+    <value>جستجوی محصولات</value>
+  </data>
+    <data name="ProductsCouldNotBeLoaded" xml:space="preserve">
+    <value>محصولات بارگذاری نشدند.</value>
   </data>
     <!--#endif -->
     <data name="Passwordless" xml:space="preserve">
@@ -1141,12 +1344,66 @@
     <data name="Send" xml:space="preserve">
     <value>ارسال</value>
   </data>
+    <data name="AccentColorApply" xml:space="preserve">
+    <value>اعمال رنگ تأکیدی {0}</value>
+  </data>
     <data name="Canceled" xml:space="preserve">
     <value>لغو شده</value>
   </data>
     <!--#if (signalR == true) -->
     <data name="AiChatPanelTitle" xml:space="preserve">
     <value>پنل هوش مصنوعی</value>
+  </data>
+    <data name="AiChatPanelDictate" xml:space="preserve">
+    <value>پیام خود را بگویید</value>
+  </data>
+    <data name="AiChatPanelStopDictation" xml:space="preserve">
+    <value>توقف گفتار</value>
+  </data>
+    <data name="AiChatPanelDictation" xml:space="preserve">
+    <value>تبدیل گفتار به متن</value>
+  </data>
+    <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
+    <value>دسترسی به میکروفن مسدود است. برای این سایت اجازه دهید تا بتوانید گفتار خود را وارد کنید.</value>
+  </data>
+    <data name="AiChatPanelDictationStopped" xml:space="preserve">
+    <value>تبدیل گفتار به متن متوقف شد: {0}</value>
+  </data>
+    <data name="AiChatPanelReadAloud" xml:space="preserve">
+    <value>خواندن با صدای بلند</value>
+  </data>
+    <data name="AiChatPanelStopReading" xml:space="preserve">
+    <value>توقف خواندن</value>
+  </data>
+    <data name="AiChatPanelTranscribing" xml:space="preserve">
+    <value>در حال نوشتن چیزی که گفتید</value>
+  </data>
+    <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
+    <value>زمان باقی‌مانده تا پایان گفتن پیام</value>
+  </data>
+    <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
+    <value>قابلیت صوتی به حساب کاربری نیاز دارد</value>
+  </data>
+    <data name="AiChatPanelSpeechSignInMessage" xml:space="preserve">
+    <value>تبدیل گفتار به نوشتار و خواندن پاسخ‌ها هر دو روی سرور انجام می‌شوند. یک بار وارد شوید تا هم بتوانید پیام خود را بگویید و هم پاسخ را بشنوید.</value>
+  </data>
+    <data name="AiChatPanelAttachImage" xml:space="preserve">
+    <value>پیوست کردن تصویر</value>
+  </data>
+    <data name="AiChatPanelImageTooLarge" xml:space="preserve">
+    <value>حجم تصویر بیشتر از ۱۰ مگابایت است.</value>
+  </data>
+    <data name="AiChatPanelOnlyImagesAllowed" xml:space="preserve">
+    <value>فقط تصویر می‌توان پیوست کرد.</value>
+  </data>
+    <data name="AiChatPanelAttachmentFailed" xml:space="preserve">
+    <value>تصویر پیوست نشد.</value>
+  </data>
+    <data name="AiChatPanelImageSignInTitle" xml:space="preserve">
+    <value>پیوست تصویر به حساب کاربری نیاز دارد</value>
+  </data>
+    <data name="AiChatPanelImageSignInMessage" xml:space="preserve">
+    <value>برای ارسال تصویر همراه پیام خود وارد شوید.</value>
   </data>
     <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>سلام{0}! من اینجا هستم تا تجربه اپلیکیشن شما رو فوق‌العاده کنم! سؤالی دارید یا به کمک نیاز دارید؟</value>
@@ -1173,7 +1430,13 @@
     <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>پیامی را وارد کنید...</value>
   </data>
-    <!--#endif -->
+      <data name="AiChatPanelMaximize" xml:space="preserve">
+    <value>بیشینه کردن</value>
+  </data>
+  <data name="AiChatPanelRestore" xml:space="preserve">
+    <value>بازگرداندن</value>
+  </data>
+  <!--#endif -->
     <!--#if (ads == true) -->
     <data name="Upgrade" xml:space="preserve">
     <value>ارتقاء</value>
@@ -1189,6 +1452,9 @@
   </data>
     <data name="UpgradeFailMessage" xml:space="preserve">
     <value>ارتقاء حساب با شکست مواجه شد.</value>
+  </data>
+    <data name="UpgradeAdNotAvailableMessage" xml:space="preserve">
+    <value>در حال حاضر تبلیغی در دسترس نیست. لطفاً بعداً دوباره تلاش کنید.</value>
   </data>
     <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>مشکلی برای مشاهده تبلیغ دارید؟</value>
@@ -1331,6 +1597,9 @@
     <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>شما نمیتوانید این کاربر SuperAdmin را حذف کنید</value>
   </data>
+  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
+    <value>شما نمی‌توانید نشست‌های این کاربر مدیر ارشد را باطل کنید</value>
+  </data>
     <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>شما نمیتوانید نشست جاری خود را حذف کنید</value>
   </data>
@@ -1355,6 +1624,9 @@
     <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>نشانی صفحه</value>
   </data>
+  <data name="InvalidPageUrl" xml:space="preserve">
+    <value>نشانی صفحه باید یک نشانی نسبی درون برنامه باشد، مانند /products.</value>
+  </data>
     <data name="YouAreNotAuthorized" xml:space="preserve">
     <value>شما دسترسی ندارید</value>
   </data>
@@ -1373,7 +1645,84 @@
     <data name="ImageNotCarError" xml:space="preserve">
     <value>تصویر ارائه شده حاوی ماشین نیست.</value>
   </data>
-    <!--#if (multitenant == true) -->
+      <data name="AddUserToGroupTitle" xml:space="preserve">
+    <value>افزودن {0} به این گروه کاربری</value>
+  </data>
+  <data name="RemoveUserFromGroupTitle" xml:space="preserve">
+    <value>حذف {0} از این گروه کاربری</value>
+  </data>
+  <data name="GrantFeatureTitle" xml:space="preserve">
+    <value>اعطای {0}</value>
+  </data>
+  <data name="RevokeFeatureTitle" xml:space="preserve">
+    <value>لغو {0}</value>
+  </data>
+  <data name="GrantAllGroupFeaturesTitle" xml:space="preserve">
+    <value>اعطای همهٔ ویژگی‌های {0}</value>
+  </data>
+  <data name="RevokeAllGroupFeaturesTitle" xml:space="preserve">
+    <value>لغو همهٔ ویژگی‌های {0}</value>
+  </data>
+  <data name="RefreshSelectedUserGroupTitle" xml:space="preserve">
+    <value>به‌روزرسانی گروه کاربری انتخاب‌شده</value>
+  </data>
+  <data name="RefreshSelectedUserTitle" xml:space="preserve">
+    <value>به‌روزرسانی کاربر انتخاب‌شده</value>
+  </data>
+  <data name="NoMatchingUserSessionMessage" xml:space="preserve">
+    <value>هیچ نشستی با جست‌وجوی شما مطابقت ندارد.</value>
+  </data>
+  <data name="TfaVerificationCodeRequiredMessage" xml:space="preserve">
+    <value>کد ۶ رقمی را از برنامهٔ احراز هویت خود وارد کنید.</value>
+  </data>
+  <data name="TfaOpenInAuthenticatorAppTitle" xml:space="preserve">
+    <value>باز کردن این حساب در برنامهٔ احراز هویت</value>
+  </data>
+  <data name="TfaQrCodeAlt" xml:space="preserve">
+    <value>کد QR برای راه‌اندازی برنامهٔ احراز هویت</value>
+  </data>
+  <data name="SessionNoLongerValidMessage" xml:space="preserve">
+    <value>این نشست دیگر معتبر نیست. لطفاً دوباره وارد شوید.</value>
+  </data>
+  <data name="RevokeSessionTitle" xml:space="preserve">
+    <value>ابطال این نشست</value>
+  </data>
+  <data name="ImageMaxSizeErrorMessage" xml:space="preserve">
+    <value>حجم تصویر باید {0} یا کمتر باشد.</value>
+  </data>
+  <data name="OnlyImageFilesAllowedErrorMessage" xml:space="preserve">
+    <value>فقط فایل‌های تصویری قابل استفاده هستند</value>
+  </data>
+  <data name="SamePhoneNumberErrorMessage" xml:space="preserve">
+    <value>این همان شمارهٔ تلفن فعلی شماست. شمارهٔ دیگری وارد کنید.</value>
+  </data>
+  <data name="SameEmailErrorMessage" xml:space="preserve">
+    <value>این همان نشانی ایمیل فعلی شماست. نشانی دیگری وارد کنید.</value>
+  </data>
+  <data name="MoreTabsTitle" xml:space="preserve">
+    <value>زبانه‌های بیشتر</value>
+  </data>
+  <data name="OpenNavigationMenuTitle" xml:space="preserve">
+    <value>باز کردن منوی ناوبری</value>
+  </data>
+  <data name="AccountMenuTitle" xml:space="preserve">
+    <value>منوی حساب کاربری</value>
+  </data>
+  <data name="SwitchToDarkThemeTitle" xml:space="preserve">
+    <value>تغییر به پوسته تیره</value>
+  </data>
+  <data name="SwitchToLightThemeTitle" xml:space="preserve">
+    <value>تغییر به پوسته روشن</value>
+  </data>
+  <!--#if (signalR == true) -->
+  <data name="SignalRConnectionId" xml:space="preserve">
+    <value>SignalRConnectionId</value>
+  </data>
+  <data name="ReadUserSessionLogsTitle" xml:space="preserve">
+    <value>خواندن گزارش‌های نشست کاربر</value>
+  </data>
+  <!--#endif -->
+  <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>مستأجر</value>
   </data>
@@ -1425,6 +1774,9 @@
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>نام مستأجر '{0}' تکراری است.</value>
   </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>نام مستأجر '{0}' رزرو شده است و قابل استفاده نیست.</value>
+  </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>مستأجر مورد نظر پیدا نشد.</value>
   </data>
@@ -1449,6 +1801,9 @@
     <data name="DuplicateTenantDomain" xml:space="preserve">
     <value>دامنه '{0}' تکراری است.</value>
   </data>
+    <data name="ReservedTenantDomain" xml:space="preserve">
+    <value>دامنه '{0}' رزرو شده است و قابل استفاده نیست.</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>شما هنوز مستأجری را انتخاب نکرده‌اید. به یکی از مستأجران خود تغییر دهید یا مستأجر جدیدی ایجاد کنید تا شروع کنید.</value>
   </data>
@@ -1470,5 +1825,14 @@
     <data name="Inactive" xml:space="preserve">
     <value>غیرفعال</value>
   </data>
-    <!--#endif-->
+      <data name="DeclineInvitation" xml:space="preserve">
+    <value>رد دعوت</value>
+  </data>
+  <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
+    <value>دعوت به {0} رد شود؟ این کار قابل بازگشت نیست - برای پیوستن به دعوت تازه‌ای نیاز خواهید داشت.</value>
+  </data>
+  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
+    <value>دعوت رد شد.</value>
+  </data>
+  <!--#endif-->
 </root>

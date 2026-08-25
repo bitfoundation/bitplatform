@@ -1,9 +1,7 @@
 //+:cnd:noEmit
 using Hangfire;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Components.Web;
-using Boilerplate.Server.Api.Features.Identity.Models;
 using Boilerplate.Server.Api.Features.Identity.Services;
 using Boilerplate.Server.Api.Features.Identity.Resources;
 

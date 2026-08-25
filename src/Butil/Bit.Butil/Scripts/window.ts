@@ -1,4 +1,4 @@
-var BitButil = BitButil || {};
+var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
     const _refs = {};
@@ -14,6 +14,17 @@ var BitButil = BitButil || {};
         innerHeight() { return window.innerHeight },
         innerWidth() { return window.innerWidth },
         isSecureContext() { return window.isSecureContext },
+        devicePixelRatio() { return window.devicePixelRatio },
+        crossOriginIsolated() { return !!(window as any).crossOriginIsolated },
+        frameCount() { return window.length },
+        // Comparing against window.top is the standard iframe test; a cross-origin parent still
+        // permits the identity check even though its properties are blocked. The catch covers the
+        // engines that throw on the access itself.
+        isInIframe() { try { return window.self !== window.top } catch { return true } },
+        moveTo(x: number, y: number) { window.moveTo(x, y) },
+        moveBy(x: number, y: number) { window.moveBy(x, y) },
+        resizeTo(width: number, height: number) { window.resizeTo(width, height) },
+        resizeBy(width: number, height: number) { window.resizeBy(width, height) },
         locationbar() { return window.locationbar },
         getName() { return window.name },
         setName(value: string) { window.name = value },

@@ -105,6 +105,8 @@ $clr-fg-pri-dark-active: var(--bit-clr-fg-pri-dark-active);
 $clr-fg-pri-light: var(--bit-clr-fg-pri-light);
 $clr-fg-pri-light-hover: var(--bit-clr-fg-pri-light-hover);
 $clr-fg-pri-light-active: var(--bit-clr-fg-pri-light-active);
+$clr-fg-pri-dis: var(--bit-clr-fg-pri-dis);
+$clr-fg-pri-dis-text: var(--bit-clr-fg-pri-dis-text);
 $clr-fg-sec: var(--bit-clr-fg-sec);
 $clr-fg-sec-hover: var(--bit-clr-fg-sec-hover);
 $clr-fg-sec-active: var(--bit-clr-fg-sec-active);
@@ -114,6 +116,8 @@ $clr-fg-sec-dark-active: var(--bit-clr-fg-sec-dark-active);
 $clr-fg-sec-light: var(--bit-clr-fg-sec-light);
 $clr-fg-sec-light-hover: var(--bit-clr-fg-sec-light-hover);
 $clr-fg-sec-light-active: var(--bit-clr-fg-sec-light-active);
+$clr-fg-sec-dis: var(--bit-clr-fg-sec-dis);
+$clr-fg-sec-dis-text: var(--bit-clr-fg-sec-dis-text);
 $clr-fg-ter: var(--bit-clr-fg-ter);
 $clr-fg-ter-hover: var(--bit-clr-fg-ter-hover);
 $clr-fg-ter-active: var(--bit-clr-fg-ter-active);
@@ -123,6 +127,8 @@ $clr-fg-ter-dark-active: var(--bit-clr-fg-ter-dark-active);
 $clr-fg-ter-light: var(--bit-clr-fg-ter-light);
 $clr-fg-ter-light-hover: var(--bit-clr-fg-ter-light-hover);
 $clr-fg-ter-light-active: var(--bit-clr-fg-ter-light-active);
+$clr-fg-ter-dis: var(--bit-clr-fg-ter-dis);
+$clr-fg-ter-dis-text: var(--bit-clr-fg-ter-dis-text);
 $clr-fg-dis: var(--bit-clr-fg-dis);
 
 //backgrounds
@@ -135,6 +141,8 @@ $clr-bg-pri-dark-active: var(--bit-clr-bg-pri-dark-active);
 $clr-bg-pri-light: var(--bit-clr-bg-pri-light);
 $clr-bg-pri-light-hover: var(--bit-clr-bg-pri-light-hover);
 $clr-bg-pri-light-active: var(--bit-clr-bg-pri-light-active);
+$clr-bg-pri-dis: var(--bit-clr-bg-pri-dis);
+$clr-bg-pri-dis-text: var(--bit-clr-bg-pri-dis-text);
 $clr-bg-sec: var(--bit-clr-bg-sec);
 $clr-bg-sec-hover: var(--bit-clr-bg-sec-hover);
 $clr-bg-sec-active: var(--bit-clr-bg-sec-active);
@@ -144,6 +152,8 @@ $clr-bg-sec-dark-active: var(--bit-clr-bg-sec-dark-active);
 $clr-bg-sec-light: var(--bit-clr-bg-sec-light);
 $clr-bg-sec-light-hover: var(--bit-clr-bg-sec-light-hover);
 $clr-bg-sec-light-active: var(--bit-clr-bg-sec-light-active);
+$clr-bg-sec-dis: var(--bit-clr-bg-sec-dis);
+$clr-bg-sec-dis-text: var(--bit-clr-bg-sec-dis-text);
 $clr-bg-ter: var(--bit-clr-bg-ter);
 $clr-bg-ter-hover: var(--bit-clr-bg-ter-hover);
 $clr-bg-ter-active: var(--bit-clr-bg-ter-active);
@@ -153,6 +163,8 @@ $clr-bg-ter-dark-active: var(--bit-clr-bg-ter-dark-active);
 $clr-bg-ter-light: var(--bit-clr-bg-ter-light);
 $clr-bg-ter-light-hover: var(--bit-clr-bg-ter-light-hover);
 $clr-bg-ter-light-active: var(--bit-clr-bg-ter-light-active);
+$clr-bg-ter-dis: var(--bit-clr-bg-ter-dis);
+$clr-bg-ter-dis-text: var(--bit-clr-bg-ter-dis-text);
 $clr-bg-dis: var(--bit-clr-bg-dis);
 $clr-bg-overlay: var(--bit-clr-bg-overlay);
 
@@ -166,6 +178,8 @@ $clr-brd-pri-dark-active: var(--bit-clr-brd-pri-dark-active);
 $clr-brd-pri-light: var(--bit-clr-brd-pri-light);
 $clr-brd-pri-light-hover: var(--bit-clr-brd-pri-light-hover);
 $clr-brd-pri-light-active: var(--bit-clr-brd-pri-light-active);
+$clr-brd-pri-dis: var(--bit-clr-brd-pri-dis);
+$clr-brd-pri-dis-text: var(--bit-clr-brd-pri-dis-text);
 $clr-brd-sec: var(--bit-clr-brd-sec);
 $clr-brd-sec-hover: var(--bit-clr-brd-sec-hover);
 $clr-brd-sec-active: var(--bit-clr-brd-sec-active);
@@ -175,6 +189,8 @@ $clr-brd-sec-dark-active: var(--bit-clr-brd-sec-dark-active);
 $clr-brd-sec-light: var(--bit-clr-brd-sec-light);
 $clr-brd-sec-light-hover: var(--bit-clr-brd-sec-light-hover);
 $clr-brd-sec-light-active: var(--bit-clr-brd-sec-light-active);
+$clr-brd-sec-dis: var(--bit-clr-brd-sec-dis);
+$clr-brd-sec-dis-text: var(--bit-clr-brd-sec-dis-text);
 $clr-brd-ter: var(--bit-clr-brd-ter);
 $clr-brd-ter-hover: var(--bit-clr-brd-ter-hover);
 $clr-brd-ter-active: var(--bit-clr-brd-ter-active);
@@ -184,10 +200,72 @@ $clr-brd-ter-dark-active: var(--bit-clr-brd-ter-dark-active);
 $clr-brd-ter-light: var(--bit-clr-brd-ter-light);
 $clr-brd-ter-light-hover: var(--bit-clr-brd-ter-light-hover);
 $clr-brd-ter-light-active: var(--bit-clr-brd-ter-light-active);
+$clr-brd-ter-dis: var(--bit-clr-brd-ter-dis);
+$clr-brd-ter-dis-text: var(--bit-clr-brd-ter-dis-text);
 $clr-brd-dis: var(--bit-clr-brd-dis);
 
 //required
 $clr-req: var(--bit-clr-req);
+
+//disabled - per-role disabled colors
+//
+//Values - every role's pair is generated from one recipe so that "disabled" reads as a single state
+//rather than a per-role variant: keep the role's OKLCH hue, drain the chroma to a faint trace
+//(<= 0.03 for the fill, <= 0.04 for the text), and park the OKLab lightness on a fixed target -
+//L 0.94 / 0.69 (fill / text) in the light palettes, L 0.30 / 0.52 in the dark ones. Because the
+//target is absolute rather than a mix of the role's main color, every disabled fill and every
+//disabled label lands at the same visual weight whatever the role: ~2.8:1 (light) / ~3.7:1 (dark)
+//for the label on the page background, ~2.4:1 for the label on its own disabled fill, and ~1.2:1
+//(light) / ~1.5:1 (dark) for the fill against the page background. That is far enough below the
+//enabled state to be unmistakable and far enough above the surface to stay readable. The generic
+//$clr-fg-dis below is the achromatic member of the same band, so a disabled form field matches a
+//disabled role. BitThemeColorDerivation applies the same recipe to roles derived at runtime.
+//
+//Convention - two intentional disabled conventions coexist:
+//  * Role-filled components (Button, Badge, Tag, Icon, Link, Checkbox, ChoiceGroup, Pivot headers,
+//    NavBar, Pagination, Timeline, ...) express disabled through their per-role component vars fed
+//    by these $clr-<role>-dis/-dis-text tokens, ideally with the generic token as the var() fallback
+//    for unclassed instances (see BitPagination/BitTimeline).
+//  * Neutral-surface components (text inputs, pickers, surfaces, layout chrome, and neutral
+//    sub-regions of role-colored components such as BitPivot's overflow menu) use the generic
+//    $clr-fg-dis / $clr-bg-dis / $clr-brd-dis directly - a disabled form field looks neutral gray
+//    regardless of any accent role, matching platform conventions.
+//Do not mix the two within the same visual region of a component.
+$clr-pri-dis: var(--bit-clr-pri-dis);
+$clr-pri-dis-text: var(--bit-clr-pri-dis-text);
+$clr-sec-dis: var(--bit-clr-sec-dis);
+$clr-sec-dis-text: var(--bit-clr-sec-dis-text);
+$clr-ter-dis: var(--bit-clr-ter-dis);
+$clr-ter-dis-text: var(--bit-clr-ter-dis-text);
+$clr-inf-dis: var(--bit-clr-inf-dis);
+$clr-inf-dis-text: var(--bit-clr-inf-dis-text);
+$clr-suc-dis: var(--bit-clr-suc-dis);
+$clr-suc-dis-text: var(--bit-clr-suc-dis-text);
+$clr-wrn-dis: var(--bit-clr-wrn-dis);
+$clr-wrn-dis-text: var(--bit-clr-wrn-dis-text);
+$clr-swr-dis: var(--bit-clr-swr-dis);
+$clr-swr-dis-text: var(--bit-clr-swr-dis-text);
+$clr-err-dis: var(--bit-clr-err-dis);
+$clr-err-dis-text: var(--bit-clr-err-dis-text);
+
+//focus (a11y) - per-role focus indicator color, plus shape/shadow tokens consumed by the focus-ring mixin.
+$clr-pri-focus: var(--bit-clr-pri-focus);
+$clr-sec-focus: var(--bit-clr-sec-focus);
+$clr-ter-focus: var(--bit-clr-ter-focus);
+$clr-inf-focus: var(--bit-clr-inf-focus);
+$clr-suc-focus: var(--bit-clr-suc-focus);
+$clr-wrn-focus: var(--bit-clr-wrn-focus);
+$clr-swr-focus: var(--bit-clr-swr-focus);
+$clr-err-focus: var(--bit-clr-err-focus);
+$clr-fg-pri-focus: var(--bit-clr-fg-pri-focus);
+$clr-fg-sec-focus: var(--bit-clr-fg-sec-focus);
+$clr-fg-ter-focus: var(--bit-clr-fg-ter-focus);
+$clr-bg-pri-focus: var(--bit-clr-bg-pri-focus);
+$clr-bg-sec-focus: var(--bit-clr-bg-sec-focus);
+$clr-bg-ter-focus: var(--bit-clr-bg-ter-focus);
+$clr-brd-pri-focus: var(--bit-clr-brd-pri-focus);
+$clr-brd-sec-focus: var(--bit-clr-brd-sec-focus);
+$clr-brd-ter-focus: var(--bit-clr-brd-ter-focus);
 
 //neutrals
 $clr-ntr-white: var(--bit-clr-ntr-white);
@@ -218,6 +296,19 @@ $clr-ntr-gray220: var(--bit-clr-ntr-gray220);
 //shadows-callout
 $box-shadow-callout: var(--bit-shd-cal);
 $box-shadow-callout2: var(--bit-shd-cal2);
+
+//shadows-surface - the elevation of each surface family, aliased in family-tokens.scss so a design
+//system that separates "card", "menu", "dialog", "sheet", "tooltip" and "toast" elevations (Material)
+//or wants hairlines instead of shadows (Cupertino) retunes one token per family. Components consume
+//these instead of the callout primitive.
+$box-shadow-card: var(--bit-shd-card);
+$box-shadow-popup: var(--bit-shd-popup);
+$box-shadow-dialog: var(--bit-shd-dialog);
+$box-shadow-sheet: var(--bit-shd-sheet);
+$box-shadow-tooltip: var(--bit-shd-tooltip);
+$box-shadow-snackbar: var(--bit-shd-snackbar);
+$box-shadow-appbar-top: var(--bit-shd-appbar-top);
+$box-shadow-appbar-bottom: var(--bit-shd-appbar-bottom);
 
 //shadow sizes
 $box-shadow-sm: var(--bit-shd-sm);
@@ -256,6 +347,20 @@ $box-shadow-24: var(--bit-shd-24);
 
 //spacing
 $spacing-scaling-factor: var(--bit-spa-scaling-factor);
+//the base inset of a dialog surface (header/body/footer padding).
+$spa-dialog: var(--bit-spa-dialog);
+
+//layout
+//density is a unitless multiplier over the spacing unit; the fallback of 1 keeps the base rhythm
+//for consumer-defined themes that never set the token.
+$layout-density-scale: var(--bit-layout-density-scale, 1);
+//how a dialog/message-box footer lays out its action buttons (row + flex-end under Fluent and
+//Material; column + center under Cupertino).
+$layout-dialog-actions-direction: var(--bit-layout-dialog-actions-direction);
+$layout-dialog-actions-justify: var(--bit-layout-dialog-actions-justify);
+//how those buttons are aligned across the footer: centered under Fluent and Material, stretched
+//under Cupertino - which is what runs the stacked alert actions full width.
+$layout-dialog-actions-align: var(--bit-layout-dialog-actions-align);
 
 //z-index
 $zindex-snackbar: var(--bit-zin-snackbar);
@@ -268,12 +373,170 @@ $zindex-base: var(--bit-zin-base);
 $shp-border-radius: var(--bit-shp-brd-radius);
 $shp-border-width: var(--bit-shp-brd-width);
 $shp-border-style: var(--bit-shp-brd-style);
+$shp-focus-ring-width: var(--bit-shp-focus-ring-width);
+$shp-focus-ring-offset: var(--bit-shp-focus-ring-offset);
+
+//shape - the second border width of the library: underline focus rules, selection indicators, the
+//slider thumb ring and every other stroke that has to read as heavier than the hairline border.
+$shp-border-width-thick: var(--bit-shp-brd-width-thick);
+
+//shape - radius scale. A fixed ramp for anything that needs a corner that is not the component
+//default: small sub-element chips, scrollbar thumbs, pills. `full` is the pill/circle radius.
+$shp-radius-none: var(--bit-shp-radius-none);
+$shp-radius-xs: var(--bit-shp-radius-xs);
+$shp-radius-sm: var(--bit-shp-radius-sm);
+$shp-radius-md: var(--bit-shp-radius-md);
+$shp-radius-lg: var(--bit-shp-radius-lg);
+$shp-radius-xl: var(--bit-shp-radius-xl);
+$shp-radius-2xl: var(--bit-shp-radius-2xl);
+$shp-radius-full: var(--bit-shp-radius-full);
+
+//shape - per-family radius. Every component takes its outer corner from the family it belongs to,
+//so a design system that rounds buttons differently from cards, menus and dialogs (Material: pill /
+//12px / 4px / 28px) is one token per family. All four default to $shp-border-radius (see
+//family-tokens.scss), so overriding the legacy --bit-shp-brd-radius still re-rounds everything.
+//  control - buttons, inputs, pickers, dropdown triggers, tags, badges, checkboxes, pagination, icon chips
+//  surface - cards, accordions, messages, images, list rows
+//  popup   - callouts, menus, dropdown lists, tooltips, snackbars
+//  dialog  - dialogs and modals
+$shp-radius-control: var(--bit-shp-radius-control);
+$shp-radius-surface: var(--bit-shp-radius-surface);
+$shp-radius-popup: var(--bit-shp-radius-popup);
+$shp-radius-dialog: var(--bit-shp-radius-dialog);
+
+//shape - per control sub-family radius. A button, a chip and a selection box are controls too, so
+//all three fall back to $shp-radius-control; a design system that shapes them apart from a plain
+//field (Material: pill button, 8dp chip, 2dp checkbox box; Cupertino: capsules) retunes one token
+//instead of restyling the components.
+//  button    - BitButton, BitActionButton, BitMenuButton, BitToggleButton and the dialog actions.
+//              BitButtonGroup stays on the control radius: it publishes its own Rounded parameter.
+//  chip      - BitTag and the chips a BitTagsInput or a multi-select BitDropdown draws in its field
+//  selection - the checkbox box (the radio ring is a circle under every design system)
+$shp-radius-button: var(--bit-shp-radius-button);
+$shp-radius-chip: var(--bit-shp-radius-chip);
+$shp-radius-selection: var(--bit-shp-radius-selection);
+
+/*---- Size ----*/
+//The dimensions every design system decides once and every component repeats: control heights,
+//icon glyph sizes, selection-indicator (checkbox box / radio ring) sizes, the spinner stroke and
+//the maximum height of a popup list. The heights and indicator sizes are density-aware by default
+//(multiples of the spacing unit); a preset may set absolute lengths instead.
+$siz-ctrl-sm: var(--bit-siz-ctrl-sm);
+$siz-ctrl-md: var(--bit-siz-ctrl-md);
+$siz-ctrl-lg: var(--bit-siz-ctrl-lg);
+$siz-ctrl-pad-x-sm: var(--bit-siz-ctrl-pad-x-sm);
+$siz-ctrl-pad-x-md: var(--bit-siz-ctrl-pad-x-md);
+$siz-ctrl-pad-x-lg: var(--bit-siz-ctrl-pad-x-lg);
+$siz-ctrl-pad-y-sm: var(--bit-siz-ctrl-pad-y-sm);
+$siz-ctrl-pad-y-md: var(--bit-siz-ctrl-pad-y-md);
+$siz-ctrl-pad-y-lg: var(--bit-siz-ctrl-pad-y-lg);
+$siz-ctrl-min-width: var(--bit-siz-ctrl-min-width);
+$siz-item-sm: var(--bit-siz-item-sm);
+$siz-item-md: var(--bit-siz-item-md);
+$siz-item-lg: var(--bit-siz-item-lg);
+$siz-tab: var(--bit-siz-tab);
+$siz-tab-indicator: var(--bit-siz-tab-indicator);
+$siz-divider: var(--bit-siz-divider);
+$siz-track-sm: var(--bit-siz-track-sm);
+$siz-track-md: var(--bit-siz-track-md);
+$siz-track-lg: var(--bit-siz-track-lg);
+$siz-icon-sm: var(--bit-siz-icon-sm);
+$siz-icon-md: var(--bit-siz-icon-md);
+$siz-icon-lg: var(--bit-siz-icon-lg);
+$siz-sel-sm: var(--bit-siz-sel-sm);
+$siz-sel-md: var(--bit-siz-sel-md);
+$siz-sel-lg: var(--bit-siz-sel-lg);
+//the switch (BitToggle) geometry per size class: the track it slides in and the knob that slides.
+//Every design system draws its own switch - Fluent's 40x20 pill with a 12px knob, Material's 52x32
+//with a 24dp handle, the 51x31 UISwitch with its 27pt thumb - and the inset that keeps the knob
+//off the track edge is derived from the two, so a preset only sets these three per size.
+$siz-switch-w-sm: var(--bit-siz-switch-w-sm);
+$siz-switch-w-md: var(--bit-siz-switch-w-md);
+$siz-switch-w-lg: var(--bit-siz-switch-w-lg);
+$siz-switch-h-sm: var(--bit-siz-switch-h-sm);
+$siz-switch-h-md: var(--bit-siz-switch-h-md);
+$siz-switch-h-lg: var(--bit-siz-switch-h-lg);
+$siz-switch-thumb-sm: var(--bit-siz-switch-thumb-sm);
+$siz-switch-thumb-md: var(--bit-siz-switch-thumb-md);
+$siz-switch-thumb-lg: var(--bit-siz-switch-thumb-lg);
+//the draggable handle of a slider per size class (Material's 20dp handle, the 28pt UISlider knob).
+$siz-slider-thumb-sm: var(--bit-siz-slider-thumb-sm);
+$siz-slider-thumb-md: var(--bit-siz-slider-thumb-md);
+$siz-slider-thumb-lg: var(--bit-siz-slider-thumb-lg);
+$siz-spinner-stroke: var(--bit-siz-spinner-stroke);
+$siz-popup-max-height: var(--bit-siz-popup-max-height);
+
+/*---- Opacity ----*/
+//The alpha of an element that is disabled but must keep its own colors (an image, a color swatch).
+//Text-bearing controls express disabled through the $clr-*-dis tokens instead, never through alpha.
+$opa-dis: var(--bit-opa-dis);
+
+//shadows-focus
+$box-shadow-focus-ring: var(--bit-shd-focus-ring);
+
+/*---- Motion ----*/
+//Durations for transitions and one-shot (entry/exit) animations; all three collapse to 0.01ms
+//under prefers-reduced-motion.
+$mot-duration: var(--bit-mot-duration);
+$mot-duration-short: var(--bit-mot-duration-short);
+$mot-duration-long: var(--bit-mot-duration-long);
+$mot-easing: var(--bit-mot-easing);
+//Entry (decelerate) and exit (accelerate) curves for popups, callouts and sheets. Standard easing
+//is for state transitions on an element that stays; these are for elements arriving and leaving.
+$mot-easing-decelerate: var(--bit-mot-easing-decelerate);
+$mot-easing-accelerate: var(--bit-mot-easing-accelerate);
+
+//Infinite/looping animations cannot use the durations above, since a near-zero looping duration
+//renders as flicker. They use these instead, which slow down under reduced motion rather than
+//collapsing, and are restored by ForceAnimation through the same inheritance - so a looping
+//animation written with them needs no reduced-motion media query of its own:
+//  - a circular spinner takes both spinner tokens, and so turns at the same speed as every other
+//    spinner in the library;
+//  - any other looping animation multiplies its literal duration (and its delays, if it staggers
+//    several parts) by the loop factor: calc(1.1s * $mot-loop-factor).
+//The one case still needing a media query is an animation that must stop rather than slow: a
+//shimmer or skeleton, which is a placeholder for content that has not arrived rather than the signal
+//that work is in progress. Stopping cannot be expressed as a duration, and pausing at the first
+//keyframe would leave a fade-in placeholder invisible, so those write the query by hand and guard it
+//with `&:not(.bit-fam):not(.bit-fam *)` so ForceAnimation still opts out. A loader never stops - it
+//is the only thing telling the user the work is still running.
+$mot-duration-spinner: var(--bit-mot-duration-spinner);
+$mot-easing-spinner: var(--bit-mot-easing-spinner);
+//the loop factor multiplies literal durations inside calc(), so it carries a fallback of 1 to keep
+//those animations valid for consumer-defined themes that never set the token.
+$mot-loop-factor: var(--bit-mot-loop-factor, 1);
 
 /*---- Typography ----*/
 $tg-font-family: var(--bit-tpg-font-family);
 $tg-font-weight: var(--bit-tpg-font-weight);
 $tg-line-height: var(--bit-tpg-line-height);
 $tg-gutter-size: var(--bit-tpg-gutter-size);
+
+// font-size scale - the type ramp components read their sizes from (BitText variants have their own
+// tokens below). Values are rem: type follows the root font size, not the spacing unit or density.
+// Size classes map sm -> xs (12px), md -> sm (14px), lg -> md (16px) at the Fluent defaults.
+$tg-fs-2xs: var(--bit-tpg-fs-2xs);
+$tg-fs-xs: var(--bit-tpg-fs-xs);
+$tg-fs-sm: var(--bit-tpg-fs-sm);
+$tg-fs-md: var(--bit-tpg-fs-md);
+$tg-fs-lg: var(--bit-tpg-fs-lg);
+$tg-fs-xl: var(--bit-tpg-fs-xl);
+$tg-fs-2xl: var(--bit-tpg-fs-2xl);
+$tg-fs-3xl: var(--bit-tpg-fs-3xl);
+$tg-fs-4xl: var(--bit-tpg-fs-4xl);
+
+// font-weight scale - components never write a literal weight; a design system that ships a
+// different face (Roboto's 500 medium, SF's 590 semibold) retunes the ramp here.
+$tg-fw-light: var(--bit-tpg-fw-light);
+$tg-fw-regular: var(--bit-tpg-fw-regular);
+$tg-fw-medium: var(--bit-tpg-fw-medium);
+$tg-fw-semibold: var(--bit-tpg-fw-semibold);
+$tg-fw-bold: var(--bit-tpg-fw-bold);
+
+// control typography - tracking and case of the label of an interactive control (button, tag, tab,
+// nav item). Fluent leaves both alone; Material 2 upper-cases buttons and tracks labels at 0.1px.
+$tg-ctrl-letter-spacing: var(--bit-tpg-ctrl-letter-spacing);
+$tg-ctrl-text-transform: var(--bit-tpg-ctrl-text-transform);
 
 // h1
 $tg-h1-margin: var(--bit-tpg-h1-margin);
@@ -384,3 +647,5 @@ $tg-inherit-font-weight: var(--bit-tpg-inherit-font-weight);
 $tg-inherit-font-size: var(--bit-tpg-inherit-font-size);
 $tg-inherit-line-height: var(--bit-tpg-inherit-line-height);
 $tg-inherit-letter-spacing: var(--bit-tpg-inherit-letter-spacing);
+$tg-inherit-text-transform: var(--bit-tpg-inherit-text-transform);
+$tg-inherit-display: var(--bit-tpg-inherit-display);

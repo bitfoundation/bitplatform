@@ -15,7 +15,8 @@
             const primaryBgColor = getComputedStyle(document.documentElement).getPropertyValue('--bit-clr-bg-pri');
             if (!primaryBgColor) return;
 
-            document.querySelector('meta[name=theme-color]')?.setAttribute('content', primaryBgColor);
+            document.querySelectorAll('meta[name=theme-color]')
+                .forEach(meta => meta.setAttribute('content', primaryBgColor));
         }
     });
 }());

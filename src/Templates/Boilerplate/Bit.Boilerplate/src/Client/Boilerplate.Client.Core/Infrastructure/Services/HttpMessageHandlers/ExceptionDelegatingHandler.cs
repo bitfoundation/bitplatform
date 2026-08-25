@@ -19,11 +19,13 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
 
         string? requestIdValue = null;
 
+        HttpResponseMessage? response = null;
+
         try
         {
             try
             {
-                var response = await base.SendAsync(request, cancellationToken);
+                response = await base.SendAsync(request, cancellationToken);
 
                 if (response.Headers.TryGetValues("Request-Id", out var requestId))
                 {
@@ -70,7 +72,7 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
             catch (Exception exp) when (exceptionHandler.IsTransientException(exp) || (exp is HttpRequestException && serverCommunicationSuccess is false))
             {
                 serverCommunicationSuccess = false; // Let's treat the server communication as failed if an exception is caught here.
-                throw new TransientException(localizer[nameof(AppStrings.ServerConnectionException)], exp);
+                throw new TransientException(localizer[nameof(AppStrings.TransientException)], exp);
             }
             finally
             {
@@ -82,6 +84,7 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
         }
         catch (Exception exp)
         {
+            response?.Dispose(); // Only ever reached on a failure; the success path returns from the inner try.
             exp.WithData("RequestId", requestIdValue ?? "?"); // Connect the exception to its corresponding request id, if one exists.
             throw;
         }

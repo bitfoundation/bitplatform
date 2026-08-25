@@ -1,18 +1,13 @@
 //+:cnd:noEmit
-//#if (offlineDb == true)
-using Microsoft.EntityFrameworkCore;
-using Boilerplate.Client.Core.Infrastructure.Data;
-//#endif
 //#if (appInsights == true)
 using BlazorApplicationInsights;
 using BlazorApplicationInsights.Interfaces;
 //#endif
 using Boilerplate.Client.Core;
+using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
-using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 //#if (signalR == true)
-using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Http.Connections;
 //#endif
 
@@ -69,12 +64,7 @@ public static partial class IClientCoreServiceCollectionExtensions
             });
             services.AddSessioned(sp => (AuthManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
-            services.AddSingleton(sp =>
-            {
-                ClientCoreSettings settings = new();
-                configuration.Bind(settings);
-                return settings;
-            });
+            services.AddSingleton(sp => sp.GetRequiredService<IOptions<ClientCoreSettings>>().Value);
 
             services.AddOptions<ClientCoreSettings>()
                 .Bind(configuration)
@@ -85,8 +75,12 @@ public static partial class IClientCoreServiceCollectionExtensions
             //#if (brouter == true)
             services.AddBitBrouterServices();
             //#endif
-            services.AddBitBlazorUIServices();
-            services.AddBitBlazorUIExtrasServices(trySingleton: AppPlatform.IsBlazorHybrid);
+
+            services.AddBitBlazorUIExtrasServices(trySingleton: AppPlatform.IsBlazorHybrid, accentColor: options =>
+            {
+                options.FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StoredCss;
+                options.Persistence = BitAccentColorPersistence.All;
+            });
 
             // Read HttpMessageHandlersChainFactory comments for more info.
             services.AddScoped<HttpMessageHandlersChainFactory>(serviceProvider => transportHandler =>
@@ -138,7 +132,7 @@ public static partial class IClientCoreServiceCollectionExtensions
             , dbContextInitializer: async (_, dbContext) =>
             {
                 if (AppEnvironment.IsDevelopment() is false && dbContext.Model.GetType() == typeof(EntityFrameworkCore.Metadata.RuntimeModel))
-                    throw new InvalidOperationException("DbContext has not been optimized"); // Checkout Boilerplate.Client.Core/Data/README.md for more info about Optimize-DbContext command.
+                    throw new InvalidOperationException("AppOfflineDbContext has not been optimized. Run 'dotnet ef dbcontext optimize --context AppOfflineDbContext' before publishing, and re-run it after every model or migration change. See Boilerplate.Client.Core/Infrastructure/Data/README.md.");
 
                 await Task.Run(async () => await dbContext.Database.MigrateAsync());
             }
@@ -187,7 +181,7 @@ public static partial class IClientCoreServiceCollectionExtensions
                         options.AccessTokenProvider = async () =>
                         {
                             return await authManager.GetFreshAccessToken(requestedBy: nameof(HubConnection),
-                                ignoreServerConnectionException: true); // ignoreServerConnectionException: If the client is disconnected and the access token is expired, this code will execute repeatedly every few seconds, causing an annoying error message to be displayed to the user.
+                                ignoreTransientException: true); // ignoreTransientException: If the client is disconnected and the access token is expired, this code will execute repeatedly every few seconds, causing an annoying error message to be displayed to the user.
                         };
                     })
                     .Build();

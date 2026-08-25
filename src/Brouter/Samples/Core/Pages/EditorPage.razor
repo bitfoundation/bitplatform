@@ -1,0 +1,47 @@
+﻿@* Route-declared LeaveGuard (see /editor in AppRouter, which reads DemoState) plus runtime
+   external-navigation confirmation. Type something, then try to leave: the guard cancels
+   preventively, so the URL never moves and the Back button stays intact. *@
+
+@inject IBrouter brouter
+@inject DemoState State
+
+<h1>Leave guard</h1>
+
+<p>Status: <strong>@(State.IsEditorDirty ? "dirty - navigation is blocked" : "clean")</strong></p>
+
+<textarea rows="3" @oninput="OnInput" value="@_draft" placeholder="Type here to make the page dirty…"></textarea>
+
+<div class="row" style="margin-top: .5rem;">
+    <button @onclick="Discard" disabled="@(State.IsEditorDirty is false)">Discard changes</button>
+    <BrouterLink Href="/" class="btn">Try to leave</BrouterLink>
+</div>
+
+<p class="muted" style="margin-top: 1rem;">
+    <label>
+        <input type="checkbox" style="width: auto;" checked="@_confirmExternal" @onchange="ToggleExternal" />
+        Also confirm tab close / reload via <code>SetConfirmExternalNavigationAsync</code>
+    </label>
+</p>
+
+@code {
+    private string _draft = string.Empty;
+    private bool _confirmExternal;
+
+    private void OnInput(ChangeEventArgs e)
+    {
+        _draft = e.Value?.ToString() ?? string.Empty;
+        State.IsEditorDirty = _draft.Length > 0;
+    }
+
+    private void Discard()
+    {
+        _draft = string.Empty;
+        State.IsEditorDirty = false;
+    }
+
+    private async Task ToggleExternal(ChangeEventArgs e)
+    {
+        _confirmExternal = e.Value is true;
+        await brouter.SetConfirmExternalNavigationAsync(_confirmExternal);
+    }
+}

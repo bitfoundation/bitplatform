@@ -1,5 +1,6 @@
 ﻿@import '../../Styles/abstracts/_vars.scss';
 @import '../../Styles/abstracts/_colors.scss';
+@import '../../Styles/abstracts/_mixins.scss';
 @import '../../Styles/abstracts/_functions.scss';
 @import '../../Styles/abstracts/_media-queries.scss';
 @import '../../Styles/abstracts/_bit-css-variables.scss';
@@ -13,10 +14,10 @@
     flex-flow: column nowrap;
     justify-content: flex-start;
 
+    // Visibility (dark-theme/light-theme classes) is owned by the global themed utilities in app.scss.
     .hero-gradient {
         top: 0;
         left: 50%;
-        display: none;
         max-width: 70rem;
         position: absolute;
         transform: translate(-50%, -10%);
@@ -45,18 +46,7 @@
         margin: auto;
         padding: 1rem;
         max-width: rem2(800px);
-    }
-}
-
-.bit-platform-dark-theme {
-    .dark-theme {
-        display: unset;
-    }
-}
-
-.bit-platform-light-theme {
-    .light-theme {
-        display: unset;
+        filter: drop-shadow(0 24px 48px rgba(24, 120, 253, 0.18));
     }
 }
 
@@ -100,6 +90,9 @@
 
 ::deep .section-title {
     font-size: 1rem;
+    font-weight: 600;
+    white-space: nowrap;
+    letter-spacing: 0.25em;
     text-transform: uppercase;
     color: $bit-color-foreground-secondary;
 }
@@ -155,7 +148,20 @@
 
             .hero-subtitle {
                 text-align: center;
+                color: $bit-color-foreground-secondary;
             }
+        }
+
+        .hero-cta-container {
+            gap: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 3rem;
+            justify-content: center;
+        }
+
+        .hero-cta {
+            @include GradientCtaButton;
         }
 
         @include lt-lg {
@@ -203,8 +209,9 @@
         font-size: 6rem;
         line-height: 1.1;
         font-weight: 600;
-        text-align:center;
+        text-align: center;
         margin-bottom: 2rem;
+        letter-spacing: -0.02em;
 
         @include lt-xl {
             font-size: 5rem;
@@ -227,6 +234,7 @@
     }
 
     .text-subtitle {
+        line-height: 1.5;
         font-size: 2.25rem;
         text-align: center;
         color: $bit-color-foreground-secondary;
@@ -254,6 +262,72 @@
     }
 }
 
+.stats-section {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+
+    .stats-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem 4rem;
+        justify-content: center;
+    }
+
+    .stats-item {
+        gap: 0.5rem;
+        display: flex;
+        align-items: center;
+        flex-flow: column nowrap;
+    }
+
+    .stats-number {
+        font-size: 3rem;
+        font-weight: 700;
+        line-height: 1.1;
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-image: linear-gradient(351deg, #31b3ec 23%, #524add 87%);
+
+        @include lt-md {
+            font-size: 2rem;
+        }
+    }
+
+    .stats-label {
+        font-size: 1rem;
+        color: $bit-color-foreground-secondary;
+    }
+}
+
+.cta-section {
+    text-align: center;
+
+    .page-section-content {
+        display: flex;
+        align-items: center;
+        flex-flow: column nowrap;
+    }
+
+    .cta-command {
+        width: 100%;
+        max-width: rem2(480px);
+        text-align: left;
+    }
+
+    .cta-buttons {
+        gap: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+        justify-content: center;
+    }
+
+    .cta-btn {
+        @include GradientCtaButton;
+    }
+}
+
 .products-section {
     padding-top: 0;
     scroll-margin: 5rem;
@@ -269,12 +343,6 @@
     }
 
     ::deep {
-        .tech-title {
-            @include lt-md {
-                font-size: 2.5rem;
-            }
-        }
-
         .tech-subtitle {
             @include lt-md {
                 font-size: 1.25rem;
@@ -298,9 +366,22 @@
         width: rem2(70px);
         height: rem2(70px);
         margin: rem2(20px);
+        border-radius: 0.5rem;
         background-size: contain;
         background-position: center;
         background-repeat: no-repeat;
+        transition: transform 0.2s $MotionEase, filter 0.2s $MotionEase;
+
+        &:hover,
+        &:focus-visible {
+            transform: translateY(-6px) scale(1.08);
+            filter: drop-shadow(0 10px 16px rgba(82, 74, 221, 0.35));
+        }
+
+        &:focus-visible {
+            outline: 2px solid $bit-color-primary;
+            outline-offset: 4px;
+        }
     }
 
     .blazor-item {
@@ -330,5 +411,55 @@
     }
 }
 
-.customer-section {
+// animate-intro is off on the render that replaces the prerendered markup: that DOM already played the
+// intro, so replaying it there would show the whole hero fade in twice (see HomePage.razor.cs).
+.hero-section-content.animate-intro {
+
+    ::deep .hero-title,
+    ::deep .hero-subtitle,
+    .hero-cta-container {
+        animation: hero-enter 0.7s ease-out both;
+    }
+
+    ::deep .hero-subtitle {
+        animation-delay: 0.15s;
+    }
+
+    .hero-cta-container {
+        animation-delay: 0.3s;
+    }
+}
+
+@supports (animation-timeline: view()) {
+
+    .page-container .hero-image,
+    .page-section:not(.hero-section) .page-section-content {
+        animation: section-reveal linear both;
+        animation-timeline: view();
+        animation-range: entry 5% entry 45%;
+    }
+}
+
+@keyframes hero-enter {
+    from {
+        opacity: 0;
+        transform: translateY(1.5rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes section-reveal {
+    from {
+        opacity: 0;
+        transform: translateY(2rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

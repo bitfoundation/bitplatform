@@ -13,6 +13,7 @@ namespace Bit.Butil;
 /// <br />
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen">https://developer.mozilla.org/en-US/docs/Web/API/Screen</see>
 /// </summary>
+[ButilService(typeof(Screen))]
 public class Screen(IJSRuntime js) : IAsyncDisposable
 {
     internal const string InvokeMethodName = nameof(InvokeScreenChange);
@@ -47,6 +48,41 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
     /// </remarks>
     public async Task<float> GetAvailableHeight()
         => await js.Invoke<float>("BitButil.screen.availHeight");
+
+    /// <summary>
+    /// The x-coordinate of the left edge of the available screen area. Non-zero on a multi-monitor
+    /// setup where this screen sits to the right of the primary one, or where the OS reserves space
+    /// on the left.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/availLeft">https://developer.mozilla.org/en-US/docs/Web/API/Screen/availLeft</see>
+    /// </summary>
+    /// <remarks>
+    /// Non-standard, and absent on some engines - reported as 0 there rather than throwing, which is
+    /// indistinguishable from a genuine 0.
+    /// <br/>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public async Task<float> GetAvailableLeft()
+        => await js.Invoke<float>("BitButil.screen.availLeft");
+
+    /// <summary>
+    /// The y-coordinate of the top edge of the available screen area - the height of any OS bar
+    /// docked at the top.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/availTop">https://developer.mozilla.org/en-US/docs/Web/API/Screen/availTop</see>
+    /// </summary>
+    /// <remarks>
+    /// Non-standard, and absent on some engines - reported as 0 there rather than throwing, which is
+    /// indistinguishable from a genuine 0.
+    /// <br/>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public async Task<float> GetAvailableTop()
+        => await js.Invoke<float>("BitButil.screen.availTop");
 
     /// <summary>
     /// Returns the amount of horizontal space in pixels available to the window.

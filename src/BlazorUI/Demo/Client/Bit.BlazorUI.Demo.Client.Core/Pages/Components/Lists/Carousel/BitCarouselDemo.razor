@@ -1,60 +1,71 @@
-@page "/components/carousel"
+﻿@page "/components/carousel"
 
 <PageOutlet Url="components/carousel"
             Title="Carousel"
-            Description="Carousel (slideshow) lets users display their items across multiple slides." />
+            Description="Carousel (slideshow) displays items across sliding pages with navigation buttons, dots, drag, keyboard, wheel, autoplay and responsive multi-item layouts." />
 
 <DemoPage Name="Carousel"
           SecondaryNames="@(["SlideShow"])"
-          Description="Carousel (slideshow) lets users display their items across multiple slides."
+          Description="Carousel (slideshow) displays a set of items across sliding pages. It can be navigated with its built-in buttons and dots, by dragging, with the keyboard or the mouse wheel, programmatically, or automatically with autoplay. It shows one or several items at a time (adapting that to its own width), scrolls horizontally or vertically, cross-fades instead of sliding, and follows the carousel pattern of the ARIA authoring practices: a labelled carousel region of labelled slides, real buttons for every control, off-screen slides taken out of the reading and tab order, and a rotation that stops as soon as the pointer or the keyboard focus reaches it."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
           PublicMembers="componentPublicMembers"
           GitHubUrl="Lists/Carousel/BitCarousel.razor"
           GitHubDemoUrl="Lists/Carousel/BitCarouselDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <BitCarousel>
+        <div>
+            The basic carousel shows one slide at a time and renders its default chrome: the next/prev buttons over the sides
+            and the navigation dots below the slides. It can also be dragged with the pointer and, since it is focusable,
+            navigated with the arrow keys and the Home/End keys. Give the carousel an AriaLabel that describes its content,
+            so assistive technologies can announce what the carousel region holds.
+        </div>
+        <br />
+        <BitCarousel AriaLabel="Landscape photos">
             <BitCarouselItem>
                 <div class="number">1 / 4</div>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
+                <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
             </BitCarouselItem>
             <BitCarouselItem>
                 <div class="number">2 / 4</div>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
             </BitCarouselItem>
             <BitCarouselItem>
                 <div class="number">3 / 4</div>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
             </BitCarouselItem>
             <BitCarouselItem>
                 <div class="number">4 / 4</div>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
             </BitCarouselItem>
         </BitCarousel>
     </DemoExample>
 
     <DemoExample Title="InfiniteScrolling" RazorCode="@example2RazorCode" Id="example2">
-        <div>Configure the BitCarousel component for infinite scrolling, allowing the carousel to loop through slides continuously.</div>
+        <div>
+            The InfiniteScrolling parameter makes the carousel loop: the first slide follows the last one and the last one
+            precedes the first, so both navigation buttons stay available at all times instead of hiding at the ends.
+        </div>
         <br />
         <div>
             <BitCarousel InfiniteScrolling>
                 <BitCarouselItem>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                    <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
                     <div class="text-title">Aurora</div>
                     <div class="text-description">This is Aurora and it's fantastic</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                    <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
                     <div class="text-title">Beautiful Mountain</div>
                     <div class="text-description">This is a Beautiful Mountain and it's gorgeous</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                    <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
                     <div class="text-title">Forest In The Valley</div>
                     <div class="text-description">This is a Forest In The Valley and it's beautiful</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                    <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
                     <div class="text-title">Road Among The Mountains</div>
                     <div class="text-description">This is a Road Among The Mountains and it's amazing</div>
                 </BitCarouselItem>
@@ -63,31 +74,34 @@
     </DemoExample>
 
     <DemoExample Title="HideDots" RazorCode="@example3RazorCode" Id="example3">
-        <div>Use the HideDots property to hide the navigation dots below the carousel slides.</div>
+        <div>
+            The HideDots parameter removes the navigation dots below the slides, leaving only the next/prev buttons
+            (which the HideNextPrev parameter removes in the same way for a fully chromeless carousel).
+        </div>
         <br />
         <div>
             <BitCarousel HideDots>
                 <BitCarouselItem>
                     <div class="number">1 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                    <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
                     <div class="text-title">Aurora</div>
                     <div class="text-description">This is Aurora and it's fantastic</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">2 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                    <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
                     <div class="text-title">Beautiful Mountain</div>
                     <div class="text-description">This is a Beautiful Mountain and it's gorgeous</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">3 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                    <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
                     <div class="text-title">Forest In The Valley</div>
                     <div class="text-description">This is a Forest In The Valley and it's beautiful</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">4 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                    <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
                     <div class="text-title">Road Among The Mountains</div>
                     <div class="text-description">This is a Road Among The Mountains and it's amazing</div>
                 </BitCarouselItem>
@@ -97,38 +111,42 @@
 
     <DemoExample Title="Public API" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>
-            Use the public API of BitCarousel to control the slides programmatically.
-            This example shows how to navigate slides using buttons.
+            The carousel can be driven entirely from application code through a @@ref to it: GoNext, GoPrev and GoTo
+            (1 based) navigate the slides, Pause, Resume and TogglePlay drive the auto scrolling, and Refresh measures
+            the carousel again after something else moved the ground under it. The CurrentPage (zero based), PagesCount,
+            ItemsCount, IsPlaying and IsPaused members report where it stands, and OnChange fires with the index of the
+            page it moved to. This example hides the built-in buttons and replaces them with its own.
         </div>
         <br />
         <div>
-            <BitCarousel HideNextPrev @ref="carousel">
+            <BitCarousel HideNextPrev @ref="carousel" OnChange="v => currentPage = v">
                 <BitCarouselItem>
                     <div class="number">1 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                    <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
                     <div class="text-title">Aurora</div>
                     <div class="text-description">This is Aurora and it's fantastic</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">2 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                    <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
                     <div class="text-title">Beautiful Mountain</div>
                     <div class="text-description">This is a Beautiful Mountain and it's gorgeous</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">3 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                    <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
                     <div class="text-title">Forest In The Valley</div>
                     <div class="text-description">This is a Forest In The Valley and it's beautiful</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">4 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                    <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
                     <div class="text-title">Road Among The Mountains</div>
                     <div class="text-description">This is a Road Among The Mountains and it's amazing</div>
                 </BitCarouselItem>
             </BitCarousel>
         </div>
+        <br />
         <div class="buttons-container">
             <div>
                 <BitButton OnClick="GoPrev">&lt; Prev</BitButton>
@@ -139,46 +157,112 @@
                 <BitNumberField @bind-Value="number" Min="1" Max="4" Mode="BitSpinButtonMode.Compact" />
             </div>
         </div>
+        <br />
+        <div>Current page: @currentPage</div>
     </DemoExample>
 
     <DemoExample Title="AutoPlay" RazorCode="@example5RazorCode" Id="example5">
         <div>
-            Configure the BitCarousel to automatically transition between slides.
-            The AutoPlay feature allows you to set the interval for automatic slide transitions.
+            The AutoPlay parameter rotates the slides on its own at the AutoPlayInterval. The rotation pauses while the
+            pointer rests over the carousel or the keyboard focus is inside it (PauseOnHover / PauseOnFocus, both on by
+            default) and while the page sits in a background tab, and resumes when they leave.
         </div>
         <br />
         <div>
             <BitCarousel HideNextPrev InfiniteScrolling AutoPlay AutoPlayInterval="2500">
                 <BitCarouselItem>
                     <div class="number">1 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                    <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
                     <div class="text-title">Aurora</div>
                     <div class="text-description">This is Aurora and it's fantastic</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">2 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                    <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
                     <div class="text-title">Beautiful Mountain</div>
                     <div class="text-description">This is a Beautiful Mountain and it's gorgeous</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">3 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                    <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
                     <div class="text-title">Forest In The Valley</div>
                     <div class="text-description">This is a Forest In The Valley and it's beautiful</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">4 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                    <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
                     <div class="text-title">Road Among The Mountains</div>
                     <div class="text-description">This is a Road Among The Mountains and it's amazing</div>
                 </BitCarouselItem>
             </BitCarousel>
         </div>
+        <br /><br />
+        <div>
+            The ShowPlayPause parameter renders a play/pause button next to the dots so the rotation can be stopped and
+            started by hand (which WCAG asks of any auto-moving content), and StopOnInteraction stops it for good as soon
+            as the carousel is navigated manually. Pause, Resume and TogglePlay do the same from code, and IsPaused /
+            IsPlaying report the state.
+        </div>
+        <br />
+        <div>
+            <BitCarousel InfiniteScrolling AutoPlay AutoPlayInterval="2000" ShowPlayPause StopOnInteraction>
+                <BitCarouselItem>
+                    <div class="number">1 / 4</div>
+                    <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <div class="number">2 / 4</div>
+                    <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <div class="number">3 / 4</div>
+                    <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <div class="number">4 / 4</div>
+                    <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                </BitCarouselItem>
+            </BitCarousel>
+        </div>
+        <br /><br />
+        <div>
+            The AutoPlayReverse parameter plays the rotation backwards, from the last slide towards the first one.
+        </div>
+        <br />
+        <div>
+            <BitCarousel AutoPlay AutoPlayReverse InfiniteScrolling HideNextPrev Style="height: 100px">
+                <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
+            </BitCarousel>
+        </div>
+        <br /><br />
+        <div>
+            StopOnLastSlide stops the rotation on the last page instead of rewinding to the first one, which only
+            applies to a carousel that does not scroll infinitely, since an infinite one never reaches an end.
+        </div>
+        <br />
+        <div>
+            <BitCarousel AutoPlay StopOnLastSlide HideNextPrev Style="height: 100px">
+                <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
+            </BitCarousel>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="Advanced" RazorCode="@example6RazorCode" Id="example6">
-        <div>Use BitCarousel with customized style, visible items count, and scroll items count for advanced scenarios.</div>
+    <DemoExample Title="Multiple items" RazorCode="@example6RazorCode" Id="example6">
+        <div>
+            The VisibleItemsCount parameter lays several slides out side by side, and ScrollItemsCount sets how many of
+            them a navigation moves at a time, so the carousel can page through its items in groups or advance them one
+            by one. The two of them together decide where the carousel stops: a page is one step of it, which is what a
+            dot stands for and what OnChange reports, so a carousel that shows three slides and moves them one at a time
+            gets a dot per slide rather than one per screenful, and its dots keep up with it.
+        </div>
+        <br />
+        <div>Three at a time, moved three at a time (three pages of three slides):</div>
         <br />
         <div>
             <BitCarousel Style="height: 100px" VisibleItemsCount="3" ScrollItemsCount="3">
@@ -193,9 +277,402 @@
                 <BitCarouselItem Class="item"><div>9</div></BitCarouselItem>
             </BitCarousel>
         </div>
+        <br /><br />
+        <div>
+            The same nine slides shown three at a time but moved one at a time, which stops in seven places instead of
+            three. The slides the next step shares with the current one stay where they are instead of being thrown out
+            and animated back in.
+        </div>
+        <br />
+        <div>
+            <BitCarousel Style="height: 100px" VisibleItemsCount="3" ScrollItemsCount="1">
+                <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>5</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>6</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>7</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>8</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>9</div></BitCarouselItem>
+            </BitCarousel>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Responsive" RazorCode="@example7RazorCode" Id="example7">
+        <div>
+            The ResponsiveOptions parameter adapts VisibleItemsCount and ScrollItemsCount to the width of the carousel.
+            Each option applies while the carousel is no wider than its Breakpoint (in pixels) and the narrowest matching
+            one wins, so the options can be listed in any order; a carousel wider than every breakpoint keeps the counts
+            of its own parameters. The width that is matched is the width of the carousel itself rather than of the
+            window, so the same carousel adapts to the room it is given inside a sidebar and across a full width page.
+        </div>
+        <br />
+        <div>Resize the window (or this panel) to watch the number of slides change:</div>
+        <br />
+        <div>
+            <BitCarousel Style="height: 100px"
+                         VisibleItemsCount="4"
+                         ScrollItemsCount="4"
+                         InfiniteScrolling
+                         ResponsiveOptions="@([new() { Breakpoint = 640, VisibleItemsCount = 1, ScrollItemsCount = 1 },
+                                               new() { Breakpoint = 960, VisibleItemsCount = 2, ScrollItemsCount = 2 },
+                                               new() { Breakpoint = 1280, VisibleItemsCount = 3, ScrollItemsCount = 3 }])">
+                <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>5</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>6</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>7</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>8</div></BitCarouselItem>
+            </BitCarousel>
+        </div>
+        <br /><br />
+        <div>
+            The responsive variants of VisibleItemsCount (Xs, Sm, Md, Lg, Xl and Xxl) are the shorthand for the common
+            case: each one applies from its breakpoint upwards (Xs from 0, Sm from 600, Md from 960, Lg from 1280,
+            Xl from 1920 and Xxl from 2560 pixels, the shared breakpoints of bit BlazorUI), and the base
+            VisibleItemsCount covers everything below the smallest one that is set (so nothing at all when Xs is set).
+            They are matched against the width of the carousel itself too, and a matching ResponsiveOptions entry takes
+            precedence over them. The carousel below changes from one visible slide up to four:
+        </div>
+        <br />
+        <div>
+            <BitCarousel Style="height: 100px" InfiniteScrolling
+                         VisibleItemsCountSm="2" VisibleItemsCountMd="3" VisibleItemsCountLg="4">
+                <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>5</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>6</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>7</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>8</div></BitCarouselItem>
+            </BitCarousel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Gap" RazorCode="@example8RazorCode" Id="example8">
+        <div>
+            The Gap parameter puts space (any CSS length) between the slides of a multi-item carousel. The space is carved
+            out of the room each slide occupies, so the pages keep lining up no matter how many slides are visible.
+        </div>
+        <br />
+        <div>
+            <BitCarousel Style="height: 100px" VisibleItemsCount="3" ScrollItemsCount="1" Gap="1rem" InfiniteScrolling>
+                <BitCarouselItem><div class="item gap-item">1</div></BitCarouselItem>
+                <BitCarouselItem><div class="item gap-item">2</div></BitCarouselItem>
+                <BitCarouselItem><div class="item gap-item">3</div></BitCarouselItem>
+                <BitCarouselItem><div class="item gap-item">4</div></BitCarouselItem>
+                <BitCarouselItem><div class="item gap-item">5</div></BitCarouselItem>
+                <BitCarouselItem><div class="item gap-item">6</div></BitCarouselItem>
+            </BitCarousel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Vertical" RazorCode="@example9RazorCode" Id="example9">
+        <div>
+            The Vertical parameter stacks the slides over the height of the carousel, so it scrolls up and down instead of
+            left and right: the navigation buttons move to the top and bottom edges and the up/down arrow keys take over
+            the navigation.
+        </div>
+        <br />
+        <div>
+            <BitCarousel Vertical Style="height: 200px" InfiniteScrolling>
+                <BitCarouselItem>
+                    <div class="number">1 / 4</div>
+                    <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <div class="number">2 / 4</div>
+                    <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <div class="number">3 / 4</div>
+                    <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <div class="number">4 / 4</div>
+                    <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                </BitCarouselItem>
+            </BitCarousel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Fade" RazorCode="@example10RazorCode" Id="example10">
+        <div>
+            The Fade parameter cross-fades the slides in place instead of sliding them, for the classic slideshow look.
+            A fading carousel shows exactly one slide at a time.
+        </div>
+        <br />
+        <div>
+            <BitCarousel Fade InfiniteScrolling>
+                <BitCarouselItem>
+                    <div class="number">1 / 4</div>
+                    <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <div class="number">2 / 4</div>
+                    <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <div class="number">3 / 4</div>
+                    <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <div class="number">4 / 4</div>
+                    <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                </BitCarouselItem>
+            </BitCarousel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Interaction" RazorCode="@example11RazorCode" Id="example11">
+        <div>
+            The way the carousel is operated by hand is configurable: NoDrag turns off dragging it with the pointer,
+            NoKeyboard takes it out of the tab sequence and turns off the arrow key navigation (arrow keys, Home and
+            End), Wheel navigates it with the mouse wheel (or a trackpad scroll), and DragThreshold sets how far a drag
+            has to travel before it counts. A drag that travels further across the carousel than along it is left alone,
+            so scrolling a page by dragging over a carousel never flips its slides; and a wheel moves the carousel
+            forwards when it is scrolled away from the reader (down, or right), whichever way its slides are laid out.
+        </div>
+        <br />
+        <div>This carousel is navigated with the mouse wheel and cannot be dragged:</div>
+        <br />
+        <div>
+            <BitCarousel Wheel NoDrag InfiniteScrolling Style="height: 100px" VisibleItemsCount="3" ScrollItemsCount="1">
+                <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>5</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>6</div></BitCarouselItem>
+            </BitCarousel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Animation" RazorCode="@example12RazorCode" Id="example12">
+        <div>
+            The AnimationDuration parameter sets how long the slide transition takes, in seconds (0.5 by default).
+            A value of 0 moves the slides at once, with no animation at all, and the same duration also drives the
+            cross-fade speed of the Fade effect.
+        </div>
+        <br />
+        <div>Slow transition (1.5 seconds):</div>
+        <br />
+        <div>
+            <BitCarousel Style="height: 100px" AnimationDuration="1.5" InfiniteScrolling>
+                <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
+            </BitCarousel>
+        </div>
+        <br />
+        <div>No animation (0 seconds):</div>
+        <br />
+        <div>
+            <BitCarousel Style="height: 100px" AnimationDuration="0" InfiniteScrolling>
+                <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
+            </BitCarousel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="DefaultPage" RazorCode="@example13RazorCode" Id="example13">
+        <div>
+            The DefaultPage parameter sets the page (1 based, like GoTo) the carousel shows when it first renders.
+            It is only read during the first layout, so changing it afterwards does not move the carousel (use GoTo
+            for that), and values outside of the range of the carousel are clamped to its first or last page.
+        </div>
+        <br />
+        <div>
+            <BitCarousel Style="height: 100px" DefaultPage="3">
+                <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>5</div></BitCarouselItem>
+            </BitCarousel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Dots" RazorCode="@example14RazorCode" Id="example14">
+        <div>
+            The DotTemplate parameter replaces the content of a dot, receiving the zero based index of the page it
+            navigates to, so the row below the slides can carry page numbers, thumbnails, or anything else. A dot that
+            holds content is laid out around it instead of being drawn as the default circle, and it keeps the
+            accessible label (DotAriaLabel) and the current page marker the carousel gives it either way.
+        </div>
+        <br />
+        <div>Numbered dots:</div>
+        <br />
+        <div>
+            <BitCarousel Style="height: 100px" InfiniteScrolling>
+                <DotTemplate Context="index"><span>@(index + 1)</span></DotTemplate>
+                <ChildContent>
+                    <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
+                </ChildContent>
+            </BitCarousel>
+        </div>
+        <br /><br />
+        <div>Thumbnails of the slides they navigate to:</div>
+        <br />
+        <div>
+            <BitCarousel InfiniteScrolling
+                         Classes="@(new() { Dots = "thumb-dot", CurrentDot = "thumb-dot-current" })">
+                <DotTemplate Context="index">
+                    <img class="thumb" alt="" src="@($"_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img{index + 1}.jpg")" />
+                </DotTemplate>
+                <ChildContent>
+                    <BitCarouselItem>
+                        <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                    </BitCarouselItem>
+                    <BitCarouselItem>
+                        <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                    </BitCarouselItem>
+                    <BitCarouselItem>
+                        <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                    </BitCarouselItem>
+                    <BitCarouselItem>
+                        <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                    </BitCarouselItem>
+                </ChildContent>
+            </BitCarousel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Thumbnails" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+        <div>
+            A strip of thumbnails outside of the carousel can drive it through its public API: clicking a thumbnail
+            navigates with GoTo, and the OnChange event keeps the highlighted thumbnail in sync no matter how the
+            carousel was moved (buttons, dragging, the keyboard or autoplay). Compare it with the DotTemplate of the
+            previous section, which puts the thumbnails into the dots of the carousel itself.
+        </div>
+        <br />
+        <div>
+            <BitCarousel @ref="thumbsCarousel" HideDots InfiniteScrolling OnChange="v => thumbsCurrentPage = v">
+                <BitCarouselItem>
+                    <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                </BitCarouselItem>
+            </BitCarousel>
+            <div class="thumbs-container">
+                @for (int i = 0; i < 4; i++)
+                {
+                    var index = i;
+                    <button type="button"
+                            aria-label="@($"Slide {index + 1}")"
+                            aria-current="@(thumbsCurrentPage == index ? "true" : null)"
+                            class="thumb-button @(thumbsCurrentPage == index ? "thumb-button-current" : null)"
+                            @onclick="() => thumbsCarousel.GoTo(index + 1)">
+                        <img alt="" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(index + 1).jpg" />
+                    </button>
+                }
+            </div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Accessibility" RazorCode="@example16RazorCode" Id="example16">
+        <div>
+            The carousel follows the carousel pattern of the ARIA authoring practices out of the box: its root is a
+            region marked as a carousel, every slide is a group marked as a slide, the slides that are scrolled out of
+            the view are taken out of the reading and the tab order, all of the controls are real buttons that point at
+            the slides they move with aria-controls, and the play/pause button is the first thing the keyboard reaches
+            so the motion can be stopped before anything else. The text of all of that is yours to set:
+        </div>
+        <br />
+        <ul>
+            <li><b>AriaLabel</b> names the carousel region, which is what a screen reader announces on the way in.</li>
+            <li><b>ItemAriaLabelFormat</b> names the slides that carry no label of their own ("{0} of {1}" by default, where {0} is the position of the slide and {1} the number of slides); a slide that deserves a better name takes an AriaLabel of its own.</li>
+            <li><b>DotsAriaLabel</b> names the group of dots and <b>DotAriaLabel</b> prefixes each one of them, which is followed by the number of the page it navigates to.</li>
+            <li><b>GoLeftAriaLabel</b> and <b>GoRightAriaLabel</b> name the navigation buttons, which otherwise are labelled after what they do (which flips with the direction of the carousel).</li>
+            <li><b>PlayButtonAriaLabel</b> and <b>PauseButtonAriaLabel</b> name the rotation control in each of its two states.</li>
+        </ul>
+        <br />
+        <div>
+            <BitCarousel AutoPlay
+                         ShowPlayPause
+                         InfiniteScrolling
+                         AriaLabel="Landscape photos"
+                         ItemAriaLabelFormat="Photo {0} of {1}"
+                         DotAriaLabel="Photo"
+                         DotsAriaLabel="Choose a photo to display"
+                         GoLeftAriaLabel="Next photo"
+                         GoRightAriaLabel="Previous photo"
+                         PlayButtonAriaLabel="Start the photo slide show"
+                         PauseButtonAriaLabel="Stop the photo slide show">
+                <BitCarouselItem AriaLabel="Aurora over a frozen lake">
+                    <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                </BitCarouselItem>
+            </BitCarousel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example17RazorCode" Id="example17">
+        <div>
+            The Color parameter offers the general colors of the theme for the chrome of the carousel: it colors the dot
+            of the current page and the navigation buttons. The Accent parameter is its lighter-weight sibling that only
+            offers the primary/secondary/tertiary/transparent kinds for the current dot.
+        </div>
+        <br />
+        <div class="colors-container">
+            <div>
+                <BitLabel>Primary</BitLabel>
+                <BitCarousel Color="BitColor.Primary" Style="height: 72px" InfiniteScrolling>
+                    <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                </BitCarousel>
+            </div>
+            <div>
+                <BitLabel>Success</BitLabel>
+                <BitCarousel Color="BitColor.Success" Style="height: 72px" InfiniteScrolling>
+                    <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                </BitCarousel>
+            </div>
+            <div>
+                <BitLabel>Warning</BitLabel>
+                <BitCarousel Color="BitColor.Warning" Style="height: 72px" InfiniteScrolling>
+                    <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                </BitCarousel>
+            </div>
+            <div>
+                <BitLabel>Error</BitLabel>
+                <BitCarousel Color="BitColor.Error" Style="height: 72px" InfiniteScrolling>
+                    <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                </BitCarousel>
+            </div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="External Icons" RazorCode="@example18RazorCode" Id="example18">
         <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>GoLeftIcon</b> and <b>GoRightIcon</b> parameters.</div>
 
         <br />
@@ -209,22 +686,22 @@
                      GoLeftIcon="@BitIconInfo.Fa("solid circle-arrow-right")"
                      GoRightIcon="@BitIconInfo.Fa("solid circle-arrow-left")">
             <BitCarouselItem>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
                 <div class="text-title">Aurora</div>
                 <div class="text-description">This is Aurora and it's fantastic</div>
             </BitCarouselItem>
             <BitCarouselItem>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
                 <div class="text-title">Beautiful Mountain</div>
                 <div class="text-description">This is a Beautiful Mountain and it's gorgeous</div>
             </BitCarouselItem>
             <BitCarouselItem>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
                 <div class="text-title">Forest In The Valley</div>
                 <div class="text-description">This is a Forest In The Valley and it's beautiful</div>
             </BitCarouselItem>
             <BitCarouselItem>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
                 <div class="text-title">Road Among The Mountains</div>
                 <div class="text-description">This is a Road Among The Mountains and it's amazing</div>
             </BitCarouselItem>
@@ -240,30 +717,86 @@
                      GoLeftIcon="@BitIconInfo.Bi("arrow-right-circle")"
                      GoRightIcon="@BitIconInfo.Bi("arrow-left-circle")">
             <BitCarouselItem>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
                 <div class="text-title">Aurora</div>
                 <div class="text-description">This is Aurora and it's fantastic</div>
             </BitCarouselItem>
             <BitCarouselItem>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
                 <div class="text-title">Beautiful Mountain</div>
                 <div class="text-description">This is a Beautiful Mountain and it's gorgeous</div>
             </BitCarouselItem>
             <BitCarouselItem>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
                 <div class="text-title">Forest In The Valley</div>
                 <div class="text-description">This is a Forest In The Valley and it's beautiful</div>
             </BitCarouselItem>
             <BitCarouselItem>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
                 <div class="text-title">Road Among The Mountains</div>
                 <div class="text-description">This is a Road Among The Mountains and it's amazing</div>
             </BitCarouselItem>
         </BitCarousel>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example8RazorCode" Id="example8">
-        <div>Use BitCarousel in right-to-left (RTL).</div>
+    <DemoExample Title="Size" RazorCode="@example19RazorCode" Id="example19">
+        <div>The Size parameter offers three sizes for the chrome of the carousel: the dots and the navigation buttons.</div>
+        <br />
+        <div class="colors-container">
+            <div>
+                <BitLabel>Small</BitLabel>
+                <BitCarousel Size="BitSize.Small" Style="height: 72px" InfiniteScrolling>
+                    <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                </BitCarousel>
+            </div>
+            <div>
+                <BitLabel>Medium</BitLabel>
+                <BitCarousel Size="BitSize.Medium" Style="height: 72px" InfiniteScrolling>
+                    <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                </BitCarousel>
+            </div>
+            <div>
+                <BitLabel>Large</BitLabel>
+                <BitCarousel Size="BitSize.Large" Style="height: 72px" InfiniteScrolling>
+                    <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                    <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                </BitCarousel>
+            </div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example20RazorCode" Id="example20">
+        <div>
+            Besides the Style and Class parameters of the root element, the Styles and Classes parameters customize every
+            part of the carousel: its container, its items and the ones of them currently on screen (Item and
+            CurrentItem), the navigation buttons and their icons, the dots and the current dot, and the play/pause
+            button and its icon.
+        </div>
+        <br />
+        <div>
+            <BitCarousel Style="height: 100px; border-radius: 0.5rem; overflow: hidden"
+                         InfiniteScrolling
+                         Styles="@(new() { Buttons = "color: white; background-color: rgba(0,0,0,0.35); width: 2.5rem;",
+                                           CurrentDot = "background-color: mediumpurple;" })"
+                         Classes="@(new() { Item = "custom-item" })">
+                <BitCarouselItem><div>1</div></BitCarouselItem>
+                <BitCarouselItem><div>2</div></BitCarouselItem>
+                <BitCarouselItem><div>3</div></BitCarouselItem>
+                <BitCarouselItem><div>4</div></BitCarouselItem>
+            </BitCarousel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="RTL" RazorCode="@example21RazorCode" Id="example21">
+        <div>
+            In right-to-left mode the carousel lays its slides out and navigates from right to left, and the roles of the
+            two navigation buttons flip accordingly.
+        </div>
         <br />
         <div>
             <BitCarousel Style="height: 100px" Dir="BitDir.Rtl" VisibleItemsCount="3" ScrollItemsCount="1" InfiniteScrolling>

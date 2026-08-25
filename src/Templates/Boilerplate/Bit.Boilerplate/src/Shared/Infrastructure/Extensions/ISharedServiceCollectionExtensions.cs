@@ -3,6 +3,7 @@ using System.Text;
 using Boilerplate.Shared.Features.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -20,12 +21,7 @@ public static partial class ISharedServiceCollectionExtensions
 
             services.AddSingleton(TimeProvider.System);
 
-            services.AddSingleton(sp =>
-            {
-                SharedSettings settings = new();
-                configuration.Bind(settings);
-                return settings;
-            });
+            services.AddSingleton(sp => sp.GetRequiredService<IOptions<SharedSettings>>().Value);
             services.TryAddSingleton(sp =>
             {
                 JsonSerializerOptions options = new JsonSerializerOptions(AppJsonContext.Default.Options);

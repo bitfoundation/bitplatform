@@ -1,8 +1,8 @@
-@import "../../../Styles/functions.scss";
+﻿@import "../../../Styles/functions.scss";
 
 .bit-prs {
     display: flex;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     box-shadow: none;
     color: $clr-fg-pri;
     width: fit-content;
@@ -10,35 +10,114 @@
     align-items: center;
     box-sizing: border-box;
     justify-content: center;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     font-family: $tg-font-family;
+    // The type ramp cannot express either end of this component. The presence dot at the two smallest
+    // sizes is 8px and 12px across, and the glyph inside it has to stay smaller than the dot - under
+    // $tg-fs-2xs, the bottom of the ramp, which would already overflow it. The initials at the two
+    // largest sizes are the mirror of that: they are sized off the avatar rather than off the text and
+    // run past $tg-fs-4xl, the top of the ramp. Both are published as this component's own knobs, the
+    // way the switch and the slider handle publish their geometry, so a preset can still retune them
+    // instead of finding a literal it cannot reach.
+    --bit-prs-presence-glyph-sm: #{rem2(4px)};
+    --bit-prs-presence-glyph-md: #{rem2(6.8px)};
+    --bit-prs-initials-lg: #{rem2(42px)};
+    --bit-prs-initials-xl: #{rem2(48px)};
+    // How far the presence dot hangs off the coin. One knob, read by all four of the positions the dot
+    // can take (the two writing directions crossed with the two reading orders), so the square coin -
+    // whose corner sits further out than the circle's - retunes it once per size instead of restating
+    // every position it is used in.
+    --bit-prs-presence-inset: #{spacing(-0.25)};
+    // The action button sits inside the coin container, so on the smallest coins it is nearly as wide as
+    // the coin itself and hangs out of the row. One knob, retuned by the size classes that need it smaller.
+    --bit-prs-action-size: #{spacing(4)};
+    // The ring the dot is cut out of. A dot on a colored surface wants the ring to match that surface
+    // rather than the border color the default draws, which is what this is here to be retuned to.
+    --bit-prs-presence-brd-clr: #{$clr-brd-sec};
+    // The active ring: the gap between the coin and the ring, the ring itself, and the color the gap is
+    // cut in. The gap reads as the page showing through, so a persona on a surface of its own retunes it
+    // to that surface rather than being left with a stripe of the page color across it.
+    --bit-prs-ring-gap: #{rem2(2px)};
+    --bit-prs-ring-width: #{rem2(2px)};
+    --bit-prs-ring-gap-clr: #{$clr-bg-pri};
+    // How far back an inactive persona is pushed. Neither of these is a design-system decision the theme
+    // publishes - the opacity is not the disabled one, and the scale is a proportion of the coin rather
+    // than a step of any ramp - so they are this component's own knobs, retunable by a preset.
+    --bit-prs-inactive-opacity: 0.8;
+    --bit-prs-inactive-scale: 0.875;
     --bit-prs-flex-direction: row;
     flex-direction: var(--bit-prs-flex-direction);
 
     &.bit-dis {
+        cursor: default;
         color: $clr-fg-dis;
+        user-select: none;
         pointer-events: none;
-        background-color: $clr-bg-dis;
+
+        // The coin keeps its own colors and is dimmed instead: a persona is a picture of a person, not a
+        // filled control, and repainting it in the disabled surface color reads as a broken image.
+        .bit-prs-cin {
+            opacity: $opa-dis;
+        }
     }
 }
 
 .bit-prs-fwi {
     width: 100%;
+    justify-content: flex-start;
+
+    // The texts take whatever the coin leaves, which is what gives them something to ellipsize against.
+    .bit-prs-det {
+        flex: 1 1 auto;
+    }
 }
 
 .bit-prs-cin {
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     position: relative;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
+    // The coin is a fixed size, not a share of the row: without this a long name in a narrow container
+    // squashes it into an ellipse instead of ellipsizing the text it belongs to.
+    flex-shrink: 0;
+    // What carries the coin between the foreground and the background of a view - the speaker changing in a
+    // call grid. It is declared here rather than on the class that pushes the coin back, because a rule that
+    // only exists while the coin is pushed back is a rule that has already been taken away by the time it
+    // comes forward again: the way out would animate and the way back would jump.
+    transition: opacity $mot-duration-short $mot-easing, transform $mot-duration-short $mot-easing;
+}
+
+// The coin as an element, whatever fills it and whatever element it is. A coin with something to do is a
+// real button or a real link, either of which arrives carrying the browser's own idea of what it looks like -
+// the button's chrome, the link's color and underline - so both are stripped back to a box here, before the
+// rules below dress them as a coin. It sits above them for that reason: everything the coin is comes after,
+// and wins.
+.bit-prs-cne {
+    margin: 0;
+    padding: 0;
+    border: none;
+    position: relative;
+    color: inherit;
+    appearance: none;
+    text-align: center;
+    font-size: inherit;
+    font-style: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    text-decoration: none;
+    background-color: transparent;
 }
 
 .bit-prs-imc {
     display: grid;
     overflow: hidden;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     position: relative;
     border-radius: 50%;
     place-items: center;
+    // The declared width is the whole coin, border included - a 48px persona that measures 50px on the
+    // page is one that no longer lines up with the row it sits in.
+    box-sizing: border-box;
     border-width: $shp-border-width;
     border-style: $shp-border-style;
 
@@ -49,21 +128,44 @@
     }
 }
 
+// The glyph that stands in for the initials - the icon that was asked for, or the generic person when a
+// name gives no initials to show. Sized off the coin, the same way the initials are.
+.bit-prs-cic {
+    line-height: 1;
+}
+
 .bit-prs-rvs {
     --bit-prs-flex-direction: row-reverse;
 }
 
-.bit-prs-him {
-    // TODO: the following lines seem redundant, we will remove it later if no issues found.
-    // .bit-prs-imc {
-    //     border: none;
-    //     border-width: 0;
-    // }
+.bit-prs-sqr {
+    // The square coin's corner sits further out than the circle's, so the dot has to follow it out.
+    --bit-prs-presence-inset: #{spacing(-0.4)};
+
+    .bit-prs-imc {
+        border-radius: $shp-radius-control;
+    }
+
+    .bit-prs-imo {
+        border-radius: $shp-radius-control;
+    }
 }
 
-.bit-prs-sqr {
-    .bit-prs-imc {
-        border-radius: $shp-border-radius;
+// The sharp square is the rounded one with its corners taken back: it keeps every nudge the rounded coin
+// tunes, and restates nothing but the radius.
+.bit-prs-sqs {
+    .bit-prs-imc,
+    .bit-prs-imo {
+        border-radius: $shp-radius-none;
+    }
+}
+
+// An inactive persona is pushed back rather than dimmed out: it keeps its colors and its place in the row,
+// and only stops being the one the eye lands on first.
+.bit-prs-ina {
+    .bit-prs-cin {
+        opacity: var(--bit-prs-inactive-opacity);
+        transform: scale(var(--bit-prs-inactive-scale));
     }
 }
 
@@ -71,27 +173,81 @@
     z-index: 2;
     width: 100%;
     height: 100%;
-    display: none;
-    font-weight: 400;
+    opacity: 0;
+    display: flex;
+    font-weight: $tg-fw-regular;
     position: absolute;
     align-items: center;
+    visibility: hidden;
     justify-content: center;
-    font-size: spacing(1.75);
-    transition: all 0.1s linear;
+    font-size: $tg-fs-sm;
+    // The overlay is the size of the coin and no larger, so what it says has to be kept inside it rather
+    // than allowed to spill across the row the coin sits in.
+    overflow: hidden;
+    line-height: 1.2;
+    text-align: center;
+    box-sizing: border-box;
+    padding-inline: spacing(0.5);
+    // Faded rather than switched on: display cannot be animated, and visibility keeps the overlay out of
+    // the accessibility tree and out of the way of the pointer while it is away.
+    transition: opacity $mot-duration-short $mot-easing, visibility $mot-duration-short $mot-easing;
+    // The overlay says what activating the coin does; it is not a thing to activate of its own. Left
+    // hit-testable it would swallow the clicks meant for what lies under it - the coin itself, and the
+    // action button at the foot of the coin, which the overlay covers exactly and which nobody could reach
+    // with a pointer once the hover that reveals the overlay had already happened.
+    pointer-events: none;
     color: var(--bit-prs-coin-clr-txt);
     background-color: var(--bit-prs-coin-clr-bg);
+    // The coin the component draws clips the overlay for it, but a coin filled by a template is not clipped
+    // by anything - and a square veil over a round picture is worse than no veil at all.
+    border-radius: $shp-radius-full;
 }
 
 .bit-prs-ini {
     text-transform: uppercase;
+    // A pair of letters standing in for a face is not text to be copied: without this, double-clicking a
+    // persona - or dragging across a list of them - selects the initials instead of doing nothing.
+    user-select: none;
+}
+
+// The coin is sized for the two initials a name can yield, and clips anything longer. Initials passed in
+// by hand are not held to that, so they are stepped down to fit instead of being cut off. The steps are in
+// em, which is the coin's own font size, so they follow every size class and any custom coin size.
+.bit-prs-in3 {
+    font-size: 0.72em;
+}
+
+.bit-prs-in4 {
+    font-size: 0.55em;
 }
 
 .bit-prs-img {
-    opacity: 1;
     width: 100%;
     height: 100%;
     display: block;
     object-fit: cover;
+}
+
+// The picture is faded in as it is painted. Deliberately an animation rather than a state the component
+// toggles off the load event: an animation always ends where it says it does, while a load event is a thing
+// that can simply not arrive - a statically rendered page has no handler attached to fire one, and a
+// prerendered one can have the picture in the cache before it does - and either of those would have left the
+// coin hidden for good behind an image that never faded in.
+@keyframes bit-prs-fade-in-anm {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.bit-prs-ifi {
+    animation-name: bit-prs-fade-in-anm;
+    animation-duration: $mot-duration;
+    animation-fill-mode: both;
+    animation-timing-function: $mot-easing-decelerate;
 }
 
 .bit-prs-pre {
@@ -103,25 +259,28 @@
     position: absolute;
     border-radius: 50%;
     align-items: center;
-    right: spacing(-0.25);
-    bottom: spacing(-0.25);
-    font-size: spacing(0.5);
+    bottom: var(--bit-prs-presence-inset);
+    inset-inline-end: var(--bit-prs-presence-inset);
+    font-size: var(--bit-prs-presence-glyph-sm);
     box-sizing: content-box;
     justify-content: center;
     forced-color-adjust: none;
     background-clip: border-box;
-    border: spacing(0.125) $shp-border-style $clr-brd-sec;
+    border: $shp-border-width $shp-border-style var(--bit-prs-presence-brd-clr);
 }
 
 .bit-prs-rvs {
     .bit-prs-pre {
-        right: unset;
-        left: spacing(-0.25);
+        inset-inline-end: unset;
+        inset-inline-start: var(--bit-prs-presence-inset);
     }
 }
 
 .bit-prs-det {
     display: flex;
+    // A flex item will not shrink past the width of its content unless it is told it may, and without
+    // that the texts push the persona wider instead of ellipsizing inside it.
+    min-width: 0;
     overflow: hidden;
     text-align: start;
     flex-direction: column;
@@ -144,27 +303,41 @@
     border: none;
     display: flex;
     cursor: pointer;
-    font-weight: 400;
-    width: spacing(4);
+    font-weight: $tg-fw-regular;
     background: unset;
     color: transparent;
-    height: spacing(4);
     position: absolute;
+    width: var(--bit-prs-action-size);
+    height: var(--bit-prs-action-size);
     text-align: center;
     align-items: center;
     text-decoration: none;
     box-sizing: border-box;
     justify-content: center;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     transform: translateX(-50%);
     font-family: $tg-font-family;
     background-color: transparent;
-    padding-inline-start: spacing(0.5);
+    transition: color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
             color: $clr-fg-pri-hover;
         }
+    }
+
+    // Where there is no pointer there is no hover to reveal the button with, and a control that can only
+    // be found by hovering is a control a touch device never shows at all.
+    @media (hover: none) {
+        color: $clr-fg-pri;
+    }
+
+    // The button is invisible until it is reached, so reaching it with the keyboard has to reveal it too -
+    // a focused control nobody can see is a focus indicator that is not there.
+    &:focus-visible {
+        color: $clr-fg-pri-hover;
+
+        @include focus-ring;
     }
 }
 
@@ -173,22 +346,69 @@
 }
 
 .bit-prs-iac {
-    .bit-prs-imc {
+    // Hung off the coin element rather than off the coin the component draws: a clickable coin filled by a
+    // template is reached, focused and hovered on exactly the same terms as any other.
+    .bit-prs-cne {
         cursor: pointer;
 
         @media (hover: hover) {
             &:hover {
                 .bit-prs-imo {
-                    display: flex;
+                    opacity: 1;
+                    visibility: visible;
                 }
             }
+        }
+
+        // The overlay names what activating the coin does, so it is shown to the keyboard on the same terms
+        // as to the pointer.
+        &:focus-visible {
+            @include focus-ring;
+
+            .bit-prs-imo {
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+    }
+}
+
+// The active ring is drawn as two shadows: a gap in the page color, then the ring in the coin color, so
+// the coin reads as lifted out of whatever it sits on rather than merely outlined.
+.bit-prs-arg {
+    .bit-prs-imc {
+        box-shadow: 0 0 0 var(--bit-prs-ring-gap) var(--bit-prs-ring-gap-clr),
+                    0 0 0 calc(var(--bit-prs-ring-gap) + var(--bit-prs-ring-width)) var(--bit-prs-coin-clr-bg);
+    }
+}
+
+.bit-prs-ash {
+    .bit-prs-imc {
+        box-shadow: $box-shadow-card;
+    }
+}
+
+.bit-prs-ars {
+    .bit-prs-imc {
+        box-shadow: 0 0 0 var(--bit-prs-ring-gap) var(--bit-prs-ring-gap-clr),
+                    0 0 0 calc(var(--bit-prs-ring-gap) + var(--bit-prs-ring-width)) var(--bit-prs-coin-clr-bg),
+                    $box-shadow-card;
+    }
+}
+
+@media (forced-colors: active) {
+    .bit-prs-arg,
+    .bit-prs-ars {
+        .bit-prs-imc {
+            outline: $shp-border-width-thick $shp-border-style;
+            outline-offset: var(--bit-prs-ring-gap);
         }
     }
 }
 
 .bit-prs-off {
     background-color: $clr-ntr-white;
-    border: spacing(0.25) $shp-border-style $clr-ntr-gray110;
+    border: $shp-border-width-thick $shp-border-style $clr-ntr-gray110;
 }
 
 .bit-prs-onl {
@@ -201,15 +421,39 @@
 
 .bit-prs-dnd {
     background-color: $clr-err;
+
+    // Busy and do-not-disturb are the same red, which leaves the two of them indistinguishable to anyone
+    // who has not been told which is which. The bar is what the rest of the industry marks the stricter of
+    // the two with.
+    &::after {
+        content: "";
+        width: 60%;
+        height: $shp-border-width-thick;
+        border-radius: $shp-radius-full;
+        background-color: $clr-ntr-white;
+    }
+
+    // A presence icon says the same thing better, so the bar steps aside for one.
+    &:has(> i)::after {
+        content: none;
+    }
 }
 
 .bit-prs-blk {
     background-color: $clr-ntr-white;
-    border: spacing(0.25) $shp-border-style $clr-err;
+    border: $shp-border-width-thick $shp-border-style $clr-err;
 }
 
 .bit-prs-bsy {
     background-color: $clr-err;
+}
+
+.bit-prs-oof {
+    background-color: $clr-swr;
+}
+
+.bit-prs-unk {
+    background-color: $clr-fg-ter;
 }
 
 .bit-prs-s8 {
@@ -219,12 +463,8 @@
         position: static;
     }
 
-    .bit-prs-pic {
-        font-size: spacing(1.25);
-    }
-
     .bit-prs-ptx {
-        font-size: spacing(1.5);
+        font-size: $tg-fs-xs;
     }
 
     .bit-prs-stx,
@@ -236,11 +476,25 @@
 
 .bit-prs-s24 {
     gap: spacing(1);
+    --bit-prs-action-size: #{spacing(2.5)};
+    // The ring is a proportion of the coin, not a constant: 2px around a 24px coin is a stripe, and 2px
+    // around a 120px one is a hairline.
+    --bit-prs-ring-gap: #{rem2(1.5px)};
+    --bit-prs-ring-width: #{rem2(1.5px)};
+
+    // The smallest square coins are barely wider than the dot, so it stays where the circle put it.
+    &.bit-prs-sqr {
+        --bit-prs-presence-inset: #{spacing(-0.25)};
+    }
+
+    .bit-prs-abt {
+        font-size: $tg-fs-2xs;
+    }
 
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(3);
-        font-size: spacing(1.75);
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-stx,
@@ -252,11 +506,22 @@
 
 .bit-prs-s32 {
     gap: spacing(1);
+    --bit-prs-action-size: #{spacing(3)};
+    --bit-prs-ring-gap: #{rem2(1.5px)};
+    --bit-prs-ring-width: #{rem2(1.5px)};
+
+    &.bit-prs-sqr {
+        --bit-prs-presence-inset: #{spacing(-0.25)};
+    }
+
+    .bit-prs-abt {
+        font-size: $tg-fs-xs;
+    }
 
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(4);
-        font-size: spacing(1.75);
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-stx,
@@ -268,27 +533,28 @@
 
 .bit-prs-s40 {
     gap: spacing(1.5);
+    --bit-prs-action-size: #{spacing(3.5)};
 
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(5);
-        font-size: spacing(2);
+        font-size: $tg-fs-md;
     }
 
     .bit-prs-pre {
         width: spacing(1.5);
         height: spacing(1.5);
-        font-size: spacing(0.85);
+        font-size: var(--bit-prs-presence-glyph-md);
     }
 
     .bit-prs-ptx {
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-stx {
-        font-weight: 400;
-        font-size: spacing(1.5);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-xs;
     }
 
     .bit-prs-ttx {
@@ -297,21 +563,6 @@
 
     .bit-prs-otx {
         display: none;
-    }
-
-    &.bit-prs-sqr {
-        .bit-prs-pre {
-            right: spacing(-0.4);
-            bottom: spacing(-0.4);
-        }
-
-
-        &.bit-prs-rvs {
-            .bit-prs-pre {
-                right: unset;
-                left: spacing(-0.4);
-            }
-        }
     }
 }
 
@@ -321,23 +572,23 @@
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(6);
-        font-size: spacing(2);
+        font-size: $tg-fs-md;
     }
 
     .bit-prs-pre {
         width: spacing(1.5);
         height: spacing(1.5);
-        font-size: spacing(0.85);
+        font-size: var(--bit-prs-presence-glyph-md);
     }
 
     .bit-prs-ptx {
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-stx {
-        font-weight: 400;
-        font-size: spacing(1.5);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-xs;
     }
 
     .bit-prs-ttx {
@@ -346,20 +597,6 @@
 
     .bit-prs-otx {
         display: none;
-    }
-
-    &.bit-prs-sqr {
-        .bit-prs-pre {
-            right: spacing(-0.4);
-            bottom: spacing(-0.4);
-        }
-
-        &.bit-prs-rvs {
-            .bit-prs-pre {
-                right: unset;
-                left: spacing(-0.4);
-            }
-        }
     }
 }
 
@@ -369,23 +606,23 @@
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(7);
-        font-size: spacing(2.5);
+        font-size: $tg-fs-xl;
     }
 
     .bit-prs-pre {
         width: spacing(2);
         height: spacing(2);
-        font-size: spacing(1.25);
+        font-size: $tg-fs-2xs;
     }
 
     .bit-prs-ptx {
-        font-weight: 400;
-        font-size: spacing(2.5);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-xl;
     }
 
     .bit-prs-stx {
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-ttx {
@@ -397,49 +634,41 @@
     }
 
     &.bit-prs-sqr {
-        .bit-prs-pre {
-            right: spacing(-0.5);
-            bottom: spacing(-0.5);
-        }
-
-        &.bit-prs-rvs {
-            .bit-prs-pre {
-                right: unset;
-                left: spacing(-0.5);
-            }
-        }
+        --bit-prs-presence-inset: #{spacing(-0.5)};
     }
 }
 
 .bit-prs-s72 {
     gap: spacing(2);
+    --bit-prs-ring-gap: #{rem2(3px)};
+    --bit-prs-ring-width: #{rem2(3px)};
 
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(9);
-        font-size: spacing(3.5);
+        font-size: $tg-fs-3xl;
     }
 
     .bit-prs-pre {
         width: spacing(2.5);
         height: spacing(2.5);
-        font-size: spacing(1.5);
+        font-size: $tg-fs-xs;
     }
 
     .bit-prs-ptx {
-        font-weight: 400;
-        font-size: spacing(2.5);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-xl;
     }
 
     .bit-prs-stx {
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-ttx {
         display: block;
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-otx {
@@ -447,121 +676,114 @@
     }
 
     &.bit-prs-sqr {
-        .bit-prs-pre {
-            right: spacing(-1);
-            bottom: spacing(-1);
-
-            &.bit-prs-rvs {
-                .bit-prs-pre {
-                    right: unset;
-                    left: spacing(-1);
-                }
-            }
-        }
+        --bit-prs-presence-inset: #{spacing(-1)};
     }
 }
 
 .bit-prs-s100 {
     gap: spacing(2);
+    --bit-prs-ring-gap: #{rem2(4px)};
+    --bit-prs-ring-width: #{rem2(4px)};
 
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(12.5);
-        font-size: spacing(5.25);
+        font-size: var(--bit-prs-initials-lg);
     }
 
     .bit-prs-pre {
         width: spacing(3.5);
         height: spacing(3.5);
-        font-size: spacing(2);
+        font-size: $tg-fs-md;
     }
 
     .bit-prs-ptx {
-        font-weight: 400;
-        font-size: spacing(2.5);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-xl;
     }
 
     .bit-prs-stx {
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-ttx {
         display: block;
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-otx {
         display: block;
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     &.bit-prs-sqr {
-        .bit-prs-pre {
-            right: spacing(-1);
-            bottom: spacing(-1);
-        }
-
-        &.bit-prs-rvs {
-            .bit-prs-pre {
-                right: unset;
-                left: spacing(-1);
-            }
-        }
+        --bit-prs-presence-inset: #{spacing(-1)};
     }
 }
 
 .bit-prs-s120 {
     gap: spacing(2);
+    --bit-prs-ring-gap: #{rem2(4px)};
+    --bit-prs-ring-width: #{rem2(4px)};
 
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(15);
-        font-size: spacing(5.25);
+        font-size: var(--bit-prs-initials-xl);
     }
 
     .bit-prs-pre {
         width: spacing(4);
         height: spacing(4);
-        font-size: spacing(2.5);
+        font-size: $tg-fs-xl;
     }
 
     .bit-prs-ptx {
-        font-weight: 400;
-        font-size: spacing(2.5);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-xl;
     }
 
     .bit-prs-stx {
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-ttx {
         display: block;
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-otx {
         display: block;
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     &.bit-prs-sqr {
-        .bit-prs-pre {
-            right: spacing(-1.5);
-            bottom: spacing(-1.5);
-        }
+        --bit-prs-presence-inset: #{spacing(-1.5)};
+    }
+}
 
-        &.bit-prs-rvs {
-            .bit-prs-pre {
-                right: unset;
-                left: spacing(-1.5);
-            }
-        }
+// The second line is normally reserved for the sizes with room for it, and ShowSecondaryText is what asks
+// for it anyway. It has to sit after every size class to outrank the display:none they set, and it restates
+// the type the small sizes never had a second line to size.
+.bit-prs-sst {
+    .bit-prs-stx {
+        display: block;
+        font-weight: $tg-fw-regular;
+    }
+
+    &.bit-prs-s8 .bit-prs-stx {
+        font-size: $tg-fs-2xs;
+    }
+
+    &.bit-prs-s24 .bit-prs-stx,
+    &.bit-prs-s32 .bit-prs-stx {
+        font-size: $tg-fs-xs;
     }
 }
 

@@ -1,0 +1,55 @@
+﻿@* The documentation rail: a filter box over grouped links, in the shape of a
+   Fluent 2 NavDrawer - a rounded row per item, a subtle fill when selected, and
+   a pill indicator on the inline start edge.
+
+   Clicking any link also closes the mobile drawer; on desktop the class toggle
+   is a no-op. That is the delegated listener in demo.js matching the links
+   themselves - no attribute on the list, so a click on a group header or on the
+   padding between items leaves the drawer alone - and no inline onclick, so the
+   site works under a strict Content-Security-Policy.
+
+   Each link sits in a .nav-item wrapper because the filter in demo.js hides
+   entries by toggling a class on them: the wrapper's class is rendered once and
+   never re-rendered, while a class written straight onto a NavLink would be
+   overwritten the next time NavLink recomputes its own active state. *@
+
+<nav class="nav-panel-inner">
+    <div class="nav-search">
+        <Icon Name="search" Class="nav-search-icon" />
+        <input type="search"
+               class="nav-search-input"
+               placeholder="Filter pages"
+               aria-label="Filter the documentation pages by name"
+               autocomplete="off"
+               data-demo-nav-search />
+    </div>
+
+    <div class="nav-list">
+        <div class="nav-group">Overview</div>
+        <div class="nav-item"><NavLink href="" Match="NavLinkMatch.All">Introduction</NavLink></div>
+        <div class="nav-item"><NavLink href="getting-started">Getting Started</NavLink></div>
+        <div class="nav-item"><NavLink href="how-it-works">How It Works</NavLink></div>
+
+        <div class="nav-group">Reference</div>
+        <div class="nav-item"><NavLink href="script-options">Script Options</NavLink></div>
+        <div class="nav-item"><NavLink href="service-worker">Service Worker Settings</NavLink></div>
+        <div class="nav-item"><NavLink href="events">Events &amp; Handler</NavLink></div>
+        <div class="nav-item"><NavLink href="progress-ui">Progress UI</NavLink></div>
+        <div class="nav-item"><NavLink href="javascript-api">JavaScript API</NavLink></div>
+
+        <div class="nav-group">Showcase</div>
+        <div class="nav-item"><NavLink href="playground">Live Playground</NavLink></div>
+        <div class="nav-item"><NavLink href="mcp-server">MCP Server</NavLink></div>
+
+        <div class="nav-group">Guides</div>
+        <div class="nav-item"><NavLink href="recipes">Recipes</NavLink></div>
+        <div class="nav-item"><NavLink href="troubleshooting">Troubleshooting &amp; FAQ</NavLink></div>
+        <div class="nav-item"><NavLink href="cleanup">Backing Out of Bswup</NavLink></div>
+        <div class="nav-item"><NavLink href="migration">Migrating to 10-6-0</NavLink></div>
+
+        @* A live region: the filter shows and hides it from JavaScript, without a Blazor
+           re-render, so screen readers only learn the search came up empty if the element
+           announces the change itself. *@
+        <div class="nav-empty" role="status" aria-live="polite">No matching page.</div>
+    </div>
+</nav>

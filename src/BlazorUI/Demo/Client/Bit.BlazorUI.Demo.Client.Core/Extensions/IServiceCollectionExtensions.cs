@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
+using Bit.BlazorUI.Demo.Client.Core.Components;
 using Bit.BlazorUI.Demo.Client.Core.Services.HttpMessageHandlers;
 using Bit.BlazorUI.Legacy;
 
@@ -16,6 +17,10 @@ public static class IServiceCollectionExtensions
 
         services.TryAddSessioned<IPubSubService, PubSubService>();
 
+        // Scoped, so that "a page has already been painted" is asked of this reader rather than of
+        // the whole server - see the type for why that distinction matters.
+        services.TryAddScoped<DemoContentDeferral>();
+
         services.TryAddTransient<RequestHeadersDelegationHandler>();
         services.TryAddTransient<RetryDelegatingHandler>();
         services.TryAddTransient<ExceptionDelegatingHandler>();
@@ -24,7 +29,16 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<LazyAssemblyLoader>();
 
         services.AddBitBlazorUIServices(trySingleton: AppRenderMode.IsBlazorHybrid);
-        services.AddBitBlazorUIExtrasServices(trySingleton: AppRenderMode.IsBlazorHybrid);
+        // The app-wide accent configuration, stated once here - this method runs in the server and
+        // in every client flavor, so the BitAccentColorHead in the host page (App.razor in the
+        // Server project) and the AccentColorSwitcher chrome instances all resolve the same values.
+        // StoredCss + All explicitly: the BitAccentColorConfig defaults persist nothing and skip
+        // first paint.
+        services.AddBitBlazorUIExtrasServices(trySingleton: AppRenderMode.IsBlazorHybrid, accentColor: options =>
+        {
+            options.FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StoredCss;
+            options.Persistence = BitAccentColorPersistence.All;
+        });
         services.AddBitBlazorUILegacyServices(trySingleton: AppRenderMode.IsBlazorHybrid);
         services.AddSharedServices();
 

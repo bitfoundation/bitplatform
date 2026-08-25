@@ -1,0 +1,546 @@
+/* Bit.Bmotion Demo - page chrome and sample styles.
+
+   Everything a demo page draws inside the reading column: its title and lead, the section cards,
+   the stage a sample is played on, the code boxes and the shared sample primitives. The tokens
+   these are written against live in theme.css, and the shell around them in app.css.
+
+   Individual pages add their own <style> blocks for sample-specific pieces. Those blocks reach for
+   the --bm-* custom properties defined in theme.css, so they follow the theme without knowing
+   anything about it - and nothing in this file may assume anything about what they contain.
+
+   The line this file will not cross: it styles the frame around a sample, never the sample. Once
+   the eye is inside a .demo-card, every pixel belongs to the animation being demonstrated. */
+
+/* ── Page title and lead ───────────────────────────────────────────────────── */
+
+/* Every page opens the same way: a title, then a paragraph of prose - not another frame. */
+.page-container > h1 {
+    font-family: var(--bm-fnt-family-display);
+    font-size: var(--bm-fnt-size-900);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-900);
+    letter-spacing: -0.03em;
+    margin-bottom: var(--bm-sp-l);
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+    color: var(--bm-clr-fg-1);
+}
+
+/* The lead is set one step up the ramp from the body of the page, so a reader who only reads the
+   first paragraph still gets the whole answer to "what is this page for". */
+.page-intro {
+    line-height: var(--bm-fnt-line-prose);
+    font-size: var(--bm-fnt-size-500);
+    margin-bottom: var(--bm-sp-4xl);
+    max-width: var(--bm-layout-measure);
+    color: var(--bm-clr-fg-3);
+}
+
+.page-intro strong {
+    font-weight: var(--bm-fnt-weight-semibold);
+    color: var(--bm-clr-fg-2);
+}
+
+@media (max-width: 47.9375rem) {
+    .page-container > h1 {
+        font-size: var(--bm-fnt-size-800);
+        line-height: var(--bm-fnt-line-800);
+    }
+
+    .page-intro {
+        font-size: var(--bm-fnt-size-400);
+    }
+}
+
+/* ── Section cards ─────────────────────────────────────────────────────────── */
+
+/* A hairline-bordered surface carrying Fluent's lightest elevation. On a documentation page the
+   same card repeats a dozen times, so anything heavier reads as noise long before it reads as
+   depth - but a flat card on a flat canvas leaves the page with no layers at all, and shadow2 is
+   exactly the amount that says "this is a surface" and nothing more. */
+.demo-section {
+    padding: var(--bm-sp-xxxl);
+    margin-bottom: var(--bm-sp-xxl);
+    /* Clear of the sticky header when the rail jumps to this section. */
+    scroll-margin-top: calc(var(--bm-layout-header) + var(--bm-layout-header-gap));
+    color: var(--bm-clr-fg-2);
+    background-color: var(--bm-clr-bg-1);
+    border: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
+    border-radius: var(--bm-crn-large);
+    box-shadow: var(--bm-shdw-2);
+}
+
+.demo-section .align-start {
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.demo-section:last-child {
+    margin-bottom: 0;
+}
+
+/* The heading sits over a hairline, so the eye can find the boundary between sections while
+   scrolling a long page instead of relying on whitespace alone. */
+.demo-section h2 {
+    position: relative;
+    font-family: var(--bm-fnt-family-display);
+    font-size: var(--bm-fnt-size-600);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-600);
+    letter-spacing: -0.02em;
+    padding-bottom: var(--bm-sp-m);
+    margin-bottom: var(--bm-sp-l);
+    scroll-margin-top: calc(var(--bm-layout-header) + var(--bm-layout-header-gap));
+    overflow-wrap: anywhere;
+    color: var(--bm-clr-fg-1);
+    border-bottom: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
+}
+
+/* Every section is addressable, so a reader can link a colleague at the one paragraph that
+   answers their question. The link is added to the heading by js/demo.js, which is also what
+   gives the heading the id the "on this page" rail points at - so a section is linkable for the
+   same reason it is listed, and the two can never disagree. */
+.heading-anchor {
+    position: absolute;
+    top: 0;
+    inset-inline-start: -1.5rem;
+    width: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--bm-fnt-line-600);
+    opacity: 0;
+    text-decoration: none;
+    color: var(--bm-clr-fg-4);
+    transition: opacity var(--bm-dur-faster) var(--bm-crv-easy-ease),
+                color var(--bm-dur-faster) var(--bm-crv-easy-ease);
+}
+
+.demo-section h2:hover .heading-anchor,
+.heading-anchor:focus-visible {
+    opacity: 1;
+}
+
+.heading-anchor:hover {
+    color: var(--bm-clr-brand-fg);
+}
+
+.heading-anchor:focus-visible {
+    outline: var(--bm-strk-thick) solid var(--bm-clr-stroke-focus);
+    outline-offset: var(--bm-strk-thin);
+    border-radius: var(--bm-crn-small);
+}
+
+.heading-anchor svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+/* Below the width where the reading column has a margin to hang the anchor in, it would sit off
+   the edge of the card. */
+@media (max-width: 63.9375rem) {
+    .heading-anchor {
+        display: none;
+    }
+}
+
+.demo-section h3 {
+    font-family: var(--bm-fnt-family-display);
+    font-size: var(--bm-fnt-size-500);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-500);
+    letter-spacing: -0.01em;
+    margin-bottom: var(--bm-sp-s);
+    color: var(--bm-clr-fg-1);
+}
+
+.demo-section p {
+    line-height: var(--bm-fnt-line-prose);
+    font-size: var(--bm-fnt-size-400);
+    margin-bottom: var(--bm-sp-xxl);
+    max-width: var(--bm-layout-measure);
+    color: var(--bm-clr-fg-2);
+}
+
+.demo-section strong {
+    font-weight: var(--bm-fnt-weight-semibold);
+    color: var(--bm-clr-fg-1);
+}
+
+.demo-section em {
+    font-style: italic;
+}
+
+.demo-section a {
+    text-decoration: underline;
+}
+
+/* An inline code span, wherever a page sets one in prose. */
+.page-intro code,
+.demo-section code {
+    display: inline;
+    font-size: 0.875em;
+    padding: 0.0625rem 0.25rem;
+    overflow-wrap: anywhere;
+    font-family: var(--bm-fnt-family-mono);
+    color: var(--bm-clr-fg-1);
+    background-color: var(--bm-clr-bg-3);
+    border: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
+    border-radius: var(--bm-crn-small);
+}
+
+@media (max-width: 47.9375rem) {
+    .demo-section {
+        padding: var(--bm-sp-xl);
+    }
+}
+
+/* ── Sample stage ──────────────────────────────────────────────────────────── */
+
+.demo-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--bm-sp-xxl);
+    align-items: center;
+}
+
+/* The stage a sample is played on. Kept one surface step off the card around it so a demo is
+   never confused with the page describing it, and printed with a faint measure grid: an animation
+   about position or scale is far easier to read against something regular than against a blank
+   field, and the grid is the quietest possible way to give the eye that reference. */
+.demo-card {
+    flex: 1;
+    display: flex;
+    padding: var(--bm-sp-xxxl);
+    min-width: 13.75rem;
+    min-height: 10rem;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bm-card);
+    background-image: radial-gradient(circle at center,
+        color-mix(in srgb, var(--bm-clr-fg-1) 7%, transparent) 0.0625rem, transparent 0.0625rem);
+    background-size: 1.25rem 1.25rem;
+    border: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
+    border-radius: var(--bm-crn-large);
+}
+
+/* A stage that stacks a caption above the moving part instead of centring one thing in the
+   middle. Nearly every page needs it, so it is a modifier here rather than the same three inline
+   declarations repeated down each page. */
+.demo-card.stack {
+    gap: var(--bm-sp-m);
+    flex-direction: column;
+}
+
+/* The caption naming what a stage is showing - a spring's constants, an easing's name, the CSS
+   property being animated. Deliberately quiet: it labels the sample, it is not part of it. */
+.demo-label {
+    font-size: var(--bm-fnt-size-200);
+    line-height: var(--bm-fnt-line-300);
+    text-align: center;
+    color: var(--bm-clr-fg-3);
+}
+
+/* The controls that drive a sample, always directly under its stage. */
+.demo-actions {
+    gap: var(--bm-sp-s);
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: var(--bm-sp-l);
+    align-items: center;
+}
+
+/* ── Sample primitives ─────────────────────────────────────────────────────── */
+
+/* The moving parts keep their own rounding and their gradient fill: they are the subject of the
+   page, not chrome, and the docs' restrained surfaces would flatten exactly the thing being
+   shown. Their colours come from the theme's accents, so the samples follow the theme too. */
+/* The label is set at 20px/700 rather than at the body size. A gradient cannot be one colour, so a
+   white label on it has to clear the bar against the lightest point it actually covers - and 20px
+   bold is the size at which that bar is WCAG's large-text 3:1 rather than 4.5:1, which the middle
+   of this gradient does not reach. The alternative was darkening the accent, which would have
+   changed the look of every sample on the site to fix the handful that carry a word. */
+.box {
+    width: 5rem;
+    height: 5rem;
+    color: #fff;
+    display: flex;
+    font-weight: var(--bm-fnt-weight-bold);
+    font-size: var(--bm-fnt-size-500);
+    line-height: var(--bm-fnt-line-500);
+    cursor: pointer;
+    user-select: none;
+    border-radius: 0.625rem;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+}
+
+.box-sm {
+    width: 3.125rem;
+    height: 3.125rem;
+    border-radius: 0.5rem;
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────────────── */
+
+/* The button that drives a sample. Fluent's primary, at Fluent's control height. */
+.btn-bm {
+    border: var(--bm-strk-thin) solid transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--bm-sp-s);
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-300);
+    font-size: var(--bm-fnt-size-300);
+    font-family: inherit;
+    min-height: 2rem;
+    padding: var(--bm-sp-xs) var(--bm-sp-m);
+    color: var(--bm-clr-brand-fg-on-bg);
+    background-color: var(--bm-clr-brand-bg);
+    border-radius: var(--bm-crn-medium);
+    transition: background-color var(--bm-dur-faster) var(--bm-crv-easy-ease);
+}
+
+.btn-bm:hover {
+    background-color: var(--bm-clr-brand-bg-hover);
+}
+
+.btn-bm:active {
+    background-color: var(--bm-clr-brand-bg-pressed);
+}
+
+.btn-bm:disabled {
+    cursor: default;
+    color: var(--bm-clr-fg-disabled);
+    background-color: var(--bm-clr-bg-disabled);
+}
+
+.btn-bm:focus-visible {
+    outline: var(--bm-strk-thick) solid var(--bm-clr-stroke-focus);
+    outline-offset: var(--bm-strk-thick);
+}
+
+/* ── Code boxes ────────────────────────────────────────────────────────────── */
+
+/* One frame around the toolbar and the code, rather than a button floating above a slab: the bar
+   is the code box's own header, so opening a snippet grows a panel instead of adding a second
+   thing to the page. */
+.code-snippet {
+    margin-top: var(--bm-sp-xxl);
+    overflow: hidden;
+    background-color: var(--bm-clr-bg-3);
+    border: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
+    border-radius: var(--bm-crn-medium);
+}
+
+.code-snippet-bar {
+    gap: var(--bm-sp-s);
+    display: flex;
+    align-items: center;
+    padding: var(--bm-sp-xs) var(--bm-sp-s);
+}
+
+.code-snippet.open .code-snippet-bar {
+    border-bottom: var(--bm-strk-thin) solid var(--bm-clr-stroke-2);
+}
+
+.code-toggle,
+.code-copy {
+    gap: var(--bm-sp-xs);
+    display: inline-flex;
+    cursor: pointer;
+    align-items: center;
+    font-weight: var(--bm-fnt-weight-semibold);
+    font-size: var(--bm-fnt-size-200);
+    line-height: var(--bm-fnt-line-300);
+    font-family: inherit;
+    padding: var(--bm-sp-xs) var(--bm-sp-s);
+    border: var(--bm-strk-thin) solid transparent;
+    background: transparent;
+    color: var(--bm-clr-fg-2);
+    border-radius: var(--bm-crn-small);
+    transition: color var(--bm-dur-faster) var(--bm-crv-easy-ease),
+                background-color var(--bm-dur-faster) var(--bm-crv-easy-ease);
+}
+
+.code-toggle:hover,
+.code-copy:hover {
+    color: var(--bm-clr-fg-1);
+    background-color: var(--bm-clr-bg-3-hover);
+}
+
+.code-toggle[aria-expanded="true"] {
+    color: var(--bm-clr-fg-1);
+}
+
+.code-toggle:focus-visible,
+.code-copy:focus-visible {
+    outline: var(--bm-strk-thick) solid var(--bm-clr-stroke-focus);
+    outline-offset: var(--bm-strk-thin);
+}
+
+.code-toggle svg,
+.code-copy svg {
+    flex: none;
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+/* The chevron turns rather than being swapped for a different glyph, so the control reads as one
+   thing in two states instead of as two controls. */
+.code-toggle-icon {
+    display: inline-flex;
+    transition: transform var(--bm-dur-faster) var(--bm-crv-easy-ease);
+}
+
+.code-toggle[aria-expanded="true"] .code-toggle-icon {
+    transform: rotate(90deg);
+}
+
+/* The language, and the spring that pushes the copy button to the far end of the bar. */
+.code-lang {
+    flex: 1 1 auto;
+    text-align: end;
+    font-size: var(--bm-fnt-size-200);
+    line-height: var(--bm-fnt-line-200);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bm-clr-fg-4);
+}
+
+.code-copy.copied {
+    color: var(--bm-clr-brand-fg);
+}
+
+.code-block {
+    margin: 0;
+    width: 100%;
+    display: block;
+    overflow: auto;
+    direction: ltr;
+    white-space: pre;
+    line-height: 1.6;
+    font-size: var(--bm-fnt-size-300);
+    max-height: 32rem;
+    font-family: var(--bm-fnt-family-mono);
+    padding: var(--bm-sp-l);
+    color: var(--bm-clr-fg-1);
+    background-color: var(--bm-clr-bg-3);
+}
+
+.code-block code {
+    display: block;
+    padding: 0;
+    border: none;
+    color: inherit;
+    background: none;
+    font-size: inherit;
+    line-height: inherit;
+    font-family: inherit;
+}
+
+.code-block::-webkit-scrollbar {
+    width: 0.5rem;
+}
+
+.code-block::-webkit-scrollbar:horizontal {
+    height: 0.5rem;
+}
+
+.code-block::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+.code-block::-webkit-scrollbar-thumb {
+    border-radius: var(--bm-crn-circular);
+    background-color: var(--bm-clr-stroke-1);
+}
+
+.code-block::-webkit-scrollbar-thumb:hover {
+    background-color: var(--bm-clr-stroke-accessible);
+}
+
+.code-block::-webkit-scrollbar-button {
+    display: none;
+}
+
+/* ── Syntax highlighting tokens ────────────────────────────────────────────── */
+
+.code-block .tok-com  { color: var(--bm-tok-com); font-style: italic; }
+.code-block .tok-tag  { color: var(--bm-tok-tag); }
+.code-block .tok-attr { color: var(--bm-tok-attr); }
+.code-block .tok-str  { color: var(--bm-tok-str); }
+.code-block .tok-key  { color: var(--bm-tok-key); }
+.code-block .tok-type { color: var(--bm-tok-type); }
+.code-block .tok-num  { color: var(--bm-tok-num); }
+.code-block .tok-raz  { color: var(--bm-tok-raz); }
+
+/* Each source line is its own block so highlighted and plain lines share uniform spacing. */
+.code-block .code-line {
+    display: block;
+}
+
+/* Lines where a Bmotion component is used, so they stand out from the markup around them. */
+.code-block .hl-line {
+    display: block;
+    margin: 0 calc(var(--bm-sp-l) * -1);
+    padding: 0 var(--bm-sp-l);
+    background-color: var(--bm-accent-soft);
+    box-shadow: inset var(--bm-strk-thicker) 0 0 var(--bm-clr-brand-stroke);
+}
+
+/* ── Badges ────────────────────────────────────────────────────────────────── */
+
+.badge-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--bm-sp-s);
+}
+
+/* Fluent's outlined badge: quiet, sized to sit under a paragraph without competing with it. */
+.badge {
+    font-weight: var(--bm-fnt-weight-semibold);
+    line-height: var(--bm-fnt-line-200);
+    font-size: var(--bm-fnt-size-200);
+    padding: var(--bm-sp-xs) var(--bm-sp-mnudge);
+    color: var(--bm-clr-brand-fg);
+    background-color: var(--bm-clr-brand-wash);
+    border: var(--bm-strk-thin) solid transparent;
+    border-radius: var(--bm-crn-circular);
+}
+
+/* ── Split text ────────────────────────────────────────────────────────────── */
+
+/* The split-text stages animate type, not boxes, so they need a type scale of their own - the
+   samples are only legible as a headline treatment if they are actually headline-sized. */
+.split-headline {
+    font-family: var(--bm-fnt-family-display);
+    font-weight: var(--bm-fnt-weight-bold);
+    font-size: var(--bm-fnt-size-600);
+    line-height: var(--bm-fnt-line-600);
+    letter-spacing: -0.02em;
+    text-align: center;
+    color: var(--bm-clr-fg-1);
+}
+
+.split-lines {
+    font-size: var(--bm-fnt-size-400);
+    line-height: var(--bm-fnt-line-prose);
+    color: var(--bm-clr-fg-1);
+}
+
+.split-body {
+    font-size: var(--bm-fnt-size-400);
+    line-height: var(--bm-fnt-line-prose);
+    color: var(--bm-clr-fg-1);
+}
+
+/* Deliberately narrow: the point of the sample is to force the text to wrap, so the reader can
+   see that the break lands between words rather than inside one. */
+.split-narrow {
+    max-width: 15rem;
+}

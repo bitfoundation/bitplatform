@@ -4,15 +4,41 @@
     overflow: hidden;
     margin-bottom: 0.625rem;
     background-color: $bit-color-error-light;
-    border-left: 0.25rem solid $bit-color-requried;
+    border-left: 0.25rem solid $bit-color-required;
 }
 
 .example-content {
     display: flex;
     max-width: 12rem;
-    overflow-x: auto;
     flex-flow: column wrap;
     padding: 0 0.2rem;
+}
+
+// The content of the callout templates is written on this page, so these elements carry its CSS scope
+// themselves and are styled without ::deep - which would depend on an ancestor instead, and the callout
+// is moved out to the body while it is open.
+.callout-header {
+    width: 100%;
+    font-weight: 600;
+    text-align: center;
+}
+
+.callout-footer {
+    width: 100%;
+    display: flex;
+    gap: 0.25rem;
+    justify-content: space-between;
+}
+
+.event-log {
+    gap: 0.125rem;
+    display: flex;
+    padding: 0.5rem;
+    min-height: 3.75rem;
+    flex-flow: column nowrap;
+    font-family: monospace;
+    border-radius: 0.25rem;
+    background-color: $bit-color-background-secondary;
 }
 
 ::deep {
@@ -93,7 +119,7 @@
 
     .validation-message {
         font-size: 0.75rem;
-        color: $bit-color-requried;
+        color: $bit-color-required;
     }
 
     .validation-errors {

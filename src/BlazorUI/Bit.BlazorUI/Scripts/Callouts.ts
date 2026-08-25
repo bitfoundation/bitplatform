@@ -33,6 +33,10 @@ namespace BitBlazorUI {
             setCalloutWidth: boolean,
             fixedCalloutWidth: boolean,
             maxWindowWidth: number,
+            // An optional cap on the scrollable content of the callout, in pixels. It is applied on top
+            // of the space the viewport leaves, so it can only ever make the list shorter. Zero (the
+            // default for the components that do not offer it) means the viewport alone decides.
+            maxHeight: number = 0,
         ) {
             component ??= document.getElementById(componentId);
             if (component == null) return false;
@@ -64,12 +68,12 @@ namespace BitBlazorUI {
             Callouts._currentParams = {
                 componentId, calloutId, overlayId, responsiveMode, dropDirection, isRtl,
                 scrollContainerId, scrollOffset, headerId, footerId,
-                setCalloutWidth, fixedCalloutWidth, maxWindowWidth
+                setCalloutWidth, fixedCalloutWidth, maxWindowWidth, maxHeight
             };
 
             const result = Callouts.position(component, callout, responsiveMode, dropDirection, isRtl,
                 scrollContainerId, scrollOffset, headerId, footerId,
-                setCalloutWidth, fixedCalloutWidth, maxWindowWidth);
+                setCalloutWidth, fixedCalloutWidth, maxWindowWidth, true, maxHeight);
 
             return result;
         }
@@ -104,8 +108,14 @@ namespace BitBlazorUI {
             setCalloutWidth: boolean,
             fixedCalloutWidth: boolean,
             maxWindowWidth: number,
+            isEntering: boolean,
+            maxHeight: number = 0,
         ) {
             const windowWidth = window.innerWidth;
+
+            // The consumer's own cap on the scrollable content, applied on top of the space the
+            // viewport leaves so that it can only ever shorten the list, never push it off the screen.
+            const cap = (height: number) => maxHeight > 0 ? Math.min(height, maxHeight) : height;
 
             // Visible (visual) viewport size and how far it is offset within the layout viewport
             // (non-zero mainly when the on-screen keyboard is shown).
@@ -154,7 +164,13 @@ namespace BitBlazorUI {
             const { x: componentX, y: componentY } = component.getBoundingClientRect();
 
             let calloutWidth = callout.offsetWidth;
-            const calloutHeight = callout.offsetHeight;
+            // The consumer's cap shortens the scrollable list (and only it), so the callout the placement
+            // below decides for can be shorter than the one measured here: whatever the cap takes off that
+            // list comes off this height too, or a list that fits under the component only because of the
+            // cap would still be pushed above it.
+            const calloutHeight = callout.offsetHeight - (maxHeight > 0 && scrollContainerId
+                                                            ? Math.max(0, (scrollContainer as HTMLElement).offsetHeight - maxHeight)
+                                                            : 0);
             const { x: calloutLeft } = callout.getBoundingClientRect();
 
             // Distances from the component to each edge of the visible band (getBoundingClientRect space).
@@ -190,7 +206,7 @@ namespace BitBlazorUI {
                 callout.style.maxHeight = visualHeight + 'px';
 
                 setTimeout(() => {
-                    scrollContainer.style.maxHeight = Math.max(0, visibleBottom - scrollContainer.getBoundingClientRect().y - footerHeight - 10) + 'px';
+                    scrollContainer.style.maxHeight = cap(Math.max(0, visibleBottom - scrollContainer.getBoundingClientRect().y - footerHeight - 10)) + 'px';
                 });
 
                 return true;
@@ -209,25 +225,31 @@ namespace BitBlazorUI {
             left = (left < visibleLeft) ? visibleLeft : left;
             callout.style.left = (left - fixedRect.left) + 'px';
 
+            // Which side of the component the callout ended up on, so the entry animation can slide it
+            // out of the component instead of always dropping it down from above.
+            let placedAbove = false;
+
             if (dropDirection == BitDropDirection.TopAndBottom) {
                 if (calloutHeight <= distanceToBottom || distanceToBottom >= distanceToTop) {
                     callout.style.top = (componentY + componentHeight + 1 - fixedRect.top) + 'px';
-                    scrollContainer.style.maxHeight = Math.max(0, distanceToBottom - scrollOffset - headerHeight - footerHeight - 10) + 'px';
+                    scrollContainer.style.maxHeight = cap(Math.max(0, distanceToBottom - scrollOffset - headerHeight - footerHeight - 10)) + 'px';
                 } else {
+                    placedAbove = true;
                     callout.style.bottom = (fixedRect.bottom - (componentY - 1)) + 'px';
-                    scrollContainer.style.maxHeight = Math.max(0, distanceToTop - scrollOffset - headerHeight - footerHeight - 10) + 'px';
+                    scrollContainer.style.maxHeight = cap(Math.max(0, distanceToTop - scrollOffset - headerHeight - footerHeight - 10)) + 'px';
                 }
             } else {
                 if (distanceToBottom >= calloutHeight) {
                     callout.style.top = (componentY + componentHeight + 1 - fixedRect.top) + 'px';
-                    scrollContainer.style.maxHeight = Math.max(0, distanceToBottom - scrollOffset - headerHeight - footerHeight - 10) + 'px';
+                    scrollContainer.style.maxHeight = cap(Math.max(0, distanceToBottom - scrollOffset - headerHeight - footerHeight - 10)) + 'px';
                 } else if (distanceToTop >= calloutHeight) {
+                    placedAbove = true;
                     callout.style.bottom = (fixedRect.bottom - (componentY - 1)) + 'px';
-                    scrollContainer.style.maxHeight = Math.max(0, distanceToTop - scrollOffset - headerHeight - footerHeight - 10) + 'px';
+                    scrollContainer.style.maxHeight = cap(Math.max(0, distanceToTop - scrollOffset - headerHeight - footerHeight - 10)) + 'px';
                 } else if ((isRtl ? distanceToLeft : distanceToRight) >= calloutWidth) {
                     callout.style.left = ((isRtl ? (componentX - calloutWidth - 1) : (componentX + componentWidth + 1)) - fixedRect.left) + 'px';
                     callout.style.bottom = (fixedRect.bottom - (visibleBottom - 2)) + 'px';
-                    scrollContainer.style.maxHeight = Math.max(0, visualHeight - scrollOffset - headerHeight - footerHeight - 10) + 'px';
+                    scrollContainer.style.maxHeight = cap(Math.max(0, visualHeight - scrollOffset - headerHeight - footerHeight - 10)) + 'px';
                 } else {
                     // Neither horizontal side has enough space; fall back to the opposite side but
                     // re-clamp so the callout never lands at a negative/off-viewport left offset.
@@ -236,11 +258,28 @@ namespace BitBlazorUI {
                     if (sideLeft < visibleLeft) sideLeft = visibleLeft;
                     callout.style.left = (sideLeft - fixedRect.left) + 'px';
                     callout.style.bottom = (fixedRect.bottom - (visibleBottom - 2)) + 'px';
-                    scrollContainer.style.maxHeight = Math.max(0, visualHeight - scrollOffset - headerHeight - footerHeight - 10) + 'px';
+                    scrollContainer.style.maxHeight = cap(Math.max(0, visualHeight - scrollOffset - headerHeight - footerHeight - 10)) + 'px';
                 }
             }
 
+            if (isEntering) {
+                Callouts.playEntryAnimation(callout, placedAbove);
+            }
+
             return (calloutWidth + calloutLeft) > document.body.offsetWidth;
+        }
+
+        // Which side the callout lands on is only known after the measuring above, and by then the
+        // browser has already resolved the callout to its open state. So the entry is (re)started
+        // from here: the from-state class is applied with transitions suppressed, forced into effect
+        // with a reflow, and then dropped, which transitions the callout to its open state - sliding
+        // down out of the component when it sits below it, and up when it sits above it.
+        // Components opt in by styling `.bit-cal-ent`; for the ones that don't this is a no-op.
+        private static playEntryAnimation(callout: HTMLElement, placedAbove: boolean) {
+            callout.setAttribute('data-bit-cal-pos', placedAbove ? 'above' : 'below');
+            callout.classList.add('bit-cal-ent');
+            void callout.offsetHeight;
+            callout.classList.remove('bit-cal-ent');
         }
 
         // Measures the layout viewport's edges in getBoundingClientRect() space by stretching a
@@ -273,9 +312,25 @@ namespace BitBlazorUI {
             const callout = document.getElementById(params.calloutId);
             if (component == null || callout == null) return;
 
+            // Not an entry: replaying the open animation on every viewport change would be a flicker.
             Callouts.position(component, callout, params.responsiveMode, params.dropDirection, params.isRtl,
                 params.scrollContainerId, params.scrollOffset, params.headerId, params.footerId,
-                params.setCalloutWidth, params.fixedCalloutWidth, params.maxWindowWidth);
+                params.setCalloutWidth, params.fixedCalloutWidth, params.maxWindowWidth, false, params.maxHeight);
+        }
+
+        // Re-applies the space the scrollable content of an open callout cannot use. The parts that sit
+        // above that content can come and go while the callout stays open (a dropdown's select all row
+        // disappears as soon as a search matches nothing), and the callout is otherwise only laid out
+        // when it is toggled, which would leave the list measured against a header that is no longer there.
+        public static updateScrollOffset(calloutId: string, scrollOffset: number) {
+            const params = Callouts._currentParams;
+            if (params == null) return;
+            if (params.calloutId !== calloutId) return;
+            if (params.scrollOffset === scrollOffset) return;
+
+            params.scrollOffset = scrollOffset;
+
+            Callouts.reposition();
         }
 
         public static reset() {
@@ -314,6 +369,14 @@ namespace BitBlazorUI {
             wrapper.setAttribute('data-bit-callout-wrapper', calloutId);
             for (const scope of scopes) {
                 wrapper.setAttribute(scope, '');
+            }
+
+            // ForceAnimation works by re-pointing inherited custom properties on the subtree carrying
+            // `bit-fam`, so relocating the callout to the body drops it back to the reduced-motion
+            // durations even though its original ancestors opted in. The wrapper is `display: contents`
+            // and therefore still inherits into the callout, so carrying the class over restores it.
+            if (parent?.closest('.bit-fam')) {
+                wrapper.classList.add('bit-fam');
             }
 
             Callouts._calloutOriginalParents.set(calloutId, {
@@ -432,6 +495,7 @@ namespace BitBlazorUI {
         setCalloutWidth: boolean;
         fixedCalloutWidth: boolean;
         maxWindowWidth: number;
+        maxHeight: number;
     }
 
     enum BitDropDirection {

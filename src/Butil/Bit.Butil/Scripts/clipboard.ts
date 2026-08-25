@@ -1,7 +1,16 @@
-var BitButil = BitButil || {};
+var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
     butil.clipboard = {
+        // navigator.clipboard is only defined in a secure context, so this answers the
+        // "am I on http://" question as well as the "did this engine ship it" one. The
+        // item-based half is a separate check: Firefox has readText/writeText without read/write.
+        isSupported() { return !!navigator.clipboard; },
+        isItemSupported() {
+            const c = navigator.clipboard as any;
+            return !!c && typeof c.read === 'function' && typeof c.write === 'function'
+                && typeof (window as any).ClipboardItem === 'function';
+        },
         readText,
         writeText,
         read,

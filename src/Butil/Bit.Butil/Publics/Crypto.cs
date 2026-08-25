@@ -21,8 +21,23 @@ namespace Bit.Butil;
 /// buffers when done where practical, and prefer server-side key custody when the threat model
 /// requires keys never to leave a hardware/secure boundary.
 /// </remarks>
+[ButilService(typeof(Crypto))]
 public class Crypto(IJSRuntime js)
 {
+    /// <summary>True when the runtime exposes <c>crypto.subtle</c>.</summary>
+    /// <remarks>
+    /// SubtleCrypto is secure-context only, so this is <c>false</c> on a plain <c>http://</c> page
+    /// in every engine - the usual reason encryption "isn't supported" on a development box served
+    /// over the network rather than over localhost. <see cref="RandomUuid"/> and
+    /// <see cref="GetRandomValues"/> do not go through SubtleCrypto and work either way; everything
+    /// that encrypts, signs, hashes or derives does.
+    /// <br/>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.crypto.isSupported");
+
     /// <summary>
     /// Returns a cryptographically strong random Guid (v4 UUID).
     /// <br />
@@ -233,14 +248,28 @@ public class Crypto(IJSRuntime js)
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/encrypt">https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/encrypt</see>
     /// </summary>
+    /// <param name="algorithm">Which algorithm to use. Every AES mode requires <paramref name="iv"/>.</param>
+    /// <param name="key">The raw key bytes.</param>
+    /// <param name="data">The plaintext to encrypt.</param>
+    /// <param name="iv">The initialization vector (the counter block for AES-CTR). Required for the AES modes, ignored for RSA-OAEP.</param>
+    /// <param name="keyHash">The digest to use with RSA-OAEP. Ignored by the AES modes.</param>
+    /// <exception cref="ArgumentNullException">An AES mode was requested without an <paramref name="iv"/>.</exception>
     public ValueTask<byte[]> Encrypt(CryptoAlgorithm algorithm, byte[] key, byte[] data, byte[]? iv = null, CryptoKeyHash? keyHash = null)
         => algorithm switch
         {
-            CryptoAlgorithm.AesCtr => Encrypt(new AesCtrCryptoAlgorithmParams { Counter = iv }, key, data, null),
-            CryptoAlgorithm.AesCbc => Encrypt(new AesCbcCryptoAlgorithmParams { Iv = iv }, key, data, null),
-            CryptoAlgorithm.AesGcm => Encrypt(new AesGcmCryptoAlgorithmParams { Iv = iv }, key, data, null),
+            CryptoAlgorithm.AesCtr => Encrypt(new AesCtrCryptoAlgorithmParams { Counter = RequireIv(algorithm, iv) }, key, data, null),
+            CryptoAlgorithm.AesCbc => Encrypt(new AesCbcCryptoAlgorithmParams { Iv = RequireIv(algorithm, iv) }, key, data, null),
+            CryptoAlgorithm.AesGcm => Encrypt(new AesGcmCryptoAlgorithmParams { Iv = RequireIv(algorithm, iv) }, key, data, null),
             _ => Encrypt(new RsaOaepCryptoAlgorithmParams(), key, data, keyHash),
         };
+
+    /// <summary>
+    /// The AES modes have no meaningful default IV, so a null one can only produce a WebCrypto
+    /// <c>OperationError</c> from inside the browser. Failing here names the parameter instead.
+    /// </summary>
+    private static byte[] RequireIv(CryptoAlgorithm algorithm, byte[]? iv)
+        => iv ?? throw new ArgumentNullException(nameof(iv),
+            $"{algorithm} requires an initialization vector; pass one through the iv parameter.");
 
     /// <summary>
     /// The Decrypt method of the Crypto interface that decrypts data.
@@ -282,12 +311,18 @@ public class Crypto(IJSRuntime js)
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/decrypt">https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/decrypt</see>
     /// </summary>
+    /// <param name="algorithm">Which algorithm to use. Every AES mode requires <paramref name="iv"/>.</param>
+    /// <param name="key">The raw key bytes.</param>
+    /// <param name="data">The ciphertext to decrypt.</param>
+    /// <param name="iv">The initialization vector (the counter block for AES-CTR) the data was encrypted with. Required for the AES modes, ignored for RSA-OAEP.</param>
+    /// <param name="keyHash">The digest to use with RSA-OAEP. Ignored by the AES modes.</param>
+    /// <exception cref="ArgumentNullException">An AES mode was requested without an <paramref name="iv"/>.</exception>
     public ValueTask<byte[]> Decrypt(CryptoAlgorithm algorithm, byte[] key, byte[] data, byte[]? iv = null, CryptoKeyHash? keyHash = null)
         => algorithm switch
         {
-            CryptoAlgorithm.AesCtr => Decrypt(new AesCtrCryptoAlgorithmParams { Counter = iv }, key, data, null),
-            CryptoAlgorithm.AesCbc => Decrypt(new AesCbcCryptoAlgorithmParams { Iv = iv }, key, data, null),
-            CryptoAlgorithm.AesGcm => Decrypt(new AesGcmCryptoAlgorithmParams { Iv = iv }, key, data, null),
+            CryptoAlgorithm.AesCtr => Decrypt(new AesCtrCryptoAlgorithmParams { Counter = RequireIv(algorithm, iv) }, key, data, null),
+            CryptoAlgorithm.AesCbc => Decrypt(new AesCbcCryptoAlgorithmParams { Iv = RequireIv(algorithm, iv) }, key, data, null),
+            CryptoAlgorithm.AesGcm => Decrypt(new AesGcmCryptoAlgorithmParams { Iv = RequireIv(algorithm, iv) }, key, data, null),
             _ => Decrypt(new RsaOaepCryptoAlgorithmParams(), key, data, keyHash),
         };
 }

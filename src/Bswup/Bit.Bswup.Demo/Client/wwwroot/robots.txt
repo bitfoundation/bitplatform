@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# /error and /not-found are kept out of the index with a robots meta tag (see PageOutlet and
+# SiteMetadata.NoIndexUrls), NOT with a Disallow here: a disallowed URL is never fetched, so the
+# crawler would never read the noindex and could still list the page from inbound links alone.
+
+# Machine endpoints, not documentation: the MCP server and the plain HTTP mirror of its tools.
+# The /mcp rules are anchored to that exact path and its descendants, so the /mcp-server docs
+# page stays crawlable.
+Disallow: /api/
+Disallow: /mcp$
+Disallow: /mcp/
+
+Sitemap: https://bswup.bitplatform.dev/sitemap.xml

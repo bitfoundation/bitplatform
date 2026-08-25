@@ -1,0 +1,765 @@
+﻿@page "/window"
+@implements IAsyncDisposable
+@inject Bit.Butil.Window window
+
+<PageTitle>Window - Bit.Butil</PageTitle>
+
+<PageHeader Category="Window & Browsing"
+            Title="Window"
+            Lead="The top-level browsing context: DOM events, native dialogs, dimensions, scrolling, popups, base64 helpers, text selection and media queries - all callable from C#."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Window"
+            InjectAs="Window window" />
+
+<div class="stack">
+    <DemoSection Title="Window events"
+                 Api="AddEventListener / SubscribeEvent / RemoveEventListener"
+                 Description="Attach a handler to any DOM event raised on window. SubscribeEvent returns a ButilSubscription - an IAsyncDisposable handle that detaches the listener when disposed, which is the safest pattern for lambdas."
+                 Code=@("""
+@implements IAsyncDisposable
+@inject Bit.Butil.Window window
+
+@code {
+    private ButilSubscription? subscription;
+
+    private async Task Subscribe()
+    {
+        subscription = await window.SubscribeEvent<ButilKeyboardEventArgs>(
+            ButilEvents.KeyDown,
+            args => Console.WriteLine($"{args.Key} ({args.Code})"));
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (subscription is not null) await subscription.DisposeAsync();
+    }
+}
+""")>
+        <div class="controls">
+            <button @onclick="SubscribeKeyDown" disabled="@(keydownSubscription is not null)">Subscribe keydown</button>
+            <button class="secondary" @onclick="UnsubscribeKeyDown" disabled="@(keydownSubscription is null)">Unsubscribe</button>
+        </div>
+        <p class="section-desc">While subscribed, press any key and watch the console below.</p>
+        <DemoConsole @ref="eventsOutput" Title="window events output" />
+    </DemoSection>
+
+    <DemoSection Title="Before-unload and page lifecycle"
+                 Api="AddBeforeUnload / RemoveBeforeUnload / SubscribeFreeze / SubscribeResume"
+                 Description="AddBeforeUnload makes the browser show a confirmation prompt before the user leaves or reloads the page - ideal for unsaved-changes protection. SubscribeFreeze and SubscribeResume observe the back/forward-cache lifecycle so you can release and re-acquire expensive resources."
+                 Code=@("""
+await window.AddBeforeUnload("You have unsaved changes.");
+
+// later, when the data is saved:
+await window.RemoveBeforeUnload();
+
+var freezeSub = await window.SubscribeFreeze(() => { /* release resources */ });
+var resumeSub = await window.SubscribeResume(() => { /* re-acquire them */ });
+""")>
+        <div class="controls">
+            <button @onclick="AddBeforeUnload" disabled="@beforeUnloadActive">Enable leave prompt</button>
+            <button class="secondary" @onclick="RemoveBeforeUnload" disabled="@(!beforeUnloadActive)">Disable</button>
+        </div>
+        <p class="section-desc">Enable it, then try reloading this tab - the browser asks for confirmation.</p>
+        <DemoConsole @ref="lifecycleOutput" Title="page lifecycle output" />
+    </DemoSection>
+
+    <DemoSection Title="Native dialogs"
+                 Api="Alert / Confirm / Prompt"
+                 Description="The classic blocking browser dialogs. Confirm resolves to a bool and Prompt resolves to the entered text, or null when the user cancels."
+                 Code=@("""
+await window.Alert("Hello from C#!");
+
+bool ok = await window.Confirm("Proceed with the operation?");
+
+string? name = await window.Prompt("What is your name?", "Butil");
+""")>
+        <div class="controls">
+            <button @onclick="ShowAlert">Alert</button>
+            <button @onclick="ShowConfirm">Confirm</button>
+            <button @onclick="ShowPrompt">Prompt</button>
+        </div>
+        <DemoConsole @ref="dialogsOutput" Title="native dialogs output" />
+    </DemoSection>
+
+    <DemoSection Title="Dimensions and offsets"
+                 Api="GetInnerWidth / GetInnerHeight / GetOuterWidth / GetOuterHeight / GetScreenX / GetScreenY / GetScrollX / GetScrollY"
+                 Description="Read the viewport and window sizes, the window position on the screen, and how far the document has been scrolled."
+                 Code=@("""
+var innerWidth = await window.GetInnerWidth();
+var innerHeight = await window.GetInnerHeight();
+var outerWidth = await window.GetOuterWidth();
+var outerHeight = await window.GetOuterHeight();
+var screenX = await window.GetScreenX();
+var screenY = await window.GetScreenY();
+var scrollX = await window.GetScrollX();
+var scrollY = await window.GetScrollY();
+""")>
+        <div class="controls">
+            <button @onclick="ReadDimensions">Read all metrics</button>
+        </div>
+        <DemoConsole @ref="dimensionsOutput" Title="dimensions output" />
+    </DemoSection>
+
+    <DemoSection Title="Scrolling"
+                 Api="Scroll / ScrollBy"
+                 Description="Scroll to an absolute position or by a relative offset. The ScrollOptions overloads add smooth or instant behavior control."
+                 Code=@("""
+await window.Scroll(0, 0);
+
+await window.ScrollBy(0, 400);
+
+await window.Scroll(new ScrollOptions
+{
+    Top = 0,
+    Behavior = ScrollBehavior.Smooth,
+});
+""")>
+        <div class="controls">
+            <button @onclick="ScrollToTop">Smooth scroll to top</button>
+            <button class="secondary" @onclick="ScrollDown">ScrollBy(0, 400)</button>
+        </div>
+        <DemoConsole @ref="scrollingOutput" Title="scrolling output" />
+    </DemoSection>
+
+    <DemoSection Title="Popups, focus and printing"
+                 Api="Open / Close / Focus / Blur / Print / Stop"
+                 Description="Open returns an opaque tracking id you can later pass to Close to close that popup, or null when the browser blocked it. Print opens the print dialog for the current document, and Stop aborts any in-flight page loading."
+                 Code=@("""
+var popupId = await window.Open("https://bitplatform.dev", "_blank", new WindowFeatures
+{
+    Popup = true,
+    Width = 600,
+    Height = 400,
+    NoOpener = true,
+});
+
+if (popupId is not null)
+{
+    await window.Close(popupId);
+}
+
+await window.Print();
+""")>
+        <div class="controls">
+            <button @onclick="OpenPopup">Open popup</button>
+            <button class="secondary" @onclick="ClosePopup" disabled="@(popupId is null)">Close popup</button>
+            <button class="secondary" @onclick="OpenPrint">Print</button>
+        </div>
+        <DemoConsole @ref="popupsOutput" Title="popups and printing output" />
+    </DemoSection>
+
+    <DemoSection Title="Base64 helpers"
+                 Api="Btoa / Atob"
+                 Description="Btoa produces a base64-encoded ASCII string from binary string data and Atob decodes it back - the same semantics as the browser globals of the same names."
+                 Code=@("""
+var encoded = await window.Btoa("Hello Butil!");   // "SGVsbG8gQnV0aWwh"
+
+var decoded = await window.Atob(encoded);          // "Hello Butil!"
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Text to encode</span>
+                <input @bind="btoaText" />
+            </div>
+            <div class="field">
+                <span class="field-label">Base64 to decode</span>
+                <input @bind="atobText" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="EncodeText">Btoa</button>
+            <button class="secondary" @onclick="DecodeText">Atob</button>
+        </div>
+        <DemoConsole @ref="base64Output" Title="base64 output" />
+    </DemoSection>
+
+    <DemoSection Title="Find and text selection"
+                 Api="Find / GetSelection / GetSelectionText / SelectElement / CopySelection / ClearSelection"
+                 Description="Find searches (and selects) text on the page. The selection helpers read the current selection as a snapshot, programmatically select an element's content, copy the selection to the clipboard, or clear it."
+                 Code=@("""
+bool found = await window.Find("butil", caseSensitive: false, wrapAround: true);
+
+WindowSelection? selection = await window.GetSelection();
+string text = await window.GetSelectionText();
+
+await window.SelectElement(myElementReference);
+bool copied = await window.CopySelection();
+await window.ClearSelection();
+""")>
+        <div class="field">
+            <span class="field-label">Search text</span>
+            <input @bind="findText" placeholder="Text to find on this page" />
+        </div>
+        <div class="field">
+            <span class="field-label">Selectable input (used by SelectElement)</span>
+            <input @ref="selectableInput" @bind="selectableText" />
+        </div>
+        <div class="controls">
+            <button @onclick="FindText">Find</button>
+            <button @onclick="ReadSelection">GetSelection</button>
+            <button @onclick="ReadSelectionText">GetSelectionText</button>
+            <button class="secondary" @onclick="SelectInput">SelectElement</button>
+            <button class="secondary" @onclick="CopySelection">CopySelection</button>
+            <button class="secondary" @onclick="ClearSelection">ClearSelection</button>
+        </div>
+        <p class="section-desc">Highlight any text on this page, then use the selection buttons.</p>
+        <DemoConsole @ref="selectionOutput" Title="find and selection output" />
+    </DemoSection>
+
+    <DemoSection Title="Context, naming and media queries"
+                 Api="IsSecureContext / GetOrigin / GetName / SetName / GetLocationBar / MatchMedia / WatchMatchMedia"
+                 Description="Inspect the browsing context: secure-context state, origin, the window name and the location bar visibility. MatchMedia evaluates a CSS media query once, while WatchMatchMedia keeps a handler subscribed to its change event via a disposable subscription."
+                 Code=@("""
+bool secure = await window.IsSecureContext();
+string origin = await window.GetOrigin();
+BarProp locationBar = await window.GetLocationBar();
+
+await window.SetName("butil-demo");
+string name = await window.GetName();
+
+MediaQueryList result = await window.MatchMedia("(max-width: 600px)");
+
+ButilSubscription sub = await window.WatchMatchMedia(
+    "(prefers-color-scheme: dark)",
+    mql => Console.WriteLine($"dark mode: {mql.Matches}"));
+
+// later: await sub.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSecureContext">IsSecureContext</button>
+            <button @onclick="ReadOrigin">GetOrigin</button>
+            <button @onclick="ReadLocationBar">GetLocationBar</button>
+            <button @onclick="ReadWindowName">GetName</button>
+        </div>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Window name</span>
+                <input @bind="windowName" placeholder="New window name" />
+            </div>
+            <div class="field">
+                <span class="field-label">Media query</span>
+                <input @bind="mediaQuery" />
+            </div>
+        </div>
+        <div class="controls">
+            <button class="secondary" @onclick="SetWindowName">SetName</button>
+            <button @onclick="EvaluateMediaQuery">MatchMedia</button>
+            <button @onclick="WatchMediaQuery" disabled="@(mediaSubscription is not null)">Watch changes</button>
+            <button class="secondary" @onclick="UnwatchMediaQuery" disabled="@(mediaSubscription is null)">Unwatch</button>
+        </div>
+        <p class="section-desc">Watch the query, then resize the browser window to see change notifications.</p>
+        <DemoConsole @ref="contextOutput" Title="context and media queries output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="Popup blockers">
+    Browsers only allow <code>Open</code> in response to a user gesture, and popup blockers can still
+    veto it - always check the returned id for <code>null</code> before assuming the window exists.
+</Callout>
+
+<Callout Type="info" Title="Removing listeners added with lambdas">
+    <code>RemoveEventListener</code> matches by delegate identity, so a freshly created lambda never matches
+    the registered one. Keep the original delegate in a field, or prefer <code>SubscribeEvent</code> and dispose
+    the returned <code>ButilSubscription</code>.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="AddEventListener" Signature="Task AddEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false)" Description="Attaches a handler to a DOM event on window." />
+    <ApiMember Name="RemoveEventListener" Signature="Task RemoveEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false)" Description="Detaches a previously added handler (matched by delegate identity)." />
+    <ApiMember Name="SubscribeEvent" Signature="Task<ButilSubscription> SubscribeEvent<T>(string domEvent, Action<T> listener, bool useCapture = false)" Description="AddEventListener variant returning a disposable subscription. An overload accepts ButilEventListenerOptions (capture, passive, once)." />
+    <ApiMember Name="AddBeforeUnload" Signature="Task AddBeforeUnload()" Description="Enables the browser's leave-confirmation prompt. An overload accepts a message string for maximum cross-browser consistency." />
+    <ApiMember Name="RemoveBeforeUnload" Signature="Task RemoveBeforeUnload()" Description="Removes the beforeunload handlers registered by this instance." />
+    <ApiMember Name="SubscribeFreeze" Signature="Task<ButilSubscription> SubscribeFreeze(Action handler)" Description="Fires when the page is frozen (moved to the back/forward cache)." />
+    <ApiMember Name="SubscribeResume" Signature="Task<ButilSubscription> SubscribeResume(Action handler)" Description="Fires when the page resumes from the back/forward cache." />
+    <ApiMember Name="GetInnerWidth / GetInnerHeight" Signature="Task<float> GetInnerWidth() / Task<float> GetInnerHeight()" Description="The content-area (viewport) size in px, including rendered scrollbars." />
+    <ApiMember Name="GetOuterWidth / GetOuterHeight" Signature="Task<float> GetOuterWidth() / Task<float> GetOuterHeight()" Description="The size of the whole browser window in px." />
+    <ApiMember Name="GetScreenX / GetScreenY" Signature="Task<float> GetScreenX() / Task<float> GetScreenY()" Description="Distance from the browser viewport to the left/top edge of the screen." />
+    <ApiMember Name="GetScrollX / GetScrollY" Signature="Task<float> GetScrollX() / Task<float> GetScrollY()" Description="How far the document has been scrolled horizontally/vertically." />
+    <ApiMember Name="IsSecureContext" Signature="Task<bool> IsSecureContext()" Description="Whether the current context is secure (https or localhost)." />
+    <ApiMember Name="GetOrigin" Signature="Task<string> GetOrigin()" Description="The global object's origin, serialized as a string." />
+    <ApiMember Name="GetLocationBar" Signature="Task<BarProp> GetLocationBar()" Description="The locationbar object; Visible is false when this window is a popup." />
+    <ApiMember Name="GetName / SetName" Signature="Task<string> GetName() / Task SetName(string value)" Description="Reads or writes the name of the window." />
+    <ApiMember Name="Alert" Signature="Task Alert(string? message = null)" Description="Displays a native alert dialog." />
+    <ApiMember Name="Confirm" Signature="Task<bool> Confirm(string? message = null)" Description="Displays a confirmation dialog; resolves to the user's choice." />
+    <ApiMember Name="Prompt" Signature="Task<string?> Prompt(string? message, string? defaultValue)" Description="Displays a text-input dialog; resolves to the entered text or null on cancel." />
+    <ApiMember Name="Btoa" Signature="Task<string> Btoa(string data)" Description="Creates a base64-encoded ASCII string from a string of binary data." />
+    <ApiMember Name="Atob" Signature="Task<string> Atob(string data)" Description="Decodes a base64-encoded string." />
+    <ApiMember Name="Find" Signature="Task<bool> Find(string? text = null, bool? caseSensitive = null, bool? backward = null, bool? wrapAround = null, bool? wholeWord = null, bool? searchInFrame = null)" Description="Searches for a string in the window; true when a match is found." />
+    <ApiMember Name="GetSelection" Signature="Task<WindowSelection?> GetSelection()" Description="Snapshot of the current selection (text plus range metadata)." />
+    <ApiMember Name="GetSelectionText" Signature="Task<string> GetSelectionText()" Description="Just the selected text." />
+    <ApiMember Name="SelectElement" Signature="Task SelectElement(Microsoft.AspNetCore.Components.ElementReference element)" Description="Selects every text node inside the element (falls back to input select())." />
+    <ApiMember Name="CopySelection" Signature="Task<bool> CopySelection()" Description="Copies the current selection to the clipboard; true on success." />
+    <ApiMember Name="ClearSelection" Signature="Task ClearSelection()" Description="Removes any current selection." />
+    <ApiMember Name="MatchMedia" Signature="Task<MediaQueryList> MatchMedia(string query)" Description="Evaluates a media query once, returning Matches and the normalized Media text." />
+    <ApiMember Name="SubscribeMatchMedia" Signature="Task<Guid> SubscribeMatchMedia(string query, Action<MediaQueryList> handler)" Description="Subscribes to the query's change event; returns an id for UnsubscribeMatchMedia." />
+    <ApiMember Name="WatchMatchMedia" Signature="Task<ButilSubscription> WatchMatchMedia(string query, Action<MediaQueryList> handler)" Description="SubscribeMatchMedia variant returning a disposable subscription." />
+    <ApiMember Name="UnsubscribeMatchMedia" Signature="ValueTask UnsubscribeMatchMedia(Guid id)" Description="Removes a match-media listener. An overload accepts the handler and returns the removed ids (ValueTask<Guid[]>)." />
+    <ApiMember Name="Open" Signature="Task<string?> Open(string? url = null, string? target = null, WindowFeatures? windowFeatures = null)" Description="Opens a new window; returns a tracking id for Close, or null when blocked. An overload accepts the features as a raw string." />
+    <ApiMember Name="Close" Signature="Task Close(string? id = null)" Description="Closes the current window, or the popup identified by the given tracking id." />
+    <ApiMember Name="Focus / Blur" Signature="Task Focus() / Task Blur()" Description="Sets focus on, or away from, the window." />
+    <ApiMember Name="Print" Signature="Task Print()" Description="Opens the print dialog for the current document." />
+    <ApiMember Name="Stop" Signature="Task Stop()" Description="Stops window loading." />
+    <ApiMember Name="Scroll" Signature="Task Scroll(float? x, float? y)" Description="Scrolls the window to an absolute position. An overload accepts ScrollOptions for smooth/instant behavior." />
+    <ApiMember Name="ScrollBy" Signature="Task ScrollBy(float? x, float? y)" Description="Scrolls the document by a relative amount. An overload accepts ScrollOptions." />
+    <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Releases every listener, media-query watcher, popup ref and beforeunload handler this instance registered. InvokeMediaQueryChange is the public JSInvokable dispatch bridge and is not intended for app code." />
+    <ApiMember Name="GetDevicePixelRatio"
+               Signature="Task<double> GetDevicePixelRatio()"
+               Description="CSS pixels per device pixel - 2 on a typical retina display, fractional at OS zoom levels. Changes when the user zooms or moves the window to another monitor, so read it when needed rather than caching it." />
+    <ApiMember Name="IsCrossOriginIsolated"
+               Signature="Task<bool> IsCrossOriginIsolated()"
+               Description="True when the page is cross-origin isolated, which unlocks SharedArrayBuffer and unthrottled high-resolution timers. Requires COOP and COEP response headers; Blazor WebAssembly multithreading needs it." />
+    <ApiMember Name="IsInIframe"
+               Signature="Task<bool> IsInIframe()"
+               Description="True when this document is running inside a frame. Stays legal across origins, and returns true if the check itself is blocked, since only a cross-origin embedding causes that. Pair with Location.GetAncestorOrigins to find out who." />
+    <ApiMember Name="GetFrameCount"
+               Signature="Task<int> GetFrameCount()"
+               Description="Number of frames directly inside this window (window.length)." />
+    <ApiMember Name="MoveTo / MoveBy"
+               Signature="Task MoveTo(float x, float y)  |  Task MoveBy(float x, float y)"
+               Description="Moves the window. Silently ignored for a normal tab - browsers only honor this for a window the script itself opened, and never for one with multiple tabs." />
+    <ApiMember Name="ResizeTo / ResizeBy"
+               Signature="Task ResizeTo(float width, float height)  |  Task ResizeBy(float width, float height)"
+               Description="Resizes the window. Subject to the same restrictions as MoveTo." />
+</ApiTable>
+
+@code {
+    private DemoConsole eventsOutput = default!;
+    private DemoConsole lifecycleOutput = default!;
+    private DemoConsole dialogsOutput = default!;
+    private DemoConsole dimensionsOutput = default!;
+    private DemoConsole scrollingOutput = default!;
+    private DemoConsole popupsOutput = default!;
+    private DemoConsole base64Output = default!;
+    private DemoConsole selectionOutput = default!;
+    private DemoConsole contextOutput = default!;
+
+    private ButilSubscription? keydownSubscription;
+    private ButilSubscription? mediaSubscription;
+    private bool beforeUnloadActive;
+    private string? popupId;
+    private string btoaText = "Hello Butil!";
+    private string atobText = "";
+    private string findText = "";
+    private string windowName = "";
+    private string mediaQuery = "(max-width: 600px)";
+    private string selectableText = "Some selectable demo text";
+    private ElementReference selectableInput;
+
+    private async Task SubscribeKeyDown()
+    {
+        try
+        {
+            keydownSubscription = await window.SubscribeEvent<ButilKeyboardEventArgs>(
+                ButilEvents.KeyDown,
+                args => _ = eventsOutput.Info("keydown:", args.Key, $"(code: {args.Code}, ctrl: {args.CtrlKey}, shift: {args.ShiftKey})"));
+            await eventsOutput.Success("Subscribed to window keydown.");
+        }
+        catch (Exception ex)
+        {
+            await eventsOutput.Error("SubscribeEvent failed:", ex.Message);
+        }
+    }
+
+    private async Task UnsubscribeKeyDown()
+    {
+        try
+        {
+            if (keydownSubscription is not null)
+            {
+                await keydownSubscription.DisposeAsync();
+                keydownSubscription = null;
+            }
+            await eventsOutput.Log("Keydown subscription disposed.");
+        }
+        catch (Exception ex)
+        {
+            await eventsOutput.Error("Unsubscribe failed:", ex.Message);
+        }
+    }
+
+    private async Task AddBeforeUnload()
+    {
+        try
+        {
+            await window.AddBeforeUnload("You have unsaved changes.");
+            beforeUnloadActive = true;
+            await lifecycleOutput.Success("Leave prompt enabled - try reloading the tab.");
+        }
+        catch (Exception ex)
+        {
+            await lifecycleOutput.Error("AddBeforeUnload failed:", ex.Message);
+        }
+    }
+
+    private async Task RemoveBeforeUnload()
+    {
+        try
+        {
+            await window.RemoveBeforeUnload();
+            beforeUnloadActive = false;
+            await lifecycleOutput.Log("Leave prompt disabled.");
+        }
+        catch (Exception ex)
+        {
+            await lifecycleOutput.Error("RemoveBeforeUnload failed:", ex.Message);
+        }
+    }
+
+    private async Task ShowAlert()
+    {
+        try
+        {
+            await window.Alert("Hello from Bit.Butil!");
+            await dialogsOutput.Log("Alert dismissed.");
+        }
+        catch (Exception ex)
+        {
+            await dialogsOutput.Error("Alert failed:", ex.Message);
+        }
+    }
+
+    private async Task ShowConfirm()
+    {
+        try
+        {
+            var result = await window.Confirm("Do you like Bit.Butil?");
+            await dialogsOutput.Info("Confirm returned:", result);
+        }
+        catch (Exception ex)
+        {
+            await dialogsOutput.Error("Confirm failed:", ex.Message);
+        }
+    }
+
+    private async Task ShowPrompt()
+    {
+        try
+        {
+            var result = await window.Prompt("What is your name?", "Butil");
+            await dialogsOutput.Info("Prompt returned:", result ?? "null (cancelled)");
+        }
+        catch (Exception ex)
+        {
+            await dialogsOutput.Error("Prompt failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadDimensions()
+    {
+        try
+        {
+            await dimensionsOutput.Info("inner:", $"{await window.GetInnerWidth()} x {await window.GetInnerHeight()}");
+            await dimensionsOutput.Info("outer:", $"{await window.GetOuterWidth()} x {await window.GetOuterHeight()}");
+            await dimensionsOutput.Info("screen offset:", $"({await window.GetScreenX()}, {await window.GetScreenY()})");
+            await dimensionsOutput.Info("scroll offset:", $"({await window.GetScrollX()}, {await window.GetScrollY()})");
+        }
+        catch (Exception ex)
+        {
+            await dimensionsOutput.Error("Reading dimensions failed:", ex.Message);
+        }
+    }
+
+    private async Task ScrollToTop()
+    {
+        try
+        {
+            await window.Scroll(new ScrollOptions { Top = 0, Behavior = ScrollBehavior.Smooth });
+            await scrollingOutput.Log("Scrolled to top.");
+        }
+        catch (Exception ex)
+        {
+            await scrollingOutput.Error("Scroll failed:", ex.Message);
+        }
+    }
+
+    private async Task ScrollDown()
+    {
+        try
+        {
+            await window.ScrollBy(0, 400);
+            await scrollingOutput.Log("Scrolled down by 400px.");
+        }
+        catch (Exception ex)
+        {
+            await scrollingOutput.Error("ScrollBy failed:", ex.Message);
+        }
+    }
+
+    private async Task OpenPopup()
+    {
+        try
+        {
+            popupId = await window.Open("https://bitplatform.dev", "_blank", new WindowFeatures
+            {
+                Popup = true,
+                Width = 600,
+                Height = 400,
+                NoOpener = true,
+            });
+            if (popupId is null)
+            {
+                await popupsOutput.Warn("Popup was blocked by the browser.");
+            }
+            else
+            {
+                await popupsOutput.Success("Popup opened, tracking id:", popupId);
+            }
+        }
+        catch (Exception ex)
+        {
+            await popupsOutput.Error("Open failed:", ex.Message);
+        }
+    }
+
+    private async Task ClosePopup()
+    {
+        try
+        {
+            await window.Close(popupId);
+            popupId = null;
+            await popupsOutput.Log("Popup closed.");
+        }
+        catch (Exception ex)
+        {
+            await popupsOutput.Error("Close failed:", ex.Message);
+        }
+    }
+
+    private async Task OpenPrint()
+    {
+        try
+        {
+            await window.Print();
+            await popupsOutput.Log("Print dialog closed.");
+        }
+        catch (Exception ex)
+        {
+            await popupsOutput.Error("Print failed:", ex.Message);
+        }
+    }
+
+    private async Task EncodeText()
+    {
+        try
+        {
+            atobText = await window.Btoa(btoaText);
+            await base64Output.Success("Btoa:", atobText);
+        }
+        catch (Exception ex)
+        {
+            await base64Output.Error("Btoa failed:", ex.Message);
+        }
+    }
+
+    private async Task DecodeText()
+    {
+        try
+        {
+            var decoded = await window.Atob(atobText);
+            await base64Output.Success("Atob:", decoded);
+        }
+        catch (Exception ex)
+        {
+            await base64Output.Error("Atob failed (is the input valid base64?):", ex.Message);
+        }
+    }
+
+    private async Task FindText()
+    {
+        try
+        {
+            var found = await window.Find(findText, caseSensitive: false, wrapAround: true);
+            await selectionOutput.Info("Find returned:", found);
+        }
+        catch (Exception ex)
+        {
+            await selectionOutput.Error("Find failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadSelection()
+    {
+        try
+        {
+            var selection = await window.GetSelection();
+            await selectionOutput.Info("GetSelection:", selection);
+        }
+        catch (Exception ex)
+        {
+            await selectionOutput.Error("GetSelection failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadSelectionText()
+    {
+        try
+        {
+            var text = await window.GetSelectionText();
+            await selectionOutput.Info("GetSelectionText:", string.IsNullOrEmpty(text) ? "(empty)" : text);
+        }
+        catch (Exception ex)
+        {
+            await selectionOutput.Error("GetSelectionText failed:", ex.Message);
+        }
+    }
+
+    private async Task SelectInput()
+    {
+        try
+        {
+            await window.SelectElement(selectableInput);
+            await selectionOutput.Log("Input content selected.");
+        }
+        catch (Exception ex)
+        {
+            await selectionOutput.Error("SelectElement failed:", ex.Message);
+        }
+    }
+
+    private async Task CopySelection()
+    {
+        try
+        {
+            var copied = await window.CopySelection();
+            await selectionOutput.Info("CopySelection returned:", copied);
+        }
+        catch (Exception ex)
+        {
+            await selectionOutput.Error("CopySelection failed:", ex.Message);
+        }
+    }
+
+    private async Task ClearSelection()
+    {
+        try
+        {
+            await window.ClearSelection();
+            await selectionOutput.Log("Selection cleared.");
+        }
+        catch (Exception ex)
+        {
+            await selectionOutput.Error("ClearSelection failed:", ex.Message);
+        }
+    }
+
+    private async Task CheckSecureContext()
+    {
+        try
+        {
+            await contextOutput.Info("IsSecureContext:", await window.IsSecureContext());
+        }
+        catch (Exception ex)
+        {
+            await contextOutput.Error("IsSecureContext failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadOrigin()
+    {
+        try
+        {
+            await contextOutput.Info("Origin:", await window.GetOrigin());
+        }
+        catch (Exception ex)
+        {
+            await contextOutput.Error("GetOrigin failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadLocationBar()
+    {
+        try
+        {
+            var bar = await window.GetLocationBar();
+            await contextOutput.Info("LocationBar.Visible:", bar.Visible);
+        }
+        catch (Exception ex)
+        {
+            await contextOutput.Error("GetLocationBar failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadWindowName()
+    {
+        try
+        {
+            var name = await window.GetName();
+            await contextOutput.Info("Window name:", string.IsNullOrEmpty(name) ? "(empty)" : name);
+        }
+        catch (Exception ex)
+        {
+            await contextOutput.Error("GetName failed:", ex.Message);
+        }
+    }
+
+    private async Task SetWindowName()
+    {
+        try
+        {
+            await window.SetName(windowName);
+            await contextOutput.Success("Window name set to:", windowName);
+        }
+        catch (Exception ex)
+        {
+            await contextOutput.Error("SetName failed:", ex.Message);
+        }
+    }
+
+    private async Task EvaluateMediaQuery()
+    {
+        try
+        {
+            var result = await window.MatchMedia(mediaQuery);
+            await contextOutput.Info("MatchMedia:", $"matches = {result.Matches}, media = {result.Media}");
+        }
+        catch (Exception ex)
+        {
+            await contextOutput.Error("MatchMedia failed:", ex.Message);
+        }
+    }
+
+    private async Task WatchMediaQuery()
+    {
+        try
+        {
+            mediaSubscription = await window.WatchMatchMedia(
+                mediaQuery,
+                mql => _ = contextOutput.Info("Media query changed:", $"matches = {mql.Matches}, media = {mql.Media}"));
+            await contextOutput.Success("Watching media query:", mediaQuery);
+        }
+        catch (Exception ex)
+        {
+            await contextOutput.Error("WatchMatchMedia failed:", ex.Message);
+        }
+    }
+
+    private async Task UnwatchMediaQuery()
+    {
+        try
+        {
+            if (mediaSubscription is not null)
+            {
+                await mediaSubscription.DisposeAsync();
+                mediaSubscription = null;
+            }
+            await contextOutput.Log("Media query watcher disposed.");
+        }
+        catch (Exception ex)
+        {
+            await contextOutput.Error("Unwatch failed:", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (keydownSubscription is not null) await keydownSubscription.DisposeAsync();
+            if (mediaSubscription is not null) await mediaSubscription.DisposeAsync();
+            if (beforeUnloadActive) await window.RemoveBeforeUnload();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+}

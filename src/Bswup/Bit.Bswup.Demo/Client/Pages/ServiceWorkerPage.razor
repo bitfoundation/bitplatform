@@ -1,0 +1,337 @@
+﻿@page "/service-worker"
+
+<PageOutlet Slug="service-worker" />
+
+<h1>Service Worker Settings</h1>
+<p class="docs-lead">
+    Everything you can configure in <code>service-worker.js</code> before importing the Bswup engine.
+</p>
+
+<CodeBlock Language="javascript" Code="@FullConfigCode" />
+
+<p>
+    The most important line is the <strong>last</strong> one - the only mandatory config in this file:
+</p>
+<CodeBlock Language="javascript" Code="self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');" />
+
+<Callout Type="danger" Title="Security: the service worker is part of your trusted base">
+    <p>
+        Unlike the assets in <code>service-worker-assets.js</code> (which Bswup verifies with Subresource
+        Integrity), the service worker script itself cannot be integrity-pinned: browsers support neither an
+        <code>integrity</code> option on <code>register()</code> nor SRI for <code>importScripts()</code>.
+        A tampered <code>service-worker.js</code> or <code>bit-bswup.sw.js</code> is effectively persistent,
+        fully-privileged XSS. Serve both over HTTPS from an origin you control and apply a strict
+        Content-Security-Policy.
+    </p>
+    <p>
+        Bswup registers with <code>updateViaCache: 'none'</code> so update checks bypass the HTTP cache for
+        the whole <code>service-worker.js</code> → <code>bit-bswup.sw.js</code> → <code>service-worker-assets.js</code>
+        import chain. As defense-in-depth (support is uneven on older Safari/iOS, and proxies are not bound
+        by it), also send <code>Cache-Control: no-cache</code> for these two files so every fetch
+        revalidates against the origin.
+    </p>
+</Callout>
+
+<h2>How the URL-matching lists are matched</h2>
+<p>
+    <code>assetsInclude</code>, <code>assetsExclude</code>, <code>prohibitedUrls</code>,
+    <code>serverHandledUrls</code> and <code>serverRenderedUrls</code> all accept the same two kinds of entry:
+</p>
+<ul>
+    <li>a <strong><code>RegExp</code></strong> (e.g. <code>/\/admin\//</code>) is used as the pattern it is - what you want for anything non-trivial;</li>
+    <li>a <strong>string</strong> (e.g. <code>'/admin/'</code>) is matched <strong>literally as a substring</strong> of the URL. It is regex-escaped, so <code>'v1.0'</code> matches only <code>v1.0</code> and never <code>v1X0</code>.</li>
+</ul>
+<Callout Type="warning" Title="Strings are substring matches">
+    <code>'app.css'</code> matches <code>/css/app.css</code> anywhere in the URL; anchor with a
+    <code>RegExp</code> such as <code>/\/app\.css$/</code> if that is too broad. Prefer a <code>RegExp</code>
+    whenever you need anchoring, alternation or wildcards. Also note: before v-10-6-0 string entries were
+    silently <em>ignored</em> - see <a href="migration">the migration guide</a>.
+</Callout>
+
+<h2>Asset selection</h2>
+
+<h3 id="assetsinclude">assetsInclude</h3>
+<p>The list of file names from the assets list to <strong>include</strong> when Bswup stores them in cache storage (regex supported).</p>
+
+<h3 id="assetsexclude">assetsExclude</h3>
+<p>The list of file names from the assets list to <strong>exclude</strong> when Bswup stores them in cache storage (regex supported).</p>
+
+<h3 id="ignoredefaultinclude">ignoreDefaultInclude / ignoreDefaultExclude</h3>
+<p>Ignore the default include / exclude arrays Bswup provides. The defaults are:</p>
+<CodeBlock Language="javascript" Code="@DefaultIncludeCode" />
+<p>
+    <code>/\.wasm/</code>, <code>/\.pdb/</code> and <code>/\.html/</code> are deliberately unanchored
+    (mirroring the standard Blazor template), so variants such as <code>foo.wasm.br</code> also match.
+    The default excludes keep the service worker's own scripts out of the cache:
+</p>
+<CodeBlock Language="javascript" Code="@DefaultExcludeCode" />
+<Callout Type="danger" Title="Never cache service worker files">
+    Caching service-worker-related files corrupts the update cycle of the service worker. Only the browser
+    should handle these files.
+</Callout>
+
+<h3 id="externalassets">externalAssets</h3>
+<p>
+    The list of external assets to cache that are not included in the auto-generated assets file. For
+    example, if you're not using <code>index.html</code> (like <code>_host.cshtml</code>), add
+    <code>{ "url": "/" }</code>.
+</p>
+<CodeBlock Language="javascript" Code="@ExternalAssetsCode" />
+<p>Accepted entry shapes and behaviors:</p>
+<ul>
+    <li>An object with a <code>url</code> (a concrete string, or a <code>RegExp</code> for server-generated names unknown ahead of time), a bare string, or a bare <code>RegExp</code>; a single value also works without the array.</li>
+    <li>An entry may carry a <code>hash</code> (an SRI digest, <code>sha256-...</code>) that participates in <code>?v=</code> cache busting and - when <code>enableIntegrityCheck</code> is on - in integrity verification, exactly like a manifest asset.</li>
+    <li>Entries whose <code>url</code> cannot be parsed are skipped with a non-fatal <code>request</code> error instead of breaking the worker.</li>
+    <li><strong>Cross-origin</strong> entries are fetched in CORS mode first; when the host sends no CORS headers, Bswup retries with <code>no-cors</code> and caches the resulting <em>opaque</em> response so the asset still works offline. This fallback is skipped for integrity-checked assets. Browsers pad opaque responses in quota accounting (Chromium reserves several megabytes per entry), so prefer CORS-enabled hosts when you control them.</li>
+    <li><strong>Media</strong> works too: requests carrying a <code>Range</code> header are answered with a real <code>206 Partial Content</code> sliced from the cached full body (Safari refuses media served as <code>200</code> for a ranged request); uncached ranged requests pass through with their <code>Range</code> intact, and partial responses are never written to the cache.</li>
+    <li>Entries cached for <code>RegExp</code> patterns are kept across updates so the app still boots offline, but only the newest three generations per pattern survive each update.</li>
+</ul>
+
+<h2>Navigation &amp; URLs</h2>
+
+<h3 id="defaulturl">defaultUrl</h3>
+<p>
+    The default page URL, served from cache for navigation requests (the SPA fallback). Defaults to
+    <code>index.html</code>; use <code>/</code> when using <code>_Host.cshtml</code>. The value must match
+    an entry that actually exists in <code>service-worker-assets.js</code> or <code>externalAssets</code>;
+    the comparison uses <em>resolved</em> URLs, so equivalent spellings match. When nothing matches,
+    offline navigation cannot work and Bswup logs a <code>defaultUrl ... matches no asset</code> warning
+    at startup.
+</p>
+<ul>
+    <li>Navigations whose URL is itself a managed asset are served that asset instead of the default document (changed in v-10-6-0): opening <code>/manifest.json</code> directly shows that file, while route URLs (<code>/counter</code>, ...) still get the app shell.</li>
+    <li>If your host answers the shell URL with a redirect (e.g. <code>/</code> → <code>/index.html</code>, common on Cloudflare Pages and Netlify), Bswup rebuilds that response so offline deep-link navigation keeps working instead of failing with a redirect-mode error.</li>
+</ul>
+
+<h3 id="assetsurl">assetsUrl</h3>
+<p>
+    The path of the compile-time assets manifest (default file name <code>service-worker-assets.js</code>).
+    The default is resolved relative to the service worker script's own location - which is also where
+    Blazor publishes the file - so it works unchanged for apps mounted on a sub-path. Set it explicitly
+    only when the file lives somewhere else; a leading <code>/</code> makes the path origin-absolute.
+</p>
+
+<h3 id="prohibitedurls">prohibitedUrls</h3>
+<p>
+    URLs that should not be accessed (regex supported). Matching requests are answered by the service
+    worker with <code>403 Forbidden</code> for every HTTP method (changed in v-10-6-0 - previously
+    <code>405</code>).
+</p>
+<Callout Type="warning" Title="A convenience, not a security boundary">
+    Enforcement happens only inside the service worker, which is bypassed whenever the page is not
+    controlled (the very first visit, a hard reload, browsers without service worker support) and by any
+    client that talks to the server directly. Access control must be enforced on the server.
+</Callout>
+
+<h3 id="serverhandledurls">serverHandledUrls</h3>
+<p>URLs that skip the service worker offline pipeline entirely and are handled only by the server (regex supported) - e.g. <code>/api</code>, <code>/swagger</code>.</p>
+
+<h3 id="serverrenderedurls">serverRenderedUrls</h3>
+<p>URLs that should be rendered by the server rather than the client while navigating (regex supported) - e.g. <code>/about.html</code>, <code>/privacy</code>.</p>
+
+<h3 id="caseinsensitiveurl">caseInsensitiveUrl</h3>
+<p>
+    Enables case-insensitive URL checking - for asset cache matching <em>and</em> every URL-matching regex
+    list: when enabled, patterns are compiled with the <code>i</code> flag so e.g.
+    <code>prohibitedUrls: [/\/admin\//]</code> also blocks <code>/ADMIN/</code>.
+</p>
+
+<h3 id="noprerenderquery">noPrerenderQuery</h3>
+<p>
+    The query string attached to the default document request to disable server prerendering, so an
+    unwanted prerendered result is not cached - e.g. <code>no-prerender=true</code>.
+</p>
+
+<h3 id="forceprerender">forcePrerender</h3>
+<p>
+    Forces prerendering of the default document for every navigation request to ensure the server always
+    has the latest version of the app. Useful for server-rendered apps.
+</p>
+
+<h2>Install behavior &amp; resiliency</h2>
+
+<h3 id="ispassive">isPassive</h3>
+<p>
+    Enables passive mode: assets are never bulk-downloaded, they are cached one by one upon first request.
+    Nothing is precached during install, and the post-start background top-up is skipped too - the cache
+    only ever holds what the running app actually asked for. The first paint is never blocked behind a
+    full precache, and the app never pays for assets it does not use. The trade-off is that the app is
+    <em>not</em> guaranteed to be offline-capable: a page whose lazy-loaded assets were never requested
+    while online will not work offline. Apps that need the whole manifest cached should leave passive mode
+    off (see <code>mode = 'FullOffline'</code>).
+</p>
+
+<h3 id="errortolerance">errorTolerance</h3>
+<p>Controls how the service worker reacts to asset download / cache failures during install:</p>
+<div class="docs-table-wrapper">
+    <table>
+        <thead>
+            <tr><th>Value</th><th>Behavior</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>lax</code> (default)</td>
+                <td>
+                    Best-effort install. Asset failures never fail the install; missing assets are filled in
+                    lazily on first fetch. Failures are reported through the <code>error</code> event with
+                    <code>fatal: false</code> and still count toward progress so the bar reaches 100%.
+                    Tolerates optional <code>externalAssets</code> that may legitimately 404, and avoids
+                    leaving a first visit with no service worker to complete the startup handshake. The
+                    download runs under the install event's <code>waitUntil</code>, so
+                    <code>updateReady</code> is only announced once the background fill has settled.
+                </td>
+            </tr>
+            <tr>
+                <td><code>strict</code></td>
+                <td>
+                    Mirrors the standard Microsoft template / Workbox behavior. If any required asset fails,
+                    the install rejects, the partial cache is discarded, and the previous service worker (if
+                    any) keeps serving. Failed assets are <em>not</em> counted toward progress, so 100% means
+                    every asset succeeded; the abort is reported with <code>reason: 'install-aborted'</code>
+                    and <code>fatal: true</code>. On a first install (no previous version to fall back to)
+                    Bswup starts the app without a service worker so it still boots, and the install is
+                    retried on the next load.
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<h3 id="maxretries">maxRetries / retryDelay</h3>
+<p>
+    <code>maxRetries</code> (default <code>2</code>) is the number of <em>additional</em> download attempts
+    after the first when an asset fails transiently during install (a rejected fetch, or HTTP 408/429/5xx).
+    Deterministic failures - 404/403 and other permanent statuses, and SRI mismatches - are never retried,
+    since identical bytes would fail identically.
+</p>
+<p>
+    <code>retryDelay</code> (default <code>300</code>) is the base backoff in milliseconds: attempt
+    <em>n</em> waits <code>retryDelay * 2^(n-1)</code> plus random jitter, so a mass failure doesn't re-hit
+    the origin in one synchronized burst.
+</p>
+
+<h3 id="enableintegritycheck">enableIntegrityCheck</h3>
+<p>
+    Enables the browsers' built-in integrity verification by setting the <code>integrity</code> attribute
+    on the requests the service worker creates to fetch assets.
+</p>
+
+<h2>Caching &amp; updates</h2>
+
+<h3 id="cacheversion">cacheVersion</h3>
+<p>
+    Overrides the value used to name the cache bucket (<code>bit-bswup:&lt;scope-path&gt; - &lt;version&gt;</code>).
+    By default this tracks Blazor's <code>assetsManifest.version</code> (a hash over the published assets),
+    so the cache rotates automatically whenever any asset hash changes - and only then. Set it to take
+    manual control:
+</p>
+<ul>
+    <li>Pin it to a stable string so noisy dev rebuilds don't needlessly evict the whole cache.</li>
+    <li>Bump it to force a refresh when a meaningful change lives outside Blazor's asset manifest.</li>
+    <li>Feed it a build-stamped value (commit SHA, build timestamp) so it bumps automatically per publish.</li>
+</ul>
+<p>
+    Only the cache bucket name is affected: per-asset <code>?v=</code> cache busting and Subresource
+    Integrity keep using each asset's own hash.
+</p>
+
+<h3 id="disablehashlessassetsupdate">disableHashlessAssetsUpdate</h3>
+<p>
+    Disables the automatic re-download of hash-less assets (e.g. external assets) that Bswup performs every
+    time an update is found.
+</p>
+
+<h3 id="enablecachecontrol">enableCacheControl</h3>
+<p>
+    Adds cache-busting to each asset request (<code>cache: 'no-store'</code> plus a
+    <code>cache-control: no-cache</code> header). The header is only attached to same-origin requests: it
+    is not CORS-safelisted, so on a cross-origin asset it would force a preflight most third-party hosts
+    reject; cross-origin requests rely on the <code>cache: no-store</code> option alone.
+</p>
+
+<h2>Diagnostics</h2>
+<ul>
+    <li><code>enableDiagnostics</code>: pushes service worker logs to the browser console.</li>
+    <li><code>enableFetchDiagnostics</code>: additionally logs every fetch event the worker handles.</li>
+</ul>
+
+<h2 id="mode">Modes</h2>
+<p>
+    A <code>mode</code> is a preset bundle of defaults for the individual settings above
+    (<code>isPassive</code>, <code>defaultUrl</code>, <code>forcePrerender</code>,
+    <code>errorTolerance</code>, <code>caseInsensitiveUrl</code>, <code>noPrerenderQuery</code>): it only
+    fills settings you have not assigned yourself, so any explicit assignment always wins over the preset -
+    including explicit falsy values such as <code>caseInsensitiveUrl = false</code>.
+</p>
+<div class="docs-table-wrapper">
+    <table>
+        <thead>
+            <tr><th>Mode</th><th>Behavior</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>NoPrerender</code></td><td>Disables prerendering of the default document for every navigation request.</td></tr>
+            <tr><td><code>InitialPrerender</code></td><td>Enables prerendering of the default document only for the initial navigation request.</td></tr>
+            <tr><td><code>AlwaysPrerender</code></td><td>Enables prerendering of the default document for every navigation request.</td></tr>
+            <tr><td><code>FullOffline</code></td><td>Full offline mode: all assets are cached and served from cache from the first time the app loads.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="pager">
+    <a href="script-options">
+        <span class="pager-label">Previous</span>
+        <b>← Script Options</b>
+    </a>
+    <a class="pager-next" href="events">
+        <span class="pager-label">Next</span>
+        <b>Events &amp; Handler →</b>
+    </a>
+</div>
+
+@code {
+    private const string FullConfigCode = @"self.assetsInclude = [/\/data\.db$/];
+self.assetsExclude = [/\.scp\.css$/, /weather\.json$/];
+self.defaultUrl = '/';
+self.prohibitedUrls = [/\/admin\//];
+self.serverHandledUrls = [/\/api\//];
+self.serverRenderedUrls = [/\/privacy$/];
+self.externalAssets = [
+    {
+        ""url"": ""/""
+    },
+    {
+        ""url"": ""https://www.googletagmanager.com/gtag/js?id=G-G123456789""
+    }
+];
+self.assetsUrl = '/service-worker-assets.js';
+self.noPrerenderQuery = 'no-prerender=true';
+self.cacheVersion = '2026.05.31-abc1234';
+
+self.caseInsensitiveUrl = true;
+self.ignoreDefaultInclude = true;
+self.ignoreDefaultExclude = true;
+self.isPassive = true;
+self.enableIntegrityCheck = true;
+self.enableDiagnostics = true;
+self.enableFetchDiagnostics = true;
+
+self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');";
+
+    private const string DefaultIncludeCode = @"[/\.dll$/, /\.wasm/, /\.pdb/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/,
+ /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/, /\.webp$/]";
+
+    private const string DefaultExcludeCode = @"[
+    /^_content\/Bit\.Bswup\/bit-bswup\.sw\.js$/,
+    /^_content\/Bit\.Bswup\/bit-bswup\.sw\.min\.js$/,
+    /^_content\/Bit\.Bswup\/bit-bswup\.sw-cleanup\.js$/,
+    /^_content\/Bit\.Bswup\/bit-bswup\.sw-cleanup\.min\.js$/,
+    /^service-worker\.js$/,
+]";
+
+    private const string ExternalAssetsCode = @"self.externalAssets = [
+    { ""url"": ""/"" },                                    // the host page itself (e.g. _host.cshtml)
+    ""https://fonts.example.com/app-font.woff2"",        // bare string shorthand
+    { ""url"": /_framework\/resource-collection\..*\.js/ }, // RegExp for server-generated names
+    { ""url"": ""/lib/chart.js"", ""hash"": ""sha256-..."" }    // with SRI hash (cache busting + integrity)
+];";
+}

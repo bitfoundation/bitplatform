@@ -13,4 +13,12 @@ public class BitTheme
     public BitThemeShapes Shape { get; set; } = new();
 
     public BitThemeTypography Typography { get; set; } = new();
+
+    public BitThemeMotion Motion { get; set; } = new();
+
+    public BitThemeLayout Layout { get; set; } = new();
+
+    public BitThemeSizes Size { get; set; } = new();
+
+    public BitThemeOpacities Opacity { get; set; } = new();
 }

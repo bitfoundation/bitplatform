@@ -1,0 +1,341 @@
+﻿@page "/barcode-detector"
+@implements IAsyncDisposable
+@inject Bit.Butil.BarcodeDetector barcodeDetector
+@inject Bit.Butil.MediaDevices mediaDevices
+
+<PageTitle>BarcodeDetector - Bit.Butil</PageTitle>
+
+<PageHeader Category="Device & Hardware"
+            Title="BarcodeDetector"
+            Lead="Find QR codes and barcodes in a camera frame or an image, using the platform's own decoder - no JavaScript scanning library, and no canvas pixel-pushing."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Barcode_Detection_API"
+            InjectAs="BarcodeDetector barcodeDetector" />
+
+<Callout Type="warning" Title="Chromium only, and the formats vary by device">
+    Firefox and Safari don't implement this. Even on Chromium the available symbologies come from
+    the underlying platform, so the same browser version decodes a different set on Android than on
+    desktop - which is what <code>GetSupportedFormats</code> is for.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support and formats"
+                 Api="IsSupported / GetSupportedFormats"
+                 Description="Worth calling both before offering a scanner: asking for a format the device can't decode makes detection quietly return nothing rather than throwing, so a list you didn't check turns into a scanner that never finds anything."
+                 Code=@("""
+@inject Bit.Butil.BarcodeDetector barcodeDetector
+
+if (await barcodeDetector.IsSupported())
+{
+    var formats = await barcodeDetector.GetSupportedFormats();
+    // "qr_code", "ean_13", "code_128", "pdf417", ...
+}
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">Check support</button>
+        </div>
+        @if (_formats.Length > 0)
+        {
+            <div class="field">
+                <span class="field-label">@_formats.Length format(s)</span>
+                <span><code>@string.Join(", ", _formats)</code></span>
+            </div>
+        }
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Scan from the camera"
+                 Api="StartScan"
+                 Description="The usual shape: open a stream with MediaDevices, attach it to a video element, and point StartScan at that element. Scanning is a poll - there is no 'barcode appeared' event - and detection is much slower than a frame, so sampling a few times a second is both enough and cheaper than trying every frame. A tick that arrives while the previous detection is still running is skipped, so a slow device degrades to a lower rate rather than building a backlog."
+                 Code=@("""
+private ButilSubscription? _scan;
+private ElementReference _video;
+
+_stream = await mediaDevices.GetUserMedia(
+    audio: false,
+    video: true,
+    videoConstraints: new { facingMode = "environment" });   // rear camera on a phone
+
+await _stream!.AttachTo(_video);
+
+_scan = await barcodeDetector.StartScan(
+    _video,
+    onDetected: codes => InvokeAsync(() =>
+    {
+        // fires repeatedly while a code stays in view - debounce on the value
+        _lastValue = codes[0].RawValue;
+        StateHasChanged();
+    }),
+    formats: ["qr_code"],
+    intervalMs: 250);
+
+// later:
+await _scan!.DisposeAsync();
+""")>
+        <div class="controls">
+            <label><input type="checkbox" @bind="_qrOnly" /> QR codes only (faster)</label>
+            <label><input type="checkbox" @bind="_rearCamera" /> Prefer the rear camera</label>
+        </div>
+        <div class="controls">
+            <button @onclick="StartScanning">Start scanning</button>
+            <button class="danger" @onclick="StopScanning">Stop</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Status</span>
+            <span>@_status</span>
+        </div>
+        <video @ref="_video" autoplay playsinline muted
+               class="demo-video" style="min-height:160px"></video>
+        @if (_hits.Count > 0)
+        {
+            <div class="field">
+                <span class="field-label">Found</span>
+                <span>@_hits.Count distinct code(s) this session</span>
+            </div>
+            <ul style="margin:0;padding-left:1.2rem;max-height:12rem;overflow:auto">
+                @foreach (var hit in _hits)
+                {
+                    <li><code>@hit.Format</code> - @hit.RawValue</li>
+                }
+            </ul>
+        }
+        <DemoConsole @ref="scanOutput" Title="scan output" />
+    </DemoSection>
+
+    <DemoSection Title="Scan a single frame, or an image file"
+                 Api="Detect / DetectImage"
+                 Description="Detect reads one frame of a video, image or canvas element. DetectImage takes an encoded image's bytes - a PNG or JPEG, not raw pixels - which is what you want for a file the user picked or an image you fetched. The decoded bitmap is released as soon as the scan finishes; it holds uncompressed pixels, which would be a real leak in a loop."
+                 Code=@("""
+// one frame of whatever the video is showing right now:
+var codes = await barcodeDetector.Detect(_video, formats: ["qr_code"]);
+
+// or an image the user picked:
+var bytes = await fileReader.ReadAsByteArray(inputElement, index: 0);
+var found = await barcodeDetector.DetectImage(bytes, "image/png");
+
+foreach (var code in found)
+{
+    // code.RawValue, code.Format, and code.X/Y/Width/Height in source pixels
+}
+""")>
+        <div class="controls">
+            <button @onclick="DetectOnce">Detect one frame</button>
+            <label>
+                or pick an image
+                <InputFile OnChange="DetectFromFile" accept="image/*" />
+            </label>
+        </div>
+        <DemoConsole @ref="singleOutput" Title="single-shot output" />
+    </DemoSection>
+</div>
+
+<Callout Type="info" Title="Nothing found is not an error">
+    Every method returns an empty array rather than throwing when there is nothing to find - and
+    also when the video has no frame yet, or the image couldn't be decoded. That keeps a scan loop
+    from needing a try/catch per tick, but it does mean "no results" and "something went wrong"
+    look the same; check <code>IsSupported</code> up front rather than inferring it from silence.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes BarcodeDetector. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="GetSupportedFormats"
+               Signature="ValueTask<string[]> GetSupportedFormats()"
+               Description="The symbologies this device can decode. Empty when the API is unavailable. The list is the platform's, not the browser's." />
+    <ApiMember Name="Detect"
+               Signature="ValueTask<DetectedBarcode[]> Detect(ElementReference element, string[]? formats = null)"
+               Description="Scans one frame of a video, image or canvas element. Empty when there is nothing to find, or no frame yet." />
+    <ApiMember Name="DetectImage"
+               Signature='ValueTask<DetectedBarcode[]> DetectImage(byte[] imageBytes, string mimeType = "image/png", string[]? formats = null)'
+               Description="Scans an encoded image - a PNG or JPEG file's bytes, not raw pixels. The decoded bitmap is released afterwards." />
+    <ApiMember Name="StartScan"
+               Signature="ValueTask<ButilSubscription?> StartScan(ElementReference element, Action<DetectedBarcode[]> onDetected, string[]? formats = null, int intervalMs = 250)"
+               Description="Polls a live element and calls back when it finds something. Null when the API is unavailable. Dispose the subscription to stop." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, stops any scan whose subscription was never disposed." />
+    <ApiMember Name="DetectedBarcode"
+               Signature="RawValue, Format, X, Y, Width, Height"
+               Description="The decoded contents, the symbology, and the bounding box in the source element's pixel coordinates." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole scanOutput = default!;
+    private DemoConsole singleOutput = default!;
+
+    private ElementReference _video;
+    private MediaStreamHandle? _stream;
+    private ButilSubscription? _scan;
+    private string[] _formats = [];
+    private string _status = "Not scanning.";
+    private bool _qrOnly = true;
+    private bool _rearCamera = true;
+
+    // Distinct hits, most recent first: a code held in front of the camera is reported on every
+    // tick, and a list that grew by one per tick would be unreadable within a second.
+    private readonly List<DetectedBarcode> _hits = [];
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            var supported = await barcodeDetector.IsSupported();
+            if (supported is false)
+            {
+                await supportOutput.Warn("BarcodeDetector is not available in this browser.");
+                return;
+            }
+
+            _formats = await barcodeDetector.GetSupportedFormats();
+            await supportOutput.Success($"Supported → true, {_formats.Length} format(s) available on this device.");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Support check failed →", ex.Message);
+        }
+    }
+
+    private string[]? SelectedFormats => _qrOnly ? ["qr_code"] : null;
+
+    private async Task StartScanning()
+    {
+        await StopScanning();
+
+        try
+        {
+            if (!await barcodeDetector.IsSupported())
+            {
+                _status = "Not supported here.";
+                await scanOutput.Warn("BarcodeDetector is not available in this browser.");
+                return;
+            }
+
+            _stream ??= await mediaDevices.GetUserMedia(
+                audio: false,
+                video: true,
+                videoConstraints: _rearCamera ? new { facingMode = "environment" } : null);
+
+            if (_stream is null)
+            {
+                _status = "Camera denied.";
+                await scanOutput.Warn("GetUserMedia returned null - permission denied or no camera.");
+                return;
+            }
+
+            await _stream.AttachTo(_video);
+
+            _scan = await barcodeDetector.StartScan(_video, OnDetected, SelectedFormats);
+            if (_scan is null)
+            {
+                _status = "Could not start.";
+                await scanOutput.Warn("StartScan returned null.");
+                return;
+            }
+
+            _status = "Scanning - hold a code up to the camera.";
+            await scanOutput.Success("StartScan → scanning.");
+        }
+        catch (Exception ex)
+        {
+            await scanOutput.Error("StartScan failed →", ex.Message);
+        }
+    }
+
+    private void OnDetected(DetectedBarcode[] codes) => InvokeAsync(async () =>
+    {
+        foreach (var code in codes)
+        {
+            if (_hits.Any(h => h.RawValue == code.RawValue && h.Format == code.Format)) continue;
+
+            _hits.Insert(0, code);
+            if (_hits.Count > 20) _hits.RemoveAt(_hits.Count - 1);
+            await scanOutput.Success($"{code.Format} → {code.RawValue}");
+        }
+
+        StateHasChanged();
+    });
+
+    private async Task StopScanning()
+    {
+        if (_scan is null) return;
+
+        await _scan.DisposeAsync();
+        _scan = null;
+        _status = "Stopped.";
+        await scanOutput.Log("Scanning stopped. The camera is still open - Stop again to release it.");
+    }
+
+    private async Task DetectOnce()
+    {
+        try
+        {
+            var codes = await barcodeDetector.Detect(_video, SelectedFormats);
+            if (codes.Length == 0)
+            {
+                await singleOutput.Warn("Detect → nothing in this frame. Start the camera first, and note that a video with no frame yet also answers empty.");
+                return;
+            }
+
+            foreach (var code in codes)
+            {
+                await singleOutput.Success($"{code.Format} → {code.RawValue} at ({code.X:0}, {code.Y:0}) {code.Width:0}x{code.Height:0}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await singleOutput.Error("Detect failed →", ex.Message);
+        }
+    }
+
+    private async Task DetectFromFile(InputFileChangeEventArgs args)
+    {
+        try
+        {
+            var file = args.File;
+            if (file is null) return;
+
+            using var stream = file.OpenReadStream(10 * 1024 * 1024);
+            using var buffer = new MemoryStream();
+            await stream.CopyToAsync(buffer);
+
+            var codes = await barcodeDetector.DetectImage(buffer.ToArray(), file.ContentType, SelectedFormats);
+            if (codes.Length == 0)
+            {
+                await singleOutput.Warn($"DetectImage({file.Name}) → nothing found.");
+                return;
+            }
+
+            foreach (var code in codes)
+            {
+                await singleOutput.Success($"{file.Name}: {code.Format} → {code.RawValue}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await singleOutput.Error("DetectImage failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_scan is not null)
+            {
+                await _scan.DisposeAsync();
+                _scan = null;
+            }
+
+            if (_stream is not null)
+            {
+                await _stream.DisposeAsync();
+                _stream = null;
+            }
+        }
+        catch (Exception)
+        {
+            // teardown - the circuit/runtime may already be gone
+        }
+    }
+}

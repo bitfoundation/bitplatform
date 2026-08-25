@@ -17,7 +17,7 @@
     width: var(--bit-ldn-hrt-32);
     height: var(--bit-ldn-hrt-32);
     background: var(--bit-ldn-color);
-    animation: bit-ldn-hrt-anm 1.2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+    animation: bit-ldn-hrt-anm calc(1.2s * var(--bit-ldn-mot-factor, 1)) infinite cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
 .bit-ldn-hrt-chl::after,

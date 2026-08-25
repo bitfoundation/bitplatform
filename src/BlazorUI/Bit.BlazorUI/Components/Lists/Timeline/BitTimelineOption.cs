@@ -9,12 +9,17 @@ public partial class BitTimelineOption : ComponentBase, IDisposable
 
 
     /// <summary>
+    /// The accessible label of the timeline option, announced by assistive technologies.
+    /// </summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    /// <summary>
     /// The custom CSS classes of the timeline option.
     /// </summary>
     [Parameter] public string? Class { get; set; }
 
     /// <summary>
-    /// The general color of the timeline option.
+    /// The general color of the timeline option, overriding the color of the timeline.
     /// </summary>
     [Parameter] public BitColor? Color { get; set; }
 
@@ -59,6 +64,11 @@ public partial class BitTimelineOption : ComponentBase, IDisposable
     [Parameter] public string? Key { get; set; }
 
     /// <summary>
+    /// The way the connecting line of the timeline option is painted, overriding the line variant of the timeline.
+    /// </summary>
+    [Parameter] public BitTimelineLineVariant? LineVariant { get; set; }
+
+    /// <summary>
     /// Click event handler of the timeline option.
     /// </summary>
     [Parameter] public EventCallback<BitTimelineOption> OnClick { get; set; }
@@ -94,14 +104,24 @@ public partial class BitTimelineOption : ComponentBase, IDisposable
     [Parameter] public string? Style { get; set; }
 
     /// <summary>
-    /// The size of the timeline option.
+    /// The size of the timeline option, overriding the size of the timeline.
     /// </summary>
     [Parameter] public BitSize? Size { get; set; }
 
     /// <summary>
-    /// The custom template for the timeline option.
+    /// The custom template that replaces the whole content of the timeline option.
     /// </summary>
     [Parameter] public RenderFragment<BitTimelineOption>? Template { get; set; }
+
+    /// <summary>
+    /// The value of the title attribute of the timeline option, shown as the native tooltip.
+    /// </summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>
+    /// The visual variant of the timeline option's dot, overriding the variant of the timeline.
+    /// </summary>
+    [Parameter] public BitVariant? Variant { get; set; }
 
 
 

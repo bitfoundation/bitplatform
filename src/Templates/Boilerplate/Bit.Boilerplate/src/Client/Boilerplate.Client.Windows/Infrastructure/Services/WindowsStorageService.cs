@@ -1,15 +1,24 @@
+// [mirror] IStorageService semantics - persistent vs temp storage - keep in sync with:
+// - src/Client/Boilerplate.Client.Maui/Infrastructure/Services/MauiStorageService.cs
+// - src/Client/Boilerplate.Client.Web/Infrastructure/Services/WebStorageService.cs
+// - src/Tests/Infrastructure/Services/TestStorageService.cs
+// IStorageServiceContractTests pins the behaviour all four must share.
+
 using System.IO.IsolatedStorage;
+using System.Collections.Concurrent;
 
 namespace Boilerplate.Client.Windows.Infrastructure.Services;
 
 public partial class WindowsStorageService : IStorageService
 {
     private Dictionary<string, string?>? persistentStorage;
-    private readonly Dictionary<string, string?> tempStorage = [];
+    private readonly ConcurrentDictionary<string, string?> tempStorage = [];
 
     public async ValueTask<bool> IsPersistent(string key)
     {
-        return string.IsNullOrEmpty(await GetItem(key)) is false;
+        persistentStorage ??= await Restore();
+
+        return persistentStorage.ContainsKey(key);
     }
 
     public async ValueTask<string?> GetItem(string key)
@@ -24,7 +33,7 @@ public partial class WindowsStorageService : IStorageService
 
     public async ValueTask RemoveItem(string key)
     {
-        tempStorage.Remove(key);
+        tempStorage.TryRemove(key, out _);
 
         persistentStorage ??= await Restore();
 
@@ -36,15 +45,24 @@ public partial class WindowsStorageService : IStorageService
 
     public async ValueTask SetItem(string key, string? value, bool persistent = true)
     {
+        persistentStorage ??= await Restore();
+
+        // A key lives in exactly one of the two stores. Writing to one without removing it from the other would leave
+        // the previous value where GetItem still reads it - and since GetItem reads tempStorage first, a persistent
+        // write would be shadowed by the temporary value it supersedes.
         if (persistent)
         {
-            persistentStorage ??= await Restore();
+            tempStorage.TryRemove(key, out _);
             persistentStorage[key] = value;
             await Save(persistentStorage);
         }
         else
         {
             tempStorage[key] = value;
+            if (persistentStorage.Remove(key))
+            {
+                await Save(persistentStorage);
+            }
         }
     }
 

@@ -1,0 +1,58 @@
+@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
+     role="group"
+     aria-label="@(AriaLabel ?? "Theme")">
+
+    @if (NoDesignSystem is false)
+    {
+        <BitDropdown TItem="BitDropdownItem<string>" TValue="string"
+                     FitWidth
+                     NoBorder
+                     Transparent
+                     Items="_items"
+                     IsEnabled="IsEnabled"
+                     Title="@DesignSystemTitle"
+                     AriaLabel="@DesignSystemTitle"
+                     Class="@GetDesignSystemClass()"
+                     Style="@Styles?.DesignSystem"
+                     @bind-Value="_designSystem"
+                     OnSelectItem="HandleOnSelectDesignSystem" />
+    }
+
+    @if (NoColorScheme is false)
+    {
+        @* Two buttons of which the stylesheet hides one, rather than a single button whose icon C# picks:
+           which scheme is active is decided from the document's own bit-theme attribute in CSS, so
+           prerendered markup - where C# cannot know the visitor's theme, and where a cached response's
+           server never saw them at all - already shows the right one instead of showing the default until
+           hydration. The two selectors are exact complements, so exactly one of the pair is visible in
+           every possible state. *@
+        <button @onclick="HandleOnToggleColorScheme"
+                type="button"
+                disabled="@(IsEnabled is false)"
+                title="@LightSchemeTitle"
+                aria-label="@LightSchemeTitle"
+                class="@GetColorSchemeClass("bit-ths-drk", Classes?.DarkSchemeButton)"
+                style="@GetColorSchemeStyle(Styles?.DarkSchemeButton)">
+            <i aria-hidden="true" style="@Styles?.Icon" class="bit-icon bit-icon--@LightSchemeIconName @Classes?.Icon"></i>
+        </button>
+
+        <button @onclick="HandleOnToggleColorScheme"
+                type="button"
+                disabled="@(IsEnabled is false)"
+                title="@DarkSchemeTitle"
+                aria-label="@DarkSchemeTitle"
+                class="@GetColorSchemeClass("bit-ths-lgt", Classes?.LightSchemeButton)"
+                style="@GetColorSchemeStyle(Styles?.LightSchemeButton)">
+            <i aria-hidden="true" style="@Styles?.Icon" class="bit-icon bit-icon--@DarkSchemeIconName @Classes?.Icon"></i>
+        </button>
+    }
+
+</div>

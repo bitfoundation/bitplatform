@@ -1,12 +1,25 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
+@* Only the explicit Hidden takes the content of the header out of reach (inert). A header that the
+   scroll rolled up is still meant to be reachable: it brings itself back as soon as anything inside
+   it takes the focus, and an inert header can never receive that focus in the first place. *@
 <header @ref=RootElement @attributes="HtmlAttributes"
         id="@_Id"
+        inert="@Hidden"
+        aria-label="@AriaLabel"
         style="@StyleBuilder.Value"
         class="@ClassBuilder.Value"
         dir="@Dir?.ToString().ToLower()">
-    <div class="bit-hdr-gut">
+    <div style="@Styles?.Container" class="bit-hdr-gut @Classes?.Container">
+        @* The skip link lives in the container rather than in the root because the container is already
+           a positioned box for it to anchor to. Positioning the root instead would pair its z-index with
+           a position and turn the header into a stacking context, which would clamp anything inside it
+           that has to paint over the rest of the page. *@
+        @if (SkipLinkHref.HasValue())
+        {
+            <a href="@SkipLinkHref" style="@Styles?.SkipLink" class="bit-hdr-skp @Classes?.SkipLink">@(SkipLinkText ?? "Skip to main content")</a>
+        }
         @ChildContent
     </div>
 </header>

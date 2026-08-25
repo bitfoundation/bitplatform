@@ -19,7 +19,7 @@
                  ModeFull="isSmallScreen is true"
                  Modeless="isSmallScreen is false"
                  OnDismiss="WrapHandled(HandleOnDismissPanel)"
-                 Classes="@(new() { Container = "panel-cnt" })">
+                 Classes="@(new() { Container = $"panel-cnt{(isMaximized ? " maximized" : null)}" })">
         <Header>
             <BitStack Horizontal Alignment="BitAlignment.Center">
                 <BitText Typography="BitTypography.H5">AI chat panel</BitText>
@@ -36,6 +36,31 @@
                            Variant="BitVariant.Text"
                            OnClick="WrapHandled(ClearChat)"
                            Color="BitColor.SecondaryBackground" />
+
+                <BitButton FixedColor
+                           Class="maximize-button"
+                           Variant="BitVariant.Text"
+                           Color="BitColor.SecondaryBackground"
+                           OnClick="() => isMaximized = !isMaximized"
+                           Title="@(isMaximized ? "Restore" : "Maximize")"
+                           AriaLabel="@(isMaximized ? "Restore the chat panel" : "Maximize the chat panel")">
+                    @if (isMaximized)
+                    {
+                        @* Four corners folded inwards. *@
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M9 4v5H4M15 4v5h5M15 20v-5h5M9 20v-5H4"
+                                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    }
+                    else
+                    {
+                        @* The same four corners, opened outwards. *@
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M4 9V4h5M20 9V4h-5M20 15v5h-5M4 15v5h5"
+                                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    }
+                </BitButton>
             </BitStack>
         </Header>
         <Body>
@@ -72,7 +97,7 @@
 
                 @if (chatMessages.Count == 1)
                 {
-                    <BitStack Alignment=" BitAlignment.Center" FitHeight FillContent Class="default-prompt-container">
+                    <BitStack Alignment="BitAlignment.Center" FitHeight FillContent Class="default-prompt-container">
                         <BitButton FixedColor
                                    Variant="BitVariant.Outline"
                                    Class="default-prompt-button"

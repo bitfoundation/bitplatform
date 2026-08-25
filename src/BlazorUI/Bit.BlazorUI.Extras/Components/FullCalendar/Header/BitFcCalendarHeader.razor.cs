@@ -13,6 +13,9 @@ public partial class BitFcCalendarHeader
 
     private async Task OnAddEventClick()
     {
+        if (State.ReadOnly)
+            return;
+
         if (OnAddClick.HasDelegate)
         {
             var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(

@@ -1,0 +1,1028 @@
+@page "/indexed-db"
+@implements IAsyncDisposable
+@inject Bit.Butil.IndexedDb indexedDb
+
+<PageTitle>IndexedDb - Bit.Butil</PageTitle>
+
+<PageHeader Category="Storage"
+            Title="IndexedDb"
+            Lead="A structured, transactional client-side database for serious amounts of data. Butil covers the whole surface - schema migrations, key ranges, cursors, indexes, atomic batches and binary values - without the ceremony of wiring up request and transaction event handlers by hand."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API"
+            InjectAs="IndexedDb indexedDb" />
+
+<div class="stack">
+    <DemoSection Title="Check for support"
+                 Api="IsSupported"
+                 Description="IndexedDB is available in every modern browser, but private-browsing modes and unusual embedding contexts can restrict it - feature-detect when your app depends on it."
+                 Code=@("""
+@inject Bit.Butil.IndexedDb indexedDb
+
+if (await indexedDb.IsSupported())
+{
+    // safe to open databases
+}
+""")>
+        <button @onclick="CheckSupport">IsSupported</button>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Open a database"
+                 Api="Open"
+                 Description="Open connects to (and creates if needed) the named database, returning a live IndexedDbHandle. The schema is applied inside the upgrade transaction and is idempotent - missing stores and indexes are created, an index whose definition changed is re-created, and a store marked Drop is removed. Pass version: null to attach to whatever version is already on disk instead of naming one. The handle reports what the open did: OldVersion, NewVersion and WasUpgraded."
+                 Code=@("""
+private IndexedDbHandle db = default!;
+
+db = await indexedDb.Open("butil-docs-notes", version: 2, stores:
+[
+    new IndexedDbStoreSchema
+    {
+        Name = "notes",
+        KeyPath = "id",
+        Indexes =
+        [
+            new IndexedDbIndexSchema { Name = "by-category", KeyPath = "category" },
+        ],
+    },
+    new IndexedDbStoreSchema { Name = "blobs" },   // out-of-line keys
+],
+onVersionChange: () => Console.WriteLine("another tab is upgrading; this handle was closed"),
+onClose: () => Console.WriteLine("connection died - storage evicted?"));
+
+if (db.WasUpgraded)
+{
+    // Runs after the upgrade transaction commits, so keep any backfill idempotent.
+    Console.WriteLine($"migrated v{db.OldVersion} -> v{db.NewVersion}");
+}
+""")>
+        <div class="controls">
+            <button @onclick="OpenDb" disabled="@(db is not null)">Open database</button>
+        </div>
+        <DemoConsole @ref="openOutput" Title="open output" />
+    </DemoSection>
+
+    <DemoSection Title="Write records"
+                 Api="Add / Put"
+                 Description="Add inserts a new record and throws when the key already exists; Put upserts - insert or overwrite. Records are plain C# objects, JSON-serialized on the way in. Because the store's keypath is id, the key comes from the record itself. Both return the record's key, which is the only way to read back what an autoIncrement store generated. A write resolves once its transaction commits, not merely once the request succeeds, so a completed call means the data is durable."
+                 Code=@("""
+public class Note
+{
+    public int Id { get; set; }
+    public string Text { get; set; } = "";
+    public string Category { get; set; } = "general";
+}
+
+var key = await db.Add("notes", new Note { Id = 1, Text = "Hello IndexedDB", Category = "intro" });
+
+await db.Put("notes", new Note { Id = 1, Text = "Hello again", Category = "intro" }); // upsert
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Id</span>
+                <input @bind="noteId" type="number" />
+            </div>
+            <div class="field">
+                <span class="field-label">Text</span>
+                <input @bind="noteText" placeholder="e.g. Hello IndexedDB" />
+            </div>
+            <div class="field">
+                <span class="field-label">Category</span>
+                <input @bind="noteCategory" placeholder="e.g. intro" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="AddNote">Add</button>
+            <button class="secondary" @onclick="PutNote">Put (upsert)</button>
+        </div>
+        <DemoConsole @ref="writeOutput" Title="write output" />
+    </DemoSection>
+
+    <DemoSection Title="Read records"
+                 Api="Get / GetAll / GetAllKeys / Count"
+                 Description="Get reads a single record by key, GetAll returns the whole store (optionally capped by a count), GetAllKeys lists just the keys, and Count reports how many records the store holds. GetRaw is the untyped sibling of Get, returning a JsonElement when no static type fits."
+                 Code=@("""
+var one = await db.Get<Note>("notes", 1);         // null when absent
+
+var all = await db.GetAll<Note>("notes");          // Note[]
+
+var keys = await db.GetAllKeys("notes");           // JsonElement[]
+
+var count = await db.Count("notes");               // int
+""")>
+        <div class="field">
+            <span class="field-label">Id to read</span>
+            <input @bind="readId" type="number" />
+        </div>
+        <div class="controls">
+            <button class="secondary" @onclick="GetNote">Get</button>
+            <button class="secondary" @onclick="GetAllNotes">GetAll</button>
+            <button class="secondary" @onclick="GetKeys">GetAllKeys</button>
+            <button class="secondary" @onclick="CountNotes">Count</button>
+        </div>
+        <DemoConsole @ref="readOutput" Title="read output" />
+    </DemoSection>
+
+    <DemoSection Title="Query a range of keys"
+                 Api="IndexedDbKeyRange"
+                 Description="A key range turns an exact-key lookup into an interval query - the main reason to reach for IndexedDB over simpler storage. Ranges go anywhere a key does: reads, counts, deletes and cursor walks all take one, so a single range object drives the whole operation set."
+                 Code=@("""
+IndexedDbKeyRange.Bound(10, 20);                   // 10 <= key <= 20
+IndexedDbKeyRange.Bound(10, 20, lowerOpen: true);  // 10 <  key <= 20
+IndexedDbKeyRange.LowerBound(10);                  // key >= 10
+IndexedDbKeyRange.UpperBound(20, open: true);      // key <  20
+IndexedDbKeyRange.Only(15);                        // key == 15
+
+var range = IndexedDbKeyRange.Bound(10, 20);
+
+var notes = await db.GetAll<Note>("notes", range);
+var keys = await db.GetAllKeys("notes", range);
+var howMany = await db.Count("notes", range);
+
+await db.Delete("notes", range);                   // removes the whole interval
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">From id</span>
+                <input @bind="rangeFrom" type="number" />
+            </div>
+            <div class="field">
+                <span class="field-label">To id</span>
+                <input @bind="rangeTo" type="number" />
+            </div>
+        </div>
+        <div class="controls">
+            <button class="secondary" @onclick="GetAllInRange">GetAll(range)</button>
+            <button class="secondary" @onclick="CountInRange">Count(range)</button>
+            <button class="danger" @onclick="DeleteRange">Delete(range)</button>
+        </div>
+        <DemoConsole @ref="rangeOutput" Title="range output" />
+    </DemoSection>
+
+    <DemoSection Title="Paginate with a cursor"
+                 Api="GetPage / GetKeyPage"
+                 Description="GetPage walks the store with a real cursor, which is how you paginate, read newest-first, or skip - none of which GetAll can express. Each record carries the keys the cursor saw alongside the value. The walk runs entirely on the JS side and hands back a materialized page: an IndexedDB transaction goes inactive as soon as control returns to the event loop, and every interop call does exactly that, so a cursor cannot be stepped one record at a time from .NET."
+                 Code=@("""
+var page = await db.GetPage<Note>("notes", skip: 20, take: 10);
+
+foreach (var record in page)
+{
+    Console.WriteLine($"{record.PrimaryKey}: {record.Value!.Text}");
+}
+
+// newest first
+var latest = await db.GetPage<Note>("notes", direction: IndexedDbCursorDirection.Previous, take: 5);
+
+// keys only, restricted to a range
+var keys = await db.GetKeyPage("notes", IndexedDbKeyRange.LowerBound(10), take: 3);
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Skip</span>
+                <input @bind="pageSkip" type="number" />
+            </div>
+            <div class="field">
+                <span class="field-label">Take</span>
+                <input @bind="pageTake" type="number" />
+            </div>
+            <div class="field">
+                <span class="field-label">Direction</span>
+                <select @bind="pageDirection">
+                    <option value="@IndexedDbCursorDirection.Next">Next (ascending)</option>
+                    <option value="@IndexedDbCursorDirection.Previous">Previous (descending)</option>
+                </select>
+            </div>
+        </div>
+        <div class="controls">
+            <button class="secondary" @onclick="GetPageDemo">GetPage</button>
+            <button class="secondary" @onclick="GetKeyPageDemo">GetKeyPage</button>
+        </div>
+        <DemoConsole @ref="pageOutput" Title="cursor output" />
+    </DemoSection>
+
+    <DemoSection Title="Query by index"
+                 Api="GetByIndex / GetAllByIndex / CountByIndex / DeleteByIndex / GetKeyPageByIndex"
+                 Description="Indexes let you look records up by a property other than the primary key. The demo database declares a by-category index over the category property. Everything the store supports works on an index too - exact keys, ranges, counts and cursor walks - plus DeleteByIndex, which an index has no native equivalent for: it walks a cursor and deletes each match by primary key inside one transaction, so it removes all of them or none. Walking with NextUnique collapses duplicates, which is how you enumerate the distinct values an index holds."
+                 Code=@("""
+var first = await db.GetByIndex<Note>("notes", "by-category", "intro");
+
+var matches = await db.GetAllByIndex<Note>("notes", "by-category", "intro");
+
+var keys = await db.GetAllKeysByIndex("notes", "by-category", "intro");
+
+var howMany = await db.CountByIndex("notes", "by-category", "intro");
+
+var removed = await db.DeleteByIndex("notes", "by-category", "intro");   // returns the count
+
+// every distinct category, once each
+var distinct = await db.GetKeyPageByIndex("notes", "by-category",
+    direction: IndexedDbCursorDirection.NextUnique);
+""")>
+        <div class="field">
+            <span class="field-label">Category</span>
+            <input @bind="queryCategory" placeholder="e.g. intro" />
+        </div>
+        <div class="controls">
+            <button class="secondary" @onclick="GetByIndexDemo">GetByIndex</button>
+            <button class="secondary" @onclick="GetAllByIndexDemo">GetAllByIndex</button>
+            <button class="secondary" @onclick="CountByIndexDemo">CountByIndex</button>
+            <button class="secondary" @onclick="DistinctCategories">Distinct categories</button>
+            <button class="danger" @onclick="DeleteByIndexDemo">DeleteByIndex</button>
+        </div>
+        <DemoConsole @ref="queryOutput" Title="query output" />
+    </DemoSection>
+
+    <DemoSection Title="Batch writes atomically"
+                 Api="Transact"
+                 Description="Transact runs every operation in one transaction spanning all the stores they touch, so a failure anywhere rolls the whole batch back. Operations are submitted together rather than issued one at a time - the same event-loop constraint that stops cursors being stepped from .NET stops a transaction being held open across calls, so passing them as a batch is what makes the atomicity real. It also means one transaction instead of one per write, which is markedly faster in bulk. The returned array holds each operation's resulting key, in order."
+                 Code=@("""
+var keys = await db.Transact(
+[
+    IndexedDbOperation.Put("notes", new Note { Id = 10, Text = "first", Category = "batch" }),
+    IndexedDbOperation.Put("notes", new Note { Id = 11, Text = "second", Category = "batch" }),
+    IndexedDbOperation.Delete("notes", 1),
+],
+durability: IndexedDbDurability.Relaxed);
+
+// An Add on a key that already exists aborts the batch - none of the writes above it survive.
+""")>
+        <div class="controls">
+            <button @onclick="TransactDemo">Transact (3 writes)</button>
+            <button class="secondary" @onclick="TransactRollbackDemo">Transact that aborts</button>
+        </div>
+        <DemoConsole @ref="transactOutput" Title="transaction output" />
+    </DemoSection>
+
+    <DemoSection Title="Store binary data"
+                 Api="PutBytes / GetBytes"
+                 Description="Values normally cross the interop boundary as JSON, which cannot carry raw bytes - base64 inflates them by a third and large payloads hit string-length limits. PutBytes keeps the payload binary the whole way and stores it as an ArrayBuffer. Read it back with GetBytes, not Get: the stored record is not JSON, so Get cannot deserialize it. The demo writes into the blobs store, which has no keypath, so the key is passed explicitly."
+                 Code=@("""
+await db.PutBytes("blobs", File.ReadAllBytes("logo.png"), key: "logo");
+
+var bytes = await db.GetBytes("blobs", "logo");   // byte[]? - null when absent or not binary
+""")>
+        <div class="field">
+            <span class="field-label">Text to store as bytes</span>
+            <input @bind="blobText" placeholder="e.g. hello bytes" />
+        </div>
+        <div class="controls">
+            <button @onclick="PutBytesDemo">PutBytes</button>
+            <button class="secondary" @onclick="GetBytesDemo">GetBytes</button>
+        </div>
+        <DemoConsole @ref="bytesOutput" Title="binary output" />
+    </DemoSection>
+
+    <DemoSection Title="Inspect the schema"
+                 Api="GetInfo / GetStoreInfo / GetIndexInfo / Databases / Compare"
+                 Description="Read back what the database actually looks like rather than assuming the schema you asked for is the schema you got - useful after an upgrade, or when another part of the app owns the versioning. Databases lists this origin's databases (an empty result also means the browser cannot enumerate them - Firefox only shipped that in 126). Compare orders two keys exactly as IndexedDB does, which is the only reliable way to reason about key ordering without guessing."
+                 Code=@("""
+var info = await db.GetInfo();          // name, version, store names
+var store = await db.GetStoreInfo("notes");   // keypath, autoIncrement, index names
+var index = await db.GetIndexInfo("notes", "by-category");   // keypath, unique, multiEntry
+
+var all = await indexedDb.Databases();  // IndexedDbDatabaseInfo[]
+
+var order = await indexedDb.Compare(1, 2);   // negative: 1 sorts before 2
+""")>
+        <div class="controls">
+            <button class="secondary" @onclick="ShowInfo">GetInfo</button>
+            <button class="secondary" @onclick="ShowStoreInfo">GetStoreInfo</button>
+            <button class="secondary" @onclick="ShowIndexInfo">GetIndexInfo</button>
+            <button class="secondary" @onclick="ListDatabases">Databases</button>
+            <button class="secondary" @onclick="CompareKeys">Compare</button>
+        </div>
+        <DemoConsole @ref="infoOutput" Title="schema output" />
+    </DemoSection>
+
+    <DemoSection Title="Delete and clear"
+                 Api="Delete / Clear"
+                 Description="Delete removes a single record by key; Clear empties the store while keeping its schema and indexes intact."
+                 Code=@("""
+await db.Delete("notes", 1);
+
+await db.Clear("notes");
+""")>
+        <div class="field">
+            <span class="field-label">Id to delete</span>
+            <input @bind="deleteId" type="number" />
+        </div>
+        <div class="controls">
+            <button class="danger" @onclick="DeleteNote">Delete</button>
+            <button class="danger" @onclick="ClearNotes">Clear store</button>
+        </div>
+        <DemoConsole @ref="deleteOutput" Title="delete output" />
+    </DemoSection>
+
+    <DemoSection Title="Close and delete the database"
+                 Api="DisposeAsync / DeleteDatabase"
+                 Description="The handle owns the underlying IDBDatabase connection - dispose it when you are done so the connection closes. DeleteDatabase removes the database entirely; close any open handle first, otherwise the browser blocks the deletion until the connection goes away."
+                 Code=@("""
+await db.DisposeAsync();                            // close the connection
+
+await indexedDb.DeleteDatabase("butil-docs-notes"); // drop the whole database
+""")>
+        <div class="controls">
+            <button class="secondary" @onclick="CloseDb" disabled="@(db is null)">Dispose handle</button>
+            <button class="danger" @onclick="DeleteDb">DeleteDatabase</button>
+        </div>
+        <DemoConsole @ref="closeOutput" Title="close output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="Versioning semantics">
+    Schema changes only happen inside an upgrade transaction, which the browser runs when
+    <code>Open</code> is called with a version number higher than the stored one. Opening with the
+    same version never touches the schema - to add a store or index to an existing database, bump the
+    version. Opening with a <em>lower</em> version than the stored one fails outright; pass
+    <code>version: null</code> to attach to whatever is on disk. Data migration is yours to do: check
+    <code>WasUpgraded</code> and <code>OldVersion</code> after the open and keep the backfill
+    idempotent, since it necessarily runs after the upgrade transaction has already committed.
+</Callout>
+
+<Callout Type="info" Title="Why cursors and transactions look different here">
+    An IndexedDB transaction goes inactive the moment control returns to the event loop, and every
+    call into JavaScript does exactly that. So a cursor cannot be stepped a record at a time from
+    .NET, and a transaction cannot be held open across calls. Both are instead expressed as a single
+    call that carries the whole job: <code>GetPage</code> walks the cursor and returns a page,
+    <code>Transact</code> submits the batch. Each still runs inside one real IDB transaction on the
+    JS side, so the ordering and atomicity guarantees are the genuine ones.
+</Callout>
+
+<Callout Type="info" Title="What keys can be">
+    Keys travel as JSON, so numbers, strings, booleans and arrays of those (arrays being how compound
+    keys are written) all work. A <code>DateTime</code> arrives in JavaScript as an ISO-8601 string
+    rather than a <code>Date</code> - which still sorts correctly, as long as every key in the store
+    was written the same way. For binary payloads use <code>PutBytes</code>/<code>GetBytes</code>,
+    which bypass JSON entirely.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes indexedDB." />
+    <ApiMember Name="Open"
+               Signature="ValueTask<IndexedDbHandle> Open(string name, int? version = 1, IndexedDbStoreSchema[]? stores = null, Action? onVersionChange = null, Action? onClose = null, Action? onBlocked = null)"
+               Description="Opens (and upgrades if needed) the named database, reconciling the schema during the upgrade transaction. Pass version: null to open whatever version is on disk. Returns a handle that owns the connection." />
+    <ApiMember Name="DeleteDatabase"
+               Signature="ValueTask DeleteDatabase(string name)"
+               Description="Deletes the named database; resolves once the deletion completes." />
+    <ApiMember Name="Databases"
+               Signature="ValueTask<IndexedDbDatabaseInfo[]> Databases()"
+               Description="Lists this origin's databases. Empty where the browser cannot enumerate them, so an empty result is not proof there are none." />
+    <ApiMember Name="Compare"
+               Signature="ValueTask<int> Compare(object first, object second)"
+               Description="Orders two keys the way IndexedDB does: negative, zero or positive." />
+    <ApiMember Name="Handle.Id"
+               Signature="Guid Id { get; }"
+               Description="Internal handle id - the database is keyed by this on the JS side." />
+    <ApiMember Name="Handle.DatabaseName / Version / StoreNames"
+               Signature="string DatabaseName { get; }  int Version { get; }  string[] StoreNames { get; }"
+               Description="What was actually opened, captured at open time." />
+    <ApiMember Name="Handle.OldVersion / NewVersion / WasUpgraded"
+               Signature="int OldVersion { get; }  int NewVersion { get; }  bool WasUpgraded { get; }"
+               Description="What the open did to the schema. Branch on WasUpgraded to run a data backfill." />
+    <ApiMember Name="Handle.Put<T>"
+               Signature="ValueTask<JsonElement> Put<T>(string store, T value, object? key = null)"
+               Description="Inserts or updates a value, returning its key. Pass key for stores without a keypath. Resolves once the transaction commits." />
+    <ApiMember Name="Handle.Add<T>"
+               Signature="ValueTask<JsonElement> Add<T>(string store, T value, object? key = null)"
+               Description="Inserts a new value, returning its key; throws on duplicate key." />
+    <ApiMember Name="Handle.PutBytes"
+               Signature="ValueTask<JsonElement> PutBytes(string store, byte[] data, object? key = null)"
+               Description="Stores raw bytes as an ArrayBuffer, bypassing JSON. Read back with GetBytes." />
+    <ApiMember Name="Handle.GetBytes"
+               Signature="ValueTask<byte[]?> GetBytes(string store, object query)"
+               Description="Reads a record written by PutBytes. Null when absent or the stored value is not binary." />
+    <ApiMember Name="Handle.Get<T>"
+               Signature="ValueTask<T?> Get<T>(string store, object query)"
+               Description="Reads a value by key, or the first value in a key range; default when nothing matches." />
+    <ApiMember Name="Handle.GetRaw"
+               Signature="ValueTask<JsonElement> GetRaw(string store, object query)"
+               Description="Reads a value as a JsonElement - no static type required." />
+    <ApiMember Name="Handle.GetKey"
+               Signature="ValueTask<JsonElement> GetKey(string store, object query)"
+               Description="Reads the key of the first matching record without fetching its value." />
+    <ApiMember Name="Handle.GetAll<T>"
+               Signature="ValueTask<T[]> GetAll<T>(string store, int? count = null)  |  GetAll<T>(string store, IndexedDbKeyRange range, int? count = null)"
+               Description="Reads all values in a store, or every value whose key falls in a range." />
+    <ApiMember Name="Handle.GetAllKeys"
+               Signature="ValueTask<JsonElement[]> GetAllKeys(string store, int? count = null)  |  GetAllKeys(string store, IndexedDbKeyRange range, int? count = null)"
+               Description="Lists every key in a store, or the keys falling in a range." />
+    <ApiMember Name="Handle.Delete"
+               Signature="ValueTask Delete(string store, object query)"
+               Description="Deletes the record(s) matching a key or a key range." />
+    <ApiMember Name="Handle.Clear"
+               Signature="ValueTask Clear(string store)"
+               Description="Empties the store, keeping its schema and indexes." />
+    <ApiMember Name="Handle.Count"
+               Signature="ValueTask<int> Count(string store, object? query = null)"
+               Description="Counts records in a store, or just those matching a key or range." />
+    <ApiMember Name="Handle.GetByIndex<T>"
+               Signature="ValueTask<T?> GetByIndex<T>(string store, string index, object query)"
+               Description="Reads the first record matching an index query." />
+    <ApiMember Name="Handle.GetKeyByIndex"
+               Signature="ValueTask<JsonElement> GetKeyByIndex(string store, string index, object query)"
+               Description="Reads the primary key of the first record matching an index query." />
+    <ApiMember Name="Handle.GetAllByIndex<T>"
+               Signature="ValueTask<T[]> GetAllByIndex<T>(string store, string index, object query, int? count = null)"
+               Description="Reads every record matching an index query." />
+    <ApiMember Name="Handle.GetAllKeysByIndex"
+               Signature="ValueTask<JsonElement[]> GetAllKeysByIndex(string store, string index, object query, int? count = null)"
+               Description="Lists the primary keys of every record matching an index query." />
+    <ApiMember Name="Handle.CountByIndex"
+               Signature="ValueTask<int> CountByIndex(string store, string index, object? query = null)"
+               Description="Counts the records matching an index query." />
+    <ApiMember Name="Handle.DeleteByIndex"
+               Signature="ValueTask<int> DeleteByIndex(string store, string index, object query)"
+               Description="Deletes every record matching an index query, returning how many. Atomic - all matches or none." />
+    <ApiMember Name="Handle.GetPage<T>"
+               Signature="ValueTask<IndexedDbRecord<T>[]> GetPage<T>(string store, object? query = null, IndexedDbCursorDirection direction = Next, int skip = 0, int take = 0)"
+               Description="Walks the store with a cursor and returns one page: values plus the keys the cursor saw. Paging, reverse order and skipping all live here." />
+    <ApiMember Name="Handle.GetKeyPage"
+               Signature="ValueTask<IndexedDbKeyRecord[]> GetKeyPage(string store, object? query = null, IndexedDbCursorDirection direction = Next, int skip = 0, int take = 0)"
+               Description="Same walk without deserializing the values." />
+    <ApiMember Name="Handle.GetPageByIndex<T>"
+               Signature="ValueTask<IndexedDbRecord<T>[]> GetPageByIndex<T>(string store, string index, object? query = null, IndexedDbCursorDirection direction = Next, int skip = 0, int take = 0)"
+               Description="Walks an index in index-key order. NextUnique collapses duplicates to one record per key." />
+    <ApiMember Name="Handle.GetKeyPageByIndex"
+               Signature="ValueTask<IndexedDbKeyRecord[]> GetKeyPageByIndex(string store, string index, object? query = null, IndexedDbCursorDirection direction = Next, int skip = 0, int take = 0)"
+               Description="Keys-only index walk. With NextUnique, this enumerates the distinct values an index holds." />
+    <ApiMember Name="Handle.Transact"
+               Signature="ValueTask<JsonElement[]> Transact(IndexedDbOperation[] operations, IndexedDbTransactionMode mode = ReadWrite, IndexedDbDurability durability = Default)"
+               Description="Runs the batch as one atomic transaction across every store it touches, returning each operation's resulting key." />
+    <ApiMember Name="Handle.GetInfo / GetStoreInfo / GetIndexInfo"
+               Signature="ValueTask<IndexedDbDatabaseInfo?> GetInfo()  |  ValueTask<IndexedDbStoreInfo?> GetStoreInfo(string store)  |  ValueTask<IndexedDbIndexInfo?> GetIndexInfo(string store, string index)"
+               Description="Reads back the live schema - version, store list, keypaths, index flags." />
+    <ApiMember Name="Handle.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Closes the underlying IDBDatabase connection. Idempotent." />
+    <ApiMember Name="IndexedDbKeyRange"
+               Signature="static IndexedDbKeyRange Only(object) | LowerBound(object, bool open = false) | UpperBound(object, bool open = false) | Bound(object, object, bool lowerOpen = false, bool upperOpen = false)"
+               Description="An interval over keys. Accepted anywhere a key is." />
+    <ApiMember Name="IndexedDbOperation"
+               Signature="static IndexedDbOperation Put<T>(string store, T value, object? key = null) | Add<T>(...) | Delete(string store, object query) | Clear(string store)"
+               Description="One write inside a Transact batch." />
+    <ApiMember Name="IndexedDbCursorDirection"
+               Signature="enum { Next, NextUnique, Previous, PreviousUnique }"
+               Description="Order a cursor walks in. The Unique variants yield one record per distinct key." />
+    <ApiMember Name="IndexedDbDurability"
+               Signature="enum { Default, Relaxed, Strict }"
+               Description="How hard the browser tries to flush a transaction to disk before reporting it complete." />
+    <ApiMember Name="IndexedDbRecord<T> / IndexedDbKeyRecord"
+               Signature="class IndexedDbRecord<T> { JsonElement Key; JsonElement PrimaryKey; T? Value; }"
+               Description="One record from a cursor walk. Key is the index key when walking an index, otherwise the primary key." />
+    <ApiMember Name="IndexedDbStoreSchema"
+               Signature="class IndexedDbStoreSchema { string Name; string? KeyPath; string[]? KeyPaths; bool AutoIncrement; bool Drop; IndexedDbIndexSchema[] Indexes; }"
+               Description="Object-store definition supplied to Open. Null KeyPath means out-of-line keys; KeyPaths declares a compound key; Drop removes the store during the upgrade." />
+    <ApiMember Name="IndexedDbIndexSchema"
+               Signature="class IndexedDbIndexSchema { string Name; string KeyPath; string[]? KeyPaths; bool Unique; bool MultiEntry; bool Drop; }"
+               Description="Index definition created alongside the store. A changed definition is dropped and re-created; Drop removes it." />
+</ApiTable>
+
+@code {
+    private const string DbName = "butil-docs-notes";
+    private const string StoreName = "notes";
+    private const string BlobStoreName = "blobs";
+    private const string IndexName = "by-category";
+
+    private DemoConsole supportOutput = default!;
+    private DemoConsole openOutput = default!;
+    private DemoConsole writeOutput = default!;
+    private DemoConsole readOutput = default!;
+    private DemoConsole rangeOutput = default!;
+    private DemoConsole pageOutput = default!;
+    private DemoConsole queryOutput = default!;
+    private DemoConsole transactOutput = default!;
+    private DemoConsole bytesOutput = default!;
+    private DemoConsole infoOutput = default!;
+    private DemoConsole deleteOutput = default!;
+    private DemoConsole closeOutput = default!;
+    private IndexedDbHandle? db;
+
+    private int noteId = 1;
+    private string noteText = "Hello IndexedDB";
+    private string noteCategory = "intro";
+    private int readId = 1;
+    private int deleteId = 1;
+    private string queryCategory = "intro";
+    private int rangeFrom = 1;
+    private int rangeTo = 10;
+    private int pageSkip = 0;
+    private int pageTake = 3;
+    private IndexedDbCursorDirection pageDirection = IndexedDbCursorDirection.Next;
+    private string blobText = "hello bytes";
+
+    private sealed class Note
+    {
+        public int Id { get; set; }
+        public string Text { get; set; } = "";
+        public string Category { get; set; } = "general";
+    }
+
+    private async Task<bool> EnsureOpen(DemoConsole output)
+    {
+        if (db is not null) return true;
+        await output.Warn("No open database - use \"Open database\" first.");
+        return false;
+    }
+
+    private async Task CheckSupport()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported() →", await indexedDb.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task OpenDb()
+    {
+        try
+        {
+            db = await indexedDb.Open(DbName, 2,
+            [
+                new IndexedDbStoreSchema
+                {
+                    Name = StoreName,
+                    KeyPath = "id",
+                    Indexes =
+                    [
+                        new IndexedDbIndexSchema { Name = IndexName, KeyPath = "category" },
+                    ],
+                },
+                new IndexedDbStoreSchema { Name = BlobStoreName },
+            ],
+            onVersionChange: () => InvokeAsync(() => openOutput.Warn("onVersionChange - another tab is upgrading; this handle was closed.")),
+            onClose: () => InvokeAsync(() => openOutput.Warn("onClose - the connection died unexpectedly.")));
+
+            await openOutput.Log($"Open(\"{DbName}\", 2) → connection open, stores [{string.Join(", ", db.StoreNames)}].");
+            await openOutput.Success($"Version {db.Version}, WasUpgraded = {db.WasUpgraded}"
+                + (db.WasUpgraded ? $" (v{db.OldVersion} → v{db.NewVersion})" : ""));
+        }
+        catch (Exception ex)
+        {
+            await openOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task AddNote()
+    {
+        if (await EnsureOpen(writeOutput) is false) return;
+        try
+        {
+            var key = await db!.Add(StoreName, new Note { Id = noteId, Text = noteText, Category = noteCategory });
+            await writeOutput.Log($"Add(\"{StoreName}\", {{ id: {noteId} }}) → key {key}");
+        }
+        catch (Exception ex)
+        {
+            await writeOutput.Error($"Add failed (duplicate key?): {ex.Message}");
+        }
+    }
+
+    private async Task PutNote()
+    {
+        if (await EnsureOpen(writeOutput) is false) return;
+        try
+        {
+            var key = await db!.Put(StoreName, new Note { Id = noteId, Text = noteText, Category = noteCategory });
+            await writeOutput.Log($"Put(\"{StoreName}\", {{ id: {noteId} }}) → key {key} (upserted)");
+        }
+        catch (Exception ex)
+        {
+            await writeOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task GetNote()
+    {
+        if (await EnsureOpen(readOutput) is false) return;
+        try
+        {
+            var note = await db!.Get<Note>(StoreName, readId);
+            if (note is null)
+            {
+                await readOutput.Warn($"Get({readId}) → not found");
+                return;
+            }
+            await readOutput.Success($"Get({readId}) →", note);
+        }
+        catch (Exception ex)
+        {
+            await readOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task GetAllNotes()
+    {
+        if (await EnsureOpen(readOutput) is false) return;
+        try
+        {
+            var notes = await db!.GetAll<Note>(StoreName);
+            await readOutput.Success($"GetAll() → {notes.Length} record(s):", notes);
+        }
+        catch (Exception ex)
+        {
+            await readOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task GetKeys()
+    {
+        if (await EnsureOpen(readOutput) is false) return;
+        try
+        {
+            var keys = await db!.GetAllKeys(StoreName);
+            await readOutput.Success($"GetAllKeys() → [{string.Join(", ", keys.Select(k => k.ToString()))}]");
+        }
+        catch (Exception ex)
+        {
+            await readOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task CountNotes()
+    {
+        if (await EnsureOpen(readOutput) is false) return;
+        try
+        {
+            await readOutput.Success("Count() →", await db!.Count(StoreName));
+        }
+        catch (Exception ex)
+        {
+            await readOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task GetByIndexDemo()
+    {
+        if (await EnsureOpen(queryOutput) is false) return;
+        try
+        {
+            var note = await db!.GetByIndex<Note>(StoreName, IndexName, queryCategory);
+            if (note is null)
+            {
+                await queryOutput.Warn($"GetByIndex(\"{IndexName}\", \"{queryCategory}\") → not found");
+                return;
+            }
+            await queryOutput.Success($"GetByIndex(\"{IndexName}\", \"{queryCategory}\") →", note);
+        }
+        catch (Exception ex)
+        {
+            await queryOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task GetAllByIndexDemo()
+    {
+        if (await EnsureOpen(queryOutput) is false) return;
+        try
+        {
+            var notes = await db!.GetAllByIndex<Note>(StoreName, IndexName, queryCategory);
+            await queryOutput.Success($"GetAllByIndex(\"{IndexName}\", \"{queryCategory}\") → {notes.Length} record(s):", notes);
+        }
+        catch (Exception ex)
+        {
+            await queryOutput.Error(ex.Message);
+        }
+    }
+
+    private IndexedDbKeyRange CurrentRange() => IndexedDbKeyRange.Bound(rangeFrom, rangeTo);
+
+    private async Task GetAllInRange()
+    {
+        if (await EnsureOpen(rangeOutput) is false) return;
+        try
+        {
+            var notes = await db!.GetAll<Note>(StoreName, CurrentRange());
+            await rangeOutput.Success($"GetAll(Bound({rangeFrom}, {rangeTo})) → {notes.Length} record(s):", notes);
+        }
+        catch (Exception ex)
+        {
+            await rangeOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task CountInRange()
+    {
+        if (await EnsureOpen(rangeOutput) is false) return;
+        try
+        {
+            await rangeOutput.Success($"Count(Bound({rangeFrom}, {rangeTo})) →", await db!.Count(StoreName, CurrentRange()));
+        }
+        catch (Exception ex)
+        {
+            await rangeOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task DeleteRange()
+    {
+        if (await EnsureOpen(rangeOutput) is false) return;
+        try
+        {
+            await db!.Delete(StoreName, CurrentRange());
+            await rangeOutput.Warn($"Delete(Bound({rangeFrom}, {rangeTo})) - interval removed.");
+        }
+        catch (Exception ex)
+        {
+            await rangeOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task GetPageDemo()
+    {
+        if (await EnsureOpen(pageOutput) is false) return;
+        try
+        {
+            var page = await db!.GetPage<Note>(StoreName, direction: pageDirection, skip: pageSkip, take: pageTake);
+            await pageOutput.Success($"GetPage(direction: {pageDirection}, skip: {pageSkip}, take: {pageTake}) → {page.Length} record(s):",
+                page.Select(r => new { key = r.PrimaryKey.ToString(), text = r.Value?.Text }));
+        }
+        catch (Exception ex)
+        {
+            await pageOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task GetKeyPageDemo()
+    {
+        if (await EnsureOpen(pageOutput) is false) return;
+        try
+        {
+            var page = await db!.GetKeyPage(StoreName, direction: pageDirection, skip: pageSkip, take: pageTake);
+            await pageOutput.Success($"GetKeyPage(...) → [{string.Join(", ", page.Select(r => r.PrimaryKey.ToString()))}]");
+        }
+        catch (Exception ex)
+        {
+            await pageOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task CountByIndexDemo()
+    {
+        if (await EnsureOpen(queryOutput) is false) return;
+        try
+        {
+            await queryOutput.Success($"CountByIndex(\"{IndexName}\", \"{queryCategory}\") →",
+                await db!.CountByIndex(StoreName, IndexName, queryCategory));
+        }
+        catch (Exception ex)
+        {
+            await queryOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task DistinctCategories()
+    {
+        if (await EnsureOpen(queryOutput) is false) return;
+        try
+        {
+            var distinct = await db!.GetKeyPageByIndex(StoreName, IndexName, direction: IndexedDbCursorDirection.NextUnique);
+            await queryOutput.Success($"GetKeyPageByIndex(NextUnique) → [{string.Join(", ", distinct.Select(r => r.Key.ToString()))}]");
+        }
+        catch (Exception ex)
+        {
+            await queryOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task DeleteByIndexDemo()
+    {
+        if (await EnsureOpen(queryOutput) is false) return;
+        try
+        {
+            var removed = await db!.DeleteByIndex(StoreName, IndexName, queryCategory);
+            await queryOutput.Warn($"DeleteByIndex(\"{IndexName}\", \"{queryCategory}\") → {removed} record(s) removed.");
+        }
+        catch (Exception ex)
+        {
+            await queryOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task TransactDemo()
+    {
+        if (await EnsureOpen(transactOutput) is false) return;
+        try
+        {
+            var keys = await db!.Transact(
+            [
+                IndexedDbOperation.Put(StoreName, new Note { Id = 101, Text = "batched one", Category = "batch" }),
+                IndexedDbOperation.Put(StoreName, new Note { Id = 102, Text = "batched two", Category = "batch" }),
+                IndexedDbOperation.Delete(StoreName, 103),
+            ],
+            durability: IndexedDbDurability.Relaxed);
+
+            await transactOutput.Success($"Transact(3 ops) → keys [{string.Join(", ", keys.Select(k => k.ToString()))}]");
+        }
+        catch (Exception ex)
+        {
+            await transactOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task TransactRollbackDemo()
+    {
+        if (await EnsureOpen(transactOutput) is false) return;
+        try
+        {
+            // The second Add duplicates the first, so the batch aborts and neither record survives.
+            await db!.Transact(
+            [
+                IndexedDbOperation.Put(StoreName, new Note { Id = 201, Text = "written first", Category = "rollback" }),
+                IndexedDbOperation.Add(StoreName, new Note { Id = 201, Text = "duplicate key", Category = "rollback" }),
+            ]);
+            await transactOutput.Warn("Expected the batch to abort, but it committed.");
+        }
+        catch (Exception ex)
+        {
+            await transactOutput.Error($"Batch aborted: {ex.Message}");
+            var survivor = await db!.Get<Note>(StoreName, 201);
+            await transactOutput.Success($"Get(201) → {(survivor is null ? "not found - the whole batch rolled back" : "found (unexpected)")}");
+        }
+    }
+
+    private async Task PutBytesDemo()
+    {
+        if (await EnsureOpen(bytesOutput) is false) return;
+        try
+        {
+            var bytes = Encoding.UTF8.GetBytes(blobText);
+            await db!.PutBytes(BlobStoreName, bytes, key: "demo");
+            await bytesOutput.Log($"PutBytes(\"{BlobStoreName}\", {bytes.Length} byte(s), key: \"demo\")");
+        }
+        catch (Exception ex)
+        {
+            await bytesOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task GetBytesDemo()
+    {
+        if (await EnsureOpen(bytesOutput) is false) return;
+        try
+        {
+            var bytes = await db!.GetBytes(BlobStoreName, "demo");
+            if (bytes is null)
+            {
+                await bytesOutput.Warn("GetBytes(\"demo\") → not found");
+                return;
+            }
+            await bytesOutput.Success($"GetBytes(\"demo\") → {bytes.Length} byte(s): \"{Encoding.UTF8.GetString(bytes)}\"");
+        }
+        catch (Exception ex)
+        {
+            await bytesOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ShowInfo()
+    {
+        if (await EnsureOpen(infoOutput) is false) return;
+        try
+        {
+            await infoOutput.Success("GetInfo() →", await db!.GetInfo());
+        }
+        catch (Exception ex)
+        {
+            await infoOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ShowStoreInfo()
+    {
+        if (await EnsureOpen(infoOutput) is false) return;
+        try
+        {
+            await infoOutput.Success($"GetStoreInfo(\"{StoreName}\") →", await db!.GetStoreInfo(StoreName));
+        }
+        catch (Exception ex)
+        {
+            await infoOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ShowIndexInfo()
+    {
+        if (await EnsureOpen(infoOutput) is false) return;
+        try
+        {
+            await infoOutput.Success($"GetIndexInfo(\"{StoreName}\", \"{IndexName}\") →", await db!.GetIndexInfo(StoreName, IndexName));
+        }
+        catch (Exception ex)
+        {
+            await infoOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ListDatabases()
+    {
+        try
+        {
+            var all = await indexedDb.Databases();
+            if (all.Length == 0)
+            {
+                await infoOutput.Warn("Databases() → empty (none exist, or this browser cannot enumerate them)");
+                return;
+            }
+            await infoOutput.Success($"Databases() → {all.Length}:", all.Select(d => $"{d.Name} v{d.Version}"));
+        }
+        catch (Exception ex)
+        {
+            await infoOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task CompareKeys()
+    {
+        try
+        {
+            await infoOutput.Success($"Compare({rangeFrom}, {rangeTo}) →", await indexedDb.Compare(rangeFrom, rangeTo));
+        }
+        catch (Exception ex)
+        {
+            await infoOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task DeleteNote()
+    {
+        if (await EnsureOpen(deleteOutput) is false) return;
+        try
+        {
+            await db!.Delete(StoreName, deleteId);
+            await deleteOutput.Warn($"Delete({deleteId}) - record removed.");
+        }
+        catch (Exception ex)
+        {
+            await deleteOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ClearNotes()
+    {
+        if (await EnsureOpen(deleteOutput) is false) return;
+        try
+        {
+            await db!.Clear(StoreName);
+            await deleteOutput.Warn($"Clear(\"{StoreName}\") - store emptied.");
+        }
+        catch (Exception ex)
+        {
+            await deleteOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task CloseDb()
+    {
+        try
+        {
+            if (db is not null)
+            {
+                await db.DisposeAsync();
+                db = null;
+                await closeOutput.Warn("Handle disposed - connection closed.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await closeOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task DeleteDb()
+    {
+        try
+        {
+            if (db is not null)
+            {
+                await db.DisposeAsync();
+                db = null;
+                await closeOutput.Warn("Open handle disposed first (deletion would block otherwise).");
+            }
+            await indexedDb.DeleteDatabase(DbName);
+            await closeOutput.Warn($"DeleteDatabase(\"{DbName}\") - database dropped.");
+        }
+        catch (Exception ex)
+        {
+            await closeOutput.Error(ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (db is not null)
+            {
+                await db.DisposeAsync();
+                db = null;
+            }
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+}

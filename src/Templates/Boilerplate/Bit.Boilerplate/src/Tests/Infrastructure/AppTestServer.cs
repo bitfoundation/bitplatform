@@ -1,14 +1,11 @@
+//+:cnd:noEmit
 using Bunit;
 using Hangfire;
-using System.Net;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
-using Boilerplate.Tests.Infrastructure.Services;
-using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 
 namespace Boilerplate.Tests.Infrastructure;
 
@@ -21,6 +18,10 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
     private WebApplicationBuilder? builder;
 
     public WebApplication WebApp => webApp ?? throw new InvalidOperationException($"{nameof(WebApp)} is null. Call {nameof(Build)} method first.");
+
+    //#if (advancedTests == true)
+    public IServiceCollection Services => builder?.Services ?? throw new InvalidOperationException($"{nameof(Services)} is null. Call {nameof(Build)} method first.");
+    //#endif
     public readonly Uri WebAppServerAddress = new(GenerateServerUrl());
 
     public AppTestServer Build(Action<IServiceCollection>? configureTestServices = null,

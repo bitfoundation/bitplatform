@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <LangVersion>latest</LangVersion>
+
+    <!-- The repo's global.json mandates the Microsoft.Testing.Platform runner. EnableMSTestRunner
+         builds that test host into the assembly itself, and it only generates the entry point for
+         an executable project - as a library the runner never runs. -->
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <OutputType>Exe</OutputType>
+
+    <!-- Assert.Scope, which collects several assertion failures into one report, is still marked
+         experimental by MSTest. It is what the multi-assertion blocks in this suite are written
+         against - a fixture that checks four properties of one page should say which of them broke,
+         not just the first. -->
+    <NoWarn>$(NoWarn);MSTESTEXP</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Playwright itself, without a per-framework integration package: the suite drives the browser
+         from ButilHarnessTestBase rather than from a PageTest base class - see the comment there. -->
+    <PackageReference Include="Microsoft.Playwright" Version="1.59.0" />
+    <PackageReference Include="MSTest" Version="4.3.3" />
+  </ItemGroup>
+
+</Project>

@@ -1,191 +1,299 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 @{
-    var presentationIconName = GetPresentationIconName();
-    var presentationIcon = GetPresentationIcon();
+    var hasPresence = Presence is not BitPersonaPresence.None;
+    var presenceIcon = hasPresence ? GetPresenceIcon() : null;
+    var presenceTitle = hasPresence ? GetPresenceTitle() : null;
+    var presenceLabel = hasPresence ? GetPresenceLabel() : null;
+    var isCoinLink = Href.HasValue();
+    var isCoinClickable = HasClickableCoin;
+    var hasCoinOverlay = HasImageOverlay;
 
-    var presenceIconInfo = BitIconInfo.From(presentationIcon, presentationIconName);
+    @* What fills the coin when there is no picture in it: the initials, or - when a name gives none, or an
+       icon was asked for instead - a glyph, so the coin is never left blank. It is worked out here rather
+       than where it is rendered because the coin reaches for it from two places: on its own, and behind an
+       image that is still loading or has failed. A coin already carrying a loaded picture asks for none of
+       this, which is what keeps a list of a hundred faces from deriving a hundred sets of initials it will
+       never show. *@
+    RenderFragment? coinFallback = null;
+    if (NeedsCoinFallback())
+    {
+        var initials = GetInitials();
+        var coinIcon = GetCoinIcon(initials);
+
+        if (coinIcon is not null)
+        {
+            coinFallback = @<i aria-hidden="true"
+                              style="@Styles?.CoinIcon"
+                              class="bit-prs-cic @coinIcon.GetCssClasses() @Classes?.CoinIcon" />;
+        }
+        else
+        {
+            @* The name is already announced from the details beside the coin, so the pair of letters standing
+               in for it is not read out again on top of it. Where there is no name to announce, they are all
+               a reader has and stay in the accessibility tree. *@
+            coinFallback = @<span style="@Styles?.Initials"
+                                  aria-hidden="@(PrimaryText.HasValue() ? "true" : null)"
+                                  class="bit-prs-ini @GetInitialsFitClass(initials) @Classes?.Initials">@initials</span>;
+        }
+    }
+
+    @* What goes inside the coin, written once because the coin itself is two different elements: a button
+       when there is something to do with it, and a plain box when there is not. *@
+    RenderFragment coinContent =
+    @<text>
+        @* What covers the coin while it is hovered or focused. It belongs to the click rather than to the
+           picture: a coin carrying initials, an icon or the unknown glyph is every bit as clickable as one
+           carrying a photo, and owes the pointer the same affordance. A coin given neither a text nor a
+           template for it has nothing to reveal and gets no veil, which is what a coin that opens a profile
+           rather than offering to change the picture is left as. *@
+        @if (hasCoinOverlay)
+        {
+            <span style="@Styles?.ImageOverlay" class="bit-prs-imo @Classes?.ImageOverlay">
+                @if (ImageOverlayTemplate is not null)
+                {
+                    @ImageOverlayTemplate
+                }
+                else
+                {
+                    <span style="@Styles?.ImageOverlayText" class="@Classes?.ImageOverlayText">@ImageOverlayText</span>
+                }
+            </span>
+        }
+
+        @if (Unknown)
+        {
+            var unknownIconInfo = BitIconInfo.From(UnknownIcon, UnknownIconName ?? "Help");
+
+            <i aria-hidden="true"
+               style="@Styles?.UnknownIcon"
+               class="bit-prs-cic @unknownIconInfo?.GetCssClasses() @Classes?.UnknownIcon" />
+        }
+        else if (HasImage || CoinTemplate is not null)
+        {
+            @* Only an image has a load to wait for and a load to fail: a coin template paints itself,
+               so nothing is ever left showing behind it. *@
+            @coinFallback
+
+            if (CoinTemplate is not null)
+            {
+                @CoinTemplate
+            }
+            else if (_hasError is false)
+            {
+                var dimension = GetPersonaImageDimension();
+
+                <img @attributes="ImageAttributes"
+                     @onload="HandleOnLoad"
+                     @onerror="HandleOnError"
+                     src="@ImageUrl"
+                     alt="@(ImageAlt ?? string.Empty)"
+                     width="@dimension"
+                     height="@dimension"
+                     sizes="@ImageSizes"
+                     srcset="@ImageSrcSet"
+                     class="bit-prs-img @(ImageFadeIn ? "bit-prs-ifi" : null) @Classes?.Image"
+                     loading="@ImageLoading?.ToString().ToLower()"
+                     style="@Styles?.Image" />
+            }
+        }
+        else
+        {
+            @coinFallback
+        }
+    </text>;
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()">
+     dir="@Dir?.ToString().ToLower()"
+     role="@GetRootRole()"
+     aria-label="@GetRootAriaLabel()">
 
-    <div style="@Styles?.CoinContainer" class="bit-prs-cin @Classes?.CoinContainer" role="presentation">
-        @if (Size is BitPersonaSize.Size8)
-        {
-            if (Presence is BitPersonaPresence.None)
+    @* A coin container with nothing in it would still take its share of the row gap and indent the texts
+       beside it, so the smallest size renders one only when there is a presence dot to put in it. *@
+    @if (Size is not BitPersonaSize.Size8 || hasPresence)
+    {
+        <div style="@Styles?.CoinContainer" class="bit-prs-cin @Classes?.CoinContainer">
+            @if (Size is BitPersonaSize.Size8)
             {
-                @if (presenceIconInfo is not null)
+                @* The smallest size has no coin at all - the presence dot stands in for it, in the flow of the
+                   row rather than pinned to a corner. *@
+                if (hasPresence)
                 {
-                    <i role="presentation"
-                       style="@Styles?.PresentationIcon"
-                       class="bit-prs-pic @presenceIconInfo.GetCssClasses() @Classes?.PresentationIcon" />
+                    <div role="img"
+                         title="@presenceTitle"
+                         aria-label="@presenceLabel"
+                         style="@JoinStyles(Styles?.Presence, Styles?.Presentation)"
+                         class="bit-prs-pre @GetPresentationClass() @Classes?.Presence @Classes?.Presentation"></div>
                 }
             }
             else
             {
-                <div title="@PresenceTitle"
-                     style="@Styles?.Presentation"
-                     class="bit-prs-pre @GetPresentationClass() @Classes?.Presentation"></div>
-            }
-        }
-        else
-        {
-
-            <div style="@GetImageContainerStyle()" class="@GetImageContainerClass()" @onclick="HandleImageClick">
-                @if (Unknown)
+                @* A coin with something to do is a real control and nothing else: the browser gives it the
+                   role, the focus, the keys and the disabled state that emulating one by hand can only
+                   approximate - Space in particular scrolls the page before a hand-rolled coin ever sees it.
+                   Which control it is follows what activating it does: a coin that goes somewhere is an
+                   anchor, so it is announced as a link and can be opened in a new tab, copied or previewed
+                   the way every other link on the page can; a coin that runs a handler is a button. A coin
+                   with nothing to do stays the plain box it is. *@
+                @if (isCoinLink)
                 {
-                    var unknownIconInfo = BitIconInfo.From(UnknownIcon, UnknownIconName ?? "Help");
-
-                    <i style="@Styles?.UnknownIcon" class="@unknownIconInfo?.GetCssClasses() @Classes?.UnknownIcon" role="presentation" />
+                    @* An anchor cannot be disabled, so a disabled one is stripped of the href that made it a
+                       link and taken out of the tab order by hand. *@
+                    <a style="@GetImageContainerStyle()"
+                       class="@GetImageContainerClass()"
+                       href="@(IsEnabled ? Href : null)"
+                       rel="@_rel"
+                       target="@Target"
+                       tabindex="@(IsEnabled ? TabIndex : "-1")"
+                       aria-label="@GetCoinButtonLabel()"
+                       aria-disabled="@(IsEnabled ? null : "true")"
+                       @onclick="HandleImageClick">
+                        @coinContent
+                    </a>
                 }
-                else if (ImageUrl.HasValue() || CoinTemplate is not null)
+                else if (isCoinClickable)
                 {
-                    if (OnImageClick.HasDelegate)
-                    {
-                        <div style="@Styles?.ImageOverlay" class="bit-prs-imo @GetCoinClass() @Classes?.ImageOverlay">
-                            @if (ImageOverlayTemplate is not null)
-                            {
-                                @ImageOverlayTemplate
-                            }
-                            else
-                            {
-                                <span style="@Styles?.ImageOverlayText" class="@Classes?.ImageOverlayText">@ImageOverlayText</span>
-                            }
-                        </div>
-                    }
-
-                    if ((ShowInitialsUntilImageLoads && _isLoaded is false) || _hasError)
-                    {
-                        <span style="@Styles?.Initials" class="bit-prs-ini @Classes?.Initials">
-                            @GetInitials()
-                        </span>
-                    }
-
-                    if (CoinTemplate is not null)
-                    {
-                        @CoinTemplate
-                    }
-                    else if (ImageUrl.HasValue())
-                    {
-                        if (_hasError is false)
-                        {
-                            var dimension = GetPersonaImageDimension();
-
-                            <img @onload="HandleOnLoad"
-                                 @onerror="HandleOnError"
-                                 src="@ImageUrl"
-                                 alt="@ImageAlt"
-                                 width="@dimension"
-                                 height="@dimension"
-                                 srcset="@ImageSrcSet"
-                                 class="bit-prs-img @Classes?.Image"
-                                 loading="@ImageLoading?.ToString().ToLower()"
-                                 style="@($"{(_isLoaded ? null : "opacity:0;")}{Styles?.Image}")" />
-                        }
-                    }
-                }
-                else
-                {
-                    <span style="@Styles?.Initials" class="bit-prs-ini @Classes?.Initials">
-                        @GetInitials()
-                    </span>
-                }
-            </div>
-
-            @if (OnActionClick.HasDelegate)
-            {
-                @if (ActionTemplate is not null)
-                {
-                    @ActionTemplate
-                }
-                else
-                {
-                    var actionIcon = BitIconInfo.From(ActionIcon, ActionIconName ?? "Edit");
-                    <button @onclick="HandleActionClick"
-                            type="button"
-                            title="@ActionButtonTitle"
-                            style="@Styles?.ActionButton"
-                            class="bit-prs-abt @Classes?.ActionButton">
-                        @if (actionIcon is not null)
-                        {
-                            <i style="@Styles?.ActionButtonIcon"
-                               class="bit-prs-aic @actionIcon.GetCssClasses() @Classes?.ActionButtonIcon" />
-                        }
+                    <button type="button"
+                            style="@GetImageContainerStyle()"
+                            class="@GetImageContainerClass()"
+                            disabled="@(IsEnabled is false)"
+                            tabindex="@TabIndex"
+                            aria-label="@GetCoinButtonLabel()"
+                            @onclick="HandleImageClick">
+                        @coinContent
                     </button>
                 }
-            }
-            else if (Presence is not BitPersonaPresence.None)
-            {
-                <div title="@PresenceTitle" style="@GetPresentationStyle()" class="bit-prs-pre @GetPresentationClass() @Classes?.Presence">
-                    @if (presenceIconInfo is not null)
+                else
+                {
+                    <div style="@GetImageContainerStyle()"
+                         class="@GetImageContainerClass()"
+                         role="@GetCoinRole()"
+                         aria-label="@GetCoinLabel()">
+                        @coinContent
+                    </div>
+                }
+
+                @if (OnActionClick.HasDelegate)
+                {
+                    @* The action button sits at the foot of the coin and the presence dot in its trailing
+                       corner, so a persona that offers to change the picture can still say whether the
+                       person is around. *@
+                    @if (ActionTemplate is not null)
                     {
-                        <i role="presentation"
-                           style="@Styles?.PresentationIcon"
-                           class="@presenceIconInfo?.GetCssClasses() @Classes?.PresentationIcon" />
+                        @ActionTemplate
+                    }
+                    else
+                    {
+                        var actionIcon = BitIconInfo.From(ActionIcon, ActionIconName ?? "Edit");
+                        <button @onclick="HandleActionClick"
+                                type="button"
+                                title="@ActionButtonTitle"
+                                aria-label="@ActionButtonTitle"
+                                disabled="@(IsEnabled is false)"
+                                style="@Styles?.ActionButton"
+                                class="bit-prs-abt @Classes?.ActionButton">
+                            @if (actionIcon is not null)
+                            {
+                                <i aria-hidden="true"
+                                   style="@Styles?.ActionButtonIcon"
+                                   class="bit-prs-aic @actionIcon.GetCssClasses() @Classes?.ActionButtonIcon" />
+                            }
+                        </button>
+                    }
+                }
+
+                @if (hasPresence)
+                {
+                    <div role="img"
+                         title="@presenceTitle"
+                         aria-label="@presenceLabel"
+                         style="@GetPresentationStyle()"
+                         class="bit-prs-pre @GetPresentationClass() @Classes?.Presence">
+                        @if (presenceIcon is not null)
+                        {
+                            <i aria-hidden="true"
+                               style="@Styles?.PresentationIcon"
+                               class="@presenceIcon.GetCssClasses() @Classes?.PresentationIcon" />
+                        }
+                    </div>
+                }
+            }
+        </div>
+    }
+
+    @* A row that has nothing in it is left out rather than rendered empty: the details column spreads its
+       rows apart, and an empty one would take a share of that space and push the rest off center. The column
+       itself goes the same way when every one of its rows has gone - an empty one still claims the gap the
+       row keeps between the coin and the texts, and leaves the coin trailing a strip of blank space. *@
+    @if (RendersDetails)
+    {
+        <div style="@Styles?.DetailsContainer" class="bit-prs-det @Classes?.DetailsContainer">
+            @if (PrimaryTextTemplate is not null || PrimaryText.HasValue())
+            {
+                <div title="@(ShowOverflowTooltip ? PrimaryText : null)"
+                     style="@Styles?.PrimaryTextContainer"
+                     class="bit-prs-ptx @Classes?.PrimaryTextContainer">
+                    @if (PrimaryTextTemplate is not null)
+                    {
+                        @PrimaryTextTemplate
+                    }
+                    else
+                    {
+                        @PrimaryText
                     }
                 </div>
             }
-        }
-    </div>
-
-    @if (HidePersonaDetails is false || Size is BitPersonaSize.Size8)
-    {
-        <div style="@Styles?.DetailsContainer" class="bit-prs-det @Classes?.DetailsContainer">
-            <div title="@PrimaryText"
-                 style="@Styles?.PrimaryTextContainer"
-                 class="bit-prs-ptx @Classes?.PrimaryTextContainer">
-                @if (PrimaryTextTemplate is not null)
-                {
-                    @PrimaryTextTemplate
-                }
-                else
-                {
-                    @PrimaryText
-                }
-            </div>
-            <div title="@SecondaryText"
-                 style="@Styles?.SecondaryTextContainer"
-                 class="bit-prs-stx @Classes?.SecondaryTextContainer">
-                @if (SecondaryTextTemplate is not null)
-                {
-                    @SecondaryTextTemplate
-                }
-                else
-                {
-                    @SecondaryText
-                }
-            </div>
-            <div title="@TertiaryText"
-                 style="@Styles?.TertiaryTextContainer"
-                 class="bit-prs-ttx @Classes?.TertiaryTextContainer">
-                @if (TertiaryTextTemplate is not null)
-                {
-                    @TertiaryTextTemplate
-                }
-                else
-                {
-                    @TertiaryText
-                }
-            </div>
-            <div title="@OptionalText"
-                 style="@Styles?.OptionalTextContainer"
-                 class="bit-prs-otx @Classes?.OptionalTextContainer">
-                @if (OptionalTextTemplate is not null)
-                {
-                    @OptionalTextTemplate
-                }
-                else
-                {
-                    @OptionalText
-                }
-            </div>
+            @if (SecondaryTextTemplate is not null || SecondaryText.HasValue())
+            {
+                <div title="@(ShowOverflowTooltip ? SecondaryText : null)"
+                     style="@Styles?.SecondaryTextContainer"
+                     class="bit-prs-stx @Classes?.SecondaryTextContainer">
+                    @if (SecondaryTextTemplate is not null)
+                    {
+                        @SecondaryTextTemplate
+                    }
+                    else
+                    {
+                        @SecondaryText
+                    }
+                </div>
+            }
+            @if (TertiaryTextTemplate is not null || TertiaryText.HasValue())
+            {
+                <div title="@(ShowOverflowTooltip ? TertiaryText : null)"
+                     style="@Styles?.TertiaryTextContainer"
+                     class="bit-prs-ttx @Classes?.TertiaryTextContainer">
+                    @if (TertiaryTextTemplate is not null)
+                    {
+                        @TertiaryTextTemplate
+                    }
+                    else
+                    {
+                        @TertiaryText
+                    }
+                </div>
+            }
+            @if (OptionalTextTemplate is not null || OptionalText.HasValue())
+            {
+                <div title="@(ShowOverflowTooltip ? OptionalText : null)"
+                     style="@Styles?.OptionalTextContainer"
+                     class="bit-prs-otx @Classes?.OptionalTextContainer">
+                    @if (OptionalTextTemplate is not null)
+                    {
+                        @OptionalTextTemplate
+                    }
+                    else
+                    {
+                        @OptionalText
+                    }
+                </div>
+            }
         </div>
     }
 
 </div>
-

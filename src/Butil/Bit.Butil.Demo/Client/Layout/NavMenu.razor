@@ -1,0 +1,87 @@
+@* Fluent 2's NavDrawer: a filter box over grouped links, pinned under the header on wide screens
+   and sliding in over the content below the lg breakpoint. Open/closed is the layout's state, not
+   this component's - the scrim that closes it lives outside the panel.
+
+   The group headers carry the mark, the sixty-six links do not: a glyph on every row is decoration
+   a reader has to look past to find a name, while ten of them are landmarks telling you which part
+   of the browser platform you are in. *@
+
+<nav id="nav-panel" class="nav-panel@(IsOpen ? " open" : "")" aria-label="Documentation">
+    <div class="nav-panel-search">
+        @* Narrowing the list in place, which is a different job from the header's search box: this
+           one leaves the reader looking at the taxonomy, so Ctrl+K belongs to the field that jumps
+           straight to a page instead. *@
+        <div class="nav-filter">
+            <Icon Name="filter" Size="16" Class="nav-filter-icon" />
+            <input type="search" placeholder="Filter docs"
+                   aria-label="Filter the documentation links"
+                   @bind="_filter" @bind:event="oninput" />
+        </div>
+    </div>
+
+    <div class="nav-panel-items">
+        @* Home is the only entry that is not a documentation page, so it is the only one written
+           out here; everything else - guides included - comes from DocsNav and is filterable. *@
+        @if (string.IsNullOrWhiteSpace(_filter))
+        {
+            <NavLink class="nav-panel-item" href="" Match="NavLinkMatch.All" @onclick="OnNavigate">
+                <span>Home</span>
+            </NavLink>
+        }
+
+        @{
+            var matched = 0;
+        }
+        @foreach (var group in DocsNav.Groups)
+        {
+            var links = group.Links.Where(Match).ToList();
+            if (links.Count == 0) continue;
+
+            matched += links.Count;
+
+            <div class="nav-panel-group">
+                <Icon Name="@group.Icon" Size="16" />
+                <span>@group.Title</span>
+            </div>
+            @foreach (var link in links)
+            {
+                <NavLink class="nav-panel-item" href="@link.Url" Match="NavLinkMatch.All" @onclick="OnNavigate">
+                    <span>@link.Title</span>
+                </NavLink>
+            }
+        }
+
+        @if (matched == 0)
+        {
+            <div class="nav-panel-empty">Nothing matches "@_filter".</div>
+        }
+    </div>
+
+    @* The count is the one thing a filtered list cannot show by itself: with the panel scrolled
+       to the middle of a long result set, "12 of 66" is what says whether the term narrowed
+       anything. Unfiltered it is the size of the catalogue, which is worth knowing too. *@
+    <div class="nav-panel-foot">
+        @if (string.IsNullOrWhiteSpace(_filter))
+        {
+            <span>@DocsNav.ReadingOrder.Length pages</span>
+        }
+        else
+        {
+            <span>@DocsNav.AllLinks.Count(Match) of @DocsNav.ReadingOrder.Length pages</span>
+        }
+    </div>
+</nav>
+
+@code {
+    private string _filter = "";
+
+    [Parameter] public bool IsOpen { get; set; }
+
+    /// <summary>Raised when a link is followed, so the layout can close the small-screen drawer.</summary>
+    [Parameter] public EventCallback OnNavigate { get; set; }
+
+    private bool Match(DocLink link) =>
+        string.IsNullOrWhiteSpace(_filter) ||
+        link.Title.Contains(_filter, StringComparison.OrdinalIgnoreCase) ||
+        link.Summary.Contains(_filter, StringComparison.OrdinalIgnoreCase);
+}

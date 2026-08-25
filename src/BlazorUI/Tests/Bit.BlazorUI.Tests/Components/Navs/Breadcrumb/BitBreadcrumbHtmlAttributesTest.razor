@@ -1,0 +1,10 @@
+@using Bit.BlazorUI
+@using System.Collections.Generic
+
+@* An aria-label written as a plain attribute goes through the HtmlAttributes of the component,
+   which the default label of the navigation landmark must not take away. *@
+<BitBreadcrumb TItem="BitBreadcrumbItem" Items="Items" aria-label="Where you are" />
+
+@code {
+    [Parameter] public List<BitBreadcrumbItem> Items { get; set; } = [];
+}

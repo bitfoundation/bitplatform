@@ -120,6 +120,7 @@ public partial class TodoPage
     private void ExitEditMode(TodoItemDto todoItem)
     {
         todoItem.IsInEditMode = false;
+        underEditTodoItemTitle = null;
     }
 
     private async Task AddTodoItem()
@@ -134,10 +135,7 @@ public partial class TodoPage
 
         allTodoItems.Add(addedTodoItem!);
 
-        if (TodoItemIsVisible(addedTodoItem!))
-        {
-            viewTodoItems.Add(addedTodoItem!);
-        }
+        FilterViewTodoItems();
 
         newTodoTitle = "";
         await newTodoInput.FocusAsync();
@@ -168,11 +166,20 @@ public partial class TodoPage
 
         isLoading = true;
 
+        // todoItem is the very instance the list renders, so a rejected save would otherwise leave the row showing
+        // a value the server refused - and Cancel only flips IsInEditMode, it does not put the old title back.
+        var previousTitle = todoItem.Title;
+
         try
         {
             todoItem.Title = underEditTodoItemTitle;
 
             await UpdateTodoItem(todoItem);
+        }
+        catch
+        {
+            todoItem.Title = previousTitle;
+            throw;
         }
         finally
         {
@@ -186,9 +193,6 @@ public partial class TodoPage
 
         todoItem.IsInEditMode = false;
 
-        if (TodoItemIsVisible(todoItem) is false)
-        {
-            viewTodoItems.Remove(todoItem);
-        }
+        FilterViewTodoItems();
     }
 }

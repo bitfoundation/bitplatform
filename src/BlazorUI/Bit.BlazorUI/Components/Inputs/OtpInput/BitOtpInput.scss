@@ -1,4 +1,4 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-otp {
     display: flex;
@@ -7,30 +7,12 @@
     flex-direction: column;
     font-family: $tg-font-family;
     font-size: var(--bit-otp-fontsize);
-
-    &.bit-dis {
-        .bit-otp-lbl {
-            color: $clr-fg-dis;
-        }
-
-        .bit-otp-inp {
-            border-color: $clr-brd-dis;
-            background-color: $clr-bg-dis;
-        }
-    }
-
-    &.bit-inv {
-        .bit-otp-inp {
-            outline: none;
-            border-color: $clr-err;
-        }
-    }
 }
 
 .bit-otp-lbl {
     margin: 0;
     display: block;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: $clr-fg-pri;
     font-size: inherit;
     box-sizing: border-box;
@@ -38,36 +20,157 @@
     overflow-wrap: break-word;
 }
 
+//the helper text under the inputs. It is a touch smaller than the code itself, so that the sentence
+//explaining the code never outweighs the code it explains.
+.bit-otp-dsc {
+    margin: 0;
+    display: block;
+    max-width: 100%;
+    color: $clr-fg-sec;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    padding: spacing(0.625) 0 0;
+    font-size: calc(var(--bit-otp-fontsize) - #{spacing(0.5)});
+}
+
 .bit-otp-iwr {
     display: flex;
+    align-items: center;
     gap: spacing(1.25);
     box-sizing: border-box;
     flex-direction: var(--bit-otp-iwr-flexdirection);
 }
 
-.bit-otp-inp {
-    display: flex;
-    cursor: pointer;
-    font-size: inherit;
-    text-align: center;
-    align-items: center;
+//the separator is decoration only (it is aria-hidden in the markup), so it must never swallow a click
+//meant for the input next to it nor end up inside a copied selection of the code.
+.bit-otp-sep {
+    line-height: 1;
+    user-select: none;
+    color: $clr-fg-sec;
+    pointer-events: none;
+}
+
+//the code has been submitted and is being checked: an indeterminate bar under the inputs, as wide as the
+//row of them, that says the wait belongs to the code rather than to the page around it.
+.bit-otp-ldr {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
     box-sizing: border-box;
-    justify-content: center;
+    height: spacing(0.375);
+    margin-top: spacing(0.625);
+    border-radius: $shp-radius-sm;
+    background-color: $clr-bg-sec;
+
+    &::after {
+        content: "";
+        width: 33%;
+        inset-block: 0;
+        position: absolute;
+        border-radius: inherit;
+        inset-inline-start: -33%;
+        background-color: var(--bit-otp-clr);
+        //the sweep is not a spinner, so it scales its own duration by the shared loop factor instead of
+        //taking the spinner tokens: stretched under reduced motion, restored inside a ForceAnimation subtree.
+        animation: calc(1.5s * #{$mot-loop-factor}) $mot-easing 0s infinite normal none running bit-otp-ldr-anm;
+    }
+}
+
+@keyframes bit-otp-ldr-anm {
+    0% {
+        inset-inline-start: -33%;
+    }
+
+    100% {
+        inset-inline-start: 100%;
+    }
+}
+
+.bit-otp-inp {
+    cursor: text;
+    //a form control carries a padding of its own that is not the same on both sides in every engine, which
+    //would push the single character of a fixed width box off its center and clip it at the small size.
+    padding: 0;
+    //a form control does not inherit the font of the page on its own, so both halves of it have to be
+    //asked for explicitly, otherwise the code would be drawn in the default font of the browser while
+    //the label above it follows the theme.
+    font-size: inherit;
+    font-family: inherit;
+    text-align: center;
+    color: $clr-fg-pri;
+    box-sizing: border-box;
     -moz-appearance: textfield;
     width: var(--bit-otp-size);
     height: var(--bit-otp-size);
-    background-color: $clr-bg-pri;
-    border-radius: $shp-border-radius;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    border-radius: $shp-radius-control;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+    transition: border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
+    &::placeholder {
+        color: $clr-fg-ter;
+    }
+
+    //the spin buttons of a number typed input would not fit in a single character wide box, and the
+    //value is a code rather than a quantity, so they are removed in every engine.
     &::-webkit-inner-spin-button,
     &::-webkit-outer-spin-button {
         -webkit-appearance: none
     }
+}
 
-    &:focus {
-        outline: none;
-        border: spacing(0.25) $shp-border-style $clr-pri;
+//Outline - the default: each input is a box drawn with the border color, filled with the page surface.
+.bit-otp-otl {
+    .bit-otp-inp {
+        border-color: $clr-brd-pri;
+        background-color: $clr-bg-pri;
+
+        //the hover rule is qualified so that it lights up nothing but a box the user can actually type
+        //in: never a disabled or a read-only component, and never over the accent color of the focused
+        //input. The very same qualifiers are repeated in the invalid block below, which is what keeps a
+        //hovered box red while the code is in error.
+        &:enabled:read-write:hover:not(:focus-visible) {
+            border-color: $clr-brd-pri-hover;
+        }
+
+        &:focus-visible {
+            border-color: var(--bit-otp-clr);
+        }
+    }
+}
+
+//Fill: the box is painted with the secondary surface and carries no rule of its own, for a softer
+//looking field that still reads as a single character slot.
+.bit-otp-fil {
+    .bit-otp-inp {
+        border-color: transparent;
+        background-color: $clr-bg-sec;
+
+        &:enabled:read-write:hover:not(:focus-visible) {
+            background-color: $clr-bg-sec-hover;
+        }
+
+        &:focus-visible {
+            border-color: var(--bit-otp-clr);
+        }
+    }
+}
+
+//Text: only an underline is painted, for a code entry that should not outweigh the content around it.
+.bit-otp-txt {
+    .bit-otp-inp {
+        border-radius: 0;
+        border-color: $clr-brd-pri;
+        background-color: transparent;
+        border-width: 0 0 $shp-border-width 0;
+
+        &:enabled:read-write:hover:not(:focus-visible) {
+            border-color: $clr-brd-pri-hover;
+        }
+
+        &:focus-visible {
+            border-color: var(--bit-otp-clr);
+        }
     }
 }
 
@@ -83,18 +186,243 @@
     --bit-otp-iwr-flexdirection: column-reverse;
 }
 
+//Merged: the inputs of each group are glued into a single field, the way a code is printed in one box on
+//a card, instead of standing next to each other. The groups are the ones the separators cut the row into,
+//so only the two ends of every group keep their rounding and the rule that two glued inputs share is drawn
+//once instead of twice. The four blocks below are the four layouts the row can be rendered in: a reversed
+//row draws the inputs the other way round without changing their order in the markup, so the input that
+//closes a group is the one sitting at its visual start, and a vertical row is glued along the block axis.
+.bit-otp-mrg {
+    .bit-otp-iwr {
+        gap: 0;
+    }
+
+    .bit-otp-inp {
+        border-radius: 0;
+
+        //the ring of the focused input is drawn with a box shadow, which the inputs glued next to it would
+        //otherwise paint over.
+        &:focus-visible {
+            z-index: 1;
+            position: relative;
+        }
+    }
+
+    //closing the gaps takes the breathing room around the separator down with them, which would leave a
+    //dash touching the two groups it stands between, so it carries a little room of its own instead.
+    .bit-otp-sep {
+        padding-inline: spacing(0.75);
+    }
+
+    &.bit-otp-vrt .bit-otp-sep {
+        padding-inline: 0;
+        padding-block: spacing(0.5);
+    }
+}
+
+.bit-otp-mrg:not(.bit-otp-vrt):not(.bit-otp-rvs) {
+    .bit-otp-inp:not(.bit-otp-gst) {
+        margin-inline-start: calc(-1 * #{$shp-border-width});
+    }
+
+    .bit-otp-gst {
+        border-start-start-radius: $shp-radius-control;
+        border-end-start-radius: $shp-radius-control;
+    }
+
+    .bit-otp-gnd {
+        border-start-end-radius: $shp-radius-control;
+        border-end-end-radius: $shp-radius-control;
+    }
+}
+
+.bit-otp-mrg.bit-otp-rvs:not(.bit-otp-vrt) {
+    .bit-otp-inp:not(.bit-otp-gnd) {
+        margin-inline-end: calc(-1 * #{$shp-border-width});
+    }
+
+    .bit-otp-gnd {
+        border-start-start-radius: $shp-radius-control;
+        border-end-start-radius: $shp-radius-control;
+    }
+
+    .bit-otp-gst {
+        border-start-end-radius: $shp-radius-control;
+        border-end-end-radius: $shp-radius-control;
+    }
+}
+
+.bit-otp-mrg.bit-otp-vrt:not(.bit-otp-rvs) {
+    .bit-otp-inp:not(.bit-otp-gst) {
+        margin-block-start: calc(-1 * #{$shp-border-width});
+    }
+
+    .bit-otp-gst {
+        border-start-start-radius: $shp-radius-control;
+        border-start-end-radius: $shp-radius-control;
+    }
+
+    .bit-otp-gnd {
+        border-end-start-radius: $shp-radius-control;
+        border-end-end-radius: $shp-radius-control;
+    }
+}
+
+.bit-otp-mrg.bit-otp-vrt.bit-otp-rvs {
+    .bit-otp-inp:not(.bit-otp-gnd) {
+        margin-block-end: calc(-1 * #{$shp-border-width});
+    }
+
+    .bit-otp-gnd {
+        border-start-start-radius: $shp-radius-control;
+        border-start-end-radius: $shp-radius-control;
+    }
+
+    .bit-otp-gst {
+        border-end-start-radius: $shp-radius-control;
+        border-end-end-radius: $shp-radius-control;
+    }
+}
+
+.bit-otp-rdl {
+    .bit-otp-inp {
+        cursor: default;
+    }
+}
+
+//declared after the read-only rule above, which the loading state carries as well: the code cannot be
+//edited in either of them, but only one of the two is a wait that is going to end.
+.bit-otp-ldg {
+    .bit-otp-inp {
+        cursor: progress;
+    }
+}
+
+.bit-otp-req {
+    .bit-otp-lbl::after {
+        content: "*";
+        color: $clr-req;
+        margin-inline-start: spacing(0.625);
+    }
+}
+
+//the focus ring and the disabled/invalid overrides are declared after the variants on purpose: they are
+//as specific as the variant rules, so only the source order keeps a focused input from painting the
+//accent color over an error, or a disabled component from keeping its variant colors.
+.bit-otp .bit-otp-inp {
+    &:focus-visible {
+        @include focus-ring(var(--bit-otp-clr-focus));
+    }
+}
+
+.bit-otp.bit-dis {
+    .bit-otp-lbl,
+    .bit-otp-dsc,
+    .bit-otp-sep {
+        color: $clr-fg-dis;
+    }
+
+    .bit-otp-inp {
+        color: $clr-fg-dis;
+        border-color: $clr-brd-dis;
+        background-color: $clr-bg-dis;
+
+        //the hint of an empty box is a part of the field, so it has to be dimmed along with it instead of
+        //staying the only thing in the component that still reads as enabled.
+        &::placeholder {
+            color: $clr-fg-dis;
+        }
+    }
+
+    //a disabled component is out of the flow the wait belongs to, so the bar is dimmed along with the rest
+    //of it rather than being the one part that still looks live.
+    .bit-otp-ldr::after {
+        background-color: $clr-fg-dis;
+    }
+}
+
+.bit-otp.bit-inv {
+    //the helper text is what says why the code was refused, so it reads as the message of the error state
+    //rather than as a hint standing next to it. It is also what keeps the failure from being carried by the
+    //color of the boxes alone.
+    .bit-otp-dsc {
+        color: $clr-err;
+    }
+
+    //a code that is being checked again after it came back rejected keeps the error state while it waits,
+    //so the bar belongs to that state rather than staying the one part still painted with the accent.
+    .bit-otp-ldr::after {
+        background-color: $clr-err;
+    }
+
+    .bit-otp-inp {
+        border-color: $clr-err;
+
+        &:enabled:read-write:hover:not(:focus-visible) {
+            border-color: $clr-err;
+        }
+
+        &:focus-visible {
+            border-color: $clr-err;
+            @include focus-ring($clr-err-focus);
+        }
+    }
+}
+
+
+//Windows High Contrast strips the background and the border colors an author paints with, which takes the
+//boxes of the Fill variant down with them: they are drawn with a surface color and a rule that is invisible
+//on purpose, so nothing of them would be left. The dimmed text of a disabled component loses its color the
+//very same way and reads as ordinary text again. Both are re-established with the system colors here.
+@media (forced-colors: active) {
+    .bit-otp-fil .bit-otp-inp {
+        border-color: ButtonText;
+    }
+
+    //the track and the sweep of the loader are two surface colors, so the bar would be a blank rectangle
+    //without them: it is drawn with a rule and the system highlight instead.
+    .bit-otp-ldr {
+        border: $shp-border-width $shp-border-style ButtonText;
+
+        &::after {
+            background-color: Highlight;
+        }
+    }
+
+    .bit-otp.bit-dis {
+        .bit-otp-lbl,
+        .bit-otp-dsc,
+        .bit-otp-sep {
+            color: GrayText;
+        }
+
+        .bit-otp-inp {
+            border-color: GrayText;
+        }
+    }
+}
+
+
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-otp-#{$role} {
+        --bit-otp-clr: #{role($tokens, main)};
+        --bit-otp-clr-focus: #{role($tokens, focus)};
+    }
+}
+
 
 .bit-otp-sm {
     --bit-otp-size: #{spacing(3.0)};
-    --bit-otp-fontsize: #{spacing(1.5)};
+    --bit-otp-fontsize: #{$tg-fs-xs};
 }
 
 .bit-otp-md {
     --bit-otp-size: #{spacing(3.75)};
-    --bit-otp-fontsize: #{spacing(1.75)};
+    --bit-otp-fontsize: #{$tg-fs-sm};
 }
 
 .bit-otp-lg {
     --bit-otp-size: #{spacing(4.5)};
-    --bit-otp-fontsize: #{spacing(2.0)};
+    --bit-otp-fontsize: #{$tg-fs-md};
 }

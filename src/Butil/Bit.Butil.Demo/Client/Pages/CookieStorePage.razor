@@ -1,0 +1,333 @@
+@page "/cookie-store"
+@implements IAsyncDisposable
+@inject Bit.Butil.CookieStore cookieStore
+
+<PageTitle>CookieStore - Bit.Butil</PageTitle>
+
+<PageHeader Category="Storage"
+            Title="CookieStore"
+            Lead="The modern, fully asynchronous cookie API. Unlike the legacy document.cookie string, CookieStore returns complete cookie metadata - domain, path, expiry, SameSite - as structured objects."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/CookieStore"
+            InjectAs="CookieStore cookieStore" />
+
+<div class="stack">
+    <DemoSection Title="Check for support"
+                 Api="IsSupported"
+                 Description="CookieStore is not available in every browser, so feature-detect before relying on it. When it is missing, fall back to the legacy Cookie service - it works everywhere but only exposes name/value pairs."
+                 Code=@("""
+@inject Bit.Butil.CookieStore cookieStore
+
+if (await cookieStore.IsSupported())
+{
+    // safe to use cookieStore
+}
+""")>
+        <button @onclick="CheckSupport">IsSupported</button>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Set a cookie"
+                 Api="Set"
+                 Description="Set accepts a CookieStoreItem carrying the full attribute set. Omitted attributes get browser defaults (Path becomes /, SameSite becomes strict in Chromium). Leave Expires null for a session cookie, or set an absolute expiry."
+                 Code=@("""
+await cookieStore.Set(new CookieStoreItem
+{
+    Name = "butil-docs",
+    Value = "hello",
+    SameSite = "lax",
+    Expires = DateTimeOffset.UtcNow.AddDays(1),
+});
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Name</span>
+                <input @bind="itemName" placeholder="butil-docs" />
+            </div>
+            <div class="field">
+                <span class="field-label">Value</span>
+                <input @bind="itemValue" placeholder="hello" />
+            </div>
+        </div>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Expires in (days, empty = session)</span>
+                <input @bind="expiresDays" type="number" placeholder="1" />
+            </div>
+            <div class="field">
+                <span class="field-label">SameSite</span>
+                <select @bind="itemSameSite">
+                    <option value="">(default)</option>
+                    <option value="strict">strict</option>
+                    <option value="lax">lax</option>
+                    <option value="none">none</option>
+                </select>
+            </div>
+        </div>
+        <button @onclick="SetItem">Set</button>
+        <DemoConsole @ref="setOutput" Title="set output" />
+    </DemoSection>
+
+    <DemoSection Title="Read with full metadata"
+                 Api="Get / GetAll"
+                 Description="This is where CookieStore earns its keep: Get and GetAll return CookieStoreItem objects with every attribute the browser knows - domain, path, expiry, secure flag, SameSite policy and partitioned state - not just the name and value."
+                 Code=@("""
+var one = await cookieStore.Get("butil-docs");   // CookieStoreItem? - null when absent
+
+var all = await cookieStore.GetAll();            // CookieStoreItem[]
+
+foreach (var c in all)
+{
+    // c.Name, c.Value, c.Domain, c.Path, c.Expires, c.Secure, c.SameSite, c.Partitioned
+}
+""")>
+        <div class="field">
+            <span class="field-label">Name</span>
+            <input @bind="getName" placeholder="butil-docs" />
+        </div>
+        <div class="controls">
+            <button class="secondary" @onclick="GetItem">Get</button>
+            <button class="secondary" @onclick="GetAllItems">GetAll</button>
+        </div>
+        <DemoConsole @ref="readOutput" Title="read output" />
+    </DemoSection>
+
+    <DemoSection Title="Delete a cookie"
+                 Api="Delete"
+                 Description="Delete removes the named cookie directly - no MaxAge = 0 workaround needed. Deleting a cookie that does not exist is a no-op."
+                 Code=@("""
+await cookieStore.Delete("butil-docs");
+""")>
+        <div class="field">
+            <span class="field-label">Name</span>
+            <input @bind="deleteName" placeholder="butil-docs" />
+        </div>
+        <button class="danger" @onclick="DeleteItem">Delete</button>
+        <DemoConsole @ref="deleteOutput" Title="delete output" />
+    </DemoSection>
+
+    <DemoSection Title="Watch cookies for changes"
+                 Api="SubscribeChange"
+                 Description="The change event is the one thing document.cookie can never give you. It fires for cookies written by script, by a server's Set-Cookie header, and on expiry - which makes it the way to notice a session cookie dying without polling for it. Each notification carries both halves: cookies written and cookies removed. An overwrite arrives as a delete plus a set, so both lists can be non-empty at once."
+                 Code=@("""
+private ButilSubscription? subscription;
+
+subscription = await cookieStore.SubscribeChange(change =>
+{
+    foreach (var c in change.Changed) { /* written or updated */ }
+    foreach (var c in change.Deleted) { /* removed or expired */ }
+});
+
+if (subscription is null)
+{
+    // no CookieStore here - document.cookie has no change event to fall back on
+}
+
+// later
+await subscription.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="WatchChanges" disabled="@(_changeSub is not null)">SubscribeChange</button>
+            <button class="secondary" @onclick="UnwatchChanges" disabled="@(_changeSub is null)">Dispose</button>
+        </div>
+        <DemoConsole @ref="changeOutput" Title="change output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="Browser support: Chromium-only (for now)">
+    CookieStore is currently implemented in Chromium-based browsers (Chrome, Edge, Opera) and requires
+    a secure context (HTTPS or localhost). Firefox and Safari have not shipped it at the time of
+    writing - always gate usage behind <code>IsSupported</code> and fall back to the
+    <a href="cookie">Cookie</a> service elsewhere.
+</Callout>
+
+<Callout Type="info" Title="Legacy Cookie vs CookieStore">
+    Both services write the same cookies. Choose <code>Cookie</code> for universal support with
+    name/value access, and <code>CookieStore</code> when you need to read attributes back or prefer a
+    promise-based API. HttpOnly cookies remain invisible to both - that protection applies to all
+    script access.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes cookieStore." />
+    <ApiMember Name="GetAll"
+               Signature="ValueTask<CookieStoreItem[]> GetAll()"
+               Description="Returns every cookie visible to the current document, with full metadata." />
+    <ApiMember Name="Get"
+               Signature="ValueTask<CookieStoreItem?> Get(string name)"
+               Description="Returns the cookie with the given name, or null when absent." />
+    <ApiMember Name="Set"
+               Signature="ValueTask Set(CookieStoreItem cookie)"
+               Description="Sets a cookie from the item's populated attributes." />
+    <ApiMember Name="Delete"
+               Signature="ValueTask Delete(string name)"
+               Description="Deletes the named cookie." />
+    <ApiMember Name="SubscribeChange"
+               Signature="ValueTask<ButilSubscription?> SubscribeChange(Action<CookieStoreChange> handler)"
+               Description="Calls the handler whenever cookies are written or removed - by script, by a Set-Cookie header, or on expiry. Null where CookieStore is unsupported." />
+    <ApiMember Name="CookieStoreItem"
+               Signature="class CookieStoreItem { string Name; string Value; string? Domain; string? Path; DateTimeOffset? Expires; bool Secure; string? SameSite; bool? Partitioned; }"
+               Description="Cookie model with the complete attribute set. Expires is null for session cookies; SameSite is one of strict, lax, none, or null." />
+    <ApiMember Name="CookieStoreChange"
+               Signature="class CookieStoreChange { CookieStoreItem[] Changed; CookieStoreItem[] Deleted; }"
+               Description="One batch of changes. Both lists can be non-empty at once, since an overwrite is reported as a delete followed by a set." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole changeOutput = default!;
+    private ButilSubscription? _changeSub;
+
+    private async Task WatchChanges()
+    {
+        try
+        {
+            _changeSub = await cookieStore.SubscribeChange(change =>
+            {
+                _ = InvokeAsync(async () =>
+                {
+                    foreach (var c in change.Changed) await changeOutput.Success($"changed → {c.Name} = {c.Value}");
+                    foreach (var c in change.Deleted) await changeOutput.Warn($"deleted → {c.Name}");
+                });
+            });
+
+            if (_changeSub is null)
+            {
+                await changeOutput.Warn("SubscribeChange → null (no CookieStore in this browser).");
+                return;
+            }
+            await changeOutput.Log("Watching - use the Set and Delete sections above to see events.");
+        }
+        catch (Exception ex)
+        {
+            await changeOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task UnwatchChanges()
+    {
+        if (_changeSub is null) return;
+        await _changeSub.DisposeAsync();
+        _changeSub = null;
+        await changeOutput.Log("Subscription disposed.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_changeSub is not null) await _changeSub.DisposeAsync();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+
+    private DemoConsole setOutput = default!;
+    private DemoConsole readOutput = default!;
+    private DemoConsole deleteOutput = default!;
+
+    private string itemName = "butil-docs";
+    private string itemValue = "hello";
+    private int? expiresDays = 1;
+    private string itemSameSite = "lax";
+    private string getName = "butil-docs";
+    private string deleteName = "butil-docs";
+
+    private async Task CheckSupport()
+    {
+        try
+        {
+            var supported = await cookieStore.IsSupported();
+            if (supported)
+            {
+                await supportOutput.Success("IsSupported() → true - CookieStore is available in this browser.");
+            }
+            else
+            {
+                await supportOutput.Warn("IsSupported() → false - use the legacy Cookie service instead.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task SetItem()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(itemName))
+            {
+                await setOutput.Warn("Enter a cookie name first.");
+                return;
+            }
+
+            var item = new CookieStoreItem
+            {
+                Name = itemName,
+                Value = itemValue,
+                Expires = expiresDays is null ? null : DateTimeOffset.UtcNow.AddDays(expiresDays.Value),
+                SameSite = string.IsNullOrEmpty(itemSameSite) ? null : itemSameSite,
+            };
+            await cookieStore.Set(item);
+            await setOutput.Log($"Set(\"{itemName}\") →", item);
+        }
+        catch (Exception ex)
+        {
+            await setOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task GetItem()
+    {
+        try
+        {
+            var item = await cookieStore.Get(getName);
+            if (item is null)
+            {
+                await readOutput.Warn($"Get(\"{getName}\") → not found");
+                return;
+            }
+            await readOutput.Success($"Get(\"{getName}\") →", item);
+        }
+        catch (Exception ex)
+        {
+            await readOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task GetAllItems()
+    {
+        try
+        {
+            var all = await cookieStore.GetAll();
+            if (all.Length == 0)
+            {
+                await readOutput.Warn("GetAll() → no cookies visible to this document.");
+                return;
+            }
+            await readOutput.Success($"GetAll() → {all.Length} cookie(s):", all);
+        }
+        catch (Exception ex)
+        {
+            await readOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task DeleteItem()
+    {
+        try
+        {
+            await cookieStore.Delete(deleteName);
+            await deleteOutput.Warn($"Delete(\"{deleteName}\") - cookie removed.");
+        }
+        catch (Exception ex)
+        {
+            await deleteOutput.Error(ex.Message);
+        }
+    }
+}

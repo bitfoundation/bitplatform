@@ -1,0 +1,75 @@
+@inject PageOutline outline
+@inject NavigationManager navManager
+
+@* One section per Fluent 2 card: a heading with the members it documents beside it, the prose, the
+   source, then the live sample on its own stage. The library's demo groups all of its examples
+   inside a single "Usage" card because they demonstrate one component; a Butil page documents a
+   whole browser API, one independent member per section, so each gets its own card. *@
+
+<section class="page-section" id="@Slug">
+    <div class="section-heading">
+        <h2>
+            @Title
+            <a class="anchor" href="@Path#@Slug" aria-label="Link to this section">
+                <Icon Name="link" Size="16" />
+            </a>
+        </h2>
+        @if (string.IsNullOrWhiteSpace(Api) is false)
+        {
+            <span class="badge">@Api</span>
+        }
+    </div>
+
+    @if (string.IsNullOrWhiteSpace(Description) is false)
+    {
+        <p class="section-desc">@Description</p>
+    }
+
+    @if (string.IsNullOrWhiteSpace(Code) is false)
+    {
+        <CodeBlock Code="@Code" Language="@Language" />
+    }
+
+    @if (ChildContent is not null)
+    {
+        @* The stage says what it is before the reader clicks anything on it: on a page of prose and
+           source listings, the one region that really runs is worth marking as such. *@
+        <div class="demo-area">
+            <span class="demo-area-tag">
+                <i aria-hidden="true"></i>
+                Live sample
+            </span>
+            @ChildContent
+        </div>
+    }
+</section>
+
+@code {
+    [Parameter] public string Title { get; set; } = "";
+
+    /// <summary>The API member(s) this section documents, shown as a badge, e.g. "WriteText / ReadText".</summary>
+    [Parameter] public string? Api { get; set; }
+
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>An optional code snippet rendered above the live demo.</summary>
+    [Parameter] public string? Code { get; set; }
+
+    [Parameter] public string Language { get; set; } = "csharp";
+
+    /// <summary>The live, interactive part of the section.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string Path => new Uri(navManager.Uri).AbsolutePath;
+
+    // Runs of separators collapse to one hyphen and the ends are trimmed, so a title like
+    // "Play / Pause" anchors at #play-pause rather than #play---pause.
+    private string Slug => string.Join('-',
+        string.Concat(Title.ToLowerInvariant().Select(c => char.IsLetterOrDigit(c) ? c : '-'))
+              .Split('-', StringSplitOptions.RemoveEmptyEntries));
+
+    // The rail cannot know the page's sections up front, so each one puts itself on the list. The
+    // outline is keyed by path and resets when the next page registers, so there is nothing to
+    // unregister here.
+    protected override void OnInitialized() => outline.Register(Path, new PageOutlineItem(Title, Slug));
+}

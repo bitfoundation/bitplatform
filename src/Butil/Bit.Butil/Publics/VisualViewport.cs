@@ -16,6 +16,7 @@ namespace Bit.Butil;
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport</see>
 /// </summary>
 /// <param name="js"></param>
+[ButilService(typeof(VisualViewport))]
 public class VisualViewport(IJSRuntime js) : IAsyncDisposable
 {
     internal const string InvokeMethodName = nameof(InvokeVisualViewport);
@@ -37,8 +38,19 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
         if (_handlers.TryGetValue(id, out var handler)) handler.Invoke();
     }
 
+    /// <summary>True when the runtime exposes <c>window.visualViewport</c>.</summary>
+    /// <remarks>
+    /// Every reader and subscriber on this class goes through that object, so a <c>false</c> here
+    /// means the rest of the type will throw rather than return zeros.
+    /// <br/>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.visualViewport.isSupported");
+
     /// <summary>
-    /// Returns the offset of the left edge of the visual viewport from the left edge of 
+    /// Returns the offset of the left edge of the visual viewport from the left edge of
     /// the layout viewport in CSS pixels, or 0 if current document is not fully active.
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/offsetLeft">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/offsetLeft</see>
@@ -277,6 +289,31 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
         }
 
         await RemoveScrollFromJs(ids);
+    }
+
+    /// <summary>
+    /// Fires once when a visual-viewport scroll settles, rather than continuously while it moves.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/scrollend_event">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/scrollend_event</see>
+    /// </summary>
+    /// <returns>A subscription - dispose it to detach the listener.</returns>
+    /// <remarks>
+    /// Use this instead of <see cref="SubscribeScroll"/> when the work is expensive - re-laying out,
+    /// or persisting a position - since a pinch-zoom pan fires <c>scroll</c> on every frame but
+    /// <c>scrollend</c> only once. Not implemented in Safari, where the handler simply never fires.
+    /// </remarks>
+    public async ValueTask<ButilSubscription> SubscribeScrollEnd(Action handler)
+    {
+        var listenerId = Guid.NewGuid();
+        _handlers.TryAdd(listenerId, handler);
+
+        await js.InvokeVoid("BitButil.visualViewport.addScrollEnd", DotNetRef, listenerId);
+
+        return new ButilSubscription(listenerId, async () =>
+        {
+            _handlers.TryRemove(listenerId, out _);
+            await js.InvokeVoid("BitButil.visualViewport.removeScrollEnd", new[] { listenerId });
+        });
     }
 
     private async ValueTask RemoveScrollFromJs(Guid[] ids)

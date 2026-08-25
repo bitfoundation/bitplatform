@@ -8,24 +8,24 @@
     justify-content: center;
     width: var(--bit-ldn-size);
     height: var(--bit-ldn-size);
-    animation: bit-ldn-ord-anm1 2s linear infinite;
+    animation: bit-ldn-ord-anm1 calc(2s * var(--bit-ldn-mot-factor, 1)) linear infinite;
 }
 
 .bit-ldn-ord-chl {
-    border-radius: 100%;
+    border-radius: 50%;
     display: inline-block;
     width: var(--bit-ldn-ord-25);
     height: var(--bit-ldn-ord-25);
     background: var(--bit-ldn-color);
-    animation: bit-ldn-ord-anm2 2s ease-in-out infinite;
+    animation: bit-ldn-ord-anm2 calc(2s * var(--bit-ldn-mot-factor, 1)) ease-in-out infinite;
 }
 
 .bit-ldn-ord-ch1 {
-    animation-delay: 0s;
+    animation-delay: calc(0s * var(--bit-ldn-mot-factor, 1));
 }
 
 .bit-ldn-ord-ch2 {
-    animation-delay: -1s;
+    animation-delay: calc(-1s * var(--bit-ldn-mot-factor, 1));
 }
 
 @keyframes bit-ldn-ord-anm1 {

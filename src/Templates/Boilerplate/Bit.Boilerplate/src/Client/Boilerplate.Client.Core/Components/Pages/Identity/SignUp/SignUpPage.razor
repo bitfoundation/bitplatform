@@ -20,11 +20,11 @@
             <ExternalIdentityProviders IsWaiting="isWaiting" OnClick="ExternalSignUp" />
 
             <EditForm Model="signUpModel" OnValidSubmit="WrapHandled(DoSignUp)" novalidate>
-                <AppDataAnnotationsValidator />
+                <AppDataAnnotationsValidator @ref="validatorRef" />
 
                 <BitStack FillContent Gap="2rem">
                     <BitStack FillContent>
-                        <BitPivot Alignment="BitAlignment.Center">
+                        <BitPivot Alignment="BitAlignment.Center" OnChange="CleanModel">
                         @* <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.UserName)]">
                             <BitTextField @bind-Value="signUpModel.UserName"
                                           TabIndex="1"
@@ -34,7 +34,7 @@
                             <ValidationMessage For="@(() => signUpModel.UserName)" />
                         </BitPivotItem> *@
 
-                            <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Email)]">
+                            <BitPivotItem Key="@EmailTabKey" HeaderText="@Localizer[nameof(AppStrings.Email)]">
                                 <BitTextField @bind-Value="signUpModel.Email"
                                               TabIndex="1"
                                               Type="BitInputType.Email"
@@ -43,7 +43,7 @@
                                 <ValidationMessage For="@(() => signUpModel.Email)" />
                             </BitPivotItem>
 
-                            <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Phone)]">
+                            <BitPivotItem Key="@PhoneNumberTabKey" HeaderText="@Localizer[nameof(AppStrings.Phone)]">
                                 <BitPhoneInput @bind-Value="signUpModel.PhoneNumber"
                                                AutoFocus TabIndex="1" FullWidth
                                               DefaultCountry="@BitCountries.Current"
@@ -81,7 +81,7 @@
                 </BitLink>
             </BitText>
             <BitText Typography="BitTypography.Body2">
-                By signing up, you agree to our <BitLink Href="@PageUrls.Terms">@Localizer[nameof(AppStrings.Terms)]</BitLink>
+                @Localizer[nameof(AppStrings.AgreeToTermsMessage)] <BitLink Href="@PageUrls.Terms">@Localizer[nameof(AppStrings.Terms)]</BitLink>
             </BitText>
         </BitStack>
     </BitStack>

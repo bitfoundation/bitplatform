@@ -1,0 +1,66 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <InvariantGlobalization>true</InvariantGlobalization>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.Bswup\Bit.Bswup.csproj" />
+        <ProjectReference Include="..\Client\Bit.Bswup.Demo.Client.csproj" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.11" />
+        <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
+        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
+        <!-- Flattens the rendered HTML of a docs page into the Markdown an MCP client reads. -->
+        <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Microsoft.AspNetCore.Mvc" />
+    </ItemGroup>
+
+    <!-- Text the MCP server hands out. It is embedded rather than read from disk so the tools keep
+         working from a published deployment, where none of these files exist next to the app.
+         LogicalName is set explicitly because the resource name IS the path an MCP client asks for. -->
+    <ItemGroup>
+        <EmbeddedResource Include="..\..\README.md" LogicalName="BswupDocs/README.md" />
+
+        <!-- The library's own sources. Bswup ships as JavaScript, so this TypeScript is where its
+             defaults, message names and asset filters are actually written down - BswupScriptCatalog
+             reads the reference straight out of it rather than out of prose that can drift.
+
+             WithCulture=false is load-bearing here: MSBuild reads the second-to-last extension of a
+             resource file name as a culture, and "bit-bswup.sw.ts" ends up looking like Swahili -
+             which quietly moves the service worker's own source into a satellite assembly, where
+             nothing on this side can find it. -->
+        <EmbeddedResource Include="..\..\Bit.Bswup\Scripts\*.ts" WithCulture="false">
+            <LogicalName>BswupSource/Library/Scripts/%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+
+        <EmbeddedResource Include="..\..\Bit.Bswup\BswupProgress.razor" LogicalName="BswupSource/Library/BswupProgress.razor" WithCulture="false" />
+
+        <!-- This site's own Bswup configuration, and nothing else of it. A blanket glob over the
+             client used to embed every page, layout, stylesheet and script of the demo - a
+             documentation site's chrome, which answers no question about Bswup, and which
+             GetBswupSourceFiles then had to list and GetBswupSourceFile hand out by the tens of
+             thousands of characters. What this site can teach about Bswup is in these three files. -->
+        <EmbeddedResource Include="..\Client\wwwroot\service-worker.js;..\Client\wwwroot\service-worker.published.js" WithCulture="false">
+            <LogicalName>BswupSource/Demo/Client/wwwroot/%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+
+        <EmbeddedResource Include="Components\App.razor" LogicalName="BswupSource/Demo/Server/Components/App.razor" WithCulture="false" />
+
+        <!-- The minimal samples - one per hosting model. Their host documents, service-worker files
+             and project files are what GetBswupSetupGuide hands out as working setup; the sample
+             apps' own pages, layouts and imports are left out, because they demonstrate nothing
+             about Bswup. SampleBswupProgressBar.razor is the exception - it IS a worked handler. -->
+        <EmbeddedResource Include="..\..\Samples\**\App.razor;..\..\Samples\**\Program.cs;..\..\Samples\**\*.csproj;..\..\Samples\**\*.html;..\..\Samples\**\wwwroot\*.js;..\..\Samples\**\SampleBswupProgressBar.razor"
+                          Exclude="..\..\Samples\**\bin\**;..\..\Samples\**\obj\**"
+                          WithCulture="false">
+            <LogicalName>BswupSource/Sample/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+    </ItemGroup>
+
+</Project>

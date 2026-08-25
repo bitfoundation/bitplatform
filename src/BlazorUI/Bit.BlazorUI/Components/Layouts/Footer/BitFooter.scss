@@ -1,31 +1,256 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-ftr {
     display: flex;
     flex-shrink: 0;
     z-index: $zindex-base;
-    color: $clr-fg-pri;
+    box-sizing: border-box;
     line-height: $tg-line-height;
     font-weight: $tg-font-weight;
     font-family: $tg-font-family;
-    background-color: $clr-bg-pri;
 
-    &.bit-dis {
-        color: $clr-fg-dis;
-    }
+    // The uncolored footer keeps the plain page surface it always had: the Fill variant below resolves
+    // --bit-ftr-bg/-on to these, and the borderless variants resolve --bit-ftr-fg/-brd to the neutral
+    // foreground and border of the theme, so a footer with no Color set never turns invisible.
+    --bit-ftr-bg: #{$clr-bg-pri};
+    --bit-ftr-on: #{$clr-fg-pri};
+    --bit-ftr-fg: #{$clr-fg-pri};
+    --bit-ftr-brd: #{$clr-brd-pri};
+    --bit-ftr-bg-dis: #{$clr-bg-pri};
+    --bit-ftr-fg-dis: #{$clr-fg-dis};
+
+    // Medium is the historical spacing of the footer and stays the default when no Size is set.
+    --bit-ftr-padding: #{spacing(1)} #{spacing(3)};
 }
 
+// The content sits in its own box so the paddings can be themed, removed (NoGutter) and targeted by
+// Classes/Styles.Container. The paddings live on this box rather than as margins because a 100% wide
+// item with side margins is wider than the footer that holds it, which overflows the page horizontally.
 .bit-ftr-gut {
     width: 100%;
     display: flex;
     position: relative;
-    align-items: center;
-    margin: 0.5rem 1.5rem;
+    box-sizing: border-box;
+    padding: var(--bit-ftr-padding);
+    gap: var(--bit-ftr-gap, 0);
+    flex-wrap: var(--bit-ftr-wrap, nowrap);
+    align-items: var(--bit-ftr-align, center);
+    justify-content: var(--bit-ftr-justify, normal);
+
+    // align-content only does anything once the content wraps, where it packs the lines the same way
+    // align-items packs a single one, so a wrapped footer stays aligned the way it was asked to be.
+    align-content: var(--bit-ftr-align, center);
 }
 
+
+.bit-ftr-fil {
+    color: var(--bit-ftr-on);
+    background-color: var(--bit-ftr-bg);
+
+    &.bit-dis {
+        color: var(--bit-ftr-fg-dis);
+        background-color: var(--bit-ftr-bg-dis);
+    }
+}
+
+.bit-ftr-otl {
+    color: var(--bit-ftr-fg);
+    background-color: transparent;
+    border: $shp-border-width $shp-border-style var(--bit-ftr-brd);
+
+    &.bit-dis {
+        color: var(--bit-ftr-fg-dis);
+        border-color: var(--bit-ftr-fg-dis);
+    }
+}
+
+.bit-ftr-txt {
+    color: var(--bit-ftr-fg);
+    background-color: transparent;
+
+    &.bit-dis {
+        color: var(--bit-ftr-fg-dis);
+    }
+}
+
+// A footer pinned over scrolling content reads better as frosted glass than as a solid slab: the
+// background keeps enough alpha to stay legible while the blur keeps what passes behind it from
+// showing through as noise. Only Fill has a background to soften, and the two class selector keeps
+// this ahead of the plain variant rule. Where backdrop-filter is unsupported the background simply
+// stays translucent, which still reads as intended.
+.bit-ftr-trs.bit-ftr-fil {
+    backdrop-filter: blur(rem2(12px));
+    -webkit-backdrop-filter: blur(rem2(12px));
+    background-color: translucent(var(--bit-ftr-bg), 72%);
+
+    &.bit-dis {
+        background-color: translucent(var(--bit-ftr-bg-dis), 72%);
+    }
+}
+
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// The border and the text of the borderless variants take the main color of the role, so an Outline
+// footer reads as that role even though its background stays transparent.
+@each $role, $tokens in $bit-color-roles {
+    .bit-ftr-#{$role} {
+        --bit-ftr-bg: #{role($tokens, main)};
+        --bit-ftr-on: #{role($tokens, on)};
+        --bit-ftr-fg: #{role($tokens, main)};
+        --bit-ftr-brd: #{role($tokens, main)};
+        --bit-ftr-bg-dis: #{role($tokens, dis)};
+        --bit-ftr-fg-dis: #{role($tokens, dis-text)};
+    }
+}
+
+
+.bit-ftr-sm {
+    --bit-ftr-padding: #{spacing(0.5)} #{spacing(2)};
+}
+
+.bit-ftr-md {
+    --bit-ftr-padding: #{spacing(1)} #{spacing(3)};
+}
+
+.bit-ftr-lg {
+    --bit-ftr-padding: #{spacing(1.5)} #{spacing(4)};
+}
+
+.bit-ftr-ngt {
+    --bit-ftr-padding: 0;
+}
+
+
+.bit-ftr-srt {
+    --bit-ftr-justify: flex-start;
+}
+
+.bit-ftr-end {
+    --bit-ftr-justify: flex-end;
+}
+
+.bit-ftr-cnt {
+    --bit-ftr-justify: center;
+}
+
+.bit-ftr-sbt {
+    --bit-ftr-justify: space-between;
+}
+
+.bit-ftr-sar {
+    --bit-ftr-justify: space-around;
+}
+
+.bit-ftr-sev {
+    --bit-ftr-justify: space-evenly;
+}
+
+// The cross axis: VerticalAlign, plus the two members of BitAlignment that say nothing about how a
+// line distributes its free space and so act here instead.
+.bit-ftr-vst {
+    --bit-ftr-align: flex-start;
+}
+
+.bit-ftr-ved {
+    --bit-ftr-align: flex-end;
+}
+
+.bit-ftr-vcn {
+    --bit-ftr-align: center;
+}
+
+.bit-ftr-bsl {
+    --bit-ftr-align: baseline;
+}
+
+.bit-ftr-str {
+    --bit-ftr-align: stretch;
+}
+
+
+.bit-ftr-wrp {
+    --bit-ftr-wrap: wrap;
+}
+
+
+// A footer pinned to the bottom of the viewport sits over the home indicator / gesture bar of a mobile
+// device, so the safe area is added to its own padding. env() resolves to the 0px fallback everywhere
+// else, which leaves the footer untouched on a device with no inset.
 .bit-ftr-fix {
     left: 0;
     right: 0;
     bottom: 0;
     position: fixed;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.bit-ftr-stk {
+    position: sticky;
+    inset-block-end: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+// Pinned to its container rather than to the page, so there is no device edge underneath it and no safe
+// area to make room for: the inset belongs to the two positions that really sit at the bottom of the screen.
+.bit-ftr-abs {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    position: absolute;
+}
+
+
+.bit-ftr-brd {
+    border-block-start: $shp-border-width $shp-border-style var(--bit-ftr-brd);
+}
+
+// The shadow is cast upwards, towards the content the footer covers, which is the opposite of the
+// downward elevation shadows of the theme. It is tinted with the primary foreground color so it stays
+// readable in a dark theme, where a black shadow over a dark surface is invisible.
+.bit-ftr-elv {
+    box-shadow: $box-shadow-appbar-bottom;
+}
+
+
+.bit-ftr-anm {
+    will-change: transform;
+    transition: transform $mot-duration $mot-easing;
+}
+
+// translateY is used rather than a bottom offset so the slide runs on the compositor, and it hides the
+// footer in both directions without any RTL specific rule.
+.bit-ftr-hdn {
+    transform: translateY(100%);
+}
+
+
+// A shadow is the only thing separating an Elevated footer from the content above it, and forced colors
+// modes drop shadows entirely, so the separation is restored as a border of the system palette there.
+@media (forced-colors: active) {
+    .bit-ftr-elv {
+        border-block-start: $shp-border-width $shp-border-style CanvasText;
+    }
+}
+
+// On paper there is no viewport to pin anything to: a pinned footer would either repeat on every sheet or
+// sit over the content, and a footer that happens to be slid out at print time would be missing entirely.
+@media print {
+    .bit-ftr-fix,
+    .bit-ftr-abs,
+    .bit-ftr-stk {
+        position: static;
+        padding-bottom: 0;
+    }
+
+    .bit-ftr-anm {
+        transition: none;
+    }
+
+    .bit-ftr-hdn {
+        transform: none;
+    }
+
+    .bit-ftr-trs.bit-ftr-fil {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
 }

@@ -40,7 +40,7 @@
     height: spacing(4);
 
     .bit-smr-wrp {
-        border-radius: spacing(0.5);
+        border-radius: $shp-radius-sm;
     }
 }
 
@@ -53,8 +53,8 @@
 
 .bit-smr-cnt {
     animation-fill-mode: both;
-    animation-duration: 0.367s;
-    animation-timing-function: ease;
+    animation-duration: $mot-duration-long;
+    animation-timing-function: $mot-easing;
     animation-name: bit-smr-anim-opacity;
 }
 
@@ -63,9 +63,9 @@
     overflow: hidden;
     position: relative;
     animation-fill-mode: both;
-    animation-duration: 0.367s;
+    animation-duration: $mot-duration-long;
     background-color: $clr-bg-sec;
-    animation-timing-function: ease;
+    animation-timing-function: $mot-easing;
     animation-name: bit-smr-anim-opacity;
 }
 
@@ -76,150 +76,49 @@
     background: var(--bit-smr-bg-clr);
 }
 
+// The wave and the pulse loop forever, so they keep literal durations rather than the
+// --bit-mot-duration* tokens (a near-zero looping duration renders as flicker). Unlike a spinner
+// they are a placeholder for content that has not arrived rather than the signal that work is in
+// progress - the shimmer's own box already conveys that - so reduced motion stops them outright the
+// way BitTextShimmer does, leaving the static block behind: the wave parks its gradient off to the
+// left and the pulse settles at full opacity. ForceAnimation renders .bit-fam on the component root
+// rather than on these elements, so the opt-out is matched on an ancestor as well.
 .bit-smr-wav {
     transform: translateX(-100%);
-    animation: bit-smr-anim-wave 1.6s linear 0.5s infinite;
+    // Literal durations multiplied by the loop factor per the looping-animation contract, so a
+    // theme can still retune the pace even though reduced motion stops (not slows) the shimmer.
+    animation: bit-smr-anim-wave calc(1.6s * $mot-loop-factor) linear calc(0.5s * $mot-loop-factor) infinite;
     background: linear-gradient(90deg, transparent, var(--bit-smr-bg-clr), transparent);
+
+    @media (prefers-reduced-motion: reduce) {
+        &:not(.bit-fam):not(.bit-fam *) {
+            animation: none;
+        }
+    }
 }
 
 .bit-smr-pul {
-    animation: bit-smr-anim-pulse 1.6s ease-in-out 0.5s infinite;
+    animation: bit-smr-anim-pulse calc(1.6s * $mot-loop-factor) ease-in-out calc(0.5s * $mot-loop-factor) infinite;
+
+    @media (prefers-reduced-motion: reduce) {
+        &:not(.bit-fam):not(.bit-fam *) {
+            animation: none;
+        }
+    }
 }
 
 
-.bit-smr-pri {
-    --bit-smr-bg-clr: #{$clr-pri};
-}
-
-.bit-smr-sec {
-    --bit-smr-bg-clr: #{$clr-sec};
-}
-
-.bit-smr-ter {
-    --bit-smr-bg-clr: #{$clr-ter};
-}
-
-.bit-smr-inf {
-    --bit-smr-bg-clr: #{$clr-inf};
-}
-
-.bit-smr-suc {
-    --bit-smr-bg-clr: #{$clr-suc};
-}
-
-.bit-smr-wrn {
-    --bit-smr-bg-clr: #{$clr-wrn};
-}
-
-.bit-smr-swr {
-    --bit-smr-bg-clr: #{$clr-swr};
-}
-
-.bit-smr-err {
-    --bit-smr-bg-clr: #{$clr-err};
-}
-
-.bit-smr-pbg {
-    --bit-smr-bg-clr: #{$clr-bg-pri};
-}
-
-.bit-smr-sbg {
-    --bit-smr-bg-clr: #{$clr-bg-sec};
-}
-
-.bit-smr-tbg {
-    --bit-smr-bg-clr: #{$clr-bg-ter};
-}
-
-.bit-smr-pfg {
-    --bit-smr-bg-clr: #{$clr-fg-pri};
-}
-
-.bit-smr-sfg {
-    --bit-smr-bg-clr: #{$clr-fg-sec};
-}
-
-.bit-smr-tfg {
-    --bit-smr-bg-clr: #{$clr-fg-ter};
-}
-
-.bit-smr-pbr {
-    --bit-smr-bg-clr: #{$clr-brd-pri};
-}
-
-.bit-smr-sbr {
-    --bit-smr-bg-clr: #{$clr-brd-sec};
-}
-
-.bit-smr-tbr {
-    --bit-smr-bg-clr: #{$clr-brd-ter};
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-smr-#{$role} {
+        --bit-smr-bg-clr: #{role($tokens, main)};
+    }
 }
 
 
-.bit-smr-bpri {
-    background-color: $clr-pri;
-}
-
-.bit-smr-bsec {
-    background-color: $clr-sec;
-}
-
-.bit-smr-bter {
-    background-color: $clr-ter;
-}
-
-.bit-smr-binf {
-    background-color: $clr-inf;
-}
-
-.bit-smr-bsuc {
-    background-color: $clr-suc;
-}
-
-.bit-smr-bwrn {
-    background-color: $clr-wrn;
-}
-
-.bit-smr-bswr {
-    background-color: $clr-swr;
-}
-
-.bit-smr-berr {
-    background-color: $clr-err;
-}
-
-.bit-smr-bpbg {
-    background-color: $clr-bg-pri;
-}
-
-.bit-smr-bsbg {
-    background-color: $clr-bg-sec;
-}
-
-.bit-smr-btbg {
-    background-color: $clr-bg-ter;
-}
-
-.bit-smr-bpfg {
-    background-color: $clr-fg-pri;
-}
-
-.bit-smr-bsfg {
-    background-color: $clr-fg-sec;
-}
-
-.bit-smr-btfg {
-    background-color: $clr-fg-ter;
-}
-
-.bit-smr-bpbr {
-    background-color: $clr-brd-pri;
-}
-
-.bit-smr-bsbr {
-    background-color: $clr-brd-sec;
-}
-
-.bit-smr-btbr {
-    background-color: $clr-brd-ter;
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-smr-b#{$role} {
+        background-color: role($tokens, main);
+    }
 }

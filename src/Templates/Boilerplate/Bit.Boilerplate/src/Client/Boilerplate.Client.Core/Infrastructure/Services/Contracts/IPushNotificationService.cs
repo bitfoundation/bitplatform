@@ -1,8 +1,10 @@
+using Boilerplate.Shared.Features.PushNotification;
+
 namespace Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 
 public interface IPushNotificationService
 {
-    string Token { get; set; }
+    string? Token { get; set; }
     /// <summary>
     /// Supported by the OS/Platform and allowed by the user.
     /// </summary>

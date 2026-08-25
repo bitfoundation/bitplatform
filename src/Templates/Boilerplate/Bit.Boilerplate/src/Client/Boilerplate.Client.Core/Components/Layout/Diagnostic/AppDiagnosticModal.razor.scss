@@ -1,11 +1,6 @@
 @import '../../../Styles/abstracts/_media-queries.scss';
 @import '../../../Styles/abstracts/_bit-css-variables.scss';
 
-section {
-    width: 100%;
-    height: 100%;
-}
-
 ::deep {
     .modal {
         width: unset;
@@ -17,10 +12,6 @@ section {
 
     .container {
         padding: 1rem;
-    }
-
-    .stack {
-        overflow: auto;
     }
 
     .go-top-button {

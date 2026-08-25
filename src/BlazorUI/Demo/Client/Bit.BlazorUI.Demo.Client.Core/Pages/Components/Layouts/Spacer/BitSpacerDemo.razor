@@ -1,30 +1,230 @@
-﻿@page "/components/spacer"
+@page "/components/spacer"
 
 <PageOutlet Url="components/spacer"
             Title="Spacer"
-            Description="The purpose of the BitSpacer is to generate space between other components, either with a set width in pixels or a flexible width." />
+            Description="The purpose of the BitSpacer is to generate space between other components, either a flexible space that absorbs whatever room is left over or a fixed space in pixels, in any other CSS length or from the spacing scale of the theme, on the horizontal or the vertical axis." />
 
 <DemoPage Name="Spacer"
-          Description="The purpose of the BitSpacer is to generate space between other components. You can either create a space with a set width (in number of pixels) or create a space with a flexible width."
+          Description="The purpose of the BitSpacer is to generate space between other components inside a flex container. Left on its own it is flexible: it swallows the leftover room of the container and pushes its neighbours apart, and Grow shares that room out between several spacers in proportion, while MinGap puts a floor under it so its neighbours never touch. Given Width, Height, Gap or Size it becomes a fixed space instead, in pixels, in any CSS length or on the spacing scale of the theme, on the horizontal or the vertical axis. The element it renders is empty and hidden from assistive technologies."
           Parameters="componentParameters"
-          GitHubUrl="Layouts/Spacer/BitSpacer.razor"
+          SubEnums="componentSubEnums"
+          GitHubUrl="Layouts/Spacer/BitSpacer.cs"
           GitHubDemoUrl="Layouts/Spacer/BitSpacerDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <div style="display: flex; width: 100%;">
-            <BitButton Variant="BitVariant.Text" IconName="@BitIconName.GlobalNavButton" />
-            <BitSpacer />
-            <BitText Typography="BitTypography.H6">Title</BitText>
-            <BitSpacer />
-            <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Contact" />
+        <div class="example-desc">
+            A spacer with no parameters is flexible: it takes every pixel the other children of the flex container did not
+            need and pushes them apart. One spacer sends the items on either side of it to the two ends of the container,
+            and several spacers split the leftover room evenly, which is how the title below ends up centered between the
+            two buttons without a single alignment rule. Keep in mind that the spacer is a real child of the container, so
+            in a container that also sets a CSS <code>gap</code> (a <b>BitStack</b>, for instance) that gap is added on both
+            sides of it.
+        </div>
+        <div class="example-content">
+            <div class="demo-row">
+                <BitButton Variant="BitVariant.Text" IconName="@BitIconName.GlobalNavButton" />
+                <BitSpacer />
+                <BitText Typography="BitTypography.H6">Title</BitText>
+                <BitSpacer />
+                <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Contact" />
+            </div>
+            <br />
+            <div class="demo-row">
+                <div class="demo-box">Start</div>
+                <BitSpacer />
+                <div class="demo-box">End</div>
+            </div>
         </div>
     </DemoExample>
-    <DemoExample Title="Width" RazorCode="@example2RazorCode" Id="example2">
-        <div style="display: flex; width: 100%;">
-            <BitProgress Circular Indeterminate />
-            <BitSpacer Width="64" />
-            <BitProgress Circular Indeterminate />
-            <BitSpacer Width="64" />
-            <BitProgress Circular Indeterminate />
+    <DemoExample Title="Fixed size" RazorCode="@example2RazorCode" Id="example2">
+        <div class="example-desc">
+            <b>Width</b> turns the spacer into a fixed gap of that many pixels, and <b>Gap</b> does the same with any CSS
+            length, so design tokens, relative units and percentages all work (<code>1rem</code>, <code>5%</code>,
+            <code>var(--my-gap)</code>). A fixed spacer no longer grows. The space is created with a logical margin rather
+            than a width, so it never shrinks when the container gets cramped and it follows the text direction of the page.
+        </div>
+        <div class="example-content">
+            <div class="demo-row">
+                <BitProgress Circular Indeterminate />
+                <BitSpacer Width="64" />
+                <BitProgress Circular Indeterminate />
+                <BitSpacer Width="64" />
+                <BitProgress Circular Indeterminate />
+            </div>
+            <br />
+            <div class="demo-row">
+                <div class="demo-box">1rem</div>
+                <BitSpacer Gap="1rem" />
+                <div class="demo-box">4ch</div>
+                <BitSpacer Gap="4ch" />
+                <div class="demo-box">10%</div>
+                <BitSpacer Gap="10%" />
+                <div class="demo-box">end</div>
+            </div>
+        </div>
+    </DemoExample>
+    <DemoExample Title="Vertical" RazorCode="@example3RazorCode" Id="example3">
+        <div class="example-desc">
+            In a column layout the horizontal <b>Width</b> creates no visible space, so <b>Height</b> is the pixel
+            parameter to reach for, and <b>Vertical</b> moves the axis-agnostic parameters - <b>Gap</b>, <b>Size</b> and
+            <b>MinGap</b> - over to the vertical axis too.
+            A flexible spacer needs neither: with no fixed size it always grows along the main axis of its container,
+            which is why the last item below is pinned to the bottom.
+        </div>
+        <div class="example-content">
+            <div class="demo-col">
+                <div class="demo-box">Height 8</div>
+                <BitSpacer Height="8" />
+                <div class="demo-box">Height 32</div>
+                <BitSpacer Height="32" />
+                <div class="demo-box">Vertical Gap 3rem</div>
+                <BitSpacer Vertical Gap="3rem" />
+                <div class="demo-box">Flexible</div>
+                <BitSpacer />
+                <div class="demo-box">Bottom</div>
+            </div>
+        </div>
+    </DemoExample>
+    <DemoExample Title="Grow" RazorCode="@example4RazorCode" Id="example4">
+        <div class="example-desc">
+            <b>Grow</b> is the flex-grow factor of a flexible spacer and defaults to <b>1</b>. When several spacers share a
+            container, the leftover room is split between them in proportion to their factors, so a <b>1</b> and a <b>2</b>
+            below give a one third / two thirds split. Any CSS flex-grow value is accepted, fractions included.
+        </div>
+        <div class="example-content">
+            <div class="demo-row">
+                <div class="demo-box">A</div>
+                <BitSpacer Grow="1" />
+                <div class="demo-box">B</div>
+                <BitSpacer Grow="2" />
+                <div class="demo-box">C</div>
+            </div>
+            <br />
+            <div class="demo-row">
+                <div class="demo-box">A</div>
+                <BitSpacer Grow="3" />
+                <div class="demo-box">B</div>
+                <BitSpacer Grow="1" />
+                <div class="demo-box">C</div>
+            </div>
+        </div>
+    </DemoExample>
+    <DemoExample Title="Minimum size" RazorCode="@example5RazorCode" Id="example5">
+        <div class="example-desc">
+            A flexible spacer collapses to nothing as soon as its siblings fill the container, which leaves them touching.
+            <b>MinGap</b> puts a floor under it in any CSS length, so the gap survives even when there is no room left to
+            share. Drag the resize handle at the bottom-right corner of the first box to squeeze it: the spacer with
+            <b>MinGap</b> keeps its <code>2rem</code>, the one without it disappears. It follows the axis of <b>Vertical</b>
+            like <b>Gap</b> does, and since only a flexible spacer can collapse in the first place, a spacer that was given
+            a fixed size ignores it.
+        </div>
+        <div class="example-content">
+            <div class="demo-row demo-resizable">
+                <div class="demo-box">MinGap</div>
+                <BitSpacer MinGap="2rem" />
+                <div class="demo-box">2rem</div>
+            </div>
+            <br />
+            <div class="demo-row demo-resizable">
+                <div class="demo-box">No</div>
+                <BitSpacer />
+                <div class="demo-box">MinGap</div>
+            </div>
+        </div>
+    </DemoExample>
+    <DemoExample Title="Element" RazorCode="@example6RazorCode" Id="example6">
+        <div class="example-desc">
+            The spacer renders a <code>div</code>, which is not a valid child everywhere: a toolbar or a menu built as a
+            list only accepts <code>li</code> elements. <b>Element</b> swaps the tag of the rendered root for any other
+            one, so the spacer can join such a container without breaking its markup, while everything else about it
+            (the space it generates, the classes and the styles) stays exactly the same.
+        </div>
+        <div class="example-content">
+            <ul class="demo-row demo-list">
+                <li class="demo-box">Home</li>
+                <li class="demo-box">Products</li>
+                <BitSpacer Element="li" />
+                <li class="demo-box">Sign in</li>
+            </ul>
+        </div>
+    </DemoExample>
+    <DemoExample Title="Size" RazorCode="@example7RazorCode" Id="example7">
+        <div class="example-desc">
+            <b>Size</b> is the fixed space picked from the spacing scale of the theme instead of being written out by hand,
+            in the usual three steps: <b>Small</b>, <b>Medium</b> and <b>Large</b>. It is the parameter to reach for when
+            the spacers of an application should stay on the rhythm of its theme, since the length it resolves to follows
+            the spacing unit and the density of the current theme and changes along with them. It sits on the same axis
+            rules as <b>Gap</b> - inline by default, block once <b>Vertical</b> is set - and the more specific
+            <b>Gap</b>, <b>Width</b> and <b>Height</b> win over it.
+        </div>
+        <div class="example-content">
+            <div class="demo-row">
+                <div class="demo-box">Small</div>
+                <BitSpacer Size="BitSize.Small" />
+                <div class="demo-box">Medium</div>
+                <BitSpacer Size="BitSize.Medium" />
+                <div class="demo-box">Large</div>
+                <BitSpacer Size="BitSize.Large" />
+                <div class="demo-box">End</div>
+            </div>
+            <br />
+            <div class="demo-col demo-col-auto">
+                <div class="demo-box">Vertical Small</div>
+                <BitSpacer Vertical Size="BitSize.Small" />
+                <div class="demo-box">Vertical Large</div>
+                <BitSpacer Vertical Size="BitSize.Large" />
+                <div class="demo-box">End</div>
+            </div>
+        </div>
+    </DemoExample>
+    <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
+        <div class="example-desc">
+            The spacer renders a single empty element, so <b>Style</b> and <b>Class</b> land straight on it. Since the
+            generated space is a margin, the element itself has no size along the main axis: give it a background and a
+            <code>min-width</code> or a border, as the examples below do, to make it visible while laying a page out. It
+            stretches along the cross axis of its container on its own, so such a decoration shows up even in a container
+            that centers its items. Inline styles are appended after the ones the component generates, so they win over
+            them. That element is also marked <code>aria-hidden</code>, so screen readers skip the empty box entirely
+            unless an <b>AriaLabel</b> is given, which takes the marking back.
+        </div>
+        <div class="example-content">
+            <div class="demo-row">
+                <div class="demo-box">Style</div>
+                <BitSpacer Style="min-width:4rem;background:tomato" />
+                <div class="demo-box">Class</div>
+                <BitSpacer Class="custom-class" />
+                <div class="demo-box">End</div>
+            </div>
+        </div>
+    </DemoExample>
+    <DemoExample Title="RTL" RazorCode="@example9RazorCode" Id="example9">
+        <div class="example-desc">
+            The fixed space is a logical inline-start margin, so it flips with the text direction on its own: mark the
+            container as right-to-left and the same markup lays out mirrored, with the space created on the right-hand
+            side of the spacer. Because the margin resolves against the direction of the spacer itself, <b>Dir</b> on a
+            single spacer moves its space to its other side without touching the rest of the row: the two bottom rows are
+            the same markup, and the tinted spacer sits after the gap in the first one and before it in the second. A
+            flexible spacer is direction-agnostic and behaves identically either way.
+        </div>
+        <div class="example-content">
+            <div class="demo-row" dir="rtl">
+                <div class="demo-box">شروع</div>
+                <BitSpacer Width="64" />
+                <div class="demo-box">میانه</div>
+                <BitSpacer />
+                <div class="demo-box">پایان</div>
+            </div>
+            <br />
+            <div class="demo-row">
+                <div class="demo-box">Start</div>
+                <BitSpacer Width="64" Class="visible-spacer" />
+                <div class="demo-box">Middle</div>
+            </div>
+            <br />
+            <div class="demo-row">
+                <div class="demo-box">Start</div>
+                <BitSpacer Width="64" Class="visible-spacer" Dir="BitDir.Rtl" />
+                <div class="demo-box">Middle</div>
+            </div>
         </div>
     </DemoExample>
 </DemoPage>

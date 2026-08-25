@@ -1,29 +1,35 @@
-<BitText Element="h3" Typography="BitTypography.H6" Gutter><b>@Name</b> @NameSuffix</BitText>
+@* The cells below are the markup BitText renders, written out rather than asked for. Everywhere else
+   on the site BitText is the right call, but a table cell is the one place where it is not: these
+   tables run to three hundred rows on the busier components, and a BitText per cell is four more
+   components - each with its own parameters, class builder and generated id - per row, for a span
+   with one class on it. Both classes are exactly what BitText emits for that typography, so the
+   rendered HTML is unchanged. *@
+<BitText Element="h3" Typography="BitTypography.H6" Gutter Class="params-title"><b>@Name</b> @NameSuffix</BitText>
 <table class="table-view params-table">
     <tr class="th-row">
-        <th class="th-cell"><BitText Element="span" Typography="BitTypography.Subtitle1">Name</BitText></th>
-        <th class="th-cell"><BitText Element="span" Typography="BitTypography.Subtitle1">Type</BitText></th>
-        <th class="th-cell"><BitText Element="span" Typography="BitTypography.Subtitle1">Default value</BitText></th>
-        <th class="th-cell"><BitText Element="span" Typography="BitTypography.Subtitle1">Description</BitText></th>
+        <th class="th-cell"><span class="bit-txt-subtitle1 bit-txt">Name</span></th>
+        <th class="th-cell"><span class="bit-txt-subtitle1 bit-txt">Type</span></th>
+        <th class="th-cell"><span class="bit-txt-subtitle1 bit-txt">Default value</span></th>
+        <th class="th-cell"><span class="bit-txt-subtitle1 bit-txt">Description</span></th>
     </tr>
     @foreach (var param in Parameters)
     {
         <tr class="tdata-row">
-            <td class="td-cell"><BitText Typography="BitTypography.Caption1">@param.Name</BitText></td>
+            <td class="td-cell"><span class="bit-txt-caption1 bit-txt">@param.Name</span></td>
             <td class="td-cell">
                 @if (param.LinkType == LinkType.Link)
                 {
                     <BitLink Href="@param.Href">
-                        <BitText Typography="BitTypography.Caption1">@param.Type</BitText>
+                        <span class="bit-txt-caption1 bit-txt">@param.Type</span>
                     </BitLink>
                 }
                 else
                 {
-                    <BitText Typography="BitTypography.Caption1">@param.Type</BitText>
+                    <span class="bit-txt-caption1 bit-txt">@param.Type</span>
                 }
             </td>
-            <td class="td-cell"><BitText Typography="BitTypography.Caption1">@param.DefaultValue</BitText></td>
-            <td class="td-cell"><BitText Typography="BitTypography.Caption1">@param.Description</BitText></td>
+            <td class="td-cell"><span class="bit-txt-caption1 bit-txt">@param.DefaultValue</span></td>
+            <td class="td-cell"><span class="bit-txt-caption1 bit-txt">@param.Description</span></td>
         </tr>
     }
 </table>

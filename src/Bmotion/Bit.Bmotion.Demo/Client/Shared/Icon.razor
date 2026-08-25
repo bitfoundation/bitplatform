@@ -1,0 +1,17 @@
+﻿@* One icon from the set in Icons.cs.
+
+   Always aria-hidden: an icon in this site is either next to its own label or inside a control
+   that carries an aria-label of its own, so announcing it a second time would only repeat the
+   button. focusable="false" is for the browsers that still put an <svg> in the tab order. *@
+
+<svg class="icon @Class" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    @((MarkupString)Path)
+</svg>
+
+@code {
+    /// <summary>The icon's geometry: one of the constants on <see cref="Icons"/>.</summary>
+    [Parameter, EditorRequired] public string Path { get; set; } = "";
+
+    /// <summary>An extra class for the caller to size or position this instance with.</summary>
+    [Parameter] public string? Class { get; set; }
+}

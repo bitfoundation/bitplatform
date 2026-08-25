@@ -1,0 +1,310 @@
+﻿@page "/navigator"
+@inject Bit.Butil.Navigator navigator
+
+<PageTitle>Navigator - Bit.Butil</PageTitle>
+
+<PageHeader Category="Window & Browsing"
+            Title="Navigator"
+            Lead="The identity and state of the user agent: device capabilities, languages, online status, native sharing, app badges, beacons and vibration - queried and driven from C#."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Navigator"
+            InjectAs="Navigator navigator" />
+
+<div class="stack">
+    <DemoSection Title="Device and hardware"
+                 Api="GetDeviceMemory / GetHardwareConcurrency / GetMaxTouchPoints"
+                 Description="Coarse hardware hints for adaptive experiences: approximate RAM in gigabytes, the number of logical CPU cores, and how many simultaneous touch points the device supports."
+                 Code=@("""
+float memory = await navigator.GetDeviceMemory();        // e.g. 8
+float cores = await navigator.GetHardwareConcurrency();  // e.g. 12
+byte touchPoints = await navigator.GetMaxTouchPoints();  // 0 on most desktops
+""")>
+        <div class="controls">
+            <button @onclick="ReadHardware">Read hardware info</button>
+        </div>
+        <DemoConsole @ref="hardwareOutput" Title="hardware output" />
+    </DemoSection>
+
+    <DemoSection Title="Language and browser traits"
+                 Api="GetLanguage / GetLanguages / GetUserAgent / IsPdfViewerEnabled / IsWebDriver"
+                 Description="Read the user's preferred languages in priority order, the raw user-agent string, whether the browser renders PDFs inline, and whether the session is driven by automation such as Selenium or Playwright."
+                 Code=@("""
+string language = await navigator.GetLanguage();     // "en-US"
+string[] languages = await navigator.GetLanguages(); // ["en-US", "en", ...]
+
+string userAgent = await navigator.GetUserAgent();
+bool pdfInline = await navigator.IsPdfViewerEnabled();
+bool automated = await navigator.IsWebDriver();
+""")>
+        <div class="controls">
+            <button @onclick="ReadLanguages">Read languages</button>
+            <button @onclick="ReadBrowserTraits">Read browser traits</button>
+        </div>
+        <DemoConsole @ref="traitsOutput" Title="language and traits output" />
+    </DemoSection>
+
+    <DemoSection Title="Online status"
+                 Api="IsOnLine"
+                 Description="Reports whether the browser believes it has network connectivity. A false value is trustworthy (definitely offline); true only means some network interface is up."
+                 Code=@("""
+bool online = await navigator.IsOnLine();
+""")>
+        <div class="controls">
+            <button @onclick="CheckOnline">IsOnLine</button>
+        </div>
+        <p class="section-desc">Toggle DevTools network throttling to Offline and check again.</p>
+        <DemoConsole @ref="onlineOutput" Title="online status output" />
+    </DemoSection>
+
+    <DemoSection Title="Web Share"
+                 Api="CanShare / Share / ShareFiles"
+                 Description="Invokes the platform's native share sheet with a title, text and URL. Check CanShare first, and use ShareFiles to attach one or more files on browsers that support Web Share Level 2."
+                 Code=@("""
+if (await navigator.CanShare())
+{
+    await navigator.Share(new ShareData
+    {
+        title = "Bit.Butil",
+        Text = "Browser APIs for C# developers",
+        url = "https://bitplatform.dev",
+    });
+}
+
+bool shared = await navigator.ShareFiles(
+    "Report",
+    [new ShareFile { Name = "report.txt", MimeType = "text/plain", Data = bytes }],
+    text: "Monthly report");
+""")>
+        <div class="controls">
+            <button @onclick="CheckCanShare">CanShare</button>
+            <button @onclick="ShareLink">Share this site</button>
+        </div>
+        <DemoConsole @ref="shareOutput" Title="web share output" />
+    </DemoSection>
+
+    <DemoSection Title="App badge"
+                 Api="SetAppBadge / ClearAppBadge"
+                 Description="Shows a count (or a plain dot when no number is given) on the app icon of an installed PWA - the same affordance native apps use for unread counts."
+                 Code=@("""
+await navigator.SetAppBadge(7);   // show "7" on the app icon
+await navigator.SetAppBadge();    // show a generic dot
+
+await navigator.ClearAppBadge();  // remove the badge
+""")>
+        <div class="field">
+            <span class="field-label">Badge count</span>
+            <input type="number" @bind="badgeCount" />
+        </div>
+        <div class="controls">
+            <button @onclick="SetBadge">SetAppBadge</button>
+            <button class="secondary" @onclick="ClearBadge">ClearAppBadge</button>
+        </div>
+        <DemoConsole @ref="badgeOutput" Title="app badge output" />
+    </DemoSection>
+
+    <DemoSection Title="Beacon and vibration"
+                 Api="SendBeacon / Vibrate"
+                 Description="SendBeacon queues a small fire-and-forget HTTP POST that survives page unload - the reliable way to flush analytics. Vibrate plays a pattern of vibration/pause durations in milliseconds on supporting hardware."
+                 Code=@("""
+bool queued = await navigator.SendBeacon("/api/analytics", "{\"event\":\"page-close\"}");
+
+bool accepted = await navigator.Vibrate([200, 100, 200]);
+""")>
+        <div class="controls">
+            <button @onclick="SendBeacon">SendBeacon</button>
+            <button @onclick="Vibrate">Vibrate (200-100-200)</button>
+        </div>
+        <p class="section-desc">Vibration only has a physical effect on devices with a vibration motor.</p>
+        <DemoConsole @ref="beaconOutput" Title="beacon and vibration output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="Secure context and user gesture required">
+    <code>Share</code>, <code>ShareFiles</code> and the app badge APIs require a secure context (https),
+    and sharing must be triggered by a user gesture such as a button click. The share sheet is mostly a
+    mobile affordance - many desktop browsers reject it - and badges only appear on installed PWAs.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="GetDeviceMemory" Signature="Task<float> GetDeviceMemory()" Description="Approximate device memory in gigabytes (rounded to a power of 2)." />
+    <ApiMember Name="GetHardwareConcurrency" Signature="Task<float> GetHardwareConcurrency()" Description="Number of logical processor cores available." />
+    <ApiMember Name="GetLanguage" Signature="Task<string> GetLanguage()" Description="The user's preferred language, usually the browser UI language." />
+    <ApiMember Name="GetLanguages" Signature="Task<string[]> GetLanguages()" Description="The user's known languages, ordered by preference." />
+    <ApiMember Name="GetMaxTouchPoints" Signature="Task<byte> GetMaxTouchPoints()" Description="Maximum number of simultaneous touch contact points supported." />
+    <ApiMember Name="IsOnLine" Signature="Task<bool> IsOnLine()" Description="Whether the browser is working online." />
+    <ApiMember Name="IsPdfViewerEnabled" Signature="Task<bool> IsPdfViewerEnabled()" Description="True when the browser can display PDF files inline." />
+    <ApiMember Name="GetUserAgent" Signature="Task<string> GetUserAgent()" Description="The raw user-agent string of the current browser." />
+    <ApiMember Name="IsWebDriver" Signature="Task<bool> IsWebDriver()" Description="True when the user agent is controlled by automation." />
+    <ApiMember Name="CanShare" Signature="Task<bool> CanShare()" Description="True when a Share call would succeed. An overload accepts a ShareData payload to validate specific content." />
+    <ApiMember Name="Share" Signature="Task Share(ShareData data)" Description="Invokes the native share mechanism with title, text and url." />
+    <ApiMember Name="ShareFiles" Signature="Task<bool> ShareFiles(string? title, ShareFile[] files, string? text = null, string? url = null)" Description="Web Share Level 2: shares files alongside optional title, text and url; false when the set cannot be shared." />
+    <ApiMember Name="SetAppBadge" Signature="Task SetAppBadge(int? contents = null)" Description="Sets a numeric badge (or a generic dot) on the installed app's icon." />
+    <ApiMember Name="ClearAppBadge" Signature="Task ClearAppBadge()" Description="Removes the badge from the app icon." />
+    <ApiMember Name="SendBeacon" Signature="Task<bool> SendBeacon(string url, object? data = null)" Description="Queues a small asynchronous HTTP transfer that survives page unload; true when queued." />
+    <ApiMember Name="Vibrate" Signature="Task<bool> Vibrate(int[] pattern)" Description="Plays a vibration/pause pattern (ms) on supporting devices; no-op elsewhere." />
+    <ApiMember Name="IsCookieEnabled"
+               Signature="Task<bool> IsCookieEnabled()"
+               Description="Whether the browser accepts cookies at all. Reports the global setting, not whether this document can set one - a third-party iframe with partitioned cookies still reads true. Use StorageAccess for that question." />
+    <ApiMember Name="GetDoNotTrack"
+               Signature="Task<string?> GetDoNotTrack()"
+               Description="The user's Do Not Track preference: 1, 0, or null when unset. Being removed from browsers, so treat null as no signal rather than as consent." />
+    <ApiMember Name="GetUserActivation"
+               Signature="Task<UserActivationState?> GetUserActivation()"
+               Description="Whether the user has interacted with the page and whether that interaction is still spendable. Null on browsers without navigator.userActivation." />
+    <ApiMember Name="UserActivationState"
+               Signature="class UserActivationState { bool HasBeenActive; bool IsActive; }"
+               Description="Sticky activation (has ever interacted) and transient activation (recent enough for a gesture-gated API). Check IsActive before calling one, to fail fast with your own message instead of an opaque browser rejection." />
+</ApiTable>
+
+@code {
+    private DemoConsole hardwareOutput = default!;
+    private DemoConsole traitsOutput = default!;
+    private DemoConsole onlineOutput = default!;
+    private DemoConsole shareOutput = default!;
+    private DemoConsole badgeOutput = default!;
+    private DemoConsole beaconOutput = default!;
+
+    private int badgeCount = 7;
+
+    private async Task ReadHardware()
+    {
+        try
+        {
+            await hardwareOutput.Info("DeviceMemory (GB):", await navigator.GetDeviceMemory());
+            await hardwareOutput.Info("HardwareConcurrency:", await navigator.GetHardwareConcurrency());
+            await hardwareOutput.Info("MaxTouchPoints:", await navigator.GetMaxTouchPoints());
+        }
+        catch (Exception ex)
+        {
+            await hardwareOutput.Error("Reading hardware info failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadLanguages()
+    {
+        try
+        {
+            await traitsOutput.Info("Language:", await navigator.GetLanguage());
+            await traitsOutput.Info("Languages:", string.Join(", ", await navigator.GetLanguages()));
+        }
+        catch (Exception ex)
+        {
+            await traitsOutput.Error("Reading languages failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadBrowserTraits()
+    {
+        try
+        {
+            await traitsOutput.Info("UserAgent:", await navigator.GetUserAgent());
+            await traitsOutput.Info("IsPdfViewerEnabled:", await navigator.IsPdfViewerEnabled());
+            await traitsOutput.Info("IsWebDriver:", await navigator.IsWebDriver());
+        }
+        catch (Exception ex)
+        {
+            await traitsOutput.Error("Reading browser traits failed:", ex.Message);
+        }
+    }
+
+    private async Task CheckOnline()
+    {
+        try
+        {
+            var online = await navigator.IsOnLine();
+            if (online)
+            {
+                await onlineOutput.Success("IsOnLine:", online);
+            }
+            else
+            {
+                await onlineOutput.Warn("IsOnLine:", online);
+            }
+        }
+        catch (Exception ex)
+        {
+            await onlineOutput.Error("IsOnLine failed:", ex.Message);
+        }
+    }
+
+    private async Task CheckCanShare()
+    {
+        try
+        {
+            await shareOutput.Info("CanShare:", await navigator.CanShare());
+        }
+        catch (Exception ex)
+        {
+            await shareOutput.Error("CanShare failed:", ex.Message);
+        }
+    }
+
+    private async Task ShareLink()
+    {
+        try
+        {
+            await navigator.Share(new ShareData
+            {
+                title = "Bit.Butil",
+                Text = "Browser APIs for C# developers",
+                url = "https://bitplatform.dev",
+            });
+            await shareOutput.Success("Share sheet completed.");
+        }
+        catch (Exception ex)
+        {
+            await shareOutput.Error("Share failed (unsupported browser or dismissed sheet):", ex.Message);
+        }
+    }
+
+    private async Task SetBadge()
+    {
+        try
+        {
+            await navigator.SetAppBadge(badgeCount);
+            await badgeOutput.Success("App badge set to:", badgeCount);
+        }
+        catch (Exception ex)
+        {
+            await badgeOutput.Error("SetAppBadge failed (requires an installed PWA):", ex.Message);
+        }
+    }
+
+    private async Task ClearBadge()
+    {
+        try
+        {
+            await navigator.ClearAppBadge();
+            await badgeOutput.Log("App badge cleared.");
+        }
+        catch (Exception ex)
+        {
+            await badgeOutput.Error("ClearAppBadge failed:", ex.Message);
+        }
+    }
+
+    private async Task SendBeacon()
+    {
+        try
+        {
+            var queued = await navigator.SendBeacon("/beacon-demo", "{\"event\":\"demo-click\"}");
+            await beaconOutput.Info("SendBeacon queued:", queued);
+        }
+        catch (Exception ex)
+        {
+            await beaconOutput.Error("SendBeacon failed:", ex.Message);
+        }
+    }
+
+    private async Task Vibrate()
+    {
+        try
+        {
+            var accepted = await navigator.Vibrate([200, 100, 200]);
+            await beaconOutput.Info("Vibrate accepted:", accepted);
+        }
+        catch (Exception ex)
+        {
+            await beaconOutput.Error("Vibrate failed:", ex.Message);
+        }
+    }
+}

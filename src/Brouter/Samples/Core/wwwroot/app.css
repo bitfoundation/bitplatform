@@ -1,0 +1,158 @@
+﻿/* Minimal styling for the Brouter samples - just enough to keep the pages readable. */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    line-height: 1.5;
+    color: #1b1b1f;
+    background: #fff;
+}
+
+a {
+    color: #2f5bea;
+}
+
+code {
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: .9em;
+    background: #f2f3f5;
+    border-radius: 3px;
+    padding: .1em .3em;
+}
+
+.topbar {
+    padding: .75rem 1.5rem;
+    border-bottom: 1px solid #e3e4e8;
+    font-weight: 600;
+}
+
+main {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+h1 {
+    font-size: 1.5rem;
+    margin: 0 0 1rem;
+}
+
+h2 {
+    font-size: 1.1rem;
+    margin: 1.5rem 0 .5rem;
+}
+
+.card {
+    border: 1px solid #e3e4e8;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    align-items: center;
+}
+
+.muted {
+    color: #5b5c66;
+    font-size: .9rem;
+}
+
+.error {
+    border-left: 4px solid #d33;
+    padding-left: 1rem;
+}
+
+/* Route parameters, shown as a name/value list on nearly every sample page. */
+dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: .25rem 1rem;
+    margin: 0 0 1rem;
+}
+
+dt {
+    font-weight: 600;
+}
+
+dd {
+    margin: 0;
+    font-family: ui-monospace, Consolas, monospace;
+}
+
+ul {
+    margin: 0;
+    padding-left: 1.25rem;
+}
+
+button, .btn {
+    font: inherit;
+    padding: .35rem .8rem;
+    border: 1px solid #c7c9d1;
+    border-radius: 5px;
+    background: #f7f8fa;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+button:disabled {
+    opacity: .5;
+    cursor: default;
+}
+
+input, textarea {
+    font: inherit;
+    padding: .35rem .5rem;
+    border: 1px solid #c7c9d1;
+    border-radius: 5px;
+    width: 100%;
+}
+
+/* View transitions sample: the tile and the detail hero share a view-transition-name, which is
+   the entire wiring of the shared-element morph. */
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+    gap: .75rem;
+}
+
+.tile, .hero {
+    display: grid;
+    place-content: center;
+    border-radius: 8px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 2rem;
+}
+
+.tile {
+    height: 6rem;
+}
+
+.hero {
+    height: 12rem;
+    margin-bottom: 1rem;
+}
+
+/* Navigation-lock sample: the page parks a pending navigation behind this dialog. */
+.backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .45);
+    display: grid;
+    place-items: center;
+}
+
+.backdrop .card {
+    background: #fff;
+    max-width: 24rem;
+    margin: 0;
+}

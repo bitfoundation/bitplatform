@@ -1,0 +1,304 @@
+<PageTitle>FAQ &amp; troubleshooting · Brouter docs</PageTitle>
+
+@* The page people arrive at from a search engine mid-problem: symptom first, cause second, fix
+   third. The adoption questions at the top mirror the landing page's FAQ so either entry point
+   answers them; the troubleshooting table below is the part that only exists here. *@
+
+<div class="bb-intro">
+    <h1>FAQ &amp; troubleshooting</h1>
+    <p class="bb-subtitle">
+        The questions asked before adopting, and the symptoms hit afterwards - each with the
+        underlying reason, because most of them turn out to be a deliberate design decision rather
+        than a bug.
+    </p>
+</div>
+
+@* ============================== Adoption ============================== *@
+
+<h2>Before you adopt</h2>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Is this a replacement for the built-in Router?</h3>
+    <p class="bb-card-desc">
+        Yes - a drop-in one. Point <code>AppAssembly</code> at your app and every
+        <code>&#64;page</code> component is discovered and matched with identical template
+        semantics; <code>&lt;Found&gt;</code>, <code>&lt;NotFound&gt;</code> and
+        <code>&lt;Navigating&gt;</code> port over unchanged. You can migrate without adopting a
+        single new feature, then add guards, loaders or transitions to the pages that benefit. See
+        the <BrouterLink Href="/docs/migration">migration guide</BrouterLink>.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Can hand-declared routes and <code>&#64;page</code> coexist?</h3>
+    <p class="bb-card-desc">
+        That's the intended shape for most apps: keep ordinary pages colocated with their
+        <code>&#64;page</code> directives, and hand-declare a <code>&lt;Broute&gt;</code> only where
+        a route needs behavior - a guard, a loader, keep-alive, nested children. Declaring a
+        <code>&lt;Broute&gt;</code> with the exact template of a discovered page <em>shadows</em>
+        it, which is how you attach that behavior without editing the page at all.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Which render modes and .NET versions?</h3>
+    <p class="bb-card-desc">
+        <code>net8.0</code>, <code>net9.0</code> and <code>net10.0</code>; Server, WebAssembly and
+        Auto, with or without prerendering. This site is the proof - the same pages run under all
+        three hosts. Features that need a DOM (scroll, focus, view transitions, lifecycle
+        callbacks) are simply skipped during static prerender, and on .NET 10 an unmatched URL
+        during static SSR produces a real HTTP 404.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Is there JavaScript to set up? Is the generator required?</h3>
+    <p class="bb-card-desc">
+        No to both. The router ships its script as a static web asset - no script tag, nothing to
+        bundle - and on browsers without the View Transitions API the animations are inert rather
+        than broken. <code>Bit.Brouter.Generators</code> is entirely optional: it's an
+        analyzer-only package that adds compile-time-safe URL builders, and everything works with
+        plain strings without it.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What does it cost at scale?</h3>
+    <p class="bb-card-desc">
+        Every route is a live component instance - roughly 3-6&nbsp;KB retained each - so ~500
+        routes add about 2.5&nbsp;MB and ~4&nbsp;ms of startup. Per-navigation matching stays fast
+        regardless, thanks to a first-segment index. Negligible for most apps, material for a very
+        large all-<code>&#64;page</code> one; the
+        <BrouterLink Href="/docs/performance">performance page</BrouterLink> has the numbers and a
+        runnable benchmark.
+    </p>
+</div>
+
+@* ============================== Troubleshooting ============================== *@
+
+<h2>Routing &amp; matching</h2>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> A URL 404s that should match</h3>
+    <table class="bb-table">
+        <thead><tr><th>Symptom</th><th>Why, and the fix</th></tr></thead>
+        <tbody>
+            <tr>
+                <td>A <code>&#64;page</code> component is never matched</td>
+                <td><code>AppAssembly</code> isn't set, or the page lives in another assembly that isn't in <code>AdditionalAssemblies</code>. If it only breaks in a published trimmed build, the component was trimmed away - preserve routable components as you would for the built-in Router.</td>
+            </tr>
+            <tr>
+                <td><code>/products/list</code> 404s but <code>/products/en/list</code> works</td>
+                <td>Working as intended. A <strong>middle</strong> optional is required at match time - only a trailing run of optionals can be omitted. This is exact framework parity; declare a second route if you want both shapes.</td>
+            </tr>
+            <tr>
+                <td>A typed parameter rejects a value you expected</td>
+                <td>Type constraints parse with <em>invariant</em> culture. <code>{price:decimal}</code> matches <code>49.99</code>, never <code>49,99</code>.</td>
+            </tr>
+            <tr>
+                <td>A catch-all route stopped serving your static files</td>
+                <td>Add the <code>nonfile</code> constraint - <code>{*path:nonfile}</code> - so URLs that look like file names fall through instead of being routed.</td>
+            </tr>
+            <tr>
+                <td>The wrong route wins</td>
+                <td>Specificity, not declaration order, decides: literal &gt; complex segment &gt; constrained parameter &gt; parameter &gt; wildcard &gt; catch-all. Add a constraint to the route that should win rather than reordering.</td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="bb-try">
+        <BrouterLink Href="/docs/route-templates" class="btn btn-outline">Template grammar →</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> An ambiguous-route exception at startup</h3>
+    <p class="bb-card-desc">
+        Two routes match exactly the same set of URLs. Brouter throws instead of silently picking
+        one, mirroring the built-in router's <code>AmbiguousMatchException</code> - usually a page
+        copied with its <code>&#64;page</code> directive, or two templates that differ only in
+        parameter <em>name</em> (<code>/users/{id}</code> and <code>/users/{userId}</code> match
+        identically). The one legal pairing is a hand-declared <code>&lt;Broute&gt;</code>
+        deliberately shadowing a discovered <code>&#64;page</code> with the same template.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> A parameter arrives null</h3>
+    <table class="bb-table">
+        <thead><tr><th>Symptom</th><th>Why, and the fix</th></tr></thead>
+        <tbody>
+            <tr>
+                <td>A query value never binds</td>
+                <td><code>[SupplyParameterFromQuery]</code> must be paired with <code>[Parameter]</code> on a routed component. If the property is an enum, a <code>Guid</code> or a <code>string[]</code>, the framework's supplier can't parse it - use Brouter's <code>[BrouterQuery]</code> instead.</td>
+            </tr>
+            <tr>
+                <td>A route value doesn't reach the component</td>
+                <td>Binding is by name. Either rename the property to match the template, or map it explicitly with <code>[BrouterParameter(Name = "...")]</code>. Note that <code>Content</code> fragments don't bind properties at all - they receive the parameter bag as their context argument.</td>
+            </tr>
+            <tr>
+                <td>A parent layout sees no parameters</td>
+                <td>Ancestors receive the slice of the winner's parameters that their own template declares. If the parent's template doesn't declare <code>{id}</code>, it won't see <code>id</code> - read it from the cascaded bag, or move the segment into the parent's template.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+@* ============================== Navigation ============================== *@
+
+<h2>Navigation, guards &amp; locks</h2>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> A guard doesn't stop the navigation</h3>
+    <table class="bb-table">
+        <thead><tr><th>Symptom</th><th>Why, and the fix</th></tr></thead>
+        <tbody>
+            <tr>
+                <td>The guard never runs</td>
+                <td><code>Navigate(url, forceLoad: true)</code> skips the pipeline by design - the browser loads a new document. Guards also don't run for <code>RevalidateAsync()</code> or preloads, both of which are deliberately side-effect-free.</td>
+            </tr>
+            <tr>
+                <td><code>LeaveGuard</code> doesn't fire on <code>/edit/1 → /edit/2</code></td>
+                <td>The route stays matched, so nothing is being left. Implement <code>OnRenavigatingAsync</code> on the component - that's exactly the gap it fills.</td>
+            </tr>
+            <tr>
+                <td>A dialog closes itself and the navigation proceeds</td>
+                <td>The lock must <em>await</em> the answer and then call <code>ctx.Cancel()</code>. Returning before the user answers approves the navigation. If the token fired, a newer navigation superseded this one - the right response is to dismiss the dialog.</td>
+            </tr>
+            <tr>
+                <td>Leaving the tab isn't caught</td>
+                <td>No SPA router can intercept that. Arm the browser's own dialog with <code>ConfirmExternalNavigation</code> or <code>SetConfirmExternalNavigationAsync(true)</code>; browser rules apply, including that its text can't be customized.</td>
+            </tr>
+            <tr>
+                <td>A thrown guard blocks everything</td>
+                <td>By design - the pipeline fails closed rather than committing a half-authorized navigation. Catch what you can handle inside the guard and use <code>ctx.Redirect</code> to steer.</td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="bb-try">
+        <BrouterLink Href="/docs/navigation-pipeline" class="btn btn-outline">What runs when →</BrouterLink>
+    </div>
+</div>
+
+@* ============================== Data ============================== *@
+
+<h2>Data &amp; rendering</h2>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The loader runs too often, or not often enough</h3>
+    <table class="bb-table">
+        <thead><tr><th>Symptom</th><th>Why, and the fix</th></tr></thead>
+        <tbody>
+            <tr>
+                <td>Stale data after a save</td>
+                <td>A <code>StaleTime</code> is serving a cache hit. Call <code>RevalidateAsync()</code> to refresh the current page, or <code>ClearLoaderCache()</code> when the mutation invalidates other pages too.</td>
+            </tr>
+            <tr>
+                <td>The loader runs twice on first load</td>
+                <td>Prerendering: once on the server, once when the app goes interactive. Enable <code>PersistLoaderState</code> to carry the result across, and supply <code>LoaderStateTypeInfoResolver</code> for trimming/AOT safety.</td>
+            </tr>
+            <tr>
+                <td>Cache misses where you expected hits</td>
+                <td>Entries are keyed by the <em>full</em> URL, query included - <code>?page=1</code> and <code>?page=2</code> are separate entries. Entries also expire at <code>LoaderCacheGcTime</code> and evict past <code>MaxLoaderCacheEntries</code>.</td>
+            </tr>
+            <tr>
+                <td>The <code>&lt;Navigating&gt;</code> UI never appears</td>
+                <td>It's revealed lazily so quick navigations don't flash it. A cache hit or a fast loader legitimately never shows it.</td>
+            </tr>
+            <tr>
+                <td><code>RevalidateAsync()</code> appears to do nothing</td>
+                <td>It's a no-op when no route in the current chain declares a <code>Loader</code>.</td>
+            </tr>
+            <tr>
+                <td><code>ReloadAsync()</code> appears to do nothing</td>
+                <td>A reload stands down while a navigation is in flight (that navigation is already rebuilding the page the user is heading to) and does nothing when no route is committed - a not-found fallback or an error boundary on screen. Otherwise it always rebuilds - it evicts this URL's cached results first, so a <code>StaleTime</code> can't quietly serve the data the discarded instances were showing.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Transitions, scroll and focus don't happen</h3>
+    <table class="bb-table">
+        <thead><tr><th>Symptom</th><th>Why, and the fix</th></tr></thead>
+        <tbody>
+            <tr>
+                <td>Nothing animates</td>
+                <td>Check <code>ViewTransitions = true</code> first. Then: the initial load never animates by design, browsers without the API are inert, and <code>prefers-reduced-motion</code> swaps motion for a crossfade - which OSes report on many VMs and remote desktops even when no user asked for it.</td>
+            </tr>
+            <tr>
+                <td>A shared-element morph doesn't morph</td>
+                <td>Both elements need the <em>same</em> <code>view-transition-name</code>, and a name must be unique on screen at any one moment - two visible elements sharing one name cancels the transition.</td>
+            </tr>
+            <tr>
+                <td>Custom <code>::view-transition-*</code> CSS is ignored</td>
+                <td>It shouldn't be - the defaults live in the <code>bit-brouter</code> CSS layer and unlayered author rules beat layered ones. If yours is <em>also</em> in a layer, the layer order decides; move it out or set <code>ViewTransitionDefaultAnimations = false</code>.</td>
+            </tr>
+            <tr>
+                <td>A <code>#fragment</code> link doesn't scroll</td>
+                <td>The target element must exist with that <code>id</code> once the new page has rendered, and <code>ScrollToFragment</code> must be on (it is by default). A resolved fragment wins over scroll restoration and <code>ScrollBehavior</code> for that navigation.</td>
+            </tr>
+            <tr>
+                <td>Scroll and focus do nothing during prerender</td>
+                <td>Expected - there is no DOM to act on yet. They run on the interactive pass.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Keep-alive and lifecycle surprises</h3>
+    <table class="bb-table">
+        <thead><tr><th>Symptom</th><th>Why, and the fix</th></tr></thead>
+        <tbody>
+            <tr>
+                <td>A hidden page keeps polling</td>
+                <td>Keep-alive means still alive - timers and subscriptions keep running. Pause on <code>OnDeactivated</code> when <code>Reason == Hidden</code> and resume in <code>OnActivated</code>.</td>
+            </tr>
+            <tr>
+                <td><code>/item/1</code> and <code>/item/2</code> share one instance</td>
+                <td>The default <code>KeepAliveMax</code> is 1, which re-binds a single instance. Raise it to keep one instance per distinct parameter set, LRU-evicted beyond the budget.</td>
+            </tr>
+            <tr>
+                <td>Lifecycle callbacks never fire on a nested component</td>
+                <td>They're discovered automatically only on the route's own <code>Component</code>. A descendant must take the cascaded <code>BrouterRouteContext</code> and call <code>Register(this)</code> / <code>Unregister(this)</code>.</td>
+            </tr>
+            <tr>
+                <td>Memory grows as the user browses</td>
+                <td>Retained pages accumulate up to their budget. Call <code>ClearKeepAlive()</code> on sign-out or memory pressure - and check that every <code>OnNavigating</code>/<code>OnNavigated</code>/<code>OnError</code> subscription is unsubscribed in <code>Dispose</code>.</td>
+            </tr>
+            <tr>
+                <td>The page keeps the previous user's / tenant's state after switching</td>
+                <td>Re-navigating to the current URL can't fix it: Blazor reuses a component whose route and parameters didn't change, so the stale instance stays (the built-in <code>Router</code> behaves the same way). Use <code>ClearKeepAlive(includeActive: true)</code> to rebuild the visible page in place, or <code>ReloadAsync()</code> when its loaded data is stale too.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> A generated URL builder is missing</h3>
+    <p class="bb-card-desc">
+        The generator reads route declarations <em>textually</em>, so anything it can't read at
+        compile time is skipped rather than guessed at: a dynamic <code>Path="@@expr"</code> (and
+        everything nested beneath it) and complex multi-part segments like
+        <code>/files/{name}.{ext?}</code>. Declaring one template with two different
+        <code>Name</code>s raises the <code>BRT001</code> warning. If nothing at all is generated,
+        confirm the <code>Bit.Brouter.Generators</code> package reference is present and rebuild -
+        the class is emitted into your project's root namespace.
+    </p>
+    <div class="bb-try">
+        <BrouterLink Href="/docs/typed-routes" class="btn btn-outline">Typed routes →</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Still stuck?</h3>
+    <p class="bb-card-desc">
+        Most behavior questions are answered by knowing which pipeline step you're in - start with
+        <BrouterLink Href="/docs/navigation-pipeline">how a navigation works</BrouterLink>, then
+        look the member up in the
+        <BrouterLink Href="/docs/api">API reference</BrouterLink>. Every feature on this site also
+        has a live demo you can compare your app against in the
+        <BrouterLink Href="/playground">playground</BrouterLink>. Bugs and questions are welcome on
+        <a href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener noreferrer">GitHub</a>.
+    </p>
+</div>

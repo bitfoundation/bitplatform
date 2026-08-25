@@ -22,6 +22,7 @@ namespace Bit.Butil;
 // the [JSInvokable] callbacks, never the JSON generic, and it keeps its own RUC/RDC attributes so a
 // trimming/AOT consumer is still warned at the real call site. Scoped to this type (not assembly-wide).
 [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "DotNetObjectReference.Create preserves all public methods; the RUC JSON APIs it pulls in are never invoked through this ref and stay annotated for consumers.")]
+[ButilService(typeof(ServiceWorker))]
 public class ServiceWorker(IJSRuntime js) : IAsyncDisposable
 {
     internal const string MessageMethodName = nameof(InvokeServiceWorkerMessage);
@@ -82,6 +83,34 @@ public class ServiceWorker(IJSRuntime js) : IAsyncDisposable
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ServiceWorkerRegistrationInfo))]
     public ValueTask<ServiceWorkerRegistrationInfo> GetRegistration(string? scope = null)
         => js.Invoke<ServiceWorkerRegistrationInfo>("BitButil.serviceWorker.getRegistration", scope);
+
+    /// <summary>
+    /// Every registration this origin has, not just the one matching a scope. Useful for cleaning up
+    /// workers left behind by an earlier version of an app.
+    /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ServiceWorkerRegistrationInfo))]
+    public ValueTask<ServiceWorkerRegistrationInfo[]> GetRegistrations()
+        => js.Invoke<ServiceWorkerRegistrationInfo[]>("BitButil.serviceWorker.getRegistrations");
+
+    /// <summary>
+    /// Waits until a service worker is <em>active</em> and returns its registration.
+    /// </summary>
+    /// <param name="timeoutMs">How long to wait before giving up. Defaults to 10 seconds.</param>
+    /// <returns>
+    /// The active registration, or an unregistered <see cref="ServiceWorkerRegistrationInfo"/> when
+    /// the wait timed out or the browser has no service worker support.
+    /// </returns>
+    /// <remarks>
+    /// <see cref="Register"/> returns as soon as the registration exists, which is usually while the
+    /// worker is still installing - messages sent then go nowhere. This is the point at which
+    /// <see cref="PostMessage"/> will actually reach it.
+    /// <br/>
+    /// The underlying <c>navigator.serviceWorker.ready</c> never rejects and never resolves when
+    /// nothing is registered, so the timeout is what keeps this from hanging forever.
+    /// </remarks>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ServiceWorkerRegistrationInfo))]
+    public ValueTask<ServiceWorkerRegistrationInfo> Ready(int timeoutMs = 10_000)
+        => js.Invoke<ServiceWorkerRegistrationInfo>("BitButil.serviceWorker.ready", timeoutMs);
 
     /// <summary>Forces an update check for a registration.</summary>
     public ValueTask Update(string? scope = null) => js.InvokeVoid("BitButil.serviceWorker.update", scope);

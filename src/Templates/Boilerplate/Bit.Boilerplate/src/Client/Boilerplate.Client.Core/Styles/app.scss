@@ -1,14 +1,16 @@
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_bit-css-variables.scss';
 
+// [mirror] Uncomment to override the theme's dark background. If you do, ThemeColors.cs's PrimaryDarkBgColor must
+// change with it - it paints the native chrome around the WebView, which would otherwise meet the page in a seam.
+// Keep in sync with: Styles/ThemeColors.cs.
 :root[bit-theme="dark"] {
-    //--bit-clr-bg-pri: #010409;
-    // In case you need to change the background color, make sure to also update ThemeColors.cs's PrimaryDarkBgColor accordingly.
+    //--bit-clr-bg-pri: #0F1318;
 }
 
 * {
     box-sizing: border-box;
-    font-family: "Segoe UI";
+    font-family: $bit-typography-font-family;
     -webkit-text-size-adjust: none;
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
@@ -59,20 +61,9 @@ p {
     height: $bit-env-height-available;
 }
 
-.selectable {
+.selectable, .selectable * {
+    -webkit-user-select: all !important;
     user-select: all !important;
-}
-
-div[dir=rtl] {
-    .bitdatagrid-paginator {
-        .go-next, .go-last {
-            transform: scaleX(1);
-        }
-
-        .go-previous, .go-first {
-            transform: scaleX(-1);
-        }
-    }
 }
 
 #components-reconnect-modal {

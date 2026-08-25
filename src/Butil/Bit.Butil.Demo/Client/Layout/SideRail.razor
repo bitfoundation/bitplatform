@@ -1,0 +1,56 @@
+@implements IDisposable
+@inject PageOutline outline
+@inject NavigationManager navManager
+
+@* "On this page". The rail is built from the sections the page registers as it renders, so it can
+   be empty for a frame - after a navigation the rail already knows the new path while the incoming
+   page's sections have yet to re-register. The <nav> is rendered regardless to hold the column
+   open: dropping it would let the content column stretch and then snap back a frame later. *@
+<nav class="side-rail" aria-label="On this page">
+    @if (_items.Count > 0)
+    {
+        <p class="side-rail-title">On this page</p>
+        <ul class="side-rail-list">
+            @foreach (var item in _items)
+            {
+                <li><a href="@_path#@item.Slug">@item.Title</a></li>
+            }
+        </ul>
+    }
+</nav>
+
+@code {
+    private string _path = "";
+
+    // Only the entries registered for the page currently on screen. The outline keeps whatever was
+    // registered last, so between a navigation and the new page's first render it still holds the
+    // previous page's sections - listing those would be a rail of links to headings that are gone.
+    private IReadOnlyList<PageOutlineItem> _items =>
+        outline.Path == _path ? outline.Items : [];
+
+    protected override void OnInitialized()
+    {
+        outline.Changed += OnOutlineChanged;
+        navManager.LocationChanged += OnLocationChanged;
+
+        SetPath();
+    }
+
+    private void SetPath() => _path = new Uri(navManager.Uri).AbsolutePath;
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        SetPath();
+        StateHasChanged();
+    }
+
+    // Raised from a section's OnInitialized, i.e. in the middle of someone else's render pass, so
+    // the re-render is queued rather than requested inline.
+    private void OnOutlineChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        outline.Changed -= OnOutlineChanged;
+        navManager.LocationChanged -= OnLocationChanged;
+    }
+}

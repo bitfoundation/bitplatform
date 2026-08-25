@@ -3,6 +3,7 @@ using System.IO.Compression;
 using Bit.BlazorUI.Demo.Server.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Bit.BlazorUI.Demo.Client.Core.Components;
+using Bit.BlazorUI.Demo.Client.Core.Services;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -58,6 +59,17 @@ public static class Services
             var httpContext = sp.GetRequiredService<IHttpContextAccessor>().HttpContext;
             return httpContext?.Items?.ContainsKey("RenderForMcpClient") is true
                 || httpContext?.Request?.Query?.ContainsKey("showallcodes") is true;
+        });
+
+        // The theme the visitor picked, from the cookie the client mirrors it into (App.razor reads
+        // the same cookie to paint the first frame). Prerendered chrome that reflects the current
+        // theme - the AppHeader's design-system dropdown - reads it from here, because the JS
+        // theme runtime is not reachable while prerendering. Null in the interactive circuits and
+        // on WebAssembly, where the components ask the runtime instead.
+        services.AddCascadingValue("PersistedTheme", sp =>
+        {
+            var httpContext = sp.GetRequiredService<IHttpContextAccessor>().HttpContext;
+            return httpContext?.Request?.Cookies[BitThemeCookie.PreferenceCookieName];
         });
 
         services.Configure<ForwardedHeadersOptions>(options =>

@@ -1,0 +1,243 @@
+@page "/battery"
+@implements IAsyncDisposable
+@inject Bit.Butil.Battery battery
+
+<PageTitle>Battery - Bit.Butil</PageTitle>
+
+<PageHeader Category="Device & Hardware"
+            Title="Battery"
+            Lead="Read the device's battery level, charging state and time estimates through the Battery Status API - one typed snapshot call, no interop code."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Battery_Status_API"
+            InjectAs="Battery battery" />
+
+<Callout Type="warning" Title="Limited browser support">
+    The Battery Status API is only implemented in Chromium-based browsers - Firefox and Safari
+    intentionally do not expose it for privacy reasons. When the API is unavailable,
+    <code>IsSupported</code> returns <code>false</code> and <code>GetStatus</code> reports a
+    charged-on-AC-power stub so your code doesn't have to special-case missing data.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes navigator.getBattery. Because the check runs over JS interop, defer it to OnAfterRenderAsync when prerendering."
+                 Code=@("""
+@inject Bit.Butil.Battery battery
+
+var supported = await battery.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Read the battery status"
+                 Api="GetStatus"
+                 Description="Takes a one-shot snapshot of the battery: charge level in the [0, 1] range, whether the device is charging, and the estimated seconds until fully charged or discharged (null when the browser can't estimate)."
+                 Code=@("""
+var status = await battery.GetStatus();
+
+var level = status.Level;                     // 0.87
+var charging = status.Charging;               // true / false
+var untilFull = status.ChargingTime;          // seconds, or null
+var untilEmpty = status.DischargingTime;      // seconds, or null
+""")>
+        <div class="controls">
+            <button @onclick="ReadStatus">GetStatus</button>
+        </div>
+        <DemoConsole @ref="statusOutput" Title="battery status output" />
+    </DemoSection>
+
+    <DemoSection Title="Formatted snapshot"
+                 Api="GetStatus"
+                 Description="The same snapshot rendered as UI state instead of raw values - a typical pattern for a status-bar battery indicator."
+                 Code=@("""
+var status = await battery.GetStatus();
+
+batteryLabel = status.Charging
+    ? $"{status.Level:P0} - charging"
+    : $"{status.Level:P0} - on battery";
+""")>
+        <div class="controls">
+            <button @onclick="RefreshSnapshot">Refresh snapshot</button>
+        </div>
+        @if (_snapshot is not null)
+        {
+            <div class="field-row" style="margin-top:0.8rem">
+                <div class="field">
+                    <span class="field-label">Level</span>
+                    <span>@_snapshot.Level.ToString("P0")</span>
+                </div>
+                <div class="field">
+                    <span class="field-label">Charging</span>
+                    <span>@(_snapshot.Charging ? "Yes" : "No")</span>
+                </div>
+                <div class="field">
+                    <span class="field-label">Time until full</span>
+                    <span>@FormatSeconds(_snapshot.ChargingTime)</span>
+                </div>
+                <div class="field">
+                    <span class="field-label">Time until empty</span>
+                    <span>@FormatSeconds(_snapshot.DischargingTime)</span>
+                </div>
+            </div>
+        }
+        <DemoConsole @ref="snapshotOutput" Title="snapshot output" />
+    </DemoSection>
+
+    <DemoSection Title="React to battery changes"
+                 Api="SubscribeChange"
+                 Description="Polling GetStatus is the wrong shape for a battery indicator. SubscribeChange hands you a fresh snapshot every time anything moves - plugged in, unplugged, or the level ticked. The spec has no single change event, so this attaches to all four (chargingchange, levelchange, chargingtimechange, dischargingtimechange) and always reports the whole state, meaning your handler never has to work out which field changed. Returns null where the API doesn't exist, since the AC-power stub can never change."
+                 Code=@("""
+private ButilSubscription? subscription;
+
+subscription = await battery.SubscribeChange(status =>
+{
+    _snapshot = status;
+    InvokeAsync(StateHasChanged);
+});
+
+if (subscription is null)
+{
+    // No Battery Status API here - nothing to watch.
+}
+
+// later
+await subscription.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="StartWatching" disabled="@(_subscription is not null)">SubscribeChange</button>
+            <button class="secondary" @onclick="StopWatching" disabled="@(_subscription is null)">Dispose</button>
+        </div>
+        <DemoConsole @ref="watchOutput" Title="change output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes navigator.getBattery. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="GetStatus"
+               Signature="ValueTask<BatteryStatus> GetStatus()"
+               Description="One-shot snapshot of the battery state. Reports a charged-AC-power stub when the API is unsupported." />
+    <ApiMember Name="SubscribeChange"
+               Signature="ValueTask<ButilSubscription?> SubscribeChange(Action<BatteryStatus> handler)"
+               Description="Calls the handler with a fresh snapshot on every battery change. Attaches to all four change events, so the handler gets the whole state each time. Null when the API is unsupported - the stub never changes." />
+    <ApiMember Name="BatteryStatus.Charging"
+               Signature="bool Charging { get; set; }"
+               Description="True if the device is currently charging." />
+    <ApiMember Name="BatteryStatus.ChargingTime"
+               Signature="double? ChargingTime { get; set; }"
+               Description="Seconds remaining until fully charged, or null when unknown." />
+    <ApiMember Name="BatteryStatus.DischargingTime"
+               Signature="double? DischargingTime { get; set; }"
+               Description="Seconds remaining until discharged, or null when unknown." />
+    <ApiMember Name="BatteryStatus.Level"
+               Signature="double Level { get; set; }"
+               Description="Battery level in the [0, 1] range." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole statusOutput = default!;
+    private DemoConsole snapshotOutput = default!;
+    private DemoConsole watchOutput = default!;
+    private BatteryStatus? _snapshot;
+    private ButilSubscription? _subscription;
+
+    private async Task StartWatching()
+    {
+        try
+        {
+            _subscription = await battery.SubscribeChange(async status =>
+            {
+                _snapshot = status;
+                await InvokeAsync(async () =>
+                {
+                    await watchOutput.Success("change →", $"level={status.Level:P0}, charging={status.Charging}");
+                    StateHasChanged();
+                });
+            });
+
+            if (_subscription is null)
+            {
+                await watchOutput.Warn("SubscribeChange → null (no Battery Status API in this browser).");
+                return;
+            }
+            await watchOutput.Log("Subscribed - plug or unplug the charger to see events.");
+        }
+        catch (Exception ex)
+        {
+            await watchOutput.Error("SubscribeChange failed →", ex.Message);
+        }
+    }
+
+    private async Task StopWatching()
+    {
+        if (_subscription is null) return;
+        await _subscription.DisposeAsync();
+        _subscription = null;
+        await watchOutput.Warn("Subscription disposed.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_subscription is not null) await _subscription.DisposeAsync();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await battery.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadStatus()
+    {
+        try
+        {
+            var status = await battery.GetStatus();
+            await statusOutput.Success("GetStatus →",
+                $"level={status.Level:P0}, charging={status.Charging}, " +
+                $"chargingTime={FormatSeconds(status.ChargingTime)}, dischargingTime={FormatSeconds(status.DischargingTime)}");
+        }
+        catch (Exception ex)
+        {
+            await statusOutput.Error("GetStatus failed →", ex.Message);
+        }
+    }
+
+    private async Task RefreshSnapshot()
+    {
+        try
+        {
+            _snapshot = await battery.GetStatus();
+            await snapshotOutput.Log("Snapshot refreshed.");
+        }
+        catch (Exception ex)
+        {
+            await snapshotOutput.Error("Snapshot failed →", ex.Message);
+        }
+    }
+
+    private static string FormatSeconds(double? seconds)
+    {
+        if (seconds is null) return "unknown";
+        if (double.IsInfinity(seconds.Value)) return "∞";
+        var span = TimeSpan.FromSeconds(seconds.Value);
+        return span.Days > 0 ? span.ToString(@"d\.hh\:mm\:ss") : span.ToString(@"hh\:mm\:ss");
+    }
+}

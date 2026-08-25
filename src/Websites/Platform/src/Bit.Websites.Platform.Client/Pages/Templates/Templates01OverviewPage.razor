@@ -1,15 +1,15 @@
-﻿@page "/templates"
+@page "/templates"
 @page "/templates/overview"
 @page "/boilerplate"
 @page "/boilerplate/overview"
 @inherits AppComponentBase
 
-<PageOutlet Url="templates/overview"
+<PageOutlet Url="templates"
             Title="Overview - Templates"
-            Description="overview of the project templates of the bit platform" />
+            Description="The bit Boilerplate project template is a production-ready .NET & Blazor foundation for building web, Android, iOS, Windows, and macOS apps from a single C# codebase." />
 
 <div class="page-container">
-    <BitText Typography="BitTypography.H3" Gutter>bit Boilerplate</BitText>
+    <BitText Typography="BitTypography.H3" Element="h1" Gutter>bit Boilerplate</BitText>
     <BitText Typography="BitTypography.Subtitle1">
         If our efforts in providing modern tooling have piqued your interest, dive into the Bit Boilerplate project template.
         <br />
@@ -23,7 +23,7 @@
     </BitText>
     <br /><br />
     <div class="video-container">
-        <iframe width="800" height="450"
+        <iframe loading="lazy" width="800" height="450"
                 allowfullscreen frameborder="0"
                 title="Bit Boilerplate features overview"
                 src="https://www.youtube.com/embed/79ssLqSInxc"
@@ -59,7 +59,7 @@
                     <li>iOS 15+</li>
                     <li>Windows 7 SP1+</li>
                     <li>macOS (Monterey) 12+</li>
-                    <li>Android 8+ & <a href="https://play.google.com/store/apps/details?id=com.google.android.webview" target="_blank">WebView</a> 85+</li>
+                    <li>Android 8+ & <a href="https://play.google.com/store/apps/details?id=com.google.android.webview" target="_blank" rel="noopener">WebView</a> 85+</li>
                 </ul>
             </li>
         </ul>

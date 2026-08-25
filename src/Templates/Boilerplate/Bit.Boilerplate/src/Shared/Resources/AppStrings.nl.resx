@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
   <!-- 
@@ -174,8 +174,159 @@
   <data name="TooManyRequestsException" xml:space="preserve">
     <value>Te veel verzoeken</value>
   </data>
-  <data name="ServerConnectionException" xml:space="preserve">
+  <data name="TransientException" xml:space="preserve">
     <value>Kan geen verbinding maken met de server.</value>
+  </data>
+  <!-- Bit.BlazorUI messages -->
+  <data name="DataGridEmptyText" xml:space="preserve">
+    <value>Geen records om weer te geven.</value>
+  </data>
+  <data name="DataGridLoadingText" xml:space="preserve">
+    <value>Laden…</value>
+  </data>
+  <data name="DataGridActionsText" xml:space="preserve">
+    <value>Acties</value>
+  </data>
+  <data name="DataGridAddRowText" xml:space="preserve">
+    <value>+ Toevoegen</value>
+  </data>
+  <data name="DataGridClearFiltersText" xml:space="preserve">
+    <value>Filters wissen</value>
+  </data>
+  <data name="DataGridExportCsvText" xml:space="preserve">
+    <value>CSV exporteren</value>
+  </data>
+  <data name="DataGridExportExcelText" xml:space="preserve">
+    <value>Excel exporteren</value>
+  </data>
+  <data name="DataGridColumnsText" xml:space="preserve">
+    <value>Kolommen</value>
+  </data>
+  <data name="DataGridEditText" xml:space="preserve">
+    <value>Bewerken</value>
+  </data>
+  <data name="DataGridDeleteText" xml:space="preserve">
+    <value>Verwijderen</value>
+  </data>
+  <data name="DataGridSaveText" xml:space="preserve">
+    <value>Opslaan</value>
+  </data>
+  <data name="DataGridCancelText" xml:space="preserve">
+    <value>Annuleren</value>
+  </data>
+  <data name="DataGridSelectAllLabel" xml:space="preserve">
+    <value>Alles selecteren</value>
+  </data>
+  <data name="DataGridSelectRowLabel" xml:space="preserve">
+    <value>Rij selecteren</value>
+  </data>
+  <data name="DataGridSelectRowFormat" xml:space="preserve">
+    <value>Rij selecteren: {0}</value>
+  </data>
+  <data name="DataGridFilterPlaceholder" xml:space="preserve">
+    <value>Filteren…</value>
+  </data>
+  <data name="DataGridFilterByFormat" xml:space="preserve">
+    <value>Filteren op {0}</value>
+  </data>
+  <data name="DataGridFilterAllText" xml:space="preserve">
+    <value>Alle</value>
+  </data>
+  <data name="DataGridFilterOperatorLabel" xml:space="preserve">
+    <value>Filteroperator voor {0}</value>
+  </data>
+  <data name="DataGridFilterOpContains" xml:space="preserve">
+    <value>Bevat</value>
+  </data>
+  <data name="DataGridFilterOpDoesNotContain" xml:space="preserve">
+    <value>Bevat niet</value>
+  </data>
+  <data name="DataGridFilterOpStartsWith" xml:space="preserve">
+    <value>Begint met</value>
+  </data>
+  <data name="DataGridFilterOpEndsWith" xml:space="preserve">
+    <value>Eindigt op</value>
+  </data>
+  <data name="DataGridBooleanTrueText" xml:space="preserve">
+    <value>Waar</value>
+  </data>
+  <data name="DataGridBooleanFalseText" xml:space="preserve">
+    <value>Onwaar</value>
+  </data>
+  <data name="DataGridGroupByFormat" xml:space="preserve">
+    <value>Groeperen op {0}</value>
+  </data>
+  <data name="DataGridUngroupByFormat" xml:space="preserve">
+    <value>Groepering op {0} opheffen</value>
+  </data>
+  <data name="DataGridExpandGroupFormat" xml:space="preserve">
+    <value>Groep {0} uitvouwen: {1}</value>
+  </data>
+  <data name="DataGridCollapseGroupFormat" xml:space="preserve">
+    <value>Groep {0} samenvouwen: {1}</value>
+  </data>
+  <data name="DataGridPagerRangeFormat" xml:space="preserve">
+    <value>{0}–{1} van {2}</value>
+  </data>
+  <data name="DataGridPagerPageFormat" xml:space="preserve">
+    <value>Pagina {0} van {1}</value>
+  </data>
+  <data name="DataGridPerPageFormat" xml:space="preserve">
+    <value>{0} / pagina</value>
+  </data>
+  <data name="DataGridRowsPerPageLabel" xml:space="preserve">
+    <value>Rijen per pagina</value>
+  </data>
+  <data name="DataGridFirstPageLabel" xml:space="preserve">
+    <value>Eerste pagina</value>
+  </data>
+  <data name="DataGridPreviousPageLabel" xml:space="preserve">
+    <value>Vorige pagina</value>
+  </data>
+  <data name="DataGridNextPageLabel" xml:space="preserve">
+    <value>Volgende pagina</value>
+  </data>
+  <data name="DataGridLastPageLabel" xml:space="preserve">
+    <value>Laatste pagina</value>
+  </data>
+  <data name="DataGridEndOfResultsText" xml:space="preserve">
+    <value>- Einde van de resultaten -</value>
+  </data>
+  <data name="DataGridToggleDetailsLabel" xml:space="preserve">
+    <value>Details tonen/verbergen</value>
+  </data>
+  <data name="DataGridToggleChildrenLabel" xml:space="preserve">
+    <value>Onderliggende items tonen/verbergen</value>
+  </data>
+  <data name="DataGridReorderRowTitle" xml:space="preserve">
+    <value>Sleep om de volgorde te wijzigen, of focus en gebruik de pijltoetsen om deze rij te verplaatsen</value>
+  </data>
+  <data name="DataGridReorderRowLabel" xml:space="preserve">
+    <value>Rij herordenen. Druk op pijl omhoog of omlaag om deze rij te verplaatsen.</value>
+  </data>
+  <data name="DataGridInvalidValueError" xml:space="preserve">
+    <value>Ongeldige waarde voor {0}.</value>
+  </data>
+  <data name="DataGridAnnouncementSortedAscending" xml:space="preserve">
+    <value>Gesorteerd op {0}, oplopend</value>
+  </data>
+  <data name="DataGridAnnouncementSortedDescending" xml:space="preserve">
+    <value>Gesorteerd op {0}, aflopend</value>
+  </data>
+  <data name="DataGridAnnouncementSortCleared" xml:space="preserve">
+    <value>Sortering op {0} verwijderd</value>
+  </data>
+  <data name="DataGridAnnouncementFiltered" xml:space="preserve">
+    <value>Filter toegepast op {0}</value>
+  </data>
+  <data name="DataGridAnnouncementFilterCleared" xml:space="preserve">
+    <value>Filter op {0} gewist</value>
+  </data>
+  <data name="DataGridAnnouncementPage" xml:space="preserve">
+    <value>Pagina {0} van {1}</value>
+  </data>
+  <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
+    <value>Rij verwijderd</value>
   </data>
   <!-- Boilerplate strings -->
   <data name="Active" xml:space="preserve">
@@ -260,12 +411,34 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="Ok" xml:space="preserve">
     <value>Oké</value>
   </data>
+    <!-- Identity pages -->
+    <data name="Close" xml:space="preserve">
+    <value>Sluiten</value>
+  </data>
+    <data name="SignInWithPasskeyButtonText" xml:space="preserve">
+    <value>Inloggen met een passkey</value>
+  </data>
+    <data name="OpenGmail" xml:space="preserve">
+    <value>Gmail openen</value>
+  </data>
+    <data name="OpenOutlook" xml:space="preserve">
+    <value>Outlook openen</value>
+  </data>
+    <data name="AgreeToTermsMessage" xml:space="preserve">
+    <value>Door u te registreren, gaat u akkoord met onze</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SystemPromptsTitle" xml:space="preserve">
     <value>Systeem prompts</value>
   </data>
   <data name="SystemPromptsSubTitle" xml:space="preserve">
     <value>Bekijk hier de systeem prompts voor de chatbot.</value>
+  </data>
+  <data name="PromptKindSupport" xml:space="preserve">
+    <value>Ondersteuning</value>
+  </data>
+  <data name="PromptKindAnalyzeProductImage" xml:space="preserve">
+    <value>Productafbeelding analyseren</value>
   </data>
   <data name="PushNotificationJob" xml:space="preserve">
     <value>Push-melding taak</value>
@@ -976,6 +1149,12 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="DeleteTodoItem" xml:space="preserve">
     <value>Taakitem verwijderen</value>
   </data>
+  <data name="SortAscending" xml:space="preserve">
+    <value>Oplopend sorteren</value>
+  </data>
+  <data name="SortDescending" xml:space="preserve">
+    <value>Aflopend sorteren</value>
+  </data>
   <!--#endif -->
   <!--#if (module == "Admin" || module == "Sales") -->
   <data name="CategoryCouldNotBeFound" xml:space="preserve">
@@ -996,6 +1175,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   </data>
     <data name="Of" xml:space="preserve">
     <value>van</value>
+  </data>
+    <data name="TryAgain" xml:space="preserve">
+    <value>Opnieuw proberen</value>
   </data>
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
@@ -1094,6 +1276,18 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="DashboardSubtitle" xml:space="preserve">
     <value>Hier is je analysegegevens</value>
   </data>
+    <data name="DeleteCategory" xml:space="preserve">
+    <value>Categorie verwijderen</value>
+  </data>
+    <data name="AreYouSureWannaDeleteCategory" xml:space="preserve">
+    <value>Weet je zeker dat je categorie {0} wilt verwijderen?</value>
+  </data>
+    <data name="PresetColors" xml:space="preserve">
+    <value>Vooraf ingestelde kleuren</value>
+  </data>
+    <data name="ProductCouldNotBeLoaded" xml:space="preserve">
+    <value>Dit product kon niet worden geladen.</value>
+  </data>
   <!--#endif -->
   <!--#if (captcha == "reCaptcha") -->
   <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
@@ -1115,6 +1309,15 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   </data>
   <data name="PurchaseSuccessful" xml:space="preserve">
     <value>Aankoop succesvol!</value>
+  </data>
+    <data name="NoProductsToShow" xml:space="preserve">
+    <value>Er zijn momenteel geen producten om te tonen.</value>
+  </data>
+    <data name="SearchProducts" xml:space="preserve">
+    <value>Producten zoeken</value>
+  </data>
+    <data name="ProductsCouldNotBeLoaded" xml:space="preserve">
+    <value>Producten konden niet worden geladen.</value>
   </data>
   <!--#endif -->
   <data name="Passwordless" xml:space="preserve">
@@ -1141,12 +1344,66 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="Send" xml:space="preserve">
     <value>Verzenden</value>
   </data>
+  <data name="AccentColorApply" xml:space="preserve">
+    <value>De accentkleur {0} toepassen</value>
+  </data>
   <data name="Canceled" xml:space="preserve">
     <value>Geannuleerd</value>
   </data>
   <!--#if (signalR == true) -->
   <data name="AiChatPanelTitle" xml:space="preserve">
     <value>AI-chatpaneel</value>
+  </data>
+  <data name="AiChatPanelDictate" xml:space="preserve">
+    <value>Uw bericht dicteren</value>
+  </data>
+  <data name="AiChatPanelStopDictation" xml:space="preserve">
+    <value>Dicteren stoppen</value>
+  </data>
+  <data name="AiChatPanelDictation" xml:space="preserve">
+    <value>Dicteren</value>
+  </data>
+  <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
+    <value>Toegang tot de microfoon is geblokkeerd. Sta deze toe voor deze site om te kunnen dicteren.</value>
+  </data>
+  <data name="AiChatPanelDictationStopped" xml:space="preserve">
+    <value>Dicteren gestopt: {0}</value>
+  </data>
+  <data name="AiChatPanelReadAloud" xml:space="preserve">
+    <value>Voorlezen</value>
+  </data>
+  <data name="AiChatPanelStopReading" xml:space="preserve">
+    <value>Voorlezen stoppen</value>
+  </data>
+  <data name="AiChatPanelTranscribing" xml:space="preserve">
+    <value>Bezig met uitschrijven wat u zei</value>
+  </data>
+  <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
+    <value>Resterende tijd voordat het dicteren stopt</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
+    <value>Spraak vereist een account</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInMessage" xml:space="preserve">
+    <value>Dicteren en voorlezen draaien allebei op de server. Meld u één keer aan en u kunt tegen de chat praten en de antwoorden laten voorlezen.</value>
+  </data>
+  <data name="AiChatPanelAttachImage" xml:space="preserve">
+    <value>Een afbeelding bijvoegen</value>
+  </data>
+  <data name="AiChatPanelImageTooLarge" xml:space="preserve">
+    <value>De afbeelding is groter dan 10 MB.</value>
+  </data>
+  <data name="AiChatPanelOnlyImagesAllowed" xml:space="preserve">
+    <value>Alleen afbeeldingen kunnen worden bijgevoegd.</value>
+  </data>
+  <data name="AiChatPanelAttachmentFailed" xml:space="preserve">
+    <value>De afbeelding kon niet worden bijgevoegd.</value>
+  </data>
+  <data name="AiChatPanelImageSignInTitle" xml:space="preserve">
+    <value>Afbeeldingen vereisen een account</value>
+  </data>
+  <data name="AiChatPanelImageSignInMessage" xml:space="preserve">
+    <value>Meld u aan om een afbeelding met uw bericht mee te sturen.</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>Hallo{0}! Ik ben hier om je app-ervaring geweldig te maken! Heb je een vraag of heb je hulp nodig?</value>
@@ -1173,6 +1430,12 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>Schrijf een bericht...</value>
   </data>
+    <data name="AiChatPanelMaximize" xml:space="preserve">
+    <value>Maximaliseren</value>
+  </data>
+  <data name="AiChatPanelRestore" xml:space="preserve">
+    <value>Herstellen</value>
+  </data>
   <!--#endif -->
   <!--#if (ads == true) -->
   <data name="Upgrade" xml:space="preserve">
@@ -1189,6 +1452,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   </data>
   <data name="UpgradeFailMessage" xml:space="preserve">
     <value>Account-upgrade mislukt.</value>
+  </data>
+  <data name="UpgradeAdNotAvailableMessage" xml:space="preserve">
+    <value>Er zijn op dit moment geen advertenties beschikbaar. Probeer het later opnieuw.</value>
   </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>Problemen met het bekijken van advertentie?</value>
@@ -1331,6 +1597,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>Je kunt deze SuperAdmin-gebruiker niet verwijderen</value>
   </data>
+  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
+    <value>U kunt de sessies van deze SuperAdmin-gebruiker niet intrekken</value>
+  </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>Je kunt je huidige sessie niet verwijderen</value>
   </data>
@@ -1355,6 +1624,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>Paginage-URL</value>
   </data>
+  <data name="InvalidPageUrl" xml:space="preserve">
+    <value>De pagina-URL moet een relatieve URL binnen de app zijn, zoals /products.</value>
+  </data>
   <data name="YouAreNotAuthorized" xml:space="preserve">
     <value>Je bent niet geautoriseerd</value>
   </data>
@@ -1373,7 +1645,84 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="ImageNotCarError" xml:space="preserve">
     <value>De opgegeven afbeelding bevat geen auto.</value>
   </data>
-    <!--#if (multitenant == true) -->
+      <data name="AddUserToGroupTitle" xml:space="preserve">
+    <value>{0} aan deze gebruikersgroep toevoegen</value>
+  </data>
+  <data name="RemoveUserFromGroupTitle" xml:space="preserve">
+    <value>{0} uit deze gebruikersgroep verwijderen</value>
+  </data>
+  <data name="GrantFeatureTitle" xml:space="preserve">
+    <value>{0} toekennen</value>
+  </data>
+  <data name="RevokeFeatureTitle" xml:space="preserve">
+    <value>{0} intrekken</value>
+  </data>
+  <data name="GrantAllGroupFeaturesTitle" xml:space="preserve">
+    <value>Alle {0}-functies toekennen</value>
+  </data>
+  <data name="RevokeAllGroupFeaturesTitle" xml:space="preserve">
+    <value>Alle {0}-functies intrekken</value>
+  </data>
+  <data name="RefreshSelectedUserGroupTitle" xml:space="preserve">
+    <value>Geselecteerde gebruikersgroep vernieuwen</value>
+  </data>
+  <data name="RefreshSelectedUserTitle" xml:space="preserve">
+    <value>Geselecteerde gebruiker vernieuwen</value>
+  </data>
+  <data name="NoMatchingUserSessionMessage" xml:space="preserve">
+    <value>Geen sessie komt overeen met uw zoekopdracht.</value>
+  </data>
+  <data name="TfaVerificationCodeRequiredMessage" xml:space="preserve">
+    <value>Voer de 6-cijferige code uit uw authenticator-app in.</value>
+  </data>
+  <data name="TfaOpenInAuthenticatorAppTitle" xml:space="preserve">
+    <value>Dit account openen in uw authenticator-app</value>
+  </data>
+  <data name="TfaQrCodeAlt" xml:space="preserve">
+    <value>QR-code voor het instellen van uw authenticator-app</value>
+  </data>
+  <data name="SessionNoLongerValidMessage" xml:space="preserve">
+    <value>Deze sessie is niet langer geldig. Meld u opnieuw aan.</value>
+  </data>
+  <data name="RevokeSessionTitle" xml:space="preserve">
+    <value>Deze sessie intrekken</value>
+  </data>
+  <data name="ImageMaxSizeErrorMessage" xml:space="preserve">
+    <value>De afbeelding mag maximaal {0} groot zijn.</value>
+  </data>
+  <data name="OnlyImageFilesAllowedErrorMessage" xml:space="preserve">
+    <value>Alleen afbeeldingsbestanden kunnen worden gebruikt</value>
+  </data>
+  <data name="SamePhoneNumberErrorMessage" xml:space="preserve">
+    <value>Dat is al uw telefoonnummer. Voer een ander nummer in.</value>
+  </data>
+  <data name="SameEmailErrorMessage" xml:space="preserve">
+    <value>Dat is al uw e-mailadres. Voer een ander adres in.</value>
+  </data>
+  <data name="MoreTabsTitle" xml:space="preserve">
+    <value>Meer tabbladen</value>
+  </data>
+  <data name="OpenNavigationMenuTitle" xml:space="preserve">
+    <value>Navigatiemenu openen</value>
+  </data>
+  <data name="AccountMenuTitle" xml:space="preserve">
+    <value>Accountmenu</value>
+  </data>
+  <data name="SwitchToDarkThemeTitle" xml:space="preserve">
+    <value>Overschakelen naar het donkere thema</value>
+  </data>
+  <data name="SwitchToLightThemeTitle" xml:space="preserve">
+    <value>Overschakelen naar het lichte thema</value>
+  </data>
+  <!--#if (signalR == true) -->
+  <data name="SignalRConnectionId" xml:space="preserve">
+    <value>SignalRConnectionId</value>
+  </data>
+  <data name="ReadUserSessionLogsTitle" xml:space="preserve">
+    <value>Sessielogboeken van de gebruiker lezen</value>
+  </data>
+  <!--#endif -->
+  <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>Tenant</value>
   </data>
@@ -1425,6 +1774,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>De tenantnaam '{0}' is al in gebruik.</value>
   </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>De tenantnaam '{0}' is gereserveerd en kan niet worden gebruikt.</value>
+  </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>Tenant kon niet worden gevonden.</value>
   </data>
@@ -1449,6 +1801,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="DuplicateTenantDomain" xml:space="preserve">
     <value>Het domein '{0}' is al in gebruik.</value>
   </data>
+    <data name="ReservedTenantDomain" xml:space="preserve">
+    <value>Het domein '{0}' is gereserveerd en kan niet worden gebruikt.</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>Je hebt nog geen tenant geselecteerd. Wissel naar een van je tenants of maak een nieuwe aan om te beginnen.</value>
   </data>
@@ -1470,5 +1825,14 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="Inactive" xml:space="preserve">
     <value>Inactief</value>
   </data>
-    <!--#endif-->
+      <data name="DeclineInvitation" xml:space="preserve">
+    <value>Uitnodiging afwijzen</value>
+  </data>
+  <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
+    <value>De uitnodiging voor {0} afwijzen? Dit kan niet ongedaan worden gemaakt - u hebt een nieuwe uitnodiging nodig om deel te nemen.</value>
+  </data>
+  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
+    <value>Uitnodiging afgewezen.</value>
+  </data>
+  <!--#endif-->
 </root>

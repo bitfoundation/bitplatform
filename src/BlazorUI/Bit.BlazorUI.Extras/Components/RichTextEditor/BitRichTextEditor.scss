@@ -2,7 +2,7 @@
 
 .bit-rte {
     border: $shp-border-width $shp-border-style $clr-brd-pri;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-surface;
     overflow: hidden;
     background: $clr-bg-pri;
     color: $clr-fg-pri;
@@ -47,10 +47,10 @@
     height: spacing(3.75);
     padding: 0 spacing(0.9);
     border: $shp-border-width $shp-border-style transparent;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     background: transparent;
     color: $clr-fg-pri;
-    font-size: 0.95rem;
+    font-size: $tg-fs-sm;
     line-height: 1;
     cursor: pointer;
     display: inline-flex;
@@ -68,7 +68,7 @@
     }
 
     &:disabled {
-        opacity: 0.45;
+        opacity: $opa-dis;
         cursor: default;
     }
 
@@ -81,11 +81,11 @@
 .bit-rte-sel {
     height: spacing(3.75);
     border: $shp-border-width $shp-border-style $clr-brd-pri;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     background: $clr-bg-pri;
     color: $clr-fg-pri;
     padding: 0 spacing(0.8);
-    font-size: 0.85rem;
+    font-size: $tg-fs-sm;
     cursor: pointer;
 
     &:focus-visible {
@@ -99,7 +99,7 @@
     align-items: center;
     height: spacing(3.75);
     padding: 0 spacing(0.5);
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     cursor: pointer;
     gap: spacing(0.25);
 
@@ -132,22 +132,22 @@
     min-width: spacing(7.5);
     height: spacing(3.75);
     border: $shp-border-width $shp-border-style $clr-brd-pri;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     padding: 0 spacing(1.1);
-    font-size: 0.88rem;
+    font-size: $tg-fs-sm;
     background: $clr-bg-pri;
     color: $clr-fg-pri;
 }
 
 .bit-rte-find-opt {
-    font-size: 0.8rem;
+    font-size: $tg-fs-xs;
     display: inline-flex;
     align-items: center;
     gap: spacing(0.25);
 }
 
 .bit-rte-find-count {
-    font-size: 0.8rem;
+    font-size: $tg-fs-xs;
     color: $clr-fg-sec;
     min-width: spacing(8);
 }
@@ -171,9 +171,9 @@
     width: spacing(3.75);
     height: spacing(3.75);
     border: $shp-border-width $shp-border-style transparent;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     background: transparent;
-    font-size: 1.1rem;
+    font-size: $tg-fs-lg;
     cursor: pointer;
 
     &:hover {
@@ -187,7 +187,7 @@
 }
 
 .bit-rte-emoji-empty {
-    font-size: 0.82rem;
+    font-size: $tg-fs-xs;
     color: $clr-fg-sec;
     padding: spacing(0.5);
 }
@@ -197,7 +197,7 @@
     background: $clr-bg-sec;
     color: $clr-err;
     border-bottom: $shp-border-width $shp-border-style $clr-err;
-    font-size: 0.82rem;
+    font-size: $tg-fs-xs;
 }
 
 .bit-rte-cnt {
@@ -205,14 +205,14 @@
     border-top: $shp-border-width $shp-border-style $clr-brd-sec;
     background: $clr-bg-sec;
     color: $clr-fg-sec;
-    font-size: 0.78rem;
+    font-size: $tg-fs-xs;
     text-align: right;
 }
 
 .bit-rte-cnt-over {
     color: $clr-err;
     margin-left: spacing(0.8);
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
 }
 
 .bit-rte-src {
@@ -222,7 +222,7 @@
     resize: vertical;
     padding: spacing(1.7) spacing(2);
     font-family: SFMono-Regular, Consolas, monospace;
-    font-size: 0.85rem;
+    font-size: $tg-fs-sm;
     line-height: 1.5;
     background: $clr-bg-sec;
     color: $clr-fg-pri;
@@ -273,17 +273,17 @@
     }
 
     h1 {
-        font-size: 1.7rem;
+        font-size: $tg-fs-3xl;
         margin: spacing(2) 0 spacing(1);
     }
 
     h2 {
-        font-size: 1.4rem;
+        font-size: $tg-fs-xl;
         margin: spacing(2) 0 spacing(1);
     }
 
     h3 {
-        font-size: 1.18rem;
+        font-size: $tg-fs-lg;
         margin: spacing(1.8) 0 spacing(0.9);
     }
 
@@ -300,11 +300,11 @@
 
     pre {
         background: $clr-bg-sec;
-        border-radius: $shp-border-radius;
+        border-radius: $shp-radius-surface;
         padding: spacing(1.5) spacing(2);
         overflow-x: auto;
         font-family: SFMono-Regular, Consolas, monospace;
-        font-size: 0.9rem;
+        font-size: $tg-fs-sm;
     }
 
     ul,
@@ -357,10 +357,10 @@
     gap: spacing(0.25);
     padding: spacing(0.7);
     border: $shp-border-width $shp-border-style $clr-brd-pri;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-popup;
     background: $clr-bg-pri;
     margin: spacing(0.5) spacing(1);
-    box-shadow: 0 spacing(0.5) spacing(1.75) rgba(0, 0, 0, 0.12);
+    box-shadow: $box-shadow-popup;
     max-width: spacing(32.5);
 }
 
@@ -376,9 +376,9 @@
     background: transparent;
     color: $clr-fg-pri;
     padding: spacing(0.6) spacing(1);
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     cursor: pointer;
-    font-size: 0.88rem;
+    font-size: $tg-fs-sm;
 
     &:hover {
         background: $clr-bg-sec-hover;

@@ -17,10 +17,4 @@ header {
             display: none;
         }
     }
-
-    .identity-button {
-        @include lt-sm {
-            display: none;
-        }
-    }
 }

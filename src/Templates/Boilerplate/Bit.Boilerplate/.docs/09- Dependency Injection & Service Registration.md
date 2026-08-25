@@ -25,9 +25,12 @@ Service registration is organized through `*ServiceCollectionExtensions.cs` and 
    ```csharp
    services.AddScoped<HtmlRenderer>();
    services.AddScoped<CultureInfoManager>();
-   services.TryAddSingleton(TimeProvider.System);
-   services.AddSingleton<SharedSettings>();
+   services.AddSingleton(TimeProvider.System);
+   services.AddSingleton(sp => { SharedSettings settings = new(); configuration.Bind(settings); return settings; });
+   services.AddOptions<SharedSettings>().Bind(configuration).ValidateDataAnnotations().ValidateOnStart();
+   services.ConfigureAuthorizationCore();
    services.AddLocalization();
+   services.AddSingleton<IMemoryCache, AppMemoryCache>();
    ```
 
 2. **`IClientCoreServiceCollectionExtensions.cs`** ([`src/Client/Boilerplate.Client.Core/Extensions/`](/src/Client/Boilerplate.Client.Core/Extensions/IClientCoreServiceCollectionExtensions.cs))
@@ -193,7 +196,7 @@ Let's say you want to add a `FeedbackService` that works on all client platforms
 
 ```csharp
 // src/Client/Boilerplate.Client.Core/Services/FeedbackService.cs
-namespace Boilerplate.Client.Core.Services;
+namespace Boilerplate.Client.Core.Infrastructure.Services;
 
 public partial class FeedbackService
 {
@@ -298,7 +301,6 @@ protected override async ValueTask DisposeAsync(bool disposing)
 ---
 
 ### AI Wiki: Answered Questions
-* [How is the HttpClient created across different platforms and Blazor hosting modes?](https://deepwiki.com/search/how-is-the-httpclient-created_0f4353a6-bf0e-47cc-afbc-bf96aaf97469)
 
 Ask your own question [here](https://wiki.bitplatform.dev)
 

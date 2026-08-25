@@ -40,7 +40,7 @@
         <!-- Android requires a unique, increasing integer for `versionCode`. We derive it from Version (e.g., '1.0' or '1.0.0') by extracting major, minor, and patch numbers, setting patch to 0 if absent, and calculating versionCode as major*10000 + minor*100 + patch (e.g., '1.0' becomes 10000, '1.0.1' becomes 10001). -->
         <_MajorVersionString>$([System.Text.RegularExpressions.Regex]::Match($(Version), '^(\d+)').Groups[1].Value)</_MajorVersionString>
         <_MinorVersionString>$([System.Text.RegularExpressions.Regex]::Match($(Version), '^\d+\.(\d+)').Groups[1].Value)</_MinorVersionString>
-        <_PatchVersionString>$([System.Text.RegularExpressions.Regex]::Match($(Version), '^\d+\.\d+\.(\d+)$').Groups[1].Value)</_PatchVersionString>
+        <_PatchVersionString>$([System.Text.RegularExpressions.Regex]::Match($(Version), '^\d+\.\d+\.(\d+)').Groups[1].Value)</_PatchVersionString>
 
         <MajorVersion>$([System.Int32]::Parse($(_MajorVersionString)))</MajorVersion>
         <MinorVersion>$([System.Int32]::Parse($(_MinorVersionString)))</MinorVersion>
@@ -122,12 +122,16 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         
+        <Using Include="Microsoft.Extensions.Logging" />
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
         <Using Include="Boilerplate.Client.Core.Components.Pages" />
         <Using Include="Boilerplate.Client.Core.Components.Layout" />
         <Using Include="Boilerplate.Shared" />
         <Using Include="Boilerplate.Client.Core.Infrastructure.Services" />
         <Using Include="Boilerplate.Client.Core.Infrastructure.Services.Contracts" />
+        <!--/+:msbuild-conditional:noEmit -->
+        <Using Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Plugin.LocalNotification" />
+        <!--/-:msbuild-conditional:noEmit -->
     </ItemGroup>
 
     <ItemGroup>
@@ -180,6 +184,8 @@
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
         <Error Text="Enable long paths in Windows. https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell#enable-long-paths-in-windows-10-version-1607-and-later" Condition=" $([MSBuild]::IsOSPlatform('windows')) AND $([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem', 'LongPathsEnabled', null, RegistryView.Registry64)) != '1' " />
+        <Error Text="Version '$(Version)' cannot be represented as an android versionCode. versionCode is derived from major, minor and patch only, so a revision ('1.0.0.4') or a pre-release suffix ('1.0.0-rc1') is DISCARDED - '1.0.0.6' and '1.0.0.7' would both ship as 10000, and the store rejects the second upload or, worse, accepts an update no device receives. Pass major.minor or major.minor.patch, e.g. 1.0.0 or 1.0.1."
+               Condition=" '$([System.Text.RegularExpressions.Regex]::IsMatch($(Version), `^\d+\.\d+(\.\d+)?$`))' != 'true' " />
         <CallTarget Targets="BuildCssFiles" />
     </Target>
 

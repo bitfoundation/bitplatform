@@ -30,5 +30,11 @@ public enum BitInputType
     /// <summary>
     /// The input expects url characters.
     /// </summary>
-    Url
+    Url,
+
+    /// <summary>
+    /// The input expects a search term, which is what lets a browser offer the previous searches of the
+    /// same field and show its own clear affordance.
+    /// </summary>
+    Search
 }

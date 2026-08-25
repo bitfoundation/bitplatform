@@ -1,5 +1,4 @@
 //+:cnd:noEmit
-using Boilerplate.Server.Api.Features.Identity.Models;
 
 namespace Boilerplate.Server.Api.Features.Identity.Configurations;
 
@@ -7,17 +6,25 @@ public partial class RoleClaimConfiguration : IEntityTypeConfiguration<RoleClaim
 {
     public void Configure(EntityTypeBuilder<RoleClaim> builder)
     {
-        builder.HasIndex(roleClaim => new { roleClaim.RoleId, roleClaim.ClaimType, roleClaim.ClaimValue });
+        builder.HasIndex(roleClaim => new { roleClaim.RoleId, roleClaim.ClaimType, roleClaim.ClaimValue }).IsUnique();
 
-        var id = 1;
+        var unlimitedPrivilegedSessions = AppClaimTypes.UNLIMITED_PRIVILEGED_SESSIONS.ToString(CultureInfo.InvariantCulture);
+
+        // Seeded ids run DOWNWARDS from -1, and that is load-bearing. RoleClaim.Id is an auto-increment int that
+        // runtime inserts also draw from (TenantController.Create, RoleManagementController.AddClaims), so numbering the
+        // seed 1..N would put the seeded rows inside the range the database hands out: adding one AppFeatures demo
+        // feature later grows the seeded set and emits an InsertData for an id production already used, and the
+        // migration fails half-applied. The auto-increment counter never produces negatives, so this range is private
+        // to the seed. (PostgreSQL is safe too - Npgsql's sequence bumping uses GREATEST(max + 1, nextval()).)
+        var id = -1;
 
         // Unlimited privileged sessions for Global admins
         var globalAdminRoleId = Guid.Parse("8ff71671-a1d6-5f97-abb9-d87d7b47d6e7");
         builder.HasData(new RoleClaim
         {
-            Id = id++,
+            Id = id--,
             ClaimType = AppClaimTypes.MAX_PRIVILEGED_SESSIONS,
-            ClaimValue = "-1",
+            ClaimValue = unlimitedPrivilegedSessions,
             RoleId = globalAdminRoleId
         });
 
@@ -26,9 +33,9 @@ public partial class RoleClaimConfiguration : IEntityTypeConfiguration<RoleClaim
         var tenantAdminRoleId = Guid.Parse("7ff71671-a1d6-5f97-abb9-d87d7b47d6e9");
         builder.HasData(new RoleClaim
         {
-            Id = id++,
+            Id = id--,
             ClaimType = AppClaimTypes.MAX_PRIVILEGED_SESSIONS,
-            ClaimValue = "-1",
+            ClaimValue = unlimitedPrivilegedSessions,
             RoleId = tenantAdminRoleId
         });
         //#endif
@@ -40,7 +47,7 @@ public partial class RoleClaimConfiguration : IEntityTypeConfiguration<RoleClaim
         {
             builder.HasData(new
             {
-                Id = id++,
+                Id = id--,
                 ClaimType = AppClaimTypes.FEATURES,
                 ClaimValue = feature.Value,
                 RoleId = demoRoleId

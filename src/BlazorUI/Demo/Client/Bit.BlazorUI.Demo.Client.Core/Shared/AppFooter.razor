@@ -1,47 +1,77 @@
 ﻿@inherits AppComponentBase
 
 <div class="footer">
-    <section>
-        <div>
-            <div class="bit-logo" />
-            <BitText Typography="BitTypography.Body2">
-                A platform that simplifies the development process for freelancers and software companies through its clean project templates and easy-to-use one-click build and deployment feature.
+    <div class="footer-inner">
+
+        <div class="footer-main">
+            <div class="footer-brand">
+                <a class="footer-logo" href="/" aria-label="bit BlazorUI home"></a>
+                <BitText Element="p" Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground" Class="footer-pitch">
+                    Native, open-source Blazor UI components, built and maintained by a dedicated team
+                    at bit platform - and free to use in anything you build.
+                </BitText>
+                <BitStack Horizontal FitWidth AutoHeight Gap="0" Class="social-link-group" VerticalAlign="BitAlignment.Center">
+                    <a class="social-link twitter-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on X (Twitter)" href="https://twitter.com/bitplatformhq"></a>
+                    <a class="social-link github-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on GitHub" href="https://github.com/bitfoundation/bitplatform"></a>
+                    <a class="social-link youtube-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on YouTube" href="https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog"></a>
+                    <a class="social-link linkedin-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on LinkedIn" href="https://www.linkedin.com/company/bitplatformhq"></a>
+                </BitStack>
+            </div>
+
+            <nav class="footer-links" aria-label="Footer">
+                <div class="footer-col">
+                    <h2 class="footer-col-title">Documentation</h2>
+                    <BitLink Href="/overview">Overview</BitLink>
+                    <BitLink Href="/getting-started">Getting started</BitLink>
+                    <BitLink Href="/components">Components</BitLink>
+                    <BitLink Href="/theming">Theming</BitLink>
+                    <BitLink Href="/iconography">Iconography</BitLink>
+                </div>
+
+                <div class="footer-col">
+                    <h2 class="footer-col-title">Resources</h2>
+                    <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI/" Target="_blank">NuGet package</BitLink>
+                    <BitLink Href="https://wiki.bitplatform.dev" Target="_blank">DeepWiki</BitLink>
+                    <BitLink Href="https://codespaces.new/bitfoundation/bit-blazorui-playground/tree/dev" Target="_blank">Playground</BitLink>
+                    <BitLink Href="/getting-started#ai-mcp">MCP server</BitLink>
+                    <BitLink Href="/terms">Terms &amp; privacy</BitLink>
+                </div>
+
+                <div class="footer-col">
+                    <h2 class="footer-col-title">Community</h2>
+                    <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_blank">GitHub repository</BitLink>
+                    <BitLink Href="https://github.com/bitfoundation/bitplatform/issues" Target="_blank">Report an issue</BitLink>
+                    <BitLink Href="https://github.com/bitfoundation/bitplatform/discussions" Target="_blank">Discussions</BitLink>
+                    <BitLink Href="https://github.com/bitfoundation" Target="_blank">GitHub organization</BitLink>
+                </div>
+
+                <div class="footer-col">
+                    <h2 class="footer-col-title">bit platform</h2>
+                    <a class="footer-address" target="_blank" rel="noopener noreferrer" href="https://maps.app.goo.gl/W8vtWHQ13YhYpksy6">
+                        Sixmastraat 15, 8932 PA<br />Leeuwarden, Netherlands
+                    </a>
+                    <a class="footer-tel" href="tel:+31684207362">+31 6 84207362</a>
+                    <BitLink Href="mailto:info@bitplatform.dev">info@bitplatform.dev</BitLink>
+                </div>
+            </nav>
+        </div>
+
+        <div class="footer-bottom">
+            <BitText Element="p" Typography="BitTypography.Caption1" Color="BitColor.TertiaryForeground">
+                Copyright © 2026 bit platform - All rights reserved.
             </BitText>
+
+            @* Anchored to the end of the document rather than floating over it: the reader has
+               already reached the bottom, so this is exactly where it is wanted and nowhere else. *@
+            <BitButton Size="BitSize.Small"
+                       OnClick="GoToTop"
+                       Variant="BitVariant.Text"
+                       Class="go-to-top"
+                       IconName="@BitIconName.Up"
+                       Color="BitColor.SecondaryForeground">
+                Back to top
+            </BitButton>
         </div>
 
-        <div class="links-container">
-            <div class="column">
-                <BitText Typography="BitTypography.H6" Gutter>Explore</BitText>
-                <BitLink Href="overview">Docs</BitLink>
-                <BitLink Href="iconography">Iconography</BitLink>
-                <BitLink Href="theming">Theming</BitLink>
-            </div>
-
-            <div class="column">
-                <BitText Typography="BitTypography.H6" Gutter>Quick links</BitText>
-                <BitLink Href="https://github.com/bitfoundation" Target="_blank">Github Org</BitLink>
-                <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_blank">Github Repo</BitLink>
-                <BitLink Href="https://github.com/bitfoundation/bitplatform/issues" Target="_blank">Github Issues</BitLink>
-            </div>
-
-            <button class="go-to-top" @onclick="GoToTop">Go to top</button>
-        </div>
-    </section>
-
-    <section>
-        <div class="address-info">
-            <a class="address" target="_blank" rel="noopener noreferrer" href="https://maps.app.goo.gl/W8vtWHQ13YhYpksy6">Sixmastraat 15, 8932 PA Leeuwarden,</a>
-            <div class="country">Netherlands</div>
-            <a class="tel" href="tel:+31684207362">+31 6 84207362</a>
-        </div>
-        <div>
-            <div class="social-link-group">
-                <a class="social-link twitter-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on X (Twitter)" href="https://twitter.com/bitplatformhq"></a>
-                <a class="social-link github-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on GitHub" href="https://github.com/bitfoundation/bitplatform"></a>
-                <a class="social-link youtube-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on YouTube" href="https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog"></a>
-                <a class="social-link linkedin-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on LinkedIn" href="https://www.linkedin.com/company/bitplatformhq"></a>
-            </div>
-            <div class="copy-right-txt">Copyright © 2026 bit platform | All Rights Reserved </div>
-        </div>
-    </section>
+    </div>
 </div>

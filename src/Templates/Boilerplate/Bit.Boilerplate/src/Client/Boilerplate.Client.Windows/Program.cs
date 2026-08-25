@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using Boilerplate.Client.Core.Components;
 using Boilerplate.Client.Windows.Infrastructure.Services;
 
+using Microsoft.Extensions.Options;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView.WindowsForms;
@@ -38,6 +39,8 @@ public partial class Program
         services.AddClientWindowsProjectServices(configuration);
         Services = services.BuildServiceProvider();
 
+        Services.GetService<IStartupValidator>()?.Validate();
+
         if (CultureInfoManager.InvariantGlobalization is false)
         {
             var culture = Services.GetRequiredService<IStorageService>()
@@ -64,7 +67,7 @@ public partial class Program
         {
             Application.Restart();
         });
-        _ = pubSubService.Subscribe(ClientAppMessages.PAGE_DATA_CHANGED, async args =>
+        pubSubHandlerReferenceToKeepAlive = pubSubService.Subscribe(ClientAppMessages.PAGE_DATA_CHANGED, async args =>
         {
             var (title, _, __) = ((string? title, string?, bool))args!;
             await form.InvokeAsync(() =>
@@ -87,7 +90,12 @@ public partial class Program
             }
         });
 
-        Environment.SetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--unsafely-treat-insecure-origin-as-secure=https://0.0.0.1 --enable-notifications");
+        var webViewArgs = "--unsafely-treat-insecure-origin-as-secure=https://0.0.0.1 --enable-notifications";
+        if (AppEnvironment.IsDevelopment())
+        {
+            webViewArgs += " --remote-debugging-port=9222";
+        }
+        Environment.SetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", webViewArgs);
 
         var blazorWebView = new BlazorWebView
         {
@@ -104,17 +112,15 @@ public partial class Program
 
         blazorWebView.BlazorWebViewInitialized += delegate
         {
-            blazorWebView.WebView.CoreWebView2.PermissionRequested += async (sender, args) =>
+            blazorWebView.WebView.CoreWebView2.PermissionRequested += (sender, args) =>
             {
+                if (args.PermissionKind is not (CoreWebView2PermissionKind.Microphone
+                             or CoreWebView2PermissionKind.ClipboardRead
+                             or CoreWebView2PermissionKind.Notifications)) return;
+
                 args.Handled = true;
                 args.State = CoreWebView2PermissionState.Allow;
             };
-            var settings = blazorWebView.WebView.CoreWebView2.Settings;
-            if (AppEnvironment.IsDevelopment() is false)
-            {
-                settings.IsZoomControlEnabled = false;
-                settings.AreBrowserAcceleratorKeysEnabled = false;
-            }
             _ = StartBlazor(blazorWebView);
         };
 
@@ -149,4 +155,9 @@ public partial class Program
     }
 
     public static IServiceProvider? Services { get; private set; }
+
+    /// <summary>
+    /// Strong root for the PAGE_DATA_CHANGED subscription, which PubSubService itself only holds weakly.
+    /// </summary>
+    private static Action? pubSubHandlerReferenceToKeepAlive;
 }

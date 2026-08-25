@@ -1,11 +1,9 @@
-using System.Reflection;
-
 namespace Boilerplate.Client.Core.Infrastructure.Services;
 
 /// <summary>
 /// Service for Publish/Subscribe pattern.
 /// You could publish messages within blazor components, pages outside blazor components (Like MAUI Xaml pages), JavaScript
-/// codes using window.postMessage or even from server side using SignalR (<see cref="SharedAppMessages.SESSION_REVOKED"/> as example.
+/// codes using window.postMessage, or - when SignalR is enabled - from the server side (<c>SESSION_REVOKED</c> as example).
 /// </summary>
 public partial class PubSubService
 {
@@ -19,59 +17,120 @@ public partial class PubSubService
 
     [AutoInject] private readonly IServiceProvider serviceProvider = default!;
 
+    /// <summary>
+    /// Serializes "queue a persistent message" against "register a handler and drain the queue". Without it the
+    /// two can interleave so that Publish finds no handler, Subscribe drains an empty queue, and Publish then
+    /// enqueues a message the handler that just arrived will never be given.
+    /// It is also the only lock guarding the inner <see cref="List{T}"/> of <see cref="handlers"/>: the dictionary
+    /// is concurrent, the lists inside it are not, and publishers run off the renderer's thread (SignalR callbacks,
+    /// and the faulted-task continuation below) while unsubscribes run on it.
+    /// </summary>
+    private readonly Lock handlersLock = new();
+
     public void Publish(string message, object? payload = null, bool persistent = false)
     {
-        if (handlers.TryGetValue(message, out var weakHandlers))
+        if (TryDeliver(message, payload) || persistent is false) return;
+
+        lock (handlersLock)
         {
-            foreach (var weakHandler in weakHandlers.ToArray())
-            {
-                weakHandler.Invoke(payload)?.ContinueWith(HandleException, TaskContinuationOptions.OnlyOnFaulted);
-            }
-        }
-        else if (persistent)
-        {
+            // Re-attempt under the lock: a Subscribe that completed while we were deciding has a live handler
+            // now. Nothing was delivered above, so this cannot deliver twice.
+            if (TryDeliver(message, payload)) return;
+
             persistentMessages.Add((message, payload));
         }
+    }
+
+    private bool TryDeliver(string message, object? payload)
+    {
+        var delivered = false;
+
+        if (handlers.TryGetValue(message, out var weakHandlers) is false) return delivered;
+
+        WeakHandler[] snapshot;
+
+        lock (handlersLock)
+        {
+            snapshot = [.. weakHandlers];
+        }
+
+        // Dispatched outside the lock on purpose: a handler that blocks must not stall every other Publish and
+        // Subscribe on this instance.
+        foreach (var weakHandler in snapshot)
+        {
+            if (weakHandler.Invoke(payload) is Task handlerTask)
+            {
+                delivered = true;
+                handlerTask.ContinueWith(HandleException, TaskContinuationOptions.OnlyOnFaulted);
+            }
+        }
+
+        return delivered;
     }
 
     public Action Subscribe(string message, Func<object?, Task> handler)
     {
         var weakHandler = new WeakHandler(handler);
         var weakHandlers = handlers.GetOrAdd(message, _ => []);
-        weakHandlers.Add(weakHandler);
 
-        // If persistent messages exist for this message, publish them immediately.
-        // A ConcurrentBag can't remove a specific item (TryTake removes an arbitrary one), so we drain it
-        // once: matching messages are dispatched and dropped, the rest are put back.
-        if (persistentMessages.IsEmpty is false)
+        lock (handlersLock)
         {
-            var retained = new List<(string message, object? payload)>();
-            while (persistentMessages.TryTake(out var pending))
+            weakHandlers.Add(weakHandler);
+
+            // If persistent messages exist for this message, publish them immediately.
+            // A ConcurrentBag can't remove a specific item (TryTake removes an arbitrary one), so we drain it
+            // once: matching messages are dispatched and dropped, the rest are put back.
+            if (persistentMessages.IsEmpty is false)
             {
-                if (pending.message == message)
+                var retained = new List<(string message, object? payload)>();
+                while (persistentMessages.TryTake(out var pending))
                 {
-                    weakHandler.Invoke(pending.payload)?.ContinueWith(HandleException, TaskContinuationOptions.OnlyOnFaulted);
+                    if (pending.message == message)
+                    {
+                        weakHandler.Invoke(pending.payload)?.ContinueWith(HandleException, TaskContinuationOptions.OnlyOnFaulted);
+                    }
+                    else
+                    {
+                        retained.Add(pending);
+                    }
                 }
-                else
+                foreach (var pending in retained)
                 {
-                    retained.Add(pending);
+                    persistentMessages.Add(pending);
                 }
-            }
-            foreach (var pending in retained)
-            {
-                persistentMessages.Add(pending);
             }
         }
 
         return () =>
         {
-            var removedHandlersCount = weakHandlers.RemoveAll(wh => wh.Matches(handler));
+            lock (handlersLock)
+            {
+                weakHandlers.RemoveAll(wh => wh.Matches(handler));
+            }
         };
     }
 
     private void HandleException(Task t)
     {
-        serviceProvider.GetRequiredService<ClientExceptionHandlerBase>().Handle(t.Exception!);
+        // The AggregateException a faulted Task carries is not what the handler threw, and every type test in
+        // ClientExceptionHandlerBase (KnownException, TransientException, UnauthorizedException) is written against
+        // the real exception. Handing over the wrapper turns an expected KnownException into a Critical log and a
+        // blocking modal showing "unknown error".
+        var exception = t.Exception is { InnerExceptions.Count: 1 } aggregateException
+            ? aggregateException.InnerExceptions[0]
+            : (Exception)t.Exception!;
+
+        try
+        {
+            serviceProvider.GetRequiredService<ClientExceptionHandlerBase>().Handle(exception);
+        }
+        catch (Exception)
+        {
+            // This is the terminal observer of the handler's exception: nothing awaits this continuation, so letting
+            // it fault would destroy the exception it was called to report. Reaching here means the scope that owns
+            // the exception handler is already gone (a torn-down Blazor Server circuit), and nothing scoped survives
+            // to report either exception.
+        }
     }
 
     private class WeakHandler

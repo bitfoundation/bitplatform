@@ -1,11 +1,13 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-prb {
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     position: relative;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     font-family: $tg-font-family;
     --bit-prb-bar-color: #{$clr-pri};
+    // Matches the sizeless default thickness (2px) the C# side uses for the circular variant.
+    --bit-prb-thickness: #{$siz-track-sm};
 
     @keyframes bit-prb-animation {
         0% {
@@ -65,13 +67,13 @@
     width: 0;
     height: inherit;
     position: absolute;
-    transition: width 0.15s linear 0s;
+    transition: width $mot-duration linear 0s;
     background-color: var(--bit-prb-bar-color);
 }
 
 .bit-prb-des {
     color: $clr-fg-sec;
-    font-size: spacing(1.25);
+    font-size: $tg-fs-2xs;
     line-height: spacing(2.25);
 }
 
@@ -79,8 +81,11 @@
     width: 0;
     min-width: 33%;
     position: absolute;
-    transition: width 0.3s ease 0s;
-    animation: 3s ease 0s infinite normal none running bit-prb-animation;
+    transition: width $mot-duration-long $mot-easing 0s;
+    // The sweep is not a spinner, so it scales its own duration by the shared loop factor instead of
+    // taking the spinner tokens: 3s normally, stretched under reduced motion, restored inside a
+    // ForceAnimation subtree.
+    animation: calc(3s * #{$mot-loop-factor}) ease 0s infinite normal none running bit-prb-animation;
     background: linear-gradient(to right, $clr-bg-sec 0%, var(--bit-prb-bar-color) 50%, $clr-bg-sec 100%);
 }
 
@@ -104,7 +109,7 @@
     color: $clr-fg-sec;
     position: absolute;
     white-space: nowrap;
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
 }
 
 .bit-prb-crt, 
@@ -118,96 +123,37 @@
 
 .bit-prb-cbr {
     stroke: var(--bit-prb-bar-color);
-    transition: stroke-dasharray 0.05s ease-in-out;
+    transition: stroke-dasharray $mot-duration-short $mot-easing;
     stroke-dasharray: calc(3.141 * var(--bit-prb-percent, 0%) * 0.8), 500%;
 }
 
 .bit-prb-cri {
     stroke: var(--bit-prb-bar-color);
-    transition: stroke-dasharray 0.05s ease-in-out;
+    transition: stroke-dasharray $mot-duration-short $mot-easing;
     stroke-dasharray: calc(3.141 * 25% * 0.8), 500%;
-    animation: bit-prb-cir-animation 1.3s linear infinite;
-    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+    animation: bit-prb-cir-animation $mot-duration-spinner $mot-easing-spinner infinite;
 }
 
 
 .bit-prb-sm {
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
+    --bit-prb-thickness: #{$siz-track-sm};
 }
 
 .bit-prb-md {
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
+    --bit-prb-thickness: #{$siz-track-md};
 }
 
 .bit-prb-lg {
-    font-size: spacing(2);
+    font-size: $tg-fs-md;
+    --bit-prb-thickness: #{$siz-track-lg};
 }
 
 
-.bit-prb-pri {
-    --bit-prb-bar-color: #{$clr-pri};
-}
-
-.bit-prb-sec {
-    --bit-prb-bar-color: #{$clr-sec};
-}
-
-.bit-prb-ter {
-    --bit-prb-bar-color: #{$clr-ter};
-}
-
-.bit-prb-inf {
-    --bit-prb-bar-color: #{$clr-inf};
-}
-
-.bit-prb-suc {
-    --bit-prb-bar-color: #{$clr-suc};
-}
-
-.bit-prb-wrn {
-    --bit-prb-bar-color: #{$clr-wrn};
-}
-
-.bit-prb-swr {
-    --bit-prb-bar-color: #{$clr-swr};
-}
-
-.bit-prb-err {
-    --bit-prb-bar-color: #{$clr-err};
-}
-
-.bit-prb-pbg {
-    --bit-prb-bar-color: #{$clr-bg-pri};
-}
-
-.bit-prb-sbg {
-    --bit-prb-bar-color: #{$clr-bg-sec};
-}
-
-.bit-prb-tbg {
-    --bit-prb-bar-color: #{$clr-bg-ter};
-}
-
-.bit-prb-pfg {
-    --bit-prb-bar-color: #{$clr-fg-pri};
-}
-
-.bit-prb-sfg {
-    --bit-prb-bar-color: #{$clr-fg-sec};
-}
-
-.bit-prb-tfg {
-    --bit-prb-bar-color: #{$clr-fg-ter};
-}
-
-.bit-prb-pbr {
-    --bit-prb-bar-color: #{$clr-brd-pri};
-}
-
-.bit-prb-sbr {
-    --bit-prb-bar-color: #{$clr-brd-sec};
-}
-
-.bit-prb-tbr {
-    --bit-prb-bar-color: #{$clr-brd-ter};
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-prb-#{$role} {
+        --bit-prb-bar-color: #{role($tokens, main)};
+    }
 }

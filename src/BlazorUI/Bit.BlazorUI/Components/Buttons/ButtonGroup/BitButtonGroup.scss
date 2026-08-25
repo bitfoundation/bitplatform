@@ -8,20 +8,33 @@
     box-sizing: border-box;
     border-width: $shp-border-width;
     border-style: $shp-border-style;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     --bit-btg-itm-brd-wid: #{$shp-border-width};
     --bit-btg-itm-brd-wid-ver: 0;
+    // Only the border is painted on the group itself: the filled and outline variants repaint it
+    // while the group is hovered, so it animates in step with the buttons inside it.
+    transition: border-color $mot-duration-short $mot-easing;
+
+    // The ring is rendered on the group container (like the MenuButton split-button) because the
+    // root's overflow:hidden would clip a box-shadow ring drawn on the focused item itself.
+    &:focus-visible,
+    &:has(:focus-visible) {
+        @include focus-ring(var(--bit-btg-clr-focus));
+    }
 
     &.bit-dis, &.bit-dis * {
         cursor: default;
-        color: $clr-fg-dis;
         pointer-events: none;
     }
 
     &.bit-dis {
-        border-color: $clr-brd-dis;
-        --bit-btg-itm-clr-bg: #{$clr-bg-dis};
-        --bit-btg-itm-clr-brd: #{$clr-brd-dis};
+        color: var(--bit-btg-clr-dis-text);
+        border-color: var(--bit-btg-clr-dis);
+
+        // Resolve through the per-variant `*-dis` tokens so outline/text variants keep transparent
+        // backgrounds and only filled variants render the colored disabled tint.
+        --bit-btg-itm-clr-bg: var(--bit-btg-itm-clr-bg-dis);
+        --bit-btg-itm-clr-brd: var(--bit-btg-itm-clr-brd-dis, var(--bit-btg-clr-dis));
     }
 }
 
@@ -30,10 +43,10 @@
 }
 
 .bit-btg-rnd {
-    border-radius: 9999px;
+    border-radius: $shp-radius-full;
 
     &.bit-btg-vrt {
-        border-radius: $shp-border-radius;
+        border-radius: $shp-radius-control;
     }
 }
 
@@ -79,7 +92,7 @@
     gap: spacing(1);
     cursor: pointer;
     border-width: 0;
-    text-align: left;
+    text-align: start;
     align-items: center;
     line-height: inherit;
     text-decoration: none;
@@ -91,10 +104,15 @@
     color: var(--bit-btg-itm-clr-txt);
     padding: var(--bit-btg-itm-padding);
     font-size: var(--bit-btg-itm-fontsize);
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
     border-color: var(--bit-btg-itm-clr-brd);
     background-color: var(--bit-btg-itm-clr-bg);
     border-inline-end-width: var(--bit-btg-itm-brd-wid);
     border-block-end-width: var(--bit-btg-itm-brd-wid-ver);
+    // The hover, active, checked and disabled states all resolve through the --bit-btg-itm-clr-*
+    // tokens above, so animating the three properties here covers every variant of the group.
+    transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
@@ -108,17 +126,20 @@
     }
 
     // The focus ring is drawn inside the button because the group clips its overflow,
-    // which would otherwise cut an outset ring off at the edges of the group.
+    // which would otherwise cut an outset ring off at the edges of the group. An inset
+    // outline is used instead of the focus-ring mixin's box-shadow for the same reason,
+    // but the width follows the global focus-ring token so theme overrides still apply.
     &:focus-visible {
         z-index: 1;
-        outline-offset: calc(-1 * #{spacing(0.25)});
-        outline: spacing(0.25) solid var(--bit-btg-itm-clr-fcs);
+        outline: #{$shp-focus-ring-width} solid var(--bit-btg-itm-clr-fcs);
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
     }
 
     &[disabled],
     &[aria-disabled="true"] {
         cursor: default;
-        color: $clr-fg-dis;
+        color: var(--bit-btg-clr-dis-text);
+        border-color: var(--bit-btg-itm-clr-brd-dis, var(--bit-btg-clr-dis));
         background-color: var(--bit-btg-itm-clr-bg-dis);
     }
 
@@ -143,14 +164,14 @@
 
     .bit-btg-itm {
         border-width: $shp-border-width;
-        border-radius: $shp-border-radius;
+        border-radius: $shp-radius-control;
     }
 
     &.bit-btg-rnd {
         border-radius: 0;
 
         .bit-btg-itm {
-            border-radius: 9999px;
+            border-radius: $shp-radius-full;
         }
     }
 }
@@ -215,27 +236,26 @@
     align-items: center;
     justify-content: center;
     padding: spacing(0.25) spacing(0.75);
-    border-radius: 9999px;
+    border-radius: $shp-radius-full;
     font-size: calc(var(--bit-btg-itm-fontsize) * 0.8);
 
     // Tinting the current foreground keeps the badge legible on every variant,
     // including the ones whose button background is transparent.
     color: currentcolor;
     background-color: rgb(128 128 128 / 25%);
-    background-color: color-mix(in srgb, currentcolor 20%, transparent);
+    background-color: translucent(currentcolor, 20%);
 }
 
 .bit-btg-spn {
     flex: none;
     border-radius: 50%;
-    border-width: spacing(0.2125);
+    border-width: $siz-spinner-stroke;
     border-style: $shp-border-style;
     width: var(--bit-btg-itm-fontsize);
     height: var(--bit-btg-itm-fontsize);
     border-color: transparent;
     border-top-color: var(--bit-btg-itm-clr-txt);
-    animation: bit-btg-spinner-animation 1.3s linear infinite;
-    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+    animation: bit-btg-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
 }
 
 @keyframes bit-btg-spinner-animation {
@@ -262,7 +282,7 @@
         inset-inline-start: 32%;
         transform: rotate(45deg);
         border-style: $shp-border-style;
-        border-width: 0 spacing(0.25) spacing(0.25) 0;
+        border-width: 0 $shp-border-width-thick $shp-border-width-thick 0;
         border-color: currentcolor;
     }
 }
@@ -279,7 +299,7 @@
     --bit-btg-itm-clr-hover: var(--bit-btg-clr-txt);
     --bit-btg-itm-clr-bg-hover: var(--bit-btg-clr-hover);
     --bit-btg-itm-clr-bg-active: var(--bit-btg-clr-active);
-    --bit-btg-itm-clr-bg-dis: #{$clr-bg-dis};
+    --bit-btg-itm-clr-bg-dis: var(--bit-btg-clr-dis);
     --bit-btg-itm-clr-fcs: var(--bit-btg-clr-txt);
 
     @media (hover: hover) {
@@ -312,6 +332,10 @@
 
     &:active {
         border-color: var(--bit-btg-clr-active);
+    }
+
+    &.bit-dis {
+        background-color: transparent;
     }
 }
 
@@ -350,92 +374,21 @@
     }
 }
 
-.bit-btg-pri {
-    --bit-btg-clr: #{$clr-pri};
-    --bit-btg-clr-txt: #{$clr-pri-text};
-    --bit-btg-clr-brd: #{$clr-pri-dark};
-    --bit-btg-clr-hover: #{$clr-pri-hover};
-    --bit-btg-clr-active: #{$clr-pri-active};
-    --bit-btg-clr-dark: #{$clr-pri-dark};
-    --bit-btg-clr-dark-hover: #{$clr-pri-dark-hover};
-    --bit-btg-clr-dark-active: #{$clr-pri-dark-active};
-}
-
-.bit-btg-sec {
-    --bit-btg-clr: #{$clr-sec};
-    --bit-btg-clr-txt: #{$clr-sec-text};
-    --bit-btg-clr-brd: #{$clr-sec-dark};
-    --bit-btg-clr-hover: #{$clr-sec-hover};
-    --bit-btg-clr-active: #{$clr-sec-active};
-    --bit-btg-clr-dark: #{$clr-sec-dark};
-    --bit-btg-clr-dark-hover: #{$clr-sec-dark-hover};
-    --bit-btg-clr-dark-active: #{$clr-sec-dark-active};
-}
-
-.bit-btg-ter {
-    --bit-btg-clr: #{$clr-ter};
-    --bit-btg-clr-txt: #{$clr-ter-text};
-    --bit-btg-clr-brd: #{$clr-ter-dark};
-    --bit-btg-clr-hover: #{$clr-ter-hover};
-    --bit-btg-clr-active: #{$clr-ter-active};
-    --bit-btg-clr-dark: #{$clr-ter-dark};
-    --bit-btg-clr-dark-hover: #{$clr-ter-dark-hover};
-    --bit-btg-clr-dark-active: #{$clr-ter-dark-active};
-}
-
-.bit-btg-inf {
-    --bit-btg-clr: #{$clr-inf};
-    --bit-btg-clr-txt: #{$clr-inf-text};
-    --bit-btg-clr-brd: #{$clr-inf-dark};
-    --bit-btg-clr-hover: #{$clr-inf-hover};
-    --bit-btg-clr-active: #{$clr-inf-active};
-    --bit-btg-clr-dark: #{$clr-inf-dark};
-    --bit-btg-clr-dark-hover: #{$clr-inf-dark-hover};
-    --bit-btg-clr-dark-active: #{$clr-inf-dark-active};
-}
-
-.bit-btg-suc {
-    --bit-btg-clr: #{$clr-suc};
-    --bit-btg-clr-txt: #{$clr-suc-text};
-    --bit-btg-clr-brd: #{$clr-suc-dark};
-    --bit-btg-clr-hover: #{$clr-suc-hover};
-    --bit-btg-clr-active: #{$clr-suc-active};
-    --bit-btg-clr-dark: #{$clr-suc-dark};
-    --bit-btg-clr-dark-hover: #{$clr-suc-dark-hover};
-    --bit-btg-clr-dark-active: #{$clr-suc-dark-active};
-}
-
-.bit-btg-wrn {
-    --bit-btg-clr: #{$clr-wrn};
-    --bit-btg-clr-txt: #{$clr-wrn-text};
-    --bit-btg-clr-brd: #{$clr-wrn-dark};
-    --bit-btg-clr-hover: #{$clr-wrn-hover};
-    --bit-btg-clr-active: #{$clr-wrn-active};
-    --bit-btg-clr-dark: #{$clr-wrn-dark};
-    --bit-btg-clr-dark-hover: #{$clr-wrn-dark-hover};
-    --bit-btg-clr-dark-active: #{$clr-wrn-dark-active};
-}
-
-.bit-btg-swr {
-    --bit-btg-clr: #{$clr-swr};
-    --bit-btg-clr-txt: #{$clr-swr-text};
-    --bit-btg-clr-brd: #{$clr-swr-dark};
-    --bit-btg-clr-hover: #{$clr-swr-hover};
-    --bit-btg-clr-active: #{$clr-swr-active};
-    --bit-btg-clr-dark: #{$clr-swr-dark};
-    --bit-btg-clr-dark-hover: #{$clr-swr-dark-hover};
-    --bit-btg-clr-dark-active: #{$clr-swr-dark-active};
-}
-
-.bit-btg-err {
-    --bit-btg-clr: #{$clr-err};
-    --bit-btg-clr-txt: #{$clr-err-text};
-    --bit-btg-clr-brd: #{$clr-err-dark};
-    --bit-btg-clr-hover: #{$clr-err-hover};
-    --bit-btg-clr-active: #{$clr-err-active};
-    --bit-btg-clr-dark: #{$clr-err-dark};
-    --bit-btg-clr-dark-hover: #{$clr-err-dark-hover};
-    --bit-btg-clr-dark-active: #{$clr-err-dark-active};
+// Role classes are generated from the shared $bit-semantic-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-semantic-color-roles {
+    .bit-btg-#{$role} {
+        --bit-btg-clr: #{role($tokens, main)};
+        --bit-btg-clr-txt: #{role($tokens, on)};
+        --bit-btg-clr-brd: #{role($tokens, dark)};
+        --bit-btg-clr-hover: #{role($tokens, hover)};
+        --bit-btg-clr-active: #{role($tokens, active)};
+        --bit-btg-clr-focus: #{role($tokens, focus)};
+        --bit-btg-clr-dark: #{role($tokens, dark)};
+        --bit-btg-clr-dark-hover: #{role($tokens, dark-hover)};
+        --bit-btg-clr-dark-active: #{role($tokens, dark-active)};
+        --bit-btg-clr-dis: #{role($tokens, dis)};
+        --bit-btg-clr-dis-text: #{role($tokens, dis-text)};
+    }
 }
 
 
@@ -445,9 +398,12 @@
     --bit-btg-clr-brd: #{$clr-bg-pri};
     --bit-btg-clr-hover: #{$clr-bg-pri-hover};
     --bit-btg-clr-active: #{$clr-bg-pri-active};
+    --bit-btg-clr-focus: #{$clr-bg-pri-focus};
     --bit-btg-clr-dark: #{$clr-bg-pri};
     --bit-btg-clr-dark-hover: #{$clr-bg-pri-hover};
     --bit-btg-clr-dark-active: #{$clr-bg-pri-active};
+    --bit-btg-clr-dis: #{$clr-bg-pri-dis};
+    --bit-btg-clr-dis-text: #{$clr-bg-pri-dis-text};
 }
 
 .bit-btg-sbg {
@@ -456,9 +412,12 @@
     --bit-btg-clr-brd: #{$clr-bg-sec};
     --bit-btg-clr-hover: #{$clr-bg-sec-hover};
     --bit-btg-clr-active: #{$clr-bg-sec-active};
+    --bit-btg-clr-focus: #{$clr-bg-sec-focus};
     --bit-btg-clr-dark: #{$clr-bg-sec};
     --bit-btg-clr-dark-hover: #{$clr-bg-sec-hover};
     --bit-btg-clr-dark-active: #{$clr-bg-sec-active};
+    --bit-btg-clr-dis: #{$clr-bg-sec-dis};
+    --bit-btg-clr-dis-text: #{$clr-bg-sec-dis-text};
 }
 
 .bit-btg-tbg {
@@ -467,9 +426,12 @@
     --bit-btg-clr-brd: #{$clr-bg-ter};
     --bit-btg-clr-hover: #{$clr-bg-ter-hover};
     --bit-btg-clr-active: #{$clr-bg-ter-active};
+    --bit-btg-clr-focus: #{$clr-bg-ter-focus};
     --bit-btg-clr-dark: #{$clr-bg-ter};
     --bit-btg-clr-dark-hover: #{$clr-bg-ter-hover};
     --bit-btg-clr-dark-active: #{$clr-bg-ter-active};
+    --bit-btg-clr-dis: #{$clr-bg-ter-dis};
+    --bit-btg-clr-dis-text: #{$clr-bg-ter-dis-text};
 }
 
 .bit-btg-pfg {
@@ -478,9 +440,12 @@
     --bit-btg-clr-brd: #{$clr-fg-pri};
     --bit-btg-clr-hover: #{$clr-fg-pri-hover};
     --bit-btg-clr-active: #{$clr-fg-pri-active};
+    --bit-btg-clr-focus: #{$clr-fg-pri-focus};
     --bit-btg-clr-dark: #{$clr-fg-pri};
     --bit-btg-clr-dark-hover: #{$clr-fg-pri-hover};
     --bit-btg-clr-dark-active: #{$clr-fg-pri-active};
+    --bit-btg-clr-dis: #{$clr-fg-pri-dis};
+    --bit-btg-clr-dis-text: #{$clr-fg-pri-dis-text};
 }
 
 .bit-btg-sfg {
@@ -489,9 +454,12 @@
     --bit-btg-clr-brd: #{$clr-fg-sec};
     --bit-btg-clr-hover: #{$clr-fg-sec-hover};
     --bit-btg-clr-active: #{$clr-fg-sec-active};
+    --bit-btg-clr-focus: #{$clr-fg-sec-focus};
     --bit-btg-clr-dark: #{$clr-fg-sec};
     --bit-btg-clr-dark-hover: #{$clr-fg-sec-hover};
     --bit-btg-clr-dark-active: #{$clr-fg-sec-active};
+    --bit-btg-clr-dis: #{$clr-fg-sec-dis};
+    --bit-btg-clr-dis-text: #{$clr-fg-sec-dis-text};
 }
 
 .bit-btg-tfg {
@@ -500,9 +468,12 @@
     --bit-btg-clr-brd: #{$clr-fg-ter};
     --bit-btg-clr-hover: #{$clr-fg-ter-hover};
     --bit-btg-clr-active: #{$clr-fg-ter-active};
+    --bit-btg-clr-focus: #{$clr-fg-ter-focus};
     --bit-btg-clr-dark: #{$clr-fg-ter};
     --bit-btg-clr-dark-hover: #{$clr-fg-ter-hover};
     --bit-btg-clr-dark-active: #{$clr-fg-ter-active};
+    --bit-btg-clr-dis: #{$clr-fg-ter-dis};
+    --bit-btg-clr-dis-text: #{$clr-fg-ter-dis-text};
 }
 
 .bit-btg-pbr {
@@ -511,9 +482,12 @@
     --bit-btg-clr-brd: #{$clr-brd-pri};
     --bit-btg-clr-hover: #{$clr-brd-pri-hover};
     --bit-btg-clr-active: #{$clr-brd-pri-active};
+    --bit-btg-clr-focus: #{$clr-brd-pri-focus};
     --bit-btg-clr-dark: #{$clr-brd-pri};
     --bit-btg-clr-dark-hover: #{$clr-brd-pri-hover};
     --bit-btg-clr-dark-active: #{$clr-brd-pri-active};
+    --bit-btg-clr-dis: #{$clr-brd-pri-dis};
+    --bit-btg-clr-dis-text: #{$clr-brd-pri-dis-text};
 }
 
 .bit-btg-sbr {
@@ -522,9 +496,12 @@
     --bit-btg-clr-brd: #{$clr-brd-sec};
     --bit-btg-clr-hover: #{$clr-brd-sec-hover};
     --bit-btg-clr-active: #{$clr-brd-sec-active};
+    --bit-btg-clr-focus: #{$clr-brd-sec-focus};
     --bit-btg-clr-dark: #{$clr-brd-sec};
     --bit-btg-clr-dark-hover: #{$clr-brd-sec-hover};
     --bit-btg-clr-dark-active: #{$clr-brd-sec-active};
+    --bit-btg-clr-dis: #{$clr-brd-sec-dis};
+    --bit-btg-clr-dis-text: #{$clr-brd-sec-dis-text};
 }
 
 .bit-btg-tbr {
@@ -533,24 +510,27 @@
     --bit-btg-clr-brd: #{$clr-brd-ter};
     --bit-btg-clr-hover: #{$clr-brd-ter-hover};
     --bit-btg-clr-active: #{$clr-brd-ter-active};
+    --bit-btg-clr-focus: #{$clr-brd-ter-focus};
     --bit-btg-clr-dark: #{$clr-brd-ter};
     --bit-btg-clr-dark-hover: #{$clr-brd-ter-hover};
     --bit-btg-clr-dark-active: #{$clr-brd-ter-active};
+    --bit-btg-clr-dis: #{$clr-brd-ter-dis};
+    --bit-btg-clr-dis-text: #{$clr-brd-ter-dis-text};
 }
 
 
 .bit-btg-sm {
-    --bit-btg-itm-fontsize: #{spacing(1.5)};
+    --bit-btg-itm-fontsize: #{$tg-fs-xs};
     --bit-btg-itm-padding: #{spacing(0.5)} #{spacing(1.5)};
 }
 
 .bit-btg-md {
-    --bit-btg-itm-fontsize: #{spacing(1.75)};
+    --bit-btg-itm-fontsize: #{$tg-fs-sm};
     --bit-btg-itm-padding: #{spacing(0.7)} #{spacing(2.0)};
 }
 
 .bit-btg-lg {
-    --bit-btg-itm-fontsize: #{spacing(2.0)};
+    --bit-btg-itm-fontsize: #{$tg-fs-md};
     --bit-btg-itm-padding: #{spacing(0.9)} #{spacing(2.5)};
 }
 

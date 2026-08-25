@@ -1,10 +1,8 @@
-@using Boilerplate.Shared.Features.Identity.Dtos
-
 @inherits AppComponentBase
 
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center">
-        @if (Loading)
+        @if (CurrentUser is null)
         {
             <BitShimmer Height="4.5rem" Circle />
             <BitShimmer Height="1.5rem" Width="12.5rem" />
@@ -22,9 +20,13 @@
                            HideFileView
                            Accept="image/*"
                            MaxSize="1024 * 1024 * 10"
+                           AllowedExtensions="@(["image/*"])"
                            UploadUrlProvider="GetUploadUrl"
                            OnUploading="() => isUploading = true"
+                           OnInvalid="HandleOnInvalid"
                            OnUploadFailed="HandleOnUploadFailed"
+                           MaxSizeErrorMessage="@Localizer[nameof(AppStrings.ImageMaxSizeErrorMessage),"10 MB"]"
+                           NotAllowedExtensionErrorMessage="@Localizer[nameof(AppStrings.OnlyImageFilesAllowedErrorMessage)]"
                            OnUploadComplete="WrapHandled(HandleOnUploadComplete)"
                            UploadRequestHttpHeadersProvider="WrapHandled(GetUploadRequestHeaders)">
                 <LabelTemplate>
@@ -74,7 +76,7 @@
 
                     <BitChoiceGroup Horizontal
                                     @bind-Value="editUserDto.Gender"
-                                    TItem="BitChoiceGroupOption<Gender>" TValue="Gender"
+                                    TItem="BitChoiceGroupOption<Gender?>" TValue="Gender?"
                                     Label="@Localizer[nameof(AppStrings.Gender)]">
                         <BitChoiceGroupOption Value="@Gender.Male" Text="@Localizer[nameof(AppStrings.GenderMale)]" />
                         <BitChoiceGroupOption Value="@Gender.Female" Text="@Localizer[nameof(AppStrings.GenderFemale)]" />

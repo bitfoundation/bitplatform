@@ -1,4 +1,5 @@
 @namespace Bit.BlazorUI
+@using System.Globalization
 @inherits BitInputBase<TimeSpan?>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -29,6 +30,7 @@
                        @oninput="@HandleOnChange"
                        @onfocusin="@HandleOnFocusIn"
                        @onfocusout="@HandleOnFocusOut"
+                       @onkeydown="@HandleOnInputKeyDown"
                        type="text"
                        name="@Name"
                        id="@_inputId"
@@ -41,6 +43,7 @@
                        value="@CurrentValueAsString"
                        disabled=@(IsEnabled is false)
                        readonly=@(AllowTextInput is false || ReadOnly)
+                       aria-readonly="@(ReadOnly ? "true" : null)"
                        aria-expanded="@(IsOpen ? "true" : "false")"
                        aria-controls="@(IsOpen ? _calloutId : null)"
                        aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
@@ -61,10 +64,16 @@
     }
     else
     {
+        @*
+            The value carrier of a standalone picker, so that one still posts and validates like any other
+            field. It is invisible, so it is taken out of the tab order: a tab stop nobody can see is a
+            place the focus disappears into on the way to the dial, which is the part being operated.
+        *@
         <input @ref="InputElement" @attributes="InputHtmlAttributes"
                type="text"
                name="@Name"
                id="@_inputId"
+               tabindex="-1"
                aria-label="@AriaLabel"
                class="bit-input-hidden"
                value="@CurrentValueAsString"
@@ -82,110 +91,264 @@
          class="bit-ctp-ovl @Classes?.Overlay"></div>
 }
 
-<div id="@_calloutId"
+@*
+    The callout is a sibling of the root instead of a child of it, so it carries the direction of the
+    component itself - without it, everything inside would fall back to the direction of the page.
+*@
+<div @ref="_calloutRef"
+     id="@_calloutId"
      style="@Styles?.Callout"
-     class="@GetCalloutCssClasses()">
-    <div @attributes=@CalloutHtmlAttributes 
-         role="dialog" 
+     class="@GetCalloutCssClasses()"
+     dir="@Dir?.ToString().ToLower()">
+    @*
+        The callout is a modal dialog only when it floats over the page, where an overlay closes the rest of it
+        off and the focus leaving it dismisses it; standalone it is a group of controls that is part of the page
+        like any other, where announcing a dialog would announce one the user can never leave.
+    *@
+    <div @attributes=@CalloutHtmlAttributes
+         role="@(Standalone ? "group" : "dialog")"
+         aria-modal="@(Standalone ? null : "true")"
          aria-label="@CalloutAriaLabel"
-         style="@Styles?.CalloutContainer" 
-         class="bit-ctp-cac @Classes?.CalloutContainer" >
-        <div style="@Styles?.Toolbar" 
-             class="bit-ctp-tbr @Classes?.Toolbar">
-            <div style="@Styles?.HourMinuteContainer" 
+         style="@Styles?.CalloutContainer"
+         class="bit-ctp-cac @Classes?.CalloutContainer">
+        @if (CalloutHeaderTemplate is not null)
+        {
+            <div id="@_headerId" style="@Styles?.CalloutHeader" class="@Classes?.CalloutHeader">
+                @CalloutHeaderTemplate
+            </div>
+        }
+        @*
+            The dial moving from one part of the time to the next, and the hand moving to a value that has no
+            number of its own, are both changes a sighted person reads off the toolbar and the clock. Neither
+            reaches a screen reader on its own - the focus stays on the same listbox throughout, and
+            aria-activedescendant has no option to point at between two marks - so the name of the part the
+            dial is now on is announced from here, along with the value it rests on wherever no option can
+            carry it. Only a change of the text is announced, which is exactly a change of either.
+        *@
+        <div aria-live="polite" aria-atomic="true" class="bit-ctp-lvr">@ViewAnnouncement</div>
+        @*
+            The meridiem pair goes either beside the time in the toolbar or under the clock, so it is built
+            once here and dropped into whichever of the two AmPmInClock asks for.
+        *@
+        @{
+            RenderFragment amPmButtons =@<div style="@Styles?.AmPmContainer"
+                                              class="bit-ctp-apc@(AmPmInClock ? " bit-ctp-apk" : "") @Classes?.AmPmContainer">
+                @{
+                    var isAm = IsAm();
+                }
+                <button @onclick="HandleOnAmClick"
+                        type="button"
+                        title="@_culture.DateTimeFormat.AMDesignator"
+                        aria-pressed="@(isAm ? "true" : "false")"
+                        style="@GetAmButtonStyle(isAm)"
+                        disabled="@(IsInteractive is false)"
+                        class="bit-ctp-apb @(isAm ? $"bit-ctp-aps {Classes?.SelectedButtons}" : "bit-ctp-ina") @Classes?.AmButton">
+                    @_culture.DateTimeFormat.AMDesignator
+                </button>
+                <button @onclick="HandleOnPmClick"
+                        type="button"
+                        title="@_culture.DateTimeFormat.PMDesignator"
+                        aria-pressed="@(isAm ? "false" : "true")"
+                        style="@GetPmButtonStyle(isAm)"
+                        disabled="@(IsInteractive is false)"
+                        class="bit-ctp-apb @(isAm ? "bit-ctp-ina" : $"bit-ctp-aps {Classes?.SelectedButtons}") @Classes?.PmButton">
+                    @_culture.DateTimeFormat.PMDesignator
+                </button>
+            </div>;
+        }
+        <div style="@Styles?.Toolbar"
+             class="bit-ctp-tlb @Classes?.Toolbar">
+            <div style="@Styles?.HourMinuteContainer"
                  class="bit-ctp-hmc @Classes?.HourMinuteContainer">
                 @if (EditMode == BitCircularTimePickerEditMode.Normal)
                 {
+                    @*
+                        The name of a toolbar button carries the part it switches to and the value it is showing:
+                        the title alone would leave a screen reader saying "select hour" on a button that reads
+                        "07", and the number alone would not say what pressing it does.
+                    *@
                     <button @onclick="HandleOnHourClick"
                             type="button"
+                            title="@HourButtonTitle"
+                            aria-label="@($"{HourButtonTitle} {GetHourString()}")"
+                            aria-pressed="@(IsHourView ? "true" : "false")"
                             style="@GetHourButtonStyle()"
                             disabled="@(IsEnabled is false)"
-                            class="bit-ctp-txt @(_showHourView ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.HourButton">
+                            class="bit-ctp-txt @(IsHourView ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.HourButton">
                         @GetHourString()
                     </button>
-                    <span style="@Styles?.HourMinuteSeparator" 
-                          class="bit-ctp-txt @Classes?.HourMinuteSeparator">:</span>
+                    <span style="@Styles?.HourMinuteSeparator"
+                          aria-hidden="true"
+                          class="bit-ctp-txt bit-ctp-sep @Classes?.HourMinuteSeparator">:</span>
                     <button @onclick="HandleOnMinuteClick"
                             type="button"
+                            title="@MinuteButtonTitle"
+                            aria-label="@($"{MinuteButtonTitle} {GetMinuteString()}")"
+                            aria-pressed="@(IsMinuteView ? "true" : "false")"
                             style="@GetMinuteButtonStyle()"
                             disabled="@(IsEnabled is false)"
-                            class="bit-ctp-txt @(_showHourView ? "bit-ctp-ina" : Classes?.SelectedButtons) @Classes?.MinuteButton">
+                            class="bit-ctp-txt @(IsMinuteView ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.MinuteButton">
                         @GetMinuteString()
                     </button>
+                    @if (HasSeconds)
+                    {
+                        <span style="@Styles?.HourMinuteSeparator"
+                              aria-hidden="true"
+                              class="bit-ctp-txt bit-ctp-sep @Classes?.HourMinuteSeparator">:</span>
+                        <button @onclick="HandleOnSecondClick"
+                                type="button"
+                                title="@SecondButtonTitle"
+                                aria-label="@($"{SecondButtonTitle} {GetSecondString()}")"
+                                aria-pressed="@(IsSecondView ? "true" : "false")"
+                                style="@GetSecondButtonStyle()"
+                                disabled="@(IsEnabled is false)"
+                                class="bit-ctp-txt @(IsSecondView ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.SecondButton">
+                            @GetSecondString()
+                        </button>
+                    }
                 }
                 else
                 {
-                    <span style="@Styles?.HourMinuteText" class="bit-ctp-txt @Classes?.HourMinuteText">@GetHourString():@GetMinuteString()</span>
+                    <span style="@Styles?.HourMinuteText" class="bit-ctp-txt @Classes?.HourMinuteText">@GetTimeString()</span>
                 }
             </div>
-            @if (TimeFormat == BitTimeFormat.TwelveHours)
+            @if (TimeFormat == BitTimeFormat.TwelveHours && AmPmInClock is false)
             {
-                var isAm = IsAm();
-                <div style="@Styles?.AmPmContainer" class="bit-ctp-apc @Classes?.AmPmContainer">
-                    <button @onclick="HandleOnAmClick"
-                            type="button"
-                            style="@GetAmButtonStyle(isAm)"
-                            disabled="@(IsEnabled is false)"
-                            class="bit-ctp-apb @(isAm ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.AmButton">
-                        @_culture.DateTimeFormat.AMDesignator
-                    </button>
-                    <button @onclick="HandleOnPmClick"
-                            type="button"
-                            style="@GetPmButtonStyle(isAm)"
-                            disabled="@(IsEnabled is false)"
-                            class="bit-ctp-apb @(isAm ? "bit-ctp-ina" : Classes?.SelectedButtons) @Classes?.PmButton">
-                        @_culture.DateTimeFormat.PMDesignator
-                    </button>
-                </div>
+                @amPmButtons
             }
         </div>
-        <div style="@Styles?.ClockContainer" class="bit-ctp-clk @Classes?.ClockContainer">
-            <div @ref="_clockRef" style="@Styles?.ClockFace" class="bit-ctp-clf @Classes?.ClockFace" @onpointerdown="HandleOnPointerDown">
-                <div style="@Styles?.ClockPin" class="bit-ctp-pin @Classes?.ClockPin"></div>
+        @*
+            Everything under the toolbar, gathered into a column of its own so the landscape layout can put the
+            toolbar beside it instead of above it without a single part inside having to be moved.
+        *@
+        <div style="@Styles?.Body" class="bit-ctp-bdy @Classes?.Body">
+            <div style="@Styles?.ClockContainer" class="bit-ctp-clk @Classes?.ClockContainer">
+                @*
+                    A listbox rather than a plain drawing: the numbers are the options of the current view and the
+                    pointer is the selection, which is what lets a screen reader read out what the dial is on and
+                    the keyboard move it without every number having to be a tab stop of its own.
+                *@
+                <div @ref="_clockRef"
+                     @onkeydown="HandleOnClockKeyDown"
+                     @onwheel="HandleOnClockWheel"
+                     @onfocus="@(() => _clockHasFocus = true)"
+                     @onblur="@(() => _clockHasFocus = false)"
+                     id="@_clockId"
+                     role="listbox"
+                     tabindex="@(IsEnabled ? (TabIndex ?? "0") : "-1")"
+                     data-bit-wheel="@(IsWheelSpinEnabled ? "1" : null)"
+                     aria-label="@ViewTitle"
+                     aria-disabled="@(IsEnabled ? null : "true")"
+                     aria-readonly="@(ReadOnly ? "true" : null)"
+                     aria-activedescendant="@_activeDescendantId"
+                     style="@Styles?.ClockFace"
+                     class="bit-ctp-clf @Classes?.ClockFace">
+                    <div style="@Styles?.ClockPin" aria-hidden="true" class="bit-ctp-pin @Classes?.ClockPin"></div>
 
-                @if (_showHourView)
-                {
-                    if (TimeFormat == BitTimeFormat.TwelveHours)
+                    @if (IsHourView)
                     {
-                        for (int i = 1; i <= 12; i++)
+                        if (TimeFormat == BitTimeFormat.TwelveHours)
                         {
-                            <p style="@GetHoursMinutesStyle(i, i, 109, 0, 5)" class="bit-ctp-num @GetHoursMinutesClass(i)">@i</p>
+                            var isAmHalf = IsAm();
+                            for (int i = 1; i <= 12; i++)
+                            {
+                                var hour = isAmHalf ? i % 12 : (i % 12) + 12;
+                                <span id="@GetNumberId(hour)"
+                                      role="option"
+                                      aria-selected="@(IsSelected(hour) ? "true" : "false")"
+                                      aria-disabled="@(IsSelectable(hour) ? null : "true")"
+                                      style="@GetNumberStyle(hour, i)"
+                                      class="bit-ctp-num @GetNumberClass(hour)">@i</span>
+                            }
+                        }
+                        else
+                        {
+                            @*Hours from 13 to 23 and 00 on the outer ring*@
+                            for (int i = 1; i <= 12; i++)
+                            {
+                                var hour = (i + 12) % 24;
+                                <span id="@GetNumberId(hour)"
+                                      role="option"
+                                      aria-selected="@(IsSelected(hour) ? "true" : "false")"
+                                      aria-disabled="@(IsSelectable(hour) ? null : "true")"
+                                      style="@GetNumberStyle(hour, i)"
+                                      class="bit-ctp-num @GetNumberClass(hour)">@(hour.ToString("D2", CultureInfo.InvariantCulture))</span>
+                            }
+                            @*Hours from 01 to 12 on the inner ring*@
+                            for (int i = 1; i <= 12; i++)
+                            {
+                                <span id="@GetNumberId(i)"
+                                      role="option"
+                                      aria-selected="@(IsSelected(i) ? "true" : "false")"
+                                      aria-disabled="@(IsSelectable(i) ? null : "true")"
+                                      style="@GetNumberStyle(i, i)"
+                                      class="bit-ctp-num bit-ctp-inn @GetNumberClass(i)">@(i.ToString("D2", CultureInfo.InvariantCulture))</span>
+                            }
                         }
                     }
                     else
                     {
-                        @*Hours from 13 to 24 (00)*@
-                        for (int i = 1; i <= 12; i++)
+                        @*The minute and the second rings are the same twelve five-unit marks*@
+                        @for (int i = 0; i < 12; i++)
                         {
-                            var hour = (i + 12) % 24;
-                            <p style="@GetHoursMinutesStyle(hour, i, 109, 0, 5)" class="bit-ctp-num @GetHoursMinutesClass(hour)">@(hour.ToString("D2"))</p>
-                        }
-                        @*Hours from 1 to 12*@
-                        for (int i = 1; i <= 12; i++)
-                        {
-                            <p style="@GetHoursMinutesStyle(i, i, 74, 0, 40)" class="bit-ctp-num @GetHoursMinutesClass(i)">@(i.ToString("D2"))</p>
+                            var value = i * 5;
+                            <span id="@GetNumberId(value)"
+                                  role="option"
+                                  aria-selected="@(IsSelected(value) ? "true" : "false")"
+                                  aria-disabled="@(IsSelectable(value) ? null : "true")"
+                                  style="@GetNumberStyle(value, i)"
+                                  class="bit-ctp-num @GetNumberClass(value)">@(value.ToString("D2", CultureInfo.InvariantCulture))</span>
                         }
                     }
-                }
-                else
-                {
-                    @for (int i = 0; i < 12; i++)
-                    {
-                        var minute = i * 5;
-                        <p style="@GetHoursMinutesStyle(minute, i, 109, 0, 5)" class="bit-ctp-num @GetHoursMinutesClass(minute)">@(minute.ToString("D2"))</p>
-                    }
-                }
 
-                @{
-                    var deg = GetPointerDegree();
-                    var isMinute = deg % 30 == 0;
-                }
-                <div style="height: @(GetClockHandHeightPercent())%; transform: rotateZ(@(deg)deg); @Classes?.ClockPointer"
-                     class="bit-ctp-ptr@(_isPointerDown ? "" : " bit-ctp-ani") @Classes?.ClockPointer">
-                    <div style="@GetClockPointerThumbStyle(isMinute)"
-                         class="bit-ctp-pth@(isMinute ? "" : $" bit-ctp-ptm {Classes?.ClockPointerThumbMinute}") @Classes?.ClockPointerThumb"></div>
+                    @{
+                        var deg = GetPointerDegree();
+                        // A hand that rests on a whole mark lands on a number, so it carries the filled disc that
+                        // reads as the selection; in between - a minute or a second with no number of its own - it
+                        // shrinks to the small ring that marks the spot without covering it. A part that has not
+                        // been picked at all takes that same ring: the hand has to rest somewhere, and the filled
+                        // disc would claim a selection the toolbar is reading out as "--".
+                        var isOnNumber = CurrentPart.HasValue && deg % 30 == 0;
+                    }
+                    <div style="@GetClockPointerStyle(deg)"
+                         aria-hidden="true"
+                         class="@GetClockPointerClass()">
+                        <div style="@GetClockPointerThumbStyle(isOnNumber)"
+                             class="bit-ctp-pth@(isOnNumber ? "" : $" bit-ctp-ptm {Classes?.ClockPointerThumbMinute}") @Classes?.ClockPointerThumb"></div>
+                    </div>
                 </div>
             </div>
+
+            @if (TimeFormat == BitTimeFormat.TwelveHours && AmPmInClock)
+            {
+                @amPmButtons
+            }
+
+            @if (HasActions)
+            {
+                <div style="@Styles?.Actions" class="bit-ctp-act @Classes?.Actions">
+                    @if (ShowNowButton)
+                    {
+                        <button @onclick="HandleOnNowClick"
+                                type="button"
+                                style="@Styles?.NowButton"
+                                class="bit-ctp-abn @Classes?.NowButton"
+                                disabled="@(IsInteractive is false)">
+                            @NowButtonText
+                        </button>
+                    }
+                    @if (ShowClearButton)
+                    {
+                        <button @onclick="HandleOnClearClick"
+                                type="button"
+                                style="@Styles?.ClearButton"
+                                class="bit-ctp-abn @Classes?.ClearButton"
+                                disabled="@(IsInteractive is false || CurrentValue.HasValue is false)">
+                            @ClearButtonText
+                        </button>
+                    }
+                </div>
+            }
         </div>
 
         @if (ShowCloseButton && Standalone is false)
@@ -199,6 +362,13 @@
                     aria-label="@CloseButtonTitle">
                 <i style="@Styles?.CloseButtonIcon" class="bit-ctp-cbi @closeButtonIcon?.GetCssClasses() @Classes?.CloseButtonIcon" aria-hidden="true" />
             </button>
+        }
+
+        @if (CalloutFooterTemplate is not null)
+        {
+            <div id="@_footerId" style="@Styles?.CalloutFooter" class="@Classes?.CalloutFooter">
+                @CalloutFooterTemplate
+            </div>
         }
     </div>
 </div>

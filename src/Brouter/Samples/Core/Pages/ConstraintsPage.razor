@@ -1,0 +1,33 @@
+﻿@* One row per catalog entry. AppRouter declares a /c/{Kind}/{v:Token} route for each, plus an
+   unconstrained /c/{kind}/{value} fallback - so the "fails" link proves the constraint rejected
+   the value and the URL fell through to the less specific sibling. *@
+
+<PageTitle>Constraints</PageTitle>
+
+<h1>Route constraints</h1>
+
+<p class="muted">
+    Type constraints validate <em>and convert</em> the bound value; validation constraints only gate
+    the match and leave it a string. <code>slug</code> is registered on
+    <code>BrouterOptions.Constraints</code> in this app's DI setup.
+</p>
+
+@foreach (var group in ConstraintCatalog.All.GroupBy(c => c.Category))
+{
+    <h2>@group.Key</h2>
+    <ul>
+        @foreach (var c in group)
+        {
+            <li>
+                <code>{v:@c.Token}</code> - @c.Rule
+                <BrouterLink Href="@Url(c, c.PassExample)">passes: @c.PassExample</BrouterLink> ·
+                <BrouterLink Href="@Url(c, c.FailExample)">fails: @c.FailExample</BrouterLink>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    private static string Url(ConstraintDemo c, string value) =>
+        $"/c/{c.Kind}/{Uri.EscapeDataString(value)}";
+}

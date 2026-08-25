@@ -12,6 +12,7 @@ namespace Bit.Butil;
 /// Both APIs require an active service worker registration. The actual work runs inside the
 /// service worker; from C# you can register/unregister tags and inspect the registered ones.
 /// </remarks>
+[ButilService(typeof(BackgroundSync))]
 public class BackgroundSync(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>ServiceWorkerRegistration.sync</c>.</summary>
@@ -46,6 +47,7 @@ public class BackgroundSync(IJSRuntime js)
     /// <summary>
     /// Registers a periodic sync. Requires the <c>periodic-background-sync</c> permission.
     /// </summary>
+    /// <param name="tag">The registration name your service worker matches on in its <c>periodicsync</c> handler.</param>
     /// <param name="minInterval">Minimum interval between fires, in milliseconds. The browser may extend it.</param>
     /// <remarks>
     /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)

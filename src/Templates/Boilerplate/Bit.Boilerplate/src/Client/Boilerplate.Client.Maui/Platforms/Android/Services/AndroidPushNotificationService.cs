@@ -1,7 +1,11 @@
+// [mirror] IPushNotificationService - subscription and permission flow - keep in sync with:
+// - src/Client/Boilerplate.Client.Maui/Platforms/iOS/Services/iOSPushNotificationService.cs
+// - src/Client/Boilerplate.Client.Maui/Platforms/MacCatalyst/Services/MacCatalystPushNotificationService.cs
+
 using Firebase.Messaging;
-using Plugin.LocalNotification;
-using Microsoft.Extensions.Logging;
 using static Android.Provider.Settings;
+
+using Boilerplate.Shared.Features.PushNotification;
 
 namespace Boilerplate.Client.Maui.Platforms.Android.Services;
 

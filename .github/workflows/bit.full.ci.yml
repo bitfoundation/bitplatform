@@ -20,12 +20,12 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
           persist-credentials: false
 
     - name: Setup .NET 10
-      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
 
@@ -50,12 +50,12 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
           persist-credentials: false
 
     - name: Setup .NET 10
-      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
 
@@ -103,7 +103,7 @@ jobs:
     - name: Run tests (Blazor Server)
       id: test-postgresql-blazorserver
       working-directory: TestPostgreSQL/src/Tests
-      run: dotnet test --no-build
+      run: dotnet test
 
     - name: Upload Blazor Server test results on failure
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -159,12 +159,12 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
           persist-credentials: false
 
     - name: Setup .NET 10
-      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
 
@@ -216,7 +216,7 @@ jobs:
     - name: Run tests (Blazor Server)
       id: test-mssql-blazorserver
       working-directory: TestSqlServer/src/Tests
-      run: dotnet test --no-build
+      run: dotnet test
 
     - name: Upload Blazor Server test results on failure
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -252,18 +252,9 @@ jobs:
         path: ./TestSqlServer/src/Tests/TestResults
         retention-days: 14
 
-    - name: Run UI tests (InvariantGlobalization)
-      id: test-mssql-invariantglobalization
-      working-directory: TestSqlServer/src/Tests
-      run: WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true dotnet test -p:InvariantGlobalization=true --filter "TestCategory=UITest&TestCategory!=Localization"
-
-    - name: Upload InvariantGlobalization test results on failure
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      if: ${{ !cancelled() && steps.test-mssql-invariantglobalization.outcome == 'failure' }}
-      with:
-        name: sqlserver-tests-invariantglobalization
-        path: ./TestSqlServer/src/Tests/TestResults
-        retention-days: 14
+    # This job deliberately has no InvariantGlobalization run: Microsoft.Data.SqlClient throws
+    # "Globalization Invariant Mode is not supported." out of SqlConnection.Open, so the whole assembly aborts in
+    # its initializer before a single browser starts. The PostgreSQL job above covers that configuration.
 
 
   build-boilerplate-configurations:
@@ -272,12 +263,12 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
           persist-credentials: false
 
     - name: Setup .NET 10
-      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
 
@@ -322,9 +313,9 @@ jobs:
 
     - name: Build sample configuration 1
       run: |
-        dotnet new bit-bp --name TestProject --database SqlServer --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --module Admin --offlineDb --appInsights --sentry --signalR --notification --cloudflare --ads --aspire --redis --multitenant --brouter
-        dotnet build TestProject/TestProject.sln -p:InvariantGlobalization=false -p:Environment=Staging -p:EnforceCodeStyleInBuild=true
-        rm -r "TestProject"
+        dotnet new bit-bp --name MyCompany.TestProject --database SqlServer --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --module Admin --offlineDb --appInsights --sentry --signalR --notification --cloudflare --ads --aspire --redis --multitenant --brouter
+        dotnet build MyCompany.TestProject/MyCompany.TestProject.sln -p:InvariantGlobalization=false -p:Environment=Staging -p:EnforceCodeStyleInBuild=true
+        rm -r "MyCompany.TestProject"
 
     - name: Build sample configuration 2
       run: |
@@ -340,12 +331,12 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
           persist-credentials: false
 
     - name: Setup .NET 10
-      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
 
@@ -380,12 +371,12 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
           persist-credentials: false
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
 
@@ -472,9 +463,10 @@ jobs:
         dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj --output ./packages --configuration Release
 
-    - name: Generate CSS/JS files Bswup
-      run: dotnet build src/Bswup/Bit.Bswup/Bit.Bswup.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
-
+    # No "Generate CSS/JS files" pre-step: unlike the BlazorUI projects above, Bit.Bswup generates
+    # its bundles as part of the build itself (see IncludeBswupAssetsAsStaticWebAsset /
+    # BuildBswupAssetsOnCrossTargeting in Bit.Bswup.csproj), so the build below emits them from a
+    # clean checkout on its own.
     - name: Build and pack Bswup
       run: |
         dotnet build src/Bswup/Bit.Bswup/Bit.Bswup.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -539,12 +531,12 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
           persist-credentials: false
 
     - name: Setup .NET 10
-      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
 
@@ -569,12 +561,12 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
           persist-credentials: false
 
     - name: Setup .NET 10
-      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
 
@@ -599,12 +591,12 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
           persist-credentials: false
 
     - name: Setup .NET 10
-      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
 
@@ -629,12 +621,12 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
           persist-credentials: false
 
     - name: Setup .NET 10
-      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
 
@@ -659,12 +651,12 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
           persist-credentials: false
 
     - name: Setup .NET 10
-      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
 
@@ -685,12 +677,12 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
           persist-credentials: false
 
     - name: Setup .NET 10
-      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
 

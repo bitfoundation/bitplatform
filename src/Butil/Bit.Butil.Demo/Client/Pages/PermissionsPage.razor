@@ -1,0 +1,225 @@
+@page "/permissions"
+@implements IAsyncDisposable
+@inject Bit.Butil.Permissions permissions
+
+<PageTitle>Permissions - Bit.Butil</PageTitle>
+
+<PageHeader Category="Identity & Permissions"
+            Title="Permissions"
+            Lead="Query the state of geolocation, notifications, camera, clipboard and any other browser permission from C# - without triggering a prompt."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Permissions_API"
+            InjectAs="Permissions permissions" />
+
+<div class="stack">
+    <DemoSection Title="Check support"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes navigator.permissions. All evergreen browsers support it, but individual descriptor names still vary per engine."
+                 Code=@("""
+@inject Bit.Butil.Permissions permissions
+
+var isSupported = await permissions.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Query a permission"
+                 Api="Query"
+                 Description="Returns the current PermissionState for a descriptor name: Granted, Denied or Prompt. Querying never shows a prompt - it only reads the stored decision. Descriptor names the engine does not recognize come back as Unknown instead of throwing."
+                 Code=@("""
+var state = await permissions.Query("geolocation");
+
+if (state is PermissionState.Granted)
+{
+    // safe to call the API without a prompt appearing
+}
+""")>
+        <div class="field">
+            <span class="field-label">Permission name</span>
+            <select @bind="selectedPermission">
+                @foreach (var name in permissionNames)
+                {
+                    <option value="@name">@name</option>
+                }
+            </select>
+        </div>
+        <div class="controls">
+            <button @onclick="QuerySelected">Query selected</button>
+        </div>
+        <DemoConsole @ref="queryOutput" Title="query output" />
+    </DemoSection>
+
+    <DemoSection Title="Snapshot all common descriptors"
+                 Api="Query"
+                 Description="Because Query is cheap and prompt-free, you can sweep a list of descriptors at startup to build a capability snapshot - handy for showing settings toggles in the right initial state."
+                 Code=@("""
+string[] names = ["geolocation", "notifications", "camera", "microphone", "clipboard-read", "clipboard-write"];
+
+foreach (var name in names)
+{
+    var state = await permissions.Query(name);
+    // Granted / Denied / Prompt / Unknown
+}
+""")>
+        <div class="controls">
+            <button class="secondary" @onclick="QueryAll">Query all common</button>
+        </div>
+        <DemoConsole @ref="snapshotOutput" Title="snapshot output" />
+    </DemoSection>
+
+    <DemoSection Title="Watch a permission for changes"
+                 Api="SubscribeChange"
+                 Description="A permission can change without your page doing anything - the user revokes camera access from the address bar, or grants notifications in site settings. SubscribeChange is the only way to notice that short of polling Query. It returns the state at subscription time alongside the subscription, so you don't have to call Query first and race the handler. An unrecognized descriptor yields Unknown with a null subscription - there is nothing to watch."
+                 Code=@("""
+var (state, subscription) = await permissions.SubscribeChange("geolocation", newState =>
+{
+    // the user granted or revoked it from browser UI
+    InvokeAsync(StateHasChanged);
+});
+
+if (subscription is null)
+{
+    // no Permissions API, or this browser doesn't know the descriptor
+}
+
+// later
+await subscription.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="WatchPermission" disabled="@(_watchSub is not null)">SubscribeChange</button>
+            <button class="secondary" @onclick="UnwatchPermission" disabled="@(_watchSub is null)">Dispose</button>
+        </div>
+        <DemoConsole @ref="watchOutput" Title="change output" />
+    </DemoSection>
+</div>
+
+<Callout Type="info" Title="Descriptor names vary by engine">
+    Chromium understands the widest set (camera, microphone, clipboard-read, background-sync, ...), while
+    Firefox and Safari accept fewer names. An unrecognized name is not an error - Butil maps it to
+    PermissionState.Unknown so a cross-browser sweep never throws.
+</Callout>
+
+<Callout Type="info" Title="Querying is passive">
+    The Permissions API reads state; it never asks the user for anything. To actually obtain a permission,
+    call the owning API - for example Notification.RequestPermission or Geolocation.GetCurrentPosition -
+    which triggers the browser's own prompt.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes navigator.permissions." />
+    <ApiMember Name="Query" Signature="Task<PermissionState> Query(string name)" Description="Returns the current state for a given permission descriptor name (granted, denied, prompt); unknown names return PermissionState.Unknown." />
+    <ApiMember Name="SubscribeChange" Signature="Task<(PermissionState State, ButilSubscription? Subscription)> SubscribeChange(string name, Action<PermissionState> handler)" Description="Watches a permission and calls the handler whenever its state changes - including revocations made from browser UI. Returns the state at subscription time; the subscription is null for an unsupported runtime or descriptor." />
+    <ApiMember Name="PermissionState" Signature="enum PermissionState { Granted, Denied, Prompt, Unknown }" Description="Mirrors PermissionStatus.state, plus Unknown for unsupported descriptors or runtimes." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole queryOutput = default!;
+    private DemoConsole snapshotOutput = default!;
+    private DemoConsole watchOutput = default!;
+    private ButilSubscription? _watchSub;
+    private string selectedPermission = "geolocation";
+
+    private async Task WatchPermission()
+    {
+        try
+        {
+            var (state, sub) = await permissions.SubscribeChange(selectedPermission, newState =>
+            {
+                _ = InvokeAsync(() => watchOutput.Info($"'{selectedPermission}' changed → {newState}"));
+            });
+
+            _watchSub = sub;
+            if (sub is null)
+            {
+                await watchOutput.Warn($"SubscribeChange(\"{selectedPermission}\") → {state}; nothing to watch on this browser.");
+                return;
+            }
+            await watchOutput.Success($"Watching '{selectedPermission}' - current state {state}. Change it from the browser's site settings to see an event.");
+        }
+        catch (Exception ex)
+        {
+            await watchOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task UnwatchPermission()
+    {
+        if (_watchSub is null) return;
+        await _watchSub.DisposeAsync();
+        _watchSub = null;
+        await watchOutput.Log("Subscription disposed.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_watchSub is not null) await _watchSub.DisposeAsync();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+
+    private static readonly string[] permissionNames =
+    [
+        "geolocation",
+        "notifications",
+        "camera",
+        "microphone",
+        "clipboard-read",
+        "clipboard-write",
+        "push",
+        "midi",
+        "background-sync",
+        "persistent-storage",
+        "screen-wake-lock",
+        "storage-access",
+    ];
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await permissions.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task QuerySelected()
+    {
+        try
+        {
+            var state = await permissions.Query(selectedPermission);
+            await queryOutput.Success($"Query(\"{selectedPermission}\") →", state);
+        }
+        catch (Exception ex)
+        {
+            await queryOutput.Error("Query failed →", ex.Message);
+        }
+    }
+
+    private async Task QueryAll()
+    {
+        try
+        {
+            await snapshotOutput.Info("Querying common permissions…");
+            foreach (var name in permissionNames)
+            {
+                var state = await permissions.Query(name);
+                await snapshotOutput.Log($"{name} → {state}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await snapshotOutput.Error("Query failed →", ex.Message);
+        }
+    }
+}

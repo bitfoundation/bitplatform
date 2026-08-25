@@ -6,6 +6,15 @@ public partial class BitCarouselDemo
     [
         new()
         {
+            Name = "Accent",
+            Type = "BitColorKind?",
+            DefaultValue = "null",
+            Description = "Specifies the accent color kind of the component, which colors the dot of the current page. Color takes precedence over it when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#color-kind-enum",
+        },
+        new()
+        {
             Name = "AnimationDuration",
             Type = "double",
             DefaultValue = "0.5",
@@ -27,6 +36,13 @@ public partial class BitCarouselDemo
         },
         new()
         {
+            Name = "AutoPlayReverse",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Plays the auto scrolling backwards, from the last slide towards the first one."
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -40,6 +56,71 @@ public partial class BitCarouselDemo
             Description = "The custom CSS classes for the different parts of the carousel.",
             LinkType = LinkType.Link,
             Href = "#class-styles"
+        },
+        new()
+        {
+            Name = "Color",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The general color of the carousel, applied to the dot of the current page and the next/prev and play/pause buttons.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
+        },
+        new()
+        {
+            Name = "DefaultPage",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "The page (1 based, like GoTo) the carousel shows when it first renders. Values outside of the range of the carousel are clamped to its first or last page."
+        },
+        new()
+        {
+            Name = "DotAriaLabel",
+            Type = "string",
+            DefaultValue = "Slide",
+            Description = "The accessible label of a dot of the carousel, followed by the number of the page it navigates to."
+        },
+        new()
+        {
+            Name = "DotsAriaLabel",
+            Type = "string",
+            DefaultValue = "Choose slide to display",
+            Description = "The accessible label of the dots container of the carousel."
+        },
+        new()
+        {
+            Name = "DotTemplate",
+            Type = "RenderFragment<int>?",
+            DefaultValue = "null",
+            Description = "The custom content of a dot of the carousel, receiving the zero based index of the page the dot navigates to. A dot that holds content is laid out around it instead of being drawn as the default circle."
+        },
+        new()
+        {
+            Name = "DragThreshold",
+            Type = "int",
+            DefaultValue = "20",
+            Description = "The distance (in pixels) the pointer has to travel over the carousel before it moves to another page."
+        },
+        new()
+        {
+            Name = "Fade",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Cross-fades the slides in place instead of sliding them. A fading carousel shows exactly one slide at a time."
+        },
+        new()
+        {
+            Name = "Gap",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The space between the slides of the carousel (any CSS length, for example 1rem)."
+        },
+        new()
+        {
+            Name = "GoLeftAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The accessible label of the go to left button. When not set, the button is labelled after what it does (next or previous slide, depending on the direction)."
         },
         new()
         {
@@ -58,6 +139,13 @@ public partial class BitCarouselDemo
             Description = "Gets or sets the name of the icon for the go to left button from the built-in Fluent UI icons.",
             LinkType = LinkType.Link,
             Href = "https://blazorui.bitplatform.dev/iconography",
+        },
+        new()
+        {
+            Name = "GoRightAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The accessible label of the go to right button. When not set, the button is labelled after what it does (previous or next slide, depending on the direction)."
         },
         new()
         {
@@ -82,14 +170,14 @@ public partial class BitCarouselDemo
             Name = "HideDots",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Hides the Dots indicator at the bottom of the BitCarousel."
+            Description = "Hides the Dots indicator at the bottom of the BitCarousel. The dots are also left out when everything fits on a single page."
         },
         new()
         {
             Name = "HideNextPrev",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Hides the Next/Prev buttons of the BitCarousel."
+            Description = "Hides the Next/Prev buttons of the BitCarousel. Each button also hides itself at the end it cannot move any further towards, unless InfiniteScrolling is enabled."
         },
         new()
         {
@@ -100,16 +188,140 @@ public partial class BitCarouselDemo
         },
         new()
         {
+            Name = "ItemAriaLabelFormat",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The accessible label of a slide of the carousel, as a composite format string whose {0} is the 1 based position of the slide and whose {1} is the number of slides (\"{0} of {1}\" when not set). It is only used for the slides that were not given an AriaLabel of their own."
+        },
+        new()
+        {
+            Name = "NoDrag",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables dragging the carousel with the pointer."
+        },
+        new()
+        {
+            Name = "NoKeyboard",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Removes the carousel from the tab sequence and turns off its keyboard navigation (arrow keys, Home and End)."
+        },
+        new()
+        {
             Name = "OnChange",
             Type = "EventCallback<int>",
-            Description = "The event that will be called on carousel page navigation."
+            Description = "The event that will be called on carousel page navigation. The provided value is the zero based index of the page the carousel moved to."
+        },
+        new()
+        {
+            Name = "PauseButtonAriaLabel",
+            Type = "string",
+            DefaultValue = "Stop automatic slide show",
+            Description = "The accessible label of the play/pause button while the auto scrolling is running."
+        },
+        new()
+        {
+            Name = "PauseIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon of the play/pause button while the auto scrolling is running, using custom CSS classes for external icon libraries. Takes precedence over PauseIconName.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "PauseIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the icon of the play/pause button while the auto scrolling is running, from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
+        },
+        new()
+        {
+            Name = "PauseOnFocus",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Pauses the auto scrolling while the keyboard focus is inside the carousel."
+        },
+        new()
+        {
+            Name = "PauseOnHover",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Pauses the auto scrolling while the pointer is over the carousel."
+        },
+        new()
+        {
+            Name = "PlayButtonAriaLabel",
+            Type = "string",
+            DefaultValue = "Start automatic slide show",
+            Description = "The accessible label of the play/pause button while the auto scrolling is paused."
+        },
+        new()
+        {
+            Name = "PlayIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon of the play/pause button while the auto scrolling is paused, using custom CSS classes for external icon libraries. Takes precedence over PlayIconName.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "PlayIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the icon of the play/pause button while the auto scrolling is paused, from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
+        },
+        new()
+        {
+            Name = "ResponsiveOptions",
+            Type = "IEnumerable<BitCarouselResponsiveOption>?",
+            DefaultValue = "null",
+            Description = "Adapts VisibleItemsCount and ScrollItemsCount to the width of the carousel. Each option applies while the carousel is no wider than its Breakpoint, and the narrowest matching one wins.",
+            LinkType = LinkType.Link,
+            Href = "#responsive-option",
         },
         new()
         {
             Name = "ScrollItemsCount",
             Type = "int",
             DefaultValue = "1",
-            Description = "Number of items that is going to be changed on navigation."
+            Description = "Number of items that is going to be changed on navigation. It is clamped to VisibleItemsCount, and a non-infinite carousel moves by fewer items near its ends so its first and last pages always stay full. Together with VisibleItemsCount it also decides where the carousel stops, which is what the dots stand for and what OnChange reports."
+        },
+        new()
+        {
+            Name = "ShowPlayPause",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders a play/pause button next to the dots, so the auto scrolling can be stopped and started again. Only rendered while AutoPlay is enabled."
+        },
+        new()
+        {
+            Name = "Size",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "The size of the dots and of the next/prev buttons of the carousel.",
+            LinkType = LinkType.Link,
+            Href = "#size-enum",
+        },
+        new()
+        {
+            Name = "StopOnInteraction",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stops the auto scrolling as soon as the carousel is navigated by hand. Once stopped this way the rotation only comes back through Resume or the play/pause button."
+        },
+        new()
+        {
+            Name = "StopOnLastSlide",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stops the auto scrolling on the last page instead of rewinding to the first one. It has no effect while InfiniteScrolling is enabled."
         },
         new()
         {
@@ -122,10 +334,66 @@ public partial class BitCarouselDemo
         },
         new()
         {
+            Name = "Vertical",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stacks the slides vertically, so the carousel scrolls up and down instead of left and right."
+        },
+        new()
+        {
             Name = "VisibleItemsCount",
             Type = "int",
             DefaultValue = "1",
-            Description = "Number of items that is visible in the carousel."
+            Description = "Number of items that is visible in the carousel. The Xs to Xxl variants override it responsively, based on the width of the carousel itself."
+        },
+        new()
+        {
+            Name = "VisibleItemsCountXs",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Number of visible items in the extra small breakpoint (from 0 up)."
+        },
+        new()
+        {
+            Name = "VisibleItemsCountSm",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Number of visible items in the small breakpoint (from 600px up)."
+        },
+        new()
+        {
+            Name = "VisibleItemsCountMd",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Number of visible items in the medium breakpoint (from 960px up)."
+        },
+        new()
+        {
+            Name = "VisibleItemsCountLg",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Number of visible items in the large breakpoint (from 1280px up)."
+        },
+        new()
+        {
+            Name = "VisibleItemsCountXl",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Number of visible items in the extra large breakpoint (from 1920px up)."
+        },
+        new()
+        {
+            Name = "VisibleItemsCountXxl",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Number of visible items in the extra extra large breakpoint (from 2560px up)."
+        },
+        new()
+        {
+            Name = "Wheel",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Navigates the carousel with the wheel of the mouse (or with a two finger scroll on a trackpad)."
         }
     ];
 
@@ -133,8 +401,61 @@ public partial class BitCarouselDemo
     [
         new()
         {
+            Id = "carousel-item",
+            Title = "BitCarouselItem",
+            Description = "A single slide of the BitCarousel.",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "ChildContent",
+                   Type = "RenderFragment?",
+                   DefaultValue = "null",
+                   Description = "The content of the carousel item (slide)."
+               },
+               new()
+               {
+                   Name = "Index",
+                   Type = "int",
+                   DefaultValue = "0",
+                   Description = "The zero based position of this item among the items of its carousel (read-only, assigned by the carousel)."
+               },
+            ]
+        },
+        new()
+        {
+            Id = "responsive-option",
+            Title = "BitCarouselResponsiveOption",
+            Description = "The layout a BitCarousel takes while it is no wider than a given breakpoint. A member that is left unset keeps the value of the matching parameter of the carousel.",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Breakpoint",
+                   Type = "double",
+                   DefaultValue = "0",
+                   Description = "The largest width (in pixels) of the carousel this option applies to."
+               },
+               new()
+               {
+                   Name = "VisibleItemsCount",
+                   Type = "int?",
+                   DefaultValue = "null",
+                   Description = "The number of items that is visible in the carousel while this option applies."
+               },
+               new()
+               {
+                   Name = "ScrollItemsCount",
+                   Type = "int?",
+                   DefaultValue = "null",
+                   Description = "The number of items a navigation moves while this option applies."
+               },
+            ]
+        },
+        new()
+        {
             Id = "class-styles",
-            Title = "BitTimelineClassStyles",
+            Title = "BitCarouselClassStyles",
             Description = "The custom CSS classes and styles of the different parts of the BitCarousel.",
             Parameters =
             [
@@ -154,10 +475,31 @@ public partial class BitCarouselDemo
                },
                new()
                {
+                   Name = "Item",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the items (slides) of the BitCarousel."
+               },
+               new()
+               {
+                   Name = "CurrentItem",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the items (slides) of the BitCarousel that are currently on screen."
+               },
+               new()
+               {
                    Name = "Buttons",
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the next/prev buttons of the BitCarousel."
+               },
+               new()
+               {
+                   Name = "ButtonIcons",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the icons of the next/prev buttons of the BitCarousel."
                },
                new()
                {
@@ -203,10 +545,24 @@ public partial class BitCarouselDemo
                },
                new()
                {
-                   Name = "CurrectDot",
+                   Name = "CurrentDot",
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the current dot element of the BitCarousel."
+               },
+               new()
+               {
+                   Name = "PlayPauseButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the play/pause button of the BitCarousel."
+               },
+               new()
+               {
+                   Name = "PlayPauseButtonIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the icon of the play/pause button of the BitCarousel."
                }
             ]
         },
@@ -241,8 +597,93 @@ public partial class BitCarouselDemo
         },
     ];
 
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+            Id = "color-kind-enum",
+            Name = "BitColorKind",
+            Description = "Defines the color kinds available in the bit BlazorUI.",
+            Items =
+            [
+                new() { Name = "Primary", Description = "The primary color kind.", Value = "0" },
+                new() { Name = "Secondary", Description = "The secondary color kind.", Value = "1" },
+                new() { Name = "Tertiary", Description = "The tertiary color kind.", Value = "2" },
+                new() { Name = "Transparent", Description = "The transparent color kind.", Value = "3" },
+            ]
+        },
+        new()
+        {
+            Id = "color-enum",
+            Name = "BitColor",
+            Description = "Defines the general colors available in the bit BlazorUI.",
+            Items =
+            [
+                new() { Name = "Primary", Description = "Primary general color.", Value = "0" },
+                new() { Name = "Secondary", Description = "Secondary general color.", Value = "1" },
+                new() { Name = "Tertiary", Description = "Tertiary general color.", Value = "2" },
+                new() { Name = "Info", Description = "Info general color.", Value = "3" },
+                new() { Name = "Success", Description = "Success general color.", Value = "4" },
+                new() { Name = "Warning", Description = "Warning general color.", Value = "5" },
+                new() { Name = "SevereWarning", Description = "SevereWarning general color.", Value = "6" },
+                new() { Name = "Error", Description = "Error general color.", Value = "7" },
+                new() { Name = "PrimaryBackground", Description = "Primary background color.", Value = "8" },
+                new() { Name = "SecondaryBackground", Description = "Secondary background color.", Value = "9" },
+                new() { Name = "TertiaryBackground", Description = "Tertiary background color.", Value = "10" },
+                new() { Name = "PrimaryForeground", Description = "Primary foreground color.", Value = "11" },
+                new() { Name = "SecondaryForeground", Description = "Secondary foreground color.", Value = "12" },
+                new() { Name = "TertiaryForeground", Description = "Tertiary foreground color.", Value = "13" },
+                new() { Name = "PrimaryBorder", Description = "Primary border color.", Value = "14" },
+                new() { Name = "SecondaryBorder", Description = "Secondary border color.", Value = "15" },
+                new() { Name = "TertiaryBorder", Description = "Tertiary border color.", Value = "16" },
+            ]
+        },
+        new()
+        {
+            Id = "size-enum",
+            Name = "BitSize",
+            Description = "Defines the sizes available in the bit BlazorUI.",
+            Items =
+            [
+                new() { Name = "Small", Description = "The small size.", Value = "0" },
+                new() { Name = "Medium", Description = "The medium size.", Value = "1" },
+                new() { Name = "Large", Description = "The large size.", Value = "2" },
+            ]
+        },
+    ];
+
     private readonly List<ComponentParameter> componentPublicMembers =
     [
+        new()
+        {
+            Name = "CurrentPage",
+            Type = "int",
+            Description = "The zero based index of the page the carousel is currently showing.",
+        },
+        new()
+        {
+            Name = "ItemsCount",
+            Type = "int",
+            Description = "The number of items (slides) of the carousel.",
+        },
+        new()
+        {
+            Name = "PagesCount",
+            Type = "int",
+            Description = "The number of pages of the carousel.",
+        },
+        new()
+        {
+            Name = "IsPlaying",
+            Type = "bool",
+            Description = "Whether the auto scrolling is currently running.",
+        },
+        new()
+        {
+            Name = "IsPaused",
+            Type = "bool",
+            Description = "Whether the auto scrolling has been paused through Pause or the play/pause button.",
+        },
         new()
         {
             Name = "GoNext",
@@ -259,26 +700,42 @@ public partial class BitCarouselDemo
         {
             Name = "GoTo",
             Type = "Task",
-            Description = "Navigates to the given carousel item number.",
+            Description = "Navigates to the given carousel page number (1 based).",
         },
         new()
         {
             Name = "Pause",
-            Type = "Task",
+            Type = "void",
             Description = "Pauses the AutoPlay if enabled.",
         },
         new()
         {
             Name = "Resume",
-            Type = "Task",
+            Type = "void",
             Description = "Resumes the AutoPlay if enabled.",
+        },
+        new()
+        {
+            Name = "TogglePlay",
+            Type = "void",
+            Description = "Pauses the AutoPlay when it is running, and resumes it when it is paused.",
+        },
+        new()
+        {
+            Name = "Refresh",
+            Type = "Task",
+            Description = "Measures the carousel again and lays its slides out accordingly.",
         }
     ];
 
 
 
     private int number = 1;
+    private int currentPage;
     private BitCarousel carousel = default!;
+
+    private int thumbsCurrentPage;
+    private BitCarousel thumbsCarousel = default!;
 
     private async Task GoNext()
     {
@@ -294,386 +751,4 @@ public partial class BitCarouselDemo
     {
         await carousel.GoTo(number);
     }
-
-
-
-    private readonly string example1RazorCode = @"
-<style>
-    .number {
-        position: absolute;
-        top: 0.75rem;
-        padding: 0.75rem;
-        font-size: 0.75rem;
-        color: #D7D7D7;
-    }
-
-    .image {
-        width: 100%;
-        height: 100%;
-    }
-</style>
-
-<BitCarousel>
-    <BitCarouselItem>
-        <div class=""numbertext"">1 / 4</div>
-        <img class=""image"" src=""img1.jpg"">
-    </BitCarouselItem>
-    <BitCarouselItem>
-        <div class=""numbertext"">2 / 4</div>
-        <img class=""image"" src=""img2.jpg"" />
-    </BitCarouselItem>
-    <BitCarouselItem>
-        <div class=""numbertext"">3 / 4</div>
-        <img class=""image"" src=""img3.jpg"" />
-    </BitCarouselItem>
-    <BitCarouselItem>
-        <div class=""numbertext"">4 / 4</div>
-        <img class=""image"" src=""img4.jpg"" />
-    </BitCarouselItem>
-</BitCarousel>";
-
-    private readonly string example2RazorCode = @"
-<style>
-    .image {
-        width: 100%;
-        height: 100%;
-    }
-
-    .text-title {
-        position: absolute;
-        bottom: 3.4375rem;
-        width: 100%;
-        font-size: 0.9375rem;
-        text-align: center;
-        color: #FFFFFF;
-    }
-
-    .text-description {
-        position: absolute;
-        bottom: 1.875rem;
-        width: 100%;
-        font-size: 0.6875rem;
-        text-align: center;
-        color: #FFFFFF;
-    }
-</style>
-
-<BitCarousel InfiniteScrolling>
-    <BitCarouselItem>
-        <img class=""image"" src=""img1.jpg"" />
-        <div class=""text-title"">Aurora</div>
-        <div class=""text-description"">This is Aurora and it's fantastic</div>
-    </BitCarouselItem>
-    <BitCarouselItem>
-        <img class=""image"" src=""img2.jpg"" />
-        <div class=""text-title"">Beautiful Mountain</div>
-        <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
-    </BitCarouselItem>
-    <BitCarouselItem>
-        <img class=""image"" src=""img3.jpg"" />
-        <div class=""text-title"">Forest In The Valley</div>
-        <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
-    </BitCarouselItem>
-    <BitCarouselItem>
-        <img class=""image"" src=""img4.jpg"" />
-        <div class=""text-title"">Road Among The Mountains</div>
-        <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
-    </BitCarouselItem>
-</BitCarousel>";
-
-    private readonly string example3RazorCode = @"
-<style>
-    .image {
-        width: 100%;
-        height: 100%;
-    }
-
-    .text-title {
-        position: absolute;
-        bottom: 3.4375rem;
-        width: 100%;
-        font-size: 0.9375rem;
-        text-align: center;
-        color: #FFFFFF;
-    }
-
-    .text-description {
-        position: absolute;
-        bottom: 1.875rem;
-        width: 100%;
-        font-size: 0.6875rem;
-        text-align: center;
-        color: #FFFFFF;
-    }
-</style>
-
-<BitCarousel HideDots>
-    <BitCarouselItem>
-        <div class=""numbertext"">1 / 4</div>
-        <img class=""image"" src=""img1.jpg"" />
-        <div class=""text-title"">Aurora</div>
-        <div class=""text-description"">This is Aurora and it's fantastic</div>
-    </BitCarouselItem>
-    <BitCarouselItem>
-        <div class=""numbertext"">2 / 4</div>
-        <img class=""image"" src=""img2.jpg"" />
-        <div class=""text-title"">Beautiful Mountain</div>
-        <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
-    </BitCarouselItem>
-    <BitCarouselItem>
-        <div class=""numbertext"">3 / 4</div>
-        <img class=""image"" src=""img3.jpg"" />
-        <div class=""text-title"">Forest In The Valley</div>
-        <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
-    </BitCarouselItem>
-    <BitCarouselItem>
-        <div class=""numbertext"">4 / 4</div>
-        <img class=""image"" src=""img4.jpg"" />
-        <div class=""text-title"">Road Among The Mountains</div>
-        <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
-    </BitCarouselItem>
-</BitCarousel>";
-
-    private readonly string example4RazorCode = @"
-<style>
-    .image {
-        width: 100%;
-        height: 100%;
-    }
-
-    .text-title {
-        position: absolute;
-        bottom: 3.4375rem;
-        width: 100%;
-        font-size: 0.9375rem;
-        text-align: center;
-        color: #FFFFFF;
-    }
-
-    .text-description {
-        position: absolute;
-        bottom: 1.875rem;
-        width: 100%;
-        font-size: 0.6875rem;
-        text-align: center;
-        color: #FFFFFF;
-    }
-</style>
-
-<BitCarousel HideNextPrev @ref=""carousel"">
-    <BitCarouselItem>
-        <div class=""numbertext"">1 / 4</div>
-        <img class=""image"" src=""img1.jpg"" />
-        <div class=""text-title"">Aurora</div>
-        <div class=""text-description"">This is Aurora and it's fantastic</div>
-    </BitCarouselItem>
-    <BitCarouselItem>
-        <div class=""numbertext"">2 / 4</div>
-        <img class=""image"" src=""img2.jpg"" />
-        <div class=""text-title"">Beautiful Mountain</div>
-        <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
-    </BitCarouselItem>
-    <BitCarouselItem>
-        <div class=""numbertext"">3 / 4</div>
-        <img class=""image"" src=""img3.jpg"" />
-        <div class=""text-title"">Forest In The Valley</div>
-        <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
-    </BitCarouselItem>
-    <BitCarouselItem>
-        <div class=""numbertext"">4 / 4</div>
-        <img class=""image"" src=""img4.jpg"" />
-        <div class=""text-title"">Road Among The Mountains</div>
-        <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
-    </BitCarouselItem>
-</BitCarousel>
-
-<BitButton OnClick=""GoPrev"">&lt; Prev</BitButton>
-<BitButton OnClick=""GoNext"">Next &gt;</BitButton>
-
-<BitButton OnClick=""GoTo"">GoTo</BitButton>
-<BitNumberField @bind-Value=""number"" Min=""1"" Max=""4"" Mode=""BitSpinButtonMode.Compact"" />";
-    private readonly string example4CsharpCode = @"
-private int number = 1;
-private BitCarousel carousel;
-
-private async Task GoNext()
-{
-    await carousel.GoNext();
-}
-
-private async Task GoPrev()
-{
-    await carousel.GoPrev();
-}
-
-private async Task GoTo()
-{
-    await carousel.GoTo(number);
-}";
-
-    private readonly string example5RazorCode = @"
-<style>
-    .image {
-        width: 100%;
-        height: 100%;
-    }
-
-    .text-title {
-        position: absolute;
-        bottom: 3.4375rem;
-        width: 100%;
-        font-size: 0.9375rem;
-        text-align: center;
-        color: #FFFFFF;
-    }
-
-    .text-description {
-        position: absolute;
-        bottom: 1.875rem;
-        width: 100%;
-        font-size: 0.6875rem;
-        text-align: center;
-        color: #FFFFFF;
-    }
-</style>
-
-<BitCarousel HideNextPrev InfiniteScrolling AutoPlay AutoPlayInterval=""2500"">
-    <BitCarouselItem>
-        <div class=""numbertext"">1 / 4</div>
-        <img class=""image"" src=""img1.jpg"" />
-        <div class=""text-title"">Aurora</div>
-        <div class=""text-description"">This is Aurora and it's fantastic</div>
-    </BitCarouselItem>
-    <BitCarouselItem>
-        <div class=""numbertext"">2 / 4</div>
-        <img class=""image"" src=""img2.jpg"" />
-        <div class=""text-title"">Beautiful Mountain</div>
-        <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
-    </BitCarouselItem>
-    <BitCarouselItem>
-        <div class=""numbertext"">3 / 4</div>
-        <img class=""image"" src=""img3.jpg"" />
-        <div class=""text-title"">Forest In The Valley</div>
-        <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
-    </BitCarouselItem>
-    <BitCarouselItem>
-        <div class=""numbertext"">4 / 4</div>
-        <img class=""image"" src=""img4.jpg"" />
-        <div class=""text-title"">Road Among The Mountains</div>
-        <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
-    </BitCarouselItem>
-</BitCarousel>";
-
-    private readonly string example6RazorCode = @"
-<style>
-    .item {
-        text-align: center;
-        color: black;
-        border: 1px solid blue;
-        background-color: lightblue;
-    }
-
-    .item div {
-        transform: translate(0, 80%);
-    }
-</style>
-
-<div>
-    <BitCarousel Style=""height: 100px"" VisibleItemsCount=""3"" ScrollItemsCount=""3"">
-        <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
-        <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
-        <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
-        <BitCarouselItem Class=""item""><div>4</div></BitCarouselItem>
-        <BitCarouselItem Class=""item""><div>5</div></BitCarouselItem>
-        <BitCarouselItem Class=""item""><div>6</div></BitCarouselItem>
-        <BitCarouselItem Class=""item""><div>7</div></BitCarouselItem>
-        <BitCarouselItem Class=""item""><div>8</div></BitCarouselItem>
-        <BitCarouselItem Class=""item""><div>9</div></BitCarouselItem>
-    </BitCarousel>
-</div>";
-
-    private readonly string example7RazorCode = @"
-<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
-
-<div>FontAwesome (circle-arrow icons):</div>
-<BitCarousel InfiniteScrolling
-             GoLeftIcon=""@BitIconInfo.Fa(""solid circle-arrow-right"")""
-             GoRightIcon=""@BitIconInfo.Fa(""solid circle-arrow-left"")"">
-    <BitCarouselItem>
-        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg"" />
-        <div class=""text-title"">Aurora</div>
-        <div class=""text-description"">This is Aurora and it's fantastic</div>
-    </BitCarouselItem>
-    <BitCarouselItem>
-        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg"" />
-        <div class=""text-title"">Beautiful Mountain</div>
-        <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
-    </BitCarouselItem>
-    <BitCarouselItem>
-        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg"" />
-        <div class=""text-title"">Forest In The Valley</div>
-        <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
-    </BitCarouselItem>
-    <BitCarouselItem>
-        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg"" />
-        <div class=""text-title"">Road Among The Mountains</div>
-        <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
-    </BitCarouselItem>
-</BitCarousel>
-
-<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
-
-<div>Bootstrap Icons (arrow-left-circle / arrow-right-circle):</div>
-<BitCarousel InfiniteScrolling
-             GoLeftIcon=""@BitIconInfo.Bi(""arrow-right-circle"")""
-             GoRightIcon=""@BitIconInfo.Bi(""arrow-left-circle"")"">
-    <BitCarouselItem>
-        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg"" />
-        <div class=""text-title"">Aurora</div>
-        <div class=""text-description"">This is Aurora and it's fantastic</div>
-    </BitCarouselItem>
-    <BitCarouselItem>
-        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg"" />
-        <div class=""text-title"">Beautiful Mountain</div>
-        <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
-    </BitCarouselItem>
-    <BitCarouselItem>
-        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg"" />
-        <div class=""text-title"">Forest In The Valley</div>
-        <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
-    </BitCarouselItem>
-    <BitCarouselItem>
-        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg"" />
-        <div class=""text-title"">Road Among The Mountains</div>
-        <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
-    </BitCarouselItem>
-</BitCarousel>";
-
-    private readonly string example8RazorCode = @"
-<style>
-    .item {
-        text-align: center;
-        color: black;
-        border: 1px solid blue;
-        background-color: lightblue;
-    }
-
-    .item div {
-        transform: translate(0, 80%);
-    }
-</style>
-
-<div>
-    <BitCarousel Style=""height: 100px"" Dir=""BitDir.Rtl"" VisibleItemsCount=""3"" ScrollItemsCount=""1"" InfiniteScrolling>
-        <BitCarouselItem Class=""item""><div>یک</div></BitCarouselItem>
-        <BitCarouselItem Class=""item""><div>دو</div></BitCarouselItem>
-        <BitCarouselItem Class=""item""><div>سه</div></BitCarouselItem>
-        <BitCarouselItem Class=""item""><div>چهار</div></BitCarouselItem>
-        <BitCarouselItem Class=""item""><div>پنج</div></BitCarouselItem>
-        <BitCarouselItem Class=""item""><div>شیش</div></BitCarouselItem>
-        <BitCarouselItem Class=""item""><div>هفت</div></BitCarouselItem>
-        <BitCarouselItem Class=""item""><div>هشت</div></BitCarouselItem>
-        <BitCarouselItem Class=""item""><div>نه</div></BitCarouselItem>
-    </BitCarousel>
-</div>";
 }

@@ -40,7 +40,8 @@ When you modify the structure, scripts, stylesheets, or metadata in `App.razor`,
 **Meta tags and viewport settings:**
 ```html
 <meta charset="utf-8" />
-<meta name="theme-color">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#0F1318" media="(prefers-color-scheme: dark)" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 ```
 
@@ -118,7 +119,12 @@ The project supports multiple Blazor hosting models, all configured in a single 
 
 ### Configuration Location
 
+<!--#if (api == "Standalone")-->
+**File**: [`/src/Server/Boilerplate.Server.Web/appsettings.json`](/src/Server/Boilerplate.Server.Web/appsettings.json)
+<!--#endif-->
+<!--#if (api == "Integrated")-->
 **File**: [`/src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json)
+<!--#endif-->
 
 ```json
 "WebAppRender": {

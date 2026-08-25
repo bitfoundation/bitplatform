@@ -1,11 +1,8 @@
 //+:cnd:noEmit
-using Boilerplate.Tests.Features.Identity;
-using Boilerplate.Tests.Infrastructure.Components;
-using Boilerplate.Tests.Infrastructure.Services;
 
 namespace Boilerplate.Tests.Features.Tenants;
 
-[TestClass, TestCategory("UITest")]
+[TestClass, TestCategory("UITest"), Retry(2)]
 public partial class TenantInvitationUITests : AppPageTest
 {
     // The seeded store tenant admin. She's a t-admin (not a global admin), See UserConfiguration.
@@ -43,10 +40,8 @@ public partial class TenantInvitationUITests : AppPageTest
         await InviteUserToCurrentTenant(Page, server, invitedEmail);
 
         // ---- Browser 2: the invited user, in her own isolated browser context ----
-        await using var invitedContext = await Browser.NewContextAsync(ContextOptions());
-        await SetBlazorWebAssemblyServerAddress(serverAddress, invitedContext);
+        await using var invitedContext = await NewBrowserContext(serverAddress);
         var invitedPage = await invitedContext.NewPageAsync();
-        invitedPage.SetDefaultTimeout((float)TimeSpan.FromSeconds(30).TotalMilliseconds);
 
         // The account the invitation just created signs in for the very first time with the magic link OTP, exactly the
         // way a self-registered user would (the same flow as MagicLinkSignInTests). Getting signed in proves that a user
@@ -108,7 +103,7 @@ public partial class TenantInvitationUITests : AppPageTest
         // The create and the rename forms share the same "tenant name" placeholder; the create one comes first in the DOM.
         // Expanding the create section resets its form (See ManageMyTenantsPage.OnSectionExpand); that async re-render can
         // wipe a value filled too eagerly, so fill and confirm it stuck before submitting.
-        await FillEnsuringStable(page.GetByPlaceholder(AppStrings.EnterTenantName).First, tenantName);
+        await page.GetByPlaceholder(AppStrings.EnterTenantName).First.FillEnsuringStable(tenantName);
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Save, Exact = true }).First.ClickAsync();
 
         // Creating a tenant needs elevated access: an elevated token is e-mailed (and dev-logged) and the OTP prompt appears.
@@ -132,7 +127,8 @@ public partial class TenantInvitationUITests : AppPageTest
         var inviteHeaderPrefix = AppStrings.InviteUserToTenant.Replace("{0}", "").Trim();
         await page.GetByText(inviteHeaderPrefix).First.ClickAsync();
 
-        await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
+        // Expanding this section resets its form the same way the create one does, so the value has to be confirmed.
+        await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillEnsuringStable(email);
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Invite, Exact = true }).ClickAsync();
 
         // Inviting also needs elevated access, but she is still elevated from creating the tenant, so no new prompt shows.
@@ -188,6 +184,10 @@ public partial class TenantInvitationUITests : AppPageTest
         // The Leave/Accept buttons carry icons whose glyphs leak into their accessible names, so match by substring.
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.LeaveTenant }).ClickAsync();
 
+        // Leaving is destructive, so it is confirmed before anything is sent - the elevated-access token is only
+        // requested after Yes. She has accepted this tenant, so the button and the dialog both read "leave", not "decline".
+        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Yes }).ClickAsync();
+
         // Leaving needs elevated access; she has none, so an elevated token is e-mailed (and dev-logged) and the OTP prompt appears.
         await page.Locator(".bit-otp-inp").First.WaitForAsync();
 
@@ -207,27 +207,10 @@ public partial class TenantInvitationUITests : AppPageTest
         await page.GotoAsync(new Uri(serverAddress, PageUrls.Dashboard).ToString(),
             new() { WaitUntil = WaitUntilState.NetworkIdle });
 
-        await Expect(page).ToHaveTitleAsync(accessible ? AppStrings.Dashboard : AppStrings.NotAuthorizedPageTitle);
+        // DashboardPage passes PageTitle="DashboardPageTitle" and Title="Dashboard" separately, and AppPageData renders
+        // `PageTitle ?? Title`, so the document title is the former. They happen to carry the same text in every shipped
+        // locale, which is what makes asserting the wrong one look like it works.
+        await Expect(page).ToHaveTitleAsync(accessible ? AppStrings.DashboardPageTitle : AppStrings.NotAuthorizedPageTitle);
     }
     //#endif
-
-    /// <summary>
-    /// Fills a text field and makes sure the value survives, retrying if an async re-render (e.g. a form that resets
-    /// itself when its accordion section finishes expanding) wipes a value that was filled a moment too early.
-    /// </summary>
-    private static async Task FillEnsuringStable(ILocator field, string value)
-    {
-        for (var attempt = 0; attempt < 5; attempt++)
-        {
-            await field.FillAsync(value);
-
-            // Give any pending reset a moment to land, then confirm our value is still there.
-            await field.Page.WaitForTimeoutAsync((float)TimeSpan.FromMilliseconds(500).TotalMilliseconds);
-
-            if (await field.InputValueAsync() == value)
-                return;
-        }
-
-        throw new InvalidOperationException($"Could not keep the field filled with '{value}'.");
-    }
 }

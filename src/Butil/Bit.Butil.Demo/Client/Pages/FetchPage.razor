@@ -1,0 +1,350 @@
+@page "/fetch"
+@inject Bit.Butil.Fetch fetch
+
+<PageTitle>Fetch - Bit.Butil</PageTitle>
+
+<PageHeader Category="Files & Data"
+            Title="Fetch"
+            Lead="Issue browser fetch() requests from C# with typed request options, download progress reporting and two flavors of cancellation - for the cases where HttpClient can't reach fetch-only semantics."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API"
+            InjectAs="Fetch fetch" />
+
+<div class="stack">
+    <DemoSection Title="Send a request"
+                 Api="Send"
+                 Description="Send issues the request and resolves with a FetchResponse carrying the status, final URL (after redirects), response headers and body bytes. Ok is true for any 2xx status; network or CORS failures surface in the Error property instead of throwing."
+                 Code=@("""
+FetchResponse response = await fetch.Send(new FetchRequest
+{
+    Url = "https://jsonplaceholder.typicode.com/todos/1",
+});
+
+if (response.Ok)
+{
+    var json = Encoding.UTF8.GetString(response.Body);
+}
+""")>
+        <div class="field">
+            <span class="field-label">URL</span>
+            <input @bind="_url" placeholder="https://jsonplaceholder.typicode.com/todos/1" />
+        </div>
+        <div class="controls">
+            <button @onclick="SendGet" disabled="@_busy">Send GET</button>
+        </div>
+        @if (_bodyPreview is not null)
+        {
+            <pre style="margin-top:1rem;white-space:pre-wrap;word-break:break-all">@_bodyPreview</pre>
+        }
+        <DemoConsole @ref="sendOutput" Title="send output" />
+    </DemoSection>
+
+    <DemoSection Title="Request options"
+                 Api="FetchRequest"
+                 Description="FetchRequest exposes the fetch() init options as plain properties: Method, Headers, Body bytes, plus the fetch-specific Credentials, Mode, Cache and Redirect strings. This demo POSTs a JSON document with an explicit Content-Type and cache bypass."
+                 Code=@("""
+var request = new FetchRequest
+{
+    Url = "https://jsonplaceholder.typicode.com/posts",
+    Method = "POST",
+    Headers = new() { ["Content-Type"] = "application/json; charset=utf-8" },
+    Body = Encoding.UTF8.GetBytes("{\"title\":\"Bit.Butil\",\"userId\":1}"),
+    Credentials = "omit",   // "omit" | "same-origin" | "include"
+    Mode = "cors",          // "cors" | "no-cors" | "same-origin" | "navigate"
+    Cache = "no-store",     // "default" | "no-store" | "reload" | "no-cache" | ...
+    Redirect = "follow",    // "follow" | "error" | "manual"
+};
+
+FetchResponse response = await fetch.Send(request);
+""")>
+        <div class="controls">
+            <button @onclick="SendPost" disabled="@_busy">Send POST</button>
+        </div>
+        <DemoConsole @ref="requestOptionsOutput" Title="request options output" />
+    </DemoSection>
+
+    <DemoSection Title="Progress reporting"
+                 Api="Send + onProgress"
+                 Description="Pass an onProgress callback and it fires as body chunks arrive, with Loaded bytes so far and Total from Content-Length (null for chunked responses). Ideal for progress bars on large downloads - something HttpClient on WebAssembly can't observe."
+                 Code=@("""
+var response = await fetch.Send(
+    new FetchRequest { Url = "https://example.com/large-file" },
+    onProgress: p =>
+    {
+        var percent = p.Total.HasValue ? $"{100.0 * p.Loaded / p.Total.Value:F0}%" : "?";
+        // update UI: p.Loaded of p.Total bytes
+    });
+""")>
+        <div class="controls">
+            <button @onclick="DownloadWithProgress" disabled="@_busy">Download ~1 MB with progress</button>
+        </div>
+        @if (_progressText is not null)
+        {
+            <p style="margin-top:0.75rem"><b>@_progressText</b></p>
+        }
+        <DemoConsole @ref="progressOutput" Title="progress output" />
+    </DemoSection>
+
+    <DemoSection Title="Cancellation"
+                 Api="Send + CancellationToken"
+                 Description="Send accepts a CancellationToken; triggering it aborts the underlying fetch through an AbortController. Cancellation does not throw - it resolves with a FetchResponse whose Aborted flag is true, matching the abort-handle path."
+                 Code=@("""
+using var cts = new CancellationTokenSource();
+
+var responseTask = fetch.Send(
+    new FetchRequest { Url = "https://example.com/large-file" },
+    cancellationToken: cts.Token);
+
+cts.Cancel(); // abort mid-flight
+
+var response = await responseTask;
+// response.Aborted == true
+""")>
+        <div class="controls">
+            <button @onclick="StartCancellable" disabled="@_busy">Start download</button>
+            <button class="danger" @onclick="CancelDownload" disabled="@(_cts is null)">Cancel</button>
+        </div>
+        <DemoConsole @ref="cancellationOutput" Title="cancellation output" />
+    </DemoSection>
+
+    <DemoSection Title="Fire-and-forget abort handle"
+                 Api="Start / AbortableFetch"
+                 Description="Start launches the request and immediately returns an AbortableFetch handle without waiting for (or returning) the response payload. Call Abort to stop it; disposing the handle also aborts unless the request already completed. Prefer Send whenever you need the response."
+                 Code=@("""
+AbortableFetch handle = await fetch.Start(new FetchRequest
+{
+    Url = "https://example.com/large-file",
+});
+
+// later:
+await handle.Abort();
+""")>
+        <div class="controls">
+            <button @onclick="StartAndAbort" disabled="@_busy">Start, then abort after 300 ms</button>
+        </div>
+        <DemoConsole @ref="abortOutput" Title="abort handle output" />
+    </DemoSection>
+</div>
+
+<Callout Type="info" Title="When to prefer HttpClient">
+    For ordinary API calls, HttpClient remains the right tool - it integrates with delegating handlers,
+    typed clients and the rest of .NET. Reach for Bit.Butil.Fetch when you need what only the browser's
+    fetch() offers: download progress, abort semantics, credentials / CORS modes and cache control.
+    Cross-origin demo requests on this page are still subject to the target server's CORS policy.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="Send" Signature="Task<FetchResponse> Send(FetchRequest request, Action<FetchProgress>? onProgress = null, CancellationToken cancellationToken = default)" Description="Sends the request and returns the full response. onProgress fires as bytes arrive; the token aborts the request." />
+    <ApiMember Name="Start" Signature="Task<AbortableFetch> Start(FetchRequest request)" Description="Starts the request and immediately returns an abort handle; does not return the response payload." />
+    <ApiMember Name="InvokeFetchProgress" Signature="void InvokeFetchProgress(Guid id, FetchProgress progress)" Description="JSInvokable interop plumbing invoked from JavaScript as bytes arrive - not intended for direct use." />
+    <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Releases the interop callback reference held for progress reporting." />
+    <ApiMember Name="FetchRequest.Url" Signature="string Url" Description="The request URL." />
+    <ApiMember Name="FetchRequest.Method" Signature='string Method = "GET"' Description="HTTP verb. Defaults to GET." />
+    <ApiMember Name="FetchRequest.Headers" Signature="Dictionary<string, string> Headers" Description="Request headers. Repeating keys aren't supported - use one comma-joined value." />
+    <ApiMember Name="FetchRequest.Body" Signature="byte[]? Body" Description="Optional body bytes. Set a Content-Type header when needed." />
+    <ApiMember Name="FetchRequest.Credentials" Signature='string Credentials = "same-origin"' Description='One of "omit", "same-origin", "include".' />
+    <ApiMember Name="FetchRequest.Mode" Signature='string Mode = "cors"' Description='One of "cors", "no-cors", "same-origin", "navigate".' />
+    <ApiMember Name="FetchRequest.Cache" Signature='string Cache = "default"' Description='Cache mode: "default", "no-store", "reload", "no-cache", "force-cache", "only-if-cached".' />
+    <ApiMember Name="FetchRequest.Redirect" Signature='string Redirect = "follow"' Description='One of "follow", "error", "manual".' />
+    <ApiMember Name="FetchResponse.Ok" Signature="bool Ok" Description="True when the status is in [200, 300)." />
+    <ApiMember Name="FetchResponse.Status" Signature="int Status" Description="HTTP status, or 0 when the request was aborted or failed before headers." />
+    <ApiMember Name="FetchResponse.StatusText" Signature="string StatusText" Description="The HTTP status text." />
+    <ApiMember Name="FetchResponse.Url" Signature="string Url" Description="Final URL after redirects." />
+    <ApiMember Name="FetchResponse.Headers" Signature="Dictionary<string, string> Headers" Description="Response headers." />
+    <ApiMember Name="FetchResponse.Body" Signature="byte[] Body" Description="Body bytes. May be empty for 204/304 or aborted responses." />
+    <ApiMember Name="FetchResponse.Aborted" Signature="bool Aborted" Description="True when the request was aborted via the handle or a cancellation token." />
+    <ApiMember Name="FetchResponse.Error" Signature="string? Error" Description="Network/CORS error description, when one occurred." />
+    <ApiMember Name="FetchProgress.Loaded" Signature="long Loaded" Description="Bytes received so far." />
+    <ApiMember Name="FetchProgress.Total" Signature="long? Total" Description="Total bytes expected, or null when unknown (chunked / no Content-Length)." />
+    <ApiMember Name="AbortableFetch.Id" Signature="Guid Id" Description="The internal request id." />
+    <ApiMember Name="AbortableFetch.Abort" Signature="ValueTask Abort()" Description="Aborts the request immediately if it's still in flight; disposing the handle does the same." />
+</ApiTable>
+
+@code {
+    private const string LargeUrl = "https://jsonplaceholder.typicode.com/photos";
+
+    private DemoConsole sendOutput = default!;
+    private DemoConsole requestOptionsOutput = default!;
+    private DemoConsole progressOutput = default!;
+    private DemoConsole cancellationOutput = default!;
+    private DemoConsole abortOutput = default!;
+
+    private string _url = "https://jsonplaceholder.typicode.com/todos/1";
+    private string? _bodyPreview;
+    private string? _progressText;
+    private bool _busy;
+    private CancellationTokenSource? _cts;
+
+    private async Task SendGet()
+    {
+        if (string.IsNullOrWhiteSpace(_url))
+        {
+            await sendOutput.Warn("Enter a URL first.");
+            return;
+        }
+
+        _busy = true;
+        _bodyPreview = null;
+        try
+        {
+            var response = await fetch.Send(new FetchRequest { Url = _url.Trim() });
+            await LogResponse("GET", response, sendOutput);
+            _bodyPreview = response.Body.Length > 0 ? PreviewBody(response.Body) : null;
+        }
+        catch (Exception ex)
+        {
+            await sendOutput.Error("Send failed:", ex.Message);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task SendPost()
+    {
+        _busy = true;
+        try
+        {
+            var payload = JsonSerializer.Serialize(new NewPost("Bit.Butil", "Hello from C#", 1));
+
+            var response = await fetch.Send(new FetchRequest
+            {
+                Url = "https://jsonplaceholder.typicode.com/posts",
+                Method = "POST",
+                Headers = new() { ["Content-Type"] = "application/json; charset=utf-8" },
+                Body = Encoding.UTF8.GetBytes(payload),
+                Credentials = "omit",
+                Cache = "no-store",
+            });
+
+            await LogResponse("POST", response, requestOptionsOutput);
+            if (response.Body.Length > 0)
+            {
+                await requestOptionsOutput.Log("Response body:", PreviewBody(response.Body));
+            }
+        }
+        catch (Exception ex)
+        {
+            await requestOptionsOutput.Error("Send failed:", ex.Message);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task DownloadWithProgress()
+    {
+        _busy = true;
+        _progressText = null;
+        try
+        {
+            var response = await fetch.Send(
+                new FetchRequest { Url = LargeUrl, Cache = "no-store" },
+                onProgress: p =>
+                {
+                    _progressText = p.Total.HasValue
+                        ? $"Received {p.Loaded:N0} / {p.Total.Value:N0} bytes"
+                        : $"Received {p.Loaded:N0} bytes";
+                    InvokeAsync(StateHasChanged);
+                });
+
+            await LogResponse("GET (progress)", response, progressOutput);
+            _progressText = $"Complete - {response.Body.Length:N0} bytes";
+        }
+        catch (Exception ex)
+        {
+            await progressOutput.Error("Send failed:", ex.Message);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task StartCancellable()
+    {
+        _busy = true;
+        _cts = new CancellationTokenSource();
+        try
+        {
+            var response = await fetch.Send(
+                new FetchRequest { Url = LargeUrl, Cache = "no-store" },
+                cancellationToken: _cts.Token);
+
+            if (response.Aborted)
+            {
+                await cancellationOutput.Warn("Request aborted - FetchResponse.Aborted is true.");
+            }
+            else
+            {
+                await LogResponse("GET (cancellable)", response, cancellationOutput);
+            }
+        }
+        catch (Exception ex)
+        {
+            await cancellationOutput.Error("Send failed:", ex.Message);
+        }
+        finally
+        {
+            _cts.Dispose();
+            _cts = null;
+            _busy = false;
+        }
+    }
+
+    private void CancelDownload() => _cts?.Cancel();
+
+    private async Task StartAndAbort()
+    {
+        _busy = true;
+        try
+        {
+            var handle = await fetch.Start(new FetchRequest { Url = LargeUrl, Cache = "no-store" });
+            await abortOutput.Log($"Start → request {handle.Id} is in flight...");
+
+            await Task.Delay(300);
+
+            await handle.Abort();
+            await abortOutput.Warn("Abort → request stopped via AbortableFetch.");
+        }
+        catch (Exception ex)
+        {
+            await abortOutput.Error("Start/Abort failed:", ex.Message);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task LogResponse(string label, FetchResponse response, DemoConsole output)
+    {
+        if (response.Error is not null)
+        {
+            await output.Error($"{label} →", response.Error);
+            return;
+        }
+
+        await output.Success($"{label} → {response.Status} {response.StatusText}",
+            $"({response.Body.Length:N0} bytes from {response.Url})");
+
+        var contentType = response.Headers.FirstOrDefault(h => string.Equals(h.Key, "content-type", StringComparison.OrdinalIgnoreCase));
+        if (contentType.Key is not null)
+        {
+            await output.Info($"  {contentType.Key}: {contentType.Value}");
+        }
+    }
+
+    private static string PreviewBody(byte[] body)
+    {
+        if (body.Length == 0) return "(empty body)";
+        var text = Encoding.UTF8.GetString(body);
+        return text.Length > 400 ? text[..400] + "…" : text;
+    }
+
+    private record NewPost(
+        [property: System.Text.Json.Serialization.JsonPropertyName("title")] string Title,
+        [property: System.Text.Json.Serialization.JsonPropertyName("body")] string Body,
+        [property: System.Text.Json.Serialization.JsonPropertyName("userId")] int UserId);
+}

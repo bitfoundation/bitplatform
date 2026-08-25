@@ -331,12 +331,12 @@ public class BmProps
     /// Render these props as an inline CSS style string - used server-side to avoid a
     /// flash of un-styled content before the JS interop layer initialises.
     /// </summary>
-    internal string ToCssStyleString()
+    internal string ToCssStyleString(BmTransformTemplate? transformTemplate = null)
     {
         var sb = new System.Text.StringBuilder();
 
         // The initial inline style renders each transform component's FIRST keyframe.
-        var transform = BmotionTransformComposer.Build(CollectTransformComponents(useLast: false));
+        var transform = ApplyTemplate(transformTemplate, CollectTransformComponents(useLast: false));
         if (transform.Length > 0) sb.Append($"transform:{transform};");
         if (OriginX.HasValue || OriginY.HasValue) sb.Append($"transform-origin:{TransformOriginCss()};");
 
@@ -393,7 +393,18 @@ public class BmProps
     /// (which assigning <c>cssText</c> would do). Keyframe sequences apply their
     /// LAST frame - the value the sequence settles on.
     /// </summary>
-    internal Dictionary<string, string> ToCssStyleDictionary()
+    // Mirrors BmotionElementAnimationState.ComposeTransform for the two element-agnostic paths (the
+    // pre-first-paint inline style and an instant Set), so a templated element never renders one
+    // untemplated transform before the engine takes over.
+    private static string ApplyTemplate(BmTransformTemplate? template, Dictionary<string, double> components)
+    {
+        var generated = BmotionTransformComposer.Build(components);
+        if (template is null) return generated;
+        try { return template(components, generated) ?? generated; }
+        catch { return generated; }
+    }
+
+    internal Dictionary<string, string> ToCssStyleDictionary(BmTransformTemplate? transformTemplate = null)
     {
         // For an instant Set, a keyframe sequence collapses to its final value.
         static bool Num(BmKeyframes? k, out double value)
@@ -408,7 +419,7 @@ public class BmProps
         var d = new Dictionary<string, string>();
 
         // For an instant Set, each transform component collapses to its LAST keyframe.
-        var transform = BmotionTransformComposer.Build(CollectTransformComponents(useLast: true));
+        var transform = ApplyTemplate(transformTemplate, CollectTransformComponents(useLast: true));
         if (transform.Length > 0) d["transform"] = transform;
         if (OriginX.HasValue || OriginY.HasValue) d["transformOrigin"] = TransformOriginCss();
 

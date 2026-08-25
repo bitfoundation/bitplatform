@@ -1,6 +1,8 @@
-﻿using System.Net;
+﻿using System.Collections.Concurrent;
+using System.Net;
 using System.Reflection;
 using System.Runtime.Loader;
+using Bit.Websites.Platform.Client.Shared;
 using Bit.Websites.Platform.Server.Components;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Components;
@@ -27,6 +29,8 @@ public class Middlewares
             app.UseSecurityHeaders();
         }
 
+        UseMovedDocsRedirects(app);
+
         Configure_404_Page(app);
 
         if (env.IsDevelopment() is false)
@@ -52,6 +56,7 @@ public class Middlewares
         app.UseStaticFiles();
 
         app.UseResponseCaching();
+        app.UseRateLimiter();
         app.UseAntiforgery();
 
         app.UseExceptionHandler("/", createScopeForErrors: true);
@@ -62,6 +67,9 @@ public class Middlewares
         app.MapHub<SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
 
         app.MapControllers();
+
+        // Exposes the tools of every MCP server of the repository's .mcp.json at bitplatform.dev/mcp.
+        app.MapMcp("/mcp");
 
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
@@ -83,6 +91,21 @@ public class Middlewares
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
             .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Websites.Platform") is true).Except([Assembly.GetExecutingAssembly()]).ToArray());
+    }
+
+    private static void UseMovedDocsRedirects(WebApplication app)
+    {
+        // These doc sections used to live on this site and are still search-indexed and linked from
+        // READMEs/NuGet pages; permanent redirects transfer that ranking to their new homes instead
+        // of dropping visitors on the 404 page.
+        app.MapGet("/bswup", () => Results.Redirect(Urls.Bswup, permanent: true));
+        app.MapGet("/bswup/{**rest}", () => Results.Redirect(Urls.Bswup, permanent: true));
+
+        app.MapGet("/butil", () => Results.Redirect(Urls.Butil, permanent: true));
+        app.MapGet("/butil/{**rest}", () => Results.Redirect(Urls.Butil, permanent: true));
+
+        app.MapGet("/templates/samples", () => Results.Redirect(Urls.Demos, permanent: true));
+        app.MapGet("/boilerplate/samples", () => Results.Redirect(Urls.Demos, permanent: true));
     }
 
     private static void Configure_404_Page(WebApplication app)
@@ -130,17 +153,40 @@ public class Middlewares
             .Where(t => typeof(IComponent).IsAssignableFrom(t))
             .SelectMany(t => t.GetCustomAttributes<Microsoft.AspNetCore.Components.RouteAttribute>())
             .Select(r => r.Template)
+            .Where(t => SiteMapUrls.NoIndexUrls.Contains(t) is false
+                     && SiteMapUrls.NonCanonicalUrls.Contains(t) is false
+                     && t.StartsWith("/boilerplate") is false)
             .ToList();
 
         const string siteMapHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<urlset\r\n      xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\r\n      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n      xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\r\n            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">";
 
+        // Keyed by the serving host so staging/test deployments emit their own URLs, not production's.
+        // The base URL comes from the (proxy-forwarded) Host header, which any client can set, so the
+        // cache is capped at the handful of hosts this app is actually deployed under: once it is full,
+        // sitemaps for further hosts are still served, just rebuilt per request instead of retained.
+        const int maxCachedHosts = 8;
+        Lock siteMapCacheLock = new();
+        ConcurrentDictionary<string, string> siteMapPerHost = new();
+
         app.MapGet("/sitemap.xml", async context =>
         {
-            if (siteMap is null)
-            {
-                var baseUrl = new Uri(context.Request.GetBaseUrl());
+            var baseUrlString = context.Request.GetBaseUrl();
 
+            if (siteMapPerHost.TryGetValue(baseUrlString, out var siteMap) is false)
+            {
+                var baseUrl = new Uri(baseUrlString);
                 siteMap = $"{siteMapHeader}{string.Join(Environment.NewLine, urls.Select(u => $"<url><loc>{new Uri(baseUrl, u)}</loc></url>"))}</urlset>";
+
+                // Count and TryAdd are each atomic, but not atomic together: without this lock, requests
+                // for distinct hosts arriving concurrently could all read a below-cap Count and then all
+                // add, pushing the cache past maxCachedHosts.
+                lock (siteMapCacheLock)
+                {
+                    if (siteMapPerHost.Count < maxCachedHosts)
+                    {
+                        siteMapPerHost.TryAdd(baseUrlString, siteMap);
+                    }
+                }
             }
 
             context.Response.Headers.ContentType = "application/xml";
@@ -148,6 +194,4 @@ public class Middlewares
             await context.Response.WriteAsync(siteMap, context.RequestAborted);
         });
     }
-
-    private static string? siteMap;
 }

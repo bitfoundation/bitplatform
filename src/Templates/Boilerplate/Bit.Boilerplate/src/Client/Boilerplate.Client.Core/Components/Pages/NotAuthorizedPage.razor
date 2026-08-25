@@ -14,7 +14,7 @@ else
         <Authorized>
             <section>
                 <BitStack HorizontalAlign="BitAlignment.Center">
-                    <BitImage Src="_content/Boilerplate.Client.Core/images/403.svg" Width="100%" Style="max-width:600px" />
+                    <BitImage Alt="" Src="_content/Boilerplate.Client.Core/images/403.svg" Width="100%" Style="max-width:600px" />
 
                     <BitText Typography="BitTypography.H5" Color="BitColor.SevereWarning" Align="BitTextAlign.Center">
                         @Localizer[nameof(AppStrings.ForbiddenException)]
@@ -43,7 +43,7 @@ else
         <NotAuthorized>
             <section>
                 <BitStack Alignment="BitAlignment.Center">
-                    <BitImage Src="_content/Boilerplate.Client.Core/images/401.svg" Width="100%" Style="max-width:600px" />
+                    <BitImage Alt="" Src="_content/Boilerplate.Client.Core/images/401.svg" Width="100%" Style="max-width:600px" />
                     <BitText Typography="BitTypography.H3" Align="BitTextAlign.Center">
                         @Localizer[nameof(AppStrings.YouAreNotAuthorized)]
                     </BitText>
@@ -59,7 +59,7 @@ else
                 </BitStack>
             </section>
             <!-- Alternatively, you can redirect the user to the sign-in page. -->
-            @* <RedirectToSignIn ReturnUrl="@ReturnUrl" /> *@
+            @* <RedirectToSignIn ReturnUrl="@GetSafeReturnUrl()" /> *@
         </NotAuthorized>
     </AuthorizeView>
 }

@@ -1,0 +1,297 @@
+﻿@page "/"
+
+@* Title and description are spelled out rather than taken from the catalog: the catalog entry
+   names this page for a nav panel and an AI agent ("Introduction"), which is not what a search
+   result for the site's front door should read. *@
+<PageOutlet Slug=""
+            Title="bit Bswup - Blazor Service Worker Update Progress"
+            Description="Install progress, controlled background updates and offline support for Blazor WebAssembly apps - with a single script tag. Documentation and live showcase of bit Bswup." />
+
+@* The landing page is also rendered on its own - without this layout - and flattened to
+   Markdown for the MCP server (Server/Services/DocsPageRenderer.cs), so the structure below is
+   kept semantic: headings are headings, the comparison is a table, and the decorative parts
+   (the product shot, the icons) are marked aria-hidden and disappear cleanly in text. *@
+
+<section class="hero">
+    <div class="hero-copy">
+        <a class="hero-badge" href="getting-started">
+            <Icon Name="sparkle" />
+            <span>Blazor WebAssembly, without the blank first paint</span>
+        </a>
+        <h1>Ship Blazor PWAs that <span class="accent">install, update &amp; work offline</span>.</h1>
+        <p>
+            Bswup replaces the default Blazor service worker experience with a real install
+            progress UI, controlled background updates, resilient downloads, and a tiny
+            JavaScript API - all from a single script tag.
+        </p>
+        <div class="hero-actions">
+            <a class="button-primary button-large" href="getting-started">
+                Get started
+                <Icon Name="arrow-right" />
+            </a>
+            <a class="button-secondary button-large" href="playground">
+                <Icon Name="play" />
+                Try the live playground
+            </a>
+        </div>
+        <div class="hero-install">
+            <code>dotnet add package Bit.Bswup</code>
+            <button type="button" class="code-block-copy" data-demo-action="copy-code"
+                    aria-label="Copy the install command to the clipboard">
+                <Icon Name="copy" Class="code-block-copy-icon" />
+                <Icon Name="checkmark" Class="code-block-copy-check" />
+                <span class="code-block-copy-label" aria-live="polite">Copy</span>
+            </button>
+        </div>
+    </div>
+
+    @* An illustration of the paragraph beside it, not new information - a faithful,
+       static reproduction of the splash this very site booted with. Hidden from
+       assistive technology and from the Markdown rendering for exactly that reason. *@
+    <div class="hero-visual" aria-hidden="true">
+        <div class="splash-shot">
+            <div class="splash-shot-chrome">
+                <span class="splash-shot-dot"></span>
+                <span class="splash-shot-dot"></span>
+                <span class="splash-shot-dot"></span>
+            </div>
+            <img class="splash-shot-logo" src="icon-512.png" alt="" width="56" height="56" />
+            <p class="splash-shot-title">bit Bswup</p>
+            <p class="splash-shot-sub">Preparing the app for offline use, please wait...</p>
+            <div class="splash-shot-bar"><span class="splash-shot-fill"></span></div>
+            <p class="splash-shot-percent">68%</p>
+        </div>
+    </div>
+</section>
+
+<div class="stat-strip">
+    <div class="stat">
+        <span class="stat-value">1</span>
+        <span class="stat-label">script tag is the entire wiring</span>
+    </div>
+    <div class="stat">
+        <span class="stat-value">11</span>
+        <span class="stat-label">lifecycle events your handler can act on</span>
+    </div>
+    <div class="stat">
+        <span class="stat-value">29</span>
+        <span class="stat-label">documented settings, each with its default</span>
+    </div>
+    <div class="stat">
+        <span class="stat-value">0</span>
+        <span class="stat-label">third-party dependencies</span>
+    </div>
+</div>
+
+<section class="home-section">
+    <div class="section-head">
+        <span class="section-eyebrow">The problem</span>
+        <h2>A blank page on the first visit, a stale build for days after</h2>
+        <p>
+            A Blazor WebAssembly app has to download a runtime and your assemblies before it can
+            render anything. The standard template hides that behind a blank page, and hides
+            updates behind nothing at all: a new version only takes effect once every tab of your
+            app has been closed.
+        </p>
+    </div>
+
+    <div class="docs-table-wrapper">
+        <table class="compare-table">
+            <thead>
+                <tr><th><span class="visually-hidden">Situation</span></th><th>Standard Blazor template</th><th>With Bswup</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><b>First visit</b></td>
+                    <td>Blank page while the runtime downloads. No indication anything is happening.</td>
+                    <td>A branded splash with an honest progress bar, counting the very bytes the app is waiting on.</td>
+                </tr>
+                <tr>
+                    <td><b>Updates</b></td>
+                    <td>Staged silently, applied only after every tab closes. Users can run a stale build indefinitely.</td>
+                    <td>Downloaded in the background, then announced. The user accepts, and every open tab moves together.</td>
+                </tr>
+                <tr>
+                    <td><b>Flaky network</b></td>
+                    <td>One failed asset fails the whole install. No retries, no reporting.</td>
+                    <td>Retries with backoff, choice of lax or strict tolerance, and structured error payloads.</td>
+                </tr>
+                <tr>
+                    <td><b>Install goes wrong</b></td>
+                    <td>Nothing is watching. A worker killed mid-install leaves the page hanging.</td>
+                    <td>A stall watchdog boots the app from the network instead. A first visit never dead-ends.</td>
+                </tr>
+                <tr>
+                    <td><b>Control</b></td>
+                    <td>Edit the generated worker and hope.</td>
+                    <td>Script attributes, worker settings, lifecycle events, and a <a href="javascript-api">JavaScript API</a>.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="home-section">
+    <div class="section-head">
+        <span class="section-eyebrow">Where to start</span>
+        <h2>Three steps from installed to shipped</h2>
+        <p>A route through the documentation rather than an index of it.</p>
+    </div>
+
+    <div class="path-grid">
+        <a class="path-card" href="getting-started">
+            <span class="path-step">1</span>
+            <h3>Get it running</h3>
+            <p>Six small steps from <code>dotnet add package</code> to a working install splash.</p>
+        </a>
+        <a class="path-card" href="how-it-works">
+            <span class="path-step">2</span>
+            <h3>Understand the model</h3>
+            <p>Who starts Blazor, how an update is staged, and which requests the worker takes over.</p>
+        </a>
+        <a class="path-card" href="recipes">
+            <span class="path-step">3</span>
+            <h3>Ship it properly</h3>
+            <p>Hosting headers, sub-path deployments, build-stamped cache versions, custom update banners.</p>
+        </a>
+    </div>
+</section>
+
+<section class="home-section">
+    <div class="section-head">
+        <span class="section-eyebrow">Capabilities</span>
+        <h2>What you get</h2>
+        <p>Every card links to the page that documents it in full.</p>
+    </div>
+
+    <div class="feature-grid">
+        <a class="feature-card" href="progress-ui">
+            <span class="feature-icon"><Icon Name="arrow-download" /></span>
+            <h3>First-install splash</h3>
+            <p>A branded full-screen progress UI while assets download - the very splash this site booted with.</p>
+            <span class="feature-more">Progress UI <Icon Name="arrow-right" /></span>
+        </a>
+        <a class="feature-card" href="events">
+            <span class="feature-icon"><Icon Name="arrow-sync" /></span>
+            <h3>Controlled updates</h3>
+            <p>Updates download silently in the background and wait for the user to accept - no unprompted reloads, consistent across every open tab.</p>
+            <span class="feature-more">Events &amp; Handler <Icon Name="arrow-right" /></span>
+        </a>
+        <a class="feature-card" href="service-worker">
+            <span class="feature-icon"><Icon Name="cloud-off" /></span>
+            <h3>Offline support</h3>
+            <p>Full precache or lazy passive mode, SPA navigation fallback, media range requests, and external asset caching.</p>
+            <span class="feature-more">Worker settings <Icon Name="arrow-right" /></span>
+        </a>
+        <a class="feature-card" href="service-worker#errortolerance">
+            <span class="feature-icon"><Icon Name="shield" /></span>
+            <h3>Resilient installs</h3>
+            <p>Retries with backoff, lax/strict error tolerance, a first-install stall watchdog, and structured error reporting.</p>
+            <span class="feature-more">errorTolerance <Icon Name="arrow-right" /></span>
+        </a>
+        <a class="feature-card" href="javascript-api#checkforupdate">
+            <span class="feature-icon"><Icon Name="compass" /></span>
+            <h3>Update polling</h3>
+            <p>Interval and on-focus update checks, a check-for-update API, and up-to-date / check-failed events.</p>
+            <span class="feature-more">checkForUpdate() <Icon Name="arrow-right" /></span>
+        </a>
+        <a class="feature-card" href="script-options">
+            <span class="feature-icon"><Icon Name="settings" /></span>
+            <h3>Configurable, not magical</h3>
+            <p>Everything is opt-in via script-tag attributes and service worker settings, with sensible defaults.</p>
+            <span class="feature-more">Script options <Icon Name="arrow-right" /></span>
+        </a>
+        <a class="feature-card" href="javascript-api#persiststorage">
+            <span class="feature-icon"><Icon Name="database" /></span>
+            <h3>Durable storage</h3>
+            <p>One call to request eviction-resistant storage so offline apps survive browser storage pressure.</p>
+            <span class="feature-more">persistStorage() <Icon Name="arrow-right" /></span>
+        </a>
+        <a class="feature-card" href="cleanup">
+            <span class="feature-icon"><Icon Name="broom" /></span>
+            <h3>Clean exit path</h3>
+            <p>A self-destructing cleanup worker recovers broken clients or removes Bswup entirely from a deployed app.</p>
+            <span class="feature-more">Backing out <Icon Name="arrow-right" /></span>
+        </a>
+    </div>
+</section>
+
+<section class="home-section">
+    <div class="section-head">
+        <span class="section-eyebrow">In one paragraph</span>
+        <h2>What is Bswup?</h2>
+    </div>
+    <p>
+        <strong>bit Bswup</strong> (<b>B</b>lazor <b>s</b>ervice-<b>w</b>orker <b>u</b>pdate <b>p</b>rogress) is a
+        NuGet package for <strong>Blazor WebAssembly</strong> apps that takes over the service worker lifecycle:
+        it downloads and caches your app's assets with visible progress, verifies their integrity, serves them
+        offline, and manages version updates without ever leaving your users staring at a blank page - or
+        running a stale build for days.
+    </p>
+    <p>
+        This documentation site is itself a prerendered Blazor WebAssembly app powered by Bswup - open the
+        browser dev tools, go offline, and reload. Then head over to the <a href="playground">Live Playground</a> to watch
+        the service worker events in real time.
+    </p>
+</section>
+
+<section class="home-section">
+    <div class="section-head">
+        <span class="section-eyebrow">Architecture</span>
+        <h2>How it fits together</h2>
+        <p>Five pieces, each with one job.</p>
+    </div>
+
+    <div class="docs-table-wrapper">
+        <table>
+            <thead>
+                <tr><th>Piece</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>bit-bswup.js</code></td>
+                    <td>Page-side script: registers the service worker, coordinates the install/update handshake, starts Blazor at the right moment, polls for updates, and raises lifecycle <a href="events">events</a>.</td>
+                </tr>
+                <tr>
+                    <td><code>bit-bswup.sw.js</code></td>
+                    <td>The service worker engine: precaches assets (with retries and integrity checks), serves fetches from cache, handles SPA navigation fallback, and stages new versions. Imported from your <a href="service-worker"><code>service-worker.js</code></a>.</td>
+                </tr>
+                <tr>
+                    <td><code>bit-bswup.progress.js</code> + <code>BswupProgress</code></td>
+                    <td>The optional built-in <a href="progress-ui">progress UI</a>: splash screen, progress bar, reload button, and failure panel - CSP-friendly and screen-reader aware.</td>
+                </tr>
+                <tr>
+                    <td><code>BitBswup</code></td>
+                    <td>A small <a href="javascript-api">JavaScript API</a> to check for updates, activate staged versions, request persistent storage, and force-reset a broken client.</td>
+                </tr>
+                <tr>
+                    <td><code>bit-bswup.sw-cleanup.js</code></td>
+                    <td>A self-destructing worker to <a href="cleanup">back out of Bswup</a> or recover clients stuck on a broken worker or cache.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        <a href="how-it-works">How It Works</a> walks through what each of them does at runtime - the boot
+        handshake, the two lifecycles, and the request pipeline.
+    </p>
+</section>
+
+<section class="home-section">
+    <div class="section-head">
+        <span class="section-eyebrow">Runnable code</span>
+        <h2>Sample projects</h2>
+        <p>Besides this documentation site, the repository ships two runnable samples.</p>
+    </div>
+    <ul>
+        <li><strong>Samples/BasicSample</strong> (<code>Bit.Bswup.BasicSample</code>) - a minimal standalone Blazor WebAssembly app with a hand-written handler, deliberately including a failing external asset to exercise the error flow.</li>
+        <li><strong>Samples/FullSample</strong> (<code>Bit.Bswup.FullSample.*</code>) - a Blazor Web App (server + client) using the <code>BswupProgress</code> component with a custom progress bar.</li>
+    </ul>
+</section>
+
+<div class="pager">
+    <a class="pager-next" href="getting-started">
+        <span class="pager-label">Next</span>
+        <b>Getting Started →</b>
+    </a>
+</div>

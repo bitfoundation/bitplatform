@@ -15,7 +15,7 @@ public partial class UserProfileImagesStorageHealthCheck : IHealthCheck
     {
         try
         {
-            var result = await blobStorage.ListObjects(new()
+            await blobStorage.ListObjects(new()
             {
                 FolderPath = settings.UserProfileImagesDir,
                 MaxResults = 1
@@ -25,7 +25,7 @@ public partial class UserProfileImagesStorageHealthCheck : IHealthCheck
         }
         catch (Exception exp)
         {
-            return HealthCheckResult.Unhealthy("User profile images storage is unhealthy", exp);
+            return new HealthCheckResult(context.Registration.FailureStatus, "User profile images storage is unhealthy", exp);
         }
     }
 }

@@ -1,7 +1,6 @@
-﻿using Bit.BlazorUI.Legacy;
-using Microsoft.AspNetCore.Components.WebAssembly.Services;
+﻿using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
-namespace Bit.BlazorUI.Legacy.Demo.Chart;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Legacy.Chart;
 
 public partial class BitChartLegacyDemo
 {
@@ -72,6 +71,10 @@ public partial class BitChartLegacyDemo
         }
     ];
 
+    // BitChartLegacy serializes its config with Newtonsoft.Json, so the samples need assemblies that this
+    // demo app keeps out of its initial WebAssembly payload through the BlazorWebAssemblyLazyLoad item group.
+    // They are fetched on demand here, before the samples render. Every other host (Blazor Server, MAUI,
+    // Windows) already has them and the load is skipped.
     [AutoInject] LazyAssemblyLoader lazyAssemblyLoader = default!;
 
     private bool isLoadingAssemblies = true;

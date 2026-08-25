@@ -15,7 +15,7 @@
     font-size: rem2(36px);
     font-weight: 800;
     line-height: 1;
-    color: #0a1929;
+    color: $bit-color-foreground-primary;
 
     @include lt-lg {
         margin-bottom: rem2(28px);
@@ -28,7 +28,7 @@
     font-size: rem2(16px);
     font-weight: 400;
     line-height: rem2(32px);
-    color: #2E2E2E;
+    color: $bit-color-foreground-secondary;
 }
 
 @mixin SectionCard {
@@ -50,7 +50,7 @@
     font-weight: 700;
     font-size: rem2(24px);
     line-height: 1;
-    color: #1a2027;
+    color: $bit-color-foreground-primary;
 }
 
 @mixin SectionCardText {
@@ -73,6 +73,48 @@
         ul {
             padding-left: rem2(16px);
         }
+    }
+}
+
+// The brand call-to-action pill button; `.primary` gets the gradient fill, `.secondary` the
+// outlined look. Shared by the hero and bottom CTAs so the two can never drift apart.
+@mixin GradientCtaButton {
+    line-height: 1;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 1rem 2rem;
+    border-radius: 2rem;
+    white-space: nowrap;
+    text-decoration: none;
+    box-sizing: border-box;
+    transition: transform 0.2s $MotionEase, box-shadow 0.2s $MotionEase, border-color 0.2s $MotionEase, background-color 0.2s $MotionEase;
+
+    &.primary {
+        color: #fff;
+        background-image: linear-gradient(96deg, #524add 10%, #0D71BF 90%);
+        box-shadow: 0 8px 24px -8px rgba(82, 74, 221, 0.6);
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px -8px rgba(82, 74, 221, 0.8);
+        }
+    }
+
+    &.secondary {
+        color: $bit-color-foreground-primary;
+        border: 1px solid $bit-color-border-secondary;
+
+        &:hover {
+            transform: translateY(-2px);
+            border-color: $bit-color-border-primary;
+            background-color: $bit-color-background-secondary;
+        }
+    }
+
+    &:focus-visible {
+        outline: 2px solid $bit-color-primary;
+        outline-offset: 2px;
     }
 }
 

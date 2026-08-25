@@ -1,0 +1,22 @@
+@* Five stacked opaque wrappers before any route registers - deliberately deeper than the boot
+   sentinel's quiet-round tolerance, so the initial navigation fires before these routes exist.
+   Pins the safety net: the late registration must trigger a rematch that renders the correct
+   route anyway (a follow-up batch, like the old two-batch mount - never a permanently missed
+   route). *@
+
+<InitialBatchProbe />
+<Brouter>
+    <InitialMountWrapper>
+        <InitialMountWrapper>
+            <InitialMountWrapper>
+                <InitialMountWrapper>
+                    <InitialMountWrapper>
+                        <Broute Path="/home">
+                            <Content><InitialMountContent /></Content>
+                        </Broute>
+                    </InitialMountWrapper>
+                </InitialMountWrapper>
+            </InitialMountWrapper>
+        </InitialMountWrapper>
+    </InitialMountWrapper>
+</Brouter>

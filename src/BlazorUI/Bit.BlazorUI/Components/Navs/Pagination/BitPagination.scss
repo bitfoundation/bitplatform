@@ -6,10 +6,11 @@
     align-items: center;
     display: inline-flex;
     font-size: var(--bit-pgn-font-size);
+    justify-content: var(--bit-pgn-justify-content, flex-start);
     --bit-pgn-ico-transform-end: scaleX(1);
     --bit-pgn-ico-transform-start: scaleX(-1);
-    --bit-pgn-clr-dis: #{$clr-bg-dis};
-    --bit-pgn-clr-txt-dis: #{$clr-fg-dis};
+    --bit-pgn-clr-dis: var(--bit-pgn-clr-dis-bg, #{$clr-bg-dis});
+    --bit-pgn-clr-txt-dis: var(--bit-pgn-clr-dis-text, #{$clr-fg-dis});
     --bit-pgn-clr-btn-txt-hover: var(--bit-pgn-clr-txt);
     --bit-pgn-clr-btn-bg-hover: var(--bit-pgn-clr-hover);
     --bit-pgn-clr-btn-brd-hover: var(--bit-pgn-clr-hover);
@@ -34,9 +35,24 @@
 
     &.bit-dis {
         cursor: default;
-        color: $clr-fg-dis;
         pointer-events: none;
+        color: var(--bit-pgn-clr-txt-dis);
     }
+}
+
+// An aligned pagination is stretched across the room it is given, since a box that is only as wide as its own
+// controls has nothing to line them up inside of. It follows .bit-pgn so that it wins the display over it.
+.bit-pgn-aln {
+    display: flex;
+}
+
+// The list and its items only carry the semantics of the markup: they are removed from the box tree so the
+// buttons stay the direct flex items of the root and the layout of the pagination is the one the root sets
+// (a gap coming from Styles.Root included). The explicit list roles in the markup keep the semantics that
+// removing these boxes used to drop.
+.bit-pgn-lst,
+.bit-pgn-itm {
+    display: contents;
 }
 
 .bit-pgn-trs {
@@ -47,32 +63,34 @@
     transform: var(--bit-pgn-ico-transform-end);
 }
 
+// The gap keeps the outline of the buttons it stands in for, so it starts at their square and only grows
+// along a text wider than one (a spelled out "more pages", say) instead of spilling over them.
 .bit-pgn-elp {
     display: flex;
     font-size: inherit;
     text-align: center;
     align-items: center;
+    user-select: none;
+    box-sizing: border-box;
     justify-content: center;
-    width: var(--bit-pgn-btn-size);
+    padding: 0 spacing(0.5);
+    min-width: var(--bit-pgn-btn-size);
     height: var(--bit-pgn-btn-size);
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
 }
 
-.bit-pgn-btn {
+// A gap that jumps into the pages it hides is a control, so it drops the surface a button is painted with and
+// picks up the role color of the pagination only while it is pointed at, which keeps the row of pages reading
+// as a row of pages with a gap in it rather than as one more button.
+.bit-pgn-elb {
+    color: inherit;
     cursor: pointer;
-    text-align: center;
-    font-size: inherit;
-    align-items: center;
-    display: inline-flex;
-    justify-content: center;
-    width: var(--bit-pgn-btn-size);
-    height: var(--bit-pgn-btn-size);
+    font: inherit;
+    text-decoration: none;
     border-style: $shp-border-style;
     border-width: $shp-border-width;
-    border-radius: $shp-border-radius;
-    color: var(--bit-pgn-clr-btn-txt);
-    border-color: var(--bit-pgn-clr-btn-brd);
-    background-color: var(--bit-pgn-clr-btn-bg);
+    border-color: transparent;
+    background-color: transparent;
 
     @media (hover: hover) {
         &:hover {
@@ -88,14 +106,164 @@
         background-color: var(--bit-pgn-clr-btn-bg-active);
     }
 
+    &:focus-visible {
+        z-index: 1;
+        @include focus-ring(var(--bit-pgn-clr-fcs, #{$clr-pri-focus}));
+    }
+
+    &[disabled],
+    &[aria-disabled="true"] {
+        cursor: default;
+        pointer-events: none;
+        color: var(--bit-pgn-clr-btn-txt-dis);
+    }
+}
+
+// The summary sits on the same baseline as the buttons without taking their square shape, so a long text
+// (a localized one, or one counting items instead of pages) stays on a single line beside them.
+.bit-pgn-sum {
+    display: flex;
+    font-size: inherit;
+    align-items: center;
+    white-space: nowrap;
+    padding: 0 spacing(0.5);
+    height: var(--bit-pgn-btn-size);
+}
+
+// The jump sits on the same baseline as the buttons. Its input keeps the neutral surface of a text input
+// rather than the role color of the buttons, so the digits typed into it stay readable whichever color and
+// variant the pagination is rendered with.
+.bit-pgn-gtp,
+.bit-pgn-pss {
+    display: flex;
+    font-size: inherit;
+    align-items: center;
+    white-space: nowrap;
+    gap: spacing(0.5);
+    padding: 0 spacing(0.5);
+    height: var(--bit-pgn-btn-size);
+}
+
+.bit-pgn-gti,
+.bit-pgn-pse {
+    font: inherit;
+
+    // The height is the one every control of the pagination stands at, so the border is counted into it
+    // rather than added on top of it.
+    box-sizing: border-box;
+    color: $clr-fg-pri;
+    background: $clr-bg-sec;
+    padding: 0 spacing(0.5);
+    height: var(--bit-pgn-btn-size);
+    border-style: $shp-border-style;
+    border-width: $shp-border-width;
+    border-color: $clr-brd-sec;
+    border-radius: $shp-radius-control;
+
+    &:focus-visible {
+        z-index: 1;
+        @include focus-ring(var(--bit-pgn-clr-fcs, #{$clr-pri-focus}));
+    }
+
     &[disabled] {
         cursor: default;
+        pointer-events: none;
         color: $clr-fg-dis;
+        background: $clr-bg-dis;
+        border-color: $clr-brd-dis;
+    }
+}
+
+// The spin buttons are dropped: the field is a jump to a page and not a value to step through, and they
+// would leave next to no room for the digits at the width the pagination gives it.
+.bit-pgn-gti {
+    text-align: center;
+    appearance: textfield;
+    width: calc(var(--bit-pgn-btn-size) * 1.75);
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+        margin: 0;
+        appearance: none;
+    }
+}
+
+.bit-pgn-pse {
+    cursor: pointer;
+}
+
+// A button is not part of the inheritance the rest of the pagination rides on (the user agent gives it a
+// font of its own), so the type tokens are spelled out here rather than inherited - which is also what keeps
+// a control rendered as a link and one rendered as a button looking the same.
+// The square is a minimum and not a fixed width: a range long enough to reach three or four digits widens
+// its buttons around the number instead of letting it spill over the neighbouring ones.
+.bit-pgn-btn {
+    cursor: pointer;
+    user-select: none;
+    box-sizing: border-box;
+    text-align: center;
+    font-size: inherit;
+    align-items: center;
+    display: inline-flex;
+    text-decoration: none;
+
+    // The button grows along the text it carries rather than breaking it: a wrapped label would push the
+    // control past the height every other one of the pagination stands at.
+    white-space: nowrap;
+    justify-content: center;
+    font-family: $tg-font-family;
+    font-weight: $tg-font-weight;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
+    padding: 0 spacing(0.5);
+    min-width: var(--bit-pgn-btn-size);
+    height: var(--bit-pgn-btn-size);
+    border-style: $shp-border-style;
+    border-width: $shp-border-width;
+    border-radius: $shp-radius-control;
+    color: var(--bit-pgn-clr-btn-txt);
+    border-color: var(--bit-pgn-clr-btn-brd);
+    background-color: var(--bit-pgn-clr-btn-bg);
+
+    // The states below repaint all three, so they animate together from here.
+    transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
+
+    @media (hover: hover) {
+        &:hover {
+            color: var(--bit-pgn-clr-btn-txt-hover);
+            border-color: var(--bit-pgn-clr-btn-brd-hover);
+            background-color: var(--bit-pgn-clr-btn-bg-hover);
+        }
+    }
+
+    &:active {
+        color: var(--bit-pgn-clr-btn-txt-active);
+        border-color: var(--bit-pgn-clr-btn-brd-active);
+        background-color: var(--bit-pgn-clr-btn-bg-active);
+    }
+
+    &:focus-visible {
+        z-index: 1;
+        @include focus-ring(var(--bit-pgn-clr-fcs, #{$clr-pri-focus}));
+    }
+
+    // A link has no disabled attribute of its own, so a page control it cannot reach reports aria-disabled
+    // and is painted (and made inert) by the same rule.
+    &[disabled],
+    &[aria-disabled="true"] {
+        cursor: default;
         pointer-events: none;
         color: var(--bit-pgn-clr-btn-txt-dis);
         border-color: var(--bit-pgn-clr-btn-brd-dis);
         background-color: var(--bit-pgn-clr-btn-bg-dis);
     }
+}
+
+// A navigation button carrying a text is no longer a square: it keeps the height of the others and grows
+// along the text, with the icon and the text sharing the room the way a labelled button does.
+.bit-pgn-lbl {
+    gap: spacing(0.5);
+    padding: 0 spacing(1);
 }
 
 .bit-pgn-sel {
@@ -118,6 +286,41 @@
     }
 }
 
+
+// The pill shape applies to the ellipsis as well, so the gaps keep the outline of the buttons they stand
+// in for instead of breaking the row with a square.
+// The radius is the pill token rather than 50%: a button carrying a text (or a page number wide enough to
+// grow it) is wider than it is tall, where a relative radius would draw an ellipse instead of a pill, and
+// the token stays a pill at any height the theme or the consumer gives the button.
+.bit-pgn-rnd {
+    .bit-pgn-btn,
+    .bit-pgn-elp {
+        border-radius: $shp-radius-full;
+    }
+}
+
+
+// forced-colors: the selected page is conveyed by fill colors that High Contrast strips; repaint
+// it with the system selection colors so it stays distinguishable from the other page buttons.
+@media (forced-colors: active) {
+    // Double class matches the specificity of the selected-state hover/active rules above so this
+    // wins the cascade in High Contrast mode (media queries add no specificity of their own).
+    .bit-pgn-btn.bit-pgn-sel {
+        color: HighlightText;
+        border-color: Highlight;
+        background-color: Highlight;
+    }
+
+    // The dimmed fill of a control that cannot be reached is stripped as well, so it is repainted with the
+    // system color that stands for it - the one form of it a link reports through aria-disabled included.
+    .bit-pgn-btn[disabled],
+    .bit-pgn-btn[aria-disabled="true"],
+    .bit-pgn-elb[disabled],
+    .bit-pgn-elb[aria-disabled="true"] {
+        color: GrayText;
+        border-color: GrayText;
+    }
+}
 
 .bit-pgn-fil {
     --bit-pgn-clr-btn-txt: var(--bit-pgn-clr-txt);
@@ -143,98 +346,34 @@
     --bit-pgn-clr-btn-brd-dis: transparent;
 }
 
-.bit-pgn-pri {
-    --bit-pgn-clr-txt: #{$clr-pri-text};
-    --bit-pgn-clr: #{$clr-pri};
-    --bit-pgn-clr-hover: #{$clr-pri-hover};
-    --bit-pgn-clr-active: #{$clr-pri-active};
-    --bit-pgn-clr-sel: #{$clr-pri-dark};
-    --bit-pgn-clr-sel-hover: #{$clr-pri-dark-hover};
-    --bit-pgn-clr-sel-active: #{$clr-pri-dark-active};
-}
-
-.bit-pgn-sec {
-    --bit-pgn-clr-txt: #{$clr-sec-text};
-    --bit-pgn-clr: #{$clr-sec};
-    --bit-pgn-clr-hover: #{$clr-sec-hover};
-    --bit-pgn-clr-active: #{$clr-sec-active};
-    --bit-pgn-clr-sel: #{$clr-sec-dark};
-    --bit-pgn-clr-sel-hover: #{$clr-sec-dark-hover};
-    --bit-pgn-clr-sel-active: #{$clr-sec-dark-active};
-}
-
-.bit-pgn-ter {
-    --bit-pgn-clr-txt: #{$clr-ter-text};
-    --bit-pgn-clr: #{$clr-ter};
-    --bit-pgn-clr-hover: #{$clr-ter-hover};
-    --bit-pgn-clr-active: #{$clr-ter-active};
-    --bit-pgn-clr-sel: #{$clr-ter-dark};
-    --bit-pgn-clr-sel-hover: #{$clr-ter-dark-hover};
-    --bit-pgn-clr-sel-active: #{$clr-ter-dark-active};
-}
-
-.bit-pgn-inf {
-    --bit-pgn-clr-txt: #{$clr-inf-text};
-    --bit-pgn-clr: #{$clr-inf};
-    --bit-pgn-clr-hover: #{$clr-inf-hover};
-    --bit-pgn-clr-active: #{$clr-inf-active};
-    --bit-pgn-clr-sel: #{$clr-inf-dark};
-    --bit-pgn-clr-sel-hover: #{$clr-inf-dark-hover};
-    --bit-pgn-clr-sel-active: #{$clr-inf-dark-active};
-}
-
-.bit-pgn-suc {
-    --bit-pgn-clr-txt: #{$clr-suc-text};
-    --bit-pgn-clr: #{$clr-suc};
-    --bit-pgn-clr-hover: #{$clr-suc-hover};
-    --bit-pgn-clr-active: #{$clr-suc-active};
-    --bit-pgn-clr-sel: #{$clr-suc-dark};
-    --bit-pgn-clr-sel-hover: #{$clr-suc-dark-hover};
-    --bit-pgn-clr-sel-active: #{$clr-suc-dark-active};
-}
-
-.bit-pgn-wrn {
-    --bit-pgn-clr-txt: #{$clr-wrn-text};
-    --bit-pgn-clr: #{$clr-wrn};
-    --bit-pgn-clr-hover: #{$clr-wrn-hover};
-    --bit-pgn-clr-active: #{$clr-wrn-active};
-    --bit-pgn-clr-sel: #{$clr-wrn-dark};
-    --bit-pgn-clr-sel-hover: #{$clr-wrn-dark-hover};
-    --bit-pgn-clr-sel-active: #{$clr-wrn-dark-active};
-}
-
-.bit-pgn-swr {
-    --bit-pgn-clr-txt: #{$clr-swr-text};
-    --bit-pgn-clr: #{$clr-swr};
-    --bit-pgn-clr-hover: #{$clr-swr-hover};
-    --bit-pgn-clr-active: #{$clr-swr-active};
-    --bit-pgn-clr-sel: #{$clr-swr-dark};
-    --bit-pgn-clr-sel-hover: #{$clr-swr-dark-hover};
-    --bit-pgn-clr-sel-active: #{$clr-swr-dark-active};
-}
-
-.bit-pgn-err {
-    --bit-pgn-clr-txt: #{$clr-err-text};
-    --bit-pgn-clr: #{$clr-err};
-    --bit-pgn-clr-hover: #{$clr-err-hover};
-    --bit-pgn-clr-active: #{$clr-err-active};
-    --bit-pgn-clr-sel: #{$clr-err-dark};
-    --bit-pgn-clr-sel-hover: #{$clr-err-dark-hover};
-    --bit-pgn-clr-sel-active: #{$clr-err-dark-active};
+// Role classes are generated from the shared $bit-semantic-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-semantic-color-roles {
+    .bit-pgn-#{$role} {
+        --bit-pgn-clr-fcs: #{role($tokens, focus)};
+        --bit-pgn-clr-txt: #{role($tokens, on)};
+        --bit-pgn-clr: #{role($tokens, main)};
+        --bit-pgn-clr-hover: #{role($tokens, hover)};
+        --bit-pgn-clr-active: #{role($tokens, active)};
+        --bit-pgn-clr-sel: #{role($tokens, dark)};
+        --bit-pgn-clr-sel-hover: #{role($tokens, dark-hover)};
+        --bit-pgn-clr-sel-active: #{role($tokens, dark-active)};
+        --bit-pgn-clr-dis-bg: #{role($tokens, dis)};
+        --bit-pgn-clr-dis-text: #{role($tokens, dis-text)};
+    }
 }
 
 
 .bit-pgn-sm {
-    --bit-pgn-btn-size: #{spacing(3)};
-    --bit-pgn-font-size: #{spacing(1.5)};
+    --bit-pgn-btn-size: #{$siz-ctrl-sm};
+    --bit-pgn-font-size: #{$tg-fs-xs};
 }
 
 .bit-pgn-md {
-    --bit-pgn-btn-size: #{spacing(4)};
-    --bit-pgn-font-size: #{spacing(1.75)};
+    --bit-pgn-btn-size: #{$siz-ctrl-md};
+    --bit-pgn-font-size: #{$tg-fs-sm};
 }
 
 .bit-pgn-lg {
-    --bit-pgn-btn-size: #{spacing(5)};
-    --bit-pgn-font-size: #{spacing(2)};
+    --bit-pgn-btn-size: #{$siz-ctrl-lg};
+    --bit-pgn-font-size: #{$tg-fs-md};
 }

@@ -12,6 +12,7 @@ namespace Bit.Butil;
 /// All operations target a named cache. The browser persists caches per origin and they
 /// outlive the page, so this service is intentionally side-effect-only - no instance state.
 /// </remarks>
+[ButilService(typeof(CacheStorage))]
 public class CacheStorage(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>caches</c>.</summary>
@@ -70,6 +71,20 @@ public class CacheStorage(IJSRuntime js)
     /// <summary>
     /// Looks up a cached response. <see cref="CachedResponse.Found"/> is false when nothing matched.
     /// </summary>
+    /// <summary>
+    /// Looks a URL up across every cache this origin owns, rather than naming one.
+    /// </summary>
+    /// <param name="url">The request URL to look for.</param>
+    /// <returns>The first match found, searching caches in creation order; <see cref="CachedResponse.Found"/> is false when nothing matched.</returns>
+    /// <remarks>
+    /// This is the lookup a service worker's fetch handler usually wants - the caller doesn't have
+    /// to know which cache holds the entry. Use <see cref="Match"/> when you do know, since it
+    /// avoids searching the others.
+    /// </remarks>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CachedResponse))]
+    public ValueTask<CachedResponse> MatchAny(string url)
+        => js.Invoke<CachedResponse>("BitButil.cacheStorage.matchAny", url);
+
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CachedResponse))]
     public ValueTask<CachedResponse> Match(string cacheName, string url)
         => js.Invoke<CachedResponse>("BitButil.cacheStorage.match", cacheName, url);

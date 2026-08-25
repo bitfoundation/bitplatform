@@ -12,12 +12,65 @@
     var searchBoxClearIconCss = BitIconInfo.From(SearchBoxClearIcon, SearchBoxClearIconName ?? "Cancel")?.GetCssClasses();
     var comboBoxAddButtonIconCss = BitIconInfo.From(ComboBoxAddButtonIcon, ComboBoxAddButtonIconName ?? "Add")?.GetCssClasses();
     var itemCheckIconCss = GetItemCheckIconCss();
+
+    // The accessible name of an element named through aria-labelledby is computed from the whole subtree
+    // of the element it points at, and the chip remove buttons sit inside the selection display, so the
+    // combobox named after that display would report a "Remove ..." after every chip. While there are
+    // chips to remove the name comes from a hidden element carrying the selection text alone; with
+    // nothing to remove the visible display keeps the id and names the trigger the way it did.
+    @* A disabled item is one the callout refuses to unselect, so its chip carries no remove button and
+       cannot be the reason the hidden name element is rendered either. *@
+    var hasChipRemoveButtons = Chips && IsEnabled && ReadOnly is false &&
+                               _selectedItems.Take(GetDisplayedItemsCount()).Any(GetIsEnabled);
+
+    RenderFragment emptyContent =
+        @* The empty state is not an option, so it is marked presentational to keep it out of the
+           options of the listbox it is rendered in; its text stays exposed either way. *@
+        @<div role="presentation" style="@Styles?.EmptyContent" class="bit-drp-emp @Classes?.EmptyContent">
+            @if (HasSearchText && (NoResultsTemplate is not null || NoResultsText.HasValue()))
+            {
+                @if (NoResultsTemplate is not null)
+                {
+                    @NoResultsTemplate
+                }
+                else
+                {
+                    @NoResultsText
+                }
+            }
+            else if (EmptyTemplate is not null)
+            {
+                @EmptyTemplate
+            }
+            else
+            {
+                @(EmptyText ?? (HasSearchText ? "No results found" : "No items found"))
+            }
+        </div>;
+
+    RenderFragment loadingContent =
+        @* Presentational because it renders inside the listbox, whose only valid children are options,
+           groups and presentational elements; the loading state is announced through the live region
+           below instead of a role="status" here. *@
+        @<div role="presentation" style="@Styles?.LoadingContainer" class="bit-drp-ldc @Classes?.LoadingContainer">
+            @if (LoadingTemplate is not null)
+            {
+                @LoadingTemplate
+            }
+            else
+            {
+                <div style="@Styles?.Spinner" class="bit-drp-spn @Classes?.Spinner"></div>
+                <span style="@Styles?.LoadingText" class="@Classes?.LoadingText">@(LoadingText ?? "Loading...")</span>
+            }
+        </div>;
 }
 
-@if (Virtualize && (Options ?? ChildContent) is not null)
+@if ((Virtualize || IsLoading) && (Options ?? ChildContent) is not null)
 {
-    @* In virtualize mode the items have to be rendered from the (registered) Items collection, so the
-       options only register themselves here without rendering their items in place. *@
+    @* In virtualize mode the items have to be rendered from the (registered) Items collection, and while
+       loading the callout shows the loading content instead of them, so the options only register
+       themselves here without rendering their items in place. Keeping them mounted (rather than dropping
+       them from the tree) preserves both the registration and the markup order of the items. *@
     <CascadingValue Value="this" IsFixed="true">
         <div style="display:none" hidden>@(Options ?? ChildContent)</div>
     </CascadingValue>
@@ -28,7 +81,7 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
-     aria-owns="@(IsOpen? _calloutId : null)">
+     aria-owns="@(IsOpen? _scrollContainerId : null)">
     @if (LabelTemplate is not null)
     {
         <label id="@_labelId">
@@ -37,24 +90,44 @@
     }
     else if (Label.HasValue())
     {
-        <label style="@Styles?.Label" class="bit-drp-lbl @Classes?.Label" id="@_labelId">
+        @* A div with a combobox role is not a labelable element, so the label cannot be tied to it with
+           a for attribute; the click is forwarded by hand to keep the behavior of a native label. *@
+        <label @onclick="HandleOnLabelClick"
+               id="@_labelId"
+               style="@Styles?.Label"
+               class="bit-drp-lbl @Classes?.Label">
             @Label
         </label>
     }
 
-    <div @onclick="HandleOnClick"
+    @* The combobox is the interactive element of this input, so it is the one InputElement points at:
+       the inherited FocusAsync of BitInputBase then focuses what a user would focus by hand. *@
+       
+    @* The combobox role is on this element, so the autocomplete behavior of the ComboBox mode has
+       to be reported here and not only on the input it wraps. *@
+    <div @ref="InputElement"
+         @onclick="HandleOnClick"
+         @onkeydown="HandleOnTriggerKeyDown"
+         @onfocusin="HandleOnFocusIn"
+         @onfocusout="HandleOnFocusOut"
          title="@Title"
          role="combobox"
          id="@_dropdownId"
          style="@Styles?.Container"
          class="bit-drp-wrp @Classes?.Container"
-         tabindex=@(IsEnabled ? 0 : -1)
+         autofocus="@AutoFocus"
+         tabindex="@(IsEnabled ? (TabIndex ?? "0") : "-1")"
          aria-haspopup="listbox"
-         aria-required="@Required"
-         aria-disabled="@(IsEnabled is false)"
+         aria-autocomplete="@(Combo ? "list" : null)"
+         aria-required="@(Required ? "true" : null)"
+         aria-readonly="@(ReadOnly ? "true" : null)"
+         aria-invalid="@(ValueInvalid is true ? "true" : null)"
+         aria-disabled="@(IsEnabled is false ? "true" : null)"
          aria-expanded=@(IsOpen ? "true" : "false")
-         aria-labelledby="@GetDropdownAriaLabelledby()"
-         aria-controls="@(IsOpen? _calloutId : null)">
+         aria-label="@AriaLabel"
+         aria-labelledby="@(AriaLabel.HasValue() ? null : GetDropdownAriaLabelledby())"
+         aria-describedby="@(HasDescription ? _descriptionId : null)"
+         aria-controls="@(IsOpen? _scrollContainerId : null)">
 
         @if (PrefixTemplate is not null)
         {
@@ -69,76 +142,146 @@
             </span>
         }
 
-        <span id="@_dropdownTextContainerId"
-              style="@Styles?.TextContainer"
-              class="bit-drp-tcn @Classes?.TextContainer"
-              aria-live="polite"
-              aria-atomic="true"
-              aria-invalid="false">
+        <span style="@Styles?.TextContainer"
+              class="bit-drp-tcn @Classes?.TextContainer">
 
-            @if (Chips)
+            @* No live region here: this element names the combobox through aria-labelledby, so a screen
+               reader reads the new selection when the focus returns to the trigger. Announcing it on every
+               render would repeat the whole selection after each keystroke typed into the combo input.
+               It wraps the selection display only, and not the ComboBox input beside it: an input inside
+               the element that names the combobox would contribute its value to that name, which would
+               make the trigger report back whatever is currently being typed into it. The wrapper takes
+               no part in the layout (display:contents), so the chips stay the direct flex items they were. *@
+            <span id="@(hasChipRemoveButtons ? null : _dropdownTextContainerId)" class="bit-drp-tdp">
+                @if (Chips)
+                {
+                    @foreach (var item in _selectedItems.Take(GetDisplayedItemsCount()))
+                    {
+                        <span style="@Styles?.Chips" class="bit-drp-chp @Classes?.Chips">
+                            @if (ChipTemplate is not null)
+                            {
+                                @ChipTemplate(item)
+                            }
+                            else
+                            {
+                                @GetText(item)
+                            }
+                            @* A disabled item cannot be unselected by picking it in the callout, so it must not
+                               offer a remove button that would silently do nothing when it is activated. *@
+                            @if (IsEnabled && ReadOnly is false && GetIsEnabled(item))
+                            {
+                                @* A button so the chip can be removed with the keyboard and is announced as an action.
+                                   The keydown listener of Dropdowns.ts stops Enter and Space from reaching the
+                                   trigger's keydown handler, so activating the button cannot toggle the callout
+                                   while the other keys keep operating the dropdown. *@
+                                <button @onclick="() => HandleOnClickUnselectItem(item)" @onclick:stopPropagation
+                                        type="button"
+                                        style="@Styles?.ChipsRemoveButton"
+                                        class="bit-drp-crb @Classes?.ChipsRemoveButton"
+                                        aria-label="@GetChipsRemoveButtonAriaLabel(item)">
+                                    <i aria-hidden="true" style="@Styles?.ChipsRemoveIcon" class="@chipsRemoveIconCss @Classes?.ChipsRemoveIcon" />
+                                </button>
+                            }
+                        </span>
+                    }
+
+                    @if (GetOverflowItemsCount() > 0)
+                    {
+                        @* The chip only shows how many selections it stands for. The ones it hides are named
+                           in its title for the pointer, and take its place in the accessible name so that
+                           the combobox (which is named after this container) still reports them all. *@
+                        <span style="@Styles?.OverflowChip"
+                              class="bit-drp-chp bit-drp-ovf @Classes?.OverflowChip"
+                              title="@GetOverflowItemsText()"
+                              aria-label="@GetOverflowItemsText()">
+                            @GetOverflowText()
+                        </span>
+                    }
+                }
+                else if (_selectedItems.Count > 0)
+                {
+                    @if (TextTemplate is not null)
+                    {
+                        @TextTemplate(this)
+                    }
+                    else
+                    {
+                        @GetText()
+                    }
+                }
+
+                @* The placeholder stands in for the selection, so it belongs to the named wrapper along with
+                   it. In the ComboBox mode it belongs to the editable input below instead. *@
+                @if (Combo is false && _selectedItems.Count == 0)
+                {
+                    @if (PlaceholderTemplate is not null)
+                    {
+                        @PlaceholderTemplate(this)
+                    }
+                    else
+                    {
+                        @Placeholder
+                    }
+                }
+            </span>
+
+            @if (hasChipRemoveButtons)
             {
-                @foreach (var item in _selectedItems)
-                {
-                    <span style="@Styles?.Chips" class="bit-drp-chp @Classes?.Chips">
-                        @GetText(item)
-                        <i style="@Styles?.ChipsRemoveIcon" class="@chipsRemoveIconCss @Classes?.ChipsRemoveIcon" @onclick="() => HandleOnClickUnselectItem(item)" @onclick:stopPropagation />
-                    </span>
-                }
-            }
-            else if (_selectedItems.Count > 0)
-            {
-                @if (TextTemplate is not null)
-                {
-                    @TextTemplate(this)
-                }
-                else
-                {
-                    @GetText()
-                }
+                @* Hidden rather than only visually hidden: the text of an element referenced by
+                   aria-labelledby is read whatever its hidden state, so it names the combobox while
+                   staying out of the content a screen reader walks through - where the chips already
+                   carry the same text. *@
+                <span id="@_dropdownTextContainerId" style="display:none" hidden>@GetChipsAriaText()</span>
             }
 
             @if (Combo)
             {
+                @* An input does not inherit the accessible name of the combobox element around
+                   it, so without an AriaLabel it is named after the label by hand. *@
                 <input @ref="_comboBoxInputRef"
                        @onkeydown="@HandleOnKeyDown"
                        @oninput="@HandleOnComboInput"
                        @onchange="@HandleOnComboChange"
+                       @onfocusin="HandleComboInputFocusIn"
+                       @onfocusout="HandleComboInputFocusOut"
                        style="@Styles?.ComboBoxInput"
                        class="bit-drp-inp @Classes?.ComboBoxInput"
                        type="text"
-                       role="combobox"
-                       value="@_searchText"
+                       value="@_comboInputText"
+                       readonly="@ReadOnly"
                        aria-label="@AriaLabel"
+                       aria-labelledby="@(AriaLabel.HasNoValue() && HasLabel ? _labelId : null)"
+                       aria-describedby="@(HasDescription ? _descriptionId : null)"
+                       aria-autocomplete="list"
+                       aria-activedescendant="@(IsOpen ? GetCommitTargetId() : null)"
+                       aria-controls="@(IsOpen ? _scrollContainerId : null)"
                        placeholder="@(_selectedItems.Count > 0 ? "" : Placeholder)"
                        autocomplete="@BitAutoCompleteValue.NewPassword"
                        disabled="@(IsEnabled is false)" />
             }
-            else if (_selectedItems.Count == 0)
-            {
-                @if (PlaceholderTemplate is not null)
-                {
-                    @PlaceholderTemplate(this)
-                }
-                else
-                {
-                    @Placeholder
-                }
-            }
         </span>
 
-        @if (IsEnabled && ShowClearButton && _selectedItems.Count > 0)
+        @if (IsEnabled && ReadOnly is false && ShowClearButton && _selectedItems.Count > 0)
         {
-            <button @onclick="HandleOnClearClick" @onclick:stopPropagation
+            @* The keydown listener of Dropdowns.ts stops Enter and Space from reaching the trigger's
+               keydown handler, so activating this button cannot toggle the callout while the other
+               keys keep operating the dropdown. *@
+            <button @onclick="HandleOnClearButtonClick" @onclick:stopPropagation
                     type="button"
+                    title="@(ClearButtonAriaLabel ?? "Clear selection")"
+                    aria-label="@(ClearButtonAriaLabel ?? "Clear selection")"
                     style="@Styles?.ClearButton"
                     class="bit-drp-icn bit-drp-clr @Classes?.ClearButton">
-                <i class="@clearButtonIconCss" />
+                <i aria-hidden="true" class="@clearButtonIconCss" />
             </button>
         }
 
         <span class="bit-drp-icn">
-            @if (CaretDownTemplate is not null)
+            @if (IsLoading)
+            {
+                <div aria-hidden="true" style="@Styles?.Spinner" class="bit-drp-spn @Classes?.Spinner"></div>
+            }
+            else if (CaretDownTemplate is not null)
             {
                 @CaretDownTemplate
             }
@@ -163,25 +306,93 @@
             </span>
         }
     </div>
-    <select @attributes="InputHtmlAttributes" class="bit-input-hidden" multiple>
+    @* Mirrors the selection into a native control so the value takes part in a plain HTML form post.
+       It duplicates the whole selection, so it is kept out of the accessibility tree (and out of the
+       tab order, which aria-hidden requires) to stop a screen reader from reading it a second time. *@
+    <select @attributes="InputHtmlAttributes"
+            name="@Name"
+            tabindex="-1"
+            aria-hidden="true"
+            class="bit-input-hidden"
+            multiple="@MultiSelect"
+            disabled="@(IsEnabled is false)">
         @foreach (var item in _selectedItems)
         {
             <option value="@GetValue(item)" selected>@GetText(item)</option>
         }
     </select>
+
+    @if (HasDescription)
+    {
+        @* Named by the combobox through aria-describedby, so it is read as part of the dropdown
+           instead of being left as text that only happens to sit under it. *@
+        <span id="@_descriptionId"
+              style="@Styles?.DescriptionContainer"
+              class="bit-drp-des @Classes?.DescriptionContainer">
+            @if (DescriptionTemplate is not null)
+            {
+                @DescriptionTemplate
+            }
+            else
+            {
+                <span style="@Styles?.Description" class="bit-drp-dtx @Classes?.Description">
+                    @Description
+                </span>
+            }
+        </span>
+    }
+
+    @* A search silently changes the length of a list a screen reader user cannot see, so the new
+       result count is announced. The container is always rendered because a live region has to be in
+       the accessibility tree before its text changes for the change to be announced; only the text
+       comes and goes, so the region stays quiet while there is nothing to announce.
+       It lives here and not in the callout because the callout is hidden while it is closed, and a
+       live region inside a hidden element announces nothing - which the loading state, the one state
+       that changes while the callout may well be closed, depends on. *@
+    <div role="status" aria-live="polite" aria-atomic="true" class="bit-drp-lvr">
+        @if (IsLoading)
+        {
+            @* Text only, never LoadingTemplate: the template is arbitrary markup meant to be seen -
+               a spinner, an image, something interactive - and rendering it a second time here would
+               duplicate its ids and its handlers and hand the screen reader whatever it happens to
+               contain instead of an announcement. *@
+            @(LoadingText ?? "Loading...")
+        }
+        else if (IsMaxSelectedItemsReached)
+        {
+            @GetMaxSelectedItemsText()
+        }
+        else if (HasSearchText)
+        {
+            @GetSearchResultsText()
+        }
+        else if (IsOpen)
+        {
+            @* Why the list did not change with what was typed, which is otherwise only visible in the
+               callout - and only to someone who can see that the items under the field are all of them. *@
+            @GetMinSearchLengthText()
+        }
+    </div>
 </div>
 
-<div @onclick="CloseCallout"
+<div @onclick="CloseCalloutAndRestoreFocus"
      style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
      id="@_overlayId"
      class="bit-drp-ovl @Classes?.Overlay"></div>
 
-<div id="@_calloutId"
+@* The listbox role lives on the scroll container, not here: the search box, the select all row, the
+   responsive panel header and the header/footer templates are not options and must not be children
+   of the listbox. *@
+@* The callout is rendered outside the root element (and reparented to the body while it is open) so
+   that it can escape any clipping ancestor, which also takes it out of the reach of the direction
+   the root declares - so it carries that direction itself. Without it the items of an RTL dropdown
+   would start their text against the wrong edge whenever the page around it is not RTL as well. *@
+<div @onkeydown="HandleOnCalloutKeyDown"
+     id="@_calloutId"
      tabindex="0"
-     role="listbox"
+     dir="@Dir?.ToString().ToLower()"
      style="@Styles?.Callout"
-     class="@GetCalloutCssClasses()"
-     aria-labelledby="@_labelId">
+     class="@GetCalloutCssClasses()">
 
     @if (Responsive)
     {
@@ -199,10 +410,10 @@
                 </label>
             }
 
-            <button @onclick="CloseCallout"
+            <button @onclick="CloseCalloutAndRestoreFocus"
                     type="button"
-                    title="Close"
-                    aria-label="Close"
+                    title="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
+                    aria-label="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
                     style="@Styles?.ResponsiveCloseButton"
                     class="bit-drp-cls @Classes?.ResponsiveCloseButton">
                 <span>
@@ -215,10 +426,10 @@
 
     @if (CalloutHeaderTemplate is not null)
     {
-        <div id="@_headerId">@CalloutHeaderTemplate</div>
+        <div id="@_headerId" style="@Styles?.CalloutHeader" class="@Classes?.CalloutHeader">@CalloutHeaderTemplate</div>
     }
 
-    @if (ShowSearchBox && Combo is false)
+    @if (HasSearchBox)
     {
         <div style="@Styles?.SearchBoxContainer"
              class="@GetSearchBoxClasses() @Classes?.SearchBoxContainer">
@@ -232,13 +443,15 @@
             <input @ref="_searchInputRef" @onfocusin="HandleSearchBoxFocusIn" @onfocusout="HandleSearchBoxFocusOut" @oninput="@HandleOnSearchBoxInput" @onchange="@HandleOnSearchBoxChange"
                    type="text"
                    role="searchbox"
-                   value="@_searchText"
-                   aria-label="Search text"
+                   value="@_searchInputText"
+                   aria-label="@(SearchBoxAriaLabel ?? "Search text")"
                    placeholder="@SearchBoxPlaceholder"
                    style="@Styles?.SearchBoxInput"
                    class="bit-drp-sin @Classes?.SearchBoxInput" />
 
-            @if (_searchText.HasValue())
+            @* Follows the text of the input rather than the applied term, so a search that is still
+               waiting to be committed (or debounced) can be taken back the moment it is typed. *@
+            @if (_searchInputText.HasValue())
             {
                 <div style="@Styles?.SearchBoxClearButtonContainer"
                      class="bit-drp-sbcc @Classes?.SearchBoxClearButtonContainer">
@@ -246,8 +459,8 @@
                             type="button"
                             style="@Styles?.SearchBoxClearButton"
                             class="bit-drp-sbc @Classes?.SearchBoxClearButton"
-                            aria-label="Clear text"
-                            disabled="@(_searchText.HasNoValue())">
+                            title="@(SearchBoxClearButtonAriaLabel ?? "Clear text")"
+                            aria-label="@(SearchBoxClearButtonAriaLabel ?? "Clear text")">
                         <span>
                             <i aria-hidden="true"
                                style="@Styles?.SearchBoxClearIcon"
@@ -263,49 +476,166 @@
     {
         <div style="@Styles?.ResponsiveComboInputContainer"
              class="bit-drp-cbi @Classes?.ResponsiveComboInputContainer">
-            <input @ref="_comboBoxInputResponsiveRef" @onkeydown="@((k) => HandleOnKeyDown(k))" @oninput="@HandleOnComboInput" @onchange="@HandleOnComboChange"
+            @* An input does not inherit the accessible name of the combobox element around
+               it, so without an AriaLabel it is named after the label by hand. *@
+            <input @ref="_comboBoxInputResponsiveRef" @onkeydown="@((k) => HandleOnKeyDown(k))" @oninput="@HandleOnComboInput" @onchange="@HandleOnComboChange" @onfocusin="HandleComboInputFocusIn" @onfocusout="HandleComboInputFocusOut"
                    style="@Styles?.ComboBoxInput"
                    class="bit-drp-icb @Classes?.ComboBoxInput"
                    type="text"
-                   role="combobox"
-                   value="@_searchText"
+                   value="@_comboInputText"
+                   readonly="@ReadOnly"
                    aria-label="@AriaLabel"
+                   aria-labelledby="@(AriaLabel.HasNoValue() && HasLabel ? _labelId : null)"
+                   aria-describedby="@(HasDescription ? _descriptionId : null)"
+                   aria-autocomplete="list"
+                   aria-activedescendant="@(IsOpen ? GetCommitTargetId() : null)"
+                   aria-controls="@(IsOpen ? _scrollContainerId : null)"
                    placeholder="@Placeholder"
                    autocomplete="@BitAutoCompleteValue.NewPassword"
                    disabled="@(IsEnabled is false)" />
 
             <button @onclick="HandleOnAddItemComboClick" @onclick:stopPropagation
                     type="button"
+                    title="@(ComboBoxAddButtonAriaLabel ?? "Add")"
+                    aria-label="@(ComboBoxAddButtonAriaLabel ?? "Add")"
                     style="@Styles?.ResponsiveComboAddButton"
                     class="bit-drp-icn bit-drp-cai @Classes?.ResponsiveComboAddButton">
-                <i class="@comboBoxAddButtonIconCss" />
+                <i aria-hidden="true" class="@comboBoxAddButtonIconCss" />
             </button>
         </div>
     }
 
+    @if (MultiSelect && ShowSelectAll && ItemsProvider is null && IsLoading is false)
+    {
+        @* One pass over the items for the three pieces of state, the first of which decides whether the
+           item is rendered at all: an empty list (or a search that matched nothing) leaves it with
+           nothing to select, and a control that cannot do anything is worse than no control. *@
+        var (hasCandidates, allSelected, anySelected) = GetSelectAllState();
+
+        if (hasCandidates)
+        {
+            var selectAllClasses = "bit-drp-sac bit-drp-iwr" +
+                                   (allSelected ? " bit-drp-chd" : string.Empty) +
+                                   (anySelected && allSelected is false ? " bit-drp-sai" : string.Empty) +
+                                   (IsEnabled && ReadOnly is false ? string.Empty : " bit-drp-ids");
+            var selectAllAriaChecked = allSelected ? "true" : anySelected ? "mixed" : "false";
+            <div style="@Styles?.SelectAllContainer"
+                 class="@selectAllClasses @Classes?.SelectAllContainer">
+                @* Reached with the arrow keys like the options below it, so it stays out of the tab order too. *@
+                <button @onclick="HandleOnSelectAllClick"
+                        type="button"
+                        role="checkbox"
+                        tabindex="-1"
+                        style="@Styles?.SelectAllButton"
+                        class="bit-drp-mcn bit-drp-sab @Classes?.SelectAllButton"
+                        disabled="@(IsEnabled is false || ReadOnly)"
+                        aria-checked="@selectAllAriaChecked">
+                    <div style="@Styles?.SelectAllCheckBox"
+                         class="bit-drp-chb @Classes?.SelectAllCheckBox">
+                        <i aria-hidden="true"
+                           style="@Styles?.SelectAllCheckIcon"
+                           class="bit-drp-chm @itemCheckIconCss @Classes?.SelectAllCheckIcon" />
+                    </div>
+                    <span style="@Styles?.SelectAllText"
+                          class="bit-drp-itx @Classes?.SelectAllText">
+                        @(SelectAllText ?? "Select all")
+                    </span>
+                </button>
+            </div>
+        }
+    }
+
+    @{
+        // The text the list offers to create an item out of, which only the Dynamic ComboBox mode ever
+        // has. It stands in for the empty state while it is there: a list that says "no results" while
+        // offering to create the very thing that was searched for contradicts itself.
+        var dynamicItemText = IsLoading ? null : GetDynamicItemText();
+
+        // The hint that the list below is still the full one because what was typed is too short to
+        // filter by, which is the one state where the items on the screen have nothing to do with the
+        // text in the search field.
+        var minSearchLengthText = IsLoading ? null : GetMinSearchLengthText();
+    }
+
+    @* The listbox is named after the label of the dropdown, so its options are read as part of the
+       field they belong to; without a label the accessible name given to the dropdown stands in. *@
     <div id="@_scrollContainerId"
+         role="listbox"
          style="@Styles?.ScrollContainer"
-         class="bit-drp-scn @Classes?.ScrollContainer">
-        @if (Virtualize)
+         class="bit-drp-scn @Classes?.ScrollContainer"
+         aria-busy="@(IsLoading ? "true" : null)"
+         aria-label="@(HasLabel ? null : AriaLabel)"
+         aria-labelledby="@(HasLabel ? _labelId : null)"
+         aria-multiselectable="@(MultiSelect ? "true" : null)">
+        @if (minSearchLengthText is not null)
+        {
+            @* Not an option, so it is marked presentational to stay out of the list it explains; it is
+               announced through the live region of the dropdown instead. *@
+            <div role="presentation"
+                 style="@Styles?.SearchHint"
+                 class="bit-drp-shn @Classes?.SearchHint">
+                @minSearchLengthText
+            </div>
+        }
+
+        @if (dynamicItemText is not null)
+        {
+            @* An option like the ones below it, so the arrow keys reach it and a screen reader reads it
+               as part of the list; it is always what a commit would take while it is on the screen,
+               which is why it carries the commit target styling as well. *@
+            <button @onclick="HandleOnDynamicItemClick"
+                    type="button"
+                    role="option"
+                    tabindex="-1"
+                    id="@DynamicItemId"
+                    aria-selected="false"
+                    style="@Styles?.DynamicItem"
+                    class="bit-drp-dyn bit-drp-ctg @Classes?.DynamicItem">
+                @if (DynamicItemTemplate is not null)
+                {
+                    @DynamicItemTemplate(dynamicItemText)
+                }
+                else
+                {
+                    <span style="@Styles?.ItemText" class="bit-drp-itx @Classes?.ItemText">
+                        @GetDynamicItemDisplayText(dynamicItemText)
+                    </span>
+                }
+            </button>
+        }
+
+        @if (IsLoading)
+        {
+            @loadingContent
+        }
+        else if (Virtualize)
         {
             if (ItemsProvider is null)
             {
-                <Virtualize Items="GetSearchedItems()"
-                            Context="item"
+                <Virtualize Items="GetDisplayItems()"
                             ItemSize="ItemSize"
                             OverscanCount="OverscanCount"
                             Placeholder="VirtualizePlaceholder">
-                    <_BitDropdownItem Item="item" Dropdown="this" ItemCheckIconCss="@itemCheckIconCss" />
+                    <ItemContent Context="item">
+                        <_BitDropdownItem Item="item" Dropdown="this" ItemCheckIconCss="@itemCheckIconCss" />
+                    </ItemContent>
+                    <EmptyContent>
+                        @emptyContent
+                    </EmptyContent>
                 </Virtualize>
             }
             else
             {
                 <Virtualize @ref="_virtualizeElement"
-                            Context="item"
                             OverscanCount="OverscanCount"
                             Placeholder="VirtualizePlaceholder"
                             ItemsProvider="InternalItemsProvider">
-                    <_BitDropdownItem Item="item" Dropdown="this" ItemCheckIconCss="@itemCheckIconCss" />
+                    <ItemContent Context="item">
+                        <_BitDropdownItem Item="item" Dropdown="this" ItemCheckIconCss="@itemCheckIconCss" />
+                    </ItemContent>
+                    <EmptyContent>
+                        @emptyContent
+                    </EmptyContent>
                 </Virtualize>
             }
         }
@@ -314,19 +644,31 @@
             <CascadingValue Value="this" IsFixed="true">
                 @(Options ?? ChildContent)
             </CascadingValue>
+
+            @if (dynamicItemText is null && HasNoVisibleItems())
+            {
+                @emptyContent
+            }
         }
         else
         {
-            @foreach (var item in GetSearchedItems())
+            @if (dynamicItemText is null && HasNoVisibleItems())
             {
-                <_BitDropdownItem Item="item" Dropdown="this" ItemCheckIconCss="@itemCheckIconCss" />
+                @emptyContent
+            }
+            else
+            {
+                @foreach (var item in GetDisplayItems())
+                {
+                    <_BitDropdownItem Item="item" Dropdown="this" ItemCheckIconCss="@itemCheckIconCss" />
+                }
             }
         }
     </div>
 
     @if (CalloutFooterTemplate is not null)
     {
-        <div id="@_footerId">@CalloutFooterTemplate</div>
+        <div id="@_footerId" style="@Styles?.CalloutFooter" class="@Classes?.CalloutFooter">@CalloutFooterTemplate</div>
     }
 
 </div>

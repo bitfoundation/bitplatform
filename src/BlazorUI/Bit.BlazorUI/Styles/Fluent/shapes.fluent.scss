@@ -1,12 +1,35 @@
 ﻿:root,
 :root[bit-theme="light"],
+:root [bit-theme="light"],
 :root[bit-theme="fluent"],
+:root [bit-theme="fluent"],
 :root[bit-theme="fluent-light"],
+:root [bit-theme="fluent-light"],
 :root[bit-theme="dark"],
-:root[bit-theme="fluent-dark"] {
-    //spacing
+:root [bit-theme="dark"],
+:root[bit-theme="fluent-dark"],
+:root [bit-theme="fluent-dark"] {
+    //spacing - base unit (length) times density (unitless); spacing() multiplies both.
     --bit-spa-scaling-factor: 0.5rem;
-    //zindex
+    --bit-layout-density-scale: 1;
+    //the base inset of a dialog surface - the one padding a design system decides for dialog
+    //headers, bodies and footers (Fluent 24px, Material 24px, Cupertino alerts 20px).
+    --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+    //layout - how a dialog/message-box footer lays out its action buttons. Fluent and Material run
+    //them in a row hugging the trailing edge; Cupertino stacks them full-width and centred.
+    --bit-layout-dialog-actions-direction: row;
+    --bit-layout-dialog-actions-justify: flex-end;
+    --bit-layout-dialog-actions-align: center;
+    //zindex - the layering contract, top to bottom:
+    //  snackbar (1400) - notifications, above everything.
+    //  callout  (1300) - floating popup surfaces (dropdown/date-picker callouts, panel content).
+    //  overlay  (1200) - the page-level click-away catcher paired with a callout. Deliberately ABOVE
+    //                    modal: a popup opened from inside a modal renders its catcher at page level
+    //                    and must cover the modal for click-away to work there.
+    //  modal    (1100) - the root of modal surfaces (BitModal/BitDialog). A modal's own backdrop does
+    //                    NOT use the overlay token; the fixed+z-indexed root forms a stacking context
+    //                    and the backdrop stacks inside it at z-index 0.
+    //  base     (1000) - sticky chrome (header/footer/layout) above normal flow content.
     --bit-zin-snackbar: 1400;
     --bit-zin-callout: 1300;
     --bit-zin-overlay: 1200;
@@ -16,4 +39,31 @@
     --bit-shp-brd-radius: 0.125rem;
     --bit-shp-brd-width: 0.0625rem;
     --bit-shp-brd-style: solid;
+
+    //shape - the heavier stroke: underline focus rules, selection indicators, the slider thumb ring.
+    --bit-shp-brd-width-thick: 0.125rem; //2px
+
+    //shape - radius scale. Fluent rounds controls at 2px (--bit-shp-brd-radius = xs); the rest of
+    //the ramp serves sub-elements and pills. The per-family radii (--bit-shp-radius-control/surface/
+    //popup/dialog) are aliases of --bit-shp-brd-radius and live in ../family-tokens.scss.
+    --bit-shp-radius-none: 0;
+    --bit-shp-radius-xs: 0.125rem; //2px
+    --bit-shp-radius-sm: 0.25rem; //4px
+    --bit-shp-radius-md: 0.375rem; //6px
+    --bit-shp-radius-lg: 0.5rem; //8px
+    --bit-shp-radius-xl: 0.75rem; //12px
+    --bit-shp-radius-2xl: 1rem; //16px
+    --bit-shp-radius-full: 9999px;
+
+    //focus ring (a11y) - width is the visible thickness, offset is the gap between the element and the ring.
+    --bit-shp-focus-ring-width: 0.125rem; //2px
+    --bit-shp-focus-ring-offset: 0.125rem; //2px
+
+    //global focus shadow used by the focus-ring mixin and the .bit-css-shd-focus utility.
+    //Inner ring uses the page background (--bit-clr-bg-pri, not the focus-state background token) to create a separator between the element and the colored ring (WCAG 2.4.11/2.4.13).
+    //The mixin sets --bit-focus-ring-color/--bit-focus-ring-offset locally on the focused element so per-call overrides apply.
+    //In forced-colors (High Contrast) mode box-shadows are stripped entirely; the focus-ring mixin restores a real Highlight outline there instead.
+    --bit-shd-focus-ring:
+        0 0 0 var(--bit-focus-ring-offset, var(--bit-shp-focus-ring-offset)) var(--bit-clr-bg-pri),
+        0 0 0 calc(var(--bit-focus-ring-offset, var(--bit-shp-focus-ring-offset)) + var(--bit-shp-focus-ring-width)) var(--bit-focus-ring-color, var(--bit-clr-pri-focus));
 }

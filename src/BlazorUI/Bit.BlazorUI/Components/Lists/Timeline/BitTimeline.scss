@@ -1,4 +1,95 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
+
+/*
+ * The dot colors are resolved on the item, never on the root: a custom property whose value contains
+ * a var() is substituted on the element that declares it, so declaring the dot colors on the root
+ * would freeze them to the root color and an item-level color or variant class could never win.
+ */
+@mixin timeline-variant-fill {
+    --bit-tln-dot-clr: var(--bit-tln-clr-fg);
+    --bit-tln-dot-clr-bg: var(--bit-tln-clr);
+    --bit-tln-dot-clr-brd: var(--bit-tln-clr);
+    --bit-tln-dot-ico-clr: var(--bit-tln-clr-fg);
+    --bit-tln-dot-ico-clr-bg: transparent;
+    --bit-tln-dot-ico-width: auto;
+    --bit-tln-dot-ico-height: auto;
+}
+
+@mixin timeline-variant-fill-disabled {
+    --bit-tln-dot-clr-bg: var(--bit-tln-clr-bg-dis);
+    --bit-tln-dot-clr-brd: var(--bit-tln-clr-brd-dis);
+    --bit-tln-dot-ico-clr: var(--bit-tln-clr-dis);
+}
+
+@mixin timeline-variant-outline {
+    --bit-tln-dot-clr: var(--bit-tln-clr-fg);
+    --bit-tln-dot-clr-bg: #{$clr-bg-pri};
+    --bit-tln-dot-clr-brd: var(--bit-tln-clr);
+    --bit-tln-dot-ico-clr: var(--bit-tln-clr);
+    --bit-tln-dot-ico-clr-bg: transparent;
+    --bit-tln-dot-ico-width: auto;
+    --bit-tln-dot-ico-height: auto;
+}
+
+@mixin timeline-variant-outline-disabled {
+    --bit-tln-dot-clr-bg: #{$clr-bg-pri};
+    --bit-tln-dot-clr-brd: var(--bit-tln-clr-brd-dis);
+    --bit-tln-dot-ico-clr: var(--bit-tln-clr-dis);
+}
+
+@mixin timeline-variant-text {
+    --bit-tln-dot-clr: var(--bit-tln-clr-fg);
+    --bit-tln-dot-clr-bg: transparent;
+    --bit-tln-dot-clr-brd: transparent;
+    --bit-tln-dot-ico-clr: var(--bit-tln-clr);
+    --bit-tln-dot-ico-clr-bg: #{$clr-bg-pri};
+    --bit-tln-dot-ico-width: var(--bit-tln-dot-size);
+    --bit-tln-dot-ico-height: var(--bit-tln-dot-size);
+}
+
+@mixin timeline-variant-text-disabled {
+    --bit-tln-dot-ico-clr: var(--bit-tln-clr-dis);
+}
+
+/*
+ * The broken lines are painted as a repeating gradient rather than a border, so the same declaration
+ * serves both orientations and both halves of the connector: the direction of the repetition follows
+ * --bit-tln-dvd-dir-s / --bit-tln-dvd-dir-e, which the root points from the dot outwards and flips
+ * while the timeline runs horizontally. Resolved per item, for the same reason the dot colors are.
+ */
+@mixin timeline-line-broken($dash, $period) {
+    --bit-tln-dvd-bg-s: repeating-linear-gradient(var(--bit-tln-dvd-dir-s),
+            var(--bit-tln-dvd-clr, #{$clr-brd-sec}) 0 #{$dash},
+            transparent #{$dash} #{$period});
+    --bit-tln-dvd-bg-e: repeating-linear-gradient(var(--bit-tln-dvd-dir-e),
+            var(--bit-tln-dvd-clr, #{$clr-brd-sec}) 0 #{$dash},
+            transparent #{$dash} #{$period});
+}
+
+@mixin timeline-line-solid {
+    --bit-tln-dvd-bg-s: var(--bit-tln-dvd-clr, #{$clr-brd-sec});
+    --bit-tln-dvd-bg-e: var(--bit-tln-dvd-clr, #{$clr-brd-sec});
+}
+
+@mixin timeline-line-dashed {
+    @include timeline-line-broken(spacing(1), spacing(1.75));
+}
+
+@mixin timeline-line-dotted {
+    @include timeline-line-broken(spacing(0.25), spacing(0.75));
+}
+
+@mixin timeline-item-reversed {
+    --bit-tln-itm-flexdir: row-reverse;
+    --bit-tln-pcn-flexdir: row;
+    --bit-tln-scn-flexdir: row-reverse;
+}
+
+@mixin timeline-item-normal {
+    --bit-tln-itm-flexdir: row;
+    --bit-tln-pcn-flexdir: row-reverse;
+    --bit-tln-scn-flexdir: row;
+}
 
 .bit-tln {
     width: 100%;
@@ -13,27 +104,24 @@
     --bit-tln-scn-flexdir: row;
     --bit-tln-cn-overflow: hidden;
     --bit-tln-cn-justcon: unset;
-    --bit-tln-cn-padding: calc(var(--bit-tln-dot-size) / 2) 0;
-    --bit-tln-dvd-top: 0;
-    --bit-tln-dvd-height: 100%;
-    --bit-tln-dvd-width: #{spacing(0.25)};
-    --bit-tln-clr-dis: #{$clr-fg-dis};
-    --bit-tln-clr-bg-dis: #{$clr-bg-dis};
-    --bit-tln-clr-brd-dis: #{$clr-brd-dis};
+    --bit-tln-dvd-dsp-s: block;
+    --bit-tln-dvd-dsp-e: block;
+    --bit-tln-dvd-top-s: 0;
+    --bit-tln-dvd-top-e: 50%;
+    --bit-tln-dvd-ins-s: auto;
+    --bit-tln-dvd-ins-e: auto;
+    --bit-tln-dvd-height: 50%;
+    --bit-tln-dvd-width: #{$shp-border-width-thick};
+    --bit-tln-dvd-dir-s: to top;
+    --bit-tln-dvd-dir-e: to bottom;
+    --bit-tln-clr-dis: var(--bit-tln-clr-dis-text, #{$clr-fg-dis});
 
     &.bit-dis {
         cursor: default;
         user-select: none;
         pointer-events: none;
         color: var(--bit-tln-clr-dis);
-        --bit-tln-dot-ico-clr: var(--bit-tln-clr-dis);
     }
-}
-
-.bit-tln-rvs, .bit-tln-irv {
-    --bit-tln-itm-flexdir: row-reverse;
-    --bit-tln-pcn-flexdir: row;
-    --bit-tln-scn-flexdir: row-reverse;
 }
 
 .bit-tln-itm {
@@ -44,13 +132,48 @@
     align-items: center;
     flex-direction: var(--bit-tln-itm-flexdir);
 
+    // Resolved per item so that an item-level color or size class also drives the padding of the
+    // contents and the disabled palette of the dot.
+    --bit-tln-cn-padding: calc(var(--bit-tln-dot-size) / 2) 0;
+    --bit-tln-clr-dis: var(--bit-tln-clr-dis-text, #{$clr-fg-dis});
+    --bit-tln-clr-bg-dis: var(--bit-tln-clr-dis-bg, #{$clr-bg-dis});
+    --bit-tln-clr-brd-dis: var(--bit-tln-clr-dis-bg, #{$clr-bg-dis});
+
     &.bit-tln-ids {
         cursor: default;
         user-select: none;
         pointer-events: none;
         color: var(--bit-tln-clr-dis);
-        --bit-tln-dot-ico-clr: #{$clr-fg-dis};
     }
+}
+
+// The interactive item keeps the listitem role on its own element, so the nested button takes over
+// the layout of the contents of the item and carries its focus ring.
+.bit-tln-btn {
+    width: 100%;
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 100%;
+    align-items: center;
+    flex-direction: var(--bit-tln-itm-flexdir);
+    border-radius: $shp-radius-control;
+
+    // A disabled item takes no pointer events at all, so the hover plate never shows up on one.
+    @media (hover: hover) {
+        &:hover {
+            background-color: $clr-bg-pri-hover;
+        }
+    }
+
+    &:focus-visible {
+        outline: none;
+        @include focus-ring(var(--bit-tln-clr-focus));
+    }
+}
+
+// Only the items that answer to a click behave like a control under the pointer.
+.bit-tln-int {
+    cursor: pointer;
 }
 
 .bit-tln-pcn,
@@ -80,7 +203,10 @@
     font-size: inherit;
     align-items: center;
     overflow-wrap: anywhere;
-    text-overflow: ellipsis;
+
+    // width: max-content keeps a short text from stretching across its half of the item, and this cap
+    // keeps a long one inside that half, where it wraps instead of being clipped by the content's overflow.
+    max-width: 100%;
 }
 
 .bit-tln-dvd {
@@ -89,13 +215,39 @@
     justify-content: center;
     padding: calc(var(--bit-tln-dot-size) / 2);
 
-    &::before {
+    /*
+     * The connector of an item is painted as two halves, one on each side of the dot, rather than as a
+     * single run across the item. A repeating gradient always starts its pattern at the start edge of
+     * the box it paints, so a single run would begin its dashes at the top of the item, which is the
+     * middle of the stretch between two dots: the dashes would then land at an arbitrary offset from
+     * every dot and never line up with those of the neighbouring item. Two halves that each run from
+     * the dot outwards keep the pattern anchored to the dots, so it stays flush against them and
+     * symmetric around them whatever the height of the item and the variant of its neighbours.
+     */
+    &::before,
+    &::after {
         content: "";
         position: absolute;
-        background: $clr-brd-sec;
-        top: var(--bit-tln-dvd-top);
         width: var(--bit-tln-dvd-width);
         height: var(--bit-tln-dvd-height);
+    }
+
+    // Routed through variables so the color of the line can be themed from the Styles of the divider,
+    // which cannot reach these pseudo-elements on its own, and so the line variants can replace the
+    // whole paint with a repeating gradient. The offsets of the axis the timeline does not run along
+    // are left at auto, so the line keeps the centered static position of the divider on that axis.
+    &::before {
+        display: var(--bit-tln-dvd-dsp-s);
+        background: var(--bit-tln-dvd-bg-s, var(--bit-tln-dvd-clr, #{$clr-brd-sec}));
+        top: var(--bit-tln-dvd-top-s);
+        inset-inline-start: var(--bit-tln-dvd-ins-s);
+    }
+
+    &::after {
+        display: var(--bit-tln-dvd-dsp-e);
+        background: var(--bit-tln-dvd-bg-e, var(--bit-tln-dvd-clr, #{$clr-brd-sec}));
+        top: var(--bit-tln-dvd-top-e);
+        inset-inline-start: var(--bit-tln-dvd-ins-e);
     }
 }
 
@@ -114,8 +266,44 @@
     background-color: var(--bit-tln-dot-clr-bg);
 }
 
+// The placeholder of a hidden dot paints nothing and only reserves the box of a dot. It repeats the
+// size declarations of the dot instead of reserving that space on the divider itself, so it measures
+// the same as a dot whichever box-sizing the host page applies to both of them.
+.bit-tln-hdd {
+    visibility: hidden;
+    width: var(--bit-tln-dot-size);
+    height: var(--bit-tln-dot-size);
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+}
+
 .bit-tln-ico {
     color: var(--bit-tln-dot-ico-clr);
+}
+
+.bit-tln-rvs {
+    @include timeline-item-reversed;
+}
+
+// Alternate flips every second item, so the items zig-zag around the line. It keys off the position
+// in the DOM (and not off an index passed from C#) so it also holds for conditionally rendered options.
+// An explicitly reversed item is excluded rather than merely overridden afterwards, because the
+// nth-child selector outweighs the item-level rule below and would otherwise win on specificity.
+.bit-tln-alt > .bit-tln-itm:nth-child(even):not(.bit-tln-irv) {
+    @include timeline-item-reversed;
+}
+
+// In a reversed timeline the zig-zag starts from the other side.
+.bit-tln-rvs.bit-tln-alt > .bit-tln-itm:nth-child(even):not(.bit-tln-irv) {
+    @include timeline-item-normal;
+}
+
+.bit-tln-itm.bit-tln-irv {
+    @include timeline-item-reversed;
+}
+
+.bit-tln-rvo {
+    --bit-tln-flexdir: column-reverse;
 }
 
 .bit-tln-hrz {
@@ -124,118 +312,199 @@
     --bit-tln-itm-flexdir: column;
     --bit-tln-cn-overflow: unset;
     --bit-tln-cn-justcon: center;
-    --bit-tln-cn-padding: 0 calc(var(--bit-tln-dot-size) / 2);
-    --bit-tln-dvd-top: unset;
-    --bit-tln-dvd-height: #{spacing(0.25)};
-    --bit-tln-dvd-width: 100%;
+    --bit-tln-dvd-top-s: unset;
+    --bit-tln-dvd-top-e: unset;
+    --bit-tln-dvd-ins-s: 0;
+    --bit-tln-dvd-ins-e: 50%;
+    --bit-tln-dvd-height: #{$shp-border-width-thick};
+    --bit-tln-dvd-width: 50%;
+    --bit-tln-dvd-dir-s: to left;
+    --bit-tln-dvd-dir-e: to right;
 
-    &.bit-tln-rvs, .bit-tln-irv {
+    // Both halves still run from the dot outwards once the inline axis is mirrored, so the directions
+    // of the repetition swap with it. Kept in its own rule so a browser without :dir() drops only this.
+    &:dir(rtl) {
+        --bit-tln-dvd-dir-s: to right;
+        --bit-tln-dvd-dir-e: to left;
+    }
+
+    .bit-tln-itm {
+        --bit-tln-cn-padding: 0 calc(var(--bit-tln-dot-size) / 2);
+    }
+
+    &.bit-tln-rvo {
+        --bit-tln-flexdir: row-reverse;
+    }
+
+    &.bit-tln-rvs {
         --bit-tln-itm-flexdir: column-reverse;
     }
-}
 
-.bit-tln-fil {
-    --bit-tln-dot-clr: var(--bit-tln-clr-fg);
-    --bit-tln-dot-clr-bg: var(--bit-tln-clr);
-    --bit-tln-dot-clr-brd: var(--bit-tln-clr);
-    --bit-tln-dot-ico-clr: var(--bit-tln-clr-fg);
+    .bit-tln-itm.bit-tln-irv {
+        --bit-tln-itm-flexdir: column-reverse;
+    }
 
-    &.bit-dis, .bit-tln-ids {
-        --bit-tln-dot-clr-bg: var(--bit-tln-clr-bg-dis);
-        --bit-tln-dot-clr-brd: var(--bit-tln-clr-brd-dis);
+    &.bit-tln-alt > .bit-tln-itm:nth-child(even):not(.bit-tln-irv) {
+        --bit-tln-itm-flexdir: column-reverse;
+    }
+
+    &.bit-tln-rvs.bit-tln-alt > .bit-tln-itm:nth-child(even):not(.bit-tln-irv) {
+        --bit-tln-itm-flexdir: column;
     }
 }
 
-.bit-tln-otl {
-    --bit-tln-dot-clr: var(--bit-tln-clr-fg);
-    --bit-tln-dot-clr-bg: #{$clr-bg-pri};
-    --bit-tln-dot-clr-brd: var(--bit-tln-clr);
-    --bit-tln-dot-ico-clr: var(--bit-tln-clr);
+/*
+ * Truncating the line drops the half of the connector of the first (or the last) item that faces away
+ * from the rest of the timeline, so the line begins and ends at a dot instead of running past it. Since
+ * each half is a pseudo-element of its own, this holds for both orientations without repeating the
+ * geometry of the horizontal one: the half is picked by its position along the timeline, not by an axis.
+ */
+.bit-tln-tls > .bit-tln-itm:first-child,
+.bit-tln-tlb > .bit-tln-itm:first-child {
+    --bit-tln-dvd-dsp-s: none;
+}
 
-    &.bit-dis, .bit-tln-ids {
-        --bit-tln-dot-clr-bg: #{$clr-bg-pri};
-        --bit-tln-dot-clr-brd: var(--bit-tln-clr-brd-dis);
+.bit-tln-tle > .bit-tln-itm:last-child,
+.bit-tln-tlb > .bit-tln-itm:last-child {
+    --bit-tln-dvd-dsp-e: none;
+}
+
+/*
+ * A reversed order paints the first item of the list at the end of the timeline and the last one at its
+ * start, so the half that faces away from the rest of the timeline is the opposite one. The half the
+ * base rule above dropped is restored explicitly, because that rule still matches here.
+ */
+.bit-tln-rvo.bit-tln-tls > .bit-tln-itm:first-child,
+.bit-tln-rvo.bit-tln-tlb > .bit-tln-itm:first-child {
+    --bit-tln-dvd-dsp-s: block;
+    --bit-tln-dvd-dsp-e: none;
+}
+
+.bit-tln-rvo.bit-tln-tle > .bit-tln-itm:last-child,
+.bit-tln-rvo.bit-tln-tlb > .bit-tln-itm:last-child {
+    --bit-tln-dvd-dsp-s: none;
+    --bit-tln-dvd-dsp-e: block;
+}
+
+// A lone item of a timeline truncated on both ends connects to nothing and carries no line at all. It
+// is spelled out because the reversed rules above, which it also matches, would restore one of its halves.
+.bit-tln-tlb > .bit-tln-itm:first-child:last-child {
+    --bit-tln-dvd-dsp-s: none;
+    --bit-tln-dvd-dsp-e: none;
+}
+
+.bit-tln-fil .bit-tln-itm {
+    @include timeline-variant-fill;
+}
+
+.bit-tln-otl .bit-tln-itm {
+    @include timeline-variant-outline;
+}
+
+.bit-tln-txt .bit-tln-itm {
+    @include timeline-variant-text;
+}
+
+// The item-level variant is declared after the timeline-level one, with the same specificity, so an
+// item can render a different dot style than the rest of the timeline.
+.bit-tln-itm.bit-tln-ivf {
+    @include timeline-variant-fill;
+}
+
+.bit-tln-itm.bit-tln-ivo {
+    @include timeline-variant-outline;
+}
+
+.bit-tln-itm.bit-tln-ivt {
+    @include timeline-variant-text;
+}
+
+.bit-tln-fil.bit-dis .bit-tln-itm,
+.bit-tln-fil .bit-tln-itm.bit-tln-ids {
+    @include timeline-variant-fill-disabled;
+}
+
+.bit-tln-otl.bit-dis .bit-tln-itm,
+.bit-tln-otl .bit-tln-itm.bit-tln-ids {
+    @include timeline-variant-outline-disabled;
+}
+
+.bit-tln-txt.bit-dis .bit-tln-itm,
+.bit-tln-txt .bit-tln-itm.bit-tln-ids {
+    @include timeline-variant-text-disabled;
+}
+
+.bit-dis .bit-tln-itm.bit-tln-ivf,
+.bit-tln-itm.bit-tln-ivf.bit-tln-ids {
+    @include timeline-variant-fill-disabled;
+}
+
+.bit-dis .bit-tln-itm.bit-tln-ivo,
+.bit-tln-itm.bit-tln-ivo.bit-tln-ids {
+    @include timeline-variant-outline-disabled;
+}
+
+.bit-dis .bit-tln-itm.bit-tln-ivt,
+.bit-tln-itm.bit-tln-ivt.bit-tln-ids {
+    @include timeline-variant-text-disabled;
+}
+
+.bit-tln-ldd .bit-tln-itm {
+    @include timeline-line-dashed;
+}
+
+.bit-tln-ldt .bit-tln-itm {
+    @include timeline-line-dotted;
+}
+
+// The item-level line variant is declared after the timeline-level one, with the same specificity, so a
+// single item can break (or restore) its own stretch of the line.
+.bit-tln-itm.bit-tln-ils {
+    @include timeline-line-solid;
+}
+
+.bit-tln-itm.bit-tln-ild {
+    @include timeline-line-dashed;
+}
+
+.bit-tln-itm.bit-tln-ilt {
+    @include timeline-line-dotted;
+}
+
+// The text variant paints an opaque plate behind the icon so the connecting line does not run through it.
+.bit-tln-txt .bit-tln-ico,
+.bit-tln-itm.bit-tln-ivt .bit-tln-ico {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--bit-tln-dot-ico-width);
+    height: var(--bit-tln-dot-ico-height);
+    background-color: var(--bit-tln-dot-ico-clr-bg);
+}
+
+// Role classes are generated from the shared $bit-semantic-color-roles map (see color-role-maps.scss).
+// Each role also gets an item-level alias class: "i" + the role's first two letters (pri > ipr).
+@each $role, $tokens in $bit-semantic-color-roles {
+    .bit-tln-#{$role}, .bit-tln-i#{role-abbr($role)} {
+        --bit-tln-clr: #{role($tokens, main)};
+        --bit-tln-clr-fg: #{role($tokens, on)};
+        --bit-tln-clr-focus: #{role($tokens, focus)};
+        --bit-tln-clr-dis-bg: #{role($tokens, dis)};
+        --bit-tln-clr-dis-text: #{role($tokens, dis-text)};
     }
-}
-
-.bit-tln-txt {
-    --bit-tln-dot-clr: var(--bit-tln-clr-fg);
-    --bit-tln-dot-clr-bg: transparent;
-    --bit-tln-dot-clr-brd: transparent;
-    --bit-tln-dot-ico-clr: var(--bit-tln-clr);
-    --bit-tln-dot-ico-clr-bg: #{$clr-bg-pri};
-    --bit-tln-dot-ico-width: var(--bit-tln-dot-size);
-    --bit-tln-dot-ico-height: var(--bit-tln-dot-size);
-
-    .bit-tln-ico {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: var(--bit-tln-dot-ico-width);
-        height: var(--bit-tln-dot-ico-height);
-        background-color: var(--bit-tln-dot-ico-clr-bg);
-    }
-}
-
-.bit-tln-pri, .bit-tln-ipr {
-    --bit-tln-clr: #{$clr-pri};
-    --bit-tln-clr-fg: #{$clr-pri-text};
-    --bit-tln-clr-ico: #{$clr-pri-text};
-}
-
-.bit-tln-sec, .bit-tln-ise {
-    --bit-tln-clr: #{$clr-sec};
-    --bit-tln-clr-fg: #{$clr-sec-text};
-    --bit-tln-clr-ico: #{$clr-sec-text};
-}
-
-.bit-tln-ter, .bit-tln-ite {
-    --bit-tln-clr: #{$clr-ter};
-    --bit-tln-clr-fg: #{$clr-ter-text};
-    --bit-tln-clr-ico: #{$clr-ter-text};
-}
-
-.bit-tln-inf, .bit-tln-iin {
-    --bit-tln-clr: #{$clr-inf};
-    --bit-tln-clr-fg: #{$clr-inf-text};
-    --bit-tln-clr-ico: #{$clr-inf-text};
-}
-
-.bit-tln-suc, .bit-tln-isu {
-    --bit-tln-clr: #{$clr-suc};
-    --bit-tln-clr-fg: #{$clr-suc-text};
-    --bit-tln-clr-ico: #{$clr-suc-text};
-}
-
-.bit-tln-wrn, .bit-tln-iwr {
-    --bit-tln-clr: #{$clr-wrn};
-    --bit-tln-clr-fg: #{$clr-wrn-text};
-    --bit-tln-clr-ico: #{$clr-wrn-text};
-}
-
-.bit-tln-swr, .bit-tln-isw {
-    --bit-tln-clr: #{$clr-swr};
-    --bit-tln-clr-fg: #{$clr-swr-text};
-    --bit-tln-clr-ico: #{$clr-swr-text};
-}
-
-.bit-tln-err, .bit-tln-ier {
-    --bit-tln-clr: #{$clr-err};
-    --bit-tln-clr-fg: #{$clr-err-text};
-    --bit-tln-clr-ico: #{$clr-err-text};
 }
 
 .bit-tln-sm, .bit-tln-ism {
     --bit-tln-dot-size: #{spacing(2.5)};
-    --bit-tln-font-size: #{spacing(1.5)};
+    --bit-tln-font-size: #{$tg-fs-xs};
 }
 
 .bit-tln-md, .bit-tln-imd {
     --bit-tln-dot-size: #{spacing(3.75)};
-    --bit-tln-font-size: #{spacing(1.75)};
+    --bit-tln-font-size: #{$tg-fs-sm};
 }
 
 .bit-tln-lg, .bit-tln-ilg {
     --bit-tln-dot-size: #{spacing(5.25)};
-    --bit-tln-font-size: #{spacing(2)};
+    --bit-tln-font-size: #{$tg-fs-md};
 }

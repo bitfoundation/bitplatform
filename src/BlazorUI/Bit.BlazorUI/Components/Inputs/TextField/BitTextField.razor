@@ -6,11 +6,14 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    <div style="@Styles?.InputWrapper" 
+    <div style="@Styles?.InputWrapper"
          class="bit-tfl-wrp @Classes?.InputWrapper">
         @if (LabelTemplate is not null)
         {
-            <label id="@_labelId" for="@_inputId">
+            <label id="@_labelId"
+                   for="@_inputId"
+                   style="@Styles?.Label"
+                   class="bit-tfl-lbl @Classes?.Label">
                 @LabelTemplate
             </label>
         }
@@ -24,7 +27,8 @@
             </label>
         }
 
-        <div style="@Styles?.FieldGroup"
+        <div title="@Title"
+             style="@Styles?.FieldGroup"
              class="bit-tfl-fgp @Classes?.FieldGroup">
             @if (PrefixTemplate is not null)
             {
@@ -40,55 +44,57 @@
                 </div>
             }
 
-            @if (Multiline && Type is null or BitInputType.Text)
-            {
-                <div class="bit-tfl-ghw @Classes?.GhostTextWrapper" style="@Styles?.GhostTextWrapper">
+            <div class="bit-tfl-ghw @Classes?.GhostTextWrapper" style="@Styles?.GhostTextWrapper">
+                @if (IsMultilineElement)
+                {
                     <textarea @ref="InputElement" @attributes="InputHtmlAttributes"
+                              @onblur="@HandleOnBlur"
                               @onclick="@HandleOnClick"
                               @onkeyup="@HandleOnKeyUp"
                               @onfocus="@HandleOnFocus"
                               @onkeydown="@HandleOnKeyDown"
                               @onfocusin="@HandleOnFocusIn"
                               @onfocusout="@HandleOnFocusOut"
-                              @onchange="@HandleOnStringValueChangeAsync"
+                              @onchange="@HandleOnChange"
                               @oninput="@HandleOnStringValueInputAsync"
                               name="@Name"
                               id="@_inputId"
+                              wrap="@Wrap"
                               rows="@(Rows ?? 1)"
                               tabindex="@TabIndex"
                               readonly="@ReadOnly"
                               required="@Required"
                               style="@Styles?.Input"
                               autofocus="@AutoFocus"
-                              maxlength="@MaxLength"
                               inputmode="@_inputMode"
                               placeholder="@Placeholder"
+                              autocomplete="@AutoComplete"
                               value="@CurrentValueAsString"
                               disabled=@(IsEnabled is false)
                               class="bit-tfl-inp @Classes?.Input"
+                              enterkeyhint="@EnterKeyHint"
+                              autocapitalize="@AutoCapitalize"
+                              maxlength="@(MaxLength >= 0 ? (int?)MaxLength : null)"
+                              minlength="@(MinLength >= 0 ? (int?)MinLength : null)"
+                              spellcheck="@(SpellCheck.HasValue ? SpellCheck.Value.ToString().ToLower() : null)"
+                              autocorrect="@(AutoCorrect.HasValue ? (AutoCorrect.Value ? "on" : "off") : null)"
                               aria-label="@AriaLabel"
-                              aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
-                              aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)" />
-                    @if (GhostText.HasValue())
-                    {
-                        <div aria-hidden="true"
-                             class="bit-tfl-gho @Classes?.GhostTextOverlay"
-                             style="@Styles?.GhostTextOverlay">
-                        </div>
-                    }
-                </div>
-            }
-            else
-            {
-                <div class="bit-tfl-ghw @Classes?.GhostTextWrapper" style="@Styles?.GhostTextWrapper">
+                              aria-busy="@AriaBusy"
+                              aria-invalid="@AriaInvalid"
+                              aria-labelledby="@LabelledBy"
+                              aria-describedby="@DescribedBy" />
+                }
+                else
+                {
                     <input @ref="@InputElement" @attributes="InputHtmlAttributes"
+                           @onblur="@HandleOnBlur"
                            @onclick="@HandleOnClick"
                            @onfocus="@HandleOnFocus"
                            @onkeyup="@HandleOnKeyUp"
                            @onkeydown="@HandleOnKeyDown"
                            @onfocusin="@HandleOnFocusIn"
                            @onfocusout="@HandleOnFocusOut"
-                           @onchange="@HandleOnStringValueChangeAsync"
+                           @onchange="@HandleOnChange"
                            @oninput="@HandleOnStringValueInputAsync"
                            name="@Name"
                            id="@_inputId"
@@ -98,59 +104,99 @@
                            tabindex="@TabIndex"
                            style="@Styles?.Input"
                            autofocus="@AutoFocus"
-                           maxlength="@MaxLength"
+                           pattern="@Pattern"
                            inputmode="@_inputMode"
                            placeholder="@Placeholder"
                            autocomplete="@AutoComplete"
                            value="@CurrentValueAsString"
                            disabled=@(IsEnabled is false)
                            class="bit-tfl-inp @Classes?.Input"
+                           enterkeyhint="@EnterKeyHint"
+                           autocapitalize="@AutoCapitalize"
+                           maxlength="@(MaxLength >= 0 ? (int?)MaxLength : null)"
+                           minlength="@(MinLength >= 0 ? (int?)MinLength : null)"
+                           spellcheck="@(SpellCheck.HasValue ? SpellCheck.Value.ToString().ToLower() : null)"
+                           autocorrect="@(AutoCorrect.HasValue ? (AutoCorrect.Value ? "on" : "off") : null)"
                            aria-label="@AriaLabel"
-                           aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
-                           aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)" />
-                    @if (GhostText.HasValue())
+                           aria-busy="@AriaBusy"
+                           aria-invalid="@AriaInvalid"
+                           aria-labelledby="@LabelledBy"
+                           aria-describedby="@DescribedBy" />
+                }
+                @if (GhostText.HasValue())
+                {
+                    <div aria-hidden="true"
+                         class="bit-tfl-gho @Classes?.GhostTextOverlay"
+                         style="@Styles?.GhostTextOverlay">
+                    </div>
+                }
+            </div>
+
+            @if (Loading)
+            {
+                @* The indicator is only drawn here; what it means is announced by the live region at the end
+                   of the component, which is already on the page by the time the busy state shows up. *@
+                <div style="@Styles?.Loading"
+                     class="bit-tfl-lod @Classes?.Loading">
+                    @if (LoadingTemplate is not null)
                     {
-                        <div aria-hidden="true"
-                             class="bit-tfl-gho @Classes?.GhostTextOverlay"
-                             style="@Styles?.GhostTextOverlay">
-                        </div>
+                        @LoadingTemplate
+                    }
+                    else
+                    {
+                        <BitSpinnerLoading CustomSize="@LoadingSize" CustomColor="currentColor" />
                     }
                 </div>
+            }
 
-                @if (ShowClearButton && CurrentValue.HasValue())
-                {
-                    var clearButtonIcon = BitIconInfo.From(ClearButtonIcon, ClearButtonIconName ?? "Cancel");
-                    <button @onclick="HandleOnClearButtonClick"
-                            type="button"
-                            aria-label="Clear text"
-                            disabled="@(IsEnabled is false)"
-                            style="@Styles?.ClearButton"
-                            class="bit-tfl-cbt @Classes?.ClearButton">
-                        <i aria-hidden="true" 
-                           style="@Styles?.ClearButtonIcon" 
+            @if (ShowClear)
+            {
+                <button @onclick="HandleOnClearButtonClick"
+                        type="button"
+                        tabindex="@TabIndex"
+                        style="@Styles?.ClearButton"
+                        class="bit-tfl-cbt @Classes?.ClearButton"
+                        aria-label="@(ClearButtonAriaLabel ?? "Clear text")"
+                        disabled="@(IsEnabled is false || ReadOnly)">
+                    @if (ClearButtonTemplate is not null)
+                    {
+                        @ClearButtonTemplate
+                    }
+                    else
+                    {
+                        var clearButtonIcon = BitIconInfo.From(ClearButtonIcon, ClearButtonIconName ?? "Cancel");
+                        <i aria-hidden="true"
+                           style="@Styles?.ClearButtonIcon"
                            class="@clearButtonIcon?.GetCssClasses() @Classes?.ClearButtonIcon" />
-                    </button>
-                }
+                    }
+                </button>
             }
 
             @if (CanRevealPassword && Type == BitInputType.Password)
             {
-                <button @onclick="ToggleRevealPassword"
+                <button @onclick="HandleOnRevealPasswordClick"
                         type="button"
+                        tabindex="@TabIndex"
                         style="@Styles?.RevealPassword"
+                        disabled="@(IsEnabled is false)"
                         class="bit-tfl-rpb @Classes?.RevealPassword"
-                        aria-label="@RevealPasswordAriaLabel"
+                        aria-label="@(RevealPasswordAriaLabel ?? "Reveal password")"
                         aria-pressed="@(_elementType == BitInputType.Text ? "true" : "false")">
                     <span style="@Styles?.RevealPasswordIconContainer"
                           class="bit-tfl-rpc @Classes?.RevealPasswordIconContainer">
-                        @{
+                        @if (RevealPasswordTemplate is not null)
+                        {
+                            @RevealPasswordTemplate(_elementType == BitInputType.Text)
+                        }
+                        else
+                        {
                             var revealIcon = _elementType == BitInputType.Text
                                 ? BitIconInfo.From(HidePasswordIcon, HidePasswordIconName ?? "Hide3")
                                 : BitIconInfo.From(RevealPasswordIcon, RevealPasswordIconName ?? "View");
+                            <i aria-hidden="true"
+                               style="@Styles?.RevealPasswordIcon"
+                               class="bit-tfl-rpi @revealIcon?.GetCssClasses() @Classes?.RevealPasswordIcon" />
                         }
-                        <i aria-hidden="true" 
-                           style="@Styles?.RevealPasswordIcon"
-                           class="bit-tfl-rpi @revealIcon.GetCssClasses() @Classes?.RevealPasswordIcon" />
                     </span>
                 </button>
             }
@@ -158,9 +204,11 @@
             @if (Icon is not null || IconName.HasValue())
             {
                 var icon = BitIconInfo.From(Icon, IconName);
-                <i aria-hidden="true" 
-                   style="@Styles?.Icon"
-                   class="bit-tfl-ico @icon?.GetCssClasses() @Classes?.Icon" />
+                <i style="@Styles?.Icon"
+                   class="bit-tfl-ico @icon?.GetCssClasses() @Classes?.Icon"
+                   role="@(IconAriaLabel.HasValue() ? "img" : null)"
+                   aria-label="@IconAriaLabel"
+                   aria-hidden="@(IconAriaLabel.HasValue() ? null : "true")" />
             }
 
             @if (SuffixTemplate is not null)
@@ -169,9 +217,9 @@
             }
             else if (Suffix.HasValue())
             {
-                <div style="@Styles?.SuffixContainer" 
+                <div style="@Styles?.SuffixContainer"
                      class="bit-tfl-suf @Classes?.SuffixContainer">
-                    <span style="@Styles?.Suffix" 
+                    <span style="@Styles?.Suffix"
                           class="@Classes?.Suffix">
                         @Suffix
                     </span>
@@ -181,22 +229,81 @@
         </div>
     </div>
 
-    @if (Description.HasValue() || DescriptionTemplate is not null)
+    @if (HasErrorMessage)
     {
-        <span id="@_descriptionId"
-              style="@Styles?.DescriptionContainer"
-              class="bit-tfl-des @Classes?.DescriptionContainer">
-            @if (DescriptionTemplate is not null)
+        @* The message sits on its own line above the footer rather than inside it: what is wrong with the
+           value is the first thing to read under the field, and the footer is a single row shared by the
+           description and the counter. It carries no live role of its own - the region at the end of the
+           component is what announces it, so it is never read out twice. *@
+        <div id="@_errorId"
+             style="@Styles?.ErrorMessageContainer"
+             class="bit-tfl-erm @Classes?.ErrorMessageContainer">
+            @if (ErrorMessageTemplate is not null)
             {
-                @DescriptionTemplate
+                @ErrorMessageTemplate
             }
-            else if (Description.HasValue())
+            else
             {
-                <span style="@Styles?.Description" 
-                      class="@Classes?.Description">
-                    @Description
+                <span style="@Styles?.ErrorMessage"
+                      class="@Classes?.ErrorMessage">
+                    @ErrorMessage
                 </span>
             }
-        </span>
+        </div>
     }
+
+    @if (HasDescription || ShowCount)
+    {
+        <div style="@Styles?.Footer" class="bit-tfl-ftr @Classes?.Footer">
+            @if (HasDescription)
+            {
+                @* A div rather than a span: a DescriptionTemplate is free to render block content, which is
+                   not valid inside a span. *@
+                <div id="@_descriptionId"
+                     style="@Styles?.DescriptionContainer"
+                     class="bit-tfl-des @Classes?.DescriptionContainer">
+                    @if (DescriptionTemplate is not null)
+                    {
+                        @DescriptionTemplate
+                    }
+                    else if (Description.HasValue())
+                    {
+                        <span style="@Styles?.Description"
+                              class="@Classes?.Description">
+                            @Description
+                        </span>
+                    }
+                </div>
+            }
+
+            @if (ShowCount)
+            {
+                <span id="@_countId"
+                      style="@Styles?.Count"
+                      class="@CountClass @Classes?.Count">
+                    @if (CountTemplate is not null)
+                    {
+                        @CountTemplate(_charCount)
+                    }
+                    else
+                    {
+                        @CountText
+                    }
+                </span>
+            }
+        </div>
+    }
+
+    @if (AriaDescription.HasValue())
+    {
+        @* aria-describedby takes an id reference, so the description text has to live in an element of
+           its own. It is visually hidden and only exists for assistive technologies. *@
+        <span id="@_ariaDescriptionId" class="bit-tfl-dsc">@AriaDescription</span>
+    }
+
+    @* A status rather than an alert: whatever it says must not steal the focus or interrupt what is being
+       typed, only be announced once the reader is done with the current sentence. It is rendered whether or
+       not it has anything to say, because a live region that arrives with its text already in it is the one
+       thing screen readers are known to miss. *@
+    <span role="status" class="bit-tfl-dsc">@LiveText</span>
 </div>

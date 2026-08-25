@@ -2,23 +2,36 @@ using Boilerplate.Shared.Features.Diagnostic;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services.DiagnosticLog;
 
-public partial class DiagnosticLogger(TimeProvider timeProvider) : ILogger, IDisposable
+public partial class DiagnosticLogger(TimeProvider timeProvider) : ILogger
 {
-    public static ConcurrentQueue<DiagnosticLogDto> Store { get; } = [];
+    private static readonly ConcurrentQueue<DiagnosticLogDto> store = [];
 
-    private IDictionary<string, object?>? currentState;
+    public static IReadOnlyCollection<DiagnosticLogDto> Store => store;
+
+    /// <summary>
+    /// Discards this device's buffer. Called when the signed-in user changes, and by the diagnostic modal.
+    /// </summary>
+    public static void ClearStore() => store.Clear();
+
+    private readonly AsyncLocal<IDictionary<string, object?>?> currentState = new();
 
     public string? Category { get; set; }
 
     public IDisposable? BeginScope<TState>(TState state)
             where TState : notnull
     {
-        if (state is IDictionary<string, object?> data)
-        {
-            currentState = data;
-        }
+        if (state is not IDictionary<string, object?> data)
+            return null;
 
-        return this;
+        var previousState = currentState.Value;
+        currentState.Value = data;
+
+        return new ScopeRestorer(this, previousState);
+    }
+
+    private sealed class ScopeRestorer(DiagnosticLogger logger, IDictionary<string, object?>? previousState) : IDisposable
+    {
+        public void Dispose() => logger.currentState.Value = previousState;
     }
 
     public bool IsEnabled(LogLevel logLevel)
@@ -32,24 +45,19 @@ public partial class DiagnosticLogger(TimeProvider timeProvider) : ILogger, IDis
 
         var message = formatter(state, exception);
 
-        if (Store.Count >= 1_000)
+        if (store.Count >= 1_000)
         {
-            Store.TryDequeue(out var _);
+            store.TryDequeue(out var _);
         }
 
-        Store.Enqueue(new()
+        store.Enqueue(new()
         {
             CreatedOn = timeProvider.GetUtcNow(),
             Level = logLevel,
             Message = message,
             Category = Category,
             ExceptionString = exception?.ToString(),
-            State = currentState?.ToDictionary(i => i.Key, i => i.Value?.ToString())
+            State = currentState.Value?.ToDictionary(i => i.Key, i => i.Value?.ToString())
         });
-    }
-
-    public void Dispose()
-    {
-
     }
 }

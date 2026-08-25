@@ -4,7 +4,6 @@
 .example-content {
     width: 17rem;
     display: flex;
-    overflow-x: auto;
     flex-flow: column wrap;
 }
 
@@ -12,11 +11,22 @@
     padding: rem2(5px);
 }
 
+.event-log {
+    gap: rem2(2px);
+    display: flex;
+    padding: rem2(8px);
+    min-height: rem2(60px);
+    flex-flow: column nowrap;
+    font-family: monospace;
+    border-radius: rem2(4px);
+    background-color: $bit-color-background-secondary;
+}
+
 .validation-summary {
     overflow: hidden;
     margin-bottom: rem2(10px);
     background-color: $bit-color-error-light;
-    border-left: rem2(5px) solid $bit-color-requried;
+    border-left: rem2(5px) solid $bit-color-required;
 }
 
 ::deep {
@@ -102,6 +112,14 @@
         font-weight: bold;
     }
 
+    .custom-clock-disabled-number {
+        opacity: 0.4;
+    }
+
+    .custom-clear-button {
+        color: blueviolet;
+    }
+
     .custom-clock-pin,
     .custom-clock-pointer,
     .custom-clock-pointer-thumb,
@@ -116,7 +134,7 @@
 
     .validation-message {
         font-size: rem2(12px);
-        color: $bit-color-requried;
+        color: $bit-color-required;
     }
 
     .validation-errors {

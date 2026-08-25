@@ -33,6 +33,7 @@
             <BitSearchBox Underlined
                           ShowSearchButton
                           OnSearch="HandleOnSearch"
+                          OnClear="WrapHandled(() => HandleOnSearch(string.Empty))"
                           Color="BitColor.Secondary"
                           Style="@($"width:{(isSmallScreen ? 100 : 50)}%")"
                           Placeholder="@Localizer[nameof(AppStrings.SearchProductsPlaceholder)]" />
@@ -60,7 +61,7 @@
                                        Property="p => p.Price"
                                        Width="160px"
                                        Filterable="false"
-                                       Format="N0" />
+                                       Format="@($"N{CultureInfo.CurrentCulture.NumberFormat.CurrencyDecimalDigits}")" />
 
                     <BitDataGridColumn Title="@Localizer[(nameof(AppStrings.Action))]"
                                        Align="BitDataGridColumnAlign.Center"

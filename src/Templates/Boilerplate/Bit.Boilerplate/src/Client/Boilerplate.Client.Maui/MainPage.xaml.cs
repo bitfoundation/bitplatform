@@ -7,7 +7,7 @@ namespace Boilerplate.Client.Maui;
 public partial class MainPage
 {
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HeadOutlet))]
-    public MainPage(ClientMauiSettings clientMauiSettings)
+    public MainPage()
     {
         InitializeComponent();
         AppWebView.RootComponents.Add(new()

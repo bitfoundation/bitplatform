@@ -1,0 +1,51 @@
+// The -full tokens hold the unreduced values and are never touched by the reduced-motion query
+// below, so they stay the single place to theme a duration: overriding --bit-mot-duration-full
+// changes both the normal value and the one .bit-fam restores. Components always read the plain
+// --bit-mot-* tokens; only the reduced-motion opt-out (.bit-fam in general.scss) reads -full.
+:root {
+    --bit-mot-duration-full: 200ms;
+    --bit-mot-duration-short-full: 100ms;
+    --bit-mot-duration-long-full: 300ms;
+
+    --bit-mot-duration: var(--bit-mot-duration-full);
+    --bit-mot-duration-short: var(--bit-mot-duration-short-full);
+    --bit-mot-duration-long: var(--bit-mot-duration-long-full);
+    --bit-mot-easing: cubic-bezier(0.33, 0, 0.67, 1);
+    // Entry / exit curves for popups, callouts and sheets (Fluent's decelerate-max and
+    // accelerate-max). Standard easing above is for state changes on an element that stays put.
+    --bit-mot-easing-decelerate: cubic-bezier(0.1, 0.9, 0.2, 1);
+    --bit-mot-easing-accelerate: cubic-bezier(0.9, 0.1, 1, 0.2);
+
+    // Looping animations (spinners, loaders, indeterminate bars) cannot use the durations above,
+    // because those collapse to 0.01ms under reduced motion and a near-zero looping duration renders
+    // as flicker. They get their own tokens, which slow down instead of collapsing:
+    //   - the spinner pair drives every circular spinner in the library, so they all turn at one
+    //     speed and a theme retunes them in one place;
+    //   - the loop factor multiplies the literal duration of a looping animation that is not a
+    //     spinner (an indeterminate bar, a staggered loader), stretching a whole set of durations
+    //     and delays together so the phase offsets between the parts survive.
+    --bit-mot-duration-spinner-full: 1.3s;
+    --bit-mot-easing-spinner-full: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+    --bit-mot-loop-factor-full: 1;
+
+    --bit-mot-duration-spinner: var(--bit-mot-duration-spinner-full);
+    --bit-mot-easing-spinner: var(--bit-mot-easing-spinner-full);
+    --bit-mot-loop-factor: var(--bit-mot-loop-factor-full);
+}
+
+// 0.01ms instead of 0ms: a zero-duration transition/animation never fires its
+// transitionend/animationend event, which would hang any JS awaiting it.
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --bit-mot-duration: 0.01ms;
+        --bit-mot-duration-short: 0.01ms;
+        --bit-mot-duration-long: 0.01ms;
+
+        // Calmed rather than collapsed - see above. The spinner also drops its eased timing function,
+        // whose speeding up and slowing down is the part that draws the eye. Stopping a loader
+        // outright is never an option: it is the only signal that the work is still in progress.
+        --bit-mot-duration-spinner: 4s;
+        --bit-mot-easing-spinner: linear;
+        --bit-mot-loop-factor: 3;
+    }
+}

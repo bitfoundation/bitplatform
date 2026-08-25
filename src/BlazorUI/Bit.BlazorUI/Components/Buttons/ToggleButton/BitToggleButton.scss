@@ -11,23 +11,28 @@
     justify-content: center;
     font-family: $tg-font-family;
     font-weight: $tg-font-weight;
+    min-width: $siz-ctrl-min-width;
     border-width: $shp-border-width;
     border-style: $shp-border-style;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-button;
     font-size: var(--bit-tgb-fontsize);
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
 
     // a gap rather than a margin on the icon, so reversing the icon position keeps the spacing on the right side
     gap: var(--bit-tgb-icn-margin);
     --bit-tgb-icn-margin: #{spacing(0.5)};
 
+    // The variants below repaint all three on hover/active, and .bit-tgb-chk swaps them again when the
+    // button is toggled, so they animate together from here.
+    transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
+
     &:focus-visible {
-        outline-offset: spacing(0.25);
-        outline: spacing(0.25) solid var(--bit-tgb-clr);
+        @include focus-ring(var(--bit-tgb-clr-focus));
     }
 
     &.bit-dis {
         cursor: default;
-        color: $clr-fg-dis;
         pointer-events: none;
     }
 
@@ -104,7 +109,7 @@
 
 .bit-tgb-spn {
     border-radius: 50%;
-    border-width: spacing(0.2125);
+    border-width: $siz-spinner-stroke;
     width: var(--bit-tgb-spn-size);
     height: var(--bit-tgb-spn-size);
     border-color: $clr-brd-sec;
@@ -112,12 +117,7 @@
 
     // the button's own foreground already contrasts with its background in every variant and state
     border-top-color: currentcolor;
-    animation: bit-tgb-spinner-animation 1.3s cubic-bezier(0.53, 0.21, 0.29, 0.67) infinite;
-
-    @media (prefers-reduced-motion: reduce) {
-        animation-duration: 4s;
-        animation-timing-function: linear;
-    }
+    animation: bit-tgb-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
 }
 
 .bit-tgb-lbl {
@@ -156,8 +156,9 @@
     }
 
     &.bit-dis {
-        border-color: $clr-brd-dis;
-        background-color: $clr-bg-dis;
+        color: var(--bit-tgb-clr-dis-text);
+        border-color: var(--bit-tgb-clr-dis);
+        background-color: var(--bit-tgb-clr-dis);
     }
 }
 
@@ -181,7 +182,9 @@
     }
 
     &.bit-dis {
-        border-color: $clr-brd-dis;
+        color: var(--bit-tgb-clr-dis-text);
+        border-color: var(--bit-tgb-clr-dis);
+        background-color: transparent;
     }
 }
 
@@ -203,6 +206,12 @@
         border-color: var(--bit-tgb-clr-active);
         background-color: var(--bit-tgb-clr-active);
     }
+
+    &.bit-dis {
+        color: var(--bit-tgb-clr-dis-text);
+        border-color: transparent;
+        background-color: transparent;
+    }
 }
 
 .bit-tgb-chk {
@@ -223,202 +232,48 @@
     }
 }
 
-.bit-tgb-pri {
-    --bit-tgb-clr-txt: #{$clr-pri-text};
-    --bit-tgb-clr: #{$clr-pri};
-    --bit-tgb-clr-hover: #{$clr-pri-hover};
-    --bit-tgb-clr-active: #{$clr-pri-active};
-    --bit-tgb-clr-dark: #{$clr-pri-dark};
-    --bit-tgb-clr-dark-hover: #{$clr-pri-dark-hover};
-    --bit-tgb-clr-dark-active: #{$clr-pri-dark-active};
-}
-
-.bit-tgb-sec {
-    --bit-tgb-clr-txt: #{$clr-sec-text};
-    --bit-tgb-clr: #{$clr-sec};
-    --bit-tgb-clr-hover: #{$clr-sec-hover};
-    --bit-tgb-clr-active: #{$clr-sec-active};
-    --bit-tgb-clr-dark: #{$clr-sec-dark};
-    --bit-tgb-clr-dark-hover: #{$clr-sec-dark-hover};
-    --bit-tgb-clr-dark-active: #{$clr-sec-dark-active};
-}
-
-.bit-tgb-ter {
-    --bit-tgb-clr-txt: #{$clr-ter-text};
-    --bit-tgb-clr: #{$clr-ter};
-    --bit-tgb-clr-hover: #{$clr-ter-hover};
-    --bit-tgb-clr-active: #{$clr-ter-active};
-    --bit-tgb-clr-dark: #{$clr-ter-dark};
-    --bit-tgb-clr-dark-hover: #{$clr-ter-dark-hover};
-    --bit-tgb-clr-dark-active: #{$clr-ter-dark-active};
-}
-
-.bit-tgb-inf {
-    --bit-tgb-clr-txt: #{$clr-inf-text};
-    --bit-tgb-clr: #{$clr-inf};
-    --bit-tgb-clr-hover: #{$clr-inf-hover};
-    --bit-tgb-clr-active: #{$clr-inf-active};
-    --bit-tgb-clr-dark: #{$clr-inf-dark};
-    --bit-tgb-clr-dark-hover: #{$clr-inf-dark-hover};
-    --bit-tgb-clr-dark-active: #{$clr-inf-dark-active};
-}
-
-.bit-tgb-suc {
-    --bit-tgb-clr-txt: #{$clr-suc-text};
-    --bit-tgb-clr: #{$clr-suc};
-    --bit-tgb-clr-hover: #{$clr-suc-hover};
-    --bit-tgb-clr-active: #{$clr-suc-active};
-    --bit-tgb-clr-dark: #{$clr-suc-dark};
-    --bit-tgb-clr-dark-hover: #{$clr-suc-dark-hover};
-    --bit-tgb-clr-dark-active: #{$clr-suc-dark-active};
-}
-
-.bit-tgb-wrn {
-    --bit-tgb-clr-txt: #{$clr-wrn-text};
-    --bit-tgb-clr: #{$clr-wrn};
-    --bit-tgb-clr-hover: #{$clr-wrn-hover};
-    --bit-tgb-clr-active: #{$clr-wrn-active};
-    --bit-tgb-clr-dark: #{$clr-wrn-dark};
-    --bit-tgb-clr-dark-hover: #{$clr-wrn-dark-hover};
-    --bit-tgb-clr-dark-active: #{$clr-wrn-dark-active};
-}
-
-.bit-tgb-swr {
-    --bit-tgb-clr-txt: #{$clr-swr-text};
-    --bit-tgb-clr: #{$clr-swr};
-    --bit-tgb-clr-hover: #{$clr-swr-hover};
-    --bit-tgb-clr-active: #{$clr-swr-active};
-    --bit-tgb-clr-dark: #{$clr-swr-dark};
-    --bit-tgb-clr-dark-hover: #{$clr-swr-dark-hover};
-    --bit-tgb-clr-dark-active: #{$clr-swr-dark-active};
-}
-
-.bit-tgb-err {
-    --bit-tgb-clr-txt: #{$clr-err-text};
-    --bit-tgb-clr: #{$clr-err};
-    --bit-tgb-clr-hover: #{$clr-err-hover};
-    --bit-tgb-clr-active: #{$clr-err-active};
-    --bit-tgb-clr-dark: #{$clr-err-dark};
-    --bit-tgb-clr-dark-hover: #{$clr-err-dark-hover};
-    --bit-tgb-clr-dark-active: #{$clr-err-dark-active};
-}
-
-.bit-tgb-pbg {
-    --bit-tgb-clr-txt: #{$clr-fg-pri};
-    --bit-tgb-clr: #{$clr-bg-pri};
-    --bit-tgb-clr-hover: #{$clr-bg-pri-hover};
-    --bit-tgb-clr-active: #{$clr-bg-pri-active};
-    --bit-tgb-clr-dark: #{$clr-bg-pri-dark};
-    --bit-tgb-clr-dark-hover: #{$clr-bg-pri-dark-hover};
-    --bit-tgb-clr-dark-active: #{$clr-bg-pri-dark-active};
-}
-
-.bit-tgb-sbg {
-    --bit-tgb-clr-txt: #{$clr-fg-pri};
-    --bit-tgb-clr: #{$clr-bg-sec};
-    --bit-tgb-clr-hover: #{$clr-bg-sec-hover};
-    --bit-tgb-clr-active: #{$clr-bg-sec-active};
-    --bit-tgb-clr-dark: #{$clr-bg-sec-dark};
-    --bit-tgb-clr-dark-hover: #{$clr-bg-sec-dark-hover};
-    --bit-tgb-clr-dark-active: #{$clr-bg-sec-dark-active};
-}
-
-.bit-tgb-tbg {
-    --bit-tgb-clr-txt: #{$clr-fg-pri};
-    --bit-tgb-clr: #{$clr-bg-ter};
-    --bit-tgb-clr-hover: #{$clr-bg-ter-hover};
-    --bit-tgb-clr-active: #{$clr-bg-ter-active};
-    --bit-tgb-clr-dark: #{$clr-bg-ter-dark};
-    --bit-tgb-clr-dark-hover: #{$clr-bg-ter-dark-hover};
-    --bit-tgb-clr-dark-active: #{$clr-bg-ter-dark-active};
-}
-
-.bit-tgb-pfg {
-    --bit-tgb-clr-txt: #{$clr-bg-pri};
-    --bit-tgb-clr: #{$clr-fg-pri};
-    --bit-tgb-clr-hover: #{$clr-fg-pri-hover};
-    --bit-tgb-clr-active: #{$clr-fg-pri-active};
-    --bit-tgb-clr-dark: #{$clr-fg-pri-dark};
-    --bit-tgb-clr-dark-hover: #{$clr-fg-pri-dark-hover};
-    --bit-tgb-clr-dark-active: #{$clr-fg-pri-dark-active};
-}
-
-.bit-tgb-sfg {
-    --bit-tgb-clr-txt: #{$clr-bg-pri};
-    --bit-tgb-clr: #{$clr-fg-sec};
-    --bit-tgb-clr-hover: #{$clr-fg-sec-hover};
-    --bit-tgb-clr-active: #{$clr-fg-sec-active};
-    --bit-tgb-clr-dark: #{$clr-fg-sec-dark};
-    --bit-tgb-clr-dark-hover: #{$clr-fg-sec-dark-hover};
-    --bit-tgb-clr-dark-active: #{$clr-fg-sec-dark-active};
-}
-
-.bit-tgb-tfg {
-    --bit-tgb-clr-txt: #{$clr-bg-pri};
-    --bit-tgb-clr: #{$clr-fg-ter};
-    --bit-tgb-clr-hover: #{$clr-fg-ter-hover};
-    --bit-tgb-clr-active: #{$clr-fg-ter-active};
-    --bit-tgb-clr-dark: #{$clr-fg-ter-dark};
-    --bit-tgb-clr-dark-hover: #{$clr-fg-ter-dark-hover};
-    --bit-tgb-clr-dark-active: #{$clr-fg-ter-dark-active};
-}
-
-.bit-tgb-pbr {
-    --bit-tgb-clr-txt: #{$clr-fg-pri};
-    --bit-tgb-clr: #{$clr-brd-pri};
-    --bit-tgb-clr-hover: #{$clr-brd-pri-hover};
-    --bit-tgb-clr-active: #{$clr-brd-pri-active};
-    --bit-tgb-clr-dark: #{$clr-brd-pri-dark};
-    --bit-tgb-clr-dark-hover: #{$clr-brd-pri-dark-hover};
-    --bit-tgb-clr-dark-active: #{$clr-brd-pri-dark-active};
-}
-
-.bit-tgb-sbr {
-    --bit-tgb-clr-txt: #{$clr-fg-pri};
-    --bit-tgb-clr: #{$clr-brd-sec};
-    --bit-tgb-clr-hover: #{$clr-brd-sec-hover};
-    --bit-tgb-clr-active: #{$clr-brd-sec-active};
-    --bit-tgb-clr-dark: #{$clr-brd-sec-dark};
-    --bit-tgb-clr-dark-hover: #{$clr-brd-sec-dark-hover};
-    --bit-tgb-clr-dark-active: #{$clr-brd-sec-dark-active};
-}
-
-.bit-tgb-tbr {
-    --bit-tgb-clr-txt: #{$clr-fg-pri};
-    --bit-tgb-clr: #{$clr-brd-ter};
-    --bit-tgb-clr-hover: #{$clr-brd-ter-hover};
-    --bit-tgb-clr-active: #{$clr-brd-ter-active};
-    --bit-tgb-clr-dark: #{$clr-brd-ter-dark};
-    --bit-tgb-clr-dark-hover: #{$clr-brd-ter-dark-hover};
-    --bit-tgb-clr-dark-active: #{$clr-brd-ter-dark-active};
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-tgb-#{$role} {
+        --bit-tgb-clr-txt: #{role($tokens, on)};
+        --bit-tgb-clr: #{role($tokens, main)};
+        --bit-tgb-clr-hover: #{role($tokens, hover)};
+        --bit-tgb-clr-active: #{role($tokens, active)};
+        --bit-tgb-clr-focus: #{role($tokens, focus)};
+        --bit-tgb-clr-dark: #{role($tokens, dark)};
+        --bit-tgb-clr-dark-hover: #{role($tokens, dark-hover)};
+        --bit-tgb-clr-dark-active: #{role($tokens, dark-active)};
+        --bit-tgb-clr-dis: #{role($tokens, dis)};
+        --bit-tgb-clr-dis-text: #{role($tokens, dis-text)};
+    }
 }
 
 
 .bit-tgb-sm {
-    padding: spacing(0.5) spacing(1.5);
-    --bit-tgb-fontsize: #{spacing(1.5)};
+    padding: $siz-ctrl-pad-y-sm $siz-ctrl-pad-x-sm;
+    --bit-tgb-fontsize: #{$tg-fs-xs};
     --bit-tgb-ntx-pad: #{spacing(0.5)};
     --bit-tgb-ntx-icn-size: #{spacing(2.00)};
     --bit-tgb-spn-size: #{spacing(2.00)};
-    --bit-tgb-lbl-fontsize: #{spacing(1.25)};
+    --bit-tgb-lbl-fontsize: #{$tg-fs-2xs};
 }
 
 .bit-tgb-md {
-    padding: spacing(0.75) spacing(2);
-    --bit-tgb-fontsize: #{spacing(1.75)};
+    padding: $siz-ctrl-pad-y-md $siz-ctrl-pad-x-md;
+    --bit-tgb-fontsize: #{$tg-fs-sm};
     --bit-tgb-ntx-pad: #{spacing(0.75)};
     --bit-tgb-ntx-icn-size: #{spacing(2.35)};
     --bit-tgb-spn-size: #{spacing(2.35)};
-    --bit-tgb-lbl-fontsize: #{spacing(1.50)};
+    --bit-tgb-lbl-fontsize: #{$tg-fs-xs};
 }
 
 .bit-tgb-lg {
-    padding: spacing(1) spacing(2.5);
-    --bit-tgb-fontsize: #{spacing(2)};
+    padding: $siz-ctrl-pad-y-lg $siz-ctrl-pad-x-lg;
+    --bit-tgb-fontsize: #{$tg-fs-md};
     --bit-tgb-ntx-pad: #{spacing(1.0)};
     --bit-tgb-ntx-icn-size: #{spacing(3.35)};
     --bit-tgb-spn-size: #{spacing(2.75)};
-    --bit-tgb-lbl-fontsize: #{spacing(1.75)};
+    --bit-tgb-lbl-fontsize: #{$tg-fs-sm};
 }
 
 
@@ -451,7 +306,7 @@
     display: inline-grid;
     place-items: center;
 
-    > * {
+    >* {
         grid-area: 1 / 1;
     }
 }
@@ -461,6 +316,8 @@
 }
 
 .bit-tgb-ntx {
+    // Icon-only toggle buttons stay square whatever the design system's labeled-button minimum is.
+    min-width: auto;
     padding: var(--bit-tgb-ntx-pad);
     --bit-tgb-icn-margin: 0;
     --bit-tgb-fontsize: var(--bit-tgb-ntx-icn-size);

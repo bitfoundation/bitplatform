@@ -12,6 +12,7 @@ namespace Bit.Butil;
 /// <br/>
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation">https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation</see>
 /// </summary>
+[ButilService(typeof(ScreenOrientation))]
 public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
 {
     internal const string InvokeMethodName = nameof(InvokeScreenOrientationChange);
@@ -32,6 +33,30 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
     {
         if (_handlers.TryGetValue(id, out var handler)) handler.Invoke(state);
     }
+
+    /// <summary>True when the runtime exposes <c>screen.orientation</c>.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.screenOrientation.isSupported");
+
+    /// <summary>
+    /// True when the runtime also exposes <c>screen.orientation.lock()</c>, which
+    /// <see cref="Lock"/> needs.
+    /// </summary>
+    /// <remarks>
+    /// Worth a separate check from <see cref="IsSupported"/>: reading the type and angle is
+    /// baseline, but locking is the half Safari and Firefox leave out - so a page that pins itself
+    /// to landscape has to gate on this one, and <see cref="Lock"/> additionally only succeeds in
+    /// fullscreen on the engines that do have it.
+    /// <br/>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public ValueTask<bool> IsLockSupported() => js.Invoke<bool>("BitButil.screenOrientation.isLockSupported");
 
     /// <summary>
     /// Returns the document's current orientation type.

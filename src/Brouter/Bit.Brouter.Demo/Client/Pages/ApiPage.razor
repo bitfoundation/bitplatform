@@ -1,0 +1,421 @@
+<PageTitle>API reference · Brouter docs</PageTitle>
+
+@* The lookup page: every public parameter, option, service member and value type in one place,
+   with defaults. Topic pages teach; this one answers "what is that parameter called and what does
+   it default to?" without reading prose. Kept in sync with the source by hand - the tables mirror
+   Broute.cs, Brouter.cs, BrouterOptions.cs, IBrouter.cs and the Navigation/ types. *@
+
+<div class="bb-intro">
+    <h1>API reference</h1>
+    <p class="bb-subtitle">
+        Every component parameter, service member, option and value type, with its default -
+        the page to keep open while you write code. The topic pages explain <em>why</em>; this one
+        answers <em>what it's called</em>.
+    </p>
+</div>
+
+<div class="bb-note">
+    Everything below lives in the <code>Bit.Brouter</code> namespace. Add
+    <code>&#64;using Bit.Brouter</code> to <code>_Imports.razor</code> once and none of it needs
+    qualifying.
+</div>
+
+@* ============================== Components ============================== *@
+
+<h2>Components</h2>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> &lt;Brouter&gt; - the router</h3>
+    <p class="bb-card-desc">
+        One per app, usually in <code>App.razor</code> or a dedicated <code>AppRouter.razor</code>.
+        Routes go in <code>&lt;Routes&gt;</code> (or directly as child content - the two are
+        aliases; never use both).
+    </p>
+    <table class="bb-table">
+        <thead><tr><th>Parameter</th><th>Type</th><th>Purpose</th></tr></thead>
+        <tbody>
+            <tr><td>Routes / ChildContent</td><td>RenderFragment?</td><td>The route tree. Aliases of each other.</td></tr>
+            <tr><td>AppAssembly</td><td>Assembly?</td><td>Assembly to scan for <code>&#64;page</code> / <code>[Route]</code> components.</td></tr>
+            <tr><td>AdditionalAssemblies</td><td>IEnumerable&lt;Assembly&gt;?</td><td>Further assemblies to scan (Razor class libraries, lazily-loaded ones).</td></tr>
+            <tr><td>OnNavigateAsync</td><td>Func&lt;ctx, ValueTask&lt;IEnumerable&lt;Assembly&gt;?&gt;&gt;?</td><td>Lazy route loading; returned assemblies register within the same navigation.</td></tr>
+            <tr><td>NotFoundUrl</td><td>string?</td><td>Redirect target when nothing matches.</td></tr>
+            <tr><td>NotFound</td><td>RenderFragment&lt;BrouterLocation&gt;?</td><td>Rendered in place instead, leaving the URL alone.</td></tr>
+            <tr><td>Navigating</td><td>RenderFragment?</td><td>Pending UI while loaders run; revealed lazily, so fast navigations never flash it.</td></tr>
+            <tr><td>ErrorContent</td><td>RenderFragment&lt;BrouterErrorContext&gt;?</td><td>Router-level error boundary - the last resort under every route's own.</td></tr>
+            <tr><td>ParallelLoaders</td><td>bool (false)</td><td>Run a chain's loaders concurrently instead of root → leaf sequentially.</td></tr>
+            <tr><td>Found</td><td>RenderFragment&lt;RouteData&gt;?</td><td>The built-in Router's template, ported verbatim. Applies to <code>Component</code>-rendered routes.</td></tr>
+            <tr><td>DefaultLayout</td><td>Type?</td><td>Layout for pages without their own <code>&#64;layout</code>.</td></tr>
+            <tr><td>NotAuthorized</td><td>RenderFragment&lt;AuthenticationState&gt;?</td><td>Setting this (or <code>Authorizing</code>/<code>Resource</code>) routes through the framework's <code>AuthorizeRouteView</code>.</td></tr>
+            <tr><td>Authorizing</td><td>RenderFragment?</td><td>Shown while an authorization policy is being evaluated.</td></tr>
+            <tr><td>Resource</td><td>object?</td><td>Resource passed to resource-based authorization policies.</td></tr>
+            <tr><td>OnMatch</td><td>Func&lt;Broute, ValueTask&gt;?</td><td>Fired when a route matched, just before <code>OnNavigated</code>.</td></tr>
+            <tr><td>OnNotFound</td><td>Func&lt;BrouterLocation, ValueTask&gt;?</td><td>Fired when nothing matched.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> &lt;Broute&gt; - one route</h3>
+    <p class="bb-card-desc">
+        Routes are components, so nesting is just markup: a <code>&lt;Broute&gt;</code> inside
+        another inherits its parent's template as a prefix. Render either a
+        <code>Component</code> or a <code>Content</code> fragment - not both.
+    </p>
+    <table class="bb-table">
+        <thead><tr><th>Parameter</th><th>Type</th><th>Purpose</th></tr></thead>
+        <tbody>
+            <tr><td>Path <em>(required)</em></td><td>string</td><td>The route template. Empty string on a child = the index route (matches the parent exactly).</td></tr>
+            <tr><td>Component</td><td>Type?</td><td>Component type to render; route values bind to its <code>[Parameter]</code> properties by name.</td></tr>
+            <tr><td>Content</td><td>RenderFragment&lt;BrouterRouteParameters&gt;?</td><td>Inline markup instead; the context argument is the parameter bag.</td></tr>
+            <tr><td>Routes / ChildContent</td><td>RenderFragment?</td><td>Child routes. Use <code>Routes</code> when the parent also has <code>Content</code>.</td></tr>
+            <tr><td>Name</td><td>string?</td><td>Enables <code>NavigateToName</code>/<code>ResolveUrl</code> and names the generated URL builder.</td></tr>
+            <tr><td>RedirectTo</td><td>string?</td><td>Redirect instead of rendering. Guards on the route still run first.</td></tr>
+            <tr><td>Group</td><td>bool (false)</td><td>Pathless group: contributes no URL segments, only shared guard/loader/layout/error boundary.</td></tr>
+            <tr><td>Guard</td><td>Func&lt;ctx, ValueTask&gt;?</td><td>Enter guard; runs root → leaf before the URL commits.</td></tr>
+            <tr><td>LeaveGuard</td><td>Func&lt;ctx, ValueTask&gt;?</td><td>Leave guard; runs leaf → root, only for routes actually being deactivated.</td></tr>
+            <tr><td>Loader</td><td>Func&lt;ctx, ValueTask&lt;object?&gt;&gt;?</td><td>Async data fetch; the result cascades as <code>BrouterRouteData</code>.</td></tr>
+            <tr><td>StaleTime</td><td>TimeSpan?</td><td>Freshness window for this route's loader results. Falls back to <code>DefaultLoaderStaleTime</code>.</td></tr>
+            <tr><td>Meta</td><td>object?</td><td>Static per-route metadata, cascaded as <code>BrouterRouteMeta</code>. No code runs.</td></tr>
+            <tr><td>KeepAlive</td><td>bool (false)</td><td>Retain the rendered component (hidden) when navigated away.</td></tr>
+            <tr><td>KeepAliveMax</td><td>int?</td><td>Retained-instance budget. Above 1, one instance per distinct parameter set, LRU-evicted. Defaults to <code>DefaultKeepAliveMax</code>.</td></tr>
+            <tr><td>ErrorContent</td><td>RenderFragment&lt;BrouterErrorContext&gt;?</td><td>Error boundary for this route and its descendants; nearest boundary wins.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> &lt;BrouterLink&gt; - navigation links</h3>
+    <p class="bb-card-desc">
+        Renders a real <code>&lt;a&gt;</code>: Ctrl/middle/Shift clicks keep native browser
+        behavior, only plain left clicks are intercepted. Extra attributes are splatted onto the
+        anchor.
+    </p>
+    <table class="bb-table">
+        <thead><tr><th>Parameter</th><th>Type (default)</th><th>Purpose</th></tr></thead>
+        <tbody>
+            <tr><td>Href <em>(required)</em></td><td>string ("/")</td><td>Destination. Route-relative forms (<code>./x</code>, <code>../x</code>) re-resolve after every navigation.</td></tr>
+            <tr><td>Match</td><td>BrouterLinkMatch (Prefix)</td><td>Active detection. <code>Prefix</code> is segment-boundary aware; <code>All</code> is exact. Root <code>/</code> always matches exactly.</td></tr>
+            <tr><td>ActiveClass</td><td>string ("active")</td><td>Class added when active; also sets <code>aria-current="page"</code>.</td></tr>
+            <tr><td>Class</td><td>string?</td><td>Base class list, always applied.</td></tr>
+            <tr><td>Replace</td><td>bool (false)</td><td>Replace the current history entry instead of pushing.</td></tr>
+            <tr><td>Preload</td><td>BrouterLinkPreload?</td><td>Warm the loader cache before the click. Falls back to <code>DefaultLinkPreload</code>.</td></tr>
+            <tr><td>HistoryState</td><td>string?</td><td>State attached to the history entry this click creates.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Outlets, views &amp; deferred data</h3>
+    <table class="bb-table">
+        <thead><tr><th>Component</th><th>Parameters</th><th>Purpose</th></tr></thead>
+        <tbody>
+            <tr><td>&lt;BrouterOutlet&gt;</td><td><code>Name</code> (string, "")</td><td>Placed in a parent's content to mark where matched children render. A name creates a secondary region.</td></tr>
+            <tr><td>&lt;BrouterView&gt;</td><td><code>Name</code>, <code>ChildContent</code></td><td>Declared inside a child route's <code>&lt;Routes&gt;</code> to fill the same-named outlet of an ancestor.</td></tr>
+            <tr><td>&lt;BrouterAwait&lt;T&gt;&gt;</td><td><code>Task</code> <em>(required)</em>, <code>Pending</code>, <code>Resolved</code>, <code>Error</code></td><td>Renders an unawaited <code>Task&lt;T&gt;</code> returned by a loader as it resolves.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+@* ============================== IBrouter ============================== *@
+
+<h2>IBrouter - the service</h2>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Methods</h3>
+    <p class="bb-card-desc">
+        Inject anywhere with <code>&#64;inject IBrouter brouter</code>. Every URL argument accepts
+        route-relative forms.
+    </p>
+    <table class="bb-table">
+        <thead><tr><th>Member</th><th>Notes</th></tr></thead>
+        <tbody>
+            <tr><td>Location</td><td><code>BrouterLocation</code> for the current URL. Never null.</td></tr>
+            <tr><td>Navigate(url, replace, forceLoad, historyState)</td><td>Fire-and-forget. <code>forceLoad</code> does a full document load and skips the pipeline entirely.</td></tr>
+            <tr><td>NavigateAsync(url, replace, historyState)</td><td>Awaits the whole pipeline and returns a <code>BrouterNavigationOutcome</code>. No <code>forceLoad</code> - nothing would survive to resolve the task.</td></tr>
+            <tr><td>Back() / BackAsync(delta = 1)</td><td>Move back; the async form is awaitable and can jump several entries.</td></tr>
+            <tr><td>Forward() / ForwardAsync(delta = 1)</td><td>The forward equivalents.</td></tr>
+            <tr><td>NavigateToName(name, parameters, query, replace, historyState)</td><td>Target a <code>Name</code>d route. Parameters not in the template become query pairs.</td></tr>
+            <tr><td>ResolveUrl(name, parameters, query)</td><td>The same substitution, returned as a string instead of navigated to.</td></tr>
+            <tr><td>NavigateWithQuery(mutate, replace = true)</td><td>Functional query update over a <code>BrouterQueryBuilder</code>; untouched parameters and the fragment survive.</td></tr>
+            <tr><td>RevalidateAsync()</td><td>Re-runs the current chain's loaders in place. No URL change, no guards, content stays visible.</td></tr>
+            <tr><td>ReloadAsync()</td><td>Rebuilds the current chain: components disposed and recreated, route guards and loaders re-run. No URL change, no navigation hooks, no leave guards. Loaders can tell a reload apart via <code>BrouterNavigationContext.IsReload</code>. Re-navigating to the same URL cannot do this - Blazor keeps the component.</td></tr>
+            <tr><td>PreloadAsync(url)</td><td>Speculatively runs the destination's loaders. No guards, no render, failures swallowed.</td></tr>
+            <tr><td>ClearLoaderCache()</td><td>Drops every cached loader result - e.g. on sign-out.</td></tr>
+            <tr><td>ClearKeepAlive()</td><td>Disposes every retained keep-alive component. The visible page keeps its instance.</td></tr>
+            <tr><td>ClearKeepAlive(includeActive)</td><td>With <code>includeActive: true</code> the page on screen is disposed and rebuilt in place too - fresh instance, no navigation, no guards or loaders re-run.</td></tr>
+            <tr><td>SetConfirmExternalNavigationAsync(enabled)</td><td>Arms/disarms the browser's "leave site?" dialog at runtime. Idempotent.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Events</h3>
+    <p class="bb-card-desc">
+        All three are <code>async</code> delegates. Subscribe in <code>OnInitialized</code> and
+        unsubscribe in <code>Dispose</code> - a forgotten handler keeps its component alive for the
+        router's lifetime.
+    </p>
+    <table class="bb-table">
+        <thead><tr><th>Event</th><th>Signature</th><th>Fires</th></tr></thead>
+        <tbody>
+            <tr><td>OnNavigating</td><td>Func&lt;ctx, ValueTask&gt;</td><td>Before every navigation, after leave guards. Can <code>Cancel()</code> / <code>Redirect()</code>.</td></tr>
+            <tr><td>OnNavigated</td><td>Func&lt;ctx, ValueTask&gt;</td><td>After a navigation commits and renders.</td></tr>
+            <tr><td>OnError</td><td>Func&lt;ctx, Exception?, ValueTask&gt;</td><td>On unhandled pipeline exceptions. Cancels and redirects are control flow and never raise it.</td></tr>
+        </tbody>
+    </table>
+    <pre class="bb-code"><span class="k">@@inject</span> IBrouter brouter
+<span class="k">@@implements</span> IDisposable
+
+<span class="k">@@code</span> {
+    <span class="k">private</span> Func&lt;BrouterNavigationContext, ValueTask&gt;? _handler;
+
+    <span class="k">protected override void</span> OnInitialized()
+    {
+        _handler = ctx =&gt; { Track(ctx.To.Path); <span class="k">return</span> ValueTask.CompletedTask; };
+        brouter.OnNavigated += _handler;
+    }
+
+    <span class="k">public void</span> Dispose()
+    {
+        <span class="k">if</span> (_handler <span class="k">is not null</span>) brouter.OnNavigated -= _handler;
+    }
+}</pre>
+</div>
+
+@* ============================== Options ============================== *@
+
+<h2>BrouterOptions</h2>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Matching</h3>
+    <table class="bb-table">
+        <thead><tr><th>Option</th><th>Default</th><th>Effect</th></tr></thead>
+        <tbody>
+            <tr><td>CaseSensitive</td><td><code>false</code></td><td>Whether literal segments match case-sensitively.</td></tr>
+            <tr><td>IgnoreTrailingSlash</td><td><code>true</code></td><td>Treat <code>/users</code> and <code>/users/</code> as the same path.</td></tr>
+            <tr><td>Constraints</td><td>empty registry</td><td>Custom constraints, scoped to this DI container: <code>o.Constraints.Register("slug", ...)</code>.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Scroll &amp; focus</h3>
+    <table class="bb-table">
+        <thead><tr><th>Option</th><th>Default</th><th>Effect</th></tr></thead>
+        <tbody>
+            <tr><td>ScrollBehavior</td><td><code>None</code></td><td><code>ToTop</code> scrolls to the top of the page after each navigation.</td></tr>
+            <tr><td>ScrollToFragment</td><td><code>true</code></td><td><code>/docs#install</code> scrolls <code>#install</code> into view and focuses it. Wins over everything else that navigation.</td></tr>
+            <tr><td>RestoreScrollPosition</td><td><code>false</code></td><td>Restore each page's scroll position on Back/Forward. Takes over <code>history.scrollRestoration</code>.</td></tr>
+            <tr><td>ScrollPositionStorage</td><td><code>Memory</code></td><td>Where those positions live. <code>SessionStorage</code> is the recommended upgrade.</td></tr>
+            <tr><td>FocusOnNavigateSelector</td><td><code>null</code></td><td>Move focus to this selector after navigation so assistive tech announces the new page. Try <code>"h1"</code>.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Data &amp; caching</h3>
+    <table class="bb-table">
+        <thead><tr><th>Option</th><th>Default</th><th>Effect</th></tr></thead>
+        <tbody>
+            <tr><td>DefaultLoaderStaleTime</td><td><code>null</code></td><td>App-wide freshness window for routes without their own <code>StaleTime</code>. Null = no caching.</td></tr>
+            <tr><td>StaleReloadMode</td><td><code>Background</code></td><td>How a stale hit is served: render cached data and refresh behind it, or <code>Blocking</code> to treat stale as a miss.</td></tr>
+            <tr><td>LoaderCacheGcTime</td><td><code>30 min</code></td><td>Hard ceiling on how old a cached result may ever be.</td></tr>
+            <tr><td>MaxLoaderCacheEntries</td><td><code>50</code></td><td>Cache size cap; oldest-written entries evicted first.</td></tr>
+            <tr><td>DefaultLinkPreload</td><td><code>None</code></td><td>Preload mode for links that don't set their own.</td></tr>
+            <tr><td>PreloadDelay</td><td><code>50 ms</code></td><td>How long the pointer must rest on a link before <code>Intent</code> preloading fires.</td></tr>
+            <tr><td>PreloadStaleTime</td><td><code>30 s</code></td><td>How long a preloaded result stays usable on routes that don't otherwise cache.</td></tr>
+            <tr><td>PersistLoaderState</td><td><code>false</code></td><td>Carry prerender loader results into the interactive pass so they don't double-fetch.</td></tr>
+            <tr><td>LoaderStateTypeInfoResolver</td><td><code>null</code></td><td>Source-generated JSON context that makes the above trimming/AOT-safe.</td></tr>
+            <tr><td>DefaultKeepAliveMax</td><td><code>1</code></td><td>Retained-instance budget for keep-alive routes that don't set their own.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Transitions &amp; leaving the app</h3>
+    <table class="bb-table">
+        <thead><tr><th>Option</th><th>Default</th><th>Effect</th></tr></thead>
+        <tbody>
+            <tr><td>ViewTransitions</td><td><code>false</code></td><td>Wrap each navigation's render in <code>document.startViewTransition</code>.</td></tr>
+            <tr><td>ViewTransitionDefaultAnimations</td><td><code>true</code></td><td>Ship the direction-aware glide/fade set. Lives in the <code>bit-brouter</code> CSS layer, so your own rules override it without <code>!important</code>.</td></tr>
+            <tr><td>ViewTransitionRespectReducedMotion</td><td><code>true</code></td><td>Swap motion for opacity crossfades under <code>prefers-reduced-motion</code>. Keep it on in production.</td></tr>
+            <tr><td>ConfirmExternalNavigation</td><td><code>false</code></td><td>Always-on <code>beforeunload</code> confirmation for tab close / reload / external links. For dynamic control use <code>SetConfirmExternalNavigationAsync</code> instead.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+@* ============================== Value types ============================== *@
+
+<h2>Context &amp; value types</h2>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> BrouterNavigationContext</h3>
+    <p class="bb-card-desc">
+        The single argument to every guard, loader and hook. <code>Cancel()</code> and
+        <code>Redirect()</code> are only honored in the decide phase - a loader's context is
+        informational.
+    </p>
+    <table class="bb-table">
+        <thead><tr><th>Member</th><th>Meaning</th></tr></thead>
+        <tbody>
+            <tr><td>From / To</td><td>Source and destination <code>BrouterLocation</code>.</td></tr>
+            <tr><td>NavigationType</td><td><code>Push</code> / <code>Replace</code> / <code>Pop</code> (Back/Forward).</td></tr>
+            <tr><td>CancellationToken</td><td>Fires when a newer navigation supersedes this one. Thread it through your async calls.</td></tr>
+            <tr><td>IsRevalidation / IsPreload / IsReload</td><td>Why this loader is running, when it isn't a plain navigation. <code>IsReload</code> is set while <code>ReloadAsync()</code> rebuilds the chain - the URL is unchanged and the components were disposed and recreated.</td></tr>
+            <tr><td>Route / Parameters</td><td>The matched route and its bound values (set once matching has run).</td></tr>
+            <tr><td>Cancel() / Redirect(url)</td><td>Stop the navigation, or send it elsewhere.</td></tr>
+            <tr><td>IsCancelled / RedirectUrl</td><td>What a previous step in the chain already decided.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> BrouterLocation</h3>
+    <table class="bb-table">
+        <thead><tr><th>Member</th><th>Meaning</th></tr></thead>
+        <tbody>
+            <tr><td>FullUri / Path / Segments</td><td>The absolute URI, the path alone, and the path split into segments.</td></tr>
+            <tr><td>Query / QueryParams</td><td>The raw query string, and it parsed into a multi-value dictionary.</td></tr>
+            <tr><td>GetQuery(key) / GetQueryAll(key)</td><td>First value, or every value for repeated pairs (<code>?tag=a&amp;tag=b</code>).</td></tr>
+            <tr><td>Hash</td><td>The fragment, including its <code>#</code>.</td></tr>
+            <tr><td>HistoryState</td><td>State attached to this history entry; survives Back/Forward.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Parameters, data &amp; metadata</h3>
+    <table class="bb-table">
+        <thead><tr><th>Type</th><th>How you get it</th><th>Members</th></tr></thead>
+        <tbody>
+            <tr>
+                <td>BrouterRouteParameters</td>
+                <td><code>[CascadingParameter(Name = "RouteParameters")]</code>, or the <code>&lt;Content Context="p"&gt;</code> argument</td>
+                <td><code>this[key]</code>, <code>Contains</code>, <code>Get&lt;T&gt;</code>, <code>TryGet&lt;T&gt;</code>, <code>GetOrDefault&lt;T&gt;</code>. Keys are case-insensitive.</td>
+            </tr>
+            <tr>
+                <td>BrouterRouteData</td>
+                <td><code>[CascadingParameter]</code> - cascaded by type</td>
+                <td>The <code>Loader</code> result: <code>Value</code>, <code>HasValue</code>, <code>Get&lt;T&gt;</code>, <code>TryGet&lt;T&gt;</code>, <code>GetOrDefault&lt;T&gt;</code>.</td>
+            </tr>
+            <tr>
+                <td>BrouterRouteMeta</td>
+                <td><code>[CascadingParameter]</code></td>
+                <td>The route's static <code>Meta</code> object, same accessors. No code runs to produce it.</td>
+            </tr>
+            <tr>
+                <td>RouteData <em>(framework type)</em></td>
+                <td><code>[CascadingParameter]</code></td>
+                <td>The committed navigation's framework route data, or null on not-found. For breadcrumbs and telemetry.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Outcomes, errors &amp; query building</h3>
+    <table class="bb-table">
+        <thead><tr><th>Type</th><th>Members</th></tr></thead>
+        <tbody>
+            <tr>
+                <td>BrouterNavigationOutcome</td>
+                <td><code>Status</code>, <code>Succeeded</code>, <code>RedirectedTo</code>, <code>Exception</code>. Returned by <code>NavigateAsync</code>.</td>
+            </tr>
+            <tr>
+                <td>BrouterErrorContext</td>
+                <td><code>Exception</code>, <code>Location</code>, <code>RetryAsync()</code>. The argument to every <code>ErrorContent</code>.</td>
+            </tr>
+            <tr>
+                <td>BrouterQueryBuilder</td>
+                <td><code>Set</code> (null removes), <code>SetAll</code> (multi-value), <code>Remove</code>, <code>Clear</code>, <code>Get</code>, <code>Contains</code>, <code>ToQueryString</code>. The argument to <code>NavigateWithQuery</code>; calls chain.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+@* ============================== Lifecycle ============================== *@
+
+<h2>Route lifecycle</h2>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> IBrouterRoute</h3>
+    <p class="bb-card-desc">
+        Implement it on a <code>Component</code>-rendered page and the router finds it
+        automatically. Every member has a no-op default, so override only what you need. Derive
+        from <code>BrouterRouteBase</code> instead to also get sync overloads, an
+        <code>IsActive</code> property and an automatic re-render after activation. For components
+        that aren't the route root, take the cascaded <code>BrouterRouteContext</code> and call
+        <code>Register(this)</code> / <code>Unregister(this)</code>.
+    </p>
+    <table class="bb-table">
+        <thead><tr><th>Member</th><th>Argument</th><th>When</th></tr></thead>
+        <tbody>
+            <tr><td>OnActivatedAsync</td><td>BrouterRouteActivation</td><td>Route became active. <code>IsFirstActivation</code> distinguishes a first visit from a keep-alive return.</td></tr>
+            <tr><td>OnRenavigatedAsync</td><td>BrouterRouteRenavigation</td><td>Same route re-committed with different parameters or query. Carries both locations.</td></tr>
+            <tr><td>OnDeactivatedAsync</td><td>BrouterRouteDeactivation</td><td>Route left. <code>Reason</code> is <code>Hidden</code> (keep-alive) or <code>Disposing</code>.</td></tr>
+            <tr><td>OnDeactivatingAsync</td><td>BrouterRouteDeactivatingContext</td><td><em>Before</em> being left - awaited and cancellable. The component-level navigation lock.</td></tr>
+            <tr><td>OnRenavigatingAsync</td><td>BrouterRouteRenavigatingContext</td><td><em>Before</em> re-committing with new parameters - the case a <code>LeaveGuard</code> can't see.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+@* ============================== Enums & constraints ============================== *@
+
+<h2>Enums</h2>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Every enum, every value</h3>
+    <table class="bb-table">
+        <thead><tr><th>Enum</th><th>Values</th></tr></thead>
+        <tbody>
+            <tr><td>BrouterNavigationStatus</td><td><code>Succeeded</code>, <code>Cancelled</code>, <code>Redirected</code>, <code>NotFound</code>, <code>Failed</code>, <code>Superseded</code></td></tr>
+            <tr><td>BrouterNavigationType</td><td><code>Push</code>, <code>Replace</code>, <code>Pop</code></td></tr>
+            <tr><td>BrouterLinkMatch</td><td><code>Prefix</code>, <code>All</code></td></tr>
+            <tr><td>BrouterLinkPreload</td><td><code>None</code>, <code>Intent</code>, <code>Viewport</code>, <code>Render</code></td></tr>
+            <tr><td>BrouterScrollMode</td><td><code>None</code>, <code>ToTop</code></td></tr>
+            <tr><td>BrouterScrollPositionStorage</td><td><code>Memory</code>, <code>SessionStorage</code>, <code>LocalStorage</code></td></tr>
+            <tr><td>BrouterStaleReloadMode</td><td><code>Background</code>, <code>Blocking</code></td></tr>
+            <tr><td>BrouterRouteDeactivationReason</td><td><code>Hidden</code>, <code>Disposing</code></td></tr>
+        </tbody>
+    </table>
+</div>
+
+<h2>Built-in constraints</h2>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Type constraints - validate <em>and</em> convert</h3>
+    <p class="bb-card-desc">
+        The parameter binds a real CLR value. In a chain, the <strong>last</strong> type constraint
+        decides the bound type.
+    </p>
+    <table class="bb-table">
+        <thead><tr><th>Token</th><th>Binds</th></tr></thead>
+        <tbody>
+            <tr><td>int, long</td><td><code>int</code> / <code>long</code>, invariant culture.</td></tr>
+            <tr><td>float, double, decimal</td><td>The matching numeric type, invariant culture.</td></tr>
+            <tr><td>bool</td><td><code>bool</code> - <code>true</code>/<code>false</code>, case-insensitive.</td></tr>
+            <tr><td>guid</td><td><code>Guid</code>, any standard format.</td></tr>
+            <tr><td>datetime</td><td><code>DateTime</code>, invariant culture.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Validation constraints - accept or reject</h3>
+    <p class="bb-card-desc">The value stays a <code>string</code>; these only gate the match.</p>
+    <table class="bb-table">
+        <thead><tr><th>Token</th><th>Rule</th></tr></thead>
+        <tbody>
+            <tr><td>alpha</td><td>ASCII letters only.</td></tr>
+            <tr><td>min(n) / max(n) / range(a,b)</td><td>Numeric bounds.</td></tr>
+            <tr><td>minlength(n) / maxlength(n)</td><td>Text-length bounds.</td></tr>
+            <tr><td>length(n) / length(a,b)</td><td>Exact length, or a length range.</td></tr>
+            <tr><td>regex(pattern)</td><td>Inline pattern, case-insensitive and invariant.</td></tr>
+            <tr><td>file / nonfile</td><td>Looks / doesn't look like a file name. <code>nonfile</code> is the classic static-asset filter.</td></tr>
+        </tbody>
+    </table>
+    <div class="bb-try">
+        <BrouterLink Href="/docs/constraints" class="btn btn-primary">Test every constraint live →</BrouterLink>
+        <BrouterLink Href="/docs/route-templates" class="btn btn-outline">Template grammar →</BrouterLink>
+    </div>
+</div>

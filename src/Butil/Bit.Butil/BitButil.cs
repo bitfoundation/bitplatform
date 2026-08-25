@@ -1,62 +1,88 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Bit.Butil;
 
 public static class BitButil
 {
+    /// <summary>
+    /// Registers every Butil service - each class marked with <see cref="ButilServiceAttribute"/> - as scoped.
+    /// </summary>
+    /// <remarks>
+    /// Scoped matches Blazor's "one circuit / one WASM app instance per user" model. Transient would create
+    /// a fresh wrapper on every <c>@inject</c>, fragmenting per-instance listener bookkeeping and keeping
+    /// captured component delegates alive longer than the component itself.
+    /// <br/>
+    /// The services are discovered by reflection rather than by a list of <c>AddScoped&lt;T&gt;()</c> calls,
+    /// and that is a trimming decision, not a style one. <c>AddScoped&lt;T&gt;()</c> annotates <c>T</c> with
+    /// <see cref="DynamicallyAccessedMemberTypes.PublicConstructors"/>, so naming all the Butil classes in
+    /// one method roots all of them: a consumer that injects only <see cref="LocalStorage"/> still carried
+    /// every other Butil class in their trimmed output. Reflecting over the assembly gives the trimmer
+    /// nothing to follow, so a class nobody injects is removed from the consumer's app and is simply not
+    /// there to be discovered here - <see cref="System.Reflection.Assembly.GetTypes"/> returns only the
+    /// types that survived. Constructors of the classes that DO survive are preserved by the annotated
+    /// type argument of <see cref="ButilServiceAttribute"/>; see that type for why it is shaped that way.
+    /// <br/>
+    /// Consequence worth knowing: in a trimmed app this registers a subset, so injecting a Butil class from
+    /// code the trimmer removed (or purely through reflection) fails at runtime rather than at build time.
+    /// Untrimmed apps - Blazor Server, and the prerendering host of a WebAssembly app - register everything.
+    /// </remarks>
+    [UnconditionalSuppressMessage("Trimming", "IL2026",
+        Justification = "Enumerating this assembly's types is the point: types the trimmer removed are absent from the consumer's app, so skipping them is correct rather than a defect. Constructors of the surviving types are preserved by ButilServiceAttribute's annotated type argument.")]
     public static IServiceCollection AddBitButilServices(this IServiceCollection services)
     {
-        // Scoped matches Blazor's "one circuit / one WASM app instance per user" model.
-        // Transient would create a fresh wrapper on every @inject, fragmenting per-instance
-        // listener bookkeeping and keeping captured component delegates alive longer than
-        // the component itself.
-        services.AddScoped<Clipboard>();
-        services.AddScoped<Console>();
-        services.AddScoped<Cookie>();
-        services.AddScoped<CookieStore>();
-        services.AddScoped<Crypto>();
-        services.AddScoped<Battery>();
-        services.AddScoped<BackgroundSync>();
-        services.AddScoped<BroadcastChannel>();
-        services.AddScoped<CacheStorage>();
-        services.AddScoped<ContactPicker>();
-        services.AddScoped<Document>();
-        services.AddScoped<EyeDropper>();
-        services.AddScoped<Fetch>();
-        services.AddScoped<FileReader>();
-        services.AddScoped<Geolocation>();
-        services.AddScoped<History>();
-        services.AddScoped<IdleDetector>();
-        services.AddScoped<IndexedDb>();
-        services.AddScoped<Keyboard>();
-        services.AddScoped<LocalStorage>();
-        services.AddScoped<SessionStorage>();
-        services.AddScoped<Location>();
-        services.AddScoped<MediaDevices>();
-        services.AddScoped<Navigator>();
-        services.AddScoped<NetworkInformation>();
-        services.AddScoped<Nfc>();
-        services.AddScoped<Notification>();
-        services.AddScoped<ObjectUrls>();
-        services.AddScoped<Performance>();
-        services.AddScoped<Permissions>();
-        services.AddScoped<Push>();
-        services.AddScoped<Reporting>();
-        services.AddScoped<Screen>();
-        services.AddScoped<ScreenOrientation>();
-        services.AddScoped<ServiceWorker>();
-        services.AddScoped<SpeechRecognition>();
-        services.AddScoped<SpeechSynthesis>();
-        services.AddScoped<StorageManager>();
-        services.AddScoped<UserAgent>();
-        services.AddScoped<VisualViewport>();
-        services.AddScoped<WakeLock>();
-        services.AddScoped<WebAudio>();
-        services.AddScoped<WebLocks>();
-        services.AddScoped<Window>();
-        services.AddScoped<WebAuthn>();
+        foreach (var type in typeof(BitButil).Assembly.GetTypes())
+        {
+            if (type.GetCustomAttribute<ButilServiceAttribute>(inherit: false) is not { } butilService) continue;
+
+            // Registering ServiceType rather than the scanned type is what keeps this call trim-clean:
+            // the property carries the PublicConstructors annotation, so no suppression is needed here.
+            // TryAdd so that a consumer registration made before this call wins, and so that calling this
+            // method twice on the same collection cannot produce duplicate descriptors.
+            services.TryAddScoped(butilService.ServiceType);
+        }
 
         return services;
+    }
+
+    /// <summary>
+    /// Registers every Butil service (see <see cref="AddBitButilServices(IServiceCollection)"/>) and applies the
+    /// library's runtime options in the same call - lazy scripts, the modules path, fast invoke - so an app can
+    /// configure everything in <c>Program.cs</c> without an MSBuild property.
+    /// </summary>
+    /// <remarks>
+    /// The options set the same process-wide toggles as <see cref="UseLazyScripts"/> / <see cref="UseFastInvoke"/>
+    /// and friends; see <see cref="BitButilOptions"/> for what that does and does not cover compared with the
+    /// <c>BitButilLazyScripts</c> and <c>BitButilTrimScripts</c> MSBuild properties.
+    /// </remarks>
+    public static IServiceCollection AddBitButilServices(this IServiceCollection services, Action<BitButilOptions> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var options = new BitButilOptions();
+        configure(options);
+
+        switch (options.LazyScripts)
+        {
+            case true: UseLazyScripts(options.ScriptModulesPath); break;
+            case false: UseBundledScripts(); break;
+            default:
+                // Mode left alone; a modules path on its own still applies, for an app that turned lazy
+                // scripts on through the MSBuild property but serves the package's assets from elsewhere.
+                if (string.IsNullOrWhiteSpace(options.ScriptModulesPath) is false) SetScriptModulesPath(options.ScriptModulesPath);
+                break;
+        }
+
+        switch (options.FastInvoke)
+        {
+            case true: UseFastInvoke(); break;
+            case false: UseNormalInvoke(); break;
+        }
+
+        return AddBitButilServices(services);
     }
 
     private static volatile bool _fastInvokeEnabled;
@@ -88,5 +114,114 @@ public static class BitButil
     public static void UseNormalInvoke()
     {
         _fastInvokeEnabled = false;
+    }
+
+
+    /// <summary>The AppContext switch the <c>BitButilLazyScripts</c> MSBuild property sets.</summary>
+    internal const string LazyScriptsSwitchName = "Bit.Butil.LazyScripts";
+
+    /// <summary>The default location of the per-module scripts, relative to the app's base href.</summary>
+    internal const string DefaultScriptModulesPath = "./_content/Bit.Butil/modules/";
+
+    // null = not overridden at runtime, so the build-time switch decides.
+    private static volatile object? _lazyScriptsOverride;
+    private static volatile string _scriptModulesPath = DefaultScriptModulesPath;
+
+    /// <summary>
+    /// The build-time half of the lazy-scripts switch: <c>&lt;BitButilLazyScripts&gt;true&lt;/BitButilLazyScripts&gt;</c>
+    /// in the consumer's project ends up here as an <see cref="AppContext"/> switch. Marked as a feature
+    /// switch so the trimmer can treat it as a constant in a trimmed publish (the runtime override below is
+    /// what keeps <see cref="UseLazyScripts"/> working there regardless).
+    /// </summary>
+#if NET9_0_OR_GREATER
+    [FeatureSwitchDefinition(LazyScriptsSwitchName)]
+#endif
+    internal static bool LazyScriptsFeature => AppContext.TryGetSwitch(LazyScriptsSwitchName, out var enabled) && enabled;
+
+    /// <summary>
+    /// <see cref="LazyScriptsFeature"/>, read once. <see cref="AppContext.TryGetSwitch"/> takes a lock on the
+    /// process's switch table, and <see cref="LazyScriptsEnabled"/> is consulted on every single interop call -
+    /// including in the default bundle mode, which must not pay for a feature it does not use. Reading it once
+    /// is safe because the switch comes from the host's runtime configuration, which is in place before any of
+    /// this assembly's code runs; a decision made in code goes through <see cref="UseLazyScripts"/> /
+    /// <see cref="UseBundledScripts"/> instead (an <see cref="AppContext.SetSwitch"/> call made after Bit.Butil
+    /// is first touched is not picked up).
+    /// </summary>
+    private static readonly bool LazyScriptsFeatureValue = LazyScriptsFeature;
+
+    /// <summary>
+    /// True when Bit.Butil loads its JavaScript per module, on first use, instead of expecting the whole
+    /// <c>bit-butil.js</c> bundle to have been loaded by a <c>&lt;script&gt;</c> tag. Decided by the build-time
+    /// switch unless <see cref="UseLazyScripts"/> / <see cref="UseBundledScripts"/> overrode it at runtime.
+    /// </summary>
+    internal static bool LazyScriptsEnabled => _lazyScriptsOverride is bool overridden ? overridden : LazyScriptsFeatureValue;
+
+    /// <summary>Where the per-module scripts are served from; see <see cref="UseLazyScripts"/>.</summary>
+    internal static string ScriptModulesPath => _scriptModulesPath;
+
+    /// <summary>
+    /// Loads Bit.Butil's JavaScript per module, on first use, instead of from the single <c>bit-butil.js</c>
+    /// bundle: the first call into a Butil API <c>import()</c>s just that API's module
+    /// (<c>_content/Bit.Butil/modules/clipboard.js</c> for <see cref="Clipboard"/>, and so on), so an app
+    /// downloads only the JavaScript for the APIs it actually calls and needs no <c>&lt;script&gt;</c> tag at all.
+    /// <br/>
+    /// The preferred way to turn this on is the <c>&lt;BitButilLazyScripts&gt;true&lt;/BitButilLazyScripts&gt;</c>
+    /// MSBuild property in the app's project, which also keeps the bundle out of the published output; this
+    /// method exists for hosts where the build-time switch cannot be applied. Process-wide static toggle
+    /// intended to be set once at startup, before any Butil call - see <see cref="UseFastInvoke"/> for the
+    /// reasoning.
+    /// </summary>
+    /// <param name="modulesPath">
+    /// Where the module files are served from, relative to the app's base href, when it is not the default
+    /// <c>./_content/Bit.Butil/modules/</c>. A root-relative path (<c>/cdn/butil/</c>) or an absolute URL
+    /// is taken as given; anything else is treated as relative to the base href, so a trailing slash and
+    /// the leading <c>./</c> a dynamic <c>import()</c> needs are both added when they are missing.
+    /// </param>
+    public static void UseLazyScripts(string? modulesPath = null)
+    {
+        _lazyScriptsOverride = true;
+
+        if (string.IsNullOrWhiteSpace(modulesPath) is false) SetScriptModulesPath(modulesPath);
+    }
+
+    /// <summary>
+    /// Normalizes a modules path into something the browser will accept as the specifier of a dynamic
+    /// <c>import()</c>: a trailing slash, and a leading <c>./</c> on a path that is merely relative.
+    /// </summary>
+    /// <remarks>
+    /// The trailing slash is only about how the path is concatenated with <c>&lt;module&gt;.js</c>.
+    /// The leading <c>./</c> matters more: a specifier that is not a URL and does not start with
+    /// <c>/</c>, <c>./</c> or <c>../</c> is a <i>bare module specifier</i> to the browser, resolved through
+    /// the page's import map rather than against <c>document.baseURI</c> - and with no import map entry
+    /// behind it, <c>import("_content/Bit.Butil/modules/clipboard.js")</c> fails outright with
+    /// <c>TypeError: Failed to resolve module specifier</c>. Since the path is documented as being
+    /// relative to the app's base href, spell that out here rather than let the first Butil call of an
+    /// app that wrote it the natural way throw.
+    /// </remarks>
+    private static void SetScriptModulesPath(string modulesPath)
+    {
+        var path = modulesPath.Trim();
+
+        var isUrl = path[0] == '/'                                          // "/x", and "//host/x"
+                 || path.StartsWith("./", StringComparison.Ordinal)
+                 || path.StartsWith("../", StringComparison.Ordinal)
+                 || path.IndexOf("://", StringComparison.Ordinal) > 0;      // "https://host/x"
+
+        if (isUrl is false) path = "./" + path;
+
+        _scriptModulesPath = path.EndsWith('/') ? path : path + "/";
+    }
+
+    /// <summary>
+    /// Expects the whole <c>bit-butil.js</c> bundle to be loaded by the app (a <c>&lt;script&gt;</c> tag) and
+    /// never loads modules on demand - the default. It selects the loading mode at runtime, so it overrides
+    /// the <c>BitButilLazyScripts</c> build property's runtime effect but not its build-time one: a publish
+    /// that set the property left the bundle out of the output, and calling this cannot bring it back. Include
+    /// and load <c>bit-butil.js</c> yourself before choosing bundled mode. Process-wide static toggle, see
+    /// <see cref="UseLazyScripts"/>.
+    /// </summary>
+    public static void UseBundledScripts()
+    {
+        _lazyScriptsOverride = false;
     }
 }

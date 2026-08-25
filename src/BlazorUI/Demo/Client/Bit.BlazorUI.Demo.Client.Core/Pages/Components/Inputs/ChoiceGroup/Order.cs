@@ -3,6 +3,10 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.ChoiceGroup;
 public class Order
 {
     public string? Name { get; set; }
+    public string? Prefix { get; set; }
+    public string? Fee { get; set; }
+    public string? Summary { get; set; }
+    public string? Tooltip { get; set; }
     public string? ItemValue { get; set; }
     public string? ImageAddress { get; set; }
     public string? ImageDescription { get; set; }

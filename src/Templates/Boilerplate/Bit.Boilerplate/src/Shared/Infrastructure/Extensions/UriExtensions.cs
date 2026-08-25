@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace System;
 
 public static partial class UriExtensions
@@ -27,7 +29,10 @@ public static partial class UriExtensions
                 return null;
 
             if (AppQueryStringCollection.Parse(uri.Query).TryGetValue("culture", out var culture))
-                return culture?.ToString();
+            {
+                if (CultureInfoManager.GetCultureInfo(culture?.ToString()) is { } cultureInfo)
+                    return cultureInfo.Name;
+            }
 
             foreach (var segment in uri.Segments.Take(2))
             {
@@ -64,10 +69,75 @@ public static partial class UriExtensions
             }.Uri.ToString();
         }
 
+        /// <summary>
+        /// The url with every query value replaced by <c>***</c>, keeping the path and the parameter names.
+        /// </summary>
+        /// <remarks>
+        /// Use this wherever a url is recorded rather than navigated to. Several of this app's own routes carry a
+        /// single-use credential in the query string - <c>?token=</c>, <c>?emailToken=</c>, <c>?phoneToken=</c>,
+        /// <c>?otp=</c> - and <c>ITelemetryContext.PageUrl</c> is copied into the scope of every error record, which
+        /// `DiagnosticLogger` keeps, the chatbot's `CheckLastError` tool reads, and Sentry/App Insights/OTLP export.
+        /// <br/>
+        /// Masking every value rather than a list of known-sensitive names is deliberate: this is a template, and a
+        /// consumer's own token-carrying route would not be on any list this file could ship. The parameter names are
+        /// kept because they are what makes a log record diagnosable.
+        /// </remarks>
+        public string GetUrlWithMaskedQueryValues()
+        {
+            var qsCollection = AppQueryStringCollection.Parse(uri.Query);
+
+            if (qsCollection is { Count: 0 })
+                return uri.ToString();
+
+            // Composed by hand rather than through AppQueryStringCollection.ToString(), which would escape the mask
+            // into %2A%2A%2A. The result is a log string, never something to navigate to.
+            // The keys are re-escaped: Parse hands them back DECODED, so emitting one raw would let a key such as
+            // `%0AInjected` put a newline into the log record, or `%26fake` invent a parameter that was never sent.
+            return $"{uri.GetLeftPart(UriPartial.Path)}?{string.Join("&", qsCollection.Keys.Select(key => $"{Uri.EscapeDataString(key)}=***"))}";
+        }
+
         public string GetPath()
         {
             var uriBuilder = new UriBuilder(uri.GetUrlWithoutCulture()) { Query = string.Empty, Fragment = string.Empty };
             return uriBuilder.Path;
+        }
+
+        /// <summary>
+        /// True only for a relative url that cannot leave this app's origin, such as <c>/sign-in?otp=123</c>.
+        /// <br/>
+        /// <see cref="Uri.IsWellFormedUriString"/> with <see cref="UriKind.Relative"/> is NOT enough on its own:
+        /// a network-path reference like <c>//attacker.com/path</c> is a well-formed RELATIVE reference, and both
+        /// browsers and <c>NavigationManager.NavigateTo</c> resolve it to <c>https://attacker.com/path</c>.
+        /// Browsers treat <c>/\host</c> and a leading backslash the same way, so those are rejected too.
+        /// <br/>
+        /// Use this wherever a url arrives from outside the app and is then navigated to - the Blazor Hybrid local
+        /// HTTP server's external-sign-in callback, and every <c>return-url</c> that reaches
+        /// <c>NavigationManager.NavigateTo</c>.
+        /// </summary>
+        /// <param name="requireLeadingSlash">
+        /// Keep the default when the url is expected to be app-rooted (<c>/products/1</c>). Pass <c>false</c> for a
+        /// <c>return-url</c>, because the app itself produces base-relative values without the leading slash - see
+        /// <c>NavigationManagerExtensions.GetRelativePath</c>, which <c>AppShell</c> and <c>SignInModalService</c>
+        /// feed straight into a <c>return-url</c>. Rootless values are equally origin-bound: a well-formed relative
+        /// reference carries no scheme and no authority, so it always resolves against the app's own base.
+        /// </param>
+        public static bool IsAppRelativeUrl([NotNullWhen(true)] string? url, bool requireLeadingSlash = true)
+        {
+            if (string.IsNullOrEmpty(url))
+                return false;
+
+            if (url[0] is '\\')
+                return false;
+
+            if (url[0] is '/')
+            {
+                if (url.Length > 1 && url[1] is '/' or '\\')
+                    return false;
+            }
+            else if (requireLeadingSlash)
+                return false;
+
+            return Uri.IsWellFormedUriString(url, UriKind.Relative);
         }
     }
 }

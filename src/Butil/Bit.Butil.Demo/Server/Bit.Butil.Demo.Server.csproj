@@ -1,0 +1,61 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.11" />
+    <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
+    <!-- Flattens the rendered HTML of a docs page into the Markdown an MCP client reads. -->
+    <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Bit.Butil\Bit.Butil.csproj" />
+    <ProjectReference Include="..\Client\Bit.Butil.Demo.Client.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.AspNetCore.Mvc" />
+  </ItemGroup>
+
+  <!-- Text the MCP server hands out. It is embedded rather than read from disk so the tools keep
+       working from a published deployment, where none of these files exist next to the app.
+       LogicalName is set explicitly because the resource name IS the path an MCP client asks for. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\README.md" LogicalName="ButilDocs/README.md" />
+
+    <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs;..\Client\**\*.css"
+                      Exclude="..\Client\bin\**;..\Client\obj\**">
+      <LogicalName>ButilSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+
+    <EmbeddedResource Include="Program.cs" LogicalName="ButilSource/Demo/Server/Program.cs" />
+
+    <!-- The Components\ and wwwroot\ prefixes are written out: %(RecursiveDir) only captures what
+         the '**' matched, so it starts below the folder and would drop the folder itself. -->
+    <EmbeddedResource Include="Components\**\*.razor">
+      <LogicalName>ButilSource/Demo/Server/Components/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+
+    <!-- The service worker the ServiceWorker, BackgroundSync and Push pages register against - the
+         one piece of this demo that is neither C# nor Razor and that those APIs cannot work without. -->
+    <EmbeddedResource Include="wwwroot\sw.js" LogicalName="ButilSource/Demo/Server/wwwroot/sw.js" />
+
+    <!-- The minimal hosting samples - standalone WebAssembly and Hybrid (MAUI). Their pages are
+         left out on purpose: they are a smaller copy of this demo's pages, and the demo itself is
+         embedded above. The shared service registration is the exception - it is the piece the
+         setup guide has to show, and the piece most easily got wrong. -->
+    <EmbeddedResource Include="..\..\Samples\**\*.cs;..\..\Samples\**\*.csproj;..\..\Samples\**\index.html;..\..\Samples\**\*.razor"
+                      Exclude="..\..\Samples\**\bin\**;..\..\Samples\**\obj\**;..\..\Samples\Bit.Butil.Samples.Core\Pages\**;..\..\Samples\Bit.Butil.Samples.Core\Shared\**;..\..\Samples\Bit.Butil.Samples.Maui\Platforms\**">
+      <LogicalName>ButilSource/Sample/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

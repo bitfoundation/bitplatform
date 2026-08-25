@@ -6,11 +6,13 @@
     <File Path="../global.json" />
     <File Path="README.md" />
   </Folder>
-  <Folder Name="/Demos/">
-    <Project Path="Bit.Bmotion.Demos/Bit.Bmotion.Demos.csproj" />
+  <Folder Name="/Bit.Bmotion.Demo/">
+    <Project Path="Bit.Bmotion.Demo/Client/Bit.Bmotion.Demo.Client.csproj" />
+    <Project Path="Bit.Bmotion.Demo/Server/Bit.Bmotion.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/Bit.Bmotion.Tests/Bit.Bmotion.Tests.csproj" />
+    <Project Path="Tests/Bit.Bmotion.Tests.Mcp/Bit.Bmotion.Tests.Mcp.csproj" />
   </Folder>
   <Project Path="Bit.Bmotion/Bit.Bmotion.csproj" />
 </Solution>

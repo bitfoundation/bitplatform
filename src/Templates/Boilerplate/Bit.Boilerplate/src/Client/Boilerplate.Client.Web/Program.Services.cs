@@ -1,5 +1,6 @@
 //+:cnd:noEmit
 
+using Microsoft.Extensions.Options;
 using Boilerplate.Client.Web.Infrastructure.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
@@ -68,13 +69,9 @@ public static partial class Program
             //#endif
             services.AddScoped<IWebAuthnService, WebAuthnService>();
             services.AddScoped<IAppUpdateService, WebAppUpdateService>();
+            services.AddScoped<IPermissionService, WebPermissionService>();
 
-            services.AddSingleton(sp =>
-            {
-                ClientWebSettings settings = new();
-                configuration.Bind(settings);
-                return settings;
-            });
+            services.AddSingleton(sp => sp.GetRequiredService<IOptions<ClientWebSettings>>().Value);
 
             services.AddOptions<ClientWebSettings>()
                 .Bind(configuration)

@@ -7,6 +7,11 @@ namespace Bit.BlazorUI;
 
 public static class IJSRuntimeExtensions
 {
+    // Cache the per-runtime-type "is this runtime invalid?" probe. The probe is resolved once per
+    // concrete IJSRuntime type via reflection (the framework exposes no public API for this) and
+    // reused thereafter, so the reflection cost is paid once rather than on every interop call.
+    private static readonly ConcurrentDictionary<Type, Func<IJSRuntime, bool>> RuntimeInvalidProbes = new();
+
 
 
     /// <summary>
@@ -73,11 +78,6 @@ public static class IJSRuntimeExtensions
 
 
 
-    // Cache the reflected framework members per runtime type. The runtime type is stable for the
-    // lifetime of the process, so this avoids repeating the reflection lookup on every interop call.
-    private static readonly ConcurrentDictionary<Type, PropertyInfo?> _remoteIsInitializedPropertyCache = new();
-    private static readonly ConcurrentDictionary<Type, FieldInfo?> _webViewIpcSenderFieldCache = new();
-
     /// <summary>
     /// Detects Blazor host runtimes where JavaScript interop must not be attempted.
     /// </summary>
@@ -103,37 +103,50 @@ public static class IJSRuntimeExtensions
         // would otherwise throw ArgumentNullException from the framework's JSRuntimeExtensions).
         if (jsRuntime is null) return true;
 
-        var type = jsRuntime.GetType();
+        // Resolve (and cache) a probe for this concrete runtime type. The probe is defensive: it
+        // relies on framework-internal type names / members that can shift between .NET releases,
+        // so any missing member or reflection failure is treated as "runtime is valid" (return
+        // false) rather than throwing - a wrong-but-safe answer that lets the interop call proceed
+        // and surface a real error, instead of crashing here.
+        var probe = RuntimeInvalidProbes.GetOrAdd(jsRuntime.GetType(), BuildRuntimeInvalidProbe);
+        return probe(jsRuntime);
+    }
 
+    [SuppressMessage("Trimming", "IL2070:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method.", Justification = "Framework-internal members probed reflectively; failures fall back to 'valid'.")]
+    private static Func<IJSRuntime, bool> BuildRuntimeInvalidProbe(Type type)
+    {
         switch (type.Name)
         {
             // https://github.com/dotnet/aspnetcore/blob/main/src/Components/Endpoints/src/DependencyInjection/UnsupportedJavaScriptRuntime.cs
             case "UnsupportedJavaScriptRuntime": // Prerendering / static SSR
-                return true;
+                return static _ => true;
 
             // https://github.com/dotnet/aspnetcore/blob/main/src/Components/Server/src/Circuits/RemoteJSRuntime.cs
             case "RemoteJSRuntime": // Blazor Server
+            {
+                var isInitialized = type.GetProperty("IsInitialized", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                if (isInitialized is null) return static _ => false;
+                return rt =>
                 {
-                    // RemoteJSRuntime.IsInitialized is an internal framework member accessed via reflection.
-                    // If a future .NET release renames or removes it, fall back to treating the runtime as
-                    // valid so legitimate interop still runs (and any genuine failure surfaces as the
-                    // framework's own exception) instead of silently dropping every JS call.
-                    var property = _remoteIsInitializedPropertyCache.GetOrAdd(type, static t => t.GetProperty("IsInitialized"));
-                    return property?.GetValue(jsRuntime) is bool isInitialized && isInitialized is false;
-                }
+                    try { return isInitialized.GetValue(rt) is false; }
+                    catch { return false; }
+                };
+            }
 
             // https://github.com/dotnet/aspnetcore/blob/main/src/Components/WebView/WebView/src/Services/WebViewJSRuntime.cs
             case "WebViewJSRuntime": // Blazor Hybrid
+            {
+                var ipcSender = type.GetField("_ipcSender", BindingFlags.NonPublic | BindingFlags.Instance);
+                if (ipcSender is null) return static _ => false;
+                return rt =>
                 {
-                    // WebViewJSRuntime._ipcSender is a private framework field accessed via reflection.
-                    // See the RemoteJSRuntime note above for the rationale behind the safe fallback.
-                    var field = _webViewIpcSenderFieldCache.GetOrAdd(type, static t => t.GetField("_ipcSender", BindingFlags.NonPublic | BindingFlags.Instance));
-                    if (field is null) return false;
-                    return field.GetValue(jsRuntime) is null;
-                }
+                    try { return ipcSender.GetValue(rt) is null; }
+                    catch { return false; }
+                };
+            }
 
-            default: // Blazor WASM and other valid runtimes
-                return false;
+            default: // Blazor WASM and anything else: assume valid.
+                return static _ => false;
         }
     }
 }

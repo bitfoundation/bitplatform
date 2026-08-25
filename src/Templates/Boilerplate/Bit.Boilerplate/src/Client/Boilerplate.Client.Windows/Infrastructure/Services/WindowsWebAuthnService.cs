@@ -1,3 +1,6 @@
+// [mirror] webauthn ceremony driven through the loopback server - keep in sync with:
+// - src/Client/Boilerplate.Client.Maui/Infrastructure/Services/MauiWebAuthnService.cs
+
 namespace Boilerplate.Client.Windows.Infrastructure.Services;
 
 public partial class WindowsWebAuthnService : WebAuthnServiceBase
@@ -16,7 +19,9 @@ public partial class WindowsWebAuthnService : WebAuthnServiceBase
 
         ((WindowsLocalHttpServer)localHttpServer).WebAuthnService = this;
 
-        await externalNavigationService.NavigateTo($"http://localhost:{localHttpServer.Port}/{PageUrls.WebInteropApp}?actionName=GetWebAuthnCredential");
+        var port = localHttpServer.EnsureStarted();
+
+        await externalNavigationService.NavigateTo($"http://localhost:{port}/{PageUrls.WebInteropApp}?actionName=GetWebAuthnCredential&token={Uri.EscapeDataString(localHttpServer.SessionToken)}&localHttpPort={port}");
 
         return await GetWebAuthnCredentialTcs.Task;
     }
@@ -32,7 +37,9 @@ public partial class WindowsWebAuthnService : WebAuthnServiceBase
 
         ((WindowsLocalHttpServer)localHttpServer).WebAuthnService = this;
 
-        await externalNavigationService.NavigateTo($"http://localhost:{localHttpServer.Port}/{PageUrls.WebInteropApp}?actionName=CreateWebAuthnCredential");
+        var port = localHttpServer.EnsureStarted();
+
+        await externalNavigationService.NavigateTo($"http://localhost:{port}/{PageUrls.WebInteropApp}?actionName=CreateWebAuthnCredential&token={Uri.EscapeDataString(localHttpServer.SessionToken)}&localHttpPort={port}");
 
         return await CreateWebAuthnCredentialTcs.Task;
     }
@@ -42,7 +49,7 @@ public partial class WindowsWebAuthnService : WebAuthnServiceBase
         var osVersion = Environment.OSVersion.Version;
 
         // Windows 10 version 1903 is build 18362
-        // Major version should be 10, Build number should be > 18362
-        return osVersion.Major >= 10 && osVersion.Build > 18362;
+        // Major version should be 10, Build number should be >= 18362
+        return osVersion.Major >= 10 && osVersion.Build >= 18362;
     }
 }

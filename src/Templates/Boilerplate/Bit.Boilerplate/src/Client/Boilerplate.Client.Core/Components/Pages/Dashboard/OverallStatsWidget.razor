@@ -2,11 +2,11 @@
 
 <section>
     <BitStack>
-        <BitStack Horizontal Wrap>
+        <BitStack Horizontal Wrap Gap="1rem">
             <OverallStatusCard Loading="isLoading" Value="dto.TotalCategories" Label="@Localizer[nameof(AppStrings.TotalCategories)]" IconName="@BitIconName.BuildQueue" />
             <OverallStatusCard Loading="isLoading" Value="dto.CategoriesWithProductCount" Label="@Localizer[nameof(AppStrings.CategoriesWithProductCount)]" IconName="@BitIconName.BarChart3" />
         </BitStack>
-        <BitStack Horizontal Wrap>
+        <BitStack Horizontal Wrap Gap="1rem">
             <OverallStatusCard Loading="isLoading" Value="dto.TotalProducts" Label="@Localizer[nameof(AppStrings.TotalProducts)]" IconName="@BitIconName.Product" />
             <OverallStatusCard Loading="isLoading" Value="dto.Last30DaysProductCount" Label="@Localizer[nameof(AppStrings.Last30DaysProductCount)]" IconName="@BitIconName.BarChartVerticalFill" />
         </BitStack>

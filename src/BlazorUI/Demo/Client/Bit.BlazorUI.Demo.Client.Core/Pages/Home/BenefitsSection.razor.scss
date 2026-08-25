@@ -1,26 +1,42 @@
-@import '../../Styles/abstracts/_functions.scss';
-@import '../../Styles/abstracts/_media-queries.scss';
-@import '../../Styles/abstracts/_bit-css-variables.scss';
+@import '../../Styles/abstracts/_docs.scss';
 
-.card-list {
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: center;
-    width: calc(100% + 20px);
-    margin-left: -20px;
+.benefits-lead {
+    margin-top: $doc-space-2xs;
+}
 
-    .benefit-card {
-        flex-grow: 0;
-        padding: rem2(16px);
-        margin-top: rem2(20px);
-        min-width: rem2(275px);
-        min-height: rem2(241px);
-        margin-left: rem2(20px);
-        box-sizing: border-box;
-        border-radius: rem2(2px);
-        max-width: calc(25% - 20px);
-        flex-basis: calc(25% - 20px);
-        box-shadow: $bit-box-shadow-callout;
-        transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+.benefit-grid {
+    display: grid;
+    gap: $doc-space-sm;
+    margin-top: $doc-space-lg;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    @include lt-xl {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+
+    @include lt-md {
+        grid-template-columns: 1fr;
+    }
+}
+
+.benefit {
+    display: flex;
+    gap: $doc-space-3xs;
+    flex-flow: column nowrap;
+    padding: $doc-space-md;
+
+    @include doc-surface;
+
+    // The border is the only thing that moves. On a grid of six cards a lift-and-shadow on hover
+    // reads as the page twitching; a border taking the accent reads as a target.
+    transition: border-color $bit-motion-duration $bit-motion-easing;
+
+    &:hover {
+        border-color: $bit-color-primary;
+    }
+}
+
+::deep .benefit-icon {
+    font-size: rem2(22px);
+    margin-bottom: $doc-space-2xs;
 }

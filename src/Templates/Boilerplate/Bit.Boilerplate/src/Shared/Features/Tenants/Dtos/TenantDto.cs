@@ -6,6 +6,12 @@ public partial class TenantDto
     /// <summary>
     /// The tenant's name must match sub domain name restrictions, so the tenant
     /// can get resolved from the sub domain for anonymous requests (See TenantProvider).
+    /// <para>
+    /// SECURITY: this is a <b>shape</b> check only, and it also runs client-side. It deliberately does not know
+    /// which labels are already taken by the deployment itself - the server rejects those separately
+    /// (See <c>ReservedTenantNames</c>), because the name is the sub domain resolution key and creating a
+    /// tenant is self-service. Do not treat matching this pattern as sufficient.
+    /// </para>
     /// </summary>
     public const string NAME_REGEX_PATTERN = "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$";
 
@@ -37,8 +43,10 @@ public partial class TenantDto
     public bool IsActive { get; set; } = true;
 
     /// <summary>
-    /// The moment the current user accepted her membership of this tenant, or null if she's been
-    /// invited but hasn't accepted yet (See <c>TenantUser.AcceptedOn</c>). Only populated by <c>UserController.GetTenants</c>.
+    /// The current user's membership state for this tenant: <c>true</c> when she has accepted it, <c>false</c> when she
+    /// has been invited but hasn't accepted yet (See <c>TenantUser.AcceptedOn</c>), and <c>null</c> when she has no
+    /// membership row at all - which only happens for a global admin, who is listed every active tenant whether or not
+    /// she belongs to it. Only populated by <c>UserController.GetTenants</c>.
     /// </summary>
     public bool? CurrentUserHasAcceptedThisTenantInvitation { get; set; }
 

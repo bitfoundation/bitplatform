@@ -5,8 +5,8 @@
     width: fit-content;
     color: $clr-fg-pri;
     padding: spacing(2);
-    box-shadow: $box-shadow-callout;
-    border-radius: $shp-border-radius;
+    box-shadow: $box-shadow-card;
+    border-radius: $shp-radius-surface;
 
     &.bit-dis {
         color: $clr-fg-dis;

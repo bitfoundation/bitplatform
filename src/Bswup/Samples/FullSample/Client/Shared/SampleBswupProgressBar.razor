@@ -1,0 +1,32 @@
+﻿<script>
+    function sampleHandler(message, data) {
+        switch (message) {
+            // case BswupMessage.updateFound: return console.log('a new update found!!!');
+        }
+    }
+</script>
+
+@*<div>
+    <BswupProgress>
+        <div class="bswup-container">
+            <div class="bswup-title">Loading...</div>
+            <div class="bswup-progress">
+                <div id="bit-bswup-progress-bar" style="width: 0%"></div>
+            </div>
+        </div>
+    </BswupProgress>
+</div>*@
+
+<div>
+    <BswupProgress AppContainer="#app-container" HideApp=false AutoReload=true ShowLogs=false Handler="sampleHandler">
+        <div class="bswup-progress-text" />
+        <svg class="bswup-container">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+    </BswupProgress>
+    @* No hand-written #bit-bswup-reload here: since v-10-6-0 BswupProgress always renders
+       the update-ready button (and its screen-reader status region) itself, outside the
+       overlay - even with custom ChildContent. A second copy would be a duplicate id that
+       shadows the component's working button. Restyle it via ::deep #bit-bswup-reload. *@
+</div>

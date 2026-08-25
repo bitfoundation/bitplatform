@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.Routing;
 using Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services;
@@ -26,25 +25,46 @@ public partial class SignInModalService : IAsyncDisposable
 
     public async Task<bool> SignIn(string? returnUrl = null)
     {
-        signInModalTcs?.TrySetCanceled();
-        signInModalTcs = new();
+        modalReference?.Close();
+        signInModalTcs?.TrySetResult(false);
+
+        // The callbacks close over LOCALS, not the fields. When they read the fields, a stale modal's close button
+        // completed whichever TaskCompletionSource the newest SignIn() call had installed - returning false to a
+        // caller nobody cancelled, closing the wrong dialog, and then throwing InvalidOperationException out of a
+        // Blazor click handler on the second click (which tears down the circuit in Blazor Server).
+        var currentTcs = new TaskCompletionSource<bool>();
+        BitProModalReference? currentModalReference = null;
+
+        signInModalTcs = currentTcs;
 
         Dictionary<string, object> signInParameters = new()
         {
             { nameof(SignInModal.ReturnUrl), returnUrl ?? navigationManager.GetRelativePath() },
-            { nameof(SignInModal.OnClose), () => { signInModalTcs.SetResult(false); modalReference?.Close(); } },
-            { nameof(SignInModal.OnSuccess), () => { signInModalTcs.SetResult(true); modalReference?.Close(); } },
+            { nameof(SignInModal.OnClose), () => { currentTcs.TrySetResult(false); currentModalReference?.Close(); } },
+            { nameof(SignInModal.OnSuccess), () => { currentTcs.TrySetResult(true); currentModalReference?.Close(); } },
         };
         var modalParameters = new BitProModalParameters()
         {
             Draggable = true,
             DragElementSelector = ".header-stack",
-            OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => signInModalTcs.SetResult(false))
+            OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => currentTcs.TrySetResult(false))
         };
 
-        modalReference = await modalService.Show<SignInModal>(signInParameters, modalParameters);
+        currentModalReference = await modalService.Show<SignInModal>(signInParameters, modalParameters);
 
-        return await signInModalTcs.Task;
+        // Show() yields, so a second SignIn() - or a navigation - can complete currentTcs while this await is
+        // pending. When that happens this call's modal is already obsolete: close it instead of publishing it as
+        // the current one, which would leave the newer modal orphaned behind a stale field.
+        if (currentTcs.Task.IsCompleted)
+        {
+            currentModalReference.Close();
+        }
+        else
+        {
+            modalReference = currentModalReference;
+        }
+
+        return await currentTcs.Task;
     }
 
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)

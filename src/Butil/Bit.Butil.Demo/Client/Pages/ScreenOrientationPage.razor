@@ -1,0 +1,222 @@
+@page "/screen-orientation"
+@implements IAsyncDisposable
+@inject Bit.Butil.ScreenOrientation screenOrientation
+
+<PageTitle>ScreenOrientation - Bit.Butil</PageTitle>
+
+<PageHeader Category="Screen & Diagnostics"
+            Title="ScreenOrientation"
+            Lead="Read the document's current orientation type and rotation angle, lock the device to a specific orientation, and get notified the moment the user rotates their phone."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation"
+            InjectAs="ScreenOrientation screenOrientation" />
+
+<div class="stack">
+    <DemoSection Title="Read the orientation"
+                 Api="GetOrientationType / GetAngle"
+                 Description="The current orientation as a strongly-typed ScreenOrientationType (portrait/landscape, primary/secondary), plus the rotation angle in degrees."
+                 Code=@("""
+var type = await screenOrientation.GetOrientationType();
+var angle = await screenOrientation.GetAngle();
+
+// e.g. LandscapePrimary at 0 degrees on a desktop monitor
+""")>
+        <div class="controls">
+            <button @onclick="GetOrientationType">GetOrientationType</button>
+            <button @onclick="GetAngle">GetAngle</button>
+        </div>
+        <DemoConsole @ref="readOutput" Title="read orientation output" />
+    </DemoSection>
+
+    <DemoSection Title="Lock & unlock"
+                 Api="Lock / Unlock"
+                 Description="Locks the containing document to one of the OrientationLockType values, and releases the lock again. Ideal for games or video players that only make sense in landscape."
+                 Code=@("""
+await screenOrientation.Lock(OrientationLockType.Landscape);
+
+// release the lock and return to the default behavior:
+await screenOrientation.Unlock();
+""")>
+        <div class="field">
+            <span class="field-label">Lock type</span>
+            <select @bind="selectedLockType">
+                @foreach (var option in Enum.GetValues<OrientationLockType>())
+                {
+                    <option value="@option">@option</option>
+                }
+            </select>
+        </div>
+        <div class="controls">
+            <button @onclick="LockOrientation">Lock</button>
+            <button class="secondary" @onclick="UnlockOrientation">Unlock</button>
+        </div>
+        <DemoConsole @ref="lockOutput" Title="lock output" />
+    </DemoSection>
+
+    <DemoSection Title="Change event"
+                 Api="SubscribeChange"
+                 Description="Fires whenever the screen orientation changes - for example when the user rotates their phone. The handler receives an OrientationState carrying the new type and angle."
+                 Code=@("""
+var subscription = await screenOrientation.SubscribeChange(state =>
+{
+    // state.Type  → ScreenOrientationType.PortraitPrimary, ...
+    // state.Angle → 0, 90, 180, 270
+});
+
+// later, when no longer needed:
+await subscription.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="Subscribe">Subscribe</button>
+            <button class="danger" @onclick="Unsubscribe">Unsubscribe</button>
+        </div>
+        <DemoConsole @ref="changeOutput" Title="change event output" />
+    </DemoSection>
+
+    <DemoSection Title="Manual listener management"
+                 Api="AddChange / RemoveChange / RemoveAllChanges"
+                 Description="If you prefer explicit ids over disposable subscriptions, AddChange returns a Guid that can later be passed to RemoveChange, and RemoveAllChanges drops every listener registered on this instance."
+                 Code=@("""
+// register and keep the id
+var id = await screenOrientation.AddChange(OnOrientationChanged);
+
+// remove a single listener by id
+await screenOrientation.RemoveChange(id);
+
+// or drop every registered listener at once
+await screenOrientation.RemoveAllChanges();
+""") />
+</div>
+
+<Callout Type="warning" Title="Locking needs mobile or fullscreen">
+    Orientation locking is typically only honored on mobile devices, and on many browsers only while the
+    document is in fullscreen mode. On a desktop browser Lock usually rejects with a NotSupportedError -
+    the demo above surfaces that error in the output console.
+</Callout>
+
+<Callout Type="info" Title="Best experienced on a phone">
+    Open this page on a mobile device and rotate it after subscribing to the change event to watch the
+    type and angle update live.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="GetOrientationType" Signature="Task<ScreenOrientationType> GetOrientationType()" Description="Returns the document's current orientation type (portrait/landscape, primary/secondary)." />
+    <ApiMember Name="GetAngle" Signature="Task<ushort> GetAngle()" Description="Returns the document's current orientation angle in degrees." />
+    <ApiMember Name="Lock" Signature="Task Lock(OrientationLockType lockType)" Description="Locks the orientation of the containing document to the specified orientation." />
+    <ApiMember Name="Unlock" Signature="Task Unlock()" Description="Unlocks the orientation of the containing document from its default orientation." />
+    <ApiMember Name="AddChange" Signature="ValueTask<Guid> AddChange(Action<OrientationState> handler)" Description="Registers a handler for the orientation change event and returns its listener id." />
+    <ApiMember Name="SubscribeChange" Signature="ValueTask<ButilSubscription> SubscribeChange(Action<OrientationState> handler)" Description="Subscribe variant of AddChange returning a disposable subscription handle." />
+    <ApiMember Name="RemoveChange" Signature="ValueTask<Guid[]> RemoveChange(Action<OrientationState> handler)" Description="Removes listeners matched by delegate identity; pass the exact handler instance that was registered." />
+    <ApiMember Name="RemoveChange" Signature="ValueTask RemoveChange(Guid id)" Description="Removes a single change listener by its id." />
+    <ApiMember Name="RemoveAllChanges" Signature="ValueTask RemoveAllChanges()" Description="Removes every change listener registered on this instance." />
+    <ApiMember Name="InvokeScreenOrientationChange" Signature="void InvokeScreenOrientationChange(Guid id, OrientationState state)" Description="JS interop bridge invoked by the browser on the change event; not intended for application code." />
+    <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Removes all listeners and releases the interop reference." />
+</ApiTable>
+
+@code {
+    private DemoConsole readOutput = default!;
+    private DemoConsole lockOutput = default!;
+    private DemoConsole changeOutput = default!;
+    private OrientationLockType selectedLockType;
+    private ButilSubscription? changeSub;
+
+    private async Task GetOrientationType()
+    {
+        try
+        {
+            var type = await screenOrientation.GetOrientationType();
+            await readOutput.Success("Orientation type →", type);
+        }
+        catch (Exception ex)
+        {
+            await readOutput.Error("GetOrientationType failed →", ex.Message);
+        }
+    }
+
+    private async Task GetAngle()
+    {
+        try
+        {
+            var angle = await screenOrientation.GetAngle();
+            await readOutput.Success("Angle →", angle, "degrees");
+        }
+        catch (Exception ex)
+        {
+            await readOutput.Error("GetAngle failed →", ex.Message);
+        }
+    }
+
+    private async Task LockOrientation()
+    {
+        try
+        {
+            await screenOrientation.Lock(selectedLockType);
+            await lockOutput.Log("Locked to", selectedLockType);
+        }
+        catch (Exception ex)
+        {
+            await lockOutput.Error("Lock failed →", ex.Message);
+        }
+    }
+
+    private async Task UnlockOrientation()
+    {
+        try
+        {
+            await screenOrientation.Unlock();
+            await lockOutput.Log("Orientation unlocked.");
+        }
+        catch (Exception ex)
+        {
+            await lockOutput.Error("Unlock failed →", ex.Message);
+        }
+    }
+
+    private async Task Subscribe()
+    {
+        try
+        {
+            if (changeSub is not null)
+            {
+                await changeOutput.Warn("Already subscribed.");
+                return;
+            }
+
+            changeSub = await screenOrientation.SubscribeChange(state =>
+                _ = changeOutput.Info("Orientation changed →", state.Type, "at", state.Angle, "degrees"));
+            await changeOutput.Log("Subscribed to the orientation change event - rotate your device.");
+        }
+        catch (Exception ex)
+        {
+            await changeOutput.Error("Subscribe failed →", ex.Message);
+        }
+    }
+
+    private async Task Unsubscribe()
+    {
+        try
+        {
+            if (changeSub is null)
+            {
+                await changeOutput.Warn("Not subscribed.");
+                return;
+            }
+
+            await changeSub.DisposeAsync();
+            changeSub = null;
+            await changeOutput.Log("Subscription removed.");
+        }
+        catch (Exception ex)
+        {
+            await changeOutput.Error("Unsubscribe failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (changeSub is not null)
+        {
+            await changeSub.DisposeAsync();
+            changeSub = null;
+        }
+    }
+}

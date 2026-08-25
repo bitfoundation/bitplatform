@@ -2,13 +2,10 @@
 using System.Web;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.SignalR.Client;
 //#endif
 //#if (appInsights == true)
 using BlazorApplicationInsights.Interfaces;
 //#endif
-using Microsoft.AspNetCore.Components.Routing;
-using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Client.Core.Infrastructure.Services.DiagnosticLog;
 
 namespace Boilerplate.Client.Core.Components;
@@ -36,8 +33,12 @@ public partial class AppClientCoordinator : AppComponentBase
     [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private ILogger<Navigator> navigatorLogger = default!;
     [AutoInject] private ILogger<AppClientCoordinator> logger = default!;
+    [AutoInject] private BitAccentColorService accentColorService = default!;
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
+    //#endif
+    //#if (brouter == true)
+    [AutoInject] private IBrouter brouter = default!;
     //#endif
 
     private List<Action> unsubscribes = [];
@@ -53,76 +54,96 @@ public partial class AppClientCoordinator : AppComponentBase
 
         if (InPrerenderSession is false)
         {
-            await Task.Run(async () =>
+            unsubscribes.Add(PubSubService.Subscribe(ClientAppMessages.NAVIGATE_TO, async (uri) =>
             {
-                unsubscribes.Add(PubSubService.Subscribe(ClientAppMessages.NAVIGATE_TO, async (uri) =>
-                {
-                    var uriValue = uri?.ToString()!;
-                    var replace = uriValue.Contains("replace=true", StringComparison.InvariantCultureIgnoreCase);
-                    var forceLoad = uriValue.Contains("forceLoad=true", StringComparison.InvariantCultureIgnoreCase);
-                    NavigationManager.NavigateTo(uriValue.Replace("replace=true", "", StringComparison.InvariantCultureIgnoreCase).Replace("forceLoad=true", "", StringComparison.InvariantCultureIgnoreCase).TrimEnd('&'), forceLoad, replace);
-                }));
-                //#if (signalR == true)
-                unsubscribes.Add(PubSubService.Subscribe(SharedAppMessages.EXCEPTION_THROWN, async (payload) =>
-                {
-                    if (payload is null) return;
+                var (url, replace, forceLoad) = ParseNavigateToOptions(uri?.ToString()!);
 
-                    var appProblemDetails = payload is JsonElement jsonDocument
-                        ? jsonDocument.Deserialize(JsonSerializerOptions.GetTypeInfo<AppProblemDetails>())! /* Message gets published from server through SignalR */
-                        : (AppProblemDetails)payload;
+                if (Uri.IsAppRelativeUrl(url, requireLeadingSlash: false) is false)
+                    return;
 
-                    ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
-                }));
-                //#endif
+                NavigationManager.NavigateTo(url, forceLoad, replace);
+            }));
+            //#if (signalR == true)
+            unsubscribes.Add(PubSubService.Subscribe(SharedAppMessages.EXCEPTION_THROWN, async (payload) =>
+            {
+                if (payload is null) return;
 
-                if (AppPlatform.IsBlazorHybrid is false)
+                var appProblemDetails = payload is JsonElement jsonDocument
+                    ? jsonDocument.Deserialize(JsonSerializerOptions.GetTypeInfo<AppProblemDetails>())! /* Message gets published from server through SignalR */
+                    : (AppProblemDetails)payload;
+
+                ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
+            }));
+            //#endif
+
+            if (AppPlatform.IsBlazorHybrid is false)
+            {
+                var userAgentData = await userAgent.Extract();
+                TelemetryContext.Platform = string.Join(' ', [userAgentData.Manufacturer, userAgentData.OsName, userAgentData.Name, "browser"]);
+            }
+            TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
+            TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
+            TelemetryContext.PageUrl = new Uri(NavigationManager.Uri).GetUrlWithMaskedQueryValues();
+
+            //#if (appInsights == true)
+            _ = appInsights.AddTelemetryInitializer(new()
+            {
+                Data = new()
                 {
-                    try
-                    {
-                        BitButil.UseFastInvoke(); // Ensures that `TelemetryContext.Platform` is available to components using this value in their `OnInitAsync` method, such as `SignInPage.razor.cs`.
-                        var userAgentData = await userAgent.Extract();
-                        TelemetryContext.Platform = string.Join(' ', [userAgentData.Manufacturer, userAgentData.OsName, userAgentData.Name, "browser"]);
-                    }
-                    finally
-                    {
-                        BitButil.UseNormalInvoke();
-                    }
+                    ["ai.application.ver"] = TelemetryContext.AppVersion,
+                    ["ai.session.id"] = TelemetryContext.AppSessionId,
+                    ["ai.device.locale"] = TelemetryContext.Culture
                 }
-                TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
-                TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
-                TelemetryContext.PageUrl = HttpUtility.UrlDecode(NavigationManager.Uri);
-
-                //#if (appInsights == true)
-                _ = appInsights.AddTelemetryInitializer(new()
-                {
-                    Data = new()
-                    {
-                        ["ai.application.ver"] = TelemetryContext.AppVersion,
-                        ["ai.session.id"] = TelemetryContext.AppSessionId,
-                        ["ai.device.locale"] = TelemetryContext.Culture
-                    }
-                });
-                //#endif
-
-                NavigationManager.LocationChanged += NavigationManager_LocationChanged;
-                AuthManager.AuthenticationStateChanged += AuthenticationStateChanged;
-                //#if (signalR == true)
-                SubscribeToSignalRSharedAppMessages();
-                //#endif
-                await PropagateAuthState(firstRun: true, AuthenticationStateTask);
             });
+            //#endif
+
+            await accentColorService.InitializeAsync();
+
+            NavigationManager.LocationChanged += NavigationManager_LocationChanged;
+            AuthManager.AuthenticationStateChanged += AuthenticationStateChanged;
+            //#if (signalR == true)
+            SubscribeToSignalRSharedAppMessages();
+            //#endif
+            await PropagateAuthState(firstRun: true, AuthenticationStateTask);
         }
+    }
+
+    /// <summary>
+    /// Splits a NAVIGATE_TO payload into the url the app should go to plus the two control flags, which the server
+    /// (and the service worker) pass as ordinary query parameters. Only the exact <c>replace</c> and <c>forceLoad</c>
+    /// keys are consumed; every other parameter, including one that merely contains those words, is left alone.
+    /// </summary>
+    private static (string Url, bool Replace, bool ForceLoad) ParseNavigateToOptions(string uriValue)
+    {
+        var queryStartIndex = uriValue.IndexOf('?', StringComparison.Ordinal);
+
+        if (queryStartIndex is -1)
+            return (uriValue, false, false);
+
+        var parsedQuery = HttpUtility.ParseQueryString(uriValue[(queryStartIndex + 1)..]);
+
+        bool IsTrue(string key) => string.Equals(parsedQuery[key], "true", StringComparison.OrdinalIgnoreCase);
+
+        var replace = IsTrue("replace");
+        var forceLoad = IsTrue("forceLoad");
+
+        parsedQuery.Remove("replace");
+        parsedQuery.Remove("forceLoad");
+
+        var remainingQuery = parsedQuery.ToString();
+
+        return ($"{uriValue[..queryStartIndex]}{(string.IsNullOrEmpty(remainingQuery) ? "" : $"?{remainingQuery}")}", replace, forceLoad);
     }
 
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        TelemetryContext.PageUrl = HttpUtility.UrlDecode(e.Location);
+        TelemetryContext.PageUrl = new Uri(e.Location).GetUrlWithMaskedQueryValues();
         navigatorLogger.LogInformation("Navigator's location changed to {Location}", TelemetryContext.PageUrl);
     }
 
-    private Guid? lastPropagatedUserId = Guid.Empty;
+    private ClaimsPrincipal? lastPropagatedUser;
     /// <summary>
-    /// This code manages the association of a user with sensitive services, such as SignalR, push notifications, App Insights, and others, 
+    /// This code manages the association of a user with sensitive services, such as SignalR, push notifications, App Insights, and others,
     /// ensuring the user is correctly set or cleared as needed.
     /// </summary>
     public async Task PropagateAuthState(bool firstRun, Task<AuthenticationState> task)
@@ -132,9 +153,19 @@ public partial class AppClientCoordinator : AppComponentBase
             var user = (await task).User;
             var isAuthenticated = user.IsAuthenticated();
             var userId = isAuthenticated ? user.GetUserId() : (Guid?)null;
-            if (lastPropagatedUserId == userId)
+
+            if (user.IsTheSame(lastPropagatedUser))
                 return;
+
             await Abort(); // Cancels ongoing user id propagation, because the new authentication state is available.
+
+            //#if (brouter == true)
+            // KeepAlive routes are hidden rather than disposed, so a retained page would otherwise hand the next
+            // principal the previous one's search text and grid filters. This is what makes a full page reload
+            // unnecessary after a tenant switch (see NavigationManagerExtensions.RefreshCurrentPage).
+            brouter.ClearKeepAlive();
+            //#endif
+
             TelemetryContext.UserId = userId;
             TelemetryContext.UserSessionId = isAuthenticated ? user.GetSessionId() : null;
 
@@ -178,7 +209,7 @@ public partial class AppClientCoordinator : AppComponentBase
                 await UpdateUserSession();
             }
 
-            lastPropagatedUserId = userId;
+            lastPropagatedUser = user;
         }
         catch (Exception exp)
         {
@@ -223,9 +254,9 @@ public partial class AppClientCoordinator : AppComponentBase
             }
             else
             {
-                if (data is not null) return false; // Snack bar service does not support payload data. It would be a good idea to return false to the server so server knows that the message was not shown.
-
                 SnackBarService.Show("Boilerplate", message);
+
+                return data is null;  // Snack bar service does not support payload data. It would be a good idea to return false to the server so server knows that the message was not shown properly.
             }
 
             return true; // Message gets shown successfully. You CAN (not implemented yet) use this in server side in order to not to send push notifications for messages that are already shown in the client side.
@@ -248,6 +279,9 @@ public partial class AppClientCoordinator : AppComponentBase
         hubConnection.Remove(SharedAppMessages.NAVIGATE_TO);
         signalROnDisposables.Add(hubConnection.On(SharedAppMessages.NAVIGATE_TO, async (string url) =>
         {
+            if (Uri.IsAppRelativeUrl(url) is false)
+                return false;
+
             await InvokeAsync(async () =>
             {
                 NavigationManager.NavigateTo(url);
@@ -344,6 +378,10 @@ public partial class AppClientCoordinator : AppComponentBase
         if (exception is null)
         {
             logger.LogInformation("SignalR state changed to {State}", hubConnection!.State);
+        }
+        else if (exception is OperationCanceledException)
+        {
+            logger.LogInformation("SignalR connection attempt cancelled.");
         }
         else
         {

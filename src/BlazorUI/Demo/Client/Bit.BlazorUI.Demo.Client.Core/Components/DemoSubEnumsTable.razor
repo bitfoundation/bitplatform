@@ -4,16 +4,16 @@
         <BitText Element="h3" Typography="BitTypography.H6" Gutter Class="subenum-title"><b>@subEnum.Name</b> enum</BitText>
         <table class="table-view enum-table">
             <tr class="th-row">
-                <th class="th-cell"><BitText Element="span" Typography="BitTypography.Subtitle1">Name</BitText></th>
-                <th class="th-cell"><BitText Element="span" Typography="BitTypography.Subtitle1">Value</BitText></th>
-                <th class="th-cell"><BitText Element="span" Typography="BitTypography.Subtitle1">Description</BitText></th>
+                <th class="th-cell"><span class="bit-txt-subtitle1 bit-txt">Name</span></th>
+                <th class="th-cell"><span class="bit-txt-subtitle1 bit-txt">Value</span></th>
+                <th class="th-cell"><span class="bit-txt-subtitle1 bit-txt">Description</span></th>
             </tr>
             @foreach (var item in subEnum.Items)
             {
                 <tr class="tdata-row">
-                    <td class="td-cell"><BitText Typography="BitTypography.Caption1">@item.Name</BitText></td>
-                    <td class="td-cell"><BitText Typography="BitTypography.Caption1">@item.Value</BitText></td>
-                    <td class="td-cell"><BitText Typography="BitTypography.Caption1">@item.Description</BitText></td>
+                    <td class="td-cell"><span class="bit-txt-caption1 bit-txt">@item.Name</span></td>
+                    <td class="td-cell"><span class="bit-txt-caption1 bit-txt">@item.Value</span></td>
+                    <td class="td-cell"><span class="bit-txt-caption1 bit-txt">@item.Description</span></td>
                 </tr>
             }
         </table>

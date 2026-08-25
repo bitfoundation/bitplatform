@@ -1,0 +1,437 @@
+﻿@page "/browser-support"
+@inject Bit.Butil.Window window
+@inject Bit.Butil.UserAgent userAgent
+@inject Bit.Butil.BackgroundSync backgroundSync
+@inject Bit.Butil.BarcodeDetector barcodeDetector
+@inject Bit.Butil.Battery battery
+@inject Bit.Butil.BroadcastChannel broadcastChannel
+@inject Bit.Butil.CacheStorage cacheStorage
+@inject Bit.Butil.Clipboard clipboard
+@inject Bit.Butil.Compression compression
+@inject Bit.Butil.ContactPicker contactPicker
+@inject Bit.Butil.CookieStore cookieStore
+@inject Bit.Butil.Crypto crypto
+@inject Bit.Butil.DeviceOrientation deviceOrientation
+@inject Bit.Butil.EventSource eventSource
+@inject Bit.Butil.EyeDropper eyeDropper
+@inject Bit.Butil.FileSystem fileSystem
+@inject Bit.Butil.Gamepad gamepad
+@inject Bit.Butil.Geolocation geolocation
+@inject Bit.Butil.IdleDetector idleDetector
+@inject Bit.Butil.IndexedDb indexedDb
+@inject Bit.Butil.MediaDevices mediaDevices
+@inject Bit.Butil.MediaRecorder mediaRecorder
+@inject Bit.Butil.MediaSession mediaSession
+@inject Bit.Butil.Navigation navigation
+@inject Bit.Butil.NetworkInformation networkInformation
+@inject Bit.Butil.Nfc nfc
+@inject Bit.Butil.Notification notification
+@inject Bit.Butil.Permissions permissions
+@inject Bit.Butil.PictureInPicture pictureInPicture
+@inject Bit.Butil.Push push
+@inject Bit.Butil.Reporting reporting
+@inject Bit.Butil.ScreenOrientation screenOrientation
+@inject Bit.Butil.ServiceWorker serviceWorker
+@inject Bit.Butil.SpeechRecognition speechRecognition
+@inject Bit.Butil.SpeechSynthesis speechSynthesis
+@inject Bit.Butil.StorageAccess storageAccess
+@inject Bit.Butil.StorageManager storageManager
+@inject Bit.Butil.ViewTransition viewTransition
+@inject Bit.Butil.VisualViewport visualViewport
+@inject Bit.Butil.WakeLock wakeLock
+@inject Bit.Butil.WebAudio webAudio
+@inject Bit.Butil.WebAuthn webAuthn
+@inject Bit.Butil.WebLocks webLocks
+
+<PageTitle>Browser support - Bit.Butil</PageTitle>
+
+<PageHeader Category="Overview"
+            Title="Browser support"
+            Lead="Butil runs anywhere Blazor runs, but it can only expose what the browser underneath it implements. This is the whole catalogue in one table: how widely each API is implemented, what it demands of the calling page - and, if you press the button, what the browser you are reading this in actually has." />
+
+<Callout Type="info" Title="This table is about the web platform, not about Butil">
+    Every wrapper on this site works in WebAssembly, Server and Hybrid alike. The limits below belong to the
+    browser: an API that Firefox has not shipped is missing whether you reach it from C# or from JavaScript.
+    The engine columns are a summary of the current state of the major engines - the live column is the
+    only one that is authoritative for a particular visitor.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Check this browser"
+                 Api="IsSupported"
+                 Description="@($"{_detectors.Count} of the {DocsNav.ApiLinks.Count()} classes here expose IsSupported(), a cheap feature detection that asks the runtime whether the underlying API object exists. Pressing the button runs all of them and fills the last column of the table below. This is exactly the check you should be making in your own app before offering a feature - never a user-agent string.")"
+                 Code=@("""
+if (await wakeLock.IsSupported())
+{
+    await wakeLock.Request();
+}
+else
+{
+    // offer the experience without it, rather than failing
+}
+""")>
+        <div class="controls">
+            <button @onclick="RunFeatureDetection" disabled="@_checking">
+                @(_checking ? "Checking..." : "Detect support in this browser")
+            </button>
+            @if (_results.Count > 0)
+            {
+                <button class="secondary" @onclick="ClearResults">Clear results</button>
+            }
+        </div>
+
+        @if (_environment is not null)
+        {
+            <div class="support-summary">
+                <div class="support-summary-item">
+                    <span class="support-summary-label">Engine</span>
+                    <span class="support-summary-value">@_environment.Brands</span>
+                </div>
+                <div class="support-summary-item">
+                    <span class="support-summary-label">Platform</span>
+                    <span class="support-summary-value">@_environment.Platform</span>
+                </div>
+                <div class="support-summary-item">
+                    <span class="support-summary-label">Mobile</span>
+                    <span class="support-summary-value">@(_environment.IsMobile ? "yes" : "no")</span>
+                </div>
+                <div class="support-summary-item">
+                    <span class="support-summary-label">Secure context</span>
+                    <span class="support-summary-value @(_environment.IsSecureContext ? "ok" : "no")">
+                        @(_environment.IsSecureContext ? "yes" : "no - HTTPS-only APIs will fail")
+                    </span>
+                </div>
+                <div class="support-summary-item">
+                    <span class="support-summary-label">Detected</span>
+                    <span class="support-summary-value">@SupportedCount of @_results.Count available</span>
+                </div>
+            </div>
+        }
+
+        <DemoConsole @ref="detectionOutput" Title="feature detection output" />
+    </DemoSection>
+</div>
+
+<section class="page-section" id="the-matrix">
+    <div class="section-heading">
+        <h2>
+            <a class="anchor" href="browser-support#the-matrix" aria-label="Link to this section">#</a>
+            The matrix
+        </h2>
+        <span class="badge">@DocsNav.ApiLinks.Count() APIs</span>
+    </div>
+
+    <p class="section-desc">
+        Filter by name, or by what an API demands of the page. "All engines" means every current
+        Chromium, Firefox and WebKit release implements it; "varies by engine" means it is there
+        everywhere but some members or behaviours are not.
+    </p>
+
+    <div class="field-row">
+        <div class="field">
+            <span class="field-label">Filter</span>
+            <input type="search" placeholder="Filter by name or summary..." @bind="_filter" @bind:event="oninput" />
+        </div>
+        <div class="field">
+            <span class="field-label">Requires</span>
+            <select @bind="_needsFilter">
+                <option value="">anything</option>
+                <option value="secure">a secure context</option>
+                <option value="permission">a permission prompt</option>
+                <option value="gesture">a user gesture</option>
+                <option value="experimental">an experimental API</option>
+                <option value="none">nothing special</option>
+            </select>
+        </div>
+        <div class="field">
+            <span class="field-label">Support</span>
+            <select @bind="_supportFilter">
+                <option value="">any</option>
+                <option value="broad">all engines</option>
+                <option value="partial">varies by engine</option>
+                <option value="narrow">one engine only</option>
+            </select>
+        </div>
+    </div>
+
+    @* Filtered re-filters and re-materializes on every read, and the rows and the empty-state
+       check below are two of them - take the one list and use it for both. *@
+    @{
+        var filtered = Filtered;
+    }
+
+    <div class="table-view support-table" role="table" aria-label="Browser support matrix">
+        <div class="th-row" role="row">
+            <div class="th-cell" role="columnheader">API</div>
+            <div class="th-cell" role="columnheader">Engines</div>
+            <div class="th-cell" role="columnheader">Requires</div>
+            <div class="th-cell" role="columnheader">This browser</div>
+        </div>
+
+        @foreach (var link in filtered)
+        {
+            <div class="tdata-row" role="row">
+                <div class="td-cell" role="cell">
+                    <a href="@link.Url">@link.Title</a>
+                </div>
+                <div class="td-cell" role="cell">
+                    <span class="support-chip @link.Support.CssClass()">@link.Support.Label()</span>
+                </div>
+                <div class="td-cell" role="cell">
+                    @if (link.Needs is ApiNeeds.None)
+                    {
+                        <span class="need-chip none">nothing</span>
+                    }
+                    else
+                    {
+                        @if (link.Needs.HasFlag(ApiNeeds.SecureContext))
+                        {
+                            <span class="need-chip" title="Only available over HTTPS or on localhost">HTTPS</span>
+                        }
+                        @if (link.Needs.HasFlag(ApiNeeds.Permission))
+                        {
+                            <span class="need-chip" title="The browser prompts the user and the call fails if denied">permission</span>
+                        }
+                        @if (link.Needs.HasFlag(ApiNeeds.UserGesture))
+                        {
+                            <span class="need-chip" title="Must be called from a click or other user-gesture handler">gesture</span>
+                        }
+                        @if (link.Needs.HasFlag(ApiNeeds.Experimental))
+                        {
+                            <span class="need-chip warn" title="Experimental or behind a flag in at least one shipping engine">experimental</span>
+                        }
+                    }
+                </div>
+                <div class="td-cell" role="cell">
+                    @if (_results.TryGetValue(link.Url, out var supported))
+                    {
+                        <span class="live-chip @(supported ? "yes" : "no")">@(supported ? "✓ available" : "✗ missing")</span>
+                    }
+                    else if (IsProbeable(link.Url))
+                    {
+                        <span class="live-chip unknown">not checked</span>
+                    }
+                    else
+                    {
+                        <span class="live-chip na" title="This API has no IsSupported() check - it is part of the baseline platform">-</span>
+                    }
+                </div>
+            </div>
+        }
+
+        @if (filtered.Count == 0)
+        {
+            <div class="tdata-row" role="row">
+                <div class="td-cell" role="cell">Nothing matches those filters.</div>
+            </div>
+        }
+    </div>
+</section>
+
+<div class="stack">
+    <DemoSection Title="Secure context"
+                 Description="Powerful APIs are only exposed to pages served over HTTPS - or from localhost, which browsers treat as trusted so that development works. On an insecure origin the API object is simply absent, so IsSupported() returns false and there is nothing to catch. Window.IsSecureContext tells you which side of that line the page is on."
+                 Code=@("""
+if (await window.IsSecureContext() is false)
+{
+    // Clipboard, Crypto, Geolocation, ServiceWorker, WebAuthn and friends
+    // do not exist here. Do not offer them.
+}
+""") />
+
+    <DemoSection Title="Permission prompts"
+                 Description="A permission-gated API shows the user a prompt the first time it is used, and the answer sticks for the origin. Query the current state before prompting so you can explain what you are about to ask for - a prompt that arrives out of nowhere is the one users deny. A denial is permanent until the user clears it in browser settings, so treat 'denied' as a stable state and not a retry opportunity."
+                 Code=@("""
+var state = await permissions.Query("geolocation");
+
+if (state == PermissionState.Denied)
+{
+    // Do not call the API - it will fail without re-prompting.
+    // Explain how to re-enable it in site settings instead.
+}
+""") />
+
+    <DemoSection Title="User gesture"
+                 Description="Opening a picker, entering fullscreen, playing audio, requesting a permission, writing to the clipboard - all of these require the call to originate from a real user interaction. The window is short and does not survive an arbitrary await, so do the gesture-bound call first and the slow work afterwards, not the other way around."
+                 Code=@("""
+private async Task OnClick()
+{
+    // First, while the gesture is still live:
+    var color = await eyeDropper.Open();
+
+    // Then everything else.
+    await SaveToServer(color);
+}
+""") />
+
+    <DemoSection Title="Experimental APIs"
+                 Description="A handful of the APIs here are still being designed. They ship in one engine, sometimes behind a flag or an origin trial, and their shape can change. Butil wraps them because they are genuinely useful where they exist - but build them as enhancements you can withdraw, never as the only path through a flow."
+                 Code=@("""
+// The pattern for anything on this list: detect, use, degrade.
+_canPickContacts = await contactPicker.IsSupported();
+""") />
+</div>
+
+<Callout Type="warning" Title="Feature-detect, never user-agent-sniff">
+    The <a href="user-agent">UserAgent</a> API exists to tell you about the visitor, not to decide what your
+    code may call. Engines ship features on their own schedule, browsers lie about their identity, and the
+    string you match today breaks on the next release. <code>IsSupported()</code> asks the runtime the actual
+    question and costs one interop call.
+</Callout>
+
+@code {
+    private DemoConsole detectionOutput = default!;
+
+    private string _filter = "";
+    private string _needsFilter = "";
+    private string _supportFilter = "";
+    private bool _checking;
+
+    private readonly Dictionary<string, bool> _results = [];
+    private BrowserEnvironment? _environment;
+    private Dictionary<string, Func<ValueTask<bool>>> _detectors = [];
+
+    private int SupportedCount => _results.Count(r => r.Value);
+
+    private record BrowserEnvironment(string Brands, string Platform, bool IsMobile, bool IsSecureContext);
+
+    // Built once: the table asks whether a row is probeable on every render, and rebuilding a
+    // forty-entry dictionary of closures per row per render is a lot of garbage for a lookup.
+    // Every class that ships an IsSupported() is here - the keys are DocsNav urls, so a typo shows
+    // up as a row that never fills rather than as a compile error. What is left out is the baseline
+    // platform that has been in every engine for a decade (window, document, history, storage and
+    // friends); a fabricated "available" for those would be a claim this page never verified.
+    protected override void OnInitialized() => _detectors = new()
+    {
+        ["background-sync"] = () => backgroundSync.IsSupported(),
+        ["barcode-detector"] = () => barcodeDetector.IsSupported(),
+        ["battery"] = () => battery.IsSupported(),
+        ["broadcast-channel"] = () => broadcastChannel.IsSupported(),
+        ["cache-storage"] = () => cacheStorage.IsSupported(),
+        ["clipboard"] = () => clipboard.IsSupported(),
+        ["compression"] = () => compression.IsSupported(),
+        ["contact-picker"] = () => contactPicker.IsSupported(),
+        ["cookie-store"] = () => cookieStore.IsSupported(),
+        ["crypto"] = () => crypto.IsSupported(),
+        ["device-orientation"] = () => deviceOrientation.IsSupported(),
+        ["event-source"] = () => eventSource.IsSupported(),
+        ["eye-dropper"] = () => eyeDropper.IsSupported(),
+        ["file-system"] = () => fileSystem.IsSupported(),
+        ["gamepad"] = () => gamepad.IsSupported(),
+        ["geolocation"] = () => geolocation.IsSupported(),
+        ["idle-detector"] = () => idleDetector.IsSupported(),
+        ["indexed-db"] = () => indexedDb.IsSupported(),
+        ["media-devices"] = () => mediaDevices.IsSupported(),
+        ["media-recorder"] = () => mediaRecorder.IsSupported(),
+        ["media-session"] = () => mediaSession.IsSupported(),
+        ["navigation"] = () => navigation.IsSupported(),
+        ["network-information"] = () => networkInformation.IsSupported(),
+        ["nfc"] = () => nfc.IsSupported(),
+        ["notification"] = () => notification.IsSupported(),
+        ["permissions"] = () => permissions.IsSupported(),
+        ["picture-in-picture"] = () => pictureInPicture.IsSupported(),
+        ["push"] = () => push.IsSupported(),
+        ["reporting"] = () => reporting.IsSupported(),
+        ["screen-orientation"] = () => screenOrientation.IsSupported(),
+        ["service-worker"] = () => serviceWorker.IsSupported(),
+        ["speech-recognition"] = () => speechRecognition.IsSupported(),
+        ["speech-synthesis"] = () => speechSynthesis.IsSupported(),
+        ["storage-access"] = () => storageAccess.IsSupported(),
+        ["storage-manager"] = () => storageManager.IsSupported(),
+        ["user-agent"] = () => userAgent.IsSupported(),
+        ["view-transition"] = () => viewTransition.IsSupported(),
+        ["visual-viewport"] = () => visualViewport.IsSupported(),
+        ["wake-lock"] = () => wakeLock.IsSupported(),
+        ["web-audio"] = () => webAudio.IsSupported(),
+        ["web-authn"] = () => new ValueTask<bool>(webAuthn.IsSupported()),
+        ["web-locks"] = () => webLocks.IsSupported(),
+    };
+
+    private bool IsProbeable(string url) => _detectors.ContainsKey(url);
+
+    private List<DocLink> Filtered => DocsNav.ApiLinks.Where(MatchesFilter).ToList();
+
+    private bool MatchesFilter(DocLink link)
+    {
+        if (string.IsNullOrWhiteSpace(_filter) is false &&
+            link.Title.Contains(_filter, StringComparison.OrdinalIgnoreCase) is false &&
+            link.Summary.Contains(_filter, StringComparison.OrdinalIgnoreCase) is false)
+        {
+            return false;
+        }
+
+        var needsMatch = _needsFilter switch
+        {
+            "secure" => link.Needs.HasFlag(ApiNeeds.SecureContext),
+            "permission" => link.Needs.HasFlag(ApiNeeds.Permission),
+            "gesture" => link.Needs.HasFlag(ApiNeeds.UserGesture),
+            "experimental" => link.Needs.HasFlag(ApiNeeds.Experimental),
+            "none" => link.Needs is ApiNeeds.None,
+            _ => true,
+        };
+
+        if (needsMatch is false) return false;
+
+        return _supportFilter switch
+        {
+            "broad" => link.Support is ApiSupport.Broad,
+            "partial" => link.Support is ApiSupport.Partial,
+            "narrow" => link.Support.CssClass() is "narrow",
+            _ => true,
+        };
+    }
+
+    private async Task RunFeatureDetection()
+    {
+        _checking = true;
+        _results.Clear();
+
+        try
+        {
+            foreach (var (url, detect) in _detectors)
+            {
+                try
+                {
+                    _results[url] = await detect();
+                }
+                catch (Exception ex)
+                {
+                    // A detector that throws is a detector that answered "no" the hard way.
+                    _results[url] = false;
+                    await detectionOutput.Warn($"{url} →", $"check failed ({ex.GetType().Name}) - treating as unsupported.");
+                }
+            }
+
+            var brands = await userAgent.GetBrands();
+            _environment = new BrowserEnvironment(
+                brands.Length > 0 ? string.Join(", ", brands.Select(b => $"{b.Brand} {b.Version}")) : "not reported",
+                await userAgent.GetPlatform() is { Length: > 0 } platform ? platform : "not reported",
+                await userAgent.IsMobile(),
+                await window.IsSecureContext());
+
+            await detectionOutput.Success("Detection complete →",
+                $"{SupportedCount} of {_results.Count} probed APIs are available in this browser.");
+
+            var missing = _results.Where(r => r.Value is false).Select(r => r.Key).ToArray();
+            if (missing.Length > 0)
+            {
+                await detectionOutput.Info("Missing here →", string.Join(", ", missing));
+            }
+        }
+        catch (Exception ex)
+        {
+            await detectionOutput.Error("Detection failed →", ex.Message);
+        }
+        finally
+        {
+            _checking = false;
+        }
+    }
+
+    private void ClearResults()
+    {
+        _results.Clear();
+        _environment = null;
+        detectionOutput.Clear();
+    }
+}

@@ -2,49 +2,72 @@
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_bit-css-variables.scss';
 
+// One open block per example: title bar over a hairline, the source, then the live preview. No
+// border around the box and no fill behind the header - the rule under the title is the only
+// frame. The box itself is a plain block; the header row and its button group are BitStacks, so
+// only what a stack cannot express (spacing between examples, the hairline) remains, in ::deep
+// because a stack's root div does not carry this file's scope attribute.
 .box {
-    width: 100%;
-    display: flex;
-    max-width: 100%;
-    flex-flow: column nowrap;
     margin-bottom: rem2(36px);
-    justify-content: flex-start;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
 }
 
-.box-header {
-    width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    position: relative;
-    align-items: flex-end;
-    margin-top: rem2(32px);
-    box-sizing: border-box;
-    justify-content: space-between;
-    border-bottom: rem2(1px) solid $bit-color-border-secondary;
-}
-
-.header-btn-group {
-    gap: 2px;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    flex-flow: row nowrap;
-    justify-content: flex-end;
-}
-
+// The source and the live preview, framed together as one stage under the example's title rule.
+// The frame is new: on the old card-based page this block sat on a card of the same color and
+// needed no edge, but the page is an article on the secondary surface now, and without a hairline
+// the preview reads as a shaded rectangle someone forgot to finish.
 .box-content {
     width: 100%;
-    position: relative;
+    overflow: hidden;
     min-height: rem2(70px);
     box-sizing: border-box;
+    margin-top: rem2(12px);
+    // border-radius: $bit-shape-radius-surface;
+    // border: rem2(1px) solid $bit-color-border-secondary;
 }
 
+.code-panel {
+    // A block formatting context. BitCollapse pulls its collapsed content up with negative margins
+    // so it occupies no space, and without a BFC here those margins escape the panel and drag the
+    // preview below it upwards.
+    overflow: hidden;
+
+    &[inert] {
+        border-bottom: none;
+    }
+}
+
+.code-holder {
+    position: relative;
+
+    // The panel around it already draws the frame, so the source is text on that surface rather
+    // than a second box inside the first.
+    pre {
+        border: none;
+        border-radius: 0;
+    }
+}
+
+// The stage the component is shown on: kept on the plain surface so a demo is never tinted by
+// the page behind it.
 .example-container {
     overflow: auto;
-    padding: rem2(24px);
+    padding: rem2(16px);
+    // background-color: $bit-color-background-primary;
 
-    @include lt-lg {
-        padding: rem2(24px) 0;
+    // A preview that has not been built yet still has to stand roughly where it will stand. The
+    // observer only holds back what is BELOW the reader, and it decides that from the geometry it
+    // finds: left at its padding alone, an unheld example is some forty pixels tall, thirty of them
+    // fit inside the observer's own margin, and a page that meant to build three examples builds all
+    // thirty - the deferral would pay for the observers and buy nothing. It is also what keeps the
+    // page still as each preview arrives. On the first page this is overridden inline with the
+    // height the prerendered copy of this very preview was measured at, which is exact rather than
+    // typical (see DemoExample).
+    &.pending {
+        min-height: rem2(180px);
     }
 
     &::-webkit-scrollbar {
@@ -57,73 +80,68 @@
 }
 
 ::deep {
+    .box-header {
+        padding: rem2(8px) 0;
+        margin-top: rem2(32px);
+        border-bottom: rem2(1px) solid $bit-color-border-secondary;
+    }
+
+    .header-btn-group {
+        flex-shrink: 0;
+        margin-inline-start: auto;
+    }
+
+    // Layout only - the heading's size and color come from BitText's own Typography and Color
+    // parameters. Sticky headers overlap the top of the page, so an anchored example has to stop
+    // short of one. How many sticky bars are stacked above depends on the hosting page (multi-API
+    // pages pin a pivot bar too), so the clearance is a variable the page sets (app.scss) and only
+    // the plain-page fallback lives here.
     .section-title {
-        scroll-margin: rem2(80px);
+        min-width: 0;
+        overflow-wrap: anywhere;
+        scroll-margin: var(--demo-section-scroll-margin, 7rem);
     }
 
+    // The theme's motion tokens rather than hardcoded durations, so these transitions collapse
+    // under prefers-reduced-motion and come back with the page's ForceAnimation toggle (bit-fam),
+    // exactly like the library's own components.
     .header-btn {
-        height: 100%;
-        min-height: rem2(40px);
-        border-bottom: none !important;
-        border-radius: rem2(4px) rem2(4px) 0 0;
-        border: rem2(1px) solid $bit-color-border-secondary;
+        transition: color $bit-motion-duration $bit-motion-easing;
+    }
 
-        &.show-code {
-            font-weight: normal;
-            min-width: rem2(125px);
-            padding: rem2(4px) rem2(12px);
+    // Confirms the copy by growing from an icon-only button into one wide enough for its
+    // "Link copied!" label, so the confirmation slides in instead of snapping open.
+    .copy-link {
+        display: flex;
+        min-width: unset;
+        width: rem2(42px);
+        align-items: center;
+        justify-content: center;
+        transition: width $bit-motion-duration $bit-motion-easing;
 
-            i {
-                font-size: 1.125rem;
-            }
-
-            @include lt-lg {
-                min-width: unset;
-                width: rem2(42px);
-
-                .show-code-lbl {
-                    display: none;
-                }
-            }
-        }
-
-        &.code-shown {
-            background-color: $bit-color-background-secondary;
-        }
-
-        &.copy-link {
-            z-index: 1;
-            display: flex;
-            min-width: unset;
-            width: rem2(42px);
-            align-items: center;
-            padding: 0 rem2(20px);
-            justify-content: center;
-            transition: width 0.2s ease-in-out;
-            background-color: $bit-color-background-primary;
-
-            &.copied {
-                overflow: hidden;
-                width: rem2(128px);
-                white-space: nowrap;
-                pointer-events: none;
-            }
+        &.copied {
+            overflow: hidden;
+            width: rem2(128px);
+            white-space: nowrap;
+            pointer-events: none;
         }
     }
 
+    // The code panel's copy button: a round glyph resting on the code surface that plays the same
+    // grow-to-confirm animation as the link button above.
     .copy-btn {
         z-index: 1;
         display: flex;
-        top: rem2(16px);
+        top: 0.5rem;
+        right: 0.5rem;
         min-width: unset;
-        right: rem2(10px);
         width: rem2(34px);
         height: rem2(34px);
         position: absolute;
         align-items: center;
         justify-content: center;
         border-radius: rem2(17px);
-        transition: width 0.2s ease-in-out;
+        transition: width $bit-motion-duration $bit-motion-easing;
         background-color: $bit-color-background-secondary;
         border: rem2(1px) solid $bit-color-border-secondary;
 

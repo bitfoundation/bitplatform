@@ -1,15 +1,72 @@
-﻿@inherits AppComponentBase
+@inherits AppComponentBase
 
-<ul class="side-rail">
-    <li><b>On this page</b></li>
-    @foreach (var item in _items)
+@* The rail is built from the headings found in the DOM, so it is empty until after the first
+   render. The <nav> is rendered regardless to hold the column open - dropping it would let the
+   content column stretch and then snap back a frame later - but its label and rule only appear
+   once there is something to label. *@
+<nav class="side-rail" aria-label="On this page">
+    @if (_items.Count > 0)
     {
-        <li>
-            <BitLink OnClick="@(() => ScrollToItem(item))" NoUnderline>
-                <BitText Typography="BitTypography.Body2" Style="text-align: start;">
-                    @item.Title
-                </BitText>
-            </BitLink>
-        </li>
+        @_railContent
     }
-</ul>
+</nav>
+
+@* Below the xl breakpoint the sticky rail is hidden, and the same content folds into a BitPanel
+   opened by a floating button - the same move the nav panel makes into the header's menu button.
+   Following a link closes the panel (see ScrollToItem). *@
+@if (_items.Count > 0)
+{
+    <div class="side-rail-fab">
+        <BitButton IconOnly FixedColor
+                   Size="BitSize.Small"
+                   AriaLabel="On this page"
+                   Class="side-rail-fab-btn"
+                   Variant="BitVariant.Text"
+                   Color="BitColor.SecondaryBackground"
+                   IconName="@BitIconName.BulletedList"
+                   OnClick="OpenPanel" />
+    </div>
+
+    @* BitPanel renders its content whether it is open or not, so a second copy of the list would
+       otherwise sit in every page at every width - including the wide ones, where the panel can
+       never open. It is mounted on the first open and stays mounted from then on, so that closing
+       it still has something to slide out. *@
+    <BitPanel @bind-IsOpen="_isPanelOpen" Position="BitPanelPosition.End" Size="280">
+        @if (_hasPanelOpened)
+        {
+            <nav class="side-rail-panel" aria-label="On this page">
+                @_railContent
+            </nav>
+        }
+    </BitPanel>
+}
+
+@code {
+    @* data-rail-item is how the scroll spy finds the entry to emphasize: the highlight is a class
+       and an aria-current, and moving those in the DOM costs a fraction of re-rendering the list on
+       every section the reader scrolls past. What is rendered here is the starting state, kept
+       right by OnActiveItemChanged, so a list mounted mid-scroll is born pointing at the right
+       entry; from there the spy takes over.
+
+       An entry is indented when its heading is deeper than the one above it, which is what keeps a
+       component page's dozen examples reading as the contents of its Usage section rather than as
+       twelve more top-level sections. *@
+    private RenderFragment _railContent =>
+        @<text>
+            <p class="side-rail-label">On this page</p>
+            <BitStack Element="ul" AutoHeight Gap="0.125rem" Class="side-rail-list">
+                @foreach (var item in _items)
+                {
+                    var isActive = item.Id == _activeItemId;
+                    <li data-rail-item="@item.Id" class="@(isActive ? "active" : null) @(item.Level > 2 ? "nested" : null)">
+                        <BitLink OnClick="@(() => ScrollToItem(item))" NoUnderline Color="BitColor.SecondaryForeground" Class="side-rail-link"
+                                 aria-current="@(isActive ? "location" : null)">
+                            <BitText Typography="BitTypography.Body2" Align="BitTextAlign.Start">
+                                @item.Title
+                            </BitText>
+                        </BitLink>
+                    </li>
+                }
+            </BitStack>
+        </text>;
+}

@@ -11,6 +11,7 @@ namespace Bit.Butil;
 /// <br/>
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Notification">https://developer.mozilla.org/en-US/docs/Web/API/Notification</see>
 /// </summary>
+[ButilService(typeof(Notification))]
 public class Notification(IJSRuntime js) : IAsyncDisposable
 {
     internal const string ClickMethodName = nameof(InvokeNotificationClick);

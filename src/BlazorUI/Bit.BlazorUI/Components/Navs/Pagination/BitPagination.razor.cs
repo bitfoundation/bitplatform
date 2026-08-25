@@ -1,29 +1,173 @@
-using System.Text;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI;
 
 /// <summary>
 /// Pagination component helps users easily navigate through content, allowing swift browsing across multiple pages or sections, commonly used in lists, tables, and content-rich interfaces.
 /// </summary>
+/// <remarks>
+/// The component renders a navigation landmark holding a list of page controls, marks the current page with
+/// aria-current and names every control for assistive technologies, so it can be dropped next to a grid or a
+/// list of results without any extra markup.
+/// <br />
+/// Name the landmark through <see cref="BitComponentBase.AriaLabel"/> whenever more than one pagination is
+/// rendered on the same page, so each of them can be told apart in the landmark list.
+/// <br />
+/// The controls are buttons by default and become links as soon as <see cref="GetPageHref"/> hands them an
+/// address, which is what a range that is meant to be crawled, bookmarked or opened in another tab calls for.
+/// <br />
+/// The range of pages is either given as a <see cref="Count"/> or worked out from <see cref="TotalItems"/> and
+/// <see cref="PageSize"/>. The second is the form to reach for whenever the size of the result set is known,
+/// since the range then follows the page size on its own.
+/// </remarks>
 public partial class BitPagination : BitComponentBase
 {
-    private int _count = 1;
-    private int _middleCount = 3;
-    private int _boundaryCount = 2;
+    /// <summary>
+    /// The placeholder a generated page list uses in place of the pages that are collapsed into an ellipsis.
+    /// </summary>
+    private const int EllipsisPage = -1;
+
+    private const int DefaultMiddleCount = 3;
+    private const int DefaultBoundaryCount = 2;
+
+    private static readonly int[] DefaultPageSizeOptions = [10, 25, 50, 100];
+
+    /// <summary>
+    /// The control the focus is handed over to after a navigation button disabled itself by moving the
+    /// selection to the end of the range it points at.
+    /// </summary>
+    /// <remarks>
+    /// Ellipsis is a source only: a gap that jumps into the pages it hides can be replaced by the pages the
+    /// jump spelled out, so it always hands the focus over, and never takes it.
+    /// </remarks>
+    private enum FocusTarget { None, SelectedPage, First, Previous, Next, Last, Ellipsis }
+
+    // The correction that was last written back over an out of range selected page (the value the consumer was
+    // holding, and the one it was answered with), which is what keeps the same correction from being made twice.
+    // Both halves are kept rather than only the consumer's value: a range that moved under a value the consumer
+    // never took is a new correction to make, and one kept under the consumer's value alone would be blocked
+    // forever by the first. Nothing at all is the state of a value that is inside the range, so that a zero
+    // handed back by a consumer is a value to correct like any other rather than that state.
+    private (int Held, int Corrected)? _correctedPage;
+
+    // The same, for the page size the selector reports.
+    private (int Held, int Corrected)? _correctedPageSize;
+
+    // A jump field holding text the browser could not read as a number reports an empty value, which is the value
+    // the render that clears the field carries as well, so the render patches nothing and the typed text stays on
+    // the screen. The value of the element is emptied directly once that render is over, which is the only thing
+    // that takes such text off it.
+    private string? _goToPageText;
+    private bool _goToPageTyped;
+    private bool _clearGoToPageInput;
+    private ElementReference _goToPageInputRef;
+
+    // Enter inside the jump field commits it, and an enclosing form takes the very same key as a request to
+    // submit itself. Blazor cannot suppress the default action of one key from a keydown handler, so the key is
+    // suppressed on the element itself, which is only worth doing while the field is on the screen.
+    private static readonly string[] _goToPageSubmittingKeys = ["Enter"];
+    private bool _goToPageKeysPrevented;
+
+    // A page size selector the consumer did not follow keeps showing the size that was picked, since the value
+    // it renders with did not change and nothing patches the element back. Rendering it under a new key
+    // replaces it, which is what puts it back on the size the pagination is actually running on.
+    // The size that was picked is kept until the render that follows the pick, since whether it is the one the
+    // pagination ends up paging by is only known once the consumer has had its say over it.
+    private int _pageSizeKey;
+    private int? _pickedPageSize;
+    private bool _restorePageSizeFocus;
+    private ElementReference _pageSizeSelectRef;
+
+    // The pages the last render put on the screen, which is what the captured element references are pruned
+    // against so that walking a long range does not keep a reference of every page it went through.
+    private int[] _renderedPages = [];
+
+    // The offered page sizes are materialized once per list the consumer hands over rather than on every render
+    // (or on every parameter set), since a consumer is free to hand over an enumerable that walks - or computes -
+    // itself each time it is read. The list that was materialized is kept beside them so that another one can be
+    // told from the same one being read again.
+    private IEnumerable<int>? _lastPageSizeOptions;
+    private int[] _pageSizeOptions = DefaultPageSizeOptions;
+
+    // The merged list the selector renders, which is the offered sizes plus the size in force whenever that size
+    // is not one of them. The two it follows from are kept beside it so that a render that moved neither of them
+    // does not sort and allocate it again.
+    private int _pageSizeSelectorOptionsSize;
+    private int[] _pageSizeSelectorOptions = DefaultPageSizeOptions;
+    private int[]? _pageSizeSelectorOptionsFor;
+
+    // The control a navigation button hands the keyboard focus over to once it disabled itself, and the page the
+    // pagination has to be showing for that control to be on the screen. The two are kept until that page is the
+    // one being rendered, which is this render for a SelectedPage bound two ways and a later one for a consumer
+    // that applies the page itself out of the callback.
+    private int _focusPage;
+    private FocusTarget _focusTarget;
+
+    private ElementReference _firstButtonRef;
+    private ElementReference _previousButtonRef;
+    private ElementReference _nextButtonRef;
+    private ElementReference _lastButtonRef;
+
+    // The page buttons are captured by their page number so that the one holding the selection can be found
+    // again after the range around it moved. Entries of the pages that left the range are harmless: the focus
+    // is only ever handed to the page the pagination just settled on, which is always one of the rendered ones.
+    private readonly Dictionary<int, ElementReference> _pageRefs = [];
+
+
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
 
     /// <summary>
-    /// The number of items at the start and end of the pagination.
+    /// The horizontal alignment of the pagination inside the room it is given.
     /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetBoundaryCount))]
-    public int BoundaryCount { get; set; }
+    /// <remarks>
+    /// The pagination is only as wide as its controls by default, so it sits wherever the layout around it puts
+    /// it. Setting an alignment stretches it across the room it is given and lines the controls up inside that
+    /// room, which is what saves wrapping it in a flex container of its own.
+    /// <br />
+    /// The controls are laid out along one row, so the members that place a box across the other axis
+    /// (<see cref="BitAlignment.Baseline"/> and <see cref="BitAlignment.Stretch"/>) mean nothing here and leave
+    /// the pagination laid out the way it is with no alignment given at all.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public BitAlignment? Alignment { get; set; }
+
+    /// <summary>
+    /// The number of items at the start and end of the pagination.
+    /// <br />
+    /// The default value is <strong>2</strong>.
+    /// </summary>
+    /// <remarks>
+    /// A value that is not positive falls back to the default, since a range with no fixed ends would lose
+    /// the shortcut to the first and the last pages.
+    /// </remarks>
+    [Parameter] public int BoundaryCount { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the pagination.
     /// </summary>
     [Parameter] public BitPaginationClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// Turns every ellipsis into a control that jumps into the middle of the pages it collapses.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// A long range is otherwise walked one window at a time, so the gap becoming a shortcut into itself is what
+    /// makes the middle of a few hundred pages reachable in a couple of clicks.
+    /// <br />
+    /// The ellipsis follows the rest of the pagination: it is a button, or a link as soon as
+    /// <see cref="GetPageHref"/> hands it an address, and it takes its accessible name from
+    /// <see cref="EllipsisAriaLabel"/>. While it is off, the ellipsis stays the plain text it is by default and
+    /// is hidden from assistive technologies.
+    /// <br />
+    /// The jump can spell the pages it landed among out in place of the gap that was clicked, so the keyboard
+    /// focus is handed over to the page it settled on rather than being dropped on the document.
+    /// </remarks>
+    [Parameter] public bool ClickableEllipsis { get; set; }
 
     /// <summary>
     /// The general color of the pagination.
@@ -33,15 +177,55 @@ public partial class BitPagination : BitComponentBase
 
     /// <summary>
     /// The total number of pages.
+    /// <br />
+    /// The default value is <strong>1</strong>.
     /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetCount))]
-    public int Count { get; set; }
+    /// <remarks>
+    /// A count that is not positive still leaves a single page to be on, since a pagination with no page at
+    /// all has nothing to render.
+    /// <br />
+    /// It is ignored while <see cref="TotalItems"/> is set, since the number of pages then follows from the
+    /// number of items and the page size.
+    /// </remarks>
+    [Parameter] public int Count { get; set; }
 
     /// <summary>
     /// The default selected page number.
     /// </summary>
     [Parameter] public int DefaultSelectedPage { get; set; }
+
+    /// <summary>
+    /// The accessible label of the item standing in for the pages an ellipsis collapses.
+    /// <br />
+    /// The default value is <strong>"More pages"</strong>.
+    /// </summary>
+    /// <remarks>
+    /// A plain gap keeps its glyph hidden from assistive technologies and lets the item around it carry this
+    /// label, so it is reported as one item instead of being read as a run of punctuation. A
+    /// <see cref="ClickableEllipsis"/> is a control of its own, so it is named by this label directly and the
+    /// item around it is left unnamed beside it.
+    /// </remarks>
+    [Parameter] public string EllipsisAriaLabel { get; set; } = "More pages";
+
+    /// <summary>
+    /// The text of the ellipsis standing in for the pages that are collapsed out of the range.
+    /// <br />
+    /// The default value is <strong>"•••"</strong>.
+    /// </summary>
+    [Parameter] public string EllipsisText { get; set; } = "•••";
+
+    /// <summary>
+    /// The accessible label of the first button.
+    /// <br />
+    /// The default value is <strong>"First page"</strong>.
+    /// </summary>
+    /// <remarks>
+    /// The value is used both as the aria-label and as the native tooltip of the button, since the button
+    /// carries an icon and no text of its own. The tooltip is dropped as soon as
+    /// <see cref="FirstButtonText"/> puts a text beside that icon, where it would only repeat what is already
+    /// on screen, while the spoken name stays this one.
+    /// </remarks>
+    [Parameter] public string FirstButtonAriaLabel { get; set; } = "First page";
 
     /// <summary>
     /// The icon for the first button using custom CSS classes for external icon libraries.
@@ -56,6 +240,113 @@ public partial class BitPagination : BitComponentBase
     [Parameter] public string? FirstButtonIconName { get; set; }
 
     /// <summary>
+    /// The text rendered beside the icon of the first button.
+    /// </summary>
+    /// <remarks>
+    /// A navigation button carries an icon only unless it is given a text, and it widens to fit the text it
+    /// is given. The accessible name still comes from <see cref="FirstButtonAriaLabel"/>, so a short visible
+    /// text can sit next to a fuller spoken one.
+    /// </remarks>
+    [Parameter] public string? FirstButtonText { get; set; }
+
+    /// <summary>
+    /// Provides the accessible label of a page button, from its one-based number and whether it is the
+    /// selected one, replacing the default "Page {number}" label.
+    /// </summary>
+    /// <remarks>
+    /// This is the hook to localize the page buttons, or to make them announce what the page holds
+    /// (for example "Page 3 of 12" or "Results 21 to 30").
+    /// <br />
+    /// The selected page also reports aria-current, so the label does not have to say that it is the
+    /// current one for a screen reader to announce it as such.
+    /// </remarks>
+    [Parameter] public Func<int, bool, string>? GetPageAriaLabel { get; set; }
+
+    /// <summary>
+    /// Provides the address a page control points at, from its one-based number, which turns every control of
+    /// the pagination into a link instead of a button.
+    /// </summary>
+    /// <remarks>
+    /// Pagination is navigation, so a range that is reachable by its own address (a crawler following it, a
+    /// page opened in another tab, a middle click) belongs in links rather than in buttons. The four
+    /// navigation controls ask for the address of the page they move to, so they turn into links along with
+    /// the numeric ones.
+    /// <br />
+    /// A control with no address to point at - one at the end of the range it navigates, one the pagination is
+    /// disabled for, or one this returns nothing for - keeps its place while reporting aria-disabled and
+    /// staying out of the tab order.
+    /// <br />
+    /// The click still reaches <see cref="OnChange"/> and <see cref="SelectedPage"/>, so a pagination of links
+    /// reports the page that was asked for exactly like a pagination of buttons.
+    /// </remarks>
+    [Parameter] public Func<int, string?>? GetPageHref { get; set; }
+
+    /// <summary>
+    /// Provides the text of the summary, from the selected page and the total number of pages, replacing the
+    /// default "Page {number} of {count}" text.
+    /// </summary>
+    /// <remarks>
+    /// This is the hook to localize the summary, or to report the position in terms of the items rather than
+    /// the pages (for example "Showing 21 to 30 of 240 results") from numbers only the consumer holds.
+    /// <br />
+    /// The default text already counts the items ("1 - 10 of 240") whenever <see cref="TotalItems"/> is set, so
+    /// this is only needed there to word or localize that text differently.
+    /// <br />
+    /// It is only called while <see cref="ShowSummary"/> is on.
+    /// </remarks>
+    [Parameter] public Func<int, int, string>? GetSummary { get; set; }
+
+    /// <summary>
+    /// The accessible label of the go to page input.
+    /// <br />
+    /// The default value is <strong>"Go to page"</strong>.
+    /// </summary>
+    /// <remarks>
+    /// It steps in once the visible <see cref="GoToPageText"/> beside the input is dropped, so the input is
+    /// named either way. While that text is there it is the one naming the input, since a label a control is
+    /// announced with that differs from the one written beside it is a control speech input cannot reach.
+    /// </remarks>
+    [Parameter] public string GoToPageAriaLabel { get; set; } = "Go to page";
+
+    /// <summary>
+    /// The text rendered ahead of the go to page input.
+    /// <br />
+    /// The default value is <strong>"Go to"</strong>.
+    /// </summary>
+    /// <remarks>
+    /// An empty text leaves the input on its own, which is the compact form a narrow layout calls for.
+    /// </remarks>
+    [Parameter] public string? GoToPageText { get; set; } = "Go to";
+
+    /// <summary>
+    /// Renders nothing at all while there is a single page to navigate.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// Navigation that cannot go anywhere is noise, so hiding it keeps the layout of a short result set clean.
+    /// Leave it off when the pagination sits in a fixed layout that a disappearing element would reflow.
+    /// <br />
+    /// Nothing at all means nothing at all: the summary, the page size selector and the jump go with the page
+    /// controls. Leave it off along with <see cref="ShowPageSizeSelector"/>, where a size big enough to leave a
+    /// single page would otherwise take the selector that picked it off the screen with it.
+    /// </remarks>
+    [Parameter] public bool HideOnSinglePage { get; set; }
+
+    /// <summary>
+    /// The accessible label of the last button.
+    /// <br />
+    /// The default value is <strong>"Last page"</strong>.
+    /// </summary>
+    /// <remarks>
+    /// The value is used both as the aria-label and as the native tooltip of the button, since the button
+    /// carries an icon and no text of its own. The tooltip is dropped as soon as
+    /// <see cref="LastButtonText"/> puts a text beside that icon, where it would only repeat what is already
+    /// on screen, while the spoken name stays this one.
+    /// </remarks>
+    [Parameter] public string LastButtonAriaLabel { get; set; } = "Last page";
+
+    /// <summary>
     /// The icon for the last button using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="LastButtonIconName"/> when both are set.
     /// </summary>
@@ -68,11 +359,50 @@ public partial class BitPagination : BitComponentBase
     [Parameter] public string? LastButtonIconName { get; set; }
 
     /// <summary>
-    /// The number of items to render in the middle of the pagination.
+    /// The text rendered beside the icon of the last button.
     /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetMiddleCount))]
-    public int MiddleCount { get; set; }
+    /// <remarks>
+    /// A navigation button carries an icon only unless it is given a text, and it widens to fit the text it
+    /// is given. The accessible name still comes from <see cref="LastButtonAriaLabel"/>, so a short visible
+    /// text can sit next to a fuller spoken one.
+    /// </remarks>
+    [Parameter] public string? LastButtonText { get; set; }
+
+    /// <summary>
+    /// Wraps the next and previous buttons around the ends of the range, so the next button moves from the
+    /// last page to the first one and the previous button from the first page to the last one.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// The two buttons also stay enabled at the ends of the range while this is on. The first and last
+    /// buttons are unaffected, since they always target a fixed page.
+    /// </remarks>
+    [Parameter] public bool Loop { get; set; }
+
+    /// <summary>
+    /// The number of items to render in the middle of the pagination.
+    /// <br />
+    /// The default value is <strong>3</strong>.
+    /// </summary>
+    /// <remarks>
+    /// A value that is not positive falls back to the default, since a middle range with nothing in it would
+    /// leave the selected page out of the pagination.
+    /// </remarks>
+    [Parameter] public int MiddleCount { get; set; }
+
+    /// <summary>
+    /// The accessible label of the next button.
+    /// <br />
+    /// The default value is <strong>"Next page"</strong>.
+    /// </summary>
+    /// <remarks>
+    /// The value is used both as the aria-label and as the native tooltip of the button, since the button
+    /// carries an icon and no text of its own. The tooltip is dropped as soon as
+    /// <see cref="NextButtonText"/> puts a text beside that icon, where it would only repeat what is already
+    /// on screen, while the spoken name stays this one.
+    /// </remarks>
+    [Parameter] public string NextButtonAriaLabel { get; set; } = "Next page";
 
     /// <summary>
     /// The icon for the next button using custom CSS classes for external icon libraries.
@@ -87,9 +417,105 @@ public partial class BitPagination : BitComponentBase
     [Parameter] public string? NextButtonIconName { get; set; }
 
     /// <summary>
+    /// The text rendered beside the icon of the next button.
+    /// </summary>
+    /// <remarks>
+    /// A navigation button carries an icon only unless it is given a text, and it widens to fit the text it
+    /// is given. The accessible name still comes from <see cref="NextButtonAriaLabel"/>, so a short visible
+    /// text can sit next to a fuller spoken one.
+    /// </remarks>
+    [Parameter] public string? NextButtonText { get; set; }
+
+    /// <summary>
     /// The event callback for when selected page changes.
     /// </summary>
+    /// <remarks>
+    /// The callback also runs when <see cref="SelectedPage"/> is bound one way, so a page can be requested
+    /// and applied by the consumer without giving up control of the value.
+    /// <br />
+    /// A page size that moves the selection (which only happens while <see cref="TotalItems"/> is set) reports
+    /// the page it moved to through here as well, ahead of <see cref="OnPageSizeChange"/>.
+    /// </remarks>
     [Parameter] public EventCallback<int> OnChange { get; set; }
+
+    /// <summary>
+    /// The event callback for when the page size is picked out of the page size selector.
+    /// </summary>
+    /// <remarks>
+    /// The callback also runs when <see cref="PageSize"/> is bound one way, and it is where the consumer
+    /// recomputes <see cref="Count"/> from the page size it was handed. While <see cref="TotalItems"/> is set
+    /// there is nothing left to recompute, and this only reports the size that was picked.
+    /// <br />
+    /// It runs after <see cref="OnChange"/>, so a page the new size moved the selection to has already been
+    /// reported by the time it is reached.
+    /// </remarks>
+    [Parameter] public EventCallback<int> OnPageSizeChange { get; set; }
+
+    /// <summary>
+    /// The number of items a page holds, which the page size selector picks.
+    /// </summary>
+    /// <remarks>
+    /// While <see cref="TotalItems"/> is set the range of pages follows the page size on its own. Otherwise the
+    /// pagination only reports the number that was picked and the range still comes from <see cref="Count"/>,
+    /// which the consumer recomputes from the new page size.
+    /// <br />
+    /// A value that is not positive falls back to the first of the <see cref="PageSizeOptions"/>, and the
+    /// fallback is written back while the selector is shown, so the size the consumer holds is the one the
+    /// selector opens on. A value that is positive but not among the offered ones is offered by the selector
+    /// along with them rather than being left unreachable.
+    /// </remarks>
+    [Parameter, TwoWayBound]
+    public int PageSize { get; set; }
+
+    /// <summary>
+    /// The accessible label of the page size selector.
+    /// <br />
+    /// The default value is <strong>"Items per page"</strong>.
+    /// </summary>
+    /// <remarks>
+    /// It steps in once the visible <see cref="PageSizeText"/> beside the selector is dropped, so the selector
+    /// is named either way. While that text is there it is the one naming the selector, since a label a control
+    /// is announced with that differs from the one written beside it is a control speech input cannot reach.
+    /// </remarks>
+    [Parameter] public string PageSizeAriaLabel { get; set; } = "Items per page";
+
+    /// <summary>
+    /// The page sizes the page size selector offers.
+    /// <br />
+    /// The default value is <strong>10, 25, 50 and 100</strong>.
+    /// </summary>
+    /// <remarks>
+    /// An empty list (or one holding nothing but sizes that are not positive, which are dropped) falls back
+    /// to the default, since a selector with nothing to pick from would leave the page size it reports
+    /// unreachable.
+    /// <br />
+    /// A <see cref="PageSize"/> the list does not hold is offered along with the others, so the selector
+    /// always shows the size the pagination is paging by.
+    /// </remarks>
+    [Parameter] public IEnumerable<int>? PageSizeOptions { get; set; }
+
+    /// <summary>
+    /// The text rendered ahead of the page size selector.
+    /// <br />
+    /// The default value is <strong>"Items per page"</strong>.
+    /// </summary>
+    /// <remarks>
+    /// An empty text leaves the selector on its own, which is the compact form a narrow layout calls for.
+    /// </remarks>
+    [Parameter] public string? PageSizeText { get; set; } = "Items per page";
+
+    /// <summary>
+    /// The accessible label of the previous button.
+    /// <br />
+    /// The default value is <strong>"Previous page"</strong>.
+    /// </summary>
+    /// <remarks>
+    /// The value is used both as the aria-label and as the native tooltip of the button, since the button
+    /// carries an icon and no text of its own. The tooltip is dropped as soon as
+    /// <see cref="PreviousButtonText"/> puts a text beside that icon, where it would only repeat what is already
+    /// on screen, while the spoken name stays this one.
+    /// </remarks>
+    [Parameter] public string PreviousButtonAriaLabel { get; set; } = "Previous page";
 
     /// <summary>
     /// The icon for the previous button using custom CSS classes for external icon libraries.
@@ -104,8 +530,30 @@ public partial class BitPagination : BitComponentBase
     [Parameter] public string? PreviousButtonIconName { get; set; }
 
     /// <summary>
+    /// The text rendered beside the icon of the previous button.
+    /// </summary>
+    /// <remarks>
+    /// A navigation button carries an icon only unless it is given a text, and it widens to fit the text it
+    /// is given. The accessible name still comes from <see cref="PreviousButtonAriaLabel"/>, so a short
+    /// visible text can sit next to a fuller spoken one.
+    /// </remarks>
+    [Parameter] public string? PreviousButtonText { get; set; }
+
+    /// <summary>
+    /// Renders the buttons of the pagination with fully rounded (circular) corners.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Rounded { get; set; }
+
+    /// <summary>
     /// The selected page number.
     /// </summary>
+    /// <remarks>
+    /// The value is one-based and is clamped into the available range while rendering, so a page number
+    /// outside of <see cref="Count"/> never leaves the pagination without a current page.
+    /// </remarks>
     [Parameter, TwoWayBound]
     public int SelectedPage { get; set; }
 
@@ -113,6 +561,18 @@ public partial class BitPagination : BitComponentBase
     /// Determines whether to show the first button.
     /// </summary>
     [Parameter] public bool ShowFirstButton { get; set; }
+
+    /// <summary>
+    /// Shows an input that jumps straight to the page number typed into it, at the end of the pagination.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// The jump runs when the input is committed (on Enter, or when it loses the focus) and the input clears
+    /// itself afterwards. A number outside of the range lands on the nearest end of it instead of being
+    /// dropped, so a long range can be reached without knowing where it stops.
+    /// </remarks>
+    [Parameter] public bool ShowGoToPage { get; set; }
 
     /// <summary>
     /// Determines whether to show the last button.
@@ -125,9 +585,48 @@ public partial class BitPagination : BitComponentBase
     [Parameter] public bool ShowNextButton { get; set; } = true;
 
     /// <summary>
+    /// Determines whether to show the numeric page buttons.
+    /// <br />
+    /// The default value is <strong>true</strong>.
+    /// </summary>
+    /// <remarks>
+    /// Turning the page buttons off leaves only the navigation buttons, which is the compact pagination a
+    /// narrow layout or an unbounded result set (where the number of pages is unknown) calls for.
+    /// </remarks>
+    [Parameter] public bool ShowPageButtons { get; set; } = true;
+
+    /// <summary>
+    /// Shows a selector that picks how many items a page holds, ahead of everything else in the pagination.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// Picking a size reports it through <see cref="PageSize"/> and <see cref="OnPageSizeChange"/>. While
+    /// <see cref="TotalItems"/> is set the range of pages is recomputed from it and the selection is moved to
+    /// the page the first item of the old one landed on. Otherwise the number of pages the new size adds up to
+    /// is the consumer's to recompute into <see cref="Count"/>, and a selected page that falls out of the
+    /// shrunk range is pulled back on its own.
+    /// </remarks>
+    [Parameter] public bool ShowPageSizeSelector { get; set; }
+
+    /// <summary>
     /// Determines whether to show the previous button.
     /// </summary>
     [Parameter] public bool ShowPreviousButton { get; set; } = true;
+
+    /// <summary>
+    /// Shows the position in the range, which reads "Page {number} of {count}" (or "1 - 10 of 240" while
+    /// <see cref="TotalItems"/> is set) unless <see cref="GetSummary"/> replaces it, ahead of the buttons of
+    /// the pagination.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// The summary is a status region, so a screen reader reports the new position as the page changes. That
+    /// makes it the piece to turn on along with <see cref="ShowPageButtons"/> turned off, where nothing else
+    /// tells which page of how many is the current one.
+    /// </remarks>
+    [Parameter] public bool ShowSummary { get; set; }
 
     /// <summary>
     /// The size of the buttons.
@@ -141,10 +640,67 @@ public partial class BitPagination : BitComponentBase
     [Parameter] public BitPaginationClassStyles? Styles { get; set; }
 
     /// <summary>
+    /// The total number of items the pagination pages through, which the number of pages is worked out from
+    /// along with <see cref="PageSize"/>, replacing <see cref="Count"/>.
+    /// </summary>
+    /// <remarks>
+    /// This is the form to reach for whenever the size of the result set is known: the range of pages follows
+    /// the page size on its own, so the page size selector needs nothing wired up behind it, and the summary
+    /// reports the items ("1 - 10 of 240") instead of the pages.
+    /// <br />
+    /// Picking a new page size keeps the first item of the current page in view rather than holding on to the
+    /// page number, which is what stops a jump to the end of a shrinking range.
+    /// <br />
+    /// A value that is not positive leaves <see cref="Count"/> in charge, which is the form to keep when the
+    /// number of items is unknown and only the number of pages is.
+    /// </remarks>
+    [Parameter] public int TotalItems { get; set; }
+
+    /// <summary>
     /// The visual variant of the pagination.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitVariant? Variant { get; set; }
+
+
+
+    /// <summary>
+    /// Gives the keyboard focus to the button of the selected page, falling back to the first navigation
+    /// button that is rendered while the page buttons are turned off.
+    /// </summary>
+    /// <remarks>
+    /// This is what a consumer reloading the list behind the pagination calls to put the focus back on the
+    /// navigation the reload was asked from.
+    /// <br />
+    /// It does nothing while the pagination renders no control at all, so a reload landing on a single page of
+    /// results is not answered with a focus call on markup that is not there.
+    /// </remarks>
+    public ValueTask FocusAsync()
+    {
+        // A pagination that renders nothing holds no control the focus could go to, and the element references
+        // left behind by an earlier render point at markup that has since been removed.
+        if (_IsHidden) return ValueTask.CompletedTask;
+
+        if (ShowPageButtons && _pageRefs.TryGetValue(_SelectedPage, out var pageRef)) return Focus(pageRef);
+
+        if (ShowFirstButton) return Focus(_firstButtonRef);
+
+        if (ShowPreviousButton) return Focus(_previousButtonRef);
+
+        if (ShowNextButton) return Focus(_nextButtonRef);
+
+        if (ShowLastButton) return Focus(_lastButtonRef);
+
+        return ValueTask.CompletedTask;
+    }
+
+    // A control that was never rendered (the whole pagination hidden by HideOnSinglePage, or a first render
+    // that has not happened yet) leaves an empty reference behind, which throws instead of doing nothing when
+    // it is focused.
+    private static ValueTask Focus(ElementReference element)
+    {
+        return element.Context is null ? ValueTask.CompletedTask : element.FocusAsync();
+    }
 
 
 
@@ -174,18 +730,46 @@ public partial class BitPagination : BitComponentBase
             BitSize.Large => "bit-pgn-lg",
             _ => "bit-pgn-md"
         });
+
+        ClassBuilder.Register(() => Rounded ? "bit-pgn-rnd" : string.Empty);
+
+        // The alignment only means something once the pagination is stretched across the room it is given, so
+        // the class that does the stretching is what the alignment itself is rendered through.
+        ClassBuilder.Register(() => _AlignmentValue is null ? string.Empty : "bit-pgn-aln");
     }
 
     protected override void RegisterCssStyles()
     {
+        StyleBuilder.Register(() => _AlignmentValue is null ? string.Empty : $"--bit-pgn-justify-content:{_AlignmentValue}");
+
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    // The controls are laid out along one row, and Baseline and Stretch place a box across the other axis, which
+    // justify-content takes neither of them for: baseline is not one of its values at all, so the declaration
+    // would be invalid and the alignment would fall to the initial value rather than to the fallback the custom
+    // property carries. Both are left without a value of their own, which leaves the pagination laid out the way
+    // it is with no alignment given rather than stretched across a room it cannot line itself up inside of.
+    private string? _AlignmentValue => Alignment switch
+    {
+        BitAlignment.Start => "flex-start",
+        BitAlignment.End => "flex-end",
+        BitAlignment.Center => "center",
+        BitAlignment.SpaceBetween => "space-between",
+        BitAlignment.SpaceAround => "space-around",
+        BitAlignment.SpaceEvenly => "space-evenly",
+        _ => null
+    };
+
     protected override async Task OnInitializedAsync()
     {
+        // The offered page sizes are needed before the first parameter set is over, since the page size is what
+        // the number of pages the default selection is clamped into follows from.
+        UpdatePageSizeOptions();
+
         if (SelectedPageHasBeenSet is false && DefaultSelectedPage != 0)
         {
-            await AssignSelectedPage(DefaultSelectedPage);
+            await AssignSelectedPage(Math.Clamp(DefaultSelectedPage, 1, _Count));
         }
 
         if (SelectedPage == 0)
@@ -196,51 +780,389 @@ public partial class BitPagination : BitComponentBase
         await base.OnInitializedAsync();
     }
 
-
-
-    private IEnumerable<int> GeneratePages()
+    protected override async Task OnParametersSetAsync()
     {
-        if (_count <= 4 || _count <= 2 * _boundaryCount + _middleCount + 2)
+        UpdatePageSizeOptions();
+
+        // A page size that the selector cannot report (a value that is not positive) is written back the same
+        // way an out of range selected page is, so that the size the consumer holds is the one the selector
+        // opens on and the paging math on both sides agrees. Only the rendered selector reports a size, so a
+        // pagination without one leaves the value alone.
+        if (PageSize == _PageSize)
         {
-            return Enumerable.Range(1, _count).ToArray();
+            _correctedPageSize = null;
+        }
+        else if (ShowPageSizeSelector && _correctedPageSize != (PageSize, _PageSize))
+        {
+            // The same fallback is only written once over the same held size: a consumer that drops it would
+            // otherwise be answered with another correction on every render, and the two would keep
+            // re-rendering each other. A different fallback (the offered sizes moved under a size the consumer
+            // never took) is a correction of its own and is written back the way the first one was.
+            _correctedPageSize = (PageSize, _PageSize);
+
+            await AssignPageSize(_PageSize);
+
+            // The merged list the selector renders holds the size in force, which the write back just moved.
+            UpdatePageSizeSelectorOptions();
         }
 
-        var length = 2 * _boundaryCount + _middleCount + 2;
+        // A selected page that fell outside of the range (a count that shrank under it, or a value that was
+        // never inside it) is written back so that the value a consumer is bound to never keeps pointing at a
+        // page that does not exist. This runs after every parameter has been applied, so a count and a
+        // selected page changing together settle on the value the consumer asked for and not on an
+        // intermediate one.
+        if (SelectedPage == _SelectedPage)
+        {
+            _correctedPage = null;
+        }
+        else if (_correctedPage != (SelectedPage, _SelectedPage))
+        {
+            // The same out of range value is only corrected once with the same page: a consumer that hands it
+            // back unchanged (a callback that drops the new page instead of storing it) would otherwise be
+            // answered with another correction on every render, and the two would keep re-rendering each
+            // other. A range that moved under a value the consumer never took lands on another page, which is
+            // a correction of its own and is written back the way the first one was.
+            _correctedPage = (SelectedPage, _SelectedPage);
+
+            await AssignSelectedPage(_SelectedPage);
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        PruneStalePageReferences();
+
+        await UpdateGoToPageInput();
+
+        // A page size selector that was replaced to put it back on the size the pagination runs on left the
+        // keyboard focus on the document along with the element it replaced, so it is handed back over. A
+        // selector that was taken off the screen in the meantime has nothing left to hand it to.
+        if (_restorePageSizeFocus)
+        {
+            _restorePageSizeFocus = false;
+
+            if (_IsHidden is false && ShowPageSizeSelector)
+            {
+                await Focus(_pageSizeSelectRef);
+            }
+        }
+
+        // The select is showing the size that was picked out of it, and the value it renders with is the one it
+        // already rendered with whenever that size is not the one that ended up in force - a size the consumer
+        // dropped, or clamped into another one - so nothing patches the element back on its own. Rendering it
+        // under a new key replaces it, which puts it back on the size the pagination is actually paging by.
+        if (_pickedPageSize is int picked)
+        {
+            _pickedPageSize = null;
+
+            if (picked != _PageSize && _IsHidden is false && ShowPageSizeSelector)
+            {
+                _pageSizeKey++;
+                _restorePageSizeFocus = true;
+
+                StateHasChanged();
+            }
+        }
+
+        // A navigation button that disabled itself by reaching the end of the range it points at drops the
+        // keyboard focus on the document, so the focus is handed over to the control that took its place
+        // (the selected page, or the navigation button pointing the other way) once the new markup is there.
+        // The hand over waits for the render that puts the pagination on the page the click asked for, since
+        // that is the first one holding the control it is meant for: a consumer applying the page itself out
+        // of the callback renders it a beat after the click, and the page rendered until then is the old one.
+        // A pagination that hid itself in the meantime has no control left to hand it to.
+        if (_IsHidden)
+        {
+            _focusTarget = FocusTarget.None;
+        }
+        else if (_focusTarget != FocusTarget.None && _SelectedPage == _focusPage)
+        {
+            var target = _focusTarget;
+            _focusTarget = FocusTarget.None;
+
+            switch (target)
+            {
+                case FocusTarget.SelectedPage:
+                    if (_pageRefs.TryGetValue(_SelectedPage, out var pageRef))
+                    {
+                        await Focus(pageRef);
+                    }
+                    break;
+                case FocusTarget.First: await Focus(_firstButtonRef); break;
+                case FocusTarget.Previous: await Focus(_previousButtonRef); break;
+                case FocusTarget.Next: await Focus(_nextButtonRef); break;
+                case FocusTarget.Last: await Focus(_lastButtonRef); break;
+            }
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    // Everything the jump field needs the element itself for, once the render that put the element there is over.
+    private async Task UpdateGoToPageInput()
+    {
+        var rendered = _IsHidden is false && ShowGoToPage;
+
+        // A field that left the screen took the listener with it, so the next one to be rendered is a new
+        // element that has to be registered again.
+        if (rendered is false)
+        {
+            _goToPageKeysPrevented = false;
+            _clearGoToPageInput = false;
+            return;
+        }
+
+        try
+        {
+            // The listener that takes Enter off the field belongs to the element it is registered on, and
+            // registering it again over the same element only refreshes the keys it holds.
+            if (_goToPageKeysPrevented is false)
+            {
+                _goToPageKeysPrevented = true;
+
+                await _js.BitUtilsRegisterPreventKeys(_goToPageInputRef, _goToPageSubmittingKeys);
+            }
+
+            // Text the browser could not read as a number is reported as an empty value, so the render that
+            // emptied the field carried the value it already carried and patched nothing. Emptying the element
+            // itself is what takes such text off it, and it leaves the focus where the user put it.
+            if (_clearGoToPageInput)
+            {
+                _clearGoToPageInput = false;
+
+                await _js.BitUtilsSetProperty(_goToPageInputRef, "value", string.Empty);
+            }
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+
+
+    // A known number of items settles the number of pages on its own, which is what keeps the range and the page
+    // size in step without the consumer wiring the two together. There is always at least one page to be on, so
+    // neither an item count nor a page count that is not positive renders an empty pagination.
+    private int _Count => TotalItems > 0
+        ? (int)Math.Min(int.MaxValue, ((long)TotalItems + _PageSize - 1) / _PageSize)
+        : (Count > 0 ? Count : 1);
+
+    // Nothing at all is rendered for a single page while the pagination is asked to stay out of the way, so the
+    // markup the focus and the element references point at is gone along with it.
+    private bool _IsHidden => HideOnSinglePage && _Count <= 1;
+
+    // The rendering runs off a clamped view of the selected page so that a value outside of the range (which
+    // a one way bound SelectedPage can hold, since the component cannot write it back) still renders a
+    // pagination with a current page and with the right buttons disabled.
+    private int _SelectedPage => Math.Clamp(SelectedPage, 1, _Count);
+
+    // A page size that was never picked falls back to the first of the offered ones, so the selector opens on
+    // a size that is actually one of its options instead of on an empty selection.
+    private int _PageSize => PageSize > 0 ? PageSize : _pageSizeOptions[0];
+
+    private int _MiddleCount => MiddleCount > 0 ? MiddleCount : DefaultMiddleCount;
+
+    private int _BoundaryCount => BoundaryCount > 0 ? BoundaryCount : DefaultBoundaryCount;
+
+    // The first and last buttons always target a fixed page, so they are the ones the loop leaves alone. The
+    // previous and next buttons only stay enabled at the ends of the range while the loop has somewhere else
+    // to take them, which a range holding a single page does not.
+    private bool _IsFirstDisabled => IsEnabled is false || _SelectedPage == 1;
+
+    private bool _IsPreviousDisabled => IsEnabled is false || (Loop ? _Count == 1 : _SelectedPage == 1);
+
+    private bool _IsNextDisabled => IsEnabled is false || (Loop ? _Count == 1 : _SelectedPage == _Count);
+
+    private bool _IsLastDisabled => IsEnabled is false || _SelectedPage == _Count;
+
+    private int _PreviousPage => Loop && _SelectedPage == 1 ? _Count : _SelectedPage - 1;
+
+    private int _NextPage => Loop && _SelectedPage == _Count ? 1 : _SelectedPage + 1;
+
+    // Every control of the pagination turns into a link at once, so the markup a control renders with never
+    // changes under it while the selection moves along the range.
+    private bool _UseLinks => GetPageHref is not null;
+
+    // A control that cannot be navigated to carries no address at all, which is what keeps it out of the tab
+    // order the way a disabled button is.
+    private string? GetHref(int page, bool disabled)
+    {
+        return disabled ? null : GetPageHref?.Invoke(page);
+    }
+
+    private string _VariantClass => Variant switch
+    {
+        BitVariant.Fill => "bit-pgn-fil",
+        BitVariant.Outline => "bit-pgn-otl",
+        BitVariant.Text => "bit-pgn-txt",
+        _ => "bit-pgn-fil"
+    };
+
+    private string GetPageLabel(int page, bool isSelected)
+    {
+        return GetPageAriaLabel?.Invoke(page, isSelected) ?? $"Page {page}";
+    }
+
+    private string GetSummaryText()
+    {
+        if (GetSummary is not null) return GetSummary(_SelectedPage, _Count);
+
+        // A known number of items is what the position is worth reporting in: "1 - 10 of 240" says how far along
+        // the result set the page sits, which the page number on its own does not.
+        if (TotalItems > 0)
+        {
+            var first = (long)(_SelectedPage - 1) * _PageSize + 1;
+
+            return $"{first} - {Math.Min(first + _PageSize - 1, TotalItems)} of {TotalItems}";
+        }
+
+        return $"Page {_SelectedPage} of {_Count}";
+    }
+
+    private void UpdatePageSizeOptions()
+    {
+        // The list is only walked again once the consumer hands over another one: an enumerable that computes
+        // itself each time it is read would otherwise be walked, and the array it lands in allocated, on every
+        // parameter set the parent drives - a keystroke elsewhere on the page, a timer, a cascading value.
+        if (ReferenceEquals(_lastPageSizeOptions, PageSizeOptions) is false)
+        {
+            _lastPageSizeOptions = PageSizeOptions;
+
+            // A size that is not positive is dropped rather than offered: it would leave the selector picking a
+            // page that holds nothing, and the number of pages a total of items adds up to undefined. A size
+            // offered twice is dropped along with them, since two rows reporting the same size are one choice
+            // and only one of them could ever be the one the selector shows as picked.
+            var options = PageSizeOptions?.Where(size => size > 0).Distinct().ToArray();
+
+            _pageSizeOptions = options is { Length: > 0 } ? options : DefaultPageSizeOptions;
+        }
+
+        UpdatePageSizeSelectorOptions();
+    }
+
+    // A page size that is not one of the offered ones is offered along with them, in its place among them, since
+    // a selector that does not hold the size it reports would show one size while the pagination runs on another.
+    // The merged list is worked out whenever the offered sizes or the size in force move rather than on every
+    // render, since a render of the go to page field (one per keystroke) does not move either of them.
+    private void UpdatePageSizeSelectorOptions()
+    {
+        var pageSize = _PageSize;
+
+        if (ReferenceEquals(_pageSizeSelectorOptionsFor, _pageSizeOptions) && _pageSizeSelectorOptionsSize == pageSize) return;
+
+        _pageSizeSelectorOptionsFor = _pageSizeOptions;
+        _pageSizeSelectorOptionsSize = pageSize;
+
+        _pageSizeSelectorOptions = Array.IndexOf(_pageSizeOptions, pageSize) < 0
+            ? [.. _pageSizeOptions.Append(pageSize).Order()]
+            : _pageSizeOptions;
+    }
+
+    // A page button is captured when it is inserted, so a page that left the range keeps a reference of an
+    // element that is no longer there. Dropping those keeps the pagination from holding one reference per
+    // page a long range was walked through; a page that comes back is captured again as it is inserted.
+    private void PruneStalePageReferences()
+    {
+        if (ShowPageButtons is false || _IsHidden)
+        {
+            _pageRefs.Clear();
+            _renderedPages = [];
+            return;
+        }
+
+        // The generated list holds a placeholder for every gap beside the pages themselves, and only the pages
+        // are captured, so counting the whole list would call a reference of a page that left the range one of
+        // the ones the render put on the screen.
+        var rendered = 0;
+
+        foreach (var page in _renderedPages)
+        {
+            if (page != EllipsisPage)
+            {
+                rendered++;
+            }
+        }
+
+        if (_pageRefs.Count <= rendered) return;
+
+        int[] captured = [.. _pageRefs.Keys];
+
+        foreach (var page in captured)
+        {
+            if (Array.IndexOf(_renderedPages, page) < 0)
+            {
+                _pageRefs.Remove(page);
+            }
+        }
+    }
+
+    // The gap is a shortcut into the middle of what it hides, which is the page halfway between the two it sits
+    // between. A gap always holds at least two pages (a single one is spelled out in its place), so the page the
+    // jump lands on is never one of the two already rendered beside it.
+    // The two are added in long: a range wide enough for the pair to run past an int would otherwise wrap into a
+    // negative midpoint, and the jump would land on the first page instead of in the middle of the gap.
+    private static int GetEllipsisPage(int[] pages, int index)
+    {
+        return (int)(((long)pages[index - 1] + pages[index + 1]) / 2);
+    }
+
+    // The pages the render is about to lay out are kept so that the references captured for the ones that
+    // left the range can be dropped once it is done.
+    private int[] GeneratePages()
+    {
+        return _renderedPages = BuildPages();
+    }
+
+    private int[] BuildPages()
+    {
+        // The size of the window is worked out in long so that boundary and middle counts big enough to
+        // overflow an int still compare as wider than the count and fall back to spelling every page out.
+        var windowLength = 2L * _BoundaryCount + _MiddleCount + 2;
+
+        if (_Count <= 4 || _Count <= windowLength)
+        {
+            return Enumerable.Range(1, _Count).ToArray();
+        }
+
+        // The window is narrower than the count at this point, so its length fits an int.
+        var length = (int)windowLength;
         var pages = new int[length];
 
-        for (var i = 0; i < _boundaryCount; i++)
+        for (var i = 0; i < _BoundaryCount; i++)
         {
             pages[i] = i + 1;
         }
 
-        for (var i = 0; i < _boundaryCount; i++)
+        for (var i = 0; i < _BoundaryCount; i++)
         {
-            pages[length - i - 1] = _count - i;
+            pages[length - i - 1] = _Count - i;
         }
 
         int startValue;
-        if (SelectedPage <= _boundaryCount + _middleCount / 2 + 1)
+        if (_SelectedPage <= _BoundaryCount + _MiddleCount / 2 + 1)
         {
-            startValue = _boundaryCount + 2;
+            startValue = _BoundaryCount + 2;
         }
-        else if (SelectedPage >= _count - _boundaryCount - _middleCount / 2)
+        else if (_SelectedPage >= _Count - _BoundaryCount - _MiddleCount / 2)
         {
-            startValue = _count - _boundaryCount - _middleCount;
+            startValue = _Count - _BoundaryCount - _MiddleCount;
         }
         else
         {
-            startValue = SelectedPage - _middleCount / 2;
+            startValue = _SelectedPage - _MiddleCount / 2;
         }
 
-        for (var i = 0; i < _middleCount; i++)
+        for (var i = 0; i < _MiddleCount; i++)
         {
-            pages[_boundaryCount + 1 + i] = startValue + i;
+            pages[_BoundaryCount + 1 + i] = startValue + i;
         }
 
-        pages[_boundaryCount] = (_boundaryCount + _middleCount / 2 + 1 < SelectedPage) ? -1 : _boundaryCount + 1;
+        pages[_BoundaryCount] = (_BoundaryCount + _MiddleCount / 2 + 1 < _SelectedPage) ? EllipsisPage : _BoundaryCount + 1;
 
-        pages[length - _boundaryCount - 1] = (_count - _boundaryCount - _middleCount / 2 > SelectedPage) ? -1 : _count - _boundaryCount;
+        pages[length - _BoundaryCount - 1] = (_Count - _BoundaryCount - _MiddleCount / 2 > _SelectedPage) ? EllipsisPage : _Count - _BoundaryCount;
 
+        // An ellipsis standing in for a single page is replaced by that page, since spelling the page out
+        // costs the same room as the ellipsis hiding it.
         for (var i = 0; i < length - 2; i++)
         {
             if (pages[i] + 2 == pages[i + 2])
@@ -254,45 +1176,194 @@ public partial class BitPagination : BitComponentBase
 
     private async Task ChangePage(int page)
     {
-        if (SelectedPageHasBeenSet && SelectedPageChanged.HasDelegate is false) return;
+        if (IsEnabled is false) return;
 
-        if (page > _count) page = _count;
+        // Every requested page lands inside the available range, so neither a wrapping navigation button nor
+        // an out of range SelectedPage can ever select a page that does not exist.
+        page = Math.Clamp(page, 1, _Count);
 
-        if (page < 1) page = 1;
+        if (page == _SelectedPage) return;
 
         await AssignSelectedPage(page);
 
+        // The callback runs even when SelectedPage is bound one way and could not be written back, so that a
+        // consumer holding the value itself still hears about the page the user asked for.
         await OnChange.InvokeAsync(page);
     }
 
-    private string GetButtonClasses()
+    // A click that opens the address somewhere else (another tab, another window, a download) leaves this
+    // pagination where it is: the page that was asked for is the one opening over there, and moving the
+    // selection here as well would report a page the user never came to.
+    private async Task ChangePageFromLink(MouseEventArgs e, int page)
     {
-        StringBuilder className = new StringBuilder();
+        if (IsModifiedClick(e)) return;
 
-        className.Append(' ').Append(Variant switch
+        await ChangePage(page);
+    }
+
+    private async Task ChangePageFromLink(MouseEventArgs e, FocusTarget source, int page)
+    {
+        if (IsModifiedClick(e)) return;
+
+        await ChangePageFrom(source, page);
+    }
+
+    private static bool IsModifiedClick(MouseEventArgs e)
+    {
+        return e.CtrlKey || e.MetaKey || e.ShiftKey || e.AltKey;
+    }
+
+    private async Task ChangePageFrom(FocusTarget source, int page)
+    {
+        if (IsEnabled is false) return;
+
+        var requested = Math.Clamp(page, 1, _Count);
+
+        // The focus only moves once the page actually changed, so a click that lands on the page already
+        // selected leaves it where the user put it. Whether it changed is read from the page that was asked for
+        // rather than from the one the pagination ends up on: a SelectedPage bound one way is moved by the
+        // consumer answering OnChange and not by the pagination itself, so the selection here is still the old
+        // one once the click is over and the two would never compare as equal.
+        // The page it was asked for is kept along with the target, since it is the render that puts the
+        // pagination on that page - this one for a two way binding, a later one for the consumer answering a
+        // callback - that has the control the focus belongs to on the screen to hand it to.
+        if (requested != _SelectedPage)
         {
-            BitVariant.Fill => "bit-pgn-fil",
-            BitVariant.Outline => "bit-pgn-otl",
-            BitVariant.Text => "bit-pgn-txt",
-            _ => "bit-pgn-fil"
-        });
+            var target = ResolveFocusTarget(source, requested);
 
-        return className.ToString();
+            if (target != FocusTarget.None)
+            {
+                _focusPage = requested;
+                _focusTarget = target;
+            }
+        }
+
+        await ChangePage(page);
     }
 
-    private void OnSetBoundaryCount()
+    // A navigation button is removed from the tab order the moment the page it moved to disables it, and the
+    // focus it was holding goes with it. The page the pagination settles on is the one the focus belongs to,
+    // and the navigation button pointing the other way is what is left to hold it once the page buttons are
+    // turned off.
+    private FocusTarget ResolveFocusTarget(FocusTarget source, int page)
     {
-        _boundaryCount = Math.Max(1, BoundaryCount);
+        var stillEnabled = source switch
+        {
+            FocusTarget.First => page > 1,
+            FocusTarget.Previous => Loop ? _Count > 1 : page > 1,
+            FocusTarget.Next => Loop ? _Count > 1 : page < _Count,
+            FocusTarget.Last => page < _Count,
+            // The pages a gap collapses can be spelled out by the very jump into them, which takes the gap
+            // that was clicked out of the markup, so the page the jump landed on takes the focus over.
+            FocusTarget.Ellipsis => false,
+            _ => true
+        };
+
+        if (stillEnabled) return FocusTarget.None;
+
+        if (ShowPageButtons) return FocusTarget.SelectedPage;
+
+        var goingBack = source is FocusTarget.First or FocusTarget.Previous;
+
+        if (goingBack)
+        {
+            if (ShowNextButton && page < _Count) return FocusTarget.Next;
+            if (ShowLastButton && page < _Count) return FocusTarget.Last;
+        }
+        else
+        {
+            if (ShowPreviousButton && page > 1) return FocusTarget.Previous;
+            if (ShowFirstButton && page > 1) return FocusTarget.First;
+        }
+
+        return FocusTarget.None;
     }
 
-    private void OnSetCount()
+    private async Task HandlePageSizeChange(ChangeEventArgs e)
     {
-        _count = Math.Max(1, Count);
-        _ = AssignSelectedPage(Math.Min(SelectedPage, Count));
+        if (IsEnabled is false) return;
+
+        if (int.TryParse(e.Value?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var size) is false) return;
+
+        if (size == _PageSize) return;
+
+        // The page and the size are read before the size is applied, since the range the page sits in is the one
+        // the old size worked out and both of them move as soon as the new size lands.
+        var previousSize = _PageSize;
+        var previousPage = _SelectedPage;
+
+        // The size that was picked is checked against the one that ends up in force once the render it started
+        // is over, since a consumer is free to drop it or to clamp it and the select would then be left showing
+        // a size the pagination is not paging by.
+        _pickedPageSize = size;
+
+        var assigned = await AssignPageSize(size);
+
+        // The merged list the selector renders holds the size in force, which the pick just moved. Nothing sets
+        // a parameter here, so the render that follows is the only chance the list has to catch up with it.
+        UpdatePageSizeSelectorOptions();
+
+        // The number of pages follows the page size while the number of items is known, so the page the user was
+        // on is no longer the page the items they were looking at are. The selection moves to the page the first
+        // of those items landed on, which keeps the reading position instead of the page number. The range only
+        // moves along with a size that was actually applied: one bound one way still belongs to the consumer.
+        if (assigned && TotalItems > 0)
+        {
+            var page = Math.Clamp((int)((long)(previousPage - 1) * previousSize / size) + 1, 1, _Count);
+
+            // The page is written back whether or not it moved, since the range it was inside of is not the
+            // range that is left and a value the consumer holds must never point outside of it.
+            await AssignSelectedPage(page);
+
+            if (page != previousPage)
+            {
+                await OnChange.InvokeAsync(page);
+            }
+        }
+
+        // The callback runs even when PageSize is bound one way and could not be written back, so that a
+        // consumer holding the value itself still hears about the size the user asked for.
+        await OnPageSizeChange.InvokeAsync(size);
     }
 
-    private void OnSetMiddleCount()
+    private void HandleGoToPageInput(ChangeEventArgs e)
     {
-        _middleCount = Math.Max(1, MiddleCount);
+        _goToPageTyped = true;
+        _goToPageText = e.Value?.ToString();
+    }
+
+    // Enter is the gesture the jump is committed with, and it is handled here rather than left to the change
+    // event: the key is taken off the element (an enclosing form would otherwise read it as a request to submit
+    // itself), and a field the browser could not read as a number reports no change to fire that event with.
+    private async Task HandleGoToPageKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key is not "Enter") return;
+
+        await CommitGoToPage(_goToPageText);
+    }
+
+    private async Task HandleGoToPageChange(ChangeEventArgs e)
+    {
+        await CommitGoToPage(e.Value?.ToString());
+    }
+
+    // The field is emptied so that the next jump starts from a blank one instead of from the number the previous
+    // one left behind.
+    private async Task CommitGoToPage(string? text)
+    {
+        // A number the field was holding is taken off it by the render itself, which is carrying an empty value
+        // over the one it rendered before. Text the browser could not read as a number is reported as an empty
+        // value already, so that render patches nothing and the element is emptied directly instead. A field
+        // that was never typed into is already blank and is left alone.
+        _clearGoToPageInput = _goToPageTyped && text.HasNoValue();
+
+        _goToPageTyped = false;
+        _goToPageText = string.Empty;
+
+        if (int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var page) is false) return;
+
+        // A number outside of the range lands on the nearest end of it, since a jump past the last page is a
+        // request for the last page and not a typing mistake worth dropping.
+        await ChangePage(page);
     }
 }

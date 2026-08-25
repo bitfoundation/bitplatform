@@ -1,5 +1,4 @@
 //+:cnd:noEmit
-using System.Runtime.CompilerServices;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services;
 
@@ -88,8 +87,7 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
 
     public override bool IgnoreException(Exception exception)
     {
-        return exception is TaskCanceledException ||
-            exception is OperationCanceledException ||
+        return exception is OperationCanceledException ||
             exception is TimeoutException || base.IgnoreException(exception);
     }
 }

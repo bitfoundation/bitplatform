@@ -4,15 +4,53 @@ namespace Bit.BlazorUI;
 
 public class BitFullCalendarState
 {
+    /// <summary>Every view the calendar offers, in the order the tab strip renders them.</summary>
+    private static readonly BitFullCalendarView[] _allViews =
+    [
+        BitFullCalendarView.Day,
+        BitFullCalendarView.Week,
+        BitFullCalendarView.Month,
+        BitFullCalendarView.Year,
+        BitFullCalendarView.Agenda
+    ];
+
+    /// <summary>The subset of views the timeline layout can render.</summary>
+    private static readonly BitFullCalendarView[] _timelineViews =
+    [
+        BitFullCalendarView.Day,
+        BitFullCalendarView.Week,
+        BitFullCalendarView.Month
+    ];
+
     private List<BitFullCalendarEvent> _allEvents = [];
     private List<BitFullCalendarEvent> _filteredEvents = [];
     private List<BitFullCalendarResource> _resources = [];
+    private List<BitFullCalendarView> _views = [.. _allViews];
     private readonly List<string> _selectedColors = [];
 
     public DateTime SelectedDate { get; private set; } = DateTime.Today;
     public BitFullCalendarView View { get; private set; } = BitFullCalendarView.Month;
     public BitFullCalendarMode Mode { get; private set; } = BitFullCalendarMode.Event;
     public IReadOnlyList<string> SelectedColors => _selectedColors;
+
+    /// <summary>
+    /// When <c>true</c> the calendar is presentation-only: the add affordances, drag-and-drop,
+    /// resizing, and the edit/delete actions are suppressed while navigation, view switching,
+    /// and filtering keep working.
+    /// </summary>
+    public bool ReadOnly { get; private set; }
+
+    /// <summary>The views the consumer allowed, in display order.</summary>
+    public IReadOnlyList<BitFullCalendarView> Views => _views;
+
+    /// <summary>The allowed views that the active <see cref="Mode"/> can render, in display order.</summary>
+    public IReadOnlyList<BitFullCalendarView> AvailableViews => GetViewsForMode(Mode);
+
+    /// <summary>
+    /// True when Timeline mode can be entered: it needs at least one resource to lay out rows and
+    /// at least one allowed view the timeline supports.
+    /// </summary>
+    public bool IsTimelineModeAvailable => _resources.Count > 0 && _views.Any(_timelineViews.Contains);
 
     /// <summary>When set, only events that include this attendee (by <see cref="BitFullCalendarHelpers.AttendeeFilterKey"/>) are shown.</summary>
     public string? SelectedAttendeeKey { get; private set; }
@@ -66,7 +104,7 @@ public class BitFullCalendarState
 
     public void SetView(BitFullCalendarView view)
     {
-        var clamped = ClampViewForMode(view, Mode);
+        var clamped = ClampView(view, Mode);
         if (clamped == View)
             return;
 
@@ -81,16 +119,16 @@ public class BitFullCalendarState
     /// </summary>
     public void SetMode(BitFullCalendarMode mode)
     {
-        // Timeline mode requires at least one resource. Refuse to enter it when there are none
-        // so the state never lands in an unsupported (timeline-without-resources) configuration.
-        if (mode == BitFullCalendarMode.Timeline && _resources.Count == 0)
+        // Timeline mode requires at least one resource and one allowed view it can lay out. Refuse
+        // to enter it otherwise so the state never lands in an unsupported configuration.
+        if (mode == BitFullCalendarMode.Timeline && !IsTimelineModeAvailable)
             mode = BitFullCalendarMode.Event;
 
         if (Mode == mode)
             return;
 
         Mode = mode;
-        var clamped = ClampViewForMode(View, mode);
+        var clamped = ClampView(View, mode);
         var viewChanged = clamped != View;
         if (viewChanged)
             View = clamped;
@@ -103,16 +141,106 @@ public class BitFullCalendarState
             NotifyDateRangeChanged();
     }
 
-    private static BitFullCalendarView ClampViewForMode(BitFullCalendarView view, BitFullCalendarMode mode)
+    /// <summary>The allowed views the supplied mode can render, in display order.</summary>
+    public IReadOnlyList<BitFullCalendarView> GetViewsForMode(BitFullCalendarMode mode)
+        => mode == BitFullCalendarMode.Timeline
+            ? [.. _views.Where(_timelineViews.Contains)]
+            : _views;
+
+    /// <summary>True when the supplied view is reachable in the active mode.</summary>
+    public bool IsViewAvailable(BitFullCalendarView view) => AvailableViews.Contains(view);
+
+    private BitFullCalendarView ClampView(BitFullCalendarView view, BitFullCalendarMode mode)
     {
-        if (mode != BitFullCalendarMode.Timeline)
+        var available = GetViewsForMode(mode);
+        if (available.Contains(view))
             return view;
 
-        return view switch
+        // Timeline mode has always fallen back to the week layout for the views it cannot render;
+        // keep that whenever Week is still allowed, and otherwise land on the first allowed view so
+        // the calendar never renders a view the consumer excluded.
+        if (mode == BitFullCalendarMode.Timeline && available.Contains(BitFullCalendarView.Week))
+            return BitFullCalendarView.Week;
+
+        return available.Count > 0 ? available[0] : view;
+    }
+
+    /// <summary>
+    /// Turns the presentation-only mode on or off. A drag that is still in flight is dropped so a
+    /// pending gesture cannot commit a change after the calendar has become read-only.
+    /// </summary>
+    public void SetReadOnly(bool value)
+    {
+        if (ReadOnly == value)
+            return;
+
+        ReadOnly = value;
+        if (ReadOnly)
+            DraggedEvent = null;
+
+        NotifyStateChanged();
+    }
+
+    /// <summary>
+    /// Replaces the set of views the calendar offers. Safe to call from <c>OnParametersSet</c> - it
+    /// short-circuits when the supplied list matches the current one. A <c>null</c> or empty list
+    /// restores every built-in view; unknown and repeated entries are dropped.
+    /// </summary>
+    public void SyncViews(IReadOnlyList<BitFullCalendarView>? views)
+    {
+        var next = NormalizeViews(views);
+        if (ViewsMatch(next))
+            return;
+
+        _views = next;
+
+        // Timeline mode needs at least one view it can lay out, so a set that removes them all has
+        // to fall back to Event mode before the active view is re-clamped into the new set.
+        if (Mode == BitFullCalendarMode.Timeline && !IsTimelineModeAvailable)
+            Mode = BitFullCalendarMode.Event;
+
+        var clamped = ClampView(View, Mode);
+        var viewChanged = clamped != View;
+        if (viewChanged)
+            View = clamped;
+
+        UpdateUI();
+
+        if (viewChanged)
+            NotifyDateRangeChanged();
+    }
+
+    private static List<BitFullCalendarView> NormalizeViews(IReadOnlyList<BitFullCalendarView>? views)
+    {
+        if (views is null || views.Count == 0)
+            return [.. _allViews];
+
+        var result = new List<BitFullCalendarView>(views.Count);
+        foreach (var view in views)
         {
-            BitFullCalendarView.Day or BitFullCalendarView.Week or BitFullCalendarView.Month => view,
-            _ => BitFullCalendarView.Week
-        };
+            // Values outside the enum would render a blank tab and never match the active view, and
+            // a repeated entry would render the same tab twice; skip both instead.
+            if (!Enum.IsDefined(view) || result.Contains(view))
+                continue;
+
+            result.Add(view);
+        }
+
+        return result.Count > 0 ? result : [.. _allViews];
+    }
+
+    private bool ViewsMatch(List<BitFullCalendarView> views)
+    {
+        if (_views.Count != views.Count)
+            return false;
+
+        for (var i = 0; i < _views.Count; i++)
+        {
+            if (_views[i] != views[i])
+                return false;
+        }
+
+        return true;
     }
 
     public void SetUse24HourFormat(bool value)
@@ -250,8 +378,9 @@ public class BitFullCalendarState
 
         // If resources were emptied while Timeline mode is active, fall back to Event mode so the
         // calendar never stays in the unsupported timeline-without-resources state. Event mode
-        // supports every view, so no view clamp is needed here (ClampViewForMode is a no-op).
-        if (Mode == BitFullCalendarMode.Timeline && _resources.Count == 0)
+        // offers every allowed view and the timeline views are a subset of them, so the active view
+        // is already valid here and no clamp is needed.
+        if (Mode == BitFullCalendarMode.Timeline && !IsTimelineModeAvailable)
         {
             Mode = BitFullCalendarMode.Event;
         }
@@ -425,6 +554,11 @@ public class BitFullCalendarState
     // Drag-and-drop helpers
     public void StartDrag(BitFullCalendarEvent ev)
     {
+        // Single choke point for every drag entry point: a read-only calendar never enters the
+        // dragging state, so the drop handlers downstream have nothing to commit.
+        if (ReadOnly)
+            return;
+
         DraggedEvent = ev;
         NotifyStateChanged();
     }

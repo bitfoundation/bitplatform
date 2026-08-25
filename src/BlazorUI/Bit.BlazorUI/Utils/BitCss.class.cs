@@ -455,6 +455,15 @@ public static partial class BitCss
             public const string S22 = "bit-css-shd-22";
             public const string S23 = "bit-css-shd-23";
             public const string S24 = "bit-css-shd-24";
+
+            public const string Card = "bit-css-shd-card";
+            public const string Popup = "bit-css-shd-popup";
+            public const string Dialog = "bit-css-shd-dialog";
+            public const string Sheet = "bit-css-shd-sheet";
+            public const string Tooltip = "bit-css-shd-tooltip";
+            public const string Snackbar = "bit-css-shd-snackbar";
+            public const string AppBarTop = "bit-css-shd-appbar-top";
+            public const string AppBarBottom = "bit-css-shd-appbar-bottom";
         }
 
         public static class ZIndex
@@ -471,6 +480,26 @@ public static partial class BitCss
             public const string BorderRadius = "bit-css-shp-brd-radius";
             public const string BorderWidth = "bit-css-shp-brd-width";
             public const string BorderStyle = "bit-css-shp-brd-style";
+            public const string BorderWidthThick = "bit-css-shp-brd-width-thick";
+
+            public static class Radius
+            {
+                public const string None = "bit-css-shp-radius-none";
+                public const string Xs = "bit-css-shp-radius-xs";
+                public const string Sm = "bit-css-shp-radius-sm";
+                public const string Md = "bit-css-shp-radius-md";
+                public const string Lg = "bit-css-shp-radius-lg";
+                public const string Xl = "bit-css-shp-radius-xl";
+                public const string Xxl = "bit-css-shp-radius-2xl";
+                public const string Full = "bit-css-shp-radius-full";
+                public const string Control = "bit-css-shp-radius-control";
+                public const string Surface = "bit-css-shp-radius-surface";
+                public const string Popup = "bit-css-shp-radius-popup";
+                public const string Dialog = "bit-css-shp-radius-dialog";
+                public const string Button = "bit-css-shp-radius-button";
+                public const string Chip = "bit-css-shp-radius-chip";
+                public const string Selection = "bit-css-shp-radius-selection";
+            }
         }
     }
 }

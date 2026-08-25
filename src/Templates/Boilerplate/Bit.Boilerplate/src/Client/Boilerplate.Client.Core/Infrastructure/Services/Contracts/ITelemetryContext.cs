@@ -51,20 +51,19 @@ public interface ITelemetryContext
 
     public Dictionary<string, object?> ToDictionary(Dictionary<string, object?>? additionalParameters = null)
     {
-        var data = new Dictionary<string, object?>(additionalParameters ?? [])
-        {
-            { nameof(UserId), UserId },
-            { nameof(UserSessionId), UserSessionId },
-            { "ClientAppSessionId", AppSessionId },
-            { nameof(Platform), Platform },
-            { nameof(AppVersion), AppVersion },
-            { nameof(PageUrl), PageUrl },
-            { nameof(TimeZone), TimeZone },
-            { "ClientDateTime", TimeProvider.GetUtcNow().ToString("u") },
-            { nameof(Culture), Culture },
-            { nameof(Environment), Environment },
-            { nameof(IsOnline), IsOnline }
-        };
+        var data = new Dictionary<string, object?>(additionalParameters ?? []);
+
+        data[nameof(UserId)] = UserId;
+        data[nameof(UserSessionId)] = UserSessionId;
+        data["ClientAppSessionId"] = AppSessionId;
+        data[nameof(Platform)] = Platform;
+        data[nameof(AppVersion)] = AppVersion;
+        data[nameof(PageUrl)] = PageUrl;
+        data[nameof(TimeZone)] = TimeZone;
+        data["ClientDateTime"] = TimeProvider.GetUtcNow().ToString("u");
+        data[nameof(Culture)] = Culture;
+        data[nameof(Environment)] = Environment;
+        data[nameof(IsOnline)] = IsOnline;
 
         if (AppPlatform.IsBlazorHybrid)
         {

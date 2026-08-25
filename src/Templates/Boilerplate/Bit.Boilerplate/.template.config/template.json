@@ -245,7 +245,7 @@
             "displayName": "Use bit Brouter?",
             "type": "parameter",
             "datatype": "bool",
-            "defaultValue": "true",
+            "defaultValue": "false",
             "description": "Replaces the built-in Blazor Router with bit Brouter, bringing advanced routing features - nested routes, route guards, data loaders, keep-alive pages and view transitions - inspired by the routers of Vue.js, React and Angular."
         },
         "nameToLower": {
@@ -293,7 +293,8 @@
             "generator": "port",
             "parameters": {
                 "low": 5000,
-                "high": 5000
+                "high": 5000,
+                "fallback": 5030
             },
             "replaces": "5030"
         },
@@ -302,7 +303,8 @@
             "generator": "port",
             "parameters": {
                 "low": 2001,
-                "high": 2300
+                "high": 2300,
+                "fallback": 2030
             },
             "replaces": "2030"
         },
@@ -311,7 +313,8 @@
             "generator": "port",
             "parameters": {
                 "low": 2001,
-                "high": 2300
+                "high": 2300,
+                "fallback": 2031
             },
             "replaces": "2031"
         },
@@ -320,7 +323,8 @@
             "generator": "port",
             "parameters": {
                 "low": 2001,
-                "high": 2300
+                "high": 2300,
+                "fallback": 2032
             },
             "replaces": "2032"
         },
@@ -329,7 +333,8 @@
             "generator": "port",
             "parameters": {
                 "low": 5001,
-                "high": 5300
+                "high": 5300,
+                "fallback": 5031
             },
             "replaces": "5031"
         },
@@ -338,7 +343,8 @@
             "generator": "port",
             "parameters": {
                 "low": 4000,
-                "high": 4300
+                "high": 4300,
+                "fallback": 4030
             },
             "replaces": "4030"
         },
@@ -479,7 +485,11 @@
                         "src/Shared/Features/Products/IProductController.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Dashboard/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Categories/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Products/**"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Products/**",
+                        // Drive ProductController / CategoryController, which this same rule removes.
+                        "src/Tests/Features/Products/ProductImageLifecycleTests.cs",
+                        "src/Tests/Features/Categories/CategoryDeleteGuardTests.cs",
+                        "src/Tests/Features/Products/AddOrEditProductPageTests.cs"
                     ]
                 },
                 {
@@ -499,7 +509,9 @@
                         "src/Shared/Features/Products/**",
                         "src/Server/Boilerplate.Server.Api/Features/Categories/**",
                         "src/Server/Boilerplate.Server.Api/Features/Products/**",
-                        "src/Client/Boilerplate.Client.Core/wwwroot/images/car_placeholder*"
+                        "src/Client/Boilerplate.Client.Core/wwwroot/images/car_placeholder*",
+                        // Covers ProductConfiguration's seed and ProductDto.FormattedPrice, both of which this rule removes.
+                        "src/Tests/Features/Products/ProductCultureSafetyTests.cs"
                     ]
                 },
                 {
@@ -508,18 +520,21 @@
                         "src/Shared/Features/Todo/**",
                         "src/Server/Boilerplate.Server.Api/Features/Todo/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/TodoPage.*",
-                        "src/Client/Boilerplate.Client.Core/images/backgrounds/empty-todo-list-bg.svg"
+                        "src/Client/Boilerplate.Client.Core/wwwroot/images/backgrounds/empty-todo-list-bg.svg"
                     ]
                 },
                 {
                     "condition": "(offlineDb == true)",
                     "exclude": [
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/TodoPage.*"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/TodoPage.*",
+                        "src/Shared/Features/Todo/ITodoItemController.cs",
+                        "src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemController.cs"
                     ]
                 },
                 {
                     "condition": "(offlineDb != true)",
                     "exclude": [
+                        "src/Server/Boilerplate.Server.Web/.config/**",
                         "src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemTableController.cs",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Data/**",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/SyncService.cs",
@@ -531,35 +546,90 @@
                 {
                     "condition": "(advancedTests != true)",
                     "exclude": [
+                        "src/Tests/Features/ServerWeb/**",
+                        "src/Tests/Features/Identity/AuthManagerRefreshCoordinationTests.cs",
+                        "src/Tests/Features/Identity/AuthManagerTokenPersistenceTests.cs",
+                        "src/Tests/Features/Identity/AccessTokenParsingTests.cs",
+                        "src/Tests/Features/Identity/IStorageServiceContractTests.cs",
                         "src/Tests/Infrastructure/Components/BitOtpInputUtils.cs",
                         "src/Tests/Features/Todo/OfflineTodoTests.cs",
+                        "src/Tests/Features/Urls/ODataQueryFilterTests.cs",
+                        "src/Tests/Features/Diagnostics/TelemetryScopeTests.cs",
+                        "src/Tests/Features/Diagnostics/LoggingConfigurationTests.cs",
+                        "src/Tests/Features/Diagnostics/AppInsightsReadinessTests.cs",
+                        "src/Tests/Features/Diagnostics/DiagnosticModalVirtualizationTests.cs",
+                        "src/Tests/Features/TemplateConfig/SourceNameLeakTests.cs",
+                        "src/Tests/Features/TemplateConfig/HybridHostHardeningTests.cs",
+                        "src/Tests/Features/TemplateConfig/BitComponentParameterTests.cs",
+                        "src/Tests/Features/Products/AddOrEditProductPageTests.cs",
+                        "src/Tests/Features/Ads/AdsServiceTests.cs",
+                        "src/Tests/Features/Configuration/ClientSettingsValidationTests.cs",
                         "src/Tests/Features/Identity/TrustedOriginsTests.cs",
                         "src/Tests/Features/Identity/MagicLinkSignInTests.cs",
                         "src/Tests/Features/Identity/MagicLinkSignInUtils.cs",
                         "src/Tests/Features/Identity/TwoFactorAuthTests.cs",
                         "src/Tests/Features/Identity/PrivilegedSessionTests.cs",
+                        "src/Tests/Features/Identity/PrivilegedSessionTenantSwitchTests.cs",
+                        "src/Tests/Features/Identity/RefreshTokenRotationTests.cs",
+                        "src/Tests/Features/Identity/ReturnUrlHardeningTests.cs",
+                        "src/Tests/Features/Identity/OneTimeTokenTests.cs",
+                        "src/Tests/Features/Identity/AccountSelfServiceSecurityTests.cs",
+                        "src/Tests/Features/Identity/IdentityEmailDeliveryTests.cs",
+                        "src/Tests/Features/Identity/EmailUniquenessIndexTests.cs",
+                        "src/Tests/Features/Identity/TestAccountUtils.cs",
+                        "src/Tests/Features/Identity/RoleAdministrationGuardTests.cs",
+                        "src/Tests/Features/Identity/ConfirmPageTwoFactorTests.cs",
+                        "src/Tests/Features/Identity/SignInPanelCredentialStateTests.cs",
+                        "src/Tests/Features/Identity/WebAuthnEnrolmentElevationTests.cs",
+                        "src/Tests/Features/Identity/TwoFactorSharedKeyExposureTests.cs",
+                        "src/Tests/Features/Identity/AccountSectionDeepLinkTests.cs",
                         "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs",
                         "src/Tests/Features/Seo/**",
                         "src/Tests/Features/Tenants/TenantInvitationUITests.cs",
+                        "src/Tests/Features/Tenants/TenantInvitationIsolationTests.cs",
                         "src/Tests/Features/MinimalApiSample/IntegrationTests.cs",
-                        "src/Tests/Infrastructure/Configuration/AppConfigurationBuilderTests.cs",
+                        "src/Tests/Features/Configuration/AppConfigurationBuilderTests.cs",
+                        "src/Tests/Features/Configuration/ServiceRegistrationTests.cs",
                         "src/Tests/Features/PubSub/PubSubServiceTests.cs",
                         "src/Tests/Features/Diagnostics/HealthCheckIntegrationTests.cs",
                         "src/Tests/Features/Attachments/UserProfilePictureWebPTests.cs",
                         "src/Tests/Features/WellKnown/AppleAppSiteAssociationTests.cs",
                         "src/Tests/Features/Theme/ThemeTogglePersistenceUITests.cs",
                         "src/Tests/Features/Culture/CultureSelectionUITests.cs",
-                        "src/Tests/Features/Identity/PhoneNumberNormalizationUITests.cs",
+                        "src/Tests/Features/Identity/PhoneNumberNormalizationTests.cs",
                         "src/Tests/Features/Identity/WebAuthnPasswordlessUITests.cs",
+                        "src/Tests/Features/Identity/SigningKeyRotationTests.cs",
+                        "src/Tests/Features/Identity/OpenIdConfigurationIntegrationTests.cs",
                         "src/Tests/Features/OpenApi/OpenApiScalarIntegrationTests.cs",
                         "src/Tests/Features/ForceUpdate/ForceUpdateUITests.cs",
-                        "src/Tests/Features/Caching/ProductResponseCacheTests.cs"
+                        "src/Tests/Features/Caching/ProductResponseCacheTests.cs",
+                        "src/Tests/Features/Identity/TokenClassSeparationTests.cs",
+                        "src/Tests/Features/Identity/RoleClaimGrantAllowListTests.cs",
+                        "src/Tests/Features/Identity/WebAuthnCredentialOwnershipTests.cs",
+                        "src/Tests/Features/Attachments/AttachmentReplacementTests.cs",
+                        "src/Tests/Features/Products/ProductImageLifecycleTests.cs",
+                        "src/Tests/Features/Products/ProductCultureSafetyTests.cs",
+                        "src/Tests/Features/Categories/CategoryDeleteGuardTests.cs",
+                        "src/Tests/Features/ErrorHandling/ProblemDetailsWireContractTests.cs",
+                        "src/Tests/Features/ErrorHandling/ErrorWriterRobustnessTests.cs",
+                        "src/Tests/Features/ErrorHandling/ProblemDetailsConversionTests.cs",
+                        "src/Tests/Features/ForceUpdate/ForceUpdateHeaderHardeningTests.cs",
+                        "src/Tests/Features/Json/JsonOptionsContractTests.cs",
+                        "src/Tests/Features/Urls/AppQueryStringCollectionTests.cs",
+                        "src/Tests/Features/TemplateConfig/TemplateConfigurationTests.cs",
+                        "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
+                        "src/Tests/Features/OpenApi/OpenApiParameterContractTests.cs",
+                        "src/Tests/Features/Urls/WebAppUrlOriginHardeningTests.cs",
+                        "src/Tests/Features/RateLimiting/IdentityRateLimitTests.cs",
+                        "src/Tests/Features/Identity/RoleQuotaClaimLifecycleTests.cs",
+                        "src/Tests/Features/Tenants/TenantMembershipStateTests.cs"
                     ]
                 },
                 {
                     "condition": "(advancedTests != true || aspire != true)",
                     "exclude": [
-                        "src/Tests/Features/Identity/ExternalIdentityTests.cs"
+                        "src/Tests/Features/Identity/ExternalIdentityTests.cs",
+                        "src/Tests/Features/AppHost/**"
                     ]
                 },
                 {
@@ -570,22 +640,57 @@
                     ]
                 },
                 {
-                    "condition": "(advancedTests != true || signalR != true)",
+                    // Tenant is the only `long Version` entity that exists without a module or signalR.
+                    "condition": "(advancedTests != true || multitenant != true)",
                     "exclude": [
-                        "src/Tests/Features/SignalR/ProfileRealtimeUpdateUITests.cs",
-                        "src/Tests/Features/Mcp/GetCurrentDateTimeMcpIntegrationTests.cs"
+                        "src/Tests/Features/Data/ConcurrencyTokenTests.cs",
+                        // The rule it pins - a tenant filtered body gets no client max-age - only exists under multitenant.
+                        "src/Tests/Features/Caching/ResponseCachePolicyClientCacheTests.cs"
                     ]
                 },
                 {
-                    "condition": "(advancedTests != true || notification != true || signalR != true)",
+                    "condition": "(advancedTests != true || signalR != true)",
                     "exclude": [
-                        "src/Tests/Features/PushNotification/PushNotificationUITests.cs"
+                        "src/Tests/Features/SignalR/ProfileRealtimeUpdateUITests.cs",
+                        "src/Tests/Features/Mcp/GetCurrentDateTimeMcpIntegrationTests.cs",
+                        "src/Tests/Features/Chatbot/SystemPromptContractTests.cs",
+                        "src/Tests/Features/Chatbot/AiChatMessageWireContractTests.cs",
+                        "src/Tests/Features/Chatbot/AiChatPanelThemeUITests.cs",
+                        "src/Tests/Features/Chatbot/ChatbotSpeechEndpointTests.cs",
+                        "src/Tests/Features/Chatbot/SpeakableTextTests.cs",
+                        "src/Tests/Features/Chatbot/AiChatPanelTestBase.cs",
+                        "src/Tests/Features/Chatbot/AppChatbotHistoryTests.cs",
+                        "src/Tests/Features/Chatbot/AiChatPanelAnswerRoutingTests.cs",
+                        "src/Tests/Features/Chatbot/TestChatClient.cs"
+                    ]
+                },
+                {
+                    // The push notification feature, and therefore its dtos and entities, only exist under `notification`.
+                    "condition": "(advancedTests != true || notification != true)",
+                    "exclude": [
+                        "src/Tests/Features/PushNotification/PushSubscriptionOwnershipTests.cs"
+                    ]
+                },
+                {
+                    // All sign in as store-admin@bitplatform.dev, which UserConfiguration only seeds under `multitenant`.
+                    // The `(module != Admin)` rule above removes them too; this one adds the other half of what they need.
+                    "condition": "(advancedTests != true || module != Admin || multitenant != true)",
+                    "exclude": [
+                        "src/Tests/Features/Products/ProductImageLifecycleTests.cs",
+                        "src/Tests/Features/Categories/CategoryDeleteGuardTests.cs",
+                        "src/Tests/Features/Products/AddOrEditProductPageTests.cs"
                     ]
                 },
                 {
                     "condition": "(filesStorage != S3)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Infrastructure/Services/S3HttpClientFactory.cs"
+                    ]
+                },
+                {
+                    "condition": "(cloudflare != true)",
+                    "exclude": [
+                        "src/Server/Boilerplate.Server.Api/Infrastructure/Services/CloudflarePurgeResponse.cs"
                     ]
                 },
                 {
@@ -605,6 +710,14 @@
                     "condition": "(database != PostgreSQL && database != SqlServer)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Features/Products/ProductEmbeddingService.cs",
+                        ".docs/25- RAG - Semantic Search with Vector Embeddings (Advanced).md"
+                    ]
+                },
+                {
+                    // Every file this walkthrough is about lives under Features/Products, which the module rules
+                    // below exclude when the module is neither Admin nor Sales.
+                    "condition": "(module != Admin && module != Sales)",
+                    "exclude": [
                         ".docs/25- RAG - Semantic Search with Vector Embeddings (Advanced).md"
                     ]
                 },
@@ -644,9 +757,8 @@
                 {
                     "condition": "(appInsights != true)",
                     "exclude": [
-                        "src/Client/Boilerplate.Client.Maui/Infrastructure/Services/MauiAppInsightsTelemetryInitializer.cs",
-                        "src/Client/Boilerplate.Client.Windows/Infrastructure/Services/WindowsAppInsightsTelemetryInitializer.cs",
-                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AppInsightsJsSdkService.cs"
+                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AppInsightsJsSdkService.cs",
+                        "src/Tests/Features/Diagnostics/AppInsightsReadinessTests.cs"
                     ]
                 },
                 {
@@ -666,14 +778,14 @@
                 {
                     "condition": "(api == Integrated)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Web/appsettings*.json",
-                        "src/Server/Boilerplate.Server.Web/Services/SimpleJwtSecureDataFormat.cs"
+                        "src/Server/Boilerplate.Server.Web/appsettings*.json"
                     ]
                 },
                 {
                     "condition": "(aspire == false)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.AppHost/**"
+                        "src/Server/Boilerplate.Server.AppHost/**",
+                        "aspire.config.json"
                     ]
                 },
                 {
@@ -692,7 +804,11 @@
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Tenants/**",
                         "src/Server/Boilerplate.Server.Api/Features/Identity/Services/AppRoleValidator.cs",
                         "src/Tests/Features/Tenants/TenantInvitationUITests.cs",
-                        "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs"
+                        "src/Tests/Features/Tenants/TenantInvitationIsolationTests.cs",
+                        "src/Tests/Features/Tenants/TenantMembershipStateTests.cs",
+                        "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
+                        "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs",
+                        "src/Tests/Features/Identity/PrivilegedSessionTenantSwitchTests.cs"
                     ]
                 },
                 {
@@ -701,16 +817,19 @@
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Settings/UpgradeAccountSection*.*",
                         "src/Client/Boilerplate.Client.Core/Scripts/Ads.ts",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/Contracts/IAdsService.cs",
-                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AdsService.cs"
+                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AdsService.cs",
+                        "src/Tests/Features/Ads/AdsServiceTests.cs"
                     ]
                 },
                 {
                     "condition": "(brouter != true)",
                     "exclude": [
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/AppPageBase.BrouterLifecycles.cs"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/AppPageBase.BrouterLifecycles.cs",
+                        "src/Client/Boilerplate.Client.Core/Components/Common/AppPageData.BrouterLifecycles.cs"
                     ]
                 }
             ]
         }
     ]
 }
+

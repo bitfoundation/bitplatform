@@ -11,6 +11,7 @@ namespace Bit.Butil;
 /// <br />
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location">https://developer.mozilla.org/en-US/docs/Web/API/Location</see>
 /// </summary>
+[ButilService(typeof(Location))]
 public class Location(IJSRuntime js)
 {
     /// <summary>
@@ -140,6 +141,21 @@ public class Location(IJSRuntime js)
     /// </summary>
     public async Task<string> GetOrigin()
         => await js.InvokeFast<string>("BitButil.location.origin");
+
+    /// <summary>
+    /// The origins of the frames containing this document, innermost first. Empty in a top-level
+    /// page.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location/ancestorOrigins">https://developer.mozilla.org/en-US/docs/Web/API/Location/ancestorOrigins</see>
+    /// </summary>
+    /// <remarks>
+    /// The only way to learn who is embedding you without cooperating over <c>postMessage</c>, which
+    /// makes it useful for refusing to run inside an unexpected host. Not implemented in Firefox,
+    /// where it reports empty - so an empty array means "top-level, or unknown", and shouldn't be
+    /// treated as proof you aren't framed. Pair it with <c>Window.IsInIframe</c> for that.
+    /// </remarks>
+    public async Task<string[]> GetAncestorOrigins()
+        => await js.InvokeFast<string[]>("BitButil.location.ancestorOrigins");
 
     /// <summary>
     /// Loads the resource at the URL provided in parameter.
