@@ -12,12 +12,35 @@
     // stretched as a whole and the phase offsets that stagger the parts against each other survive -
     // scaling the durations alone would bunch them up. It follows the theme's shared loop factor,
     // which already slows under reduced motion and is restored by ForceAnimation, and stays a knob a
-    // consumer can override on a single loader.
+    // consumer can override on a single loader - which is what the Speed parameter writes over it.
     --bit-ldn-mot-factor: #{$mot-loop-factor};
+}
+
+// An inline loader sits in a line of text, a button or a table cell instead of taking a line of its
+// own. The middle alignment is what keeps it on the text's own centre line rather than its baseline,
+// where a square drawing would hang below the text.
+.bit-ldn-inl {
+    display: inline-flex;
+    vertical-align: middle;
 }
 
 .bit-ldn-lbl {
     font-size: var(--bit-ldn-font-size);
+}
+
+// The text a labelless loader announces. Taken out of the flow rather than merely hidden, so that it
+// is neither drawn nor counted as one of the root's flex items - a hidden in-flow child would still
+// earn a gap of its own between the drawing and the edge of the component.
+.bit-ldn-srt {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
 }
 
 .bit-ldn-ltp {

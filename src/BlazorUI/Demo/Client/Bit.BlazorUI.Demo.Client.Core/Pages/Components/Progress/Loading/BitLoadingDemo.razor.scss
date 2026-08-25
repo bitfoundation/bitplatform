@@ -16,3 +16,57 @@
     min-width: rem2(176px);
     flex-direction: column;
 }
+
+// The panel the Overlay example covers. AbsolutePosition confines the overlay to its nearest
+// positioned ancestor, so the host has to establish one.
+.overlay-host {
+    gap: 1rem;
+    display: flex;
+    position: relative;
+    align-items: center;
+    padding: rem2(24px);
+    height: rem2(200px);
+    border-radius: rem2(4px);
+    flex-flow: column nowrap;
+    justify-content: center;
+    border: rem2(1px) solid var(--bit-clr-brd-sec);
+}
+
+// The classes the Style & Class example hands to the components themselves. They are written as
+// ::deep rules anchored on the plain wrappers above, because the scope attribute only ever lands on
+// elements written in this file - never on the root a component renders for a Class parameter.
+::deep .custom-class {
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: darkslateblue;
+
+    .bit-ldn-rng-chl {
+        border-top-color: gold;
+    }
+
+    .bit-ldn-lbl {
+        color: gold;
+    }
+}
+
+::deep .custom-root {
+    padding: 0.5rem;
+    border-radius: 8px;
+    background-color: whitesmoke;
+}
+
+::deep .custom-child {
+    border-radius: 0;
+    background-color: seagreen;
+}
+
+::deep .custom-label {
+    color: seagreen;
+    font-weight: bold;
+}
+
+::deep .overlay {
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bit-clr-bg-overlay);
+}

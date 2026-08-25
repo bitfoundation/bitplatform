@@ -1,6 +1,3 @@
-.bit-ldn-elp {
-}
-
 .bit-ldn-elp-ccn {
     position: relative;
     display: inline-block;
@@ -15,27 +12,26 @@
     width: var(--bit-ldn-elp-13);
     height: var(--bit-ldn-elp-13);
     background: var(--bit-ldn-color);
-    animation-timing-function: cubic-bezier(0, 1, 1, 0);
 }
 
 .bit-ldn-elp-ch1 {
     left: var(--bit-ldn-elp-8);
-    animation: bit-ldn-elp-anm1 calc(0.6s * var(--bit-ldn-mot-factor, 1)) infinite;
+    animation: bit-ldn-elp-anm1 calc(0.6s * var(--bit-ldn-mot-factor, 1)) cubic-bezier(0, 1, 1, 0) infinite;
 }
 
 .bit-ldn-elp-ch2 {
     left: var(--bit-ldn-elp-8);
-    animation: bit-ldn-elp-anm2 calc(0.6s * var(--bit-ldn-mot-factor, 1)) infinite;
+    animation: bit-ldn-elp-anm2 calc(0.6s * var(--bit-ldn-mot-factor, 1)) cubic-bezier(0, 1, 1, 0) infinite;
 }
 
 .bit-ldn-elp-ch3 {
     left: var(--bit-ldn-elp-32);
-    animation: bit-ldn-elp-anm2 calc(0.6s * var(--bit-ldn-mot-factor, 1)) infinite;
+    animation: bit-ldn-elp-anm2 calc(0.6s * var(--bit-ldn-mot-factor, 1)) cubic-bezier(0, 1, 1, 0) infinite;
 }
 
 .bit-ldn-elp-ch4 {
     left: var(--bit-ldn-elp-56);
-    animation: bit-ldn-elp-anm3 calc(0.6s * var(--bit-ldn-mot-factor, 1)) infinite;
+    animation: bit-ldn-elp-anm3 calc(0.6s * var(--bit-ldn-mot-factor, 1)) cubic-bezier(0, 1, 1, 0) infinite;
 }
 
 @keyframes bit-ldn-elp-anm1 {

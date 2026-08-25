@@ -2,8 +2,43 @@
 
 public partial class BitLoadingDemo
 {
+    private bool _isWorking;
+    private bool _isOverlayOpen;
+
+    private async Task StartWork()
+    {
+        _isWorking = true;
+        await Task.Delay(1500);
+        _isWorking = false;
+    }
+
+    private async Task StartOverlayWork()
+    {
+        _isOverlayOpen = true;
+        await Task.Delay(3000);
+        _isOverlayOpen = false;
+    }
+
+
+
     private readonly List<ComponentParameter> componentParameters =
     [
+        new()
+        {
+            Name = "AriaLive",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "How insistently the live region of the loading component announces itself, rendered as the aria-live attribute of the root element. Falls back to \"polite\".",
+        },
+        new()
+        {
+            Name = "Classes",
+            Type = "BitLoadingClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the loading component.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
+        },
         new()
         {
             Name = "Color",
@@ -18,21 +53,35 @@ public partial class BitLoadingDemo
             Name = "CustomColor",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The custom css color of the loading component.",
+            Description = "The custom css color of the loading component. Only applies while Color is left unset.",
         },
         new()
         {
             Name = "CustomSize",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The custom size of the loading component in px.",
+            Description = "The custom size of the loading component in px. Only applies while Size is left unset.",
+        },
+        new()
+        {
+            Name = "Delay",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "How long, in milliseconds, the loading component waits before it renders anything at all, so that a quick task never makes it flash up and vanish again. Read once, when the component is first created.",
+        },
+        new()
+        {
+            Name = "Inline",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lays the loading component out as an inline box aligned to the middle of the current line, so it can sit inside a sentence, a button or a table cell.",
         },
         new()
         {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text content of the label of the loading component.",
+            Description = "The text content of the label of the loading component, which is also what assistive technology announces.",
         },
         new()
         {
@@ -52,12 +101,82 @@ public partial class BitLoadingDemo
         },
         new()
         {
+            Name = "Role",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The ARIA role of the root element of the loading component. Falls back to \"status\", which makes the root a live region.",
+        },
+        new()
+        {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
             Description = "The Size of the loading component.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
+        },
+        new()
+        {
+            Name = "Speed",
+            Type = "double?",
+            DefaultValue = "null",
+            Description = "How fast the animation runs, as a multiplier of its normal speed: 2 is twice as fast, 0.5 half as fast. Zero and negative values are ignored.",
+        },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitLoadingClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the loading component.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
+        }
+    ];
+
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitLoadingClassStyles",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root element of the BitLoading components."
+                },
+                new()
+                {
+                    Name = "Container",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the child container of the BitLoading components."
+                },
+                new()
+                {
+                    Name = "Child",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the child element(s) of the BitLoading components."
+                },
+                new()
+                {
+                    Name = "Label",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the label of the BitLoading components."
+                },
+                new()
+                {
+                    Name = "ScreenReaderText",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the visually hidden text a labelless BitLoading component announces to assistive technology."
+                }
+            ]
         }
     ];
 
@@ -117,6 +236,60 @@ public partial class BitLoadingDemo
                     Name= "Error",
                     Description="Error general color.",
                     Value="7",
+                },
+                new()
+                {
+                    Name= "PrimaryBackground",
+                    Description="Primary background color.",
+                    Value="8",
+                },
+                new()
+                {
+                    Name= "SecondaryBackground",
+                    Description="Secondary background color.",
+                    Value="9",
+                },
+                new()
+                {
+                    Name= "TertiaryBackground",
+                    Description="Tertiary background color.",
+                    Value="10",
+                },
+                new()
+                {
+                    Name= "PrimaryForeground",
+                    Description="Primary foreground color.",
+                    Value="11",
+                },
+                new()
+                {
+                    Name= "SecondaryForeground",
+                    Description="Secondary foreground color.",
+                    Value="12",
+                },
+                new()
+                {
+                    Name= "TertiaryForeground",
+                    Description="Tertiary foreground color.",
+                    Value="13",
+                },
+                new()
+                {
+                    Name= "PrimaryBorder",
+                    Description="Primary border color.",
+                    Value="14",
+                },
+                new()
+                {
+                    Name= "SecondaryBorder",
+                    Description="Secondary border color.",
+                    Value="15",
+                },
+                new()
+                {
+                    Name= "TertiaryBorder",
+                    Description="Tertiary border color.",
+                    Value="16",
                 }
             ]
         },
@@ -124,31 +297,31 @@ public partial class BitLoadingDemo
         {
             Id = "label-position-enum",
             Name = "BitLabelPosition",
-            Description = "",
+            Description = "Defines where the label of a loading component sits relative to its animation.",
             Items =
             [
                 new()
                 {
                     Name= "Top",
-                    Description="The label shows on the top of the button.",
+                    Description="The label shows above the animation.",
                     Value="0",
                 },
                 new()
                 {
                     Name= "End",
-                    Description="The label shows on the end of the button.",
+                    Description="The label shows at the end side of the animation, which follows the direction of the writing.",
                     Value="1",
                 },
                 new()
                 {
                     Name= "Bottom",
-                    Description="The label shows on the bottom of the button.",
+                    Description="The label shows below the animation.",
                     Value="2",
                 },
                 new()
                 {
                     Name= "Start",
-                    Description="The label shows on the start of the button.",
+                    Description="The label shows at the start side of the animation, which follows the direction of the writing.",
                     Value="3",
                 },
             ]
@@ -157,25 +330,25 @@ public partial class BitLoadingDemo
         {
             Id = "size-enum",
             Name = "BitSize",
-            Description = "",
+            Description = "Defines the sizes available in the bit BlazorUI.",
             Items =
             [
                 new()
                 {
                     Name= "Small",
-                    Description="The small size button.",
+                    Description="The small size, which renders a 40px loading component.",
                     Value="0",
                 },
                 new()
                 {
                     Name= "Medium",
-                    Description="The medium size button.",
+                    Description="The medium size, which renders a 64px loading component.",
                     Value="1",
                 },
                 new()
                 {
                     Name= "Large",
-                    Description="The large size button.",
+                    Description="The large size, which renders an 88px loading component.",
                     Value="2",
                 }
             ]
@@ -222,7 +395,9 @@ public partial class BitLoadingDemo
 <BitRollingSquareLoading />";
 
     private readonly string example2RazorCode = @"
-<BitGridLoading Label=""Loading"" />";
+<BitGridLoading Label=""Loading"" />
+
+<BitRingLoading Label=""Uploading photos..."" />";
 
     private readonly string example3RazorCode = @"
 <BitDotsRingLoading Label=""Top"" LabelPosition=""BitLabelPosition.Top"" />
@@ -238,9 +413,94 @@ public partial class BitLoadingDemo
     <LabelTemplate>
         <div style=""color:green""><b>Loading</b></div>
     </LabelTemplate>
-</BitEllipsisLoading>";
+</BitEllipsisLoading>
+
+<BitRollerLoading LabelPosition=""BitLabelPosition.Bottom"">
+    <LabelTemplate>
+        <BitText Typography=""BitTypography.Caption1"" Color=""BitColor.SecondaryForeground"">
+            Restoring your session
+        </BitText>
+    </LabelTemplate>
+</BitRollerLoading>";
 
     private readonly string example5RazorCode = @"
+<BitRingLoading Label=""0.5x"" Speed=""0.5"" />
+
+<BitRingLoading Label=""1x (default)"" />
+
+<BitRingLoading Label=""2x"" Speed=""2"" />
+
+<BitRingLoading Label=""4x"" Speed=""4"" />";
+
+    private readonly string example6RazorCode = @"
+<BitButton OnClick=""StartWork"" IsEnabled=""@(_isWorking is false)"">Run a 1.5s task</BitButton>
+
+@if (_isWorking)
+{
+    <BitSpinnerLoading />
+
+    <BitSpinnerLoading Delay=""500"" />
+
+    @* The task is over before the delay elapses, so this one never renders at all. *@
+    <BitSpinnerLoading Delay=""3000"" />
+}";
+    private readonly string example6CsharpCode = @"
+private bool _isWorking;
+
+private async Task StartWork()
+{
+    _isWorking = true;
+    await Task.Delay(1500);
+    _isWorking = false;
+}";
+
+    private readonly string example7RazorCode = @"
+<div>
+    Fetching the latest results
+    <BitRingLoading Inline CustomSize=""16"" CustomColor=""currentColor"" />
+    please wait.
+</div>
+
+<BitButton IsEnabled=""false"">
+    <BitStack Horizontal FitWidth AutoHeight Gap=""0.5rem"" VerticalAlign=""BitAlignment.Center"">
+        <BitRingLoading Inline CustomSize=""16"" CustomColor=""currentColor"" />
+        <span>Saving</span>
+    </BitStack>
+</BitButton>";
+
+    private readonly string example8RazorCode = @"
+<div class=""overlay-host"">
+    <BitButton OnClick=""StartOverlayWork"" IsEnabled=""@(_isOverlayOpen is false)"">Load the panel</BitButton>
+    <div>This panel is what the overlay covers.</div>
+
+    <BitOverlay @bind-IsOpen=""_isOverlayOpen"" Class=""overlay"" AbsolutePosition NoAutoClose>
+        <BitRingLoading Label=""Loading your data..."" Color=""BitColor.PrimaryBackground"" />
+    </BitOverlay>
+</div>";
+    private readonly string example8CsharpCode = @"
+private bool _isOverlayOpen;
+
+private async Task StartOverlayWork()
+{
+    _isOverlayOpen = true;
+    await Task.Delay(3000);
+    _isOverlayOpen = false;
+}";
+
+    private readonly string example9RazorCode = @"
+@* role=""status"" aria-live=""polite"" and a visually hidden ""Loading"" by default. *@
+<BitSpinnerLoading />
+
+@* The hidden text becomes the AriaLabel. *@
+<BitSpinnerLoading AriaLabel=""Fetching your orders"" />
+
+@* Decorative: the surroundings already report the wait. *@
+<BitSpinnerLoading Role=""none"" />
+
+@* Interrupts the screen reader rather than waiting for it. *@
+<BitSpinnerLoading Label=""Signing you out"" AriaLive=""assertive"" />";
+
+    private readonly string example10RazorCode = @"
 <BitBarsLoading Label=""Primary"" Color=""BitColor.Primary"" />
 
 <BitCircleLoading Label=""Secondary"" Color=""BitColor.Secondary"" />
@@ -255,23 +515,58 @@ public partial class BitLoadingDemo
 
 <BitHeartLoading Label=""SevereWarning"" Color=""BitColor.SevereWarning"" />
 
-<BitHourglassLoading Label=""Error"" Color=""BitColor.Error"" />";
+<BitHourglassLoading Label=""Error"" Color=""BitColor.Error"" />
 
-    private readonly string example6RazorCode = @"
+
 <BitBarsLoading Label=""brown"" CustomColor=""brown"" />
 
 <BitCircleLoading Label=""rgb(0 107 185 / 75%)"" CustomColor=""rgb(0 107 185 / 75%)"" />
 
 <BitDotsRingLoading Label=""#426985"" CustomColor=""#426985"" />
 
-<BitDualRingLoading Label=""hsl(106 100% 22% / 1)"" CustomColor=""hsl(106 100% 22% / 1)"" />";
+<BitDualRingLoading Label=""hsl(106 100% 22% / 1)"" CustomColor=""hsl(106 100% 22% / 1)"" />
 
-    private readonly string example7RazorCode = @"
-<BitHourglassLoading Label=""Small"" Size=""BitSize.Small"" />
+<div style=""color:mediumvioletred"">
+    <BitSpinnerLoading Label=""currentColor"" CustomColor=""currentColor"" />
+</div>";
 
-<BitHourglassLoading Label=""Medium"" Size=""BitSize.Medium"" />
+    private readonly string example11RazorCode = @"
+<BitXboxLoading Label=""Small"" Size=""BitSize.Small"" />
 
-<BitHourglassLoading Label=""Large"" Size=""BitSize.Large"" />
+<BitXboxLoading Label=""Medium"" Size=""BitSize.Medium"" />
 
-<BitHourglassLoading Label=""Custom (128)"" CustomSize=""128"" />";
+<BitXboxLoading Label=""Large"" Size=""BitSize.Large"" />
+
+<BitXboxLoading Label=""Custom (128)"" CustomSize=""128"" />
+
+<BitXboxLoading Label=""Custom (24)"" CustomSize=""24"" />";
+
+    private readonly string example12RazorCode = @"
+<BitRingLoading Label=""Style"" Style=""padding:1rem;border:1px solid gray;border-radius:8px"" />
+
+<BitRingLoading Label=""Class"" Class=""custom-class"" />
+
+
+<BitDotsRingLoading Label=""Variables"" Style=""--bit-ldn-color:rebeccapurple;--bit-ldn-size:48px;--bit-ldn-mot-factor:0.5"" />
+
+
+<BitGridLoading Label=""Styles""
+                Styles=""@(new() { Root = ""padding:0.5rem"",
+                                  Container = ""outline:1px dashed gray"",
+                                  Child = ""border-radius:0"",
+                                  Label = ""color:tomato;font-weight:bold"" })"" />
+
+<BitGridLoading Label=""Classes""
+                Classes=""@(new() { Root = ""custom-root"",
+                                   Child = ""custom-child"",
+                                   Label = ""custom-label"" })"" />";
+
+    private readonly string example13RazorCode = @"
+<div dir=""rtl"">
+    <BitRingLoading Dir=""BitDir.Rtl"" Label=""شروع"" LabelPosition=""BitLabelPosition.Start"" />
+
+    <BitRingLoading Dir=""BitDir.Rtl"" Label=""پایان"" LabelPosition=""BitLabelPosition.End"" />
+
+    <BitRingLoading Dir=""BitDir.Rtl"" Label=""در حال بارگذاری"" LabelPosition=""BitLabelPosition.Bottom"" />
+</div>";
 }

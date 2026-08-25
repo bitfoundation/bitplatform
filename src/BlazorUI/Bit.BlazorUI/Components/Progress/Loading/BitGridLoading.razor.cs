@@ -8,7 +8,6 @@ public partial class BitGridLoading : BitLoadingBase
     {
         base.RegisterCssStyles();
 
-
         StyleBuilder.Register(() => $"--bit-ldn-grd-8:{Convert(8)}px");
         StyleBuilder.Register(() => $"--bit-ldn-grd-16:{Convert(16)}px");
         StyleBuilder.Register(() => $"--bit-ldn-grd-32:{Convert(32)}px");
