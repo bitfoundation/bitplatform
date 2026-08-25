@@ -1,4 +1,4 @@
-(self as any)['bit-bswup.sw version'] = '10.6.0-pre-02';
+(self as any)['bit-bswup.sw version'] = '10.6.0-pre-03';
 
 // This file (and bit-bswup.sw-cleanup.ts) is a classic service-worker script loaded via
 // importScripts - not an ES module - and is compiled against the "WebWorker" lib (see
