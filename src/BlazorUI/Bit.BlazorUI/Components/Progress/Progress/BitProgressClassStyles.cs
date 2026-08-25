@@ -28,6 +28,11 @@ public class BitProgressClassStyles
     public string? Track { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the buffer bar of the BitProgress.
+    /// </summary>
+    public string? Buffer { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the bar of the BitProgress.
     /// </summary>
     public string? Bar { get; set; }
