@@ -13,12 +13,23 @@ public class BitShimmerClassStyles
     public string? Content { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the live region of the BitShimmer that carries its Label and LoadedLabel.
+    /// </summary>
+    public string? Label { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the shimmer wrapper of the BitShimmer.
     /// </summary>
+    /// <remarks>
+    /// A multi-line shimmer draws one wrapper per line, so these are applied to each of them.
+    /// </remarks>
     public string? ShimmerWrapper { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the shimmer of the BitShimmer.
     /// </summary>
+    /// <remarks>
+    /// This is the animated part inside each wrapper.
+    /// </remarks>
     public string? Shimmer { get; set; }
 }

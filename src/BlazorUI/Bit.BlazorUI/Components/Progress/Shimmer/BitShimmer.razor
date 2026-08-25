@@ -2,27 +2,47 @@
 @inherits BitComponentBase
 
 <div @ref="RootElement" @attributes="@HtmlAttributes"
-     class="@ClassBuilder.Value"
+     id="@_Id"
      style="@StyleBuilder.Value"
-     dir="@Dir?.ToString().ToLower()">
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
+     aria-label="@AriaLabel"
+     aria-busy="@(Loaded ? null : "true")">
+
+    @if (_hasLiveRegion)
+    {
+        @* The one thing on the shimmer a screen reader reads. It is on the page from the first render rather
+           than being inserted with its text already in it - a live region only announces what changes inside
+           it - so the swap from the loading text to the loaded one is what gets announced. *@
+        <span style="@Styles?.Label"
+              class="bit-smr-vhd @Classes?.Label"
+              role="@(Politeness == BitPoliteness.Off ? null : "status")"
+              aria-live="@_ariaLive"
+              aria-atomic="true">@(Loaded ? LoadedLabel : Label)</span>
+    }
+
     @if (Loaded)
     {
         <div style="@Styles?.Content" class="bit-smr-cnt @Classes?.Content">
             @(ChildContent ?? Content)
         </div>
     }
+    else if (Template is not null)
+    {
+        @Template
+    }
     else
     {
-        @if (Template is not null)
-        {
-            @Template
-        }
-        else
+        @* The placeholder itself carries no information: it stands in for content that is not there yet, and
+           what is going on is already said by aria-busy on the root and by the live region above. Hiding it
+           keeps a shimmer built out of a dozen boxes from being read out as a dozen empty groups. *@
+        @for (var i = 0; i < _lineCount; i++)
         {
             <div style="@Styles?.ShimmerWrapper"
-                 class="bit-smr-wrp @GetWrapperClass() @Classes?.ShimmerWrapper">
-                <div style="@Styles?.Shimmer @GetAnimationStyle()"
-                     class="bit-smr-anm @GetAnimationClass() @Classes?.Shimmer"></div>
+                 class="bit-smr-wrp @_backgroundClass @Classes?.ShimmerWrapper"
+                 aria-hidden="true">
+                <div style="@JoinStyles(Styles?.Shimmer, _animationStyle)"
+                     class="bit-smr-anm @_animationClass @Classes?.Shimmer"></div>
             </div>
         }
     }
