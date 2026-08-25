@@ -240,7 +240,7 @@ public static class ComponentCatalog
         ["Tag"] = "A compact chip for an attribute, a person or an asset - dismissible, selectable or clickable.",
 
         // Progress
-        ["Loading"] = "A set of ready-made loading visuals for any waiting scenario.",
+        ["Loading"] = "Eighteen ready-made loading animations with one shared API.",
         ["Progress"] = "The completion status of an operation, determinate or indeterminate.",
         ["Shimmer"] = "A placeholder that stands in for content while it is being fetched.",
 
