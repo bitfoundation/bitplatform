@@ -221,7 +221,7 @@ public class BitProgressTests : BunitTestContext
             parameters.Add(p => p.LabelTemplate, labelTemplate);
         });
 
-        var labelChildNodes = component?.Find(".bit-prb")?.FirstChild?.ChildNodes;
+        var labelChildNodes = component?.Find(".bit-prb-lbl")?.ChildNodes;
         labelChildNodes?.MarkupMatches(labelTemplate);
     }
 
@@ -376,6 +376,65 @@ public class BitProgressTests : BunitTestContext
         var svg = component.Find(".bit-prb-cir");
         Assert.AreEqual("progressbar", svg.GetAttribute("role"));
         Assert.IsNull(svg.GetAttribute("aria-valuenow"));
+    }
+
+    [TestMethod]
+    public void BitProgressMeterShouldReportAMeasurementRatherThanProgress()
+    {
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Meter, true);
+            parameters.Add(p => p.Value, 60);
+            parameters.Add(p => p.Max, 100);
+        });
+
+        var bar = component.Find(".bit-prb-bar");
+        Assert.AreEqual("meter", bar.GetAttribute("role"));
+        Assert.AreEqual("60", bar.GetAttribute("aria-valuenow"));
+        Assert.AreEqual("0", bar.GetAttribute("aria-valuemin"));
+        Assert.AreEqual("100", bar.GetAttribute("aria-valuemax"));
+    }
+
+    [TestMethod]
+    public void BitProgressCircularMeterShouldReportAMeasurementRatherThanProgress()
+    {
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Meter, true);
+            parameters.Add(p => p.Circular, true);
+            parameters.Add(p => p.GapDegree, 120);
+            parameters.Add(p => p.Percent, 42);
+        });
+
+        Assert.AreEqual("meter", component.Find(".bit-prb-cir").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitProgressAnIndeterminateMeterShouldStayAProgressbar()
+    {
+        // A meter always has a value, so there is no such thing as an indeterminate one.
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Meter, true);
+            parameters.Add(p => p.Indeterminate, true);
+        });
+
+        Assert.AreEqual("progressbar", component.Find(".bit-prb-bar").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitProgressTheRoleShouldFollowAParameterChange()
+    {
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Percent, 42);
+        });
+
+        Assert.AreEqual("progressbar", component.Find(".bit-prb-bar").GetAttribute("role"));
+
+        component.Render(parameters => parameters.Add(p => p.Meter, true));
+
+        Assert.AreEqual("meter", component.Find(".bit-prb-bar").GetAttribute("role"));
     }
 
 
@@ -693,14 +752,26 @@ public class BitProgressTests : BunitTestContext
     [TestMethod]
     public void BitProgressPercentNumberShouldUseTheFormat()
     {
-        var component = RenderComponent<BitProgress>(parameters =>
+        // The readout is formatted with the ambient culture, so the expected separator is only a dot
+        // while the culture the test runs under says so.
+        var culture = CultureInfo.CurrentCulture;
+        try
         {
-            parameters.Add(p => p.Percent, 85.69);
-            parameters.Add(p => p.ShowPercentNumber, true);
-            parameters.Add(p => p.PercentNumberFormat, "{0:F2} %");
-        });
+            CultureInfo.CurrentCulture = new CultureInfo("en-US");
 
-        Assert.AreEqual("85.69 %", component.Find(".bit-prb-pnm").TextContent);
+            var component = RenderComponent<BitProgress>(parameters =>
+            {
+                parameters.Add(p => p.Percent, 85.69);
+                parameters.Add(p => p.ShowPercentNumber, true);
+                parameters.Add(p => p.PercentNumberFormat, "{0:F2} %");
+            });
+
+            Assert.AreEqual("85.69 %", component.Find(".bit-prb-pnm").TextContent);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = culture;
+        }
     }
 
     [TestMethod]
@@ -773,7 +844,8 @@ public class BitProgressTests : BunitTestContext
         DataRow(BitProgressPercentPosition.End, "bit-prb-pce"),
         DataRow(BitProgressPercentPosition.Start, "bit-prb-pcs"),
         DataRow(BitProgressPercentPosition.Center, "bit-prb-pcc"),
-        DataRow(BitProgressPercentPosition.Inside, "bit-prb-pci")
+        DataRow(BitProgressPercentPosition.Inside, "bit-prb-pci"),
+        DataRow(BitProgressPercentPosition.Top, "bit-prb-pco")
     ]
     public void BitProgressPercentNumberPositionTest(BitProgressPercentPosition position, string expectedClass)
     {
@@ -817,6 +889,101 @@ public class BitProgressTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitProgressTopPercentNumberShouldShareTheLabelRow()
+    {
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Uploading");
+            parameters.Add(p => p.Percent, 42);
+            parameters.Add(p => p.ShowPercentNumber, true);
+            parameters.Add(p => p.PercentNumberPosition, BitProgressPercentPosition.Top);
+        });
+
+        var header = component.Find(".bit-prb-hdr");
+        Assert.AreEqual(2, header.Children.Length);
+        Assert.IsTrue(header.Children[0].ClassList.Contains("bit-prb-lbl"));
+        Assert.IsTrue(header.Children[1].ClassList.Contains("bit-prb-pco"));
+
+        // ... and it is not rendered a second time under the bar.
+        Assert.AreEqual(1, component.FindAll(".bit-prb-pct").Count);
+    }
+
+    [TestMethod]
+    public void BitProgressTopPercentNumberShouldNotNeedALabel()
+    {
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Percent, 42);
+            parameters.Add(p => p.ShowPercentNumber, true);
+            parameters.Add(p => p.PercentNumberPosition, BitProgressPercentPosition.Top);
+        });
+
+        var header = component.Find(".bit-prb-hdr");
+        Assert.AreEqual(1, header.Children.Length);
+        Assert.IsTrue(header.Children[0].ClassList.Contains("bit-prb-pco"));
+        Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-prb-lbl"));
+    }
+
+    [TestMethod]
+    public void BitProgressALabelShouldAlwaysSitInTheHeaderRow()
+    {
+        // The row is the label's element whether or not a readout joins it, so a label laid out on its own is
+        // laid out in exactly the element it is laid out in beside one.
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Label");
+        });
+
+        Assert.IsNotNull(component.Find(".bit-prb > .bit-prb-hdr > .bit-prb-lbl"));
+    }
+
+    [TestMethod]
+    public void BitProgressWithoutALabelOrATopReadoutShouldRenderNoHeaderRow()
+    {
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Percent, 42);
+            parameters.Add(p => p.ShowPercentNumber, true);
+        });
+
+        Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-prb-hdr"));
+    }
+
+    [TestMethod]
+    public void BitProgressAnIndeterminateTopReadoutShouldLeaveTheHeaderToTheLabel()
+    {
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Preparing");
+            parameters.Add(p => p.Indeterminate, true);
+            parameters.Add(p => p.ShowPercentNumber, true);
+            parameters.Add(p => p.PercentNumberPosition, BitProgressPercentPosition.Top);
+        });
+
+        var header = component.Find(".bit-prb-hdr");
+        Assert.AreEqual(1, header.Children.Length);
+        Assert.IsTrue(header.Children[0].ClassList.Contains("bit-prb-lbl"));
+    }
+
+    [TestMethod]
+    public void BitProgressTopPercentNumberShouldCarryItsSlots()
+    {
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Uploading");
+            parameters.Add(p => p.Percent, 42);
+            parameters.Add(p => p.ShowPercentNumber, true);
+            parameters.Add(p => p.PercentNumberPosition, BitProgressPercentPosition.Top);
+            parameters.Add(p => p.Classes, new BitProgressClassStyles { PercentNumber = "custom-pct" });
+            parameters.Add(p => p.Styles, new BitProgressClassStyles { PercentNumber = "color: red;" });
+        });
+
+        var readout = component.Find(".bit-prb-pco");
+        Assert.IsTrue(readout.ClassList.Contains("custom-pct"));
+        Assert.Contains("color: red;", readout.GetAttribute("style")!);
+    }
+
+    [TestMethod]
     public void BitProgressCircularShouldIgnoreThePercentNumberPosition()
     {
         var component = RenderComponent<BitProgress>(parameters =>
@@ -829,6 +996,22 @@ public class BitProgressTests : BunitTestContext
 
         Assert.IsNotNull(component.Find(".bit-prb-ctx"));
         Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-prb-pci"));
+    }
+
+    [TestMethod]
+    public void BitProgressCircularShouldNotMoveItsReadoutToTheHeader()
+    {
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Circular, true);
+            parameters.Add(p => p.Label, "Steps");
+            parameters.Add(p => p.Percent, 42);
+            parameters.Add(p => p.ShowPercentNumber, true);
+            parameters.Add(p => p.PercentNumberPosition, BitProgressPercentPosition.Top);
+        });
+
+        Assert.IsNotNull(component.Find(".bit-prb-ctx"));
+        Assert.AreEqual(1, component.Find(".bit-prb-hdr").Children.Length);
     }
 
 
@@ -1163,15 +1346,19 @@ public class BitProgressTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitProgressSegmentTokensShouldNotSurviveTheRootStyle()
+    public void BitProgressSegmentTokensAndTheRootStyleShouldBothReachTheRoot()
     {
+        // The tokens are written ahead of the style builder's own output, so neither they nor the
+        // consumer's style can drop the other.
         var component = RenderComponent<BitProgress>(parameters =>
         {
             parameters.Add(p => p.Segments, 5);
             parameters.Add(p => p.Style, "padding: 1rem;");
         });
 
-        Assert.Contains("padding: 1rem;", component.Find(".bit-prb").GetAttribute("style")!);
+        var style = component.Find(".bit-prb").GetAttribute("style")!;
+        Assert.Contains("--bit-prb-segments: 5", style);
+        Assert.Contains("padding: 1rem;", style);
     }
 
     [TestMethod,
@@ -1220,10 +1407,12 @@ public class BitProgressTests : BunitTestContext
         // pieces along with the bar.
         var component = RenderComponent<BitProgress>(parameters =>
         {
+            parameters.Add(p => p.Segments, 5);
             parameters.Add(p => p.Percent, 42);
             parameters.Add(p => p.ShowPercentNumber, true);
         });
 
+        Assert.IsTrue(component.Find(".bit-prb").ClassList.Contains("bit-prb-seg"));
         Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-prb-bcn .bit-prb-pct"));
         Assert.IsNotNull(component.Find(".bit-prb > .bit-prb-pct"));
     }
@@ -1380,24 +1569,31 @@ public class BitProgressTests : BunitTestContext
     [TestMethod]
     public void BitProgressShouldAnnounceTheSameMilestoneTwiceAfterAReset()
     {
-        // A live region that ends up holding the text it already held is a change of nothing, so the
-        // element carrying it has to be a new one each time.
+        // A milestone that was already announced is announced a second time once the progress has been
+        // reset past it. The two announcements read the same, so the label is changed on the way back
+        // up: only a re-announcement can put the new one in the region. (In a browser the keyed span is
+        // what makes the live region fire again on identical text, but bUnit re-parses the whole markup
+        // after every render, so element identity says nothing about it either way.)
         var component = RenderComponent<BitProgress>(parameters =>
         {
             parameters.Add(p => p.AnnounceProgress, true);
+            parameters.Add(p => p.Label, "First run");
             parameters.Add(p => p.Percent, 0);
         });
 
         component.Render(parameters => parameters.Add(p => p.Percent, 30));
-        var first = component.Find(".bit-prb-lvr span");
-        Assert.AreEqual("25 %", first.TextContent);
+        Assert.AreEqual("First run: 25 %", component.Find(".bit-prb-lvr span").TextContent);
 
+        // The reset itself announces nothing - it leaves the last announcement standing in the region.
         component.Render(parameters => parameters.Add(p => p.Percent, 0));
-        component.Render(parameters => parameters.Add(p => p.Percent, 30));
+        Assert.AreEqual("First run: 25 %", component.Find(".bit-prb-lvr span").TextContent);
 
-        var second = component.Find(".bit-prb-lvr span");
-        Assert.AreEqual("25 %", second.TextContent);
-        Assert.AreNotSame(first, second);
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Label, "Second run");
+            parameters.Add(p => p.Percent, 30);
+        });
+        Assert.AreEqual("Second run: 25 %", component.Find(".bit-prb-lvr span").TextContent);
     }
 
     [TestMethod]
@@ -1496,6 +1692,96 @@ public class BitProgressTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-prb").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitProgressBarColorShouldReachTheRootAsAToken()
+    {
+        // One declaration on the root is what the bar, the ring stroke, the buffer tint and the stripes all
+        // read, so the whole indicator follows a custom color rather than only the filled rectangle.
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Percent, 42);
+            parameters.Add(p => p.BarColor, "tomato");
+        });
+
+        Assert.Contains("--bit-prb-bar-color: tomato;", component.Find(".bit-prb").GetAttribute("style")!);
+    }
+
+    [TestMethod]
+    public void BitProgressTrackColorShouldReachTheRootAsAToken()
+    {
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Percent, 42);
+            parameters.Add(p => p.TrackColor, "#e9d5ff");
+        });
+
+        Assert.Contains("--bit-prb-track-color: #e9d5ff;", component.Find(".bit-prb").GetAttribute("style")!);
+    }
+
+    [TestMethod]
+    public void BitProgressCustomColorsShouldAlsoReachTheCircularShape()
+    {
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Circular, true);
+            parameters.Add(p => p.Percent, 42);
+            parameters.Add(p => p.BarColor, "tomato");
+            parameters.Add(p => p.TrackColor, "gainsboro");
+        });
+
+        var style = component.Find(".bit-prb").GetAttribute("style")!;
+        Assert.Contains("--bit-prb-bar-color: tomato;", style);
+        Assert.Contains("--bit-prb-track-color: gainsboro;", style);
+    }
+
+    [TestMethod]
+    public void BitProgressWithoutCustomColorsShouldDeclareNoColorToken()
+    {
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Percent, 42);
+            parameters.Add(p => p.Color, BitColor.Success);
+        });
+
+        var style = component.Find(".bit-prb").GetAttribute("style");
+
+        Assert.IsTrue(style.HasNoValue() || style!.Contains("--bit-prb-bar-color") is false);
+    }
+
+    [TestMethod]
+    public void BitProgressCustomColorsShouldNotOutrankTheRootStyles()
+    {
+        // The tokens are a prefix of the root style, so what the consumer wrote still comes last and wins.
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Percent, 42);
+            parameters.Add(p => p.BarColor, "tomato");
+            parameters.Add(p => p.Segments, 4);
+            parameters.Add(p => p.Styles, new BitProgressClassStyles { Root = "--bit-prb-bar-color: rebeccapurple;" });
+        });
+
+        var style = component.Find(".bit-prb").GetAttribute("style")!;
+
+        Assert.IsTrue(style.IndexOf("tomato") < style.IndexOf("rebeccapurple"));
+        Assert.Contains("--bit-prb-segments: 4;", style);
+    }
+
+    [TestMethod]
+    public void BitProgressCustomColorsShouldFollowAParameterChange()
+    {
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Percent, 42);
+            parameters.Add(p => p.BarColor, "tomato");
+        });
+
+        Assert.Contains("--bit-prb-bar-color: tomato;", component.Find(".bit-prb").GetAttribute("style")!);
+
+        component.Render(parameters => parameters.Add(p => p.BarColor, "rebeccapurple"));
+
+        Assert.Contains("--bit-prb-bar-color: rebeccapurple;", component.Find(".bit-prb").GetAttribute("style")!);
     }
 
     [TestMethod,

@@ -8,17 +8,38 @@
      dir="@Dir?.ToString().ToLower()">
     @* The label is a plain block rather than a <label>: nothing here is a form control, so there is
        nothing for a label to be "for". It is referenced by aria-labelledby instead, which is what
-       gives the progressbar the accessible name its role requires. *@
-    @if (_HasLabel)
+       gives the progressbar the accessible name its role requires. It always sits in a row of its own,
+       so a readout placed on that row is laid out against the label rather than against the root -
+       which is what keeps it at the end of the label's line instead of at the end of the bar's. *@
+    @if (_HasHeader)
     {
-        <div style="@Styles?.Label" class="bit-prb-lbl @Classes?.Label" id="@_labelId">
-            @if (LabelTemplate is not null)
+        <div class="bit-prb-hdr">
+            @if (_HasLabel)
             {
-                @LabelTemplate
+                <div style="@Styles?.Label" class="bit-prb-lbl @Classes?.Label" id="@_labelId">
+                    @if (LabelTemplate is not null)
+                    {
+                        @LabelTemplate
+                    }
+                    else
+                    {
+                        @Label
+                    }
+                </div>
             }
-            else
+
+            @if (_IsPercentNumberTop)
             {
-                @Label
+                <div style="@Styles?.PercentNumber" class="@_PercentNumberClass @Classes?.PercentNumber">
+                    @if (PercentNumberTemplate is not null)
+                    {
+                        @PercentNumberTemplate(_Percent)
+                    }
+                    else
+                    {
+                        <bdi class="bit-prb-pnm">@FormatPercent(_Percent)</bdi>
+                    }
+                </div>
             }
         </div>
     }
@@ -35,7 +56,7 @@
                  style="@GetCircleStyle()"
                  height="@(GetDiameter())px"
                  width="@(GetDiameter())px"
-                 role="progressbar"
+                 role="@_Role"
                  aria-label="@AriaLabel"
                  aria-labelledby="@_AriaLabelledBy"
                  aria-describedby="@_AriaDescribedBy"
@@ -88,7 +109,7 @@
                 <div style="@GetBufferStyle()" class="bit-prb-buf @Classes?.Buffer"></div>
             }
             <div class="@_BarClass @Classes?.Bar"
-                 role="progressbar"
+                 role="@_Role"
                  aria-label="@AriaLabel"
                  aria-labelledby="@_AriaLabelledBy"
                  aria-valuetext="@AriaValueText"
@@ -118,7 +139,7 @@
         }
     </div>
 
-    @if (Circular is false && _ShowsPercentNumber && _IsPercentNumberInside is false)
+    @if (Circular is false && _ShowsPercentNumber && _IsPercentNumberInside is false && _IsPercentNumberTop is false)
     {
         <div style="@Styles?.PercentNumber" class="@_PercentNumberClass @Classes?.PercentNumber">
             @if (PercentNumberTemplate is not null)

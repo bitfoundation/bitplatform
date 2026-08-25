@@ -27,6 +27,13 @@ public partial class BitProgressDemo
         },
         new()
         {
+            Name = "BarColor",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The color of the bar itself, as any CSS color. It replaces the palette the Color role would have given, and everything derived from it follows: the stroke of the ring, the faint tint of the Buffer and the fill of a Striped bar.",
+        },
+        new()
+        {
             Name = "Buffer",
             Type = "double?",
             DefaultValue = "null",
@@ -37,7 +44,7 @@ public partial class BitProgressDemo
             Name = "Circular",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Circular mode of the BitProgress.",
+            Description = "Draws the progress as a ring instead of as a bar, which is the shape for a compact spot - inside a button, in a card corner, beside a row - where a full-width bar has nowhere to go. A circular indeterminate progress is what is usually called a spinner.",
         },
         new()
         {
@@ -99,7 +106,7 @@ public partial class BitProgressDemo
             Name = "Indeterminate",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not to show indeterminate progress animation.",
+            Description = "Reports that something is running without saying how far along it is: the bar sweeps and the ring spins instead of filling. No value is published to assistive technology in this mode - which is what tells a screen reader the progress is indeterminate - and the percentage readout is hidden. Switch to a determinate value as soon as one exists.",
         },
         new()
         {
@@ -131,6 +138,13 @@ public partial class BitProgressDemo
         },
         new()
         {
+            Name = "Meter",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reports the indicator as a meter rather than as a progress bar. A progress bar says how far along a task is and only ever moves forward; a meter is a reading taken within a known range - a disk that is 60% full, a temperature, a score - which can move either way and is never \"finished\". This is what the ARIA practices ask for when the number is a measurement rather than progress. An Indeterminate indicator stays a progress bar, since a meter always has a value.",
+        },
+        new()
+        {
             Name = "Min",
             Type = "double",
             DefaultValue = "0",
@@ -148,7 +162,7 @@ public partial class BitProgressDemo
             Name = "PercentNumberFormat",
             Type = "string",
             DefaultValue = "{0:F0} %",
-            Description = "The format of the percent number in percentage display.",
+            Description = "The composite format string the percentage readout is written with, applied to the percentage itself - \"{0:F0} %\" by default. It is formatted on the current culture, since it is text the reader sees.",
         },
         new()
         {
@@ -206,7 +220,7 @@ public partial class BitProgressDemo
             Name = "ShowPercentNumber",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not to percentage display.",
+            Description = "Writes the percentage beside the bar, or in the middle of the ring. PercentNumberPosition says where it goes and PercentNumberFormat how it reads. It is hidden while Indeterminate is true, since there is no number to show.",
         },
         new()
         {
@@ -245,7 +259,14 @@ public partial class BitProgressDemo
             Name = "Thickness",
             Type = "int?",
             DefaultValue = "null",
-            Description = "Thickness of the BitProgress. When not set, the value is determined by the Size parameter.",
+            Description = "How thick the indicator is drawn, in pixels: the height of a horizontal bar, the width of a Vertical one and the stroke of the ring. When not set it follows the Size, which is what keeps a page of indicators in step with each other and with the theme.",
+        },
+        new()
+        {
+            Name = "TrackColor",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The color of the unfilled part of the indicator, as any CSS color: the track behind the bar, the ring behind the stroke, and the two ends the indeterminate sweep fades into.",
         },
         new()
         {
@@ -382,7 +403,8 @@ public partial class BitProgressDemo
                 new() { Name = "End", Description = "Under the bar, aligned to the end of it. This is the default.", Value = "0" },
                 new() { Name = "Start", Description = "Under the bar, aligned to the start of it.", Value = "1" },
                 new() { Name = "Center", Description = "Under the bar, in the middle of it.", Value = "2" },
-                new() { Name = "Inside", Description = "On the bar itself rather than under it, which keeps the whole indicator to one line.", Value = "3" }
+                new() { Name = "Inside", Description = "On the bar itself rather than under it, which keeps the whole indicator to one line.", Value = "3" },
+                new() { Name = "Top", Description = "Above the bar, on the same row as the label and aligned to the end of it. Without a label it is a line of its own above the bar.", Value = "4" }
             ]
         },
         new()
@@ -406,4 +428,5 @@ public partial class BitProgressDemo
     private double segmentedPercent = 45;
     private double announcedPercent = 0;
     private double gaugeValue = 65;
+    private double meterValue = 62;
 }

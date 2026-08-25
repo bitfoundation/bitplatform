@@ -35,6 +35,13 @@ public partial class BitProgress : BitComponentBase
     [Parameter] public string? AriaValueText { get; set; }
 
     /// <summary>
+    /// The color of the bar itself, as any CSS color. It replaces the palette the <see cref="Color"/> role
+    /// would have given, and everything derived from it follows: the stroke of the ring, the faint tint of
+    /// the <see cref="Buffer"/> and the fill of a <see cref="Striped"/> bar.
+    /// </summary>
+    [Parameter] public string? BarColor { get; set; }
+
+    /// <summary>
     /// The secondary, buffered progress rendered behind the main bar, for an operation that loads ahead of
     /// what it has already played or processed (the buffered part of a video, the downloaded part of a file).
     /// It is read on the same scale as <see cref="Value"/> (between <see cref="Min"/> and <see cref="Max"/>)
@@ -44,7 +51,9 @@ public partial class BitProgress : BitComponentBase
     [Parameter] public double? Buffer { get; set; }
 
     /// <summary>
-    /// Circular mode of the BitProgress.
+    /// Draws the progress as a ring instead of as a bar, which is the shape for a compact spot - inside a
+    /// button, in a card corner, beside a row - where a full-width bar has nowhere to go. A circular
+    /// indeterminate progress is what is usually called a spinner.
     /// </summary>
     /// <remarks>
     /// Segments, the vertical orientation and the gauge gap each apply to one shape only, so the class
@@ -82,7 +91,9 @@ public partial class BitProgress : BitComponentBase
     [Parameter] public int? Diameter { get; set; }
 
     /// <summary>
-    /// Thickness of the BitProgress. When not set, the value is determined by the Size parameter.
+    /// How thick the indicator is drawn, in pixels: the height of a horizontal bar, the width of a
+    /// <see cref="Vertical"/> one and the stroke of the ring. When not set it follows the <see cref="Size"/>,
+    /// which is what keeps a page of indicators in step with each other and with the theme.
     /// </summary>
     [Parameter] public int? Thickness { get; set; }
 
@@ -103,7 +114,10 @@ public partial class BitProgress : BitComponentBase
     public BitProgressGapPosition GapPosition { get; set; }
 
     /// <summary>
-    /// Whether or not to show indeterminate progress animation.
+    /// Reports that something is running without saying how far along it is: the bar sweeps and the ring spins
+    /// instead of filling. No value is published to assistive technology in this mode - which is what tells a
+    /// screen reader the progress is indeterminate - and the percentage readout is hidden. Switch to a
+    /// determinate value as soon as one exists.
     /// </summary>
     [Parameter] public bool Indeterminate { get; set; }
 
@@ -136,13 +150,24 @@ public partial class BitProgress : BitComponentBase
     [Parameter] public double Max { get; set; } = 100;
 
     /// <summary>
+    /// Reports the indicator as a meter rather than as a progress bar. A progress bar says how far along a
+    /// task is and only ever moves forward; a meter is a reading taken within a known range - a disk that is
+    /// 60% full, a temperature, a score - which can move either way and is never "finished". This is what the
+    /// ARIA practices ask for when the number is a measurement rather than progress, and it pairs with the
+    /// gauge shape and with <see cref="Value"/>, <see cref="Min"/> and <see cref="Max"/>. An
+    /// <see cref="Indeterminate"/> indicator stays a progress bar, since a meter always has a value.
+    /// </summary>
+    [Parameter] public bool Meter { get; set; }
+
+    /// <summary>
     /// Percentage of the operation's completeness, numerically between 0 and 100.
     /// Ignored when <see cref="Value"/> is set.
     /// </summary>
     [Parameter] public double Percent { get; set; }
 
     /// <summary>
-    /// The format of the percent number in percentage display.
+    /// The composite format string the percentage readout is written with, applied to the percentage itself -
+    /// "{0:F0} %" by default. It is formatted on the current culture, since it is text the reader sees.
     /// </summary>
     [Parameter] public string PercentNumberFormat { get; set; } = "{0:F0} %";
 
@@ -194,7 +219,9 @@ public partial class BitProgress : BitComponentBase
     [Parameter] public int SegmentGap { get; set; } = 4;
 
     /// <summary>
-    /// Whether or not to percentage display.
+    /// Writes the percentage beside the bar, or in the middle of the ring. <see cref="PercentNumberPosition"/>
+    /// says where it goes and <see cref="PercentNumberFormat"/> how it reads. It is hidden while
+    /// <see cref="Indeterminate"/> is true, since there is no number to show.
     /// </summary>
     [Parameter] public bool ShowPercentNumber { get; set; }
 
@@ -220,6 +247,12 @@ public partial class BitProgress : BitComponentBase
     /// Custom CSS styles for different parts of the BitProgress.
     /// </summary>
     [Parameter] public BitProgressClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// The color of the unfilled part of the indicator, as any CSS color: the track behind the bar, the ring
+    /// behind the stroke, and the two ends the indeterminate sweep fades into.
+    /// </summary>
+    [Parameter] public string? TrackColor { get; set; }
 
     /// <summary>
     /// Stands the linear bar on its end, filling it from the bottom up - or from the top down when it
@@ -326,11 +359,23 @@ public partial class BitProgress : BitComponentBase
     // it a sibling of the container, out of reach of the segment mask.
     private bool _IsPercentNumberInside => Circular is false && PercentNumberPosition == BitProgressPercentPosition.Inside;
 
+    // The top readout shares the label's row instead of taking a line of its own, so it is rendered in the
+    // header rather than under the bar. Nothing is put there when there is no readout to place.
+    private bool _IsPercentNumberTop => Circular is false && _ShowsPercentNumber && PercentNumberPosition == BitProgressPercentPosition.Top;
+
+    // The label keeps a wrapper of its own whether or not the readout joins it, so the row the two share is
+    // the same element the label sits in alone.
+    private bool _HasHeader => _HasLabel || _IsPercentNumberTop;
+
+    // A meter is a reading, not a task: it needs a value, so an indeterminate indicator stays a progress bar.
+    private string _Role => Meter && Indeterminate is false ? "meter" : "progressbar";
+
     private string _PercentNumberClass => PercentNumberPosition switch
     {
         BitProgressPercentPosition.Start => "bit-prb-pct bit-prb-pcs",
         BitProgressPercentPosition.Center => "bit-prb-pct bit-prb-pcc",
         BitProgressPercentPosition.Inside => "bit-prb-pct bit-prb-pci",
+        BitProgressPercentPosition.Top => "bit-prb-pct bit-prb-pco",
         // The default carries a class of its own so a rule that wants to move only the readout nobody
         // placed by hand - the vertical one, which is centred over its narrow bar - can say so without
         // outranking an explicit alignment.
@@ -361,11 +406,37 @@ public partial class BitProgress : BitComponentBase
         ? $"--bit-prb-gap: {Css(_GapDegree)}deg;--bit-prb-arc: {Css((360 - _GapDegree) / 360)};"
         : null;
 
+    // Both colors are declared on the root as custom properties rather than written onto the parts: the bar
+    // color is read by the bar, the ring stroke, the buffer tint and the stripes, and one declaration keeps
+    // all of them in step. An inline declaration also outranks the role class, which is what lets a custom
+    // color replace the palette Color would have given.
+    private string? _ColorStyle
+    {
+        get
+        {
+            if (BarColor.HasNoValue() && TrackColor.HasNoValue()) return null;
+
+            StringBuilder sb = new();
+
+            if (BarColor.HasValue())
+            {
+                sb.Append($"--bit-prb-bar-color: {BarColor};");
+            }
+
+            if (TrackColor.HasValue())
+            {
+                sb.Append($"--bit-prb-track-color: {TrackColor};");
+            }
+
+            return sb.Length == 0 ? null : sb.ToString();
+        }
+    }
+
     private string? _RootStyle
     {
         get
         {
-            var prefix = _SegmentStyle + _GapStyle;
+            var prefix = _SegmentStyle + _GapStyle + _ColorStyle;
 
             return prefix.HasNoValue() ? StyleBuilder.Value : prefix + StyleBuilder.Value;
         }
