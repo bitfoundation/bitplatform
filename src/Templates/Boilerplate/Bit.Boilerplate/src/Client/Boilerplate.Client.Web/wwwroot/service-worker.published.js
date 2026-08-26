@@ -11,13 +11,13 @@ self.addEventListener('push', function (event) {
 
     const eventData = event.data.json();
 
-    self.registration.showNotification(eventData.title, {
+    event.waitUntil(self.registration.showNotification(eventData.title, {
 
         data: eventData.data,
         body: eventData.message,
         icon: '/images/icons/bit-icon-512.png'
 
-    });
+    }));
 
 });
 

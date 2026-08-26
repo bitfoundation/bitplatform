@@ -16,10 +16,13 @@
             <BitSeparator />
 
             <div class="info-grid">
-                <div class="info-item">
-                    <span class="info-label">Operating system</span>
-                    <span class="info-value">@Platform</span>
-                </div>
+                @if (string.IsNullOrEmpty(Platform) is false)
+                {
+                    <div class="info-item">
+                        <span class="info-label">Operating system</span>
+                        <span class="info-value">@Platform</span>
+                    </div>
+                }
                 @if (string.IsNullOrEmpty(WebView) is false)
                 {
                     <div class="info-item">
@@ -34,10 +37,13 @@
                         <span class="info-value">@Oem</span>
                     </div>
                 }
-                <div class="info-item">
-                    <span class="info-label">Process ID</span>
-                    <span class="info-value">@ProcessId</span>
-                </div>
+                @if (string.IsNullOrEmpty(ProcessId) is false)
+                {
+                    <div class="info-item">
+                        <span class="info-label">Process ID</span>
+                        <span class="info-value">@ProcessId</span>
+                    </div>
+                }
             </div>
 
             @if (Note is not null)
