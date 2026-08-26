@@ -63,6 +63,13 @@ public partial class BitCardDemo
         },
         new()
         {
+            Name = "CoverOverlay",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lays the cover of the card behind its content instead of above it, filling the whole surface. The card needs a Height or a MinHeight of its own, since an overlaid cover no longer makes it as tall as the picture.",
+        },
+        new()
+        {
             Name = "CoverWidth",
             Type = "string?",
             DefaultValue = "null",
@@ -179,6 +186,15 @@ public partial class BitCardDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The height of the cover image of the card. The image is cropped to fill it rather than stretched.",
+        },
+        new()
+        {
+            Name = "ImageLoading",
+            Type = "BitImageLoading?",
+            DefaultValue = "null",
+            Description = "The loading behavior of the cover image of the card, eager or lazy.",
+            LinkType = LinkType.Link,
+            Href = "#image-loading-enum",
         },
         new()
         {
@@ -611,6 +627,27 @@ public partial class BitCardDemo
         },
         new()
         {
+            Id = "image-loading-enum",
+            Name = "BitImageLoading",
+            Description = "Determines when the browser fetches the image.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Eager",
+                    Description = "The default behavior of the browser: the image is fetched as soon as the img element is processed.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Lazy",
+                    Description = "The image is fetched only once the browser estimates that it is about to be needed.",
+                    Value = "1",
+                }
+            ]
+        },
+        new()
+        {
             Id = "size-enum",
             Name = "BitSize",
             Description = "Defines the sizes available in the bit BlazorUI.",
@@ -824,6 +861,19 @@ public partial class BitCardDemo
             The Cover template takes the place of the image.
         </BitText>
     </ChildContent>
+</BitCard>
+
+<BitCard Title=""Olympic National Park"" Subtitle=""Washington, USA"" Class=""example-hero""
+         CoverOverlay ImageUrl=""/images/carousel/img2.jpg"" ImageLoading=""BitImageLoading.Lazy""
+         Width=""18rem"" Height=""14rem"">
+    <ChildContent>
+        <BitText Typography=""BitTypography.Body2"">
+            An overlaid cover fills the card and the content is written over it.
+        </BitText>
+    </ChildContent>
+    <Footer>
+        <BitButton Variant=""BitVariant.Fill"" Size=""BitSize.Small"">Explore</BitButton>
+    </Footer>
 </BitCard>";
 
     private readonly string example4RazorCode = @"

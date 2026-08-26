@@ -4,8 +4,14 @@
 @{
     var icon = BitIconInfo.From(Icon, IconName);
 
-    var hasTitle = Title.HasValue();
-    var hasSubtitle = Subtitle.HasValue();
+    @* A custom header takes the place of the icon, the title and the subtitle, so neither of those two lines is
+       on the card any more - and neither of their ids is on the page. Anything that points at one of them, the
+       name of the stretched link above all, has to know that: an aria-labelledby aimed at an element that was
+       never rendered leaves the thing it names with no name at all. *@
+    var hasHeaderTemplate = HeaderTemplate is not null;
+
+    var hasTitle = hasHeaderTemplate is false && Title.HasValue();
+    var hasSubtitle = hasHeaderTemplate is false && Subtitle.HasValue();
     var titleId = hasTitle ? $"{_Id}-ttl" : null;
     var subtitleId = hasSubtitle ? $"{_Id}-sub" : null;
 
@@ -98,7 +104,11 @@
                 }
                 else
                 {
-                    <img src="@ImageUrl" alt="@(ImageAlt ?? string.Empty)" style="@Styles?.Image" class="bit-crd-img @Classes?.Image" />
+                    <img src="@ImageUrl"
+                         alt="@(ImageAlt ?? string.Empty)"
+                         loading="@ImageLoading?.ToString().ToLower()"
+                         style="@Styles?.Image"
+                         class="bit-crd-img @Classes?.Image" />
                 }
             </div>
         }

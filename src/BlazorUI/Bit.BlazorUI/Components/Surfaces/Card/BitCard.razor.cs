@@ -119,6 +119,20 @@ public partial class BitCard : BitComponentBase
     [Parameter] public RenderFragment? Cover { get; set; }
 
     /// <summary>
+    /// Lays the cover of the card behind its content instead of above it, filling the whole surface.
+    /// </summary>
+    /// <remarks>
+    /// This is the hero card: a picture the size of the card with the header, the body and the footer written
+    /// over it. The picture carries no scrim of its own, so give the card a foreground it can be read against
+    /// through <see cref="Color"/>, <see cref="BitComponentBase.Style"/> or <see cref="Styles"/>, and give it a
+    /// <see cref="Height"/> or a <see cref="MinHeight"/> - an overlaid cover is taken out of the flow and no
+    /// longer makes the card as tall as the picture. It wins over <see cref="Horizontal"/>, which lays the same
+    /// cover beside the content rather than behind it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool CoverOverlay { get; set; }
+
+    /// <summary>
     /// The width of the cover of a horizontal card.
     /// </summary>
     /// <remarks>
@@ -178,7 +192,10 @@ public partial class BitCard : BitComponentBase
     /// The custom template rendered as the header of the card, in place of the icon, the title and the subtitle.
     /// </summary>
     /// <remarks>
-    /// <see cref="Actions"/> still renders beside it, so the trailing controls of the header survive a custom header.
+    /// <see cref="Actions"/> still renders beside it, so the trailing controls of the header survive a custom
+    /// header. What does not survive is the <see cref="Title"/> and the <see cref="Subtitle"/> - a card with an
+    /// <see cref="Href"/> and a header of its own therefore has nothing left to name its stretched link with,
+    /// and wants a <see cref="BitComponentBase.AriaLabel"/>.
     /// </remarks>
     [Parameter] public RenderFragment? HeaderTemplate { get; set; }
 
@@ -262,6 +279,16 @@ public partial class BitCard : BitComponentBase
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? ImageHeight { get; set; }
+
+    /// <summary>
+    /// The loading behavior of the cover image of the card, eager or lazy.
+    /// </summary>
+    /// <remarks>
+    /// A page of cards is the case lazy loading exists for: it holds the request for every picture that is not
+    /// near the viewport yet. Leave it unset - or set it to eager - for the cards above the fold, whose pictures
+    /// are what the reader is waiting for.
+    /// </remarks>
+    [Parameter] public BitImageLoading? ImageLoading { get; set; }
 
     /// <summary>
     /// The URL of the cover image at the head of the card.
@@ -513,6 +540,8 @@ public partial class BitCard : BitComponentBase
 
         ClassBuilder.Register(() => Horizontal ? "bit-crd-hrz" : string.Empty);
 
+        ClassBuilder.Register(() => CoverOverlay ? "bit-crd-ovl" : string.Empty);
+
         ClassBuilder.Register(() => _IsLink || _IsButton ? "bit-crd-int" : string.Empty);
 
         ClassBuilder.Register(() => Hoverable ? "bit-crd-hov" : string.Empty);
@@ -575,7 +604,10 @@ public partial class BitCard : BitComponentBase
     {
         if (IsEnabled is false) return;
 
-        if (_IsToggle)
+        // Only a card that is a button toggles. A linked card navigates away on the same click, and it is the
+        // only kind whose pressed state is never reported - aria-pressed belongs to a button - so flipping
+        // Selected there would change the card silently on its way off the page.
+        if (_IsButton && _IsToggle)
         {
             await AssignSelected(Selected is false);
         }

@@ -88,6 +88,31 @@
     }
 }
 
+// Behind rather than above: the cover is taken out of the flow and stretched over the whole surface, and the
+// column of content is written on top of it. It is declared after the horizontal block so it wins over the
+// share of the width that one hands the cover - an absolutely positioned box with a left, a right and a width
+// drops one of the three, and the one it drops is not the width.
+//
+// The column is only made a positioned element, never given a z-index of its own: a z-index here would open a
+// stacking context, and the header actions and the footer inside it could then no longer be raised over the
+// stretched link of a linked card, which is the whole reason those two slots carry one. Painting order does
+// the work instead - the cover comes first in the DOM, so the column lands on top of it either way.
+.bit-crd-ovl {
+    > .bit-crd-cvr {
+        width: auto;
+        inset: 0;
+        position: absolute;
+
+        > .bit-crd-img {
+            height: var(--bit-crd-img-height, 100%);
+        }
+    }
+
+    > .bit-crd-mai {
+        position: relative;
+    }
+}
+
 
 .bit-crd-hdr {
     display: flex;
@@ -393,6 +418,14 @@
 .bit-crd-sel {
     --bit-crd-brd-wid: #{$shp-border-width-thick};
     --bit-crd-brd-clr: #{$clr-pri};
+}
+
+// A card painted in a role color is the one case where the primary rule above cannot be seen: on a filled
+// primary card it is the color the card is already painted in, and on any other filled role it is a second
+// color fighting the first. The rule is drawn in the foreground the fill already chose for its own words
+// instead, which is the one color guaranteed to read against that fill whatever the role is.
+.bit-crd-vfl.bit-crd-sel {
+    --bit-crd-brd-clr: var(--bit-crd-clr-txt);
 }
 
 // The lift. A card that is a control lifts on its own; Hoverable is for one that reacts to the pointer without

@@ -652,6 +652,69 @@ public class BitCardTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow(BitImageLoading.Lazy, "lazy")]
+    [DataRow(BitImageLoading.Eager, "eager")]
+    public void BitCardImageLoadingShouldReachTheCoverImage(BitImageLoading loading, string expected)
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.ImageUrl, "/images/a.png");
+            parameters.Add(p => p.ImageLoading, loading);
+        });
+
+        Assert.AreEqual(expected, component.Find(".bit-crd-img").GetAttribute("loading"));
+    }
+
+    [TestMethod]
+    public void BitCardWithoutImageLoadingShouldLeaveTheAttributeOff()
+    {
+        // No attribute at all rather than an explicit eager: eager is what the browser does anyway, and a card
+        // that says so out loud cannot be told apart from one that was asked for it.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.ImageUrl, "/images/a.png");
+        });
+
+        Assert.IsNull(component.Find(".bit-crd-img").GetAttribute("loading"));
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void BitCardCoverOverlayTest(bool coverOverlay)
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.ImageUrl, "/images/a.png");
+            parameters.Add(p => p.CoverOverlay, coverOverlay);
+        });
+
+        Assert.AreEqual(coverOverlay, component.Find(".bit-crd").ClassList.Contains("bit-crd-ovl"));
+    }
+
+    [TestMethod]
+    public void BitCardCoverOverlayShouldKeepTheCoverAndTheMainColumn()
+    {
+        // The overlay is only a layer change: the same cover and the same column of content are rendered, and
+        // the raised slots are still inside that column so a linked hero card keeps its controls.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.CoverOverlay, true);
+            parameters.Add(p => p.ImageUrl, "/images/a.png");
+            parameters.Add(p => p.Title, "Title");
+            parameters.Add(p => p.Footer, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "button");
+                builder.AddAttribute(1, "class", "ftr-btn");
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-crd-sct > .bit-crd-cvr > .bit-crd-img").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-crd-sct > .bit-crd-mai > .bit-crd-ftr > .ftr-btn").Count);
+    }
+
+    [TestMethod]
     public void BitCardCoverWidthShouldRenderItsCustomProperty()
     {
         var component = RenderComponent<BitCard>(parameters =>
@@ -1115,6 +1178,41 @@ public class BitCardTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCardLinkShouldNotBeNamedByATitleACustomHeaderTookOff()
+    {
+        // A custom header replaces the title and the subtitle, so neither id is on the page. Pointing the link
+        // at one of them anyway would name it after an element that was never rendered, which leaves it with no
+        // accessible name at all - worse than the href a reader would otherwise hear.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Title, "bit BlazorUI");
+            parameters.Add(p => p.Subtitle, "blazorui.bitplatform.dev");
+            parameters.Add(p => p.HeaderTemplate, (RenderFragment)(builder => builder.AddContent(0, "Custom")));
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-crd-ttl").Count);
+        Assert.IsNull(component.Find(".bit-crd-lnk").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitCardLinkAriaLabelShouldStillNameACustomHeaderCard()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Title, "bit BlazorUI");
+            parameters.Add(p => p.HeaderTemplate, (RenderFragment)(builder => builder.AddContent(0, "Custom")));
+            parameters.Add(p => p.AriaLabel, "Open the docs");
+        });
+
+        var link = component.Find(".bit-crd-lnk");
+
+        Assert.AreEqual("Open the docs", link.GetAttribute("aria-label"));
+        Assert.IsNull(link.GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
     public void BitCardLinkShouldTakeTheNameOffTheRoot()
     {
         // The name belongs to the control the reader lands on; a copy on the wrapper reads the words twice.
@@ -1266,6 +1364,25 @@ public class BitCardTests : BunitTestContext
         component.Find(".bit-crd").Click();
 
         Assert.IsFalse(selected);
+    }
+
+    [TestMethod]
+    public void BitCardLinkedShouldNotToggleTheSelectionButShouldStillClick()
+    {
+        var selected = false;
+        var clicked = false;
+
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.OnClick, () => clicked = true);
+            parameters.Bind(p => p.Selected, selected, v => selected = v);
+        });
+
+        component.Find(".bit-crd").Click();
+
+        Assert.IsFalse(selected);
+        Assert.IsTrue(clicked);
     }
 
     [TestMethod]
@@ -1628,6 +1745,33 @@ public class BitCardTests : BunitTestContext
 
         // The elevation was not set directly, so the cascaded one still applies.
         Assert.IsTrue(card.ClassList.Contains("bit-crd-e6"));
+    }
+
+    [TestMethod]
+    public void BitCardCascadedCoverParametersShouldReachTheCover()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitCardParams
+            {
+                CoverOverlay = true,
+                ImageLoading = BitImageLoading.Lazy
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitCard>(0);
+                builder.AddAttribute(1, nameof(BitCard.ImageUrl), "/images/a.png");
+                builder.CloseComponent();
+            });
+        });
+
+        Assert.IsTrue(component.Find(".bit-crd").ClassList.Contains("bit-crd-ovl"));
+        Assert.AreEqual("lazy", component.Find(".bit-crd-img").GetAttribute("loading"));
     }
 
     [TestMethod]

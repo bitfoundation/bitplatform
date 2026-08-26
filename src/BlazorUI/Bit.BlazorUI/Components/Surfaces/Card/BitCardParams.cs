@@ -43,6 +43,11 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// Lays the cover of the card behind its content instead of above it, filling the whole surface.
+    /// </summary>
+    public bool? CoverOverlay { get; set; }
+
+    /// <summary>
     /// The width of the cover of a horizontal card.
     /// </summary>
     public string? CoverWidth { get; set; }
@@ -91,6 +96,11 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
     /// The height of the cover image of the card.
     /// </summary>
     public string? ImageHeight { get; set; }
+
+    /// <summary>
+    /// The loading behavior of the cover image of the card, eager or lazy.
+    /// </summary>
+    public BitImageLoading? ImageLoading { get; set; }
 
     /// <summary>
     /// Sets the maximum height of the card.
@@ -214,6 +224,13 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
             bitCard.ClassBuilder.Reset();
         }
 
+        if (CoverOverlay.HasValue && bitCard.HasNotBeenSet(nameof(CoverOverlay)))
+        {
+            bitCard.CoverOverlay = CoverOverlay.Value;
+
+            bitCard.ClassBuilder.Reset();
+        }
+
         if (Elevation.HasValue && bitCard.HasNotBeenSet(nameof(Elevation)))
         {
             bitCard.Elevation = Elevation.Value;
@@ -259,6 +276,11 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
             bitCard.Hoverable = Hoverable.Value;
 
             bitCard.ClassBuilder.Reset();
+        }
+
+        if (ImageLoading.HasValue && bitCard.HasNotBeenSet(nameof(ImageLoading)))
+        {
+            bitCard.ImageLoading = ImageLoading.Value;
         }
 
         if (NoPadding.HasValue && bitCard.HasNotBeenSet(nameof(NoPadding)))

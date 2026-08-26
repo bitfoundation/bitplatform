@@ -74,8 +74,11 @@
             <b>ImageUrl</b> puts a picture at the head of the card, outside the padding and clipped to the corner the card draws.
             <b>ImageHeight</b> fixes how tall it is and the picture is cropped to fill that box rather than stretched, so a row of
             cards keeps one picture height whatever the aspect ratios are. The picture is decorative next to the title beside it, so
-            it renders an empty alt unless <b>ImageAlt</b> says otherwise. <b>Cover</b> takes a template instead, for a head that is
-            not a single picture - a chart, a carousel, a video.
+            it renders an empty alt unless <b>ImageAlt</b> says otherwise, and <b>ImageLoading</b> hands the browser the picture of
+            a card that is still below the fold to fetch later. <b>Cover</b> takes a template instead, for a head that is not a
+            single picture - a chart, a carousel, a video. <b>CoverOverlay</b> moves the cover behind the content rather than above
+            it, which is the hero card: give the card a <b>Height</b> of its own, since a cover behind the content no longer makes
+            the card as tall as the picture, and a foreground the words can be read against - the picture carries no scrim.
         </div>
         <br /><br />
         <div class="card-row">
@@ -95,6 +98,19 @@
                         The Cover template takes the place of the image.
                     </BitText>
                 </ChildContent>
+            </BitCard>
+
+            <BitCard Title="Olympic National Park" Subtitle="Washington, USA" Class="example-hero"
+                     CoverOverlay ImageUrl="/images/carousel/img2.jpg" ImageLoading="BitImageLoading.Lazy"
+                     Width="18rem" Height="14rem">
+                <ChildContent>
+                    <BitText Typography="BitTypography.Body2">
+                        An overlaid cover fills the card and the content is written over it.
+                    </BitText>
+                </ChildContent>
+                <Footer>
+                    <BitButton Variant="BitVariant.Fill" Size="BitSize.Small">Explore</BitButton>
+                </Footer>
             </BitCard>
         </div>
     </DemoExample>
@@ -206,8 +222,8 @@
         <div>
             Binding <b>Selected</b> turns the card into a toggle the same way a click handler turns it into a button: clicking or
             pressing Enter flips the value and the card reports its state through <code>aria-pressed</code>. A picked card is marked
-            with a thicker rule in the primary color rather than a new fill, so the state survives whatever <b>Color</b> the card is
-            already wearing.
+            with a thicker rule rather than a new fill, so the state survives whatever <b>Color</b> the card is already wearing: the
+            rule is drawn in the primary color, or in the fill's own foreground on a card that is already painted in a role.
         </div>
         <br /><br />
         <div class="card-row">
@@ -473,7 +489,8 @@
             reports itself as a <code>button</code>, takes focus and answers Enter and Space; a bound <b>Selected</b> reports the
             state through <code>aria-pressed</code>; <b>Loading</b> reports the card as busy; and <b>IsEnabled="false"</b> takes it
             out of the tab order and marks it disabled. A linked card hands its name to the anchor stretched over it rather than
-            keeping a second copy on the wrapper.
+            keeping a second copy on the wrapper - and since a <b>HeaderTemplate</b> takes the title and the subtitle off the card,
+            a linked card with a header of its own has nothing left to be named by and wants an <b>AriaLabel</b>.
         </div>
         <br /><br />
         <div class="card-row">
