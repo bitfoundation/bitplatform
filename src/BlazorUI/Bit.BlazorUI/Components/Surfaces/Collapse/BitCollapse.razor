@@ -7,10 +7,18 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
      aria-label="@AriaLabel">
-    <div role="region"
+    <div id="@ContentId"
+         role="@_role"
          style="@Styles?.Content"
          class="bit-col-con @(Expanded ? "bit-col-cex" : "bit-col-cco") @Classes?.Content"
-         tabindex="@(IsEnabled ? 0 : -1)">
-        @ChildContent
+         inert="@_inert"
+         tabindex="@(IsEnabled && _visible ? 0 : -1)"
+         aria-labelledby="@LabelledBy">
+        <div style="@Styles?.Wrapper" class="bit-col-wrp @Classes?.Wrapper">
+            @if (_renderContent)
+            {
+                @(ChildContent ?? Body)
+            }
+        </div>
     </div>
 </div>

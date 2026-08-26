@@ -1,6 +1,14 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-col {
+    // The three knobs the component writes as custom properties on this element, each falling back to the
+    // motion theme so a collapse that sets none of them animates exactly like every other transition in the
+    // library - and stops when the reader asks for reduced motion, which is what the theme token does.
+    --bit-col-duration: var(--bit-col-dur, #{$mot-duration-long});
+    --bit-col-easing: var(--bit-col-eas, #{$mot-easing});
+    --bit-col-delay: var(--bit-col-del, 0ms);
+    --bit-col-size: var(--bit-col-csz, 0px);
+
     width: 100%;
     font-weight: $tg-fw-regular;
     color: $clr-fg-pri;
@@ -15,21 +23,125 @@
     }
 }
 
-.bit-col-con {
-    height: auto;
-    overflow: hidden;
-    padding: 0 spacing(1.5);
-    transition: all $mot-duration-long $mot-easing 0ms;
+
+.bit-col-pbg {
+    background-color: $clr-bg-pri;
 }
 
-.bit-col-cco {
-    opacity: 0;
-    max-height: 0;
-    margin: spacing(-1.5) 0;
+.bit-col-sbg {
+    background-color: $clr-bg-sec;
+}
+
+.bit-col-tbg {
+    background-color: $clr-bg-ter;
+}
+
+.bit-col-rbg {
+    background-color: transparent;
+}
+
+
+// The size is animated by the grid track rather than by a max-height guess: a track going from 0fr to 1fr
+// interpolates, so the collapse opens to whatever its content actually measures and closes to nothing,
+// with no magic number to keep in sync with the content and nothing to clip when the content outgrows it.
+.bit-col-con {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows var(--bit-col-duration) var(--bit-col-easing) var(--bit-col-delay),
+                opacity var(--bit-col-duration) var(--bit-col-easing) var(--bit-col-delay),
+                visibility 0s linear var(--bit-col-delay);
+
+    // The content region is keyboard-focusable while it is on the screen; the outline is inset so it stays
+    // inside the box the collapse clips rather than poking past its edge.
+    &:focus-visible {
+        outline: #{$shp-focus-ring-width} solid $clr-pri-focus;
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+    }
 }
 
 .bit-col-cex {
     opacity: 1;
-    height: auto;
-    margin: spacing(1.5) 0;
+    grid-template-rows: 1fr;
+}
+
+.bit-col-cco {
+    opacity: 0;
+    visibility: hidden;
+    grid-template-rows: 0fr;
+    // Opening shows the content at once and then grows the track; closing has to keep the content on the
+    // screen for the whole of the transition and only take it out of the accessibility tree at the end,
+    // which is what the duration-long delay on visibility is for.
+    transition-delay: var(--bit-col-delay),
+                      var(--bit-col-delay),
+                      calc(var(--bit-col-delay) + var(--bit-col-duration));
+}
+
+// min-height:0 is what lets the 0fr track actually reach zero - a grid item contributes its min-content size
+// to an fr track otherwise - and overflow:hidden is what clips the content while the track is smaller than it.
+.bit-col-wrp {
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    padding: spacing(1.5);
+}
+
+.bit-col-npd > .bit-col-con > .bit-col-wrp {
+    padding: 0;
+}
+
+
+// A peek keeps part of the content on the screen while the collapse is closed, so the fade is taken off and
+// the floor of the collapsed track is raised to the requested size instead of falling to nothing.
+.bit-col-pek {
+    > .bit-col-con > .bit-col-wrp {
+        min-height: var(--bit-col-size);
+    }
+
+    // inherit rather than visible, so a collapse the Visibility parameter has hidden stays hidden.
+    > .bit-col-cco {
+        visibility: inherit;
+    }
+}
+
+
+.bit-col-nfd > .bit-col-cco {
+    opacity: 1;
+}
+
+
+// A horizontal collapse is the same track animation turned a quarter: the columns carry the size, the root
+// shrinks to its content instead of filling the line, and the wrapper keeps its natural width so the track
+// clips it rather than reflowing it a word at a time.
+.bit-col-hor {
+    width: max-content;
+    max-width: 100%;
+
+    > .bit-col-con {
+        grid-template-rows: none;
+        transition-property: grid-template-columns, opacity, visibility;
+    }
+
+    > .bit-col-cex {
+        grid-template-columns: 1fr;
+    }
+
+    > .bit-col-cco {
+        grid-template-columns: 0fr;
+    }
+
+    > .bit-col-con > .bit-col-wrp {
+        width: max-content;
+        max-width: 100%;
+    }
+
+    &.bit-col-pek > .bit-col-con > .bit-col-wrp {
+        min-height: 0;
+        min-width: var(--bit-col-size);
+    }
+}
+
+
+// Last, so it wins over the transition-property the horizontal rules above put back on the content.
+.bit-col-nan > .bit-col-con {
+    transition: none;
 }
