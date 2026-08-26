@@ -98,8 +98,11 @@ $icon-cell-gap: 8px;
             outline-offset: rem2(-2px);
         }
 
+        // Inset for the same reason as the focus ring above, and so a cell at the edge of the
+        // scroller is not clipped by its overflow.
         &.selected {
             outline: rem2(1px) solid $bit-color-primary;
+            outline-offset: rem2(-1px);
         }
     }
 }

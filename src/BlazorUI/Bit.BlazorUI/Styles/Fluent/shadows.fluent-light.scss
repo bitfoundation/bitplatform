@@ -37,6 +37,14 @@
     --bit-shd-tooltip: 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.132), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.108); //depth8
     --bit-shd-snackbar: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108); //depth16
 
+    // App bars cast towards the content they cover - downwards for the header, upwards for the
+    // footer - at the depth Fabric's own CommandBar sits at. They are declared here rather than
+    // left to family-tokens.scss, whose fallback tints them with the FOREGROUND color so that a
+    // theme which says nothing still gets a visible edge on a dark surface; a real Fluent shadow is
+    // black in both schemes, and the dark file pairs it with a hairline instead.
+    --bit-shd-appbar-top: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108); //depth4
+    --bit-shd-appbar-bottom: 0 -1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 -0.3px 0.9px 0 rgba(0, 0, 0, 0.108); //depth4, mirrored
+
     // shadow sizes - the generic ramp the .bit-css-shd-* utilities and a handful of components read,
     // mapped onto six steps of the same depth formula.
     --bit-shd-sm: 0 0.8px 1.8px 0 rgba(0, 0, 0, 0.132), 0 0.15px 0.45px 0 rgba(0, 0, 0, 0.108); //depth2

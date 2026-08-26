@@ -1,64 +1,82 @@
 // Fluent - dark elevation. The same Fabric depth geometry as the light scheme (see
-// shadows.fluent-light.scss for the formula and the per-family mapping), at twice the alpha - which
-// is the step Fluent 2 itself takes from its light shadow tokens to its dark ones.
+// shadows.fluent-light.scss for the formula and the per-family mapping) in the same BLACK, at twice
+// the alpha - which is the step Fluent 2 itself takes from its light shadow tokens to its dark ones
+// (colorNeutralShadowKey .14 -> .28, colorNeutralShadowAmbient .12 -> .24). A shadow is an absence
+// of light; inverting it to white on a dark surface turns it into a glow, which is not a thing
+// either Fluent draws.
 //
-// The color is the one deliberate departure from Fabric, which keeps its shadows black on a dark
-// surface: this library's floating surfaces carry no stroke of their own - a callout is
-// `background-color: $clr-bg-pri` with a radius and a shadow, nothing else - and the page behind it
-// is that same color, so a black shadow would leave a dark callout on a dark page with nothing
-// separating the two. Fluent 2 can afford black on dark because every one of its floating surfaces
-// also draws a colorNeutralStroke hairline. Until these surfaces do, the shadow is the whole of the
-// separation and has to be lighter than what it sits on.
+// What makes black work here is the ring below. This library's floating surfaces carry no stroke of
+// their own - a callout is `background-color: $clr-bg-pri` with a radius and a shadow, nothing else
+// - and the page behind one is that same color, so a black shadow alone would leave a dark callout
+// on a dark page with nothing separating the two. Fluent 2 solves this with a colorNeutralStroke
+// hairline on every floating surface; adding one here as the first layer of the shadow itself gets
+// the same edge without every one of the two dozen surfaces having to grow a border of its own -
+// and it follows the surface's border-radius, costs no layout, and is themed by the palette's own
+// subtlest stroke tier rather than by a color written down here.
+//
+// The ring is on every elevation a surface can be raised by, including the numbered ramp: BitCard
+// sets `border: none` and its Elevation classes replace the shadow outright, so a dark elevated
+// card has nothing else to be separated by. It is deliberately NOT on --bit-shd-inner (an inset
+// shadow, where an outer ring would be nonsense) or on the app bars (which draw a line towards the
+// content they cover, not around themselves).
 //
 // Scoped-preset twins: see the note in colors.fluent-light.scss.
+$dark-surface-ring: 0 0 0 #{$shp-border-width} #{$clr-brd-ter};
+
 :root[bit-theme="dark"],
 :root [bit-theme="dark"],
 :root[bit-theme="fluent-dark"],
 :root [bit-theme="fluent-dark"] {
     // shadows-callout
-    --bit-shd-cal: 0 6.4px 14.4px 0 rgba(255, 255, 255, 0.264), 0 1.2px 3.6px 0 rgba(255, 255, 255, 0.216); //depth16
-    --bit-shd-cal2: 0 25.6px 57.6px 0 rgba(255, 255, 255, 0.44), 0 4.8px 14.4px 0 rgba(255, 255, 255, 0.36); //depth64
+    --bit-shd-cal: #{$dark-surface-ring}, 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.264), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.216); //depth16
+    --bit-shd-cal2: #{$dark-surface-ring}, 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.44), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.36); //depth64
 
     // Per surface family - the same depths the light scheme assigns.
-    --bit-shd-card: 0 1.6px 3.6px 0 rgba(255, 255, 255, 0.264), 0 0.3px 0.9px 0 rgba(255, 255, 255, 0.216); //depth4
-    --bit-shd-popup: 0 6.4px 14.4px 0 rgba(255, 255, 255, 0.264), 0 1.2px 3.6px 0 rgba(255, 255, 255, 0.216); //depth16
-    --bit-shd-dialog: 0 25.6px 57.6px 0 rgba(255, 255, 255, 0.44), 0 4.8px 14.4px 0 rgba(255, 255, 255, 0.36); //depth64
-    --bit-shd-sheet: 0 25.6px 57.6px 0 rgba(255, 255, 255, 0.44), 0 4.8px 14.4px 0 rgba(255, 255, 255, 0.36); //depth64
-    --bit-shd-tooltip: 0 3.2px 7.2px 0 rgba(255, 255, 255, 0.264), 0 0.6px 1.8px 0 rgba(255, 255, 255, 0.216); //depth8
-    --bit-shd-snackbar: 0 6.4px 14.4px 0 rgba(255, 255, 255, 0.264), 0 1.2px 3.6px 0 rgba(255, 255, 255, 0.216); //depth16
+    --bit-shd-card: #{$dark-surface-ring}, 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.264), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.216); //depth4
+    --bit-shd-popup: #{$dark-surface-ring}, 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.264), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.216); //depth16
+    --bit-shd-dialog: #{$dark-surface-ring}, 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.44), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.36); //depth64
+    --bit-shd-sheet: #{$dark-surface-ring}, 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.44), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.36); //depth64
+    --bit-shd-tooltip: #{$dark-surface-ring}, 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.264), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.216); //depth8
+    --bit-shd-snackbar: #{$dark-surface-ring}, 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.264), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.216); //depth16
+
+    // App bars take a DIRECTIONAL hairline rather than the ring - a line under the header and over
+    // the footer, which is the edge the bar is separated by - ahead of the same black depth4 the
+    // light scheme casts.
+    --bit-shd-appbar-top: 0 #{$shp-border-width} 0 0 #{$clr-brd-ter}, 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.264), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.216); //depth4
+    --bit-shd-appbar-bottom: 0 calc(-1 * #{$shp-border-width}) 0 0 #{$clr-brd-ter}, 0 -1.6px 3.6px 0 rgba(0, 0, 0, 0.264), 0 -0.3px 0.9px 0 rgba(0, 0, 0, 0.216); //depth4, mirrored
 
     // shadow sizes
-    --bit-shd-sm: 0 0.8px 1.8px 0 rgba(255, 255, 255, 0.264), 0 0.15px 0.45px 0 rgba(255, 255, 255, 0.216); //depth2
-    --bit-shd-nm: 0 1.6px 3.6px 0 rgba(255, 255, 255, 0.264), 0 0.3px 0.9px 0 rgba(255, 255, 255, 0.216); //depth4
-    --bit-shd-md: 0 3.2px 7.2px 0 rgba(255, 255, 255, 0.264), 0 0.6px 1.8px 0 rgba(255, 255, 255, 0.216); //depth8
-    --bit-shd-lg: 0 6.4px 14.4px 0 rgba(255, 255, 255, 0.264), 0 1.2px 3.6px 0 rgba(255, 255, 255, 0.216); //depth16
-    --bit-shd-xl: 0 12.8px 28.8px 0 rgba(255, 255, 255, 0.264), 0 2.4px 7.2px 0 rgba(255, 255, 255, 0.216); //depth32
-    --bit-shd-2xl: 0 25.6px 57.6px 0 rgba(255, 255, 255, 0.44), 0 4.8px 14.4px 0 rgba(255, 255, 255, 0.36); //depth64
-    --bit-shd-inner: inset 0 1.6px 3.6px 0 rgba(255, 255, 255, 0.264), inset 0 0.3px 0.9px 0 rgba(255, 255, 255, 0.216); //depth4, turned inward
+    --bit-shd-sm: #{$dark-surface-ring}, 0 0.8px 1.8px 0 rgba(0, 0, 0, 0.264), 0 0.15px 0.45px 0 rgba(0, 0, 0, 0.216); //depth2
+    --bit-shd-nm: #{$dark-surface-ring}, 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.264), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.216); //depth4
+    --bit-shd-md: #{$dark-surface-ring}, 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.264), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.216); //depth8
+    --bit-shd-lg: #{$dark-surface-ring}, 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.264), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.216); //depth16
+    --bit-shd-xl: #{$dark-surface-ring}, 0 12.8px 28.8px 0 rgba(0, 0, 0, 0.264), 0 2.4px 7.2px 0 rgba(0, 0, 0, 0.216); //depth32
+    --bit-shd-2xl: #{$dark-surface-ring}, 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.44), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.36); //depth64
+    --bit-shd-inner: inset 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.264), inset 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.216); //depth4, turned inward
 
     // shadows - BitCard's Elevation (1..24), dealt across the six depths in even bands of four.
-    --bit-shd-1: 0 0.8px 1.8px 0 rgba(255, 255, 255, 0.264), 0 0.15px 0.45px 0 rgba(255, 255, 255, 0.216); //depth2
-    --bit-shd-2: 0 0.8px 1.8px 0 rgba(255, 255, 255, 0.264), 0 0.15px 0.45px 0 rgba(255, 255, 255, 0.216);
-    --bit-shd-3: 0 0.8px 1.8px 0 rgba(255, 255, 255, 0.264), 0 0.15px 0.45px 0 rgba(255, 255, 255, 0.216);
-    --bit-shd-4: 0 0.8px 1.8px 0 rgba(255, 255, 255, 0.264), 0 0.15px 0.45px 0 rgba(255, 255, 255, 0.216);
-    --bit-shd-5: 0 1.6px 3.6px 0 rgba(255, 255, 255, 0.264), 0 0.3px 0.9px 0 rgba(255, 255, 255, 0.216); //depth4
-    --bit-shd-6: 0 1.6px 3.6px 0 rgba(255, 255, 255, 0.264), 0 0.3px 0.9px 0 rgba(255, 255, 255, 0.216);
-    --bit-shd-7: 0 1.6px 3.6px 0 rgba(255, 255, 255, 0.264), 0 0.3px 0.9px 0 rgba(255, 255, 255, 0.216);
-    --bit-shd-8: 0 1.6px 3.6px 0 rgba(255, 255, 255, 0.264), 0 0.3px 0.9px 0 rgba(255, 255, 255, 0.216);
-    --bit-shd-9: 0 3.2px 7.2px 0 rgba(255, 255, 255, 0.264), 0 0.6px 1.8px 0 rgba(255, 255, 255, 0.216); //depth8
-    --bit-shd-10: 0 3.2px 7.2px 0 rgba(255, 255, 255, 0.264), 0 0.6px 1.8px 0 rgba(255, 255, 255, 0.216);
-    --bit-shd-11: 0 3.2px 7.2px 0 rgba(255, 255, 255, 0.264), 0 0.6px 1.8px 0 rgba(255, 255, 255, 0.216);
-    --bit-shd-12: 0 3.2px 7.2px 0 rgba(255, 255, 255, 0.264), 0 0.6px 1.8px 0 rgba(255, 255, 255, 0.216);
-    --bit-shd-13: 0 6.4px 14.4px 0 rgba(255, 255, 255, 0.264), 0 1.2px 3.6px 0 rgba(255, 255, 255, 0.216); //depth16
-    --bit-shd-14: 0 6.4px 14.4px 0 rgba(255, 255, 255, 0.264), 0 1.2px 3.6px 0 rgba(255, 255, 255, 0.216);
-    --bit-shd-15: 0 6.4px 14.4px 0 rgba(255, 255, 255, 0.264), 0 1.2px 3.6px 0 rgba(255, 255, 255, 0.216);
-    --bit-shd-16: 0 6.4px 14.4px 0 rgba(255, 255, 255, 0.264), 0 1.2px 3.6px 0 rgba(255, 255, 255, 0.216);
-    --bit-shd-17: 0 12.8px 28.8px 0 rgba(255, 255, 255, 0.264), 0 2.4px 7.2px 0 rgba(255, 255, 255, 0.216); //depth32
-    --bit-shd-18: 0 12.8px 28.8px 0 rgba(255, 255, 255, 0.264), 0 2.4px 7.2px 0 rgba(255, 255, 255, 0.216);
-    --bit-shd-19: 0 12.8px 28.8px 0 rgba(255, 255, 255, 0.264), 0 2.4px 7.2px 0 rgba(255, 255, 255, 0.216);
-    --bit-shd-20: 0 12.8px 28.8px 0 rgba(255, 255, 255, 0.264), 0 2.4px 7.2px 0 rgba(255, 255, 255, 0.216);
-    --bit-shd-21: 0 25.6px 57.6px 0 rgba(255, 255, 255, 0.44), 0 4.8px 14.4px 0 rgba(255, 255, 255, 0.36); //depth64
-    --bit-shd-22: 0 25.6px 57.6px 0 rgba(255, 255, 255, 0.44), 0 4.8px 14.4px 0 rgba(255, 255, 255, 0.36);
-    --bit-shd-23: 0 25.6px 57.6px 0 rgba(255, 255, 255, 0.44), 0 4.8px 14.4px 0 rgba(255, 255, 255, 0.36);
-    --bit-shd-24: 0 25.6px 57.6px 0 rgba(255, 255, 255, 0.44), 0 4.8px 14.4px 0 rgba(255, 255, 255, 0.36);
+    --bit-shd-1: #{$dark-surface-ring}, 0 0.8px 1.8px 0 rgba(0, 0, 0, 0.264), 0 0.15px 0.45px 0 rgba(0, 0, 0, 0.216); //depth2
+    --bit-shd-2: #{$dark-surface-ring}, 0 0.8px 1.8px 0 rgba(0, 0, 0, 0.264), 0 0.15px 0.45px 0 rgba(0, 0, 0, 0.216);
+    --bit-shd-3: #{$dark-surface-ring}, 0 0.8px 1.8px 0 rgba(0, 0, 0, 0.264), 0 0.15px 0.45px 0 rgba(0, 0, 0, 0.216);
+    --bit-shd-4: #{$dark-surface-ring}, 0 0.8px 1.8px 0 rgba(0, 0, 0, 0.264), 0 0.15px 0.45px 0 rgba(0, 0, 0, 0.216);
+    --bit-shd-5: #{$dark-surface-ring}, 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.264), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.216); //depth4
+    --bit-shd-6: #{$dark-surface-ring}, 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.264), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.216);
+    --bit-shd-7: #{$dark-surface-ring}, 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.264), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.216);
+    --bit-shd-8: #{$dark-surface-ring}, 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.264), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.216);
+    --bit-shd-9: #{$dark-surface-ring}, 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.264), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.216); //depth8
+    --bit-shd-10: #{$dark-surface-ring}, 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.264), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.216);
+    --bit-shd-11: #{$dark-surface-ring}, 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.264), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.216);
+    --bit-shd-12: #{$dark-surface-ring}, 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.264), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.216);
+    --bit-shd-13: #{$dark-surface-ring}, 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.264), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.216); //depth16
+    --bit-shd-14: #{$dark-surface-ring}, 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.264), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.216);
+    --bit-shd-15: #{$dark-surface-ring}, 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.264), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.216);
+    --bit-shd-16: #{$dark-surface-ring}, 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.264), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.216);
+    --bit-shd-17: #{$dark-surface-ring}, 0 12.8px 28.8px 0 rgba(0, 0, 0, 0.264), 0 2.4px 7.2px 0 rgba(0, 0, 0, 0.216); //depth32
+    --bit-shd-18: #{$dark-surface-ring}, 0 12.8px 28.8px 0 rgba(0, 0, 0, 0.264), 0 2.4px 7.2px 0 rgba(0, 0, 0, 0.216);
+    --bit-shd-19: #{$dark-surface-ring}, 0 12.8px 28.8px 0 rgba(0, 0, 0, 0.264), 0 2.4px 7.2px 0 rgba(0, 0, 0, 0.216);
+    --bit-shd-20: #{$dark-surface-ring}, 0 12.8px 28.8px 0 rgba(0, 0, 0, 0.264), 0 2.4px 7.2px 0 rgba(0, 0, 0, 0.216);
+    --bit-shd-21: #{$dark-surface-ring}, 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.44), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.36); //depth64
+    --bit-shd-22: #{$dark-surface-ring}, 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.44), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.36);
+    --bit-shd-23: #{$dark-surface-ring}, 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.44), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.36);
+    --bit-shd-24: #{$dark-surface-ring}, 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.44), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.36);
 }
