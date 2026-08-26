@@ -15,17 +15,13 @@
     var titleId = hasTitle ? $"{_Id}-ttl" : null;
     var subtitleId = hasSubtitle ? $"{_Id}-sub" : null;
 
-    @* A card title is the heading of the section the card is, but only where the page says so: a level turns
-       it into one, and without a level it stays the plain line of text it looks like. The heading is a div
-       carrying role/aria-level rather than an h1-h6, so no user-agent heading styles have to be undone. *@
-    var headingLevel = HeadingLevel is >= 1 and <= 6 ? HeadingLevel : null;
-
     @* An attribute written after the splat wins over the one the app passed in through HtmlAttributes, and a
        null one takes it off the element altogether. What the card has of its own therefore comes first, but
        it falls back to whatever came in with the attributes. *@
     var splattedRole = HtmlAttributes.TryGetValue("role", out var srl) ? srl?.ToString() : null;
     var splattedLabel = HtmlAttributes.TryGetValue("aria-label", out var sal) ? sal?.ToString() : null;
     var splattedTabIndex = HtmlAttributes.TryGetValue("tabindex", out var sti) ? sti?.ToString() : null;
+    var splattedLabelledBy = HtmlAttributes.TryGetValue("aria-labelledby", out var slb) ? slb?.ToString() : null;
 
     var label = AriaLabel ?? splattedLabel;
     var tabIndex = TabIndex ?? splattedTabIndex;
@@ -36,10 +32,33 @@
     var labelOnRoot = _IsLink is false;
 
     @* A clickable card is a button in everything but its tag name, so it reports itself as one. A card that
-       is not a control but does carry a name needs a role for that name to be announced at all - aria-label
-       on a plain div is not guaranteed to be read - and "group" is the role of a box that holds related
-       things without being a landmark. A role the app splatted in itself always wins over both. *@
-    var role = splattedRole ?? (_IsButton ? "button" : (labelOnRoot && label.HasValue() ? "group" : null));
+       is not a control but does carry a name - through AriaLabel, or through an aria-labelledby pointing at a
+       heading elsewhere on the page - needs a role for that name to be announced at all, since a name on a
+       plain div is not guaranteed to be read, and "group" is the role of a box that holds related things
+       without being a landmark. A role the app splatted in itself always wins over both. *@
+    var isNamed = label.HasValue() || splattedLabelledBy.HasValue();
+    var role = splattedRole ?? (_IsButton ? "button" : (labelOnRoot && isNamed ? "group" : null));
+
+    @* Some roles present their children: what is inside one of them is read as the name of the control rather
+       than as structure, so nothing in there is ever reached on its own. A card wearing one - the button it
+       becomes with a click handler above all, but an option or a tab splatted in just the same - therefore has
+       no heading in it whatever the page asks for, and a heading role that can never be reached is one more
+       thing for a validator to flag. The list is the one ARIA gives for "children presentational: true". *@
+    var presentsItsChildren = role is "button" or "checkbox" or "img" or "menuitemcheckbox" or "menuitemradio"
+                                   or "option" or "progressbar" or "radio" or "scrollbar" or "separator"
+                                   or "slider" or "switch" or "tab";
+
+    @* A card title is the heading of the section the card is, but only where the page says so: a level turns
+       it into one, and without a level it stays the plain line of text it looks like. The heading is a div
+       carrying role/aria-level rather than an h1-h6, so no user-agent heading styles have to be undone. *@
+    var headingLevel = presentsItsChildren is false && HeadingLevel is >= 1 and <= 6 ? HeadingLevel : null;
+
+    @* A card that carries a selection reports it with the state the role it ended up with actually carries: a
+       button says aria-pressed, while the roles that make a card an item of a list, a grid or a tab strip say
+       aria-selected instead. A card with neither role has nothing to report the state with - which is why the
+       Selected docs ask for such a role to be splatted in - and is left with only the ring to show for it. *@
+    var selectedRole = role is "option" or "row" or "gridcell" or "tab" or "treeitem" or "columnheader" or "rowheader";
+    var selectedState = _IsSelectable ? (Selected ? "true" : "false") : null;
 
     @* aria-disabled is a widget attribute rather than a global one: a div with no role of its own maps to the
        generic role, which prohibits it, and a validator flags it there. It is only reported where the card has
@@ -47,15 +66,18 @@
        or whatever the app splatted in. What actually takes a disabled card off the pointer and out of the tab
        order is the bit-dis class and the missing tab index, and neither of those depends on this. *@
 
-    @* The stretched link carries no text of its own, so what names it is the title of the card - and failing
-       that its subtitle, which is the only other thing on the card that says what it is. A linked card with
-       neither has nothing to be named by and needs an AriaLabel. *@
-    var linkLabelledBy = label.HasValue() ? null : (titleId ?? subtitleId);
+    @* The stretched link carries no text of its own, so what names it is whatever the card was named by: an
+       aria-labelledby the app splatted in, or failing that the title of the card, or failing that its subtitle,
+       which is the only other thing on the card that says what it is. A linked card with none of them has
+       nothing to be named by and needs an AriaLabel. *@
+    var linkLabelledBy = label.HasValue() ? null : (splattedLabelledBy ?? titleId ?? subtitleId);
 
     @* A linked card hands its tab index to the anchor stretched over it, which is the control a reader lands
        on; a copy of it on the wrapper as well would be two tab stops on something the reader sees as a single
-       thing. *@
-    var rootTabIndex = _IsButton ? (IsEnabled ? (tabIndex ?? "0") : null) : (_IsLink ? null : tabIndex);
+       thing. A card that is a button is reachable by the keyboard without being asked, and a disabled card of
+       any kind leaves the tab order altogether - a stop the keyboard can still land on but nothing answers on
+       is worse than no stop at all. *@
+    var rootTabIndex = _IsLink || IsEnabled is false ? null : (_IsButton ? (tabIndex ?? "0") : tabIndex);
 
     var onClick = OnClick.HasDelegate || _IsToggle
                 ? EventCallback.Factory.Create<MouseEventArgs>(this, HandleOnClick)
@@ -76,7 +98,9 @@
      role="@role"
      tabindex="@rootTabIndex"
      aria-label="@(labelOnRoot ? label : null)"
-     aria-pressed="@(_IsButton && _IsSelectable ? (Selected ? "true" : "false") : null)"
+     aria-labelledby="@(labelOnRoot ? splattedLabelledBy : null)"
+     aria-pressed="@(role is "button" ? selectedState : null)"
+     aria-selected="@(selectedRole ? selectedState : null)"
      aria-busy="@(Loading ? "true" : null)"
      aria-disabled="@(role is not null && IsEnabled is false ? "true" : null)"
      style="@StyleBuilder.Value"
@@ -87,8 +111,9 @@
         @* The card is not wrapped in the anchor: an anchor around the whole card is invalid the moment the
            card holds a link or a button of its own, and a screen reader reads the entire card out as the name
            of that one link. The anchor is laid over the surface instead, which is the block-link pattern every
-           design system settled on, and it is named after the title so a page of linked cards reads as a list
-           of destinations rather than a list of identical links. *@
+           design system settled on, and it is named after whatever names the card - its label, the heading an
+           aria-labelledby points at, its title - so a page of linked cards reads as a list of destinations
+           rather than a list of identical links. *@
         <a @ref="_linkRef"
            style="@Styles?.Link"
            class="bit-crd-lnk @Classes?.Link"
@@ -106,8 +131,15 @@
     {
         @* Over the surface rather than in the column of parts, and over the stretched link with it, so the control a
            picture card keeps in its corner is reachable on a card whose header is under the picture - or on a card
-           that has no header at all. *@
-        <div style="@Styles?.FloatingActions" class="bit-crd-fac @Classes?.FloatingActions">@FloatingActions</div>
+           that has no header at all.
+
+           Like the two slots inside the column of parts, it keeps the events of the controls in it away from the click
+           of a card that has one of its own: pressing the favourite toggle of such a card is pressing the toggle, and
+           not the card under it as well. *@
+        <div @onclick:stopPropagation="_IsClickable"
+             @onkeydown:stopPropagation="_IsClickable"
+             style="@Styles?.FloatingActions"
+             class="bit-crd-fac @Classes?.FloatingActions">@FloatingActions</div>
     }
 
     @if (_IsSectioned)
@@ -179,8 +211,13 @@
                         @if (Actions is not null)
                         {
                             @* Outside the title block and raised above the stretched link, so the controls it holds
-                               are controls of their own rather than part of whatever the card leads to. *@
-                            <div style="@Styles?.Actions" class="bit-crd-act @Classes?.Actions">@Actions</div>
+                               are controls of their own rather than part of whatever the card leads to - and on a card
+                               that has a click of its own, the click and the key press stop here rather than reaching
+                               the root as well, so acting on the menu of a card is not also acting on the card. *@
+                            <div @onclick:stopPropagation="_IsClickable"
+                                 @onkeydown:stopPropagation="_IsClickable"
+                                 style="@Styles?.Actions"
+                                 class="bit-crd-act @Classes?.Actions">@Actions</div>
                         }
                     </div>
                 }
@@ -212,8 +249,12 @@
                 @if (Footer is not null)
                 {
                     @* Raised above the stretched link for the same reason the header actions are: the buttons of a
-                       linked card have to stay reachable by the pointer and by the keyboard. *@
-                    <div style="@Styles?.Footer" class="bit-crd-ftr @Classes?.Footer">@Footer</div>
+                       linked card have to stay reachable by the pointer and by the keyboard, and their events stop
+                       here on a card that has a click of its own rather than firing it a second time. *@
+                    <div @onclick:stopPropagation="_IsClickable"
+                         @onkeydown:stopPropagation="_IsClickable"
+                         style="@Styles?.Footer"
+                         class="bit-crd-ftr @Classes?.Footer">@Footer</div>
                 }
             </div>
         }

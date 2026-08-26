@@ -668,6 +668,83 @@ public class BitCardTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCardHeadingLevelShouldBeDroppedOnACardThatIsAButton()
+    {
+        // The children of a button are presentational: what is in one is read as the name of the control rather
+        // than as structure, so a heading role in there is never reached and is a thing for a validator to flag.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Title, "Title");
+            parameters.Add(p => p.HeadingLevel, 3);
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        var title = component.Find(".bit-crd-ttl");
+
+        Assert.AreEqual("button", component.Find(".bit-crd").GetAttribute("role"));
+        Assert.IsNull(title.GetAttribute("role"));
+        Assert.IsNull(title.GetAttribute("aria-level"));
+    }
+
+    [TestMethod]
+    [DataRow("option")]
+    [DataRow("tab")]
+    [DataRow("switch")]
+    public void BitCardHeadingLevelShouldBeDroppedOnAnyRoleThatPresentsItsChildren(string role)
+    {
+        // A button is not the only role whose contents are read as its name rather than as structure.
+        var component = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Title), "Title");
+            builder.AddAttribute(2, nameof(BitCard.HeadingLevel), 3);
+            builder.AddAttribute(3, "role", role);
+        });
+
+        var title = component.Find(".bit-crd-ttl");
+
+        Assert.IsNull(title.GetAttribute("role"));
+        Assert.IsNull(title.GetAttribute("aria-level"));
+    }
+
+    [TestMethod]
+    public void BitCardHeadingLevelShouldSurviveARoleThatIsNotAButton()
+    {
+        // The card only gives the heading up where it actually ended up reporting itself as a button; a card that
+        // splatted a role of its own in is whatever that role says it is.
+        var component = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Title), "Title");
+            builder.AddAttribute(2, nameof(BitCard.HeadingLevel), 3);
+            builder.AddAttribute(3, nameof(BitCard.OnClick), EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+            builder.AddAttribute(4, "role", "article");
+        });
+
+        var title = component.Find(".bit-crd-ttl");
+
+        Assert.AreEqual("article", component.Find(".bit-crd").GetAttribute("role"));
+        Assert.AreEqual("heading", title.GetAttribute("role"));
+        Assert.AreEqual("3", title.GetAttribute("aria-level"));
+    }
+
+    [TestMethod]
+    public void BitCardHeadingLevelShouldSurviveALinkedCard()
+    {
+        // A linked card is not a button - the anchor stretched over it is the control - so the title of one is
+        // still the heading of the section the card is.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Title, "Title");
+            parameters.Add(p => p.HeadingLevel, 2);
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+        });
+
+        var title = component.Find(".bit-crd-ttl");
+
+        Assert.AreEqual("heading", title.GetAttribute("role"));
+        Assert.AreEqual("2", title.GetAttribute("aria-level"));
+    }
+
+    [TestMethod]
     public void BitCardWithoutHeadingLevelShouldLeaveTheTitlePlain()
     {
         var component = RenderComponent<BitCard>(parameters =>
@@ -842,6 +919,45 @@ public class BitCardTests : BunitTestContext
         var card = component.Find(".bit-crd");
 
         Assert.IsTrue(card.ClassList.Contains("bit-crd-cra"));
+        Assert.IsFalse(card.ClassList.Contains("bit-crd-sct"));
+        Assert.AreEqual(0, component.FindAll(".bit-crd-cvr").Count);
+    }
+
+    [TestMethod]
+    public void BitCardImagePositionShouldRenderItsCustomProperty()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.ImageUrl, "/img.png");
+            parameters.Add(p => p.ImagePosition, "top");
+        });
+
+        Assert.IsTrue(component.Find(".bit-crd").GetAttribute("style")!.Contains("--bit-crd-img-position:top"));
+    }
+
+    [TestMethod]
+    public void BitCardWithoutImagePositionShouldNotRenderItsCustomProperty()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.ImageUrl, "/img.png");
+        });
+
+        Assert.IsFalse((component.Find(".bit-crd").GetAttribute("style") ?? string.Empty).Contains("--bit-crd-img-position"));
+    }
+
+    [TestMethod]
+    public void BitCardImagePositionAloneShouldNotSectionTheCard()
+    {
+        // It is only the crop of a cover the card already has; on its own there is nothing for it to move.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.ImagePosition, "top");
+            parameters.AddChildContent("<span class=\"inner\">body</span>");
+        });
+
+        var card = component.Find(".bit-crd");
+
         Assert.IsFalse(card.ClassList.Contains("bit-crd-sct"));
         Assert.AreEqual(0, component.FindAll(".bit-crd-cvr").Count);
     }
@@ -1203,7 +1319,7 @@ public class BitCardTests : BunitTestContext
 
     #endregion
 
-    #region Horizontal & Hoverable
+    #region Horizontal, Reversed & Hoverable
 
     [TestMethod]
     [DataRow(false)]
@@ -1216,6 +1332,83 @@ public class BitCardTests : BunitTestContext
         });
 
         Assert.AreEqual(horizontal, component.Find(".bit-crd").ClassList.Contains("bit-crd-hrz"));
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void BitCardReversedTest(bool reversed)
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Reversed, reversed);
+        });
+
+        Assert.AreEqual(reversed, component.Find(".bit-crd").ClassList.Contains("bit-crd-rev"));
+    }
+
+    [TestMethod]
+    public void BitCardReversedShouldComposeWithHorizontal()
+    {
+        // The two are independent: one picks the axis, the other picks which end of it the cover goes on.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Horizontal, true);
+            parameters.Add(p => p.Reversed, true);
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-hrz"));
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-rev"));
+    }
+
+    [TestMethod]
+    public void BitCardReversedShouldNotChangeTheDocumentOrderOfTheParts()
+    {
+        // The order is reversed by the layout rather than by the markup, so the reading order of the card - the
+        // one a screen reader and a stylesheet-less page follow - is the same either way.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Reversed, true);
+            parameters.Add(p => p.Title, "Title");
+            parameters.Add(p => p.ImageUrl, "/img.png");
+        });
+
+        var children = component.Find(".bit-crd").Children;
+
+        Assert.IsTrue(children[0].ClassList.Contains("bit-crd-cvr"));
+        Assert.IsTrue(children[1].ClassList.Contains("bit-crd-mai"));
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void BitCardScrollableBodyTest(bool scrollableBody)
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.ScrollableBody, scrollableBody);
+        });
+
+        Assert.AreEqual(scrollableBody, component.Find(".bit-crd").ClassList.Contains("bit-crd-scb"));
+    }
+
+    [TestMethod]
+    public void BitCardScrollableBodyAloneShouldNotSectionTheCard()
+    {
+        // It says what the content does inside the card, not that the card grew any parts.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.ScrollableBody, true);
+            parameters.AddChildContent("<span class=\"inner\">body</span>");
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-scb"));
+        Assert.IsFalse(card.ClassList.Contains("bit-crd-sct"));
+        Assert.AreEqual(0, component.FindAll(".bit-crd-bdy").Count);
     }
 
     [TestMethod]
@@ -1344,6 +1537,176 @@ public class BitCardTests : BunitTestContext
         });
 
         Assert.AreEqual("3", component.Find(".bit-crd").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitCardActionsShouldNotFireTheClickOfACardThatIsAButton()
+    {
+        // Pressing the overflow menu of a card is pressing the menu, not the card under it.
+        var cardClicks = 0;
+        var actionClicks = 0;
+
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Title, "Title");
+            parameters.Add(p => p.OnClick, () => cardClicks++);
+            parameters.Add(p => p.Actions, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "button");
+                builder.AddAttribute(1, "class", "action");
+                builder.AddAttribute(2, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => actionClicks++));
+                builder.CloseElement();
+            }));
+        });
+
+        component.Find(".action").Click();
+
+        Assert.AreEqual(1, actionClicks);
+        Assert.AreEqual(0, cardClicks);
+
+        // And the card itself still answers the pointer.
+        component.Find(".bit-crd").Click();
+
+        Assert.AreEqual(1, cardClicks);
+    }
+
+    [TestMethod]
+    public void BitCardFooterShouldNotFireTheClickOfACardThatIsAButton()
+    {
+        var cardClicks = 0;
+        var footerClicks = 0;
+
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.OnClick, () => cardClicks++);
+            parameters.Add(p => p.Footer, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "button");
+                builder.AddAttribute(1, "class", "footer-button");
+                builder.AddAttribute(2, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => footerClicks++));
+                builder.CloseElement();
+            }));
+        });
+
+        component.Find(".footer-button").Click();
+
+        Assert.AreEqual(1, footerClicks);
+        Assert.AreEqual(0, cardClicks);
+    }
+
+    [TestMethod]
+    public void BitCardFloatingActionsShouldNotFireTheClickOfACardThatIsAButton()
+    {
+        var cardClicks = 0;
+        var floatingClicks = 0;
+
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.OnClick, () => cardClicks++);
+            parameters.Add(p => p.FloatingActions, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "button");
+                builder.AddAttribute(1, "class", "floating-button");
+                builder.AddAttribute(2, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => floatingClicks++));
+                builder.CloseElement();
+            }));
+        });
+
+        component.Find(".floating-button").Click();
+
+        Assert.AreEqual(1, floatingClicks);
+        Assert.AreEqual(0, cardClicks);
+    }
+
+    [TestMethod]
+    public void BitCardFooterKeyPressShouldNotToggleACardThatIsAButton()
+    {
+        // The keyboard reaches the buttons of a card the same way the pointer does, and the space that presses
+        // one of them must not press the card as well.
+        var selected = false;
+        var footerKeys = 0;
+
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Bind(p => p.Selected, selected, v => selected = v);
+            parameters.Add(p => p.Footer, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "button");
+                builder.AddAttribute(1, "class", "footer-button");
+                builder.AddAttribute(2, "onkeydown", EventCallback.Factory.Create<KeyboardEventArgs>(this, () => footerKeys++));
+                builder.CloseElement();
+            }));
+        });
+
+        component.Find(".footer-button").KeyDown(new KeyboardEventArgs { Key = " " });
+
+        Assert.AreEqual(1, footerKeys);
+        Assert.IsFalse(selected);
+    }
+
+    [TestMethod]
+    public void BitCardFooterShouldNotFireTheClickOfALinkedCardEither()
+    {
+        // A linked card is not a button, but its click handler is still its own: the buttons the block-link
+        // pattern keeps reachable in the footer must not fire it on their way past.
+        var cardClicks = 0;
+        var footerClicks = 0;
+
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.OnClick, () => cardClicks++);
+            parameters.Add(p => p.Footer, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "button");
+                builder.AddAttribute(1, "class", "footer-button");
+                builder.AddAttribute(2, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => footerClicks++));
+                builder.CloseElement();
+            }));
+        });
+
+        component.Find(".footer-button").Click();
+
+        Assert.AreEqual(1, footerClicks);
+        Assert.AreEqual(0, cardClicks);
+
+        component.Find(".bit-crd").Click();
+
+        Assert.AreEqual(1, cardClicks);
+    }
+
+    [TestMethod]
+    public void BitCardFooterClickShouldStillLeaveAPlainCard()
+    {
+        // A card that is not a control of its own swallows nothing: whatever the app wrapped the card in still
+        // sees the clicks of the buttons inside it, the way it would without a card in between.
+        var outerClicks = 0;
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, []);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenElement(0, "div");
+                builder.AddAttribute(1, "class", "outer");
+                builder.AddAttribute(2, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => outerClicks++));
+
+                builder.OpenComponent<BitCard>(3);
+                builder.AddAttribute(4, nameof(BitCard.Footer), (RenderFragment)(inner =>
+                {
+                    inner.OpenElement(0, "button");
+                    inner.AddAttribute(1, "class", "footer-button");
+                    inner.CloseElement();
+                }));
+                builder.CloseComponent();
+
+                builder.CloseElement();
+            });
+        });
+
+        component.Find(".footer-button").Click();
+
+        Assert.AreEqual(1, outerClicks);
     }
 
     #endregion
@@ -1570,6 +1933,30 @@ public class BitCardTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCardSplattedLabelledByShouldNameTheStretchedLink()
+    {
+        // The name of a linked card belongs to the anchor a reader lands on, whichever way the card was named -
+        // and a second copy of it left on the wrapper would have the same words announced twice.
+        var component = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Href), "https://bitplatform.dev");
+            builder.AddAttribute(2, nameof(BitCard.Title), "Title");
+            builder.AddAttribute(3, "aria-labelledby", "some-heading");
+        });
+
+        Assert.IsNull(component.Find(".bit-crd").GetAttribute("aria-labelledby"));
+        Assert.AreEqual("some-heading", component.Find(".bit-crd-lnk").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitCardSplattedLabelledByShouldStayOnAnUnlinkedCard()
+    {
+        var component = RenderSplattedCard(builder => builder.AddAttribute(1, "aria-labelledby", "some-heading"));
+
+        Assert.AreEqual("some-heading", component.Find(".bit-crd").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
     public void BitCardLinkTabIndexShouldReachTheAnchorAndNotTheRoot()
     {
         var component = RenderComponent<BitCard>(parameters =>
@@ -1734,6 +2121,89 @@ public class BitCardTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow("option")]
+    [DataRow("row")]
+    [DataRow("gridcell")]
+    [DataRow("tab")]
+    [DataRow("treeitem")]
+    [DataRow("columnheader")]
+    [DataRow("rowheader")]
+    public void BitCardSelectedShouldReportAriaSelectedOnARoleThatCarriesIt(string role)
+    {
+        // aria-pressed belongs to a button. A card made an item of a listbox, a grid, a tree or a tab strip
+        // reports the very same selection with the state its own role answers to.
+        var component = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Selected), true);
+            builder.AddAttribute(2, nameof(BitCard.SelectedChanged), EventCallback.Factory.Create<bool>(this, _ => { }));
+            builder.AddAttribute(3, "role", role);
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.AreEqual(role, card.GetAttribute("role"));
+        Assert.AreEqual("true", card.GetAttribute("aria-selected"));
+        Assert.IsNull(card.GetAttribute("aria-pressed"));
+    }
+
+    [TestMethod]
+    public void BitCardUnselectedShouldStillReportAriaSelectedOnARoleThatCarriesIt()
+    {
+        // A toggle that only says so while it is on is a toggle whose off state cannot be told from no state.
+        var component = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.SelectedChanged), EventCallback.Factory.Create<bool>(this, _ => { }));
+            builder.AddAttribute(2, "role", "option");
+        });
+
+        Assert.AreEqual("false", component.Find(".bit-crd").GetAttribute("aria-selected"));
+    }
+
+    [TestMethod]
+    public void BitCardWithoutASelectionShouldNotReportAriaSelected()
+    {
+        var component = RenderSplattedCard(builder => builder.AddAttribute(1, "role", "option"));
+
+        Assert.IsNull(component.Find(".bit-crd").GetAttribute("aria-selected"));
+    }
+
+    [TestMethod]
+    public void BitCardSelectedShouldReportNeitherStateOnARoleThatCarriesNeither()
+    {
+        // An article is not a control and has no selection to report; the ring is all such a card has to show
+        // for it, which is what the Selected docs warn about.
+        var component = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Selected), true);
+            builder.AddAttribute(2, nameof(BitCard.OnClick), EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+            builder.AddAttribute(3, "role", "article");
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsNull(card.GetAttribute("aria-pressed"));
+        Assert.IsNull(card.GetAttribute("aria-selected"));
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-sel"));
+    }
+
+    [TestMethod]
+    public void BitCardSelectableCardShouldNotReportAriaSelectedOnItsOwnRole()
+    {
+        // The roles the card picks for itself - the button of a clickable card, the group of a named one - do
+        // not carry a selection, so nothing but aria-pressed is reported there.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.OnClick, () => { });
+            parameters.Add(p => p.Selected, true);
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.AreEqual("true", card.GetAttribute("aria-pressed"));
+        Assert.IsNull(card.GetAttribute("aria-selected"));
+    }
+
+    [TestMethod]
     public void BitCardUnboundSelectedShouldNotReportAriaPressed()
     {
         var component = RenderComponent<BitCard>(parameters =>
@@ -1764,6 +2234,42 @@ public class BitCardTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCardSplattedLabelledByShouldGiveTheCardAGroupRole()
+    {
+        // A name pointing at a heading elsewhere on the page names the card just as an AriaLabel does, and it is
+        // just as unlikely to be announced on an element that reports no role at all.
+        var component = RenderSplattedCard(builder => builder.AddAttribute(1, "aria-labelledby", "some-heading"));
+
+        var card = component.Find(".bit-crd");
+
+        Assert.AreEqual("some-heading", card.GetAttribute("aria-labelledby"));
+        Assert.AreEqual("group", card.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitCardWithNoNameAtAllShouldNotReportAGroupRole()
+    {
+        // A group is the role of a box that was given a name; an unnamed one is just a box.
+        var component = RenderComponent<BitCard>(parameters => parameters.Add(p => p.Title, "Title"));
+
+        Assert.IsNull(component.Find(".bit-crd").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitCardLinkedCardShouldNotBecomeAGroupFromItsLabelledBy()
+    {
+        // The name of a linked card belongs to the anchor stretched over it, which is the control a reader lands
+        // on, so the wrapper stays a plain box rather than becoming a second named thing.
+        var component = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Href), "https://bitplatform.dev");
+            builder.AddAttribute(2, "aria-labelledby", "some-heading");
+        });
+
+        Assert.IsNull(component.Find(".bit-crd").GetAttribute("role"));
+    }
+
+    [TestMethod]
     public void BitCardSplattedRoleShouldWinOverTheOneTheCardPicks()
     {
         // The splat only reaches the card through the render tree: HtmlAttributes is a plain parameter on
@@ -1775,6 +2281,48 @@ public class BitCardTests : BunitTestContext
         });
 
         Assert.AreEqual("article", component.Find(".bit-crd").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitCardTabIndexShouldReachAPlainCard()
+    {
+        // A card the page asked to be focusable is focusable, control or not - and the stylesheet gives every
+        // focusable card a ring, so it is one the keyboard can see it has reached.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.TabIndex, "0");
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.AreEqual("0", card.GetAttribute("tabindex"));
+        Assert.IsNull(card.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitCardDisabledPlainCardShouldLeaveTheTabOrder()
+    {
+        // A stop the keyboard can still land on but nothing answers on is worse than no stop at all, and that
+        // holds for a card the page made focusable itself just as much as for one the card made a button.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.TabIndex, "0");
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        Assert.IsNull(component.Find(".bit-crd").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitCardDisabledSplattedTabIndexShouldLeaveTheTabOrderToo()
+    {
+        var component = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.IsEnabled), false);
+            builder.AddAttribute(2, "tabindex", "0");
+        });
+
+        Assert.IsNull(component.Find(".bit-crd").GetAttribute("tabindex"));
     }
 
     [TestMethod]
@@ -2189,6 +2737,74 @@ public class BitCardTests : BunitTestContext
 
         Assert.IsTrue(card.ClassList.Contains("bit-crd-cra"));
         Assert.IsTrue(card.GetAttribute("style")!.Contains("--bit-crd-cvr-ratio:4 / 3"));
+    }
+
+    [TestMethod]
+    public void BitCardCascadedReversedAndImagePositionShouldReachTheCard()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitCardParams { Reversed = true, ImagePosition = "top" }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitCard>(0);
+                builder.AddAttribute(1, nameof(BitCard.ImageUrl), "/img.png");
+                builder.CloseComponent();
+            });
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-rev"));
+        Assert.IsTrue(card.GetAttribute("style")!.Contains("--bit-crd-img-position:top"));
+    }
+
+    [TestMethod]
+    public void BitCardCascadedDownloadShouldReachTheStretchedLink()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitCardParams { Download = "report.pdf" }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitCard>(0);
+                builder.AddAttribute(1, nameof(BitCard.Href), "/report.pdf");
+                builder.CloseComponent();
+            });
+        });
+
+        Assert.AreEqual("report.pdf", component.Find(".bit-crd-lnk").GetAttribute("download"));
+    }
+
+    [TestMethod]
+    public void BitCardCascadedScrollableBodyShouldReachTheCard()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitCardParams { ScrollableBody = true }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitCard>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        Assert.IsTrue(component.Find(".bit-crd").ClassList.Contains("bit-crd-scb"));
     }
 
     [TestMethod]

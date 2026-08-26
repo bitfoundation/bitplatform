@@ -63,6 +63,11 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
     public bool? Divider { get; set; }
 
     /// <summary>
+    /// The download attribute of the stretched link of the card.
+    /// </summary>
+    public string? Download { get; set; }
+
+    /// <summary>
     /// Sets the shadow elevation level of the card (0-24).
     /// </summary>
     public int? Elevation { get; set; }
@@ -113,6 +118,11 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
     public BitImageLoading? ImageLoading { get; set; }
 
     /// <summary>
+    /// The part of the cover image of the card that is kept in frame, as a CSS object-position such as top or 50% 20%.
+    /// </summary>
+    public string? ImagePosition { get; set; }
+
+    /// <summary>
     /// Sets the maximum height of the card.
     /// </summary>
     public string? MaxHeight { get; set; }
@@ -151,6 +161,16 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
     /// The rel attribute of the stretched link of the card.
     /// </summary>
     public BitLinkRels? Rel { get; set; }
+
+    /// <summary>
+    /// Lays the cover of the card after its content instead of before it.
+    /// </summary>
+    public bool? Reversed { get; set; }
+
+    /// <summary>
+    /// Lets the content of the card scroll inside it instead of growing past the height it was given.
+    /// </summary>
+    public bool? ScrollableBody { get; set; }
 
     /// <summary>
     /// The size of the card, which sets its padding, the gap between its parts and the type of its header.
@@ -281,6 +301,13 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
             bitCard.HeadingLevel = HeadingLevel.Value;
         }
 
+        if (Reversed.HasValue && bitCard.HasNotBeenSet(nameof(Reversed)))
+        {
+            bitCard.Reversed = Reversed.Value;
+
+            bitCard.ClassBuilder.Reset();
+        }
+
         if (Horizontal.HasValue && bitCard.HasNotBeenSet(nameof(Horizontal)))
         {
             bitCard.Horizontal = Horizontal.Value;
@@ -298,6 +325,11 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
         if (ImageLoading.HasValue && bitCard.HasNotBeenSet(nameof(ImageLoading)))
         {
             bitCard.ImageLoading = ImageLoading.Value;
+        }
+
+        if (Download is not null && bitCard.HasNotBeenSet(nameof(Download)))
+        {
+            bitCard.Download = Download;
         }
 
         if (NoPadding.HasValue && bitCard.HasNotBeenSet(nameof(NoPadding)))
@@ -326,6 +358,13 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
             bitCard.Rel = Rel.Value;
 
             bitCard.OnSetHrefAndRel();
+        }
+
+        if (ScrollableBody.HasValue && bitCard.HasNotBeenSet(nameof(ScrollableBody)))
+        {
+            bitCard.ScrollableBody = ScrollableBody.Value;
+
+            bitCard.ClassBuilder.Reset();
         }
 
         if (Size.HasValue && bitCard.HasNotBeenSet(nameof(Size)))
@@ -386,6 +425,13 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
         if (ImageHeight is not null && bitCard.HasNotBeenSet(nameof(ImageHeight)))
         {
             bitCard.ImageHeight = ImageHeight;
+
+            bitCard.StyleBuilder.Reset();
+        }
+
+        if (ImagePosition is not null && bitCard.HasNotBeenSet(nameof(ImagePosition)))
+        {
+            bitCard.ImagePosition = ImagePosition;
 
             bitCard.StyleBuilder.Reset();
         }

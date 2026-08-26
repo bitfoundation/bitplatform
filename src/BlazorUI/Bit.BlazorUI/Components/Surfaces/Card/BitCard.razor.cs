@@ -246,9 +246,10 @@ public partial class BitCard : BitComponentBase
     /// A card in a list of cards is usually a section of the page, and the title of such a section is a
     /// heading - which is what lets a screen reader user jump between the cards instead of reading through
     /// them. Leaving it unset keeps the title plain text, which is the right choice for a card whose title is
-    /// only a label. Values outside 1-6 are ignored. A card that is a button through <see cref="OnClick"/> has no
-    /// use for it either: the contents of a button are named rather than read as structure, so the heading inside
-    /// one is never reached.
+    /// only a label. Values outside 1-6 are ignored, and so is any value at all on a card wearing a role that
+    /// presents its children - the button it becomes through <see cref="OnClick"/> above all, but an <c>option</c>
+    /// or a <c>tab</c> splatted in just the same. What such a role holds is read as the name of the control rather
+    /// than as structure, so a heading in one is never reached and is left off the card entirely.
     /// </remarks>
     [Parameter] public int? HeadingLevel { get; set; }
 
@@ -265,9 +266,10 @@ public partial class BitCard : BitComponentBase
     /// Everything in <see cref="Actions"/> and <see cref="Footer"/> stays above that anchor and keeps working;
     /// an interactive element anywhere else in the card is covered by it, so put the controls of a linked card
     /// in one of those two slots, and so is the text of the body, which a reader can no longer select with the
-    /// pointer - the price the block-link pattern pays everywhere it is used. The anchor is named by the
-    /// <see cref="Title"/> of the card, or by <see cref="BitComponentBase.AriaLabel"/> where there is no title
-    /// to name it.
+    /// pointer - the price the block-link pattern pays everywhere it is used. The anchor is named by
+    /// <see cref="BitComponentBase.AriaLabel"/>, by an <c>aria-labelledby</c> splatted onto the card, by its
+    /// <see cref="Title"/> or by its <see cref="Subtitle"/>, in that order; the name is moved onto the anchor
+    /// rather than left on the card as a second copy of itself.
     /// </remarks>
     [Parameter, CallOnSet(nameof(OnSetHrefAndRel)), ResetClassBuilder]
     public string? Href { get; set; }
@@ -345,6 +347,17 @@ public partial class BitCard : BitComponentBase
     [Parameter] public BitImageLoading? ImageLoading { get; set; }
 
     /// <summary>
+    /// The part of the cover image of the card that is kept in frame, as a CSS object-position such as <c>top</c> or <c>50% 20%</c>.
+    /// </summary>
+    /// <remarks>
+    /// A cover given an <see cref="ImageHeight"/> or a <see cref="CoverRatio"/> is a crop of the picture rather
+    /// than the whole of it, and the crop is taken from the middle unless this says otherwise - which is what a
+    /// portrait whose face sits at the top of the frame, or a landscape whose horizon sits at the bottom, needs.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? ImagePosition { get; set; }
+
+    /// <summary>
     /// The URL of the cover image at the head of the card.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -408,8 +421,11 @@ public partial class BitCard : BitComponentBase
     /// <remarks>
     /// Setting it turns the card into a button: it takes focus, it answers Enter and Space, and it reports
     /// itself as a control to assistive technologies. A card that is a button should not hold controls of its
-    /// own - use <see cref="Href"/> with <see cref="Actions"/> or <see cref="Footer"/> for a card that leads
-    /// somewhere and still carries buttons.
+    /// own - the children of a button are presentational, so nothing inside one is reachable on its own - use
+    /// <see cref="Href"/> with <see cref="Actions"/> or <see cref="Footer"/> for a card that leads somewhere and
+    /// still carries buttons. Whatever the card has in <see cref="Actions"/>, <see cref="Footer"/> or
+    /// <see cref="FloatingActions"/> keeps its click and its key press to itself either way, rather than firing
+    /// this a second time - so a linked card with a click handler of its own is safe to fill with controls.
     /// </remarks>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
@@ -434,17 +450,43 @@ public partial class BitCard : BitComponentBase
     public BitLinkRels? Rel { get; set; }
 
     /// <summary>
+    /// Lays the cover of the card after its content instead of before it.
+    /// </summary>
+    /// <remarks>
+    /// A vertical card then wears its cover under the body rather than over the header, and a
+    /// <see cref="Horizontal"/> one puts it on the trailing edge rather than the leading one. Only the order of the
+    /// two changes; the cover is still full-bleed and still clipped to the corner of the card. It has nothing to
+    /// reorder on a cover laid behind the content by <see cref="CoverOverlay"/>, which is not in the flow at all.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Reversed { get; set; }
+
+    /// <summary>
     /// Whether the card is currently selected.
     /// </summary>
     /// <remarks>
     /// Binding it turns the card into a toggle the same way <see cref="OnClick"/> turns it into a button:
     /// clicking it flips the value, and the card reports its state through <c>aria-pressed</c>. A card that is a
     /// button through <see cref="OnClick"/> reports the state through <c>aria-pressed</c> as well while it carries
-    /// it, even where the app flips the value itself rather than binding it. A card that is neither has only the
-    /// ring to show for it, and wants a role of its own - an <c>option</c>, a <c>gridcell</c> - splatted in.
+    /// it, even where the app flips the value itself rather than binding it. A card splatted with a role that carries
+    /// a selection of its own - <c>option</c>, <c>row</c>, <c>gridcell</c>, <c>tab</c>, <c>treeitem</c>,
+    /// <c>columnheader</c>, <c>rowheader</c> - reports it through <c>aria-selected</c> instead, which is the state
+    /// those roles answer to. A card with neither kind of role has only the ring to show for it.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     public bool Selected { get; set; }
+
+    /// <summary>
+    /// Lets the content of the card scroll inside it instead of growing past the height it was given.
+    /// </summary>
+    /// <remarks>
+    /// It only means anything on a card whose height is bounded - by <see cref="Height"/>, by
+    /// <see cref="MaxHeight"/> or by <see cref="FullHeight"/> in a container of a known height - and it is what
+    /// keeps the header and the footer of such a card in place while only the body between them moves. On a card
+    /// that is still a plain padded box it is the box itself that scrolls, since there is no body to scroll instead.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool ScrollableBody { get; set; }
 
     /// <summary>
     /// The size of the card, which sets its padding, the gap between its parts and the type of its header.
@@ -598,6 +640,8 @@ public partial class BitCard : BitComponentBase
 
         ClassBuilder.Register(() => Horizontal ? "bit-crd-hrz" : string.Empty);
 
+        ClassBuilder.Register(() => Reversed ? "bit-crd-rev" : string.Empty);
+
         ClassBuilder.Register(() => Divider ? "bit-crd-dvd" : string.Empty);
 
         ClassBuilder.Register(() => CoverOverlay ? "bit-crd-ovl" : string.Empty);
@@ -609,6 +653,8 @@ public partial class BitCard : BitComponentBase
         ClassBuilder.Register(() => Hoverable ? "bit-crd-hov" : string.Empty);
 
         ClassBuilder.Register(() => Loading ? "bit-crd-ldg" : string.Empty);
+
+        ClassBuilder.Register(() => ScrollableBody ? "bit-crd-scb" : string.Empty);
 
         ClassBuilder.Register(() => Selected ? $"bit-crd-sel {Classes?.Selected}" : string.Empty);
 
@@ -640,6 +686,8 @@ public partial class BitCard : BitComponentBase
         StyleBuilder.Register(() => MaxWidth.HasNoValue() ? null : $"max-width:{MaxWidth}");
 
         StyleBuilder.Register(() => ImageHeight.HasNoValue() ? null : $"--bit-crd-img-height:{ImageHeight}");
+
+        StyleBuilder.Register(() => ImagePosition.HasNoValue() ? null : $"--bit-crd-img-position:{ImagePosition}");
 
         StyleBuilder.Register(() => CoverWidth.HasNoValue() ? null : $"--bit-crd-cvr-width:{CoverWidth}");
 

@@ -51,6 +51,19 @@
     flex-direction: row;
 }
 
+// After rather than before: the cover moves under the content of a vertical card and onto the trailing edge of a
+// horizontal one. Only the order of the two is reversed - the padding stays on the parts, the cover stays full-bleed
+// and the corner still clips it - and the two slots that position themselves over the surface, the stretched link
+// and the floating actions, are out of the flow and stay where they are. The pair is written after the horizontal
+// block above so the row-reverse of a card that is both wins over the plain row that one asks for.
+.bit-crd-rev {
+    flex-direction: column-reverse;
+}
+
+.bit-crd-hrz.bit-crd-rev {
+    flex-direction: row-reverse;
+}
+
 
 // Everything that is not the cover: the header, the body and the footer, stacked with the block padding on
 // this element and the inline padding on each part, so the gap between two parts is the gap and not the sum
@@ -70,11 +83,14 @@
     flex: 0 0 auto;
 }
 
+// A cover with a height or a ratio of its own shows a crop of the picture rather than the whole of it, and the crop
+// is taken from the middle of the frame unless the card is told which part of it to keep.
 .bit-crd-img {
     display: block;
     width: 100%;
     object-fit: cover;
     height: var(--bit-crd-img-height, auto);
+    object-position: var(--bit-crd-img-position, 50% 50%);
 }
 
 // A cover laid beside the content is sized by the width it is given rather than by the picture inside it, and
@@ -212,6 +228,28 @@ i.bit-crd-hic {
     padding-inline: var(--bit-crd-pad);
 }
 
+// A card whose height is bounded and whose content is not: the body between the header and the footer takes the
+// scrollbar, so the two of them stay where the reader left them. The minimums are what let it: a flex item refuses
+// to shrink below its content until its own minimum is taken off, so without them the column would grow past the
+// card rather than scroll inside it, and there would be nothing for the overflow to do.
+.bit-crd-scb {
+    > .bit-crd-mai {
+        min-height: 0;
+
+        > .bit-crd-bdy {
+            min-height: 0;
+            overflow: auto;
+            overscroll-behavior: contain;
+        }
+    }
+}
+
+// A card that is still a plain padded box has no body of its own to hand the scrollbar to, so the box takes it.
+.bit-crd-scb:not(.bit-crd-sct) {
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
 // The default placeholder of a loading card: three bars standing in for the lines of text that have not
 // arrived yet.
 .bit-crd-skl {
@@ -258,11 +296,17 @@ i.bit-crd-hic {
 // of the library, and says so with the cursor.
 .bit-crd-int {
     cursor: pointer;
+}
 
-    &:focus-visible {
-        outline: $shp-focus-ring-width solid currentcolor;
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
-    }
+// Every card the keyboard can reach shows that it has been reached, whether it became focusable by being made a
+// button or a toggle or only because the page handed it a tab index of its own: a stop the keyboard can land on
+// without being able to see it is a WCAG failure whatever put it there. It is an inset outline rather than the
+// shared ring for the same reason the one on the stretched link is - a card that clips its cover to its corner
+// would clip a ring painted outside itself - and it wins over the selection ring further down, which is the right
+// way round: a focus indicator a state can hide is not a focus indicator.
+.bit-crd:focus-visible {
+    outline: $shp-focus-ring-width solid currentcolor;
+    outline-offset: calc(-1 * #{$shp-focus-ring-width});
 }
 
 // The neutral surface paints. They are the background of a card with no Color of its own, and the Color
@@ -572,7 +616,7 @@ i.bit-crd-hic {
         border-color: GrayText;
     }
 
-    .bit-crd-int:focus-visible,
+    .bit-crd:focus-visible,
     .bit-crd-lnk:focus-visible {
         outline-color: Highlight;
     }

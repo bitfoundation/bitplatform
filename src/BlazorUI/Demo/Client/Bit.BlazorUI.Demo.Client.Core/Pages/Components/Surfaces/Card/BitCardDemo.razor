@@ -2,10 +2,10 @@
 
 <PageOutlet Url="components/card"
             Title="Card"
-            Description="Card is the surface that wraps a single subject - a cover, a header, a body and a footer on one elevated, outlined or tinted box that can also be clicked, linked or selected." />
+            Description="Card is the surface that wraps a single subject - a cover, a header, a body and a footer on one elevated, outlined or tinted box that can be laid out above, beside, after or behind its picture, and clicked, linked or selected." />
 
 <DemoPage Name="Card"
-          Description="Card is the surface a single subject lives on. On its own it is a padded box with the corner, the paint and the shadow of the current theme; give it a title, an icon, a cover picture, a row of actions or a footer and it lays those parts out for you, edge to edge where the picture needs it and inset everywhere else. It comes in three sizes and across the whole color palette in three variants, with a 25-step elevation ramp, an outline instead of a shadow, square corners and a horizontal layout. Give it a click handler and it becomes a real control that answers Enter and Space; give it a URL and it lays an accessible block link over its own surface without swallowing the buttons in its header and footer; bind its Selected value and it becomes a card a reader can pick."
+          Description="Card is the surface a single subject lives on. On its own it is a padded box with the corner, the paint and the shadow of the current theme; give it a title, an icon, a cover picture, a row of actions or a footer and it lays those parts out for you, edge to edge where the picture needs it and inset everywhere else. The cover can sit above the content, beside it, after it, or behind it as a hero, cropped to a height or an aspect ratio of your own. It comes in three sizes and across the whole color palette in three variants, with a 25-step elevation ramp, an outline instead of a shadow and square corners. Give it a click handler and it becomes a real control that answers Enter and Space; give it a URL and it lays an accessible block link over its own surface without swallowing the buttons in its header and footer; bind its Selected value and it becomes a card a reader can pick."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubEnums="componentSubEnums"
@@ -93,23 +93,41 @@
             single picture - a chart, a carousel, a video. <b>CoverRatio</b> draws the cover at a ratio of your own instead -
             <code>16 / 9</code>, <code>1 / 1</code>, <code>4 / 3</code> - which is what a responsive grid wants: a fixed height
             keeps a row of cards level only until the column narrows, while a ratio keeps it level at every width.
-            <b>CoverOverlay</b> moves the cover behind the content rather than above
+            <b>ImagePosition</b> says which part of the picture survives that crop - <code>top</code> for a portrait whose face
+            sits high in the frame, <code>bottom</code> for a landscape whose horizon sits low - instead of the middle the browser
+            keeps by default. <b>Reversed</b> moves the cover under the content instead of over it, which is the shape a caption
+            card wants. <b>CoverOverlay</b> moves the cover behind the content rather than above
             it, which is the hero card: give the card a <b>Height</b> of its own, since a cover behind the content no longer makes
             the card as tall as the picture, and a foreground the words can be read against - the picture carries no scrim.
         </div>
         <br /><br />
         <div class="card-row">
             <BitCard Title="Mount Rainier" Subtitle="Washington, USA" Width="18rem"
-                     ImageUrl="/images/carousel/img1.jpg" ImageHeight="9rem">
+                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" ImageHeight="9rem">
                 <BitText Typography="BitTypography.Body2">
                     A cover runs edge to edge and is clipped to the corner of the card.
                 </BitText>
             </BitCard>
 
             <BitCard Title="Widescreen" Subtitle="A 16 / 9 cover" Width="18rem"
-                     ImageUrl="/images/carousel/img3.jpg" CoverRatio="16 / 9">
+                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" CoverRatio="16 / 9">
                 <BitText Typography="BitTypography.Body2">
                     A cover given a ratio stays at that ratio however wide the card ends up.
+                </BitText>
+            </BitCard>
+
+            <BitCard Title="Top of the frame" Subtitle="ImagePosition=&quot;top&quot;" Width="18rem"
+                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg"
+                     ImageHeight="9rem" ImagePosition="top">
+                <BitText Typography="BitTypography.Body2">
+                    The crop is taken from the top rather than from the middle.
+                </BitText>
+            </BitCard>
+
+            <BitCard Reversed Title="Caption first" Subtitle="A cover under the content" Width="18rem"
+                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" CoverRatio="16 / 9">
+                <BitText Typography="BitTypography.Body2">
+                    Reversed puts the header and the body over the picture instead of under it.
                 </BitText>
             </BitCard>
 
@@ -125,7 +143,7 @@
             </BitCard>
 
             <BitCard Title="Olympic National Park" Subtitle="Washington, USA" Class="example-hero"
-                     CoverOverlay ImageUrl="/images/carousel/img2.jpg" ImageLoading="BitImageLoading.Lazy"
+                     CoverOverlay ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" ImageLoading="BitImageLoading.Lazy"
                      Width="18rem" Height="14rem">
                 <ChildContent>
                     <BitText Typography="BitTypography.Body2">
@@ -150,7 +168,9 @@
             footer draws one rule between them rather than two. <b>FloatingActions</b> is the third slot: it floats over the corner
             of the card itself rather than sitting in the column of parts, which is where a picture card has to keep its favourite
             toggle or its selection box - on such a card the header is under the cover rather than over it. It floats over a plain
-            padded card just as well, and it is raised above the block link too.
+            padded card just as well, and it is raised above the block link too. All three keep their clicks and their key presses
+            to themselves on a card that has an <b>OnClick</b> of its own, so pressing the menu of such a card is not also pressing
+            the card under it.
         </div>
         <br /><br />
         <div class="card-row">
@@ -170,7 +190,7 @@
             </BitCard>
 
             <BitCard Title="Mount Rainier" Subtitle="Washington, USA" Width="18rem"
-                     ImageUrl="/images/carousel/img1.jpg" CoverRatio="16 / 9">
+                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" CoverRatio="16 / 9">
                 <FloatingActions>
                     <BitButton Variant="BitVariant.Fill" IconOnly Title="Star"
                                Color="@(isStarred ? BitColor.Warning : BitColor.SecondaryBackground)"
@@ -206,13 +226,14 @@
             <b>Horizontal</b> lays the cover beside the content instead of above it, which is the shape a list of cards wants when
             each row is a thumbnail and a summary. The cover takes a third of the width by default and <b>CoverWidth</b> sets it to
             anything else; the picture fills that box in both directions, so a row of cards keeps one thumbnail size whatever the
-            aspect ratios are.
+            aspect ratios are. <b>Reversed</b> swaps the two around, so the thumbnail sits on the trailing edge of the row and the
+            words lead it - and it mirrors with the card, so a right-to-left row reverses the other way.
         </div>
         <br /><br />
         <div class="card-row">
             <BitCard Horizontal Width="26rem"
                      Title="Mount Rainier" Subtitle="Washington, USA"
-                     ImageUrl="/images/carousel/img2.jpg">
+                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg">
                 <BitText Typography="BitTypography.Body2">
                     A horizontal card is a thumbnail and a summary on one row.
                 </BitText>
@@ -220,9 +241,17 @@
 
             <BitCard Horizontal Width="26rem" CoverWidth="8rem"
                      Title="Mount Rainier" Subtitle="A narrower cover"
-                     ImageUrl="/images/carousel/img3.jpg">
+                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg">
                 <BitText Typography="BitTypography.Body2">
                     CoverWidth pins the thumbnail to a fixed width.
+                </BitText>
+            </BitCard>
+
+            <BitCard Horizontal Reversed Width="26rem" CoverWidth="8rem"
+                     Title="Mount Rainier" Subtitle="A trailing cover"
+                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
+                <BitText Typography="BitTypography.Body2">
+                    Reversed puts the thumbnail after the words instead of before them.
                 </BitText>
             </BitCard>
         </div>
@@ -231,8 +260,11 @@
     <DemoExample Title="Click" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>
             <b>OnClick</b> turns the card into a control: it takes focus, it answers Enter and Space, it reports itself as a button
-            to assistive technologies and it lifts under the pointer. A card that is a button should not hold controls of its own -
-            use the <b>Href</b> below with <b>Actions</b> or <b>Footer</b> for a card that leads somewhere and still carries buttons.
+            to assistive technologies and it lifts under the pointer. It also gives up the heading a <b>HeadingLevel</b> would make
+            of its title, since what a button holds is read as its name rather than as structure. A card that is a button is best
+            left without controls of its own for the same reason - use the <b>Href</b> below with <b>Actions</b> or <b>Footer</b>
+            for a card that leads somewhere and still carries buttons - though a control in any of the three action slots keeps its
+            click and its key press to itself either way, rather than firing the card as well.
             <b>IsEnabled="false"</b> takes it out of the tab order, off the pointer and marks it disabled, and
             <b>StopPropagation</b> keeps the click from reaching whatever the card sits in - a card inside another clickable card,
             or inside a row that has a handler of its own.
@@ -254,14 +286,16 @@
             <b>Href</b> makes the whole card lead somewhere. The card is not wrapped in an anchor - an anchor around a card is
             invalid the moment the card holds a link or a button, and a screen reader reads the whole card out as the name of that
             one link. Instead an anchor is stretched over the surface, which is the block-link pattern the design systems settled on,
-            and it is named after the <b>AriaLabel</b>, the <b>Title</b> or the <b>Subtitle</b> - in that order - so a page of
-            linked cards reads as a list of destinations rather than a list of identical links. <b>Target</b> and
+            and it is named after the <b>AriaLabel</b>, an <code>aria-labelledby</code> of your own, the <b>Title</b> or the
+            <b>Subtitle</b> - in that order - so a page of linked cards reads as a list of destinations rather than a list of
+            identical links, and the name is handed to the anchor rather than left on the card as a second copy. <b>Target</b> and
             <b>Rel</b> reach that anchor; a card opening in a new tab gets <code>rel="noopener"</code> on its own, and
-            <b>Download</b> turns the whole card into the thing that saves the file it points at. Everything in <b>Actions</b> and
-            <b>Footer</b> stays above the anchor and keeps working. A linked card takes no tab stop of its own: the anchor is the
-            one control over the surface, and a <b>TabIndex</b> goes to it rather than to the wrapper around it. What the anchor
-            does cover is the text of the body, which a reader can no longer select with the pointer - the price the block-link
-            pattern pays wherever it is used.
+            <b>Download</b> turns the whole card into the thing that saves the file it points at. Everything in <b>Actions</b>,
+            <b>Footer</b> and <b>FloatingActions</b> stays above the anchor and keeps working - and keeps its click to itself, so
+            a linked card that also has an <b>OnClick</b> is not fired by the buttons inside it. A linked card takes no tab stop
+            of its own: the anchor is the one control over the surface, and a <b>TabIndex</b> goes to it rather than to the
+            wrapper around it. What the anchor does cover is the text of the body, which a reader can no longer select with the
+            pointer - the price the block-link pattern pays wherever it is used.
         </div>
         <br /><br />
         <div class="card-row">
@@ -292,7 +326,10 @@
             drawn in the primary color, or in the fill's own foreground on a card that is already painted in a role. It is painted
             over the edge of the card rather than added to it, so picking through a grid of cards moves nothing. A card that is a
             button through <b>OnClick</b> reports the state as well while it carries it, even where the app sets <b>Selected</b>
-            itself rather than binding it - a control whose state only the sighted reader can see is not a state at all.
+            itself rather than binding it - a control whose state only the sighted reader can see is not a state at all. A card
+            splatted with a role that carries a selection of its own - <code>option</code>, <code>row</code>, <code>gridcell</code>,
+            <code>tab</code>, <code>treeitem</code> - reports it through <code>aria-selected</code> instead, which is the state
+            those roles answer to; that is what a grid or a listbox built out of cards needs.
         </div>
         <br /><br />
         <div class="card-row">
@@ -503,13 +540,15 @@
         <div>
             <b>Width</b> and <b>Height</b> size the card explicitly, and <b>MinWidth</b>, <b>MaxWidth</b>, <b>MinHeight</b> and
             <b>MaxHeight</b> bound it instead - which is usually the better answer for a card in a responsive grid, where a maximum
-            width keeps the line length readable without pinning the card to one size.
+            width keeps the line length readable without pinning the card to one size. Content taller than the height it was given
+            runs out of the card, so a card whose height is fixed and whose content is not wants <b>ScrollableBody</b>: the body
+            between the header and the footer takes the scrollbar and those two stay where they are.
         </div>
         <br /><br />
         <BitSlider @bind-Value="cardWidth" Min="100" Max="600" Step="10" Label="Width (px)" />
         <BitSlider @bind-Value="cardHeight" Min="100" Max="400" Step="10" Label="Height (px)" />
         <br />
-        <BitCard Width="@($"{(int)cardWidth}px")" Height="@($"{(int)cardHeight}px")" Outlined Style="overflow:hidden">
+        <BitCard Width="@($"{(int)cardWidth}px")" Height="@($"{(int)cardHeight}px")" Outlined ScrollableBody>
             <BitStack HorizontalAlign="BitAlignment.Start">
                 <BitText Typography="BitTypography.H4">bit BlazorUI</BitText>
                 <BitText Typography="BitTypography.Body1">
@@ -523,6 +562,19 @@
             <BitText Typography="BitTypography.Body2">
                 This one is bounded rather than sized: it never shrinks below 12rem and never grows past 24rem.
             </BitText>
+        </BitCard>
+        <br />
+        <BitCard ScrollableBody Divider MaxHeight="14rem" Width="22rem"
+                 Title="Release notes" Subtitle="A body that scrolls">
+            <ChildContent>
+                @for (var i = 1; i <= 12; i++)
+                {
+                    <BitText Typography="BitTypography.Body2">Line @i of a body that outgrew its card.</BitText>
+                }
+            </ChildContent>
+            <Footer>
+                <BitButton Variant="BitVariant.Fill" Size="BitSize.Small">Close</BitButton>
+            </Footer>
         </BitCard>
     </DemoExample>
 
@@ -560,8 +612,12 @@
             the <b>Title</b> a real heading, so a page of cards can be walked heading by heading. A card with an <b>OnClick</b>
             reports itself as a <code>button</code>, takes focus and answers Enter and Space - and gives up the heading, since the
             contents of a button are named rather than read as structure; a bound <b>Selected</b> reports the
-            state through <code>aria-pressed</code>; <b>Loading</b> reports the card as busy; and <b>IsEnabled="false"</b> takes it
-            out of the tab order and marks it disabled. A linked card hands its name to the anchor stretched over it rather than
+            state through <code>aria-pressed</code>, or through <code>aria-selected</code> on a card splatted with a role that
+            carries one; <b>Loading</b> reports the card as busy; and <b>IsEnabled="false"</b> takes it
+            out of the tab order and marks it disabled - whether the card was made focusable by the card or by a <b>TabIndex</b>
+            of your own, and either way what focus it does take is drawn with a ring. A run of cards is a list, so wrap them in one
+            - a <code>ul</code> of <code>li</code>s, or a container with <code>role="list"</code> - and give that list a name of
+            its own. A linked card hands its name to the anchor stretched over it rather than
             keeping a second copy on the wrapper - and since a <b>HeaderTemplate</b> takes the title and the subtitle off the card,
             a linked card with a header of its own has nothing left to be named by and wants an <b>AriaLabel</b>.
         </div>

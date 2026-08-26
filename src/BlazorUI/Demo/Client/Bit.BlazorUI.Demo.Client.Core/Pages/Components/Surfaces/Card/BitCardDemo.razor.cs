@@ -226,6 +226,13 @@ public partial class BitCardDemo
         },
         new()
         {
+            Name = "ImagePosition",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The part of the cover image of the card that is kept in frame, as a CSS object-position such as top or 50% 20%. It only means anything on a cover that crops the picture, through ImageHeight or CoverRatio.",
+        },
+        new()
+        {
             Name = "ImageUrl",
             Type = "string?",
             DefaultValue = "null",
@@ -311,10 +318,24 @@ public partial class BitCardDemo
         },
         new()
         {
+            Name = "Reversed",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lays the cover of the card after its content instead of before it: under the body on a vertical card, on the trailing edge of a Horizontal one.",
+        },
+        new()
+        {
+            Name = "ScrollableBody",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lets the content of the card scroll inside it instead of growing past the height it was given. It only means anything on a card whose height is bounded.",
+        },
+        new()
+        {
             Name = "Selected",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the card is currently selected. Binding it turns the card into a toggle: clicking it flips the value and the card reports its state through aria-pressed.",
+            Description = "Whether the card is currently selected. Binding it turns the card into a toggle: clicking it flips the value, and the card reports its state through aria-pressed as a button, or through aria-selected where it was given a role that carries one.",
         },
         new()
         {
@@ -894,16 +915,30 @@ public partial class BitCardDemo
 
     private readonly string example3RazorCode = @"
 <BitCard Title=""Mount Rainier"" Subtitle=""Washington, USA"" Width=""18rem""
-         ImageUrl=""/images/carousel/img1.jpg"" ImageHeight=""9rem"">
+         ImageUrl=""/images/img1.jpg"" ImageHeight=""9rem"">
     <BitText Typography=""BitTypography.Body2"">
         A cover runs edge to edge and is clipped to the corner of the card.
     </BitText>
 </BitCard>
 
 <BitCard Title=""Widescreen"" Subtitle=""A 16 / 9 cover"" Width=""18rem""
-         ImageUrl=""/images/carousel/img3.jpg"" CoverRatio=""16 / 9"">
+         ImageUrl=""/images/img3.jpg"" CoverRatio=""16 / 9"">
     <BitText Typography=""BitTypography.Body2"">
         A cover given a ratio stays at that ratio however wide the card ends up.
+    </BitText>
+</BitCard>
+
+<BitCard Title=""Top of the frame"" Subtitle=""ImagePosition=&quot;top&quot;"" Width=""18rem""
+         ImageUrl=""/images/img4.jpg"" ImageHeight=""9rem"" ImagePosition=""top"">
+    <BitText Typography=""BitTypography.Body2"">
+        The crop is taken from the top rather than from the middle.
+    </BitText>
+</BitCard>
+
+<BitCard Reversed Title=""Caption first"" Subtitle=""A cover under the content"" Width=""18rem""
+         ImageUrl=""/images/img3.jpg"" CoverRatio=""16 / 9"">
+    <BitText Typography=""BitTypography.Body2"">
+        Reversed puts the header and the body over the picture instead of under it.
     </BitText>
 </BitCard>
 
@@ -919,7 +954,7 @@ public partial class BitCardDemo
 </BitCard>
 
 <BitCard Title=""Olympic National Park"" Subtitle=""Washington, USA"" Class=""example-hero""
-         CoverOverlay ImageUrl=""/images/carousel/img2.jpg"" ImageLoading=""BitImageLoading.Lazy""
+         CoverOverlay ImageUrl=""/images/img2.jpg"" ImageLoading=""BitImageLoading.Lazy""
          Width=""18rem"" Height=""14rem"">
     <ChildContent>
         <BitText Typography=""BitTypography.Body2"">
@@ -948,7 +983,7 @@ public partial class BitCardDemo
 </BitCard>
 
 <BitCard Title=""Mount Rainier"" Subtitle=""Washington, USA"" Width=""18rem""
-         ImageUrl=""/images/carousel/img1.jpg"" CoverRatio=""16 / 9"">
+         ImageUrl=""/images/img1.jpg"" CoverRatio=""16 / 9"">
     <FloatingActions>
         <BitButton Variant=""BitVariant.Fill"" IconOnly Title=""Star""
                    Color=""@(isStarred ? BitColor.Warning : BitColor.SecondaryBackground)""
@@ -983,7 +1018,7 @@ private bool isStarred;";
     private readonly string example5RazorCode = @"
 <BitCard Horizontal Width=""26rem""
          Title=""Mount Rainier"" Subtitle=""Washington, USA""
-         ImageUrl=""/images/carousel/img2.jpg"">
+         ImageUrl=""/images/img2.jpg"">
     <BitText Typography=""BitTypography.Body2"">
         A horizontal card is a thumbnail and a summary on one row.
     </BitText>
@@ -991,9 +1026,17 @@ private bool isStarred;";
 
 <BitCard Horizontal Width=""26rem"" CoverWidth=""8rem""
          Title=""Mount Rainier"" Subtitle=""A narrower cover""
-         ImageUrl=""/images/carousel/img3.jpg"">
+         ImageUrl=""/images/img3.jpg"">
     <BitText Typography=""BitTypography.Body2"">
         CoverWidth pins the thumbnail to a fixed width.
+    </BitText>
+</BitCard>
+
+<BitCard Horizontal Reversed Width=""26rem"" CoverWidth=""8rem""
+         Title=""Mount Rainier"" Subtitle=""A trailing cover""
+         ImageUrl=""/images/img1.jpg"">
+    <BitText Typography=""BitTypography.Body2"">
+        Reversed puts the thumbnail after the words instead of before them.
     </BitText>
 </BitCard>";
 
@@ -1176,7 +1219,7 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
 <BitSlider @bind-Value=""cardWidth"" Min=""100"" Max=""600"" Step=""10"" Label=""Width (px)"" />
 <BitSlider @bind-Value=""cardHeight"" Min=""100"" Max=""400"" Step=""10"" Label=""Height (px)"" />
 
-<BitCard Width=""@($""{(int)cardWidth}px"")"" Height=""@($""{(int)cardHeight}px"")"" Outlined Style=""overflow:hidden"">
+<BitCard Width=""@($""{(int)cardWidth}px"")"" Height=""@($""{(int)cardHeight}px"")"" Outlined ScrollableBody>
     <BitStack HorizontalAlign=""BitAlignment.Start"">
         <BitText Typography=""BitTypography.H4"">bit BlazorUI</BitText>
         <BitText Typography=""BitTypography.Body1"">
@@ -1190,6 +1233,19 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
     <BitText Typography=""BitTypography.Body2"">
         This one is bounded rather than sized: it never shrinks below 12rem and never grows past 24rem.
     </BitText>
+</BitCard>
+
+<BitCard ScrollableBody Divider MaxHeight=""14rem"" Width=""22rem""
+         Title=""Release notes"" Subtitle=""A body that scrolls"">
+    <ChildContent>
+        @for (var i = 1; i <= 12; i++)
+        {
+            <BitText Typography=""BitTypography.Body2"">Line @i of a body that outgrew its card.</BitText>
+        }
+    </ChildContent>
+    <Footer>
+        <BitButton Variant=""BitVariant.Fill"" Size=""BitSize.Small"">Close</BitButton>
+    </Footer>
 </BitCard>";
     private readonly string example18CsharpCode = @"
 private double cardWidth = 300;
