@@ -53,6 +53,11 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
     public string? CoverWidth { get; set; }
 
     /// <summary>
+    /// Draws a hairline between the header and the body of the card and between its body and its footer.
+    /// </summary>
+    public bool? Divider { get; set; }
+
+    /// <summary>
     /// Sets the shadow elevation level of the card (0-24).
     /// </summary>
     public int? Elevation { get; set; }
@@ -227,6 +232,13 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
         if (CoverOverlay.HasValue && bitCard.HasNotBeenSet(nameof(CoverOverlay)))
         {
             bitCard.CoverOverlay = CoverOverlay.Value;
+
+            bitCard.ClassBuilder.Reset();
+        }
+
+        if (Divider.HasValue && bitCard.HasNotBeenSet(nameof(Divider)))
+        {
+            bitCard.Divider = Divider.Value;
 
             bitCard.ClassBuilder.Reset();
         }

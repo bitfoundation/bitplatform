@@ -41,12 +41,21 @@
        things without being a landmark. A role the app splatted in itself always wins over both. *@
     var role = splattedRole ?? (_IsButton ? "button" : (labelOnRoot && label.HasValue() ? "group" : null));
 
+    @* aria-disabled is a widget attribute rather than a global one: a div with no role of its own maps to the
+       generic role, which prohibits it, and a validator flags it there. It is only reported where the card has
+       a role that can carry it - the button it becomes with a click handler, the group it becomes with a name,
+       or whatever the app splatted in. What actually takes a disabled card off the pointer and out of the tab
+       order is the bit-dis class and the missing tab index, and neither of those depends on this. *@
+
     @* The stretched link carries no text of its own, so what names it is the title of the card - and failing
        that its subtitle, which is the only other thing on the card that says what it is. A linked card with
        neither has nothing to be named by and needs an AriaLabel. *@
     var linkLabelledBy = label.HasValue() ? null : (titleId ?? subtitleId);
 
-    var rootTabIndex = _IsButton ? (IsEnabled ? (tabIndex ?? "0") : null) : tabIndex;
+    @* A linked card hands its tab index to the anchor stretched over it, which is the control a reader lands
+       on; a copy of it on the wrapper as well would be two tab stops on something the reader sees as a single
+       thing. *@
+    var rootTabIndex = _IsButton ? (IsEnabled ? (tabIndex ?? "0") : null) : (_IsLink ? null : tabIndex);
 
     var onClick = OnClick.HasDelegate || _IsToggle
                 ? EventCallback.Factory.Create<MouseEventArgs>(this, HandleOnClick)
@@ -69,7 +78,7 @@
      aria-label="@(labelOnRoot ? label : null)"
      aria-pressed="@(_IsButton && _IsToggle ? (Selected ? "true" : "false") : null)"
      aria-busy="@(Loading ? "true" : null)"
-     aria-disabled="@(IsEnabled ? null : "true")"
+     aria-disabled="@(role is not null && IsEnabled is false ? "true" : null)"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
@@ -127,7 +136,14 @@
                         }
                         else
                         {
-                            @if (icon is not null)
+                            @* The leading slot of the header. A template takes the place of the glyph, so an avatar, a
+                               logo or a thumbnail can lead the header without a HeaderTemplate having to take the title
+                               and the subtitle - and the name of the stretched link with them - off the card. *@
+                            @if (IconTemplate is not null)
+                            {
+                                <div style="@Styles?.Icon" class="bit-crd-hic @Classes?.Icon">@IconTemplate</div>
+                            }
+                            else if (icon is not null)
                             {
                                 <i aria-hidden="true" style="@Styles?.Icon" class="bit-crd-hic @icon.GetCssClasses() @Classes?.Icon" />
                             }

@@ -125,6 +125,12 @@
 // brings a type size of its own, and inside a header it is the header that sets the scale.
 .bit-crd-hic {
     flex: 0 0 auto;
+}
+
+// Only the glyph is pulled back to the type of the header: an icon from an external library brings a size of
+// its own and inside a header it is the header that sets the scale. An IconTemplate in the same slot renders
+// into a div rather than an i, and keeps whatever scale the avatar or the logo in it brought with it.
+i.bit-crd-hic {
     line-height: 1;
     font-size: var(--bit-crd-icn-fontsize);
 }
@@ -138,6 +144,7 @@
 }
 
 .bit-crd-ttl {
+    overflow-wrap: break-word;
     font-weight: $tg-fw-semibold;
     font-size: var(--bit-crd-ttl-fontsize);
 }
@@ -146,6 +153,7 @@
 // which is what keeps it read as a qualifier of the title rather than as a second title.
 .bit-crd-sub {
     color: $clr-fg-sec;
+    overflow-wrap: break-word;
     font-weight: $tg-fw-regular;
     font-size: var(--bit-crd-sub-fontsize);
 }
@@ -289,9 +297,26 @@
     --bit-crd-shd: none;
 }
 
+// Each level also names the level it lifts to and the one it presses down to, so that a card given an elevation
+// of its own still moves the right way under the pointer. A single fixed hover shadow cannot do that: it is a
+// lift on a card resting near the bottom of the ramp and a drop on one resting above it.
 @for $i from 1 through 24 {
+    $hover: $i + 8;
+    @if $hover > 24 { $hover: 24; }
+
+    $active: $i - 2;
+    @if $active < 1 { $active: 0; }
+
     .bit-crd-e#{$i} {
         --bit-crd-shd: var(--bit-shd-#{$i});
+        --bit-crd-shd-hov: var(--bit-shd-#{$hover});
+
+        @if $active == 0 {
+            --bit-crd-shd-act: none;
+        }
+        @else {
+            --bit-crd-shd-act: var(--bit-shd-#{$active});
+        }
     }
 }
 
@@ -345,6 +370,9 @@
     color: var(--bit-crd-clr-txt);
     background-color: var(--bit-crd-clr);
     --bit-crd-brd-clr: var(--bit-crd-clr);
+    // the neutral rule color is chosen against the page, not against a card painted in a role, so the hairline
+    // between the parts follows the words the fill already picked for itself.
+    --bit-crd-dvd-clr: currentcolor;
 
     &.bit-dis {
         color: var(--bit-crd-clr-dis-text);
@@ -387,6 +415,26 @@
 }
 
 
+// The hairline that sets the header and the footer apart from the body. A card that stacks all three is often
+// read better as three parts than as one column, and the rule is what says so. It is drawn on the edge of the
+// header and of the footer rather than as an element of its own, and each of them is inset by the gap the parts
+// already stand apart by, so the rule lands halfway between the two blocks it separates.
+//
+// A header with nothing after it, or a footer with nothing before it, draws no rule: that one would sit on the
+// outer edge of the card and read as a stray line rather than as a separation.
+.bit-crd-dvd > .bit-crd-mai {
+    > .bit-crd-hdr:not(:last-child) {
+        padding-block-end: var(--bit-crd-gap);
+        border-block-end: $siz-divider $shp-border-style var(--bit-crd-dvd-clr, #{$clr-brd-sec});
+    }
+
+    > .bit-crd-ftr:not(:first-child) {
+        padding-block-start: var(--bit-crd-gap);
+        border-block-start: $siz-divider $shp-border-style var(--bit-crd-dvd-clr, #{$clr-brd-sec});
+    }
+}
+
+
 .bit-crd-npd {
     --bit-crd-pad: 0;
 }
@@ -413,19 +461,36 @@
 // is a state of: a selected card is still selected while it is outlined, painted in a role or wearing an
 // elevation, and a card the author asked to lift still lifts while it carries one of those.
 
-// A picked card. The rule is drawn in the primary color and thickened, rather than the card being repainted:
-// a state carried by a fill alone is one that collides with every Color the card may already be wearing.
+// A picked card. The ring is drawn in the primary color rather than the card being repainted: a state carried
+// by a fill alone is one that collides with every Color the card may already be wearing.
+//
+// It is an inset outline rather than a border, because a border is part of the box: thickening one from nothing
+// to two pixels on the way into the selected state moves everything the card holds by two pixels, and a grid of
+// cards visibly jumps as the reader picks through it. An outline is painted over the box without being part of
+// it, so the same cue costs no layout at all. It is offset inwards for the same reason the focus ring is - a
+// card that clips its cover to its corner would clip a ring painted outside itself.
+//
+// A card that is a control and has the focus keeps showing the focus ring instead: :focus-visible is the more
+// specific selector of the two, which is the right way round - a focus indicator that a state can hide is not
+// a focus indicator.
 .bit-crd-sel {
-    --bit-crd-brd-wid: #{$shp-border-width-thick};
-    --bit-crd-brd-clr: #{$clr-pri};
+    outline: $shp-border-width-thick $shp-border-style $clr-pri;
+    outline-offset: calc(-1 * #{$shp-border-width-thick});
 }
 
-// A card painted in a role color is the one case where the primary rule above cannot be seen: on a filled
+// A card painted in a role color is the one case where the primary ring above cannot be seen: on a filled
 // primary card it is the color the card is already painted in, and on any other filled role it is a second
-// color fighting the first. The rule is drawn in the foreground the fill already chose for its own words
+// color fighting the first. The ring is drawn in the foreground the fill already chose for its own words
 // instead, which is the one color guaranteed to read against that fill whatever the role is.
 .bit-crd-vfl.bit-crd-sel {
-    --bit-crd-brd-clr: var(--bit-crd-clr-txt);
+    outline-color: var(--bit-crd-clr-txt);
+}
+
+// A selected card that is also disabled dims its ring along with its words, rather than keeping a live accent
+// on something that answers nothing. currentcolor is already the dimmed foreground by then - the neutral one
+// on a plain card, the disabled slot of the role on a painted one - so it is the one value that covers both.
+.bit-crd-sel.bit-dis {
+    outline-color: currentcolor;
 }
 
 // The lift. A card that is a control lifts on its own; Hoverable is for one that reacts to the pointer without
@@ -433,12 +498,12 @@
 @media (hover: hover) {
     .bit-crd-int:hover,
     .bit-crd-hov:hover {
-        --bit-crd-shd: #{$box-shadow-8};
+        --bit-crd-shd: var(--bit-crd-shd-hov, #{$box-shadow-8});
     }
 }
 
 .bit-crd-int:active {
-    --bit-crd-shd: #{$box-shadow-2};
+    --bit-crd-shd: var(--bit-crd-shd-act, #{$box-shadow-2});
 }
 
 
@@ -453,7 +518,7 @@
     }
 
     .bit-crd-sel {
-        border-color: Highlight;
+        outline-color: Highlight;
     }
 
     .bit-crd.bit-dis {

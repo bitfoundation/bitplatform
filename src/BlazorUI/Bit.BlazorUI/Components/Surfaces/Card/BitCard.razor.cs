@@ -43,6 +43,7 @@ public partial class BitCard : BitComponentBase
                             || Title.HasValue()
                             || Subtitle.HasValue()
                             || Actions is not null
+                            || IconTemplate is not null
                             || Icon is not null
                             || IconName.HasValue();
 
@@ -143,6 +144,16 @@ public partial class BitCard : BitComponentBase
     public string? CoverWidth { get; set; }
 
     /// <summary>
+    /// Draws a hairline between the header and the body of the card and between its body and its footer.
+    /// </summary>
+    /// <remarks>
+    /// It only means anything on a card that is laid out as a stack of parts, and a part on the outer edge of
+    /// that stack - a header with nothing under it, a footer with nothing over it - draws no rule of its own.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Divider { get; set; }
+
+    /// <summary>
     /// The download attribute of the stretched link of the card.
     /// </summary>
     /// <remarks>
@@ -206,7 +217,9 @@ public partial class BitCard : BitComponentBase
     /// A card in a list of cards is usually a section of the page, and the title of such a section is a
     /// heading - which is what lets a screen reader user jump between the cards instead of reading through
     /// them. Leaving it unset keeps the title plain text, which is the right choice for a card whose title is
-    /// only a label. Values outside 1-6 are ignored.
+    /// only a label. Values outside 1-6 are ignored. A card that is a button through <see cref="OnClick"/> has no
+    /// use for it either: the contents of a button are named rather than read as structure, so the heading inside
+    /// one is never reached.
     /// </remarks>
     [Parameter] public int? HeadingLevel { get; set; }
 
@@ -222,8 +235,10 @@ public partial class BitCard : BitComponentBase
     /// <remarks>
     /// Everything in <see cref="Actions"/> and <see cref="Footer"/> stays above that anchor and keeps working;
     /// an interactive element anywhere else in the card is covered by it, so put the controls of a linked card
-    /// in one of those two slots. The anchor is named by the <see cref="Title"/> of the card, or by
-    /// <see cref="BitComponentBase.AriaLabel"/> where there is no title to name it.
+    /// in one of those two slots, and so is the text of the body, which a reader can no longer select with the
+    /// pointer - the price the block-link pattern pays everywhere it is used. The anchor is named by the
+    /// <see cref="Title"/> of the card, or by <see cref="BitComponentBase.AriaLabel"/> where there is no title
+    /// to name it.
     /// </remarks>
     [Parameter, CallOnSet(nameof(OnSetHrefAndRel)), ResetClassBuilder]
     public string? Href { get; set; }
@@ -259,6 +274,16 @@ public partial class BitCard : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public string? IconName { get; set; }
+
+    /// <summary>
+    /// The custom template rendered in the leading slot of the header of the card, in place of the icon.
+    /// </summary>
+    /// <remarks>
+    /// This is the slot for an avatar, a logo or a thumbnail that leads the header. Unlike
+    /// <see cref="HeaderTemplate"/> it keeps the <see cref="Title"/> and the <see cref="Subtitle"/> beside it -
+    /// and with them the name a linked card gives its stretched anchor.
+    /// </remarks>
+    [Parameter] public RenderFragment? IconTemplate { get; set; }
 
     /// <summary>
     /// The alternate text of the cover image of the card.
@@ -372,8 +397,9 @@ public partial class BitCard : BitComponentBase
     /// The rel attribute of the stretched link of the card.
     /// </summary>
     /// <remarks>
-    /// With no value of its own, a card whose <see cref="Target"/> is <c>_blank</c> gets <c>noopener</c>,
-    /// which is what protects the page from reverse tabnabbing.
+    /// A card whose <see cref="Target"/> is <c>_blank</c> gets <c>noopener</c> either way, which is what
+    /// protects the page from reverse tabnabbing; a value here that already carries <c>noopener</c> or
+    /// <c>noreferrer</c> is left as it is.
     /// </remarks>
     [Parameter, CallOnSet(nameof(OnSetHrefAndRel))]
     public BitLinkRels? Rel { get; set; }
@@ -540,6 +566,8 @@ public partial class BitCard : BitComponentBase
 
         ClassBuilder.Register(() => Horizontal ? "bit-crd-hrz" : string.Empty);
 
+        ClassBuilder.Register(() => Divider ? "bit-crd-dvd" : string.Empty);
+
         ClassBuilder.Register(() => CoverOverlay ? "bit-crd-ovl" : string.Empty);
 
         ClassBuilder.Register(() => _IsLink || _IsButton ? "bit-crd-int" : string.Empty);
@@ -635,15 +663,19 @@ public partial class BitCard : BitComponentBase
             return;
         }
 
-        if (Rel.HasValue)
+        var rel = Rel.HasValue ? BitLinkRelUtils.GetRels(Rel.Value) : null;
+
+        // noopener protects against reverse-tabnabbing when opening the link in a new browsing context, so it
+        // is added to whatever rel the card was given rather than left to it - a Rel of NoFollow alone is about
+        // crawling and says nothing about the opener. A rel that already carries noopener or noreferrer covers
+        // it. The target attribute is matched case-insensitively by the browser, so a "_BLANK" opens the same
+        // new context and has to be recognized here as one.
+        if (string.Equals(Target, "_blank", StringComparison.OrdinalIgnoreCase) &&
+            rel?.Contains("noopener") is not true && rel?.Contains("noreferrer") is not true)
         {
-            _rel = BitLinkRelUtils.GetRels(Rel.Value);
-            return;
+            rel = rel.HasValue() ? $"{rel} noopener" : "noopener";
         }
 
-        // protects against reverse-tabnabbing when opening the link in a new browsing context. The target
-        // attribute is matched case-insensitively by the browser, so a "_BLANK" opens the same new context
-        // and has to be recognized here as one.
-        _rel = string.Equals(Target, "_blank", StringComparison.OrdinalIgnoreCase) ? "noopener" : null;
+        _rel = rel;
     }
 }

@@ -40,8 +40,10 @@
         box-shadow: aqua 0 0 0.5rem;
     }
 
+    // A card draws no rule of its own by default - its border-width is zero - so a class that only names a
+    // border color would paint nothing. The whole border is declared here instead.
     .custom-root {
-        border-color: mediumpurple;
+        border: 1px solid mediumpurple;
         box-shadow: mediumpurple 0 0 0.5rem;
     }
 

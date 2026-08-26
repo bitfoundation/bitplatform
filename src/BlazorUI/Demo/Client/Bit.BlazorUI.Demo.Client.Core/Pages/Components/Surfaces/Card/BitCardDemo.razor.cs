@@ -77,6 +77,13 @@ public partial class BitCardDemo
         },
         new()
         {
+            Name = "Divider",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Draws a hairline between the header and the body of the card and between its body and its footer. A part on the outer edge of the stack - a header with nothing under it, a footer with nothing over it - draws no rule of its own.",
+        },
+        new()
+        {
             Name = "Download",
             Type = "string?",
             DefaultValue = "null",
@@ -172,6 +179,13 @@ public partial class BitCardDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The name of the leading icon of the header of the card.",
+        },
+        new()
+        {
+            Name = "IconTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template rendered in the leading slot of the header of the card, in place of the icon. Unlike HeaderTemplate it keeps the Title and the Subtitle beside it.",
         },
         new()
         {
@@ -830,6 +844,18 @@ public partial class BitCardDemo
     </BitText>
 </BitCard>
 
+<BitCard Title=""Ada Lovelace"" Subtitle=""Author"" Width=""18rem"">
+    <IconTemplate>
+        <BitPersona Size=""BitPersonaSize.Size32"" HidePersonaDetails
+                    ImageUrl=""/images/persona/persona-female.png"" />
+    </IconTemplate>
+    <ChildContent>
+        <BitText Typography=""BitTypography.Body2"">
+            An IconTemplate leads the header and leaves the title and the subtitle where they are.
+        </BitText>
+    </ChildContent>
+</BitCard>
+
 <BitCard Width=""18rem"">
     <HeaderTemplate>
         <BitPersona Size=""BitPersonaSize.Size32""
@@ -884,6 +910,21 @@ public partial class BitCardDemo
     <ChildContent>
         <BitText Typography=""BitTypography.Body2"">
             Actions sit beside the title; the footer sits under the body.
+        </BitText>
+    </ChildContent>
+    <Footer>
+        <BitButton Variant=""BitVariant.Fill"" Size=""BitSize.Small"">Open</BitButton>
+        <BitButton Variant=""BitVariant.Text"" Size=""BitSize.Small"">Share</BitButton>
+    </Footer>
+</BitCard>
+
+<BitCard Divider Title=""Weekly report"" Subtitle=""Updated an hour ago"" Width=""20rem"">
+    <Actions>
+        <BitButton Variant=""BitVariant.Text"" IconOnly IconName=""@BitIconName.More"" Title=""More"" />
+    </Actions>
+    <ChildContent>
+        <BitText Typography=""BitTypography.Body2"">
+            And the same card with a rule between each part and the next.
         </BitText>
     </ChildContent>
     <Footer>

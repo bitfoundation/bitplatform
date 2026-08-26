@@ -521,6 +521,79 @@ public class BitCardTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCardIconTemplateShouldRenderInTheLeadingSlotAndKeepTheHeaderText()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Title, "Title");
+            parameters.Add(p => p.Subtitle, "Subtitle");
+            parameters.Add(p => p.IconTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddAttribute(1, "class", "custom-avatar");
+                builder.AddContent(2, "AL");
+                builder.CloseElement();
+            }));
+        });
+
+        var slot = component.Find(".bit-crd-hic");
+
+        Assert.AreEqual("DIV", slot.TagName);
+        Assert.AreEqual(1, component.FindAll(".bit-crd-hic .custom-avatar").Count);
+        Assert.IsNull(slot.GetAttribute("aria-hidden"));
+        Assert.AreEqual("Title", component.Find(".bit-crd-ttl").TextContent);
+        Assert.AreEqual("Subtitle", component.Find(".bit-crd-sub").TextContent);
+    }
+
+    [TestMethod]
+    public void BitCardIconTemplateShouldWinOverTheIconName()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Album");
+            parameters.Add(p => p.IconTemplate, (RenderFragment)(builder => builder.AddContent(0, "Avatar")));
+        });
+
+        var slot = component.Find(".bit-crd-hic");
+
+        Assert.AreEqual(1, component.FindAll(".bit-crd-hic").Count);
+        Assert.IsFalse(slot.ClassList.Contains("bit-icon--Album"));
+        Assert.AreEqual("Avatar", slot.TextContent);
+    }
+
+    [TestMethod]
+    public void BitCardIconTemplateAloneShouldSectionTheCard()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.IconTemplate, (RenderFragment)(builder => builder.AddContent(0, "Avatar")));
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-sct"));
+        Assert.AreEqual(1, component.FindAll(".bit-crd-mai > .bit-crd-hdr > .bit-crd-hic").Count);
+    }
+
+    [TestMethod]
+    public void BitCardHeaderTemplateShouldWinOverTheIconTemplate()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.IconTemplate, (RenderFragment)(builder => builder.AddContent(0, "Avatar")));
+            parameters.Add(p => p.HeaderTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddAttribute(1, "class", "custom-header");
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.AreEqual(1, component.FindAll(".custom-header").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-crd-hic").Count);
+    }
+
+    [TestMethod]
     public void BitCardHeaderTemplateShouldReplaceTheTitleAndSubtitle()
     {
         var component = RenderComponent<BitCard>(parameters =>
@@ -822,6 +895,35 @@ public class BitCardTests : BunitTestContext
         Assert.IsTrue(cover >= 0 && main > cover && header > main && body > header && footer > body);
     }
 
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void BitCardDividerTest(bool divider)
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Title, "Title");
+            parameters.Add(p => p.Divider, divider);
+        });
+
+        Assert.AreEqual(divider, component.Find(".bit-crd").ClassList.Contains("bit-crd-dvd"));
+    }
+
+    [TestMethod]
+    public void BitCardDividerAloneShouldNotSectionTheCard()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Divider, true);
+            parameters.AddChildContent("<div>Body</div>");
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-dvd"));
+        Assert.IsFalse(card.ClassList.Contains("bit-crd-sct"));
+    }
+
     #endregion
 
     #region Reactivity
@@ -844,6 +946,29 @@ public class BitCardTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-crd").ClassList.Contains("bit-crd-sct"));
         Assert.AreEqual(1, component.FindAll(".bit-crd-bdy .inner").Count);
+    }
+
+    [TestMethod]
+    public void BitCardShouldSectionItselfWhenAnIconTemplateArrivesLater()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.AddChildContent("<div class=\"content\">Body</div>");
+        });
+
+        Assert.IsFalse(component.Find(".bit-crd").ClassList.Contains("bit-crd-sct"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.IconTemplate, (RenderFragment)(builder => builder.AddContent(0, "Avatar")));
+            parameters.AddChildContent("<div class=\"content\">Body</div>");
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-sct"));
+        Assert.AreEqual(1, component.FindAll(".bit-crd-hic").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-crd-bdy .content").Count);
     }
 
     [TestMethod]
@@ -1243,6 +1368,7 @@ public class BitCardTests : BunitTestContext
     [TestMethod]
     public void BitCardExplicitRelShouldWinOverTheDefault()
     {
+        // noreferrer already keeps the opened page from reaching back, so noopener is not added on top of it.
         var component = RenderComponent<BitCard>(parameters =>
         {
             parameters.Add(p => p.Href, "https://bitplatform.dev");
@@ -1254,6 +1380,24 @@ public class BitCardTests : BunitTestContext
 
         Assert.IsTrue(rel.Contains("nofollow"));
         Assert.IsTrue(rel.Contains("noreferrer"));
+        Assert.IsFalse(rel.Contains("noopener"));
+    }
+
+    [TestMethod]
+    public void BitCardExplicitRelShouldStillGetNoOpenerForTargetBlank()
+    {
+        // A rel that says nothing about the opener does not waive the protection against reverse tabnabbing.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Target, "_blank");
+            parameters.Add(p => p.Rel, BitLinkRels.NoFollow);
+        });
+
+        var rel = component.Find(".bit-crd-lnk").GetAttribute("rel")!;
+
+        Assert.IsTrue(rel.Contains("nofollow"));
+        Assert.IsTrue(rel.Contains("noopener"));
     }
 
     [TestMethod]
@@ -1294,6 +1438,32 @@ public class BitCardTests : BunitTestContext
         Assert.IsNull(link.GetAttribute("href"));
         Assert.AreEqual("-1", link.GetAttribute("tabindex"));
         Assert.AreEqual("true", link.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitCardLinkTabIndexShouldReachTheAnchorAndNotTheRoot()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.TabIndex, "3");
+        });
+
+        Assert.IsNull(component.Find(".bit-crd").GetAttribute("tabindex"));
+        Assert.AreEqual("3", component.Find(".bit-crd-lnk").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitCardLinkShouldNotTakeATabStopOfItsOwn()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        Assert.IsNull(component.Find(".bit-crd").GetAttribute("tabindex"));
+        Assert.IsNull(component.Find(".bit-crd-lnk").GetAttribute("tabindex"));
     }
 
     #endregion
@@ -1515,6 +1685,36 @@ public class BitCardTests : BunitTestContext
         });
     }
 
+    [TestMethod]
+    public void BitCardDisabledPlainCardShouldNotReportAriaDisabled()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsTrue(card.ClassList.Contains("bit-dis"));
+        Assert.IsNull(card.GetAttribute("role"));
+        Assert.IsNull(card.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitCardDisabledNamedCardShouldReportAriaDisabled()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "Release notes");
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.AreEqual("group", card.GetAttribute("role"));
+        Assert.AreEqual("true", card.GetAttribute("aria-disabled"));
+    }
+
     #endregion
 
     #region Classes & Styles
@@ -1585,15 +1785,18 @@ public class BitCardTests : BunitTestContext
     {
         var component = RenderComponent<BitCard>(parameters =>
         {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
             parameters.Add(p => p.ImageUrl, "/images/a.png");
             parameters.Add(p => p.Title, "Title");
             parameters.Add(p => p.Subtitle, "Subtitle");
             parameters.Add(p => p.IconName, "Album");
+            parameters.Add(p => p.Actions, (RenderFragment)(builder => builder.AddContent(0, "actions")));
             parameters.Add(p => p.Footer, (RenderFragment)(builder => builder.AddContent(0, "footer")));
             parameters.AddChildContent("<span>body</span>");
             parameters.Add(p => p.Styles, new BitCardClassStyles
             {
                 Root = "color:red",
+                Link = "color:navy",
                 Cover = "color:orange",
                 Image = "color:yellow",
                 Main = "color:green",
@@ -1602,12 +1805,14 @@ public class BitCardTests : BunitTestContext
                 HeaderText = "color:violet",
                 Title = "color:black",
                 Subtitle = "color:white",
+                Actions = "color:teal",
                 Body = "color:gray",
                 Footer = "color:brown"
             });
         });
 
         Assert.IsTrue(component.Find(".bit-crd").GetAttribute("style")!.Contains("color:red"));
+        Assert.AreEqual("color:navy", component.Find(".bit-crd-lnk").GetAttribute("style"));
         Assert.AreEqual("color:orange", component.Find(".bit-crd-cvr").GetAttribute("style"));
         Assert.AreEqual("color:yellow", component.Find(".bit-crd-img").GetAttribute("style"));
         Assert.AreEqual("color:green", component.Find(".bit-crd-mai").GetAttribute("style"));
@@ -1616,6 +1821,7 @@ public class BitCardTests : BunitTestContext
         Assert.AreEqual("color:violet", component.Find(".bit-crd-htx").GetAttribute("style"));
         Assert.AreEqual("color:black", component.Find(".bit-crd-ttl").GetAttribute("style"));
         Assert.AreEqual("color:white", component.Find(".bit-crd-sub").GetAttribute("style"));
+        Assert.AreEqual("color:teal", component.Find(".bit-crd-act").GetAttribute("style"));
         Assert.AreEqual("color:gray", component.Find(".bit-crd-bdy").GetAttribute("style"));
         Assert.AreEqual("color:brown", component.Find(".bit-crd-ftr").GetAttribute("style"));
     }
@@ -1678,6 +1884,7 @@ public class BitCardTests : BunitTestContext
                 NoPadding = true,
                 Hoverable = true,
                 Horizontal = true,
+                Divider = true,
                 Background = BitColorKind.Tertiary,
                 Border = BitColorKind.Primary,
                 Width = "20rem",
@@ -1705,6 +1912,7 @@ public class BitCardTests : BunitTestContext
         Assert.IsTrue(card.ClassList.Contains("bit-crd-npd"));
         Assert.IsTrue(card.ClassList.Contains("bit-crd-hov"));
         Assert.IsTrue(card.ClassList.Contains("bit-crd-hrz"));
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-dvd"));
         Assert.IsTrue(card.ClassList.Contains("bit-crd-btg"));
         Assert.IsTrue(card.ClassList.Contains("bit-crd-bpr"));
 
