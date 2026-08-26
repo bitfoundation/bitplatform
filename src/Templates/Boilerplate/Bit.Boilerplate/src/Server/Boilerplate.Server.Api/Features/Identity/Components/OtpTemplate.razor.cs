@@ -6,7 +6,7 @@ public partial class OtpTemplate
 {
     [Parameter] public OtpTemplateModel Model { get; set; } = default!;
     [Parameter] public HttpContext HttpContext { get; set; } = default!;
-    [Inject] public IStringLocalizer<EmailStrings> EmailLocalizer { get; set; } = default!;
+    [AutoInject] public IStringLocalizer<EmailStrings> EmailLocalizer { get; set; } = default!;
 }
 
 public partial class OtpTemplateModel

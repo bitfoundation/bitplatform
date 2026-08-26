@@ -63,10 +63,6 @@ public partial class Program
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath)
         };
         var pubSubService = Services.GetRequiredService<PubSubService>();
-        _ = pubSubService.Subscribe(ClientAppMessages.CULTURE_CHANGED, async culture =>
-        {
-            Application.Restart();
-        });
         pubSubHandlerReferenceToKeepAlive = pubSubService.Subscribe(ClientAppMessages.PAGE_DATA_CHANGED, async args =>
         {
             var (title, _, __) = ((string? title, string?, bool))args!;

@@ -31,6 +31,13 @@ public static partial class MauiProgram
 #endif
         ITelemetryContext.Current = new MauiTelemetryContext();
 
+        if (CultureInfoManager.InvariantGlobalization is false)
+        {
+            CultureInfoManager.SetCurrentCulture(
+                Preferences.Get("Culture", null) ?? // 1- User settings (the key MauiStorageService persists)
+                CultureInfo.CurrentUICulture.Name); // 2- OS settings
+        }
+
         var builder = MauiApp.CreateBuilder();
         builder.Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Maui");
 
@@ -230,7 +237,7 @@ public static partial class MauiProgram
     }
 #endif
 
-    private static void LogException(object? error, string reportedBy)
+    internal static void LogException(object? error, string reportedBy)
     {
         if (IPlatformApplication.Current?.Services is IServiceProvider services && error is Exception exp)
         {

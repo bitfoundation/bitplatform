@@ -1,9 +1,34 @@
 //+:cnd:noEmit
 namespace Boilerplate.Client.Core.Components;
 
-public partial class Routes
+public partial class Routes : ComponentBase, IDisposable
 {
     [Parameter] public Type? Layout { get; set; }
+
+    [AutoInject] private PubSubService pubSubService { get; set; } = default!;
+
+    private string? currentCulture;
+    private Action? unsubscribeCultureChanged;
+
+    protected override void OnInitialized()
+    {
+        currentCulture = CultureInfo.CurrentUICulture.Name;
+
+        unsubscribeCultureChanged = pubSubService.Subscribe(ClientAppMessages.CULTURE_CHANGED, payload => InvokeAsync(async () =>
+        {
+            currentCulture = payload as string ?? CultureInfo.CurrentUICulture.Name;
+            StateHasChanged();
+        }));
+
+        base.OnInitialized();
+    }
+
+    public void Dispose()
+    {
+        unsubscribeCultureChanged?.Invoke();
+        unsubscribeCultureChanged = null;
+        GC.SuppressFinalize(this);
+    }
 
     [AutoInject]
     NavigationManager? navigationManager
@@ -23,17 +48,14 @@ public partial class Routes
 
     public static async Task OpenUniversalLink(string url, bool forceLoad = false, bool replace = false)
     {
+        if (Uri.IsAppRelativeUrl(url, requireLeadingSlash: false) is false)
+        {
+            url = PageUrls.Home;
+        }
+
         await NavigationManagerProvider.Task;
 
         var navigationManager = current!;
-
-        if (CultureInfoManager.InvariantGlobalization is false &&
-            forceLoad == false &&
-            (AppPlatform.IsAndroid || AppPlatform.IsIos))
-        {
-            var urlCulture = new Uri(new Uri(navigationManager.BaseUri), url).GetCulture();
-            forceLoad = urlCulture is not null && string.Equals(CultureInfo.CurrentUICulture.Name, urlCulture, StringComparison.InvariantCultureIgnoreCase) is false;
-        }
 
         navigationManager.NavigateTo(url, forceLoad, replace);
     }

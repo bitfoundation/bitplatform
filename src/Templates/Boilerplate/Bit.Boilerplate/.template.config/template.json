@@ -29,7 +29,7 @@
             "generator": "guid",
             "replaces": "AC87AA5B-4B37-4E52-8468-2D5DF24AF256",
             "parameters": {
-                "defaultFormat": "D" //Guid format 
+                "defaultFormat": "D" //Guid format
             }
         },
         "SeedDataProductCreatedOn": {
@@ -513,7 +513,7 @@
                         // Covers ProductConfiguration's seed and ProductDto.FormattedPrice, both of which this rule removes.
                         "src/Tests/Features/Products/ProductCultureSafetyTests.cs"
                     ]
-                },
+                },  
                 {
                     "condition": "(sample != true && offlineDb != true)",
                     "exclude": [
@@ -526,9 +526,7 @@
                 {
                     "condition": "(offlineDb == true)",
                     "exclude": [
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/TodoPage.*",
-                        "src/Shared/Features/Todo/ITodoItemController.cs",
-                        "src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemController.cs"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/TodoPage.*"
                     ]
                 },
                 {
@@ -552,6 +550,7 @@
                         "src/Tests/Features/Identity/AccessTokenParsingTests.cs",
                         "src/Tests/Features/Identity/IStorageServiceContractTests.cs",
                         "src/Tests/Infrastructure/Components/BitOtpInputUtils.cs",
+                        "src/Tests/Infrastructure/Components/BitSnackBarUtils.cs",
                         "src/Tests/Features/Todo/OfflineTodoTests.cs",
                         "src/Tests/Features/Urls/ODataQueryFilterTests.cs",
                         "src/Tests/Features/Diagnostics/TelemetryScopeTests.cs",
@@ -560,6 +559,7 @@
                         "src/Tests/Features/Diagnostics/DiagnosticModalVirtualizationTests.cs",
                         "src/Tests/Features/TemplateConfig/SourceNameLeakTests.cs",
                         "src/Tests/Features/TemplateConfig/HybridHostHardeningTests.cs",
+                        "src/Tests/Features/Culture/CultureSwitchRebuildTests.cs",
                         "src/Tests/Features/TemplateConfig/BitComponentParameterTests.cs",
                         "src/Tests/Features/Products/AddOrEditProductPageTests.cs",
                         "src/Tests/Features/Ads/AdsServiceTests.cs",
