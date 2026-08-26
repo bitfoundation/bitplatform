@@ -1,4 +1,5 @@
 ﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/media-queries.scss";
 
 .bit-clo {
     box-sizing: border-box;
@@ -25,17 +26,268 @@
     background-color: transparent;
 }
 
+// A callout that opens on hover is closed by the pointer leaving it, and the overlay would be the one
+// element the pointer could never leave it for: it covers the whole page while the callout is open, so it
+// would swallow the very mouseover events the mode is driven by. The page behind it keeps its own clicks.
+.bit-clo-ovh {
+    pointer-events: none;
+}
+
+// The dimmed backdrop of a modal callout. It is painted rather than left transparent, so the callout reads
+// as the only thing in play, and it fades in with the callout instead of appearing under it in one frame.
+.bit-clo-ovm {
+    background-color: $clr-bg-overlay;
+    animation-fill-mode: both;
+    animation-name: bit-fade-show;
+    animation-duration: $mot-duration-short;
+    animation-timing-function: $mot-easing-decelerate;
+}
+
 .bit-clo-cal {
+    // The entry offset is signed by where the callout was placed, so it always slides out of the anchor:
+    // downward when it opens below it, upward when there was only room above it, and sideways when it was
+    // placed beside it. The attribute is set by Callouts.playEntryAnimation, which knows the placement
+    // only after measuring.
+    --bit-clo-tra-ent: translateY(#{spacing(-0.5)});
+    --bit-clo-opa: 0;
+    --bit-clo-tra: var(--bit-clo-tra-ent);
+    // The responsive panel slides in from a logical edge, so the sign of the transform that takes it off
+    // the screen is the one the direction of the callout gives it.
+    --bit-clo-transform-factor: 1;
+
     display: none;
+    outline: transparent;
     position: fixed;
-    min-width: max-content;
     box-sizing: border-box;
     z-index: $zindex-callout;
-    animation-fill-mode: both;
-    animation-duration: $mot-duration-long;
+    // The sizing the consumer asked for, defaulted to what the callout does on its own: as wide as its
+    // content needs it to be. The positioning code clears the inline width of the callout on every layout
+    // pass and only writes it back for SetCalloutWidth/FixedCalloutWidth, which is why these are declared
+    // rather than inlined.
+    width: var(--bit-clo-wid, auto);
+    min-width: var(--bit-clo-mnw, var(--bit-clo-mnw-def, max-content));
+    max-width: var(--bit-clo-mxw, none);
+    opacity: var(--bit-clo-opa);
+    transform: var(--bit-clo-tra);
     background-color: $clr-bg-pri;
     border-radius: $shp-radius-popup;
     box-shadow: $box-shadow-popup;
-    animation-name: bit-fade-show, bit-slide-down;
-    animation-timing-function: $mot-easing-decelerate;
+    transition: opacity $mot-duration-short $mot-easing, transform $mot-duration $mot-easing;
+
+    // The callout is programmatically focusable, and the focus lands on it when the content holds nothing
+    // focusable of its own, so it needs an indicator of its own to stay perceivable (WCAG 2.4.7). The ring
+    // is drawn inside the callout rather than through the shared focus-ring mixin, whose box-shadow would
+    // take the place of the elevation the callout is drawn with.
+    &:focus-visible {
+        outline: $shp-focus-ring-width solid $clr-pri-focus;
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+    }
+
+    &[data-bit-cal-pos="above"] {
+        --bit-clo-tra-ent: translateY(#{spacing(0.5)});
+    }
+
+    // Placed beside the anchor, the callout slides out of it sideways: from the right when it ended up on
+    // the left of the anchor, and from the left when it ended up on its right.
+    &[data-bit-cal-pos="left"] {
+        --bit-clo-tra-ent: translateX(#{spacing(0.5)});
+    }
+
+    &[data-bit-cal-pos="right"] {
+        --bit-clo-tra-ent: translateX(#{spacing(-0.5)});
+    }
+
+    &.bit-clo-ocl {
+        --bit-clo-opa: 1;
+        --bit-clo-tra: translate(0, 0);
+    }
+
+    // The from-state of the opening animation. The callout is display:none while closed, so it has no
+    // before-change style to transition from once it opens: Callouts.playEntryAnimation applies this class
+    // with transitions suppressed, forces it into effect, then drops it, which leaves the callout
+    // transitioning from here to the open state above. Declared after .bit-clo-ocl, which is already on
+    // the element by the time the callout is positioned.
+    &.bit-cal-ent {
+        transition: none;
+        --bit-clo-opa: 0;
+        --bit-clo-tra: var(--bit-clo-tra-ent);
+    }
+
+    &.bit-clo-mxh {
+        overflow: hidden auto;
+        // The cap the consumer asked for, itself kept within the screen: a callout capped taller than the
+        // shortest screen it is shown on would otherwise run off the bottom of it, where a fixed-positioned
+        // element is out of reach of the page's own scrolling. Whatever the cap resolves to is what the
+        // positioning code measures, so the placement is decided against the height the callout really has.
+        // dvh follows the browser chrome of a mobile device as it retracts, and vh is the fallback for the
+        // engines that do not know it - the slightly too tall behavior there rather than no cap at all.
+        max-height: min(var(--bit-clo-mxh), calc(100vh - #{spacing(2)}));
+        max-height: min(var(--bit-clo-mxh), calc(100dvh - #{spacing(2)}));
+    }
+
+    // The positioning code caps the callout to the room the viewport leaves; scrolling is what turns that
+    // cap into content the user can still reach rather than content that is simply cut off.
+    &.bit-clo-fit {
+        overflow: hidden auto;
+    }
+
+    &.bit-clo-nsh {
+        box-shadow: none;
+    }
+
+    // A callout is as wide as its content asks to be, which is a min-width of max-content: without it a
+    // fixed-positioned element is laid out against the room its position leaves rather than against its
+    // content. That floor would win over a maximum width, so a callout that was given one drops it and
+    // lets the content wrap, which is the whole point of asking for one.
+    &.bit-clo-mxw {
+        --bit-clo-mnw-def: auto;
+    }
+
+    &.bit-rtl {
+        --bit-clo-transform-factor: -1;
+    }
+}
+
+// The beak that points at the anchor. It is a square rotated onto its corner and centred on the point the
+// positioning code puts it at, which is the middle of the edge of the callout that faces the anchor: one
+// half of it lands inside the callout, which is painted over it, and the other half shows as the beak.
+// It is a sibling of the callout rather than a child of it, so a callout that scrolls its own content
+// never clips it.
+.bit-clo-arw {
+    top: 0;
+    left: 0;
+    width: spacing(1.5);
+    height: spacing(1.5);
+    display: none;
+    position: fixed;
+    box-sizing: border-box;
+    pointer-events: none;
+    z-index: $zindex-callout;
+    background-color: $clr-bg-pri;
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.bit-clo-res {
+    @include lt-sm {
+        opacity: 0;
+        height: 100%;
+        display: block;
+        overflow: hidden;
+        max-height: unset;
+        min-width: unset;
+        box-shadow: $box-shadow-sheet;
+        border-radius: $shp-radius-none;
+        transition: transform $mot-duration $mot-easing-decelerate, opacity $mot-duration-short linear;
+
+        // On these screens the callout is a panel sized against the screen, so the MaxHeight cap does not
+        // apply to it. That cap is declared with two classes (.bit-clo-cal.bit-clo-mxh), so the override
+        // needs two of its own rather than the single class the panel styling carries. Scoping the cap
+        // itself would have taken it away from the responsive callouts on the wider screens too, where the
+        // callout is an ordinary one and the cap is exactly what it asked for.
+        &.bit-clo-mxh {
+            overflow: hidden;
+            max-height: unset;
+        }
+
+        &.bit-clo-sta {
+            inset-block: 0;
+            inset-inline-start: 0;
+            transform: translateX(calc(var(--bit-clo-transform-factor) * -100%));
+        }
+
+        &.bit-clo-end {
+            inset-block: 0;
+            inset-inline-end: 0;
+            transform: translateX(calc(var(--bit-clo-transform-factor) * 100%));
+        }
+
+        // A panel that comes down from the top or up from the bottom is a sheet as tall as its content,
+        // unlike the side ones, which run the full height of the screen: the full height the rule above
+        // gives them all would leave a sheet covering the page it is meant to sit over. The positioning
+        // code caps it to the visible viewport on its own, so a taller content is capped rather than cut.
+        &.bit-clo-top {
+            top: 0;
+            width: 100%;
+            max-width: 100%;
+            inset-inline: 0;
+            height: fit-content;
+            transform: translateY(-100%);
+        }
+
+        &.bit-clo-btm {
+            top: unset;
+            bottom: 0;
+            width: 100%;
+            max-width: 100%;
+            inset-inline: 0;
+            height: fit-content;
+            transform: translateY(100%);
+        }
+    }
+}
+
+// The surface colors, shared by the callout and by the beak that points out of it so the two are always
+// painted alike. They are declared after both, so they win over the default look each of them declares.
+.bit-clo-bpg {
+    background-color: $clr-bg-pri;
+}
+
+.bit-clo-bsg {
+    background-color: $clr-bg-sec;
+}
+
+.bit-clo-btg {
+    background-color: $clr-bg-ter;
+}
+
+.bit-clo-brg {
+    background-color: transparent;
+}
+
+.bit-clo-brd {
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+
+    &.bit-clo-bpr {
+        border-color: $clr-brd-pri;
+    }
+
+    &.bit-clo-bsr {
+        border-color: $clr-brd-sec;
+    }
+
+    &.bit-clo-btr {
+        border-color: $clr-brd-ter;
+    }
+
+    &.bit-clo-brr {
+        border-color: transparent;
+    }
+}
+
+// Only the two edges of the rotated square that face away from the callout are the outline of the beak;
+// the other two sit under the callout, where a border would draw a line across its face. Which two those
+// are follows the side of the anchor the callout was placed on: after the 45deg rotation the top edge of
+// the square faces up-right, the right edge down-right, the bottom edge down-left and the left edge
+// up-left, so each placement keeps the pair whose faces point away from the callout.
+.bit-clo-arw.bit-clo-brd {
+    &[data-bit-cal-pos="below"] {
+        border-right: none;
+        border-bottom: none;
+    }
+
+    &[data-bit-cal-pos="above"] {
+        border-top: none;
+        border-left: none;
+    }
+
+    &[data-bit-cal-pos="left"] {
+        border-bottom: none;
+        border-left: none;
+    }
+
+    &[data-bit-cal-pos="right"] {
+        border-top: none;
+        border-right: none;
+    }
 }

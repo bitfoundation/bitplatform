@@ -2,6 +2,8 @@
 @inherits BitComponentBase
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
+     @onmouseenter="HandleOnMouseEnter"
+     @onmouseleave="HandleOnMouseLeave"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
@@ -9,8 +11,14 @@
 
     @if (Anchor is not null)
     {
-        <div @onclick="OpenCallout"
+        @* The anchor holds the consumer's own trigger, so the relationship attributes are all this
+           element carries: a role or a tabindex of its own would either duplicate the tab stop of the
+           button inside it or turn a container of interactive content into an interactive element. *@
+        <div @onclick="HandleOnAnchorClick"
              id="@_anchorId"
+             aria-controls="@_contentId"
+             aria-haspopup="@(TrapFocus ? "dialog" : "true")"
+             aria-expanded="@(IsOpen ? "true" : "false")"
              style="@Styles?.AnchorContainer"
              class="bit-clo-acn @Classes?.AnchorContainer">
             @Anchor
@@ -18,14 +26,35 @@
     }
 </div>
 
-<div @onclick="CloseCallout" @onclick:stopPropagation
+<div @onclick="HandleOnOverlayClick" @onclick:stopPropagation
      id="@_overlayId"
      style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
-     class="bit-clo-ovl @Classes?.Overlay">
+     class="@GetOverlayCssClasses()">
 </div>
 
-<div id="@_contentId"
-     style="@Styles?.Content"
-     class="bit-clo-cal @Classes?.Content">
+@if (ShowArrow)
+{
+    @* The arrow is a sibling of the callout rather than a child of it so that a callout which scrolls
+       its own content never clips the half of the arrow that sticks out of it. It is positioned, and
+       hidden again, by the same code that places the callout. *@
+    <div id="@_arrowId"
+         aria-hidden="true"
+         style="@Styles?.Arrow"
+         class="@GetArrowCssClasses()">
+    </div>
+}
+
+<div @onclick="HandleOnCalloutClick"
+     @onkeydown="HandleOnCalloutKeyDown"
+     @onmouseenter="HandleOnMouseEnter"
+     @onmouseleave="HandleOnMouseLeave"
+     id="@_contentId"
+     tabindex="-1"
+     role="@GetRole()"
+     aria-label="@AriaLabel"
+     aria-modal="@(TrapFocus ? "true" : null)"
+     style="@GetCalloutStyles()"
+     class="@GetCalloutCssClasses()"
+     dir="@Dir?.ToString().ToLower()">
     @(Content ?? ChildContent)
 </div>

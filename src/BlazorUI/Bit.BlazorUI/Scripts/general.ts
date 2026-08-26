@@ -38,6 +38,13 @@ window.addEventListener('scroll', (e: Event) => {
         }
     }
 
+    // A callout that asked not to be dismissed by the page moving under it is re-anchored to its
+    // component instead, so that it follows what it points at rather than being left behind by it.
+    if (currentCallout.noDismiss) {
+        BitBlazorUI.Callouts.reposition();
+        return;
+    }
+
     BitBlazorUI.Callouts.replaceCurrent();
 }, true);
 
@@ -52,6 +59,13 @@ window.addEventListener('resize', () => {
         && active
         && (document.getElementById(BitBlazorUI.Callouts.current.calloutId)?.contains(active)
             || BitBlazorUI.Callouts.componentContains(active))) {
+        BitBlazorUI.Callouts.reposition();
+        return;
+    }
+
+    // See the scroll handler above: a callout that opted out of being dismissed by the page moving
+    // under it follows its component instead.
+    if (BitBlazorUI.Callouts.current.noDismiss) {
         BitBlazorUI.Callouts.reposition();
         return;
     }

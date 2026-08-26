@@ -3037,7 +3037,9 @@ public class BitDropdownTests : BunitTestContext
         // The callout sets the height of its scrollable list from the viewport with an inline style, so
         // a cap the consumer asks for can only be applied there - a stylesheet rule would never win.
         var toggle = Context.JSInterop.Invocations["BitBlazorUI.Callouts.toggle"];
-        Assert.AreEqual(180, toggle[^1].Arguments[^1]);
+        // The cap is the 18th argument of the positioning call; the ones after it are the optional extras
+        // (the arrow, the gap and the dismissal opt-out) that only the callout component itself passes.
+        Assert.AreEqual(180, toggle[^1].Arguments[17]);
     }
 
     [TestMethod]
