@@ -6,8 +6,29 @@
     font-size: $tg-fs-sm;
     font-family: $tg-font-family;
     --bit-prb-bar-color: #{$clr-pri};
+    --bit-prb-bar-on-color: #{$clr-pri-text};
+    // The unfilled part of every shape reads one token, so a custom track color reaches the linear track,
+    // the ring behind the stroke and the two ends the indeterminate sweep fades into at once.
+    --bit-prb-track-color: #{$clr-bg-sec};
+    // Where the circular stroke starts, and which way round it goes. A <circle> path starts at three
+    // o'clock and runs clockwise, so the default turn of a quarter puts the start at twelve; the mirror
+    // is a plain factor rather than a conditional transform, which is what lets the two compose.
+    --bit-prb-mirror: 1;
+    --bit-prb-rotate: -90deg;
+    // How much of the full circle the stroke is allowed to use, which is the whole of it until a gap
+    // is cut out of the ring.
+    --bit-prb-arc: 1;
     // Matches the sizeless default thickness (2px) the C# side uses for the circular variant.
     --bit-prb-thickness: #{$siz-track-sm};
+    // The floor the circular variant is drawn at. The C# side still sizes the svg from
+    // Thickness * Radius, so a ring asked to be bigger than this stays bigger; what the token adds is
+    // a sensible diameter per size class, which the raw multiplication never gave.
+    --bit-prb-diameter: #{spacing(6.25)};
+    // The pitch of the diagonal stripes, and how far the animation travels in one cycle.
+    --bit-prb-stripe-size: #{spacing(2)};
+    // How long a vertical bar is when nothing asked for a length. A horizontal one takes the width of
+    // whatever it is put in, so it needs no equivalent.
+    --bit-prb-length: #{spacing(20)};
 
     @keyframes bit-prb-animation {
         0% {
@@ -21,6 +42,18 @@
         }
     }
 
+    @keyframes bit-prb-ver-animation {
+        0% {
+            inset-block-start: -100%;
+            transform: translateY(100%);
+        }
+
+        100% {
+            inset-block-start: 100%;
+            transform: translateY(0%);
+        }
+    }
+
     @keyframes bit-prb-cir-animation {
         0% {
             transform: rotate(0deg);
@@ -30,9 +63,40 @@
             transform: rotate(360deg);
         }
     }
+
+    @keyframes bit-prb-stripe-animation {
+        0% {
+            background-position-x: var(--bit-prb-stripe-size);
+        }
+
+        100% {
+            background-position-x: 0;
+        }
+    }
+}
+
+// The row the label and a readout placed on it share. It is there whenever either of them is, so a label on
+// its own is laid out in exactly the element it is laid out in beside a readout - one flex item, which is
+// what keeps its ellipsis working while the readout keeps its own width.
+.bit-prb-hdr {
+    display: flex;
+    align-items: baseline;
+    gap: spacing(1);
+    justify-content: space-between;
+
+    > .bit-prb-lbl {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    > .bit-prb-pct {
+        flex: 0 0 auto;
+        padding-bottom: spacing(1);
+    }
 }
 
 .bit-prb-lbl {
+    display: block;
     overflow: hidden;
     color: $clr-fg-pri;
     white-space: nowrap;
@@ -44,6 +108,48 @@
 .bit-prb-pct {
     text-align: end;
     color: $clr-fg-pri;
+}
+
+.bit-prb-pce {
+    text-align: end;
+}
+
+.bit-prb-pcs {
+    text-align: start;
+}
+
+.bit-prb-pcc {
+    text-align: center;
+}
+
+.bit-prb-pco {
+    text-align: end;
+}
+
+// The readout on the bar is a child of the filled part, so it is centered in whatever is filled and
+// clipped by it, and it takes the contrast color of the bar rather than the page foreground.
+.bit-prb-pci {
+    display: flex;
+    height: inherit;
+    align-items: center;
+    justify-content: center;
+    color: var(--bit-prb-bar-on-color);
+}
+
+.bit-prb-bri {
+    overflow: hidden;
+}
+
+.bit-prb-lvr {
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    border: 0;
+    padding: 0;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
 }
 
 .bit-prb-pnm {
@@ -60,7 +166,17 @@
     width: 100%;
     height: inherit;
     position: absolute;
-    background-color: $clr-bg-sec;
+    background-color: var(--bit-prb-track-color);
+}
+
+.bit-prb-buf {
+    width: 0;
+    height: inherit;
+    position: absolute;
+    transition: width $mot-duration linear 0s;
+    // The buffer is the same progress seen faintly, so it is the bar color at low alpha rather than a
+    // color of its own: every role, preset and scheme keeps it in step with the bar for free.
+    background-color: translucent(var(--bit-prb-bar-color), 38%);
 }
 
 .bit-prb-bar {
@@ -81,12 +197,22 @@
     width: 0;
     min-width: 33%;
     position: absolute;
-    transition: width $mot-duration-long $mot-easing 0s;
     // The sweep is not a spinner, so it scales its own duration by the shared loop factor instead of
     // taking the spinner tokens: 3s normally, stretched under reduced motion, restored inside a
     // ForceAnimation subtree.
     animation: calc(3s * #{$mot-loop-factor}) ease 0s infinite normal none running bit-prb-animation;
-    background: linear-gradient(to right, $clr-bg-sec 0%, var(--bit-prb-bar-color) 50%, $clr-bg-sec 100%);
+    background: linear-gradient(to right, var(--bit-prb-track-color) 0%, var(--bit-prb-bar-color) 50%, var(--bit-prb-track-color) 100%);
+}
+
+// The stripes are a class ON the bar rather than a descendant rule, so the indeterminate sweep - which
+// paints the bar with a gradient of its own through the shorthand - cannot be outranked by them.
+.bit-prb-stp {
+    background-image: linear-gradient(45deg, translucent($clr-bg-pri, 25%) 25%, transparent 25%, transparent 50%, translucent($clr-bg-pri, 25%) 50%, translucent($clr-bg-pri, 25%) 75%, transparent 75%, transparent);
+    background-size: var(--bit-prb-stripe-size) var(--bit-prb-stripe-size);
+}
+
+.bit-prb-sta {
+    animation: calc(1s * #{$mot-loop-factor}) linear 0s infinite normal none running bit-prb-stripe-animation;
 }
 
 .bit-prb-crp {
@@ -99,8 +225,8 @@
 
 .bit-prb-cir {
     display: block;
-    min-width: spacing(6.25);
-    min-height: spacing(6.25);
+    min-width: var(--bit-prb-diameter);
+    min-height: var(--bit-prb-diameter);
 }
 
 .bit-prb-ctx {
@@ -112,42 +238,216 @@
     font-size: $tg-fs-xs;
 }
 
-.bit-prb-crt, 
-.bit-prb-cbr, 
+.bit-prb-crt,
+.bit-prb-cbf,
+.bit-prb-cbr,
 .bit-prb-cri {
     fill: none;
-    stroke: $clr-bg-sec;
-    transform: rotate(-90deg);
+    stroke: var(--bit-prb-track-color);
     transform-origin: 50% 50%;
+    // The mirror is applied to the element first and the turn to the mirrored result, which is what
+    // keeps a reversed ring starting where a forward one does and only running the other way.
+    transform: scale(var(--bit-prb-mirror), 1) rotate(var(--bit-prb-rotate));
+}
+
+.bit-prb-cbf {
+    stroke: translucent(var(--bit-prb-bar-color), 38%);
+    transition: stroke-dasharray $mot-duration-short $mot-easing;
+    stroke-dasharray: calc(3.141 * var(--bit-prb-buffer, 0%) * 0.8 * var(--bit-prb-arc)), 500%;
 }
 
 .bit-prb-cbr {
     stroke: var(--bit-prb-bar-color);
     transition: stroke-dasharray $mot-duration-short $mot-easing;
-    stroke-dasharray: calc(3.141 * var(--bit-prb-percent, 0%) * 0.8), 500%;
+    stroke-dasharray: calc(3.141 * var(--bit-prb-percent, 0%) * 0.8 * var(--bit-prb-arc)), 500%;
 }
 
 .bit-prb-cri {
     stroke: var(--bit-prb-bar-color);
     transition: stroke-dasharray $mot-duration-short $mot-easing;
-    stroke-dasharray: calc(3.141 * 25% * 0.8), 500%;
+    stroke-dasharray: calc(3.141 * 25% * 0.8 * var(--bit-prb-arc)), 500%;
     animation: bit-prb-cir-animation $mot-duration-spinner $mot-easing-spinner infinite;
+}
+
+// A gap turns the ring into a gauge: the stroke is shortened to what is left of the circle and its
+// start is moved to the leading edge of the gap. Angles are measured clockwise from three o'clock, so
+// a gap centred at A begins the stroke at A plus half of it.
+.bit-prb-gap {
+    --bit-prb-gap-base: 90deg;
+    --bit-prb-rotate: calc(var(--bit-prb-gap-base) + var(--bit-prb-gap) / 2);
+
+    .bit-prb-crt {
+        stroke-dasharray: calc(3.141 * 100% * 0.8 * var(--bit-prb-arc)), 500%;
+    }
+}
+
+.bit-prb-gpt {
+    --bit-prb-gap-base: -90deg;
+}
+
+.bit-prb-gps {
+    --bit-prb-gap-base: 180deg;
+}
+
+.bit-prb-gpe {
+    --bit-prb-gap-base: 0deg;
+}
+
+// A rotation is a physical thing, so the two sides that are named after the reading direction are the
+// two that have to be swapped by hand when it turns around.
+.bit-rtl.bit-prb-gps {
+    --bit-prb-gap-base: 0deg;
+}
+
+.bit-rtl.bit-prb-gpe {
+    --bit-prb-gap-base: 180deg;
+}
+
+
+// Rounded: a pill in linear mode, a round stroke cap in circular mode. The track is rounded with the
+// bar so the two ends of an empty bar are not square while the filled one is round.
+.bit-prb-rnd {
+    .bit-prb-trc,
+    .bit-prb-buf,
+    .bit-prb-bar {
+        border-radius: $shp-radius-full;
+    }
+
+    .bit-prb-cbf,
+    .bit-prb-cbr,
+    .bit-prb-cri {
+        stroke-linecap: round;
+    }
+}
+
+// Reversed: the bar is absolutely positioned and takes its static position - the start edge - when no
+// inset is given, so anchoring it to the end edge is all the linear case needs. The circular one is
+// mirrored on its own axis, which turns the sweep counter-clockwise.
+.bit-prb-rev {
+    --bit-prb-mirror: -1;
+
+    .bit-prb-buf,
+    .bit-prb-bar {
+        inset-inline-end: 0;
+    }
+
+    // The sweep already animates its own inset, so pinning the other edge would over-constrain it and
+    // be dropped. Running the same keyframes backwards is what reverses it (MUI calls this the query
+    // variant), and the end inset is handed back so the two declarations cannot fight.
+    .bit-prb-ind {
+        inset-inline-end: auto;
+        animation-direction: reverse;
+    }
+
+    // The spinner's keyframes set a transform of their own, which outranks the mirrored one for as
+    // long as the animation runs; reversing the animation is what turns the spinner around.
+    .bit-prb-cri {
+        animation-direction: reverse;
+    }
+}
+
+
+// Vertical: the same three absolutely positioned children, measured along the other axis. The
+// container carries the width for all of them, so what is left per element is the length of the fill
+// and which edge it grows from - the bottom one, so the bar rises the way a level does.
+.bit-prb-ver {
+    // A vertical indicator is a narrow column, so the root holds to the width of what is in it rather
+    // than to the width of the row it was dropped into - otherwise the label and the readout would sit
+    // an arbitrary distance away from the bar they belong to.
+    width: max-content;
+
+    .bit-prb-pce {
+        text-align: center;
+    }
+
+    .bit-prb-trc {
+        height: 100%;
+    }
+
+    .bit-prb-buf,
+    .bit-prb-bar {
+        width: 100%;
+        height: 0;
+        inset-block-end: 0;
+        transition: height $mot-duration linear 0s;
+    }
+
+    .bit-prb-ind {
+        width: 100%;
+        height: 0;
+        min-width: 0;
+        min-height: 33%;
+        inset-block-end: auto;
+        animation-name: bit-prb-ver-animation;
+        background: linear-gradient(to bottom, var(--bit-prb-track-color) 0%, var(--bit-prb-bar-color) 50%, var(--bit-prb-track-color) 100%);
+    }
+}
+
+// A reversed vertical bar hangs from the top instead of standing on the bottom. The inline-end inset
+// the horizontal rule sets is left alone: with a full-width element it resolves to the same place.
+.bit-prb-ver.bit-prb-rev {
+    .bit-prb-buf,
+    .bit-prb-bar {
+        inset-block-end: auto;
+        inset-block-start: 0;
+    }
+}
+
+
+// Segments: one mask over the bar container clips the track, the buffer and the bar in the same
+// places, so the pieces line up whatever the value is. It has to sit on the container rather than on
+// the bar, whose own width is the value - a mask there would be measured against the filled part and
+// slide as the bar grows. The percentage readout is deliberately outside this element for the same
+// reason: the mask would cut the text into pieces too.
+.bit-prb-seg .bit-prb-bcn {
+    --bit-prb-segment-width: calc((100% - (var(--bit-prb-segments) - 1) * var(--bit-prb-segment-gap)) / var(--bit-prb-segments));
+    -webkit-mask-image: repeating-linear-gradient(to right, #000 0 var(--bit-prb-segment-width), transparent 0 calc(var(--bit-prb-segment-width) + var(--bit-prb-segment-gap)));
+    mask-image: repeating-linear-gradient(to right, #000 0 var(--bit-prb-segment-width), transparent 0 calc(var(--bit-prb-segment-width) + var(--bit-prb-segment-gap)));
+}
+
+// A vertical bar is cut along the other axis, and its direction never mirrors with the text.
+.bit-prb-seg.bit-prb-ver .bit-prb-bcn {
+    -webkit-mask-image: repeating-linear-gradient(to bottom, #000 0 var(--bit-prb-segment-width), transparent 0 calc(var(--bit-prb-segment-width) + var(--bit-prb-segment-gap)));
+    mask-image: repeating-linear-gradient(to bottom, #000 0 var(--bit-prb-segment-width), transparent 0 calc(var(--bit-prb-segment-width) + var(--bit-prb-segment-gap)));
+}
+
+// A gradient has no logical direction, so the pattern - which ends on the gap that is clipped off the
+// far edge - has to be turned around by hand for a right-to-left bar.
+.bit-prb-seg.bit-rtl:not(.bit-prb-ver) .bit-prb-bcn {
+    -webkit-mask-image: repeating-linear-gradient(to left, #000 0 var(--bit-prb-segment-width), transparent 0 calc(var(--bit-prb-segment-width) + var(--bit-prb-segment-gap)));
+    mask-image: repeating-linear-gradient(to left, #000 0 var(--bit-prb-segment-width), transparent 0 calc(var(--bit-prb-segment-width) + var(--bit-prb-segment-gap)));
+}
+
+
+// A disabled progress is one that is not running: it keeps its value on the page - and in the
+// accessibility tree - but stops moving and steps back visually.
+.bit-prb.bit-dis {
+    opacity: $opa-dis;
+
+    .bit-prb-ind,
+    .bit-prb-sta,
+    .bit-prb-cri {
+        animation: none;
+    }
 }
 
 
 .bit-prb-sm {
     font-size: $tg-fs-xs;
     --bit-prb-thickness: #{$siz-track-sm};
+    --bit-prb-diameter: #{spacing(4)};
 }
 
 .bit-prb-md {
     font-size: $tg-fs-sm;
     --bit-prb-thickness: #{$siz-track-md};
+    --bit-prb-diameter: #{spacing(6.25)};
 }
 
 .bit-prb-lg {
     font-size: $tg-fs-md;
     --bit-prb-thickness: #{$siz-track-lg};
+    --bit-prb-diameter: #{spacing(9)};
 }
 
 
@@ -155,5 +455,48 @@
 @each $role, $tokens in $bit-color-roles {
     .bit-prb-#{$role} {
         --bit-prb-bar-color: #{role($tokens, main)};
+        --bit-prb-bar-on-color: #{role($tokens, on)};
+    }
+}
+
+
+// Windows High Contrast strips the track down to the system Canvas, which leaves the extent of the
+// operation invisible: everything that is not yet done reads as page background. A border restores it,
+// and the bar is forced onto the highlight color so the two halves stay told apart.
+@media (forced-colors: active) {
+    .bit-prb-trc {
+        border: $shp-border-width solid CanvasText;
+    }
+
+    .bit-prb-crt {
+        stroke: CanvasText;
+    }
+
+    // Forced colors replaces every background with the system Canvas, which would leave the filled part of
+    // the bar the same color as the empty part. Painting it with the system Highlight - and the ring's
+    // stroke with it - is what keeps the two halves told apart; the gradient of the sweep goes with it,
+    // since a gradient forced onto one color is not a gradient at all.
+    .bit-prb-buf,
+    .bit-prb-bar,
+    .bit-prb-ind {
+        background: Highlight;
+    }
+
+    .bit-prb-cbf,
+    .bit-prb-cbr,
+    .bit-prb-cri {
+        stroke: Highlight;
+    }
+
+    // The bar and the buffer are both forced onto the same system color, which would make the two
+    // indistinguishable. Opacity is not forced, so it is what keeps them apart.
+    .bit-prb-buf,
+    .bit-prb-cbf {
+        opacity: 0.4;
+    }
+
+    // The readout rides on the bar, so it takes the color the bar is painted with.
+    .bit-prb-pci {
+        color: HighlightText;
     }
 }
