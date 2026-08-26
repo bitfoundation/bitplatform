@@ -88,6 +88,17 @@
     }
 }
 
+// A cover given a ratio is sized by that ratio rather than by the picture inside it, which is what keeps a grid of
+// cards on one line whatever the pictures turn out to be - and keeps it there while the column narrows, which a
+// fixed height cannot do. The picture then fills the box it was given in both directions.
+.bit-crd-cra > .bit-crd-cvr {
+    aspect-ratio: var(--bit-crd-cvr-ratio);
+
+    > .bit-crd-img {
+        height: var(--bit-crd-img-height, 100%);
+    }
+}
+
 // Behind rather than above: the cover is taken out of the flow and stretched over the whole surface, and the
 // column of content is written on top of it. It is declared after the horizontal block so it wins over the
 // share of the width that one hands the cover - an absolutely positioned box with a left, a right and a width
@@ -102,6 +113,8 @@
         width: auto;
         inset: 0;
         position: absolute;
+        // a cover pinned on all four sides is already as tall as the card, so there is nothing left for a ratio to size.
+        aspect-ratio: auto;
 
         > .bit-crd-img {
             height: var(--bit-crd-img-height, 100%);
@@ -158,12 +171,31 @@ i.bit-crd-hic {
     font-size: var(--bit-crd-sub-fontsize);
 }
 
-// The two slots that hold controls. Both are raised over the stretched link of a linked card, so a button in
-// either of them still answers the pointer instead of being covered by the anchor over the whole surface.
+// The two slots that hold controls inside the column of parts. Both are raised over the stretched link of a linked
+// card, so a button in either of them still answers the pointer instead of being covered by the anchor over the whole
+// surface. The floating slot below is raised the same way, but positions itself rather than staying in the flow.
 .bit-crd-act,
 .bit-crd-ftr {
     z-index: 2;
     position: relative;
+}
+
+// The slot that floats over the surface itself rather than sitting in the column of parts: the corner a picture card
+// keeps its favourite toggle or its selection box in, which the header cannot hold because on such a card the header
+// is under the picture rather than over it. It is a child of the root rather than of the column, so it lands in the
+// same corner whether the card is sectioned or is still the plain padded box it starts as.
+//
+// It is inset by the gap rather than by the padding: a card asked to drop its padding has not asked for its floating
+// controls to be pushed flush against the corner it draws, where the ring around a focused one would be clipped by
+// the very clipping the cover needs.
+.bit-crd-fac {
+    z-index: 2;
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: var(--bit-crd-gap);
+    inset-block-start: var(--bit-crd-gap);
+    inset-inline-end: var(--bit-crd-gap);
 }
 
 .bit-crd-act {
@@ -254,8 +286,15 @@ i.bit-crd-hic {
 
 // Outlined is a shorthand for "a rule instead of a shadow". It is written before the border-color classes so
 // that an explicit Border still decides the color of that rule.
+//
+// A card resting at no shadow at all still lifts under the pointer, but it must not lift when it is pressed: the
+// press level of the ramp is two steps below the rest level, and two steps below nothing is still nothing. Without
+// this the fallback of the :active block would give a flat card a shadow the moment it is held down, which reads
+// as the card rising rather than as the card being pressed.
 .bit-crd-otl {
     --bit-crd-shd: none;
+    --bit-crd-shd-hov: #{$box-shadow-8};
+    --bit-crd-shd-act: none;
     --bit-crd-brd-wid: #{$shp-border-width};
     --bit-crd-brd-clr: #{$clr-brd-pri};
 }
@@ -293,8 +332,13 @@ i.bit-crd-hic {
 
 // The elevation ramp. Every level of the theme shadow scale is a class, and 0 is the level that has no shadow
 // at all - which is what a "flat" card is in every library that counts elevation this way.
+// Level 0 names the same lift and the same press the rest of the ramp does - eight steps up under the pointer and
+// nothing at all under the press - so a flat card behaves like every other card on the ramp rather than falling back
+// to the fixed shadows the state blocks carry for cards that never named a level.
 .bit-crd-e0 {
     --bit-crd-shd: none;
+    --bit-crd-shd-hov: #{$box-shadow-8};
+    --bit-crd-shd-act: none;
 }
 
 // Each level also names the level it lifts to and the one it presses down to, so that a card given an elevation
@@ -384,6 +428,8 @@ i.bit-crd-hic {
 .bit-crd-vot {
     color: var(--bit-crd-clr);
     --bit-crd-shd: none;
+    --bit-crd-shd-hov: #{$box-shadow-8};
+    --bit-crd-shd-act: none;
     --bit-crd-brd-wid: #{$shp-border-width};
     --bit-crd-brd-clr: var(--bit-crd-clr);
 
@@ -397,6 +443,8 @@ i.bit-crd-hic {
     color: var(--bit-crd-clr);
     background-color: var(--bit-crd-clr-light);
     --bit-crd-shd: none;
+    --bit-crd-shd-hov: #{$box-shadow-8};
+    --bit-crd-shd-act: none;
 
     &.bit-dis {
         color: var(--bit-crd-clr-dis);
@@ -416,22 +464,18 @@ i.bit-crd-hic {
 
 
 // The hairline that sets the header and the footer apart from the body. A card that stacks all three is often
-// read better as three parts than as one column, and the rule is what says so. It is drawn on the edge of the
-// header and of the footer rather than as an element of its own, and each of them is inset by the gap the parts
-// already stand apart by, so the rule lands halfway between the two blocks it separates.
+// read better as three parts than as one column, and the rule is what says so. It is a border rather than an
+// element of its own, and the part it opens is inset by the gap the parts already stand apart by, so the rule lands
+// halfway between the two blocks it separates.
 //
-// A header with nothing after it, or a footer with nothing before it, draws no rule: that one would sit on the
-// outer edge of the card and read as a stray line rather than as a separation.
-.bit-crd-dvd > .bit-crd-mai {
-    > .bit-crd-hdr:not(:last-child) {
-        padding-block-end: var(--bit-crd-gap);
-        border-block-end: $siz-divider $shp-border-style var(--bit-crd-dvd-clr, #{$clr-brd-sec});
-    }
-
-    > .bit-crd-ftr:not(:first-child) {
-        padding-block-start: var(--bit-crd-gap);
-        border-block-start: $siz-divider $shp-border-style var(--bit-crd-dvd-clr, #{$clr-brd-sec});
-    }
+// The rule belongs to the boundary between two parts rather than to either of them, so it is drawn on the leading
+// edge of every part that has one before it: exactly one rule lands between any two neighbours, and none on the
+// outer edge of the stack, where it would read as a stray line rather than as a separation. Hanging it off the end
+// of the header instead would draw two of them on a card that stacks a header straight onto a footer - one closing
+// the header and one opening the footer, with only the gap between them.
+.bit-crd-dvd > .bit-crd-mai > :not(:first-child) {
+    padding-block-start: var(--bit-crd-gap);
+    border-block-start: $siz-divider $shp-border-style var(--bit-crd-dvd-clr, #{$clr-brd-sec});
 }
 
 
@@ -442,6 +486,8 @@ i.bit-crd-hic {
 
 .bit-crd-nsd {
     --bit-crd-shd: none;
+    --bit-crd-shd-hov: #{$box-shadow-8};
+    --bit-crd-shd-act: none;
 }
 
 

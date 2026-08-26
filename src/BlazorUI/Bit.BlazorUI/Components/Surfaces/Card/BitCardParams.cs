@@ -48,6 +48,11 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
     public bool? CoverOverlay { get; set; }
 
     /// <summary>
+    /// The aspect ratio the cover of the card is drawn at, as a CSS ratio such as 16 / 9.
+    /// </summary>
+    public string? CoverRatio { get; set; }
+
+    /// <summary>
     /// The width of the cover of a horizontal card.
     /// </summary>
     public string? CoverWidth { get; set; }
@@ -360,6 +365,14 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
         {
             bitCard.Height = Height;
 
+            bitCard.StyleBuilder.Reset();
+        }
+
+        if (CoverRatio is not null && bitCard.HasNotBeenSet(nameof(CoverRatio)))
+        {
+            bitCard.CoverRatio = CoverRatio;
+
+            bitCard.ClassBuilder.Reset();
             bitCard.StyleBuilder.Reset();
         }
 

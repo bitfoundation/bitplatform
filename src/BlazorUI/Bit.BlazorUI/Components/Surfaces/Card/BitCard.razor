@@ -76,7 +76,7 @@
      role="@role"
      tabindex="@rootTabIndex"
      aria-label="@(labelOnRoot ? label : null)"
-     aria-pressed="@(_IsButton && _IsToggle ? (Selected ? "true" : "false") : null)"
+     aria-pressed="@(_IsButton && _IsSelectable ? (Selected ? "true" : "false") : null)"
      aria-busy="@(Loading ? "true" : null)"
      aria-disabled="@(role is not null && IsEnabled is false ? "true" : null)"
      style="@StyleBuilder.Value"
@@ -100,6 +100,14 @@
            aria-disabled="@(IsEnabled ? null : "true")"
            aria-labelledby="@linkLabelledBy"
            aria-label="@label"></a>
+    }
+
+    @if (FloatingActions is not null)
+    {
+        @* Over the surface rather than in the column of parts, and over the stretched link with it, so the control a
+           picture card keeps in its corner is reachable on a card whose header is under the picture - or on a card
+           that has no header at all. *@
+        <div style="@Styles?.FloatingActions" class="bit-crd-fac @Classes?.FloatingActions">@FloatingActions</div>
     }
 
     @if (_IsSectioned)

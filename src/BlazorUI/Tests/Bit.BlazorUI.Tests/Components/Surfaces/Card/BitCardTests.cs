@@ -801,6 +801,52 @@ public class BitCardTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCardCoverRatioShouldRenderItsClassAndCustomProperty()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.ImageUrl, "/images/a.png");
+            parameters.Add(p => p.CoverRatio, "16 / 9");
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-cra"));
+        Assert.IsTrue(card.GetAttribute("style")!.Contains("--bit-crd-cvr-ratio:16 / 9"));
+    }
+
+    [TestMethod]
+    public void BitCardWithoutCoverRatioShouldNotRenderTheRatioClass()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.ImageUrl, "/images/a.png");
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsFalse(card.ClassList.Contains("bit-crd-cra"));
+        Assert.IsFalse(card.GetAttribute("style")?.Contains("--bit-crd-cvr-ratio") ?? false);
+    }
+
+    [TestMethod]
+    public void BitCardCoverRatioAloneShouldNotSectionTheCard()
+    {
+        // The ratio only sizes a cover; a card that has none is still the plain padded box it started as.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.CoverRatio, "1 / 1");
+            parameters.AddChildContent("<span class=\"inner\">body</span>");
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-cra"));
+        Assert.IsFalse(card.ClassList.Contains("bit-crd-sct"));
+        Assert.AreEqual(0, component.FindAll(".bit-crd-cvr").Count);
+    }
+
+    [TestMethod]
     public void BitCardCoverShouldTakePrecedenceOverImageUrl()
     {
         var component = RenderComponent<BitCard>(parameters =>
@@ -922,6 +968,89 @@ public class BitCardTests : BunitTestContext
 
         Assert.IsTrue(card.ClassList.Contains("bit-crd-dvd"));
         Assert.IsFalse(card.ClassList.Contains("bit-crd-sct"));
+    }
+
+    #endregion
+
+    #region Floating actions
+
+    [TestMethod]
+    public void BitCardFloatingActionsShouldRenderAsADirectChildOfTheRoot()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.FloatingActions, (RenderFragment)(builder => builder.AddContent(0, "star")));
+            parameters.AddChildContent("<span class=\"inner\">body</span>");
+        });
+
+        var floating = component.Find(".bit-crd-fac");
+
+        // It floats over the whole surface, so it hangs off the root rather than off the column of parts.
+        Assert.AreEqual(1, component.FindAll(".bit-crd > .bit-crd-fac").Count);
+        Assert.AreEqual("star", floating.TextContent);
+    }
+
+    [TestMethod]
+    public void BitCardFloatingActionsAloneShouldNotSectionTheCard()
+    {
+        // A slot that is positioned over the card needs no column of parts under it.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.FloatingActions, (RenderFragment)(builder => builder.AddContent(0, "star")));
+            parameters.AddChildContent("<span class=\"inner\">body</span>");
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsFalse(card.ClassList.Contains("bit-crd-sct"));
+        Assert.AreEqual(0, component.FindAll(".bit-crd-mai").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-crd-bdy").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-crd > .inner").Count);
+    }
+
+    [TestMethod]
+    public void BitCardFloatingActionsShouldStayOutsideTheMainColumnOfASectionedCard()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.ImageUrl, "/images/a.png");
+            parameters.Add(p => p.Title, "Title");
+            parameters.Add(p => p.FloatingActions, (RenderFragment)(builder => builder.AddContent(0, "star")));
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-sct"));
+        Assert.AreEqual(1, component.FindAll(".bit-crd > .bit-crd-fac").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-crd-mai .bit-crd-fac").Count);
+    }
+
+    [TestMethod]
+    public void BitCardFloatingActionsShouldRenderAfterTheStretchedLink()
+    {
+        // The anchor is painted under the slot, which is what keeps the control in it clickable on a linked card.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Title, "Title");
+            parameters.Add(p => p.FloatingActions, (RenderFragment)(builder => builder.AddContent(0, "star")));
+        });
+
+        var children = component.Find(".bit-crd").Children;
+
+        Assert.IsTrue(children[0].ClassList.Contains("bit-crd-lnk"));
+        Assert.IsTrue(children[1].ClassList.Contains("bit-crd-fac"));
+    }
+
+    [TestMethod]
+    public void BitCardWithoutFloatingActionsShouldNotRenderTheSlot()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Title, "Title");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-crd-fac").Count);
     }
 
     #endregion
@@ -1556,6 +1685,55 @@ public class BitCardTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCardClickableSelectedShouldReportAriaPressedWithoutABinding()
+    {
+        // The app flipped the value itself rather than binding it. The card is still a button that is pressed, and a
+        // button whose state only the sighted reader can see has no state at all.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.OnClick, () => { });
+            parameters.Add(p => p.Selected, true);
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.AreEqual("button", card.GetAttribute("role"));
+        Assert.AreEqual("true", card.GetAttribute("aria-pressed"));
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-sel"));
+    }
+
+    [TestMethod]
+    public void BitCardClickableWithoutAnySelectionShouldNotReportAriaPressed()
+    {
+        // A card that only does something is a plain button, and a plain button is not a toggle.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.AreEqual("button", card.GetAttribute("role"));
+        Assert.IsNull(card.GetAttribute("aria-pressed"));
+    }
+
+    [TestMethod]
+    public void BitCardLinkedSelectedShouldNotReportAriaPressed()
+    {
+        // aria-pressed belongs to a button, and a linked card is not one.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Selected, true);
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsNull(card.GetAttribute("aria-pressed"));
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-sel"));
+    }
+
+    [TestMethod]
     public void BitCardUnboundSelectedShouldNotReportAriaPressed()
     {
         var component = RenderComponent<BitCard>(parameters =>
@@ -1745,12 +1923,14 @@ public class BitCardTests : BunitTestContext
             parameters.Add(p => p.Subtitle, "Subtitle");
             parameters.Add(p => p.IconName, "Album");
             parameters.Add(p => p.Actions, (RenderFragment)(builder => builder.AddContent(0, "actions")));
+            parameters.Add(p => p.FloatingActions, (RenderFragment)(builder => builder.AddContent(0, "star")));
             parameters.Add(p => p.Footer, (RenderFragment)(builder => builder.AddContent(0, "footer")));
             parameters.AddChildContent("<span>body</span>");
             parameters.Add(p => p.Classes, new BitCardClassStyles
             {
                 Root = "c-root",
                 Link = "c-link",
+                FloatingActions = "c-floating",
                 Cover = "c-cover",
                 Image = "c-image",
                 Main = "c-main",
@@ -1767,6 +1947,7 @@ public class BitCardTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-crd").ClassList.Contains("c-root"));
         Assert.IsTrue(component.Find(".bit-crd-lnk").ClassList.Contains("c-link"));
+        Assert.IsTrue(component.Find(".bit-crd-fac").ClassList.Contains("c-floating"));
         Assert.IsTrue(component.Find(".bit-crd-cvr").ClassList.Contains("c-cover"));
         Assert.IsTrue(component.Find(".bit-crd-img").ClassList.Contains("c-image"));
         Assert.IsTrue(component.Find(".bit-crd-mai").ClassList.Contains("c-main"));
@@ -1791,12 +1972,14 @@ public class BitCardTests : BunitTestContext
             parameters.Add(p => p.Subtitle, "Subtitle");
             parameters.Add(p => p.IconName, "Album");
             parameters.Add(p => p.Actions, (RenderFragment)(builder => builder.AddContent(0, "actions")));
+            parameters.Add(p => p.FloatingActions, (RenderFragment)(builder => builder.AddContent(0, "star")));
             parameters.Add(p => p.Footer, (RenderFragment)(builder => builder.AddContent(0, "footer")));
             parameters.AddChildContent("<span>body</span>");
             parameters.Add(p => p.Styles, new BitCardClassStyles
             {
                 Root = "color:red",
                 Link = "color:navy",
+                FloatingActions = "color:crimson",
                 Cover = "color:orange",
                 Image = "color:yellow",
                 Main = "color:green",
@@ -1813,6 +1996,7 @@ public class BitCardTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-crd").GetAttribute("style")!.Contains("color:red"));
         Assert.AreEqual("color:navy", component.Find(".bit-crd-lnk").GetAttribute("style"));
+        Assert.AreEqual("color:crimson", component.Find(".bit-crd-fac").GetAttribute("style"));
         Assert.AreEqual("color:orange", component.Find(".bit-crd-cvr").GetAttribute("style"));
         Assert.AreEqual("color:yellow", component.Find(".bit-crd-img").GetAttribute("style"));
         Assert.AreEqual("color:green", component.Find(".bit-crd-mai").GetAttribute("style"));
@@ -1980,6 +2164,31 @@ public class BitCardTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-crd").ClassList.Contains("bit-crd-ovl"));
         Assert.AreEqual("lazy", component.Find(".bit-crd-img").GetAttribute("loading"));
+    }
+
+    [TestMethod]
+    public void BitCardCascadedCoverRatioShouldReachTheCardAsAClassAndAProperty()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitCardParams { CoverRatio = "4 / 3" }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitCard>(0);
+                builder.AddAttribute(1, nameof(BitCard.ImageUrl), "/images/a.png");
+                builder.CloseComponent();
+            });
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-cra"));
+        Assert.IsTrue(card.GetAttribute("style")!.Contains("--bit-crd-cvr-ratio:4 / 3"));
     }
 
     [TestMethod]

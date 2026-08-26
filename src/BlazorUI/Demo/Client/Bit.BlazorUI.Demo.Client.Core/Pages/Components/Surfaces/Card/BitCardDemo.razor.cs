@@ -70,6 +70,13 @@ public partial class BitCardDemo
         },
         new()
         {
+            Name = "CoverRatio",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The aspect ratio the cover of the card is drawn at, as a CSS ratio such as 16 / 9. The cover is then sized by the ratio rather than by the picture inside it, which keeps a row of cards level while the column narrows.",
+        },
+        new()
+        {
             Name = "CoverWidth",
             Type = "string?",
             DefaultValue = "null",
@@ -102,6 +109,13 @@ public partial class BitCardDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The content rendered under the body of the card, for the actions a reader is meant to take. It is raised above the stretched link of a card that has an Href, so the controls in it stay clickable.",
+        },
+        new()
+        {
+            Name = "FloatingActions",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The content floated over the leading corner of the card, above everything else on its surface - the corner a picture card keeps its favourite toggle or its selection box in. It is raised above the stretched link of a card that has an Href, so the control in it stays clickable.",
         },
         new()
         {
@@ -404,6 +418,13 @@ public partial class BitCardDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the stretched link that covers a card with an Href."
+                },
+                new()
+                {
+                    Name = "FloatingActions",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the slot floated over the corner of the BitCard."
                 },
                 new()
                 {
@@ -808,6 +829,7 @@ public partial class BitCardDemo
     private int size = 0;
     private int clickCount;
     private bool isPinned;
+    private bool isStarred;
     private bool isLoading = true;
     private double elevation = 4;
     private double cardWidth = 300;
@@ -878,6 +900,13 @@ public partial class BitCardDemo
     </BitText>
 </BitCard>
 
+<BitCard Title=""Widescreen"" Subtitle=""A 16 / 9 cover"" Width=""18rem""
+         ImageUrl=""/images/carousel/img3.jpg"" CoverRatio=""16 / 9"">
+    <BitText Typography=""BitTypography.Body2"">
+        A cover given a ratio stays at that ratio however wide the card ends up.
+    </BitText>
+</BitCard>
+
 <BitCard Title=""Custom cover"" Subtitle=""Any markup you like"" Width=""18rem"">
     <Cover>
         <div class=""example-cover"">bit BlazorUI</div>
@@ -918,6 +947,21 @@ public partial class BitCardDemo
     </Footer>
 </BitCard>
 
+<BitCard Title=""Mount Rainier"" Subtitle=""Washington, USA"" Width=""18rem""
+         ImageUrl=""/images/carousel/img1.jpg"" CoverRatio=""16 / 9"">
+    <FloatingActions>
+        <BitButton Variant=""BitVariant.Fill"" IconOnly Title=""Star""
+                   Color=""@(isStarred ? BitColor.Warning : BitColor.SecondaryBackground)""
+                   IconName=""@(isStarred ? BitIconName.FavoriteStarFill : BitIconName.FavoriteStar)""
+                   OnClick=""() => isStarred = !isStarred"" />
+    </FloatingActions>
+    <ChildContent>
+        <BitText Typography=""BitTypography.Body2"">
+            The star floats over the picture. Starred: @isStarred
+        </BitText>
+    </ChildContent>
+</BitCard>
+
 <BitCard Divider Title=""Weekly report"" Subtitle=""Updated an hour ago"" Width=""20rem"">
     <Actions>
         <BitButton Variant=""BitVariant.Text"" IconOnly IconName=""@BitIconName.More"" Title=""More"" />
@@ -932,6 +976,9 @@ public partial class BitCardDemo
         <BitButton Variant=""BitVariant.Text"" Size=""BitSize.Small"">Share</BitButton>
     </Footer>
 </BitCard>";
+
+    private readonly string example4CsharpCode = @"
+private bool isStarred;";
 
     private readonly string example5RazorCode = @"
 <BitCard Horizontal Width=""26rem""

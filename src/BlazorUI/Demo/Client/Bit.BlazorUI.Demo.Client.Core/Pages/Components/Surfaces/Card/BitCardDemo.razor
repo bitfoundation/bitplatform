@@ -90,7 +90,10 @@
             cards keeps one picture height whatever the aspect ratios are. The picture is decorative next to the title beside it, so
             it renders an empty alt unless <b>ImageAlt</b> says otherwise, and <b>ImageLoading</b> hands the browser the picture of
             a card that is still below the fold to fetch later. <b>Cover</b> takes a template instead, for a head that is not a
-            single picture - a chart, a carousel, a video. <b>CoverOverlay</b> moves the cover behind the content rather than above
+            single picture - a chart, a carousel, a video. <b>CoverRatio</b> draws the cover at a ratio of your own instead -
+            <code>16 / 9</code>, <code>1 / 1</code>, <code>4 / 3</code> - which is what a responsive grid wants: a fixed height
+            keeps a row of cards level only until the column narrows, while a ratio keeps it level at every width.
+            <b>CoverOverlay</b> moves the cover behind the content rather than above
             it, which is the hero card: give the card a <b>Height</b> of its own, since a cover behind the content no longer makes
             the card as tall as the picture, and a foreground the words can be read against - the picture carries no scrim.
         </div>
@@ -100,6 +103,13 @@
                      ImageUrl="/images/carousel/img1.jpg" ImageHeight="9rem">
                 <BitText Typography="BitTypography.Body2">
                     A cover runs edge to edge and is clipped to the corner of the card.
+                </BitText>
+            </BitCard>
+
+            <BitCard Title="Widescreen" Subtitle="A 16 / 9 cover" Width="18rem"
+                     ImageUrl="/images/carousel/img3.jpg" CoverRatio="16 / 9">
+                <BitText Typography="BitTypography.Body2">
+                    A cover given a ratio stays at that ratio however wide the card ends up.
                 </BitText>
             </BitCard>
 
@@ -129,14 +139,18 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Actions & Footer" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Actions & Footer" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>
             <b>Actions</b> is the slot at the trailing edge of the header, for whatever acts on the card as a whole - an overflow
             menu, a dismiss button, a status tag. <b>Footer</b> is the row under the body, for the actions a reader is meant to take.
             Both sit outside the title block and both are raised above the block link of a card that has an <b>Href</b>, so the
             controls in them keep working on a card that is itself a link. <b>Divider</b> draws a hairline between the header and
             the body and between the body and the footer, for a card that reads better as three parts than as one column; a header
-            with nothing under it, or a footer with nothing over it, draws no rule at all.
+            with nothing under it, or a footer with nothing over it, draws no rule at all, and a header stacked straight onto a
+            footer draws one rule between them rather than two. <b>FloatingActions</b> is the third slot: it floats over the corner
+            of the card itself rather than sitting in the column of parts, which is where a picture card has to keep its favourite
+            toggle or its selection box - on such a card the header is under the cover rather than over it. It floats over a plain
+            padded card just as well, and it is raised above the block link too.
         </div>
         <br /><br />
         <div class="card-row">
@@ -153,6 +167,21 @@
                     <BitButton Variant="BitVariant.Fill" Size="BitSize.Small">Open</BitButton>
                     <BitButton Variant="BitVariant.Text" Size="BitSize.Small">Share</BitButton>
                 </Footer>
+            </BitCard>
+
+            <BitCard Title="Mount Rainier" Subtitle="Washington, USA" Width="18rem"
+                     ImageUrl="/images/carousel/img1.jpg" CoverRatio="16 / 9">
+                <FloatingActions>
+                    <BitButton Variant="BitVariant.Fill" IconOnly Title="Star"
+                               Color="@(isStarred ? BitColor.Warning : BitColor.SecondaryBackground)"
+                               IconName="@(isStarred ? BitIconName.FavoriteStarFill : BitIconName.FavoriteStar)"
+                               OnClick="() => isStarred = !isStarred" />
+                </FloatingActions>
+                <ChildContent>
+                    <BitText Typography="BitTypography.Body2">
+                        The star floats over the picture. Starred: @isStarred
+                    </BitText>
+                </ChildContent>
             </BitCard>
 
             <BitCard Divider Title="Weekly report" Subtitle="Updated an hour ago" Width="20rem">
@@ -261,7 +290,9 @@
             pressing Enter flips the value and the card reports its state through <code>aria-pressed</code>. A picked card is marked
             with a ring rather than a new fill, so the state survives whatever <b>Color</b> the card is already wearing: the ring is
             drawn in the primary color, or in the fill's own foreground on a card that is already painted in a role. It is painted
-            over the edge of the card rather than added to it, so picking through a grid of cards moves nothing.
+            over the edge of the card rather than added to it, so picking through a grid of cards moves nothing. A card that is a
+            button through <b>OnClick</b> reports the state as well while it carries it, even where the app sets <b>Selected</b>
+            itself rather than binding it - a control whose state only the sighted reader can see is not a state at all.
         </div>
         <br /><br />
         <div class="card-row">
@@ -695,8 +726,8 @@
         <div>
             Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific
             UI requirements. <b>Style</b> and <b>Class</b> land on the root of the card, while <b>Styles</b> and <b>Classes</b> reach
-            every part of it separately - the block link, the cover and its image, the main column, the header with its icon, title
-            and subtitle, the actions, the body, the footer and the selected state.
+            every part of it separately - the block link, the floating slot, the cover and its image, the main column, the header
+            with its icon, title and subtitle, the actions, the body, the footer and the selected state.
         </div>
         <br /><br />
         <div>Component's Style & Class:</div>

@@ -16,6 +16,11 @@ public class BitCardClassStyles
     public string? Link { get; set; }
 
     /// <summary>
+    /// The custom CSS class/style for the slot floated over the corner of the card.
+    /// </summary>
+    public string? FloatingActions { get; set; }
+
+    /// <summary>
     /// The custom CSS class/style for the full-bleed media area at the head of the card.
     /// </summary>
     public string? Cover { get; set; }

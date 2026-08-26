@@ -24,6 +24,11 @@ public partial class BitCard : BitComponentBase
     // Binding Selected turns the card into a toggle, the same way a click handler turns it into a button.
     private bool _IsToggle => SelectedChanged.HasDelegate;
 
+    // Whether the card has a selected state to report at all. A bound Selected always has one, and so does a card
+    // that was handed the state ready-made rather than letting the card flip it - a card drawing the selection ring
+    // while saying nothing about it would be a control whose state only the sighted reader can see.
+    private bool _IsSelectable => _IsToggle || Selected;
+
     private bool _IsClickable => OnClick.HasDelegate || _IsToggle;
 
     // The root only becomes a control where there is no stretched link to be one instead - two controls over
@@ -134,6 +139,18 @@ public partial class BitCard : BitComponentBase
     public bool CoverOverlay { get; set; }
 
     /// <summary>
+    /// The aspect ratio the cover of the card is drawn at, as a CSS ratio such as <c>16 / 9</c>.
+    /// </summary>
+    /// <remarks>
+    /// The cover is then sized by the ratio rather than by the picture inside it, and the picture fills it - which is
+    /// what keeps a row of cards level whatever the pictures turn out to be, and keeps it level while the column
+    /// narrows, which the fixed <see cref="ImageHeight"/> cannot do. It has nothing to size on a cover laid behind the
+    /// content by <see cref="CoverOverlay"/>, which is as tall as the card is.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? CoverRatio { get; set; }
+
+    /// <summary>
     /// The width of the cover of a horizontal card.
     /// </summary>
     /// <remarks>
@@ -180,6 +197,18 @@ public partial class BitCard : BitComponentBase
     /// clickable rather than being covered by it.
     /// </remarks>
     [Parameter] public RenderFragment? Footer { get; set; }
+
+    /// <summary>
+    /// The content floated over the leading corner of the card, above everything else on its surface.
+    /// </summary>
+    /// <remarks>
+    /// This is the slot for the control a picture card keeps in its corner - a favourite toggle, a selection box, a
+    /// dismiss button - which <see cref="Actions"/> cannot hold on such a card, since the header it renders into sits
+    /// under the cover rather than over it. It is raised above the stretched link of a card that has an
+    /// <see cref="Href"/>, so the control in it stays clickable, and it floats over the card whether the card is laid
+    /// out as a stack of parts or is still a plain padded box.
+    /// </remarks>
+    [Parameter] public RenderFragment? FloatingActions { get; set; }
 
     /// <summary>
     /// Makes the card height 100% of its parent container.
@@ -409,7 +438,10 @@ public partial class BitCard : BitComponentBase
     /// </summary>
     /// <remarks>
     /// Binding it turns the card into a toggle the same way <see cref="OnClick"/> turns it into a button:
-    /// clicking it flips the value, and the card reports its state through <c>aria-pressed</c>.
+    /// clicking it flips the value, and the card reports its state through <c>aria-pressed</c>. A card that is a
+    /// button through <see cref="OnClick"/> reports the state through <c>aria-pressed</c> as well while it carries
+    /// it, even where the app flips the value itself rather than binding it. A card that is neither has only the
+    /// ring to show for it, and wants a role of its own - an <c>option</c>, a <c>gridcell</c> - splatted in.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     public bool Selected { get; set; }
@@ -570,6 +602,8 @@ public partial class BitCard : BitComponentBase
 
         ClassBuilder.Register(() => CoverOverlay ? "bit-crd-ovl" : string.Empty);
 
+        ClassBuilder.Register(() => CoverRatio.HasValue() ? "bit-crd-cra" : string.Empty);
+
         ClassBuilder.Register(() => _IsLink || _IsButton ? "bit-crd-int" : string.Empty);
 
         ClassBuilder.Register(() => Hoverable ? "bit-crd-hov" : string.Empty);
@@ -608,6 +642,8 @@ public partial class BitCard : BitComponentBase
         StyleBuilder.Register(() => ImageHeight.HasNoValue() ? null : $"--bit-crd-img-height:{ImageHeight}");
 
         StyleBuilder.Register(() => CoverWidth.HasNoValue() ? null : $"--bit-crd-cvr-width:{CoverWidth}");
+
+        StyleBuilder.Register(() => CoverRatio.HasNoValue() ? null : $"--bit-crd-cvr-ratio:{CoverRatio}");
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCardParams))]
