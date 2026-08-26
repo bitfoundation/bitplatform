@@ -38,6 +38,13 @@ public partial class BitCollapseDemo
         },
         new()
         {
+            Name = "CollapseDuration",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The duration of the collapse transition in ms, which overrides Duration while the collapse is closing and leaves the opening alone."
+        },
+        new()
+        {
             Name = "CollapsedSize",
             Type = "string?",
             DefaultValue = "null",
@@ -62,7 +69,7 @@ public partial class BitCollapseDemo
             Name = "Duration",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The duration of the expand/collapse transition in ms. Leaving it unset keeps the duration of the motion theme, which is also what the reduced motion preference collapses to nothing. It is what OnExpanded, OnCollapsed, NoClip and UnmountOnCollapse wait for."
+            Description = "The duration of the expand/collapse transition in ms. Leaving it unset keeps the duration of the motion theme, which is also what the reduced motion preference collapses to nothing. It is what OnExpanded, OnCollapsed, NoClip, HiddenUntilFound and UnmountOnCollapse wait for."
         },
         new()
         {
@@ -70,6 +77,13 @@ public partial class BitCollapseDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The timing function of the expand/collapse transition, as any CSS easing value."
+        },
+        new()
+        {
+            Name = "ExpandDuration",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The duration of the expand transition in ms, which overrides Duration while the collapse is opening and leaves the closing alone."
         },
         new()
         {
@@ -84,6 +98,13 @@ public partial class BitCollapseDemo
             Type = "EventCallback<bool>",
             DefaultValue = "",
             Description = "The callback of the two-way binding of the Expanded parameter, raised with the new state."
+        },
+        new()
+        {
+            Name = "HiddenUntilFound",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Hands the closed content to the browser as hidden=\"until-found\", so find-in-page and a navigation to a fragment inside the section reach into it and open it. Such a collapse ignores LazyRender and UnmountOnCollapse, since the content has to stay in the DOM to be found, and one that cannot open - disabled, or with a one-way Expanded - is not offered to find-in-page at all."
         },
         new()
         {
@@ -104,7 +125,7 @@ public partial class BitCollapseDemo
             Name = "LazyRender",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Keeps the content out of the DOM until the collapse is expanded for the first time. A collapse that keeps a CollapsedSize ignores it, since the peek has to have something in it to show."
+            Description = "Keeps the content out of the DOM until the collapse is expanded for the first time. A collapse that keeps a CollapsedSize or is searchable through HiddenUntilFound ignores it."
         },
         new()
         {
@@ -115,17 +136,17 @@ public partial class BitCollapseDemo
         },
         new()
         {
-            Name = "NoFade",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Removes the fade of the content, leaving the size on its own to open and close the collapse."
-        },
-        new()
-        {
             Name = "NoClip",
             Type = "bool",
             DefaultValue = "false",
             Description = "Stops clipping the content once the collapse has finished opening, so a focus ring, a shadow or a menu that reaches past the edges of the section is drawn in full. The clipping is put back the moment the collapse starts closing."
+        },
+        new()
+        {
+            Name = "NoFade",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Removes the fade of the content, leaving the size on its own to open and close the collapse."
         },
         new()
         {
@@ -146,14 +167,28 @@ public partial class BitCollapseDemo
             Name = "OnCollapsed",
             Type = "EventCallback",
             DefaultValue = "",
-            Description = "Callback that is called once the collapse has finished closing, which is the end of the collapse transition rather than the start of it."
+            Description = "Callback that is called once the collapse has finished closing, which is the end of the collapse transition."
+        },
+        new()
+        {
+            Name = "OnCollapsing",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "Callback that is called as the collapse starts closing, which is the start of the collapse transition."
         },
         new()
         {
             Name = "OnExpanded",
             Type = "EventCallback",
             DefaultValue = "",
-            Description = "Callback that is called once the collapse has finished opening, which is the end of the expand transition rather than the start of it."
+            Description = "Callback that is called once the collapse has finished opening, which is the end of the expand transition."
+        },
+        new()
+        {
+            Name = "OnExpanding",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "Callback that is called as the collapse starts opening, which is the start of the expand transition."
         },
         new()
         {
@@ -176,7 +211,7 @@ public partial class BitCollapseDemo
             Name = "UnmountOnCollapse",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Takes the content back out of the DOM once the collapse has closed, after the transition has had time to finish. A collapse that keeps a CollapsedSize ignores it, since the peek would have nothing left in it to show."
+            Description = "Takes the content back out of the DOM once the collapse has closed, after the transition has had time to finish. A collapse that keeps a CollapsedSize or is searchable through HiddenUntilFound ignores it."
         }
     ];
 
@@ -199,6 +234,12 @@ public partial class BitCollapseDemo
             Name = "ExpandAsync",
             Type = "Task",
             Description = "Expands the collapse, reporting the change through ExpandedChanged and OnChange."
+        },
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask",
+            Description = "Moves the focus to the content region of the collapse, which is worth pairing with OnExpanded so the focus lands once the section has finished opening."
         },
         new()
         {
@@ -306,6 +347,7 @@ public partial class BitCollapseDemo
     private bool peekExpanded;
 
     private bool transitionExpanded = true;
+    private bool paceExpanded = true;
     private bool noFadeExpanded = true;
     private bool noAnimationExpanded = true;
 
@@ -318,10 +360,14 @@ public partial class BitCollapseDemo
     private bool clipExpanded = true;
 
     private bool lazyExpanded;
-    private int lazyRenderCount;
+    private int lazyOpenCount;
     private bool unmountExpanded = true;
 
+    private bool findExpanded = true;
+
     private bool a11yExpanded;
+    private bool focusExpanded;
+    private BitCollapse? focusCollapseRef;
 
     private bool expandedClass = true;
     private bool expandedStyle = true;
@@ -337,6 +383,8 @@ public partial class BitCollapseDemo
     }
 
     private void HandleEventsChange(bool value) => LogCollapseEvent($"OnChange({value.ToString().ToLower()})");
+    private void HandleEventsExpanding() => LogCollapseEvent("OnExpanding");
+    private void HandleEventsCollapsing() => LogCollapseEvent("OnCollapsing");
     private void HandleEventsExpanded() => LogCollapseEvent("OnExpanded");
     private void HandleEventsCollapsed() => LogCollapseEvent("OnCollapsed");
 
@@ -344,9 +392,17 @@ public partial class BitCollapseDemo
     {
         eventsLog.Insert(0, name);
 
-        if (eventsLog.Count > 6)
+        if (eventsLog.Count > 8)
         {
             eventsLog.RemoveAt(eventsLog.Count - 1);
+        }
+    }
+
+    private async Task HandleFocusExpanded()
+    {
+        if (focusCollapseRef is not null)
+        {
+            await focusCollapseRef.FocusAsync();
         }
     }
 }

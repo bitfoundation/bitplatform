@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-col {
-    // The three knobs the component writes as custom properties on this element, each falling back to the
+    // The knobs the component writes as custom properties on this element, each falling back to the
     // motion theme so a collapse that sets none of them animates exactly like every other transition in the
     // library - and stops when the reader asks for reduced motion, which is what the theme token does.
     --bit-col-duration: var(--bit-col-dur, #{$mot-duration-long});
@@ -117,6 +117,16 @@
 
 .bit-col-nfd > .bit-col-cco {
     opacity: 1;
+}
+
+
+// A searchable collapse hides its closed content with the hidden="until-found" attribute the component
+// renders at the end of the close, and that attribute is the only thing allowed to hide it: text the
+// stylesheet has hidden with visibility is text find-in-page skips, which is the whole of what the
+// parameter is for.
+// inherit rather than visible, so a collapse the Visibility parameter has hidden stays hidden.
+.bit-col-huf > .bit-col-cco {
+    visibility: inherit;
 }
 
 

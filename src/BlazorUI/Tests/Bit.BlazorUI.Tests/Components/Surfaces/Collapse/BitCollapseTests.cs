@@ -1031,4 +1031,455 @@ public class BitCollapseTests : BunitTestContext
         Assert.IsTrue(root.GetAttribute("style").Contains("color:red"));
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
     }
+
+    [TestMethod]
+    public void BitCollapseShouldRespectExpandDurationWhileItIsExpanded()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.Duration, 500);
+            parameters.Add(p => p.ExpandDuration, 900);
+            parameters.Add(p => p.CollapseDuration, 200);
+            parameters.Add(p => p.Expanded, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur:900ms"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldRespectCollapseDurationWhileItIsCollapsed()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.Duration, 500);
+            parameters.Add(p => p.ExpandDuration, 900);
+            parameters.Add(p => p.CollapseDuration, 200);
+            parameters.Add(p => p.Expanded, false);
+        });
+
+        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur:200ms"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldSwapTheDurationWhenTheStateChanges()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.ExpandDuration, 900);
+            parameters.Add(p => p.CollapseDuration, 200);
+            parameters.Add(p => p.Expanded, false);
+        });
+
+        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur:200ms"));
+
+        component.Render(parameters => parameters.Add(p => p.Expanded, true));
+
+        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur:900ms"));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitCollapseShouldFallBackToDurationForTheDirectionThatHasNoneOfItsOwn(bool expanded)
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.Duration, 500);
+            parameters.Add(p => p.ExpandDuration, expanded ? null : 900);
+            parameters.Add(p => p.CollapseDuration, expanded ? 200 : null);
+            parameters.Add(p => p.Expanded, expanded);
+        });
+
+        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur:500ms"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldClampNegativeDirectionalDurations()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.ExpandDuration, -100);
+            parameters.Add(p => p.Expanded, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur:0ms"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldCallOnExpandingWhenTheExpandTransitionStarts()
+    {
+        var expandingCount = 0;
+
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.Duration, 3000);
+            parameters.Add(p => p.OnExpanding, () => expandingCount++);
+            parameters.Add(p => p.Expanded, false);
+        });
+
+        Assert.AreEqual(0, expandingCount);
+
+        component.Render(parameters => parameters.Add(p => p.Expanded, true));
+
+        Assert.AreEqual(1, expandingCount);
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldCallOnCollapsingWhenTheCollapseTransitionStarts()
+    {
+        var collapsingCount = 0;
+
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.Duration, 3000);
+            parameters.Add(p => p.OnCollapsing, () => collapsingCount++);
+            parameters.Add(p => p.Expanded, true);
+        });
+
+        Assert.AreEqual(0, collapsingCount);
+
+        component.Render(parameters => parameters.Add(p => p.Expanded, false));
+
+        Assert.AreEqual(1, collapsingCount);
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldNotCallTheStartCallbacksForTheStateItStartsIn()
+    {
+        var expandingCount = 0;
+        var collapsingCount = 0;
+
+        RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.OnExpanding, () => expandingCount++);
+            parameters.Add(p => p.OnCollapsing, () => collapsingCount++);
+            parameters.Add(p => p.Expanded, true);
+        });
+
+        Assert.AreEqual(0, expandingCount);
+        Assert.AreEqual(0, collapsingCount);
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldNotCallOnCollapsingForACollapseThatWasNeverExpanded()
+    {
+        var collapsingCount = 0;
+
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.OnCollapsing, () => collapsingCount++);
+            parameters.Add(p => p.Expanded, false);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Expanded, true));
+        component.Render(parameters => parameters.Add(p => p.Expanded, false));
+
+        Assert.AreEqual(1, collapsingCount);
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldCallTheStartCallbackBeforeTheEndCallback()
+    {
+        var log = new List<string>();
+
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.Duration, 100);
+            parameters.Add(p => p.OnExpanding, () => log.Add("expanding"));
+            parameters.Add(p => p.OnExpanded, () => log.Add("expanded"));
+            parameters.Add(p => p.Expanded, false);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Expanded, true));
+
+        WaitUntil(() => log.Count == 2);
+
+        CollectionAssert.AreEqual(new[] { "expanding", "expanded" }, log);
+    }
+
+    [TestMethod]
+    public async Task BitCollapseShouldCallTheStartCallbacksOfTheComponentDrivenChanges()
+    {
+        var expandingCount = 0;
+        var collapsingCount = 0;
+
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.NoAnimation, true);
+            parameters.Add(p => p.OnExpanding, () => expandingCount++);
+            parameters.Add(p => p.OnCollapsing, () => collapsingCount++);
+        });
+
+        await component.InvokeAsync(() => component.Instance.ExpandAsync());
+
+        Assert.AreEqual(1, expandingCount);
+
+        await component.InvokeAsync(() => component.Instance.CollapseAsync());
+
+        Assert.AreEqual(1, collapsingCount);
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldRespectTabIndexWhileItIsOnTheScreen()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.Expanded, true);
+            parameters.Add(p => p.TabIndex, "3");
+        });
+
+        Assert.AreEqual("3", component.Find(".bit-col-con").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldNotLetTabIndexTakeAClosedSectionBackIntoTheTabOrder()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.Expanded, false);
+            parameters.Add(p => p.TabIndex, "3");
+        });
+
+        Assert.AreEqual("-1", component.Find(".bit-col-con").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldRespectTabIndexOnAPeek()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.Expanded, false);
+            parameters.Add(p => p.CollapsedSize, "3rem");
+            parameters.Add(p => p.TabIndex, "2");
+        });
+
+        Assert.AreEqual("2", component.Find(".bit-col-con").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldHideAClosedSearchableSectionUntilItIsFound()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.Expanded, false);
+        });
+
+        Assert.AreEqual("until-found", component.Find(".bit-col-con").GetAttribute("hidden"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldNotHideAnOpenSearchableSection()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.Expanded, true);
+        });
+
+        Assert.IsFalse(component.Find(".bit-col-con").HasAttribute("hidden"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldRenderNoHiddenAttributeByDefault()
+    {
+        var component = RenderComponent<BitCollapse>(parameters => parameters.Add(p => p.Expanded, false));
+
+        Assert.IsFalse(component.Find(".bit-col-con").HasAttribute("hidden"));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitCollapseShouldRespectHiddenUntilFound(bool hiddenUntilFound)
+    {
+        var component = RenderComponent<BitCollapse>(parameters => parameters.Add(p => p.HiddenUntilFound, hiddenUntilFound));
+
+        Assert.AreEqual(hiddenUntilFound, component.Find(".bit-col").ClassList.Contains("bit-col-huf"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldNotMakeAPeekSearchable()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.CollapsedSize, "3rem");
+            parameters.Add(p => p.Expanded, false);
+        });
+
+        Assert.IsFalse(component.Find(".bit-col").ClassList.Contains("bit-col-huf"));
+
+        Assert.IsFalse(component.Find(".bit-col-con").HasAttribute("hidden"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldNotMakeASearchableSectionInert()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.Expanded, false);
+        });
+
+        Assert.IsFalse(component.Find(".bit-col-con").HasAttribute("inert"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldHideASearchableSectionOnlyOnceTheCollapseTransitionHasFinished()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.Duration, 200);
+            parameters.Add(p => p.Expanded, true);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Expanded, false));
+
+        Assert.IsFalse(component.Find(".bit-col-con").HasAttribute("hidden"));
+
+        Assert.IsTrue(component.Find(".bit-col-con").HasAttribute("inert"));
+
+        component.WaitForAssertion(() => Assert.AreEqual("until-found", component.Find(".bit-col-con").GetAttribute("hidden")),
+                                   TimeSpan.FromSeconds(2));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldRenderTheContentOfALazySearchableCollapseBeforeItIsEverExpanded()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.LazyRender, true);
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.Expanded, false);
+            parameters.AddChildContent("<div>searchable content</div>");
+        });
+
+        Assert.IsTrue(component.Markup.Contains("searchable content"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldNotUnmountTheContentOfASearchableCollapse()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.UnmountOnCollapse, true);
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.NoAnimation, true);
+            parameters.Add(p => p.Expanded, true);
+            parameters.AddChildContent("<div>searchable content</div>");
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Expanded, false));
+
+        Thread.Sleep(200);
+
+        component.Render();
+
+        Assert.IsTrue(component.Markup.Contains("searchable content"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldExpandWhenTheBrowserIsAboutToRevealTheContent()
+    {
+        var changeCount = 0;
+
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.ExpandedChanged, _ => { });
+            parameters.Add(p => p.OnChange, _ => changeCount++);
+            parameters.Add(p => p.Expanded, false);
+        });
+
+        component.Find(".bit-col-con").TriggerEvent("onbeforematch", EventArgs.Empty);
+
+        Assert.IsTrue(component.Instance.Expanded);
+
+        Assert.AreEqual(1, changeCount);
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldListenForABeforeMatchOnlyWhileItIsSearchable()
+    {
+        var component = RenderComponent<BitCollapse>(parameters => parameters.Add(p => p.Expanded, false));
+
+        Assert.IsFalse(component.Markup.Contains("onbeforematch"));
+
+        component.Render(parameters => parameters.Add(p => p.HiddenUntilFound, true));
+
+        Assert.IsTrue(component.Markup.Contains("onbeforematch"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldNotOfferADisabledSectionToFindInPage()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.ExpandedChanged, _ => { });
+            parameters.Add(p => p.Expanded, false);
+        });
+
+        Assert.IsFalse(component.Markup.Contains("onbeforematch"));
+
+        Assert.IsFalse(component.Find(".bit-col-con").HasAttribute("hidden"));
+
+        Assert.IsTrue(component.Find(".bit-col-con").HasAttribute("inert"));
+
+        Assert.IsFalse(component.Find(".bit-col").ClassList.Contains("bit-col-huf"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldStopBeingSearchableWhenTheRevealIsRefused()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.Expanded, false);
+        });
+
+        Assert.AreEqual("until-found", component.Find(".bit-col-con").GetAttribute("hidden"));
+
+        component.Find(".bit-col-con").TriggerEvent("onbeforematch", EventArgs.Empty);
+
+        Assert.IsFalse(component.Instance.Expanded);
+
+        Assert.IsFalse(component.Find(".bit-col-con").HasAttribute("hidden"));
+
+        Assert.IsTrue(component.Find(".bit-col-con").HasAttribute("inert"));
+
+        Assert.IsFalse(component.Find(".bit-col").ClassList.Contains("bit-col-huf"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldBeSearchableAgainAfterTheStateChangesForReal()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.NoAnimation, true);
+            parameters.Add(p => p.Expanded, false);
+        });
+
+        component.Find(".bit-col-con").TriggerEvent("onbeforematch", EventArgs.Empty);
+
+        Assert.IsFalse(component.Find(".bit-col-con").HasAttribute("hidden"));
+
+        component.Render(parameters => parameters.Add(p => p.Expanded, true));
+        component.Render(parameters => parameters.Add(p => p.Expanded, false));
+
+        component.WaitForAssertion(() => Assert.AreEqual("until-found", component.Find(".bit-col-con").GetAttribute("hidden")),
+                                   TimeSpan.FromSeconds(2));
+    }
+
+    [TestMethod]
+    public async Task BitCollapseFocusAsyncShouldNotThrow()
+    {
+        var component = RenderComponent<BitCollapse>(parameters => parameters.Add(p => p.Expanded, true));
+
+        await component.InvokeAsync(async () => await component.Instance.FocusAsync());
+    }
 }

@@ -83,6 +83,11 @@ private bool peekExpanded;";
     A thousand milliseconds after a two hundred millisecond wait, on an easing that overshoots at both ends.
 </BitCollapse>
 
+<BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""paceExpanded"" />
+<BitCollapse Expanded=""paceExpanded"" ExpandDuration=""900"" CollapseDuration=""200"">
+    Nine hundred milliseconds to open, two hundred to close.
+</BitCollapse>
+
 <BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""noFadeExpanded"" />
 <BitCollapse Expanded=""noFadeExpanded"" NoFade Duration=""800"">
     The size opens and closes this section; the content never changes its opacity.
@@ -94,6 +99,7 @@ private bool peekExpanded;";
 </BitCollapse>";
     private readonly string example5CsharpCode = @"
 private bool transitionExpanded = true;
+private bool paceExpanded = true;
 private bool noFadeExpanded = true;
 private bool noAnimationExpanded = true;";
 
@@ -103,10 +109,12 @@ private bool noAnimationExpanded = true;";
              @bind-Expanded=""eventsExpanded""
              Duration=""600""
              OnChange=""HandleEventsChange""
+             OnExpanding=""HandleEventsExpanding""
+             OnCollapsing=""HandleEventsCollapsing""
              OnExpanded=""HandleEventsExpanded""
              OnCollapsed=""HandleEventsCollapsed"">
-    OnChange lands as soon as the button is pressed; the other two arrive six hundred milliseconds later,
-    when this section has stopped moving.
+    OnChange and the -ing callback land as soon as the button is pressed; the -ed one arrives six hundred
+    milliseconds later, when this section has stopped moving.
 </BitCollapse>
 
 @foreach (var entry in eventsLog)
@@ -119,6 +127,8 @@ private BitCollapse? eventsCollapseRef;
 private readonly List<string> eventsLog = [];
 
 private void HandleEventsChange(bool value) => LogCollapseEvent($""OnChange({value.ToString().ToLower()})"");
+private void HandleEventsExpanding() => LogCollapseEvent(""OnExpanding"");
+private void HandleEventsCollapsing() => LogCollapseEvent(""OnCollapsing"");
 private void HandleEventsExpanded() => LogCollapseEvent(""OnExpanded"");
 private void HandleEventsCollapsed() => LogCollapseEvent(""OnCollapsed"");
 
@@ -126,7 +136,7 @@ private void LogCollapseEvent(string name)
 {
     eventsLog.Insert(0, name);
 
-    if (eventsLog.Count > 6)
+    if (eventsLog.Count > 8)
     {
         eventsLog.RemoveAt(eventsLog.Count - 1);
     }
@@ -170,9 +180,8 @@ private bool clipExpanded = true;";
 
     private readonly string example9RazorCode = @"
 <BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""lazyExpanded"" />
-<BitCollapse LazyRender Expanded=""lazyExpanded"">
-    @{ lazyRenderCount++; }
-    <div>This content has rendered @lazyRenderCount time(s); the first of them was the moment the section was first opened.</div>
+<BitCollapse LazyRender Expanded=""lazyExpanded"" OnExpanded=""() => lazyOpenCount++"">
+    <div>This content was built the first time the section was opened, and has stayed since; the section has been opened @lazyOpenCount time(s).</div>
 </BitCollapse>
 
 <BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""unmountExpanded"" />
@@ -181,10 +190,19 @@ private bool clipExpanded = true;";
 </BitCollapse>";
     private readonly string example9CsharpCode = @"
 private bool lazyExpanded;
-private int lazyRenderCount;
+private int lazyOpenCount;
 private bool unmountExpanded = true;";
 
     private readonly string example10RazorCode = @"
+<BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""findExpanded"" />
+<BitCollapse HiddenUntilFound @bind-Expanded=""findExpanded"">
+    The passphrase kept in this section is <b>marmalade skies</b>. Close the section, press Ctrl+F, search
+    for it, and watch the browser open the collapse around the match.
+</BitCollapse>";
+    private readonly string example10CsharpCode = @"
+private bool findExpanded = true;";
+
+    private readonly string example11RazorCode = @"
 <BitButton Id=""a11y-trigger""
            aria-controls=""a11y-collapse-content""
            aria-expanded=""@(a11yExpanded ? ""true"" : ""false"")""
@@ -193,11 +211,28 @@ private bool unmountExpanded = true;";
 </BitButton>
 <BitCollapse Id=""a11y-collapse"" Expanded=""a11yExpanded"" LabelledBy=""a11y-trigger"">
     Orders placed before 2 pm ship the same day. <BitLink Href=""/components/collapse"">Read the full policy</BitLink>.
-</BitCollapse>";
-    private readonly string example10CsharpCode = @"
-private bool a11yExpanded;";
+</BitCollapse>
 
-    private readonly string example11RazorCode = @"
+<BitButton OnClick=""() => focusCollapseRef?.ExpandAsync()"">Open and focus</BitButton>
+<BitCollapse @ref=""focusCollapseRef"" @bind-Expanded=""focusExpanded"" OnExpanded=""HandleFocusExpanded"">
+    The focus ring around this section was put here by FocusAsync at the end of the expand transition, so
+    the reader carries on inside the section rather than back at the button.
+</BitCollapse>";
+    private readonly string example11CsharpCode = @"
+private bool a11yExpanded;
+
+private bool focusExpanded;
+private BitCollapse? focusCollapseRef;
+
+private async Task HandleFocusExpanded()
+{
+    if (focusCollapseRef is not null)
+    {
+        await focusCollapseRef.FocusAsync();
+    }
+}";
+
+    private readonly string example12RazorCode = @"
 <style>
     .custom-expanded {
         padding: 10px;
@@ -224,11 +259,11 @@ private bool a11yExpanded;";
     each word has the power to transform into something extraordinary. Here lies the start of something new-an
     opportunity to craft, inspire, and create.
 </BitCollapse>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private bool expandedClass = true;
 private bool expandedStyle = true;";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitToggleButton OnText=""بستن"" OffText=""باز کردن"" @bind-IsChecked=""expandedRtl"" />
 <BitCollapse Expanded=""expandedRtl"" Dir=""BitDir.Rtl"">
     لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
@@ -242,7 +277,7 @@ private bool expandedStyle = true;";
         <div style=""white-space:nowrap"">این بخش به سمت راست باز می شود.</div>
     </BitCollapse>
 </div>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private bool expandedRtl = true;
 private bool expandedRtlHorizontal = true;";
 }
