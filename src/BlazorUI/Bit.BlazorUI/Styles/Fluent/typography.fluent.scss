@@ -13,7 +13,13 @@
 :root [bit-theme="fluent-dark"] {
     // main
     --bit-tpg-font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-    --bit-tpg-font-weight: 500;
+    // The weight of the LABEL OF AN INTERACTIVE CONTROL - a button, a tag, a pagination page, a
+    // dialog action, the parts of a time picker. Fabric sets those semibold (ms-Button-label), and
+    // so does Fluent 2 (Button medium and large are fontWeightSemibold); Material stays at 500,
+    // which is what M3's label-large asks for, by not overriding this token at all. It is not the
+    // weight of body copy, and a component that only establishes a default for the app content
+    // inside it (a header, a footer, a nav bar) takes $tg-fw-regular instead.
+    --bit-tpg-font-weight: 600;
     --bit-tpg-line-height: 1.75rem;
     --bit-tpg-gutter-size: 0.35em;
     // font-size scale - the ramp every component reads its text and glyph sizes from. Fluent's

@@ -508,6 +508,11 @@ $mot-loop-factor: var(--bit-mot-loop-factor, 1);
 
 /*---- Typography ----*/
 $tg-font-family: var(--bit-tpg-font-family);
+// The weight of the LABEL OF AN INTERACTIVE CONTROL - a button, a tag, a pagination page, a dialog
+// action - which every design system decides separately from body copy (Fluent and Fluent 2:
+// semibold; Material: label-large's 500; Cupertino: SF semibold). A component that only establishes
+// a typographic default for the app content inside it - a header, a footer, a nav bar - takes
+// $tg-fw-regular from the weight ramp below instead, or the whole surface inherits a label's weight.
 $tg-font-weight: var(--bit-tpg-font-weight);
 $tg-line-height: var(--bit-tpg-line-height);
 $tg-gutter-size: var(--bit-tpg-gutter-size);

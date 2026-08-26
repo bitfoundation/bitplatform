@@ -193,17 +193,25 @@
     --bit-tpg-overline-text-transform: uppercase;
 
     /*---- Motion ----*/
-    // iOS: quick fades (~200ms), 335ms sheets, ~500ms navigation; ease default, the sheet curve for
-    // entries and its mirror for exits. Only the -full tokens are set: the plain ones are what the
-    // reduced-motion query collapses, and declaring them here would outweigh it. The core stylesheet
-    // re-substitutes the plain tokens on any element carrying a bit-theme attribute, so a scoped
-    // cupertino region reads these durations rather than the document's (see motion.fluent.scss).
+    // iOS: quick fades (~200ms), 335ms sheets, ~500ms navigation; Core Animation's default curve for
+    // state changes, the sheet curve for entries and its mirror for exits. Only the -full tokens are
+    // set: the plain ones are what the reduced-motion query collapses, and declaring them here would
+    // outweigh it. The core stylesheet re-substitutes the plain tokens on any element carrying a
+    // bit-theme attribute, so a scoped cupertino region reads these durations rather than the
+    // document's (see motion.fluent.scss).
     --bit-mot-duration-short-full: 120ms;
     --bit-mot-duration-full: 250ms;
     --bit-mot-duration-long-full: 400ms;
-    --bit-mot-easing: cubic-bezier(0.25, 0.1, 0.25, 1);
+    // kCAMediaTimingFunctionEaseInEaseOut - the curve UIKit and SwiftUI animate a state change with,
+    // rather than the CSS `ease` default, whose control points are a web convention Apple never uses.
+    --bit-mot-easing: cubic-bezier(0.42, 0, 0.58, 1);
     --bit-mot-easing-decelerate: cubic-bezier(0.32, 0.72, 0, 1);
     --bit-mot-easing-accelerate: cubic-bezier(0.67, 0.03, 0.65, 0.09);
+    // The iOS activity indicator turns its spokes once a second and never eases - the fade runs
+    // round the ring at a constant rate. Fluent's 1.3s eased sweep is the wrong cadence and the
+    // wrong motion for it.
+    --bit-mot-duration-spinner-full: 1s;
+    --bit-mot-easing-spinner-full: linear;
 
     /*---- Elevation ----*/
     // Cupertino separates surfaces with hairlines and dimming, not shadows; what remains is the
@@ -224,7 +232,7 @@
     // one continuous soft ascent in the platform's idiom - low offsets, wide blur, thin alpha -
     // rather than the ambient+key pairs Fluent and Material stack. Declaring them matters even
     // though iOS barely uses shadows: left out, every .bit-css-shd-* utility on a Cupertino page
-    // would keep the core stylesheet's Material-2 ramp, and in a scoped region inside a dark
+    // would keep the core stylesheet's Fabric depth ramp, and in a scoped region inside a dark
     // document it would be the WHITE one Fluent's dark palette declares.
     --bit-shd-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
     --bit-shd-nm: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -236,7 +244,7 @@
 
     // BitCard's Elevation (1..24) predates the family tier and is still a public API, so the
     // numbered ramp is retuned onto the same six soft steps, four levels each, rather than left on
-    // the core stylesheet's Material-2 ladder - which is the one thing on an iOS-flavoured page that
+    // the core stylesheet's Fabric depths - which is the one thing on an iOS-flavoured page that
     // would read as another platform entirely.
     --bit-shd-1: 0 1px 2px rgba(0, 0, 0, 0.08);
     --bit-shd-2: 0 1px 2px rgba(0, 0, 0, 0.08);

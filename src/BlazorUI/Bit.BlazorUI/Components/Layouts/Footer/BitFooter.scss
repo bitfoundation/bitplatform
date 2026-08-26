@@ -6,7 +6,9 @@
     z-index: $zindex-base;
     box-sizing: border-box;
     line-height: $tg-line-height;
-    font-weight: $tg-font-weight;
+    // The footer establishes a typographic default for whatever the app puts inside it, so it takes
+    // the body weight rather than $tg-font-weight - which is the weight of a control's own label.
+    font-weight: $tg-fw-regular;
     font-family: $tg-font-family;
 
     // The uncolored footer keeps the plain page surface it always had: the Fill variant below resolves

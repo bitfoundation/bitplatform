@@ -37,8 +37,8 @@
 
     // BitCard's Elevation (1..24) predates the family tier and is still a public API, so the
     // numbered ramp is retuned here too. Left out, it is the one thing on a Fluent 2 page still
-    // casting the core stylesheet's Material-2 ladder. Fluent 2 publishes six levels, so the 24
-    // steps are dealt out in six even bands, one level each.
+    // casting the core stylesheet's Fabric depths - the elevation of the Fluent this one succeeds.
+    // Fluent 2 publishes six levels, so the 24 steps are dealt out in six even bands, one level each.
     --bit-shd-1: 0 0 2px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.14); //shadow2
     --bit-shd-2: 0 0 2px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.14);
     --bit-shd-3: 0 0 2px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.14);

@@ -447,6 +447,48 @@ public sealed class BitThemeSeedPaletteTests
         Assert.AreEqual("#8764B8", BitThemeFactory.CreateLightThemeFromSeed("#8764b8").Color.Primary.Main);
     }
 
+    // ── Ramp integrity ────────────────────────────────────────────────────────
+
+    [DataTestMethod]
+    [DataRow(BitThemeColorScheme.Light)]
+    [DataRow(BitThemeColorScheme.Dark)]
+    public void TheLightTierKeepsThreeDistinctStepsForEverySeed(BitThemeColorScheme scheme)
+    {
+        // The light tier is the one the contrast repair never touches - it repairs main and dark,
+        // where the on-color sits - so what it holds is exactly what the seed's lightness move
+        // produced. That makes it the pin for that move being a remap rather than an addition: an
+        // addition runs the top of the tier off the end of the scale, where the conversion clamps
+        // it, and a light brand color (a marigold, a cyan) then lands `light`, `light-hover` and
+        // `light-active` on one identical white - three interactive states rendering as one color.
+        // Pure black and pure white are excluded because there is genuinely no room to ramp into.
+        var failures = new List<string>();
+
+        foreach (var seed in Seeds())
+        {
+            if (seed is "#000000" or "#FFFFFF") continue;
+
+            var theme = scheme is BitThemeColorScheme.Dark
+                ? BitThemeFactory.CreateDarkThemeFromSeed(seed)
+                : BitThemeFactory.CreateLightThemeFromSeed(seed);
+
+            foreach (var (name, role) in new (string, BitThemeColorVariants)[]
+            {
+                ("pri", theme.Color.Primary), ("sec", theme.Color.Secondary), ("ter", theme.Color.Tertiary),
+                ("inf", theme.Color.Info), ("suc", theme.Color.Success), ("wrn", theme.Color.Warning),
+                ("swr", theme.Color.SevereWarning), ("err", theme.Color.Error),
+            })
+            {
+                var steps = new[] { role.Light!, role.LightHover!, role.LightActive! };
+                if (steps.Distinct(StringComparer.OrdinalIgnoreCase).Count() == steps.Length) continue;
+
+                failures.Add($"seed {seed} {name}-light {string.Join(" ", steps)}");
+            }
+        }
+
+        Assert.AreEqual(0, failures.Count,
+            $"{failures.Count} light tiers collapsed onto a repeated step: {string.Join("; ", failures.Take(12))}");
+    }
+
     // ── Input validation ──────────────────────────────────────────────────────
 
     [TestMethod]

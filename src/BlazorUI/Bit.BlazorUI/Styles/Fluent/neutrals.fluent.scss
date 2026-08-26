@@ -1,4 +1,21 @@
-﻿:root {
+﻿// The gray ramp is scheme-independent - the same 22 tones under the light and the dark palette -
+// but it still carries the full palette selector list rather than sitting on a bare `:root`. The
+// list is what brings the ramp BACK inside a scoped region: an element carrying bit-theme="fluent"
+// in a document themed material or cupertino gets every other Fluent color from
+// colors.fluent-*.scss, which name those selectors, and a ramp declared on `:root` alone would be
+// the only token family left inheriting the document preset's - a warm ramp inside an otherwise
+// Fluent region, or the reverse. Scoped-preset twins: see the note in colors.fluent-light.scss.
+:root,
+:root[bit-theme="light"],
+:root [bit-theme="light"],
+:root[bit-theme="fluent"],
+:root [bit-theme="fluent"],
+:root[bit-theme="fluent-light"],
+:root [bit-theme="fluent-light"],
+:root[bit-theme="dark"],
+:root [bit-theme="dark"],
+:root[bit-theme="fluent-dark"],
+:root [bit-theme="fluent-dark"] {
     // neutrals
     --bit-clr-ntr-white: #FFFFFF;
     --bit-clr-ntr-black: #000000;

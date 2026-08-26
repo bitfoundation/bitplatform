@@ -461,12 +461,15 @@ code {
 // so ChartLegacy and Chart, or Toggle and ToggleButton, are told apart before the reader commits.
 // Global rather than scoped to ComponentSearchBox because the row is rendered inside BitSearchBox's
 // callout, which is not a DOM descendant of the box on every platform.
+// The row grows to hold both lines - BitSearchBox's item height is a minimum, not a fixed height.
+// The name drops Body2's 1.714 leading, which is meant for a paragraph of running text: stacked
+// over the category it only reads as a gap, and eight rows of it push the list past the callout.
 .cmp-search-item {
     overflow: hidden;
-    padding-block: rem2(2px);
 }
 
 .cmp-search-item-name {
+    line-height: 1.35;
     font-weight: $bit-typography-fw-medium;
 }
 

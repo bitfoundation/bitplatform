@@ -201,6 +201,11 @@
     --bit-mot-easing: cubic-bezier(0.2, 0, 0, 1);
     --bit-mot-easing-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
     --bit-mot-easing-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+    // M3's circular progress indicator rotates its container once every 1568ms at a constant rate -
+    // the easing lives in the arc's grow/shrink, not in the rotation. Fluent's 1.3s eased sweep is a
+    // different cadence and a different motion.
+    --bit-mot-duration-spinner-full: 1568ms;
+    --bit-mot-easing-spinner-full: linear;
 
     /*---- Elevation ----*/
     // The M3 levels (material-web's canonical key + ambient shadow pairs):
@@ -230,9 +235,9 @@
     --bit-shd-inner: inset 0 1px 3px 1px rgba(0, 0, 0, 0.15);
 
     // BitCard's Elevation (1..24) predates the family tier and is still a public API, so the numbered
-    // ramp is retuned here rather than left on the core stylesheet's - which is the Material 2
-    // ladder, and under a Material preset would be the wrong Material. M3 replaced those 24 steps
-    // with five levels, so the 24 are dealt out in five even bands, one level each.
+    // ramp is retuned here rather than left on the core stylesheet's, which is Fabric's depth ramp.
+    // M3 replaced the 24 steps with five levels, so the 24 are dealt out in five even bands, one
+    // level each.
     --bit-shd-1: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15); //L1
     --bit-shd-2: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
     --bit-shd-3: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);

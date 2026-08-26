@@ -6,7 +6,10 @@
     display: flex;
     align-items: stretch;
     flex-direction: row;
-    font-weight: $tg-font-weight;
+    // The item buttons inherit this weight and the selected one steps up to semibold below, so the
+    // bar sits at the body weight: taking $tg-font-weight - a control label's own weight, which is
+    // semibold under Fluent - would put every item at the weight that marks the selected one.
+    font-weight: $tg-fw-regular;
     font-family: $tg-font-family;
 
     // The size tokens live on the root so a single class swaps the metrics of every part at once.
