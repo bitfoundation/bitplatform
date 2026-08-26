@@ -224,7 +224,7 @@
             <code>IsExpanding</code> tells an expansion from a collapse and <code>Reason</code> tells a click on
             the header from an <code>Expand</code>, <code>Collapse</code> or <code>Toggle</code> call. The
             callback is awaited, so it can load the panel or ask for a confirmation first - nothing else toggles
-            the accordion while it is running.
+            the accordion while it is running, and the header reports itself as busy for as long as it does.
         </div>
         <br />
         <BitToggle @bind-Value="lockAccordion" OnText="Locked open" OffText="Unlocked" />
@@ -264,7 +264,9 @@
             should not cost anything until it is asked for. <code>UnmountOnCollapse</code> goes further and drops the
             content again on every collapse, which stops whatever it was running but leaves nothing to animate on the
             way out. A collapsed panel is hidden from the reader either way, so its text is out of reach of the
-            find-in-page of the browser whichever of the three is chosen.
+            find-in-page of the browser whichever of the three is chosen - and only the first of the three can
+            still be <BitLink Href="#example18">printed</BitLink>, since the other two have nothing in the DOM
+            to print.
         </div>
         <br />
         <div>Type into both, then close and open them again: the first one finds its text where it was left, the second one has thrown it away.</div>
@@ -389,7 +391,10 @@
             an icon-only <code>HeaderTemplate</code> - takes a <code>HeaderAriaLabel</code>, which names both the toggle
             and the panel it opens. <code>NoContentRegion</code> drops the landmark role from the panel, which the
             authoring practices ask for on a page carrying more than about six panels that can all be open at once,
-            where the landmarks would get in the way rather than help.
+            where the landmarks would get in the way rather than help. A panel that cannot be closed because
+            something has to stay open reports itself as <code>aria-disabled</code> through
+            <BitLink Href="#example19">ReadOnly</BitLink>, which is the state the authoring practices ask for
+            there rather than the greying-out of <code>IsEnabled="false"</code>.
         </div>
         <br />
         <BitAccordion Title="Under an h2" HeadingLevel="3">
@@ -429,7 +434,56 @@
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+    <DemoExample Title="Printing" RazorCode="@example18RazorCode" Id="example18">
+        <div>
+            A collapsed panel is hidden outright, so an accordion prints as a bare header and everything it was
+            about is left off the paper. <code>ExpandOnPrint</code> opens the panel for the print stylesheet
+            alone - what is on screen stays exactly where the reader left it - and lifts the scroll cap of
+            <code>MaxHeight</code> with it, since paper does not scroll. What is not in the DOM at all cannot be
+            printed by any of this: a <code>LazyContent</code> panel that has never been opened, and every closed
+            panel of an accordion using <code>UnmountOnCollapse</code>, still print as a bare header.
+        </div>
+        <br />
+        <div>Leave both of these closed and open the print preview of the browser (Ctrl+P): only the first one carries its text onto the page.</div>
+        <br />
+        <BitAccordion Title="Printed with its content" ExpandOnPrint>
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
+        </BitAccordion>
+        <br />
+        <BitAccordion Title="Printed as a bare header">
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
+        </BitAccordion>
+    </DemoExample>
+
+    <DemoExample Title="Read-only" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+        <div>
+            <code>ReadOnly</code> is for the panel that has to stay as it is rather than the one that is turned
+            off: the header keeps the colors of a live one and its place in the tab order, and reports itself as
+            <code>aria-disabled</code> the way the authoring practices ask an open panel that cannot be closed
+            to - the last one left open in a one-at-a-time accordion, for instance. <code>OnClick</code> still
+            reports the click, so the page can say why nothing moved, and <code>Expand</code>,
+            <code>Collapse</code> and <code>Toggle</code> still drive it: what is closed is the way in from the
+            header, not the one the app itself uses. Compare it with <code>IsEnabled="false"</code> beside it,
+            which greys the whole accordion out and takes the header out of the tab order altogether.
+        </div>
+        <br />
+        <BitAccordion Title="Read-only"
+                      Description="@($"Clicked {readOnlyClickCount} times, still open")"
+                      OnClick="() => readOnlyClickCount++"
+                      ReadOnly
+                      DefaultIsExpanded>
+            This panel answers no click and no key, but it is not greyed out: it is open on purpose and nothing
+            about it is unavailable.
+        </BitAccordion>
+        <br />
+        <BitAccordion Title="Disabled" Description="Turned off altogether" IsEnabled="false" DefaultIsExpanded>
+            This one is greyed out and its header is out of the tab order.
+        </BitAccordion>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
         <div><code>Background</code> and <code>Border</code> pick the color kind of the surface and of the outline of the accordion, so it can be tuned to the surface it is placed on - <b>Transparent</b> letting whatever is underneath show through.</div>
         <br /><br />
         <div class="example-content">
@@ -463,7 +517,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="External Icons" RazorCode="@example21RazorCode" Id="example21">
         <div>
             <code>Icon</code> and <code>ExpanderIcon</code> take a <code>BitIconInfo</code> rather than the name of a
             built-in icon, so an accordion can be dressed in the icons of any library that draws them from CSS classes.
@@ -530,8 +584,8 @@
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example20RazorCode" Id="example20">
-        <div>The <code>Size</code> drives the padding of the header and of the panel and the size of the title and of the icons, so an accordion can be tuned to how much room it is given.</div>
+    <DemoExample Title="Size" RazorCode="@example22RazorCode" Id="example22">
+        <div>The <code>Size</code> drives the padding of the header and of the panel and the type scale of the whole accordion - the title, the description, the icons and the text of the panel - so it can be tuned to how much room it is given.</div>
         <br />
         <BitAccordion Title="Small" Size="BitSize.Small" IconName="@BitIconName.Settings">
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
@@ -546,7 +600,7 @@
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example21RazorCode" Id="example21">
+    <DemoExample Title="Style & Class" RazorCode="@example23RazorCode" Id="example23">
         <div><code>Style</code> and <code>Class</code> dress the root element, while <code>Styles</code> and <code>Classes</code> reach each part of the accordion on its own - the header, the title, the expander icon, the panel and everything between them.</div>
         <br /><br />
         <div class="example-content">
@@ -577,7 +631,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example22RazorCode" Id="example22">
+    <DemoExample Title="RTL" RazorCode="@example24RazorCode" Id="example24">
         <div>Set <code>Dir</code> to <code>BitDir.Rtl</code> - or let it cascade from an ancestor - and the whole header turns around: the icon leads from the right, the expander closes on the left, and the padding of the panel follows with it.</div><br />
         <BitAccordion Dir="BitDir.Rtl"
                       Title="تنظیمات"

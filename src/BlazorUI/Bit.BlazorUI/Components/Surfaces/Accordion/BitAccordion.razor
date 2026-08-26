@@ -21,12 +21,13 @@
                     id="@_HeaderId"
                     type="button"
                     style="@Styles?.Header"
-                    class="bit-acd-hdr @Classes?.Header"
+                    class="bit-acd-hdr @(_isToggling ? "bit-acd-bsy" : "") @Classes?.Header"
                     aria-label="@HeaderAriaLabel"
                     aria-expanded="@(IsExpanded ? "true" : "false")"
                     aria-controls="@_ContentId"
-                    aria-disabled="@(IsEnabled ? null : "true")"
-                    tabindex="@(IsEnabled ? 0 : -1)">
+                    aria-disabled="@((IsEnabled is false || ReadOnly) ? "true" : null)"
+                    aria-busy="@(_isToggling ? "true" : null)"
+                    tabindex="@(IsEnabled ? (TabIndex ?? "0") : "-1")">
                 @if (HeaderTemplate is not null)
                 {
                     @HeaderTemplate(IsExpanded)

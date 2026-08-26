@@ -10,6 +10,7 @@ public partial class BitAccordion : BitComponentBase
     internal const string HeadingLevelCascadeName = "BitAccordionHeadingLevel";
 
     private bool _isToggling;
+    private bool _skipRender;
     private bool _hasBeenExpanded;
     private bool _contentHasFocus;
     private ElementReference _headerRef;
@@ -105,6 +106,19 @@ public partial class BitAccordion : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitIconPosition? ExpanderIconPosition { get; set; }
+
+    /// <summary>
+    /// Opens the panel of the accordion while the page is being printed, so that a collapsed section is not
+    /// left out of the paper as a bare header.
+    /// </summary>
+    /// <remarks>
+    /// The scroll cap of <see cref="MaxHeight"/> is lifted along with it, since paper does not scroll. Content
+    /// that is not in the DOM at all cannot be printed by any of this: a <see cref="LazyContent"/> panel that
+    /// has never been opened, and every collapsed panel of an accordion that uses
+    /// <see cref="UnmountOnCollapse"/>, are still printed as a bare header.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool ExpandOnPrint { get; set; }
 
     /// <summary>
     /// Gets or sets the accessible label of the toggle button in the header, for a header whose own content
@@ -222,6 +236,23 @@ public partial class BitAccordion : BitComponentBase
     [Parameter] public EventCallback<BitAccordionToggleArgs> OnToggling { get; set; }
 
     /// <summary>
+    /// Leaves the accordion where it is: the header keeps its colors and its place in the tab order, but it
+    /// no longer answers the pointer or the keyboard.
+    /// </summary>
+    /// <remarks>
+    /// This is the panel that has to stay as it is rather than the one that is turned off - the open panel of
+    /// a one-at-a-time accordion, which cannot be collapsed because something has to stay open - so it reports
+    /// itself as <c>aria-disabled</c> the way the WAI-ARIA authoring practices ask a header in that position
+    /// to, without being greyed out the way <see cref="BitComponentBase.IsEnabled"/> greys it.
+    /// <br />
+    /// <see cref="OnClick"/> still reports the click, and <see cref="Expand"/>, <see cref="Collapse"/> and
+    /// <see cref="Toggle"/> still drive the accordion: what is closed here is the way in from the header, not
+    /// the one the app itself uses.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool ReadOnly { get; set; }
+
+    /// <summary>
     /// Gets or sets the size of the accordion, which drives the padding of the header and of the content
     /// and the size of the title.
     /// <br />
@@ -330,6 +361,10 @@ public partial class BitAccordion : BitComponentBase
 
         ClassBuilder.Register(() => MaxHeight.HasValue() ? "bit-acd-mxh" : string.Empty);
 
+        ClassBuilder.Register(() => ExpandOnPrint ? "bit-acd-eop" : string.Empty);
+
+        ClassBuilder.Register(() => ReadOnly ? "bit-acd-rdo" : string.Empty);
+
         ClassBuilder.Register(() => ExpanderIconPosition is BitIconPosition.Start ? "bit-acd-sei" : string.Empty);
 
         ClassBuilder.Register(() => Size switch
@@ -389,7 +424,22 @@ public partial class BitAccordion : BitComponentBase
     {
         if (IsExpanded) _hasBeenExpanded = true;
 
+        // A render the page asks for is never the one the focus bookkeeping below is trying to skip.
+        _skipRender = false;
+
         base.OnParametersSet();
+    }
+
+    // Blazor re-renders a component after every one of its event handlers, and the two focusin/focusout
+    // handlers below run on each move of the focus inside the panel - which would re-render the whole
+    // content of the accordion, a form and all, for a piece of bookkeeping that changes nothing on screen.
+    protected override bool ShouldRender()
+    {
+        if (_skipRender is false) return true;
+
+        _skipRender = false;
+
+        return false;
     }
 
 
@@ -399,6 +449,10 @@ public partial class BitAccordion : BitComponentBase
         if (IsEnabled is false) return;
 
         await OnClick.InvokeAsync(e);
+
+        // A read-only accordion still reports the click - the page can want to say why the panel is staying
+        // where it is - it just does not act on it.
+        if (ReadOnly) return;
 
         await AssignExpanded(IsExpanded is false, BitAccordionToggleReason.Click);
     }
@@ -432,6 +486,11 @@ public partial class BitAccordion : BitComponentBase
         {
             _isToggling = true;
 
+            // The callback is awaited and nothing else toggles the accordion while it is running, so the
+            // header says as much - aria-busy for a screen reader, a busy cursor for a pointer - rather than
+            // going on looking like a toggle that answers.
+            await RenderTheBusyState();
+
             try
             {
                 var args = new BitAccordionToggleArgs(value, reason);
@@ -447,6 +506,8 @@ public partial class BitAccordion : BitComponentBase
             finally
             {
                 _isToggling = false;
+
+                await RenderTheBusyState();
             }
         }
 
@@ -470,9 +531,29 @@ public partial class BitAccordion : BitComponentBase
         return true;
     }
 
-    private void HandleOnContentFocusIn() => _contentHasFocus = true;
+    // The call can come from off the render loop - a Toggle from a timer - so the render goes through the
+    // dispatcher, and the skip flag is cleared first: a click on the header of an accordion whose panel held
+    // the focus arrives right behind a focusout that would otherwise swallow this render.
+    private Task RenderTheBusyState()
+    {
+        if (IsDisposed) return Task.CompletedTask;
 
-    private void HandleOnContentFocusOut() => _contentHasFocus = false;
+        _skipRender = false;
+
+        return InvokeAsync(StateHasChanged);
+    }
+
+    private void HandleOnContentFocusIn()
+    {
+        _contentHasFocus = true;
+        _skipRender = true;
+    }
+
+    private void HandleOnContentFocusOut()
+    {
+        _contentHasFocus = false;
+        _skipRender = true;
+    }
 
     // A panel that closes on something the keyboard was standing in takes that place away, and the browser
     // answers by dropping the focus on the document - which is the top of the page for anyone reading by

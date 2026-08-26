@@ -105,6 +105,13 @@ public partial class BitAccordionDemo
         },
         new()
         {
+            Name = "ExpandOnPrint",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Opens the panel of the accordion while the page is being printed, so that a collapsed section is not left out of the paper as a bare header. The scroll cap of MaxHeight is lifted along with it. Content that is not in the DOM at all - a LazyContent panel that has never been opened, a collapsed UnmountOnCollapse panel - is still printed as a bare header."
+        },
+        new()
+        {
             Name = "HeaderAriaLabel",
             Type = "string?",
             DefaultValue = "null",
@@ -221,10 +228,17 @@ public partial class BitAccordionDemo
         },
         new()
         {
+            Name = "ReadOnly",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Leaves the accordion where it is: the header keeps its colors and its place in the tab order, and reports itself as aria-disabled, but it no longer answers the pointer or the keyboard. OnClick still reports the click, and the Expand, Collapse and Toggle methods still drive the accordion."
+        },
+        new()
+        {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "Gets or sets the size of the accordion, which drives the padding of the header and of the content and the size of the title. The default value is Medium.",
+            Description = "Gets or sets the size of the accordion, which drives the padding of the header and of the panel and the type scale of the whole component. The default value is Medium.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -576,6 +590,8 @@ public partial class BitAccordionDemo
 
     private BitAccordion accordionRef = default!;
 
+    private int readOnlyClickCount;
+
     private BitColorKind backgroundColorKind = BitColorKind.Primary;
     private BitColorKind borderColorKind = BitColorKind.Primary;
 
@@ -846,16 +862,16 @@ private BitAccordion accordionRef = default!;";
 <BitAccordion Title=""Nature"" Description=""I am an accordion"">
     <BitCarousel AnimationDuration=""1"">
         <BitCarouselItem>
-            <img src=""/images/carousel/img1.jpg"">
+            <img src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg"">
         </BitCarouselItem>
         <BitCarouselItem>
-            <img src=""/images/carousel/img2.jpg"" />
+            <img src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg"" />
         </BitCarouselItem>
         <BitCarouselItem>
-            <img src=""/images/carousel/img3.jpg"" />
+            <img src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg"" />
         </BitCarouselItem>
         <BitCarouselItem>
-            <img src=""/images/carousel/img4.jpg"" />
+            <img src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg"" />
         </BitCarouselItem>
     </BitCarousel>
 </BitAccordion>";
@@ -895,6 +911,34 @@ private BitAccordion accordionRef = default!;";
 </BitAccordion>";
 
     private readonly string example18RazorCode = @"
+<BitAccordion Title=""Printed with its content"" ExpandOnPrint>
+    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
+</BitAccordion>
+
+<BitAccordion Title=""Printed as a bare header"">
+    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
+</BitAccordion>";
+
+    private readonly string example19RazorCode = @"
+<BitAccordion Title=""Read-only""
+              Description=""@($""Clicked {readOnlyClickCount} times, still open"")""
+              OnClick=""() => readOnlyClickCount++""
+              ReadOnly
+              DefaultIsExpanded>
+    This panel answers no click and no key, but it is not greyed out: it is open on purpose and nothing
+    about it is unavailable.
+</BitAccordion>
+
+<BitAccordion Title=""Disabled"" Description=""Turned off altogether"" IsEnabled=""false"" DefaultIsExpanded>
+    This one is greyed out and its header is out of the tab order.
+</BitAccordion>";
+
+    private readonly string example19CsharpCode = @"
+private int readOnlyClickCount;";
+
+    private readonly string example20RazorCode = @"
 <BitChoiceGroup @bind-Value=""backgroundColorKind"" Horizontal
                 TItem=""BitChoiceGroupOption<BitColorKind>"" TValue=""BitColorKind"">
     <BitChoiceGroupOption Text=""Primary"" Value=""BitColorKind.Primary"" />
@@ -920,11 +964,11 @@ private BitAccordion accordionRef = default!;";
 <BitAccordion Title=""Accordion"" Border=""borderColorKind"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>";
-    private readonly string example18CsharpCode = @"
+    private readonly string example20CsharpCode = @"
 private BitColorKind backgroundColorKind = BitColorKind.Primary;
 private BitColorKind borderColorKind = BitColorKind.Primary;";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example21RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitAccordion Title=""Chevron Down"" ExpanderIcon=""@(""fa-solid fa-chevron-down"")"">
@@ -962,7 +1006,7 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
     Icon=""@BitIconInfo.Bi(""gear"")""
 </BitAccordion>";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example22RazorCode = @"
 <BitAccordion Title=""Small"" Size=""BitSize.Small"" IconName=""@BitIconName.Settings"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
@@ -975,7 +1019,7 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example23RazorCode = @"
 <style>
     .custom-class {
         border-color: blueviolet;
@@ -1013,7 +1057,7 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example24RazorCode = @"
 <BitAccordion Dir=""BitDir.Rtl""
               Title=""تنظیمات""
               IconName=""@BitIconName.Settings""

@@ -1717,4 +1717,267 @@ public class BitAccordionTests : BunitTestContext
         Assert.AreEqual(0, expanded);
         Assert.IsTrue(com.Find(".bit-acd").ClassList.Contains("bit-acd-exp"));
     }
+
+
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false),
+    ]
+    public void BitAccordionShouldRenderTheReadOnlyClass(bool readOnly)
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, readOnly);
+        });
+
+        Assert.AreEqual(readOnly, com.Find(".bit-acd").ClassList.Contains("bit-acd-rdo"));
+    }
+
+    [TestMethod]
+    public void BitAccordionReadOnlyShouldNotToggleOnClick()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.DefaultIsExpanded, true);
+        });
+
+        com.Find(".bit-acd-hdr").Click();
+
+        Assert.IsTrue(com.Find(".bit-acd").ClassList.Contains("bit-acd-exp"));
+        Assert.AreEqual("true", com.Find(".bit-acd-hdr").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void BitAccordionReadOnlyShouldStillReportTheClick()
+    {
+        var clicks = 0;
+        var changes = 0;
+
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.OnClick, () => clicks++);
+            parameters.Add(p => p.OnChange, (bool _) => changes++);
+        });
+
+        com.Find(".bit-acd-hdr").Click();
+
+        Assert.AreEqual(1, clicks);
+        Assert.AreEqual(0, changes);
+    }
+
+    [TestMethod]
+    public void BitAccordionReadOnlyShouldNotCallOnToggling()
+    {
+        var calls = 0;
+
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.OnToggling, (BitAccordionToggleArgs _) => calls++);
+        });
+
+        com.Find(".bit-acd-hdr").Click();
+
+        Assert.AreEqual(0, calls);
+    }
+
+    [TestMethod]
+    public void BitAccordionReadOnlyShouldKeepTheHeaderInTheTabOrderAndReportItAsDisabled()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+        });
+
+        var header = com.Find(".bit-acd-hdr");
+
+        Assert.AreEqual("0", header.GetAttribute("tabindex"));
+        Assert.AreEqual("true", header.GetAttribute("aria-disabled"));
+        Assert.IsFalse(com.Find(".bit-acd").ClassList.Contains("bit-dis"));
+    }
+
+    [TestMethod]
+    public async Task BitAccordionReadOnlyShouldStillAnswerTheMethods()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+        });
+
+        await com.InvokeAsync(() => com.Instance.Expand());
+
+        Assert.IsTrue(com.Find(".bit-acd").ClassList.Contains("bit-acd-exp"));
+
+        await com.InvokeAsync(() => com.Instance.Collapse());
+
+        Assert.IsFalse(com.Find(".bit-acd").ClassList.Contains("bit-acd-exp"));
+    }
+
+
+
+    [TestMethod]
+    public void BitAccordionShouldGiveTheHeaderATabStopOfItsOwn()
+    {
+        var com = RenderComponent<BitAccordion>();
+
+        Assert.AreEqual("0", com.Find(".bit-acd-hdr").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldRenderTheTabIndexOnTheHeader()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.TabIndex, "3");
+        });
+
+        Assert.AreEqual("3", com.Find(".bit-acd-hdr").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitAccordionDisabledHeaderShouldStayOutOfTheTabOrderWhateverTheTabIndexIs()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.TabIndex, "3");
+        });
+
+        Assert.AreEqual("-1", com.Find(".bit-acd-hdr").GetAttribute("tabindex"));
+    }
+
+
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false),
+    ]
+    public void BitAccordionShouldRenderTheExpandOnPrintClass(bool expandOnPrint)
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.ExpandOnPrint, expandOnPrint);
+        });
+
+        Assert.AreEqual(expandOnPrint, com.Find(".bit-acd").ClassList.Contains("bit-acd-eop"));
+    }
+
+
+
+    [TestMethod]
+    public async Task BitAccordionShouldReportTheHeaderAsBusyWhileOnTogglingIsAwaited()
+    {
+        var gate = new TaskCompletionSource();
+
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.OnToggling, async (BitAccordionToggleArgs _) => await gate.Task);
+        });
+
+        Assert.IsNull(com.Find(".bit-acd-hdr").GetAttribute("aria-busy"));
+
+        var toggling = com.InvokeAsync(() => com.Instance.Toggle());
+
+        Assert.AreEqual("true", com.Find(".bit-acd-hdr").GetAttribute("aria-busy"));
+        Assert.IsTrue(com.Find(".bit-acd-hdr").ClassList.Contains("bit-acd-bsy"));
+
+        gate.SetResult();
+
+        await toggling;
+
+        Assert.IsNull(com.Find(".bit-acd-hdr").GetAttribute("aria-busy"));
+        Assert.IsFalse(com.Find(".bit-acd-hdr").ClassList.Contains("bit-acd-bsy"));
+    }
+
+    [TestMethod]
+    public async Task BitAccordionShouldDropTheBusyStateOfACancelledToggleToo()
+    {
+        var gate = new TaskCompletionSource();
+
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.OnToggling, async (BitAccordionToggleArgs args) =>
+            {
+                await gate.Task;
+                args.Cancel = true;
+            });
+        });
+
+        var toggling = com.InvokeAsync(() => com.Instance.Toggle());
+
+        Assert.AreEqual("true", com.Find(".bit-acd-hdr").GetAttribute("aria-busy"));
+
+        gate.SetResult();
+
+        await toggling;
+
+        Assert.IsNull(com.Find(".bit-acd-hdr").GetAttribute("aria-busy"));
+        Assert.IsFalse(com.Find(".bit-acd").ClassList.Contains("bit-acd-exp"));
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldNotReportTheHeaderAsBusyWithoutAnOnToggling()
+    {
+        var com = RenderComponent<BitAccordion>();
+
+        com.Find(".bit-acd-hdr").Click();
+
+        Assert.IsNull(com.Find(".bit-acd-hdr").GetAttribute("aria-busy"));
+        Assert.IsTrue(com.Find(".bit-acd").ClassList.Contains("bit-acd-exp"));
+    }
+
+
+
+    [TestMethod]
+    public void BitAccordionShouldNotRenderAgainWhenTheFocusMovesInsideThePanel()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.ChildContent, "<button id=\"inside\">inside</button>");
+        });
+
+        var renders = com.RenderCount;
+
+        com.Find(".bit-acd-con").TriggerEvent("onfocusin", new FocusEventArgs());
+        com.Find(".bit-acd-con").TriggerEvent("onfocusout", new FocusEventArgs());
+        com.Find(".bit-acd-con").TriggerEvent("onfocusin", new FocusEventArgs());
+
+        Assert.AreEqual(renders, com.RenderCount);
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldStillRenderTheClickThatFollowsAFocusMove()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.ChildContent, "<button id=\"inside\">inside</button>");
+        });
+
+        com.Find(".bit-acd-con").TriggerEvent("onfocusout", new FocusEventArgs());
+
+        com.Find(".bit-acd-hdr").Click();
+
+        Assert.IsFalse(com.Find(".bit-acd").ClassList.Contains("bit-acd-exp"));
+        Assert.AreEqual("false", com.Find(".bit-acd-hdr").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldStillRenderAParameterChangeThatFollowsAFocusMove()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.Title, "before");
+        });
+
+        com.Find(".bit-acd-con").TriggerEvent("onfocusin", new FocusEventArgs());
+
+        com.Render(parameters => parameters.Add(p => p.Title, "after"));
+
+        Assert.AreEqual("after", com.Find(".bit-acd-ttl").TextContent.Trim());
+    }
 }

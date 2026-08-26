@@ -6,7 +6,10 @@
     font-weight: $tg-fw-regular;
     color: $clr-fg-pri;
     box-sizing: border-box;
-    font-size: $tg-fs-sm;
+    // The panel follows the size class of the accordion the way the header does, so that a Size means the
+    // size of the whole component and not only of its header. The fallback is what the medium size resolves
+    // to, for an accordion whose class list a consumer has taken apart.
+    font-size: var(--bit-acd-fontsize, #{$tg-fs-sm});
     flex-flow: column nowrap;
     font-family: $tg-font-family;
     background-color: $clr-bg-pri;
@@ -23,7 +26,13 @@
     // and everything below reads this derived one, following the -full pattern of motion.fluent.scss, so the
     // reduced-motion query can still collapse a duration that was set inline. Without one it falls back to
     // the theme's own long duration, which the global stylesheet already collapses on its own.
-    --bit-acd-dur: var(--bit-acd-dur-full, #{$mot-duration-long});
+    //
+    // The -full token is re-declared here rather than only read, because custom properties inherit: an
+    // accordion nested in the panel of one that was given a TransitionDuration would otherwise animate at
+    // its parent's duration. The inline declaration sits on the element itself, so it still wins over this
+    // one on the accordion that was actually given the parameter.
+    --bit-acd-dur-full: #{$mot-duration-long};
+    --bit-acd-dur: var(--bit-acd-dur-full);
 
     // Every rule that reaches from the root into a part of the accordion is chained down through the header
     // line or through the content container, because an accordion can hold another accordion: a plain
@@ -59,7 +68,29 @@
 // sitting inside an opted-out subtree.
 .bit-acd.bit-fam,
 .bit-fam .bit-acd {
-    --bit-acd-dur: var(--bit-acd-dur-full, #{$mot-duration-long});
+    --bit-acd-dur: var(--bit-acd-dur-full);
+}
+
+
+// The two things an accordion paints inside its own rounded border - the header while the pointer is over it
+// and the panel of a borderless accordion - are square boxes, and a square box in a rounded one paints over
+// the rounding. The radius is handed down to them instead, and squared again along the line where the header
+// and the panel meet while the accordion is open, so that the two read as one surface rather than as two.
+.bit-acd-hwr,
+.bit-acd-hed,
+.bit-acd-hdr,
+.bit-acd-cnt {
+    border-radius: inherit;
+}
+
+.bit-acd-cnt {
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+}
+
+.bit-acd-exp > .bit-acd-hwr {
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
 }
 
 
@@ -189,7 +220,7 @@
 // The whole header answers the pointer, so it says so. The rule is chained down from the root rather than
 // reaching for a descendant, so that the disabled state of an outer accordion does not take the hover away
 // from the headers of the accordions nested in its panel.
-.bit-acd:not(.bit-dis) > .bit-acd-hwr > .bit-acd-hed > .bit-acd-hdr {
+.bit-acd:not(.bit-dis, .bit-acd-rdo) > .bit-acd-hwr > .bit-acd-hed > .bit-acd-hdr {
     @media (hover: hover) {
         &:hover {
             background-color: var(--bit-acd-hov);
@@ -199,6 +230,19 @@
     &:active {
         background-color: var(--bit-acd-prs);
     }
+}
+
+// A read-only accordion keeps the colors of a live one - it is the panel that has to stay where it is, not one
+// that has been turned off - so the only thing left to report that the header answers nothing is the cursor.
+.bit-acd-rdo > .bit-acd-hwr > .bit-acd-hed > .bit-acd-hdr {
+    cursor: default;
+}
+
+// While an awaited OnToggling is running the header answers nothing, so it stops offering to be clicked. It
+// follows .bit-acd-hdr rather than being chained down from the root, since it has to win over the pointer
+// cursor declared there at the same specificity.
+.bit-acd-bsy {
+    cursor: progress;
 }
 
 .bit-acd-act {
@@ -321,4 +365,27 @@
 .bit-acd-mxh > .bit-acd-cnt > .bit-acd-cwr > .bit-acd-con {
     overflow-y: auto;
     max-height: var(--bit-acd-max-h);
+}
+
+
+// A collapsed panel is a grid row of no height whose content is hidden outright, so an accordion prints as a
+// bare header - which is how a page of them ends up on paper with everything it was about left out.
+// ExpandOnPrint opens the panel for the print stylesheet: the row is given its full height, the hiding of the
+// collapsed state is undone, and the scroll cap of MaxHeight is lifted along with it, since paper does not
+// scroll. The block sits at the end of the file because the max-height it overrides is declared at the same
+// specificity, so source order is what decides between them.
+@media print {
+    .bit-acd-eop {
+        > .bit-acd-cnt {
+            grid-template-rows: 1fr;
+        }
+
+        > .bit-acd-cnt > .bit-acd-cwr > .bit-acd-con {
+            opacity: 1;
+            max-height: none;
+            overflow-y: visible;
+            visibility: visible;
+            padding-block: var(--bit-acd-pad);
+        }
+    }
 }
