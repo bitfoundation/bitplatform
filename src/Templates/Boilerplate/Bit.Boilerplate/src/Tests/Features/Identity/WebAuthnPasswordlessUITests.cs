@@ -88,7 +88,7 @@ public partial class WebAuthnPasswordlessUITests : AppPageTest
 
         // credentials.create() against the virtual authenticator succeeds: the success snackbar shows and the button
         // flips to its "disable" state (isConfigured == true).
-        await Expect(Page.GetByText(AppStrings.EnablePasswordlessSucsessMessage)).ToBeVisibleAsync();
+        await Expect(BitSnackBarUtils.GetSnackBar(Page, AppStrings.EnablePasswordlessSucsessMessage)).ToBeVisibleAsync();
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.DisablePasswordless })).ToBeVisibleAsync();
 
         // 3. She signs out. Sign-out clears only the auth tokens; the bit-webauthn marker survives, so the passkey option

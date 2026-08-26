@@ -1,5 +1,5 @@
 @*+:cnd:noEmit*@
-<AppErrorBoundary>
+<AppErrorBoundary @key="currentCulture">
     <CascadingAuthenticationState>
         <AppClientCoordinator />
         <LayoutView Layout="@(Layout ?? typeof(MainLayout))">

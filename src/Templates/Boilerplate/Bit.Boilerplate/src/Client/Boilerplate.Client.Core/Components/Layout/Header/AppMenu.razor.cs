@@ -112,13 +112,21 @@ public partial class AppMenu
         // Switching calls the refresh token api that stores the new tenant id in the token's claims (See IdentityController.Refresh).
         if (await AuthManager.SwitchTenant(newTenantId, CurrentCancellationToken))
         {
-            //#if (brouter == true)
-            brouter.ClearKeepAlive();
-            //#endif
-
-            NavigationManager.RefreshCurrentPage(); // Re-renders the current page so it reflects the new tenant's data.
+            // Re-renders the current page so it reflects the new tenant's data.
             // The layout's tenant display (next to the app version) updates on its own: switching changes the tenant claim, which
             // triggers the authentication-state change that MainLayout re-resolves the current tenant from (See MainLayout.SetCurrentTenantIfNeeded).
+            //#if (brouter == true)
+            brouter.ClearKeepAlive();
+            await brouter.ReloadAsync();
+            //#else
+            //#if (IsInsideProjectTemplate == true)
+            /*
+            //#endif
+            NavigationManager.RefreshCurrentPage();
+            //#if (IsInsideProjectTemplate == true)
+            */
+            //#endif
+            //#endif
         }
     }
     //#endif

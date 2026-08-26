@@ -52,6 +52,7 @@ public partial class iOSPushNotificationService : PushNotificationServiceBase
         catch (Exception exp)
         {
             Logger.LogError(exp, "Unable to resolve token for APNS.");
+            return null;
         }
 
         var subscription = new PushNotificationSubscriptionDto
