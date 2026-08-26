@@ -1,1 +1,39 @@
-﻿
+﻿// The row every group of demo cards is laid out in: cards wrap onto as many lines as the viewport needs and
+// stay top-aligned, so a short card next to a tall one does not float in the middle of the row.
+.card-row {
+    gap: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+// The stand-in for a real picture in the Cover template example.
+.example-cover {
+    color: white;
+    display: flex;
+    height: 7rem;
+    font-size: 1.25rem;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(120deg, var(--bit-clr-pri), var(--bit-clr-inf));
+}
+
+::deep {
+    .custom-class {
+        border-radius: 0.25rem;
+        box-shadow: aqua 0 0 0.5rem;
+    }
+
+    .custom-root {
+        border-color: mediumpurple;
+        box-shadow: mediumpurple 0 0 0.5rem;
+    }
+
+    .custom-title {
+        color: mediumpurple;
+    }
+
+    .custom-icon {
+        color: mediumpurple;
+    }
+}

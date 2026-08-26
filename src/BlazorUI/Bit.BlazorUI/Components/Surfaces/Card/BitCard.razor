@@ -1,11 +1,191 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
+@{
+    var icon = BitIconInfo.From(Icon, IconName);
+
+    var hasTitle = Title.HasValue();
+    var hasSubtitle = Subtitle.HasValue();
+    var titleId = hasTitle ? $"{_Id}-ttl" : null;
+    var subtitleId = hasSubtitle ? $"{_Id}-sub" : null;
+
+    @* A card title is the heading of the section the card is, but only where the page says so: a level turns
+       it into one, and without a level it stays the plain line of text it looks like. The heading is a div
+       carrying role/aria-level rather than an h1-h6, so no user-agent heading styles have to be undone. *@
+    var headingLevel = HeadingLevel is >= 1 and <= 6 ? HeadingLevel : null;
+
+    @* An attribute written after the splat wins over the one the app passed in through HtmlAttributes, and a
+       null one takes it off the element altogether. What the card has of its own therefore comes first, but
+       it falls back to whatever came in with the attributes. *@
+    var splattedRole = HtmlAttributes.TryGetValue("role", out var srl) ? srl?.ToString() : null;
+    var splattedLabel = HtmlAttributes.TryGetValue("aria-label", out var sal) ? sal?.ToString() : null;
+    var splattedTabIndex = HtmlAttributes.TryGetValue("tabindex", out var sti) ? sti?.ToString() : null;
+
+    var label = AriaLabel ?? splattedLabel;
+    var tabIndex = TabIndex ?? splattedTabIndex;
+
+    @* The name of a linked card belongs to the anchor stretched over it, which is the control a reader lands
+       on; a copy of it on the wrapper as well would have the same words announced twice. Anywhere else the
+       name stays on the root. *@
+    var labelOnRoot = _IsLink is false;
+
+    @* A clickable card is a button in everything but its tag name, so it reports itself as one. A card that
+       is not a control but does carry a name needs a role for that name to be announced at all - aria-label
+       on a plain div is not guaranteed to be read - and "group" is the role of a box that holds related
+       things without being a landmark. A role the app splatted in itself always wins over both. *@
+    var role = splattedRole ?? (_IsButton ? "button" : (labelOnRoot && label.HasValue() ? "group" : null));
+
+    @* The stretched link carries no text of its own, so what names it is the title of the card - and failing
+       that its subtitle, which is the only other thing on the card that says what it is. A linked card with
+       neither has nothing to be named by and needs an AriaLabel. *@
+    var linkLabelledBy = label.HasValue() ? null : (titleId ?? subtitleId);
+
+    var rootTabIndex = _IsButton ? (IsEnabled ? (tabIndex ?? "0") : null) : tabIndex;
+
+    var onClick = OnClick.HasDelegate || _IsToggle
+                ? EventCallback.Factory.Create<MouseEventArgs>(this, HandleOnClick)
+                : default;
+
+    @* Nothing listens for a key on a card that is not a control - an empty callback still costs a round trip
+       to the server on every keystroke of a Blazor Server app. *@
+    var onKeyDown = _IsButton
+                  ? EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleOnKeyDown)
+                  : default;
+}
+
 <div @ref="RootElement" @attributes="HtmlAttributes"
+     @onclick="onClick"
+     @onclick:stopPropagation="StopPropagation"
+     @onkeydown="onKeyDown"
      id="@_Id"
-     aria-label="@AriaLabel"
+     role="@role"
+     tabindex="@rootTabIndex"
+     aria-label="@(labelOnRoot ? label : null)"
+     aria-pressed="@(_IsButton && _IsToggle ? (Selected ? "true" : "false") : null)"
+     aria-busy="@(Loading ? "true" : null)"
+     aria-disabled="@(IsEnabled ? null : "true")"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    @ChildContent
+    @if (_IsLink)
+    {
+        @* The card is not wrapped in the anchor: an anchor around the whole card is invalid the moment the
+           card holds a link or a button of its own, and a screen reader reads the entire card out as the name
+           of that one link. The anchor is laid over the surface instead, which is the block-link pattern every
+           design system settled on, and it is named after the title so a page of linked cards reads as a list
+           of destinations rather than a list of identical links. *@
+        <a @ref="_linkRef"
+           style="@Styles?.Link"
+           class="bit-crd-lnk @Classes?.Link"
+           href="@(IsEnabled ? Href : null)"
+           rel="@_rel"
+           target="@Target"
+           download="@Download"
+           tabindex="@(IsEnabled ? tabIndex : "-1")"
+           aria-disabled="@(IsEnabled ? null : "true")"
+           aria-labelledby="@linkLabelledBy"
+           aria-label="@label"></a>
+    }
+
+    @if (_IsSectioned)
+    {
+        @if (_HasCover)
+        {
+            <div style="@Styles?.Cover" class="bit-crd-cvr @Classes?.Cover">
+                @if (Cover is not null)
+                {
+                    @Cover
+                }
+                else
+                {
+                    <img src="@ImageUrl" alt="@(ImageAlt ?? string.Empty)" style="@Styles?.Image" class="bit-crd-img @Classes?.Image" />
+                }
+            </div>
+        }
+
+        @* The column of everything that is not the cover. A card that is only a cover has nothing to put in it,
+           and rendering it anyway would leave the block padding of the column hanging under the picture. *@
+        @if (_HasMain)
+        {
+            <div style="@Styles?.Main" class="bit-crd-mai @Classes?.Main">
+                @if (_HasHeader)
+                {
+                    <div style="@Styles?.Header" class="bit-crd-hdr @Classes?.Header">
+                        @if (HeaderTemplate is not null)
+                        {
+                            @HeaderTemplate
+                        }
+                        else
+                        {
+                            @if (icon is not null)
+                            {
+                                <i aria-hidden="true" style="@Styles?.Icon" class="bit-crd-hic @icon.GetCssClasses() @Classes?.Icon" />
+                            }
+
+                            @if (hasTitle || hasSubtitle)
+                            {
+                                <div style="@Styles?.HeaderText" class="bit-crd-htx @Classes?.HeaderText">
+                                    @if (hasTitle)
+                                    {
+                                        <div id="@titleId"
+                                             role="@(headingLevel is null ? null : "heading")"
+                                             aria-level="@headingLevel"
+                                             style="@Styles?.Title"
+                                             class="bit-crd-ttl @Classes?.Title">@Title</div>
+                                    }
+
+                                    @if (hasSubtitle)
+                                    {
+                                        <div id="@subtitleId" style="@Styles?.Subtitle" class="bit-crd-sub @Classes?.Subtitle">@Subtitle</div>
+                                    }
+                                </div>
+                            }
+                        }
+
+                        @if (Actions is not null)
+                        {
+                            @* Outside the title block and raised above the stretched link, so the controls it holds
+                               are controls of their own rather than part of whatever the card leads to. *@
+                            <div style="@Styles?.Actions" class="bit-crd-act @Classes?.Actions">@Actions</div>
+                        }
+                    </div>
+                }
+
+                @if (Loading)
+                {
+                    @* The body of a card whose content has not arrived yet. The header stays put - the title of a
+                       card is known before its content is - and only what is still being fetched is stood in for. *@
+                    <div style="@Styles?.Body" class="bit-crd-bdy @Classes?.Body">
+                        @if (LoadingTemplate is not null)
+                        {
+                            @LoadingTemplate
+                        }
+                        else
+                        {
+                            <div class="bit-crd-skl">
+                                <BitShimmer Width="100%" Height="0.75rem" />
+                                <BitShimmer Width="90%" Height="0.75rem" />
+                                <BitShimmer Width="60%" Height="0.75rem" />
+                            </div>
+                        }
+                    </div>
+                }
+                else if (ChildContent is not null)
+                {
+                    <div style="@Styles?.Body" class="bit-crd-bdy @Classes?.Body">@ChildContent</div>
+                }
+
+                @if (Footer is not null)
+                {
+                    @* Raised above the stretched link for the same reason the header actions are: the buttons of a
+                       linked card have to stay reachable by the pointer and by the keyboard. *@
+                    <div style="@Styles?.Footer" class="bit-crd-ftr @Classes?.Footer">@Footer</div>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        @ChildContent
+    }
 </div>
