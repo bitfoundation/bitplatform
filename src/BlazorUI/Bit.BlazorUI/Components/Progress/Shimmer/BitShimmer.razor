@@ -1,10 +1,14 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 @{
     @* An inline shimmer stands in a line of text, which is phrasing content: a div there would be closed out
-       of the paragraph around it by the HTML parser, taking the sentence apart. The two roots hold the same
-       body and differ in nothing but the tag. *@
+       of the paragraph around it by the HTML parser, taking the sentence apart. That goes for the boxes the
+       component draws inside the root as much as for the root itself, so each of them is written twice - as a
+       span while the shimmer is inline and as a div while it is not - and the two versions differ in nothing
+       but the tag. What the block layout of the inline boxes needs is given back to them in CSS. *@
+    RenderFragment content = @<text>@(ChildContent ?? Content)</text>;
+
     RenderFragment body =
     @<text>
         @if (_hasLiveRegion)
@@ -21,9 +25,14 @@
 
         @if (_loaded)
         {
-            <div style="@Styles?.Content" class="bit-smr-cnt @Classes?.Content">
-                @(ChildContent ?? Content)
-            </div>
+            if (Inline)
+            {
+                <span style="@Styles?.Content" class="bit-smr-cnt @Classes?.Content">@content</span>
+            }
+            else
+            {
+                <div style="@Styles?.Content" class="bit-smr-cnt @Classes?.Content">@content</div>
+            }
         }
         else if (_hasTemplate)
         {
@@ -37,9 +46,14 @@
                    out of sight so the placeholder is what is seen. Hiding it with visibility rather than with
                    opacity is what also takes it out of the tab order and out of the accessibility tree, so nothing
                    under the cover can be reached or read while it is covered. *@
-                <div style="@Styles?.Content" class="bit-smr-cvd @Classes?.Content">
-                    @(ChildContent ?? Content)
-                </div>
+                if (Inline)
+                {
+                    <span style="@Styles?.Content" class="bit-smr-cvd @Classes?.Content">@content</span>
+                }
+                else
+                {
+                    <div style="@Styles?.Content" class="bit-smr-cvd @Classes?.Content">@content</div>
+                }
             }
 
             @* The placeholder itself carries no information: it stands in for content that is not there yet, and
@@ -47,12 +61,25 @@
                keeps a shimmer built out of a dozen boxes from being read out as a dozen empty groups. *@
             @for (var i = 0; i < _lineCount; i++)
             {
-                <div style="@Styles?.ShimmerWrapper"
-                     class="bit-smr-wrp @_backgroundClass @Classes?.ShimmerWrapper"
-                     aria-hidden="true">
-                    <div style="@JoinStyles(Styles?.Shimmer, _animationStyle)"
-                         class="bit-smr-anm @_animationClass @Classes?.Shimmer"></div>
-                </div>
+                var wrapperStyle = JoinStyles(Styles?.ShimmerWrapper, GetLineStyle(i));
+                var shimmerStyle = JoinStyles(Styles?.Shimmer, GetAnimationStyle(i));
+
+                if (Inline)
+                {
+                    <span style="@wrapperStyle"
+                          class="bit-smr-wrp @_backgroundClass @Classes?.ShimmerWrapper"
+                          aria-hidden="true"><span style="@shimmerStyle"
+                                                   class="bit-smr-anm @_animationClass @Classes?.Shimmer"></span></span>
+                }
+                else
+                {
+                    <div style="@wrapperStyle"
+                         class="bit-smr-wrp @_backgroundClass @Classes?.ShimmerWrapper"
+                         aria-hidden="true">
+                        <div style="@shimmerStyle"
+                             class="bit-smr-anm @_animationClass @Classes?.Shimmer"></div>
+                    </div>
+                }
             }
         }
     </text>;
@@ -65,6 +92,7 @@
           style="@StyleBuilder.Value"
           class="@ClassBuilder.Value"
           dir="@Dir?.ToString().ToLower()"
+          role="@_role"
           aria-label="@AriaLabel"
           aria-busy="@(_loaded ? null : "true")">@body</span>
 }
@@ -75,6 +103,7 @@ else
          style="@StyleBuilder.Value"
          class="@ClassBuilder.Value"
          dir="@Dir?.ToString().ToLower()"
+         role="@_role"
          aria-label="@AriaLabel"
          aria-busy="@(_loaded ? null : "true")">@body</div>
 }

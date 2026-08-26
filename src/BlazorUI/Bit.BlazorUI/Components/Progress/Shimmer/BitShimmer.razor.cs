@@ -51,6 +51,12 @@ public partial class BitShimmer : BitComponentBase
         _ => "status"
     };
 
+    // aria-label is not a global attribute: on a plain div or a span it names nothing at all, so a shimmer
+    // that was given one publishes itself as an indeterminate progress bar - which is what a placeholder
+    // standing in for content that is on its way actually is - and gives the role back once the content is
+    // in and the element is nothing but the box around it.
+    private string? _role => _loaded is false && AriaLabel.HasValue() ? "progressbar" : null;
+
     private string _animationClass => _animation switch
     {
         BitShimmerAnimation.Pulse => "bit-smr-pul",
@@ -61,17 +67,36 @@ public partial class BitShimmer : BitComponentBase
 
     // The pace of the animation is a value rather than a class, so it lands on the element as a style. Both
     // parts are dropped for a placeholder that does not animate, where there is nothing for them to time.
-    private string _animationStyle
+    // Negative milliseconds are clamped away: a negative duration is not a duration a browser accepts, and a
+    // negative delay would start the loop part-way through a sweep nobody asked to skip.
+    private string GetAnimationStyle(int index)
     {
-        get
-        {
-            if (_animation == BitShimmerAnimation.None) return string.Empty;
+        if (_animation == BitShimmerAnimation.None) return string.Empty;
 
-            var delay = Delay.HasValue ? $"animation-delay:{Delay}ms" : string.Empty;
-            var duration = Duration.HasValue ? $"animation-duration:{Duration}ms" : string.Empty;
+        // A stack that starts every one of its lines at the same instant reads as one block breathing rather
+        // than as a paragraph loading, so each line is offset from the one above it. There is nothing to
+        // offset a single line against, which is also what keeps a lone placeholder on the pace the
+        // stylesheet gives it rather than on an explicit start of its own.
+        var stagger = _lineCount > 1 && Stagger.HasValue ? Math.Max(0, Stagger.Value) * index : (int?)null;
 
-            return string.Join(';', [delay, duration]).Trim(';').Trim();
-        }
+        var start = Delay.HasValue || stagger.HasValue ? Math.Max(0, Delay ?? 0) + (stagger ?? 0) : (int?)null;
+
+        var delay = start.HasValue ? $"animation-delay:{start}ms" : string.Empty;
+        var duration = Duration.HasValue ? $"animation-duration:{Math.Max(0, Duration.Value)}ms" : string.Empty;
+
+        return string.Join(';', [delay, duration]).Trim(';').Trim();
+    }
+
+    // The width of one line of a stack. Only a stack has lines to give a width of their own - a single bar
+    // is sized by Width, and a circle by its diameter - and a line the list does not reach keeps the width
+    // the stylesheet gives it, which is the full measure or the shortened last one.
+    private string? GetLineStyle(int index)
+    {
+        if (_lineCount < 2 || LineWidths is null || index >= LineWidths.Count) return null;
+
+        var width = LineWidths[index];
+
+        return width.HasValue() ? $"width:{width}" : null;
     }
 
     private string _backgroundClass => Background switch
@@ -118,7 +143,8 @@ public partial class BitShimmer : BitComponentBase
     /// </summary>
     /// <remarks>
     /// This is the resting color of the placeholder - the box the animation plays over - while
-    /// <see cref="Color"/> is the color of the animated part itself.
+    /// <see cref="Color"/> is the color of the animated part itself. A placeholder with no animation has no
+    /// animated part, so this is the whole of what a <see cref="BitShimmerAnimation.None"/> block is painted in.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Background { get; set; }
@@ -151,6 +177,9 @@ public partial class BitShimmer : BitComponentBase
     /// This is the color of the wave band, or of the block the pulse and the fade play on, over the resting
     /// <see cref="Background"/> of the placeholder. Keep the two close together: a placeholder is not content,
     /// and a high-contrast pair reads as something the page is actually showing.
+    /// <br />
+    /// A <see cref="BitShimmerAnimation.None"/> placeholder has no animated part, so it is painted in
+    /// <see cref="Background"/> alone and this no longer applies.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
@@ -219,7 +248,10 @@ public partial class BitShimmer : BitComponentBase
     /// type turns out to be.
     /// <br />
     /// The root is rendered as a <c>span</c> rather than a <c>div</c> while it is inline, so a placeholder
-    /// standing in the middle of a paragraph is phrasing content and the paragraph stays in one piece.
+    /// standing in the middle of a paragraph is phrasing content and the paragraph stays in one piece. So is
+    /// every box the component draws inside it, which leaves what is passed in: a <see cref="ChildContent"/>,
+    /// a <see cref="Content"/> or a <see cref="Template"/> given to an inline shimmer has to be phrasing
+    /// content itself, or the paragraph is taken apart by the content rather than by the placeholder.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Inline { get; set; }
@@ -244,6 +276,9 @@ public partial class BitShimmer : BitComponentBase
     /// <remarks>
     /// Only applies while <see cref="Lines"/> is greater than 1. The last line of a paragraph rarely reaches the
     /// end of its measure, so it is shortened by default; set it to <c>100%</c> for a stack of even lines.
+    /// <br />
+    /// <see cref="LineWidths"/> wins over it wherever the list reaches the last line, which is what gives a
+    /// stack a measure per line rather than one shortened end.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? LastLineWidth { get; set; }
@@ -255,13 +290,28 @@ public partial class BitShimmer : BitComponentBase
     /// </summary>
     /// <remarks>
     /// Each line takes the <see cref="Height"/> of a single line and they are separated by <see cref="Gap"/>,
-    /// with the last one shortened to <see cref="LastLineWidth"/>.
+    /// with the last one shortened to <see cref="LastLineWidth"/> and any of them given a measure of its own by
+    /// <see cref="LineWidths"/>. <see cref="Stagger"/> offsets their animations against one another.
     /// <br />
     /// A <see cref="BitShimmerShape.Circle"/> is a single shape rather than a stack, so it ignores this, and
     /// so does an <see cref="Overlay"/>, which is one box laid over the whole of the content it covers.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public int Lines { get; set; } = 1;
+
+    /// <summary>
+    /// The width of each line of a multi-line shimmer, as a list of CSS lengths.
+    /// </summary>
+    /// <remarks>
+    /// Only applies while <see cref="Lines"/> is greater than 1. Real prose does not run to the same measure
+    /// on every line, and a stack of identical bars is the part of a skeleton that reads as a table rather
+    /// than as text; this gives each line a measure of its own.
+    /// <br />
+    /// A line the list does not reach keeps the width it would have had anyway - the full measure, or
+    /// <see cref="LastLineWidth"/> for the last one - so a list shorter than the count is a prefix rather
+    /// than a replacement.
+    /// </remarks>
+    [Parameter] public IList<string>? LineWidths { get; set; }
 
     /// <summary>
     /// Controls when the shimmer is swapped with actual data through an animated transition.
@@ -396,6 +446,20 @@ public partial class BitShimmer : BitComponentBase
     public BitSize? Size { get; set; }
 
     /// <summary>
+    /// The offset in ms between the animation of one line of a multi-line shimmer and the next.
+    /// </summary>
+    /// <remarks>
+    /// Only applies while <see cref="Lines"/> is greater than 1, and it is added to <see cref="Delay"/> rather
+    /// than replacing it: line <c>n</c> starts at <c>Delay + n * Stagger</c>. A stack whose lines all start
+    /// together reads as one block breathing, while a small offset - a tenth of the
+    /// <see cref="Duration"/> is usually enough - reads as a paragraph arriving line by line.
+    /// <br />
+    /// It times the animation rather than the placeholder, so it neither holds a line back from appearing nor
+    /// applies to <see cref="BitShimmerAnimation.None"/>.
+    /// </remarks>
+    [Parameter] public int? Stagger { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the BitShimmer.
     /// </summary>
     [Parameter] public BitShimmerClassStyles? Styles { get; set; }
@@ -445,9 +509,9 @@ public partial class BitShimmer : BitComponentBase
         }
         else if (_loaded is false && _holdCts is null)
         {
-            var shown = ShowDelay ?? 0;
+            var shown = Math.Max(0, ShowDelay ?? 0);
             var elapsed = _waitStart.HasValue ? Environment.TickCount64 - _waitStart.Value : 0;
-            var remaining = _waitStart.HasValue ? shown + (MinShowTime ?? 0) - elapsed : 0;
+            var remaining = _waitStart.HasValue ? shown + Math.Max(0, MinShowTime ?? 0) - elapsed : 0;
 
             // Nothing is held back for a placeholder that was never seen - the response beat the ShowDelay
             // that was holding it back - nor for one that has already lived out its shortest life.
@@ -546,7 +610,7 @@ public partial class BitShimmer : BitComponentBase
         StyleBuilder.Register(() => _loaded is false && Gap.HasValue() ? $"--bit-smr-gap:{Gap}" : string.Empty);
         StyleBuilder.Register(() => _loaded is false && LastLineWidth.HasValue() ? $"--bit-smr-llw:{LastLineWidth}" : string.Empty);
         StyleBuilder.Register(() => _loaded is false && Radius.HasValue() ? $"--bit-smr-rad:{Radius}" : string.Empty);
-        StyleBuilder.Register(() => _loaded is false && ShowDelay.HasValue ? $"--bit-smr-dly:{ShowDelay}ms" : string.Empty);
+        StyleBuilder.Register(() => _loaded is false && ShowDelay.HasValue ? $"--bit-smr-dly:{Math.Max(0, ShowDelay.Value)}ms" : string.Empty);
     }
 
     protected override void RegisterCssClasses()

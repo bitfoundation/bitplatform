@@ -3,6 +3,7 @@
 .bit-smr {
     display: block;
     --bit-smr-bg-clr: #{$clr-bg-ter};
+
     // The sizing properties are inherited, and a Template is built out of shimmers of its own - so a height,
     // a gap, a last-line width, a corner or a show delay set on the outer one would otherwise land on every
     // shimmer inside it that did not set its own. Resetting them to the guaranteed-invalid value here sends
@@ -135,6 +136,16 @@
 .bit-smr-inl {
     display: inline-block;
     vertical-align: middle;
+
+    // The boxes an inline shimmer is built out of are spans, so that a placeholder standing in a line of text
+    // is phrasing content from the root down. A span lays out inline, which a placeholder that has a height
+    // and a corner to draw cannot do, so the block layout the block version gets from its tag is given back
+    // here. The animated band is positioned absolutely and so is already blockified by that.
+    > .bit-smr-cnt,
+    > .bit-smr-cvd,
+    > .bit-smr-wrp {
+        display: block;
+    }
 }
 
 .bit-smr-lin.bit-smr-inl {
@@ -208,13 +219,25 @@
     background-color: $clr-bg-sec;
     animation-timing-function: $mot-easing;
     animation-name: bit-smr-anim-opacity;
-    border-radius: var(--bit-smr-rad, #{$shp-radius-sm});
+    // A placeholder is drawn in the shape of the thing it is waiting for, and what it is usually waiting for
+    // is a surface - a card, an image, a row of a list - so the default corner is the surface family's rather
+    // than a step of the scale, which is what lets a design system that rounds its surfaces differently round
+    // the placeholders for them the same way.
+    border-radius: var(--bit-smr-rad, #{$shp-radius-surface});
 }
 
 .bit-smr-anm {
     inset: 0;
     position: absolute;
     background: var(--bit-smr-bg-clr);
+}
+
+// A placeholder that does not animate has no animated part, and the animated part is what Color paints: left
+// on the page it would cover the wrapper edge to edge and leave Background - the resting color of the
+// placeholder, which is the only color a static block has - with nothing to show. The element itself stays so
+// that a class or a style given to it is still addressable.
+.bit-smr-non {
+    display: none;
 }
 
 // The wave and the pulse loop forever, so they keep literal durations rather than the

@@ -6,7 +6,7 @@
 
 <DemoPage Name="Shimmer"
           SecondaryNames="@(["Skeleton"])"
-          Description="Shimmer is a temporary placeholder for content that has not arrived yet, so a page can lay itself out before its data is in rather than blocking on it. It draws a rounded bar, a square, a pill or a circle at any corner radius, stacks itself into a paragraph of lines with a shortened last one, and animates with a wave, a pulse, a fade or nothing at all. Any layout beyond that is built from a template of shimmers of its own, and content that is already on the page is covered rather than stood in for. It holds itself back for a moment so a fast response never flashes a placeholder and stays a moment longer so one landing just afterwards never flickers, swaps to the real content with a fade once it is loaded, and carries a live region so a screen reader is told when the wait is over."
+          Description="Shimmer is a temporary placeholder for content that has not arrived yet, so a page can lay itself out before its data is in rather than blocking on it. It draws a bar, a square, a pill or a circle at any size and corner, stacks itself into a paragraph with a measure per line, and animates with a wave, a pulse, a fade or nothing at all; anything more elaborate is a template of shimmers of its own, and content already on the page is covered rather than stood in for. It holds itself back so a fast response never flashes a placeholder and lingers so one landing just afterwards never flickers, fades into the real content once it is loaded, and carries a live region so a screen reader is told when the wait is over."
           Parameters="componentParameters"
           SubEnums="componentSubEnums"
           SubClasses="componentSubClasses"
@@ -85,6 +85,10 @@
             reaches the end of its measure, which is most of what makes a stack of bars read as text rather than as a table.
             Set <b>LastLineWidth="100%"</b> for a stack of even rows, and note that a <BitLink Href="#example2">circle</BitLink> is a single
             shape rather than a stack, so it ignores the count.
+            <br /><br />
+            <b>LineWidths</b> goes the rest of the way: real prose does not run to the same measure on every line, so this gives each line a
+            measure of its own. It is a prefix rather than a replacement - a line the list does not reach keeps the width it would have had
+            anyway, which is the full measure or the shortened last one - so a two-entry list over four lines only varies the first two.
         </div>
         <br /><br />
         <div>Lines="3" (default gap and last line)</div>
@@ -95,6 +99,9 @@
         <br />
         <div>Even rows</div>
         <BitShimmer Lines="3" Height="1.5rem" Gap="0.25rem" LastLineWidth="100%" />
+        <br />
+        <div>A measure per line</div>
+        <BitShimmer Lines="4" Height="0.75rem" LineWidths="@(["100%", "88%", "94%", "52%"])" />
     </DemoExample>
 
     <DemoExample Title="Animation" RazorCode="@example5RazorCode" Id="example5">
@@ -103,11 +110,16 @@
             highlight color across the box and turns around on a right-to-left page; <b>Pulse</b> breathes between full and reduced opacity, which
             is cheaper to paint and calmer on a page carrying many placeholders at once; <b>Fade</b> takes that breath all the way out; and
             <b>None</b> leaves a static block, which is the right answer for a very long list or a page that already shows a progress indicator
-            of its own. <b>Pulse="true"</b> stays as the short spelling of <b>Animation="BitShimmerAnimation.Pulse"</b>.
+            of its own - and having no animated part, it is painted in <BitLink Href="#example12">Background</BitLink> alone.
+            <b>Pulse="true"</b> stays as the short spelling of <b>Animation="BitShimmerAnimation.Pulse"</b>.
             <br /><br />
-            <b>Duration</b> is one full sweep or one full breath in milliseconds and <b>Delay</b> is the pause before each loop; neither applies to
+            <b>Duration</b> is one full sweep or one full breath in milliseconds and <b>Delay</b> is the pause before the first loop; neither applies to
             <b>None</b>. The animation loops for as long as the placeholder is on the page, so it stops outright - rather than running faster - as
             soon as the reader asks for reduced motion, which is why this page keeps it still until the animation toggle turns it back on.
+            <br /><br />
+            <b>Stagger</b> offsets the lines of a <BitLink Href="#example4">stack</BitLink> against one another, so line <b>n</b> starts at
+            <b>Delay + n * Stagger</b>. A stack whose lines all start together reads as one block breathing; a small offset - a tenth of the
+            duration is usually enough - reads as a paragraph arriving line by line.
         </div>
         <br /><br />
         <div>Wave (default)</div>
@@ -127,6 +139,9 @@
         <br />
         <div>Duration and Delay</div>
         <BitShimmer Height="3rem" Duration="5000" Delay="1000" />
+        <br />
+        <div>Stagger</div>
+        <BitShimmer Lines="4" Height="0.75rem" Stagger="200" />
     </DemoExample>
 
     <DemoExample Title="ShowDelay & MinShowTime" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
@@ -270,11 +285,16 @@
             loading and swaps to <b>LoadedLabel</b> once the content arrives. The swap is what gets announced, which is the point - a screen reader
             user is told the wait is over rather than being left on a silent page. Set it on the one shimmer that stands for a whole region rather
             than on each of a group of them, and raise <b>Politeness</b> beyond polite only where the content is the reason the reader is on the page.
+            <br /><br />
+            <b>AriaLabel</b> is the quieter half of the same idea: it names the placeholder without announcing anything. Because <b>aria-label</b>
+            names nothing at all on a plain element, a shimmer that is given one publishes itself as an indeterminate <b>progressbar</b> while it
+            waits - which is what a placeholder standing in for content on its way actually is - and gives the role back once the content is in.
         </div>
         <br /><br />
         <BitShimmer Loaded="@isAccessibleLoaded"
                     Label="Loading your profile"
                     LoadedLabel="Profile loaded"
+                    AriaLabel="Profile"
                     Lines="2"
                     Height="1rem">
             Xafan Salina, Software Engineer.
@@ -288,6 +308,8 @@
             <b>Background</b> is the resting color of the placeholder - the box the animation plays over - while
             <BitLink Href="#example13">Color</BitLink> is the color of the animated part itself. Keep the two close together: a placeholder is not
             content, and a high-contrast pair reads as something the page is actually showing.
+            <br /><br />
+            A placeholder with <BitLink Href="#example5">no animation</BitLink> has no animated part, so this is the whole of what it is painted in.
         </div>
         <br /><br />
         <div>Primary</div>
@@ -345,7 +367,8 @@
     <DemoExample Title="Color" RazorCode="@example13RazorCode" Id="example13">
         <div>
             <b>Color</b> paints the animated part of the shimmer - the wave band, or the block the pulse and the fade play on - in any of the general
-            colors of bit BlazorUI, over the resting <BitLink Href="#example12">Background</BitLink> of the placeholder.
+            colors of bit BlazorUI, over the resting <BitLink Href="#example12">Background</BitLink> of the placeholder. A placeholder with
+            <BitLink Href="#example5">no animation</BitLink> has no animated part, so this no longer applies to it.
         </div>
         <br /><br />
         <div>Primary</div>
@@ -431,7 +454,10 @@
             <b>Style</b> and <b>Class</b> reach the root element, while <b>Styles</b> and <b>Classes</b> reach each part of the component by name -
             the root, the wrapper of every line, the animated part inside it, the content that replaces them - or that they cover - and the live
             region that speaks for them.
-            A custom gradient on the shimmer is how a color pair outside the general roles is set.
+            <br /><br />
+            For a color pair outside the general roles, set the resting color as a <b>background-color</b> on the wrapper and the highlight as the
+            <b>--bit-smr-bg-clr</b> custom property on the root - the one value the wave, the pulse and the fade all read - or paint a gradient of
+            your own straight onto the shimmer.
         </div>
         <br /><br />
         <div>
@@ -441,8 +467,8 @@
             <BitShimmer Height="2.7rem" Class="custom-class" />
             <br /><br /><br />
             <div><b>Styles</b> & <b>Classes</b>:</div><br />
-            <BitShimmer Height="2.7rem" Styles="@(new() { Shimmer="background-color: darkgoldenrod;",
-                                                          ShimmerWrapper = "background-color: darkgoldenrod;" })" />
+            <BitShimmer Height="2.7rem" Styles="@(new() { Root = "--bit-smr-bg-clr: goldenrod",
+                                                          ShimmerWrapper = "background-color: saddlebrown" })" />
             <br /><br />
             <BitShimmer Height="2.7rem" Lines="2" Classes="@(new() { Root = "custom-root",
                                                                      Shimmer="custom-shimmer",

@@ -21,8 +21,9 @@ public enum BitShimmerAnimation
     Fade,
 
     /// <summary>
-    /// No animation at all: the placeholder is a static block, which is what a page with a great many of them - or one that already
-    /// carries a progress indicator of its own - is better off showing.
+    /// No animation at all: the placeholder is a static block of its <see cref="BitShimmer.Background"/>, which is what a page with a
+    /// great many of them - or one that already carries a progress indicator of its own - is better off showing. There is no animated
+    /// part left for <see cref="BitShimmer.Color"/> to paint.
     /// </summary>
     None
 }

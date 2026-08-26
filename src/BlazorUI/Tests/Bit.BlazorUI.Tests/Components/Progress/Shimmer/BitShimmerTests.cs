@@ -274,6 +274,7 @@ public class BitShimmerTests : BunitTestContext
         component.Render(parameters => parameters.Add(p => p.Height, "3rem"));
 
         Assert.IsTrue(component.Find(".bit-smr").GetAttribute("style").Contains("--bit-smr-hgt:3rem"));
+        Assert.IsFalse(component.Find(".bit-smr").GetAttribute("style").Contains("--bit-smr-hgt:1rem"));
     }
 
     [TestMethod]
@@ -388,6 +389,152 @@ public class BitShimmerTests : BunitTestContext
 
 
 
+    // ----------------------------------------------------------------- line widths
+
+    [TestMethod]
+    public void BitShimmerShouldGiveEveryLineAMeasureOfItsOwn()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Lines, 4);
+            parameters.Add(p => p.LineWidths, ["100%", "88%", "94%", "52%"]);
+        });
+
+        var wrappers = component.FindAll(".bit-smr-wrp");
+
+        Assert.AreEqual(4, wrappers.Count);
+        Assert.AreEqual("width:100%", wrappers[0].GetAttribute("style"));
+        Assert.AreEqual("width:88%", wrappers[1].GetAttribute("style"));
+        Assert.AreEqual("width:94%", wrappers[2].GetAttribute("style"));
+        Assert.AreEqual("width:52%", wrappers[3].GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldTreatAShortLineWidthListAsAPrefix()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Lines, 4);
+            parameters.Add(p => p.LineWidths, ["70%", "40%"]);
+        });
+
+        var wrappers = component.FindAll(".bit-smr-wrp");
+
+        // A line the list does not reach keeps the width it would have had anyway - the full measure, or the
+        // shortened last one the stylesheet draws - so a short list varies the lines it names and no others.
+        Assert.AreEqual("width:70%", wrappers[0].GetAttribute("style"));
+        Assert.AreEqual("width:40%", wrappers[1].GetAttribute("style"));
+        Assert.IsNull(wrappers[2].GetAttribute("style"));
+        Assert.IsNull(wrappers[3].GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldSkipTheEmptyEntriesOfALineWidthList()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Lines, 3);
+            parameters.Add(p => p.LineWidths, ["70%", "", "45%"]);
+        });
+
+        var wrappers = component.FindAll(".bit-smr-wrp");
+
+        // An entry with nothing in it names no measure, so the line it stands for is left as it was rather
+        // than being given a `width:` with no length after it.
+        Assert.AreEqual("width:70%", wrappers[0].GetAttribute("style"));
+        Assert.IsNull(wrappers[1].GetAttribute("style"));
+        Assert.AreEqual("width:45%", wrappers[2].GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldNotGiveASingleLineAMeasureFromTheLineWidthList()
+    {
+        var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.LineWidths, ["70%"]));
+
+        // A single bar is sized by Width; only a stack has lines to give a width of their own.
+        Assert.IsNull(component.Find(".bit-smr-wrp").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitShimmerCircleShouldIgnoreTheLineWidthList()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Circle, true);
+            parameters.Add(p => p.Lines, 3);
+            parameters.Add(p => p.LineWidths, ["70%", "40%", "20%"]);
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-smr-wrp").Count);
+        Assert.IsNull(component.Find(".bit-smr-wrp").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitShimmerOverlayShouldIgnoreTheLineWidthList()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Overlay, true);
+            parameters.Add(p => p.Lines, 3);
+            parameters.Add(p => p.LineWidths, ["70%", "40%", "20%"]);
+            parameters.AddChildContent("Covered content");
+        });
+
+        // A cover is one box over the whole of the content, so there are no lines for the list to measure.
+        Assert.AreEqual(1, component.FindAll(".bit-smr-wrp").Count);
+        Assert.IsNull(component.Find(".bit-smr-wrp").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldSpliceTheLineWidthAfterACustomWrapperStyle()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Lines, 2);
+            parameters.Add(p => p.LineWidths, ["70%"]);
+            parameters.Add(p => p.Styles, new BitShimmerClassStyles { ShimmerWrapper = "background:tomato" });
+        });
+
+        var wrappers = component.FindAll(".bit-smr-wrp");
+
+        // Without the semicolon between them the custom declaration would swallow the width.
+        Assert.AreEqual("background:tomato;width:70%", wrappers[0].GetAttribute("style"));
+        Assert.AreEqual("background:tomato", wrappers[1].GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldChangeTheLineWidthsAfterARerender()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Lines, 2);
+            parameters.Add(p => p.LineWidths, ["70%", "40%"]);
+        });
+
+        Assert.AreEqual("width:70%", component.FindAll(".bit-smr-wrp")[0].GetAttribute("style"));
+
+        component.Render(parameters => parameters.Add(p => p.LineWidths, ["30%", "20%"]));
+
+        Assert.AreEqual("width:30%", component.FindAll(".bit-smr-wrp")[0].GetAttribute("style"));
+        Assert.AreEqual("width:20%", component.FindAll(".bit-smr-wrp")[1].GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldNotRenderALineWidthOnALoadedShimmer()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Lines, 3);
+            parameters.Add(p => p.LineWidths, ["70%", "40%", "20%"]);
+            parameters.Add(p => p.Loaded, true);
+            parameters.AddChildContent("Loaded content");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-smr-wrp").Count);
+    }
+
+
+
     // ----------------------------------------------------------------- animation
 
     [TestMethod]
@@ -487,6 +634,143 @@ public class BitShimmerTests : BunitTestContext
         var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.ShowDelay, 750));
 
         Assert.IsTrue(component.Find(".bit-smr").GetAttribute("style").Contains("--bit-smr-dly:750ms"));
+    }
+
+
+    [TestMethod]
+    public void BitShimmerShouldNotTimeAnAnimationWithANegativeNumberOfMilliseconds()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Duration, -3000);
+            parameters.Add(p => p.Delay, -500);
+        });
+
+        var style = component.Find(".bit-smr-anm").GetAttribute("style");
+
+        // A negative duration is not a duration a browser accepts, and a negative delay would start the loop
+        // part-way through a sweep nobody asked to skip; both are clamped rather than published as they are.
+        Assert.AreEqual("animation-delay:0ms;animation-duration:0ms", style);
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldNotWaitForANegativeShowDelay()
+    {
+        var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.ShowDelay, -750));
+
+        Assert.IsTrue(component.Find(".bit-smr").GetAttribute("style").Contains("--bit-smr-dly:0ms"));
+    }
+
+
+    // ----------------------------------------------------------------- stagger
+
+    [TestMethod]
+    public void BitShimmerShouldStaggerTheLinesOfAStack()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Lines, 4);
+            parameters.Add(p => p.Stagger, 200);
+        });
+
+        var shimmers = component.FindAll(".bit-smr-anm");
+
+        // Line n starts at n * Stagger, so the stack reads as a paragraph arriving line by line rather than
+        // as one block breathing.
+        Assert.AreEqual("animation-delay:0ms", shimmers[0].GetAttribute("style"));
+        Assert.AreEqual("animation-delay:200ms", shimmers[1].GetAttribute("style"));
+        Assert.AreEqual("animation-delay:400ms", shimmers[2].GetAttribute("style"));
+        Assert.AreEqual("animation-delay:600ms", shimmers[3].GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldAddTheStaggerToTheDelayRatherThanReplacingIt()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Lines, 3);
+            parameters.Add(p => p.Delay, 500);
+            parameters.Add(p => p.Stagger, 100);
+        });
+
+        var shimmers = component.FindAll(".bit-smr-anm");
+
+        Assert.AreEqual("animation-delay:500ms", shimmers[0].GetAttribute("style"));
+        Assert.AreEqual("animation-delay:600ms", shimmers[1].GetAttribute("style"));
+        Assert.AreEqual("animation-delay:700ms", shimmers[2].GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldKeepTheDurationOnEveryStaggeredLine()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Lines, 2);
+            parameters.Add(p => p.Duration, 2000);
+            parameters.Add(p => p.Stagger, 250);
+        });
+
+        var shimmers = component.FindAll(".bit-smr-anm");
+
+        Assert.AreEqual("animation-delay:0ms;animation-duration:2000ms", shimmers[0].GetAttribute("style"));
+        Assert.AreEqual("animation-delay:250ms;animation-duration:2000ms", shimmers[1].GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldNotStaggerASinglePlaceholderAgainstItself()
+    {
+        var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.Stagger, 200));
+
+        // There is nothing to offset one line against, which is what keeps a lone placeholder on the pace the
+        // stylesheet gives it rather than on an explicit start of its own.
+        Assert.AreEqual(string.Empty, component.Find(".bit-smr-anm").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldNotStaggerAnAnimationItDoesNotPlay()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Lines, 3);
+            parameters.Add(p => p.Animation, BitShimmerAnimation.None);
+            parameters.Add(p => p.Stagger, 200);
+        });
+
+        foreach (var shimmer in component.FindAll(".bit-smr-anm"))
+        {
+            Assert.AreEqual(string.Empty, shimmer.GetAttribute("style"));
+        }
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldNotStaggerLinesByANegativeNumberOfMilliseconds()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Lines, 3);
+            parameters.Add(p => p.Stagger, -200);
+        });
+
+        foreach (var shimmer in component.FindAll(".bit-smr-anm"))
+        {
+            Assert.AreEqual("animation-delay:0ms", shimmer.GetAttribute("style"));
+        }
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldChangeTheStaggerAfterARerender()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Lines, 2);
+            parameters.Add(p => p.Stagger, 100);
+        });
+
+        Assert.AreEqual("animation-delay:100ms", component.FindAll(".bit-smr-anm")[1].GetAttribute("style"));
+
+        component.Render(parameters => parameters.Add(p => p.Stagger, 400));
+
+        Assert.AreEqual("animation-delay:400ms", component.FindAll(".bit-smr-anm")[1].GetAttribute("style"));
     }
 
 
@@ -674,6 +958,51 @@ public class BitShimmerTests : BunitTestContext
         component.Render(parameters => parameters.Add(p => p.Inline, true));
 
         Assert.AreEqual("span", component.Find(".bit-smr").TagName.ToLower());
+    }
+
+    [TestMethod]
+    [DataRow(false, "div")]
+    [DataRow(true, "span")]
+    public void BitShimmerShouldRenderTheWholePlaceholderAsPhrasingContentWhileItIsInline(bool inline, string expectedTag)
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Inline, inline);
+            parameters.Add(p => p.Lines, 2);
+        });
+
+        Assert.AreEqual(expectedTag, component.Find(".bit-smr-wrp").TagName.ToLower());
+        Assert.AreEqual(expectedTag, component.Find(".bit-smr-anm").TagName.ToLower());
+    }
+
+    [TestMethod]
+    [DataRow(false, "div")]
+    [DataRow(true, "span")]
+    public void BitShimmerShouldRenderTheContentBoxAsPhrasingContentWhileItIsInline(bool inline, string expectedTag)
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Inline, inline);
+            parameters.Add(p => p.Loaded, true);
+            parameters.AddChildContent("Loaded content");
+        });
+
+        Assert.AreEqual(expectedTag, component.Find(".bit-smr-cnt").TagName.ToLower());
+    }
+
+    [TestMethod]
+    [DataRow(false, "div")]
+    [DataRow(true, "span")]
+    public void BitShimmerShouldRenderTheCoveredContentAsPhrasingContentWhileItIsInline(bool inline, string expectedTag)
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Inline, inline);
+            parameters.Add(p => p.Overlay, true);
+            parameters.AddChildContent("Covered content");
+        });
+
+        Assert.AreEqual(expectedTag, component.Find(".bit-smr-cvd").TagName.ToLower());
     }
 
 
@@ -1207,6 +1536,102 @@ public class BitShimmerTests : BunitTestContext
         // Both roles carry a politeness of their own, so the one that is rendered is the one that agrees with
         // aria-live - and a region asked to stay silent drops the role along with the live region it implies.
         Assert.AreEqual(expectedRole, region.GetAttribute("role"));
+    }
+
+
+
+    // ----------------------------------------------------------------- the role of the root
+
+    [TestMethod]
+    public void BitShimmerShouldNotTakeARoleItWasNotGivenAnythingToSay()
+    {
+        var component = RenderComponent<BitShimmer>();
+
+        // A page of a dozen unlabelled placeholders is a dozen progress bars a screen reader has to walk
+        // past, so the role arrives with the label rather than by default.
+        Assert.IsNull(component.Find(".bit-smr").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldPublishALabelledPlaceholderAsAProgressBar()
+    {
+        var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.AriaLabel, "Profile"));
+
+        var root = component.Find(".bit-smr");
+
+        // aria-label names nothing at all on a plain element, so the label comes with the role that carries it.
+        Assert.AreEqual("progressbar", root.GetAttribute("role"));
+        Assert.AreEqual("Profile", root.GetAttribute("aria-label"));
+        Assert.AreEqual("true", root.GetAttribute("aria-busy"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldGiveTheProgressBarRoleBackOnceItIsLoaded()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "Profile");
+            parameters.AddChildContent("Loaded content");
+        });
+
+        Assert.AreEqual("progressbar", component.Find(".bit-smr").GetAttribute("role"));
+
+        component.Render(parameters => parameters.Add(p => p.Loaded, true));
+
+        // What is left is the box around the content, which is nobody's progress bar.
+        Assert.IsNull(component.Find(".bit-smr").GetAttribute("role"));
+        Assert.AreEqual("Profile", component.Find(".bit-smr").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldKeepTheProgressBarRoleWhileTheSwapIsHeldBack()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.MinShowTime, 1000);
+            parameters.Add(p => p.AriaLabel, "Profile");
+            parameters.AddChildContent("Loaded content");
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Loaded, true));
+
+        // What the shimmer reports is what it is showing, so the role goes when the placeholder does.
+        Assert.AreEqual("progressbar", component.Find(".bit-smr").GetAttribute("role"));
+
+        component.WaitForAssertion(() => Assert.IsNull(component.Find(".bit-smr").GetAttribute("role")),
+                                   TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldPublishAnInlinePlaceholderAsAProgressBarToo()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Inline, true);
+            parameters.Add(p => p.AriaLabel, "The price");
+        });
+
+        var root = component.Find(".bit-smr");
+
+        Assert.AreEqual("span", root.TagName.ToLower());
+        Assert.AreEqual("progressbar", root.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitShimmerShouldPublishATemplatedSkeletonAsOneProgressBar()
+    {
+        var component = RenderComponent<BitShimmer>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "The card");
+            parameters.Add(p => p.Template, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddAttribute(1, "class", "custom-template");
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.AreEqual("progressbar", component.Find(".bit-smr").GetAttribute("role"));
     }
 
 

@@ -33,7 +33,8 @@ public class BitShimmerClassStyles
     /// Custom CSS classes/styles for the shimmer of the BitShimmer.
     /// </summary>
     /// <remarks>
-    /// This is the animated part inside each wrapper.
+    /// This is the animated part inside each wrapper, which a placeholder set to
+    /// <see cref="BitShimmerAnimation.None"/> does not draw.
     /// </remarks>
     public string? Shimmer { get; set; }
 }
