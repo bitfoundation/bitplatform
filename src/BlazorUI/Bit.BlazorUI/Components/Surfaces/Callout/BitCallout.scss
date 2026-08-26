@@ -32,6 +32,7 @@
     height: 100%;
     display: none;
     position: fixed;
+
     // A callout opened from inside another one is stacked above it, and so is the overlay that takes the
     // clicks for it: left at the shared level it would sit under the callout beneath it, where a click on
     // that callout would never reach the overlay meant to dismiss the one on top. One step is the whole
@@ -66,6 +67,7 @@
     --bit-clo-tra-ent: translateY(#{spacing(-0.5)});
     --bit-clo-opa: 0;
     --bit-clo-tra: var(--bit-clo-tra-ent);
+
     // The responsive panel slides in from a logical edge, so the sign of the transform that takes it off
     // the screen is the one the direction of the callout gives it.
     --bit-clo-transform-factor: 1;
@@ -75,6 +77,7 @@
     position: fixed;
     box-sizing: border-box;
     z-index: calc(#{$zindex-callout} + var(--bit-clo-lvl, 0) * (#{$zindex-callout} - #{$zindex-overlay} + 1));
+
     // The sizing the consumer asked for, defaulted to what the callout does on its own: as wide as its
     // content needs it to be. The positioning code clears the inline width of the callout on every layout
     // pass and only writes it back for SetCalloutWidth/FixedCalloutWidth, which is why these are declared
@@ -130,6 +133,7 @@
 
     &.bit-clo-mxh {
         overflow: hidden auto;
+
         // The cap the consumer asked for, itself kept within the screen: a callout capped taller than the
         // shortest screen it is shown on would otherwise run off the bottom of it, where a fixed-positioned
         // element is out of reach of the page's own scrolling. Whatever the cap resolves to is what the
@@ -152,9 +156,11 @@
 
     // A callout is as wide as its content asks to be, which is a min-width of max-content: without it a
     // fixed-positioned element is laid out against the room its position leaves rather than against its
-    // content. That floor would win over a maximum width, so a callout that was given one drops it and
-    // lets the content wrap, which is the whole point of asking for one.
-    &.bit-clo-mxw {
+    // content. That floor would win over a width the consumer asked for - a maximum one, or a width of
+    // its own - so a callout that was given either drops it and lets the content wrap inside the width it
+    // was told to take, which is the whole point of asking for one.
+    &.bit-clo-mxw,
+    &.bit-clo-wid {
         --bit-clo-mnw-def: auto;
     }
 
@@ -172,6 +178,18 @@
     }
 }
 
+// The parts that stay put while the body between them scrolls. They carry the hairline that marks where
+// the scrolling starts and stops - without it the header is read as the first line of a list that has
+// simply stopped moving - and nothing else: the padding of the content is the consumer's to decide, here
+// as everywhere else in the callout.
+.bit-clo-hdr {
+    border-block-end: $siz-divider $shp-border-style $clr-brd-sec;
+}
+
+.bit-clo-ftr {
+    border-block-start: $siz-divider $shp-border-style $clr-brd-sec;
+}
+
 // The body between the header and the footer is what gives way when the callout is capped to the room the
 // viewport leaves: the positioning code writes the cap onto it, and this is what turns that cap into
 // content the user can still reach rather than content that is simply cut off.
@@ -187,6 +205,7 @@
 .bit-clo-arw {
     top: 0;
     left: 0;
+
     // The size the consumer asked for, defaulted to the beak the theme's own rhythm gives. The square is
     // centred on the point the positioning code puts it at, so its size is the only thing that changes.
     width: var(--bit-clo-arw-siz, #{spacing(1.5)});

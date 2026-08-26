@@ -75,27 +75,42 @@
                 // The same set the focus trap cycles through, so the element the focus lands on when the
                 // popup opens is the same one Shift+Tab wraps back to from the end of it.
                 const candidates = Array.from(container.querySelectorAll<HTMLElement>(Utils._focusables));
-                // offsetParent is null for a display:none subtree, which is how a hidden part of the
-                // content (e.g. a collapsed section) is skipped without measuring every ancestor. It is
-                // also null for a fixed-positioned element that is perfectly visible, so those are
-                // checked by hand instead: a hidden one has no box at all, and visibility:hidden leaves
-                // a box the focus still cannot land in.
-                const focusable = (el: HTMLElement) => {
-                    if (el.offsetParent !== null) return true;
-
-                    const style = getComputedStyle(el);
-                    return style.position === 'fixed'
-                        && style.visibility !== 'hidden'
-                        && el.getClientRects().length > 0;
-                };
 
                 // The consumer naming the element the focus should land on, for the popups whose first
                 // focusable element is not the one worth starting at - a dismiss button ahead of the field
                 // the popup was opened to fill in. The first focusable element is the fallback.
-                const requested = candidates.find(el => el.hasAttribute('data-autofocus') && focusable(el));
+                const requested = candidates.find(el => el.hasAttribute('data-autofocus') && Utils.isFocusable(el));
 
-                (requested ?? candidates.find(focusable) ?? container).focus();
+                (requested ?? candidates.find(Utils.isFocusable) ?? container).focus();
             } catch (e) { console.error("BitBlazorUI.Utils.focusFirstElement:", e); }
+        }
+
+        // Mirrors the popup relationship onto the element the user actually reaches. A callout renders its
+        // anchor as a plain container around the consumer's own trigger, and aria-haspopup, aria-controls
+        // and aria-expanded on a container that is neither focusable nor interactive are attributes no
+        // screen reader ever reads: the button inside it is what the user lands on. The first focusable
+        // descendant is that button; a container that holds none keeps the attributes on itself, where they
+        // are at least on the element the relationship was declared for.
+        // An empty hasPopup takes the attribute away again - but only where this is the code that put it
+        // there, so a trigger that names a popup of its own (a dropdown used as an anchor) keeps its own.
+        public static syncAriaPopup(anchorId: string, popupId: string, isOpen: boolean, hasPopup: string) {
+            try {
+                const anchor = document.getElementById(anchorId);
+                if (!anchor) return;
+
+                const trigger = anchor.querySelector<HTMLElement>(Utils._focusables) ?? anchor;
+
+                trigger.setAttribute('aria-controls', popupId);
+                trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+
+                if (hasPopup) {
+                    trigger.setAttribute('aria-haspopup', hasPopup);
+                    trigger.setAttribute('data-bit-haspopup', '');
+                } else if (trigger.hasAttribute('data-bit-haspopup')) {
+                    trigger.removeAttribute('aria-haspopup');
+                    trigger.removeAttribute('data-bit-haspopup');
+                }
+            } catch (e) { console.error("BitBlazorUI.Utils.syncAriaPopup:", e); }
         }
 
         // True when the focus currently sits inside the given container. The popup components ask before
@@ -442,6 +457,19 @@
             '[contenteditable]:not([contenteditable="false"]):not([tabindex="-1"]), ' +
             '[tabindex]:not([tabindex="-1"])';
 
+        // Whether an element matching the set above is a place the focus can actually land. It is the one
+        // answer both the initial focus and the focus trap ask for, so the element the focus is moved to
+        // when a popup opens is the same one Shift+Tab wraps back to from the end of it.
+        // A hidden element has no box at all - which is how a display:none subtree (e.g. a collapsed
+        // section) is skipped without measuring every ancestor - and visibility:hidden leaves a box the
+        // focus still cannot land in, so it is asked about separately, and only for the elements that got
+        // past the cheap measurement.
+        private static isFocusable(el: HTMLElement) {
+            const hasBox = el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0;
+
+            return hasBox && getComputedStyle(el).visibility !== 'hidden';
+        }
+
         // Keeps Tab and Shift+Tab cycling inside a container, which is what a popup that reports itself a modal
         // dialog has to do: the tab order runs on into the page behind it otherwise, leaving the focus somewhere
         // an overlay swallows every click that could bring it back. The keydown is left alone where the focus is
@@ -452,7 +480,7 @@
             // A hidden element is not a place the focus can land, and a callout carries parts that are only
             // rendered for some of its states.
             const focusables = Array.from(root.querySelectorAll<HTMLElement>(Utils._focusables))
-                .filter(el => el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0);
+                .filter(Utils.isFocusable);
 
             if (focusables.length === 0) {
                 // Nothing inside the container can take the focus, which leaves the container itself

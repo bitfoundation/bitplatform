@@ -27,6 +27,7 @@ public partial class BitCallout : BitComponentBase
     private bool _scrollLocked;
     private bool _hoverInside;
     private bool? _isHoverDevice;
+    private (bool IsOpen, string? HasPopup)? _syncedAria;
     private string? _swipesKey;
     private CancellationTokenSource? _hoverCts;
     private DotNetObjectReference<BitCallout>? _dotnetObj;
@@ -50,6 +51,18 @@ public partial class BitCallout : BitComponentBase
     [Parameter] public BitCalloutAlignment? Alignment { get; set; }
 
     /// <summary>
+    /// The distance in pixels the callout is slid along the axis it is aligned on, off the edge of the
+    /// anchor it was lined up with. It runs inwards from whichever edge <see cref="Alignment"/> picked,
+    /// so the same value moves a Start-aligned callout and an End-aligned one towards each other, and it
+    /// has no edge to slide a centered callout away from. It defaults to zero.
+    /// </summary>
+    /// <remarks>
+    /// It is applied before the callout is kept within the screen, so a callout slid off an edge is still
+    /// brought back onto it, and the arrow keeps pointing at the anchor either way.
+    /// </remarks>
+    [Parameter] public int AlignmentOffset { get; set; }
+
+    /// <summary>
     /// The content of the anchor element of the callout.
     /// </summary>
     /// <remarks>
@@ -69,6 +82,18 @@ public partial class BitCallout : BitComponentBase
     /// The id of the external anchor element.
     /// </summary>
     [Parameter] public string? AnchorId { get; set; }
+
+    /// <summary>
+    /// The distance in pixels the arrow drawn by <see cref="ShowArrow"/> is kept away from the corners of
+    /// the callout, so that it never lands on a rounded corner, where the radius would cut half of it away.
+    /// It defaults to 16, and never drops below the size of the arrow itself.
+    /// </summary>
+    /// <remarks>
+    /// It is what a callout aligned with an edge of a wide anchor needs: the arrow is centered on the
+    /// anchor, so a wider padding pulls it back towards the middle of the callout, and a narrower one lets
+    /// it sit closer to the corner and stay nearer to what it points at.
+    /// </remarks>
+    [Parameter] public int? ArrowPadding { get; set; }
 
     /// <summary>
     /// The size in pixels of the arrow drawn by <see cref="ShowArrow"/>, which is the length of the side of
@@ -377,9 +402,10 @@ public partial class BitCallout : BitComponentBase
     [Parameter] public bool TrapFocus { get; set; }
 
     /// <summary>
-    /// The width of the callout as a CSS value (e.g. "20rem"). By default the callout is only as wide as
-    /// its content needs. <see cref="SetCalloutWidth"/> and <see cref="FixedCalloutWidth"/> are applied
-    /// after the callout is measured, so they take precedence over it.
+    /// The width of the callout as a CSS value (e.g. "20rem"), which a content wider than it wraps inside
+    /// rather than stretching. By default the callout is only as wide as its content needs.
+    /// <see cref="SetCalloutWidth"/> and <see cref="FixedCalloutWidth"/> are applied after the callout is
+    /// measured, so they take precedence over it.
     /// </summary>
     [Parameter] public string? Width { get; set; }
 
@@ -459,6 +485,18 @@ public partial class BitCallout : BitComponentBase
 
         await InvokeAsync(StateHasChanged);
     }
+
+    /// <summary>
+    /// Lays the open callout out again against what it is placed on, without reopening it: the side, the
+    /// alignment and the room the content is given are all decided anew, and the entry animation is not
+    /// replayed. It does nothing to a callout that is closed.
+    /// </summary>
+    /// <remarks>
+    /// The callout already follows the page scrolling and resizing under it, and an anchor that changes
+    /// size while it is open, so this is for what it cannot see: a content of its own that has grown or
+    /// shrunk, or an anchor moved by something other than a resize of it.
+    /// </remarks>
+    public Task Reposition() => IsOpen ? RepositionCallout() : Task.CompletedTask;
 
     /// <summary>
     /// Toggles the callout to open/close it.
@@ -627,6 +665,8 @@ public partial class BitCallout : BitComponentBase
             await SetupSwipes();
         }
 
+        await SyncAnchorAria();
+
         // The opening that had to wait for a render: an IsOpen (or DefaultIsOpen) that starts out true
         // reaches OnSetIsOpen before the first render, when neither the callout element nor the .NET object
         // reference the JS side needs exist yet, and a lazily rendered content is only put in the callout
@@ -656,10 +696,12 @@ public partial class BitCallout : BitComponentBase
             _placeAfterRender = false;
 
             // The callout is already open and was only moved to a new point, so it is laid out again
-            // rather than opened again: nothing about its state changed for the consumer to hear about.
+            // rather than opened again: nothing about its state changed for the consumer to hear about,
+            // and going back through the toggle would replay the entry animation of a callout that never
+            // went anywhere - a second right-click somewhere else would flash the menu it only moved.
             if (IsOpen)
             {
-                await ToggleCallout();
+                await RepositionCallout();
             }
         }
     }
@@ -753,8 +795,9 @@ public partial class BitCallout : BitComponentBase
 
         if (await DelayHover(HoverCloseDelay) is false) return;
 
-        // The pointer came back before the delay was up, onto the anchor or into the callout.
-        if (_hoverInside) return;
+        // The pointer came back before the delay was up, onto the anchor or into the callout - or the
+        // callout was closed by something else while the delay ran out.
+        if (_hoverInside || IsOpen is false) return;
 
         await CloseCallout();
 
@@ -946,7 +989,20 @@ public partial class BitCallout : BitComponentBase
                     _ => ""
                 },
                 noFlip: NoFlip,
-                collisionPadding: CollisionPadding);
+                collisionPadding: CollisionPadding,
+                alignmentOffset: AlignmentOffset,
+                arrowPadding: ArrowPadding ?? 0);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    private async Task RepositionCallout()
+    {
+        if (IsDisposed || _dotnetObj is null) return;
+
+        try
+        {
+            await _js.BitCalloutReposition();
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1038,6 +1094,28 @@ public partial class BitCallout : BitComponentBase
         try
         {
             await _js.BitUtilsFocusFirstElement(_contentId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    // The anchor container carries the popup relationship, but the element the user actually lands on is
+    // the trigger the consumer put inside it, so the relationship is copied onto that one as well. Only
+    // when what it would report has actually changed: the attributes are written from JS, so a call per
+    // render would be a round trip per render for something that only changes when the callout is toggled
+    // or the kind of popup it holds is.
+    private async Task SyncAnchorAria()
+    {
+        if (Anchor is null || IsDisposed || _dotnetObj is null) return;
+
+        var aria = (IsOpen, GetAriaHasPopup());
+
+        if (_syncedAria == aria) return;
+
+        _syncedAria = aria;
+
+        try
+        {
+            await _js.BitUtilsSyncAriaPopup(_anchorId, _contentId, aria.Item1, aria.Item2);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1278,6 +1356,27 @@ public partial class BitCallout : BitComponentBase
         return AriaLabel.HasValue() ? "group" : null;
     }
 
+    // What the anchor tells the screen readers is behind it. The token has to name what the popup actually
+    // is - the role of the element that holds it has to match it - and the `true` this used to carry is
+    // read as `menu` by every screen reader, which is a promise a callout of plain content does not keep.
+    // So a callout that is a dialog says dialog, one given a popup role of its own is named by it, and the
+    // rest carry nothing at all rather than announce a menu that is not there; aria-expanded is what tells
+    // the user there is something to open either way.
+    private string? GetAriaHasPopup()
+    {
+        var role = GetRole();
+
+        return role is "dialog" or "menu" or "listbox" or "tree" or "grid" ? role : null;
+    }
+
+    // A callout that reports itself as a dialog needs an accessible name (WAI-ARIA APG), and one that
+    // renders a header of its own is already showing the name it should be given. AriaLabel wins where it
+    // is set, so naming the callout by hand still takes precedence over the header it happens to have.
+    private string? GetAriaLabelledBy()
+    {
+        return (AriaLabel.HasValue() is false && Header is not null) ? _headerId : null;
+    }
+
     private string GetOverlayCssClasses()
     {
         List<string> classes = ["bit-clo-ovl"];
@@ -1395,6 +1494,11 @@ public partial class BitCallout : BitComponentBase
         if (MaxWidth.HasValue())
         {
             classes.Add("bit-clo-mxw");
+        }
+
+        if (Width.HasValue())
+        {
+            classes.Add("bit-clo-wid");
         }
 
         if (FitsToViewport)

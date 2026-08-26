@@ -78,6 +78,13 @@ namespace BitBlazorUI {
             // The distance in pixels the callout keeps from the edges of the screen, taken off the room
             // every side is measured against; zero lets the callout go right up to them.
             collisionPadding: number = 0,
+            // The distance in pixels the callout is slid along the axis it is aligned on, inwards from the
+            // edge of the component the alignment lined it up with; zero keeps it on that edge, and a
+            // centered callout has no edge for it to run from.
+            alignmentOffset: number = 0,
+            // The distance in pixels the arrow is kept away from the corners of the callout, so that it
+            // never lands on a rounded one; zero takes the default the placement keeps on its own.
+            arrowPadding: number = 0,
         ) {
             component ??= document.getElementById(componentId);
             if (component == null) return false;
@@ -114,12 +121,19 @@ namespace BitBlazorUI {
             Callouts._params.set(calloutId, {
                 componentId, calloutId, overlayId, responsiveMode, dropDirection, isRtl,
                 scrollContainerId, scrollOffset, headerId, footerId,
-                setCalloutWidth, fixedCalloutWidth, maxWindowWidth, maxHeight, arrowId, gap, preferredSide, alignment, noFlip, collisionPadding
+                setCalloutWidth, fixedCalloutWidth, maxWindowWidth, maxHeight, arrowId, gap, preferredSide, alignment, noFlip, collisionPadding,
+                alignmentOffset, arrowPadding
             });
+
+            // The callout follows a component that changes size while it is open - a button whose label
+            // arrives with the data, a field that grows as it is typed in - which neither a scroll nor a
+            // resize of the page reports.
+            Callouts.observeComponent(component);
 
             const result = Callouts.position(component, callout, responsiveMode, dropDirection, isRtl,
                 scrollContainerId, scrollOffset, headerId, footerId,
-                setCalloutWidth, fixedCalloutWidth, maxWindowWidth, true, maxHeight, arrowId, gap, preferredSide, alignment, noFlip, collisionPadding);
+                setCalloutWidth, fixedCalloutWidth, maxWindowWidth, true, maxHeight, arrowId, gap, preferredSide, alignment, noFlip, collisionPadding,
+                alignmentOffset, arrowPadding);
 
             return result;
         }
@@ -164,6 +178,12 @@ namespace BitBlazorUI {
             // The distance in pixels the callout keeps from the edges of the screen, taken off the room
             // every side is measured against; zero lets the callout go right up to them.
             collisionPadding: number = 0,
+            // The distance in pixels the callout is slid along the axis it is aligned on, inwards from the
+            // edge of the component the alignment lined it up with; zero keeps it on that edge.
+            alignmentOffset: number = 0,
+            // The distance in pixels the arrow is kept away from the corners of the callout; zero takes
+            // the default below.
+            arrowPadding: number = 0,
         ) {
             const windowWidth = window.innerWidth;
 
@@ -298,10 +318,15 @@ namespace BitBlazorUI {
             // How the callout lines up with the component across the side it is placed on. 'start' - the
             // default every component that does not offer the choice gets - keeps the edge the component
             // starts at, which is its right edge in a right-to-left layout.
+            // The offset runs inwards from whichever edge the alignment picked, so the same value moves a
+            // start-aligned callout and an end-aligned one towards each other, and a centered callout has
+            // no edge for it to run from.
             const alignAcross = (componentStart: number, componentSize: number, calloutSize: number, mirrored: boolean) => {
                 if (alignment === 'center') return componentStart + (componentSize - calloutSize) / 2;
                 const atEnd = alignment === 'end' ? !mirrored : mirrored;
-                return atEnd ? (componentStart + componentSize - calloutSize) : componentStart;
+                return atEnd
+                    ? (componentStart + componentSize - calloutSize - alignmentOffset)
+                    : (componentStart + alignmentOffset);
             };
 
             // Horizontal placement is computed in getBoundingClientRect space then converted to a
@@ -330,7 +355,8 @@ namespace BitBlazorUI {
                 ? Callouts.placeOnPreferredSide(preferredSide, isRtl, callout, scrollContainer, cap,
                     fixedRect, offset, componentX, componentY, componentWidth, componentHeight,
                     calloutWidth, calloutHeight, distanceToTop, distanceToBottom, distanceToLeft, distanceToRight,
-                    visibleTop, visibleBottom, scrollOffset, headerHeight, footerHeight, alignAcross, noFlip)
+                    visibleTop, visibleLeft, visibleBottom, visibleRight, scrollOffset, headerHeight, footerHeight,
+                    alignAcross, noFlip)
                 : null;
 
             if (placedOnPreferredSide) {
@@ -407,7 +433,7 @@ namespace BitBlazorUI {
 
                 Callouts.positionArrow(arrow, callout, placement, fixedRect,
                     componentX, componentY, componentWidth, componentHeight,
-                    visibleTop, visibleLeft, visibleBottom, visibleRight);
+                    visibleTop, visibleLeft, visibleBottom, visibleRight, arrowPadding);
             }
 
             if (isEntering) {
@@ -441,7 +467,9 @@ namespace BitBlazorUI {
             distanceToLeft: number,
             distanceToRight: number,
             visibleTop: number,
+            visibleLeft: number,
             visibleBottom: number,
+            visibleRight: number,
             scrollOffset: number,
             headerHeight: number,
             footerHeight: number,
@@ -478,27 +506,56 @@ namespace BitBlazorUI {
                             : null;
             if (placement == null) return null;
 
+            // A side that was held onto without the room for it. The callout is still kept on the screen
+            // there, so it ends up overlapping the component rather than running off the edge of the page,
+            // and it is measured against the whole visible band rather than against the sliver the side it
+            // was forced onto leaves - which would otherwise collapse it to nothing.
+            const forced = !fits(placement);
+            const availableAcross = Math.max(0, visibleBottom - visibleTop - 4);
+
             if (placement === 'below') {
-                callout.style.top = (componentY + componentHeight + offset - fixedRect.top) + 'px';
-                scrollContainer.style.maxHeight = cap(Math.max(0, distanceToBottom - scrollOffset - headerHeight - footerHeight - 10)) + 'px';
+                if (forced) {
+                    const height = Math.min(calloutHeight, availableAcross);
+                    let top = componentY + componentHeight + offset;
+                    if (top + height > visibleBottom - 2) top = visibleBottom - 2 - height;
+                    if (top < visibleTop + 2) top = visibleTop + 2;
+                    callout.style.top = (top - fixedRect.top) + 'px';
+                } else {
+                    callout.style.top = (componentY + componentHeight + offset - fixedRect.top) + 'px';
+                }
+                const room = forced ? availableAcross : distanceToBottom;
+                scrollContainer.style.maxHeight = cap(Math.max(0, room - scrollOffset - headerHeight - footerHeight - 10)) + 'px';
             } else if (placement === 'above') {
-                callout.style.bottom = (fixedRect.bottom - (componentY - offset)) + 'px';
-                scrollContainer.style.maxHeight = cap(Math.max(0, distanceToTop - scrollOffset - headerHeight - footerHeight - 10)) + 'px';
+                // A callout above the component is anchored by its bottom edge, so that the browser grows
+                // it upwards on its own as its content changes; the clamping works on that edge too.
+                if (forced) {
+                    const height = Math.min(calloutHeight, availableAcross);
+                    let bottomEdge = componentY - offset;
+                    if (bottomEdge - height < visibleTop + 2) bottomEdge = visibleTop + 2 + height;
+                    if (bottomEdge > visibleBottom - 2) bottomEdge = visibleBottom - 2;
+                    callout.style.bottom = (fixedRect.bottom - bottomEdge) + 'px';
+                } else {
+                    callout.style.bottom = (fixedRect.bottom - (componentY - offset)) + 'px';
+                }
+                const room = forced ? availableAcross : distanceToTop;
+                scrollContainer.style.maxHeight = cap(Math.max(0, room - scrollOffset - headerHeight - footerHeight - 10)) + 'px';
             } else {
                 // The horizontal placement above aligned the callout with the component; a callout beside
                 // it is placed against the edge it sits next to instead, and aligned with the top of the
                 // component the way a submenu is, sliding along the screen only when it would hang off it.
-                callout.style.left = ((placement === 'left'
-                                        ? (componentX - calloutWidth - offset)
-                                        : (componentX + componentWidth + offset)) - fixedRect.left) + 'px';
+                let sideLeft = placement === 'left'
+                                ? (componentX - calloutWidth - offset)
+                                : (componentX + componentWidth + offset);
+                if (sideLeft + calloutWidth > visibleRight) sideLeft = visibleRight - calloutWidth - 3;
+                if (sideLeft < visibleLeft) sideLeft = visibleLeft;
+                callout.style.left = (sideLeft - fixedRect.left) + 'px';
 
-                const available = Math.max(0, visibleBottom - visibleTop - 4);
-                const height = Math.min(calloutHeight, available);
+                const height = Math.min(calloutHeight, availableAcross);
                 let top = alignAcross(componentY, componentHeight, height, false);
                 if (top + height > visibleBottom - 2) top = visibleBottom - 2 - height;
                 if (top < visibleTop + 2) top = visibleTop + 2;
                 callout.style.top = (top - fixedRect.top) + 'px';
-                scrollContainer.style.maxHeight = cap(Math.max(0, available - scrollOffset - headerHeight - footerHeight - 10)) + 'px';
+                scrollContainer.style.maxHeight = cap(Math.max(0, availableAcross - scrollOffset - headerHeight - footerHeight - 10)) + 'px';
             }
 
             return placement;
@@ -524,6 +581,8 @@ namespace BitBlazorUI {
             visibleLeft: number,
             visibleBottom: number,
             visibleRight: number,
+            // The distance the arrow is kept away from the corners of the callout; zero takes the default.
+            arrowPadding: number = 0,
         ) {
             arrow.style.display = 'block';
             arrow.setAttribute('data-bit-cal-pos', placement);
@@ -533,7 +592,7 @@ namespace BitBlazorUI {
             const rect = callout.getBoundingClientRect();
             // Half of the arrow always has to clear the rounded corner it is kept away from, so an arrow
             // sized past the default inset widens it to its own size rather than being cut by the radius.
-            const inset = Math.max(Callouts.ARROW_CORNER_INSET, arrow.offsetWidth);
+            const inset = Math.max(arrowPadding > 0 ? arrowPadding : Callouts.ARROW_CORNER_INSET, arrow.offsetWidth);
 
             const clamp = (value: number, min: number, max: number) => max < min ? (min + max) / 2 : Math.min(Math.max(value, min), max);
 
@@ -602,7 +661,8 @@ namespace BitBlazorUI {
                 Callouts.position(component, callout, params.responsiveMode, params.dropDirection, params.isRtl,
                     params.scrollContainerId, params.scrollOffset, params.headerId, params.footerId,
                     params.setCalloutWidth, params.fixedCalloutWidth, params.maxWindowWidth, false, params.maxHeight,
-                    params.arrowId, params.gap, params.preferredSide, params.alignment, params.noFlip, params.collisionPadding);
+                    params.arrowId, params.gap, params.preferredSide, params.alignment, params.noFlip, params.collisionPadding,
+                    params.alignmentOffset, params.arrowPadding);
             }
         }
 
@@ -623,6 +683,69 @@ namespace BitBlazorUI {
         public static reset() {
             Callouts._stack = [];
             Callouts._params.clear();
+            Callouts._resizeObserver?.disconnect();
+        }
+
+        // A callout is placed against a component that can change size while it stays open - a button whose
+        // label arrives with the data, a field that grows as it is typed in, a toolbar that wraps onto a
+        // second row - and neither a scroll nor a resize of the page reports that. The observer watches the
+        // components of the open callouts for it; it is shared by all of them and its work is coalesced
+        // into one layout pass per frame, since a resize arrives as a burst.
+        private static _resizeObserver: ResizeObserver | null = null;
+        private static _resizeFrame: number | null = null;
+        private static _observedSizes: WeakMap<Element, { width: number, height: number }> = new WeakMap();
+
+        private static observeComponent(component: HTMLElement) {
+            if (typeof ResizeObserver === 'undefined') return;
+
+            Callouts._resizeObserver ??= new ResizeObserver(entries => {
+                // A ResizeObserver reports the size of an element as soon as it is observed, and that first
+                // report is the size the callout has just been placed against. Following it would lay the
+                // callout out again a frame into its entry animation, where the arrow is measured against a
+                // box the animation has moved - and left where that put it. Only a size that has actually
+                // changed since the callout was placed is one worth following.
+                let changed = false;
+                for (const entry of entries) {
+                    const target = entry.target as HTMLElement;
+                    const size = { width: target.offsetWidth, height: target.offsetHeight };
+                    const last = Callouts._observedSizes.get(target);
+
+                    Callouts._observedSizes.set(target, size);
+
+                    if (last == null || last.width !== size.width || last.height !== size.height) {
+                        changed = true;
+                    }
+                }
+                if (!changed) return;
+
+                if (Callouts._resizeFrame != null) return;
+
+                Callouts._resizeFrame = requestAnimationFrame(() => {
+                    Callouts._resizeFrame = null;
+                    Callouts.reposition();
+                });
+            });
+
+            // Recorded before the observation, so the report it opens with is the size already accounted
+            // for. Observing the same element again is a no-op, so a callout that is laid out repeatedly
+            // while it stays open never stacks up registrations of its own component.
+            Callouts._observedSizes.set(component, { width: component.offsetWidth, height: component.offsetHeight });
+
+            Callouts._resizeObserver.observe(component);
+        }
+
+        private static unobserveComponent(componentId: string | undefined) {
+            if (!componentId || Callouts._resizeObserver == null) return;
+
+            const component = document.getElementById(componentId);
+            if (component == null) return;
+
+            // Only when no other open callout is still placed against it: two callouts can share an
+            // anchor, and the one that closes first must not take the tracking away from the other.
+            const stillOpen = Callouts._stack.some(entry => Callouts._params.get(entry.calloutId)?.componentId === componentId);
+            if (stillOpen) return;
+
+            Callouts._resizeObserver.unobserve(component);
         }
 
         // True when the node lives inside the anchor component of one of the open callouts (e.g. the
@@ -845,7 +968,13 @@ namespace BitBlazorUI {
         }
 
         private static detach(entry: BitCallout, notify: boolean, hide: boolean) {
+            const componentId = Callouts._params.get(entry.calloutId)?.componentId;
+
             Callouts._params.delete(entry.calloutId);
+
+            // The entry has already been taken off the stack by the time it is detached, so what is left
+            // there is what is still open and still has to be tracked.
+            Callouts.unobserveComponent(componentId);
 
             const callout = document.getElementById(entry.calloutId);
             if (callout && hide) {
@@ -900,6 +1029,8 @@ namespace BitBlazorUI {
         alignment: string;
         noFlip: boolean;
         collisionPadding: number;
+        alignmentOffset: number;
+        arrowPadding: number;
     }
 
     // Which side of the component the callout was placed on, as a physical side, so that the stylesheets

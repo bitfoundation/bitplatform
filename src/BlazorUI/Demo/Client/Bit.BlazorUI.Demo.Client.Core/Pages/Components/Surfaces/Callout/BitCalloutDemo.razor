@@ -6,7 +6,7 @@
 
 <DemoPage Name="Callout"
           SecondaryNames="@(["Popover", "Popup"])"
-          Description="Callout is an anchored surface that hosts any content - a tip, a form, a filter panel, a menu - next to an anchor of its own, next to any element on the page, or at a point a right-click happened, without blocking what is behind it. It flips to the side with the most room, takes a side and an alignment of its own where they fit, can be sized in every direction, and points at its anchor with an optional arrow. It opens on a click or on hover and closes on an outside click or the Escape key, and it can keep the focus inside itself while it is open, close as soon as its content is clicked, dim and hold the page behind it, nest inside another callout, and turn into a swipeable panel on small screens."
+          Description="Callout is an anchored surface that hosts any content - a tip, a form, a filter panel, a menu - next to an anchor of its own, next to any element on the page, or at a point a right-click happened, without blocking what is behind it. It places itself where there is room, on the side and the alignment asked for wherever they fit, points at its anchor with an optional arrow, and keeps following it for as long as it is open. It opens on a click or on hover and closes on an outside click or the Escape key, and it can take the keyboard over, dim the page behind it, nest inside another callout, and become a swipeable panel on the small screens."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
@@ -130,7 +130,7 @@
                 </Content>
             </BitCallout>
 
-            <BitCallout DefaultIsOpen="false">
+            <BitCallout DefaultIsOpen="true">
                 <Anchor>
                     <BitButton Variant="BitVariant.Text">DefaultIsOpen</BitButton>
                 </Anchor>
@@ -181,7 +181,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Positioning" RazorCode="@example6RazorCode" Id="example6">
+    <DemoExample Title="Positioning" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>
             <b>Direction</b> declares which sides the callout may be placed on, and it picks the one with the
             most room among them: <b>TopAndBottom</b> (the default) keeps it above or below the anchor, while
@@ -193,10 +193,24 @@
             layout that has to stay put needs. <b>Alignment</b> runs across that choice: it lines the callout up with the <b>Start</b> edge of
             the anchor (the default), with its <b>Center</b>, or with its <b>End</b> edge - horizontally for
             a callout above or below the anchor, vertically for one beside it - and the callout is still slid
-            back onto the screen afterwards if the alignment would hang it off an edge. <b>Gap</b> is the
+            back onto the screen afterwards if the alignment would hang it off an edge.
+            <b>AlignmentOffset</b> slides the callout along that same axis, inwards from whichever edge the
+            alignment picked, so the same value moves a Start-aligned callout and an End-aligned one towards
+            each other and a centered one not at all. <b>Gap</b> is the
             distance in pixels the callout keeps from the anchor, on whichever side it ends up on, and
             <b>CollisionPadding</b> is the distance it keeps from the edges of the screen - the room to leave
             around it, and around a fixed header or toolbar it should not end up under.
+        </div>
+        <br />
+        <div>
+            The placement is kept up to date for as long as the callout is open: it follows the page
+            scrolling and resizing under it, the visible area changing as a mobile keyboard comes and goes,
+            and an anchor that changes size, and it hides itself while its anchor is scrolled out of sight
+            rather than pointing at nothing. <b>Reposition</b> covers what it cannot see - a content of its
+            own that has grown or shrunk - and lays it out again without replaying its entry animation.
+            <b>MaxWindowWidth</b> is the window width below which the callout may hang off the end of the
+            screen instead of being slid back onto it, for the layouts that scroll sideways on narrow screens
+            and would otherwise have the callout pulled away from the anchor it belongs to.
         </div>
         <br />
         <div class="example-box">
@@ -206,7 +220,7 @@
                 </Anchor>
                 <Content>
                     <div class="callout-content">
-                        @for (int i = 1; i < 13; i++)
+                        @for (int i = 1; i < 23; i++)
                         {
                             <div>Callout content @i</div>
                         }
@@ -220,7 +234,7 @@
                 </Anchor>
                 <Content>
                     <div class="callout-content">
-                        @for (int i = 1; i < 13; i++)
+                        @for (int i = 1; i < 23; i++)
                         {
                             <div>Callout content @i</div>
                         }
@@ -296,6 +310,28 @@
                 </Content>
             </BitCallout>
 
+            <BitCallout AlignmentOffset="32" ShowArrow Gap="8">
+                <Anchor>
+                    <BitButton Variant="BitVariant.Text">AlignmentOffset of 32px</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">
+                        Slid 32px in from the start edge of the anchor.
+                    </div>
+                </Content>
+            </BitCallout>
+
+            <BitCallout Alignment="BitCalloutAlignment.End" AlignmentOffset="32" ShowArrow Gap="8">
+                <Anchor>
+                    <BitButton Variant="BitVariant.Text">End alignment, offset of 32px</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">
+                        The same value, running in from the end edge instead.
+                    </div>
+                </Content>
+            </BitCallout>
+
             <BitCallout Gap="16">
                 <Anchor>
                     <BitButton Variant="BitVariant.Outline">Gap of 16px</BitButton>
@@ -303,6 +339,23 @@
                 <Content>
                     <div class="callout-content">
                         This callout keeps 16px away from its anchor.
+                    </div>
+                </Content>
+            </BitCallout>
+
+            <BitCallout @ref="callout4" Side="BitCalloutSide.Top" ShowArrow Gap="8" MinWidth="14rem">
+                <Anchor>
+                    <BitButton Variant="BitVariant.Outline">Reposition</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">
+                        <BitStack Gap="0.5rem">
+                            @for (int i = 1; i <= repositionRows; i++)
+                            {
+                                <div>Callout content @i</div>
+                            }
+                            <BitButton OnClick="AddRepositionRow">Add a row</BitButton>
+                        </BitStack>
                     </div>
                 </Content>
             </BitCallout>
@@ -330,7 +383,10 @@
             is placed - above, below or beside the anchor - and is painted in the same color as the callout,
             border included. <b>ArrowSize</b> sets the side of the square it is cut out of, in pixels (12 by
             default), and a bigger beak is kept further from the corners of the callout so the rounding never
-            cuts it. Pair it with a <b>Gap</b> to leave the beak room to stand out of the anchor.
+            cuts it. <b>ArrowPadding</b> is that distance from the corners (16px by default, never less than
+            the arrow itself): a wider one pulls the beak back towards the middle of a callout aligned with
+            the edge of a wide anchor, and a narrower one lets it sit closer to the corner and nearer to what
+            it points at. Pair it with a <b>Gap</b> to leave the beak room to stand out of the anchor.
         </div>
         <br />
         <div class="example-box">
@@ -366,15 +422,26 @@
                     </div>
                 </Content>
             </BitCallout>
+
+            <BitCallout ShowArrow ArrowPadding="64" Gap="8" MinWidth="16rem">
+                <Anchor>
+                    <BitButton Variant="BitVariant.Text">ArrowPadding of 64px</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">
+                        The beak is held 64px away from the corners of the callout.
+                    </div>
+                </Content>
+            </BitCallout>
         </div>
     </DemoExample>
 
     <DemoExample Title="Sizing" RazorCode="@example8RazorCode" Id="example8">
         <div>
             A callout is only as wide as its content needs by default. <b>Width</b>, <b>MinWidth</b> and
-            <b>MaxWidth</b> take CSS values and size it directly - a maximum width lets a long content wrap
-            instead of stretching the callout - while <b>MaxHeight</b> caps it and scrolls whatever is left
-            over. <b>SetCalloutWidth</b> widens the callout to at least the width of the anchor and
+            <b>MaxWidth</b> take CSS values and size it directly - a width or a maximum width is one a long
+            content wraps inside rather than stretching the callout past it - while <b>MaxHeight</b> caps it
+            and scrolls whatever is left over. <b>SetCalloutWidth</b> widens the callout to at least the width of the anchor and
             <b>FixedCalloutWidth</b> holds it to at most that width, so a wider content wraps instead of
             stretching it; both are applied after the callout is measured, so they take precedence over Width.
         </div>
@@ -442,7 +509,9 @@
             that takes the scrolling, so a title and a row of actions stay put while a long content scrolls
             between them. The callout wires the three parts up itself: the body is what is capped to the room
             the viewport leaves, less the heights of the header and the footer, so the callout is never
-            taller than the screen it is shown on and nothing is cut off.
+            taller than the screen it is shown on and nothing is cut off. The header is also what names the
+            callout to the screen readers unless AriaLabel names it directly, which is the accessible name a
+            callout that reports itself as a dialog is required to have.
         </div>
         <br />
         <div>
@@ -663,7 +732,11 @@
             AutoFocus. <b>Role</b> overrides the ARIA role for the cases those two do not cover, and
             <b>AriaLabel</b> names the callout where its content does not - which makes it a group unless a
             role of its own says otherwise, since a name on a plain container is one no screen reader
-            announces.
+            announces. A callout that renders a <b>Header</b> is named by it without either of the two, so a
+            dialog always has the accessible name it is required to have. The rest is wired up on its own:
+            the trigger inside the anchor reports the callout with aria-controls and aria-expanded, and it
+            names what it opens with aria-haspopup only where the callout really is one of the kinds that
+            property can name - a dialog, a menu, a listbox, a tree or a grid.
         </div>
         <br />
         <div class="example-box">

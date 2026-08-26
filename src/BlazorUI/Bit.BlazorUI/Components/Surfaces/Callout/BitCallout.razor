@@ -28,7 +28,7 @@
         <div @onclick="HandleOnAnchorClick" @onclick:stopPropagation
              id="@_anchorId"
              aria-controls="@_contentId"
-             aria-haspopup="@(TrapFocus ? "dialog" : "true")"
+             aria-haspopup="@GetAriaHasPopup()"
              aria-expanded="@(IsOpen ? "true" : "false")"
              style="@Styles?.AnchorContainer"
              class="bit-clo-acn @Classes?.AnchorContainer">
@@ -75,6 +75,7 @@
      tabindex="-1"
      role="@GetRole()"
      aria-label="@AriaLabel"
+     aria-labelledby="@GetAriaLabelledBy()"
      aria-modal="@(TrapFocus ? "true" : null)"
      style="@GetCalloutStyles()"
      class="@GetCalloutCssClasses()"

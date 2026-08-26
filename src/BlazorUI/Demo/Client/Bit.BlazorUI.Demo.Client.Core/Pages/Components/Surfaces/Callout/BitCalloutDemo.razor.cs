@@ -15,6 +15,13 @@ public partial class BitCalloutDemo
         },
         new()
         {
+            Name = "AlignmentOffset",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The distance in pixels the callout is slid along the axis it is aligned on, inwards from the edge of the anchor the Alignment lined it up with. A centered callout has no edge for it to run from."
+        },
+        new()
+        {
             Name = "Anchor",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -33,6 +40,13 @@ public partial class BitCalloutDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The id of the external anchor element."
+        },
+        new()
+        {
+            Name = "ArrowPadding",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The distance in pixels the arrow drawn by ShowArrow is kept away from the corners of the callout, so that the rounding never cuts it. It defaults to 16, and never drops below the size of the arrow itself."
         },
         new()
         {
@@ -576,6 +590,12 @@ public partial class BitCalloutDemo
             Name = "Toggle",
             Type = "Task",
             Description = "Toggles the callout to open/close it.",
+        },
+        new()
+        {
+            Name = "Reposition",
+            Type = "Task",
+            Description = "Lays the open callout out again against what it is placed on, without reopening it or replaying its entry animation. It is for what the callout cannot see on its own: a content that has grown or shrunk, or an anchor moved by something other than a resize of it.",
         }
     ];
 
@@ -585,6 +605,7 @@ public partial class BitCalloutDemo
     private BitCallout callout1 = default!;
     private BitCallout callout2 = default!;
     private BitCallout callout3 = default!;
+    private BitCallout callout4 = default!;
     private BitCallout contextCallout = default!;
 
     private bool isOpen;
@@ -595,6 +616,29 @@ public partial class BitCalloutDemo
     private int dismissCount;
     private string autoCloseAction = "none";
     private string contextAction = "none";
+    private int repositionRows = 2;
+    private bool repositionAfterRender;
+
+    private void AddRepositionRow()
+    {
+        repositionRows++;
+
+        // The callout is laid out against what is actually in it, so the reposition waits for the render
+        // that puts the new row there rather than measuring the content the callout still holds.
+        repositionAfterRender = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (repositionAfterRender)
+        {
+            repositionAfterRender = false;
+
+            await callout4.Reposition();
+        }
+    }
 
 
 
@@ -689,7 +733,7 @@ private string contextAction = ""none"";";
     </Content>
 </BitCallout>
 
-<BitCallout DefaultIsOpen=""false"">
+<BitCallout DefaultIsOpen=""true"">
     <Anchor>
         <BitButton Variant=""BitVariant.Text"">DefaultIsOpen</BitButton>
     </Anchor>
@@ -732,7 +776,7 @@ private bool isOpen;";
     </Anchor>
     <Content>
         <div class=""callout-content"">
-            @for (int i = 1; i < 13; i++)
+            @for (int i = 1; i < 23; i++)
             {
                 <div>Callout content @i</div>
             }
@@ -746,7 +790,7 @@ private bool isOpen;";
     </Anchor>
     <Content>
         <div class=""callout-content"">
-            @for (int i = 1; i < 13; i++)
+            @for (int i = 1; i < 23; i++)
             {
                 <div>Callout content @i</div>
             }
@@ -822,6 +866,28 @@ private bool isOpen;";
     </Content>
 </BitCallout>
 
+<BitCallout AlignmentOffset=""32"" ShowArrow Gap=""8"">
+    <Anchor>
+        <BitButton Variant=""BitVariant.Text"">AlignmentOffset of 32px</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""callout-content"">
+            Slid 32px in from the start edge of the anchor.
+        </div>
+    </Content>
+</BitCallout>
+
+<BitCallout Alignment=""BitCalloutAlignment.End"" AlignmentOffset=""32"" ShowArrow Gap=""8"">
+    <Anchor>
+        <BitButton Variant=""BitVariant.Text"">End alignment, offset of 32px</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""callout-content"">
+            The same value, running in from the end edge instead.
+        </div>
+    </Content>
+</BitCallout>
+
 <BitCallout Gap=""16"">
     <Anchor>
         <BitButton Variant=""BitVariant.Outline"">Gap of 16px</BitButton>
@@ -829,6 +895,23 @@ private bool isOpen;";
     <Content>
         <div class=""callout-content"">
             This callout keeps 16px away from its anchor.
+        </div>
+    </Content>
+</BitCallout>
+
+<BitCallout @ref=""callout4"" Side=""BitCalloutSide.Top"" ShowArrow Gap=""8"" MinWidth=""14rem"">
+    <Anchor>
+        <BitButton Variant=""BitVariant.Outline"">Reposition</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""callout-content"">
+            <BitStack Gap=""0.5rem"">
+                @for (int i = 1; i <= repositionRows; i++)
+                {
+                    <div>Callout content @i</div>
+                }
+                <BitButton OnClick=""AddRepositionRow"">Add a row</BitButton>
+            </BitStack>
         </div>
     </Content>
 </BitCallout>
@@ -846,6 +929,33 @@ private bool isOpen;";
         </div>
     </Content>
 </BitCallout>";
+
+    private readonly string example6CsharpCode = @"
+private BitCallout callout4 = default!;
+
+private int repositionRows = 2;
+private bool repositionAfterRender;
+
+private void AddRepositionRow()
+{
+    repositionRows++;
+
+    // The callout is laid out against what is actually in it, so the reposition waits for the render
+    // that puts the new row there rather than measuring the content the callout still holds.
+    repositionAfterRender = true;
+}
+
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    await base.OnAfterRenderAsync(firstRender);
+
+    if (repositionAfterRender)
+    {
+        repositionAfterRender = false;
+
+        await callout4.Reposition();
+    }
+}";
 
     private readonly string example7RazorCode = @"
 <BitCallout ShowArrow Gap=""8"">
@@ -877,6 +987,17 @@ private bool isOpen;";
     <Content>
         <div class=""callout-content"">
             A beak twice the size of the default one.
+        </div>
+    </Content>
+</BitCallout>
+
+<BitCallout ShowArrow ArrowPadding=""64"" Gap=""8"" MinWidth=""16rem"">
+    <Anchor>
+        <BitButton Variant=""BitVariant.Text"">ArrowPadding of 64px</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""callout-content"">
+            The beak is held 64px away from the corners of the callout.
         </div>
     </Content>
 </BitCallout>";

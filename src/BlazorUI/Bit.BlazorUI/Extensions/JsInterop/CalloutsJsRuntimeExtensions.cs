@@ -47,7 +47,14 @@ internal static class CalloutsJsRuntimeExtensions
         bool noFlip = false,
         // The distance in pixels the callout keeps from the edges of the screen, taken off the room every
         // side is measured against; zero lets the callout go right up to them.
-        int collisionPadding = 0) where T : class
+        int collisionPadding = 0,
+        // The distance in pixels the callout is slid along the axis it is aligned on, inwards from the edge
+        // of the component the alignment lined it up with; zero keeps it on that edge, and a centered
+        // callout has no edge for it to run from.
+        int alignmentOffset = 0,
+        // The distance in pixels the arrow is kept away from the corners of the callout, so that it never
+        // lands on a rounded one; zero takes the default the placement keeps on its own.
+        int arrowPadding = 0) where T : class
     {
         return jsRuntime.Invoke<bool>(
             "BitBlazorUI.Callouts.toggle",
@@ -75,7 +82,9 @@ internal static class CalloutsJsRuntimeExtensions
             preferredSide,
             alignment,
             noFlip,
-            collisionPadding);
+            collisionPadding,
+            alignmentOffset,
+            arrowPadding);
     }
 
     // Re-applies the space the scrollable content of the open callout cannot use, for the parts above
@@ -83,6 +92,15 @@ internal static class CalloutsJsRuntimeExtensions
     internal static ValueTask BitCalloutUpdateScrollOffset(this IJSRuntime jsRuntime, string calloutId, int scrollOffset)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Callouts.updateScrollOffset", calloutId, scrollOffset);
+    }
+
+    // Lays every open callout out again against what it is placed on, with the inputs it was opened with.
+    // It is what a callout that is still open and has only moved needs - a context menu brought along to a
+    // second right-click, a content that has changed size - since going through the toggle would replay the
+    // entry animation of a callout that never went anywhere.
+    internal static ValueTask BitCalloutReposition(this IJSRuntime jsRuntime)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Callouts.reposition");
     }
 
     internal static ValueTask BitCalloutClearCallout(this IJSRuntime jsRuntime, string calloutId)
