@@ -6,7 +6,7 @@
 
 <DemoPage Name="Accordion"
           SecondaryNames="@(["Expander"])"
-          Description="The Accordion shows and hides a section of related content behind a header the reader can open and close. It carries a title, an optional description and icons, animates the panel open to whatever height its content needs, and can be driven by binding, by events or by its own Expand, Collapse and Toggle methods. The header is a button inside a heading, wired to the panel the way the WAI-ARIA accordion pattern asks for."
+          Description="The Accordion shows and hides a section of related content behind a header the reader can open and close. It carries a title, an optional description and icons, animates the panel open to whatever height its content needs, and can be driven by binding, by events or by its own Expand, Collapse and Toggle methods - which a callback of its own can refuse before the panel moves. The header is a button inside a heading, wired to the panel the way the WAI-ARIA accordion pattern asks for."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubEnums="componentSubEnums"
@@ -198,6 +198,8 @@
             <code>OnClick</code> reports every click on the header, whether or not it changed anything.
             <code>OnChange</code> reports the new state, and <code>OnExpand</code> and <code>OnCollapse</code> report
             each half of it on its own, so a panel that loads its data when it opens does not have to test the flag.
+            All three report a change that has already happened; <BitLink Href="#example10">OnToggling</BitLink> is
+            the one that runs before it and can still refuse it.
         </div>
         <br />
         <BitAccordion Title="Accordion"
@@ -214,7 +216,31 @@
         <div>Expanded: <b>@expandCount</b> times, collapsed: <b>@collapseCount</b> times</div>
     </DemoExample>
 
-    <DemoExample Title="Programmatic control" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoExample Title="Cancelling a toggle" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>
+            <code>OnToggling</code> runs before the panel moves and can refuse the change: set <code>Cancel</code>
+            on the arguments it hands over and the accordion stays where it is, with nothing written back to the
+            binding and neither <code>OnChange</code> nor <code>OnExpand</code>/<code>OnCollapse</code> raised.
+            <code>IsExpanding</code> tells an expansion from a collapse and <code>Reason</code> tells a click on
+            the header from an <code>Expand</code>, <code>Collapse</code> or <code>Toggle</code> call. The
+            callback is awaited, so it can load the panel or ask for a confirmation first - nothing else toggles
+            the accordion while it is running.
+        </div>
+        <br />
+        <BitToggle @bind-Value="lockAccordion" OnText="Locked open" OffText="Unlocked" />
+        <br />
+        <BitAccordion Title="Unsaved changes"
+                      Description="@(lockAccordion ? "Unlock to close this panel" : "Free to close")"
+                      DefaultIsExpanded
+                      OnToggling="HandleOnToggling">
+            The collapse of this panel is refused while it is locked, the way a panel holding a form that has not
+            been filled in yet would refuse to close on the reader.
+        </BitAccordion>
+        <br />
+        <div>Refused: <b>@refusedCount</b> times</div>
+    </DemoExample>
+
+    <DemoExample Title="Programmatic control" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>
             A reference to the component exposes <code>Expand</code>, <code>Collapse</code> and <code>Toggle</code>,
             which report the change through the binding and the events exactly as a click on the header would. They
@@ -230,13 +256,15 @@
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="Content rendering" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="Content rendering" RazorCode="@example12RazorCode" Id="example12">
         <div>
-            By default the panel is rendered even while it is closed, which is what keeps its state and lets the browser
-            find text inside it. <code>LazyContent</code> holds the first render back until the panel is opened, and then
-            keeps it - the right choice for a heavy panel that should not cost anything until it is asked for.
-            <code>UnmountOnCollapse</code> goes further and drops the content again on every collapse, which stops
-            whatever it was running but leaves nothing to animate on the way out.
+            By default the panel is rendered even while it is closed, which is what keeps the state its content holds -
+            a half-filled form, a scroll position, a running timer - across a collapse. <code>LazyContent</code> holds
+            the first render back until the panel is opened, and then keeps it: the right choice for a heavy panel that
+            should not cost anything until it is asked for. <code>UnmountOnCollapse</code> goes further and drops the
+            content again on every collapse, which stops whatever it was running but leaves nothing to animate on the
+            way out. A collapsed panel is hidden from the reader either way, so its text is out of reach of the
+            find-in-page of the browser whichever of the three is chosen.
         </div>
         <br />
         <div>Type into both, then close and open them again: the first one finds its text where it was left, the second one has thrown it away.</div>
@@ -250,7 +278,7 @@
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="MaxHeight" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="MaxHeight" RazorCode="@example13RazorCode" Id="example13">
         <div>
             <code>MaxHeight</code> (any CSS length) caps how tall the open panel grows and lets its content scroll
             inside instead, so a long panel cannot push the rest of the page out of reach. The scrolling region takes a
@@ -268,7 +296,7 @@
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="Transition" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Transition" RazorCode="@example14RazorCode" Id="example14">
         <div>
             The panel animates open to whatever height its content needs. <code>TransitionDuration</code> (in
             milliseconds) overrides the duration the theme provides, and <code>0</code> turns the animation off. A
@@ -285,7 +313,7 @@
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="Templates" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Templates" RazorCode="@example15RazorCode" Id="example15">
         <div>
             <code>TitleTemplate</code> takes the place of the title text and leaves the rest of the header - the icon,
             the description and the expander - as it is. <code>HeaderTemplate</code> goes further and replaces the whole
@@ -349,16 +377,19 @@
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="Accessibility" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Accessibility" RazorCode="@example16RazorCode" Id="example16">
         <div>
             The header is a button inside a heading, the panel is a region named by that button, and the two are tied
             together with <code>aria-controls</code> and <code>aria-expanded</code> - the structure the WAI-ARIA
             accordion pattern asks for. <code>HeadingLevel</code> is what puts the header at the right depth of the
             heading outline of the page (3 by default, clamped to 1..6), so the accordions of a section sit one level
-            below the heading that introduces them. A collapsed panel is taken out of the tab order and out of the
+            below the heading that introduces them; an accordion nested in the panel of another one takes the level
+            below its own without being told. A collapsed panel is taken out of the tab order and out of the
             accessibility tree, so nothing inside a closed accordion answers Tab. A header that does not name itself -
             an icon-only <code>HeaderTemplate</code> - takes a <code>HeaderAriaLabel</code>, which names both the toggle
-            and the panel it opens.
+            and the panel it opens. <code>NoContentRegion</code> drops the landmark role from the panel, which the
+            authoring practices ask for on a page carrying more than about six panels that can all be open at once,
+            where the landmarks would get in the way rather than help.
         </div>
         <br />
         <BitAccordion Title="Under an h2" HeadingLevel="3">
@@ -379,9 +410,17 @@
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </Body>
         </BitAccordion>
+        <br />
+        <BitAccordion Title="Nested (aria-level 3)" NoContentRegion DefaultIsExpanded>
+            The accordion below is announced one level under this one, and neither of the two panels is a landmark.
+            <br /><br />
+            <BitAccordion Title="Nested (aria-level 4)" NoContentRegion>
+                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            </BitAccordion>
+        </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="NoBorder" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="NoBorder" RazorCode="@example17RazorCode" Id="example17">
         <div><code>NoBorder</code> drops the border of the accordion and fills it with the secondary background instead, for a flat accordion that leans on the surface it sits on rather than on an outline.</div>
         <br />
         <BitAccordion Title="Accordion" NoBorder>
@@ -390,7 +429,7 @@
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+    <DemoExample Title="Color" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
         <div><code>Background</code> and <code>Border</code> pick the color kind of the surface and of the outline of the accordion, so it can be tuned to the surface it is placed on - <b>Transparent</b> letting whatever is underneath show through.</div>
         <br /><br />
         <div class="example-content">
@@ -424,8 +463,14 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example18RazorCode" Id="example18">
-        <div>Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>ExpanderIcon</b> and <b>Icon</b> parameters.</div>
+    <DemoExample Title="External Icons" RazorCode="@example19RazorCode" Id="example19">
+        <div>
+            <code>Icon</code> and <code>ExpanderIcon</code> take a <code>BitIconInfo</code> rather than the name of a
+            built-in icon, so an accordion can be dressed in the icons of any library that draws them from CSS classes.
+            <code>BitIconInfo.Css</code> takes the classes as they are - a bare string is enough, as the first accordion
+            below shows - while <code>BitIconInfo.Fa</code> and <code>BitIconInfo.Bi</code> spell out the prefixes of
+            FontAwesome and Bootstrap Icons for you.
+        </div>
 
         <br />
         <br />
@@ -485,7 +530,7 @@
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="Size" RazorCode="@example20RazorCode" Id="example20">
         <div>The <code>Size</code> drives the padding of the header and of the panel and the size of the title and of the icons, so an accordion can be tuned to how much room it is given.</div>
         <br />
         <BitAccordion Title="Small" Size="BitSize.Small" IconName="@BitIconName.Settings">
@@ -501,7 +546,7 @@
         </BitAccordion>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example20RazorCode" Id="example20">
+    <DemoExample Title="Style & Class" RazorCode="@example21RazorCode" Id="example21">
         <div><code>Style</code> and <code>Class</code> dress the root element, while <code>Styles</code> and <code>Classes</code> reach each part of the accordion on its own - the header, the title, the expander icon, the panel and everything between them.</div>
         <br /><br />
         <div class="example-content">
@@ -532,7 +577,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example21RazorCode" Id="example21">
+    <DemoExample Title="RTL" RazorCode="@example22RazorCode" Id="example22">
         <div>Set <code>Dir</code> to <code>BitDir.Rtl</code> - or let it cascade from an ancestor - and the whole header turns around: the icon leads from the right, the expander closes on the left, and the padding of the panel follows with it.</div><br />
         <BitAccordion Dir="BitDir.Rtl"
                       Title="تنظیمات"

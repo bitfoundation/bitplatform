@@ -122,7 +122,7 @@ public partial class BitAccordionDemo
             Name = "HeadingLevel",
             Type = "int?",
             DefaultValue = "null",
-            Description = "Gets or sets the heading level (aria-level) reported for the header of the accordion, so that it takes its right place in the heading outline of the page. The default value is 3, and the value is clamped to the 1..6 range."
+            Description = "Gets or sets the heading level (aria-level) reported for the header of the accordion, so that it takes its right place in the heading outline of the page. The default value is 3 - or one level below the accordion this one is nested in - and the value is clamped to the 1..6 range."
         },
         new()
         {
@@ -175,6 +175,13 @@ public partial class BitAccordionDemo
         },
         new()
         {
+            Name = "NoContentRegion",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Removes the region role from the panel of the accordion, leaving it a plain container. The role names the panel as a landmark, which helps a screen reader user find their way back to the content of a panel that holds headings or another accordion; the WAI-ARIA authoring practices ask for it to be dropped where it would flood the page with landmarks instead - more than about six panels that can all be open at the same time."
+        },
+        new()
+        {
             Name = "NoExpanderRotation",
             Type = "bool",
             DefaultValue = "false",
@@ -203,6 +210,14 @@ public partial class BitAccordionDemo
             Name = "OnExpand",
             Type = "EventCallback",
             Description = "Callback that is called when the accordion is expanded."
+        },
+        new()
+        {
+            Name = "OnToggling",
+            Type = "EventCallback<BitAccordionToggleArgs>",
+            Description = "Callback invoked before the accordion expands or collapses, letting the change be cancelled. Since the callback is awaited, it can also run asynchronous work like loading the content of the panel or asking for a confirmation first, and nothing else toggles the accordion while it is running. A change that comes from the IsExpanded parameter itself is not offered here.",
+            LinkType = LinkType.Link,
+            Href = "#accordion-toggle-args",
         },
         new()
         {
@@ -332,6 +347,27 @@ public partial class BitAccordionDemo
         },
         new()
         {
+            Id = "accordion-toggle-reason-enum",
+            Name = "BitAccordionToggleReason",
+            Description = "What made a BitAccordion expand or collapse.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Click",
+                    Description = "The header of the accordion was clicked, or activated by the Enter or the Space key.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Method",
+                    Description = "The Expand, Collapse or Toggle method of the accordion was called.",
+                    Value = "1",
+                }
+            ]
+        },
+        new()
+        {
             Id = "size-enum",
             Name = "BitSize",
             Description = "Defines the sizes available in the bit BlazorUI.",
@@ -361,6 +397,37 @@ public partial class BitAccordionDemo
 
     private readonly List<ComponentSubClass> componentSubClasses =
     [
+        new()
+        {
+            Id = "accordion-toggle-args",
+            Title = "BitAccordionToggleArgs",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "IsExpanding",
+                    Type = "bool",
+                    DefaultValue = "",
+                    Description = "The state the accordion is about to move to: true while it is expanding, false while it is collapsing."
+                },
+                new()
+                {
+                    Name = "Reason",
+                    Type = "BitAccordionToggleReason",
+                    DefaultValue = "",
+                    Description = "What made the accordion expand or collapse: a click on its header, or a call to one of its Expand, Collapse and Toggle methods.",
+                    LinkType = LinkType.Link,
+                    Href = "#accordion-toggle-reason-enum",
+                },
+                new()
+                {
+                    Name = "Cancel",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Set to true to cancel the expansion or the collapse and leave the accordion as it is."
+                }
+            ]
+        },
         new()
         {
             Id = "accordion-class-styles",
@@ -496,6 +563,16 @@ public partial class BitAccordionDemo
     private bool lastChange;
     private int expandCount;
     private int collapseCount;
+
+    private bool lockAccordion;
+    private int refusedCount;
+    private void HandleOnToggling(BitAccordionToggleArgs args)
+    {
+        if (args.IsExpanding || lockAccordion is false) return;
+
+        args.Cancel = true;
+        refusedCount++;
+    }
 
     private BitAccordion accordionRef = default!;
 
@@ -654,6 +731,29 @@ private int expandCount;
 private int collapseCount;";
 
     private readonly string example10RazorCode = @"
+<BitToggle @bind-Value=""lockAccordion"" OnText=""Locked open"" OffText=""Unlocked"" />
+
+<BitAccordion Title=""Unsaved changes""
+              Description=""@(lockAccordion ? ""Unlock to close this panel"" : ""Free to close"")""
+              DefaultIsExpanded
+              OnToggling=""HandleOnToggling"">
+    The collapse of this panel is refused while it is locked, the way a panel holding a form that has not
+    been filled in yet would refuse to close on the reader.
+</BitAccordion>
+
+<div>Refused: <b>@refusedCount</b> times</div>";
+    private readonly string example10CsharpCode = @"
+private bool lockAccordion;
+private int refusedCount;
+private void HandleOnToggling(BitAccordionToggleArgs args)
+{
+    if (args.IsExpanding || lockAccordion is false) return;
+
+    args.Cancel = true;
+    refusedCount++;
+}";
+
+    private readonly string example11RazorCode = @"
 <BitButton OnClick=""() => accordionRef.Expand()"">Expand</BitButton>
 <BitButton OnClick=""() => accordionRef.Collapse()"">Collapse</BitButton>
 <BitButton OnClick=""() => accordionRef.Toggle()"">Toggle</BitButton>
@@ -661,10 +761,10 @@ private int collapseCount;";
 <BitAccordion @ref=""accordionRef"" Title=""Accordion"" Description=""I am an accordion"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private BitAccordion accordionRef = default!;";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitAccordion Title=""LazyContent"" LazyContent>
     <BitTextField Placeholder=""Kept after a collapse..."" />
 </BitAccordion>
@@ -673,7 +773,7 @@ private BitAccordion accordionRef = default!;";
     <BitTextField Placeholder=""Thrown away on a collapse..."" />
 </BitAccordion>";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitAccordion Title=""Accordion"" MaxHeight=""10rem"" DefaultIsExpanded>
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
     These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
@@ -684,7 +784,7 @@ private BitAccordion accordionRef = default!;";
     are boundless. This space is yours to craft, yours to shape, yours to bring to life.
 </BitAccordion>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitAccordion Title=""Slow (1000ms)"" TransitionDuration=""1000"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
@@ -693,7 +793,7 @@ private BitAccordion accordionRef = default!;";
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitAccordion IconName=""@BitIconName.Settings"" Description=""I am an accordion"">
     <TitleTemplate>
         <BitStack Horizontal FitWidth AutoHeight Gap=""0.5rem"" VerticalAlign=""BitAlignment.Center"">
@@ -760,7 +860,7 @@ private BitAccordion accordionRef = default!;";
     </BitCarousel>
 </BitAccordion>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitAccordion Title=""Under an h2"" HeadingLevel=""3"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 
@@ -778,15 +878,23 @@ private BitAccordion accordionRef = default!;";
     <Body>
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
     </Body>
+</BitAccordion>
+
+<BitAccordion Title=""Nested (aria-level 3)"" NoContentRegion DefaultIsExpanded>
+    The accordion below is announced one level under this one, and neither of the two panels is a landmark.
+
+    <BitAccordion Title=""Nested (aria-level 4)"" NoContentRegion>
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+    </BitAccordion>
 </BitAccordion>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitAccordion Title=""Accordion"" NoBorder>
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
     These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
 </BitAccordion>";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitChoiceGroup @bind-Value=""backgroundColorKind"" Horizontal
                 TItem=""BitChoiceGroupOption<BitColorKind>"" TValue=""BitColorKind"">
     <BitChoiceGroupOption Text=""Primary"" Value=""BitColorKind.Primary"" />
@@ -812,11 +920,11 @@ private BitAccordion accordionRef = default!;";
 <BitAccordion Title=""Accordion"" Border=""borderColorKind"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>";
-    private readonly string example17CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 private BitColorKind backgroundColorKind = BitColorKind.Primary;
 private BitColorKind borderColorKind = BitColorKind.Primary;";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitAccordion Title=""Chevron Down"" ExpanderIcon=""@(""fa-solid fa-chevron-down"")"">
@@ -854,7 +962,7 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
     Icon=""@BitIconInfo.Bi(""gear"")""
 </BitAccordion>";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitAccordion Title=""Small"" Size=""BitSize.Small"" IconName=""@BitIconName.Settings"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
@@ -867,7 +975,7 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <style>
     .custom-class {
         border-color: blueviolet;
@@ -905,7 +1013,7 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example22RazorCode = @"
 <BitAccordion Dir=""BitDir.Rtl""
               Title=""تنظیمات""
               IconName=""@BitIconName.Settings""

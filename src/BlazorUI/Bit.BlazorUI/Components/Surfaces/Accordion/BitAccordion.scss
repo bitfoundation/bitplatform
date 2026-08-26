@@ -13,6 +13,12 @@
     border-radius: $shp-radius-surface;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
+    // The colors the header is painted with while the pointer is over it and while it is held down. They are
+    // declared as tokens rather than written into the header rule, because the shade that reads as "a little
+    // darker" depends on the background the accordion carries - see the Background classes below.
+    --bit-acd-hov: #{$clr-bg-pri-hover};
+    --bit-acd-prs: #{$clr-bg-pri-active};
+
     // The duration of the expand/collapse transition. TransitionDuration arrives inline as the -full token
     // and everything below reads this derived one, following the -full pattern of motion.fluent.scss, so the
     // reduced-motion query can still collapse a duration that was set inline. Without one it falls back to
@@ -79,30 +85,48 @@
 }
 
 
+// The background of a borderless accordion is the one thing that still tells it apart from the page it sits
+// on, so it is only handed over where a Background of its own was asked for - :not() rather than source order,
+// since the Background classes below it can be turned off again by a nested accordion's own state.
 .bit-acd-nbd {
     border: none;
-    background-color: $clr-bg-sec;
 
-    > .bit-acd-cnt {
+    &:not(.bit-acd-pbg, .bit-acd-sbg, .bit-acd-tbg, .bit-acd-rbg) {
         background-color: $clr-bg-sec;
+        --bit-acd-hov: #{$clr-bg-sec-hover};
+        --bit-acd-prs: #{$clr-bg-sec-active};
+
+        > .bit-acd-cnt {
+            background-color: $clr-bg-sec;
+        }
     }
 }
 
 
 .bit-acd-pbg {
     background-color: $clr-bg-pri;
+    --bit-acd-hov: #{$clr-bg-pri-hover};
+    --bit-acd-prs: #{$clr-bg-pri-active};
 }
 
 .bit-acd-sbg {
     background-color: $clr-bg-sec;
+    --bit-acd-hov: #{$clr-bg-sec-hover};
+    --bit-acd-prs: #{$clr-bg-sec-active};
 }
 
 .bit-acd-tbg {
     background-color: $clr-bg-ter;
+    --bit-acd-hov: #{$clr-bg-ter-hover};
+    --bit-acd-prs: #{$clr-bg-ter-active};
 }
 
+// A transparent accordion is there to let whatever is underneath it show through, so its header is not painted
+// over on hover either; what is left to report the pointer is the cursor and the focus ring.
 .bit-acd-rbg {
     background-color: transparent;
+    --bit-acd-hov: transparent;
+    --bit-acd-prs: transparent;
 }
 
 
@@ -151,6 +175,7 @@
     font-family: $tg-font-family;
     background-color: transparent;
     padding: var(--bit-acd-pad);
+    transition: background-color $mot-duration-short $mot-easing 0ms;
 
     // Full-bleed inside the accordion's rounded border, so an inset outline is used instead of
     // the focus-ring mixin's outset shadow (which would poke past the component edge); the width
@@ -158,6 +183,21 @@
     &:focus-visible {
         outline: #{$shp-focus-ring-width} solid $clr-pri-focus;
         outline-offset: calc(-1 * #{$shp-focus-ring-width});
+    }
+}
+
+// The whole header answers the pointer, so it says so. The rule is chained down from the root rather than
+// reaching for a descendant, so that the disabled state of an outer accordion does not take the hover away
+// from the headers of the accordions nested in its panel.
+.bit-acd:not(.bit-dis) > .bit-acd-hwr > .bit-acd-hed > .bit-acd-hdr {
+    @media (hover: hover) {
+        &:hover {
+            background-color: var(--bit-acd-hov);
+        }
+    }
+
+    &:active {
+        background-color: var(--bit-acd-prs);
     }
 }
 

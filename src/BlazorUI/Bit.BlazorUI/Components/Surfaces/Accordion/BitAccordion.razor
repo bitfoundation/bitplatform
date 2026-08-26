@@ -16,7 +16,8 @@
              aria-level="@_HeadingLevel"
              style="@Styles?.Heading"
              class="bit-acd-hed @Classes?.Heading">
-            <button @onclick="HandleOnClick"
+            <button @ref="_headerRef"
+                    @onclick="HandleOnClick"
                     id="@_HeaderId"
                     type="button"
                     style="@Styles?.Header"
@@ -92,15 +93,22 @@
        element, since a border box can never be shorter than its own padding. *@
     <div style="@Styles?.ContentContainer" class="bit-acd-cnt @Classes?.ContentContainer">
         <div style="@Styles?.ContentWrapper" class="bit-acd-cwr @Classes?.ContentWrapper">
+            @* aria-labelledby names a landmark, and on an element without the role it names nothing at all,
+               so the two are dropped together rather than leaving one behind. *@
             <div id="@_ContentId"
-                 role="region"
-                 aria-labelledby="@_HeaderId"
+                 role="@(NoContentRegion ? null : "region")"
+                 aria-labelledby="@(NoContentRegion ? null : _HeaderId)"
                  style="@Styles?.Content"
                  class="bit-acd-con @(IsExpanded ? "bit-acd-cex" : "bit-acd-cco") @Classes?.Content"
-                 tabindex="@(_IsContentFocusable ? "0" : null)">
+                 tabindex="@(_IsContentFocusable ? "0" : null)"
+                 @onfocusin="HandleOnContentFocusIn"
+                 @onfocusout="HandleOnContentFocusOut">
                 @if (_ShouldRenderContent)
                 {
-                    @(ChildContent ?? Body)
+                    @* An accordion nested in this panel takes the level below this one, unless it is given one. *@
+                    <CascadingValue TValue="int?" Name="@HeadingLevelCascadeName" Value="_HeadingLevel">
+                        @(ChildContent ?? Body)
+                    </CascadingValue>
                 }
             </div>
         </div>

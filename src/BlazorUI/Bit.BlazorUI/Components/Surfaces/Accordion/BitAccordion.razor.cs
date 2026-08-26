@@ -5,7 +5,23 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitAccordion : BitComponentBase
 {
+    // The name of the cascading value an accordion hands its own heading level down to the accordions nested
+    // in its panel.
+    internal const string HeadingLevelCascadeName = "BitAccordionHeadingLevel";
+
+    private bool _isToggling;
     private bool _hasBeenExpanded;
+    private bool _contentHasFocus;
+    private ElementReference _headerRef;
+
+
+
+    /// <summary>
+    /// The heading level of the accordion this one sits inside of, so that an accordion nested in the panel of
+    /// another one takes its place one level below it without having to be told.
+    /// </summary>
+    [CascadingParameter(Name = HeadingLevelCascadeName)]
+    private int? ParentHeadingLevel { get; set; }
 
 
 
@@ -106,7 +122,8 @@ public partial class BitAccordion : BitComponentBase
     /// Gets or sets the heading level (aria-level) reported for the header of the accordion, so that it
     /// takes its right place in the heading outline of the page.
     /// <br />
-    /// The default value is <strong>3</strong>, and the value is clamped to the 1..6 range.
+    /// The default value is <strong>3</strong> - or one level below the accordion this one is nested in -
+    /// and the value is clamped to the 1..6 range.
     /// </summary>
     [Parameter] public int? HeadingLevel { get; set; }
 
@@ -153,6 +170,17 @@ public partial class BitAccordion : BitComponentBase
     public bool NoBorder { get; set; }
 
     /// <summary>
+    /// Removes the <c>region</c> role from the panel of the accordion, leaving it a plain container.
+    /// </summary>
+    /// <remarks>
+    /// The role names the panel as a landmark, which helps a screen reader user find their way back to the
+    /// content of a panel that holds headings or another accordion. The WAI-ARIA authoring practices ask for it
+    /// to be dropped where it would flood the page with landmarks instead - more than about six panels that can
+    /// all be open at the same time - which is what this is for.
+    /// </remarks>
+    [Parameter] public bool NoContentRegion { get; set; }
+
+    /// <summary>
     /// Keeps the expander icon still instead of turning it over when the accordion is expanded.
     /// </summary>
     [Parameter] public bool NoExpanderRotation { get; set; }
@@ -176,6 +204,22 @@ public partial class BitAccordion : BitComponentBase
     /// Callback that is called when the accordion is expanded.
     /// </summary>
     [Parameter] public EventCallback OnExpand { get; set; }
+
+    /// <summary>
+    /// Callback invoked before the accordion expands or collapses, letting the change be cancelled.
+    /// </summary>
+    /// <remarks>
+    /// Set <c>Cancel</c> on the provided <see cref="BitAccordionToggleArgs"/> to leave the accordion as it is -
+    /// keeping a panel whose form has not been filled in open, for one - and read its <c>IsExpanding</c> and
+    /// <c>Reason</c> to tell an expansion from a collapse and a click on the header from an
+    /// <see cref="Expand"/>, <see cref="Collapse"/> or <see cref="Toggle"/> call. Since the callback is awaited,
+    /// it can also run asynchronous work like loading the content of the panel or asking for a confirmation
+    /// first, and nothing else toggles the accordion while it is running.
+    /// <br />
+    /// A change that comes from the <see cref="IsExpanded"/> parameter itself is not offered here: the page that
+    /// hands the accordion its state owns it outright, and there is nothing left for the accordion to refuse.
+    /// </remarks>
+    [Parameter] public EventCallback<BitAccordionToggleArgs> OnToggling { get; set; }
 
     /// <summary>
     /// Gets or sets the size of the accordion, which drives the padding of the header and of the content
@@ -254,11 +298,17 @@ public partial class BitAccordion : BitComponentBase
     private string _HeaderId => $"{_Id}-hdr";
     private string _ContentId => $"{_Id}-cnt";
 
-    private int _HeadingLevel => Math.Clamp(HeadingLevel ?? 3, 1, 6);
+    // An accordion nested in the panel of another one is a subsection of it, so it takes the level below the one
+    // holding it unless it is given a level of its own. The clamp is what stops a deep nest from running past 6.
+    private int _HeadingLevel => Math.Clamp(HeadingLevel ?? (ParentHeadingLevel + 1) ?? 3, 1, 6);
 
     // A region is not an interactive element, so it earns a tab stop only where it has something the
     // keyboard could not otherwise reach: the scroll of a content that is taller than its MaxHeight.
     private bool _IsContentFocusable => IsExpanded && MaxHeight.HasValue();
+
+    // A one-way bound IsExpanded is owned by the page that hands it over: the accordion cannot move it, so
+    // nothing it would report about a move of its own would be true.
+    private bool _OwnsExpansion => IsExpandedHasBeenSet is false || IsExpandedChanged.HasDelegate;
 
     private bool _ShouldRenderContent => UnmountOnCollapse
                                             ? IsExpanded
@@ -350,28 +400,61 @@ public partial class BitAccordion : BitComponentBase
 
         await OnClick.InvokeAsync(e);
 
-        await AssignExpanded(IsExpanded is false);
+        await AssignExpanded(IsExpanded is false, BitAccordionToggleReason.Click);
     }
 
     // The public methods are not called from an event handler, so nothing re-renders the component on their
-    // behalf the way Blazor does after a click.
+    // behalf the way Blazor does after a click. The re-render goes through the dispatcher, since a call from
+    // off the render loop - a timer, a background task - is just as much a call as one from a button.
     private async Task SetExpanded(bool value)
     {
-        if (await AssignExpanded(value) is false) return;
+        if (await AssignExpanded(value, BitAccordionToggleReason.Method) is false) return;
 
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
 
-    private async Task<bool> AssignExpanded(bool value)
+    private async Task<bool> AssignExpanded(bool value, BitAccordionToggleReason reason)
     {
         // AssignIsExpanded reports back only whether the assignment was allowed at all (a one-way bound
         // IsExpanded refuses it), not whether it changed anything, so the state the accordion is already in
         // is caught here - otherwise Expand on an open accordion would report an expansion of its own.
         if (IsExpanded == value) return false;
 
+        // The same refusal, asked ahead of time rather than after the fact: a controlled accordion is not
+        // going anywhere, so there is nothing for OnToggling to be given the chance to refuse either.
+        if (_OwnsExpansion is false) return false;
+
+        // OnToggling is awaited, so a second click - or a Toggle call while a confirmation prompt is still
+        // open - would otherwise start a change of its own alongside the first one.
+        if (_isToggling) return false;
+
+        if (OnToggling.HasDelegate)
+        {
+            _isToggling = true;
+
+            try
+            {
+                var args = new BitAccordionToggleArgs(value, reason);
+
+                await OnToggling.InvokeAsync(args);
+
+                if (args.Cancel) return false;
+
+                // The state can have moved on while the callback was awaited - the page can have driven a
+                // bound IsExpanded itself, or disposed the accordion altogether.
+                if (IsDisposed || IsExpanded == value) return false;
+            }
+            finally
+            {
+                _isToggling = false;
+            }
+        }
+
         if (await AssignIsExpanded(value) is false) return false;
 
         if (IsExpanded) _hasBeenExpanded = true;
+
+        await ReturnFocusToTheHeader();
 
         await OnChange.InvokeAsync(IsExpanded);
 
@@ -385,5 +468,23 @@ public partial class BitAccordion : BitComponentBase
         }
 
         return true;
+    }
+
+    private void HandleOnContentFocusIn() => _contentHasFocus = true;
+
+    private void HandleOnContentFocusOut() => _contentHasFocus = false;
+
+    // A panel that closes on something the keyboard was standing in takes that place away, and the browser
+    // answers by dropping the focus on the document - which is the top of the page for anyone reading by
+    // keyboard. The header that closed it is where the reader was, so that is where the focus goes back to.
+    // A click on the header has already moved the focus there itself, so this is really about a collapse the
+    // page asks for while the reader is inside the panel.
+    private async Task ReturnFocusToTheHeader()
+    {
+        if (IsExpanded || _contentHasFocus is false) return;
+
+        _contentHasFocus = false;
+
+        await _headerRef.FocusAsync();
     }
 }
