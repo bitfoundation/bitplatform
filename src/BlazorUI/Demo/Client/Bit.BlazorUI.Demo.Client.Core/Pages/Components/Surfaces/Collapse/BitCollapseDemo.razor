@@ -6,7 +6,7 @@
 
 <DemoPage Name="Collapse"
           SecondaryNames="@(["Collapsible", "Disclosure"])"
-          Description="Collapse is the container that opens and closes a section of a page. It renders no trigger of its own, so anything can drive it - a button, a switch, a link, a piece of state - and one trigger can drive several collapses at once. It animates the real size of its content rather than a guessed maximum, so it opens to whatever is inside it, downwards or sideways, all the way or down to a peek that keeps the first few lines readable. The pace of the transition, the padding, the background and the fade are all parameters, the closed content is taken out of the tab order and the accessibility tree, and content that is expensive to build can be kept out of the DOM until the section is opened - or dropped again once it is closed."
+          Description="Collapse is the container that opens and closes a section of a page. It renders no trigger of its own, so anything can drive it - a button, a switch, a link, a piece of state - and one trigger can drive several sections at once. It animates the real size of its content rather than a guessed maximum, downwards or sideways, all the way or down to a peek that keeps the first few lines readable. The pace of the transition, the padding, the background and the fade are all parameters, the end of each transition is reported back, the closed content is taken out of the tab order and the accessibility tree, and content that is expensive to build can be kept out of the DOM until the section is opened - or dropped again once it is closed."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubEnums="componentSubEnums"
@@ -130,9 +130,10 @@
             </div>
             <br />
             <div>
-                Because a peek is still on the screen, a collapse that keeps one never fades out and is neither hidden
-                from assistive technology nor taken out of the tab order while it is closed. On a
-                <b>Horizontal</b> collapse the value is a width rather than a height.
+                Because a peek is still on the screen, a collapse that keeps one never fades out, is neither hidden from
+                assistive technology nor taken out of the tab order while it is closed, and ignores both of the rendering
+                parameters below - there would be nothing left in the peek to read. The value is the size of the closed
+                section, padding included, and on a <b>Horizontal</b> collapse it is a width rather than a height.
             </div>
             <br /><br />
             <BitCollapse Expanded="peekExpanded" CollapsedSize="4.5rem">
@@ -186,7 +187,43 @@
             </BitCollapse>
         </DemoExample>
 
-        <DemoExample Title="Padding & background" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <DemoExample Title="Transition events" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>OnExpanded</b> and <b>OnCollapsed</b> fire at the <i>end</i> of the transition rather than at the start
+                of it, which is the moment the content has reached its full size or finished leaving the screen. That is
+                where a page scrolls the opened section into view, measures it, moves focus into it, or lets go of what
+                the closed one was holding. <b>OnChange</b>, in contrast, lands the instant the state flips.
+            </div>
+            <br />
+            <div>
+                The end of the transition is a clock rather than an event from the browser, and it is timed off
+                <b>Duration</b> - so a collapse whose pace is retuned in CSS rather than through the parameter is better
+                off setting it to the same value, and a reader who has asked for reduced motion, whose transition
+                finished at once, still waits it out. A collapse with <b>NoAnimation</b> reports both at once, and one
+                that simply starts open or closed reports nothing at all: the state it begins in is not something it
+                transitioned into.
+            </div>
+            <br /><br />
+            <BitButton OnClick="() => eventsCollapseRef?.ToggleAsync()">@(eventsExpanded ? "Collapse" : "Expand")</BitButton>
+            <BitCollapse @ref="eventsCollapseRef"
+                         @bind-Expanded="eventsExpanded"
+                         Duration="600"
+                         OnChange="HandleEventsChange"
+                         OnExpanded="HandleEventsExpanded"
+                         OnCollapsed="HandleEventsCollapsed">
+                OnChange lands as soon as the button is pressed; the other two arrive six hundred milliseconds later,
+                when this section has stopped moving.
+            </BitCollapse>
+            <br />
+            <div>
+                @foreach (var entry in eventsLog)
+                {
+                    <div>@entry</div>
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Padding & background" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 The collapse puts padding around its content so text never meets the edges of the section, and paints the
                 primary background so nothing shows through it. <b>NoPadding</b> removes the first, which is what content
@@ -209,7 +246,35 @@
             </BitCollapse>
         </DemoExample>
 
-        <DemoExample Title="Rendering" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <DemoExample Title="Overflow" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                The collapse clips whatever reaches past the edges of its content, which is what makes the transition
+                read as a section opening rather than as content sliding over the page. Once the section has finished
+                opening there is nothing left to clip and the clipping starts costing instead: a focus ring, a shadow,
+                or a menu dropping out of a control inside it is cut off at the edge of the box.
+            </div>
+            <br />
+            <div>
+                <b>NoClip</b> takes the clipping off at the end of the expand transition and puts it back the moment the
+                collapse starts closing, so the animation is unchanged and only the section that has stopped moving
+                stops cutting things off. Like the callbacks above, it is timed off <b>Duration</b>.
+            </div>
+            <br /><br />
+            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="clipExpanded" />
+            <br /><br />
+            <div>Default</div>
+            <BitCollapse Expanded="clipExpanded" NoPadding Duration="600">
+                <div class="clip-card">The glow around this card is cut off at the edge of the collapse.</div>
+            </BitCollapse>
+            <br /><br />
+            <div>NoClip</div>
+            <BitCollapse Expanded="clipExpanded" NoPadding NoClip Duration="600">
+                <div class="clip-card">The same glow is drawn in full once the section has finished opening.</div>
+            </BitCollapse>
+            <br />
+        </DemoExample>
+
+        <DemoExample Title="Rendering" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>
                 By default the content of a collapse is rendered whether the section is open or not, which keeps whatever
                 it holds - the position of a scroll, the text in a field, the frame of a video - across a close and a
@@ -220,7 +285,9 @@
                 <b>LazyRender</b> keeps the content out of the DOM until the section is expanded for the first time, so
                 nothing inside a page full of closed sections is built, queried or measured until it is opened.
                 <b>UnmountOnCollapse</b> takes it back out once the section has closed - after the transition has had
-                time to finish, so the close still animates - and builds it again from scratch on the next open.
+                time to finish, so the close still animates - and builds it again from scratch on the next open, which
+                means anything it was holding starts over. Neither applies to a collapse that keeps a
+                <b>CollapsedSize</b>, since the peek has to have something in it to show.
             </div>
             <br /><br />
             <div>LazyRender</div>
@@ -239,7 +306,7 @@
             </BitCollapse>
         </DemoExample>
 
-        <DemoExample Title="Accessibility" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <DemoExample Title="Accessibility" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
                 A closed collapse is taken out of the tab order and out of the accessibility tree, so a link or a field
                 inside it can never be reached by a keyboard or announced by a screen reader while the section is shut.
@@ -252,7 +319,8 @@
                 which is what <b>aria-controls</b> has to point at, and it can be read off a component reference for a
                 collapse that was left to generate its own id.
                 <b>LabelledBy</b> names the region from an element on the page - the trigger itself, or the heading
-                above it - which is what turns the section into a landmark a screen reader can jump to.
+                above it - which is what turns the section into a landmark a screen reader can jump to, and
+                <b>AriaLabel</b> names it from a string where no such element exists.
                 <b>Role</b> overrides the default <b>region</b> role; set it to an empty string for content that already
                 carries semantics of its own.
             </div>
@@ -268,7 +336,7 @@
             </BitCollapse>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div>
                 Empower customization by overriding default styles and classes, allowing tailored design modifications to
                 suit specific UI requirements. <b>Style</b> and <b>Class</b> land on the root element, while <b>Styles</b>
@@ -297,7 +365,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <DemoExample Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
                 Use BitCollapse in right-to-left (RTL). A vertical collapse is unchanged by the direction of the page,
                 while a horizontal one opens from the start edge, which in an RTL page is the right one.

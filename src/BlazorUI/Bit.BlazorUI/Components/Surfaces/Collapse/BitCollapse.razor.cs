@@ -19,13 +19,22 @@ public partial class BitCollapse : BitComponentBase
     // transition has had time to run, and cleared the moment the component is expanded again.
     private bool _unmounted;
 
-    private CancellationTokenSource? _unmountCts;
+    // Whether the expand transition has finished, which is the only moment at which it is safe to stop
+    // clipping the content: while the track is still growing, anything the wrapper does not clip spills
+    // out of a collapse that is not yet its full size.
+    private bool _entered;
+
+    private CancellationTokenSource? _transitionCts;
 
 
 
     // A collapse holding a peek of its content is partly on the screen even while it is closed, so it is
     // neither hidden from assistive technology nor taken out of the tab order; a fully closed one is both.
-    private bool _visible => Expanded || CollapsedSize.HasValue();
+    private bool _visible => Expanded || _keepsPeek;
+
+    // Whether a CollapsedSize keeps part of the content on the screen while the collapse is closed, which
+    // is what makes the two rendering parameters inapplicable: there would be nothing left in the peek.
+    private bool _keepsPeek => CollapsedSize.HasValue();
 
     // inert takes the closed content out of the tab order, out of hit testing and out of the accessibility
     // tree in one attribute. The stylesheet hides it as well - a zero-height box with overflow:hidden still
@@ -40,7 +49,8 @@ public partial class BitCollapse : BitComponentBase
 
     // Content that has never been expanded is not rendered at all while LazyRender is on, and content that
     // has been collapsed long enough for the transition to finish is dropped again while UnmountOnCollapse is.
-    private bool _renderContent => (LazyRender is false || _everExpanded) && _unmounted is false;
+    // Neither applies to a collapse that keeps a peek, which has to have something in it to show.
+    private bool _renderContent => _keepsPeek || ((LazyRender is false || _everExpanded) && _unmounted is false);
 
 
 
@@ -91,7 +101,11 @@ public partial class BitCollapse : BitComponentBase
     /// what a "show more" clamp is made of: the first few lines stay readable and the rest of them animate in.
     /// <br />
     /// A collapse that keeps a peek is still partly on the screen, so it neither fades out nor hides itself
-    /// from assistive technology while it is closed.
+    /// from assistive technology while it is closed, and it ignores <see cref="LazyRender"/> and
+    /// <see cref="UnmountOnCollapse"/>: the peek has to have something in it to show.
+    /// <br />
+    /// The value is the size of the closed section rather than of the content inside its padding, so it means
+    /// the same thing whether or not <see cref="NoPadding"/> is on.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public string? CollapsedSize { get; set; }
@@ -121,6 +135,10 @@ public partial class BitCollapse : BitComponentBase
     /// what collapses to nothing when the reader asks for reduced motion. A value set here is a fixed
     /// duration that the reduced motion preference no longer shortens, so prefer the theme unless the pace
     /// of this particular collapse carries meaning. Negative values are clamped away.
+    /// <br />
+    /// It is also what <see cref="OnExpanded"/>, <see cref="OnCollapsed"/>, <see cref="NoClip"/> and
+    /// <see cref="UnmountOnCollapse"/> wait for, so a collapse whose transition is retuned in CSS rather than
+    /// here is better off setting it to the same value.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public int? Duration { get; set; }
@@ -179,6 +197,9 @@ public partial class BitCollapse : BitComponentBase
     /// This is what a page carrying many collapses of expensive content wants: nothing inside a closed one is
     /// built, queried or measured until it is opened. Once it has been opened the content stays, unless
     /// <see cref="UnmountOnCollapse"/> says otherwise.
+    /// <br />
+    /// A collapse that keeps a <see cref="CollapsedSize"/> ignores it: the peek has to have something in it
+    /// to show before the section is ever opened.
     /// </remarks>
     [Parameter] public bool LazyRender { get; set; }
 
@@ -202,6 +223,21 @@ public partial class BitCollapse : BitComponentBase
     public bool NoFade { get; set; }
 
     /// <summary>
+    /// Stops clipping the content once the collapse has finished opening, so anything that reaches past the
+    /// edges of the section - a focus ring, a shadow, a menu that drops out of a control inside it - is drawn
+    /// in full instead of being cut off.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// The clipping is what makes the transition look like an opening section rather than content sliding
+    /// over the page, so it is only taken off at the end of the expand transition and put back the moment the
+    /// collapse starts closing again.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool NoClip { get; set; }
+
+    /// <summary>
     /// Removes the padding the collapse puts around its content.
     /// <br />
     /// The default value is <strong>false</strong>.
@@ -222,6 +258,33 @@ public partial class BitCollapse : BitComponentBase
     /// assigning to <see cref="Expanded"/>.
     /// </remarks>
     [Parameter] public EventCallback<bool> OnChange { get; set; }
+
+    /// <summary>
+    /// Callback that is called once the collapse has finished closing.
+    /// </summary>
+    /// <remarks>
+    /// It fires at the end of the collapse transition rather than at the start of it, which is the moment
+    /// the content is off the screen: this is where a page unloads what the section was holding, or moves
+    /// focus, or scrolls to what the closed section pushed back up. A collapse that is not animated at all
+    /// reports it as soon as it closes.
+    /// <br />
+    /// It reports every close, whether the page made it by assigning to <see cref="Expanded"/> or the
+    /// component made it itself, and never fires for a collapse that was closed to begin with.
+    /// </remarks>
+    [Parameter] public EventCallback OnCollapsed { get; set; }
+
+    /// <summary>
+    /// Callback that is called once the collapse has finished opening.
+    /// </summary>
+    /// <remarks>
+    /// It fires at the end of the expand transition rather than at the start of it, which is the moment the
+    /// content is at its full size: this is where a page scrolls the section into view, or measures it, or
+    /// moves focus into it. A collapse that is not animated at all reports it as soon as it opens.
+    /// <br />
+    /// It reports every open, whether the page made it by assigning to <see cref="Expanded"/> or the
+    /// component made it itself, and never fires for a collapse that was open to begin with.
+    /// </remarks>
+    [Parameter] public EventCallback OnExpanded { get; set; }
 
     /// <summary>
     /// The ARIA role of the content region of the collapse.
@@ -247,6 +310,9 @@ public partial class BitCollapse : BitComponentBase
     /// The content is removed after the collapse transition has had time to finish, so the close still
     /// animates; it is put back the moment the collapse is expanded again, which means anything the content
     /// was holding - the position of a scroll, the text in a field, the frame of a video - starts over.
+    /// <br />
+    /// A collapse that keeps a <see cref="CollapsedSize"/> ignores it: the peek would have nothing left in it
+    /// to show.
     /// </remarks>
     [Parameter] public bool UnmountOnCollapse { get; set; }
 
@@ -284,11 +350,15 @@ public partial class BitCollapse : BitComponentBase
 
         ClassBuilder.Register(() => NoAnimation ? "bit-col-nan" : string.Empty);
 
-        ClassBuilder.Register(() => (NoFade || CollapsedSize.HasValue()) ? "bit-col-nfd" : string.Empty);
+        ClassBuilder.Register(() => (NoFade || _keepsPeek) ? "bit-col-nfd" : string.Empty);
 
         ClassBuilder.Register(() => NoPadding ? "bit-col-npd" : string.Empty);
 
-        ClassBuilder.Register(() => CollapsedSize.HasValue() ? "bit-col-pek" : string.Empty);
+        // The clipping is only taken off once the expand transition has finished, so the class carries both
+        // halves of that condition rather than leaving the stylesheet to guess at the second one.
+        ClassBuilder.Register(() => (NoClip && _entered) ? "bit-col-ncl" : string.Empty);
+
+        ClassBuilder.Register(() => _keepsPeek ? "bit-col-pek" : string.Empty);
 
         ClassBuilder.Register(() => Background switch
         {
@@ -331,7 +401,7 @@ public partial class BitCollapse : BitComponentBase
 
     protected override ValueTask DisposeAsync(bool disposing)
     {
-        CancelPendingUnmount();
+        CancelPendingTransition();
 
         return base.DisposeAsync(disposing);
     }
@@ -353,28 +423,47 @@ public partial class BitCollapse : BitComponentBase
 
     private void HandleExpandedChanged()
     {
-        CancelPendingUnmount();
+        CancelPendingTransition();
 
         if (Expanded)
         {
             _everExpanded = true;
             _unmounted = false;
+        }
+
+        // Nothing has been drawn yet, so the state the component starts in is where it begins rather than
+        // something it transitioned into: the end of that transition is reached at once and reported to no one.
+        if (IsRendered is false)
+        {
+            SetEntered(Expanded);
             return;
         }
 
-        if (UnmountOnCollapse is false || _everExpanded is false) return;
+        // The clipping goes back on the moment either transition starts, since the content is the wrong size
+        // for the whole of both of them.
+        SetEntered(false);
 
-        // The content leaves the DOM only after the close has had time to play, so the collapse still
-        // animates shut rather than blinking out of existence; a collapse with no animation at all has
-        // nothing to wait for.
+        // A collapse that was closed to begin with never played a close, so there is nothing to report and
+        // nothing to take out of the DOM that was ever put in it.
+        if (Expanded is false && _everExpanded is false) return;
+
+        var needsEnd = Expanded
+            ? (NoClip || OnExpanded.HasDelegate)
+            : ((UnmountOnCollapse && _keepsPeek is false) || OnCollapsed.HasDelegate);
+
+        if (needsEnd is false) return;
+
+        // The end of the transition is reached by the clock rather than by an event from the browser, so that
+        // it is still reached when the transition was collapsed to nothing - by NoAnimation here, or by the
+        // reduced motion preference in the stylesheet, which C# cannot see.
         var wait = NoAnimation ? 0 : Math.Max(0, Delay ?? 0) + Math.Max(0, Duration ?? DefaultDurationInMs);
 
-        _unmountCts = new CancellationTokenSource();
+        _transitionCts = new CancellationTokenSource();
 
-        _ = UnmountAfterAsync(wait, _unmountCts.Token);
+        _ = CompleteTransitionAsync(wait, Expanded, _transitionCts.Token);
     }
 
-    private async Task UnmountAfterAsync(int wait, CancellationToken token)
+    private async Task CompleteTransitionAsync(int wait, bool expanded, CancellationToken token)
     {
         try
         {
@@ -383,22 +472,57 @@ public partial class BitCollapse : BitComponentBase
                 await Task.Delay(wait, token);
             }
 
-            if (token.IsCancellationRequested || IsDisposed || Expanded || _unmounted) return;
+            if (token.IsCancellationRequested || IsDisposed || Expanded != expanded) return;
 
-            _unmounted = true;
+            var render = false;
 
-            await InvokeAsync(StateHasChanged);
+            if (expanded)
+            {
+                if (NoClip && _entered is false)
+                {
+                    SetEntered(true);
+                    render = true;
+                }
+            }
+            // The content leaves the DOM only after the close has had time to play, so the collapse still
+            // animates shut rather than blinking out of existence.
+            else if (UnmountOnCollapse && _keepsPeek is false && _unmounted is false)
+            {
+                _unmounted = true;
+                render = true;
+            }
+
+            if (render)
+            {
+                await InvokeAsync(StateHasChanged);
+            }
+
+            var callback = expanded ? OnExpanded : OnCollapsed;
+
+            if (callback.HasDelegate)
+            {
+                await InvokeAsync(() => callback.InvokeAsync());
+            }
         }
         catch (OperationCanceledException) { }
         catch (ObjectDisposedException) { }
     }
 
-    private void CancelPendingUnmount()
+    private void SetEntered(bool value)
     {
-        if (_unmountCts is null) return;
+        if (_entered == value) return;
 
-        _unmountCts.Cancel();
-        _unmountCts.Dispose();
-        _unmountCts = null;
+        _entered = value;
+
+        ClassBuilder.Reset();
+    }
+
+    private void CancelPendingTransition()
+    {
+        if (_transitionCts is null) return;
+
+        _transitionCts.Cancel();
+        _transitionCts.Dispose();
+        _transitionCts = null;
     }
 }

@@ -98,6 +98,41 @@ private bool noFadeExpanded = true;
 private bool noAnimationExpanded = true;";
 
     private readonly string example6RazorCode = @"
+<BitButton OnClick=""() => eventsCollapseRef?.ToggleAsync()"">@(eventsExpanded ? ""Collapse"" : ""Expand"")</BitButton>
+<BitCollapse @ref=""eventsCollapseRef""
+             @bind-Expanded=""eventsExpanded""
+             Duration=""600""
+             OnChange=""HandleEventsChange""
+             OnExpanded=""HandleEventsExpanded""
+             OnCollapsed=""HandleEventsCollapsed"">
+    OnChange lands as soon as the button is pressed; the other two arrive six hundred milliseconds later,
+    when this section has stopped moving.
+</BitCollapse>
+
+@foreach (var entry in eventsLog)
+{
+    <div>@entry</div>
+}";
+    private readonly string example6CsharpCode = @"
+private bool eventsExpanded = true;
+private BitCollapse? eventsCollapseRef;
+private readonly List<string> eventsLog = [];
+
+private void HandleEventsChange(bool value) => LogCollapseEvent($""OnChange({value.ToString().ToLower()})"");
+private void HandleEventsExpanded() => LogCollapseEvent(""OnExpanded"");
+private void HandleEventsCollapsed() => LogCollapseEvent(""OnCollapsed"");
+
+private void LogCollapseEvent(string name)
+{
+    eventsLog.Insert(0, name);
+
+    if (eventsLog.Count > 6)
+    {
+        eventsLog.RemoveAt(eventsLog.Count - 1);
+    }
+}";
+
+    private readonly string example7RazorCode = @"
 <BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""surfaceExpanded"" />
 
 <BitCollapse Expanded=""surfaceExpanded"">The padding and the primary background of the component.</BitCollapse>
@@ -107,10 +142,33 @@ private bool noAnimationExpanded = true;";
 <BitCollapse Expanded=""surfaceExpanded"" Background=""BitColorKind.Transparent"" NoPadding>
     <BitMessage Color=""BitColor.Info"">Content that carries its own surface and its own insets.</BitMessage>
 </BitCollapse>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private bool surfaceExpanded = true;";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
+<style>
+    .clip-card {
+        margin: 0.5rem;
+        padding: 0.75rem;
+        border-radius: 0.25rem;
+        background-color: var(--bit-clr-bg-sec);
+        box-shadow: 0 0 0 1rem rgba(0, 120, 212, 0.25);
+    }
+</style>
+
+<BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""clipExpanded"" />
+
+<BitCollapse Expanded=""clipExpanded"" NoPadding Duration=""600"">
+    <div class=""clip-card"">The glow around this card is cut off at the edge of the collapse.</div>
+</BitCollapse>
+
+<BitCollapse Expanded=""clipExpanded"" NoPadding NoClip Duration=""600"">
+    <div class=""clip-card"">The same glow is drawn in full once the section has finished opening.</div>
+</BitCollapse>";
+    private readonly string example8CsharpCode = @"
+private bool clipExpanded = true;";
+
+    private readonly string example9RazorCode = @"
 <BitToggleButton OnText=""Collapse"" OffText=""Expand"" @bind-IsChecked=""lazyExpanded"" />
 <BitCollapse LazyRender Expanded=""lazyExpanded"">
     @{ lazyRenderCount++; }
@@ -121,12 +179,12 @@ private bool surfaceExpanded = true;";
 <BitCollapse UnmountOnCollapse Expanded=""unmountExpanded"">
     <BitTextField Label=""Type something, then close and reopen"" />
 </BitCollapse>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private bool lazyExpanded;
 private int lazyRenderCount;
 private bool unmountExpanded = true;";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitButton Id=""a11y-trigger""
            aria-controls=""a11y-collapse-content""
            aria-expanded=""@(a11yExpanded ? ""true"" : ""false"")""
@@ -136,10 +194,10 @@ private bool unmountExpanded = true;";
 <BitCollapse Id=""a11y-collapse"" Expanded=""a11yExpanded"" LabelledBy=""a11y-trigger"">
     Orders placed before 2 pm ship the same day. <BitLink Href=""/components/collapse"">Read the full policy</BitLink>.
 </BitCollapse>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private bool a11yExpanded;";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .custom-expanded {
         padding: 10px;
@@ -166,11 +224,11 @@ private bool a11yExpanded;";
     each word has the power to transform into something extraordinary. Here lies the start of something new-an
     opportunity to craft, inspire, and create.
 </BitCollapse>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private bool expandedClass = true;
 private bool expandedStyle = true;";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitToggleButton OnText=""بستن"" OffText=""باز کردن"" @bind-IsChecked=""expandedRtl"" />
 <BitCollapse Expanded=""expandedRtl"" Dir=""BitDir.Rtl"">
     لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
@@ -184,7 +242,7 @@ private bool expandedStyle = true;";
         <div style=""white-space:nowrap"">این بخش به سمت راست باز می شود.</div>
     </BitCollapse>
 </div>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private bool expandedRtl = true;
 private bool expandedRtlHorizontal = true;";
 }

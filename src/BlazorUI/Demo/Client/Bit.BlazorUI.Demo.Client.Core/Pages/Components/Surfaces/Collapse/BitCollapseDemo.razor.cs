@@ -62,7 +62,7 @@ public partial class BitCollapseDemo
             Name = "Duration",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The duration of the expand/collapse transition in ms. Leaving it unset keeps the duration of the motion theme, which is also what the reduced motion preference collapses to nothing."
+            Description = "The duration of the expand/collapse transition in ms. Leaving it unset keeps the duration of the motion theme, which is also what the reduced motion preference collapses to nothing. It is what OnExpanded, OnCollapsed, NoClip and UnmountOnCollapse wait for."
         },
         new()
         {
@@ -77,6 +77,13 @@ public partial class BitCollapseDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Determines whether the collapse is expanded or collapsed."
+        },
+        new()
+        {
+            Name = "ExpandedChanged",
+            Type = "EventCallback<bool>",
+            DefaultValue = "",
+            Description = "The callback of the two-way binding of the Expanded parameter, raised with the new state."
         },
         new()
         {
@@ -97,7 +104,7 @@ public partial class BitCollapseDemo
             Name = "LazyRender",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Keeps the content out of the DOM until the collapse is expanded for the first time."
+            Description = "Keeps the content out of the DOM until the collapse is expanded for the first time. A collapse that keeps a CollapsedSize ignores it, since the peek has to have something in it to show."
         },
         new()
         {
@@ -115,6 +122,13 @@ public partial class BitCollapseDemo
         },
         new()
         {
+            Name = "NoClip",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stops clipping the content once the collapse has finished opening, so a focus ring, a shadow or a menu that reaches past the edges of the section is drawn in full. The clipping is put back the moment the collapse starts closing."
+        },
+        new()
+        {
             Name = "NoPadding",
             Type = "bool",
             DefaultValue = "false",
@@ -126,6 +140,20 @@ public partial class BitCollapseDemo
             Type = "EventCallback<bool>",
             DefaultValue = "",
             Description = "Callback that is called when the Expanded value has changed by the component itself."
+        },
+        new()
+        {
+            Name = "OnCollapsed",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "Callback that is called once the collapse has finished closing, which is the end of the collapse transition rather than the start of it."
+        },
+        new()
+        {
+            Name = "OnExpanded",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "Callback that is called once the collapse has finished opening, which is the end of the expand transition rather than the start of it."
         },
         new()
         {
@@ -148,7 +176,7 @@ public partial class BitCollapseDemo
             Name = "UnmountOnCollapse",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Takes the content back out of the DOM once the collapse has closed, after the transition has had time to finish."
+            Description = "Takes the content back out of the DOM once the collapse has closed, after the transition has had time to finish. A collapse that keeps a CollapsedSize ignores it, since the peek would have nothing left in it to show."
         }
     ];
 
@@ -281,7 +309,13 @@ public partial class BitCollapseDemo
     private bool noFadeExpanded = true;
     private bool noAnimationExpanded = true;
 
+    private bool eventsExpanded = true;
+    private BitCollapse? eventsCollapseRef;
+    private readonly List<string> eventsLog = [];
+
     private bool surfaceExpanded = true;
+
+    private bool clipExpanded = true;
 
     private bool lazyExpanded;
     private int lazyRenderCount;
@@ -300,5 +334,19 @@ public partial class BitCollapseDemo
     private void HandleDefaultChange(bool value)
     {
         defaultChangeLog = $"OnChange reported {value}.";
+    }
+
+    private void HandleEventsChange(bool value) => LogCollapseEvent($"OnChange({value.ToString().ToLower()})");
+    private void HandleEventsExpanded() => LogCollapseEvent("OnExpanded");
+    private void HandleEventsCollapsed() => LogCollapseEvent("OnCollapsed");
+
+    private void LogCollapseEvent(string name)
+    {
+        eventsLog.Insert(0, name);
+
+        if (eventsLog.Count > 6)
+        {
+            eventsLog.RemoveAt(eventsLog.Count - 1);
+        }
     }
 }

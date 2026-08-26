@@ -68,6 +68,7 @@
     opacity: 0;
     visibility: hidden;
     grid-template-rows: 0fr;
+
     // Opening shows the content at once and then grows the track; closing has to keep the content on the
     // screen for the whole of the transition and only take it out of the accessibility tree at the end,
     // which is what the duration-long delay on visibility is for.
@@ -78,15 +79,25 @@
 
 // min-height:0 is what lets the 0fr track actually reach zero - a grid item contributes its min-content size
 // to an fr track otherwise - and overflow:hidden is what clips the content while the track is smaller than it.
+// border-box is what makes a collapsed size the size of the closed collapse rather than the size of the
+// content inside its padding.
 .bit-col-wrp {
     min-width: 0;
     min-height: 0;
     overflow: hidden;
+    box-sizing: border-box;
     padding: spacing(1.5);
 }
 
 .bit-col-npd > .bit-col-con > .bit-col-wrp {
     padding: 0;
+}
+
+// The class is only on the element once the expand transition has finished, so nothing escapes the collapse
+// while the track is still growing; what escapes afterwards is a focus ring, a shadow or a menu dropping out
+// of a control inside the section, none of which the box the collapse has finished drawing should cut off.
+.bit-col-ncl > .bit-col-con > .bit-col-wrp {
+    overflow: visible;
 }
 
 

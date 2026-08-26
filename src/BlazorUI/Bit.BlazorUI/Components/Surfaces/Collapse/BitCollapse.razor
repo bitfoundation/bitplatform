@@ -13,6 +13,7 @@
          class="bit-col-con @(Expanded ? "bit-col-cex" : "bit-col-cco") @Classes?.Content"
          inert="@_inert"
          tabindex="@(IsEnabled && _visible ? 0 : -1)"
+         aria-label="@AriaLabel"
          aria-labelledby="@LabelledBy">
         <div style="@Styles?.Wrapper" class="bit-col-wrp @Classes?.Wrapper">
             @if (_renderContent)

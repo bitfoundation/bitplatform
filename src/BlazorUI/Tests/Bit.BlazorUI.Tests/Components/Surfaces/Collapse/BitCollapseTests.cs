@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -8,6 +10,21 @@ namespace Bit.BlazorUI.Tests.Components.Surfaces.Collapse;
 [TestClass]
 public class BitCollapseTests : BunitTestContext
 {
+    // The transition callbacks are raised on a timer and hand their value to a plain delegate rather than to a
+    // component, so nothing re-renders when they land and WaitForAssertion - which only re-checks on a render -
+    // would never look again. This polls the value itself instead.
+    private static void WaitUntil(Func<bool> condition, int timeoutInMs = 3000)
+    {
+        var deadline = DateTime.UtcNow.AddMilliseconds(timeoutInMs);
+
+        while (condition() is false && DateTime.UtcNow < deadline)
+        {
+            Thread.Sleep(20);
+        }
+    }
+
+
+
     [TestMethod]
     public void BitCollapseShouldRenderRootElement()
     {
@@ -94,6 +111,22 @@ public class BitCollapseTests : BunitTestContext
         var component = RenderComponent<BitCollapse>(parameters => parameters.Add(p => p.AriaLabel, "More details"));
 
         Assert.AreEqual("More details", component.Find(".bit-col").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldNameTheContentRegionWithTheAriaLabel()
+    {
+        var component = RenderComponent<BitCollapse>(parameters => parameters.Add(p => p.AriaLabel, "Shipping details"));
+
+        Assert.AreEqual("Shipping details", component.Find(".bit-col-con").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldRenderNoAriaLabelOnTheContentRegionByDefault()
+    {
+        var component = RenderComponent<BitCollapse>();
+
+        Assert.IsNull(component.Find(".bit-col-con").GetAttribute("aria-label"));
     }
 
     [TestMethod]
@@ -487,39 +520,39 @@ public class BitCollapseTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCollapseToggleAsyncShouldFlipTheState()
+    public async Task BitCollapseToggleAsyncShouldFlipTheState()
     {
         var component = RenderComponent<BitCollapse>();
 
-        component.InvokeAsync(() => component.Instance.ToggleAsync());
+        await component.InvokeAsync(() => component.Instance.ToggleAsync());
 
         Assert.IsTrue(component.Instance.Expanded);
 
-        component.InvokeAsync(() => component.Instance.ToggleAsync());
+        await component.InvokeAsync(() => component.Instance.ToggleAsync());
 
         Assert.IsFalse(component.Instance.Expanded);
     }
 
     [TestMethod]
-    public void BitCollapseExpandAsyncAndCollapseAsyncShouldSetTheState()
+    public async Task BitCollapseExpandAsyncAndCollapseAsyncShouldSetTheState()
     {
         var component = RenderComponent<BitCollapse>();
 
-        component.InvokeAsync(() => component.Instance.ExpandAsync());
+        await component.InvokeAsync(() => component.Instance.ExpandAsync());
 
         Assert.IsTrue(component.Instance.Expanded);
 
-        component.InvokeAsync(() => component.Instance.ExpandAsync());
+        await component.InvokeAsync(() => component.Instance.ExpandAsync());
 
         Assert.IsTrue(component.Instance.Expanded);
 
-        component.InvokeAsync(() => component.Instance.CollapseAsync());
+        await component.InvokeAsync(() => component.Instance.CollapseAsync());
 
         Assert.IsFalse(component.Instance.Expanded);
     }
 
     [TestMethod]
-    public void BitCollapseShouldWriteBackToTheBoundValue()
+    public async Task BitCollapseShouldWriteBackToTheBoundValue()
     {
         var expanded = false;
 
@@ -528,13 +561,13 @@ public class BitCollapseTests : BunitTestContext
             parameters.Bind(p => p.Expanded, expanded, v => expanded = v);
         });
 
-        component.InvokeAsync(() => component.Instance.ToggleAsync());
+        await component.InvokeAsync(() => component.Instance.ToggleAsync());
 
         Assert.IsTrue(expanded);
     }
 
     [TestMethod]
-    public void BitCollapseShouldCallOnChange()
+    public async Task BitCollapseShouldCallOnChange()
     {
         var changes = new List<bool>();
 
@@ -543,8 +576,8 @@ public class BitCollapseTests : BunitTestContext
             parameters.Add(p => p.OnChange, (bool v) => changes.Add(v));
         });
 
-        component.InvokeAsync(() => component.Instance.ToggleAsync());
-        component.InvokeAsync(() => component.Instance.ToggleAsync());
+        await component.InvokeAsync(() => component.Instance.ToggleAsync());
+        await component.InvokeAsync(() => component.Instance.ToggleAsync());
 
         Assert.AreEqual(2, changes.Count);
         Assert.IsTrue(changes[0]);
@@ -552,7 +585,7 @@ public class BitCollapseTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCollapseShouldNotCallOnChangeWhenTheStateDoesNotChange()
+    public async Task BitCollapseShouldNotCallOnChangeWhenTheStateDoesNotChange()
     {
         var changes = 0;
 
@@ -561,13 +594,13 @@ public class BitCollapseTests : BunitTestContext
             parameters.Add(p => p.OnChange, (bool _) => changes++);
         });
 
-        component.InvokeAsync(() => component.Instance.CollapseAsync());
+        await component.InvokeAsync(() => component.Instance.CollapseAsync());
 
         Assert.AreEqual(0, changes);
     }
 
     [TestMethod]
-    public void BitCollapseShouldNotToggleAnUnboundExpanded()
+    public async Task BitCollapseShouldNotToggleAnUnboundExpanded()
     {
         var changes = 0;
 
@@ -577,14 +610,14 @@ public class BitCollapseTests : BunitTestContext
             parameters.Add(p => p.OnChange, (bool _) => changes++);
         });
 
-        component.InvokeAsync(() => component.Instance.ToggleAsync());
+        await component.InvokeAsync(() => component.Instance.ToggleAsync());
 
         Assert.IsFalse(component.Instance.Expanded);
         Assert.AreEqual(0, changes);
     }
 
     [TestMethod]
-    public void BitCollapseShouldNotToggleWhenDisabled()
+    public async Task BitCollapseShouldNotToggleWhenDisabled()
     {
         var changes = 0;
 
@@ -594,7 +627,7 @@ public class BitCollapseTests : BunitTestContext
             parameters.Add(p => p.OnChange, (bool _) => changes++);
         });
 
-        component.InvokeAsync(() => component.Instance.ToggleAsync());
+        await component.InvokeAsync(() => component.Instance.ToggleAsync());
 
         Assert.IsFalse(component.Instance.Expanded);
         Assert.AreEqual(0, changes);
@@ -698,6 +731,246 @@ public class BitCollapseTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Markup.Contains("never expanded"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldNotUnmountTheContentOfAPeek()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.UnmountOnCollapse, true);
+            parameters.Add(p => p.NoAnimation, true);
+            parameters.Add(p => p.CollapsedSize, "3rem");
+            parameters.Add(p => p.Expanded, true);
+            parameters.AddChildContent("<div>peeked content</div>");
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.UnmountOnCollapse, true);
+            parameters.Add(p => p.NoAnimation, true);
+            parameters.Add(p => p.CollapsedSize, "3rem");
+            parameters.Add(p => p.Expanded, false);
+        });
+
+        Thread.Sleep(200);
+
+        component.Render();
+
+        Assert.IsTrue(component.Markup.Contains("peeked content"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldRenderTheContentOfALazyPeekBeforeItIsEverExpanded()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.LazyRender, true);
+            parameters.Add(p => p.CollapsedSize, "3rem");
+            parameters.Add(p => p.Expanded, false);
+            parameters.AddChildContent("<div>peeked content</div>");
+        });
+
+        Assert.IsTrue(component.Markup.Contains("peeked content"));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitCollapseShouldRespectNoClip(bool noClip)
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.NoClip, noClip);
+            parameters.Add(p => p.NoAnimation, true);
+            parameters.Add(p => p.Expanded, true);
+        });
+
+        Assert.AreEqual(noClip, component.Find(".bit-col").ClassList.Contains("bit-col-ncl"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldNotStopClippingWhileItIsCollapsed()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.NoClip, true);
+            parameters.Add(p => p.NoAnimation, true);
+            parameters.Add(p => p.Expanded, false);
+        });
+
+        Assert.IsFalse(component.Find(".bit-col").ClassList.Contains("bit-col-ncl"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldStopClippingOnlyOnceTheExpandTransitionHasFinished()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.NoClip, true);
+            parameters.Add(p => p.Duration, 200);
+            parameters.Add(p => p.Expanded, false);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Expanded, true));
+
+        Assert.IsFalse(component.Find(".bit-col").ClassList.Contains("bit-col-ncl"));
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-col").ClassList.Contains("bit-col-ncl")),
+                                   TimeSpan.FromSeconds(2));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldStartClippingAgainWhenItStartsClosing()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.NoClip, true);
+            parameters.Add(p => p.NoAnimation, true);
+            parameters.Add(p => p.Expanded, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-col").ClassList.Contains("bit-col-ncl"));
+
+        component.Render(parameters => parameters.Add(p => p.Expanded, false));
+
+        Assert.IsFalse(component.Find(".bit-col").ClassList.Contains("bit-col-ncl"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldCallOnExpandedWhenTheExpandTransitionHasFinished()
+    {
+        var expandedCount = 0;
+
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.NoAnimation, true);
+            parameters.Add(p => p.OnExpanded, () => expandedCount++);
+            parameters.Add(p => p.Expanded, false);
+        });
+
+        Assert.AreEqual(0, expandedCount);
+
+        component.Render(parameters => parameters.Add(p => p.Expanded, true));
+
+        WaitUntil(() => expandedCount == 1);
+
+        Assert.AreEqual(1, expandedCount);
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldCallOnCollapsedWhenTheCollapseTransitionHasFinished()
+    {
+        var collapsedCount = 0;
+
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.NoAnimation, true);
+            parameters.Add(p => p.OnCollapsed, () => collapsedCount++);
+            parameters.Add(p => p.Expanded, true);
+        });
+
+        Assert.AreEqual(0, collapsedCount);
+
+        component.Render(parameters => parameters.Add(p => p.Expanded, false));
+
+        WaitUntil(() => collapsedCount == 1);
+
+        Assert.AreEqual(1, collapsedCount);
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldNotCallTheTransitionCallbacksForTheStateItStartsIn()
+    {
+        var expandedCount = 0;
+        var collapsedCount = 0;
+
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.NoAnimation, true);
+            parameters.Add(p => p.OnExpanded, () => expandedCount++);
+            parameters.Add(p => p.OnCollapsed, () => collapsedCount++);
+            parameters.Add(p => p.Expanded, true);
+        });
+
+        Thread.Sleep(200);
+
+        component.Render();
+
+        Assert.AreEqual(0, expandedCount);
+        Assert.AreEqual(0, collapsedCount);
+    }
+
+    [TestMethod]
+    public async Task BitCollapseShouldCallTheTransitionCallbacksOfTheComponentDrivenChanges()
+    {
+        var expandedCount = 0;
+        var collapsedCount = 0;
+
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.NoAnimation, true);
+            parameters.Add(p => p.OnExpanded, () => expandedCount++);
+            parameters.Add(p => p.OnCollapsed, () => collapsedCount++);
+        });
+
+        await component.InvokeAsync(() => component.Instance.ExpandAsync());
+
+        WaitUntil(() => expandedCount == 1);
+
+        Assert.AreEqual(1, expandedCount);
+
+        await component.InvokeAsync(() => component.Instance.CollapseAsync());
+
+        WaitUntil(() => collapsedCount == 1);
+
+        Assert.AreEqual(1, collapsedCount);
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldReportOnlyTheLastOfSeveralTransitionsInARow()
+    {
+        var expandedCount = 0;
+        var collapsedCount = 0;
+
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.Duration, 400);
+            parameters.Add(p => p.OnExpanded, () => expandedCount++);
+            parameters.Add(p => p.OnCollapsed, () => collapsedCount++);
+            parameters.Add(p => p.Expanded, false);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Expanded, true));
+        component.Render(parameters => parameters.Add(p => p.Expanded, false));
+        component.Render(parameters => parameters.Add(p => p.Expanded, true));
+
+        WaitUntil(() => expandedCount == 1);
+
+        Assert.AreEqual(1, expandedCount);
+
+        Assert.AreEqual(0, collapsedCount);
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldNotUnmountTheContentOfACollapseThatWasReopenedDuringTheTransition()
+    {
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.UnmountOnCollapse, true);
+            parameters.Add(p => p.Duration, 300);
+            parameters.Add(p => p.Expanded, true);
+            parameters.AddChildContent("<div>unmounted content</div>");
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Expanded, false));
+        component.Render(parameters => parameters.Add(p => p.Expanded, true));
+
+        Thread.Sleep(600);
+
+        component.Render();
+
+        Assert.IsTrue(component.Markup.Contains("unmounted content"));
     }
 
     [TestMethod]
