@@ -22,7 +22,8 @@
 
 <!DOCTYPE html>
 <html @attributes="BitThemeSsr.BuildRootThemeAttributeMap(HttpContext.Request.Cookies[BitThemeCookie.PreferenceCookieName])"
-      bit-theme-system bit-theme-persist bit-theme-persist-cookie bit-theme-view-transition>
+      bit-theme-system bit-theme-persist bit-theme-persist-cookie bit-theme-view-transition
+      bit-theme-light="@BitExtraThemePresets.Fluent2Light" bit-theme-dark="@BitExtraThemePresets.Fluent2Dark">
 
 <head>
     <ContentSecurityPolicy />
@@ -37,7 +38,7 @@
     @* The OS media queries only cover the first paint: Scripts/theme.ts rewrites BOTH tags on every theme change, so a *@
     @* theme pinned against the OS wins as well. Keep in sync with: src/Client/Boilerplate.Client.Core/Styles/ThemeColors.cs *@
     <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0F1318" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#1A1A1A" media="(prefers-color-scheme: dark)" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="description" content="@localizer[nameof(AppStrings.DescriptionMetaTagValue)]" />
 
@@ -71,6 +72,7 @@
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
+    <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.fluent2.css" />
     <Link rel="stylesheet" Href="_content/Boilerplate.Client.Core/styles/app.css" />
     <Link rel="stylesheet" Href="Boilerplate.Server.Web.styles.css" />
 
@@ -100,7 +102,7 @@
     {
         <!-- If you don't plan to older browsers and prefer to use the original `blazor.web.js`, follow the instructions in this link: https://github.com/orgs/bitfoundation/discussions/10238#discussioncomment-12493737 -->
         <Script Src="_framework/bit.blazor.web.es2019.js" autostart="false"></Script>
-        <Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_framework/bit.blazor.web.es2019.js"></Script>
+        <Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_framework/bit.blazor.web.es2019.js" updateInterval="60" updateOnVisibility="true"></Script>
         <Script Src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
         <AppBswupProgressBar />
         <Script Src="_content/Bit.Butil/bit-butil.js"></Script>

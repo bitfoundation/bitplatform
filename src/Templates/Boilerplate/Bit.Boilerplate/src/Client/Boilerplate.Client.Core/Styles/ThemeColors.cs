@@ -10,6 +10,6 @@ namespace Boilerplate.Client.Core.Styles;
 // src/Server/Boilerplate.Server.Web/Components/App.razor, src/Client/Boilerplate.Client.Web/wwwroot/manifest.json.
 public partial class ThemeColors
 {
-    public static readonly string PrimaryDarkBgColor = "#0F1318";
+    public static readonly string PrimaryDarkBgColor = "#1A1A1A";
     public static readonly string PrimaryLightBgColor = "#FFFFFF";
 }

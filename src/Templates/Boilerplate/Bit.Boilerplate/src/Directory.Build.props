@@ -42,6 +42,8 @@
         <StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
         <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
 
+        <!-- Enable BitButil script trimming -->
+        <BitButilTrimScripts>true</BitButilTrimScripts>
         <DefaultItemExcludes>$(DefaultItemExcludes);**/App_Data/**</DefaultItemExcludes>
     </PropertyGroup>
     <!--/+:msbuild-conditional:noEmit -->

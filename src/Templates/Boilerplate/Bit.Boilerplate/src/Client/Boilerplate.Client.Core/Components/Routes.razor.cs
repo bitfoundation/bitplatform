@@ -31,20 +31,30 @@ public partial class Routes : ComponentBase, IDisposable
     }
 
     [AutoInject]
-    NavigationManager? navigationManager
+    IServiceProvider? serviceProvider
     {
         set
         {
             if (value is not null)
             {
-                current = value;
-                NavigationManagerProvider.TrySetResult();
+                currentServiceProvider = value;
+                ServiceProviderReady.TrySetResult();
             }
         }
         get;
     }
-    private static NavigationManager? current;
-    private static readonly TaskCompletionSource NavigationManagerProvider = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private static IServiceProvider? currentServiceProvider
+    {
+        get
+        {
+            if (AppPlatform.IsBlazorHybridOrBrowser is false)
+                throw new InvalidOperationException();
+
+            return field;
+        }
+        set;
+    }
+    private static readonly TaskCompletionSource ServiceProviderReady = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     public static async Task OpenUniversalLink(string url, bool forceLoad = false, bool replace = false)
     {
@@ -53,9 +63,18 @@ public partial class Routes : ComponentBase, IDisposable
             url = PageUrls.Home;
         }
 
-        await NavigationManagerProvider.Task;
+        await ServiceProviderReady.Task;
 
-        var navigationManager = current!;
+        var navigationManager = currentServiceProvider!.GetRequiredService<NavigationManager>();
+
+        if (CultureInfoManager.InvariantGlobalization is false
+            && navigationManager.ToAbsoluteUri(url).GetCulture() is string culture
+            && string.IsNullOrEmpty(culture) is false
+            && string.Equals(culture, CultureInfo.CurrentUICulture.Name, StringComparison.InvariantCultureIgnoreCase) is false)
+        {
+            CultureInfoManager.SetCurrentCulture(culture);
+            currentServiceProvider!.GetRequiredService<PubSubService>().Publish(ClientAppMessages.CULTURE_CHANGED, culture, persistent: true);
+        }
 
         navigationManager.NavigateTo(url, forceLoad, replace);
     }
