@@ -13,6 +13,7 @@
 :root [bit-theme="fluent-dark"] {
     // main
     --bit-tpg-font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+
     // The weight of the LABEL OF AN INTERACTIVE CONTROL - a button, a tag, a pagination page, a
     // dialog action, the parts of a time picker. Fabric sets those semibold (ms-Button-label), and
     // so does Fluent 2 (Button medium and large are fontWeightSemibold); Material stays at 500,

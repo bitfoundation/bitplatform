@@ -25,6 +25,7 @@
         --bit-clr-err: CanvasText;
         --bit-clr-suc: CanvasText;
         --bit-clr-wrn: CanvasText;
+
         // Elevation is meaningless against a two-color system palette, so every shadow token is
         // flattened. The per-family ones have to be named individually rather than left to follow
         // --bit-shd-cal: they are aliases only in the fallback tier (family-tokens.scss) - every

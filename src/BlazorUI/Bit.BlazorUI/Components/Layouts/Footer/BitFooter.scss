@@ -6,6 +6,7 @@
     z-index: $zindex-base;
     box-sizing: border-box;
     line-height: $tg-line-height;
+
     // The footer establishes a typographic default for whatever the app puts inside it, so it takes
     // the body weight rather than $tg-font-weight - which is the weight of a control's own label.
     font-weight: $tg-fw-regular;

@@ -348,6 +348,7 @@
 }
 
 .bit-nbr-sel {
+    font-weight: $tg-fw-semibold;
     color: var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr));
     background-color: var(--bit-nbr-clr-acc-active, transparent);
 }
