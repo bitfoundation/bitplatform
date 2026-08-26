@@ -149,13 +149,17 @@ public partial class WindowsStorageService : IStorageService
     // Persist application-scope property to isolated storage
     private static async Task Save(ConcurrentDictionary<string, string?> data)
     {
-        // A snapshot, not the live store: JsonSerializer enumerates what it is given, and another thread may be adding
-        // a key to `data` while this runs.
-        var snapshot = new Dictionary<string, string?>(data);
-
         try
         {
             await ioLock.WaitAsync();
+
+            // A snapshot, so JsonSerializer never enumerates a store another thread is writing to - and taken here,
+            // after the wait, rather than on the way in. Two writers queue on this lock, and a snapshot taken before
+            // waiting freezes what the store held at CALL time: the second writer to reach the file would flush the
+            // older of the two, leaving a key that is present in memory missing from disk until something saves again.
+            // Taken after the wait, whoever writes last serializes the newest state.
+            var snapshot = new Dictionary<string, string?>(data);
+
             using IsolatedStorageFile storage = IsolatedStorageFile.GetUserStoreForDomain();
             using IsolatedStorageFileStream stream = new IsolatedStorageFileStream(WindowsStorageFilename, FileMode.Create, storage);
             using StreamWriter writer = new StreamWriter(stream);
