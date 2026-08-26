@@ -96,6 +96,29 @@ public class BitAccordionTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitAccordionShouldNotRenderTheTitleWhenThereIsNothingToPutInIt()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.Description, "description-value");
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-acd-ttl").Count);
+        Assert.AreEqual("description-value", com.Find(".bit-acd-des").TextContent);
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldRenderTheTitleForATitleTemplateWithoutATitle()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.TitleTemplate, "template-value");
+        });
+
+        Assert.AreEqual("template-value", com.Find(".bit-acd-ttl").TextContent);
+    }
+
+    [TestMethod]
     public void BitAccordionShouldNotRenderDescriptionWhenItIsEmpty()
     {
         var com = RenderComponent<BitAccordion>(parameters =>
@@ -1690,6 +1713,151 @@ public class BitAccordionTests : BunitTestContext
         await com.InvokeAsync(() => com.Instance.Expand());
 
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier.Contains("focus")));
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldReturnTheFocusToTheHeaderWhenAControlledCollapseClosesOnIt()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.IsExpanded, true);
+            parameters.Add(p => p.ChildContent, "<button id=\"inside\">inside</button>");
+        });
+
+        com.Find(".bit-acd-con").TriggerEvent("onfocusin", new FocusEventArgs());
+
+        com.Render(parameters => parameters.Add(p => p.IsExpanded, false));
+
+        Context.JSInterop.VerifyInvoke("Blazor._internal.domWrapper.focus");
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldReturnTheFocusToTheHeaderWhenABoundCollapseClosesOnIt()
+    {
+        var isExpanded = true;
+
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Bind(p => p.IsExpanded, isExpanded, v => isExpanded = v);
+            parameters.Add(p => p.ChildContent, "<button id=\"inside\">inside</button>");
+        });
+
+        com.Find(".bit-acd-con").TriggerEvent("onfocusin", new FocusEventArgs());
+
+        com.Render(parameters => parameters.Bind(p => p.IsExpanded, false, v => isExpanded = v));
+
+        Context.JSInterop.VerifyInvoke("Blazor._internal.domWrapper.focus");
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldNotTouchTheFocusWhenAParameterChangeExpandsIt()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.IsExpanded, false);
+            parameters.Add(p => p.ChildContent, "<button id=\"inside\">inside</button>");
+        });
+
+        com.Find(".bit-acd-con").TriggerEvent("onfocusin", new FocusEventArgs());
+
+        com.Render(parameters => parameters.Add(p => p.IsExpanded, true));
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier.Contains("focus")));
+    }
+
+    [TestMethod]
+    public async Task BitAccordionFocusAsyncShouldFocusTheHeader()
+    {
+        var com = RenderComponent<BitAccordion>(parameters => parameters.Add(p => p.Title, "title-value"));
+
+        await com.InvokeAsync(() => com.Instance.FocusAsync());
+
+        Context.JSInterop.VerifyInvoke("Blazor._internal.domWrapper.focus");
+    }
+
+    [TestMethod]
+    public async Task BitAccordionFocusAsyncShouldFocusTheHeaderWithoutScrollingIt()
+    {
+        var com = RenderComponent<BitAccordion>(parameters => parameters.Add(p => p.Title, "title-value"));
+
+        await com.InvokeAsync(() => com.Instance.FocusAsync(true));
+
+        Context.JSInterop.VerifyInvoke("Blazor._internal.domWrapper.focus");
+    }
+
+
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false),
+    ]
+    public void BitAccordionShouldRenderTheExpanderTemplateInPlaceOfTheIcon(bool defaultIsExpanded)
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.Title, "title-value");
+            parameters.Add(p => p.DefaultIsExpanded, defaultIsExpanded);
+            parameters.Add(p => p.ExpanderTemplate, (isExpanded) => isExpanded ? "expanded-expander" : "collapsed-expander");
+        });
+
+        var wrapper = com.Find(".bit-acd-eiw");
+
+        Assert.AreEqual(defaultIsExpanded ? "expanded-expander" : "collapsed-expander", wrapper.TextContent);
+        Assert.AreEqual(0, com.FindAll(".bit-acd-eic").Count);
+
+        // The rest of the header is exactly where it was.
+        Assert.AreEqual("title-value", com.Find(".bit-acd-ttl").TextContent);
+    }
+
+    [TestMethod]
+    public void BitAccordionExpanderTemplateShouldStillTurnOverWithThePanel()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.ExpanderTemplate, _ => "expander-template");
+        });
+
+        Assert.IsTrue(com.Find(".bit-acd-eiw").ClassList.Contains("bit-ico--r180"));
+    }
+
+    [TestMethod]
+    public void BitAccordionExpanderTemplateShouldStayStillWithNoExpanderRotation()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.NoExpanderRotation, true);
+            parameters.Add(p => p.ExpanderTemplate, _ => "expander-template");
+        });
+
+        Assert.IsFalse(com.Find(".bit-acd-eiw").ClassList.Contains("bit-ico--r180"));
+    }
+
+    [TestMethod]
+    public void BitAccordionHideExpanderIconShouldRemoveTheExpanderTemplateToo()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.HideExpanderIcon, true);
+            parameters.Add(p => p.ExpanderTemplate, _ => "expander-template");
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-acd-eiw").Count);
+        Assert.IsFalse(com.Find(".bit-acd-hdr").TextContent.Contains("expander-template"));
+    }
+
+    [TestMethod]
+    public void BitAccordionHeaderTemplateShouldWinOverTheExpanderTemplate()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.ExpanderTemplate, _ => "expander-template");
+            parameters.Add(p => p.HeaderTemplate, _ => "header-template");
+        });
+
+        Assert.AreEqual("header-template", com.Find(".bit-acd-hdr").TextContent);
+        Assert.AreEqual(0, com.FindAll(".bit-acd-eiw").Count);
     }
 
     [TestMethod]

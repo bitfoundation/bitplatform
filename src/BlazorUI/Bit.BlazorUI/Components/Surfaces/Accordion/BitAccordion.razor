@@ -51,16 +51,22 @@
                     }
 
                     <div style="@Styles?.HeaderContent" class="bit-acd-wrp @Classes?.HeaderContent">
-                        <div style="@Styles?.Title" class="bit-acd-ttl @Classes?.Title">
-                            @if (TitleTemplate is not null)
-                            {
-                                @TitleTemplate
-                            }
-                            else
-                            {
-                                @Title
-                            }
-                        </div>
+                        @* Left out when there is nothing to put in it, the way the description below is: an empty
+                           title box is still a flex item, and the gap it brings with it would open a hole in front
+                           of the description of a header that carries one without a title. *@
+                        @if (TitleTemplate is not null || Title.HasValue())
+                        {
+                            <div style="@Styles?.Title" class="bit-acd-ttl @Classes?.Title">
+                                @if (TitleTemplate is not null)
+                                {
+                                    @TitleTemplate
+                                }
+                                else
+                                {
+                                    @Title
+                                }
+                            </div>
+                        }
                         @if (Description.HasValue())
                         {
                             <div style="@Styles?.Description" class="bit-acd-des @Classes?.Description">
@@ -73,9 +79,16 @@
                     {
                         <span style="@Styles?.ExpanderIconWrapper"
                               class="bit-acd-eiw @Classes?.ExpanderIconWrapper @(rotated ? "bit-ico--r180" : "")">
-                            <i aria-hidden="true"
-                               style="@JoinStyles(Styles?.ExpanderIcon, IsExpanded ? Styles?.ExpandedIcon : null)"
-                               class="bit-acd-eic @expanderIcon?.GetCssClasses() @Classes?.ExpanderIcon @(IsExpanded ? Classes?.ExpandedIcon : "")" />
+                            @if (ExpanderTemplate is not null)
+                            {
+                                @ExpanderTemplate(IsExpanded)
+                            }
+                            else
+                            {
+                                <i aria-hidden="true"
+                                   style="@JoinStyles(Styles?.ExpanderIcon, IsExpanded ? Styles?.ExpandedIcon : null)"
+                                   class="bit-acd-eic @expanderIcon?.GetCssClasses() @Classes?.ExpanderIcon @(IsExpanded ? Classes?.ExpandedIcon : "")" />
+                            }
                         </span>
                     }
                 }

@@ -6,6 +6,7 @@
     font-weight: $tg-fw-regular;
     color: $clr-fg-pri;
     box-sizing: border-box;
+
     // The panel follows the size class of the accordion the way the header does, so that a Size means the
     // size of the whole component and not only of its header. The fallback is what the medium size resolves
     // to, for an accordion whose class list a consumer has taken apart.
@@ -25,13 +26,18 @@
     // The duration of the expand/collapse transition. TransitionDuration arrives inline as the -full token
     // and everything below reads this derived one, following the -full pattern of motion.fluent.scss, so the
     // reduced-motion query can still collapse a duration that was set inline. Without one it falls back to
-    // the theme's own long duration, which the global stylesheet already collapses on its own.
+    // the theme's own long duration.
     //
     // The -full token is re-declared here rather than only read, because custom properties inherit: an
     // accordion nested in the panel of one that was given a TransitionDuration would otherwise animate at
     // its parent's duration. The inline declaration sits on the element itself, so it still wins over this
     // one on the accordion that was actually given the parameter.
-    --bit-acd-dur-full: #{$mot-duration-long};
+    //
+    // The default is read from the theme's -full duration rather than from the derived one it feeds: the
+    // derived token is the one the reduced-motion query collapses, so reading it here would leave
+    // --bit-acd-dur-full already collapsed under a reduced-motion preference and give the .bit-fam opt-out
+    // below nothing to restore. The fallback keeps a theme that ships only the derived token working.
+    --bit-acd-dur-full: var(--bit-mot-duration-long-full, #{$mot-duration-long});
     --bit-acd-dur: var(--bit-acd-dur-full);
 
     // Every rule that reaches from the root into a part of the accordion is chained down through the header
@@ -122,7 +128,10 @@
 .bit-acd-nbd {
     border: none;
 
-    &:not(.bit-acd-pbg, .bit-acd-sbg, .bit-acd-tbg, .bit-acd-rbg) {
+    // .bit-dis is excluded along with them for a different reason: the disabled background is declared at
+    // the same specificity as this rule and earlier in the file, so without the exclusion a disabled
+    // borderless accordion would keep the secondary fill while the rest of it went grey.
+    &:not(.bit-dis, .bit-acd-pbg, .bit-acd-sbg, .bit-acd-tbg, .bit-acd-rbg) {
         background-color: $clr-bg-sec;
         --bit-acd-hov: #{$clr-bg-sec-hover};
         --bit-acd-prs: #{$clr-bg-sec-active};
@@ -292,14 +301,21 @@
     align-items: center;
 }
 
+// Both are handed text the page wrote, so both are allowed to break inside a word rather than run past the
+// header: a flex item is min-width:auto by default, which is the width of its longest unbreakable run - a URL
+// or an identifier in a title would otherwise push the expander icon out of the accordion altogether.
 .bit-acd-ttl {
+    min-width: 0;
+    overflow-wrap: break-word;
     font-weight: $tg-fw-semibold;
     font-size: var(--bit-acd-ttl-fontsize);
 }
 
 .bit-acd-des {
     flex-grow: 1;
+    min-width: 0;
     color: $clr-fg-sec;
+    overflow-wrap: break-word;
 }
 
 

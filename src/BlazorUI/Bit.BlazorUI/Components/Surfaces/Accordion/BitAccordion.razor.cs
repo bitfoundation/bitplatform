@@ -11,6 +11,7 @@ public partial class BitAccordion : BitComponentBase
 
     private bool _isToggling;
     private bool _skipRender;
+    private bool _wasExpanded;
     private bool _hasBeenExpanded;
     private bool _contentHasFocus;
     private ElementReference _headerRef;
@@ -106,6 +107,18 @@ public partial class BitAccordion : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitIconPosition? ExpanderIconPosition { get; set; }
+
+    /// <summary>
+    /// The custom content to render in place of the expander icon, leaving the rest of the header - the
+    /// icon, the title and the description - as it is, and receiving the current expanded state.
+    /// </summary>
+    /// <remarks>
+    /// It takes the place of the icon inside the wrapper the rotation is applied to, so the content is
+    /// still turned over as the panel opens unless <see cref="NoExpanderRotation"/> keeps it still, and
+    /// <see cref="HideExpanderIcon"/> still removes it altogether. Unlike <see cref="HeaderTemplate"/>,
+    /// which replaces the whole header and this along with it, it only takes the place of the expander.
+    /// </remarks>
+    [Parameter] public RenderFragment<bool>? ExpanderTemplate { get; set; }
 
     /// <summary>
     /// Opens the panel of the accordion while the page is being printed, so that a collapsed section is not
@@ -296,6 +309,17 @@ public partial class BitAccordion : BitComponentBase
 
 
     /// <summary>
+    /// Gives the focus to the header of the accordion, so that a panel the app has just opened is also
+    /// where the keyboard is standing.
+    /// </summary>
+    public ValueTask FocusAsync() => _headerRef.FocusAsync();
+
+    /// <summary>
+    /// Gives the focus to the header of the accordion without scrolling it into view.
+    /// </summary>
+    public ValueTask FocusAsync(bool preventScroll) => _headerRef.FocusAsync(preventScroll);
+
+    /// <summary>
     /// Expands the accordion. Does nothing if it is already expanded, and reports the change through the
     /// IsExpanded binding, OnChange and OnExpand.
     /// </summary>
@@ -442,6 +466,29 @@ public partial class BitAccordion : BitComponentBase
         return false;
     }
 
+    // A panel that closes on something the keyboard was standing in takes that place away, and the browser
+    // answers by dropping the focus on the document - which is the top of the page for anyone reading by
+    // keyboard. The header that holds the panel is where the reader was, so that is where the focus goes.
+    //
+    // It is done here, off the render that closed the panel, rather than in the toggle itself, because a
+    // collapse does not have to come from the accordion at all: a bound or a fully controlled IsExpanded is
+    // driven from the page, and the reader inside the panel loses their place just the same. A click on the
+    // header has already moved the focus there itself, and the focusout that comes with it has already
+    // cleared the flag below, so this really is about a collapse that came from somewhere else.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_wasExpanded && IsExpanded is false && _contentHasFocus)
+        {
+            _contentHasFocus = false;
+
+            await _headerRef.FocusAsync();
+        }
+
+        _wasExpanded = IsExpanded;
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
 
 
     private async Task HandleOnClick(MouseEventArgs e)
@@ -463,6 +510,10 @@ public partial class BitAccordion : BitComponentBase
     private async Task SetExpanded(bool value)
     {
         if (await AssignExpanded(value, BitAccordionToggleReason.Method) is false) return;
+
+        // A render that carries a state change is never the one the focus bookkeeping is trying to skip -
+        // and it is the one the focus return in OnAfterRenderAsync above rides on.
+        _skipRender = false;
 
         await InvokeAsync(StateHasChanged);
     }
@@ -515,8 +566,6 @@ public partial class BitAccordion : BitComponentBase
 
         if (IsExpanded) _hasBeenExpanded = true;
 
-        await ReturnFocusToTheHeader();
-
         await OnChange.InvokeAsync(IsExpanded);
 
         if (IsExpanded)
@@ -553,19 +602,5 @@ public partial class BitAccordion : BitComponentBase
     {
         _contentHasFocus = false;
         _skipRender = true;
-    }
-
-    // A panel that closes on something the keyboard was standing in takes that place away, and the browser
-    // answers by dropping the focus on the document - which is the top of the page for anyone reading by
-    // keyboard. The header that closed it is where the reader was, so that is where the focus goes back to.
-    // A click on the header has already moved the focus there itself, so this is really about a collapse the
-    // page asks for while the reader is inside the panel.
-    private async Task ReturnFocusToTheHeader()
-    {
-        if (IsExpanded || _contentHasFocus is false) return;
-
-        _contentHasFocus = false;
-
-        await _headerRef.FocusAsync();
     }
 }

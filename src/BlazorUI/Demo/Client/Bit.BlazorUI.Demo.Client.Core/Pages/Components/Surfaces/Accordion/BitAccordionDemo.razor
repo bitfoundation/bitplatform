@@ -80,7 +80,8 @@
             <code>ExpanderIcon</code> replace it, <code>ExpanderIconPosition</code> moves it to the start of the header,
             <code>HideExpanderIcon</code> removes it, and <code>NoExpanderRotation</code> keeps it still. Giving an
             <code>ExpandedExpanderIconName</code> swaps the icon for another one while the panel is open, which also
-            stops the rotation - a swapped icon already reports the state on its own.
+            stops the rotation - a swapped icon already reports the state on its own. For an expander that is not an
+            icon at all, <BitLink Href="#example15">ExpanderTemplate</BitLink> puts any content in its place.
         </div>
         <br /><br />
         <div class="example-content">
@@ -245,11 +246,15 @@
             A reference to the component exposes <code>Expand</code>, <code>Collapse</code> and <code>Toggle</code>,
             which report the change through the binding and the events exactly as a click on the header would. They
             work on a disabled accordion too, so an app can still open one to show why it is disabled.
+            <code>FocusAsync</code> moves the keyboard to the header, so a panel the app has just opened is also
+            where the reader is standing - and the other way round, a panel that closes on the element the keyboard
+            was in hands the focus back to its own header on its own, whoever closed it.
         </div>
         <br />
         <BitButton OnClick="() => accordionRef.Expand()">Expand</BitButton>
         <BitButton OnClick="() => accordionRef.Collapse()">Collapse</BitButton>
         <BitButton OnClick="() => accordionRef.Toggle()">Toggle</BitButton>
+        <BitButton OnClick="async () => { await accordionRef.Expand(); await accordionRef.FocusAsync(); }">Expand &amp; focus</BitButton>
         <br /><br />
         <BitAccordion @ref="accordionRef" Title="Accordion" Description="I am an accordion">
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
@@ -318,10 +323,13 @@
     <DemoExample Title="Templates" RazorCode="@example15RazorCode" Id="example15">
         <div>
             <code>TitleTemplate</code> takes the place of the title text and leaves the rest of the header - the icon,
-            the description and the expander - as it is. <code>HeaderTemplate</code> goes further and replaces the whole
-            header, expander icon included, receiving the current expanded state so the template can draw its own
-            indicator. Anything interactive belongs in <code>Actions</code> rather than in either template, both of which
-            are rendered inside the toggle button. The panel itself takes any content at all.
+            the description and the expander - as it is. <code>ExpanderTemplate</code> does the same for the expander,
+            receiving the current expanded state and sitting inside the wrapper the rotation is applied to, so its
+            content still turns over unless <code>NoExpanderRotation</code> keeps it still.
+            <code>HeaderTemplate</code> goes further and replaces the whole header, expander included, receiving the
+            expanded state so the template can draw its own indicator. Anything interactive belongs in
+            <code>Actions</code> rather than in any of the three, all of which are rendered inside the toggle button.
+            The panel itself takes any content at all.
         </div>
         <br /><br />
         <div class="example-content">
@@ -333,6 +341,28 @@
                         <BitIcon IconName="@BitIconName.Info" Color="BitColor.Info" />
                     </BitStack>
                 </TitleTemplate>
+                <Body>
+                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                </Body>
+            </BitAccordion>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>ExpanderTemplate:</div>
+            <BitAccordion Title="Show more" IconName="@BitIconName.Info" NoExpanderRotation>
+                <ExpanderTemplate Context="isExpanded">
+                    <BitText Typography="BitTypography.Caption1" Color="BitColor.Primary">
+                        @(isExpanded ? "Less" : "More")
+                    </BitText>
+                </ExpanderTemplate>
+                <Body>
+                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                </Body>
+            </BitAccordion>
+            <BitAccordion Title="Turning with the panel">
+                <ExpanderTemplate>
+                    <BitIcon IconName="@BitIconName.CirclePlus" />
+                </ExpanderTemplate>
                 <Body>
                     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
                 </Body>
@@ -601,7 +631,14 @@
     </DemoExample>
 
     <DemoExample Title="Style & Class" RazorCode="@example23RazorCode" Id="example23">
-        <div><code>Style</code> and <code>Class</code> dress the root element, while <code>Styles</code> and <code>Classes</code> reach each part of the accordion on its own - the header, the title, the expander icon, the panel and everything between them.</div>
+        <div>
+            <code>Style</code> and <code>Class</code> dress the root element, while <code>Styles</code> and
+            <code>Classes</code> reach each part of the accordion on its own - the header, the title, the expander
+            icon, the panel and everything between them. Two of their slots are states rather than parts:
+            <code>Expanded</code> is added to the root only while the panel is open, and <code>ExpandedIcon</code>
+            only to the expander icon while it is, so the open accordion can be dressed differently from the
+            closed one without a line of C#.
+        </div>
         <br /><br />
         <div class="example-content">
             <div>Component's style &amp; class:</div>
@@ -620,6 +657,8 @@
                           Styles="@(new() { Header = "background: var(--bit-clr-bg-sec);",
                                             Title = "color: tomato;",
                                             ExpanderIcon = "color: tomato;",
+                                            ExpandedIcon = "color: seagreen;",
+                                            Expanded = "border-color: seagreen;",
                                             Content = "font-style: italic;" })">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>

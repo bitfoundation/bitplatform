@@ -105,6 +105,13 @@ public partial class BitAccordionDemo
         },
         new()
         {
+            Name = "ExpanderTemplate",
+            Type = "RenderFragment<bool>?",
+            DefaultValue = "null",
+            Description = "The custom content to render in place of the expander icon, leaving the rest of the header as it is and receiving the current expanded state. It sits inside the wrapper the rotation is applied to, so it still turns over unless NoExpanderRotation keeps it still, and HideExpanderIcon still removes it. HeaderTemplate replaces it along with the rest of the header."
+        },
+        new()
+        {
             Name = "ExpandOnPrint",
             Type = "bool",
             DefaultValue = "false",
@@ -300,6 +307,12 @@ public partial class BitAccordionDemo
             Name = "Toggle",
             Type = "Task",
             Description = "Expands the accordion if it is collapsed and collapses it if it is expanded, reporting the change through the IsExpanded binding, OnChange and OnExpand/OnCollapse."
+        },
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask",
+            Description = "Gives the focus to the header of the accordion, so that a panel the app has just opened is also where the keyboard is standing. The overload taking a bool prevents the header from being scrolled into view."
         }
     ];
 
@@ -773,6 +786,7 @@ private void HandleOnToggling(BitAccordionToggleArgs args)
 <BitButton OnClick=""() => accordionRef.Expand()"">Expand</BitButton>
 <BitButton OnClick=""() => accordionRef.Collapse()"">Collapse</BitButton>
 <BitButton OnClick=""() => accordionRef.Toggle()"">Toggle</BitButton>
+<BitButton OnClick=""async () => { await accordionRef.Expand(); await accordionRef.FocusAsync(); }"">Expand &amp; focus</BitButton>
 
 <BitAccordion @ref=""accordionRef"" Title=""Accordion"" Description=""I am an accordion"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
@@ -817,6 +831,25 @@ private BitAccordion accordionRef = default!;";
             <BitIcon IconName=""@BitIconName.Info"" Color=""BitColor.Info"" />
         </BitStack>
     </TitleTemplate>
+    <Body>
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+    </Body>
+</BitAccordion>
+
+<BitAccordion Title=""Show more"" IconName=""@BitIconName.Info"" NoExpanderRotation>
+    <ExpanderTemplate Context=""isExpanded"">
+        <BitText Typography=""BitTypography.Caption1"" Color=""BitColor.Primary"">
+            @(isExpanded ? ""Less"" : ""More"")
+        </BitText>
+    </ExpanderTemplate>
+    <Body>
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+    </Body>
+</BitAccordion>
+<BitAccordion Title=""Turning with the panel"">
+    <ExpanderTemplate>
+        <BitIcon IconName=""@BitIconName.CirclePlus"" />
+    </ExpanderTemplate>
     <Body>
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
     </Body>
@@ -1048,6 +1081,8 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
               Styles=""@(new() { Header = ""background: var(--bit-clr-bg-sec);"",
                                 Title = ""color: tomato;"",
                                 ExpanderIcon = ""color: tomato;"",
+                                ExpandedIcon = ""color: seagreen;"",
+                                Expanded = ""border-color: seagreen;"",
                                 Content = ""font-style: italic;"" })"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
