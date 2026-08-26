@@ -27,12 +27,12 @@
     // and everything below reads this derived one, following the -full pattern of motion.fluent.scss, so the
     // reduced-motion query can still collapse a duration that was set inline. Without one it falls back to
     // the theme's own long duration.
-    //
+    // On the re-declaration:
     // The -full token is re-declared here rather than only read, because custom properties inherit: an
     // accordion nested in the panel of one that was given a TransitionDuration would otherwise animate at
     // its parent's duration. The inline declaration sits on the element itself, so it still wins over this
     // one on the accordion that was actually given the parameter.
-    //
+    // On the default value:
     // The default is read from the theme's -full duration rather than from the derived one it feeds: the
     // derived token is the one the reduced-motion query collapses, so reading it here would leave
     // --bit-acd-dur-full already collapsed under a reduced-motion preference and give the .bit-fam opt-out
