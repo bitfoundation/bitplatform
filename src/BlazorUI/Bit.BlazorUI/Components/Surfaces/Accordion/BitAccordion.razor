@@ -7,47 +7,124 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
      aria-label="@AriaLabel">
-    <button @onclick="HandleOnClick"
-            role="button"
-            type="button"
-            style="@Styles?.Header"
-            class="bit-acd-hdr @Classes?.Header"
-            aria-expanded="@IsExpanded"
-            tabindex="@(IsEnabled ? 0 : -1)">
-        @if (HeaderTemplate is not null)
-        {
-            @HeaderTemplate(IsExpanded)
-        }
-        else
-        {
-            var expanderIcon = BitIconInfo.From(ExpanderIcon, ExpanderIconName ?? "ChevronRight bit-ico-r90");
-
-            <div style="@Styles?.HeaderContent" class="bit-acd-wrp @Classes?.HeaderContent">
-                <div style="@Styles?.Title" class="bit-acd-ttl @Classes?.Title">
-                    @Title
-                </div>
-                @if (Description.HasValue())
+    <div style="@Styles?.HeaderWrapper" class="bit-acd-hwr @Classes?.HeaderWrapper">
+        @* The APG asks for the toggle to be the only thing inside a heading, so anything else the header
+           carries (the Actions slot) is a sibling of the heading rather than a child of it: content inside
+           the heading would otherwise be read as part of the heading text, and an interactive element there
+           would be nested inside the button. *@
+        <div role="heading"
+             aria-level="@_HeadingLevel"
+             style="@Styles?.Heading"
+             class="bit-acd-hed @Classes?.Heading">
+            <button @ref="_headerRef"
+                    @onclick="HandleOnClick"
+                    id="@_HeaderId"
+                    type="button"
+                    style="@Styles?.Header"
+                    class="bit-acd-hdr @(_isToggling ? "bit-acd-bsy" : "") @Classes?.Header"
+                    aria-label="@HeaderAriaLabel"
+                    aria-expanded="@(IsExpanded ? "true" : "false")"
+                    aria-controls="@_ContentId"
+                    aria-disabled="@((IsEnabled is false || ReadOnly) ? "true" : null)"
+                    aria-busy="@(_isToggling ? "true" : null)"
+                    tabindex="@(IsEnabled ? (TabIndex ?? "0") : "-1")">
+                @if (HeaderTemplate is not null)
                 {
-                    <div style="@Styles?.Description" class="bit-acd-des @Classes?.Description">
-                        @Description
+                    @HeaderTemplate(IsExpanded)
+                }
+                else
+                {
+                    var icon = BitIconInfo.From(Icon, IconName);
+                    var expandedIcon = BitIconInfo.From(ExpandedExpanderIcon, ExpandedExpanderIconName);
+                    var expanderIcon = (IsExpanded && expandedIcon is not null)
+                                     ? expandedIcon
+                                     : BitIconInfo.From(ExpanderIcon, ExpanderIconName ?? "ChevronRight bit-ico-r90");
+                    // A chevron that turns is the whole story of the state, but an icon that is swapped for
+                    // another one when expanded already tells it, and turning that one as well only garbles it.
+                    var rotated = IsExpanded && expandedIcon is null && NoExpanderRotation is false;
+
+                    @if (icon is not null)
+                    {
+                        <i aria-hidden="true"
+                           style="@Styles?.Icon"
+                           class="bit-acd-ico @icon.GetCssClasses() @Classes?.Icon" />
+                    }
+
+                    <div style="@Styles?.HeaderContent" class="bit-acd-wrp @Classes?.HeaderContent">
+                        @* Left out when there is nothing to put in it, the way the description below is: an empty
+                           title box is still a flex item, and the gap it brings with it would open a hole in front
+                           of the description of a header that carries one without a title. *@
+                        @if (TitleTemplate is not null || Title.HasValue())
+                        {
+                            <div style="@Styles?.Title" class="bit-acd-ttl @Classes?.Title">
+                                @if (TitleTemplate is not null)
+                                {
+                                    @TitleTemplate
+                                }
+                                else
+                                {
+                                    @Title
+                                }
+                            </div>
+                        }
+                        @if (Description.HasValue())
+                        {
+                            <div style="@Styles?.Description" class="bit-acd-des @Classes?.Description">
+                                @Description
+                            </div>
+                        }
                     </div>
+
+                    @if (HideExpanderIcon is false)
+                    {
+                        <span style="@Styles?.ExpanderIconWrapper"
+                              class="bit-acd-eiw @Classes?.ExpanderIconWrapper @(rotated ? "bit-ico--r180" : "")">
+                            @if (ExpanderTemplate is not null)
+                            {
+                                @ExpanderTemplate(IsExpanded)
+                            }
+                            else
+                            {
+                                <i aria-hidden="true"
+                                   style="@JoinStyles(Styles?.ExpanderIcon, IsExpanded ? Styles?.ExpandedIcon : null)"
+                                   class="bit-acd-eic @expanderIcon?.GetCssClasses() @Classes?.ExpanderIcon @(IsExpanded ? Classes?.ExpandedIcon : "")" />
+                            }
+                        </span>
+                    }
+                }
+            </button>
+        </div>
+        @if (Actions is not null)
+        {
+            <div style="@Styles?.Actions" class="bit-acd-act @Classes?.Actions">
+                @Actions
+            </div>
+        }
+    </div>
+
+    @* The collapse is a grid track animating between 0fr and 1fr, which is the only cross-browser way to
+       transition to the intrinsic height of the content: the padding therefore has to sit on the innermost
+       element, since a border box can never be shorter than its own padding. *@
+    <div style="@Styles?.ContentContainer" class="bit-acd-cnt @Classes?.ContentContainer">
+        <div style="@Styles?.ContentWrapper" class="bit-acd-cwr @Classes?.ContentWrapper">
+            @* aria-labelledby names a landmark, and on an element without the role it names nothing at all,
+               so the two are dropped together rather than leaving one behind. *@
+            <div id="@_ContentId"
+                 role="@(NoContentRegion ? null : "region")"
+                 aria-labelledby="@(NoContentRegion ? null : _HeaderId)"
+                 style="@Styles?.Content"
+                 class="bit-acd-con @(IsExpanded ? "bit-acd-cex" : "bit-acd-cco") @Classes?.Content"
+                 tabindex="@(_IsContentFocusable ? "0" : null)"
+                 @onfocusin="HandleOnContentFocusIn"
+                 @onfocusout="HandleOnContentFocusOut">
+                @if (_ShouldRenderContent)
+                {
+                    @* An accordion nested in this panel takes the level below this one, unless it is given one. *@
+                    <CascadingValue TValue="int?" Name="@HeadingLevelCascadeName" Value="_HeadingLevel">
+                        @(ChildContent ?? Body)
+                    </CascadingValue>
                 }
             </div>
-            <span style="@Styles?.ExpanderIconWrapper"
-                  class="bit-acd-eiw @Classes?.ExpanderIconWrapper @(IsExpanded ? "bit-ico--r180" : "")">
-                <i aria-hidden="true"
-                   style="@Styles?.ExpanderIcon @(IsExpanded ? Styles?.ExpandedIcon : "")"
-                   class="bit-acd-eic @expanderIcon?.GetCssClasses() @Classes?.ExpanderIcon @(IsExpanded ? Classes?.ExpandedIcon : "")" />
-            </span>
-        }
-    </button>
-
-    <div style="@Styles?.ContentContainer" class="bit-acd-cnt @Classes?.ContentContainer">
-        <div role="region"
-             style="@Styles?.Content"
-             class="bit-acd-con @(IsExpanded ? "bit-acd-cex" : "bit-acd-cco") @Classes?.Content"
-             tabindex="@(IsEnabled ? 0 : -1)">
-            @(ChildContent ?? Body)
         </div>
     </div>
 </div>
