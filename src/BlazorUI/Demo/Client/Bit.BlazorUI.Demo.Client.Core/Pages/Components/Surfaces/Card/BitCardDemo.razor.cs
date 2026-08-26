@@ -978,6 +978,8 @@ private int clickCount;";
         <BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"">GitHub</BitLink>
     </Footer>
 </BitCard>";
+    private readonly string example7CsharpCode = @"
+private bool isPinned;";
 
     private readonly string example8RazorCode = @"
 <BitCard @bind-Selected=""isBasicSelected"" Title=""Basic"" Subtitle=""Everything you need to start"" Width=""16rem"">
