@@ -1,4 +1,10 @@
-﻿.example-box {
+﻿.context-area {
+    padding: 2rem;
+    border-radius: 4px;
+    border: 1px dashed var(--bit-clr-brd-sec);
+}
+
+.example-box {
     gap: 1rem;
     display: flex;
     flex-wrap: wrap;
@@ -10,6 +16,13 @@
     // have to sit in the ::deep block, which the scope attribute the relocation carries over still matches.
     .callout-content {
         padding: 1rem;
+    }
+
+    // The header and the footer the callout renders itself hold their own padding, since the content
+    // between them is the only part that carries the .callout-content padding above.
+    .section-bar {
+        font-weight: 600;
+        padding: 0.75rem 1rem;
     }
 
     .scroller {

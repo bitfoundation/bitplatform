@@ -15,6 +15,16 @@
     width: fit-content;
 }
 
+// The point a callout opened with OpenAt is placed against. It is a zero-sized element at the coordinates
+// asked for, so the placement code measures a box the way it measures an anchor and needs to know nothing
+// about points. It takes no room, no clicks and no part in the accessibility tree.
+.bit-clo-pnt {
+    width: 0;
+    height: 0;
+    position: fixed;
+    pointer-events: none;
+}
+
 .bit-clo-ovl {
     top: 0;
     left: 0;
@@ -22,7 +32,12 @@
     height: 100%;
     display: none;
     position: fixed;
-    z-index: $zindex-overlay;
+    // A callout opened from inside another one is stacked above it, and so is the overlay that takes the
+    // clicks for it: left at the shared level it would sit under the callout beneath it, where a click on
+    // that callout would never reach the overlay meant to dismiss the one on top. One step is the whole
+    // distance between the two levels plus one, so a nested overlay clears the callout below it. The
+    // level is set by the positioning code on the wrapper the relocated parts share.
+    z-index: calc(#{$zindex-overlay} + var(--bit-clo-lvl, 0) * (#{$zindex-callout} - #{$zindex-overlay} + 1));
     background-color: transparent;
 }
 
@@ -59,7 +74,7 @@
     outline: transparent;
     position: fixed;
     box-sizing: border-box;
-    z-index: $zindex-callout;
+    z-index: calc(#{$zindex-callout} + var(--bit-clo-lvl, 0) * (#{$zindex-callout} - #{$zindex-overlay} + 1));
     // The sizing the consumer asked for, defaulted to what the callout does on its own: as wide as its
     // content needs it to be. The positioning code clears the inline width of the callout on every layout
     // pass and only writes it back for SetCalloutWidth/FixedCalloutWidth, which is why these are declared
@@ -143,9 +158,25 @@
         --bit-clo-mnw-def: auto;
     }
 
+    // A callout with a header or a footer is a column of them around a body that takes the scrolling, so
+    // the parts around the body stay put while the body scrolls. The callout itself must not scroll then:
+    // the positioning code caps the body, and a second scroller around it would let the header and the
+    // footer be scrolled away too.
+    // Declared after the caps above so it wins over them at the same specificity.
+    &.bit-clo-sec {
+        overflow: hidden;
+    }
+
     &.bit-rtl {
         --bit-clo-transform-factor: -1;
     }
+}
+
+// The body between the header and the footer is what gives way when the callout is capped to the room the
+// viewport leaves: the positioning code writes the cap onto it, and this is what turns that cap into
+// content the user can still reach rather than content that is simply cut off.
+.bit-clo-bdy {
+    overflow: hidden auto;
 }
 
 // The beak that points at the anchor. It is a square rotated onto its corner and centred on the point the
@@ -156,13 +187,15 @@
 .bit-clo-arw {
     top: 0;
     left: 0;
-    width: spacing(1.5);
-    height: spacing(1.5);
+    // The size the consumer asked for, defaulted to the beak the theme's own rhythm gives. The square is
+    // centred on the point the positioning code puts it at, so its size is the only thing that changes.
+    width: var(--bit-clo-arw-siz, #{spacing(1.5)});
+    height: var(--bit-clo-arw-siz, #{spacing(1.5)});
     display: none;
     position: fixed;
     box-sizing: border-box;
     pointer-events: none;
-    z-index: $zindex-callout;
+    z-index: calc(#{$zindex-callout} + var(--bit-clo-lvl, 0) * (#{$zindex-callout} - #{$zindex-overlay} + 1));
     background-color: $clr-bg-pri;
     transform: translate(-50%, -50%) rotate(45deg);
 }

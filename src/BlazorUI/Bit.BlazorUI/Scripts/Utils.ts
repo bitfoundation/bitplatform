@@ -80,15 +80,21 @@
                 // also null for a fixed-positioned element that is perfectly visible, so those are
                 // checked by hand instead: a hidden one has no box at all, and visibility:hidden leaves
                 // a box the focus still cannot land in.
-                const target = candidates.find(el => {
+                const focusable = (el: HTMLElement) => {
                     if (el.offsetParent !== null) return true;
 
                     const style = getComputedStyle(el);
                     return style.position === 'fixed'
                         && style.visibility !== 'hidden'
                         && el.getClientRects().length > 0;
-                });
-                (target ?? container).focus();
+                };
+
+                // The consumer naming the element the focus should land on, for the popups whose first
+                // focusable element is not the one worth starting at - a dismiss button ahead of the field
+                // the popup was opened to fill in. The first focusable element is the fallback.
+                const requested = candidates.find(el => el.hasAttribute('data-autofocus') && focusable(el));
+
+                (requested ?? candidates.find(focusable) ?? container).focus();
             } catch (e) { console.error("BitBlazorUI.Utils.focusFirstElement:", e); }
         }
 

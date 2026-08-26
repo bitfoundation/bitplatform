@@ -6,6 +6,15 @@ public partial class BitCalloutDemo
     [
         new()
         {
+            Name = "Alignment",
+            Type = "BitCalloutAlignment?",
+            DefaultValue = "null",
+            Description = "How the callout is lined up with its anchor along the axis it is not placed on. It defaults to Start.",
+            LinkType = LinkType.Link,
+            Href = "#callout-alignment-enum"
+        },
+        new()
+        {
             Name = "Anchor",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -24,6 +33,13 @@ public partial class BitCalloutDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The id of the external anchor element."
+        },
+        new()
+        {
+            Name = "ArrowSize",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The size in pixels of the arrow drawn by ShowArrow, which is the length of the side of the square the beak is cut out of. It defaults to 12."
         },
         new()
         {
@@ -75,6 +91,13 @@ public partial class BitCalloutDemo
         },
         new()
         {
+            Name = "CollisionPadding",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The distance in pixels the callout keeps from the edges of the screen when it is placed and when it is slid back onto it."
+        },
+        new()
+        {
             Name = "Content",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -101,14 +124,21 @@ public partial class BitCalloutDemo
             Name = "FixedCalloutWidth",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Forces the callout to preserve its component's original width."
+            Description = "Holds the callout to the width of its anchor, so that a content wider than the anchor wraps inside it instead of stretching it."
+        },
+        new()
+        {
+            Name = "Footer",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The content of a footer that stays at the bottom of the callout while the rest of it scrolls."
         },
         new()
         {
             Name = "FooterId",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The id of the footer element that renders at the end of the scrolling container of the callout content."
+            Description = "The id of the footer element that renders at the end of the scrolling container of the callout content. It wins over the Footer parameter."
         },
         new()
         {
@@ -119,10 +149,17 @@ public partial class BitCalloutDemo
         },
         new()
         {
+            Name = "Header",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The content of a header that stays at the top of the callout while the rest of it scrolls."
+        },
+        new()
+        {
             Name = "HeaderId",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The id of the header element that renders at the top of the scrolling container of the callout content."
+            Description = "The id of the header element that renders at the top of the scrolling container of the callout content. It wins over the Header parameter."
         },
         new()
         {
@@ -147,6 +184,13 @@ public partial class BitCalloutDemo
         },
         new()
         {
+            Name = "LazyRender",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the content of the callout out of the page until the callout is opened for the first time. Once rendered it stays, so whatever state the content holds survives the callout closing."
+        },
+        new()
+        {
             Name = "MaxHeight",
             Type = "string?",
             DefaultValue = "null",
@@ -164,7 +208,7 @@ public partial class BitCalloutDemo
             Name = "MaxWindowWidth",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The max window width to consider when calculating the position of the callout before opening."
+            Description = "The window width in pixels below which the callout is allowed to hang off the end of the screen rather than being slid back onto it."
         },
         new()
         {
@@ -178,7 +222,7 @@ public partial class BitCalloutDemo
             Name = "Modal",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Dims the page behind the callout, so that the callout reads as the only thing in play."
+            Description = "Dims the page behind the callout and holds it still while the callout is open, so that the callout reads as the only thing in play."
         },
         new()
         {
@@ -193,6 +237,13 @@ public partial class BitCalloutDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Keeps the callout open when a click lands outside of it, and when the page is scrolled or resized under it."
+        },
+        new()
+        {
+            Name = "NoFlip",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the callout on the Side it was asked for even when there is not enough room for it there, instead of flipping it to the opposite side."
         },
         new()
         {
@@ -273,7 +324,7 @@ public partial class BitCalloutDemo
             Name = "SetCalloutWidth",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Forces the callout to set its content container width while opening based on the available space and actual content."
+            Description = "Widens the callout to at least the width of its anchor, so that a callout with little in it still reads as belonging to what it was opened from."
         },
         new()
         {
@@ -361,6 +412,27 @@ public partial class BitCalloutDemo
                 },
                 new()
                 {
+                    Name = "Header",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the header element of the BitCallout, which is rendered when the Header parameter is set."
+                },
+                new()
+                {
+                    Name = "Body",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the scrolling body element of the BitCallout, which is rendered when the Header or the Footer parameter is set."
+                },
+                new()
+                {
+                    Name = "Footer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the footer element of the BitCallout, which is rendered when the Footer parameter is set."
+                },
+                new()
+                {
                     Name = "Overlay",
                     Type = "string?",
                     DefaultValue = "null",
@@ -441,6 +513,18 @@ public partial class BitCalloutDemo
         },
         new()
         {
+            Id = "callout-alignment-enum",
+            Name = "BitCalloutAlignment",
+            Description = "",
+            Items =
+            [
+                new() { Name = "Start", Value = "0", Description = "Lined up with the edge the anchor starts at - its left edge in a left-to-right layout for a callout above or below it, and its top edge for a callout beside it." },
+                new() { Name = "Center", Value = "1", Description = "Centered on the anchor." },
+                new() { Name = "End", Value = "2", Description = "Lined up with the edge the anchor ends at - its right edge in a left-to-right layout for a callout above or below it, and its bottom edge for a callout beside it." },
+            ]
+        },
+        new()
+        {
             Id = "panel-position-enum",
             Name = "BitPanelPosition",
             Description = "",
@@ -477,6 +561,12 @@ public partial class BitCalloutDemo
         },
         new()
         {
+            Name = "OpenAt",
+            Type = "Task",
+            Description = "Opens the callout at a point on the screen rather than against an anchor, which is what a context menu needs. It takes the coordinates (double x, double y) or the MouseEventArgs they came from, and moves an already open callout to the new point.",
+        },
+        new()
+        {
             Name = "Close",
             Type = "Task",
             Description = "Closes the callout programmatically.",
@@ -495,12 +585,16 @@ public partial class BitCalloutDemo
     private BitCallout callout1 = default!;
     private BitCallout callout2 = default!;
     private BitCallout callout3 = default!;
+    private BitCallout contextCallout = default!;
 
     private bool isOpen;
+    private DateTimeOffset? lazyDate;
+    private DateTimeOffset? eagerDate;
     private int openCount;
     private int toggleCount;
     private int dismissCount;
     private string autoCloseAction = "none";
+    private string contextAction = "none";
 
 
 
@@ -547,6 +641,34 @@ private BitCallout callout1;
 private BitCallout callout2;";
 
     private readonly string example3RazorCode = @"
+<style>
+    .context-area {
+        padding: 2rem;
+        border-radius: 4px;
+        border: 1px dashed gray;
+    }
+</style>
+
+<div class=""context-area"" @oncontextmenu=""e => contextCallout.OpenAt(e)"" @oncontextmenu:preventDefault>
+    Right-click anywhere in here
+</div>
+
+<BitCallout AutoClose MinWidth=""12rem"" @ref=""contextCallout"">
+    <div class=""callout-content"">
+        <BitStack Gap=""0.25rem"">
+            <BitButton Variant=""BitVariant.Text"" OnClick=""@(() => contextAction = ""Cut"")"">Cut</BitButton>
+            <BitButton Variant=""BitVariant.Text"" OnClick=""@(() => contextAction = ""Copied"")"">Copy</BitButton>
+            <BitButton Variant=""BitVariant.Text"" OnClick=""@(() => contextAction = ""Pasted"")"">Paste</BitButton>
+        </BitStack>
+    </div>
+</BitCallout>
+
+<div>Last action: @contextAction</div>";
+    private readonly string example3CsharpCode = @"
+private BitCallout contextCallout;
+private string contextAction = ""none"";";
+
+    private readonly string example4RazorCode = @"
 <BitButton OnClick=""() => isOpen = true"">Show callout</BitButton>
 
 <BitCallout @bind-IsOpen=""isOpen"">
@@ -577,10 +699,10 @@ private BitCallout callout2;";
         </div>
     </Content>
 </BitCallout>";
-    private readonly string example3CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 private bool isOpen;";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitCallout OpenOnHover Gap=""8"">
     <Anchor>
         <BitButton Variant=""BitVariant.Outline"">Hover me</BitButton>
@@ -603,7 +725,7 @@ private bool isOpen;";
     </Content>
 </BitCallout>";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitCallout Direction=""BitDropDirection.TopAndBottom"">
     <Anchor>
         <BitButton>TopAndBottom</BitButton>
@@ -654,6 +776,52 @@ private bool isOpen;";
     </Content>
 </BitCallout>
 
+<BitCallout Side=""BitCalloutSide.Top"" NoFlip ShowArrow Gap=""8"">
+    <Anchor>
+        <BitButton Variant=""BitVariant.Outline"">Side: Top, NoFlip</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""callout-content"">
+            @for (int i = 1; i < 13; i++)
+            {
+                <div>Callout content @i</div>
+            }
+        </div>
+    </Content>
+</BitCallout>
+
+<BitCallout Alignment=""BitCalloutAlignment.Center"" ShowArrow Gap=""8"">
+    <Anchor>
+        <BitButton Variant=""BitVariant.Text"">A wide anchor, centered alignment</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""callout-content"">Centered on the anchor.</div>
+    </Content>
+</BitCallout>
+
+<BitCallout Alignment=""BitCalloutAlignment.End"" ShowArrow Gap=""8"">
+    <Anchor>
+        <BitButton Variant=""BitVariant.Text"">A wide anchor, end alignment</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""callout-content"">Lined up with the end edge.</div>
+    </Content>
+</BitCallout>
+
+<BitCallout Side=""BitCalloutSide.End"" Alignment=""BitCalloutAlignment.Center"" ShowArrow Gap=""8"">
+    <Anchor>
+        <BitButton Variant=""BitVariant.Text"">Beside, centered</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""callout-content"">
+            @for (int i = 1; i < 5; i++)
+            {
+                <div>Callout content @i</div>
+            }
+        </div>
+    </Content>
+</BitCallout>
+
 <BitCallout Gap=""16"">
     <Anchor>
         <BitButton Variant=""BitVariant.Outline"">Gap of 16px</BitButton>
@@ -663,9 +831,23 @@ private bool isOpen;";
             This callout keeps 16px away from its anchor.
         </div>
     </Content>
+</BitCallout>
+
+<BitCallout CollisionPadding=""24"" Direction=""BitDropDirection.All"" MinWidth=""14rem"">
+    <Anchor>
+        <BitButton Variant=""BitVariant.Outline"">CollisionPadding of 24px</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""callout-content"">
+            @for (int i = 1; i < 25; i++)
+            {
+                <div>Callout content @i</div>
+            }
+        </div>
+    </Content>
 </BitCallout>";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitCallout ShowArrow Gap=""8"">
     <Anchor>
         <BitButton>With an arrow</BitButton>
@@ -686,9 +868,20 @@ private bool isOpen;";
             The beak takes the border of the callout too.
         </div>
     </Content>
+</BitCallout>
+
+<BitCallout ShowArrow ArrowSize=""20"" Gap=""12"">
+    <Anchor>
+        <BitButton Variant=""BitVariant.Text"">ArrowSize of 20px</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""callout-content"">
+            A beak twice the size of the default one.
+        </div>
+    </Content>
 </BitCallout>";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitCallout Width=""20rem"">
     <Anchor>
         <BitButton>Width</BitButton>
@@ -737,12 +930,19 @@ private bool isOpen;";
         <BitButton>A wide anchor with FixedCalloutWidth</BitButton>
     </Anchor>
     <Content>
-        <div class=""callout-content"">The callout is exactly as wide as its anchor.</div>
+        <div class=""callout-content"">
+            A long line of text that wraps rather than making the callout wider than its anchor.
+        </div>
     </Content>
 </BitCallout>";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <style>
+    .section-bar {
+        font-weight: 600;
+        padding: 0.75rem 1rem;
+    }
+
     .scroller {
         display: flex;
         max-width: 16rem;
@@ -759,9 +959,29 @@ private bool isOpen;";
     }
 </style>
 
+<BitCallout MaxWidth=""16rem"">
+    <Anchor>
+        <BitButton>Header & Footer</BitButton>
+    </Anchor>
+    <Header>
+        <div class=""section-bar"">A header that stays put</div>
+    </Header>
+    <Content>
+        <div class=""callout-content"">
+            @for (int i = 1; i < 69; i++)
+            {
+                <div>Callout content @i</div>
+            }
+        </div>
+    </Content>
+    <Footer>
+        <div class=""section-bar"">A footer that stays put</div>
+    </Footer>
+</BitCallout>
+
 <BitCallout ScrollContainerId=""scroller-container"" HeaderId=""scroller-header"" FooterId=""scroller-footer"">
     <Anchor>
-        <BitButton>Show callout</BitButton>
+        <BitButton Variant=""BitVariant.Outline"">Wired up by hand</BitButton>
     </Anchor>
     <Content>
         <div class=""callout-content scroller"">
@@ -777,7 +997,7 @@ private bool isOpen;";
     </Content>
 </BitCallout>";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitCallout ResponsiveMode=""BitResponsiveMode.Panel"" PanelPosition=""BitPanelPosition.End"">
     <Anchor>
         <BitButton>End panel</BitButton>
@@ -821,7 +1041,7 @@ private bool isOpen;";
     </Content>
 </BitCallout>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitCallout Background=""BitColorKind.Secondary"">
     <Anchor>
         <BitButton>Background</BitButton>
@@ -849,7 +1069,7 @@ private bool isOpen;";
     </Content>
 </BitCallout>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitCallout Modal>
     <Anchor>
         <BitButton>Modal</BitButton>
@@ -874,7 +1094,7 @@ private bool isOpen;";
     </Content>
 </BitCallout>";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitCallout AutoFocus>
     <Anchor>
         <BitButton>AutoFocus</BitButton>
@@ -883,6 +1103,21 @@ private bool isOpen;";
         <div class=""callout-content"">
             <BitStack Gap=""1rem"">
                 <BitTextField Label=""Name"" />
+                <BitButton>Submit</BitButton>
+            </BitStack>
+        </div>
+    </Content>
+</BitCallout>
+
+<BitCallout AutoFocus>
+    <Anchor>
+        <BitButton Variant=""BitVariant.Outline"">AutoFocus (data-autofocus)</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""callout-content"">
+            <BitStack Gap=""1rem"">
+                <BitButton Variant=""BitVariant.Text"">Dismiss</BitButton>
+                <BitTextField Label=""Name"" InputHtmlAttributes=""@(new() { { ""data-autofocus"", """" } })"" />
                 <BitButton>Submit</BitButton>
             </BitStack>
         </div>
@@ -913,7 +1148,7 @@ private bool isOpen;";
     </Content>
 </BitCallout>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitCallout AutoClose>
     <Anchor>
         <BitButton>AutoClose (@autoCloseAction)</BitButton>
@@ -941,11 +1176,81 @@ private bool isOpen;";
         </div>
     </Content>
 </BitCallout>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private BitCallout callout3;
 private string autoCloseAction = ""none"";";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
+<BitCallout MinWidth=""15rem"">
+    <Anchor>
+        <BitButton>Filters</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""callout-content"">
+            <BitStack Gap=""0.5rem"">
+                <BitText Typography=""BitTypography.Subtitle2"">Filters</BitText>
+                <BitCheckbox Label=""Active"" />
+                <BitCheckbox Label=""Archived"" />
+
+                <BitCallout ShowArrow Gap=""8"" Side=""BitCalloutSide.End"">
+                    <Anchor>
+                        <BitButton Variant=""BitVariant.Outline"">More options</BitButton>
+                    </Anchor>
+                    <Content>
+                        <div class=""callout-content"">
+                            <BitStack Gap=""0.25rem"">
+                                <BitText>The panel behind is still open.</BitText>
+
+                                <BitCallout ShowArrow Gap=""8"" AutoClose Side=""BitCalloutSide.End"">
+                                    <Anchor>
+                                        <BitButton Variant=""BitVariant.Text"">One more level</BitButton>
+                                    </Anchor>
+                                    <Content>
+                                        <div class=""callout-content"">And so is this one.</div>
+                                    </Content>
+                                </BitCallout>
+                            </BitStack>
+                        </div>
+                    </Content>
+                </BitCallout>
+            </BitStack>
+        </div>
+    </Content>
+</BitCallout>";
+
+    private readonly string example16RazorCode = @"
+<BitCallout LazyRender>
+    <Anchor>
+        <BitButton>LazyRender</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""callout-content"">
+            <BitStack Gap=""0.5rem"">
+                <BitText Typography=""BitTypography.Subtitle2"">Pick a date</BitText>
+                <BitCalendar @bind-Value=""lazyDate"" />
+            </BitStack>
+        </div>
+    </Content>
+</BitCallout>
+
+<BitCallout>
+    <Anchor>
+        <BitButton Variant=""BitVariant.Outline"">Rendered up front</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""callout-content"">
+            <BitStack Gap=""0.5rem"">
+                <BitText Typography=""BitTypography.Subtitle2"">Pick a date</BitText>
+                <BitCalendar @bind-Value=""eagerDate"" />
+            </BitStack>
+        </div>
+    </Content>
+</BitCallout>";
+    private readonly string example16CsharpCode = @"
+private DateTimeOffset? lazyDate;
+private DateTimeOffset? eagerDate;";
+
+    private readonly string example17RazorCode = @"
 <BitCallout OnToggle=""v => toggleCount++"" OnOpen=""() => openCount++"" OnDismiss=""() => dismissCount++"">
     <Anchor>
         <BitButton>Show callout</BitButton>
@@ -956,12 +1261,12 @@ private string autoCloseAction = ""none"";";
 </BitCallout>
 
 <div>Toggled: @toggleCount, Opened: @openCount, Dismissed: @dismissCount</div>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 private int openCount;
 private int toggleCount;
 private int dismissCount;";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example18RazorCode = @"
 <style>
     .custom-class {
         border-radius: 4px;
@@ -1024,14 +1329,14 @@ private int dismissCount;";
                                                  Arrow = ""custom-arrow"",
                                                  AnchorContainer = ""custom-anchor"" })"">
     <Anchor>
-        Classes
+        <BitButton Variant=""BitVariant.Text"">Classes</BitButton>
     </Anchor>
     <Content>
-        This is the callout content.
+        <div class=""callout-content"">This is the callout content.</div>
     </Content>
 </BitCallout>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitCallout Dir=""BitDir.Rtl"" ShowArrow Gap=""8"">
     <Anchor>
         <BitButton>نمایش کال‌اوت</BitButton>

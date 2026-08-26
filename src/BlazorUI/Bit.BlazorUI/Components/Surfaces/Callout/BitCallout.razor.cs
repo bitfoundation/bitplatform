@@ -2,19 +2,29 @@
 
 /// <summary>
 /// A callout is an anchored tip that can be used to teach people or guide them through the app without
-/// blocking them. It hosts any content next to an anchor of its own or an element elsewhere on the page,
-/// flips to the side with the most room, can be sized in every direction, points at its anchor with an
-/// optional arrow, and closes on an outside click or the Escape key.
+/// blocking them. It hosts any content next to an anchor of its own, next to an element elsewhere on the
+/// page, or at a point a right-click happened; flips to the side with the most room, takes a side and an
+/// alignment of its own where they fit, can be sized in every direction, points at its anchor with an
+/// optional arrow, nests inside another callout, and closes on an outside click or the Escape key.
 /// </summary>
 public partial class BitCallout : BitComponentBase
 {
     private string _anchorId = default!;
     private string _arrowId = default!;
+    private string _bodyId = default!;
+    private string _pointId = default!;
     private string _contentId = default!;
+    private string _footerId = default!;
+    private string _headerId = default!;
     private string _overlayId = default!;
-    private bool _openOnFirstRender;
+    private double? _pointX;
+    private double? _pointY;
+    private bool _openAfterRender;
+    private bool _placeAfterRender;
+    private bool _contentRendered;
     private bool _selfDrivenIsOpen;
     private bool _focusTrapped;
+    private bool _scrollLocked;
     private bool _hoverInside;
     private bool? _isHoverDevice;
     private string? _swipesKey;
@@ -27,6 +37,17 @@ public partial class BitCallout : BitComponentBase
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
+
+    /// <summary>
+    /// How the callout is lined up with its anchor along the axis it is not placed on: a callout above or
+    /// below the anchor is aligned horizontally, and one beside the anchor is aligned vertically. It
+    /// defaults to Start, which lines the callout up with the edge the anchor starts at.
+    /// </summary>
+    /// <remarks>
+    /// The alignment is applied before the callout is kept within the screen, so a callout that would hang
+    /// off an edge is still slid back onto it, and the arrow keeps pointing at the anchor either way.
+    /// </remarks>
+    [Parameter] public BitCalloutAlignment? Alignment { get; set; }
 
     /// <summary>
     /// The content of the anchor element of the callout.
@@ -50,6 +71,12 @@ public partial class BitCallout : BitComponentBase
     [Parameter] public string? AnchorId { get; set; }
 
     /// <summary>
+    /// The size in pixels of the arrow drawn by <see cref="ShowArrow"/>, which is the length of the side of
+    /// the square the beak is cut out of. It defaults to 12.
+    /// </summary>
+    [Parameter] public int? ArrowSize { get; set; }
+
+    /// <summary>
     /// Closes the callout as soon as a click lands anywhere inside it, which is what an action list is
     /// expected to do: picking an item completes the interaction. It is off by default, since a callout
     /// hosting a form or a filter panel is meant to stay open while it is being used.
@@ -60,6 +87,10 @@ public partial class BitCallout : BitComponentBase
     /// Moves the focus into the callout as soon as it opens, to its first focusable element,
     /// or to the callout itself when it holds none.
     /// </summary>
+    /// <remarks>
+    /// An element in the content marked with a <c>data-autofocus</c> attribute takes the focus instead,
+    /// for the callouts whose first focusable element is not the one worth starting at.
+    /// </remarks>
     [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
@@ -83,6 +114,17 @@ public partial class BitCallout : BitComponentBase
     [Parameter] public BitCalloutClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The distance in pixels the callout keeps from the edges of the screen when it is placed and when it
+    /// is slid back onto it, so that a callout at the edge of the page is not pressed flat against it, and
+    /// one under a fixed header or over a fixed toolbar can be kept clear of it. It defaults to zero.
+    /// </summary>
+    /// <remarks>
+    /// The padding is taken off the room every side is measured against, so it also decides which side has
+    /// enough room for the callout, not only where the callout comes to rest.
+    /// </remarks>
+    [Parameter] public int CollisionPadding { get; set; }
+
+    /// <summary>
     /// Alias for ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Content { get; set; }
@@ -99,13 +141,29 @@ public partial class BitCallout : BitComponentBase
     [Parameter] public BitDropDirection? Direction { get; set; }
 
     /// <summary>
-    /// Forces the callout to preserve its component's original width.
+    /// Holds the callout to the width of its anchor, so that a content wider than the anchor wraps inside
+    /// it instead of stretching it. A callout whose content is narrower stays as narrow as it is.
     /// </summary>
     [Parameter] public bool FixedCalloutWidth { get; set; }
 
     /// <summary>
+    /// The content of a footer that stays at the bottom of the callout while the rest of it scrolls.
+    /// </summary>
+    /// <remarks>
+    /// Setting a header or a footer lays the callout out as a column of header, scrolling body and footer,
+    /// and wires the three of them up on its own, which is the id-free version of pointing
+    /// <see cref="HeaderId"/>, <see cref="ScrollContainerId"/> and <see cref="FooterId"/> at elements of the
+    /// consumer's own. Those parameters still win where they are set.
+    /// </remarks>
+    [Parameter] public RenderFragment? Footer { get; set; }
+
+    /// <summary>
     /// The id of the footer element that renders at the end of the scrolling container of the callout content.
     /// </summary>
+    /// <remarks>
+    /// It is the manual version of the <see cref="Footer"/> parameter, for a footer the consumer renders in
+    /// the content itself, and it wins over the footer the callout renders when both are given.
+    /// </remarks>
     [Parameter] public string? FooterId { get; set; }
 
     /// <summary>
@@ -115,8 +173,23 @@ public partial class BitCallout : BitComponentBase
     [Parameter] public int Gap { get; set; }
 
     /// <summary>
+    /// The content of a header that stays at the top of the callout while the rest of it scrolls.
+    /// </summary>
+    /// <remarks>
+    /// Setting a header or a footer lays the callout out as a column of header, scrolling body and footer,
+    /// and wires the three of them up on its own, which is the id-free version of pointing
+    /// <see cref="HeaderId"/>, <see cref="ScrollContainerId"/> and <see cref="FooterId"/> at elements of the
+    /// consumer's own. Those parameters still win where they are set.
+    /// </remarks>
+    [Parameter] public RenderFragment? Header { get; set; }
+
+    /// <summary>
     /// The id of the header element that renders at the top of the scrolling container of the callout content.
     /// </summary>
+    /// <remarks>
+    /// It is the manual version of the <see cref="Header"/> parameter, for a header the consumer renders in
+    /// the content itself, and it wins over the header the callout renders when both are given.
+    /// </remarks>
     [Parameter] public string? HeaderId { get; set; }
 
     /// <summary>
@@ -142,6 +215,17 @@ public partial class BitCallout : BitComponentBase
     public bool IsOpen { get; set; }
 
     /// <summary>
+    /// Keeps the content of the callout out of the page until the callout is opened for the first time, for
+    /// the callouts whose content is expensive enough that rendering it behind a closed callout is a cost of
+    /// its own. Once rendered it stays, so whatever state the content holds survives the callout closing.
+    /// </summary>
+    /// <remarks>
+    /// The placement of the callout is measured against its content, so the first opening of a lazy callout
+    /// waits for the render that puts the content in it before the callout is placed and shown.
+    /// </remarks>
+    [Parameter] public bool LazyRender { get; set; }
+
+    /// <summary>
     /// The maximum height of the callout as a CSS value (e.g. "20rem"), beyond which its content scrolls.
     /// It takes over from the automatic cap that otherwise keeps the callout within the room the viewport
     /// leaves, so it should stay within what the shortest screen the callout is used on can show.
@@ -154,7 +238,10 @@ public partial class BitCallout : BitComponentBase
     [Parameter] public string? MaxWidth { get; set; }
 
     /// <summary>
-    /// The max window width to consider when calculating the position of the callout before opening.
+    /// The window width in pixels below which the callout is allowed to hang off the end of the screen
+    /// rather than being slid back onto it, for the layouts that scroll sideways on the narrow screens and
+    /// would otherwise have the callout pulled away from the anchor it belongs to. Leaving it unset keeps
+    /// the callout within the screen at every width.
     /// </summary>
     [Parameter] public int? MaxWindowWidth { get; set; }
 
@@ -165,9 +252,14 @@ public partial class BitCallout : BitComponentBase
     [Parameter] public string? MinWidth { get; set; }
 
     /// <summary>
-    /// Dims the page behind the callout, so that the callout reads as the only thing in play. The overlay
-    /// still dismisses the callout on a click unless <see cref="NoDismissOnOutsideClick"/> says otherwise.
+    /// Dims the page behind the callout and holds it still while the callout is open, so that the callout
+    /// reads as the only thing in play. The overlay still dismisses the callout on a click unless
+    /// <see cref="NoDismissOnOutsideClick"/> says otherwise.
     /// </summary>
+    /// <remarks>
+    /// The page is what would otherwise take the wheel and the touch away from the callout, and scrolling
+    /// it is also what dismisses a callout, so a modal one keeps the page from scrolling underneath it.
+    /// </remarks>
     [Parameter] public bool Modal { get; set; }
 
     /// <summary>
@@ -182,6 +274,17 @@ public partial class BitCallout : BitComponentBase
     /// closed programmatically, by its own content, or by another callout opening.
     /// </summary>
     [Parameter] public bool NoDismissOnOutsideClick { get; set; }
+
+    /// <summary>
+    /// Keeps the callout on the <see cref="Side"/> it was asked for even when there is not enough room for
+    /// it there, instead of flipping it to the opposite side. It has nothing to hold in place for a callout
+    /// that was not given a side, whose placement is the automatic one to begin with.
+    /// </summary>
+    /// <remarks>
+    /// The callout is still kept within the screen, so one that is forced onto a side without the room for
+    /// it ends up overlapping its anchor rather than running off the edge of the page.
+    /// </remarks>
+    [Parameter] public bool NoFlip { get; set; }
 
     /// <summary>
     /// Removes the box-shadow from the callout.
@@ -239,7 +342,8 @@ public partial class BitCallout : BitComponentBase
     [Parameter] public int? ScrollOffset { get; set; }
 
     /// <summary>
-    /// Forces the callout to set its content container width while opening based on the available space and actual content.
+    /// Widens the callout to at least the width of its anchor, so that a callout with little in it still
+    /// reads as belonging to what it was opened from. A wider content keeps its own width.
     /// </summary>
     [Parameter] public bool SetCalloutWidth { get; set; }
 
@@ -254,7 +358,8 @@ public partial class BitCallout : BitComponentBase
     /// The side of the anchor the callout is placed on when there is room for it there. It is a preference
     /// rather than a demand: a callout that does not fit on the side asked for is placed on the opposite
     /// one, and when neither has room the placement falls back to <see cref="Direction"/>, which weighs
-    /// every side it allows. Leaving it unset leaves the choice to Direction alone.
+    /// every side it allows. Leaving it unset leaves the choice to Direction alone, and
+    /// <see cref="NoFlip"/> turns the preference into a demand.
     /// </summary>
     [Parameter] public BitCalloutSide? Side { get; set; }
 
@@ -289,6 +394,56 @@ public partial class BitCallout : BitComponentBase
 
         await InvokeAsync(StateHasChanged);
     }
+
+    /// <summary>
+    /// Opens the callout at a point on the screen rather than against an anchor, which is what a context
+    /// menu needs: the callout is placed against the point the way it would be against an anchor, so it
+    /// still flips to the side with the most room and is still kept within the screen.
+    /// </summary>
+    /// <param name="x">The horizontal distance in pixels from the left edge of the visible page.</param>
+    /// <param name="y">The vertical distance in pixels from the top edge of the visible page.</param>
+    /// <remarks>
+    /// Calling it again while the callout is open moves it to the new point instead of reopening it, so a
+    /// second right-click somewhere else brings the menu along without it closing and opening again. The
+    /// anchor takes over again the next time the callout is opened by anything else.
+    /// </remarks>
+    public async Task OpenAt(double x, double y)
+    {
+        if (IsEnabled is false) return;
+
+        _pointX = x;
+        _pointY = y;
+
+        // The element the callout is placed against is rendered from these coordinates, so both the
+        // opening and a move to a new point wait for the render that puts it there.
+        if (IsOpen)
+        {
+            _placeAfterRender = true;
+        }
+        else
+        {
+            _selfDrivenIsOpen = true;
+            try
+            {
+                if (await AssignIsOpen(true) is false) return;
+            }
+            finally
+            {
+                _selfDrivenIsOpen = false;
+            }
+
+            _contentRendered = true;
+            _openAfterRender = true;
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>
+    /// Opens the callout at the point a mouse event happened, which is what a context menu needs. It is the
+    /// <see cref="OpenAt(double, double)"/> above, handed the coordinates of the event.
+    /// </summary>
+    public Task OpenAt(MouseEventArgs e) => OpenAt(e.ClientX, e.ClientY);
 
     /// <summary>
     /// Closes the callout programmatically.
@@ -334,6 +489,8 @@ public partial class BitCallout : BitComponentBase
         // The focus is deliberately left where it is: whatever took over from this callout is about to
         // take it.
         await DisposeFocusTrap();
+
+        await DisposeScrollLock();
 
         _selfDrivenIsOpen = true;
         try
@@ -389,8 +546,12 @@ public partial class BitCallout : BitComponentBase
     {
         _anchorId = $"BitCallout-{UniqueId}-anchor";
         _arrowId = $"BitCallout-{UniqueId}-arrow";
+        _bodyId = $"BitCallout-{UniqueId}-body";
         _contentId = $"BitCallout-{UniqueId}-content";
+        _footerId = $"BitCallout-{UniqueId}-footer";
+        _headerId = $"BitCallout-{UniqueId}-header";
         _overlayId = $"BitCallout-{UniqueId}-overlay";
+        _pointId = $"BitCallout-{UniqueId}-point";
 
         // The uncontrolled starting state. The callout itself can only be shown once the DOM exists,
         // so the actual opening is deferred to the first render like an initially set IsOpen is.
@@ -399,7 +560,8 @@ public partial class BitCallout : BitComponentBase
             IsOpen = DefaultIsOpen.Value;
         }
 
-        _openOnFirstRender = IsOpen;
+        _openAfterRender = IsOpen;
+        _contentRendered = IsOpen;
 
         base.OnInitialized();
     }
@@ -419,8 +581,9 @@ public partial class BitCallout : BitComponentBase
             await SetupSwipes();
         }
 
-        // The focus trap is registered against the open callout, so turning it on or off while the callout
-        // is open has to reach the already registered one rather than wait for the next time it opens.
+        // The focus trap and the scroll lock are registered against the open callout, so turning either of
+        // them on or off while the callout is open has to reach the already registered one rather than
+        // wait for the next time it opens.
         if (IsRendered && IsOpen)
         {
             if (TrapFocus)
@@ -430,6 +593,15 @@ public partial class BitCallout : BitComponentBase
             else
             {
                 await DisposeFocusTrap();
+            }
+
+            if (Modal)
+            {
+                await SetupScrollLock();
+            }
+            else
+            {
+                await DisposeScrollLock();
             }
         }
     }
@@ -448,27 +620,47 @@ public partial class BitCallout : BitComponentBase
             StateHasChanged();
         }
 
-        if (firstRender is false) return;
-
-        _dotnetObj = DotNetObjectReference.Create(this);
-
-        await SetupSwipes();
-
-        // An IsOpen (or DefaultIsOpen) that starts out true reaches OnSetIsOpen before the first render,
-        // when neither the callout element nor the .NET object reference the JS side needs exist yet.
-        if (_openOnFirstRender)
+        if (firstRender)
         {
-            _openOnFirstRender = false;
+            _dotnetObj = DotNetObjectReference.Create(this);
+
+            await SetupSwipes();
+        }
+
+        // The opening that had to wait for a render: an IsOpen (or DefaultIsOpen) that starts out true
+        // reaches OnSetIsOpen before the first render, when neither the callout element nor the .NET object
+        // reference the JS side needs exist yet, and a lazily rendered content is only put in the callout
+        // by the render the opening itself asks for, which the placement then has to be measured against.
+        if (_openAfterRender)
+        {
+            _openAfterRender = false;
+
+            // The callout may have been closed again between the opening being deferred and the render it
+            // was waiting for, in which case there is nothing left to open.
+            if (IsOpen is false) return;
 
             await ToggleCallout();
 
             await SetupFocusTrap();
+
+            await SetupScrollLock();
 
             await FocusCalloutIfNeeded();
 
             await OnToggle.InvokeAsync(true);
 
             await OnOpen.InvokeAsync();
+        }
+        else if (_placeAfterRender)
+        {
+            _placeAfterRender = false;
+
+            // The callout is already open and was only moved to a new point, so it is laid out again
+            // rather than opened again: nothing about its state changed for the consumer to hear about.
+            if (IsOpen)
+            {
+                await ToggleCallout();
+            }
         }
     }
 
@@ -520,11 +712,13 @@ public partial class BitCallout : BitComponentBase
 
         if (e.Key is not "Escape" || NoDismissOnEscape) return;
 
-        // The focus is inside the callout, so closing it hands the focus back to the anchor on its own.
+        // The key can come from the callout or from the anchor, since the focus stays on the trigger unless
+        // the callout was asked to take it. Closing hands the focus back to the anchor when it was in the
+        // callout, and leaves it where it is when it was already on the anchor.
         await CloseCallout();
 
-        // The close runs on the callout's own event, which does not re-render the anchor, so refresh the
-        // open-state classes and aria-expanded here.
+        // The close runs on an event of the callout or of the root, neither of which re-renders the other,
+        // so refresh the open-state classes and aria-expanded here.
         StateHasChanged();
     }
 
@@ -587,16 +781,24 @@ public partial class BitCallout : BitComponentBase
             _selfDrivenIsOpen = false;
         }
 
-        // Before the first render there is no callout element to show, only the state to record.
-        if (IsRendered is false)
+        // Opened by something other than OpenAt, so the anchor takes the placement back from the point the
+        // callout was last opened at.
+        ForgetPoint();
+
+        // Before the first render there is no callout element to show, and a lazy content is not in the
+        // callout the placement is measured against yet, so the opening waits for the render either way.
+        if (IsRendered is false || NeedsContentRender)
         {
-            _openOnFirstRender = true;
+            _contentRendered = true;
+            _openAfterRender = true;
             return;
         }
 
         await ToggleCallout();
 
         await SetupFocusTrap();
+
+        await SetupScrollLock();
 
         await FocusCalloutIfNeeded();
 
@@ -629,6 +831,8 @@ public partial class BitCallout : BitComponentBase
 
         await DisposeFocusTrap();
 
+        await DisposeScrollLock();
+
         await ToggleCallout();
 
         // The element the focus was on is gone with the callout, which would leave the focus on the body
@@ -653,7 +857,8 @@ public partial class BitCallout : BitComponentBase
         }
 
         // Before the first render there is no callout to hide, only the state to correct.
-        _openOnFirstRender = false;
+        _openAfterRender = false;
+        _placeAfterRender = false;
 
         _selfDrivenIsOpen = true;
         try
@@ -672,6 +877,11 @@ public partial class BitCallout : BitComponentBase
         // is filtered out here to keep the callbacks from firing for a dismissal that never happened.
         if (IsOpen is false) return;
 
+        // An opening, or a move to a new point, that was waiting for a render is called off: the callout is
+        // closed before the render it was deferred to ever arrives.
+        _openAfterRender = false;
+        _placeAfterRender = false;
+
         if (await AssignIsOpen(false) is false) return;
 
         await OnToggle.InvokeAsync(false);
@@ -686,14 +896,16 @@ public partial class BitCallout : BitComponentBase
         // The reference is created on the first render, so before it there is nothing to position either.
         if (_dotnetObj is null) return;
 
-        var id = Anchor is not null ? _anchorId : AnchorId ?? _Id;
+        // A callout opened at a point is placed against the zero-sized element rendered there, so the
+        // placement code needs to know nothing about points: it measures an element as it always does.
+        var id = HasPoint ? _pointId : Anchor is not null ? _anchorId : AnchorId ?? _Id;
 
         try
         {
             await _js.BitCalloutToggleCallout(
                 dotnetObj: _dotnetObj,
                 componentId: id,
-                component: AnchorEl is null ? null : AnchorEl(),
+                component: (HasPoint || AnchorEl is null) ? null : AnchorEl(),
                 calloutId: _contentId,
                 callout: null,
                 overlayId: _overlayId,
@@ -706,10 +918,12 @@ public partial class BitCallout : BitComponentBase
                 // so that content taller than the screen scrolls inside the callout instead of running off
                 // the bottom of it, where a fixed-positioned element is out of reach of the page's own
                 // scrolling.
-                scrollContainerId: ScrollContainerId.HasValue() ? ScrollContainerId! : (FitsToViewport ? _contentId : ""),
+                scrollContainerId: ScrollContainerId.HasValue()
+                                    ? ScrollContainerId!
+                                    : HasSections ? _bodyId : (FitsToViewport ? _contentId : ""),
                 scrollOffset: ScrollOffset ?? 0,
-                headerId: HeaderId ?? "",
-                footerId: FooterId ?? "",
+                headerId: HeaderId.HasValue() ? HeaderId! : (Header is not null ? _headerId : ""),
+                footerId: FooterId.HasValue() ? FooterId! : (Footer is not null ? _footerId : ""),
                 setCalloutWidth: SetCalloutWidth,
                 fixedCalloutWidth: FixedCalloutWidth,
                 maxWindowWidth: MaxWindowWidth ?? 0,
@@ -724,7 +938,15 @@ public partial class BitCallout : BitComponentBase
                     BitCalloutSide.Start => "start",
                     BitCalloutSide.End => "end",
                     _ => ""
-                });
+                },
+                alignment: Alignment switch
+                {
+                    BitCalloutAlignment.Center => "center",
+                    BitCalloutAlignment.End => "end",
+                    _ => ""
+                },
+                noFlip: NoFlip,
+                collisionPadding: CollisionPadding);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -734,10 +956,19 @@ public partial class BitCallout : BitComponentBase
         // The open/close path of the component toggles the callout itself, right after the assignment.
         if (_selfDrivenIsOpen) return;
 
-        // Before the first render the callout element does not exist yet; OnAfterRenderAsync opens it.
-        if (IsRendered is false)
+        // Opened by the parent rather than by OpenAt, so the anchor takes the placement back from the point
+        // the callout was last opened at.
+        if (IsOpen)
         {
-            _openOnFirstRender = IsOpen;
+            ForgetPoint();
+        }
+
+        // Before the first render the callout element does not exist yet, and a lazy content is not in the
+        // callout the placement is measured against; OnAfterRenderAsync opens it once the render is in.
+        if (IsRendered is false || (IsOpen && NeedsContentRender))
+        {
+            _contentRendered = _contentRendered || IsOpen;
+            _openAfterRender = IsOpen;
             return;
         }
 
@@ -749,11 +980,32 @@ public partial class BitCallout : BitComponentBase
     // over to its content and still keeps it there.
     private async Task ToggleCalloutFromOutside()
     {
+        try
+        {
+            await ToggleCalloutFromOutsideCore();
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (ObjectDisposedException) { } // we can ignore this exception here
+        catch (Exception ex)
+        {
+            // The setter that starts this does not await it, so an exception thrown by one of the consumer
+            // callbacks it invokes - OnToggle, OnOpen, OnDismiss - has no caller to surface on and would be
+            // left unobserved. It is handed to the component's error boundary instead, the way an exception
+            // out of a click handler is - unless the component is already gone, where there is no longer a
+            // boundary to hand it to.
+            if (IsDisposed is false) await DispatchExceptionAsync(ex);
+        }
+    }
+
+    private async Task ToggleCalloutFromOutsideCore()
+    {
         if (IsOpen)
         {
             await ToggleCallout();
 
             await SetupFocusTrap();
+
+            await SetupScrollLock();
 
             await FocusCalloutIfNeeded();
 
@@ -765,6 +1017,8 @@ public partial class BitCallout : BitComponentBase
         {
             await DisposeFocusTrap();
 
+            await DisposeScrollLock();
+
             await ToggleCallout();
 
             await OnToggle.InvokeAsync(false);
@@ -773,11 +1027,11 @@ public partial class BitCallout : BitComponentBase
         }
     }
 
-    private async Task FocusCalloutIfNeeded(bool force = false)
+    private async Task FocusCalloutIfNeeded()
     {
         // A trapped callout has to hold the focus to trap it: leaving it on the anchor would let the very
         // first Tab out of the callout, since the trap only ever sees the keys pressed inside of it.
-        if ((force || AutoFocus || TrapFocus) is false || IsOpen is false || IsDisposed) return;
+        if ((AutoFocus || TrapFocus) is false || IsOpen is false || IsDisposed) return;
 
         if (_dotnetObj is null) return;
 
@@ -826,10 +1080,35 @@ public partial class BitCallout : BitComponentBase
     // screen reports a mouseover of its own, which would fight the click that is meant to toggle it.
     private bool HoverDriven => OpenOnHover && _isHoverDevice is true;
 
+    // Whether the callout was opened at a point on the screen rather than against an anchor.
+    private bool HasPoint => _pointX.HasValue && _pointY.HasValue;
+
+    private void ForgetPoint()
+    {
+        _pointX = null;
+        _pointY = null;
+    }
+
+    // Whether the content of the callout is in the page. A lazy callout leaves it out until it is opened
+    // for the first time, and keeps it from then on, so the state the content holds survives a close.
+    private bool ContentRendered => LazyRender is false || _contentRendered;
+
+    // Whether an opening has to wait for a render to put the content in the callout first, since the
+    // placement of the callout is measured against what is in it.
+    private bool NeedsContentRender => LazyRender && _contentRendered is false;
+
+    // Whether the callout lays itself out as a header, a scrolling body and a footer rather than as one
+    // block of content. A footer alone is enough: what makes the layout is the body taking the scrolling.
+    private bool HasSections => Header is not null || Footer is not null;
+
     // Whether the callout is the one that has to be kept within the viewport. A named scroll container is
-    // the consumer taking that over, a max height is the consumer capping it by hand, and a responsive
-    // callout is a panel sized against the screen on exactly the screens where the callout would not fit.
-    private bool FitsToViewport => IsResponsive is false && MaxHeight.HasValue() is false && ScrollContainerId.HasValue() is false;
+    // the consumer taking that over, a header or a footer hands it to the body between them, a max height
+    // is the consumer capping it by hand, and a responsive callout is a panel sized against the screen on
+    // exactly the screens where the callout would not fit.
+    private bool FitsToViewport => IsResponsive is false
+                                && HasSections is false
+                                && MaxHeight.HasValue() is false
+                                && ScrollContainerId.HasValue() is false;
 
     private bool IsResponsive => ResponsiveMode is not null && ResponsiveMode != BitResponsiveMode.None;
 
@@ -891,6 +1170,35 @@ public partial class BitCallout : BitComponentBase
         try
         {
             await _js.BitUtilsDisposeFocusTrap(_contentId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    // A modal callout holds the page still underneath it: the wheel and the touch are the callout's while
+    // it is open, and scrolling the page is also what dismisses a callout, so a modal one would otherwise
+    // be scrolled away by the very gesture it is meant to be the only thing in play for.
+    private async Task SetupScrollLock()
+    {
+        if (Modal is false || _scrollLocked || IsDisposed || _dotnetObj is null) return;
+
+        _scrollLocked = true;
+
+        try
+        {
+            await _js.BitUtilsToggleOverflow("body", true);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    private async Task DisposeScrollLock()
+    {
+        if (_scrollLocked is false) return;
+
+        _scrollLocked = false;
+
+        try
+        {
+            await _js.BitUtilsToggleOverflow("body", false);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -995,6 +1303,27 @@ public partial class BitCallout : BitComponentBase
         return string.Join(' ', classes).Trim();
     }
 
+    // The coordinates are written with the invariant culture, since a comma decimal separator would leave
+    // the browser with a length it cannot read.
+    private string GetPointStyles()
+    {
+        var x = _pointX!.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var y = _pointY!.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+        return $"left:{x}px;top:{y}px";
+    }
+
+    private string? GetArrowStyles()
+    {
+        // The size travels as a custom property the stylesheet reads, so that the arrow keeps whatever the
+        // theme sizes it to when nothing is asked for, and the consumer's own styles still win over both.
+        var size = ArrowSize > 0 ? $"--bit-clo-arw-siz:{ArrowSize.Value}px;" : null;
+
+        var result = $"{size}{Styles?.Arrow}";
+
+        return result.HasValue() ? result : null;
+    }
+
     private string GetArrowCssClasses()
     {
         List<string> classes = ["bit-clo-arw"];
@@ -1073,6 +1402,11 @@ public partial class BitCallout : BitComponentBase
             classes.Add("bit-clo-fit");
         }
 
+        if (HasSections)
+        {
+            classes.Add("bit-clo-sec");
+        }
+
         classes.AddRange(GetSurfaceCssClasses());
 
         // The callout is relocated to the body while it is open, so the direction of the page is what it
@@ -1141,6 +1475,13 @@ public partial class BitCallout : BitComponentBase
             {
                 await _js.BitCalloutClearCallout(_contentId);
                 await _js.BitUtilsDisposeFocusTrap(_contentId);
+
+                // A modal callout disposed while it is open would otherwise leave the page it was holding
+                // still unable to scroll again, with nothing left on the page to release it.
+                if (_scrollLocked)
+                {
+                    await _js.BitUtilsToggleOverflow("body", false);
+                }
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }

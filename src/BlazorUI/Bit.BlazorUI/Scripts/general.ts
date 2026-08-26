@@ -6,6 +6,19 @@ interface DotNetObject {
     dispose(): void;
 }
 
+// Scroll events arrive faster than the page is laid out, and every reposition measures each open
+// callout, so the paths that follow a scroll instead of dismissing on it coalesce their work into
+// one run per animation frame.
+let repositionFrame: number | null = null;
+const repositionOnNextFrame = () => {
+    if (repositionFrame != null) return;
+
+    repositionFrame = requestAnimationFrame(() => {
+        repositionFrame = null;
+        BitBlazorUI.Callouts.reposition();
+    });
+};
+
 window.addEventListener('scroll', (e: Event) => {
     const currentCallout = BitBlazorUI.Callouts.current;
     if (window.innerWidth < BitBlazorUI.Utils.MAX_MOBILE_WIDTH && currentCallout.responsiveMode) return;
@@ -13,12 +26,11 @@ window.addEventListener('scroll', (e: Event) => {
     const target = e.target as HTMLElement;
     if (target?.id && target.id == currentCallout.scrollContainerId) return;
 
-    // A scroll that started inside the callout itself is the user reading it, not the page moving out
-    // from under it, so it must not dismiss it. The named scroll container above is the part a component
-    // measures and caps; anything else the content scrolls - a callout capped with a max height, a
-    // scrollable the consumer put in it - is covered here.
-    if (target && currentCallout.calloutId &&
-        document.getElementById(currentCallout.calloutId)?.contains(target)) return;
+    // A scroll that started inside one of the open callouts is the user reading it, not the page moving
+    // out from under it, so it must not dismiss it. The named scroll container above is the part a
+    // component measures and caps; anything else the content scrolls - a callout capped with a max height,
+    // a scrollable the consumer put in it - is covered here.
+    if (BitBlazorUI.Callouts.calloutContains(target)) return;
 
     // On touch devices (notably iOS) focusing an input shows the virtual keyboard, which fires a
     // scroll event as the browser brings the field into view. That should not dismiss an open
@@ -27,13 +39,13 @@ window.addEventListener('scroll', (e: Event) => {
     if (BitBlazorUI.Utils.isTouchDevice() && BitBlazorUI.Utils.isEditableElementFocused() && active) {
         // The editable lives inside the callout (e.g. a dropdown's search box): the scroll is
         // internal, so keep the callout open and leave it where it is.
-        if (document.getElementById(currentCallout.calloutId)?.contains(active)) return;
+        if (BitBlazorUI.Callouts.calloutContains(active)) return;
 
         // The editable is the callout's anchor (e.g. the SearchBox input): the page itself was
         // scrolled (commonly when the keyboard opens), moving the anchor. Keep the callout open
         // and re-anchor it to the anchor's new position instead of dismissing it.
         if (BitBlazorUI.Callouts.componentContains(active)) {
-            BitBlazorUI.Callouts.reposition();
+            repositionOnNextFrame();
             return;
         }
     }
@@ -41,7 +53,7 @@ window.addEventListener('scroll', (e: Event) => {
     // A callout that asked not to be dismissed by the page moving under it is re-anchored to its
     // component instead, so that it follows what it points at rather than being left behind by it.
     if (currentCallout.noDismiss) {
-        BitBlazorUI.Callouts.reposition();
+        repositionOnNextFrame();
         return;
     }
 
@@ -57,7 +69,7 @@ window.addEventListener('resize', () => {
         && window.innerWidth < BitBlazorUI.Utils.MAX_MOBILE_WIDTH
         && BitBlazorUI.Utils.isEditableElementFocused()
         && active
-        && (document.getElementById(BitBlazorUI.Callouts.current.calloutId)?.contains(active)
+        && (BitBlazorUI.Callouts.calloutContains(active)
             || BitBlazorUI.Callouts.componentContains(active))) {
         BitBlazorUI.Callouts.reposition();
         return;

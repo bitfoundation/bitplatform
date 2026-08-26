@@ -38,7 +38,16 @@ internal static class CalloutsJsRuntimeExtensions
         bool noDismiss = false,
         // The side of the anchor the callout is preferably placed on ("top", "bottom", "start" or "end"),
         // or an empty string to leave the placement entirely to the drop direction.
-        string preferredSide = "") where T : class
+        string preferredSide = "",
+        // How the callout is lined up with the anchor across the side it is placed on ("center" or "end"),
+        // or an empty string for the start-edge alignment every component without the choice gets.
+        string alignment = "",
+        // Keeps the callout on the preferred side even when it does not fit there, instead of flipping it
+        // to the opposite one. It has nothing to hold in place without a preferred side.
+        bool noFlip = false,
+        // The distance in pixels the callout keeps from the edges of the screen, taken off the room every
+        // side is measured against; zero lets the callout go right up to them.
+        int collisionPadding = 0) where T : class
     {
         return jsRuntime.Invoke<bool>(
             "BitBlazorUI.Callouts.toggle",
@@ -63,7 +72,10 @@ internal static class CalloutsJsRuntimeExtensions
             arrowId,
             gap,
             noDismiss,
-            preferredSide);
+            preferredSide,
+            alignment,
+            noFlip,
+            collisionPadding);
     }
 
     // Re-applies the space the scrollable content of the open callout cannot use, for the parts above
