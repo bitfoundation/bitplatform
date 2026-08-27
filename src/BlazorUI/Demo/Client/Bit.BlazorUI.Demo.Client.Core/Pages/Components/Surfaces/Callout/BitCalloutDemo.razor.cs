@@ -261,6 +261,13 @@ public partial class BitCalloutDemo
         },
         new()
         {
+            Name = "NoOverlay",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Leaves the page its own clicks while the callout is open, by not rendering the overlay that otherwise covers it. A Modal callout keeps its overlay."
+        },
+        new()
+        {
             Name = "NoShadow",
             Type = "bool",
             DefaultValue = "false",
@@ -654,13 +661,24 @@ public partial class BitCalloutDemo
     </Content>
 </BitCallout>
 
-<BitCallout IsEnabled=""false"">
+<BitCallout NoOverlay>
     <Anchor>
-        <BitButton IsEnabled=""false"">Disabled</BitButton>
+        <BitButton Variant=""BitVariant.Outline"">NoOverlay</BitButton>
     </Anchor>
     <Content>
         <div class=""callout-content"">
-            This is the callout content.
+            The page keeps its own clicks while this callout is open.
+        </div>
+    </Content>
+</BitCallout>
+
+<BitCallout DefaultIsOpen=""true"" NoOverlay>
+    <Anchor>
+        <BitButton Variant=""BitVariant.Text"">DefaultIsOpen</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""callout-content"">
+            This callout owns its own open state.
         </div>
     </Content>
 </BitCallout>";
@@ -697,7 +715,7 @@ private BitCallout callout2;";
     Right-click anywhere in here
 </div>
 
-<BitCallout AutoClose MinWidth=""12rem"" @ref=""contextCallout"">
+<BitCallout AutoClose NoOverlay MinWidth=""12rem"" @ref=""contextCallout"">
     <div class=""callout-content"">
         <BitStack Gap=""0.25rem"">
             <BitButton Variant=""BitVariant.Text"" OnClick=""@(() => contextAction = ""Cut"")"">Cut</BitButton>
@@ -729,17 +747,6 @@ private string contextAction = ""none"";";
                 <BitButton OnClick=""() => isOpen = false"">Done</BitButton>
                 <BitButton OnClick=""() => isOpen = false"" Variant=""BitVariant.Outline"">Cancel</BitButton>
             </div>
-        </div>
-    </Content>
-</BitCallout>
-
-<BitCallout DefaultIsOpen=""true"">
-    <Anchor>
-        <BitButton Variant=""BitVariant.Text"">DefaultIsOpen</BitButton>
-    </Anchor>
-    <Content>
-        <div class=""callout-content"">
-            This callout owns its own open state.
         </div>
     </Content>
 </BitCallout>";

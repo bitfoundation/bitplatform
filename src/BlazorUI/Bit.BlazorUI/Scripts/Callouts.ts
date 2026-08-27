@@ -40,6 +40,9 @@ namespace BitBlazorUI {
             component: HTMLElement | null,
             calloutId: string,
             callout: HTMLElement | null,
+            // The id of the overlay that covers the page while the callout is open and takes the clicks
+            // that dismiss it, or '' for a callout that renders none and leaves the page its own clicks -
+            // which is what hands the dismissal to the page-level handler in general.ts.
             overlayId: string,
             isCalloutOpen: boolean,
             responsiveMode: BitResponsiveMode,
@@ -784,6 +787,39 @@ namespace BitBlazorUI {
             if (node == null) return false;
 
             return Callouts._stack.some(entry => document.getElementById(entry.calloutId)?.contains(node) ?? false);
+        }
+
+        // Dismisses the open callouts that render no overlay of their own, when the user interacts with the
+        // page somewhere outside of them. Every other callout is dismissed by the click landing on the
+        // overlay that covers the page for it; one that was asked to leave the page its own clicks has
+        // nothing between it and the page to hear them, so the page tells it instead.
+        public static dismissOnOutsideInteraction(target: Node | null) {
+            // Innermost first, since a callout without an overlay can still have been opened from inside
+            // one that has one, and only down to the first callout that speaks for itself: an overlay of
+            // its own takes the interaction before the page ever sees it, and a callout that asked not to
+            // be dismissed from outside covers everything it is nested in as well.
+            while (Callouts._stack.length > 0) {
+                const top = Callouts.current;
+
+                if (top.overlayId || top.noDismiss) return;
+
+                if (Callouts.entryContains(top, target)) return;
+
+                Callouts.closeTop();
+            }
+        }
+
+        // True when the node lives inside the given open callout or inside the component it was opened
+        // from. The component is where the anchor is: a click on it is the trigger toggling the callout,
+        // which it does itself, and dismissing it here would fight that.
+        private static entryContains(entry: BitCallout, node: Node | null): boolean {
+            if (node == null) return false;
+
+            if (document.getElementById(entry.calloutId)?.contains(node)) return true;
+
+            return entry.componentId
+                ? (document.getElementById(entry.componentId)?.contains(node) ?? false)
+                : false;
         }
 
         private static moveCalloutToBody(calloutId: string, callout: HTMLElement, overlayId: string, arrowId: string = '') {

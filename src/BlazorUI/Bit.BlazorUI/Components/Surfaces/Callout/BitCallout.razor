@@ -49,11 +49,18 @@
     </div>
 }
 
-<div @onclick="HandleOnOverlayClick" @onclick:stopPropagation
-     id="@_overlayId"
-     style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
-     class="@GetOverlayCssClasses()">
-</div>
+@if (HasOverlay)
+{
+    @* The overlay covers the page while the callout is open, so that a click anywhere outside of the
+       callout lands on it instead of on whatever it is over, and dismisses the callout. A callout that
+       was asked to leave the page its own clicks renders none, and the dismissal is taken over for it by
+       the page-level handler on the JS side. *@
+    <div @onclick="HandleOnOverlayClick" @onclick:stopPropagation
+         id="@_overlayId"
+         style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
+         class="@GetOverlayCssClasses()">
+    </div>
+}
 
 @if (ShowArrow)
 {

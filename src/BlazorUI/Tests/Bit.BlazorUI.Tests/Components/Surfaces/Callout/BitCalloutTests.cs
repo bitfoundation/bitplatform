@@ -945,6 +945,66 @@ public class BitCalloutTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCalloutShouldRenderNoOverlayWhenThePageKeepsItsOwnClicks()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.NoOverlay, true);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-clo-ovl").Count);
+
+        // Everything else about the callout is unchanged: only the element between it and the page is gone.
+        Assert.IsNotNull(component.Find(".bit-clo-cal"));
+    }
+
+    [TestMethod]
+    public void BitCalloutShouldKeepTheOverlayOfAModalCalloutAskedForNone()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.Modal, true);
+            parameters.Add(p => p.NoOverlay, true);
+        });
+
+        // The overlay is what dims the page and holds it still, so a modal callout keeps it.
+        Assert.IsTrue(component.Find(".bit-clo-ovl").ClassList.Contains("bit-clo-ovm"));
+    }
+
+    [TestMethod]
+    public void BitCalloutShouldPassNoOverlayIdToThePositioningWhenItRendersNone()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.NoOverlay, true);
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+        });
+
+        component.Find(".bit-clo-acn").Click();
+
+        var arguments = Context.JSInterop.Invocations["BitBlazorUI.Callouts.toggle"][^1].Arguments;
+
+        // An empty id is how the JS side is told that there is no overlay to take the outside clicks for
+        // this callout, and that the page-level handler has to dismiss it instead.
+        Assert.AreEqual(string.Empty, arguments[5]);
+    }
+
+    [TestMethod]
+    public void BitCalloutShouldPassTheOverlayIdToThePositioningWhenItRendersOne()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+        });
+
+        component.Find(".bit-clo-acn").Click();
+
+        var arguments = Context.JSInterop.Invocations["BitBlazorUI.Callouts.toggle"][^1].Arguments;
+
+        Assert.AreEqual(component.Find(".bit-clo-ovl").Id, arguments[5]);
+    }
+
+    [TestMethod]
     public void BitCalloutShouldHoldThePageStillWhileAModalOneIsOpen()
     {
         var component = RenderComponent<BitCallout>(parameters =>

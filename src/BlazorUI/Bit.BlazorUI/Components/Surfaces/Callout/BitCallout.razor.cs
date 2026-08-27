@@ -312,6 +312,19 @@ public partial class BitCallout : BitComponentBase
     [Parameter] public bool NoFlip { get; set; }
 
     /// <summary>
+    /// Leaves the page its own clicks while the callout is open, by not rendering the overlay that
+    /// otherwise covers it. Whatever is underneath the callout can be interacted with, and an interaction
+    /// outside of the callout dismisses it unless <see cref="NoDismissOnOutsideClick"/> says otherwise.
+    /// </summary>
+    /// <remarks>
+    /// This is what a context menu needs: the overlay would take the right-click that is meant to move the
+    /// menu to a new point, leaving the browser to show its own menu on top of it instead. A
+    /// <see cref="Modal"/> callout keeps its overlay, since dimming the page and holding it still is the
+    /// whole of what it is for.
+    /// </remarks>
+    [Parameter] public bool NoOverlay { get; set; }
+
+    /// <summary>
     /// Removes the box-shadow from the callout.
     /// </summary>
     [Parameter] public bool NoShadow { get; set; }
@@ -951,7 +964,9 @@ public partial class BitCallout : BitComponentBase
                 component: (HasPoint || AnchorEl is null) ? null : AnchorEl(),
                 calloutId: _contentId,
                 callout: null,
-                overlayId: _overlayId,
+                // No overlay to hide (and, on the JS side, no overlay to take the outside clicks for the
+                // callout) when the page was left its own clicks.
+                overlayId: HasOverlay ? _overlayId : "",
                 isCalloutOpen: IsOpen,
                 responsiveMode: ResponsiveMode ?? BitResponsiveMode.None,
                 dropDirection: Direction ?? BitDropDirection.TopAndBottom,
@@ -1187,6 +1202,13 @@ public partial class BitCallout : BitComponentBase
                                 && HasSections is false
                                 && MaxHeight.HasValue() is false
                                 && ScrollContainerId.HasValue() is false;
+
+    // Whether the overlay that covers the page while the callout is open is rendered at all. Without it
+    // the page keeps its own clicks - which is the point of NoOverlay - and the dismissal that the overlay
+    // would have taken care of falls to the page-level handler on the JS side. A modal callout keeps its
+    // overlay whatever else was asked for: the overlay is what dims the page and holds it still, so a
+    // modal callout without one would be modal in name only.
+    private bool HasOverlay => NoOverlay is false || Modal;
 
     private bool IsResponsive => ResponsiveMode is not null && ResponsiveMode != BitResponsiveMode.None;
 

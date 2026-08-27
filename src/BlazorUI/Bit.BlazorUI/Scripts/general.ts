@@ -85,6 +85,29 @@ window.addEventListener('resize', () => {
     BitBlazorUI.Callouts.replaceCurrent();
 }, true);
 
+// The callouts that render no overlay of their own leave the page its own clicks, so nothing lies between
+// them and the page to hear that the user has gone elsewhere - the page itself tells them. The capture
+// phase is what a stopPropagation inside the page cannot take away, and the primary button is what a
+// dismissal is: a right-click is the contextmenu handler's below, and the middle one is the browser's.
+document.addEventListener('pointerdown', (e: PointerEvent) => {
+    if (e.button !== 0) return;
+
+    BitBlazorUI.Callouts.dismissOnOutsideInteraction(e.target as Node);
+}, true);
+
+// A right-click dismisses the same callouts, except where the page took the click for itself - a handler
+// that opens a context menu of its own calls preventDefault on it - since that is the page moving its own
+// menu to the new point rather than the user leaving it. Whether the click was taken is only known once
+// the event has been dispatched, which is what the deferral is for: the handlers that take it, Blazor's
+// among them, all run before the task queued here does.
+document.addEventListener('contextmenu', (e: MouseEvent) => {
+    setTimeout(() => {
+        if (e.defaultPrevented) return;
+
+        BitBlazorUI.Callouts.dismissOnOutsideInteraction(e.target as Node);
+    });
+}, true);
+
 // Keep an open callout aligned with the visible area when the visual viewport changes
 // (iOS keyboard show/hide, pinch-zoom). window 'resize' doesn't fire for these on iOS, so
 // listen to visualViewport directly. Reposition is a no-op when no callout is open.

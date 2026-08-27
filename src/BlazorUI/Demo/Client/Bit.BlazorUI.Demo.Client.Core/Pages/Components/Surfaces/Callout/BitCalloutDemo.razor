@@ -22,6 +22,16 @@
             the Open, OpenAt and Toggle methods, and closes one that was already open.
         </div>
         <br />
+        <div>
+            <b>NoOverlay</b> leaves the page its own clicks while the callout is open, by not rendering the
+            overlay that otherwise covers the page and takes the click that dismisses the callout. Whatever
+            is underneath stays usable - an outside click still dismisses the callout, but it also reaches
+            what it landed on. <b>DefaultIsOpen</b> is the state the callout starts in and then manages
+            itself, so the third one here is already open when the page loads; it is given NoOverlay as
+            well, since a callout that opens with the page would otherwise spend the first click made
+            anywhere on it on dismissing itself.
+        </div>
+        <br />
         <div class="example-box">
             <BitCallout>
                 <Anchor>
@@ -34,13 +44,24 @@
                 </Content>
             </BitCallout>
 
-            <BitCallout IsEnabled="false">
+            <BitCallout NoOverlay>
                 <Anchor>
-                    <BitButton IsEnabled="false">Disabled</BitButton>
+                    <BitButton Variant="BitVariant.Outline">NoOverlay</BitButton>
                 </Anchor>
                 <Content>
                     <div class="callout-content">
-                        This is the callout content.
+                        The page keeps its own clicks while this callout is open.
+                    </div>
+                </Content>
+            </BitCallout>
+
+            <BitCallout DefaultIsOpen="true" NoOverlay>
+                <Anchor>
+                    <BitButton Variant="BitVariant.Text">DefaultIsOpen</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">
+                        This callout owns its own open state.
                     </div>
                 </Content>
             </BitCallout>
@@ -82,12 +103,20 @@
             and reopening it, and the anchor takes over again the next time anything else opens the callout.
         </div>
         <br />
+        <div>
+            A context menu is what <BitLink Href="#example1">NoOverlay</BitLink> is there for: with the
+            overlay in the way, the second right-click would land on it, so the browser would show its own
+            menu over the callout instead of the callout moving to the new point. The callout is still
+            dismissed by an interaction outside of it - a click anywhere else on the page, or a right-click
+            the page does not take for itself.
+        </div>
+        <br />
         <div class="example-box">
             <div class="context-area" @oncontextmenu="e => contextCallout.OpenAt(e)" @oncontextmenu:preventDefault>
                 Right-click anywhere in here
             </div>
 
-            <BitCallout AutoClose MinWidth="12rem" @ref="contextCallout">
+            <BitCallout AutoClose NoOverlay MinWidth="12rem" @ref="contextCallout">
                 <div class="callout-content">
                     <BitStack Gap="0.25rem">
                         <BitButton Variant="BitVariant.Text" OnClick="@(() => contextAction = "Cut")">Cut</BitButton>
@@ -104,9 +133,10 @@
     <DemoExample Title="Binding" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>
             <b>IsOpen</b> is two-way bindable, so the open state can be owned by the page: anything can open
-            the callout and its own content can close it. <b>DefaultIsOpen</b> is the uncontrolled version of
-            the same thing - the state the callout starts in, which it then manages itself - and it is only
-            read when IsOpen is not bound.
+            the callout and its own content can close it. <b>DefaultIsOpen</b>, in the
+            <BitLink Href="#example1">Basic</BitLink> example above, is the uncontrolled version of the same
+            thing - the state the callout starts in, which it then manages itself - and it is only read when
+            IsOpen is not bound.
         </div>
         <br />
         <div class="example-box">
@@ -126,17 +156,6 @@
                             <BitButton OnClick="() => isOpen = false">Done</BitButton>
                             <BitButton OnClick="() => isOpen = false" Variant="BitVariant.Outline">Cancel</BitButton>
                         </div>
-                    </div>
-                </Content>
-            </BitCallout>
-
-            <BitCallout DefaultIsOpen="true">
-                <Anchor>
-                    <BitButton Variant="BitVariant.Text">DefaultIsOpen</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">
-                        This callout owns its own open state.
                     </div>
                 </Content>
             </BitCallout>
