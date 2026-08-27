@@ -1,9 +1,23 @@
 ﻿@import '../../../../Styles/abstracts/_functions.scss';
 
 ::deep {
+    // The margin is smaller than the spread of the glow, so the glow reaches past the box the collapse
+    // clips - which is the whole of what the NoClip example has to show.
+    .clip-card {
+        margin: 0.5rem;
+        padding: 0.75rem;
+        border-radius: 0.25rem;
+        background-color: var(--bit-clr-bg-sec);
+        box-shadow: 0 0 0 1rem rgba(0, 120, 212, 0.25);
+    }
+
     .custom-expanded {
         padding: 10px;
         background-color: #808080;
         border: 1px solid #0054C6;
+    }
+
+    .custom-wrapper {
+        font-style: italic;
     }
 }
