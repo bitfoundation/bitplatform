@@ -313,8 +313,8 @@ public class BitCollapseTests : BunitTestContext
 
         var style = component.Find(".bit-col").GetAttribute("style");
 
-        Assert.IsTrue(style.Contains("--bit-col-dur:750ms"));
-        Assert.IsTrue(style.Contains("--bit-col-del:120ms"));
+        Assert.IsTrue(style.Contains("--bit-col-dur-full:750ms"));
+        Assert.IsTrue(style.Contains("--bit-col-del-full:120ms"));
         Assert.IsTrue(style.Contains("--bit-col-eas:linear"));
     }
 
@@ -329,8 +329,8 @@ public class BitCollapseTests : BunitTestContext
 
         var style = component.Find(".bit-col").GetAttribute("style");
 
-        Assert.IsTrue(style.Contains("--bit-col-dur:0ms"));
-        Assert.IsTrue(style.Contains("--bit-col-del:0ms"));
+        Assert.IsTrue(style.Contains("--bit-col-dur-full:0ms"));
+        Assert.IsTrue(style.Contains("--bit-col-del-full:0ms"));
     }
 
     [TestMethod]
@@ -340,8 +340,8 @@ public class BitCollapseTests : BunitTestContext
 
         var style = component.Find(".bit-col").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsFalse(style.Contains("--bit-col-dur"));
-        Assert.IsFalse(style.Contains("--bit-col-del"));
+        Assert.IsFalse(style.Contains("--bit-col-dur-full"));
+        Assert.IsFalse(style.Contains("--bit-col-del-full"));
         Assert.IsFalse(style.Contains("--bit-col-eas"));
     }
 
@@ -1043,7 +1043,7 @@ public class BitCollapseTests : BunitTestContext
             parameters.Add(p => p.Expanded, true);
         });
 
-        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur:900ms"));
+        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur-full:900ms"));
     }
 
     [TestMethod]
@@ -1057,7 +1057,7 @@ public class BitCollapseTests : BunitTestContext
             parameters.Add(p => p.Expanded, false);
         });
 
-        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur:200ms"));
+        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur-full:200ms"));
     }
 
     [TestMethod]
@@ -1070,11 +1070,11 @@ public class BitCollapseTests : BunitTestContext
             parameters.Add(p => p.Expanded, false);
         });
 
-        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur:200ms"));
+        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur-full:200ms"));
 
         component.Render(parameters => parameters.Add(p => p.Expanded, true));
 
-        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur:900ms"));
+        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur-full:900ms"));
     }
 
     [TestMethod]
@@ -1090,7 +1090,7 @@ public class BitCollapseTests : BunitTestContext
             parameters.Add(p => p.Expanded, expanded);
         });
 
-        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur:500ms"));
+        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur-full:500ms"));
     }
 
     [TestMethod]
@@ -1102,7 +1102,7 @@ public class BitCollapseTests : BunitTestContext
             parameters.Add(p => p.Expanded, true);
         });
 
-        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur:0ms"));
+        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur-full:0ms"));
     }
 
     [TestMethod]

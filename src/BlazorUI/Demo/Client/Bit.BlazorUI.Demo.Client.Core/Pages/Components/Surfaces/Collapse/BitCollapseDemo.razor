@@ -18,8 +18,9 @@
             The expand and collapse transition is motion, so it honors the reduced motion preference of the OS/browser
             (prefers-reduced-motion) by finishing at once instead of animating. If nothing on this page is animating,
             either turn the reduce motion setting off, use the ForceAnimation parameter, or turn on the ForceAnimation
-            toggle at the top of this page. Setting an explicit <b>Duration</b> - or <b>ExpandDuration</b> / <b>CollapseDuration</b> - pins the transition to that value and
-            takes it out of the reduced motion opt-out, so leave it unset unless the pace carries meaning.
+            toggle at the top of this page. An explicit <b>Duration</b> - or <b>ExpandDuration</b> / <b>CollapseDuration</b>,
+            or <b>Delay</b> - retunes the pace but is collapsed by the preference all the same: ForceAnimation is the one
+            thing that opts out of it.
         </BitText>
     </NotesTemplate>
 
@@ -156,9 +157,10 @@
         <DemoExample Title="Transition" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
                 <b>Duration</b>, <b>Delay</b> and <b>Easing</b> retune the transition: milliseconds for the first two,
-                any CSS timing function for the third. Leaving them unset keeps the pace of the motion theme, which is
-                also the pace that collapses to nothing when the reader asks for reduced motion - an explicit
-                <b>Duration</b> is a fixed value the preference no longer shortens.
+                any CSS timing function for the third. Leaving them unset keeps the pace of the motion theme. Either way
+                the transition still collapses to nothing when the reader asks for reduced motion: the pace is a matter
+                of design and the preference is not, so <b>ForceAnimation</b> is what a collapse whose motion carries
+                meaning opts out with.
             </div>
             <br />
             <div>
@@ -406,8 +408,8 @@
                 Empower customization by overriding default styles and classes, allowing tailored design modifications to
                 suit specific UI requirements. <b>Style</b> and <b>Class</b> land on the root element, while <b>Styles</b>
                 and <b>Classes</b> reach each part of the component separately: <b>Root</b>, the <b>Expanded</b> and
-                <b>Collapsed</b> states of the root, the <b>Content</b> region that animates, and the <b>Wrapper</b> that
-                carries the padding and clips what is outside the collapsed size.
+                <b>Collapsed</b> states of the root, the <b>Content</b> region that fades and clips, and the <b>Wrapper</b> that
+                carries the padding.
             </div>
             <br /><br />
             <div>

@@ -18,14 +18,14 @@ public class BitCollapseClassStyles
     public string? Collapsed { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the content region of the BitCollapse, which is the element that animates
-    /// between the two states.
+    /// Custom CSS classes/styles for the content region of the BitCollapse, which is the element that fades
+    /// between the two states and clips what is outside the collapsed size.
     /// </summary>
     public string? Content { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the wrapper the BitCollapse puts around its content, which is the element
-    /// that carries the padding and clips what is outside the collapsed size.
+    /// that carries the padding.
     /// </summary>
     public string? Wrapper { get; set; }
 }

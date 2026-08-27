@@ -20,7 +20,7 @@ public partial class BitCollapse : BitComponentBase
     private bool _unmounted;
 
     // Whether the expand transition has finished, which is the only moment at which it is safe to stop
-    // clipping the content: while the track is still growing, anything the wrapper does not clip spills
+    // clipping the content: while the track is still growing, anything the content region does not clip spills
     // out of a collapse that is not yet its full size.
     private bool _entered;
 
@@ -185,7 +185,9 @@ public partial class BitCollapse : BitComponentBase
     /// The delay of the expand/collapse transition in ms.
     /// </summary>
     /// <remarks>
-    /// This postpones the start of the transition; it does not make it longer. Negative values are clamped away.
+    /// This postpones the start of the transition; it does not make it longer. It goes away with the transition
+    /// when the reader asks for reduced motion, since there is no longer anything to postpone. Negative values
+    /// are clamped away.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public int? Delay { get; set; }
@@ -194,10 +196,11 @@ public partial class BitCollapse : BitComponentBase
     /// The duration of the expand/collapse transition in ms.
     /// </summary>
     /// <remarks>
-    /// Leaving it unset keeps the duration the motion theme gives a transition of this length, which is also
-    /// what collapses to nothing when the reader asks for reduced motion. A value set here is a fixed
-    /// duration that the reduced motion preference no longer shortens, so prefer the theme unless the pace
-    /// of this particular collapse carries meaning. Negative values are clamped away.
+    /// Leaving it unset keeps the duration the motion theme gives a transition of this length, so prefer the
+    /// theme unless the pace of this particular collapse carries meaning. A value set here is still collapsed
+    /// to nothing when the reader asks for reduced motion: the pace of a transition is a matter of design and
+    /// the reduced motion preference is not, and <see cref="BitComponentBase.ForceAnimation"/> is the one
+    /// thing that overrides it. Negative values are clamped away.
     /// <br />
     /// It applies to both directions, and <see cref="ExpandDuration"/> and <see cref="CollapseDuration"/>
     /// retune one of them on its own.
@@ -530,9 +533,9 @@ public partial class BitCollapse : BitComponentBase
         // carries the duration of the direction that is playing, which is what lets a section open and close
         // at paces of their own. Negative milliseconds are clamped away: a negative duration is not one a
         // browser accepts, and a negative delay would start the transition part-way through.
-        StyleBuilder.Register(() => _durationValue.HasValue ? $"--bit-col-dur:{Math.Max(0, _durationValue.Value)}ms" : string.Empty);
+        StyleBuilder.Register(() => _durationValue.HasValue ? $"--bit-col-dur-full:{Math.Max(0, _durationValue.Value)}ms" : string.Empty);
 
-        StyleBuilder.Register(() => Delay.HasValue ? $"--bit-col-del:{Math.Max(0, Delay.Value)}ms" : string.Empty);
+        StyleBuilder.Register(() => Delay.HasValue ? $"--bit-col-del-full:{Math.Max(0, Delay.Value)}ms" : string.Empty);
 
         StyleBuilder.Register(() => Easing.HasValue() ? $"--bit-col-eas:{Easing}" : string.Empty);
 

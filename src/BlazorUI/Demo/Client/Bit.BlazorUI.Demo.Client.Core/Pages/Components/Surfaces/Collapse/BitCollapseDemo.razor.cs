@@ -69,7 +69,7 @@ public partial class BitCollapseDemo
             Name = "Duration",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The duration of the expand/collapse transition in ms. Leaving it unset keeps the duration of the motion theme, which is also what the reduced motion preference collapses to nothing. It is what OnExpanded, OnCollapsed, NoClip, HiddenUntilFound and UnmountOnCollapse wait for."
+            Description = "The duration of the expand/collapse transition in ms. Leaving it unset keeps the duration of the motion theme. A value set here is still collapsed to nothing by the reduced motion preference, which only ForceAnimation opts out of. It is what OnExpanded, OnCollapsed, NoClip, HiddenUntilFound and UnmountOnCollapse wait for."
         },
         new()
         {
@@ -320,14 +320,14 @@ public partial class BitCollapseDemo
                     Name = "Content",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the content region of the BitCollapse, which is the element that animates between the two states."
+                    Description = "Custom CSS classes/styles for the content region of the BitCollapse, which is the element that fades between the two states and clips what is outside the collapsed size."
                 },
                 new()
                 {
                     Name = "Wrapper",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the wrapper the BitCollapse puts around its content, which is the element that carries the padding and clips what is outside the collapsed size."
+                    Description = "Custom CSS classes/styles for the wrapper the BitCollapse puts around its content, which is the element that carries the padding."
                 }
             ]
         }
