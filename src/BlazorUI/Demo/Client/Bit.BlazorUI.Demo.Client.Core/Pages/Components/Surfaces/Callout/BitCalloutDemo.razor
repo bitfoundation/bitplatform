@@ -181,7 +181,67 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Positioning" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <DemoExample Title="Arrow" RazorCode="@example6RazorCode" Id="example6">
+        <div>
+            <b>ShowArrow</b> draws a beak on the edge of the callout that faces the anchor, centred on the
+            anchor and kept clear of the rounded corners of the callout. It follows the callout wherever it
+            is placed - above, below or beside the anchor - and is painted in the same color as the callout,
+            border included. <b>ArrowSize</b> sets the side of the square it is cut out of, in pixels (12 by
+            default), and a bigger beak is kept further from the corners of the callout so the rounding never
+            cuts it. <b>ArrowPadding</b> is that distance from the corners (16px by default, never less than
+            the arrow itself): a wider one pulls the beak back towards the middle of a callout aligned with
+            the edge of a wide anchor, and a narrower one lets it sit closer to the corner and nearer to what
+            it points at. Pair it with a <b>Gap</b> to leave the beak room to stand out of the anchor.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitCallout ShowArrow Gap="8">
+                <Anchor>
+                    <BitButton>With an arrow</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">
+                        This callout points at its anchor.
+                    </div>
+                </Content>
+            </BitCallout>
+
+            <BitCallout ShowArrow Gap="8" Border="BitColorKind.Secondary" Background="BitColorKind.Secondary">
+                <Anchor>
+                    <BitButton Variant="BitVariant.Outline">Arrow with a border</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">
+                        The beak takes the border of the callout too.
+                    </div>
+                </Content>
+            </BitCallout>
+
+            <BitCallout ShowArrow ArrowSize="20" Gap="12">
+                <Anchor>
+                    <BitButton Variant="BitVariant.Text">ArrowSize of 20px</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">
+                        A beak twice the size of the default one.
+                    </div>
+                </Content>
+            </BitCallout>
+
+            <BitCallout ShowArrow ArrowPadding="64" Gap="8" MinWidth="16rem">
+                <Anchor>
+                    <BitButton Variant="BitVariant.Text">ArrowPadding of 64px</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">
+                        The beak is held 64px away from the corners of the callout.
+                    </div>
+                </Content>
+            </BitCallout>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Positioning" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>
             <b>Direction</b> declares which sides the callout may be placed on, and it picks the one with the
             most room among them: <b>TopAndBottom</b> (the default) keeps it above or below the anchor, while
@@ -370,66 +430,6 @@
                         {
                             <div>Callout content @i</div>
                         }
-                    </div>
-                </Content>
-            </BitCallout>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Arrow" RazorCode="@example7RazorCode" Id="example7">
-        <div>
-            <b>ShowArrow</b> draws a beak on the edge of the callout that faces the anchor, centred on the
-            anchor and kept clear of the rounded corners of the callout. It follows the callout wherever it
-            is placed - above, below or beside the anchor - and is painted in the same color as the callout,
-            border included. <b>ArrowSize</b> sets the side of the square it is cut out of, in pixels (12 by
-            default), and a bigger beak is kept further from the corners of the callout so the rounding never
-            cuts it. <b>ArrowPadding</b> is that distance from the corners (16px by default, never less than
-            the arrow itself): a wider one pulls the beak back towards the middle of a callout aligned with
-            the edge of a wide anchor, and a narrower one lets it sit closer to the corner and nearer to what
-            it points at. Pair it with a <b>Gap</b> to leave the beak room to stand out of the anchor.
-        </div>
-        <br />
-        <div class="example-box">
-            <BitCallout ShowArrow Gap="8">
-                <Anchor>
-                    <BitButton>With an arrow</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">
-                        This callout points at its anchor.
-                    </div>
-                </Content>
-            </BitCallout>
-
-            <BitCallout ShowArrow Gap="8" Border="BitColorKind.Secondary" Background="BitColorKind.Secondary">
-                <Anchor>
-                    <BitButton Variant="BitVariant.Outline">Arrow with a border</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">
-                        The beak takes the border of the callout too.
-                    </div>
-                </Content>
-            </BitCallout>
-
-            <BitCallout ShowArrow ArrowSize="20" Gap="12">
-                <Anchor>
-                    <BitButton Variant="BitVariant.Text">ArrowSize of 20px</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">
-                        A beak twice the size of the default one.
-                    </div>
-                </Content>
-            </BitCallout>
-
-            <BitCallout ShowArrow ArrowPadding="64" Gap="8" MinWidth="16rem">
-                <Anchor>
-                    <BitButton Variant="BitVariant.Text">ArrowPadding of 64px</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">
-                        The beak is held 64px away from the corners of the callout.
                     </div>
                 </Content>
             </BitCallout>

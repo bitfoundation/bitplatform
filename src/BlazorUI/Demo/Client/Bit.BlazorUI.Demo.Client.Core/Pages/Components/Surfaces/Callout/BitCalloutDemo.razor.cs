@@ -770,6 +770,51 @@ private bool isOpen;";
 </BitCallout>";
 
     private readonly string example6RazorCode = @"
+<BitCallout ShowArrow Gap=""8"">
+    <Anchor>
+        <BitButton>With an arrow</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""callout-content"">
+            This callout points at its anchor.
+        </div>
+    </Content>
+</BitCallout>
+
+<BitCallout ShowArrow Gap=""8"" Border=""BitColorKind.Secondary"" Background=""BitColorKind.Secondary"">
+    <Anchor>
+        <BitButton Variant=""BitVariant.Outline"">Arrow with a border</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""callout-content"">
+            The beak takes the border of the callout too.
+        </div>
+    </Content>
+</BitCallout>
+
+<BitCallout ShowArrow ArrowSize=""20"" Gap=""12"">
+    <Anchor>
+        <BitButton Variant=""BitVariant.Text"">ArrowSize of 20px</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""callout-content"">
+            A beak twice the size of the default one.
+        </div>
+    </Content>
+</BitCallout>
+
+<BitCallout ShowArrow ArrowPadding=""64"" Gap=""8"" MinWidth=""16rem"">
+    <Anchor>
+        <BitButton Variant=""BitVariant.Text"">ArrowPadding of 64px</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""callout-content"">
+            The beak is held 64px away from the corners of the callout.
+        </div>
+    </Content>
+</BitCallout>";
+
+    private readonly string example7RazorCode = @"
 <BitCallout Direction=""BitDropDirection.TopAndBottom"">
     <Anchor>
         <BitButton>TopAndBottom</BitButton>
@@ -930,7 +975,7 @@ private bool isOpen;";
     </Content>
 </BitCallout>";
 
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private BitCallout callout4 = default!;
 
 private int repositionRows = 2;
@@ -956,51 +1001,6 @@ protected override async Task OnAfterRenderAsync(bool firstRender)
         await callout4.Reposition();
     }
 }";
-
-    private readonly string example7RazorCode = @"
-<BitCallout ShowArrow Gap=""8"">
-    <Anchor>
-        <BitButton>With an arrow</BitButton>
-    </Anchor>
-    <Content>
-        <div class=""callout-content"">
-            This callout points at its anchor.
-        </div>
-    </Content>
-</BitCallout>
-
-<BitCallout ShowArrow Gap=""8"" Border=""BitColorKind.Secondary"" Background=""BitColorKind.Secondary"">
-    <Anchor>
-        <BitButton Variant=""BitVariant.Outline"">Arrow with a border</BitButton>
-    </Anchor>
-    <Content>
-        <div class=""callout-content"">
-            The beak takes the border of the callout too.
-        </div>
-    </Content>
-</BitCallout>
-
-<BitCallout ShowArrow ArrowSize=""20"" Gap=""12"">
-    <Anchor>
-        <BitButton Variant=""BitVariant.Text"">ArrowSize of 20px</BitButton>
-    </Anchor>
-    <Content>
-        <div class=""callout-content"">
-            A beak twice the size of the default one.
-        </div>
-    </Content>
-</BitCallout>
-
-<BitCallout ShowArrow ArrowPadding=""64"" Gap=""8"" MinWidth=""16rem"">
-    <Anchor>
-        <BitButton Variant=""BitVariant.Text"">ArrowPadding of 64px</BitButton>
-    </Anchor>
-    <Content>
-        <div class=""callout-content"">
-            The beak is held 64px away from the corners of the callout.
-        </div>
-    </Content>
-</BitCallout>";
 
     private readonly string example8RazorCode = @"
 <BitCallout Width=""20rem"">

@@ -587,9 +587,26 @@ namespace BitBlazorUI {
             arrow.style.display = 'block';
             arrow.setAttribute('data-bit-cal-pos', placement);
 
-            // The callout has just been laid out, so its resolved box is what the arrow is placed against
-            // rather than the inputs the placement was computed from (which do not account for clamping).
-            const rect = callout.getBoundingClientRect();
+            // Where the callout comes to rest, which is what the arrow is placed against rather than the
+            // inputs the placement was computed from (which do not account for clamping). It is taken from
+            // the placement just written rather than from the box the callout reports, because until the
+            // render that opens it lands the callout is still held at the offset its entry animation
+            // slides in from - and that offset cannot simply be taken off for the measurement either:
+            // assigning the transform inline starts a transition of its own, and a running transition
+            // outranks an inline style, so the box would come back carrying the offset all the same.
+            // Leaving the arrow on the offset box is what pushes the beak clear of the edge it is meant to
+            // be half buried in, showing the corners of the square it is cut out of instead of a beak.
+            // Only the edges have to come from the placement: an entry offset is a translation, which
+            // leaves the size of the box alone. `top` anchors a callout placed below the component and
+            // `bottom` one placed above it, so whichever of the two was written is the one to measure from.
+            const box = callout.getBoundingClientRect();
+            const styleTop = parseFloat(callout.style.top);
+            const styleBottom = parseFloat(callout.style.bottom);
+            const left = fixedRect.left + (parseFloat(callout.style.left) || 0);
+            const top = Number.isNaN(styleTop)
+                ? (Number.isNaN(styleBottom) ? box.top : fixedRect.bottom - styleBottom - box.height)
+                : fixedRect.top + styleTop;
+            const rect = { top, left, bottom: top + box.height, right: left + box.width };
             // Half of the arrow always has to clear the rounded corner it is kept away from, so an arrow
             // sized past the default inset widens it to its own size rather than being cut by the radius.
             const inset = Math.max(arrowPadding > 0 ? arrowPadding : Callouts.ARROW_CORNER_INSET, arrow.offsetWidth);
