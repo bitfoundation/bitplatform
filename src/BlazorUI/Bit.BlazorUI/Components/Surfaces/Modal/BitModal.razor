@@ -3,11 +3,18 @@
 
 @if (IsOpen)
 {
+    @* The keydown handler sits on the root so that Escape dismisses the Modal from anywhere inside it -
+       the content, the overlay, whichever part of it the keyboard happens to be in. The keys stop here:
+       a Modal opened from inside another one renders inside that one's content, so an Escape left to
+       carry on up would dismiss the Modal the keyboard is still working inside of along with the one it
+       was meant for. *@
     <div @ref="RootElement" @attributes="_params.HtmlAttributes"
+         @onkeydown="HandleOnKeyDown" @onkeydown:stopPropagation
          id="@_Id"
          style="@StyleBuilder.Value"
          class="@ClassBuilder.Value"
          dir="@_params.Dir?.ToString().ToLower()"
+         aria-label="@_params.AriaLabel"
          aria-labelledby="@_params.TitleAriaId"
          aria-describedby="@_params.SubtitleAriaId"
          aria-modal="@((_params.AriaModal ?? true).ToString().ToLowerInvariant())"
@@ -16,12 +23,16 @@
         {
             <div @onclick="HandleOnOverlayClick"
                  aria-hidden="true"
-                 style="@Styles?.Overlay @_params.Styles?.Overlay"
-                 class="bit-mdl-ovl @Classes?.Overlay @_params.Classes?.Overlay" />
+                 style="@GetOverlayStyles()"
+                 class="@GetOverlayClasses()" />
         }
+        @* tabindex="-1" makes the content programmatically focusable, which is what the focus has to land
+           on when the Modal opens with nothing focusable inside it: the alternative is leaving it behind
+           on the element that opened the Modal, out of reach behind the overlay. *@
         <div id="@_containerId"
-             style="@($"{Styles?.Content} {_params.Styles?.Content}".Trim())"
-             class="@($"bit-mdl-ctn {Classes?.Content} {_params.Classes?.Content}".Trim())">
+             tabindex="-1"
+             style="@GetContentStyles()"
+             class="@GetContentClasses()">
             @ChildContent
         </div>
     </div>

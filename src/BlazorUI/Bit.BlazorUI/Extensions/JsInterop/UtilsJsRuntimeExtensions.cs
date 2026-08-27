@@ -75,6 +75,31 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // Records the element the focus is on right now under the given key, so that a popup which is about to
+    // take the focus over can hand it back to whatever opened it once it closes.
+    internal static ValueTask BitUtilsStoreFocus(this IJSRuntime jsRuntime, string key)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.storeFocus", key);
+    }
+
+
+    // Hands the focus back to the element stored under the given key and forgets it. With onlyWhenLost the
+    // focus is only handed back while nothing else holds it, which after the popup was taken out of the page
+    // is the case the restore exists for: a focus that has since moved elsewhere belongs to whoever moved it.
+    internal static ValueTask BitUtilsRestoreFocus(this IJSRuntime jsRuntime, string key, bool onlyWhenLost = true)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.restoreFocus", key, onlyWhenLost);
+    }
+
+
+    // Drops the element stored under the given key without focusing it, for a component disposed while its
+    // popup is still open.
+    internal static ValueTask BitUtilsForgetFocus(this IJSRuntime jsRuntime, string key)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.forgetFocus", key);
+    }
+
+
     internal static ValueTask BitUtilsPreventDefaultKeys(this IJSRuntime jsRuntime, string elementId, string[] keys)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.preventDefaultKeys", elementId, keys);

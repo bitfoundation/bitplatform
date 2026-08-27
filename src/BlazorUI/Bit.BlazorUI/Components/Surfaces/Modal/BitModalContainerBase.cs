@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The shared base for a container component that renders the modals shown through a modal service.
@@ -82,6 +82,14 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
     }
 
 
+
+    /// <summary>
+    /// The modals this container currently renders, in the order they were opened.
+    /// </summary>
+    internal IReadOnlyList<TReference> GetOpenModals()
+    {
+        return _modalRefs;
+    }
 
     internal void InjectPersistentModals(IReadOnlyList<TReference> modals)
     {

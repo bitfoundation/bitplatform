@@ -172,6 +172,56 @@
             Utils._focusTraps.delete(elementId);
         }
 
+        private static _focusOrigins = new Map<string, HTMLElement>();
+
+        // Remembers the element the focus was on before a popup took it over, so that closing the popup can
+        // hand the focus back to whatever opened it. A popup that leaves the focus behind on an element it is
+        // about to remove drops the keyboard user back at the top of the page, which is the one place they
+        // never navigated to. The body is not an element worth handing anything back to, so it is recorded
+        // as "nothing to restore" rather than as an origin.
+        public static storeFocus(key: string) {
+            try {
+                const active = document.activeElement as HTMLElement | null;
+
+                if (!active || active === document.body || active === document.documentElement || typeof active.focus !== 'function') {
+                    Utils._focusOrigins.delete(key);
+                    return;
+                }
+
+                Utils._focusOrigins.set(key, active);
+            } catch (e) { console.error("BitBlazorUI.Utils.storeFocus:", e); }
+        }
+
+        // Hands the focus back to the element storeFocus recorded under the same key, and forgets it either
+        // way - a stored origin is only ever restored once. `onlyWhenLost` is the guard for the usual case:
+        // the focus is only the popup's to hand back while it is still where the popup left it, which after
+        // the popup is taken out of the page means nowhere (the browser drops it on the body). A focus that
+        // has since moved somewhere else belongs to whoever moved it.
+        public static restoreFocus(key: string, onlyWhenLost: boolean) {
+            const element = Utils._focusOrigins.get(key);
+            Utils._focusOrigins.delete(key);
+
+            if (!element) return;
+
+            try {
+                if (onlyWhenLost) {
+                    const active = document.activeElement;
+                    if (active && active !== document.body && active !== document.documentElement) return;
+                }
+
+                if (!element.isConnected) return;
+
+                element.focus();
+            } catch (e) { console.error("BitBlazorUI.Utils.restoreFocus:", e); }
+        }
+
+        // Drops a stored origin without focusing it, for a component that is disposed while its popup is
+        // still open: there is no close for the focus to be handed back on, and the map would otherwise keep
+        // the element alive for as long as the page lives.
+        public static forgetFocus(key: string) {
+            Utils._focusOrigins.delete(key);
+        }
+
         private static _preventedKeys = new Map<string, AbortController>();
 
         // Suppresses the default behavior (page scrolling) of the given keys on an element, for the

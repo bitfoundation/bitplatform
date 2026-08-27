@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.ProModal;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.ProModal;
 
 public partial class BitProModalDemo
 {
@@ -173,6 +173,34 @@ public partial class BitProModalDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Removes the default top border of the Modal.",
+        },
+        new()
+        {
+            Name = "NoAutoFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Prevents the Modal from moving the focus into itself when it opens. By default the focus lands on the first focusable element of the content, or on the element inside it marked with the data-autofocus attribute.",
+        },
+        new()
+        {
+            Name = "NoDismissOnEscape",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Prevents the Modal from being dismissed by pressing the Escape key.",
+        },
+        new()
+        {
+            Name = "NoFocusTrap",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Prevents the Modal from keeping the keyboard focus inside itself while it is open. A Modeless Modal never traps the focus in the first place.",
+        },
+        new()
+        {
+            Name = "NoRestoreFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Prevents the Modal from handing the focus back to the element that had it before the Modal opened.",
         },
         new()
         {

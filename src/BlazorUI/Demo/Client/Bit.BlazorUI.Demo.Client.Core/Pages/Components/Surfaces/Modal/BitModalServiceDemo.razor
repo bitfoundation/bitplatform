@@ -1,18 +1,57 @@
-@page "/components/modalservice"
+﻿@page "/components/modalservice"
 
 <PageOutlet Url="components/modalservice"
             Title="ModalService"
-            Description="BitModalService is a service to globally handle modals with any content." />
+            Description="BitModalService shows a BitModal with any content from anywhere in the app." />
 
 <DemoPage Name="ModalService"
-          Description="BitModalService is a service to globally handle modals with any content."
+          Description="BitModalService shows a BitModal with any content from anywhere in the app - a service, a view model, a handler - rather than from the markup of the page the modal belongs to. Every modal it shows is rendered by the single BitModalContainer mounted in the layout, and each Show hands back a reference that closes the modal, carries its content component, and completes with the result it was closed with."
           Parameters="componentParameters"
+          SubClasses="componentSubClasses"
           GitHubUrl="Surfaces/Modal/BitModalService.cs"
           GitHubDemoUrl="Surfaces/Modal/BitModalServiceDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            A <b>BitModalContainer</b> must be mounted once, in the layout, for the shown modals to render. Register
+            the service as <b>Scoped</b> on Blazor Server, where a singleton would be shared between circuits;
+            a singleton is only safe for the single-user hosting models (WebAssembly and Hybrid).
+        </BitText>
+    </NotesTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-            <div>Show a FullWidth modal using the BitModalService:</div><br/>
+            <div>
+                <b>Show</b> takes the component to render as the content of the modal, and optionally a
+                <b>BitModalParameters</b> that customizes the modal around it - the same set of options the
+                <BitLink Href="/components/modal">BitModal</BitLink> parameters cover. The content reaches its own
+                modal through the cascaded <b>BitModalReference</b>, which is how it closes itself.
+            </div>
+            <br />
             <BitButton OnClick="ShowModal">Show</BitButton>
+        </DemoExample>
+
+        <DemoExample Title="Awaiting a result" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                <b>CloseWith</b> takes the value the modal is answered with, and the reference's <b>Result</b> completes
+                with it - which turns a modal into a question the calling code can await. A modal dismissed rather
+                than answered (Escape, a click on the overlay) completes with <b>null</b>, so that is the case to
+                treat as "no answer".
+            </div>
+            <br />
+            <BitButton OnClick="ShowConfirmModal">Delete the project</BitButton>
+            <br />
+            <div>Answer: [@confirmAnswer]</div>
+        </DemoExample>
+
+        <DemoExample Title="Closing every modal" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                <b>CloseAll</b> closes every modal the service currently has open, each with a null result. It is
+                what a sign-out or a navigation reaches for: whatever was left open belongs to the state that is
+                being left behind.
+            </div>
+            <br />
+            <BitButton OnClick="ShowModal">Show one more</BitButton>
+            <br /><br />
+            <BitButton Variant="BitVariant.Outline" OnClick="() => modalService.CloseAll()">Close all</BitButton>
         </DemoExample>
     </Examples>
 </DemoPage>

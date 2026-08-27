@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The set of parameters used to customize a <see cref="BitProModal"/> that is shown using the <see cref="BitProModalService"/>.
@@ -126,6 +126,26 @@ public class BitProModalParameters
     public bool? NoBorder { get; set; }
 
     /// <summary>
+    /// Prevents the Modal from moving the focus into itself when it opens. <c>null</c> means not set (defaults to <c>false</c>).
+    /// </summary>
+    public bool? NoAutoFocus { get; set; }
+
+    /// <summary>
+    /// Prevents the Modal from being dismissed by pressing the Escape key. <c>null</c> means not set (defaults to <c>false</c>).
+    /// </summary>
+    public bool? NoDismissOnEscape { get; set; }
+
+    /// <summary>
+    /// Prevents the Modal from keeping the keyboard focus inside itself while it is open. <c>null</c> means not set (defaults to <c>false</c>).
+    /// </summary>
+    public bool? NoFocusTrap { get; set; }
+
+    /// <summary>
+    /// Prevents the Modal from handing the focus back to the element that had it before the Modal opened. <c>null</c> means not set (defaults to <c>false</c>).
+    /// </summary>
+    public bool? NoRestoreFocus { get; set; }
+
+    /// <summary>
     /// A callback function for when the Modal is dismissed.
     /// </summary>
     public EventCallback<MouseEventArgs> OnDismiss { get; set; }
@@ -219,6 +239,10 @@ public class BitProModalParameters
             ModeFull = params1.ModeFull ?? params2.ModeFull,
             Modeless = params1.Modeless ?? params2.Modeless,
             NoBorder = params1.NoBorder ?? params2.NoBorder,
+            NoAutoFocus = params1.NoAutoFocus ?? params2.NoAutoFocus,
+            NoDismissOnEscape = params1.NoDismissOnEscape ?? params2.NoDismissOnEscape,
+            NoFocusTrap = params1.NoFocusTrap ?? params2.NoFocusTrap,
+            NoRestoreFocus = params1.NoRestoreFocus ?? params2.NoRestoreFocus,
             // Only compose a callback when at least one side actually has a delegate. Otherwise leave
             // the merged callback at its default (HasDelegate == false) to preserve the empty contract,
             // so consumers (e.g. the inner BitModal) don't see a handler that does nothing.

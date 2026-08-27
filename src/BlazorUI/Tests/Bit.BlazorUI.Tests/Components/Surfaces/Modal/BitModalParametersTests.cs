@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Surfaces.Modal;
@@ -93,6 +93,99 @@ public class BitModalParametersTests
             new BitModalParameters { HtmlAttributes = null! })!;
         Assert.IsNotNull(bothNull.HtmlAttributes);
         Assert.AreEqual(0, bothNull.HtmlAttributes.Count);
+    }
+
+    [TestMethod]
+    public void MergeShouldFallBackToSecondForTheUnsetDialogBehaviorFlags()
+    {
+        var first = new BitModalParameters { NoAutoFocus = true };
+        var second = new BitModalParameters
+        {
+            NoAutoFocus = false,
+            NoDismissOnEscape = true,
+            NoFocusTrap = true,
+            NoRestoreFocus = true,
+            AriaLabel = "Cascaded label",
+        };
+
+        var merged = BitModalParameters.Merge(first, second)!;
+
+        Assert.AreEqual(true, merged.NoAutoFocus);        // first wins
+        Assert.AreEqual(true, merged.NoDismissOnEscape);  // only set on second
+        Assert.AreEqual(true, merged.NoFocusTrap);        // only set on second
+        Assert.AreEqual(true, merged.NoRestoreFocus);     // only set on second
+        Assert.AreEqual("Cascaded label", merged.AriaLabel);
+    }
+
+    [TestMethod]
+    public void MergeShouldKeepAnUnsetFlagUnset()
+    {
+        // null is "not set", which is what lets the BitModal default (or the value it was given on the
+        // component itself) stand rather than being overridden with a false nobody asked for.
+        var merged = BitModalParameters.Merge(new BitModalParameters(), new BitModalParameters())!;
+
+        Assert.IsNull(merged.NoAutoFocus);
+        Assert.IsNull(merged.NoDismissOnEscape);
+        Assert.IsNull(merged.NoFocusTrap);
+        Assert.IsNull(merged.NoRestoreFocus);
+        Assert.IsNull(merged.AriaModal);
+        Assert.IsNull(merged.ShowOverlay);
+        Assert.IsNull(merged.AriaLabel);
+    }
+
+    [TestMethod]
+    public void MergeShouldReportNoDelegateWhenNeitherSourceHasOne()
+    {
+        var merged = BitModalParameters.Merge(new BitModalParameters(), new BitModalParameters())!;
+
+        Assert.IsFalse(merged.OnDismiss.HasDelegate);
+        Assert.IsFalse(merged.OnOpen.HasDelegate);
+        Assert.IsFalse(merged.OnOverlayClick.HasDelegate);
+    }
+
+    [TestMethod]
+    public async System.Threading.Tasks.Task MergeShouldComposeTheOnOpenCallbacksInvokingFirstThenSecond()
+    {
+        var order = new List<string>();
+
+        var first = new BitModalParameters
+        {
+            OnOpen = Microsoft.AspNetCore.Components.EventCallback.Factory.Create(new object(), () => order.Add("open-first")),
+        };
+        var second = new BitModalParameters
+        {
+            OnOpen = Microsoft.AspNetCore.Components.EventCallback.Factory.Create(new object(), () => order.Add("open-second")),
+        };
+
+        var merged = BitModalParameters.Merge(first, second)!;
+
+        Assert.IsTrue(merged.OnOpen.HasDelegate);
+
+        await merged.OnOpen.InvokeAsync();
+
+        CollectionAssert.AreEqual(new[] { "open-first", "open-second" }, order);
+    }
+
+    [TestMethod]
+    public void MergeShouldMergeTheClassesAndStylesOfEachPart()
+    {
+        var first = new BitModalParameters
+        {
+            Classes = new BitModalClassStyles { Root = "first-root" },
+            Styles = new BitModalClassStyles { Overlay = "color:red" },
+        };
+        var second = new BitModalParameters
+        {
+            Classes = new BitModalClassStyles { Root = "second-root", Content = "second-content" },
+            Styles = new BitModalClassStyles { Overlay = "color:green", Content = "color:blue" },
+        };
+
+        var merged = BitModalParameters.Merge(first, second)!;
+
+        Assert.AreEqual("first-root", merged.Classes!.Root);
+        Assert.AreEqual("second-content", merged.Classes!.Content);
+        Assert.AreEqual("color:red", merged.Styles!.Overlay);
+        Assert.AreEqual("color:blue", merged.Styles!.Content);
     }
 
     [TestMethod]

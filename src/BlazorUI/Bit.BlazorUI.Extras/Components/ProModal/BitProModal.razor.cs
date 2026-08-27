@@ -202,6 +202,29 @@ public partial class BitProModal : BitComponentBase
     public bool NoBorder { get; set; }
 
     /// <summary>
+    /// Prevents the Modal from moving the focus into itself when it opens, for the cases where the focus is
+    /// placed by the consumer instead. See <see cref="BitModal.NoAutoFocus"/>.
+    /// </summary>
+    [Parameter] public bool NoAutoFocus { get; set; }
+
+    /// <summary>
+    /// Prevents the Modal from being dismissed by pressing the Escape key. See <see cref="BitModal.NoDismissOnEscape"/>.
+    /// </summary>
+    [Parameter] public bool NoDismissOnEscape { get; set; }
+
+    /// <summary>
+    /// Prevents the Modal from keeping the keyboard focus inside itself while it is open.
+    /// See <see cref="BitModal.NoFocusTrap"/>.
+    /// </summary>
+    [Parameter] public bool NoFocusTrap { get; set; }
+
+    /// <summary>
+    /// Prevents the Modal from handing the focus back to the element that had it before the Modal opened.
+    /// See <see cref="BitModal.NoRestoreFocus"/>.
+    /// </summary>
+    [Parameter] public bool NoRestoreFocus { get; set; }
+
+    /// <summary>
     /// A callback function for when the Modal is dismissed.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
@@ -500,6 +523,10 @@ public partial class BitProModal : BitComponentBase
             ModeFull = ModeFull ? true : p.ModeFull,
             Modeless = Modeless ? true : p.Modeless,
             NoBorder = NoBorder ? true : p.NoBorder,
+            NoAutoFocus = NoAutoFocus ? true : p.NoAutoFocus,
+            NoDismissOnEscape = NoDismissOnEscape ? true : p.NoDismissOnEscape,
+            NoFocusTrap = NoFocusTrap ? true : p.NoFocusTrap,
+            NoRestoreFocus = NoRestoreFocus ? true : p.NoRestoreFocus,
             OnDismiss = _onDismiss,
             OnOpen = _onOpen,
             OnOverlayClick = _onOverlayClick,

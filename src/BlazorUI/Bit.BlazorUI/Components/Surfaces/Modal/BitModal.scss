@@ -16,7 +16,6 @@
     font-size: $tg-fs-sm;
     font-family: $tg-font-family;
     background-color: transparent;
-    transition: opacity $mot-duration-long $mot-easing 0s;
 }
 
 .bit-mdl-nta {
@@ -33,16 +32,43 @@
     position: absolute;
     pointer-events: all;
     background-color: $clr-bg-overlay;
+    // The backdrop is put into the page in the same frame as the content it dims, so it fades in with it
+    // rather than appearing under it in one frame. The duration collapses to nothing under reduced motion,
+    // which the motion tokens take care of.
+    animation-fill-mode: both;
+    animation-name: bit-fade-show;
+    animation-duration: $mot-duration-short;
+    animation-timing-function: $mot-easing-decelerate;
 }
 
 .bit-mdl-ctn {
     max-width: 100%;
+    // A Modal taller than the screen would otherwise run off both ends of it, where nothing can reach it:
+    // the root is fixed to the viewport, so the page's own scrolling never brings it back. Capping the
+    // content to the room the root has - the viewport, or whatever the root was placed inside of - and
+    // letting it scroll inside itself is what keeps all of it reachable.
+    max-height: 100%;
+    overflow: auto;
+    // The scroll stops here rather than carrying on into the page behind the Modal once the content is
+    // scrolled to its end.
+    overscroll-behavior: contain;
     position: absolute;
     pointer-events: all;
     box-sizing: border-box;
     background-color: $clr-bg-pri;
     box-shadow: $box-shadow-dialog;
     border-radius: $shp-radius-dialog;
+    // The content is made programmatically focusable (tabindex="-1") so the focus has somewhere to land in
+    // a Modal that holds nothing focusable. That focus is never one the user moved there themselves, so it
+    // is not one to draw a ring around; :focus-visible still does for the keyboard.
+    outline: none;
+    // backwards rather than both: the transform of the last keyframe would otherwise stay on the element
+    // for good, and an element that carries a transform is the containing block of every fixed-positioned
+    // descendant it holds - which is not something an entry animation gets to decide.
+    animation-fill-mode: backwards;
+    animation-name: bit-mdl-zoom-in;
+    animation-duration: $mot-duration;
+    animation-timing-function: $mot-easing-decelerate;
 }
 
 .bit-mdl-fhe {
@@ -54,5 +80,19 @@
 .bit-mdl-fwi {
     .bit-mdl-ctn {
         width: 100%;
+    }
+}
+
+// The Modal grows into place out of the middle rather than appearing in one frame, which is the movement
+// that tells the eye something was put on top of the page instead of the page having changed.
+@keyframes bit-mdl-zoom-in {
+    0% {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
     }
 }

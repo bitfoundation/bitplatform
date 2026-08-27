@@ -27,6 +27,12 @@ public class BitModalParameters
     public BitDir? Dir { get; set; }
 
     /// <summary>
+    /// The accessible name of the Modal, for the Modals that have no visible title to point
+    /// <see cref="TitleAriaId"/> at.
+    /// </summary>
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
     /// Whether the Modal should be announced as modal to assistive technologies. <c>null</c> means not set (defaults to <c>true</c>).
     /// </summary>
     public bool? AriaModal { get; set; }
@@ -57,9 +63,34 @@ public class BitModalParameters
     public bool? IsAlert { get; set; }
 
     /// <summary>
+    /// Prevents the Modal from moving the focus into itself when it opens. <c>null</c> means not set (defaults to <c>false</c>).
+    /// </summary>
+    public bool? NoAutoFocus { get; set; }
+
+    /// <summary>
+    /// Prevents the Modal from being dismissed by pressing the Escape key. <c>null</c> means not set (defaults to <c>false</c>).
+    /// </summary>
+    public bool? NoDismissOnEscape { get; set; }
+
+    /// <summary>
+    /// Prevents the Modal from keeping the keyboard focus inside itself while it is open. <c>null</c> means not set (defaults to <c>false</c>).
+    /// </summary>
+    public bool? NoFocusTrap { get; set; }
+
+    /// <summary>
+    /// Prevents the Modal from handing the focus back to the element that had it before the Modal opened. <c>null</c> means not set (defaults to <c>false</c>).
+    /// </summary>
+    public bool? NoRestoreFocus { get; set; }
+
+    /// <summary>
     /// A callback function for when the Modal is dismissed.
     /// </summary>
     public EventCallback<MouseEventArgs> OnDismiss { get; set; }
+
+    /// <summary>
+    /// A callback function for when the Modal is opened.
+    /// </summary>
+    public EventCallback OnOpen { get; set; }
 
     /// <summary>
     /// A callback function for when somewhere on the overlay element of the Modal is clicked.
@@ -103,13 +134,19 @@ public class BitModalParameters
             IsEnabled = params1.IsEnabled ?? params2.IsEnabled,
             HtmlAttributes = (params2.HtmlAttributes ?? []).Concat(params1.HtmlAttributes ?? []).GroupBy(kv => kv.Key).ToDictionary(g => g.Key, g => g.Last().Value),
             Dir = params1.Dir ?? params2.Dir,
+            AriaLabel = params1.AriaLabel ?? params2.AriaLabel,
             AriaModal = params1.AriaModal ?? params2.AriaModal,
             Blocking = params1.Blocking ?? params2.Blocking,
             Classes = BitModalClassStyles.Merge(params1.Classes, params2.Classes),
             FullHeight = params1.FullHeight ?? params2.FullHeight,
             FullWidth = params1.FullWidth ?? params2.FullWidth,
             IsAlert = params1.IsAlert ?? params2.IsAlert,
+            NoAutoFocus = params1.NoAutoFocus ?? params2.NoAutoFocus,
+            NoDismissOnEscape = params1.NoDismissOnEscape ?? params2.NoDismissOnEscape,
+            NoFocusTrap = params1.NoFocusTrap ?? params2.NoFocusTrap,
+            NoRestoreFocus = params1.NoRestoreFocus ?? params2.NoRestoreFocus,
             OnDismiss = MergeCallbacks(params1.OnDismiss, params2.OnDismiss),
+            OnOpen = MergeCallbacks(params1.OnOpen, params2.OnOpen),
             OnOverlayClick = MergeCallbacks(params1.OnOverlayClick, params2.OnOverlayClick),
             ShowOverlay = params1.ShowOverlay ?? params2.ShowOverlay,
             Styles = BitModalClassStyles.Merge(params1.Styles, params2.Styles),
@@ -135,6 +172,20 @@ public class BitModalParameters
         {
             await callback1.InvokeAsync(e);
             await callback2.InvokeAsync(e);
+        });
+    }
+
+    /// <summary>
+    /// The argument-less counterpart of the composition above, for the callbacks that carry no event data.
+    /// </summary>
+    private static EventCallback MergeCallbacks(EventCallback callback1, EventCallback callback2)
+    {
+        if (callback1.HasDelegate is false && callback2.HasDelegate is false) return default;
+
+        return EventCallback.Factory.Create(new object(), async () =>
+        {
+            await callback1.InvokeAsync();
+            await callback2.InvokeAsync();
         });
     }
 }

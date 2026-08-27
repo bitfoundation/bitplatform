@@ -1,4 +1,4 @@
-using Bunit;
+﻿using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -240,5 +240,53 @@ public class BitProModalTests : BunitTestContext
 
         Assert.AreEqual(0, com.FindAll(".bit-pmd-hcn").Count);
         Assert.AreEqual(0, com.FindAll(".bit-pmd-fcn").Count);
+    }
+
+    [TestMethod]
+    public void BitProModalShouldBeDismissedByTheEscapeKey()
+    {
+        // The dialog behaviors belong to the BitModal underneath, so a ProModal has them too.
+        var isOpen = true;
+        var com = RenderComponent<BitProModal>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+        });
+
+        com.Find(".bit-mdl").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsFalse(isOpen);
+    }
+
+    [TestMethod]
+    public void BitProModalShouldPassTheDialogBehaviorOptOutsThrough()
+    {
+        var isOpen = true;
+        var com = RenderComponent<BitProModal>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+            parameters.Add(p => p.NoDismissOnEscape, true);
+            parameters.Add(p => p.NoAutoFocus, true);
+            parameters.Add(p => p.NoFocusTrap, true);
+        });
+
+        com.Find(".bit-mdl").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsTrue(isOpen);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
+    }
+
+    [TestMethod]
+    public void BitProModalShouldNotTrapTheFocusWhileItIsModeless()
+    {
+        var com = RenderComponent<BitProModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Modeless, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count));
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
     }
 }

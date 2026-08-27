@@ -100,11 +100,20 @@ public abstract class BitModalServiceBase<TReference, TParameters>
     /// <summary>
     /// Closes an already opened modal using its reference.
     /// </summary>
-    public async Task Close(TReference modalRef)
+    public Task Close(TReference modalRef)
+    {
+        return Close(modalRef, null);
+    }
+
+    /// <summary>
+    /// Closes an already opened modal using its reference, with the result its
+    /// <see cref="BitModalReferenceBase{TReference, TParameters}.Result"/> completes with.
+    /// </summary>
+    public async Task Close(TReference modalRef, object? result)
     {
         // Mark the reference closed up front so any add handler still iterating in a concurrent Show
         // (a handler may close the modal mid-show) can detect the close and skip (re-)adding it.
-        modalRef.MarkClosed();
+        modalRef.MarkClosed(result);
 
         // Stop tracking persistent modals once closed so they aren't re-injected on a container remount.
         if (modalRef.Persistent)
@@ -138,6 +147,39 @@ public abstract class BitModalServiceBase<TReference, TParameters>
             {
                 throw new AggregateException(exceptions);
             }
+        }
+    }
+
+    /// <summary>
+    /// Closes every modal this service currently has open, each with a <c>null</c> result.
+    /// </summary>
+    /// <remarks>
+    /// The modals are closed in the order they were opened, and the set to close is taken before any of them
+    /// is closed, so a modal opened by a close handler of an earlier one is left alone rather than being
+    /// closed by the same call that opened it. Modals shown while no container is mounted are not tracked
+    /// here (persistent ones excepted), so they are not reached by this either.
+    /// </remarks>
+    public async Task CloseAll()
+    {
+        TReference[] openModals = _container is null ? [] : [.. _container.GetOpenModals()];
+
+        // A persistent modal shown while no container was mounted is tracked by the service rather than by
+        // a container, so it would otherwise survive a CloseAll made before the container mounts.
+        lock (_persistentModalsLock)
+        {
+            foreach (var modalRef in _persistentModals)
+            {
+                if (openModals.Contains(modalRef)) continue;
+
+                openModals = [.. openModals, modalRef];
+            }
+        }
+
+        foreach (var modalRef in openModals)
+        {
+            if (modalRef.IsClosed) continue;
+
+            await Close(modalRef);
         }
     }
 

@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 <BitModal AriaLabel="@_params.AriaLabel"
@@ -17,6 +17,10 @@
           IsAlert="@(_params.IsAlert ?? ((_params.Blocking ?? false) && (_params.Modeless ?? false) is false))"
           IsOpen="IsOpen"
           IsOpenChanged="HandleInnerIsOpenChanged"
+          NoAutoFocus="_params.NoAutoFocus ?? false"
+          NoDismissOnEscape="_params.NoDismissOnEscape ?? false"
+          NoFocusTrap="_params.NoFocusTrap ?? false"
+          NoRestoreFocus="_params.NoRestoreFocus ?? false"
           OnDismiss="_params.OnDismiss"
           OnOverlayClick="_params.OnOverlayClick"
           ShowOverlay="(_params.Modeless ?? false) is false"

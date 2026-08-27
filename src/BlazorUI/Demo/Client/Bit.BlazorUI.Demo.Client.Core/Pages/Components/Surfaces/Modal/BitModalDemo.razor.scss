@@ -21,31 +21,34 @@
     padding: 0 rem2(24px) rem2(24px);
 }
 
-.relative-container {
-    width: 100%;
-    overflow: auto;
-    margin-top: 1rem;
-    position: relative;
-    height: rem2(400px);
-    border: rem2(2px) lightgreen solid;
-}
-
-.position-btn-container {
+// The plain content box the shorter examples use: a column of items with room around them, capped so a
+// modal never stretches to the width of a wide screen.
+.modal-content {
     gap: 1rem;
     display: flex;
+    padding: 1.5rem;
+    max-width: rem2(420px);
     flex-flow: column nowrap;
+    align-items: flex-start;
+}
 
-    div {
-        display: flex;
-        justify-content: space-between;
-    }
+.modal-content-header {
+    gap: 1rem;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+// The row of buttons that opens the modals of an example.
+.example-box {
+    gap: 1rem;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
 }
 
 ::deep {
-    .position-button {
-        width: 130px;
-    }
-
     .custom-class {
         border: 0.5rem solid tomato;
         background-color: darkgoldenrod;

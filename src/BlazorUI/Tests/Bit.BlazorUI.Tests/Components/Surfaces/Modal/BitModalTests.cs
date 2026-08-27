@@ -1,4 +1,8 @@
-﻿using Bunit;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Bunit;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Surfaces.Modal;
@@ -132,7 +136,7 @@ public class BitModalTests : BunitTestContext
 
         var elementContent = com.Find(".bit-mdl-ctn");
 
-        elementContent.MarkupMatches("<div id:ignore style:ignore class=\"bit-mdl-ctn\"><div>Test Content</div></div>");
+        elementContent.MarkupMatches("<div id:ignore tabindex=\"-1\" class=\"bit-mdl-ctn\"><div>Test Content</div></div>");
     }
 
     [TestMethod]
@@ -172,6 +176,699 @@ public class BitModalTests : BunitTestContext
         Assert.IsFalse(isOpen);
         Assert.AreEqual(1, currentCount);
     }
+
+
+
+    // ------------------------------------------------------------------------------------------------
+    // Rendering & structure
+    // ------------------------------------------------------------------------------------------------
+
+    [TestMethod]
+    public void BitModalShouldRenderTheAriaLabelItWasGiven()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AriaLabel, "Terms of service");
+        });
+
+        Assert.AreEqual("Terms of service", com.Find(".bit-mdl").GetAttribute("aria-label"));
+    }
+
+    [TestMethod,
+        DataRow(true, "true"),
+        DataRow(false, "false")
+    ]
+    public void BitModalShouldReportWhetherItIsModal(bool ariaModal, string expected)
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AriaModal, ariaModal);
+        });
+
+        Assert.AreEqual(expected, com.Find(".bit-mdl").GetAttribute("aria-modal"));
+    }
+
+    [TestMethod]
+    public void BitModalShouldMakeItsContentProgrammaticallyFocusable()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        // Without a tab stop of its own the content has nowhere to put the focus in a Modal that holds
+        // nothing focusable, which would leave it behind the overlay on whatever opened the Modal.
+        Assert.AreEqual("-1", com.Find(".bit-mdl-ctn").GetAttribute("tabindex"));
+    }
+
+    [TestMethod,
+        DataRow(true, 1),
+        DataRow(false, 0)
+    ]
+    public void BitModalShouldRenderTheOverlayOnlyWhenAskedFor(bool showOverlay, int expectedCount)
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowOverlay, showOverlay);
+        });
+
+        Assert.AreEqual(expectedCount, com.FindAll(".bit-mdl-ovl").Count);
+    }
+
+    [TestMethod]
+    public void BitModalShouldApplyTheFullSizeClasses()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.FullWidth, true);
+            parameters.Add(p => p.FullHeight, true);
+        });
+
+        var root = com.Find(".bit-mdl");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-mdl-fwi"));
+        Assert.IsTrue(root.ClassList.Contains("bit-mdl-fhe"));
+    }
+
+    [TestMethod]
+    public void BitModalShouldApplyTheClassesAndStylesOfEachPart()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Classes, new BitModalClassStyles { Root = "root-class", Overlay = "overlay-class", Content = "content-class" });
+            parameters.Add(p => p.Styles, new BitModalClassStyles { Root = "color:red", Overlay = "color:green", Content = "color:blue" });
+        });
+
+        Assert.IsTrue(com.Find(".bit-mdl").ClassList.Contains("root-class"));
+        Assert.IsTrue(com.Find(".bit-mdl").GetAttribute("style")!.Contains("color:red"));
+
+        Assert.IsTrue(com.Find(".bit-mdl-ovl").ClassList.Contains("overlay-class"));
+        Assert.AreEqual("color:green", com.Find(".bit-mdl-ovl").GetAttribute("style"));
+
+        Assert.IsTrue(com.Find(".bit-mdl-ctn").ClassList.Contains("content-class"));
+        Assert.AreEqual("color:blue", com.Find(".bit-mdl-ctn").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitModalShouldKeepTwoStyleSourcesApartWithASemicolon()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.AddCascadingValue(new BitModalParameters
+            {
+                Styles = new BitModalClassStyles { Overlay = "margin:1rem", Content = "padding:1rem" }
+            });
+            parameters.Add(p => p.IsOpen, true);
+            // Neither part carries a trailing semicolon: without one being spliced in, the declaration
+            // that follows is swallowed and the CSS parser drops both.
+            parameters.Add(p => p.Styles, new BitModalClassStyles { Overlay = "color:green", Content = "color:blue" });
+        });
+
+        Assert.AreEqual("color:green;margin:1rem", com.Find(".bit-mdl-ovl").GetAttribute("style"));
+        Assert.AreEqual("color:blue;padding:1rem", com.Find(".bit-mdl-ctn").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitModalShouldJoinTheOwnAndCascadedClassesOfEachPart()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.AddCascadingValue(new BitModalParameters
+            {
+                Classes = new BitModalClassStyles { Overlay = "cascaded-overlay", Content = "cascaded-content" }
+            });
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Classes, new BitModalClassStyles { Overlay = "own-overlay", Content = "own-content" });
+        });
+
+        Assert.AreEqual("bit-mdl-ovl own-overlay cascaded-overlay", com.Find(".bit-mdl-ovl").GetAttribute("class"));
+        Assert.AreEqual("bit-mdl-ctn own-content cascaded-content", com.Find(".bit-mdl-ctn").GetAttribute("class"));
+    }
+
+    [TestMethod]
+    public void BitModalShouldJoinASingleClassSourceWithoutAnEmptySlot()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.AddCascadingValue(new BitModalParameters
+            {
+                Classes = new BitModalClassStyles { Overlay = "cascaded-overlay" }
+            });
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Classes, new BitModalClassStyles { Content = "own-content" });
+        });
+
+        Assert.AreEqual("bit-mdl-ovl cascaded-overlay", com.Find(".bit-mdl-ovl").GetAttribute("class"));
+        Assert.AreEqual("bit-mdl-ctn own-content", com.Find(".bit-mdl-ctn").GetAttribute("class"));
+    }
+
+    [TestMethod]
+    public void BitModalShouldNotRenderAnEmptyStyleAttributeOnItsParts()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        Assert.IsFalse(com.Find(".bit-mdl-ovl").HasAttribute("style"));
+        Assert.IsFalse(com.Find(".bit-mdl-ctn").HasAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitModalShouldNotLeaveEmptyClassSlotsInTheRenderedAttribute()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        Assert.AreEqual("bit-mdl-ovl", com.Find(".bit-mdl-ovl").GetAttribute("class"));
+        Assert.AreEqual("bit-mdl-ctn", com.Find(".bit-mdl-ctn").GetAttribute("class"));
+    }
+
+
+
+    // ------------------------------------------------------------------------------------------------
+    // Dismissal
+    // ------------------------------------------------------------------------------------------------
+
+    [TestMethod]
+    public void BitModalShouldBeDismissedByTheEscapeKey()
+    {
+        var isOpen = true;
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+        });
+
+        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsFalse(isOpen);
+        Assert.AreEqual(0, com.FindAll(".bit-mdl").Count);
+    }
+
+    [TestMethod]
+    public void BitModalShouldNotBeDismissedByTheEscapeKeyWhenItWasToldNotToBe()
+    {
+        var isOpen = true;
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+            parameters.Add(p => p.NoDismissOnEscape, true);
+        });
+
+        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsTrue(isOpen);
+        Assert.AreEqual(1, com.FindAll(".bit-mdl").Count);
+    }
+
+    [TestMethod]
+    public void BitModalShouldIgnoreEveryKeyButEscape()
+    {
+        var isOpen = true;
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+        });
+
+        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.IsTrue(isOpen);
+        Assert.AreEqual(1, com.FindAll(".bit-mdl").Count);
+    }
+
+    [TestMethod]
+    public void BitModalShouldStillBeDismissedByTheEscapeKeyWhileItBlocksTheOverlay()
+    {
+        // Blocking takes the pointer's way out away; a keyboard user would otherwise have none at all
+        // unless the content offers one.
+        var isOpen = true;
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+            parameters.Add(p => p.Blocking, true);
+        });
+
+        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsFalse(isOpen);
+    }
+
+    [TestMethod]
+    public void BitModalShouldFireOnDismissWhenItIsDismissedByTheEscapeKey()
+    {
+        var isOpen = true;
+        var dismissCount = 0;
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, dismissCount));
+    }
+
+    [TestMethod]
+    public void BitModalShouldNotBeDismissedWhileItIsDisabled()
+    {
+        var isOpen = true;
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        com.Find(".bit-mdl-ovl").Click();
+        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsTrue(isOpen);
+        Assert.AreEqual(1, com.FindAll(".bit-mdl").Count);
+    }
+
+    [TestMethod]
+    public void BitModalShouldReportEveryOverlayClickEvenTheOnesItRefusesToBeDismissedBy()
+    {
+        var isOpen = true;
+        var clickCount = 0;
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+            parameters.Add(p => p.Blocking, true);
+            parameters.Add(p => p.OnOverlayClick, () => clickCount++);
+        });
+
+        com.Find(".bit-mdl-ovl").Click();
+
+        Assert.AreEqual(1, clickCount);
+        Assert.IsTrue(isOpen);
+    }
+
+    [TestMethod]
+    public void BitModalShouldNotBeDismissableWhileTheConsumerDrivesIsOpenOneWay()
+    {
+        // A one-way IsOpen is the consumer holding the state: the Modal has nowhere to report a
+        // dismissal to, so it does not act on one either.
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        com.Find(".bit-mdl-ovl").Click();
+        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(1, com.FindAll(".bit-mdl").Count);
+    }
+
+
+
+    // ------------------------------------------------------------------------------------------------
+    // Open state
+    // ------------------------------------------------------------------------------------------------
+
+    [TestMethod,
+        DataRow(true, 1),
+        DataRow(false, 0)
+    ]
+    public void BitModalShouldStartInTheStateDefaultIsOpenAsksFor(bool defaultIsOpen, int expectedCount)
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.DefaultIsOpen, defaultIsOpen);
+        });
+
+        Assert.AreEqual(expectedCount, com.FindAll(".bit-mdl").Count);
+    }
+
+    [TestMethod]
+    public void BitModalShouldIgnoreDefaultIsOpenWhenIsOpenIsSet()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.DefaultIsOpen, true);
+            parameters.Add(p => p.IsOpen, false);
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-mdl").Count);
+    }
+
+    [TestMethod]
+    public async Task BitModalShouldOpenAndCloseThroughItsOwnMethods()
+    {
+        var com = RenderComponent<BitModal>();
+
+        Assert.AreEqual(0, com.FindAll(".bit-mdl").Count);
+
+        await com.InvokeAsync(() => com.Instance.Open());
+        Assert.AreEqual(1, com.FindAll(".bit-mdl").Count);
+
+        await com.InvokeAsync(() => com.Instance.Close());
+        Assert.AreEqual(0, com.FindAll(".bit-mdl").Count);
+    }
+
+    [TestMethod]
+    public async Task BitModalShouldToggleThroughItsOwnMethod()
+    {
+        var com = RenderComponent<BitModal>();
+
+        await com.InvokeAsync(() => com.Instance.Toggle());
+        Assert.AreEqual(1, com.FindAll(".bit-mdl").Count);
+
+        await com.InvokeAsync(() => com.Instance.Toggle());
+        Assert.AreEqual(0, com.FindAll(".bit-mdl").Count);
+    }
+
+    [TestMethod]
+    public async Task BitModalShouldReportTheOpeningThroughIsOpenChanged()
+    {
+        var isOpen = false;
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+        });
+
+        await com.InvokeAsync(() => com.Instance.Open());
+
+        Assert.IsTrue(isOpen);
+    }
+
+    [TestMethod]
+    public void BitModalShouldFireOnOpenOnceItIsInThePage()
+    {
+        var openCount = 0;
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.OnOpen, () => openCount++);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, openCount));
+    }
+
+    [TestMethod]
+    public void BitModalShouldNotFireOnOpenWhileItIsClosed()
+    {
+        var openCount = 0;
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, false);
+            parameters.Add(p => p.OnOpen, () => openCount++);
+        });
+
+        Assert.AreEqual(0, openCount);
+
+        com.Render(parameters => parameters.Add(p => p.IsOpen, true));
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, openCount));
+    }
+
+
+
+    // ------------------------------------------------------------------------------------------------
+    // Focus handling
+    // ------------------------------------------------------------------------------------------------
+
+    [TestMethod]
+    public void BitModalShouldTakeTheFocusAndTheTabSequenceWhenItOpens()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        var containerId = com.Find(".bit-mdl-ctn").Id;
+
+        com.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"].Count);
+            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
+            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count);
+        });
+
+        Assert.AreEqual(containerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"][^1].Arguments[0]);
+        Assert.AreEqual(containerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"][^1].Arguments[0]);
+    }
+
+    [TestMethod]
+    public void BitModalShouldHandTheFocusBackWhenItCloses()
+    {
+        var isOpen = true;
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count));
+
+        com.Render(parameters => parameters.Add(p => p.IsOpen, false));
+
+        com.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"].Count);
+            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"].Count);
+        });
+
+        // The focus is only handed back while nothing else has taken it, which after the Modal left the
+        // page is the state the browser leaves behind.
+        Assert.AreEqual(true, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"][^1].Arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitModalShouldNotMoveTheFocusWhenItWasToldNotTo()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.NoAutoFocus, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count));
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count);
+    }
+
+    [TestMethod]
+    public void BitModalShouldNotTrapTheFocusWhenItWasToldNotTo()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.NoFocusTrap, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count));
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
+    }
+
+    [TestMethod]
+    public void BitModalShouldNotTrapTheFocusWhileItIsNotModal()
+    {
+        // Holding the keyboard inside a surface the pointer is free to leave would only be half a
+        // barrier, so a modeless Modal leaves the tab sequence alone.
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AriaModal, false);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count));
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
+    }
+
+    [TestMethod]
+    public void BitModalShouldNotRememberTheFocusWhenItWillNotHandItBack()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.NoRestoreFocus, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count));
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"].Count);
+    }
+
+    [TestMethod]
+    public void BitModalShouldTakeBackWhatItRegisteredWhenItIsDisposedWhileOpen()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count));
+
+        Context.DisposeComponentsAsync().GetAwaiter().GetResult();
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"].Count);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.forgetFocus"].Count);
+    }
+
+    [TestMethod]
+    public void BitModalShouldRegisterTheFocusTrapWhenItIsTurnedOnWhileTheModalIsOpen()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.NoFocusTrap, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count));
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
+
+        com.Render(parameters => parameters.Add(p => p.NoFocusTrap, false));
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count));
+    }
+
+
+
+    // ------------------------------------------------------------------------------------------------
+    // Cascaded parameters
+    // ------------------------------------------------------------------------------------------------
+
+    [TestMethod]
+    public void BitModalShouldTakeTheValuesOfTheCascadedParameters()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.AddCascadingValue(new BitModalParameters
+            {
+                AriaLabel = "Cascaded label",
+                FullWidth = true,
+                IsAlert = true,
+                ShowOverlay = false,
+            });
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        var root = com.Find(".bit-mdl");
+
+        Assert.AreEqual("Cascaded label", root.GetAttribute("aria-label"));
+        Assert.AreEqual("alertdialog", root.GetAttribute("role"));
+        Assert.IsTrue(root.ClassList.Contains("bit-mdl-fwi"));
+        Assert.AreEqual(0, com.FindAll(".bit-mdl-ovl").Count);
+    }
+
+    [TestMethod]
+    public void BitModalShouldPreferItsOwnValuesOverTheCascadedOnes()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.AddCascadingValue(new BitModalParameters { AriaLabel = "Cascaded label", IsAlert = false });
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AriaLabel, "Own label");
+            parameters.Add(p => p.IsAlert, true);
+        });
+
+        var root = com.Find(".bit-mdl");
+
+        Assert.AreEqual("Own label", root.GetAttribute("aria-label"));
+        Assert.AreEqual("alertdialog", root.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitModalShouldHonorTheCascadedNoDismissOnEscape()
+    {
+        var isOpen = true;
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.AddCascadingValue(new BitModalParameters { NoDismissOnEscape = true });
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+        });
+
+        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsTrue(isOpen);
+    }
+
+    [TestMethod]
+    public void BitModalShouldHonorTheCascadedBlocking()
+    {
+        var isOpen = true;
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.AddCascadingValue(new BitModalParameters { Blocking = true });
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+        });
+
+        com.Find(".bit-mdl-ovl").Click();
+
+        Assert.IsTrue(isOpen);
+    }
+
+    [TestMethod]
+    public void BitModalShouldFireTheCascadedCallbacksAlongsideItsOwn()
+    {
+        var isOpen = true;
+        var ownDismiss = 0;
+        var cascadedDismiss = 0;
+        var ownOverlayClick = 0;
+        var cascadedOverlayClick = 0;
+
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.AddCascadingValue(new BitModalParameters
+            {
+                OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(new object(), () => cascadedDismiss++),
+                OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(new object(), () => cascadedOverlayClick++),
+            });
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+            parameters.Add(p => p.OnDismiss, () => ownDismiss++);
+            parameters.Add(p => p.OnOverlayClick, () => ownOverlayClick++);
+        });
+
+        com.Find(".bit-mdl-ovl").Click();
+
+        com.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(1, ownOverlayClick);
+            Assert.AreEqual(1, cascadedOverlayClick);
+            Assert.AreEqual(1, ownDismiss);
+            Assert.AreEqual(1, cascadedDismiss);
+        });
+    }
+
+    [TestMethod]
+    public void BitModalShouldMergeTheCascadedHtmlAttributesWithItsOwn()
+    {
+        var com = RenderComponent<BitModalHtmlAttributesTest>(parameters =>
+        {
+            parameters.Add(p => p.ModalParameters, new BitModalParameters
+            {
+                HtmlAttributes = new Dictionary<string, object> { ["data-cascaded"] = "yes", ["data-shared"] = "cascaded" }
+            });
+        });
+
+        var root = com.Find(".bit-mdl");
+
+        Assert.AreEqual("yes", root.GetAttribute("data-cascaded"));
+        Assert.AreEqual("yes", root.GetAttribute("data-own"));
+        Assert.AreEqual("own", root.GetAttribute("data-shared"));
+    }
+
+    [TestMethod]
+    public void BitModalShouldTolerateANullCascadedParameters()
+    {
+        // A cascaded null is what a consumer writing ModalParameters="null" hands down; the Modal falls
+        // back to a set of its own rather than failing on it.
+        var com = RenderComponent<BitModalHtmlAttributesTest>();
+
+        Assert.AreEqual(1, com.FindAll(".bit-mdl").Count);
+        Assert.AreEqual("yes", com.Find(".bit-mdl").GetAttribute("data-own"));
+    }
+
+
 
     private void HandleIsOpenChanged(bool isOpen) => isModalOpen = isOpen;
 }
