@@ -40,6 +40,36 @@ public sealed class ComponentCatalogItem
     /// <summary>One line on what the component is for. Shown on the gallery card.</summary>
     public string Summary { get; init; } = string.Empty;
 
+    /// <summary>
+    /// The glyph the gallery card carries. A hundred identical blocks of text are read one at a
+    /// time; a hundred distinct glyphs are scanned. It is a Fabric icon rather
+    /// than an asset for the same reason the category's is - it takes the theme's colors, so it
+    /// follows the active preset and the accent the switcher applies.
+    /// <para>
+    /// A component the icon map has no entry for falls back to its category's glyph, so the card is
+    /// never left with an empty tile.
+    /// </para>
+    /// </summary>
+    public required string IconName { get; init; }
+
+    /// <summary>
+    /// The NuGet package the component ships in - "Bit.BlazorUI", "Bit.BlazorUI.Extras" or
+    /// "Bit.BlazorUI.Legacy". Which package a component needs is one of the first things a reader
+    /// wants from an index, and until now it could only be learned by opening the page.
+    /// </summary>
+    public required string Package { get; init; }
+
+    /// <summary>
+    /// The short badge the card shows for a component that is not in the core package, or null for
+    /// one that is. Core is the default, and a badge on ninety cards saying so would be noise.
+    /// </summary>
+    public string? PackageBadge => Package switch
+    {
+        "Bit.BlazorUI.Extras" => "Extras",
+        "Bit.BlazorUI.Legacy" => "Legacy",
+        _ => null
+    };
+
     /// <summary>Everything the gallery's search box matches against, lower-cased once at build time.</summary>
     public string SearchText { get; init; } = string.Empty;
 

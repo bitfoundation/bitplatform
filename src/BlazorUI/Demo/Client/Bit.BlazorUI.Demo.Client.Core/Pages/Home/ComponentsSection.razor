@@ -14,7 +14,7 @@
 <div class="category-grid">
     @foreach (var category in ComponentCatalog.Categories)
     {
-        <a class="category" href="@($"/components?q={Uri.EscapeDataString(category.Name)}")">
+        <a class="category" href="@($"/components?category={Uri.EscapeDataString(category.Name)}")">
             <BitIcon IconName="@category.IconName" Color="BitColor.Primary" Class="category-icon" />
             <span class="category-name">@category.Name</span>
             <span class="category-count">@category.Items.Count components</span>

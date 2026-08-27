@@ -18,6 +18,13 @@ public sealed class ComponentCatalogCategory
     /// <summary>What the category covers, shown under its heading in the gallery.</summary>
     public string Summary { get; init; } = string.Empty;
 
+    /// <summary>
+    /// The NuGet package every component in this category ships in. The split follows the projects:
+    /// the Extras and Theming groups are <c>Bit.BlazorUI.Extras</c>, the Legacy group is
+    /// <c>Bit.BlazorUI.Legacy</c>, and everything else is the core package.
+    /// </summary>
+    public required string Package { get; init; }
+
     public required IReadOnlyList<ComponentCatalogItem> Items { get; init; }
 
     /// <summary>

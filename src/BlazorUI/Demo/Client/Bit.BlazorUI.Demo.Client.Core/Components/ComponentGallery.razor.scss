@@ -1,7 +1,8 @@
 ﻿@import '../Styles/abstracts/_docs.scss';
 
-// Search and category chips travel together and stay reachable while the reader scrolls a list this
-// long. Sticky rather than fixed, so it releases the moment the gallery ends.
+// ── Controls ──────────────────────────────────────────────────────────────────────────────────
+// Search, layout toggle and category chips travel together and stay reachable while the reader
+// scrolls a list this long. Sticky rather than fixed, so it releases the moment the gallery ends.
 .gallery-controls {
     top: var(--demo-header-height);
     z-index: 5;
@@ -11,6 +12,12 @@
     flex-flow: column nowrap;
     padding-block: $doc-space-sm;
     background-color: $bit-color-background-secondary;
+}
+
+.gallery-controls-row {
+    display: flex;
+    gap: $doc-space-sm;
+    align-items: center;
 }
 
 .gallery-chips {
@@ -34,6 +41,7 @@
     background-color: $bit-color-background-primary;
     border: rem2(1px) solid $bit-color-border-secondary;
     transition: color $bit-motion-duration-short $bit-motion-easing,
+                opacity $bit-motion-duration-short $bit-motion-easing,
                 border-color $bit-motion-duration-short $bit-motion-easing,
                 background-color $bit-motion-duration-short $bit-motion-easing;
 
@@ -51,6 +59,13 @@
         border-color: $bit-color-primary;
         background-color: $bit-color-primary;
     }
+
+    // A category the current term does not reach at all. Dimmed rather than removed: a chip row
+    // that reflows while it is being read cannot be aimed at, and the zero is itself an answer -
+    // "there are no Pickers called that" is worth more than the chip quietly disappearing.
+    &.empty:not(.active) {
+        opacity: 0.45;
+    }
 }
 
 .gallery-chip-count {
@@ -59,21 +74,119 @@
     font-variant-numeric: tabular-nums;
 }
 
+// Two layouts of one result set. A segmented pair rather than two loose buttons, because they are
+// one choice with two positions and the shared frame is what says so.
+.gallery-views {
+    display: flex;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: $bit-shape-radius-control;
+    border: rem2(1px) solid $bit-color-border-secondary;
+
+    // The choice only earns its keep where a card grid runs several columns wide; on a phone both
+    // layouts are one column and the toggle would be a control that does nothing visible.
+    @include lt-md {
+        display: none;
+    }
+}
+
+.gallery-view {
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    width: rem2(34px);
+    height: rem2(34px);
+    background-color: $bit-color-background-primary;
+    color: $bit-color-foreground-secondary;
+    border: none;
+    transition: color $bit-motion-duration-short $bit-motion-easing,
+                background-color $bit-motion-duration-short $bit-motion-easing;
+
+    & + & {
+        border-inline-start: rem2(1px) solid $bit-color-border-secondary;
+    }
+
+    &:hover {
+        color: $bit-color-foreground-primary;
+        background-color: $bit-color-background-primary-hover;
+    }
+
+    &:focus-visible {
+        @include doc-focus-ring(-2px);
+    }
+
+    &.active {
+        color: $bit-color-primary-text;
+        background-color: $bit-color-primary;
+    }
+
+    ::deep .bit-ico {
+        font-size: rem2(15px);
+    }
+}
+
+
+// ── Status ────────────────────────────────────────────────────────────────────────────────────
+// What the controls have produced, in words, on the hairline that separates them from the results.
+.gallery-status {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $doc-space-2xs;
+    align-items: center;
+    padding-bottom: $doc-space-sm;
+    border-bottom: rem2(1px) solid $bit-color-border-secondary;
+}
+
+.gallery-status-text {
+    margin: 0;
+    margin-inline-end: auto;
+    font-size: $bit-typography-fs-xs;
+    color: $bit-color-foreground-secondary;
+
+    b {
+        font-variant-numeric: tabular-nums;
+        font-weight: $bit-typography-fw-semibold;
+        color: $bit-color-foreground-primary;
+    }
+}
+
+// The line beside a category heading: how many it holds and which package it comes out of.
+.gallery-group-meta {
+    white-space: nowrap;
+    font-size: $bit-typography-fs-2xs;
+    color: $bit-color-foreground-tertiary;
+
+    code {
+        @include doc-code-inline;
+    }
+}
+
+
+// ── Results ───────────────────────────────────────────────────────────────────────────────────
 // Auto-fill rather than a fixed column count: the grid then holds the same card width whether it is
 // showing three components or twenty-one, instead of stretching three cards across the page.
 .gallery-grid {
     display: grid;
     gap: $doc-space-sm;
-    grid-template-columns: repeat(auto-fill, minmax(rem2(232px), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(rem2(260px), 1fr));
+}
+
+// The same cards, one per line. For a reader who knows the name and wants the whole catalog in a
+// few screens rather than a dozen.
+.gallery-list {
+    display: flex;
+    gap: $doc-space-3xs;
+    flex-flow: column nowrap;
 }
 
 .gallery-card {
     display: flex;
     min-width: 0;
-    gap: rem2(2px);
-    flex-flow: column nowrap;
+    gap: $doc-space-xs;
     text-decoration: none;
-    padding: $doc-space-xs $doc-space-sm $doc-space-sm;
+    align-items: flex-start;
+    padding: $doc-space-sm;
     color: $bit-color-foreground-primary;
 
     @include doc-surface;
@@ -84,21 +197,98 @@
     }
 }
 
+// The glyph is what makes a hundred-odd cards scannable rather than readable. A Fabric
+// icon on a tint of the accent, so it re-skins with the preset and the accent switcher instead of
+// being one baked-in blue - and so the tile reads as part of the theme rather than as an asset.
+.gallery-card-icon {
+    display: flex;
+    flex-shrink: 0;
+    width: rem2(36px);
+    height: rem2(36px);
+    align-items: center;
+    justify-content: center;
+    color: $bit-color-primary;
+    border-radius: $bit-shape-radius-md;
+    background-color: color-mix(in srgb, #{$bit-color-primary} 12%, transparent);
+
+    ::deep .bit-ico {
+        font-size: rem2(18px);
+    }
+}
+
+.gallery-card-body {
+    display: flex;
+    min-width: 0;
+    flex: 1 1 auto;
+    gap: rem2(2px);
+    flex-flow: column nowrap;
+}
+
+.gallery-card-head {
+    display: flex;
+    min-width: 0;
+    flex-wrap: wrap;
+    gap: $doc-space-3xs;
+    align-items: center;
+}
+
 .gallery-card-name {
     overflow-wrap: anywhere;
     font-size: $bit-typography-fs-sm;
     font-weight: $bit-typography-fw-semibold;
 }
 
-// The names other libraries use for the same thing. Someone looking for a "Switch" or a "Chip"
-// should recognise the card without having to open it.
-.gallery-card-aliases {
+// Which NuGet package the component ships in - the question an index is asked most often after
+// "what is it". Only the two that are not the core package say anything: a badge on ninety cards
+// reading "Bit.BlazorUI" would be noise, and its absence already means exactly that.
+.gallery-card-badge {
+    line-height: 1.6;
+    white-space: nowrap;
+    padding-inline: rem2(6px);
+    font-size: $bit-typography-fs-2xs;
+    font-weight: $bit-typography-fw-semibold;
+    border-radius: $bit-shape-radius-chip;
+    color: $bit-color-foreground-secondary;
+    background-color: $bit-color-background-secondary;
+    border: rem2(1px) solid $bit-color-border-secondary;
+
+    // Legacy is a warning, not a label: these are the previous implementations, kept working but
+    // not the one to reach for. It takes the theme's own warning color rather than a chosen amber.
+    &.legacy {
+        color: $bit-color-warning;
+        border-color: color-mix(in srgb, #{$bit-color-warning} 40%, transparent);
+        background-color: color-mix(in srgb, #{$bit-color-warning} 12%, transparent);
+    }
+}
+
+// Category and aliases on one line: where the component lives, and the names other libraries use
+// for the same thing. Someone looking for a "Switch" or a "Chip" should recognise the card without
+// having to open it.
+.gallery-card-meta {
+    display: flex;
     overflow: hidden;
     white-space: nowrap;
-    text-overflow: ellipsis;
+    gap: $doc-space-3xs;
     margin-bottom: rem2(2px);
     font-size: $bit-typography-fs-2xs;
     color: $bit-color-foreground-tertiary;
+}
+
+.gallery-card-category {
+    flex-shrink: 0;
+    color: $bit-color-foreground-secondary;
+
+    // The separator is drawn rather than written, so the aliases can be absent without leaving a
+    // dangling middot behind them.
+    & + .gallery-card-aliases::before {
+        content: '·';
+        margin-inline-end: $doc-space-3xs;
+    }
+}
+
+.gallery-card-aliases {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .gallery-card-summary {
@@ -107,6 +297,78 @@
     color: $bit-color-foreground-secondary;
 }
 
+// The compact layout re-flows the same card into one line: the tile shrinks, the name takes a
+// column of its own so the summaries line up, and the summary takes whatever is left and clips.
+.gallery-list .gallery-card {
+    align-items: center;
+    gap: $doc-space-sm;
+    padding: $doc-space-2xs $doc-space-sm;
+
+    // Nothing moves under the pointer in a list this dense - a row that lifts while the one below
+    // it does not turns a scan into a flicker.
+    &:hover {
+        transform: none;
+    }
+
+    .gallery-card-icon {
+        width: rem2(28px);
+        height: rem2(28px);
+
+        ::deep .bit-ico {
+            font-size: rem2(15px);
+        }
+    }
+
+    .gallery-card-body {
+        gap: $doc-space-sm;
+        align-items: baseline;
+        flex-flow: row nowrap;
+    }
+
+    .gallery-card-head {
+        min-width: 0;
+        flex-wrap: nowrap;
+        flex: 0 0 rem2(230px);
+    }
+
+    .gallery-card-badge {
+        flex-shrink: 0;
+    }
+
+    .gallery-card-name {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .gallery-card-meta,
+    .gallery-card-summary {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        margin-bottom: 0;
+    }
+
+    // The middle column is the first thing to go when the row runs out of room: the summary says
+    // more about the component than the names it also goes by, and a three-column row that starts
+    // clipping all three at once is worse than one that drops to two.
+    .gallery-card-meta {
+        flex: 0 1 auto;
+        max-width: rem2(200px);
+
+        @include lt-xl {
+            display: none;
+        }
+    }
+
+    .gallery-card-summary {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+}
+
+
+// ── Empty ─────────────────────────────────────────────────────────────────────────────────────
 .gallery-empty {
     display: flex;
     text-align: center;
@@ -116,12 +378,14 @@
     padding: $doc-space-3xl $doc-space-sm;
 
     @include doc-surface($bit-color-background-primary);
+}
 
-    ::deep .bit-btn {
-        margin-top: $doc-space-sm;
-    }
+::deep .gallery-empty-actions {
+    margin-top: $doc-space-sm;
+    justify-content: center;
 }
 
 ::deep .gallery-search {
-    max-width: rem2(440px);
+    flex: 1 1 auto;
+    max-width: rem2(480px);
 }

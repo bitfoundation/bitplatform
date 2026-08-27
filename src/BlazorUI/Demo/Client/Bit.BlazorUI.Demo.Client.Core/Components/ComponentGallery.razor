@@ -1,66 +1,204 @@
-@inherits AppComponentBase
+﻿@inherits AppComponentBase
 
-@* The library, browsable. Two ways in - type what you are after, or pick the category it belongs
-   to - over one grid of cards that says what each component is for. It reads ComponentCatalog, so
-   it can never fall behind the nav the way the hand-written list it replaces did. *@
+@* The library, browsable. Three ways in - type what you are after, narrow to the category it
+   belongs to, or read the whole catalog in the order the nav lists it - over one set of cards that
+   says what each component is for, which package it ships in, and what it looks like. It reads
+   ComponentCatalog, so it can never fall behind the nav the way the hand-written list it replaces
+   did. *@
 
 <div class="gallery-controls">
-    <BitSearchBox Immediate DebounceTime="150" Value="@_filter" ValueChanged="ApplyFilter" Class="gallery-search"
-                  Placeholder="Search 100+ components by name, alias or purpose" IconName="@BitIconName.Search" />
+    <div class="gallery-controls-row">
+        <BitSearchBox Immediate
+                      DebounceTime="150"
+                      Value="@_filter"
+                      ValueChanged="ApplyFilter"
+                      OnSearch="GoToTopResult"
+                      Class="gallery-search"
+                      AriaLabel="Filter components"
+                      IconName="@BitIconName.Search"
+                      Placeholder="@($"Search {ComponentCatalog.Items.Count} components by name, alias or purpose")" />
 
+        @* Two layouts of the same results rather than two lists: the markup of a card is identical
+           in both, so nothing can be shown in one and missing from the other. *@
+        <div class="gallery-views" role="group" aria-label="Result layout">
+            <button type="button" title="Card view" aria-label="Card view"
+                    class="gallery-view @(_view is GalleryView.Grid ? "active" : null)"
+                    aria-pressed="@(_view is GalleryView.Grid ? "true" : "false")"
+                    @onclick="() => SelectView(GalleryView.Grid)">
+                <BitIcon IconName="@BitIconName.GridViewMedium" />
+            </button>
+            <button type="button" title="Compact list" aria-label="Compact list"
+                    class="gallery-view @(_view is GalleryView.List ? "active" : null)"
+                    aria-pressed="@(_view is GalleryView.List ? "true" : "false")"
+                    @onclick="() => SelectView(GalleryView.List)">
+                <BitIcon IconName="@BitIconName.BulletedList" />
+            </button>
+        </div>
+    </div>
+
+    @* A chip carries its count, which turns the filter row into a table of contents: the reader can
+       see that Extras holds twenty-one components and Progress three before choosing where to look.
+       While a term is typed the counts become the term's own - how many of the matches are in each
+       category - so the row says where the answer is, and a category the term does not reach at all
+       is dimmed rather than removed, because a row that reflows under the pointer cannot be aimed at. *@
     <div class="gallery-chips" role="group" aria-label="Filter by category">
         <button type="button" class="gallery-chip @(_category is null ? "active" : null)"
-                aria-pressed="@(_category is null)" @onclick="() => SelectCategory(null)">
+                aria-pressed="@(_category is null ? "true" : "false")" @onclick="() => SelectCategory(null)">
             All
-            <span class="gallery-chip-count">@ComponentCatalog.Items.Count</span>
+            <span class="gallery-chip-count">@_totalCount</span>
         </button>
         @foreach (var category in ComponentCatalog.Categories)
         {
             var isActive = _category == category.Name;
-            <button type="button" class="gallery-chip @(isActive ? "active" : null)" aria-pressed="@isActive"
-                    @onclick="() => SelectCategory(category.Name)">
+            var count = _counts.GetValueOrDefault(category.Name);
+            <button type="button" class="gallery-chip @(isActive ? "active" : null) @(count == 0 ? "empty" : null)"
+                    aria-pressed="@(isActive ? "true" : "false")" @onclick="() => SelectCategory(category.Name)">
                 @category.Name
-                <span class="gallery-chip-count">@category.Items.Count</span>
+                <span class="gallery-chip-count">@count</span>
             </button>
         }
     </div>
 </div>
 
-@if (_groups.Count == 0)
-{
-    @* A dead end is the one thing a search must never be: this says what was searched for and
-           offers the way back to everything. *@
-    <div class="gallery-empty">
-        <BitIcon IconName="@BitIconName.SearchIssue" Size="BitSize.Large" Color="BitColor.TertiaryForeground" />
-        <BitText Element="p" Typography="BitTypography.Subtitle1">No component matches &ldquo;@_filter&rdquo;</BitText>
-        <BitText Element="p" Color="BitColor.SecondaryForeground">
-            Try a shorter term, the name another library uses (&ldquo;select&rdquo;, &ldquo;switch&rdquo;,
-            &ldquo;chip&rdquo;),
-            or what you want it to do.
-        </BitText>
-        <BitButton Variant="BitVariant.Outline" OnClick="ClearFilters" IconName="@BitIconName.ClearFilter">
-            Show all components
+@* What the controls above have produced, said in words. It is the line that tells a reader their
+   search worked before they have parsed a single card, and it is the only place a filter can be
+   dropped from without hunting for the chip that set it. *@
+<div class="gallery-status">
+    <p class="gallery-status-text" role="status">
+        @if (_isSearching)
+        {
+            <b>@_matchCount</b>
+            @(_matchCount == 1 ? " component matches " : " components match ")
+            <b>&ldquo;@_filter&rdquo;</b>
+            @if (_category is not null)
+            {
+                <text> in @_category</text>
+            }
+        }
+        else if (_category is not null)
+        {
+            <b>@_matchCount</b>
+            <text> components in @_category</text>
+        }
+        else
+        {
+            <b>@ComponentCatalog.Items.Count</b>
+            <text> components across @ComponentCatalog.Categories.Count categories, in </text>
+            <b>@ComponentCatalog.Packages.Count</b>
+            <text> packages</text>
+        }
+    </p>
+
+    @if (_isSearching || _category is not null)
+    {
+        <BitButton Size="BitSize.Small"
+                   Variant="BitVariant.Text"
+                   OnClick="ClearFilters"
+                   Color="BitColor.SecondaryForeground"
+                   IconName="@BitIconName.ClearFilter">
+            Clear filters
         </BitButton>
-    </div>
+    }
+</div>
+
+@if (_isSearching)
+{
+    @if (_results.Count == 0)
+    {
+        @* A dead end is the one thing a search must never be: this says what was searched for, why
+           it may have found nothing, and offers the way back to everything. *@
+        <div class="gallery-empty">
+            <BitIcon IconName="@BitIconName.SearchIssue" Size="BitSize.Large" Color="BitColor.TertiaryForeground" />
+            <BitText Element="p" Typography="BitTypography.Subtitle1">
+                No component matches &ldquo;@_filter&rdquo;@(_category is not null ? $" in {_category}" : null)
+            </BitText>
+            <BitText Element="p" Color="BitColor.SecondaryForeground">
+                Try a shorter term, the name another library uses (&ldquo;select&rdquo;, &ldquo;switch&rdquo;,
+                &ldquo;chip&rdquo;), or what you want it to do.
+            </BitText>
+            <BitStack Horizontal Wrap AutoSize Gap="0.75rem" Class="gallery-empty-actions">
+                @if (_category is not null)
+                {
+                    <BitButton Variant="BitVariant.Fill" OnClick="() => SelectCategory(null)" IconName="@BitIconName.Search">
+                        Search every category
+                    </BitButton>
+                }
+                <BitButton Variant="BitVariant.Outline" OnClick="ClearFilters" IconName="@BitIconName.ClearFilter">
+                    Show all components
+                </BitButton>
+            </BitStack>
+        </div>
+    }
+    else
+    {
+        @* One flat run, best match first. No category headings here on purpose: in a ranked list a
+           heading would either lie about the order or break it. *@
+        <div class="@GridClass">
+            @foreach (var item in _results)
+            {
+                @Card(item, true)
+            }
+        </div>
+    }
 }
 else
 {
     @foreach (var group in _groups)
     {
         <DocSection Id="@group.Anchor" Title="@group.Name" Description="@group.Summary">
-            <div class="gallery-grid">
-                @foreach (var item in group.Items)
-                {
-                    <a class="gallery-card" href="@item.Url">
-                        <span class="gallery-card-name">@item.Name</span>
-                        @if (item.Aliases.HasValue())
-                        {
-                            <span class="gallery-card-aliases">@item.Aliases</span>
-                        }
-                        <span class="gallery-card-summary">@item.Summary</span>
-                    </a>
-                }
-            </div>
+            <HeaderActions>
+                <span class="gallery-group-meta">
+                    @group.Items.Count components &nbsp;·&nbsp; <code>@group.Package</code>
+                </span>
+            </HeaderActions>
+            <ChildContent>
+                <div class="@GridClass">
+                    @foreach (var item in group.Items)
+                    {
+                        @Card(item, false)
+                    }
+                </div>
+            </ChildContent>
         </DocSection>
     }
+}
+
+@code {
+    private string GridClass => _view is GalleryView.List ? "gallery-list" : "gallery-grid";
+
+    @* One card, two layouts. The glyph is what makes 113 cards scannable rather than readable, the
+       package badge answers the question an index is asked most often after "what is it" - which
+       NuGet package do I need - and the category rides along only in a ranked result list, where
+       there is no heading above the card to say where it came from. *@
+    private RenderFragment<(ComponentCatalogItem Item, bool ShowCategory)> _card = context =>
+        @<a class="gallery-card" href="@context.Item.Url">
+            <span class="gallery-card-icon" aria-hidden="true">
+                <BitIcon IconName="@context.Item.IconName" />
+            </span>
+            <span class="gallery-card-body">
+                <span class="gallery-card-head">
+                    <span class="gallery-card-name">@context.Item.Name</span>
+                    @if (context.Item.PackageBadge is string badge)
+                    {
+                        <span class="gallery-card-badge @badge.ToLowerInvariant()">@badge</span>
+                    }
+                </span>
+                @if (context.ShowCategory || context.Item.Aliases.HasValue())
+                {
+                    <span class="gallery-card-meta">
+                        @if (context.ShowCategory)
+                        {
+                            <span class="gallery-card-category">@context.Item.Category</span>
+                        }
+                        @if (context.Item.Aliases.HasValue())
+                        {
+                            <span class="gallery-card-aliases">@context.Item.Aliases</span>
+                        }
+                    </span>
+                }
+                <span class="gallery-card-summary">@context.Item.Summary</span>
+            </span>
+        </a>;
+
+    private RenderFragment Card(ComponentCatalogItem item, bool showCategory) => _card((item, showCategory));
 }
