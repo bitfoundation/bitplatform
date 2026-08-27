@@ -965,9 +965,6 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>Verificatiecode:</value>
   </data>
-  <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>Voer verificatiecode in.</value>
-  </data>
   <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>Verifiëren</value>
   </data>
@@ -1170,9 +1167,6 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <value>Alt-tekst</value>
   </data>
   <!--#endif -->
-    <data name="Page" xml:space="preserve">
-    <value>Pagina</value>
-  </data>
     <data name="Of" xml:space="preserve">
     <value>van</value>
   </data>
@@ -1182,9 +1176,6 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>Admin-paneel</value>
-  </data>
-  <data name="PaginatorSummary" xml:space="preserve">
-    <value>{0} items</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>Aantal producten laatste 30 dagen</value>
@@ -1222,9 +1213,6 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>Categorieën met productenaantal</value>
   </data>
-  <data name="SearchOnName" xml:space="preserve">
-    <value>Zoeken op naam</value>
-  </data>
   <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>Grafiek producten per categorie</value>
   </data>
@@ -1254,9 +1242,6 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   </data>
   <data name="DeleteProduct" xml:space="preserve">
     <value>Product verwijderen</value>
-  </data>
-  <data name="DefaultColorPicker" xml:space="preserve">
-    <value>Standaard kleurkiezer</value>
   </data>
   <data name="EditProduct" xml:space="preserve">
     <value>Product {0} bewerken</value>
@@ -1344,9 +1329,6 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="Send" xml:space="preserve">
     <value>Verzenden</value>
   </data>
-  <data name="AccentColorApply" xml:space="preserve">
-    <value>De accentkleur {0} toepassen</value>
-  </data>
   <data name="Canceled" xml:space="preserve">
     <value>Geannuleerd</value>
   </data>
@@ -1364,7 +1346,7 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <value>Dicteren</value>
   </data>
   <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
-    <value>Toegang tot de microfoon is geblokkeerd. Sta deze toe voor deze site om te kunnen dicteren.</value>
+    <value>Toegang tot de microfoon is geblokkeerd. Sta deze toe in je instellingen om te kunnen dicteren.</value>
   </data>
   <data name="AiChatPanelDictationStopped" xml:space="preserve">
     <value>Dicteren gestopt: {0}</value>
@@ -1414,19 +1396,15 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>Hoe kan ik de PWA-versie van de app installeren?</value>
   </data>
+  <data name="AiChatPanelPrompt3" xml:space="preserve">
   <!--#if (module == "Admin") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>Ik heb wat feedback die ik wil delen!</value>
-  </data>
+  <value>Ik heb wat feedback die ik wil delen!</value>
   <!--#elif (module == "Sales") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>Ik heb wat feedback die ik wil delen!</value>
-  </data>
+  <value>Ik heb wat feedback die ik wil delen!</value>
   <!--#else -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>Ik heb wat feedback die ik wil delen!</value>
-  </data>
+  <value>Ik heb wat feedback die ik wil delen!</value>
   <!--#endif -->
+  </data>
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>Schrijf een bericht...</value>
   </data>
@@ -1463,9 +1441,6 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <value>Ik heb problemen met het bekijken van in-app-advertenties.</value>
   </data>
   <!--#endif -->
-  <data name="PleaseWait" xml:space="preserve">
-    <value>Wacht even</value>
-  </data>
   <data name="Management" xml:space="preserve">
     <value>Beheer</value>
   </data>

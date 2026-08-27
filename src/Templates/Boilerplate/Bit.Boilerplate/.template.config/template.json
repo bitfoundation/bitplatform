@@ -580,6 +580,7 @@
                         "src/Tests/Features/TemplateConfig/PwaManifestShortcutTests.cs",
                         "src/Tests/Features/Culture/CultureSwitchRebuildTests.cs",
                         "src/Tests/Features/Culture/CultureCookieParsingTests.cs",
+                        "src/Tests/Features/Culture/ResxParityTests.cs",
                         "src/Tests/Features/TemplateConfig/BitComponentParameterTests.cs",
                         "src/Tests/Features/Products/AddOrEditProductPageTests.cs",
                         "src/Tests/Features/Ads/AdsServiceTests.cs",

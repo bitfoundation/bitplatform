@@ -88,7 +88,11 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         if (User.GetUserId() == userId)
             throw new BadRequestException(Localizer[nameof(AppStrings.UserCantRemoveItselfErrorMessage)]);
 
-        await EnsureCallerCanRevokeSessionsOf(userId, cancellationToken);
+        // The guard has to run here, ahead of the multitenant branch below: that branch deletes the target's
+        // UserSession rows for the current tenant, so moving the check after it would re-open the denial of
+        // service the guard exists to prevent. Only the message differs - the caller pressed Delete, not Revoke.
+        await EnsureCallerCanRevokeSessionsOf(userId, cancellationToken,
+                                              Localizer[nameof(AppStrings.UserCantRemoveSuperAdminErrorMessage)]);
 
         //#if (multitenant == true)
         await EnsureUserIsInCurrentTenant(userId, cancellationToken);
@@ -214,13 +218,13 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
     /// other role can be renamed to it, and <c>Delete</c> refuses to remove it. Hence the single membership query -
     /// there is no "which g-admin role" question to answer and no missing-role case to handle.
     /// </remarks>
-    private async Task EnsureCallerCanRevokeSessionsOf(Guid targetUserId, CancellationToken cancellationToken)
+    private async Task EnsureCallerCanRevokeSessionsOf(Guid targetUserId, CancellationToken cancellationToken, string? errorMessage = null)
     {
         if (User.IsInRole(AppRoles.GlobalAdmin))
             return;
 
         if (await DbContext.UserRoles.AnyAsync(ur => ur.UserId == targetUserId && ur.Role!.Name == AppRoles.GlobalAdmin, cancellationToken))
-            throw new BadRequestException(Localizer[nameof(AppStrings.UserCantRevokeSuperAdminSessionsErrorMessage)]);
+            throw new BadRequestException(errorMessage ?? Localizer[nameof(AppStrings.UserCantRevokeSuperAdminSessionsErrorMessage)]);
     }
 
     private async Task<User> GetUserById(Guid id, CancellationToken cancellationToken)

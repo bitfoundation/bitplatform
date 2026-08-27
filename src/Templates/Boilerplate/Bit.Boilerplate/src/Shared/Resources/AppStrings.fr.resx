@@ -965,9 +965,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>Code de vérification :</value>
   </data>
-  <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>Saisir le code de vérification.</value>
-  </data>
   <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>Vérifier</value>
   </data>
@@ -1170,9 +1167,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Texte alternatif</value>
   </data>
   <!--#endif -->
-    <data name="Page" xml:space="preserve">
-    <value>Page</value>
-  </data>
     <data name="Of" xml:space="preserve">
     <value>sur</value>
   </data>
@@ -1182,9 +1176,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>Panneau d'administration</value>
-  </data>
-  <data name="PaginatorSummary" xml:space="preserve">
-    <value>{0} éléments</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>Nombre de produits des 30 derniers jours</value>
@@ -1222,9 +1213,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>Catégories avec nombre de produits</value>
   </data>
-  <data name="SearchOnName" xml:space="preserve">
-    <value>Rechercher par nom</value>
-  </data>
   <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>Graphique du nombre de produits par catégorie</value>
   </data>
@@ -1254,9 +1242,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   </data>
   <data name="DeleteProduct" xml:space="preserve">
     <value>Supprimer le produit</value>
-  </data>
-  <data name="DefaultColorPicker" xml:space="preserve">
-    <value>Sélecteur de couleur par défaut</value>
   </data>
   <data name="EditProduct" xml:space="preserve">
     <value>Modifier le produit {0}</value>
@@ -1344,9 +1329,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="Send" xml:space="preserve">
     <value>Envoyer</value>
   </data>
-  <data name="AccentColorApply" xml:space="preserve">
-    <value>Appliquer la couleur d'accentuation {0}</value>
-  </data>
   <data name="Canceled" xml:space="preserve">
     <value>Annulé</value>
   </data>
@@ -1364,7 +1346,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Dictée</value>
   </data>
   <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
-    <value>L'accès au microphone est bloqué. Autorisez-le pour ce site afin de pouvoir dicter.</value>
+    <value>L'accès au microphone est bloqué. Autorisez-le dans vos paramètres afin de pouvoir dicter.</value>
   </data>
   <data name="AiChatPanelDictationStopped" xml:space="preserve">
     <value>Dictée interrompue : {0}</value>
@@ -1414,19 +1396,15 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>Comment installer la version PWA de l'application ?</value>
   </data>
+  <data name="AiChatPanelPrompt3" xml:space="preserve">
   <!--#if (module == "Admin") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>J'ai des commentaires à partager !</value>
-  </data>
+  <value>J'ai des commentaires à partager !</value>
   <!--#elif (module == "Sales") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>J'ai des commentaires à partager !</value>
-  </data>
+  <value>J'ai des commentaires à partager !</value>
   <!--#else -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>J'ai des commentaires à partager !</value>
-  </data>
+  <value>J'ai des commentaires à partager !</value>
   <!--#endif -->
+  </data>
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>Écrivez un message...</value>
   </data>
@@ -1463,9 +1441,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>J'ai des problèmes pour regarder les pubs dans l'application.</value>
   </data>
   <!--#endif -->
-  <data name="PleaseWait" xml:space="preserve">
-    <value>Veuillez patienter</value>
-  </data>
   <data name="Management" xml:space="preserve">
     <value>Gestion</value>
   </data>

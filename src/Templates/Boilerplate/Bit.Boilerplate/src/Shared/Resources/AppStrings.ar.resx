@@ -965,9 +965,6 @@
   <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>كود التحقق:</value>
   </data>
-  <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>أدخل كود التحقق</value>
-  </data>
   <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>التحقق</value>
   </data>
@@ -1170,9 +1167,6 @@
     <value>النص البديل</value>
   </data>
   <!--#endif -->
-    <data name="Page" xml:space="preserve">
-    <value>صفحة</value>
-  </data>
     <data name="Of" xml:space="preserve">
     <value>من</value>
   </data>
@@ -1182,9 +1176,6 @@
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>لوحة الإدارة</value>
-  </data>
-  <data name="PaginatorSummary" xml:space="preserve">
-    <value>{0} عناصر</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>عدد المنتجات في آخر 30 يومًا</value>
@@ -1222,9 +1213,6 @@
   <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>الفئات مع عدد المنتجات</value>
   </data>
-  <data name="SearchOnName" xml:space="preserve">
-    <value>البحث حسب الاسم</value>
-  </data>
   <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>مخطط عدد المنتجات لكل فئة</value>
   </data>
@@ -1254,9 +1242,6 @@
   </data>
   <data name="DeleteProduct" xml:space="preserve">
     <value>حذف المنتج</value>
-  </data>
-  <data name="DefaultColorPicker" xml:space="preserve">
-    <value>مختار اللون الافتراضي</value>
   </data>
   <data name="EditProduct" xml:space="preserve">
     <value>تعديل المنتج {0}</value>
@@ -1344,9 +1329,6 @@
   <data name="Send" xml:space="preserve">
     <value>إرسال</value>
   </data>
-  <data name="AccentColorApply" xml:space="preserve">
-    <value>تطبيق لون التمييز {0}</value>
-  </data>
   <data name="Canceled" xml:space="preserve">
     <value>ملغى</value>
   </data>
@@ -1364,7 +1346,7 @@
     <value>الإملاء</value>
   </data>
   <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
-    <value>تم حظر الوصول إلى الميكروفون. اسمح به لهذا الموقع لكي تتمكن من الإملاء.</value>
+    <value>تم حظر الوصول إلى الميكروفون. اسمح به من الإعدادات لكي تتمكن من الإملاء.</value>
   </data>
   <data name="AiChatPanelDictationStopped" xml:space="preserve">
     <value>توقف الإملاء: {0}</value>
@@ -1414,19 +1396,15 @@
   <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>كيف يمكنني تثبيت إصدار PWA من التطبيق؟</value>
   </data>
+  <data name="AiChatPanelPrompt3" xml:space="preserve">
   <!--#if (module == "Admin") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>لدي بعض التعليقات أود مشاركتها!</value>
-  </data>
+  <value>لدي بعض التعليقات أود مشاركتها!</value>
   <!--#elif (module == "Sales") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>لدي بعض التعليقات أود مشاركتها!</value>
-  </data>
+  <value>لدي بعض التعليقات أود مشاركتها!</value>
   <!--#else -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>لدي بعض التعليقات أود مشاركتها!</value>
-  </data>
+  <value>لدي بعض التعليقات أود مشاركتها!</value>
   <!--#endif -->
+  </data>
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>اكتب رسالة...</value>
   </data>
@@ -1463,9 +1441,6 @@
     <value>أواجه مشكلة في مشاهدة الإعلانات داخل التطبيق.</value>
   </data>
   <!--#endif -->
-  <data name="PleaseWait" xml:space="preserve">
-    <value>يرجى الانتظار</value>
-  </data>
   <data name="Management" xml:space="preserve">
     <value>إدارة</value>
   </data>

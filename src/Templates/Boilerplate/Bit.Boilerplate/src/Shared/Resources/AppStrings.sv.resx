@@ -965,9 +965,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>Verifieringskod:</value>
   </data>
-  <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>Ange verifieringskod.</value>
-  </data>
   <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>Verifiera</value>
   </data>
@@ -1170,9 +1167,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <value>Alternativtext</value>
   </data>
   <!--#endif -->
-    <data name="Page" xml:space="preserve">
-    <value>Sida</value>
-  </data>
     <data name="Of" xml:space="preserve">
     <value>av</value>
   </data>
@@ -1182,9 +1176,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>Adminpanel</value>
-  </data>
-  <data name="PaginatorSummary" xml:space="preserve">
-    <value>{0} objekt</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>Produktantal de senaste 30 dagarna</value>
@@ -1222,9 +1213,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>Kategorier med produktantal</value>
   </data>
-  <data name="SearchOnName" xml:space="preserve">
-    <value>Sök på namn</value>
-  </data>
   <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>Diagram över produktantal per kategori</value>
   </data>
@@ -1254,9 +1242,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   </data>
   <data name="DeleteProduct" xml:space="preserve">
     <value>Ta bort produkt</value>
-  </data>
-  <data name="DefaultColorPicker" xml:space="preserve">
-    <value>Standard färgväljare</value>
   </data>
   <data name="EditProduct" xml:space="preserve">
     <value>Redigera produkt {0}</value>
@@ -1344,9 +1329,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="Send" xml:space="preserve">
     <value>Skicka</value>
   </data>
-  <data name="AccentColorApply" xml:space="preserve">
-    <value>Använd accentfärgen {0}</value>
-  </data>
   <data name="Canceled" xml:space="preserve">
     <value>Avbrutet</value>
   </data>
@@ -1364,7 +1346,7 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <value>Diktering</value>
   </data>
   <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
-    <value>Åtkomsten till mikrofonen är blockerad. Tillåt den för den här webbplatsen för att kunna diktera.</value>
+    <value>Åtkomsten till mikrofonen är blockerad. Tillåt den i dina inställningar för att kunna diktera.</value>
   </data>
   <data name="AiChatPanelDictationStopped" xml:space="preserve">
     <value>Dikteringen stoppades: {0}</value>
@@ -1414,19 +1396,15 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>Hur installerar jag PWA-versionen av appen?</value>
   </data>
+  <data name="AiChatPanelPrompt3" xml:space="preserve">
   <!--#if (module == "Admin") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>Jag har lite feedback jag vill dela med mig av!</value>
-  </data>
+  <value>Jag har lite feedback jag vill dela med mig av!</value>
   <!--#elif (module == "Sales") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>Jag har lite feedback jag vill dela med mig av!</value>
-  </data>
+  <value>Jag har lite feedback jag vill dela med mig av!</value>
   <!--#else -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>Jag har lite feedback jag vill dela med mig av!</value>
-  </data>
+  <value>Jag har lite feedback jag vill dela med mig av!</value>
   <!--#endif -->
+  </data>
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>Skriv ett meddelande...</value>
   </data>
@@ -1463,9 +1441,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <value>Jag har problem med att titta på annonser i appen.</value>
   </data>
   <!--#endif -->
-  <data name="PleaseWait" xml:space="preserve">
-    <value>Vänligen vänta</value>
-  </data>
   <data name="Management" xml:space="preserve">
     <value>Hantering</value>
   </data>

@@ -879,7 +879,7 @@
     <value>अलग उपयोगकर्ता के रूप में साइन इन करें</value>
   </data>
   <data name="YouAreSignedInAs" xml:space="preserve">
-    <value>आप {0} के रूप में साइन इन हैं</value>
+    <value>आप साइन इन हैं</value>
   </data>
   <data name="ForgotPasswordLink" xml:space="preserve">
     <value>पासवर्ड भूल गए?</value>
@@ -964,9 +964,6 @@
   </data>
   <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>सत्यापन कोड:</value>
-  </data>
-  <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>सत्यापन कोड दर्ज करें।</value>
   </data>
   <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>सत्यापित करें</value>
@@ -1170,9 +1167,6 @@
     <value>वैकल्पिक पाठ</value>
   </data>
   <!--#endif -->
-    <data name="Page" xml:space="preserve">
-    <value>पृष्ठ</value>
-  </data>
     <data name="Of" xml:space="preserve">
     <value>में से</value>
   </data>
@@ -1182,9 +1176,6 @@
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>प्रशासक पैनल</value>
-  </data>
-  <data name="PaginatorSummary" xml:space="preserve">
-    <value>{0} आइटम</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>पिछले 30 दिनों में उत्पादों की संख्या</value>
@@ -1222,9 +1213,6 @@
   <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>उत्पाद संख्या के साथ श्रेणियां</value>
   </data>
-  <data name="SearchOnName" xml:space="preserve">
-    <value>नाम पर खोजें</value>
-  </data>
   <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>प्रति श्रेणी उत्पाद गणना चार्ट</value>
   </data>
@@ -1254,9 +1242,6 @@
   </data>
   <data name="DeleteProduct" xml:space="preserve">
     <value>उत्पाद हटाएं</value>
-  </data>
-  <data name="DefaultColorPicker" xml:space="preserve">
-    <value>डिफ़ॉल्ट रंग पिकर</value>
   </data>
   <data name="EditProduct" xml:space="preserve">
     <value>उत्पाद {0} संपादित करें</value>
@@ -1344,9 +1329,6 @@
   <data name="Send" xml:space="preserve">
     <value>भेजें</value>
   </data>
-  <data name="AccentColorApply" xml:space="preserve">
-    <value>{0} एक्सेंट रंग लागू करें</value>
-  </data>
   <data name="Canceled" xml:space="preserve">
     <value>रद्द</value>
   </data>
@@ -1364,7 +1346,7 @@
     <value>श्रुतलेख</value>
   </data>
   <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
-    <value>माइक्रोफ़ोन का उपयोग अवरुद्ध है। बोलकर लिखने के लिए इस साइट को अनुमति दें।</value>
+    <value>माइक्रोफ़ोन का उपयोग अवरुद्ध है। बोलकर लिखने के लिए सेटिंग में अनुमति दें।</value>
   </data>
   <data name="AiChatPanelDictationStopped" xml:space="preserve">
     <value>श्रुतलेख रुक गया: {0}</value>
@@ -1414,19 +1396,15 @@
   <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>मैं ऐप का PWA संस्करण कैसे स्थापित कर सकता हूं?</value>
   </data>
+  <data name="AiChatPanelPrompt3" xml:space="preserve">
   <!--#if (module == "Admin") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>मेरे पास कुछ प्रतिक्रिया साझा करने के लिए है!</value>
-  </data>
+  <value>मेरे पास कुछ प्रतिक्रिया साझा करने के लिए है!</value>
   <!--#elif (module == "Sales") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>मेरे पास कुछ प्रतिक्रिया साझा करने के लिए है!</value>
-  </data>
+  <value>मेरे पास कुछ प्रतिक्रिया साझा करने के लिए है!</value>
   <!--#else -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>मेरे पास कुछ प्रतिक्रिया साझा करने के लिए है!</value>
-  </data>
+  <value>मेरे पास कुछ प्रतिक्रिया साझा करने के लिए है!</value>
   <!--#endif -->
+  </data>
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>एक संदेश लिखें...</value>
   </data>
@@ -1463,9 +1441,6 @@
     <value>मुझे ऐप में विज्ञापन देखने में समस्या हो रही है।</value>
   </data>
   <!--#endif -->
-  <data name="PleaseWait" xml:space="preserve">
-    <value>कृपया प्रतीक्षा करें</value>
-  </data>
   <data name="Management" xml:space="preserve">
     <value>प्रबंधन</value>
   </data>
