@@ -263,7 +263,19 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             // decode of an untrusted upload can cost is bounded, and anything Magick.NET cannot decode throws here.
             // OpenReadStream hands out a NEW stream per call and MagickImage does not take ownership of it.
             using var sourceStream = file.OpenReadStream();
-            using MagickImage sourceImage = new(sourceStream);
+            MagickImage? decodedImage;
+            try
+            {
+                decodedImage = new(sourceStream);
+            }
+            catch (MagickException)
+            {
+                // An undecodable upload is bad input, not a server fault - a 400 like the endpoint's other rejections,
+                // instead of a 500 with a Critical log per attempt. Only the decode is caught: a failure in the resize
+                // or WebP encode below would be a server problem and stays loud.
+                return BadRequest(Localizer["The uploaded file is not a supported image."].ToString());
+            }
+            using MagickImage sourceImage = decodedImage;
 
             if (imageResizeContext.ShrinkOnly is false &&
                 (sourceImage.Width < imageResizeContext.Width || sourceImage.Height < imageResizeContext.Height))

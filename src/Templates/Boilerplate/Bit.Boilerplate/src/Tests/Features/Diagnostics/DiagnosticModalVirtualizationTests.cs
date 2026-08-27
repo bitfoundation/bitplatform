@@ -72,14 +72,18 @@ public class DiagnosticModalVirtualizationTests
     private const string MessagePrefix = "b31-log-entry-";
 
     /// <summary>
-    /// The store is process-wide and shared with everything else in the run, so it is emptied first and last.
+    /// The store is process-wide and shared with everything else in the run, so it is emptied first and last - and
+    /// because every parallel test's server also logs into it (each AppTestServer runs Development, where the
+    /// DiagnosticLogger provider is registered host-wide), nothing here may assume this test is the only writer.
     /// The clock is fake but advanced, so the entries sort in a defined order.
     /// </summary>
     private static void WriteLogs()
     {
         DiagnosticLogger.ClearStore();
 
-        var timeProvider = new FakeTimeProvider(DateTimeOffset.Parse("2026-08-23T10:00:00Z"));
+        // A day in the future, so a concurrently logged real-clock record can never sort above these entries in the
+        // modal's default newest-first order and push them below the virtualization window.
+        var timeProvider = new FakeTimeProvider(DateTimeOffset.UtcNow.AddDays(1));
 
         var logger = new DiagnosticLogger(timeProvider) { Category = nameof(DiagnosticModalVirtualizationTests) };
 
@@ -92,7 +96,9 @@ public class DiagnosticModalVirtualizationTests
             timeProvider.Advance(TimeSpan.FromMilliseconds(1));
         }
 
-        Assert.AreEqual(LogCount, DiagnosticLogger.Store.Count);
+        // Counted per this test's own category: the store is shared, so a record another test's server logged in the
+        // window since ClearStore() must not fail an exact whole-store count.
+        Assert.AreEqual(LogCount, DiagnosticLogger.Store.Count(log => log.Category == nameof(DiagnosticModalVirtualizationTests)));
     }
 
     public Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; } = default!;

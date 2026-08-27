@@ -47,6 +47,14 @@ public partial class WindowsStorageService : IStorageService
 
     public async ValueTask SetItem(string key, string? value, bool persistent = true)
     {
+        if (value is null)
+        {
+            // Storing a null must remove the key (see WebStorageService/MauiStorageService), otherwise IsPersistent
+            // would keep answering true for a value that no longer exists - the axis AuthManager derives "remember me" from.
+            await RemoveItem(key);
+            return;
+        }
+
         var storage = await GetPersistentStorage();
 
         // A key lives in exactly one of the two stores. Writing to one without removing it from the other would leave

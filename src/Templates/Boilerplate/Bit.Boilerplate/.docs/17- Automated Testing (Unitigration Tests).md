@@ -28,7 +28,8 @@ The test project is located at [`src/Tests/Boilerplate.Tests.csproj`](/src/Tests
 - **[`IntegrationTests.cs`](/src/Tests/Features/Identity/IntegrationTests.cs)**: Example of API/backend testing
 - **[`UITests.cs`](/src/Tests/Features/Identity/UITests.cs)**: Example of UI testing with Playwright
 - **[`TestData.cs`](/src/Tests/Features/Identity/TestData.cs)**: Shared test data constants
-- **[`.runsettings`](/src/Tests/.runsettings)**: Test configuration (Playwright settings, parallel execution, environment variables)
+- **[`.runsettings`](/src/Tests/.runsettings)**: Test configuration (Playwright debug settings, environment variable overrides)
+- **[`MSTestSettings.cs`](/src/Tests/MSTestSettings.cs)**: Assembly-level parallel execution settings
 
 ### Supporting Folders:
 - **`Infrastructure/`**: Core test infrastructure
@@ -52,7 +53,7 @@ The test project is located at [`src/Tests/Boilerplate.Tests.csproj`](/src/Tests
 - **FakeItEasy**: Mocking library (when selective mocking is needed)
 
 ### Key Features:
-- **Parallel Test Execution**: Tests run in parallel for faster feedback (configured in `.runsettings`)
+- **Parallel Test Execution**: Tests run in parallel for faster feedback (configured via `[assembly: Parallelize(...)]` in [`MSTestSettings.cs`](/src/Tests/MSTestSettings.cs))
 - **Video Recording**: Failed UI tests automatically record videos for debugging
 - **Real Dependencies**: Through Aspire, tests can run against real SQL Server, email server, etc.
 
@@ -62,7 +63,7 @@ The test project is located at [`src/Tests/Boilerplate.Tests.csproj`](/src/Tests
 
 ### 1. AppTestServer - The Heart of Testing
 
-The [`AppTestServer`](/src/Tests/AppTestServer.cs) class is responsible for spinning up the web application in-process for testing:
+The [`AppTestServer`](/src/Tests/Infrastructure/AppTestServer.cs) class is responsible for spinning up the web application in-process for testing:
 
 ```csharp
 public partial class AppTestServer : IAsyncDisposable
@@ -185,7 +186,7 @@ var authManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
 public const string DefaultTestEmail = "test@bitplatform.dev";
 public const string DefaultTestPassword = "123456";
 ```
-- Centralized test data in [`TestData.cs`](/src/Tests/TestData.cs)
+- Centralized test data in [`TestData.cs`](/src/Tests/Features/Identity/TestData.cs)
 - Seeds are created in `AppDbContext.OnModelCreating()` for development/testing
 - Tests use known data for predictable assertions
 
@@ -197,7 +198,7 @@ Let's examine [`UITests.cs`](/src/Tests/Features/Identity/UITests.cs) for end-to
 
 ```csharp
 [TestClass]
-public partial class UITests : PageTest
+public partial class UITests : AppPageTest
 {
     [TestMethod]
     public async Task SignIn_Should_WorkAsExpected()
@@ -222,23 +223,15 @@ public partial class UITests : PageTest
         await Expect(Page).ToHaveURLAsync(server.WebAppServerAddress.ToString());
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = TestData.DefaultTestFullName })).ToBeVisibleAsync();
     }
-
-    // Enable video recording for failed tests
-    public override BrowserNewContextOptions ContextOptions() => 
-        base.ContextOptions().EnableVideoRecording(TestContext);
-
-    [TestCleanup]
-    public async ValueTask Cleanup() => 
-        await Context.FinalizeVideoRecording(TestContext);
 }
 ```
 
 **Key Concepts:**
 
-### PageTest Base Class
-- Inherit from `PageTest` (Microsoft.Playwright.MSTest.v4)
-- Automatically provides `Page` and `Context` properties
-- Handles browser lifecycle (start/stop)
+### AppPageTest Base Class
+- Inherit from [`AppPageTest`](/src/Tests/Infrastructure/AppPageTest.cs), the project's base on top of `PageTest` (Microsoft.Playwright.MSTest.v4)
+- Automatically provides `Page` and `Context` properties and handles the browser lifecycle (start/stop)
+- Centralizes the timeouts, video recording setup and cleanup that test classes used to override per class
 
 ### Locator Best Practices
 ```csharp
@@ -276,9 +269,14 @@ The [`.runsettings`](/src/Tests/.runsettings) file configures test execution:
 ```xml
 <RunSettings>
     <RunConfiguration>
-        <EnvironmentVariables>            
-            <!-- Override appsettings for tests -->
-            <ConnectionStrings__sqlite>Data Source=BoilerplateDb.db;Mode=Memory;Cache=Shared;</ConnectionStrings__sqlite>
+        <EnvironmentVariables>
+            <!-- https://playwright.dev/docs/debug -->
+            <!--<HEADED>1</HEADED>-->
+            <!--<PWDEBUG>1</PWDEBUG>-->
+            <!--<BROWSER>firefox</BROWSER>-->
+
+            <!-- You can override the configuration from appsettings.json for tests here. -->
+            <DOTNET_SYSTEM_GLOBALIZATION_INVARIANT>false</DOTNET_SYSTEM_GLOBALIZATION_INVARIANT>
         </EnvironmentVariables>
     </RunConfiguration>
 </RunSettings>
@@ -286,12 +284,10 @@ The [`.runsettings`](/src/Tests/.runsettings) file configures test execution:
 
 **Key Settings:**
 
-
-
 ### Environment Overrides
-- **SQLite In-Memory**: Default for fast, isolated tests
-- **Can Override**: Point to real SQL Server if needed
-- **Hierarchy**: `.runsettings` → `appsettings.json` → environment variables
+- **Playwright debugging**: Uncomment `HEADED`/`PWDEBUG`/`BROWSER` to watch or step through UI tests
+- **Configuration overrides**: Any `Section__Key` environment variable (e.g. a `ConnectionStrings__sqlite` value) overrides `appsettings.json` for the test run
+- **Test reports**: The trx report is requested via `TestingPlatformCommandLineArguments` in the csproj — the Microsoft.Testing.Platform runner ignores a runsettings `LoggerRunSettings` section
 
 ---
 
@@ -339,21 +335,19 @@ The project includes GitHub Actions workflows that run tests automatically:
 
 ### On Every Push/PR:
 - Tests run in parallel on CI servers
-- Playwright browsers are cached for speed
-- Test results are uploaded as artifacts
-- Failed test videos are saved for review
+- Test results (trx report plus failed-test videos) are uploaded as an artifact
 
 ### Configuration in `.github/workflows/`:
 ```yaml
-- name: Run Tests
-  run: dotnet test src/Tests/Boilerplate.Tests.csproj --configuration Release
+- name: Test
+  run: cd src/Tests && dotnet test
 
-- name: Upload Test Videos (on failure)
+- name: Upload Tests Artifact
   if: failure()
   uses: actions/upload-artifact@v4
   with:
-    name: test-videos
-    path: src/Tests/TestResults/Videos/
+    name: tests-artifact
+    path: ./src/Tests/TestResults
 ```
 
 ---
