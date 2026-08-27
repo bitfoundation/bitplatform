@@ -118,7 +118,7 @@ When a user wants to **enable passwordless authentication**, here's what happens
 
 **4. Platform-Specific Credential Creation**
 
-   **Web Platform** (`src/Client/Boilerplate.Client.Core/Infrastructure/Services/WebAuthnService.cs`):
+   **Web Platform** (`src/Client/Boilerplate.Client.Web/Infrastructure/Services/WebAuthnService.cs`):
    - Directly calls browser's WebAuthn API via Bit.Butil
    - Browser shows native biometric prompt
    

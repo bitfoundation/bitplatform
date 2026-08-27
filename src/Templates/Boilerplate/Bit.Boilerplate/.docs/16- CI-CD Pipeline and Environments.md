@@ -517,9 +517,13 @@ The workflow follows a **security-focused two-phase deployment** pattern that se
 **Characteristics**:
 - Has full SDK installations (.NET, Node.js, Android SDK, Xcode)
 - Performs compilation, transpilation, bundling
-- Runs tests and quality checks
 - Uploads artifacts to GitHub (or Azure DevOps)
 - **No production access** - isolated from production systems
+
+> **The build phase does not run tests.** `cd-template.yml` goes straight from `dotnet workload install` to
+> `dotnet publish`; `ci.yml` is the only workflow that runs the test suite, and it triggers on **pull requests**,
+> not on the push that starts a deploy. If you want deploys to be test-gated, protect `main` and `test` with a
+> required status check on `ci.yml`.
 
 ### Phase 2: Deploy
 **Purpose**: Take pre-built artifacts and deploy them  

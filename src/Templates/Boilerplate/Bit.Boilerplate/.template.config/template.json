@@ -637,6 +637,7 @@
                         "src/Tests/Features/Json/JsonOptionsContractTests.cs",
                         "src/Tests/Features/Urls/AppQueryStringCollectionTests.cs",
                         "src/Tests/Features/TemplateConfig/TemplateConfigurationTests.cs",
+                        "src/Tests/Features/Documentation/DocumentationTruthTests.cs",
                         "src/Tests/Features/TemplateConfig/SolutionAndRepoFilesTests.cs",
                         "src/Tests/Features/TemplateConfig/PipelineFilesTests.cs",
                         "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",

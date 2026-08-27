@@ -202,8 +202,8 @@ This allows platform-specific code:
 ```xml
 <Using Include="System.Net.Http" />
 <Using Include="System.Text.Json" />
-<Using Include="Boilerplate.Shared.Dtos" />
-<Using Include="Boilerplate.Shared.Exceptions" />
+<Using Include="Boilerplate.Shared.Infrastructure.Dtos" />
+<Using Include="Boilerplate.Shared.Infrastructure.Exceptions" />
 <!-- ... and many more -->
 ```
 

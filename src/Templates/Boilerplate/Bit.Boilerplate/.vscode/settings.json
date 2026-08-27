@@ -3,7 +3,6 @@
     "files.autoGuessEncoding": false,
     "dotnet.defaultSolution": "Boilerplate.Web.slnf",
     "dotnet.unitTests.runSettingsPath": "src/Tests/.runsettings",
-    "chat.tools.autoApprove": true,
     "github.copilot.chat.codesearch.enabled": true,
     "github.copilot.chat.scopeSelection": true,
     "github.copilot.chat.agent.thinkingTool": true,

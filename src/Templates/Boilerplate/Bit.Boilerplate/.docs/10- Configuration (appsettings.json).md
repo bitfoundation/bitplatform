@@ -410,7 +410,7 @@ public class EmailService
 
 The project supports four environments by default:
 - **Development** - Local development (uses `appsettings.Development.json`)
-- **Test** - Testing environment (uses `appsettings.Test.json`)
+- **Test** - Testing environment (create `appsettings.Test.json` next to the existing environment files if you need Test-specific overrides; it is picked up automatically)
 - **Staging** - Pre-production testing environment
 - **Production** - Live production environment (uses `appsettings.Production.json`)
 

@@ -624,17 +624,22 @@ This approach keeps your source code clean and focused, while ensuring that all 
 
 That's why `bit-resx` tool is added to the project CD pipelines. Here's how it's used in this project's GitHub Actions:
 
-**Example from `.github/workflows/cd.yml`:**
+**Example from `.github/workflows/cd-template.yml`:**
 
 ```yaml
-- name: Install Bit.ResxTranslator
-  run: dotnet tool install --global Bit.ResxTranslator --prerelease
-
-- name: Translate Resources
+- name: Use Bit.ResxTranslator
   env:
-    OpenAI__ApiKey: ${{ secrets.OPENAI_API_KEY }}
-  run: bit-resx-translate
+    OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
+    OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
+  run: |
+    dotnet tool install --global Bit.ResxTranslator
+    bit-resx-translate
 ```
+
+> The secret is named **`OPENAI_APIKEY`** (no underscore between `API` and `KEY`) and the endpoint comes from
+> the repository **variable** `OPENAI_ENDPOINT`. Both names have to match exactly: with no key configured the
+> step does not fail the deploy, it simply skips - so a misnamed secret means every release silently ships the
+> untranslated `.resx` keys this section tells you it is safe to leave blank.
 
 ### When to Run the Tool
 

@@ -34,21 +34,20 @@ Call `GetBitBlazorUIComponentsList` **once** to get the complete component catal
 For **each component** you plan to use, call `GetBitBlazorUIComponentDocs("<ComponentName>")` **in parallel**
 
 Never assume parameter names or usage patterns from memory - always look them up.
-### Step 4: Ask DeepWiki for Theming or Architecture Questions
+### Step 4: Look Up Theming and Component Questions with the bit BlazorUI Tools
 
-If you need to understand theming, SCSS variable usage, or how a specific pattern fits the project architecture, ask:
+Theming, SCSS variables and component styling are answered by the **bit BlazorUI MCP server**, not by
+`ask_question` - that tool's own description excludes the bit platform libraries, which have dedicated tools on the
+same server. Use `GetBitBlazorUIComponentDocs` for a specific component, `GetBitBlazorUIEnumDetails` for
+`BitColor`/`BitVariant`/`BitSize`, and `GetAllBitBlazorUIIconNames` when you need an icon name.
 
-```
-ask_question(
-  repoName: "bitfoundation/bitplatform",
-  question: "<your specific question>"
-)
-```
-
-Use this for questions like:
+Use them for questions like:
 - "How do I use `$bit-color-*` SCSS variables for dark/light theme support?"
 - "How should I use `BitColor` enum vs `BitCss.Class` vs `BitCss.Var` for coloring components?"
 - "What is the correct `::deep` selector pattern for styling Bit.BlazorUI components from a scoped SCSS file?"
+
+Reserve `ask_question` for the third-party libraries its description names (Mapperly, Aspire, Hangfire, FusionCache
+and the others).
 
 ### Step 6: Implement Replacements
 
