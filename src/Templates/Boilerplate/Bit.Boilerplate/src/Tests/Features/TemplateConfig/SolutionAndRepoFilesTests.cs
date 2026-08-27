@@ -166,11 +166,12 @@ public class SolutionAndRepoFilesTests
     /// Both clean scripts delete every <c>*.css</c>/<c>*.js</c>/<c>*.map</c> in the tree, and the repository has
     /// exactly two git-tracked files matching those patterns: <c>service-worker.js</c> and
     /// <c>service-worker.published.js</c> - hand-written PWA/push source that nothing regenerates. The scripts'
-    /// behavior is shell-runtime and cannot run inside this suite, so what is pinned here is the presence of the two
-    /// guards that keep them from destroying source: the tracked-file check, and the refusal to run the deletion
-    /// pass at all outside a git repository (where "tracked" cannot be answered and <c>Clean.bat</c>'s original
-    /// guard silently matched nothing - precisely in the state, fresh from <c>dotnet new</c>, with no history to
-    /// restore from).
+    /// behavior is shell-runtime and cannot run inside this suite, so what is pinned here is the presence of the
+    /// three guards that keep them from destroying source: the tracked-file check, that the check is by exact path
+    /// rather than by regex (a name is a pattern to <c>-Match</c>, so <c>chunk[1].js</c> fails to match itself), and
+    /// the refusal to run the deletion pass at all outside a git repository (where "tracked" cannot be answered and
+    /// <c>Clean.bat</c>'s original guard silently matched nothing - precisely the state, fresh from
+    /// <c>dotnet new</c>, with no history to restore from).
     /// </summary>
     [TestMethod]
     public void CleanScripts_Should_GuardGitTrackedFilesFromDeletion()
@@ -187,8 +188,14 @@ public class SolutionAndRepoFilesTests
 
         Assert.IsTrue(cleanBat.Contains("git ls-files", StringComparison.Ordinal),
             "Clean.bat no longer consults git for tracked files before deleting css/js/map files.");
-        Assert.IsTrue(cleanBat.Contains("IsNullOrWhiteSpace($trackedFiles)", StringComparison.Ordinal),
+        Assert.IsTrue(cleanBat.Contains("$trackedFiles.Count -eq 0", StringComparison.Ordinal),
             "Clean.bat no longer detects the git-ls-files-failed case (not a git repository), where its tracked-file guard matches nothing and everything gets deleted.");
+        Assert.IsTrue(cleanBat.Contains("$tracked.Contains($_.FullName)", StringComparison.Ordinal),
+            "Clean.bat no longer decides by exact full path whether a candidate is tracked.");
+        Assert.IsFalse(cleanBat.Contains("-NotMatch", StringComparison.Ordinal),
+            "Clean.bat is answering \"is this tracked?\" with a regex again. The file NAME becomes the pattern, so a "
+            + "tracked assets/chunk[1].js never matches itself - [1] is a character class - and the guard deletes the "
+            + "very file it exists to protect.");
     }
 
     /// <summary>

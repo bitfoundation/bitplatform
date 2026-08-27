@@ -591,6 +591,7 @@
                         "src/Tests/Features/Identity/TwoFactorAuthTests.cs",
                         "src/Tests/Features/Identity/PrivilegedSessionTests.cs",
                         "src/Tests/Features/Identity/PrivilegedSessionTenantSwitchTests.cs",
+                        "src/Tests/Features/Identity/UserManagementTenantScopingTests.cs",
                         "src/Tests/Features/Identity/RefreshTokenRotationTests.cs",
                         "src/Tests/Features/Identity/ReturnUrlHardeningTests.cs",
                         "src/Tests/Features/Identity/OneTimeTokenTests.cs",
@@ -832,7 +833,8 @@
                         "src/Tests/Features/Tenants/TenantMembershipStateTests.cs",
                         "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
                         "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs",
-                        "src/Tests/Features/Identity/PrivilegedSessionTenantSwitchTests.cs"
+                        "src/Tests/Features/Identity/PrivilegedSessionTenantSwitchTests.cs",
+                        "src/Tests/Features/Identity/UserManagementTenantScopingTests.cs"
                     ]
                 },
                 {

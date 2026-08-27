@@ -3,7 +3,7 @@
 :: The commands in this script are specifically designed for Windows.
 
 :: Deletes CSS, JS, and source map files that are not tracked in Git (e.g. wwwroot/service-worker.js is git-tracked source code and must survive).
-powershell -Command "[string]$trackedFiles = git ls-files 2>$null; if ([string]::IsNullOrWhiteSpace($trackedFiles)) { Write-Warning 'Not a git repository - skipping cleanup of css/js/map files, because git-tracked source files (e.g. service-worker.js) cannot be told apart from build outputs.' } else { Get-ChildItem -Force -Include *.css,*.min.css,*.js,*.min.js,*.map,*.proj.Backup.tmp -Recurse | ForEach-Object { if ($trackedFiles -NotMatch $_.Name) { Remove-Item -Recurse -Path $_ -Confirm:$false -Force }}}"
+powershell -NoProfile -Command "$trackedFiles = @(git ls-files 2>$null); if ($trackedFiles.Count -eq 0) { Write-Warning 'Not a git repository - skipping cleanup of css/js/map files, because git-tracked source files (e.g. service-worker.js) cannot be told apart from build outputs.' } else { $tracked = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase); foreach ($t in $trackedFiles) { [void]$tracked.Add([System.IO.Path]::GetFullPath((Join-Path $PWD.Path $t.Replace('/', '\')))) }; Get-ChildItem -Force -File -Include *.css,*.min.css,*.js,*.min.js,*.map,*.proj.Backup.tmp -Recurse | ForEach-Object { if ($tracked.Contains($_.FullName) -eq $false) { Remove-Item -LiteralPath $_.FullName -Force -Confirm:$false } } }"
 
 :: Runs the dotnet clean command for each .csproj file.
 powershell -Command "Get-ChildItem -Force -Include *.csproj -Recurse | ForEach-Object { dotnet clean $_.FullName }"

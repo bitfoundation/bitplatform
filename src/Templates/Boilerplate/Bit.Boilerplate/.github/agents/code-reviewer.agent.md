@@ -32,7 +32,8 @@ You are a code reviewer specialized in this project's conventions. Review change
 - [ ] `long Version` for concurrency control
 - [ ] Route carries the API version segment - `[ApiVersion(1)]` + `Route("api/v{v:apiVersion}/[controller]/[action]")` on the controller, literal `api/v1/...` on the shared interface
 <!--#if (multitenant == true)-->
-- [ ] Every entity the controller queries either implements `ITenantAware` (so `AppDbContext` applies the tenant row filter) or is scoped by an explicit ownership term in the query - a new entity with neither is readable across tenants
+- [ ] Every entity the controller queries either implements `ITenantAware` (so `AppDbContext` applies the tenant row filter) or is scoped by an explicit ownership term in the query - a new entity with neither is readable across tenants.
+A deliberately global entity is the one exception `.github/prompts/scaffold.prompt.md` allows; flag it anyway, so the intent gets stated rather than assumed
 <!--#endif-->
 
 ### DTOs

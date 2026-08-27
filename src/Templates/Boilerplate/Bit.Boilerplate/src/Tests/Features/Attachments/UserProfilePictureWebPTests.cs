@@ -40,6 +40,10 @@ public partial class UserProfilePictureWebPTests
 
         var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
 
+        // Only this test's own upload may be cleaned up below: the account is the shared seeded one, so an early
+        // failure - the download, the user lookup - must leave whatever picture it already had exactly as it was.
+        var pictureWasUploadedByThisTest = false;
+
         try
         {
             var currentUser = await scope.ServiceProvider.GetRequiredService<IUserController>()
@@ -60,6 +64,7 @@ public partial class UserProfilePictureWebPTests
 
             using var uploadResponse = await httpClient.PostAsync("api/v1/Attachment/UploadUserProfilePicture", form, TestContext.CancellationToken);
             uploadResponse.EnsureSuccessStatusCode();
+            pictureWasUploadedByThisTest = true;
 
             // Download the generated small (256x256) attachment. attachmentId for a profile picture is the user id.
             var downloadedBytes = await httpClient.GetByteArrayAsync(
@@ -80,11 +85,14 @@ public partial class UserProfilePictureWebPTests
             // permanently carries HasProfilePicture=true pointing at a blob under this run's working directory.
             // Best effort, mirroring AttachmentReplacementTests.DeleteProfilePicture: a test that fails early must not
             // take the cleanup down with it.
-            try
+            if (pictureWasUploadedByThisTest)
             {
-                using var _ = await httpClient.DeleteAsync("api/v1/Attachment/DeleteUserProfilePicture", CancellationToken.None);
+                try
+                {
+                    using var _ = await httpClient.DeleteAsync("api/v1/Attachment/DeleteUserProfilePicture", CancellationToken.None);
+                }
+                catch (Exception) { }
             }
-            catch (Exception) { }
         }
     }
 }

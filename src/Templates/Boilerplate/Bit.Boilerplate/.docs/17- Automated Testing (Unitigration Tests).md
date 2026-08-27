@@ -243,13 +243,12 @@ await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue }).Clic
 - **Accessibility-friendly**: Tests enforce proper ARIA roles and labels
 
 ### Video Recording
-```csharp
-public override BrowserNewContextOptions ContextOptions() => 
-    base.ContextOptions().EnableVideoRecording(TestContext);
-```
-- Videos are recorded in [`TestResults/Videos/`](/src/Tests/TestResults/Videos/)
-- **Only failed tests** keep their videos (successful tests delete them to save space)
-- Videos are invaluable for debugging intermittent failures
+[`AppPageTest`](/src/Tests/Infrastructure/AppPageTest.cs) owns this - do **not** override `ContextOptions()` in a test class to switch recording on:
+- Recording costs CPU on every test, which is what makes tests flaky on constrained CI runners. So the **first attempt runs without a video**: `AppPageTest.ContextOptions()` enables it only from the first retry onwards (`TestContext.TestRunCount > 1`), which is exactly when an already-failing test is worth recording.
+- `AppPageTest.Cleanup()` calls `FinalizeVideoRecording`, which keeps the video **only when the outcome is `Failed`** and deletes the directory otherwise.
+- Videos land in [`TestResults/Videos/`](/src/Tests/TestResults/Videos/), one directory per test method.
+- A second browser opened through `AppPageTest.NewBrowserContext(serverAddress)` inherits the same settings.
+- Videos are invaluable for debugging intermittent failures.
 
 ### Assertions
 ```csharp

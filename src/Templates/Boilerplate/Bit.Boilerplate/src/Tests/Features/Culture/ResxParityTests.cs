@@ -94,8 +94,18 @@ public class ResxParityTests
                     if (neutral.TryGetValue(key, out var neutralValues) is false)
                         continue; // reported by the key-parity test instead.
 
-                    // A key can legitimately carry several values - one per template branch. Compare them in order.
-                    for (var i = 0; i < Math.Min(neutralValues.Count, localeValues.Count); i++)
+                    // A key can legitimately carry several values - one per template branch - and the branches have
+                    // to line up: a locale that grew or lost one leaves some branch of the generated project with no
+                    // value at all, or with its neighbour's. Comparing only the shared prefix would never see it.
+                    if (neutralValues.Count != localeValues.Count)
+                    {
+                        failures.Add(
+                            $"{Path.GetFileName(locale)} :: {key} carries {localeValues.Count} value branch(es) where " +
+                            $"the neutral file carries {neutralValues.Count}");
+                        continue;
+                    }
+
+                    for (var i = 0; i < neutralValues.Count; i++)
                     {
                         var expected = PlaceholderIndexes(neutralValues[i]);
                         var actual = PlaceholderIndexes(localeValues[i]);
@@ -112,9 +122,10 @@ public class ResxParityTests
         }
 
         Assert.IsEmpty(failures,
-            $"A translated value's placeholders no longer match the neutral value's. Either the call site never fills " +
-            $"the extra one (it renders as a literal brace) or it fills one that has been dropped (the value is " +
-            $"silently swallowed):{Environment.NewLine}{string.Join(Environment.NewLine, failures)}");
+            $"A translated value no longer lines up with the neutral value. Either the call site never fills an extra " +
+            $"placeholder (it renders as a literal brace), or it fills one that has been dropped (the value is " +
+            $"silently swallowed), or the template branches themselves no longer correspond:" +
+            $"{Environment.NewLine}{string.Join(Environment.NewLine, failures)}");
     }
 
     [TestMethod]

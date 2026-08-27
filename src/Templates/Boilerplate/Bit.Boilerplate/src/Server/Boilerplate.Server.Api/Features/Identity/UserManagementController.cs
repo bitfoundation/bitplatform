@@ -88,6 +88,13 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         if (User.GetUserId() == userId)
             throw new BadRequestException(Localizer[nameof(AppStrings.UserCantRemoveItselfErrorMessage)]);
 
+        //#if (multitenant == true)
+        // Tenant scoping comes first. Both guards below throw, but with different status codes - 400 from the
+        // global-admin check, 404 from this one - so asking "is the target a global admin?" before "is the target
+        // even in my tenant?" lets a tenant admin probe global-admin membership across tenants by the status code.
+        await EnsureUserIsInCurrentTenant(userId, cancellationToken);
+        //#endif
+
         // The guard has to run here, ahead of the multitenant branch below: that branch deletes the target's
         // UserSession rows for the current tenant, so moving the check after it would re-open the denial of
         // service the guard exists to prevent. Only the message differs - the caller pressed Delete, not Revoke.
@@ -95,8 +102,6 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
                                               Localizer[nameof(AppStrings.UserCantRemoveSuperAdminErrorMessage)]);
 
         //#if (multitenant == true)
-        await EnsureUserIsInCurrentTenant(userId, cancellationToken);
-
         if (User.HasFeature(AppFeatures.Management.Tenants_Manage_Global) is false)
         {
             // Only global admins can actually delete a user account. Deleting a user as a tenant
@@ -141,11 +146,15 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         var entityToDelete = await DbContext.UserSessions.FindAsync([id], cancellationToken)
             ?? throw new ResourceNotFoundException().WithData("Reason", "User session not found.");
 
+        //#if (multitenant == true)
+        // Before the global-admin guard, so its 400 cannot be told apart from this one's 404 for a target outside
+        // the current tenant - that difference answers "is this user a global admin?" across tenants (See Delete).
+        await EnsureUserIsInCurrentTenant(entityToDelete.UserId, cancellationToken);
+        //#endif
+
         await EnsureCallerCanRevokeSessionsOf(entityToDelete.UserId, cancellationToken);
 
         //#if (multitenant == true)
-        await EnsureUserIsInCurrentTenant(entityToDelete.UserId, cancellationToken);
-
         // Non Global admins may only revoke the sessions that are signed into the current tenant (See GetUserSessions).
         if (User.HasFeature(AppFeatures.Management.Tenants_Manage_Global) is false && entityToDelete.TenantId != User.GetTenantId())
             throw new ResourceNotFoundException().WithData("Reason", "Non Global admins may only revoke the sessions that are signed into the current tenant.");
@@ -167,11 +176,12 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task RevokeAllUserSessions(Guid userId, CancellationToken cancellationToken)
     {
-        await EnsureCallerCanRevokeSessionsOf(userId, cancellationToken);
-
         //#if (multitenant == true)
+        // Before the global-admin guard, for the reason Delete spells out: the two throw different status codes.
         await EnsureUserIsInCurrentTenant(userId, cancellationToken);
         //#endif
+
+        await EnsureCallerCanRevokeSessionsOf(userId, cancellationToken);
 
         var userSessionId = User.GetSessionId();
 

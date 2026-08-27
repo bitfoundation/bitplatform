@@ -638,8 +638,8 @@ That's why `bit-resx` tool is added to the project CD pipelines. Here's how it's
 
 > The secret is named **`OPENAI_APIKEY`** (no underscore between `API` and `KEY`) and the endpoint comes from
 > the repository **variable** `OPENAI_ENDPOINT`. Both names have to match exactly: with no key configured the
-> step does not fail the deploy, it simply skips - so a misnamed secret means every release silently ships the
-> untranslated `.resx` keys this section tells you it is safe to leave blank.
+> step skips translation instead of failing the deploy - so a missing or misnamed secret ships that release with
+> its `.resx` keys left untranslated. Leave the secret blank only when untranslated keys are acceptable.
 
 ### When to Run the Tool
 

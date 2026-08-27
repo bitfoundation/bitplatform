@@ -11,6 +11,7 @@ You have access to the following MCP tools - use them instead of guessing APIs:
 - **`GetBitBlazorUIComponentsList`** - returns the full catalog of available components with descriptions.
 - **`GetBitBlazorUIComponentDocs`** - returns real, ready-to-use code examples for a named component.
 - **`GetBitBlazorUIEnumDetails`** - returns all values and descriptions for a named Bit.BlazorUI enum (e.g., `BitColor`, `BitVariant`, `BitSize`).
+- **`GetAllBitBlazorUIIconNames`** - returns every icon name Bit.BlazorUI ships, for the `IconName` parameters.
 - **`ask_question`** (repo: `bitfoundation/bitplatform`) - ask architecture or theming questions when the above tools don't fully answer your question.
 
 ---

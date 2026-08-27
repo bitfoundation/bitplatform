@@ -35,6 +35,11 @@ public partial class ThemeTogglePersistenceUITests : AppPageTest
         var lightTheme = await htmlElement.GetAttributeAsync("bit-theme-light");
         Assert.IsFalse(string.IsNullOrEmpty(darkTheme) || string.IsNullOrEmpty(lightTheme),
             "The <html> element should declare its dark and light theme names (bit-theme-dark / bit-theme-light).");
+        // Without these two, a preset whose dark and light names coincide - or an active theme that is neither -
+        // makes toggledTheme equal initialTheme, and every assertion below passes on a theme that never changed.
+        Assert.AreNotEqual(darkTheme, lightTheme, "The dark and light theme names must differ, or toggling is unobservable.");
+        Assert.IsTrue(initialTheme == darkTheme || initialTheme == lightTheme,
+            $"The active theme ({initialTheme}) must be one of the two declared themes ({darkTheme} / {lightTheme}).");
         var toggledTheme = (initialTheme == darkTheme ? lightTheme : darkTheme)!;
 
         // Flip the theme from the anonymous user menu, then confirm the DOM signal changed.
