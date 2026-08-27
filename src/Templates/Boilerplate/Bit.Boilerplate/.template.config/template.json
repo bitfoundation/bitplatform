@@ -620,6 +620,7 @@
                         "src/Tests/Features/Json/JsonOptionsContractTests.cs",
                         "src/Tests/Features/Urls/AppQueryStringCollectionTests.cs",
                         "src/Tests/Features/TemplateConfig/TemplateConfigurationTests.cs",
+                        "src/Tests/Features/TemplateConfig/SolutionAndRepoFilesTests.cs",
                         "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
                         "src/Tests/Features/OpenApi/OpenApiParameterContractTests.cs",
                         "src/Tests/Features/Urls/WebAppUrlOriginHardeningTests.cs",
