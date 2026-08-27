@@ -6,17 +6,33 @@ public partial class BitDialogDemo
     [
         new()
         {
-            Name = "AutoToggleScroll",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Enables the auto scrollbar toggle behavior of the Dialog."
-        },
-        new()
-        {
             Name = "AbsolutePosition",
             Type = "bool",
             DefaultValue = "false",
-            Description = "When true, the Dialog will be positioned absolute instead of fixed."
+            Description = "When true, the Dialog will be positioned absolute instead of fixed, so it covers its nearest positioned ancestor instead of the screen."
+        },
+        new()
+        {
+            Name = "AutoFocus",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Moves the focus into the Dialog when it opens, onto the first focusable element it holds, falling back to the Dialog itself when it holds none."
+        },
+        new()
+        {
+            Name = "AutoFocusButton",
+            Type = "BitDialogButton?",
+            DefaultValue = "null",
+            Description = "Which of the Dialog's own buttons AutoFocus lands on, instead of the first focusable element the Dialog holds.",
+            LinkType = LinkType.Link,
+            Href = "#component-button-enum",
+        },
+        new()
+        {
+            Name = "AutoToggleScroll",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables the auto scrollbar toggle behavior of the Dialog, which stops the scroller from scrolling for as long as the Dialog is open."
         },
         new()
         {
@@ -50,6 +66,13 @@ public partial class BitDialogDemo
         },
         new()
         {
+            Name = "CloseButtonTitle",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The title (and aria-label) of the close button, for accessibility and localization. Defaults to \"Close\" when not set."
+        },
+        new()
+        {
             Name = "CloseIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -68,6 +91,13 @@ public partial class BitDialogDemo
         },
         new()
         {
+            Name = "CloseOnEscape",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Dismisses the Dialog when the Escape key is pressed while the focus is inside it. A blocking Dialog ignores the Escape key whatever this is set to."
+        },
+        new()
+        {
             Name = "DragElementSelector",
             Type = "string?",
             DefaultValue = "null",
@@ -82,6 +112,34 @@ public partial class BitDialogDemo
         },
         new()
         {
+            Name = "FullHeight",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the Dialog height 100% of the area it is positioned in."
+        },
+        new()
+        {
+            Name = "FullSize",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the Dialog width and height 100% of the area it is positioned in."
+        },
+        new()
+        {
+            Name = "FullWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the Dialog width 100% of the area it is positioned in."
+        },
+        new()
+        {
+            Name = "HeaderTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Used to customize the header of the Dialog, replacing the Title and Subtitle while keeping the close button beside it."
+        },
+        new()
+        {
             Name = "IsAlert",
             Type = "bool?",
             DefaultValue = "null",
@@ -92,7 +150,7 @@ public partial class BitDialogDemo
             Name = "IsBlocking",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the Dialog can be light dismissed by clicking outside the Dialog (on the overlay)."
+            Description = "Prevents the Dialog from being dismissed by a click on the overlay or by the Escape key, leaving its buttons as the only way out."
         },
         new()
         {
@@ -106,7 +164,7 @@ public partial class BitDialogDemo
             Name = "IsModeless",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the Dialog should be modeless (e.g. not dismiss when focusing/clicking outside of the Dialog). If true, IsBlocking is ignored, and there will be no overlay."
+            Description = "Whether the Dialog should be modeless (e.g. not dismiss when focusing/clicking outside of the Dialog). If true, IsBlocking is ignored, there will be no overlay, and the focus is neither taken nor trapped."
         },
         new()
         {
@@ -127,7 +185,7 @@ public partial class BitDialogDemo
             Name = "Message",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The message to display in the dialog."
+            Description = "The message to display in the dialog. It also describes the Dialog to a screen reader unless a Subtitle or a SubtitleAriaId takes that job instead."
         },
         new()
         {
@@ -162,7 +220,14 @@ public partial class BitDialogDemo
             Name = "OnOk",
             Type = "EventCallback<MouseEventArgs>",
             DefaultValue = "null",
-            Description = "A callback function for when the Ok button is clicked."
+            Description = "A callback function for when the Ok button is clicked. The Dialog waits for it before closing and shows a spinner in place of the Ok text while it waits."
+        },
+        new()
+        {
+            Name = "OnOpen",
+            Type = "EventCallback",
+            DefaultValue = "null",
+            Description = "A callback function for when the Dialog is opened."
         },
         new()
         {
@@ -172,6 +237,20 @@ public partial class BitDialogDemo
             Description = "Position of the Dialog on the screen.",
             LinkType = LinkType.Link,
             Href = "#component-position-enum",
+        },
+        new()
+        {
+            Name = "RestoreFocus",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Hands the focus back to whatever held it when the Dialog opened, once the Dialog closes."
+        },
+        new()
+        {
+            Name = "ScrollerElement",
+            Type = "ElementReference?",
+            DefaultValue = "null",
+            Description = "Set the element reference for which the Dialog disables its scroll if applicable. Takes precedence over ScrollerSelector when both are set."
         },
         new()
         {
@@ -212,10 +291,17 @@ public partial class BitDialogDemo
         },
         new()
         {
+            Name = "Subtitle",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The secondary line of the header, under the title."
+        },
+        new()
+        {
             Name = "SubtitleAriaId",
             Type = "string?",
             DefaultValue = "null",
-            Description = "ARIA id for the subtitle of the Dialog, if any."
+            Description = "ARIA id for the subtitle of the Dialog, if any. When it is not set, the Dialog describes itself with its own Subtitle, or with its Message when there is no subtitle."
         },
         new()
         {
@@ -229,7 +315,51 @@ public partial class BitDialogDemo
             Name = "TitleAriaId",
             Type = "string?",
             DefaultValue = "null",
-            Description = "ARIA id for the title of the Dialog, if any."
+            Description = "ARIA id for the title of the Dialog, if any. When it is not set, the Dialog names itself with its own Title, and falls back to AriaLabel when there is none."
+        },
+        new()
+        {
+            Name = "TrapFocus",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Keeps Tab and Shift+Tab cycling inside the Dialog while it is open. Defaults to true for a normal Dialog and false for a modeless one."
+        }
+    ];
+
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "Result",
+            Type = "BitDialogResult?",
+            DefaultValue = "null",
+            Description = "The result of the last showing of the Dialog: Ok or Cancel when one of those buttons ended it, and null when it was dismissed without an answer or has not been shown yet.",
+            LinkType = LinkType.Link,
+            Href = "#component-result-enum",
+        },
+        new()
+        {
+            Name = "Show",
+            Type = "Task<BitDialogResult?>",
+            Description = "Opens the Dialog and waits for it to close, reporting how it closed."
+        },
+        new()
+        {
+            Name = "Open",
+            Type = "Task",
+            Description = "Opens the Dialog."
+        },
+        new()
+        {
+            Name = "Close",
+            Type = "Task",
+            Description = "Closes the Dialog."
+        },
+        new()
+        {
+            Name = "Toggle",
+            Type = "Task",
+            Description = "Opens the Dialog when it is closed and closes it when it is open."
         }
     ];
 
@@ -247,6 +377,13 @@ public partial class BitDialogDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the root element of the BitDialog."
+                },
+                new()
+                {
+                    Name = "Document",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the document element of the BitDialog, the layer that holds the overlay and the container and decides where on the screen the Dialog sits."
                 },
                 new()
                 {
@@ -285,6 +422,27 @@ public partial class BitDialogDemo
                 },
                 new()
                 {
+                    Name = "Subtitle",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the subtitle of the BitDialog."
+                },
+                new()
+                {
+                    Name = "CloseButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the close button of the BitDialog."
+                },
+                new()
+                {
+                    Name = "CloseIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the icon of the close button of the BitDialog."
+                },
+                new()
+                {
                     Name = "Message",
                     Type = "string?",
                     DefaultValue = "null",
@@ -317,6 +475,13 @@ public partial class BitDialogDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the cancel button of the BitDialog."
+                },
+                new()
+                {
+                    Name = "Footer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the footer of the BitDialog, the element that wraps the FooterTemplate."
                 }
             ]
         },
@@ -357,18 +522,47 @@ public partial class BitDialogDemo
         {
             Id = "component-position-enum",
             Name = "BitDialogPosition",
-            Description = "",
+            Description = "The Left and Right values are physical and stay on the same side of the screen in both reading directions. The Start and End values are logical: Start is the left in an LTR Dialog and the right in an RTL one.",
             Items =
             [
-                new() { Name = "Center", Value = "0" },
-                new() { Name = "TopLeft", Value = "1" },
-                new() { Name = "TopCenter", Value = "2" },
-                new() { Name = "TopRight", Value = "3" },
-                new() { Name = "CenterLeft", Value = "4" },
-                new() { Name = "CenterRight", Value = "5" },
-                new() { Name = "BottomLeft", Value = "6" },
-                new() { Name = "BottomCenter", Value = "7" },
-                new() { Name = "BottomRight", Value = "8" }
+                new() { Name = "Center", Value = "0", Description = "Centered both ways." },
+                new() { Name = "TopLeft", Value = "1", Description = "The top left corner, in both reading directions." },
+                new() { Name = "TopCenter", Value = "2", Description = "The top edge, centered horizontally." },
+                new() { Name = "TopRight", Value = "3", Description = "The top right corner, in both reading directions." },
+                new() { Name = "CenterLeft", Value = "4", Description = "The left edge, centered vertically." },
+                new() { Name = "CenterRight", Value = "5", Description = "The right edge, centered vertically." },
+                new() { Name = "BottomLeft", Value = "6", Description = "The bottom left corner, in both reading directions." },
+                new() { Name = "BottomCenter", Value = "7", Description = "The bottom edge, centered horizontally." },
+                new() { Name = "BottomRight", Value = "8", Description = "The bottom right corner, in both reading directions." },
+                new() { Name = "TopStart", Value = "9", Description = "The top edge, on the side the reading direction starts from." },
+                new() { Name = "TopEnd", Value = "10", Description = "The top edge, on the side the reading direction ends at." },
+                new() { Name = "CenterStart", Value = "11", Description = "Centered vertically, on the side the reading direction starts from." },
+                new() { Name = "CenterEnd", Value = "12", Description = "Centered vertically, on the side the reading direction ends at." },
+                new() { Name = "BottomStart", Value = "13", Description = "The bottom edge, on the side the reading direction starts from." },
+                new() { Name = "BottomEnd", Value = "14", Description = "The bottom edge, on the side the reading direction ends at." }
+            ]
+        },
+        new()
+        {
+            Id = "component-result-enum",
+            Name = "BitDialogResult",
+            Description = "How a showing of the Dialog ended. A dismissal that answered neither way reports null rather than one of these.",
+            Items =
+            [
+                new() { Name = "Ok", Value = "0", Description = "The Ok button ended the showing." },
+                new() { Name = "Cancel", Value = "1", Description = "The Cancel button ended the showing." }
+            ]
+        },
+        new()
+        {
+            Id = "component-button-enum",
+            Name = "BitDialogButton",
+            Description = "One of the three buttons a BitDialog renders of its own.",
+            Items =
+            [
+                new() { Name = "Ok", Value = "0", Description = "The Ok button, which answers the Dialog with BitDialogResult.Ok." },
+                new() { Name = "Cancel", Value = "1", Description = "The Cancel button, which answers the Dialog with BitDialogResult.Cancel." },
+                new() { Name = "Close", Value = "2", Description = "The close button in the header, which dismisses the Dialog without an answer." }
             ]
         }
     ];
@@ -376,25 +570,48 @@ public partial class BitDialogDemo
 
 
     private bool IsOpen = false;
-    private bool IsOpenEvent = false;
 
-    private BitDialog dialogRef = default!;
-    private BitDialog customDialogRef = default!;
+    private bool isOpenLabels = false;
+    private bool isOpenAcknowledge = false;
+    private bool isOpenNoClose = false;
 
-    private bool IsOpen1 = false;
+    private bool isOpenSubtitle = false;
+    private bool isOpenHeaderTemplate = false;
+    private bool isOpenFooterTemplate = false;
 
     private bool IsOpen2 = false;
     private string? optionValue;
-    private bool IsOpen3 = false;
+    private BitDialog customDialogRef = default!;
+
+    private bool IsOpen1 = false;
+    private BitDialog dialogRef = default!;
+    private BitDialog awaitDialogRef = default!;
+    private string awaitedResultText = "(not shown yet)";
+
+    private bool IsOpenEvent = false;
+    private string lastEvent = "-";
 
     private bool IsOpen4 = false;
-    private bool IsOpen5 = false;
+    private bool isOpenNoEscape = false;
+    private bool isOpenModeless = false;
 
-    private bool IsOpen6 = false;
+    private bool isOpenFocus = false;
+    private bool isOpenNoFocus = false;
+    private bool isOpenFocusCancel = false;
+
+    private bool IsOpen5 = false;
     private bool IsOpen7 = false;
+
+    private bool isOpenFullWidth = false;
+    private bool isOpenFullSize = false;
+    private bool isOpenSized = false;
 
     private bool IsOpenInPosition = false;
     private BitDialogPosition position;
+    private bool isOpenPhysical = false;
+    private bool isOpenLogical = false;
+
+    private bool IsOpen6 = false;
 
     private bool IsDraggable = false;
     private bool IsOpen8 = false;
@@ -405,7 +622,26 @@ public partial class BitDialogDemo
     private bool IsOpenExtIcon3 = false;
     private bool IsOpenExtIcon4 = false;
 
+    private bool isOpenStyles = false;
+    private bool isOpenClasses = false;
+
     private bool IsOpen10 = false;
+
+    private async Task ShowAndAwait()
+    {
+        var result = await awaitDialogRef.Show();
+
+        awaitedResultText = result?.ToString() ?? "(dismissed)";
+    }
+
+    private async Task HandleSlowOk()
+    {
+        lastEvent = "OnOk (working...)";
+
+        await Task.Delay(1000);
+
+        lastEvent = "OnOk";
+    }
 
     private void OpenDialogInPosition(BitDialogPosition positionValue)
     {
@@ -422,26 +658,84 @@ public partial class BitDialogDemo
 private bool IsOpen = false;";
 
     private readonly string example2RazorCode = @"
-<BitButton OnClick=""@(() => IsOpen1 = true)"">Open Dialog</BitButton>
-<span>Result is: @dialogRef?.Result</span>
+<BitButton OnClick=""@(() => isOpenLabels = true)"">Custom labels</BitButton>
+<BitButton OnClick=""@(() => isOpenAcknowledge = true)"">Single action</BitButton>
+<BitButton OnClick=""@(() => isOpenNoClose = true)"">No close button</BitButton>
 
-<BitDialog @ref=""@dialogRef""
-           @bind-IsOpen=""@IsOpen1""
+<BitDialog @bind-IsOpen=""isOpenLabels""
+           Title=""Delete this file?""
+           Message=""This file will be moved to the trash. You can restore it for 30 days.""
+           OkText=""Move to trash""
+           CancelText=""Keep it"" />
+
+<BitDialog @bind-IsOpen=""isOpenAcknowledge""
+           ShowCancelButton=""false""
+           Title=""Your session expired""
+           Message=""Sign in again to pick up where you left off.""
+           OkText=""Got it"" />
+
+<BitDialog @bind-IsOpen=""isOpenNoClose""
+           ShowCloseButton=""false""
            Title=""Missing Subject""
            Message=""Do you want to send this message without a subject?"" />";
     private readonly string example2CsharpCode = @"
-private bool IsOpen1;
-private BitDialog dialogRef;
-";
+private bool isOpenLabels = false;
+private bool isOpenAcknowledge = false;
+private bool isOpenNoClose = false;";
 
     private readonly string example3RazorCode = @"
-<BitButton OnClick=""@(() => IsOpenEvent = true)"">Open Dialog</BitButton>
-<BitDialog @bind-IsOpen=""IsOpenEvent""
-           Title=""Missing Subject""
-           Message=""Do you want to send this message without a subject?""
-           OnOk=""async () => await Task.Delay(1000)"" />";
+<style>
+    .dialog-header {
+        gap: 0.5rem;
+        display: flex;
+        font-size: 20px;
+        font-weight: 600;
+        align-items: center;
+    }
+
+    .dialog-footer {
+        display: flex;
+        align-items: center;
+        padding: 0 14px 14px;
+        justify-content: flex-end;
+    }
+</style>
+
+<BitButton OnClick=""@(() => isOpenSubtitle = true)"">Title & subtitle</BitButton>
+<BitButton OnClick=""@(() => isOpenHeaderTemplate = true)"">Header template</BitButton>
+<BitButton OnClick=""@(() => isOpenFooterTemplate = true)"">Footer template</BitButton>
+
+<BitDialog @bind-IsOpen=""isOpenSubtitle""
+           Title=""Publish this version?""
+           Subtitle=""Version 4.2.0 · 18 changed files""
+           Message=""Everyone in the workspace will see this version as soon as it goes out."" />
+
+<BitDialog @bind-IsOpen=""isOpenHeaderTemplate""
+           AriaLabel=""Storage almost full""
+           Message=""Delete something, or move up to the next plan to keep syncing."">
+    <HeaderTemplate>
+        <div class=""dialog-header"">
+            <BitIcon IconName=""@BitIconName.Warning"" Color=""BitColor.Warning"" />
+            <span>Storage almost full</span>
+        </div>
+    </HeaderTemplate>
+</BitDialog>
+
+<BitDialog @bind-IsOpen=""isOpenFooterTemplate""
+           ShowOkButton=""false""
+           ShowCancelButton=""false""
+           Title=""Delete all""
+           Message=""+99 emails will be deleted."">
+    <FooterTemplate>
+        <div class=""dialog-footer"">
+            Are you sure?! there's no going back.
+        </div>
+    </FooterTemplate>
+</BitDialog>";
     private readonly string example3CsharpCode = @"
-private bool IsOpenEvent = false;";
+private bool isOpenSubtitle = false;
+private bool isOpenHeaderTemplate = false;
+private bool isOpenFooterTemplate = false;";
 
     private readonly string example4RazorCode = @"
 <style>
@@ -460,15 +754,7 @@ private bool IsOpenEvent = false;";
         overflow-y: hidden;
         padding: 0 24px 24px;
     }
-
-    .dialog-footer {
-        display: flex;
-        align-items: center;
-        padding: 0 14px 14px;
-        justify-content: flex-end;
-    }
 </style>
-
 
 <BitButton OnClick=""@(() => IsOpen2 = true)"">Open Dialog</BitButton>
 <div>Result is: @customDialogRef?.Result</div>
@@ -477,8 +763,11 @@ private bool IsOpenEvent = false;";
     <div>Value is: @optionValue</div>
 }
 
-<BitDialog @ref=""customDialogRef"" @bind-IsOpen=""@IsOpen2"" ShowCloseButton=""false"">
-    <div class=""dialog-title"">
+<BitDialog @ref=""customDialogRef""
+           @bind-IsOpen=""@IsOpen2""
+           TitleAriaId=""dialog-custom-title""
+           ShowCloseButton=""false"">
+    <div class=""dialog-title"" id=""dialog-custom-title"">
         <span>All emails together</span>
     </div>
     <div class=""dialog-body"">
@@ -486,127 +775,206 @@ private bool IsOpenEvent = false;";
             Your Inbox has changed. No longer does it include favorites, it is a singular destination for your emails.
         </p>
         <br />
-        <BitChoiceGroup @bind-Value=""optionValue"" Label=""Basic Options"" TItem=""BitChoiceGroupOption<string?>"" TValue=""string?"">
+        <BitChoiceGroup @bind-Value=""optionValue"" Label=""Basic Options"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
             <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
             <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
             <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
         </BitChoiceGroup>
     </div>
-</BitDialog>
-
-<BitButton OnClick=""@(() => IsOpen3 = true)"">Open Dialog</BitButton>
-<BitDialog @bind-IsOpen=""@IsOpen3"" ShowCloseButton=""false"">
-    <Body>
-        <div class=""dialog-title"">
-            Delete all
-        </div>
-        <div class=""dialog-body"">
-            +99 Emails will be deleted.
-        </div>
-    </Body>
-    <FooterTemplate>
-        <div class=""dialog-footer"">
-            Are you sure?! there's no going back.
-        </div>
-    </FooterTemplate>
 </BitDialog>";
     private readonly string example4CsharpCode = @"
 private bool IsOpen2 = false;
 private string? optionValue;
-private bool IsOpen3 = false;
-";
+private BitDialog customDialogRef = default!;";
 
     private readonly string example5RazorCode = @"
-<BitButton OnClick=""@(() => IsOpen4 = true)"">Open Dialog (IsBlocking = true)</BitButton>
-<BitButton OnClick=""@(() => IsOpen5 = true)"">Open Dialog (AutoToggleScroll = false)</BitButton>
+<BitButton OnClick=""@(() => IsOpen1 = true)"">Open Dialog</BitButton>
+<span>Result is: @(dialogRef?.Result?.ToString() ?? ""(dismissed)"")</span>
+
+<BitDialog @ref=""@dialogRef""
+           @bind-IsOpen=""@IsOpen1""
+           Title=""Missing Subject""
+           Message=""Do you want to send this message without a subject?"" />
+
+
+<BitButton OnClick=""ShowAndAwait"">Show and await</BitButton>
+<span>Awaited result is: @awaitedResultText</span>
+
+<BitDialog @ref=""awaitDialogRef""
+           Title=""Discard draft?""
+           OkText=""Discard""
+           CancelText=""Keep editing""
+           Message=""Your changes since the last save will be lost."" />";
+    private readonly string example5CsharpCode = @"
+private bool IsOpen1 = false;
+private BitDialog dialogRef = default!;
+private BitDialog awaitDialogRef = default!;
+private string awaitedResultText = ""(not shown yet)"";
+
+private async Task ShowAndAwait()
+{
+    var result = await awaitDialogRef.Show();
+
+    awaitedResultText = result?.ToString() ?? ""(dismissed)"";
+}";
+
+    private readonly string example6RazorCode = @"
+<BitButton OnClick=""@(() => IsOpenEvent = true)"">Open Dialog</BitButton>
+<div>Last event: @lastEvent</div>
+
+<BitDialog @bind-IsOpen=""IsOpenEvent""
+           Title=""Missing Subject""
+           Message=""Do you want to send this message without a subject?""
+           OnOpen=""@(() => lastEvent = ""OnOpen"")""
+           OnOk=""HandleSlowOk""
+           OnCancel=""@(() => lastEvent = ""OnCancel"")""
+           OnClose=""@(() => lastEvent = ""OnClose"")""
+           OnDismiss=""@(() => lastEvent += "" → OnDismiss"")"" />";
+    private readonly string example6CsharpCode = @"
+private bool IsOpenEvent = false;
+private string lastEvent = ""-"";
+
+private async Task HandleSlowOk()
+{
+    lastEvent = ""OnOk (working...)"";
+
+    await Task.Delay(1000);
+
+    lastEvent = ""OnOk"";
+}";
+
+    private readonly string example7RazorCode = @"
+<BitButton OnClick=""@(() => IsOpen4 = true)"">IsBlocking</BitButton>
+<BitButton OnClick=""@(() => isOpenNoEscape = true)"">CloseOnEscape = false</BitButton>
+<BitButton OnClick=""@(() => isOpenModeless = true)"">IsModeless</BitButton>
 
 <BitDialog IsBlocking
            @bind-IsOpen=""IsOpen4""
            Title=""Missing Subject""
-           Message=""Do you want to send this message without a subject?"" />
+           Message=""Neither the Escape key nor a click outside will close this one."" />
 
-<BitDialog AutoToggleScroll=""false""
-           @bind-IsOpen=""IsOpen5""
+<BitDialog CloseOnEscape=""false""
+           @bind-IsOpen=""isOpenNoEscape""
            Title=""Missing Subject""
-           Message=""Do you want to send this message without a subject?"" />";
-    private readonly string example5CsharpCode = @"
-private bool IsOpen4 = false;
-private bool IsOpen5 = false;";
+           Message=""Escape does nothing here, but a click on the overlay still closes it."" />
 
-    private readonly string example6RazorCode = @"
+<BitDialog IsModeless
+           @bind-IsOpen=""isOpenModeless""
+           Position=""BitDialogPosition.TopEnd""
+           Title=""Modeless""
+           Message=""There is no overlay, so the page behind this one is still usable."" />";
+    private readonly string example7CsharpCode = @"
+private bool IsOpen4 = false;
+private bool isOpenNoEscape = false;
+private bool isOpenModeless = false;";
+
+    private readonly string example8RazorCode = @"
+<style>
+    .dialog-body {
+        max-width: 40rem;
+        overflow-y: hidden;
+        padding: 0 24px 24px;
+    }
+</style>
+
+<BitButton OnClick=""@(() => isOpenFocus = true)"">Default focus behavior</BitButton>
+<BitButton OnClick=""@(() => isOpenNoFocus = true)"">AutoFocus & TrapFocus off</BitButton>
+
+<BitDialog @bind-IsOpen=""isOpenFocus""
+           Title=""Rename the project""
+           ShowCloseButton=""false"">
+    <div class=""dialog-body"">
+        <BitTextField Label=""Name"" DefaultValue=""Untitled project"" />
+    </div>
+</BitDialog>
+
+<BitDialog AutoFocus=""false""
+           TrapFocus=""false""
+           @bind-IsOpen=""isOpenNoFocus""
+           Title=""Rename the project""
+           ShowCloseButton=""false"">
+    <div class=""dialog-body"">
+        <BitTextField Label=""Name"" DefaultValue=""Untitled project"" />
+    </div>
+</BitDialog>
+
+
+<BitButton OnClick=""@(() => isOpenFocusCancel = true)"">Focus the safe answer</BitButton>
+<BitDialog @bind-IsOpen=""isOpenFocusCancel""
+           IsAlert
+           ShowCloseButton=""false""
+           AutoFocusButton=""BitDialogButton.Cancel""
+           Title=""Delete this workspace?""
+           Message=""Every project, file and comment in it goes with it. This cannot be undone.""
+           OkText=""Delete workspace""
+           CancelText=""Cancel"" />";
+    private readonly string example8CsharpCode = @"
+private bool isOpenFocus = false;
+private bool isOpenNoFocus = false;
+private bool isOpenFocusCancel = false;";
+
+    private readonly string example9RazorCode = @"
 <style>
     .relative-container {
         width: 100%;
         height: 400px;
         overflow: auto;
+        padding: 0.5rem;
         margin-top: 1rem;
         position: relative;
-        background-color: #eee;
         border: 2px lightgreen solid;
     }
 </style>
 
-<BitButton OnClick=""@(() => IsOpen6 = true)"">Open Dialog (AbsolutePosition = true)</BitButton>
-<BitButton OnClick=""@(() => IsOpen7 = true)"">Open Dialog (ScrollerSelector)</BitButton>
+<BitButton OnClick=""@(() => IsOpen5 = true)"">AutoToggleScroll</BitButton>
+<BitButton OnClick=""@(() => IsOpen7 = true)"">ScrollerSelector</BitButton>
+
+<BitDialog AutoToggleScroll
+           @bind-IsOpen=""IsOpen5""
+           Title=""Missing Subject""
+           Message=""The page behind this one cannot be scrolled while it is open."" />
 
 <div class=""relative-container"">
-
-    <BitDialog AbsolutePosition IsModeless
-               @bind-IsOpen=""IsOpen6""
-               AutoToggleScroll=""false""
-               Title=""Missing Subject""
-               Message=""Do you want to send this message without a subject?"" />
-
-    <BitDialog AbsolutePosition
+    <BitDialog AbsolutePosition AutoToggleScroll
                @bind-IsOpen=""IsOpen7""
                ScrollerSelector="".relative-container""
                Title=""Missing Subject""
-               Message=""Do you want to send this message without a subject?"" />
+               Message=""This one locks the box it sits in, not the page."" />
 
     Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
     Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-    <br />
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-    <br />
-    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-    shaped into meaning, and the emotions ready to resonate with every reader.
-    <br />
-    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-    each word has the power to transform into something extraordinary. Here lies the start of something new-an
-    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
-    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
-    begins here, in this quiet moment where everything is possible.
-    <br />
-    Imagine this space as a window into the future empty yet alive with the energy of endless possibilities.
-    These words stand as temporary guides, placeholders that whisper of what is to come.
-    They hold the promise of stories waiting to unfold, ideas eager to take shape, and connections that will
-    soon emerge to inspire and resonate. This is not an empty page; it is a canvas, rich with potential and
-    ready to transform into something meaningful.
-    For now, these lines are here to remind you of the beauty of beginnings.
-    They are the quiet before the symphony, the foundation upon which your creativity will build.
-    Soon, this space will hold your thoughts, your visions, and your voice a reflection of who you
-    are and what you wish to share with the world. Every sentence will carry purpose, every word
-    will invite others to connect, to think, to feel.
-    So take a moment to dream, to imagine what this blank slate can become.
-    Whether it’s a story, an idea, or a message that matters, this is your starting point.
-    The possibilities are endless, and the journey begins now.
+    when possibilities are limitless, waiting for content to emerge.
 </div>";
-    private readonly string example6CsharpCode = @"
-private bool IsOpen6 = false;
+    private readonly string example9CsharpCode = @"
+private bool IsOpen5 = false;
 private bool IsOpen7 = false;";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example10RazorCode = @"
+<BitButton OnClick=""@(() => isOpenFullWidth = true)"">FullWidth</BitButton>
+<BitButton OnClick=""@(() => isOpenFullSize = true)"">FullSize</BitButton>
+<BitButton OnClick=""@(() => isOpenSized = true)"">Fixed width</BitButton>
+
+<BitDialog FullWidth
+           @bind-IsOpen=""isOpenFullWidth""
+           Position=""BitDialogPosition.BottomCenter""
+           Title=""Missing Subject""
+           Message=""Do you want to send this message without a subject?"" />
+
+<BitDialog FullSize
+           @bind-IsOpen=""isOpenFullSize""
+           Title=""Missing Subject""
+           Message=""Do you want to send this message without a subject?"" />
+
+<BitDialog @bind-IsOpen=""isOpenSized""
+           Styles=""@(new() { Container = ""width: 32rem;"" })""
+           Title=""Missing Subject""
+           Message=""Do you want to send this message without a subject?"" />";
+    private readonly string example10CsharpCode = @"
+private bool isOpenFullWidth = false;
+private bool isOpenFullSize = false;
+private bool isOpenSized = false;";
+
+    private readonly string example11RazorCode = @"
 <BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.TopLeft)"">Top Left</BitButton>
 <BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.TopRight)"">Top Right</BitButton>
 <BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.BottomLeft)"">Bottom Left</BitButton>
@@ -615,10 +983,32 @@ private bool IsOpen7 = false;";
 <BitDialog @bind-IsOpen=""IsOpenInPosition""
            Position=""position""
            Title=""Missing Subject""
-           Message=""Do you want to send this message without a subject?"" />";
-    private readonly string example7CsharpCode = @"
+           Message=""Do you want to send this message without a subject?"" />
+
+
+<BitButton Dir=""BitDir.Rtl"" OnClick=""@(() => isOpenPhysical = true)"">TopLeft</BitButton>
+<BitButton Dir=""BitDir.Rtl"" OnClick=""@(() => isOpenLogical = true)"">TopStart</BitButton>
+
+<BitDialog @bind-IsOpen=""isOpenPhysical""
+           Dir=""BitDir.Rtl""
+           Position=""BitDialogPosition.TopLeft""
+           Title=""TopLeft""
+           OkText=""تایید""
+           CancelText=""انصراف""
+           Message=""موقعیت فیزیکی: همیشه سمت چپ"" />
+
+<BitDialog @bind-IsOpen=""isOpenLogical""
+           Dir=""BitDir.Rtl""
+           Position=""BitDialogPosition.TopStart""
+           Title=""TopStart""
+           OkText=""تایید""
+           CancelText=""انصراف""
+           Message=""موقعیت منطقی: ابتدای جهت خواندن"" />";
+    private readonly string example11CsharpCode = @"
 private bool IsOpenInPosition = false;
 private BitDialogPosition position;
+private bool isOpenPhysical = false;
+private bool isOpenLogical = false;
 
 private void OpenDialogInPosition(BitDialogPosition positionValue)
 {
@@ -626,7 +1016,34 @@ private void OpenDialogInPosition(BitDialogPosition positionValue)
     position = positionValue;
 }";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example12RazorCode = @"
+<style>
+    .relative-container {
+        width: 100%;
+        height: 400px;
+        overflow: auto;
+        padding: 0.5rem;
+        margin-top: 1rem;
+        position: relative;
+        border: 2px lightgreen solid;
+    }
+</style>
+
+<BitButton OnClick=""@(() => IsOpen6 = true)"">Open Dialog</BitButton>
+
+<div class=""relative-container"">
+    <BitDialog AbsolutePosition
+               @bind-IsOpen=""IsOpen6""
+               Title=""Missing Subject""
+               Message=""This Dialog covers the bordered box, not the page."" />
+
+    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
+</div>";
+    private readonly string example12CsharpCode = @"
+private bool IsOpen6 = false;";
+
+    private readonly string example13RazorCode = @"
 <style>
     .dialog-title {
         display: flex;
@@ -645,7 +1062,7 @@ private void OpenDialogInPosition(BitDialogPosition positionValue)
     }
 </style>
 
-<BitToggle Label=""Is Draggable?"" @bind-Value=""IsDraggable"" />
+<BitToggle Label=""Is Draggable"" @bind-Value=""IsDraggable"" />
 
 <BitButton OnClick=""@(() => IsOpen8 = true)"">Open Dialog</BitButton>
 <BitDialog @bind-IsOpen=""IsOpen8""
@@ -654,30 +1071,28 @@ private void OpenDialogInPosition(BitDialogPosition positionValue)
            Message=""Do you want to send this message without a subject?"" />
 
 <BitButton OnClick=""@(() => IsOpen9 = true)"">Open Dialog</BitButton>
-<BitDialog IsDraggable @bind-IsOpen=""IsOpen9"" ShowCloseButton=""false"" DragElementSelector="".dialog-title-drag"">
+<BitDialog IsDraggable
+           @bind-IsOpen=""IsOpen9""
+           ShowCloseButton=""false""
+           AriaLabel=""Draggable Dialog with custom drag element""
+           DragElementSelector="".dialog-title-drag"">
     <div class=""dialog-title dialog-title-drag"">
-        <span>Draggble Dialog with custom drag element</span>
+        <span>Draggable Dialog with custom drag element</span>
         <BitButton Variant=""BitVariant.Text"" OnClick=@(() => IsOpen9 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""dialog-body"">
         <p>
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-            in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
         </p>
     </div>
 </BitDialog>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private bool IsDraggable = false;
 private bool IsOpen8 = false;
-private bool IsOpen9 = false;
-";
+private bool IsOpen9 = false;";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example14RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitButton OnClick=""@(() => IsOpenExtIcon1 = true)"">Open Dialog (CloseIcon = fa)</BitButton>
@@ -705,21 +1120,69 @@ private bool IsOpen9 = false;
 <BitDialog @bind-IsOpen=""IsOpenExtIcon4""
            Title=""CloseIconName""
            Message=""This dialog uses CloseIconName to set a built-in Fluent UI icon for the close button.""
+           CloseButtonTitle=""Dismiss""
            CloseIconName=""@BitIconName.ChromeClose"" />";
-    private readonly string example9CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private bool IsOpenExtIcon1 = false;
 private bool IsOpenExtIcon2 = false;
 private bool IsOpenExtIcon3 = false;
 private bool IsOpenExtIcon4 = false;";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example15RazorCode = @"
+<style>
+    .custom-container {
+        border: 2px solid tomato;
+    }
+
+    .custom-header {
+        background-color: #fff3f0;
+    }
+
+    .custom-ok {
+        border-color: tomato;
+        background-color: tomato;
+    }
+</style>
+
+<BitButton OnClick=""@(() => isOpenStyles = true)"">Styles</BitButton>
+<BitButton OnClick=""@(() => isOpenClasses = true)"">Classes</BitButton>
+
+<BitDialog @bind-IsOpen=""isOpenStyles""
+           Title=""Styled Dialog""
+           Subtitle=""Every part reachable on its own""
+           Message=""The overlay, the container, the title and the two buttons are all restyled here.""
+           Styles=""@(new()
+           {
+               Overlay = ""backdrop-filter: blur(2px);"",
+               Container = ""width: 24rem; border: 2px solid blueviolet;"",
+               Title = ""color: blueviolet;"",
+               Message = ""font-style: italic;"",
+               OkButton = ""background-color: blueviolet; border-color: blueviolet;"",
+               CancelButton = ""color: blueviolet; border-color: blueviolet;""
+           })"" />
+
+<BitDialog @bind-IsOpen=""isOpenClasses""
+           Title=""Classed Dialog""
+           Message=""The same parts, reached with CSS classes of your own.""
+           Classes=""@(new()
+           {
+               Container = ""custom-container"",
+               Header = ""custom-header"",
+               OkButton = ""custom-ok""
+           })"" />";
+    private readonly string example15CsharpCode = @"
+private bool isOpenStyles = false;
+private bool isOpenClasses = false;";
+
+    private readonly string example16RazorCode = @"
 <BitButton Dir=""BitDir.Rtl"" OnClick=""@(() => IsOpen10 = true)"">باز کردن پنجره پیام</BitButton>
-<BitDialog @bind-IsOpen=""IsOpen10"" 
+<BitDialog @bind-IsOpen=""IsOpen10""
            Dir=""BitDir.Rtl""
            Title=""بدون موضوع""
            OkText=""تایید""
            CancelText=""انصراف""
+           CloseButtonTitle=""بستن""
            Message=""آیا می خواهید این پیام را بدون موضوع ارسال کنید؟"" />";
-    private readonly string example10CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private bool IsOpen10 = false;";
 }

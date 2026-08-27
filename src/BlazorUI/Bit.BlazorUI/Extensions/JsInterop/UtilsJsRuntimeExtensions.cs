@@ -64,6 +64,24 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    internal static ValueTask BitUtilsSaveFocus(this IJSRuntime jsRuntime, string key)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.saveFocus", key);
+    }
+
+
+    internal static ValueTask BitUtilsRestoreFocus(this IJSRuntime jsRuntime, string key)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.restoreFocus", key);
+    }
+
+
+    internal static ValueTask BitUtilsClearSavedFocus(this IJSRuntime jsRuntime, string key)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.clearSavedFocus", key);
+    }
+
+
     internal static ValueTask BitUtilsPreventDefaultKeys(this IJSRuntime jsRuntime, string elementId, string[] keys)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.preventDefaultKeys", elementId, keys);

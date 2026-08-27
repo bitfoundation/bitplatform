@@ -151,6 +151,57 @@
             Utils._focusTraps.delete(elementId);
         }
 
+        private static _savedFocus = new Map<string, HTMLElement>();
+
+        // Remembers what held the focus when a popup took it over, so closing the popup can hand it back
+        // instead of dropping the keyboard at the top of the document. The element is kept by reference
+        // under a key of the caller's choosing, which is what lets a component that outlives many
+        // open/close cycles overwrite its own entry rather than accumulate one per cycle.
+        public static saveFocus(key: string) {
+            try {
+                const active = document.activeElement as HTMLElement | null;
+
+                // document.body is where the focus sits when nothing holds it, and that is also where it
+                // lands on its own once the popup goes away, so there is nothing worth remembering.
+                if (!active || active === document.body) {
+                    Utils._savedFocus.delete(key);
+                    return;
+                }
+
+                Utils._savedFocus.set(key, active);
+            } catch (e) { console.error("BitBlazorUI.Utils.saveFocus:", e); }
+        }
+
+        // Hands the focus back to whatever saveFocus remembered under this key, and forgets it either way.
+        // An element that has since left the document - the trigger was inside content the dialog replaced,
+        // or the page navigated - is skipped rather than focused, since focusing a detached node silently
+        // throws the focus to the body instead.
+        public static restoreFocus(key: string) {
+            const element = Utils._savedFocus.get(key);
+            Utils._savedFocus.delete(key);
+            if (!element) return;
+
+            try {
+                if (!element.isConnected) return;
+
+                // Only the focus the popup itself orphaned is worth handing back. Taking the focus away from
+                // somewhere the user has since put it - a field on the page behind a modeless popup, or the
+                // trigger a popup never took it from - would be moving it, not restoring it. A popup that
+                // was holding the focus leaves the body holding it once its element is removed, which is
+                // the one case this can tell apart.
+                const active = document.activeElement;
+                if (active && active !== document.body && active !== document.documentElement) return;
+
+                element.focus();
+            } catch (e) { console.error("BitBlazorUI.Utils.restoreFocus:", e); }
+        }
+
+        // Drops a remembered element without focusing it, for the component that is going away and would
+        // otherwise leave a detached node held by the map for the life of the page.
+        public static clearSavedFocus(key: string) {
+            Utils._savedFocus.delete(key);
+        }
+
         private static _preventedKeys = new Map<string, AbortController>();
 
         // Suppresses the default behavior (page scrolling) of the given keys on an element, for the

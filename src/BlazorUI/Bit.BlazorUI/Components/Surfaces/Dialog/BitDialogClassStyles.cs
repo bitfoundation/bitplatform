@@ -8,10 +8,16 @@ public class BitDialogClassStyles
     public string? Root { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the document element of the BitDialog, the layer that holds the
+    /// overlay and the container and decides where on the screen the Dialog sits.
+    /// </summary>
+    public string? Document { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the overlay of the BitDialog.
     /// </summary>
     public string? Overlay { get; set; }
-    
+
     /// <summary>
     /// Custom CSS classes/styles for the container of the BitDialog.
     /// </summary>
@@ -31,6 +37,21 @@ public class BitDialogClassStyles
     /// Custom CSS classes/styles for the title of the BitDialog.
     /// </summary>
     public string? Title { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the subtitle of the BitDialog.
+    /// </summary>
+    public string? Subtitle { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the close button of the BitDialog.
+    /// </summary>
+    public string? CloseButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the icon of the close button of the BitDialog.
+    /// </summary>
+    public string? CloseIcon { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the message of the BitDialog.
@@ -56,4 +77,9 @@ public class BitDialogClassStyles
     /// Custom CSS classes/styles for the cancel button of the BitDialog.
     /// </summary>
     public string? CancelButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the footer of the BitDialog, the element that wraps the FooterTemplate.
+    /// </summary>
+    public string? Footer { get; set; }
 }

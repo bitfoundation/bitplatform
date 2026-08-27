@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 @if (IsOpen)
@@ -9,87 +9,122 @@
          class="@ClassBuilder.Value"
          dir="@Dir?.ToString().ToLower()">
 
-        <div role=@((IsAlert ?? (IsBlocking && IsModeless is false)) ? "alertdialog": "dialog")
-             aria-modal="@((IsModeless is false).ToString())"
-             aria-labelledby="@TitleAriaId"
-             aria-describedby="@SubtitleAriaId"
-             style="outline:none;">
+        <div style="@Styles?.Document" class="bit-dlg-doc @GetPositionClass() @Classes?.Document">
+            @if (IsModeless is false)
+            {
+                <div style="@Styles?.Overlay" class="bit-dlg-ovl @Classes?.Overlay" aria-hidden="true" @onclick="HandleOnOverlayClick" />
+            }
 
-            <div class="bit-dlg-doc @GetPositionClass()" role="document">
-                @if (IsModeless is false)
+            @* The surface is what carries the role and the accessible name, since that is the element the
+               content lives in - a wrapper above the overlay would put the overlay inside the dialog for a
+               screen reader. It is made programmatically focusable so that a Dialog holding nothing focusable
+               still has somewhere to put the focus, which is what both the Escape key and the focus trap need:
+               a keydown only reaches Blazor from inside the element it is bound to. *@
+            <div id="@_containerId"
+                 role="@GetRole()"
+                 tabindex="-1"
+                 aria-modal="@GetAriaModal()"
+                 aria-label="@AriaLabel"
+                 aria-labelledby="@GetLabelledBy()"
+                 aria-describedby="@GetDescribedBy()"
+                 @onkeydown="HandleOnKeyDown"
+                 style="@Styles?.Container"
+                 class="bit-dlg-ctn @Classes?.Container">
+                @if (HeaderTemplate is not null || Title.HasValue() || Subtitle.HasValue() || ShowCloseButton)
                 {
-                    <div style="@Styles?.Overlay" class="bit-dlg-ovl @Classes?.Overlay" aria-hidden="true" @onclick="HandleOnOverlayClick" />
+                    <div style="@Styles?.Header" class="bit-dlg-hdr @Classes?.Header">
+                        @if (HeaderTemplate is not null)
+                        {
+                            <div class="bit-dlg-htc">@HeaderTemplate</div>
+                        }
+                        else if (Title.HasValue() || Subtitle.HasValue())
+                        {
+                            <div class="bit-dlg-htc">
+                                @if (Title.HasValue())
+                                {
+                                    <div id="@_titleId" style="@Styles?.Title" class="bit-dlg-ttl @Classes?.Title">@Title</div>
+                                }
+
+                                @if (Subtitle.HasValue())
+                                {
+                                    <div id="@_subtitleId" style="@Styles?.Subtitle" class="bit-dlg-sub @Classes?.Subtitle">@Subtitle</div>
+                                }
+                            </div>
+                        }
+
+                        @if (ShowCloseButton)
+                        {
+                            var closeIcon = BitIconInfo.From(CloseIcon, CloseIconName ?? "Cancel");
+                            var closeTitle = CloseButtonTitle ?? DefaultCloseButtonTitle;
+
+                            <button @ref="_closeButtonRef" @onclick="HandleOnCloseClick"
+                                    style="@Styles?.CloseButton"
+                                    class="bit-dlg-cls @Classes?.CloseButton"
+                                    type="button"
+                                    disabled="@(IsEnabled is false)"
+                                    title="@closeTitle"
+                                    aria-label="@closeTitle">
+                                <span>
+                                    <i style="@Styles?.CloseIcon" class="bit-dlg-cli @closeIcon?.GetCssClasses() @Classes?.CloseIcon" aria-hidden="true" />
+                                </span>
+                            </button>
+                        }
+                    </div>
                 }
-                <div id="@_containerId" style="@Styles?.Container" class="bit-dlg-ctn @Classes?.Container">
-                    @if (Title.HasValue() || ShowCloseButton)
+                <div style="@Styles?.Body" class="bit-dlg-scr-cnt @Classes?.Body">
+                    @if (Message.HasValue())
                     {
-                        <div style="@Styles?.Header" class="bit-dlg-hdr @Classes?.Header">
-                            @if (Title.HasValue())
+                        <div id="@_messageId" style="@Styles?.Message" class="bit-dlg-msg @Classes?.Message">@Message</div>
+                    }
+
+                    @(Body ?? ChildContent)
+
+                    @if (ShowOkButton || ShowCancelButton)
+                    {
+                        <div style="@Styles?.ButtonsContainer" class="bit-dlg-bct @Classes?.ButtonsContainer">
+                            @if (ShowOkButton)
                             {
-                                <div style="@Styles?.Title" class="bit-dlg-ttl @Classes?.Title">@Title</div>
+                                @* The spinner replaces the label while the Ok callback runs, which would
+                                   otherwise leave the button nameless to a screen reader for as long as it
+                                   takes - so the label is kept as the accessible name for that stretch. *@
+                                <button @ref="_okButtonRef" @onclick="HandleOnOkClick"
+                                        type="button"
+                                        disabled="@(IsEnabled is false || _isLoading)"
+                                        aria-busy="@(_isLoading ? "true" : null)"
+                                        aria-label="@(_isLoading ? OkText : null)"
+                                        style="@Styles?.OkButton"
+                                        class="bit-dlg-okb @Classes?.OkButton">
+                                    @if (_isLoading)
+                                    {
+                                        <div style="@Styles?.Spinner" class="bit-dlg-spn @Classes?.Spinner" aria-hidden="true"></div>
+                                    }
+                                    else
+                                    {
+                                        @OkText
+                                    }
+                                </button>
                             }
 
-                            @if (ShowCloseButton)
+                            @if (ShowCancelButton)
                             {
-                                var closeIcon = BitIconInfo.From(CloseIcon, CloseIconName ?? "Cancel");
-
-                                <button @onclick="HandleOnCloseClick"
-                                        class="bit-dlg-cls"
+                                <button @ref="_cancelButtonRef" @onclick="HandleOnCancelClick"
                                         type="button"
-                                        title="Close"
-                                        aria-label="Close">
-                                    <span>
-                                        <i class="bit-dlg-cli @closeIcon?.GetCssClasses()" />
-                                    </span>
+                                        disabled="@(IsEnabled is false)"
+                                        style="@Styles?.CancelButton"
+                                        class="bit-dlg-cnb @Classes?.CancelButton">
+                                    @CancelText
                                 </button>
                             }
                         </div>
                     }
-                    <div style="@Styles?.Body" class="bit-dlg-scr-cnt @Classes?.Body">
-                        @if (Message.HasValue())
-                        {
-                            <div style="@Styles?.Message" class="bit-dlg-msg @Classes?.Message">@Message</div>
-                        }
-
-                        @(Body ?? ChildContent)
-
-                        @if (ShowOkButton || ShowCancelButton)
-                        {
-                            <div style="@Styles?.ButtonsContainer" class="bit-dlg-bct @Classes?.ButtonsContainer">
-                                @if (ShowOkButton)
-                                {
-                                    <button @onclick="HandleOnOkClick"
-                                            style="@Styles?.OkButton"
-                                            class="bit-dlg-okb @Classes?.OkButton">
-                                        @if (_isLoading)
-                                        {
-                                            <div style="@Styles?.Spinner" class="bit-dlg-spn @Classes?.Spinner"></div>
-                                        }
-                                        else
-                                        {
-                                            @OkText
-                                        }
-                                    </button>
-                                }
-
-                                @if (ShowCancelButton)
-                                {
-                                    <button @onclick="HandleOnCancelClick"
-                                            style="@Styles?.CancelButton"
-                                            class="bit-dlg-cnb @Classes?.CancelButton">
-                                        @CancelText
-                                    </button>
-                                }
-                            </div>
-                        }
-                    </div>
-                    @if (FooterTemplate is not null)
-                    {
-                        @FooterTemplate
-                    }
                 </div>
+                @if (FooterTemplate is not null)
+                {
+                    <div style="@Styles?.Footer" class="bit-dlg-ftr @Classes?.Footer">
+                        @FooterTemplate
+                    </div>
+                }
             </div>
-
         </div>
 
     </div>

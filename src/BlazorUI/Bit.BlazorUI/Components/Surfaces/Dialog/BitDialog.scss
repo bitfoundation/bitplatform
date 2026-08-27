@@ -9,6 +9,11 @@
     z-index: $zindex-modal;
     font-size: $tg-fs-sm;
     font-family: $tg-font-family;
+    // The root spans the whole screen but is only a frame for the two layers that are actually there:
+    // the overlay and the container each take their own pointer events back. A modeless Dialog has no
+    // overlay at all, and without this its invisible frame would swallow every click on the page it is
+    // deliberately leaving usable.
+    pointer-events: none;
 
     @keyframes bit-dlg-spinner-animation {
         0% {
@@ -19,13 +24,30 @@
             transform: rotate(360deg);
         }
     }
-}
 
-.bit-dlg-nta {
-    touch-action: none;
+    // The Dialog is mounted rather than transitioned into place - it is not in the DOM while it is
+    // closed - so the entrance is a keyframe animation rather than a transition. Both durations come
+    // from the motion tokens, which collapse to near zero under prefers-reduced-motion.
+    @keyframes bit-dlg-overlay-animation {
+        from {
+            opacity: 0;
+        }
 
-    * {
-        touch-action: none;
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes bit-dlg-container-animation {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
     }
 }
 
@@ -40,34 +62,65 @@
     height: 100%;
     display: flex;
     position: absolute;
-    pointer-events: auto;
     background-color: transparent;
-    transition: opacity $mot-duration-long $mot-easing 0s;
 }
 
 .bit-dlg-ovl {
     inset: 0;
     z-index: 0;
     position: absolute;
+    pointer-events: auto;
     background-color: $clr-bg-overlay;
+    animation: bit-dlg-overlay-animation $mot-duration-short $mot-easing-decelerate;
 }
 
 .bit-dlg-ctn {
+    z-index: 1;
+    display: flex;
     max-width: 100%;
+    max-height: 100%;
     position: absolute;
+    pointer-events: auto;
+    flex-direction: column;
     box-sizing: border-box;
     box-shadow: $box-shadow-dialog;
     border-radius: $shp-radius-dialog;
     background-color: $clr-bg-pri;
+    animation: bit-dlg-container-animation $mot-duration $mot-easing-decelerate;
+    // The surface is made programmatically focusable so the Escape key and the focus trap have somewhere
+    // to land, which is a job the focus ring has no business advertising.
+    outline: none;
+}
+
+.bit-dlg-fwi {
+    .bit-dlg-ctn {
+        width: 100%;
+    }
+}
+
+.bit-dlg-fhe {
+    .bit-dlg-ctn {
+        height: 100%;
+    }
 }
 
 .bit-dlg-hdr {
     z-index: 1;
     display: flex;
-    align-items: center;
+    flex-shrink: 0;
+    align-items: flex-start;
     overflow-wrap: anywhere;
     background-color: $clr-bg-pri;
+    border-start-start-radius: $shp-radius-dialog;
+    border-start-end-radius: $shp-radius-dialog;
     padding: spacing(2) $spa-dialog spacing(2.5);
+}
+
+// Holds the title and the subtitle as one block so the close button stays beside both of them rather
+// than beside the title alone.
+.bit-dlg-htc {
+    flex-grow: 1;
+    min-width: 0;
 }
 
 .bit-dlg-ttl {
@@ -80,11 +133,21 @@
     color: $clr-fg-pri;
 }
 
+.bit-dlg-sub {
+    margin: 0;
+    width: 100%;
+    line-height: 1.5;
+    font-weight: $tg-fw-regular;
+    font-size: $tg-fs-sm;
+    padding-top: spacing(0.5);
+    color: $clr-fg-sec;
+}
+
 .bit-dlg-scr-cnt {
     flex-grow: 1;
     display: flex;
+    min-height: 0;
     overflow-y: auto;
-    max-height: 100vh;
     flex-direction: column;
 }
 
@@ -95,6 +158,12 @@
     overflow-wrap: break-word;
     margin: 0 $spa-dialog $spa-dialog;
     color: $clr-fg-sec;
+}
+
+// The message hangs under a header, which is where its top spacing normally comes from. A Dialog with
+// neither a title nor a close button has no header at all, so the message needs that spacing itself.
+.bit-dlg-scr-cnt:first-child > .bit-dlg-msg {
+    margin-top: $spa-dialog;
 }
 
 .bit-dlg-bct {
@@ -110,6 +179,12 @@
     justify-content: $layout-dialog-actions-justify;
     padding: 0 $spa-dialog $spa-dialog;
     background-color: $clr-bg-pri;
+    margin-top: auto;
+    // The actions are the last opaque band of a Dialog without a footer, so they take the bottom corners
+    // with them - an opaque band squared off inside a rounded container shows at the corners as soon as a
+    // consumer gives it a background of its own. Where a footer does follow, this is simply invisible.
+    border-end-start-radius: $shp-radius-dialog;
+    border-end-end-radius: $shp-radius-dialog;
 
     button {
         display: flex;
@@ -119,6 +194,7 @@
         // which is invalid inside max(), and 64px already equals Material's button minimum.
         min-width: spacing(8);
         min-height: $siz-ctrl-md;
+        align-items: center;
         box-sizing: border-box;
         margin: spacing(0.25) spacing(0.5);
         justify-content: center;
@@ -133,6 +209,12 @@
         font-weight: $tg-font-weight;
         letter-spacing: $tg-ctrl-letter-spacing;
         text-transform: $tg-ctrl-text-transform;
+        transition: background-color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
+
+        &:disabled {
+            cursor: default;
+            opacity: $opa-dis;
+        }
     }
 }
 
@@ -142,13 +224,13 @@
     background-color: $clr-pri;
 
     @media (hover: hover) {
-        &:hover {
+        &:hover:not(:disabled) {
             border-color: $clr-pri-hover;
             background-color: $clr-pri-hover;
         }
     }
 
-    &:active {
+    &:active:not(:disabled) {
         border-color: $clr-pri-active;
         background-color: $clr-pri-active;
     }
@@ -171,26 +253,35 @@
     background-color: transparent;
 
     @media (hover: hover) {
-        &:hover {
+        &:hover:not(:disabled) {
             color: $clr-pri-text;
             border-color: $clr-pri-hover;
             background-color: $clr-pri-hover;
         }
     }
 
-    &:active {
+    &:active:not(:disabled) {
         color: $clr-pri-text;
         border-color: $clr-pri-active;
         background-color: $clr-pri-active;
     }
 }
 
+.bit-dlg-ftr {
+    z-index: 1;
+    flex-shrink: 0;
+    background-color: $clr-bg-pri;
+    border-end-start-radius: $shp-radius-dialog;
+    border-end-end-radius: $shp-radius-dialog;
+}
+
 .bit-dlg-cls {
     border: none;
     cursor: pointer;
+    flex-shrink: 0;
     font-weight: $tg-fw-regular;
     width: $siz-ctrl-md;
-    margin-left: auto;
+    margin-inline-start: auto;
     height: $siz-ctrl-md;
     align-self: normal;
     text-align: center;
@@ -202,6 +293,7 @@
     border-radius: $shp-radius-control;
     background-color: transparent;
     color: $clr-fg-pri;
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     span {
         height: 100%;
@@ -216,24 +308,34 @@
     }
 
     @media (hover: hover) {
-        &:hover {
+        &:hover:not(:disabled) {
             color: $clr-fg-pri-hover;
             background-color: $clr-bg-pri-hover;
         }
     }
 
-    &:active {
+    &:active:not(:disabled) {
         color: $clr-fg-pri-active;
         background-color: $clr-bg-pri-active;
     }
+
+    &:disabled {
+        cursor: default;
+        opacity: $opa-dis;
+    }
 }
 
+// The position classes lay the container out inside the document layer with flexbox. The physical ones
+// (left/right) have to stay on the same side of the screen in an RTL Dialog, so they are pinned back
+// below; the logical ones (start/end) are left to follow the direction the flex container inherits,
+// which is exactly what makes them logical.
 .bit-dlg-ctr {
     align-items: center;
     justify-content: center;
 }
 
-.bit-dlg-tl {
+.bit-dlg-tl,
+.bit-dlg-ts {
     align-items: flex-start;
     justify-content: flex-start;
 }
@@ -243,22 +345,26 @@
     justify-content: center;
 }
 
-.bit-dlg-tr {
+.bit-dlg-tr,
+.bit-dlg-te {
     align-items: flex-start;
     justify-content: flex-end;
 }
 
-.bit-dlg-cl {
+.bit-dlg-cl,
+.bit-dlg-cs {
     align-items: center;
     justify-content: flex-start;
 }
 
-.bit-dlg-cr {
+.bit-dlg-cr,
+.bit-dlg-ce {
     align-items: center;
     justify-content: flex-end;
 }
 
-.bit-dlg-bl {
+.bit-dlg-bl,
+.bit-dlg-bs {
     align-items: flex-end;
     justify-content: flex-start;
 }
@@ -268,7 +374,25 @@
     justify-content: center;
 }
 
-.bit-dlg-br {
+.bit-dlg-br,
+.bit-dlg-be {
     align-items: flex-end;
     justify-content: flex-end;
+}
+
+// flex-start and flex-end follow the inline direction, which an RTL Dialog reverses - so left would
+// come out on the right. The physical positions are put back onto their own side here, leaving the
+// start/end pair above as the only ones that move with the reading direction.
+.bit-dlg.bit-rtl {
+    .bit-dlg-tl,
+    .bit-dlg-cl,
+    .bit-dlg-bl {
+        justify-content: flex-end;
+    }
+
+    .bit-dlg-tr,
+    .bit-dlg-cr,
+    .bit-dlg-br {
+        justify-content: flex-start;
+    }
 }
