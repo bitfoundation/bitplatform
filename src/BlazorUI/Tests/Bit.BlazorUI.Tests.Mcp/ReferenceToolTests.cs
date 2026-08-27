@@ -59,6 +59,39 @@ public class ReferenceToolTests : McpTestBase
     }
 
     [TestMethod]
+    public async Task A_token_catalog_names_the_branches_it_is_organised_into()
+    {
+        // BitCss holds no constants of its own - it is nothing but nested static classes - so an
+        // answer that only listed them beside a constants table left the whole tree unreachable.
+        var root = await CallAsync("GetBitBlazorUIType", new { typeName = "BitCss" });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(root, "`BitCss.Var`", "BitCss does not name the branches it is organised into.");
+        StringAssert.Contains(root, "`BitCss.Class`");
+
+        // And every branch it names is a name the same tool resolves: the path is the full dotted
+        // one and not the CLR simple name, which would send a caller to a different type entirely.
+        var branch = await CallAsync("GetBitBlazorUIType", new { typeName = "BitCss.Var.Color" });
+
+        StringAssert.Contains(branch, "`BitCss.Var.Color.Primary`", "A nested branch is named by its simple name, which does not resolve.");
+
+        var leaf = await CallAsync("GetBitBlazorUIType", new { typeName = "BitCss.Var.Color.Primary" });
+
+        Assert.DoesNotContain("has no public type called", leaf, "A path the answer above printed does not resolve.");
+    }
+
+    [TestMethod]
+    public async Task A_short_dotted_name_answers_under_the_path_that_resolves()
+    {
+        // The Bit prefix is optional on the way in, but what comes back is what a caller pastes
+        // into the next call, so it carries the name the type actually has.
+        var answer = await CallAsync("GetBitBlazorUIType", new { typeName = "Css.Var.Color" });
+
+        StringAssert.StartsWith(answer, "# BitCss.Var.Color");
+    }
+
+    [TestMethod]
     public async Task The_type_listing_leaves_out_what_a_component_documents_and_says_so()
     {
         var listing = await CallAsync("GetBitBlazorUIType");
@@ -76,6 +109,11 @@ public class ReferenceToolTests : McpTestBase
 
         // Anything it leaves out is counted, not silently dropped.
         StringAssert.Contains(listing, "not listed here");
+
+        // "Referenced by a component" is a test on the name, not on the characters: BitLink names
+        // no Link parameter, and a substring test listed the Assets component under it.
+        Assert.DoesNotContain("- `Link`", listing,
+            "A component nothing takes as a parameter is listed because its name sits inside another one.");
     }
 
     [TestMethod]

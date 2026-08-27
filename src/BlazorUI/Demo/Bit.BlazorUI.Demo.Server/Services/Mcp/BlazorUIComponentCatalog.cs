@@ -66,12 +66,13 @@ public sealed record BlazorUIComponent
     public IReadOnlyList<ComponentSubType> OwnTypes { get; init; } = [];
 
     /// <summary>
-    /// The library-wide enums this component's parameters take. Named with their values but without
-    /// their prose: the same handful of enums appears on nearly every component, and repeating their
-    /// descriptions 110 times is the redundancy this server exists to avoid. Each is documented in
-    /// full by <c>GetBitBlazorUIType</c>.
+    /// The library-wide types this component's parameters take - <c>BitColor</c>, <c>BitVariant</c>,
+    /// <c>BitIconInfo</c>. Named with their members but without their prose: the same handful
+    /// appears on nearly every component, and repeating their descriptions 110 times is the
+    /// redundancy this server exists to avoid. Each is documented in full by
+    /// <c>GetBitBlazorUIType</c>.
     /// </summary>
-    public IReadOnlyList<ComponentSubType> SharedEnums { get; init; } = [];
+    public IReadOnlyList<ComponentSubType> SharedTypes { get; init; } = [];
 
     public IReadOnlyList<DemoExampleSource> Examples { get; init; } = [];
 }
@@ -195,7 +196,7 @@ public static class BlazorUIComponentCatalog
                 Parameters = parameters,
                 PublicMembers = tables?.PublicMembers ?? [],
                 OwnTypes = own,
-                SharedEnums = shared,
+                SharedTypes = shared,
                 Examples = demo?.Examples ?? []
             };
         })];
@@ -228,8 +229,14 @@ public static class BlazorUIComponentCatalog
     /// <summary>
     /// Splits the types a demo page documents into the ones only this component uses and the ones
     /// the whole library shares. A type whose name opens with the component's own is its own; every
-    /// other one - <c>BitColor</c>, <c>BitVariant</c>, <c>BitSize</c> - belongs to the library and
-    /// is documented once, by <c>GetBitBlazorUIType</c>.
+    /// other one - <c>BitColor</c>, <c>BitVariant</c>, <c>BitIconInfo</c> - belongs to the library
+    /// and is documented once, by <c>GetBitBlazorUIType</c>.
+    /// <para>
+    /// The split is on the name alone and not on enum-ness: a shared class is as much a type a
+    /// caller has to resolve as a shared enum is, and filtering the shared half down to the enums
+    /// dropped it from both halves - <c>BitButton</c> never mentioned the <c>BitIconInfo</c> its
+    /// own <c>Icon</c> parameter takes.
+    /// </para>
     /// </summary>
     private static (ComponentSubType[] Own, ComponentSubType[] Shared) SplitSubTypes(string name, DemoTables? tables)
     {
@@ -237,8 +244,9 @@ public static class BlazorUIComponentCatalog
 
         var all = tables.SubClasses.Concat(tables.SubEnums).ToArray();
 
-        return ([.. all.Where(t => t.Name.StartsWith(name, StringComparison.OrdinalIgnoreCase))],
-                [.. all.Where(t => t.IsEnum && t.Name.StartsWith(name, StringComparison.OrdinalIgnoreCase) is false)]);
+        var own = all.ToLookup(t => t.Name.StartsWith(name, StringComparison.OrdinalIgnoreCase));
+
+        return ([.. own[true]], [.. own[false]]);
     }
 
     private static Type? FindType(string name)

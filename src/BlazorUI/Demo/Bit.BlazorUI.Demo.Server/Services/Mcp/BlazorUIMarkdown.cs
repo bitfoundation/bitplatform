@@ -110,15 +110,15 @@ public static class BlazorUIMarkdown
             builder.AppendLine();
         }
 
-        if (component.SharedEnums.Count > 0)
+        if (component.SharedTypes.Count > 0)
         {
-            builder.AppendLine("## Library enums used here").AppendLine();
-            builder.AppendLine("Named with their values only - these are shared across the library and documented in full")
+            builder.AppendLine("## Library types used here").AppendLine();
+            builder.AppendLine("Named with their members only - these are shared across the library and documented in full")
                    .AppendLine("by `GetBitBlazorUIType`.").AppendLine();
 
-            foreach (var type in component.SharedEnums)
+            foreach (var type in component.SharedTypes)
             {
-                builder.AppendLine($"- `{type.Name}`: {string.Join(", ", type.Members.Select(m => m.Name))}");
+                builder.AppendLine($"- `{type.Name}` ({(type.IsEnum ? "enum" : "class")}): {string.Join(", ", type.Members.Select(m => m.Name))}");
             }
 
             builder.AppendLine();
@@ -293,7 +293,7 @@ public static class BlazorUIMarkdown
             return builder.ToString();
         }
 
-        BlazorUIReflection.AppendMembers(builder, clr);
+        BlazorUIReflection.AppendMembers(builder, clr, type.Name);
 
         return Truncate(builder.ToString());
     }

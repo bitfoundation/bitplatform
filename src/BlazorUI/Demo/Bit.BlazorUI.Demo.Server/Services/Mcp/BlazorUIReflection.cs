@@ -17,7 +17,12 @@ public static class BlazorUIReflection
     /// <summary>How many constants one answer prints before it stops being a table and starts being a dump.</summary>
     private const int ConstantsCap = 80;
 
-    public static void AppendMembers(StringBuilder builder, Type type)
+    /// <summary>
+    /// The members of a type, under the name a caller reaches it by: <paramref name="path"/> is the
+    /// dotted path for a nested type - <c>BitCss.Var.Color</c> - because the CLR simple name of one
+    /// branch of a token tree (<c>Color</c>) is not a name anything else on this server resolves.
+    /// </summary>
+    public static void AppendMembers(StringBuilder builder, Type type, string? path = null)
     {
         if (type.IsEnum)
         {
@@ -32,6 +37,7 @@ public static class BlazorUIReflection
         }
 
         AppendConstants(builder, type);
+        AppendNested(builder, type, path);
         AppendProperties(builder, type);
         AppendMethods(builder, type);
         AppendEvents(builder, type);
@@ -99,16 +105,29 @@ public static class BlazorUIReflection
         }
 
         builder.AppendLine();
+    }
 
-        // The nested static classes a catalog is organised into - BitCss.Var.Color.Primary and its
-        // siblings - are types of their own and reached by name, so they are named rather than
-        // inlined, which would flatten a tree of five hundred values into one table.
+    /// <summary>
+    /// The nested static classes a catalog is organised into - <c>BitCss.Var.Color.Primary</c> and
+    /// its siblings - are types of their own and reached by name, so they are named rather than
+    /// inlined, which would flatten a tree of five hundred values into one table.
+    /// <para>
+    /// Written outside <see cref="AppendConstants"/> because the branches of such a tree hold no
+    /// constants of their own: <c>BitCss</c> is nothing but nested classes, and listing them only
+    /// when it also had a constants table left the whole token tree undiscoverable.
+    /// </para>
+    /// </summary>
+    private static void AppendNested(StringBuilder builder, Type type, string? path)
+    {
         var nested = type.GetNestedTypes(BindingFlags.Public).Where(t => t.IsAbstract && t.IsSealed).ToArray();
 
-        if (nested.Length > 0)
-        {
-            builder.AppendLine($"Nested: {string.Join(", ", nested.Select(t => $"`{type.Name}.{t.Name}`"))}.").AppendLine();
-        }
+        if (nested.Length == 0) return;
+
+        // The path a caller types, not the CLR simple name: `GetBitBlazorUIType` walks the full
+        // dotted name, and "Color.Primary" would send it to the BitColor enum instead.
+        var prefix = string.IsNullOrWhiteSpace(path) ? type.Name : path.Trim();
+
+        builder.AppendLine($"Nested: {string.Join(", ", nested.Select(t => $"`{prefix}.{t.Name}`"))}.").AppendLine();
     }
 
     private static void AppendProperties(StringBuilder builder, Type type)

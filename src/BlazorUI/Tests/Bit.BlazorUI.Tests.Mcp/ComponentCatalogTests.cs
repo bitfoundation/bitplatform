@@ -151,7 +151,7 @@ public class ComponentCatalogTests : McpTestBase
     }
 
     [TestMethod]
-    public async Task Shared_enums_are_named_rather_than_repeated_on_every_component()
+    public async Task Shared_types_are_named_rather_than_repeated_on_every_component()
     {
         var answer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitButton" });
 
@@ -161,12 +161,32 @@ public class ComponentCatalogTests : McpTestBase
         StringAssert.Contains(answer, "## BitButtonClassStyles (class)");
         StringAssert.Contains(answer, "## BitButtonType (enum)");
 
-        // The library-wide ones are named with their values and left to GetBitBlazorUIType, because
+        // The library-wide ones are named with their members and left to GetBitBlazorUIType, because
         // the same handful appears on nearly every component.
-        StringAssert.Contains(answer, "## Library enums used here");
-        StringAssert.Contains(answer, "`BitColor`: Primary, Secondary");
+        StringAssert.Contains(answer, "## Library types used here");
+        StringAssert.Contains(answer, "`BitColor` (enum): Primary, Secondary");
+
+        // Including the shared classes: a class is as much a type a caller has to resolve as an
+        // enum is, and BitIconInfo is what BitButton's own Icon parameter takes.
+        StringAssert.Contains(answer, "`BitIconInfo` (class)",
+            "A shared class the demo page documents was dropped from the answer instead of being named.");
 
         Assert.DoesNotContain("Primary general color", answer,
             "BitColor's per-value prose is repeated on the component, which is the redundancy the split exists to avoid.");
+    }
+
+    [TestMethod]
+    public async Task Every_type_a_component_documents_is_either_documented_there_or_named()
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitButton" });
+
+        // The Icon parameter's type has to be reachable from the answer that names it: either
+        // documented in full above, or named as a library type for GetBitBlazorUIType to resolve.
+        var icon = await CallAsync("GetBitBlazorUIType", new { typeName = "BitIconInfo" });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(answer, "BitIconInfo");
+        Assert.DoesNotContain("has no public type called", icon, "BitIconInfo does not resolve by name.");
     }
 }

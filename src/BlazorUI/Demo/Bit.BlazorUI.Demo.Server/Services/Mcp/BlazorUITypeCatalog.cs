@@ -64,13 +64,43 @@ public static class BlazorUITypeCatalog
 
     private static BlazorUIType[] BuildListing()
     {
-        // The type text of every parameter and member of every component, as one haystack: the
-        // names in it are the names a caller reads off a signature and then has to look up.
-        var referenced = string.Join(' ', BlazorUIComponentCatalog.Components.SelectMany(c =>
-            c.Parameters.Concat(c.PublicMembers).Concat(c.OwnTypes.SelectMany(t => t.Members)).Select(m => m.Type)));
+        // Every name written in the type of a parameter or member of any component: those are the
+        // names a caller reads off a signature and then has to look up. Names rather than one
+        // concatenated haystack, because a substring test answers yes for any name that happens to
+        // sit inside another - "Link" is in "BitLink" and in "BitNavLinkItem", which listed an
+        // Assets component nothing takes as a parameter, and "BitTheme" is in "BitThemeManager".
+        var referenced = BlazorUIComponentCatalog.Components
+            .SelectMany(c => c.Parameters.Concat(c.PublicMembers).Concat(c.OwnTypes.SelectMany(t => t.Members)))
+            .SelectMany(m => Identifiers(m.Type))
+            .ToHashSet(StringComparer.Ordinal);
 
         return [.. LibraryWide.Where(t => t.Kind is not ("class" or "component")
-                                       || referenced.Contains(t.Name, StringComparison.Ordinal))];
+                                       || referenced.Contains(t.Name))];
+    }
+
+    /// <summary>
+    /// The identifiers written in a type as the tables spell it - <c>IEnumerable&lt;BitNavItem&gt;?</c>
+    /// is <c>IEnumerable</c> and <c>BitNavItem</c>. Anything that cannot be part of a C# name ends
+    /// the one being read.
+    /// </summary>
+    private static IEnumerable<string> Identifiers(string? text)
+    {
+        if (string.IsNullOrEmpty(text)) yield break;
+
+        var start = -1;
+
+        for (var i = 0; i <= text.Length; i++)
+        {
+            var part = i < text.Length && (char.IsLetterOrDigit(text[i]) || text[i] == '_');
+
+            if (part && start < 0) start = i;
+            else if (part is false && start >= 0)
+            {
+                yield return text[start..i];
+
+                start = -1;
+            }
+        }
     }
 
     public static void Warm() => _ = _byName.Value;
@@ -111,7 +141,11 @@ public static class BlazorUITypeCatalog
             if (current is null) return null;
         }
 
-        return root with { Clr = current, Name = dotted, Kind = current.IsEnum ? "enum" : "static class", Summary = BlazorUIXmlDocs.GetSummary(BlazorUIXmlDocs.IdOf(current)) };
+        // Named from the root's own name rather than from what was typed, so that the path this
+        // answer prints - and the nested paths under it - are paths that resolve again.
+        var name = string.Join('.', new[] { root.Name }.Concat(parts.Skip(1)));
+
+        return root with { Clr = current, Name = name, Kind = current.IsEnum ? "enum" : "static class", Summary = BlazorUIXmlDocs.GetSummary(BlazorUIXmlDocs.IdOf(current)) };
     }
 
     /// <summary>The names closest to one that resolved to nothing.</summary>
