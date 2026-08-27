@@ -365,6 +365,13 @@
                     {
                         "regex": "^(https|http):\/\/",
                         "replacement": ""
+                    },
+                    // A pasted url carries a trailing slash, and this value lands in bare-host positions
+                    // (iOS/MacCatalyst `applinks:` entitlements, Android `DataHosts`) where `host/` never matches.
+                    // Only the trailing slash is stripped - a base path is legitimate in ServerAddress.
+                    {
+                        "regex": "\/+$",
+                        "replacement": ""
                     }
                 ]
             },
@@ -386,6 +393,11 @@
                 "steps": [
                     {
                         "regex": "^(https|http):\/\/",
+                        "replacement": ""
+                    },
+                    // See normalizedServerUrl: a trailing slash breaks the bare-host call sites.
+                    {
+                        "regex": "\/+$",
                         "replacement": ""
                     }
                 ]
@@ -448,6 +460,11 @@
                         ".vs/**",
                         "**/[Bb]in/**",
                         "**/[Oo]bj/**",
+                        // Build / tooling output that a local `dotnet pack` would otherwise carry into the
+                        // nupkg (node_modules alone is ~50MB) and from there into every generated project.
+                        "**/node_modules/**",
+                        "**/[Tt]est[Rr]esults/**",
+                        ".playwright-mcp/**",
                         ".template.config/**",
                         "**/*.filelist",
                         "**/*.user",
@@ -621,6 +638,7 @@
                         "src/Tests/Features/Urls/AppQueryStringCollectionTests.cs",
                         "src/Tests/Features/TemplateConfig/TemplateConfigurationTests.cs",
                         "src/Tests/Features/TemplateConfig/SolutionAndRepoFilesTests.cs",
+                        "src/Tests/Features/TemplateConfig/PipelineFilesTests.cs",
                         "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
                         "src/Tests/Features/OpenApi/OpenApiParameterContractTests.cs",
                         "src/Tests/Features/Urls/WebAppUrlOriginHardeningTests.cs",
