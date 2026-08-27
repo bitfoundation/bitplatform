@@ -22,8 +22,9 @@ public partial class ComponentSearchBox
         ComponentCatalog.Items.ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
-    /// Ties the keyboard shortcut to this instance's input. Unique per instance because the header
-    /// and the gallery can both be on screen; only the first one registered claims the shortcut.
+    /// Ties the keyboard shortcut to this instance's input. Unique per instance because the header,
+    /// the hero and the gallery can each have one on screen; the first one registered claims the
+    /// shortcut, and keeps it for as long as its element is in the DOM.
     /// </summary>
     private readonly string _rootId = $"cmp-search-{Guid.NewGuid():N}";
 
@@ -35,7 +36,16 @@ public partial class ComponentSearchBox
     [Parameter] public string Placeholder { get; set; } = "Search components";
 
     /// <summary>
-    /// Whether Ctrl/Cmd+K should put the caret in this box. Only the header's copy asks for it.
+    /// The size of the box. The header's copy takes the default that fits a toolbar row; the home
+    /// page's hero asks for the large one, where the box is a section of the page rather than a
+    /// control in a bar.
+    /// </summary>
+    [Parameter] public BitSize? Size { get; set; }
+
+    /// <summary>
+    /// Whether Ctrl/Cmd+K (and a bare "/") should put the caret in this box. The header's copy asks
+    /// for it on every page that has one, and the home page's hero asks for it there, where the
+    /// header hides its own copy.
     /// </summary>
     [Parameter] public bool RegisterShortcut { get; set; }
 

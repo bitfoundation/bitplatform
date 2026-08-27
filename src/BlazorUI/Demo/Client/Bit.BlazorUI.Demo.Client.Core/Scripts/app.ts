@@ -226,13 +226,21 @@ function registerWindowResizeListener(id: string, dotnetObj: any, methodName: st
 }
 
 // The first caller wins: the header's search box registers on every page, and a second copy of the
-// control (the gallery's) must not steal the shortcut from it.
+// control (the gallery's) must not steal the shortcut from it. A claim only lives as long as the
+// element that made it, though: the home page renders its finder in the hero instead of the header,
+// so navigating away from it leaves the claim pointing at an element that is gone, and the next box
+// to register takes over. The listener itself is attached once, whoever holds the claim.
 let searchShortcutRootId: string | null = null;
+let searchShortcutListening = false;
 
 function registerSearchShortcut(rootElementId: string) {
-    if (searchShortcutRootId != null) return;
+    if (searchShortcutRootId != null && document.getElementById(searchShortcutRootId) != null) return;
 
     searchShortcutRootId = rootElementId;
+
+    if (searchShortcutListening) return;
+
+    searchShortcutListening = true;
 
     window.addEventListener('keydown', (e: KeyboardEvent) => {
         const isCommandK = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k';

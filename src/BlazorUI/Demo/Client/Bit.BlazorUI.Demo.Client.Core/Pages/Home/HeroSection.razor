@@ -19,6 +19,20 @@
             Explore components
         </BitButton>
     </BitStack>
+    @* The header keeps its finder off this page, so this is the home page's way into a component by
+       name - and the other half of what the buttons above offer: search for the one you came for,
+       browse the rest with "Explore components". It also claims Ctrl/Cmd+K and "/" here, which the
+       header's copy holds on every other page. *@
+    <div class="hero-search">
+        <ComponentSearchBox RegisterShortcut
+                            Size="BitSize.Large"
+                            Class="hero-search-box"
+                            Placeholder="Search 100+ components" />
+        <BitText Element="p" Typography="BitTypography.Caption1" Color="BitColor.TertiaryForeground" Class="hero-search-hint">
+            Search by name, by what another library calls it, or by what you want it to do - or press
+            <kbd>/</kbd> from anywhere.
+        </BitText>
+    </div>
     <div class="hero-install">
         <CodeBox>dotnet add package Bit.BlazorUI</CodeBox>
     </div>
