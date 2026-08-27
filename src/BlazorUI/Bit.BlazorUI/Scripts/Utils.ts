@@ -222,6 +222,74 @@
             Utils._focusOrigins.delete(key);
         }
 
+        // Every element currently held open by one or more scroll locks, against the inline values it
+        // carried before the first of them took it over, and the keys still holding it.
+        private static _scrollLocks = new Map<HTMLElement, { keys: Set<string>, overflow: string, paddingRight: string }>();
+        // The element each key locked, so that unlocking releases the one that key actually took.
+        private static _scrollLockOwners = new Map<string, HTMLElement>();
+
+        // Stops the page behind a popup from scrolling while it is open, which is what keeps the wheel and
+        // the touch drag on the surface the user is looking at instead of on the page they cannot reach.
+        // The locks are counted rather than toggled: two popups open at once both hold the page, and the
+        // page is only handed back once the last of them lets go - a plain toggle would hand it back when
+        // the first one closes and leave the second one over a scrolling page.
+        // Taking the scrollbar away narrows the element by its width, which shifts the whole page sideways
+        // in the same frame the popup appears in; the room it took is added back as padding so nothing moves.
+        public static lockScroll(key: string, selector: string | null) {
+            try {
+                if (Utils._scrollLockOwners.has(key)) return;
+
+                const element = (selector ? document.querySelector(selector) : document.body) as HTMLElement | null;
+                if (!element) return;
+
+                Utils._scrollLockOwners.set(key, element);
+
+                const held = Utils._scrollLocks.get(element);
+                if (held) {
+                    held.keys.add(key);
+                    return;
+                }
+
+                const style = element.style;
+                // What the element carried of its own, so that handing it back restores exactly that -
+                // including the case of it having carried nothing, which is an empty string here.
+                Utils._scrollLocks.set(element, { keys: new Set([key]), overflow: style.overflow, paddingRight: style.paddingRight });
+
+                const scrollbar = element === document.body
+                    ? window.innerWidth - document.documentElement.clientWidth
+                    : element.offsetWidth - element.clientWidth;
+
+                if (scrollbar > 0) {
+                    const current = parseFloat(getComputedStyle(element).paddingRight) || 0;
+                    style.paddingRight = `${current + scrollbar}px`;
+                }
+
+                style.overflow = 'hidden';
+            } catch (e) { console.error("BitBlazorUI.Utils.lockScroll:", e); }
+        }
+
+        // Releases the lock the given key holds, and hands the element back what it carried before the
+        // first lock took it over - but only once no other key is still holding it.
+        public static unlockScroll(key: string) {
+            try {
+                const element = Utils._scrollLockOwners.get(key);
+                if (!element) return;
+
+                Utils._scrollLockOwners.delete(key);
+
+                const held = Utils._scrollLocks.get(element);
+                if (!held) return;
+
+                held.keys.delete(key);
+                if (held.keys.size > 0) return;
+
+                Utils._scrollLocks.delete(element);
+
+                element.style.overflow = held.overflow;
+                element.style.paddingRight = held.paddingRight;
+            } catch (e) { console.error("BitBlazorUI.Utils.unlockScroll:", e); }
+        }
+
         private static _preventedKeys = new Map<string, AbortController>();
 
         // Suppresses the default behavior (page scrolling) of the given keys on an element, for the

@@ -78,13 +78,17 @@ public abstract class BitModalReferenceBase<TReference, TParameters>
         Parameters = parameters;
     }
 
-    internal void MarkClosed(object? result)
+    /// <summary>
+    /// Marks this reference closed with the given result, returning whether this call is the one that closed it:
+    /// false for a modal that was already closed, whose original result stands.
+    /// </summary>
+    internal bool MarkClosed(object? result)
     {
         IsClosed = true;
 
         // TrySet rather than Set: a modal can be asked to close more than once (a close button and the
         // overlay racing, a container tearing down mid-close), and only the first answer is the answer.
-        _resultSource.TrySetResult(result);
+        return _resultSource.TrySetResult(result);
     }
 
     /// <summary>

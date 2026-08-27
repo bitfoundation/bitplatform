@@ -31,6 +31,7 @@ public partial class BitProModal : BitComponentBase
     private EventCallback _onOpen;
     private EventCallback<MouseEventArgs> _onDismiss;
     private EventCallback<MouseEventArgs> _onOverlayClick;
+    private EventCallback<KeyboardEventArgs> _onEscapeKeyDown;
 
     // Memoizes the merged HtmlAttributes dictionary so BuildParameters doesn't re-run the
     // Concat/GroupBy/ToDictionary allocation on every OnParametersSet when neither the own nor the
@@ -178,6 +179,12 @@ public partial class BitProModal : BitComponentBase
     [Parameter] public bool? IsAlert { get; set; }
 
     /// <summary>
+    /// Keeps the Modal in the page while it is closed instead of building it again the next time it opens.
+    /// See <see cref="BitModal.KeepMounted"/>.
+    /// </summary>
+    [Parameter] public bool KeepMounted { get; set; }
+
+    /// <summary>
     /// Whether the Modal is displayed.
     /// </summary>
     [Parameter, TwoWayBound]
@@ -225,9 +232,25 @@ public partial class BitProModal : BitComponentBase
     [Parameter] public bool NoRestoreFocus { get; set; }
 
     /// <summary>
+    /// Prevents the Modal from holding the page still while it is open. See <see cref="BitModal.NoScrollLock"/>.
+    /// </summary>
+    /// <remarks>
+    /// A Modal that does its own scroll handling through <see cref="AutoToggleScroll"/> holds its scroller
+    /// itself, so the hold the underlying BitModal would take on the page is stood down for it whether or
+    /// not this is set - the two would otherwise both be holding the same page.
+    /// </remarks>
+    [Parameter] public bool NoScrollLock { get; set; }
+
+    /// <summary>
     /// A callback function for when the Modal is dismissed.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
+
+    /// <summary>
+    /// A callback function for when the Escape key is pressed inside the Modal, including the presses a Modal
+    /// with <see cref="NoDismissOnEscape"/> refuses to be dismissed by. See <see cref="BitModal.OnEscapeKeyDown"/>.
+    /// </summary>
+    [Parameter] public EventCallback<KeyboardEventArgs> OnEscapeKeyDown { get; set; }
 
     /// <summary>
     /// A callback function for when the Modal is opened.
@@ -345,6 +368,11 @@ public partial class BitProModal : BitComponentBase
         {
             await OnOverlayClick.InvokeAsync(e);
             await ProModalParameters!.OnOverlayClick.InvokeAsync(e);
+        });
+        _onEscapeKeyDown = EventCallback.Factory.Create<KeyboardEventArgs>(this, async (KeyboardEventArgs e) =>
+        {
+            await OnEscapeKeyDown.InvokeAsync(e);
+            await ProModalParameters!.OnEscapeKeyDown.InvokeAsync(e);
         });
 
         base.OnInitialized();
@@ -520,6 +548,7 @@ public partial class BitProModal : BitComponentBase
             IsAlert = IsAlert ?? p.IsAlert,
             // Can only force off (default is enabled): the lone exception to the "force on" rule above.
             IsEnabled = IsEnabled is false ? false : p.IsEnabled,
+            KeepMounted = KeepMounted ? true : p.KeepMounted,
             ModeFull = ModeFull ? true : p.ModeFull,
             Modeless = Modeless ? true : p.Modeless,
             NoBorder = NoBorder ? true : p.NoBorder,
@@ -527,7 +556,9 @@ public partial class BitProModal : BitComponentBase
             NoDismissOnEscape = NoDismissOnEscape ? true : p.NoDismissOnEscape,
             NoFocusTrap = NoFocusTrap ? true : p.NoFocusTrap,
             NoRestoreFocus = NoRestoreFocus ? true : p.NoRestoreFocus,
+            NoScrollLock = NoScrollLock ? true : p.NoScrollLock,
             OnDismiss = _onDismiss,
+            OnEscapeKeyDown = _onEscapeKeyDown,
             OnOpen = _onOpen,
             OnOverlayClick = _onOverlayClick,
             Position = Position ?? p.Position,

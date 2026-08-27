@@ -5,7 +5,7 @@
 /// </summary>
 /// <remarks>
 /// BREAKING CHANGE: the boolean members (<see cref="IsEnabled"/>, <see cref="AriaModal"/>, <see cref="Blocking"/>,
-/// <see cref="FullHeight"/>, <see cref="FullWidth"/>, <see cref="ShowOverlay"/>) are now nullable (<c>bool?</c>)
+/// <see cref="FullHeight"/>, <see cref="FullWidth"/>, <see cref="ShowOverlay"/>) are nullable (<c>bool?</c>)
 /// instead of <c>bool</c>. A <c>null</c> value means "not set" and the corresponding <see cref="BitModal"/> default
 /// is used (or the cascaded value, when merged). Code that read these members as non-nullable <c>bool</c> must be updated.
 /// </remarks>
@@ -63,6 +63,11 @@ public class BitModalParameters
     public bool? IsAlert { get; set; }
 
     /// <summary>
+    /// Keeps the Modal in the page while it is closed instead of building it again the next time it opens. <c>null</c> means not set (defaults to <c>false</c>).
+    /// </summary>
+    public bool? KeepMounted { get; set; }
+
+    /// <summary>
     /// Prevents the Modal from moving the focus into itself when it opens. <c>null</c> means not set (defaults to <c>false</c>).
     /// </summary>
     public bool? NoAutoFocus { get; set; }
@@ -83,9 +88,20 @@ public class BitModalParameters
     public bool? NoRestoreFocus { get; set; }
 
     /// <summary>
+    /// Prevents the Modal from holding the page still while it is open. <c>null</c> means not set (defaults to <c>false</c>).
+    /// </summary>
+    public bool? NoScrollLock { get; set; }
+
+    /// <summary>
     /// A callback function for when the Modal is dismissed.
     /// </summary>
     public EventCallback<MouseEventArgs> OnDismiss { get; set; }
+
+    /// <summary>
+    /// A callback function for when the Escape key is pressed inside the Modal, including the presses a Modal
+    /// with <c>NoDismissOnEscape</c> refuses to be dismissed by.
+    /// </summary>
+    public EventCallback<KeyboardEventArgs> OnEscapeKeyDown { get; set; }
 
     /// <summary>
     /// A callback function for when the Modal is opened.
@@ -96,6 +112,12 @@ public class BitModalParameters
     /// A callback function for when somewhere on the overlay element of the Modal is clicked.
     /// </summary>
     public EventCallback<MouseEventArgs> OnOverlayClick { get; set; }
+
+    /// <summary>
+    /// The CSS selector of the element whose scrolling the Modal holds while it is open, for the layouts whose
+    /// scroller is not the page itself. <c>null</c> means not set (the page is held).
+    /// </summary>
+    public string? ScrollerSelector { get; set; }
 
     /// <summary>
     /// Whether the overlay should be rendered. <c>null</c> means not set (defaults to <c>true</c>).
@@ -141,13 +163,17 @@ public class BitModalParameters
             FullHeight = params1.FullHeight ?? params2.FullHeight,
             FullWidth = params1.FullWidth ?? params2.FullWidth,
             IsAlert = params1.IsAlert ?? params2.IsAlert,
+            KeepMounted = params1.KeepMounted ?? params2.KeepMounted,
             NoAutoFocus = params1.NoAutoFocus ?? params2.NoAutoFocus,
             NoDismissOnEscape = params1.NoDismissOnEscape ?? params2.NoDismissOnEscape,
             NoFocusTrap = params1.NoFocusTrap ?? params2.NoFocusTrap,
             NoRestoreFocus = params1.NoRestoreFocus ?? params2.NoRestoreFocus,
+            NoScrollLock = params1.NoScrollLock ?? params2.NoScrollLock,
             OnDismiss = MergeCallbacks(params1.OnDismiss, params2.OnDismiss),
+            OnEscapeKeyDown = MergeCallbacks(params1.OnEscapeKeyDown, params2.OnEscapeKeyDown),
             OnOpen = MergeCallbacks(params1.OnOpen, params2.OnOpen),
             OnOverlayClick = MergeCallbacks(params1.OnOverlayClick, params2.OnOverlayClick),
+            ScrollerSelector = params1.ScrollerSelector ?? params2.ScrollerSelector,
             ShowOverlay = params1.ShowOverlay ?? params2.ShowOverlay,
             Styles = BitModalClassStyles.Merge(params1.Styles, params2.Styles),
             SubtitleAriaId = params1.SubtitleAriaId ?? params2.SubtitleAriaId,
@@ -156,19 +182,19 @@ public class BitModalParameters
     }
 
     /// <summary>
-    /// Composes two <see cref="EventCallback{MouseEventArgs}"/> into one that invokes both (first then second).
+    /// Composes two <see cref="EventCallback{TValue}"/> into one that invokes both (first then second).
     /// Returns an empty callback when neither source has a delegate, so the merged result preserves the
     /// "no delegate" semantics (<see cref="EventCallback.HasDelegate"/> stays <c>false</c>) instead of
     /// reporting a handler that does nothing.
     /// </summary>
-    private static EventCallback<MouseEventArgs> MergeCallbacks(EventCallback<MouseEventArgs> callback1, EventCallback<MouseEventArgs> callback2)
+    private static EventCallback<T> MergeCallbacks<T>(EventCallback<T> callback1, EventCallback<T> callback2)
     {
         if (callback1.HasDelegate is false && callback2.HasDelegate is false) return default;
 
         // These callbacks are invoked manually (never bound to a child component), so the
         // EventCallback receiver only needs to be non-null to be considered "has delegate".
         // A throwaway object() is sufficient here; there's no component to associate for re-render.
-        return EventCallback.Factory.Create<MouseEventArgs>(new object(), async (MouseEventArgs e) =>
+        return EventCallback.Factory.Create<T>(new object(), async (T e) =>
         {
             await callback1.InvokeAsync(e);
             await callback2.InvokeAsync(e);

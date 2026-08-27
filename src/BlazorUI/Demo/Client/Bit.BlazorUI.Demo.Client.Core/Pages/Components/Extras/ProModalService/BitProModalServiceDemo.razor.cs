@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.ProModalService;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.ProModalService;
 
 public partial class BitProModalServiceDemo
 {
@@ -45,6 +45,13 @@ public partial class BitProModalServiceDemo
             Type = "Task<BitProModalReference> (Dictionary<string, object>? parameters, BitProModalParameters? modalParameters)",
             DefaultValue = "",
             Description = "Shows a new BitProModal with a custom component as its content with custom parameters for the custom component and the modal.",
+        },
+        new()
+        {
+            Name = "Show",
+            Type = "Task<BitProModalReference> (RenderFragment content, BitProModalParameters? modalParameters, bool persistent)",
+            DefaultValue = "",
+            Description = "Shows a new BitProModal with the given markup as its content, for the content that is not worth a component of its own. The reference's Content stays null for such a modal, since markup is not a component instance.",
         },
     ];
 

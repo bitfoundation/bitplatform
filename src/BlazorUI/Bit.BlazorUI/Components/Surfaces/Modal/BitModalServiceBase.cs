@@ -113,7 +113,11 @@ public abstract class BitModalServiceBase<TReference, TParameters>
     {
         // Mark the reference closed up front so any add handler still iterating in a concurrent Show
         // (a handler may close the modal mid-show) can detect the close and skip (re-)adding it.
-        modalRef.MarkClosed(result);
+        //
+        // A modal can be asked to close more than once (a close button and the overlay racing, a container tearing
+        // down mid-close). Only the first close is the close: it keeps the result, and it is the only one the close
+        // handlers are run for, so a modal is never removed - or reported closed - twice.
+        if (modalRef.MarkClosed(result) is false) return;
 
         // Stop tracking persistent modals once closed so they aren't re-injected on a container remount.
         if (modalRef.Persistent)
@@ -258,6 +262,25 @@ public abstract class BitModalServiceBase<TReference, TParameters>
     }
 
     /// <summary>
+    /// Shows a new modal with the given markup as its content, for the content that is not worth a component
+    /// of its own - a line of text, a confirmation, a fragment the caller already has in hand.
+    /// </summary>
+    /// <remarks>
+    /// The reference's <see cref="BitModalReferenceBase{TReference, TParameters}.Content"/> stays <c>null</c>
+    /// for a modal shown this way: markup is not a component instance, so there is none to hand back. Use one
+    /// of the <c>Show&lt;T&gt;</c> overloads where the content has to be reached after it is shown.
+    /// </remarks>
+    public Task<TReference> Show(RenderFragment content, TParameters? modalParameters = null, bool persistent = false)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+
+        var modalReference = CreateReference(persistent);
+        modalReference.SetParameters(modalParameters);
+
+        return Show(modalReference, content, persistent);
+    }
+
+    /// <summary>
     /// Shows a new modal, building the content component's parameters from a factory that receives the modal reference.
     /// Use this overload when a parameter needs the reference itself (e.g. an <c>OnClose</c> callback that closes this
     /// very modal): the reference is handed to the factory before the content is rendered, so the callback can never
@@ -297,6 +320,16 @@ public abstract class BitModalServiceBase<TReference, TParameters>
             builder.CloseComponent();
         });
 
+        return await Show(modalReference, content, persistent);
+    }
+
+    /// <summary>
+    /// The shared tail of every Show overload: wraps the content in the concrete modal component, tracks the
+    /// reference when it is persistent, and hands it to the add handlers - rolling all of that back if one
+    /// of them throws.
+    /// </summary>
+    private async Task<TReference> Show(TReference modalReference, RenderFragment content, bool persistent)
+    {
         var modal = BuildModalFragment(modalReference, content);
         modalReference.SetModal(modal);
 

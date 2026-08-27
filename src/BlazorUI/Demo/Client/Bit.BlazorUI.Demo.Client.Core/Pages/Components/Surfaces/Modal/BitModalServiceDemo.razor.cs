@@ -77,6 +77,13 @@ public partial class BitModalServiceDemo
         new()
         {
             Name = "Show",
+            Type = "Task<BitModalReference> (RenderFragment content, BitModalParameters? modalParameters, bool persistent)",
+            DefaultValue = "",
+            Description = "Shows a new BitModal with the given markup as its content, for the content that is not worth a component of its own. The reference's Content stays null for such a modal, since markup is not a component instance.",
+        },
+        new()
+        {
+            Name = "Show",
             Type = "Task<BitModalReference> (Func<BitModalReference, Dictionary<string, object>?> parametersFactory, BitModalParameters? modalParameters, bool persistent)",
             DefaultValue = "",
             Description = "Shows a new BitModal, building the content component's parameters from a factory that receives the modal reference. Use this overload when a parameter needs the reference itself, such as an OnClose callback that closes this very modal.",
@@ -168,6 +175,18 @@ public partial class BitModalServiceDemo
     }
 
 
+    private async Task ShowMarkupModal()
+    {
+        await modalService.Show(builder =>
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "style", "padding:1.5rem;max-width:26rem");
+            builder.AddContent(2, "This modal was shown with markup rather than with a component of its own.");
+            builder.CloseElement();
+        });
+    }
+
+
     private readonly string example1RazorCode = @"
 <BitButton OnClick=""ShowModal"">Show</BitButton>
 
@@ -218,10 +237,26 @@ private async Task ShowConfirmModal()
 }";
 
     private readonly string example3RazorCode = @"
+<BitButton OnClick=""ShowMarkupModal"">Show markup</BitButton>";
+    private readonly string example3CsharpCode = @"
+[AutoInject] private BitModalService modalService = default!;
+
+private async Task ShowMarkupModal()
+{
+    await modalService.Show(builder =>
+    {
+        builder.OpenElement(0, ""div"");
+        builder.AddAttribute(1, ""style"", ""padding:1.5rem;max-width:26rem"");
+        builder.AddContent(2, ""This modal was shown with markup rather than with a component of its own."");
+        builder.CloseElement();
+    });
+}";
+
+    private readonly string example4RazorCode = @"
 <BitButton OnClick=""ShowModal"">Show one more</BitButton>
 
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => modalService.CloseAll()"">Close all</BitButton>";
-    private readonly string example3CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 [AutoInject] private BitModalService modalService = default!;
 
 private async Task ShowModal()

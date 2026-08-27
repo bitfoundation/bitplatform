@@ -71,6 +71,13 @@ public partial class BitModalDemo
         },
         new()
         {
+            Name = "KeepMounted",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the Modal in the page while it is closed instead of taking it out and building it again the next time it opens, so the content - and whatever state it holds - survives being closed. Nothing is rendered before the first time the Modal opens, and a kept Modal is inert and hidden from assistive technologies while it is closed.",
+        },
+        new()
+        {
             Name = "NoAutoFocus",
             Type = "bool",
             DefaultValue = "false",
@@ -99,9 +106,22 @@ public partial class BitModalDemo
         },
         new()
         {
+            Name = "NoScrollLock",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Prevents the Modal from holding the page still while it is open. By default the page behind an open Modal is held, with the room the scrollbar took added back as padding so that nothing shifts sideways; the holds are counted, so the page is only handed back once the last open Modal closes. A Modal that reports itself modeless (see AriaModal) never holds the page in the first place.",
+        },
+        new()
+        {
             Name = "OnDismiss",
             Type = "EventCallback<MouseEventArgs>",
             Description = "A callback function for when the Modal is dismissed.",
+        },
+        new()
+        {
+            Name = "OnEscapeKeyDown",
+            Type = "EventCallback<KeyboardEventArgs>",
+            Description = "A callback function for when the Escape key is pressed inside the Modal. It is invoked for every Escape, including the ones a Modal with NoDismissOnEscape refuses to be dismissed by, which makes it the counterpart of OnOverlayClick for the keyboard.",
         },
         new()
         {
@@ -114,6 +134,13 @@ public partial class BitModalDemo
             Name = "OnOverlayClick",
             Type = "EventCallback<MouseEventArgs>",
             Description = "A callback function for when somewhere on the overlay element of the Modal is clicked. It is invoked for every overlay click, including the ones a Blocking Modal refuses to be dismissed by.",
+        },
+        new()
+        {
+            Name = "ScrollerSelector",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The CSS selector of the element whose scrolling the Modal holds while it is open. The page (body) is what is held when this is not set, which is the scroller of an ordinary page; an application shell that scrolls a region of its own names that region here.",
         },
         new()
         {
@@ -218,6 +245,9 @@ public partial class BitModalDemo
     private bool isOpenAutoFocus;
     private readonly Dictionary<string, object> autoFocusAttributes = new() { { "data-autofocus", true } };
 
+    private bool isOpenScrollLock;
+    private bool isOpenNoScrollLock;
+
     private bool isOpenFullWidth;
     private bool isOpenFullHeight;
     private bool isOpenFullSize;
@@ -227,14 +257,22 @@ public partial class BitModalDemo
     private bool isOpenAlert;
     private bool isOpenLabelled;
 
+    private bool isOpenKeptMounted;
+    private bool isOpenNotKeptMounted;
+
     private bool isEventsOpen;
     private bool isOpened;
+    private int openedVersion;
     private bool isDismissed;
     private bool isOverlayClicked;
+    private bool isEscapePressed;
     private async Task HandleOnOpen()
     {
+        // Each open starts a new countdown: a reopen within the 3 seconds must not be cleared by the reset of the previous one.
+        var version = ++openedVersion;
         isOpened = true;
         await Task.Delay(3000);
+        if (version != openedVersion) return;
         isOpened = false;
         StateHasChanged();
     }
@@ -250,6 +288,15 @@ public partial class BitModalDemo
         _ = Task.Delay(2000).ContinueWith(_ =>
             {
                 isOverlayClicked = false;
+                InvokeAsync(StateHasChanged);
+            });
+    }
+    private void HandleOnEscapeKeyDown()
+    {
+        isEscapePressed = true;
+        _ = Task.Delay(2000).ContinueWith(_ =>
+            {
+                isEscapePressed = false;
                 InvokeAsync(StateHasChanged);
             });
     }
@@ -386,7 +433,7 @@ private bool isOpenNoEscape;";
 <BitModal @bind-IsOpen=""isOpenFocus"">
     <div class=""modal-content"">
         <BitText Typography=""BitTypography.H6"">The focus is here</BitText>
-        <BitText>Tab and Shift+Tab cycle between these three buttons and never reach the page behind them.</BitText>
+        <BitText>Tab and Shift+Tab cycle between the two buttons here, Ok and Cancel, and never reach the page behind them.</BitText>
         <BitStack Horizontal Gap=""0.5rem"" AutoHeight>
             <BitButton OnClick=""() => isOpenFocus = false"">Ok</BitButton>
             <BitButton Variant=""BitVariant.Outline"" OnClick=""() => isOpenFocus = false"">Cancel</BitButton>
@@ -424,6 +471,29 @@ private bool isOpenAutoFocus;
 private readonly Dictionary<string, object> autoFocusAttributes = new() { { ""data-autofocus"", true } };";
 
     private readonly string example6RazorCode = @"
+<BitButton OnClick=""() => isOpenScrollLock = true"">Holds the page</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""() => isOpenNoScrollLock = true"">NoScrollLock</BitButton>
+
+<BitModal @bind-IsOpen=""isOpenScrollLock"">
+    <div class=""modal-content"">
+        <BitText Typography=""BitTypography.H6"">The page is held</BitText>
+        <BitText>Try scrolling: the page behind this Modal stays where it was, and nothing shifted sideways when its scrollbar went away.</BitText>
+        <BitButton OnClick=""() => isOpenScrollLock = false"">Close</BitButton>
+    </div>
+</BitModal>
+
+<BitModal @bind-IsOpen=""isOpenNoScrollLock"" NoScrollLock>
+    <div class=""modal-content"">
+        <BitText Typography=""BitTypography.H6"">The page still scrolls</BitText>
+        <BitText>Try scrolling: the page behind this Modal moves along with the wheel.</BitText>
+        <BitButton OnClick=""() => isOpenNoScrollLock = false"">Close</BitButton>
+    </div>
+</BitModal>";
+    private readonly string example6CsharpCode = @"
+private bool isOpenScrollLock;
+private bool isOpenNoScrollLock;";
+
+    private readonly string example7RazorCode = @"
 <BitButton OnClick=""() => isOpenFullWidth = true"">FullWidth</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => isOpenFullHeight = true"">FullHeight</BitButton>
 <BitButton Variant=""BitVariant.Text"" OnClick=""() => isOpenFullSize = true"">Both</BitButton>
@@ -451,12 +521,12 @@ private readonly Dictionary<string, object> autoFocusAttributes = new() { { ""da
         <BitButton OnClick=""() => isOpenFullSize = false"">Close</BitButton>
     </div>
 </BitModal>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private bool isOpenFullWidth;
 private bool isOpenFullHeight;
 private bool isOpenFullSize;";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitButton OnClick=""() => isOpenNoOverlay = true"">No overlay</BitButton>
 
 <BitModal @bind-IsOpen=""isOpenNoOverlay"" ShowOverlay=""false"" AriaModal=""false"">
@@ -466,10 +536,10 @@ private bool isOpenFullSize;";
         <BitButton OnClick=""() => isOpenNoOverlay = false"">Close</BitButton>
     </div>
 </BitModal>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private bool isOpenNoOverlay;";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitButton OnClick=""() => isOpenLabelled = true"">Labelled dialog</BitButton>
 <BitButton Variant=""BitVariant.Outline"" Color=""BitColor.Error"" OnClick=""() => isOpenAlert = true"">Alert dialog</BitButton>
 
@@ -491,20 +561,45 @@ private bool isOpenNoOverlay;";
         </BitStack>
     </div>
 </BitModal>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private bool isOpenAlert;
 private bool isOpenLabelled;";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
+<BitButton OnClick=""() => isOpenKeptMounted = true"">KeepMounted</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""() => isOpenNotKeptMounted = true"">Built again each time</BitButton>
+
+<BitModal @bind-IsOpen=""isOpenKeptMounted"" KeepMounted>
+    <div class=""modal-content"">
+        <BitText Typography=""BitTypography.H6"">Kept in the page</BitText>
+        <BitTextField Label=""Your name"" />
+        <BitButton OnClick=""() => isOpenKeptMounted = false"">Close</BitButton>
+    </div>
+</BitModal>
+
+<BitModal @bind-IsOpen=""isOpenNotKeptMounted"">
+    <div class=""modal-content"">
+        <BitText Typography=""BitTypography.H6"">Built again each time</BitText>
+        <BitTextField Label=""Your name"" />
+        <BitButton OnClick=""() => isOpenNotKeptMounted = false"">Close</BitButton>
+    </div>
+</BitModal>";
+    private readonly string example10CsharpCode = @"
+private bool isOpenKeptMounted;
+private bool isOpenNotKeptMounted;";
+
+    private readonly string example11RazorCode = @"
 <BitButton OnClick=""() => isEventsOpen = true"">Open Modal</BitButton>
 
 <div>Opened? [@isOpened]</div>
 <div>Dismissed? [@isDismissed]</div>
 <div>Overlay clicked? [@isOverlayClicked]</div>
+<div>Escape pressed? [@isEscapePressed]</div>
 
 <BitModal @bind-IsOpen=""isEventsOpen""
           OnOpen=""HandleOnOpen""
           OnDismiss=""HandleOnDismiss""
+          OnEscapeKeyDown=""HandleOnEscapeKeyDown""
           OnOverlayClick=""HandleOnOverlayClick"">
     <div class=""modal-header"">
         <span class=""modal-header-text"">Events modal</span>
@@ -523,16 +618,21 @@ private bool isOpenLabelled;";
         are boundless. This space is yours to craft, yours to shape, yours to bring to life.
     </div>
 </BitModal>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private bool isEventsOpen;
 private bool isOpened;
+private int openedVersion;
 private bool isDismissed;
 private bool isOverlayClicked;
+private bool isEscapePressed;
 
 private async Task HandleOnOpen()
 {
+    // Each open starts a new countdown: a reopen within the 3 seconds must not be cleared by the reset of the previous one.
+    var version = ++openedVersion;
     isOpened = true;
     await Task.Delay(3000);
+    if (version != openedVersion) return;
     isOpened = false;
     StateHasChanged();
 }
@@ -552,9 +652,19 @@ private void HandleOnOverlayClick()
         isOverlayClicked = false;
         InvokeAsync(StateHasChanged);
     });
+}
+
+private void HandleOnEscapeKeyDown()
+{
+    isEscapePressed = true;
+    _ = Task.Delay(2000).ContinueWith(_ =>
+    {
+        isEscapePressed = false;
+        InvokeAsync(StateHasChanged);
+    });
 }";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitButton OnClick=""() => refModal.Open()"">Open</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => refModal.Toggle()"">Toggle</BitButton>
 
@@ -565,10 +675,10 @@ private void HandleOnOverlayClick()
         <BitButton OnClick=""() => refModal.Close()"">Close</BitButton>
     </div>
 </BitModal>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private BitModal refModal = default!;";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example13RazorCode = @"
 <style>
     .custom-class {
         border: 0.5rem solid tomato;
@@ -660,13 +770,13 @@ private BitModal refModal = default!;";
         are boundless. This space is yours to craft, yours to shape, yours to bring to life.
     </div>
 </BitModal>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private bool isOpenStyle;
 private bool isOpenClass;
 private bool isOpenStyles;
 private bool isOpenClasses;";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example14RazorCode = @"
 <div dir=""rtl"">
     <BitButton Dir=""BitDir.Rtl"" OnClick=""() => isOpenRtl = true"">باز کردن مُدال</BitButton>
 </div>
@@ -691,6 +801,6 @@ private bool isOpenClasses;";
         </p>
     </div>
 </BitModal>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private bool isOpenRtl;";
 }

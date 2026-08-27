@@ -18,7 +18,16 @@ public partial class BitModal : BitComponentBase
     private bool _internalIsOpen;
     private bool _focusTrapped;
     private bool _focusStored;
+    private bool _scrollLocked;
+    private bool _hasBeenOpened;
+    private bool _contentFocused;
     private string _containerId = default!;
+
+    // Which of the two interchangeable "refused" animations the content is carrying, 0 for none. Two
+    // classes carrying the same movement under different names are alternated rather than one being added
+    // and taken away again: an animation only restarts when the animation-name it resolves to changes, and
+    // taking the class off would resolve back to the entry animation and replay that instead.
+    private int _bounce;
 
     // Stable EventCallback wrappers created once (in OnInitialized) instead of on every
     // BuildParameters call. These are only invoked internally (not passed to a child), so
@@ -27,6 +36,7 @@ public partial class BitModal : BitComponentBase
     // parameter values at invoke time, so they remain correct while avoiding the allocations.
     private EventCallback<MouseEventArgs> _onDismiss;
     private EventCallback<MouseEventArgs> _onOverlayClick;
+    private EventCallback<KeyboardEventArgs> _onEscapeKeyDown;
     private EventCallback _onOpen;
 
     // Memoizes the merged HtmlAttributes dictionary so BuildParameters doesn't re-run the
@@ -127,6 +137,20 @@ public partial class BitModal : BitComponentBase
     public bool IsOpen { get; set; }
 
     /// <summary>
+    /// Keeps the Modal in the page while it is closed instead of taking it out and building it again the
+    /// next time it opens.
+    /// </summary>
+    /// <remarks>
+    /// A Modal is built when it opens and taken away when it closes, which is what keeps a page that declares
+    /// many of them cheap - and what makes each of them start over: a half-filled form inside one is gone by
+    /// the time it is opened again. Keeping it mounted hides it instead, so its content, and whatever state
+    /// that content holds, is still there the next time it opens. A kept Modal is <c>inert</c> and hidden
+    /// from assistive technologies while it is closed, and nothing of it is rendered until the first time it
+    /// opens, so a Modal that is never opened still costs nothing.
+    /// </remarks>
+    [Parameter] public bool KeepMounted { get; set; }
+
+    /// <summary>
     /// Prevents the Modal from moving the focus into itself when it opens, for the cases where the focus is
     /// placed by the consumer instead.
     /// </summary>
@@ -168,9 +192,34 @@ public partial class BitModal : BitComponentBase
     [Parameter] public bool NoRestoreFocus { get; set; }
 
     /// <summary>
+    /// Prevents the Modal from holding the page still while it is open.
+    /// </summary>
+    /// <remarks>
+    /// A modal surface takes the page over, and a page that carries on scrolling behind it moves what the
+    /// user is coming back to out from under them, so the page is held for as long as the Modal is open. The
+    /// room the scrollbar took is added back as padding while it is held, so that taking the scrollbar away
+    /// shifts nothing sideways, and the locks are counted: two Modals open at once both hold the page and it
+    /// is only handed back once the last of them closes.
+    /// <br/>
+    /// A Modal that reports itself modeless (see <see cref="AriaModal"/>) never holds the page in the first
+    /// place, since it is meant to leave what is behind it usable.
+    /// </remarks>
+    [Parameter] public bool NoScrollLock { get; set; }
+
+    /// <summary>
     /// A callback function for when the Modal is dismissed.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
+
+    /// <summary>
+    /// A callback function for when the Escape key is pressed inside the Modal.
+    /// </summary>
+    /// <remarks>
+    /// Invoked for every Escape, including the ones a Modal with <see cref="NoDismissOnEscape"/> refuses to
+    /// be dismissed by, which makes it the counterpart of <see cref="OnOverlayClick"/> for the keyboard: the
+    /// place to react to a dismissal that was turned down, or to close a Modal on terms of its own.
+    /// </remarks>
+    [Parameter] public EventCallback<KeyboardEventArgs> OnEscapeKeyDown { get; set; }
 
     /// <summary>
     /// A callback function for when the Modal is opened.
@@ -189,6 +238,18 @@ public partial class BitModal : BitComponentBase
     /// dismissed by, which is what makes it the place to react to a click that was turned down.
     /// </remarks>
     [Parameter] public EventCallback<MouseEventArgs> OnOverlayClick { get; set; }
+
+    /// <summary>
+    /// The CSS selector of the element whose scrolling the Modal holds while it is open, for the layouts
+    /// whose scroller is not the page itself.
+    /// </summary>
+    /// <remarks>
+    /// The page (<c>body</c>) is what is held when this is not set, which is the scroller of an ordinary
+    /// page. An application shell that scrolls a region of its own instead - a layout with a fixed header
+    /// and a scrolling main area - names that region here, since holding a page that never scrolls holds
+    /// nothing. Ignored by a Modal that holds nothing in the first place (see <see cref="NoScrollLock"/>).
+    /// </remarks>
+    [Parameter] public string? ScrollerSelector { get; set; }
 
     /// <summary>
     /// Whether the overlay should be rendered.
@@ -286,6 +347,11 @@ public partial class BitModal : BitComponentBase
             await OnOverlayClick.InvokeAsync(e);
             await ModalParameters!.OnOverlayClick.InvokeAsync(e);
         });
+        _onEscapeKeyDown = EventCallback.Factory.Create<KeyboardEventArgs>(this, async (KeyboardEventArgs e) =>
+        {
+            await OnEscapeKeyDown.InvokeAsync(e);
+            await ModalParameters!.OnEscapeKeyDown.InvokeAsync(e);
+        });
         _onOpen = EventCallback.Factory.Create(this, async () =>
         {
             await OnOpen.InvokeAsync();
@@ -337,8 +403,9 @@ public partial class BitModal : BitComponentBase
     {
         await base.OnParametersSetAsync();
 
-        // The focus trap is registered against the open Modal, so turning it on or off while the Modal is
-        // open has to reach the already registered one rather than wait for the next time it opens.
+        // The focus trap and the scroll lock are both registered against the open Modal, so turning either
+        // of them on or off while the Modal is open has to reach the already registered one rather than wait
+        // for the next time it opens.
         if (IsRendered is false || IsOpen is false || _internalIsOpen is false) return;
 
         if (ShouldTrapFocus)
@@ -349,6 +416,17 @@ public partial class BitModal : BitComponentBase
         {
             await DisposeFocusTrap();
         }
+
+        if (ShouldLockScroll)
+        {
+            await LockScroll();
+        }
+        else
+        {
+            await UnlockScroll();
+        }
+
+        await FocusContent();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -373,11 +451,17 @@ public partial class BitModal : BitComponentBase
 
     private async Task HandleOnOpened()
     {
+        // Remembered from the first opening on, so that a kept-mounted Modal stays in the page from then on
+        // while one that has never been opened is never rendered at all.
+        _hasBeenOpened = true;
+
         // The focus is recorded before anything is done with it, while it is still on whatever opened the
         // Modal: this is the element it goes back to once the Modal closes.
         await StoreFocus();
 
         await SetupFocusTrap();
+
+        await LockScroll();
 
         await FocusContent();
 
@@ -386,7 +470,11 @@ public partial class BitModal : BitComponentBase
 
     private async Task HandleOnClosed()
     {
+        _contentFocused = false;
+
         await DisposeFocusTrap();
+
+        await UnlockScroll();
 
         await RestoreFocus();
     }
@@ -397,7 +485,11 @@ public partial class BitModal : BitComponentBase
 
         await _params.OnOverlayClick.InvokeAsync(e);
 
-        if (_params.Blocking ?? false) return;
+        if (_params.Blocking ?? false)
+        {
+            Bounce();
+            return;
+        }
 
         await AssignIsOpen(false);
     }
@@ -410,9 +502,24 @@ public partial class BitModal : BitComponentBase
 
         if (e.Key is not "Escape") return;
 
-        if (_params.NoDismissOnEscape ?? false) return;
+        await _params.OnEscapeKeyDown.InvokeAsync(e);
+
+        if (_params.NoDismissOnEscape ?? false)
+        {
+            Bounce();
+            return;
+        }
 
         await AssignIsOpen(false);
+    }
+
+    // Answers a dismissal the Modal turns down with a movement rather than with nothing at all: a click on
+    // the overlay of a blocking Modal, or an Escape it does not leave on, otherwise reads as a page that has
+    // stopped responding rather than as a surface waiting to be answered. The movement collapses to nothing
+    // under reduced motion, which the motion tokens take care of.
+    private void Bounce()
+    {
+        _bounce = _bounce == 1 ? 2 : 1;
     }
 
     private string GetRole()
@@ -439,8 +546,31 @@ public partial class BitModal : BitComponentBase
 
     private string GetContentClasses()
     {
-        return JoinClasses("bit-mdl-ctn", Classes?.Content, _params.Classes?.Content);
+        return JoinClasses(_bounce switch
+        {
+            1 => "bit-mdl-ctn bit-mdl-bna",
+            2 => "bit-mdl-ctn bit-mdl-bnb",
+            _ => "bit-mdl-ctn"
+        }, Classes?.Content, _params.Classes?.Content);
     }
+
+    // A kept-mounted Modal that is closed is still in the page, so it is taken out of the way of it rather
+    // than left lying over it. The builder answers null for a Modal that carries no classes at all, which
+    // this never is - the root class is one of them - but a null is still not something to splice a class
+    // list onto.
+    private string? GetRootClasses()
+    {
+        if (IsOpen) return ClassBuilder.Value;
+
+        var classes = ClassBuilder.Value;
+
+        return classes.HasNoValue() ? "bit-mdl-hid" : $"{classes} bit-mdl-hid";
+    }
+
+    // Whether a closed Modal is still to be rendered. Only one that has been open at least once is kept: a
+    // Modal that has never opened has no state worth keeping, and rendering it up front would put the cost
+    // of every Modal on the page onto that page's first render.
+    private bool _keptMounted => (_params.KeepMounted ?? false) && _hasBeenOpened;
 
     // Two class lists are one attribute value while a single space stands between them, and an empty part
     // in the middle would otherwise leave a double space (or a trailing one) in the rendered attribute.
@@ -457,7 +587,15 @@ public partial class BitModal : BitComponentBase
 
     private void OnSetIsOpen()
     {
-        if (IsOpen || IsRendered is false) return;
+        if (IsOpen)
+        {
+            // A refusal leaves the content marked with the movement that answered it. Opening the Modal
+            // again starts from the entry animation instead.
+            _bounce = 0;
+            return;
+        }
+
+        if (IsRendered is false) return;
 
         // Fire-and-forget the dismiss callback, then re-render. Wrapped in a local async method
         // (instead of ContinueWith) so a throwing OnDismiss surfaces through Blazor's normal async
@@ -472,13 +610,30 @@ public partial class BitModal : BitComponentBase
     // Whether the keyboard is the Modal's to hold. Only a Modal that reports itself modal takes the tab
     // sequence over: a modeless one is meant to leave the page behind it usable, and a trap would take the
     // keyboard half of that away while leaving the pointer half in place.
-    private bool ShouldTrapFocus => (_params.NoFocusTrap ?? false) is false && (_params.AriaModal ?? true);
+    private bool ShouldTrapFocus => (_params.NoFocusTrap ?? false) is false && (_params.AriaModal ?? true) && IsShown;
 
+    // Whether the page behind the Modal is the Modal's to hold. As with the focus trap, only a Modal that
+    // reports itself modal takes it: a modeless one is meant to leave the page usable, and a page held still
+    // behind a surface the pointer is free to leave reads as a page that broke rather than one that is covered.
+    private bool ShouldLockScroll => (_params.NoScrollLock ?? false) is false && (_params.AriaModal ?? true) && IsShown;
+
+    // A Modal that was taken out of view carries none of the behaviors that only make sense for one the user
+    // can see: it neither holds the keyboard nor the page behind it.
+    private bool IsShown => Visibility == BitVisibility.Visible;
+
+    // Moved once per opening: the call is made again whenever the Modal becomes something the user can see
+    // while it is already open, so that a Modal opened out of view still starts with the keyboard in it once
+    // it appears - and a Modal that already placed the focus is not made to place it a second time by an
+    // unrelated parameter change.
     private async Task FocusContent()
     {
         if (_params.NoAutoFocus ?? false) return;
 
+        if (_contentFocused || IsShown is false) return;
+
         if (IsDisposed) return;
+
+        _contentFocused = true;
 
         try
         {
@@ -548,6 +703,34 @@ public partial class BitModal : BitComponentBase
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
+    private async Task LockScroll()
+    {
+        if (ShouldLockScroll is false || _scrollLocked || IsDisposed) return;
+
+        _scrollLocked = true;
+
+        try
+        {
+            await _js.BitUtilsLockScroll(_containerId, _params.ScrollerSelector);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    private async Task UnlockScroll()
+    {
+        // Only what was taken is handed back, and the hold is given up whether or not the call goes through,
+        // so a Modal can never end up holding a page it has already let go of.
+        if (_scrollLocked is false) return;
+
+        _scrollLocked = false;
+
+        try
+        {
+            await _js.BitUtilsUnlockScroll(_containerId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
     /// <summary>
     /// Builds the effective parameters by merging this component's own parameters with the cascaded
     /// <see cref="BitModalParameters"/>. The component's own values take precedence, preserving the
@@ -559,8 +742,9 @@ public partial class BitModal : BitComponentBase
     /// asymmetrically and the component param only expresses the "stronger" intent for that flag:
     /// <list type="bullet">
     /// <item><see cref="Blocking"/>, <see cref="FullHeight"/>, <see cref="FullWidth"/>,
-    /// <see cref="NoAutoFocus"/>, <see cref="NoDismissOnEscape"/>, <see cref="NoFocusTrap"/>,
-    /// <see cref="NoRestoreFocus"/>: the component param can only force the behavior <b>on</b>
+    /// <see cref="KeepMounted"/>, <see cref="NoAutoFocus"/>, <see cref="NoDismissOnEscape"/>,
+    /// <see cref="NoFocusTrap"/>, <see cref="NoRestoreFocus"/>, <see cref="NoScrollLock"/>:
+    /// the component param can only force the behavior <b>on</b>
     /// (<c>X ? true : p.X</c>); it can never force it off.</item>
     /// <item><see cref="AriaModal"/>, <see cref="ShowOverlay"/>, <see cref="BitComponentBase.IsEnabled"/>:
     /// the component param can only force the behavior <b>off</b> (<c>X is false ? false : p.X</c>); it
@@ -594,6 +778,8 @@ public partial class BitModal : BitComponentBase
             FullWidth = FullWidth ? true : p.FullWidth,
             IsAlert = IsAlert ?? p.IsAlert,
             // Can only force on (default is off): see remarks on asymmetric merge.
+            KeepMounted = KeepMounted ? true : p.KeepMounted,
+            // Can only force on (default is off): see remarks on asymmetric merge.
             NoAutoFocus = NoAutoFocus ? true : p.NoAutoFocus,
             // Can only force on (default is off): see remarks on asymmetric merge.
             NoDismissOnEscape = NoDismissOnEscape ? true : p.NoDismissOnEscape,
@@ -601,7 +787,11 @@ public partial class BitModal : BitComponentBase
             NoFocusTrap = NoFocusTrap ? true : p.NoFocusTrap,
             // Can only force on (default is off): see remarks on asymmetric merge.
             NoRestoreFocus = NoRestoreFocus ? true : p.NoRestoreFocus,
+            // Can only force on (default is off): see remarks on asymmetric merge.
+            NoScrollLock = NoScrollLock ? true : p.NoScrollLock,
+            ScrollerSelector = ScrollerSelector ?? p.ScrollerSelector,
             OnDismiss = _onDismiss,
+            OnEscapeKeyDown = _onEscapeKeyDown,
             OnOpen = _onOpen,
             OnOverlayClick = _onOverlayClick,
             // Can only force off (default is enabled): see remarks on asymmetric merge.
@@ -657,20 +847,28 @@ public partial class BitModal : BitComponentBase
         if (IsDisposed || disposing is false) return;
 
         // A Modal disposed while it is still open never reaches its close, so the registrations it made on
-        // the JS side are taken back here instead. The stored focus is dropped rather than restored: there
-        // is no close for it to be handed back on, and the map would keep the element alive without this.
-        if (_focusTrapped || _focusStored)
+        // the JS side - the focus trap, the hold on the page behind it - are taken back here instead. The
+        // stored focus is dropped rather than restored: there is no close for it to be handed back on, and
+        // the map would keep the element alive without this.
+        if (_focusTrapped || _focusStored || _scrollLocked)
         {
             var trapped = _focusTrapped;
             var stored = _focusStored;
+            var locked = _scrollLocked;
             _focusTrapped = false;
             _focusStored = false;
+            _scrollLocked = false;
 
             try
             {
                 if (trapped)
                 {
                     await _js.BitUtilsDisposeFocusTrap(_containerId);
+                }
+
+                if (locked)
+                {
+                    await _js.BitUtilsUnlockScroll(_containerId);
                 }
 
                 if (stored)

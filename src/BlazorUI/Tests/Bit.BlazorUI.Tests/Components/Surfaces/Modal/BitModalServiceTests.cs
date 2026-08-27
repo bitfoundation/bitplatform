@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -104,6 +106,9 @@ public class BitModalServiceTests : BunitTestContext
     {
         var container = RenderComponent<BitModalContainer>();
 
+        var closeCount = 0;
+        ModalService.OnCloseModal += _ => { closeCount++; return Task.CompletedTask; };
+
         var modalRef = await ModalService.Show<TestModalContent>();
 
         await modalRef.CloseWith("first");
@@ -111,6 +116,9 @@ public class BitModalServiceTests : BunitTestContext
 
         // Only the first answer is the answer: a modal can be asked to close more than once.
         Assert.AreEqual("first", await modalRef.Result);
+
+        // And only the first close is a close: the second one is not reported to the close handlers again.
+        Assert.AreEqual(1, closeCount);
     }
 
     [TestMethod]
@@ -213,5 +221,54 @@ public class BitModalServiceTests : BunitTestContext
         });
 
         Assert.IsTrue(modalRef.Persistent);
+    }
+
+
+    [TestMethod]
+    public async Task BitModalServiceShouldShowMarkupAsTheContentOfAModal()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var modalRef = await ModalService.Show(builder =>
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "class", "markup-content");
+            builder.AddContent(2, "Shown with markup");
+            builder.CloseElement();
+        }, new BitModalParameters { FullWidth = true });
+
+        container.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(1, container.FindAll(".bit-mdl").Count);
+            Assert.AreEqual(1, container.FindAll(".markup-content").Count);
+            Assert.IsTrue(container.Find(".bit-mdl").ClassList.Contains("bit-mdl-fwi"));
+        });
+
+        // Markup is not a component instance, so there is none to hand back on the reference.
+        Assert.IsNull(modalRef.Content);
+
+        await modalRef.Close();
+
+        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-mdl").Count));
+    }
+
+    [TestMethod]
+    public async Task BitModalServiceShouldRefuseToShowNothingAsMarkup()
+    {
+        RenderComponent<BitModalContainer>();
+
+        await Assert.ThrowsExactlyAsync<ArgumentNullException>(() => ModalService.Show((RenderFragment)null!));
+    }
+
+    [TestMethod]
+    public async Task BitModalServiceShouldCompleteTheResultOfAMarkupModalItIsClosedWith()
+    {
+        RenderComponent<BitModalContainer>();
+
+        var modalRef = await ModalService.Show(builder => builder.AddContent(0, "Shown with markup"));
+
+        await modalRef.CloseWith("answered");
+
+        Assert.AreEqual("answered", await modalRef.Result);
     }
 }

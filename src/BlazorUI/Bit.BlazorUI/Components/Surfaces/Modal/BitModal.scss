@@ -18,6 +18,8 @@
     background-color: transparent;
 }
 
+// Put on the drag handle of a draggable Modal (by the drag-drop script) so that a touch drag moves the
+// Modal instead of scrolling whatever is under the finger.
 .bit-mdl-nta {
     touch-action: none;
 
@@ -26,12 +28,20 @@
     }
 }
 
+// A Modal that is kept in the page while it is closed is taken out of the way of the page rather than left
+// lying over it: display:none takes it out of the layout, out of the tab sequence and out of the paint,
+// while the content it holds - and whatever state that content is in - stays built.
+.bit-mdl-hid {
+    display: none;
+}
+
 .bit-mdl-ovl {
     inset: 0;
     z-index: 0;
     position: absolute;
     pointer-events: all;
     background-color: $clr-bg-overlay;
+
     // The backdrop is put into the page in the same frame as the content it dims, so it fades in with it
     // rather than appearing under it in one frame. The duration collapses to nothing under reduced motion,
     // which the motion tokens take care of.
@@ -43,12 +53,14 @@
 
 .bit-mdl-ctn {
     max-width: 100%;
+
     // A Modal taller than the screen would otherwise run off both ends of it, where nothing can reach it:
     // the root is fixed to the viewport, so the page's own scrolling never brings it back. Capping the
     // content to the room the root has - the viewport, or whatever the root was placed inside of - and
     // letting it scroll inside itself is what keeps all of it reachable.
     max-height: 100%;
     overflow: auto;
+
     // The scroll stops here rather than carrying on into the page behind the Modal once the content is
     // scrolled to its end.
     overscroll-behavior: contain;
@@ -58,10 +70,12 @@
     background-color: $clr-bg-pri;
     box-shadow: $box-shadow-dialog;
     border-radius: $shp-radius-dialog;
+
     // The content is made programmatically focusable (tabindex="-1") so the focus has somewhere to land in
     // a Modal that holds nothing focusable. That focus is never one the user moved there themselves, so it
     // is not one to draw a ring around; :focus-visible still does for the keyboard.
     outline: none;
+
     // backwards rather than both: the transform of the last keyframe would otherwise stay on the element
     // for good, and an element that carries a transform is the containing block of every fixed-positioned
     // descendant it holds - which is not something an entry animation gets to decide.
@@ -69,6 +83,27 @@
     animation-name: bit-mdl-zoom-in;
     animation-duration: $mot-duration;
     animation-timing-function: $mot-easing-decelerate;
+}
+
+// The answer to a dismissal the Modal turns down - a click on the overlay of a blocking Modal, or an Escape
+// it does not leave on. Two classes carrying the same movement under different names, so that the second
+// refusal in a row restarts it: an animation only starts over when the animation-name it resolves to
+// changes, and taking the class off again would resolve back to the entry animation and replay that.
+// fill-mode none, so that nothing of the transform is left on the element once the movement is over - an
+// element that carries a transform is the containing block of every fixed-positioned descendant it holds.
+.bit-mdl-bna,
+.bit-mdl-bnb {
+    animation-fill-mode: none;
+    animation-duration: $mot-duration-short;
+    animation-timing-function: $mot-easing;
+}
+
+.bit-mdl-bna {
+    animation-name: bit-mdl-refuse-a;
+}
+
+.bit-mdl-bnb {
+    animation-name: bit-mdl-refuse-b;
 }
 
 .bit-mdl-fhe {
@@ -94,5 +129,27 @@
     100% {
         opacity: 1;
         transform: scale(1);
+    }
+}
+
+// A single short pulse: enough movement to read as "that was heard and turned down", not enough to read as
+// the Modal having changed.
+@keyframes bit-mdl-refuse-a {
+    0%, 100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.02);
+    }
+}
+
+@keyframes bit-mdl-refuse-b {
+    0%, 100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.02);
     }
 }

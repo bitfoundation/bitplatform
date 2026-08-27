@@ -17,9 +17,7 @@ public class BitProModalTests : BunitTestContext
             parameters.Add(p => p.Modeless, true);
         });
 
-        var root = com.Find(".bit-mdl");
-
-        Assert.AreEqual("false", root.Attributes["aria-modal"]?.Value);
+        Assert.AreEqual("false", com.Find(".bit-mdl-ctn").Attributes["aria-modal"]?.Value);
         Assert.AreEqual(0, com.FindAll(".bit-mdl-ovl").Count);
     }
 
@@ -45,7 +43,7 @@ public class BitProModalTests : BunitTestContext
             Assert.IsTrue(isOpen);
             Assert.AreEqual(0, dismissed);
             Assert.AreEqual(1, overlayClicked);
-            Assert.AreEqual("alertdialog", com.Find(".bit-mdl").Attributes["role"]?.Value);
+            Assert.AreEqual("alertdialog", com.Find(".bit-mdl-ctn").Attributes["role"]?.Value);
         });
     }
 
@@ -79,10 +77,12 @@ public class BitProModalTests : BunitTestContext
             parameters.Add(p => p.SubtitleAriaId, "subtitle-id");
         });
 
-        var root = com.Find(".bit-mdl");
+        // The dialog is the content box, not the layer that also holds the overlay, so that is where the
+        // name and the description of it belong.
+        var content = com.Find(".bit-mdl-ctn");
 
-        Assert.AreEqual("title-id", root.Attributes["aria-labelledby"]?.Value);
-        Assert.AreEqual("subtitle-id", root.Attributes["aria-describedby"]?.Value);
+        Assert.AreEqual("title-id", content.Attributes["aria-labelledby"]?.Value);
+        Assert.AreEqual("subtitle-id", content.Attributes["aria-describedby"]?.Value);
     }
 
     [TestMethod,
@@ -288,5 +288,78 @@ public class BitProModalTests : BunitTestContext
         com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count));
 
         Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
+    }
+
+
+    [TestMethod]
+    public void BitProModalShouldForwardTheEscapeCallbackAndTheKeptMountedFlag()
+    {
+        var escapes = 0;
+        var isOpen = true;
+
+        var com = RenderComponent<BitProModal>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+            parameters.Add(p => p.KeepMounted, true);
+            parameters.Add(p => p.NoDismissOnEscape, true);
+            parameters.Add(p => p.OnEscapeKeyDown, EventCallback.Factory.Create<KeyboardEventArgs>(this, () => escapes++));
+        });
+
+        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, escapes));
+        Assert.IsTrue(isOpen);
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, false);
+            parameters.Add(p => p.KeepMounted, true);
+        });
+
+        // Kept in the page, but out of the way of it.
+        Assert.IsTrue(com.Find(".bit-mdl").ClassList.Contains("bit-mdl-hid"));
+    }
+
+    [TestMethod]
+    public void BitProModalShouldStandDownTheModalHoldOnThePageWhileItTogglesTheScrollItself()
+    {
+        // AutoToggleScroll is the ProModal holding its own scroller, and two holds on the same page would
+        // only get in each other's way.
+        var com = RenderComponent<BitProModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AutoToggleScroll, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
+    }
+
+    [TestMethod]
+    public void BitProModalShouldHoldThePageThroughTheModalWhenItDoesNotToggleTheScrollItself()
+    {
+        var com = RenderComponent<BitProModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count);
+    }
+
+    [TestMethod]
+    public void BitProModalShouldNotHoldThePageWhileItIsModeless()
+    {
+        var com = RenderComponent<BitProModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Modeless, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count));
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
     }
 }

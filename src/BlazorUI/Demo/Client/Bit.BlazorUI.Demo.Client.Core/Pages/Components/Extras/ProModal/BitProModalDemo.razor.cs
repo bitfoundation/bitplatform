@@ -169,6 +169,13 @@ public partial class BitProModalDemo
         },
         new()
         {
+            Name = "KeepMounted",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the Modal in the page while it is closed instead of taking it out and building it again the next time it opens, so the content - and whatever state it holds - survives being closed.",
+        },
+        new()
+        {
             Name = "NoBorder",
             Type = "bool",
             DefaultValue = "false",
@@ -204,9 +211,22 @@ public partial class BitProModalDemo
         },
         new()
         {
+            Name = "NoScrollLock",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Prevents the Modal from holding the page still while it is open. A Modal that does its own scroll handling through AutoToggleScroll holds its scroller itself, so the hold on the page is stood down for it whether or not this is set.",
+        },
+        new()
+        {
             Name = "OnDismiss",
             Type = "EventCallback<MouseEventArgs>",
             Description = "A callback function for when the Modal is dismissed.",
+        },
+        new()
+        {
+            Name = "OnEscapeKeyDown",
+            Type = "EventCallback<KeyboardEventArgs>",
+            Description = "A callback function for when the Escape key is pressed inside the Modal. It is invoked for every Escape, including the ones a Modal with NoDismissOnEscape refuses to be dismissed by.",
         },
         new()
         {

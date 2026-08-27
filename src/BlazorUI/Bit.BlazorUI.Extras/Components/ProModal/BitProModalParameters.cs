@@ -121,6 +121,11 @@ public class BitProModalParameters
     public bool? Modeless { get; set; }
 
     /// <summary>
+    /// Keeps the Modal in the page while it is closed instead of building it again the next time it opens. <c>null</c> means not set (defaults to <c>false</c>).
+    /// </summary>
+    public bool? KeepMounted { get; set; }
+
+    /// <summary>
     /// Removes the default top border of the Modal.
     /// </summary>
     public bool? NoBorder { get; set; }
@@ -146,9 +151,20 @@ public class BitProModalParameters
     public bool? NoRestoreFocus { get; set; }
 
     /// <summary>
+    /// Prevents the Modal from holding the page still while it is open. <c>null</c> means not set (defaults to <c>false</c>).
+    /// </summary>
+    public bool? NoScrollLock { get; set; }
+
+    /// <summary>
     /// A callback function for when the Modal is dismissed.
     /// </summary>
     public EventCallback<MouseEventArgs> OnDismiss { get; set; }
+
+    /// <summary>
+    /// A callback function for when the Escape key is pressed inside the Modal, including the presses a Modal
+    /// with <c>NoDismissOnEscape</c> refuses to be dismissed by.
+    /// </summary>
+    public EventCallback<KeyboardEventArgs> OnEscapeKeyDown { get; set; }
 
     /// <summary>
     /// A callback function for when the Modal is opened.
@@ -236,6 +252,7 @@ public class BitProModalParameters
             HtmlAttributes = (params2.HtmlAttributes ?? []).Concat(params1.HtmlAttributes ?? []).GroupBy(kv => kv.Key).ToDictionary(g => g.Key, g => g.Last().Value),
             IsAlert = params1.IsAlert ?? params2.IsAlert,
             IsEnabled = params1.IsEnabled ?? params2.IsEnabled,
+            KeepMounted = params1.KeepMounted ?? params2.KeepMounted,
             ModeFull = params1.ModeFull ?? params2.ModeFull,
             Modeless = params1.Modeless ?? params2.Modeless,
             NoBorder = params1.NoBorder ?? params2.NoBorder,
@@ -243,6 +260,7 @@ public class BitProModalParameters
             NoDismissOnEscape = params1.NoDismissOnEscape ?? params2.NoDismissOnEscape,
             NoFocusTrap = params1.NoFocusTrap ?? params2.NoFocusTrap,
             NoRestoreFocus = params1.NoRestoreFocus ?? params2.NoRestoreFocus,
+            NoScrollLock = params1.NoScrollLock ?? params2.NoScrollLock,
             // Only compose a callback when at least one side actually has a delegate. Otherwise leave
             // the merged callback at its default (HasDelegate == false) to preserve the empty contract,
             // so consumers (e.g. the inner BitModal) don't see a handler that does nothing.
@@ -251,6 +269,13 @@ public class BitProModalParameters
                 {
                     await params1.OnDismiss.InvokeAsync(e);
                     await params2.OnDismiss.InvokeAsync(e);
+                })
+                : default,
+            OnEscapeKeyDown = (params1.OnEscapeKeyDown.HasDelegate || params2.OnEscapeKeyDown.HasDelegate)
+                ? EventCallback.Factory.Create<KeyboardEventArgs>(new object(), async (KeyboardEventArgs e) =>
+                {
+                    await params1.OnEscapeKeyDown.InvokeAsync(e);
+                    await params2.OnEscapeKeyDown.InvokeAsync(e);
                 })
                 : default,
             OnOpen = (params1.OnOpen.HasDelegate || params2.OnOpen.HasDelegate)

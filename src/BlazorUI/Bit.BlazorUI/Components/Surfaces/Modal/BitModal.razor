@@ -1,24 +1,24 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-@if (IsOpen)
+@if (IsOpen || _keptMounted)
 {
     @* The keydown handler sits on the root so that Escape dismisses the Modal from anywhere inside it -
        the content, the overlay, whichever part of it the keyboard happens to be in. The keys stop here:
        a Modal opened from inside another one renders inside that one's content, so an Escape left to
        carry on up would dismiss the Modal the keyboard is still working inside of along with the one it
        was meant for. *@
+    @* While a kept-mounted Modal is closed it is still in the page, only hidden: inert and aria-hidden
+       take it out of the tab sequence and out of the reading order for the browsers that would otherwise
+       still reach into a display:none subtree through a stale reference. *@
     <div @ref="RootElement" @attributes="_params.HtmlAttributes"
          @onkeydown="HandleOnKeyDown" @onkeydown:stopPropagation
          id="@_Id"
          style="@StyleBuilder.Value"
-         class="@ClassBuilder.Value"
+         class="@GetRootClasses()"
          dir="@_params.Dir?.ToString().ToLower()"
-         aria-label="@_params.AriaLabel"
-         aria-labelledby="@_params.TitleAriaId"
-         aria-describedby="@_params.SubtitleAriaId"
-         aria-modal="@((_params.AriaModal ?? true).ToString().ToLowerInvariant())"
-         role="@GetRole()">
+         inert="@(IsOpen is false)"
+         aria-hidden="@(IsOpen ? null : "true")">
         @if (_params.ShowOverlay ?? true)
         {
             <div @onclick="HandleOnOverlayClick"
@@ -26,13 +26,21 @@
                  style="@GetOverlayStyles()"
                  class="@GetOverlayClasses()" />
         }
-        @* tabindex="-1" makes the content programmatically focusable, which is what the focus has to land
-           on when the Modal opens with nothing focusable inside it: the alternative is leaving it behind
-           on the element that opened the Modal, out of reach behind the overlay. *@
+        @* The dialog is this box rather than the layer around it: the pattern asks for every element the
+           dialog is operated through to be a descendant of the element that carries the role, and the layer
+           also holds the overlay, which is not part of the dialog but the page it is covering.
+           tabindex="-1" makes it programmatically focusable, which is what the focus has to land on when the
+           Modal opens with nothing focusable inside it: the alternative is leaving it behind on the element
+           that opened the Modal, out of reach behind the overlay. *@
         <div id="@_containerId"
              tabindex="-1"
              style="@GetContentStyles()"
-             class="@GetContentClasses()">
+             class="@GetContentClasses()"
+             aria-label="@_params.AriaLabel"
+             aria-labelledby="@_params.TitleAriaId"
+             aria-describedby="@_params.SubtitleAriaId"
+             aria-modal="@((_params.AriaModal ?? true).ToString().ToLowerInvariant())"
+             role="@GetRole()">
             @ChildContent
         </div>
     </div>

@@ -6,7 +6,7 @@
 
 <DemoPage Name="Modal"
           SecondaryNames="@(["Dialog", "Popup"])"
-          Description="Modal is a temporary surface that covers the page and takes it over until it is dealt with. It hosts whatever is put in it - a form, a license agreement, a confirmation - centered over an overlay that dims what is behind it, and it behaves the way a dialog is expected to: the focus moves into it when it opens, Tab keeps cycling inside it while it is open, Escape and a click on the overlay dismiss it, and the focus goes back to whatever opened it once it closes. Each of those can be turned off on its own, and the Modal can be driven either by binding IsOpen or through its Open, Close and Toggle methods."
+          Description="Modal is a temporary surface that covers the page and takes it over until it is dealt with. It hosts whatever is put in it - a form, a license agreement, a confirmation - centered over an overlay that dims what is behind it, and it behaves the way a dialog is expected to: the focus moves into it when it opens, Tab keeps cycling inside it while it is open, the page behind it stops scrolling, Escape and a click on the overlay dismiss it, and the focus goes back to whatever opened it once it closes. Each of those can be turned off on its own, and the Modal can be driven either by binding IsOpen or through its Open, Close and Toggle methods."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
@@ -17,9 +17,9 @@
             There are two different modal components available for different purposes: <b>BitModal</b> is a basic,
             lightweight modal for simple pop-up content, while
             <BitLink Href="/components/promodal">BitProModal</BitLink> is an advanced modal with extra features such
-            as dragging, blocking, modeless, positioning, full-size and scroll handling. Pick the one that fits your
-            use-case. The dialog behaviors below - the focus handling and the Escape dismissal - belong to BitModal,
-            so BitProModal has all of them too.
+            as dragging, blocking, modeless, positioning, full-size and custom scrollers. Pick the one that fits
+            your use-case. The dialog behaviors below - the focus handling, the Escape dismissal, the hold on the
+            page behind it - belong to BitModal, so BitProModal has all of them too.
         </BitText>
         <br />
         <BitText>
@@ -33,7 +33,8 @@
             <div>
                 <b>IsOpen</b> is what shows the Modal, and it is two-way bound so that the Modal can close itself:
                 clicking the overlay or pressing Escape sets it back to false. Nothing of the Modal is in the page
-                while it is closed, so the content is built when it opens and taken away again when it closes.
+                while it is closed, so the content is built when it opens and taken away again when it closes -
+                unless it is told to <BitLink Href="#example10">stay</BitLink>.
             </div>
             <br />
             <div>
@@ -112,7 +113,9 @@
             <div>
                 Only the pointer is blocked. Escape still dismisses a blocking Modal, since a keyboard user has no
                 other way out unless one is offered; <b>NoDismissOnEscape</b> (next section) is what takes that away
-                as well.
+                as well. A click the Modal turns down is answered with a short pulse rather than with nothing at
+                all, so that a surface waiting to be dealt with never reads as a page that stopped responding.
+                <b>OnOverlayClick</b> is where that click can be reacted to.
             </div>
             <br />
             <BitButton OnClick="() => isOpenBlocking = true">Open blocking Modal</BitButton>
@@ -144,7 +147,8 @@
             <div>
                 The key is handled where the keyboard is, so it works because the focus is inside the Modal; a Modal
                 that opted out of the focus handling with NoAutoFocus only sees Escape once something inside it has
-                been focused.
+                been focused. <b>OnEscapeKeyDown</b> is invoked for every Escape, including the ones a Modal refuses
+                to be dismissed by - which, like a turned-down overlay click, is answered with a short pulse.
             </div>
             <br />
             <div class="example-box">
@@ -190,7 +194,7 @@
             <BitModal @bind-IsOpen="isOpenFocus">
                 <div class="modal-content">
                     <BitText Typography="BitTypography.H6">The focus is here</BitText>
-                    <BitText>Tab and Shift+Tab cycle between these three buttons and never reach the page behind them.</BitText>
+                    <BitText>Tab and Shift+Tab cycle between the two buttons here, Ok and Cancel, and never reach the page behind them.</BitText>
                     <BitStack Horizontal Gap="0.5rem" AutoHeight>
                         <BitButton OnClick="() => isOpenFocus = false">Ok</BitButton>
                         <BitButton Variant="BitVariant.Outline" OnClick="() => isOpenFocus = false">Cancel</BitButton>
@@ -221,7 +225,44 @@
             </BitModal>
         </DemoExample>
 
-        <DemoExample Title="Full width & height" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <DemoExample Title="Scroll lock" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                A Modal takes the page over, so the page is held still for as long as one is open: the wheel and the
+                touch drag act on the Modal instead of scrolling away what the user is coming back to. The room the
+                scrollbar took is added back as padding while the page is held, so taking it away shifts nothing
+                sideways, and the holds are counted - two Modals open at once both hold the page and it is only
+                handed back once the last of them closes.
+            </div>
+            <br />
+            <div>
+                <b>NoScrollLock</b> leaves the page scrolling, for the Modals that sit over a page the user is meant
+                to keep reading. A Modal that reports itself modeless with <b>AriaModal</b> set to false never holds
+                the page in the first place, since it is meant to leave what is behind it usable. An application
+                shell that scrolls a region of its own rather than the page names that region with
+                <b>ScrollerSelector</b>, since holding a page that never scrolls holds nothing.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitButton OnClick="() => isOpenScrollLock = true">Holds the page</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => isOpenNoScrollLock = true">NoScrollLock</BitButton>
+            </div>
+            <BitModal @bind-IsOpen="isOpenScrollLock">
+                <div class="modal-content">
+                    <BitText Typography="BitTypography.H6">The page is held</BitText>
+                    <BitText>Try scrolling: the page behind this Modal stays where it was, and nothing shifted sideways when its scrollbar went away.</BitText>
+                    <BitButton OnClick="() => isOpenScrollLock = false">Close</BitButton>
+                </div>
+            </BitModal>
+            <BitModal @bind-IsOpen="isOpenNoScrollLock" NoScrollLock>
+                <div class="modal-content">
+                    <BitText Typography="BitTypography.H6">The page still scrolls</BitText>
+                    <BitText>Try scrolling: the page behind this Modal moves along with the wheel.</BitText>
+                    <BitButton OnClick="() => isOpenNoScrollLock = false">Close</BitButton>
+                </div>
+            </BitModal>
+        </DemoExample>
+
+        <DemoExample Title="Full width & height" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 <b>FullWidth</b> and <b>FullHeight</b> stretch the Modal to the width and the height of the area it
                 is placed in - the viewport, for a Modal rendered at the page level. Set both for a Modal that takes
@@ -256,7 +297,7 @@
             </BitModal>
         </DemoExample>
 
-        <DemoExample Title="Overlay" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <DemoExample Title="Overlay" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>
                 The overlay is what dims the page and takes the click that light dismisses the Modal.
                 <b>ShowOverlay</b> set to false leaves it out, which lets the page behind the Modal keep its own
@@ -266,8 +307,9 @@
             <br />
             <div>
                 A Modal that leaves the page usable is not modal any more, so tell assistive technologies as much
-                with <b>AriaModal</b> set to false. That is also what takes the focus trap off it, since holding the
-                keyboard inside a surface the pointer can leave would only be half a barrier.
+                with <b>AriaModal</b> set to false. That is also what stands down the two holds a modal surface
+                takes on the page - the focus trap and the scroll lock - since keeping the keyboard, or the wheel,
+                inside a surface the pointer is free to leave would only ever be half a barrier.
             </div>
             <br />
             <div class="example-box">
@@ -282,7 +324,7 @@
             </BitModal>
         </DemoExample>
 
-        <DemoExample Title="Accessibility" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <DemoExample Title="Accessibility" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>
                 A dialog needs a name. <b>TitleAriaId</b> points at the element that holds the visible title and
                 <b>SubtitleAriaId</b> at the one that describes it, which is what a screen reader reads out when the
@@ -319,13 +361,52 @@
             </BitModal>
         </DemoExample>
 
-        <DemoExample Title="Events" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <DemoExample Title="Keeping the content" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                A Modal is built when it opens and taken away when it closes, which is what keeps a page that
+                declares many of them cheap - and what makes each of them start over: a half-filled form inside one
+                is gone by the time it is opened again. <b>KeepMounted</b> hides the Modal instead of taking it
+                away, so its content, and whatever state that content holds, is still there the next time it opens.
+            </div>
+            <br />
+            <div>
+                Nothing is rendered before the first time the Modal opens, so a Modal that is never opened still
+                costs nothing, and a kept Modal is <b>inert</b> and hidden from assistive technologies while it is
+                closed. Type into both fields below, close each Modal and open it again: only the kept one still
+                has what was typed.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitButton OnClick="() => isOpenKeptMounted = true">KeepMounted</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => isOpenNotKeptMounted = true">Built again each time</BitButton>
+            </div>
+            <BitModal @bind-IsOpen="isOpenKeptMounted" KeepMounted>
+                <div class="modal-content">
+                    <BitText Typography="BitTypography.H6">Kept in the page</BitText>
+                    <BitTextField Label="Your name" />
+                    <BitButton OnClick="() => isOpenKeptMounted = false">Close</BitButton>
+                </div>
+            </BitModal>
+            <BitModal @bind-IsOpen="isOpenNotKeptMounted">
+                <div class="modal-content">
+                    <BitText Typography="BitTypography.H6">Built again each time</BitText>
+                    <BitTextField Label="Your name" />
+                    <BitButton OnClick="() => isOpenNotKeptMounted = false">Close</BitButton>
+                </div>
+            </BitModal>
+        </DemoExample>
+
+        <DemoExample Title="Events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div>
                 <b>OnOpen</b> fires once the Modal is in the page and its focus handling has run, which makes it the
                 place to load what the Modal shows. <b>OnDismiss</b> fires whenever it closes, however it was closed.
-                <b>OnOverlayClick</b> fires for every click on the overlay, including the ones a Blocking Modal
-                refuses to be dismissed by - which is what makes it the place to react to a click that was turned
-                down.
+            </div>
+            <br />
+            <div>
+                <b>OnOverlayClick</b> and <b>OnEscapeKeyDown</b> are the two ways a user asks a Modal to go away, and
+                both fire for every attempt - including the ones a <b>Blocking</b> or <b>NoDismissOnEscape</b> Modal
+                turns down. That is what makes them the place to react to a dismissal that was refused: warn about
+                unsaved work, or answer on the Modal's own terms.
             </div>
             <br />
             <BitButton OnClick="() => isEventsOpen = true">Open Modal</BitButton>
@@ -335,9 +416,12 @@
             <div>Dismissed? [@isDismissed]</div>
             <br />
             <div>Overlay clicked? [@isOverlayClicked]</div>
+            <br />
+            <div>Escape pressed? [@isEscapePressed]</div>
             <BitModal @bind-IsOpen="isEventsOpen"
                       OnOpen="HandleOnOpen"
                       OnDismiss="HandleOnDismiss"
+                      OnEscapeKeyDown="HandleOnEscapeKeyDown"
                       OnOverlayClick="HandleOnOverlayClick">
                 <div class="modal-header">
                     <span class="modal-header-text">Events modal</span>
@@ -358,7 +442,7 @@
             </BitModal>
         </DemoExample>
 
-        <DemoExample Title="Programmatic control" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <DemoExample Title="Programmatic control" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
                 A Modal captured with <b>@@ref</b> can be driven through its <b>Open</b>, <b>Close</b> and
                 <b>Toggle</b> methods, which is the way to reach one from code that has no field to bind IsOpen to.
@@ -385,7 +469,7 @@
             </BitModal>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root element of the Modal - the layer that covers the page -
                 while <b>Styles</b> and <b>Classes</b> reach each of its three parts by name: <b>Root</b>,
@@ -470,7 +554,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <DemoExample Title="RTL" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
             <div>
                 Set <b>Dir</b> to <b>BitDir.Rtl</b> to lay the Modal and everything inside it out right to left.
             </div>

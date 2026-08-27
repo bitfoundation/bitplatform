@@ -42,7 +42,23 @@
             <div>Answer: [@confirmAnswer]</div>
         </DemoExample>
 
-        <DemoExample Title="Closing every modal" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <DemoExample Title="Markup as content" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                <b>Show</b> also takes plain markup, for the content that is not worth a component of its own -
+                a line of text, a note, a fragment the calling code already has in hand. The modal around it is
+                customized with the same <b>BitModalParameters</b> as any other.
+            </div>
+            <br />
+            <div>
+                The reference's <b>Content</b> stays null for a modal shown this way, since markup is not a
+                component instance and there is none to hand back; reach for one of the <b>Show&lt;T&gt;</b>
+                overloads where the content has to be reached after it is shown.
+            </div>
+            <br />
+            <BitButton OnClick="ShowMarkupModal">Show markup</BitButton>
+        </DemoExample>
+
+        <DemoExample Title="Closing every modal" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
                 <b>CloseAll</b> closes every modal the service currently has open, each with a null result. It is
                 what a sign-out or a navigation reaches for: whatever was left open belongs to the state that is
