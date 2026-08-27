@@ -10,8 +10,8 @@ namespace Boilerplate.Tests.Features.Culture;
 /// A culture change used to be applied by reloading the host: <c>forceLoad: true</c> on every platform, plus an
 /// <c>Application.Restart()</c> on the windows head. That reload existed for one reason - it rebuilds the root
 /// component tree, and a fresh tree re-reads <c>IStringLocalizer</c> and every culture dependent format. On blazor
-/// hybrid the rebuild can be done in place instead, so <c>Routes</c> keys its <c>LayoutView</c> on the current
-/// culture and <c>CultureService</c> no longer forces a load there.
+/// hybrid the rebuild can be done in place instead, so <c>Routes</c> keys the <c>AppErrorBoundary</c> wrapping its
+/// <c>LayoutView</c> on the current culture and <c>CultureService</c> no longer forces a load there.
 /// <para>
 /// This test guards the replacement, because losing it fails <b>silently</b>: the app keeps running, the culture
 /// is stored and <c>CultureInfo.CurrentUICulture</c> is updated, and only the already-rendered UI keeps the old
@@ -60,12 +60,12 @@ public class CultureSwitchRebuildTests
         await PublishCulture("zz-Sentinel");
 
         await cut.WaitForAssertionAsync(() => Assert.AreEqual(2, ProbeLayout.Instantiations,
-            "Publishing CULTURE_CHANGED did not rebuild the layout subtree. Routes keys its LayoutView on the " +
-            "current culture precisely so a culture change tears the tree down and builds a fresh one - that " +
-            "rebuild is the only thing the old forceLoad reload was doing for localization. Without it the app " +
-            "keeps showing the previous language until an unrelated render happens to refresh it, and nothing " +
-            "reports an error. Check the @key on LayoutView in Routes.razor and the CULTURE_CHANGED subscription " +
-            "in Routes.razor.cs."), timeout: TimeSpan.FromSeconds(10));
+            "Publishing CULTURE_CHANGED did not rebuild the layout subtree. Routes keys the AppErrorBoundary " +
+            "wrapping its LayoutView on the current culture precisely so a culture change tears the tree down and " +
+            "builds a fresh one - that rebuild is the only thing the old forceLoad reload was doing for localization. " +
+            "Without it the app keeps showing the previous language until an unrelated render happens to refresh it, " +
+            "and nothing reports an error. Check the @key on AppErrorBoundary in Routes.razor and the " +
+            "CULTURE_CHANGED subscription in Routes.razor.cs."), timeout: TimeSpan.FromSeconds(10));
 
         // Now the same transition with a real culture, from a known starting key.
         await PublishCulture("fa-IR");

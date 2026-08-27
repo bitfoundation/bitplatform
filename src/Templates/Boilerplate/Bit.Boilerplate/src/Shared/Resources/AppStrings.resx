@@ -965,9 +965,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>Verification Code:</value>
   </data>
-    <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>Enter verification code.</value>
-  </data>
     <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>Verify</value>
   </data>
@@ -1170,9 +1167,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Alt text</value>
   </data>
     <!--#endif -->
-    <data name="Page" xml:space="preserve">
-    <value>Page</value>
-  </data>
     <data name="Of" xml:space="preserve">
     <value>of</value>
   </data>
@@ -1182,9 +1176,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <!--#if (module == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
     <value>Admin panel</value>
-  </data>
-    <data name="PaginatorSummary" xml:space="preserve">
-    <value>{0} items</value>
   </data>
     <data name="Last30DaysProductCount" xml:space="preserve">
     <value>Last 30 days product count</value>
@@ -1222,9 +1213,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>Categories with product count</value>
   </data>
-    <data name="SearchOnName" xml:space="preserve">
-    <value>Search on name</value>
-  </data>
     <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>Products count per category chart</value>
   </data>
@@ -1254,9 +1242,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="DeleteProduct" xml:space="preserve">
     <value>Delete product</value>
-  </data>
-    <data name="DefaultColorPicker" xml:space="preserve">
-    <value>Default color picker</value>
   </data>
     <data name="EditProduct" xml:space="preserve">
     <value>Edit product {0}</value>
@@ -1344,9 +1329,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="Send" xml:space="preserve">
     <value>Send</value>
   </data>
-    <data name="AccentColorApply" xml:space="preserve">
-    <value>Apply the {0} accent color</value>
-  </data>
     <data name="Canceled" xml:space="preserve">
     <value>Canceled</value>
   </data>
@@ -1364,7 +1346,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Dictation</value>
   </data>
     <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
-    <value>Microphone access is blocked. Allow it for this site to dictate.</value>
+    <value>Microphone access is blocked. Allow it in your settings to dictate.</value>
   </data>
     <data name="AiChatPanelDictationStopped" xml:space="preserve">
     <value>Dictation stopped: {0}</value>
@@ -1414,19 +1396,15 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>How can I install the PWA version of the app?</value>
   </data>
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
     <!--#if (module == "Admin") -->
-    <data name="AiChatPanelPrompt3" xml:space="preserve">
     <value>Where can I find reports about products?</value>
-  </data>
     <!--#elif (module == "Sales") -->
-    <data name="AiChatPanelPrompt3" xml:space="preserve">
     <value>I'm searching for a Benz SUV electric car with a 75K budget!</value>
-  </data>
     <!--#else -->
-    <data name="AiChatPanelPrompt3" xml:space="preserve">
     <value>I have some feedback I'd like to share!</value>
-  </data>
     <!--#endif -->
+  </data>
     <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>Write a message...</value>
   </data>
@@ -1463,9 +1441,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>I'm having trouble watching in app ads.</value>
   </data>
     <!--#endif -->
-    <data name="PleaseWait" xml:space="preserve">
-    <value>Please wait</value>
-  </data>
     <data name="Management" xml:space="preserve">
     <value>Management</value>
   </data>
@@ -1641,6 +1616,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="ImageTooSmall" xml:space="preserve">
     <value>Image's too small. Minimum required dimensions are {0}x{1}, but the current dimensions are {2}x{3}.</value>
+  </data>
+  <data name="UnsupportedImageFormat" xml:space="preserve">
+    <value>The uploaded file is not a supported image.</value>
   </data>
     <data name="ImageNotCarError" xml:space="preserve">
     <value>The provided image does not contain a car.</value>

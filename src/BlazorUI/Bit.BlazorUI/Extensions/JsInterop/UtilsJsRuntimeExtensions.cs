@@ -40,6 +40,17 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // Mirrors the popup relationship of a popup component onto the element the user actually reaches: the
+    // anchor of a callout is a plain container around the consumer's own trigger, and relationship
+    // attributes on a container no screen reader ever lands on are attributes no screen reader ever reads.
+    // An empty hasPopup takes the attribute away again, for the popups that are not one of the kinds the
+    // property can name.
+    internal static ValueTask BitUtilsSyncAriaPopup(this IJSRuntime jsRuntime, string anchorId, string popupId, bool isOpen, string? hasPopup)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.syncAriaPopup", anchorId, popupId, isOpen, hasPopup ?? string.Empty);
+    }
+
+
     internal static ValueTask<bool> BitUtilsContainsActiveElement(this IJSRuntime jsRuntime, string elementId)
     {
         return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.containsActiveElement", elementId);

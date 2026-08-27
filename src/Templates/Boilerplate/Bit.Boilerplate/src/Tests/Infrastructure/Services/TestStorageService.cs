@@ -42,6 +42,14 @@ public partial class TestStorageService : IStorageService
 
     public async ValueTask SetItem(string key, string? value, bool persistent = true)
     {
+        if (value is null)
+        {
+            // Storing a null must remove the key (see WebStorageService/MauiStorageService), otherwise IsPersistent
+            // would keep answering true for a value that no longer exists - the axis AuthManager derives "remember me" from.
+            await RemoveItem(key);
+            return;
+        }
+
         // A key lives in exactly one of the two stores. Writing to one without removing it from the other would leave
         // the previous value where GetItem still reads it - and since Preferences wins there (it is the value, the temp
         // entry is only the default), a temporary write would be shadowed by the persistent value it supersedes.

@@ -716,6 +716,142 @@ public class TemplateConfigurationTests
     }
 
     /// <summary>
+    /// Every conditional region has to be closed before the end of its file. The engine treats EOF as an implicit
+    /// <c>#endif</c>, so an unterminated region does not corrupt anything today - it silently swallows everything
+    /// from the opening directive to the last line, in every configuration where the condition is false.
+    /// <para>
+    /// That is what makes it dangerous rather than merely untidy: the template's own working copy shows the
+    /// content, the local build shows it, and the only way to notice is to generate a project in the losing
+    /// configuration and diff. It already cost <c>.docs/01</c> its trailing footer, and anything appended to the
+    /// end of such a file joins the region without anyone touching the directive.
+    /// </para>
+    /// <para>
+    /// Both dialects are counted together - a template conditional and a real C# <c>#if DEBUG</c>
+    /// are indistinguishable at their <c>#endif</c> - which is fine, because an unbalanced count is a defect
+    /// either way. <c>#else</c> and <c>#elseif</c> neither open nor close. Every directive on a line counts, not
+    /// just the first: a C# file may legitimately close a one-line region inline, and only counting the first
+    /// would report it as unterminated.
+    /// </para>
+    /// </summary>
+    [TestMethod]
+    public void EveryConditionalRegion_Should_BeTerminatedBeforeEndOfFile()
+    {
+        var (templateRoot, template) = LoadTemplateJson();
+        template?.Dispose();
+
+        List<string> offenders = [];
+
+        foreach (var file in EnumerateTemplateFiles(templateRoot))
+        {
+            var lines = File.ReadAllLines(file);
+            var processingOn = true;
+            Stack<int> openedAt = new();
+
+            for (var i = 0; i < lines.Length; i++)
+            {
+                var marker = processingMarker.Match(lines[i]);
+                if (marker.Success)
+                {
+                    processingOn = marker.Groups["onOff"].Value is "+";
+                    continue;
+                }
+
+                if (processingOn is false)
+                    continue;
+
+                foreach (Match directive in anyDirective.Matches(lines[i]))
+                {
+                    if (directive.Groups["keyword"].Value is "endif")
+                    {
+                        if (openedAt.TryPop(out _) is false)
+                        {
+                            offenders.Add($"{Path.GetRelativePath(templateRoot, file)}:{i + 1}: #endif with no matching directive above it.");
+                        }
+                    }
+                    else if (directive.Groups["keyword"].Value is "if")
+                    {
+                        openedAt.Push(i + 1);
+                    }
+                }
+            }
+
+            foreach (var line in openedAt)
+            {
+                offenders.Add($"{Path.GetRelativePath(templateRoot, file)}:{line}: conditional region is never closed - everything from here to the end of the file disappears when the condition is false.");
+            }
+        }
+
+        Assert.IsEmpty(offenders,
+            $"""
+             Unbalanced conditional regions. Close each one where the conditional content actually ends, not at
+             the end of the file - an #endif placed at EOF keeps the trailing content conditional and changes
+             nothing:
+             {string.Join(Environment.NewLine, offenders)}
+             """);
+    }
+
+    /// <summary>
+    /// <c>README.md</c> is <c>primaryOutputs[0]</c> and the file the IDE post-action opens after
+    /// <c>dotnet new</c>. Its opening code fence exists for exactly one purpose - to record the arguments the
+    /// project was generated with, so that the configuration can be reproduced later - and it does that with one
+    /// conditional per parameter.
+    /// <para>
+    /// Nothing connects the two. A parameter added to <c>template.json</c> without a matching branch in
+    /// <c>README.md</c> is simply absent from the record, and because the block renders as a shorter but
+    /// perfectly well-formed command, the reader has no signal that anything is missing. Six of the twenty-two
+    /// parameters had drifted out this way.
+    /// </para>
+    /// </summary>
+    [TestMethod]
+    public void EveryTemplateParameter_Should_BeRecordedInTheGeneratedReadme()
+    {
+        var (templateRoot, template) = LoadTemplateJson();
+
+        using (template)
+        {
+            var readme = File.ReadAllText(Path.Combine(templateRoot, "README.md"));
+
+            var missing = template.RootElement.GetProperty("symbols")
+                .EnumerateObject()
+                .Where(symbol => symbol.Value.TryGetProperty("type", out var type) && type.GetString() is "parameter")
+                .Select(symbol => symbol.Name)
+                .Where(name => parametersNotWorthRecording.Contains(name) is false)
+                // A whole-token match: `--api` must not be satisfied by `--apiServerUrl`.
+                .Where(name => Regex.IsMatch(readme, $@"--{Regex.Escape(name)}(?![A-Za-z0-9])") is false)
+                .ToArray();
+
+            Assert.IsEmpty(missing,
+                $"""
+                 These template.json parameters are never named in README.md, so choosing a non-default value for
+                 any of them leaves no trace in the one artifact whose job is to record the generating command.
+                 Add a branch to the fence at the top of README.md in the existing style:
+                 {string.Join(Environment.NewLine, missing)}
+                 """);
+        }
+    }
+
+    /// <summary>
+    /// The parameters this check deliberately does not ask <c>README.md</c> to record.
+    /// <list type="bullet">
+    /// <item><c>helpUrl</c> is a link to the online parameter documentation shown while the template is being
+    /// configured. It is not part of the generated project's configuration and there is nothing to reproduce.</item>
+    /// <item><c>apiServerUrl</c> and <c>webAppUrl</c> are free-text values, not choices. Unlike every other
+    /// parameter they are also <c>replaces</c> tokens, so whatever was passed is already written throughout the
+    /// generated tree - the configuration is not lost when the command block omits them, and printing two long
+    /// urls in the first code block a user ever sees costs more than it records. Both are
+    /// <c>"isVisible": false</c> in <c>ide.host.json</c> for the same reason.</item>
+    /// </list>
+    /// </summary>
+    private static readonly string[] parametersNotWorthRecording = ["helpUrl", "apiServerUrl", "webAppUrl"];
+
+    /// <summary>
+    /// The first conditional directive on a line, in any host syntax, with its keyword captured. Deliberately
+    /// looser than <see cref="conditionalDirective"/>: this one also has to see <c>#endif</c> and <c>#else</c>,
+    /// and it must match a real C# <c>#if DEBUG</c> as well as a parenthesized template conditional.
+    /// </summary>
+    private static readonly Regex anyDirective = new(@"#(?<keyword>endif|elseif|elif|else|if)\b", RegexOptions.Compiled);
+
+    /// <summary>
     /// The template engine scans every line for the text <c>#if</c> with no idea that it might be inside a C# string
     /// literal, an XML doc comment or a markdown fence. When it finds one with no parenthesized condition after it,
     /// the expression parser indexes past the end of its token list and <b>aborts the entire generation</b> - so one

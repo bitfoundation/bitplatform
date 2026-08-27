@@ -55,10 +55,18 @@ public partial class AiChatPanelThemeUITests : AiChatPanelTestBase
         var htmlElement = Page.Locator("html");
 
         // Read the starting theme instead of assuming one, then ask for the opposite - so the test proves a CHANGE
-        // rather than passing because the app already happened to be in the requested theme.
+        // rather than passing because the app already happened to be in the requested theme. The SetApplicationTheme
+        // tool accepts only the semantic words "light"/"dark", while the html attribute carries the concrete theme
+        // NAME the app maps them to (declared on the element as bit-theme-dark / bit-theme-light, e.g. fluent2-dark) -
+        // so what is requested and what is expected are tracked separately.
         var initialTheme = await htmlElement.GetAttributeAsync("bit-theme");
         Assert.IsFalse(string.IsNullOrEmpty(initialTheme), "The <html> element should carry a bit-theme attribute.");
-        var requestedTheme = initialTheme == "dark" ? "light" : "dark";
+        var darkTheme = await htmlElement.GetAttributeAsync("bit-theme-dark");
+        var lightTheme = await htmlElement.GetAttributeAsync("bit-theme-light");
+        Assert.IsFalse(string.IsNullOrEmpty(darkTheme) || string.IsNullOrEmpty(lightTheme),
+            "The <html> element should declare its dark and light theme names (bit-theme-dark / bit-theme-light).");
+        var requestedTheme = initialTheme == darkTheme ? "light" : "dark";
+        var expectedThemeName = initialTheme == darkTheme ? lightTheme : darkTheme;
 
         const string finalAnswer = "Done, I have switched the theme for you.";
 
@@ -87,7 +95,7 @@ public partial class AiChatPanelThemeUITests : AiChatPanelTestBase
         await SendChatMessage(panel, "please switch the app theme", chatClient);
 
         // The payoff: the browser's own theme attribute, changed by nothing but the chatbot.
-        await Expect(htmlElement).ToHaveAttributeAsync("bit-theme", requestedTheme);
+        await Expect(htmlElement).ToHaveAttributeAsync("bit-theme", expectedThemeName!);
 
         // The answer written after the tool ran reaches the panel, which proves the second half of the round trip -
         // the tool result went back to the model and its prose was streamed to the user.
@@ -96,8 +104,10 @@ public partial class AiChatPanelThemeUITests : AiChatPanelTestBase
         // The tool really executed on the server rather than the theme changing by some other route: its return
         // value was fed back into the conversation. SetApplicationTheme returns "Theme changed to X successfully"
         // only when the client reported an actual change.
-        // Every conversation is searched rather than the last one, because the hub also asks for follow-up
-        // suggestions (a separate agent, a separate conversation) and which of the two lands last is a race.
+        // The tool result lands in the post-tool-call conversation (the second of the turn's two model calls), so all
+        // conversations are searched rather than assuming which one holds it. Follow-up suggestions play no part here:
+        // they are written by the model itself through the SendFollowUpSuggestions tool (see
+        // AiChatPanelAnswerRoutingTests' header), and this scripted model never calls it.
         var toolResults = chatClient.ReceivedConversations
             .SelectMany(conversation => conversation)
             .SelectMany(message => message.Contents)

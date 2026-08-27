@@ -965,9 +965,6 @@
     <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>کد تایید:</value>
   </data>
-    <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>لطفا کد تایید را وارد کنید.</value>
-  </data>
     <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>تأیید</value>
   </data>
@@ -1170,9 +1167,6 @@
     <value>متن جایگزین</value>
   </data>
     <!--#endif -->
-    <data name="Page" xml:space="preserve">
-    <value>برگه</value>
-  </data>
     <data name="Of" xml:space="preserve">
     <value>از</value>
   </data>
@@ -1182,9 +1176,6 @@
     <!--#if (module == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
     <value>پنل ادمین</value>
-  </data>
-    <data name="PaginatorSummary" xml:space="preserve">
-    <value>{0} آیتم</value>
   </data>
     <data name="Last30DaysProductCount" xml:space="preserve">
     <value>تعداد محصولات ۳۰ روز گذشته</value>
@@ -1222,9 +1213,6 @@
     <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>تعداد دسته های دارای محصول</value>
   </data>
-    <data name="SearchOnName" xml:space="preserve">
-    <value>جستجو در نام</value>
-  </data>
     <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>چارت تعداد محصولات در هر دسته</value>
   </data>
@@ -1254,9 +1242,6 @@
   </data>
     <data name="DeleteProduct" xml:space="preserve">
     <value>حذف محصول</value>
-  </data>
-    <data name="DefaultColorPicker" xml:space="preserve">
-    <value>انتخاب کننده رنگ پیش فرض</value>
   </data>
     <data name="EditProduct" xml:space="preserve">
     <value>ویرایش محصول {0}</value>
@@ -1344,9 +1329,6 @@
     <data name="Send" xml:space="preserve">
     <value>ارسال</value>
   </data>
-    <data name="AccentColorApply" xml:space="preserve">
-    <value>اعمال رنگ تأکیدی {0}</value>
-  </data>
     <data name="Canceled" xml:space="preserve">
     <value>لغو شده</value>
   </data>
@@ -1364,7 +1346,7 @@
     <value>تبدیل گفتار به متن</value>
   </data>
     <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
-    <value>دسترسی به میکروفن مسدود است. برای این سایت اجازه دهید تا بتوانید گفتار خود را وارد کنید.</value>
+    <value>دسترسی به میکروفن مسدود است. در تنظیمات اجازه دهید تا بتوانید گفتار خود را وارد کنید.</value>
   </data>
     <data name="AiChatPanelDictationStopped" xml:space="preserve">
     <value>تبدیل گفتار به متن متوقف شد: {0}</value>
@@ -1414,19 +1396,15 @@
     <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>چگونه میتوانم نسخه PWA برنامه رو نصب کنم؟</value>
   </data>
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
     <!--#if (module == "Admin") -->
-    <data name="AiChatPanelPrompt3" xml:space="preserve">
     <value>کجا میتونم گزارشات محصولات رو ببینم؟</value>
-  </data>
     <!--#elif (module == "Sales") -->
-    <data name="AiChatPanelPrompt3" xml:space="preserve">
     <value>دنبال ماشین SUV مرسدس بنز با ۷۰هزار دلار بودجه میگردم!</value>
-  </data>
     <!--#else -->
-    <data name="AiChatPanelPrompt3" xml:space="preserve">
     <value>یه سری فیدبک دارم که بگم!</value>
-  </data>
     <!--#endif -->
+  </data>
     <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>پیامی را وارد کنید...</value>
   </data>
@@ -1463,9 +1441,6 @@
     <value>من تو تماشای تبلیغات درون برنامه‌ای مشکل دارم</value>
   </data>
     <!--#endif -->
-    <data name="PleaseWait" xml:space="preserve">
-    <value>لطفا صبر کنید</value>
-  </data>
     <data name="Management" xml:space="preserve">
     <value>مدیریت</value>
   </data>
@@ -1641,6 +1616,9 @@
   </data>
     <data name="ImageTooSmall" xml:space="preserve">
     <value>تصویر خیلی کوچک است. حداقل ابعاد مورد نیاز {0}x{1} است، اما ابعاد فعلی {2}x{3} است.</value>
+  </data>
+  <data name="UnsupportedImageFormat" xml:space="preserve">
+    <value>فایل بارگذاری‌شده یک تصویر پشتیبانی‌شده نیست.</value>
   </data>
     <data name="ImageNotCarError" xml:space="preserve">
     <value>تصویر ارائه شده حاوی ماشین نیست.</value>

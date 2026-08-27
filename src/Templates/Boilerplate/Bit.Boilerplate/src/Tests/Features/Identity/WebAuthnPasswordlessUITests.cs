@@ -149,7 +149,8 @@ public partial class WebAuthnPasswordlessUITests : AppPageTest
     {
         await MagicLinkSignInUtils.RequestMagicLinkAndOtp(page, appBaseUrl, email);
 
-        // A brand-new account's confirmation e-mail carries the OTP; we only need the code, not the (127.0.0.1-based) link.
+        // A brand-new account's confirmation e-mail carries the OTP; we only need the code, not the link (which this
+        // test's ServerAddress override makes localhost-based rather than the default 127.0.0.1).
         var (_, otpCode) = await MagicLinkSignInUtils.ReadConfirmationEmail(server, email, TestContext.CancellationToken);
         await BitOtpInputUtils.FillOtpInputs(page, otpCode);
 

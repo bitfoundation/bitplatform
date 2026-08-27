@@ -1,5 +1,10 @@
 name: Boilerplate CI
 
+#if (IsInsideProjectTemplate == true)
+# [mirror] .azure-devops/workflows/ci.yml
+# Only one of the two pipeline directories ships to a generated project, so this note is template-only.
+#endif
+
 # https://bitplatform.dev/templates/dev-ops
 
 on:
