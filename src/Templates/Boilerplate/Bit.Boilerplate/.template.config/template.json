@@ -760,6 +760,7 @@
                         "src/Client/Boilerplate.Client.Maui/Platforms/iOS/Extensions/NSDataExtensions.cs",
                         "src/Client/Boilerplate.Client.Maui/Platforms/iOS/Services/AppUNUserNotificationCenterDelegate.cs",
                         "src/Client/Boilerplate.Client.Maui/Platforms/iOS/Services/iOSPushNotificationService.cs",
+                        "src/Client/Boilerplate.Client.Web/AdsPushVapidOptions.cs",
                         "src/Client/Boilerplate.Client.Web/Infrastructure/Services/WebPushNotificationService.cs",
                         "src/Client/Boilerplate.Client.Windows/Infrastructure/Services/WindowsPushNotificationService.cs",
                         "src/Server/Boilerplate.Server.Api/Features/PushNotification/**",
@@ -783,6 +784,7 @@
                     "condition": "(appInsights != true)",
                     "exclude": [
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AppInsightsJsSdkService.cs",
+                        "src/Shared/ApplicationInsightsOptions.cs",
                         "src/Tests/Features/Diagnostics/AppInsightsReadinessTests.cs"
                     ]
                 },
