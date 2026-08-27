@@ -718,9 +718,9 @@ private BitCallout callout2;";
 <BitCallout AutoClose NoOverlay MinWidth=""12rem"" @ref=""contextCallout"">
     <div class=""callout-content"">
         <BitStack Gap=""0.25rem"">
-            <BitButton Variant=""BitVariant.Text"" OnClick=""@(() => contextAction = ""Cut"")"">Cut</BitButton>
-            <BitButton Variant=""BitVariant.Text"" OnClick=""@(() => contextAction = ""Copied"")"">Copy</BitButton>
-            <BitButton Variant=""BitVariant.Text"" OnClick=""@(() => contextAction = ""Pasted"")"">Paste</BitButton>
+            <BitButton FullWidth Variant=""BitVariant.Text"" OnClick=""@(() => contextAction = ""Cut"")"">Cut</BitButton>
+            <BitButton FullWidth Variant=""BitVariant.Text"" OnClick=""@(() => contextAction = ""Copied"")"">Copy</BitButton>
+            <BitButton FullWidth Variant=""BitVariant.Text"" OnClick=""@(() => contextAction = ""Pasted"")"">Paste</BitButton>
         </BitStack>
     </div>
 </BitCallout>
