@@ -2,81 +2,457 @@
 
 <PageOutlet Url="components/collapse"
             Title="Collapse"
-            Description="The Collapse component allows the user to show and hide sections of related content on a page." />
+            Description="The Collapse component shows and hides a section of related content with an animated transition, leaving the trigger that toggles it to the page around it." />
 
 <DemoPage Name="Collapse"
-          Description="The Collapse component allows the user to show and hide sections of related content on a page."
+          SecondaryNames="@(["Collapsible", "Disclosure"])"
+          Description="Collapse is the container that opens and closes a section of a page. It renders no trigger of its own, so anything can drive it - a button, a switch, a link, a piece of state - and one trigger can drive several sections at once. It animates the real size of its content rather than a guessed maximum, downwards or sideways, all the way or down to a peek that keeps the first few lines readable. The pace of the transition - one for each direction if they differ - the padding, the background and the fade are all parameters, the start and the end of each transition are reported back, the closed content is taken out of the tab order and the accessibility tree, and it can still be reached by find-in-page. Content that is expensive to build can be kept out of the DOM until the section is opened, or dropped again once it is closed."
           Parameters="componentParameters"
+          PublicMembers="componentPublicMembers"
+          SubEnums="componentSubEnums"
           SubClasses="componentSubClasses"
           GitHubUrl="Surfaces/Collapse/BitCollapse.razor"
           GitHubDemoUrl="Surfaces/Collapse/BitCollapseDemo.razor">
-    <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-        <div>
-            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="expanded" />
-            <BitCollapse Expanded="expanded">
-                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                shaped into meaning, and the emotions ready to resonate with every reader.
-                <br />
-                In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-                each word has the power to transform into something extraordinary. Here lies the start of something new-an
-                opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
-                idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
-                begins here, in this quiet moment where everything is possible.
-            </BitCollapse>
-        </div>
-    </DemoExample>
+    <NotesTemplate>
+        <BitText>
+            The expand and collapse transition is motion, so it honors the reduced motion preference of the OS/browser
+            (prefers-reduced-motion) by finishing at once instead of animating. If nothing on this page is animating,
+            either turn the reduce motion setting off, use the ForceAnimation parameter, or turn on the ForceAnimation
+            toggle at the top of this page. An explicit <b>Duration</b> - or <b>ExpandDuration</b> / <b>CollapseDuration</b>,
+            or <b>Delay</b> - retunes the pace but is collapsed by the preference all the same: ForceAnimation is the one
+            thing that opts out of it.
+        </BitText>
+    </NotesTemplate>
 
-    <DemoExample Title="Style & Class" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-        <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
-        <br /><br />
-        <div>
-            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="expandedStyle" />
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                <b>Expanded</b> is the whole of the basic component: while it is true the content is on the page at its
+                natural size, and while it is false the section is closed. The collapse draws no header and no chevron,
+                so whatever flips that value - here a toggle button - lives on the page beside it, which is what lets a
+                single trigger open several sections at once or several triggers open the same one.
+            </div>
+            <br />
+            <div>
+                The size is animated by the content itself rather than by a maximum height set in advance, so a section
+                whose content grows, wraps or loads late still opens exactly as far as it needs to.
+            </div>
             <br /><br />
-            <BitCollapse Expanded="expandedStyle" Styles="@(new() { Expanded = "padding:10px;background-color:#333;border: 1px solid #ff0000;" })">
-                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                shaped into meaning, and the emotions ready to resonate with every reader.
-                <br />
-                In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-                each word has the power to transform into something extraordinary. Here lies the start of something new-an
-                opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
-                idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
-                begins here, in this quiet moment where everything is possible.
-            </BitCollapse>
-            <br /><br /><br /><br />
-            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="expandedClass" />
-            <br /><br />
-            <BitCollapse Expanded="expandedClass" Classes="@(new() { Expanded = "custom-expanded" })">
-                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                shaped into meaning, and the emotions ready to resonate with every reader.
-                <br />
-                In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-                each word has the power to transform into something extraordinary. Here lies the start of something new-an
-                opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
-                idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
-                begins here, in this quiet moment where everything is possible.
-            </BitCollapse>
-        </div>
-    </DemoExample>
+            <div>
+                <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="expanded" />
+                <BitCollapse Expanded="expanded">
+                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+                    shaped into meaning, and the emotions ready to resonate with every reader.
+                    <br />
+                    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+                    each word has the power to transform into something extraordinary. Here lies the start of something new-an
+                    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+                    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+                    begins here, in this quiet moment where everything is possible.
+                </BitCollapse>
+            </div>
+        </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-        <div>Use BitCollapse in right-to-left (RTL).</div><br />
-        <br /><br />
-        <div>
-            <BitToggleButton OnText="بستن" OffText="باز کردن" @bind-IsChecked="expandedRtl" />
-            <BitCollapse Expanded="expandedRtl" Dir="BitDir.Rtl">
-                لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
-                چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است
-                و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+        <DemoExample Title="Binding & control" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                There are three ways to drive a collapse, and they can be mixed. <b>@@bind-Expanded</b> keeps the state on
+                the page and lets the component write back to it; <b>DefaultExpanded</b> hands the state to the component
+                for a section that only has to remember whether it is open; and the <b>ToggleAsync</b>,
+                <b>ExpandAsync</b> and <b>CollapseAsync</b> methods drive it from code through a component reference.
+                <b>OnChange</b> reports the changes the component itself makes, which is every change but the ones the
+                page makes by assigning to <b>Expanded</b>.
+            </div>
+            <br />
+            <div>
+                A disabled collapse (<b>IsEnabled="false"</b>) keeps whatever state it is in: the three methods above
+                turn into no-ops rather than toggling it.
+            </div>
+            <br /><br />
+            <div>Two-way binding</div>
+            <br />
+            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="boundExpanded" />
+            <BitCollapse @bind-Expanded="boundExpanded">
+                The button above and the collapse share one value, so either of them can change it and both of them see it.
             </BitCollapse>
-        </div>
-    </DemoExample>
+            <br />
+            <div>The bound value is currently <b>@boundExpanded</b>.</div>
+            <br /><br /><br />
+            <div>Uncontrolled with DefaultExpanded</div>
+            <br />
+            <BitButton OnClick="() => defaultCollapseRef?.ToggleAsync()">Toggle</BitButton>
+            <BitCollapse @ref="defaultCollapseRef" DefaultExpanded OnChange="HandleDefaultChange">
+                This section starts open because DefaultExpanded is set, and nothing on the page holds its state.
+            </BitCollapse>
+            <br />
+            <div>@defaultChangeLog</div>
+            <br /><br /><br />
+            <div>Driving it from code</div>
+            <br />
+            <div style="display:flex;gap:0.5rem">
+                <BitButton OnClick="() => imperativeCollapseRef?.ExpandAsync()">Expand</BitButton>
+                <BitButton OnClick="() => imperativeCollapseRef?.CollapseAsync()">Collapse</BitButton>
+                <BitButton OnClick="() => imperativeCollapseRef?.ToggleAsync()">Toggle</BitButton>
+            </div>
+            <BitCollapse @ref="imperativeCollapseRef">
+                ExpandAsync, CollapseAsync and ToggleAsync go through the same path a bound value does, so the change is
+                reported once through both ExpandedChanged and OnChange.
+            </BitCollapse>
+        </DemoExample>
+
+        <DemoExample Title="Horizontal" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                <b>Horizontal</b> turns the transition a quarter, so the section opens sideways along the inline axis
+                instead of downwards. A horizontal collapse takes the width of its content rather than the full width of
+                its container, and it opens from the start edge, which follows the direction of the page - so the same
+                markup opens to the right in a left-to-right page and to the left in a right-to-left one.
+            </div>
+            <br />
+            <div>
+                This is what a collapsing sidebar, a search field that grows out of its icon, or a row of actions that
+                slides out of a toolbar is made of.
+            </div>
+            <br /><br />
+            <div style="display:flex;align-items:center;gap:1rem">
+                <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="horizontalExpanded" />
+                <BitCollapse Horizontal Expanded="horizontalExpanded" Background="BitColorKind.Secondary">
+                    <div style="white-space:nowrap">This panel opens sideways.</div>
+                </BitCollapse>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Collapsed size" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                <b>CollapsedSize</b> is the size the section keeps while it is closed, as any CSS length. Instead of
+                closing all the way it leaves a peek of the content on the page, which is exactly what a "show more"
+                clamp is: the first few lines stay readable and the rest of them animate in.
+            </div>
+            <br />
+            <div>
+                Because a peek is still on the screen, a collapse that keeps one never fades out, is neither hidden from
+                assistive technology nor taken out of the tab order while it is closed, and ignores the rendering
+                parameters below - there would be nothing left in the peek to read, and nothing left to search. The
+                value is the size of the closed section, padding included, and on a <b>Horizontal</b> collapse it is a
+                width rather than a height.
+            </div>
+            <br /><br />
+            <BitCollapse Expanded="peekExpanded" CollapsedSize="4.5rem">
+                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+                to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+                vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+                shaped into meaning, and the emotions ready to resonate with every reader.
+                <br />
+                In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+                each word has the power to transform into something extraordinary. Here lies the start of something new-an
+                opportunity to craft, inspire, and create.
+            </BitCollapse>
+            <BitButton Variant="BitVariant.Text" OnClick="() => peekExpanded = !peekExpanded">
+                @(peekExpanded ? "Show less" : "Show more")
+            </BitButton>
+        </DemoExample>
+
+        <DemoExample Title="Transition" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>Duration</b>, <b>Delay</b> and <b>Easing</b> retune the transition: milliseconds for the first two,
+                any CSS timing function for the third. Leaving them unset keeps the pace of the motion theme. Either way
+                the transition still collapses to nothing when the reader asks for reduced motion: the pace is a matter
+                of design and the preference is not, so <b>ForceAnimation</b> is what a collapse whose motion carries
+                meaning opts out with.
+            </div>
+            <br />
+            <div>
+                <b>ExpandDuration</b> and <b>CollapseDuration</b> override <b>Duration</b> in one direction each, for a
+                section that opens deliberately and gets out of the way quickly - or the other way around. Whichever of
+                them applies is also what the callbacks and the deferred behaviors below wait for.
+            </div>
+            <br />
+            <div>
+                <b>NoFade</b> takes the opacity out of the transition and leaves the size to do the work on its own, and
+                <b>NoAnimation</b> takes the transition out altogether, so the section appears and disappears at once.
+            </div>
+            <br /><br />
+            <div>Slow, with a delay and a custom easing</div>
+            <br />
+            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="transitionExpanded" />
+            <BitCollapse Expanded="transitionExpanded" Duration="1000" Delay="200" Easing="cubic-bezier(0.68, -0.55, 0.27, 1.55)">
+                A thousand milliseconds after a two hundred millisecond wait, on an easing that overshoots at both ends.
+            </BitCollapse>
+            <br /><br /><br />
+            <div>A pace for each direction</div>
+            <br />
+            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="paceExpanded" />
+            <BitCollapse Expanded="paceExpanded" ExpandDuration="900" CollapseDuration="200">
+                Nine hundred milliseconds to open, two hundred to close.
+            </BitCollapse>
+            <br /><br /><br />
+            <div>NoFade</div>
+            <br />
+            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="noFadeExpanded" />
+            <BitCollapse Expanded="noFadeExpanded" NoFade Duration="800">
+                The size opens and closes this section; the content never changes its opacity.
+            </BitCollapse>
+            <br /><br /><br />
+            <div>NoAnimation</div>
+            <br />
+            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="noAnimationExpanded" />
+            <BitCollapse Expanded="noAnimationExpanded" NoAnimation>
+                There is no transition here at all, which is what a section that toggles as part of a larger change wants.
+            </BitCollapse>
+        </DemoExample>
+
+        <DemoExample Title="Transition events" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                Four callbacks bracket a change of state. <b>OnExpanding</b> and <b>OnCollapsing</b> fire as the
+                transition starts - where a page loads what the section is about to show, or saves what it is about to
+                put away - and <b>OnExpanded</b> and <b>OnCollapsed</b> fire at the <i>end</i> of it, the moment the
+                content has reached its full size or finished leaving the screen, which is where a page scrolls the
+                opened section into view, measures it, moves focus into it, or lets go of what the closed one was
+                holding. All four report every change, whoever made it; <b>OnChange</b>, in contrast, lands the instant
+                the state flips and only for the changes the component itself makes.
+            </div>
+            <br />
+            <div>
+                The end of the transition is a clock rather than an event from the browser, and it is timed off the
+                duration that applies to the direction being played - so a collapse whose pace is retuned in CSS rather
+                than through the parameters is better off setting them to the same value, and a reader who has asked for
+                reduced motion, whose transition finished at once, still waits it out. A collapse with <b>NoAnimation</b>
+                reports the start and the end together, and one that simply starts open or closed reports nothing at all:
+                the state it begins in is not something it transitioned into.
+            </div>
+            <br /><br />
+            <BitButton OnClick="() => eventsCollapseRef?.ToggleAsync()">@(eventsExpanded ? "Collapse" : "Expand")</BitButton>
+            <BitCollapse @ref="eventsCollapseRef"
+                         @bind-Expanded="eventsExpanded"
+                         Duration="600"
+                         OnChange="HandleEventsChange"
+                         OnExpanding="HandleEventsExpanding"
+                         OnCollapsing="HandleEventsCollapsing"
+                         OnExpanded="HandleEventsExpanded"
+                         OnCollapsed="HandleEventsCollapsed">
+                OnChange and the -ing callback land as soon as the button is pressed; the -ed one arrives six hundred
+                milliseconds later, when this section has stopped moving.
+            </BitCollapse>
+            <br />
+            <div>
+                @foreach (var entry in eventsLog)
+                {
+                    <div>@entry</div>
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Padding & background" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                The collapse puts padding around its content so text never meets the edges of the section, and paints the
+                primary background so nothing shows through it. <b>NoPadding</b> removes the first, which is what content
+                that draws its own insets - a list, a card, an image that meets the container edge to edge - wants, and
+                <b>Background</b> changes the second, with <b>BitColorKind.Transparent</b> letting the surface underneath
+                through.
+            </div>
+            <br /><br />
+            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="surfaceExpanded" />
+            <br /><br />
+            <div>Default</div>
+            <BitCollapse Expanded="surfaceExpanded">The padding and the primary background of the component.</BitCollapse>
+            <br />
+            <div>Secondary background</div>
+            <BitCollapse Expanded="surfaceExpanded" Background="BitColorKind.Secondary">A background of the secondary color kind.</BitCollapse>
+            <br />
+            <div>Transparent background, no padding</div>
+            <BitCollapse Expanded="surfaceExpanded" Background="BitColorKind.Transparent" NoPadding>
+                <BitMessage Color="BitColor.Info">Content that carries its own surface and its own insets.</BitMessage>
+            </BitCollapse>
+        </DemoExample>
+
+        <DemoExample Title="Overflow" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                The collapse clips whatever reaches past the edges of its content, which is what makes the transition
+                read as a section opening rather than as content sliding over the page. Once the section has finished
+                opening there is nothing left to clip and the clipping starts costing instead: a focus ring, a shadow,
+                or a menu dropping out of a control inside it is cut off at the edge of the box.
+            </div>
+            <br />
+            <div>
+                <b>NoClip</b> takes the clipping off at the end of the expand transition and puts it back the moment the
+                collapse starts closing, so the animation is unchanged and only the section that has stopped moving
+                stops cutting things off. Like the callbacks above, it is timed off the duration of the transition.
+            </div>
+            <br /><br />
+            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="clipExpanded" />
+            <br /><br />
+            <div>Default</div>
+            <BitCollapse Expanded="clipExpanded" NoPadding Duration="600">
+                <div class="clip-card">The glow around this card is cut off at the edge of the collapse.</div>
+            </BitCollapse>
+            <br /><br />
+            <div>NoClip</div>
+            <BitCollapse Expanded="clipExpanded" NoPadding NoClip Duration="600">
+                <div class="clip-card">The same glow is drawn in full once the section has finished opening.</div>
+            </BitCollapse>
+            <br />
+        </DemoExample>
+
+        <DemoExample Title="Rendering" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                By default the content of a collapse is rendered whether the section is open or not, which keeps whatever
+                it holds - the position of a scroll, the text in a field, the frame of a video - across a close and a
+                reopen. Two parameters trade that away for the work it costs.
+            </div>
+            <br />
+            <div>
+                <b>LazyRender</b> keeps the content out of the DOM until the section is expanded for the first time, so
+                nothing inside a page full of closed sections is built, queried or measured until it is opened.
+                <b>UnmountOnCollapse</b> takes it back out once the section has closed - after the transition has had
+                time to finish, so the close still animates - and builds it again from scratch on the next open, which
+                means anything it was holding starts over. Neither applies to a collapse that keeps a
+                <b>CollapsedSize</b> or that is searchable through <b>HiddenUntilFound</b>: there has to be something
+                left to show, or something left to find.
+            </div>
+            <br /><br />
+            <div>LazyRender</div>
+            <br />
+            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="lazyExpanded" />
+            <BitCollapse LazyRender Expanded="lazyExpanded" OnExpanded="() => lazyOpenCount++">
+                <div>This content was built the first time the section was opened, and has stayed since; the section has been opened @lazyOpenCount time(s).</div>
+            </BitCollapse>
+            <br /><br /><br />
+            <div>UnmountOnCollapse</div>
+            <br />
+            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="unmountExpanded" />
+            <BitCollapse UnmountOnCollapse Expanded="unmountExpanded">
+                <BitTextField Label="Type something, then close and reopen" />
+            </BitCollapse>
+        </DemoExample>
+
+        <DemoExample Title="Find in page" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                Text a reader cannot see is text the browser will not find, which is what makes a page of collapsed
+                sections frustrating to search. <b>HiddenUntilFound</b> hands the closed content to the browser as
+                <b>hidden="until-found"</b> instead: find-in-page and a navigation to a fragment inside the section
+                reach into it, and the component answers by opening the section around the match and reporting the
+                change through <b>ExpandedChanged</b> and <b>OnChange</b>, exactly as if the trigger had been pressed.
+            </div>
+            <br />
+            <div>
+                The attribute is only applied once the close has finished, so the collapse still animates shut, and the
+                content has to stay in the DOM to be found at all - which is why such a collapse ignores
+                <b>LazyRender</b> and <b>UnmountOnCollapse</b>. A browser that does not know the value simply hides the
+                closed content, which is what a closed section looks like anyway; only the searching is lost.
+            </div>
+            <br />
+            <div>
+                Opening the section is the whole point, so a collapse that cannot open is not offered to
+                find-in-page: a disabled one never is, and one whose <b>Expanded</b> is set one way, with no
+                <b>@@bind-Expanded</b> or <b>ExpandedChanged</b> to write back to, gives up on it the first time a
+                match asks it to open and it cannot. Either way the content goes back to being hidden the
+                ordinary way, out of the tab order and out of the accessibility tree.
+            </div>
+            <br /><br />
+            <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="findExpanded" />
+            <BitCollapse HiddenUntilFound @bind-Expanded="findExpanded">
+                The passphrase kept in this section is <b>marmalade skies</b>. Close the section, press Ctrl+F, search
+                for it, and watch the browser open the collapse around the match.
+            </BitCollapse>
+        </DemoExample>
+
+        <DemoExample Title="Accessibility" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>
+                A closed collapse is taken out of the tab order and out of the accessibility tree, so a link or a field
+                inside it can never be reached by a keyboard or announced by a screen reader while the section is shut.
+                What the component cannot do on its own is wire up the trigger, because the trigger is not part of it:
+                a disclosure is a button carrying <b>aria-expanded</b> and <b>aria-controls</b> beside the section it opens.
+            </div>
+            <br />
+            <div>
+                <b>ContentId</b> is the id of the content element - the id of the root with <b>-content</b> after it -
+                which is what <b>aria-controls</b> has to point at, and it can be read off a component reference for a
+                collapse that was left to generate its own id.
+                <b>LabelledBy</b> names the region from an element on the page - the trigger itself, or the heading
+                above it - which is what turns the section into a landmark a screen reader can jump to, and
+                <b>AriaLabel</b> names it from a string where no such element exists.
+                <b>Role</b> overrides the default <b>region</b> role; set it to an empty string for content that already
+                carries semantics of its own.
+            </div>
+            <br />
+            <div>
+                The open section is itself a tab stop, so a reader tabbing past the trigger lands on the region rather
+                than in the middle of its content; <b>TabIndex</b> moves where that stop sits, and <b>FocusAsync</b>
+                puts the focus there from code - paired with <b>OnExpanded</b>, at the moment the section has finished
+                opening.
+            </div>
+            <br /><br />
+            <BitButton Id="a11y-trigger"
+                       aria-controls="a11y-collapse-content"
+                       aria-expanded="@(a11yExpanded ? "true" : "false")"
+                       OnClick="() => a11yExpanded = !a11yExpanded">
+                @(a11yExpanded ? "Hide shipping details" : "Show shipping details")
+            </BitButton>
+            <BitCollapse Id="a11y-collapse" Expanded="a11yExpanded" LabelledBy="a11y-trigger">
+                Orders placed before 2 pm ship the same day. <BitLink Href="/components/collapse">Read the full policy</BitLink>.
+            </BitCollapse>
+            <br /><br /><br />
+            <div>Moving the focus into the section</div>
+            <br />
+            <BitButton OnClick="() => focusCollapseRef?.ExpandAsync()">Open and focus</BitButton>
+            <BitCollapse @ref="focusCollapseRef" @bind-Expanded="focusExpanded" OnExpanded="HandleFocusExpanded">
+                The focus ring around this section was put here by FocusAsync at the end of the expand transition, so
+                the reader carries on inside the section rather than back at the button.
+            </BitCollapse>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div>
+                Empower customization by overriding default styles and classes, allowing tailored design modifications to
+                suit specific UI requirements. <b>Style</b> and <b>Class</b> land on the root element, while <b>Styles</b>
+                and <b>Classes</b> reach each part of the component separately: <b>Root</b>, the <b>Expanded</b> and
+                <b>Collapsed</b> states of the root, the <b>Content</b> region that fades and clips, and the <b>Wrapper</b> that
+                carries the padding.
+            </div>
+            <br /><br />
+            <div>
+                <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="expandedStyle" />
+                <br /><br />
+                <BitCollapse Expanded="expandedStyle" Styles="@(new() { Expanded = "padding:10px;background-color:#333;border: 1px solid #ff0000;" })">
+                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+                    vibrant narratives of tomorrow.
+                </BitCollapse>
+                <br /><br /><br /><br />
+                <BitToggleButton OnText="Collapse" OffText="Expand" @bind-IsChecked="expandedClass" />
+                <br /><br />
+                <BitCollapse Expanded="expandedClass" Classes="@(new() { Expanded = "custom-expanded", Wrapper = "custom-wrapper" })">
+                    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+                    each word has the power to transform into something extraordinary. Here lies the start of something new-an
+                    opportunity to craft, inspire, and create.
+                </BitCollapse>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+            <div>
+                Use BitCollapse in right-to-left (RTL). A vertical collapse is unchanged by the direction of the page,
+                while a horizontal one opens from the start edge, which in an RTL page is the right one.
+            </div>
+            <br /><br />
+            <div>
+                <BitToggleButton OnText="بستن" OffText="باز کردن" @bind-IsChecked="expandedRtl" />
+                <BitCollapse Expanded="expandedRtl" Dir="BitDir.Rtl">
+                    لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
+                    چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است
+                    و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+                </BitCollapse>
+                <br /><br /><br />
+                <div style="display:flex;align-items:center;gap:1rem" dir="rtl">
+                    <BitToggleButton OnText="بستن" OffText="باز کردن" @bind-IsChecked="expandedRtlHorizontal" />
+                    <BitCollapse Horizontal Expanded="expandedRtlHorizontal" Dir="BitDir.Rtl" Background="BitColorKind.Secondary">
+                        <div style="white-space:nowrap">این بخش به سمت راست باز می شود.</div>
+                    </BitCollapse>
+                </div>
+            </div>
+        </DemoExample>
+    </Examples>
 </DemoPage>
