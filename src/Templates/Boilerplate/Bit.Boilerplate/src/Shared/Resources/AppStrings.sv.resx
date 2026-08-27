@@ -1617,6 +1617,9 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="ImageTooSmall" xml:space="preserve">
     <value>Bilden är för liten. Minsta tillåtna dimensioner är {0}x{1}, men nuvarande dimensioner är {2}x{3}.</value>
   </data>
+  <data name="UnsupportedImageFormat" xml:space="preserve">
+    <value>Den uppladdade filen är inte en bild som stöds.</value>
+  </data>
   <data name="ImageNotCarError" xml:space="preserve">
     <value>Den medföljande bilden innehåller inte någon bil.</value>
   </data>

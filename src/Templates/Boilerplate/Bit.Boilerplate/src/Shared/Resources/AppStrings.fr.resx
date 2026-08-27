@@ -1617,6 +1617,9 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="ImageTooSmall" xml:space="preserve">
     <value>L'image est trop petite. Dimensions minimales requises : {0}x{1}, mais les dimensions actuelles sont {2}x{3}.</value>
   </data>
+  <data name="UnsupportedImageFormat" xml:space="preserve">
+    <value>Le fichier téléversé n'est pas une image prise en charge.</value>
+  </data>
   <data name="ImageNotCarError" xml:space="preserve">
     <value>L'image fournie ne contient pas de voiture.</value>
   </data>

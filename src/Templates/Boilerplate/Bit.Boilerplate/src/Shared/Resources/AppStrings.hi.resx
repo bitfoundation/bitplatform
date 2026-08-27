@@ -1617,6 +1617,9 @@
   <data name="ImageTooSmall" xml:space="preserve">
     <value>छवि बहुत छोटी है। न्यूनतम आवश्यक आयाम {0}x{1} हैं, लेकिन वर्तमान आयाम {2}x{3} हैं।</value>
   </data>
+  <data name="UnsupportedImageFormat" xml:space="preserve">
+    <value>अपलोड की गई फ़ाइल एक समर्थित छवि नहीं है।</value>
+  </data>
   <data name="ImageNotCarError" xml:space="preserve">
     <value>प्रदान की गई छवि में कार नहीं है।</value>
   </data>

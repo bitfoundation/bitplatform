@@ -1617,6 +1617,9 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="ImageTooSmall" xml:space="preserve">
     <value>Bild ist zu klein. Minimale erforderliche Abmessungen sind {0}x{1}, aber die aktuellen Abmessungen sind {2}x{3}.</value>
   </data>
+  <data name="UnsupportedImageFormat" xml:space="preserve">
+    <value>Die hochgeladene Datei ist kein unterstütztes Bild.</value>
+  </data>
   <data name="ImageNotCarError" xml:space="preserve">
     <value>Das bereitgestellte Bild enthält kein Auto.</value>
   </data>

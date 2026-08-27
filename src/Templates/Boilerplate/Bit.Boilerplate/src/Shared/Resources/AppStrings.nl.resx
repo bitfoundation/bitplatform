@@ -1617,6 +1617,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="ImageTooSmall" xml:space="preserve">
     <value>Afbeelding is te klein. Minimale vereiste afmetingen zijn {0}x{1}, maar de huidige afmetingen zijn {2}x{3}.</value>
   </data>
+  <data name="UnsupportedImageFormat" xml:space="preserve">
+    <value>Het geüploade bestand is geen ondersteunde afbeelding.</value>
+  </data>
   <data name="ImageNotCarError" xml:space="preserve">
     <value>De opgegeven afbeelding bevat geen auto.</value>
   </data>

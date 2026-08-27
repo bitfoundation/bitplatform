@@ -273,7 +273,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                 // An undecodable upload is bad input, not a server fault - a 400 like the endpoint's other rejections,
                 // instead of a 500 with a Critical log per attempt. Only the decode is caught: a failure in the resize
                 // or WebP encode below would be a server problem and stays loud.
-                return BadRequest(Localizer["The uploaded file is not a supported image."].ToString());
+                return BadRequest(Localizer[nameof(AppStrings.UnsupportedImageFormat)].ToString());
             }
             using MagickImage sourceImage = decodedImage;
 

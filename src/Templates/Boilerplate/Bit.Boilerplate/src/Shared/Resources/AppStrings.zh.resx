@@ -1617,6 +1617,9 @@
   <data name="ImageTooSmall" xml:space="preserve">
     <value>图像太小。最小要求尺寸为 {0}x{1}，当前尺寸为 {2}x{3}。</value>
   </data>
+  <data name="UnsupportedImageFormat" xml:space="preserve">
+    <value>上传的文件不是受支持的图像。</value>
+  </data>
   <data name="ImageNotCarError" xml:space="preserve">
     <value>提供的图像不包含汽车。</value>
   </data>
