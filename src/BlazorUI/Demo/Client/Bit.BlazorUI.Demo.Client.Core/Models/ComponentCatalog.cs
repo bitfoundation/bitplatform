@@ -61,6 +61,34 @@ public static class ComponentCatalog
     }
 
     /// <summary>
+    /// The components a term matches, the closest match first: by name, then by the names the
+    /// component is also known by, then by the words that only describe it (see
+    /// <see cref="ComponentCatalogItem.Relevance"/>). Ties are broken towards the shorter name -
+    /// between two components whose names start the same way, the term covers more of the shorter
+    /// one - and then towards nav order, so the result of a term never depends on anything else.
+    /// </summary>
+    /// <param name="term">What the reader typed. A blank term matches everything, in nav order.</param>
+    /// <param name="take">How many to return at most; zero or less returns all of them.</param>
+    public static IReadOnlyList<ComponentCatalogItem> Search(string? term, int take = 0)
+    {
+        if (string.IsNullOrWhiteSpace(term))
+        {
+            return take > 0 ? [.. Items.Take(take)] : Items;
+        }
+
+        var key = term.Trim().ToLowerInvariant();
+
+        var ranked = Items.Select((item, index) => (item, index, score: item.Relevance(key)))
+                          .Where(entry => entry.score != ComponentCatalogItem.NoMatch)
+                          .OrderBy(entry => entry.score)
+                          .ThenBy(entry => entry.item.Name.Length)
+                          .ThenBy(entry => entry.index)
+                          .Select(entry => entry.item);
+
+        return [.. take > 0 ? ranked.Take(take) : ranked];
+    }
+
+    /// <summary>
     /// The entries either side of a page in the flattened catalog, which is what the pager at the
     /// foot of a demo page offers as "previous" and "next". Both ends are null-safe: the first page
     /// has no previous and the last has no next.
@@ -112,6 +140,7 @@ public static class ComponentCatalog
                 Url = navItem.Url!,
                 Category = name,
                 Aliases = navItem.Description,
+                Keywords = navItem.Data?.ToString(),
                 Summary = summary,
                 // Built once here rather than on every keystroke of the gallery's search box: the
                 // catalog is ~110 items and the box filters on every character.

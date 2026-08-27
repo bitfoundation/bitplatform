@@ -15,8 +15,7 @@
               Placeholder="@Placeholder"
               IconName="@BitIconName.Search"
               Class="@($"cmp-search {Class}".Trim())"
-              SuggestItems="_names"
-              SuggestFilterFunction="Matches"
+              SuggestItemsProvider="Suggest"
               SuggestItemTemplate="_suggestTemplate"
               OnSuggestItemSelect="GoToComponent"
               OnSearch="HandleSearch"
@@ -29,7 +28,7 @@
         @<BitStack Gap="0.125rem" AutoHeight Class="cmp-search-item">
             <BitText Typography="BitTypography.Body2" Class="cmp-search-item-name">@name</BitText>
             <BitText Typography="BitTypography.Caption1" Color="BitColor.TertiaryForeground" NoWrap>
-                @ComponentCatalog.Items.FirstOrDefault(i => i.Name == name)?.Category
+                @(_byName.TryGetValue(name, out var item) ? item.Category : null)
             </BitText>
         </BitStack>;
 }
