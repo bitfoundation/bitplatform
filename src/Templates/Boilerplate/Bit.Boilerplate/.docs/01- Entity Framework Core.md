@@ -472,6 +472,7 @@ For comprehensive information about the client-side offline database, including:
 - Downloading the database file for inspection
 
 **See:** [`/src/Client/Boilerplate.Client.Core/Infrastructure/Data/README.md`](/src/Client/Boilerplate.Client.Core/Infrastructure/Data/README.md)
+<!--#endif-->
 
 ---
 

@@ -42,6 +42,27 @@ public partial class GetCurrentDateTimeMcpIntegrationTests
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
+        // Before signing in, pin that /mcp actually REJECTS an anonymous caller. This guard once shipped commented out
+        // (748225ec87, restored by 6cf854a66a), and every other line of this test authenticates first - so without this
+        // probe, removing RequireAuthorization() again would leave the whole suite green while /mcp (whose tools can
+        // drive any user's connected client session) goes anonymous. Asserted on the raw HTTP status rather than
+        // through the MCP client, whose transport wraps/obscures the 401 - and through a bare HttpClient rather than
+        // the DI one, whose handler chain attaches auth and turns the non-success status into an exception.
+        // This exercises Server.Web's mapping (Program.Middlewares.cs); Server.Api's own MapMcp stays mirror-protected.
+        using (var anonymousHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress })
+        {
+            using var anonymousRequest = new HttpRequestMessage(HttpMethod.Post, "mcp");
+            anonymousRequest.Content = new StringContent("""{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}""",
+                System.Text.Encoding.UTF8, "application/json");
+            anonymousRequest.Headers.Accept.ParseAdd("application/json");
+            anonymousRequest.Headers.Accept.ParseAdd("text/event-stream");
+
+            using var anonymousResponse = await anonymousHttpClient.SendAsync(anonymousRequest, TestContext.CancellationToken);
+            Assert.AreEqual(HttpStatusCode.Unauthorized, anonymousResponse.StatusCode,
+                "/mcp must reject an anonymous caller. Its tools can push messages to any connected client session, " +
+                "and this exact guard has already shipped commented out once.");
+        }
+
         // The /mcp endpoint is behind RequireAuthorization(), so sign in with the seeded default account first and reuse
         // the resulting bearer token to authenticate the MCP transport.
         await scope.ServiceProvider.GetRequiredService<AuthManager>().SignIn(new()

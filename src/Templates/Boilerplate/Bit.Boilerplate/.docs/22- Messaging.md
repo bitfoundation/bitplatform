@@ -525,7 +525,7 @@ Each platform has its own implementation:
 
 The project uses **Bit.Butil.Notification** to access the browser's native Notification API.
 
-**Extension Helper**: [`src/Client/Boilerplate.Client.Core/Extensions/NotificationExtensions.cs`](/src/Client/Boilerplate.Client.Core/Extensions/NotificationExtensions.cs)
+**Extension Helper**: [`src/Client/Boilerplate.Client.Core/Infrastructure/Extensions/NotificationExtensions.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Extensions/NotificationExtensions.cs)
 
 ```csharp
 public static async Task<bool> IsNotificationAvailable(this Notification notification)

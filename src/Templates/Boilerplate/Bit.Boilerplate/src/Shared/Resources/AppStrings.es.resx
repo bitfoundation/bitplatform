@@ -965,9 +965,6 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>Código de verificación:</value>
   </data>
-  <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>Ingresa el código de verificación.</value>
-  </data>
   <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>Verificar</value>
   </data>
@@ -1170,9 +1167,6 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <value>Texto alternativo</value>
   </data>
   <!--#endif -->
-    <data name="Page" xml:space="preserve">
-    <value>Página</value>
-  </data>
     <data name="Of" xml:space="preserve">
     <value>de</value>
   </data>
@@ -1182,9 +1176,6 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>Panel de administración</value>
-  </data>
-  <data name="PaginatorSummary" xml:space="preserve">
-    <value>{0} elementos</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>Conteo de productos de los últimos 30 días</value>
@@ -1222,9 +1213,6 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>Categorías con conteo de productos</value>
   </data>
-  <data name="SearchOnName" xml:space="preserve">
-    <value>Buscar por nombre</value>
-  </data>
   <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>Gráfico de conteo de productos por categoría</value>
   </data>
@@ -1254,9 +1242,6 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   </data>
   <data name="DeleteProduct" xml:space="preserve">
     <value>Eliminar producto</value>
-  </data>
-  <data name="DefaultColorPicker" xml:space="preserve">
-    <value>Selector de color predeterminado</value>
   </data>
   <data name="EditProduct" xml:space="preserve">
     <value>Editar producto {0}</value>
@@ -1344,9 +1329,6 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="Send" xml:space="preserve">
     <value>Enviar</value>
   </data>
-  <data name="AccentColorApply" xml:space="preserve">
-    <value>Aplicar el color de acento {0}</value>
-  </data>
   <data name="Canceled" xml:space="preserve">
     <value>Cancelado</value>
   </data>
@@ -1364,7 +1346,7 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <value>Dictado</value>
   </data>
   <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
-    <value>El acceso al micrófono está bloqueado. Permítelo para este sitio para poder dictar.</value>
+    <value>El acceso al micrófono está bloqueado. Permítelo en tu configuración para poder dictar.</value>
   </data>
   <data name="AiChatPanelDictationStopped" xml:space="preserve">
     <value>Dictado detenido: {0}</value>
@@ -1414,19 +1396,15 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>¿Cómo puedo instalar la versión PWA de la app?</value>
   </data>
+  <data name="AiChatPanelPrompt3" xml:space="preserve">
   <!--#if (module == "Admin") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>¡Tengo algunos comentarios que me gustaría compartir!</value>
-  </data>
+  <value>¡Tengo algunos comentarios que me gustaría compartir!</value>
   <!--#elif (module == "Sales") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>¡Tengo algunos comentarios que me gustaría compartir!</value>
-  </data>
+  <value>¡Tengo algunos comentarios que me gustaría compartir!</value>
   <!--#else -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>¡Tengo algunos comentarios que me gustaría compartir!</value>
-  </data>
+  <value>¡Tengo algunos comentarios que me gustaría compartir!</value>
   <!--#endif -->
+  </data>
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>Escribe un mensaje...</value>
   </data>
@@ -1463,9 +1441,6 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <value>Tengo problemas para ver los anuncios en la app.</value>
   </data>
   <!--#endif -->
-  <data name="PleaseWait" xml:space="preserve">
-    <value>Por favor espera</value>
-  </data>
   <data name="Management" xml:space="preserve">
     <value>Gestión</value>
   </data>
@@ -1641,6 +1616,9 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   </data>
   <data name="ImageTooSmall" xml:space="preserve">
     <value>La imagen es demasiado pequeña. Las dimensiones mínimas requeridas son {0}x{1}, pero las dimensiones actuales son {2}x{3}.</value>
+  </data>
+  <data name="UnsupportedImageFormat" xml:space="preserve">
+    <value>El archivo subido no es una imagen compatible.</value>
   </data>
   <data name="ImageNotCarError" xml:space="preserve">
     <value>La imagen proporcionada no contiene un automóvil.</value>

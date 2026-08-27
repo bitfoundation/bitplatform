@@ -12,15 +12,20 @@ You are an expert at scaffolding complete entity implementations for the project
 **MANDATORY for First-Time CRUD Setup**: Before generating any page files (`.razor`, `.razor.cs`, `.razor.scss`), check the project for existing implementations of `<BitDataGrid`.
 
 * **If a `<BitDataGrid` is already present in the project:** Skip this research step and follow the existing project patterns.
-* **If NO `<BitDataGrid` can be found (First CRUD Implementation):** You **MUST** use the `DeepWiki_ask_question` tool with repository `bitfoundation/bitplatform` to retrieve the authoritative CRUD page patterns.
+* **If NO `<BitDataGrid` can be found (First CRUD Implementation):** You **MUST** call the bit BlazorUI MCP tools -
+  `GetBitBlazorUIComponentDocs` for `BitDataGrid`, `BitDialog` and `BitForm`, plus `GetBitBlazorUIComponentsList`
+  when you need to find a component you do not already know the name of - to retrieve the authoritative component
+  APIs before writing any markup. Do **not** use `ask_question` for this: that tool's own description excludes the
+  bit platform libraries, which have dedicated tools on the same server.
 
   There are **two types of CRUD pages** - choose the appropriate one based on the DTO being scaffolded:
-  - **Modal Dialog CRUD** - suited for DTOs with a small number of simple properties. The `bitfoundation/bitplatform` reference sample for this pattern is **Categories**.
-  - **Detailed Page CRUD** - suited for DTOs with many properties, rich text editors, file uploads, or complex forms. The `bitfoundation/bitplatform` reference sample for this pattern is **Products**.
+  - **Modal Dialog CRUD** - suited for DTOs with a small number of simple properties.
+  - **Detailed Page CRUD** - suited for DTOs with many properties, rich text editors, file uploads, or complex forms.
 
   **Before proceeding, ask the user which mode is appropriate** given the current DTO's structure and requirements.
 
-Use the returned patterns as the authoritative reference for all generated Blazor page files in this initial scaffold.
+Use the component documentation returned by those tools as the authoritative reference for all generated Blazor
+page files in this initial scaffold.
 
 ## Instructions
 
@@ -33,7 +38,7 @@ Generate a complete CRUD implementation for an entity including:
 6. **Mapper** (using Mapperly)
 7. **API Controller**
 8. **IAppController Interface** (Strongly-typed HTTP client)
-9. **Resource Strings** (AppStrings.resx)
+9. **Localized Strings** (see the note under *DTO*)
 10. **Data Grid Page**
 11. **Add/Edit Modal or Page**
 12. **PageUrls.cs**, **NavBar.razor** and **MainLayout.razor.items.cs** integration
@@ -47,6 +52,15 @@ Generate a complete CRUD implementation for an entity including:
   - Add appropriate navigation properties
   - Use nullable reference types
   - Add data annotations as needed
+<!--#if (multitenant == true)-->
+  - **Implement `ITenantAware`** unless the entity is deliberately global, or is scoped by something other than the
+    tenant. `ITenantAware` is what makes `AppDbContext.ConfigureTenantAwareEntities` attach the
+    `HasQueryFilter(x => x.TenantId == CurrentTenantId)` row-level filter and stamp `TenantId` on save; an entity
+    that skips it is readable and writable across every tenant. `Product.cs` is the shipped example.
+  - `TodoItem` is the counter-example: it is scoped per **user** through `UserId`, not per tenant, so it correctly
+    does not implement `ITenantAware`. If you take that route, say so explicitly and put the ownership term in
+    every query in the controller - nothing else will add it for you.
+<!--#endif-->
 
 ### Entity Configuration, AppDbContext DbSet and Migration
 - **Location**: `src/Server/Boilerplate.Server.Api/Features/{FeatureName}/`
@@ -58,12 +72,18 @@ Generate a complete CRUD implementation for an entity including:
   - Run: `dotnet ef migrations add {MigrationName} --output-dir Infrastructure/Data/Migrations --verbose` in `Boilerplate.Server.Api` project
 
 ### DTO
-- **Location**: `src/Shared/Boilerplate.Shared/Features/{FeatureName}/`
+- **Location**: `src/Shared/Features/{FeatureName}/`
 - **File**: `{EntityName}Dto.cs`
 - **Requirements**:
   - Use `[DtoResourceType(typeof(AppStrings))]` attribute
   - Add validation attributes: `[Required]`, `[MaxLength]`, `[Display]`
-  - Use `nameof(AppStrings.PropertyName)` for error messages and display names
+  - Use `nameof(AppStrings.PropertyName)` for error messages and display names. **Validation attributes are the
+    one place a new `.resx` key is required**, because `[Display(Name = ...)]` and `[Required(ErrorMessage = ...)]`
+    take compile-time constants - `TodoItemDto.cs` is the shipped shape. **Everywhere else** (page markup,
+    code-behind, controllers) follow `AGENTS.md` section 5 and write the English text through the
+    `IStringLocalizer` indexer, e.g. `Localizer["Category saved."]`; editing `.resx` outside the DTO forces a full
+    restart of a running hot-reload session. Moving those literals into `.resx` is a separate, explicitly-requested
+    pass - see `.github/prompts/resx.prompt.md`.
   - Include `Id`, `Version` properties
   - Add calculated properties if needed (e.g., `ProductsCount`)
   - Add `[JsonSerializable(typeof({DtoName}))]` to `AppJsonContext.cs`
@@ -84,6 +104,7 @@ Generate a complete CRUD implementation for an entity including:
 - **Requirements**:
   - Inherit from `AppControllerBase`
   - Implement the corresponding `IAppController` interface
+  - Add `[ApiVersion(1)]` and `[Route("api/v{v:apiVersion}/[controller]/[action]")]`
   - Add appropriate authorization attributes
   - Use `[EnableQuery]` for GET endpoints with OData support
   - Implement validation in private methods
@@ -91,11 +112,15 @@ Generate a complete CRUD implementation for an entity including:
   - Handle resource not found scenarios using `ResourceNotFoundException`
 
 ### IAppController Interface
-- **Location**: `src/Shared/Boilerplate.Shared/Features/{FeatureName}/`
+- **Location**: `src/Shared/Features/{FeatureName}/`
 - **File**: `I{EntityName}Controller.cs`
 - **Requirements**:
   - Inherit from `IAppController`
-  - Add `[Route("api/[controller]/[action]/")]` attribute
+  - Add `[Route("api/v1/[controller]/[action]/")]` attribute, matching every interface the project already ships.
+    The interface uses the literal `v1`; the **server controller** uses `[ApiVersion(1)]` together with
+    `[Route("api/v{v:apiVersion}/[controller]/[action]")]`. Do not unify the two - the generated typed proxy has
+    no `apiVersion` route value to substitute. (An unversioned route also works, since `AddApiVersioning` sets
+    `AssumeDefaultVersionWhenUnspecified`, but it would be the only one in the project.)
   - Add `[AuthorizedApi]` if authentication required
   - Always use `CancellationToken` parameters
   - The return type should be `Task<T>` or `Task<T>` where T is JSON Serializable type like DTO, int, or List<Dto>
