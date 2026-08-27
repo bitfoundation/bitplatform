@@ -1,6 +1,16 @@
 ﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/color-role-maps.scss";
 
 .bit-dlg {
+    // The color of the action buttons, defaulted to the primary role and re-pointed by the role classes
+    // below. They are declared on the root rather than on the buttons so a Dialog that is given a color
+    // paints the pair of them, the spinner between them and the ring around either, from one place.
+    --bit-dlg-clr: #{$clr-pri};
+    --bit-dlg-clr-txt: #{$clr-pri-text};
+    --bit-dlg-clr-hover: #{$clr-pri-hover};
+    --bit-dlg-clr-active: #{$clr-pri-active};
+    --bit-dlg-clr-focus: #{$clr-pri-focus};
+    --bit-dlg-clr-spn: #{$clr-pri-dark};
     inset: 0;
     width: 100%;
     height: 100%;
@@ -101,8 +111,16 @@
 .bit-dlg-ctn {
     z-index: 1;
     display: flex;
-    max-width: 100%;
-    max-height: 100%;
+    // The six sizing parameters arrive as custom properties on this element, so a Dialog that was given
+    // none of them keeps the shrink-to-fit box it has always had and the ones it was given are the only
+    // declarations that change. The caps default to the area the Dialog is positioned in, which is what
+    // keeps a Dialog with more content than room from growing past the screen.
+    width: var(--bit-dlg-wid, auto);
+    height: var(--bit-dlg-hei, auto);
+    min-width: var(--bit-dlg-mnw, auto);
+    min-height: var(--bit-dlg-mnh, auto);
+    max-width: var(--bit-dlg-mxw, 100%);
+    max-height: var(--bit-dlg-mxh, 100%);
     position: absolute;
     pointer-events: auto;
     flex-direction: column;
@@ -243,9 +261,10 @@
 
         // The Dialog opens with the focus on one of these as often as not - AutoFocusButton puts it on the
         // safe answer of a destructive confirmation - so where the focus is has to be as plain here as it is
-        // on every other control in the library, rather than left to whatever the browser draws.
+        // on every other control in the library, rather than left to whatever the browser draws. The ring
+        // follows the color of the Dialog, so a destructive confirmation is not ringed in the accent.
         &:focus-visible {
-            @include focus-ring;
+            @include focus-ring(var(--bit-dlg-clr-focus));
         }
 
         &:disabled {
@@ -256,20 +275,20 @@
 }
 
 .bit-dlg-okb {
-    color: $clr-pri-text;
-    border-color: $clr-pri;
-    background-color: $clr-pri;
+    color: var(--bit-dlg-clr-txt);
+    border-color: var(--bit-dlg-clr);
+    background-color: var(--bit-dlg-clr);
 
     @media (hover: hover) {
         &:hover:not(:disabled) {
-            border-color: $clr-pri-hover;
-            background-color: $clr-pri-hover;
+            border-color: var(--bit-dlg-clr-hover);
+            background-color: var(--bit-dlg-clr-hover);
         }
     }
 
     &:active:not(:disabled) {
-        border-color: $clr-pri-active;
-        background-color: $clr-pri-active;
+        border-color: var(--bit-dlg-clr-active);
+        background-color: var(--bit-dlg-clr-active);
     }
 }
 
@@ -280,27 +299,41 @@
     border-color: $clr-brd-sec;
     border-width: $siz-spinner-stroke;
     border-style: $shp-border-style;
-    border-top-color: $clr-pri-dark;
+    border-top-color: var(--bit-dlg-clr-spn);
     animation: bit-dlg-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
 }
 
 .bit-dlg-cnb {
-    color: $clr-pri;
-    border-color: $clr-pri;
+    color: var(--bit-dlg-clr);
+    border-color: var(--bit-dlg-clr);
     background-color: transparent;
 
     @media (hover: hover) {
         &:hover:not(:disabled) {
-            color: $clr-pri-text;
-            border-color: $clr-pri-hover;
-            background-color: $clr-pri-hover;
+            color: var(--bit-dlg-clr-txt);
+            border-color: var(--bit-dlg-clr-hover);
+            background-color: var(--bit-dlg-clr-hover);
         }
     }
 
     &:active:not(:disabled) {
-        color: $clr-pri-text;
-        border-color: $clr-pri-active;
-        background-color: $clr-pri-active;
+        color: var(--bit-dlg-clr-txt);
+        border-color: var(--bit-dlg-clr-active);
+        background-color: var(--bit-dlg-clr-active);
+    }
+}
+
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). They sit on
+// the root of the Dialog and only re-point the tokens the two action buttons read, which is what keeps a
+// colored Dialog a Dialog with colored actions rather than a colored surface.
+@each $role, $tokens in $bit-color-roles {
+    .bit-dlg-#{$role} {
+        --bit-dlg-clr: #{role($tokens, main)};
+        --bit-dlg-clr-txt: #{role($tokens, on)};
+        --bit-dlg-clr-hover: #{role($tokens, hover)};
+        --bit-dlg-clr-active: #{role($tokens, active)};
+        --bit-dlg-clr-focus: #{role($tokens, focus)};
+        --bit-dlg-clr-spn: #{role-emphasis($tokens)};
     }
 }
 

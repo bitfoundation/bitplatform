@@ -105,6 +105,15 @@ public partial class BitDialogDemo
         },
         new()
         {
+            Name = "Color",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The general color of the Dialog, which its Ok and Cancel buttons, the Ok spinner and the focus ring of both are painted in. Defaults to Primary.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
+        },
+        new()
+        {
             Name = "DragElementSelector",
             Type = "string?",
             DefaultValue = "null",
@@ -144,6 +153,13 @@ public partial class BitDialogDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Used to customize the header of the Dialog, replacing the Title and Subtitle while keeping the close button beside it."
+        },
+        new()
+        {
+            Name = "Height",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The CSS height of the Dialog surface. A Dialog is as tall as its content by default, and FullHeight and FullSize take precedence over this."
         },
         new()
         {
@@ -196,10 +212,45 @@ public partial class BitDialogDemo
         },
         new()
         {
+            Name = "MaxHeight",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The CSS maximum height of the Dialog surface. Defaults to 100% of the area the Dialog is positioned in, and setting it replaces that default rather than adding to it."
+        },
+        new()
+        {
+            Name = "MaxWidth",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The CSS maximum width of the Dialog surface. Defaults to 100% of the area the Dialog is positioned in, and setting it replaces that default rather than adding to it - min(100%, 32rem) is the whole of a responsive Dialog."
+        },
+        new()
+        {
             Name = "Message",
             Type = "string?",
             DefaultValue = "null",
             Description = "The message to display in the dialog. It also describes the Dialog to a screen reader unless a Subtitle or a SubtitleAriaId takes that job instead."
+        },
+        new()
+        {
+            Name = "MinHeight",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The CSS minimum height of the Dialog surface."
+        },
+        new()
+        {
+            Name = "MinWidth",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The CSS minimum width of the Dialog surface, the floor under a Dialog whose message is a handful of words."
+        },
+        new()
+        {
+            Name = "NoDismissPreventedAnimation",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Turns off the shake the Dialog plays when a dismissal is refused. OnDismissPrevented is raised either way."
         },
         new()
         {
@@ -227,7 +278,16 @@ public partial class BitDialogDemo
             Name = "OnDismiss",
             Type = "EventCallback<MouseEventArgs>",
             DefaultValue = "null",
-            Description = "A callback function for when the the dialog is dismissed (closed). DismissReason names the gesture that ended the showing by the time it runs."
+            Description = "A callback function for when the the dialog is dismissed (closed). It is invoked for every closing the Dialog carries out itself, including a Close or Toggle call, and DismissReason names the gesture that ended the showing by the time it runs."
+        },
+        new()
+        {
+            Name = "OnDismissing",
+            Type = "EventCallback<BitDialogDismissArgs>",
+            DefaultValue = "null",
+            Description = "A callback function invoked before the Dialog closes, letting the closing be refused. Set Cancel on the arguments to leave the Dialog where it is, and read Reason to tell the gestures apart. It is awaited, so it can run asynchronous work of its own.",
+            LinkType = LinkType.Link,
+            Href = "#dismiss-args",
         },
         new()
         {
@@ -353,6 +413,13 @@ public partial class BitDialogDemo
             Type = "bool?",
             DefaultValue = "null",
             Description = "Keeps Tab and Shift+Tab cycling inside the Dialog while it is open. Defaults to true for a normal Dialog and false for a modeless one."
+        },
+        new()
+        {
+            Name = "Width",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The CSS width of the Dialog surface. A Dialog is as wide as its content by default, and FullWidth and FullSize take precedence over this."
         }
     ];
 
@@ -392,7 +459,7 @@ public partial class BitDialogDemo
         {
             Name = "Close",
             Type = "Task",
-            Description = "Closes the Dialog."
+            Description = "Closes the Dialog the same way its own gestures do: OnDismissing gets its say and can refuse it, DismissReason is named Programmatic, and OnDismiss is invoked once it is done."
         },
         new()
         {
@@ -526,6 +593,30 @@ public partial class BitDialogDemo
         },
         new()
         {
+            Id = "dismiss-args",
+            Title = "BitDialogDismissArgs",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Reason",
+                    Type = "BitDialogDismissReason",
+                    DefaultValue = "",
+                    Description = "What is about to close the Dialog: one of its three buttons, a click on the overlay, the Escape key, or a call to one of its Close and Toggle methods.",
+                    LinkType = LinkType.Link,
+                    Href = "#component-dismiss-reason-enum",
+                },
+                new()
+                {
+                    Name = "Cancel",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Set to true to refuse the closing and leave the Dialog where it is. A refused closing shakes the surface and raises OnDismissPrevented with the same reason."
+                }
+            ]
+        },
+        new()
+        {
             Id = "bit-icon-info",
             Title = "BitIconInfo",
             Parameters =
@@ -557,6 +648,117 @@ public partial class BitDialogDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
+        new()
+        {
+            Id = "color-enum",
+            Name = "BitColor",
+            Description = "Defines the general colors available in the bit BlazorUI.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Primary",
+                    Description = "Primary general color.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Secondary",
+                    Description = "Secondary general color.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Tertiary",
+                    Description = "Tertiary general color.",
+                    Value = "2",
+                },
+                new()
+                {
+                    Name = "Info",
+                    Description = "Info general color.",
+                    Value = "3",
+                },
+                new()
+                {
+                    Name = "Success",
+                    Description = "Success general color.",
+                    Value = "4",
+                },
+                new()
+                {
+                    Name = "Warning",
+                    Description = "Warning general color.",
+                    Value = "5",
+                },
+                new()
+                {
+                    Name = "SevereWarning",
+                    Description = "SevereWarning general color.",
+                    Value = "6",
+                },
+                new()
+                {
+                    Name = "Error",
+                    Description = "Error general color.",
+                    Value = "7",
+                },
+                new()
+                {
+                    Name= "PrimaryBackground",
+                    Description="Primary background color.",
+                    Value="8",
+                },
+                new()
+                {
+                    Name= "SecondaryBackground",
+                    Description="Secondary background color.",
+                    Value="9",
+                },
+                new()
+                {
+                    Name= "TertiaryBackground",
+                    Description="Tertiary background color.",
+                    Value="10",
+                },
+                new()
+                {
+                    Name= "PrimaryForeground",
+                    Description="Primary foreground color.",
+                    Value="11",
+                },
+                new()
+                {
+                    Name= "SecondaryForeground",
+                    Description="Secondary foreground color.",
+                    Value="12",
+                },
+                new()
+                {
+                    Name= "TertiaryForeground",
+                    Description="Tertiary foreground color.",
+                    Value="13",
+                },
+                new()
+                {
+                    Name= "PrimaryBorder",
+                    Description="Primary border color.",
+                    Value="14",
+                },
+                new()
+                {
+                    Name= "SecondaryBorder",
+                    Description="Secondary border color.",
+                    Value="15",
+                },
+                new()
+                {
+                    Name= "TertiaryBorder",
+                    Description="Tertiary border color.",
+                    Value="16",
+                }
+            ]
+        },
         new()
         {
             Id = "component-position-enum",
@@ -651,6 +853,12 @@ public partial class BitDialogDemo
     private bool isOpenPrevented = false;
     private string? preventedHint;
 
+    private bool hasUnsavedChanges = true;
+    private bool isOpenGuarded = false;
+    private string? guardedHint;
+    private string refusedGesture = "-";
+    private BitDialog guardedDialogRef = default!;
+
     private bool isOpenFocus = false;
     private bool isOpenNoFocus = false;
     private bool isOpenFocusCancel = false;
@@ -658,10 +866,6 @@ public partial class BitDialogDemo
 
     private bool IsOpen5 = false;
     private bool IsOpen7 = false;
-
-    private bool isOpenFullWidth = false;
-    private bool isOpenFullSize = false;
-    private bool isOpenSized = false;
 
     private bool IsOpenInPosition = false;
     private BitDialogPosition position;
@@ -680,10 +884,20 @@ public partial class BitDialogDemo
     private bool isOpenKeptMounted = false;
     private bool isOpenUnmounted = false;
 
+    private bool isOpenColor = false;
+    private BitColor dialogColor = BitColor.Primary;
+    private readonly BitColor[] dialogColors = Enum.GetValues<BitColor>();
+
     private bool IsOpenExtIcon1 = false;
     private bool IsOpenExtIcon2 = false;
     private bool IsOpenExtIcon3 = false;
     private bool IsOpenExtIcon4 = false;
+
+    private bool isOpenSized = false;
+    private bool isOpenResponsive = false;
+    private bool isOpenTall = false;
+    private bool isOpenFullWidth = false;
+    private bool isOpenFullSize = false;
 
     private bool isOpenStyles = false;
     private bool isOpenClasses = false;
@@ -704,6 +918,23 @@ public partial class BitDialogDemo
         await Task.Delay(1000);
 
         lastEvent = "OnOk";
+    }
+
+    private async Task HandleColorOk()
+    {
+        await Task.Delay(1000);
+    }
+
+    private void HandleDismissing(BitDialogDismissArgs args)
+    {
+        // Save is the way out that is always let through, so the Dialog is never a trap.
+        args.Cancel = hasUnsavedChanges && args.Reason is not BitDialogDismissReason.OkButton;
+    }
+
+    private void OpenDialogInColor(BitColor color)
+    {
+        dialogColor = color;
+        isOpenColor = true;
     }
 
     private void OpenDialogInPosition(BitDialogPosition positionValue)
@@ -949,6 +1180,37 @@ private bool isOpenPrevented = false;
 private string? preventedHint;";
 
     private readonly string example8RazorCode = @"
+<BitToggle Label=""The note has unsaved changes"" @bind-Value=""hasUnsavedChanges"" />
+
+<BitButton OnClick=""@(() => isOpenGuarded = true)"">Open Dialog</BitButton>
+
+<div>Last refused gesture: @refusedGesture</div>
+<div>Result is: @(guardedDialogRef?.Result?.ToString() ?? ""(none yet)"")</div>
+
+<BitDialog @ref=""guardedDialogRef""
+           @bind-IsOpen=""isOpenGuarded""
+           Title=""Edit the note""
+           Subtitle=""@guardedHint""
+           Message=""While the toggle above is on, everything but Save is refused - try Escape, the overlay, the close button and Cancel.""
+           OkText=""Save""
+           CancelText=""Discard""
+           OnDismissing=""HandleDismissing""
+           OnOpen=""@(() => { guardedHint = null; refusedGesture = ""-""; })""
+           OnDismissPrevented=""@(r => { refusedGesture = r.ToString(); guardedHint = ""There are unsaved changes - save them first.""; })"" />";
+    private readonly string example8CsharpCode = @"
+private bool hasUnsavedChanges = true;
+private bool isOpenGuarded = false;
+private string? guardedHint;
+private string refusedGesture = ""-"";
+private BitDialog guardedDialogRef = default!;
+
+private void HandleDismissing(BitDialogDismissArgs args)
+{
+    // Save is the way out that is always let through, so the Dialog is never a trap.
+    args.Cancel = hasUnsavedChanges && args.Reason is not BitDialogDismissReason.OkButton;
+}";
+
+    private readonly string example9RazorCode = @"
 <style>
     .dialog-body {
         max-width: 40rem;
@@ -1002,13 +1264,13 @@ private string? preventedHint;";
         <BitTextField Class=""invite-email"" Label=""Email"" Placeholder=""name@example.com"" />
     </div>
 </BitDialog>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private bool isOpenFocus = false;
 private bool isOpenNoFocus = false;
 private bool isOpenFocusCancel = false;
 private bool isOpenFocusSelector = false;";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .relative-container {
         width: 100%;
@@ -1040,39 +1302,19 @@ private bool isOpenFocusSelector = false;";
     Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
     when possibilities are limitless, waiting for content to emerge.
 </div>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private bool IsOpen5 = false;
 private bool IsOpen7 = false;";
 
-    private readonly string example10RazorCode = @"
-<BitButton OnClick=""@(() => isOpenFullWidth = true)"">FullWidth</BitButton>
-<BitButton OnClick=""@(() => isOpenFullSize = true)"">FullSize</BitButton>
-<BitButton OnClick=""@(() => isOpenSized = true)"">Fixed width</BitButton>
-
-<BitDialog FullWidth
-           @bind-IsOpen=""isOpenFullWidth""
-           Position=""BitDialogPosition.BottomCenter""
-           Title=""Missing Subject""
-           Message=""Do you want to send this message without a subject?"" />
-
-<BitDialog FullSize
-           @bind-IsOpen=""isOpenFullSize""
-           Title=""Missing Subject""
-           Message=""Do you want to send this message without a subject?"" />
-
-<BitDialog @bind-IsOpen=""isOpenSized""
-           Styles=""@(new() { Container = ""width: 32rem;"" })""
-           Title=""Missing Subject""
-           Message=""Do you want to send this message without a subject?"" />";
-    private readonly string example10CsharpCode = @"
-private bool isOpenFullWidth = false;
-private bool isOpenFullSize = false;
-private bool isOpenSized = false;";
-
     private readonly string example11RazorCode = @"
 <BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.TopLeft)"">Top Left</BitButton>
+<BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.TopCenter)"">Top Center</BitButton>
 <BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.TopRight)"">Top Right</BitButton>
+<BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.CenterLeft)"">Center Left</BitButton>
+<BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.Center)"">Center</BitButton>
+<BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.CenterRight)"">Center Right</BitButton>
 <BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.BottomLeft)"">Bottom Left</BitButton>
+<BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.BottomCenter)"">Bottom Center</BitButton>
 <BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.BottomRight)"">Bottom Right</BitButton>
 
 <BitDialog @bind-IsOpen=""IsOpenInPosition""
@@ -1252,6 +1494,35 @@ private bool isOpenKeptMounted = false;
 private bool isOpenUnmounted = false;";
 
     private readonly string example16RazorCode = @"
+@foreach (var color in dialogColors)
+{
+    <BitButton Color=""color"" OnClick=""() => OpenDialogInColor(color)"">@color</BitButton>
+}
+
+<BitDialog @bind-IsOpen=""isOpenColor""
+           Color=""dialogColor""
+           AutoFocusButton=""BitDialogButton.Cancel""
+           Title=""@($""{dialogColor} dialog"")""
+           Message=""The two buttons, the ring around the focused one and the spinner the Ok button shows all follow the color.""
+           OkText=""Confirm""
+           OnOk=""HandleColorOk"" />";
+    private readonly string example16CsharpCode = @"
+private bool isOpenColor = false;
+private BitColor dialogColor = BitColor.Primary;
+private readonly BitColor[] dialogColors = Enum.GetValues<BitColor>();
+
+private void OpenDialogInColor(BitColor color)
+{
+    dialogColor = color;
+    isOpenColor = true;
+}
+
+private async Task HandleColorOk()
+{
+    await Task.Delay(1000);
+}";
+
+    private readonly string example17RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitButton OnClick=""@(() => IsOpenExtIcon1 = true)"">Open Dialog (CloseIcon = fa)</BitButton>
@@ -1281,13 +1552,69 @@ private bool isOpenUnmounted = false;";
            Message=""This dialog uses CloseIconName to set a built-in Fluent UI icon for the close button.""
            CloseButtonTitle=""Dismiss""
            CloseIconName=""@BitIconName.ChromeClose"" />";
-    private readonly string example16CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 private bool IsOpenExtIcon1 = false;
 private bool IsOpenExtIcon2 = false;
 private bool IsOpenExtIcon3 = false;
 private bool IsOpenExtIcon4 = false;";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
+<style>
+    .dialog-body {
+        max-width: 40rem;
+        overflow-y: hidden;
+        padding: 0 24px 24px;
+    }
+</style>
+
+<BitButton OnClick=""@(() => isOpenSized = true)"">Width</BitButton>
+<BitButton OnClick=""@(() => isOpenResponsive = true)"">MaxWidth & MinWidth</BitButton>
+<BitButton OnClick=""@(() => isOpenTall = true)"">Height & MaxHeight</BitButton>
+<BitButton OnClick=""@(() => isOpenFullWidth = true)"">FullWidth</BitButton>
+<BitButton OnClick=""@(() => isOpenFullSize = true)"">FullSize</BitButton>
+
+<BitDialog Width=""32rem""
+           @bind-IsOpen=""isOpenSized""
+           Title=""Fixed width""
+           Message=""This Dialog is 32rem wide however little it has to say."" />
+
+<BitDialog MinWidth=""20rem""
+           MaxWidth=""min(100%, 28rem)""
+           @bind-IsOpen=""isOpenResponsive""
+           Title=""Responsive width""
+           Message=""No narrower than 20rem, no wider than 28rem, and never wider than the screen."" />
+
+<BitDialog Height=""24rem""
+           MaxHeight=""min(100%, 24rem)""
+           @bind-IsOpen=""isOpenTall""
+           Title=""Fixed height""
+           OkText=""Agree"">
+    <div class=""dialog-body"">
+        <p>
+            The surface keeps its height whatever it holds, and the body scrolls inside it while the header
+            above and the buttons below stay where they are.
+        </p>
+    </div>
+</BitDialog>
+
+<BitDialog FullWidth
+           @bind-IsOpen=""isOpenFullWidth""
+           Position=""BitDialogPosition.BottomCenter""
+           Title=""Missing Subject""
+           Message=""Do you want to send this message without a subject?"" />
+
+<BitDialog FullSize
+           @bind-IsOpen=""isOpenFullSize""
+           Title=""Missing Subject""
+           Message=""Do you want to send this message without a subject?"" />";
+    private readonly string example18CsharpCode = @"
+private bool isOpenSized = false;
+private bool isOpenResponsive = false;
+private bool isOpenTall = false;
+private bool isOpenFullWidth = false;
+private bool isOpenFullSize = false;";
+
+    private readonly string example19RazorCode = @"
 <style>
     .custom-container {
         border: 2px solid tomato;
@@ -1329,11 +1656,11 @@ private bool IsOpenExtIcon4 = false;";
                Header = ""custom-header"",
                OkButton = ""custom-ok""
            })"" />";
-    private readonly string example17CsharpCode = @"
+    private readonly string example19CsharpCode = @"
 private bool isOpenStyles = false;
 private bool isOpenClasses = false;";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitButton Dir=""BitDir.Rtl"" OnClick=""@(() => IsOpen10 = true)"">باز کردن پنجره پیام</BitButton>
 <BitDialog @bind-IsOpen=""IsOpen10""
            Dir=""BitDir.Rtl""
@@ -1342,6 +1669,6 @@ private bool isOpenClasses = false;";
            CancelText=""انصراف""
            CloseButtonTitle=""بستن""
            Message=""آیا می خواهید این پیام را بدون موضوع ارسال کنید؟"" />";
-    private readonly string example18CsharpCode = @"
+    private readonly string example20CsharpCode = @"
 private bool IsOpen10 = false;";
 }

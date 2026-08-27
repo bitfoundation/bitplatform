@@ -25,6 +25,7 @@ public partial class BitDialog : BitComponentBase
     private bool _isLoading;
     private float _offsetTop;
     private bool _internalIsOpen;
+    private bool _isDismissing;
     private bool _dismissPrevented;
     private string _containerId = default!;
     private string _titleId = default!;
@@ -108,6 +109,10 @@ public partial class BitDialog : BitComponentBase
     /// inside the Dialog only, and a selector that matches nothing visible falls back to the first focusable
     /// element - so a Dialog whose content varies never opens with the focus nowhere.
     /// <see cref="AutoFocusButton"/> takes precedence over this when both are set.
+    /// <br />
+    /// An element inside the Dialog carrying a <c>data-autofocus</c> attribute is picked up without a
+    /// selector at all, which is the one to reach for when what should be focused is decided by the content
+    /// rather than by the Dialog around it.
     /// </remarks>
     [Parameter] public string? AutoFocusSelector { get; set; }
 
@@ -167,8 +172,29 @@ public partial class BitDialog : BitComponentBase
     /// <remarks>
     /// A blocking Dialog (<see cref="IsBlocking"/>) ignores the Escape key whatever this is set to, since
     /// the point of a blocking Dialog is that it can only be answered with one of its buttons.
+    /// <br />
+    /// The key is listened for on the Dialog itself rather than on the document, which is what keeps a
+    /// Dialog opened from inside another one from closing both of them at once - so it is heard while the
+    /// focus is inside the Dialog, which it is by default and stays for as long as
+    /// <see cref="TrapFocus"/> holds it there. A Dialog that has turned <see cref="AutoFocus"/> off and
+    /// placed the focus somewhere else on the page is a Dialog the key no longer reaches.
     /// </remarks>
     [Parameter] public bool CloseOnEscape { get; set; } = true;
+
+    /// <summary>
+    /// The general color of the Dialog, which its Ok and Cancel buttons are painted in.
+    /// <br />
+    /// The default value is <strong>Primary</strong>.
+    /// </summary>
+    /// <remarks>
+    /// A Dialog that confirms something destructive is expected to say so in its colors as much as in its
+    /// words, which is what <see cref="BitColor.Error"/> is for here - alongside
+    /// <see cref="AutoFocusButton"/> pointed at the safe answer. The color reaches the Ok button, the
+    /// outline of the Cancel button, the Ok spinner and the focus ring of both, and leaves the rest of the
+    /// Dialog - the surface, the title, the message - alone.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
 
     /// <summary>
     /// The CSS selector of the element the Dialog is dragged by. By default it is the header when the
@@ -210,6 +236,16 @@ public partial class BitDialog : BitComponentBase
     /// close button beside it.
     /// </summary>
     [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+
+    /// <summary>
+    /// The CSS height of the Dialog surface. A Dialog is as tall as its content by default.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="FullHeight"/> and <see cref="FullSize"/> take precedence over this, and the surface never
+    /// grows past <see cref="MaxHeight"/> - which is the height of the area the Dialog is positioned in
+    /// unless it is set to something else.
+    /// </remarks>
+    [Parameter] public string? Height { get; set; }
 
     /// <summary>
     /// Determines the ARIA role of the Dialog (alertdialog/dialog). If this is set, it will override the ARIA role determined by IsBlocking and IsModeless.
@@ -259,6 +295,29 @@ public partial class BitDialog : BitComponentBase
     [Parameter] public bool KeepMounted { get; set; }
 
     /// <summary>
+    /// The CSS maximum height of the Dialog surface.
+    /// <br />
+    /// The default value is <strong>100%</strong> of the area the Dialog is positioned in.
+    /// </summary>
+    /// <remarks>
+    /// Setting this replaces that default rather than adding to it, so a value in absolute units can be
+    /// taller than the screen on a small one - reach for <c>min()</c> where the cap has to stay inside it.
+    /// </remarks>
+    [Parameter] public string? MaxHeight { get; set; }
+
+    /// <summary>
+    /// The CSS maximum width of the Dialog surface.
+    /// <br />
+    /// The default value is <strong>100%</strong> of the area the Dialog is positioned in.
+    /// </summary>
+    /// <remarks>
+    /// This is the one to reach for where a Dialog should stop growing with its content but still shrink
+    /// with a narrow screen: <c>min(100%, 32rem)</c> is the whole of a responsive Dialog. Setting it
+    /// replaces the 100% default rather than adding to it.
+    /// </remarks>
+    [Parameter] public string? MaxWidth { get; set; }
+
+    /// <summary>
     /// The message to display in the dialog.
     /// </summary>
     /// <remarks>
@@ -266,6 +325,31 @@ public partial class BitDialog : BitComponentBase
     /// <see cref="Subtitle"/> or a <see cref="SubtitleAriaId"/> takes that job instead.
     /// </remarks>
     [Parameter] public string? Message { get; set; }
+
+    /// <summary>
+    /// The CSS minimum height of the Dialog surface.
+    /// </summary>
+    [Parameter] public string? MinHeight { get; set; }
+
+    /// <summary>
+    /// The CSS minimum width of the Dialog surface.
+    /// </summary>
+    /// <remarks>
+    /// A confirmation whose message is a handful of words comes out as narrow as those words, which reads as
+    /// a Dialog that failed to load rather than one that had little to say. This is the floor under that.
+    /// </remarks>
+    [Parameter] public string? MinWidth { get; set; }
+
+    /// <summary>
+    /// Turns off the shake the Dialog plays when a dismissal is refused.
+    /// </summary>
+    /// <remarks>
+    /// The shake is what keeps a refused Escape or a refused click on the overlay from reading as a page
+    /// that has stopped responding, so it is worth replacing with something rather than simply removing -
+    /// a hint under the buttons raised from <see cref="OnDismissPrevented"/>, as a rule. The callback is
+    /// raised either way.
+    /// </remarks>
+    [Parameter] public bool NoDismissPreventedAnimation { get; set; }
 
     /// <summary>
     /// The text of the ok button.
@@ -286,13 +370,33 @@ public partial class BitDialog : BitComponentBase
     /// A callback function for when the the dialog is dismissed (closed).
     /// </summary>
     /// <remarks>
-    /// <see cref="DismissReason"/> reports which gesture ended the showing by the time this runs.
+    /// It is invoked for every closing the Dialog carries out itself - one of its three buttons, a click on
+    /// the overlay, the Escape key, or a call to <see cref="Close"/> or <see cref="Toggle"/> - and not for
+    /// the parent simply setting <see cref="IsOpen"/> to false behind its back, which is a closing the
+    /// parent already knows about. <see cref="DismissReason"/> reports which of them ended the showing by
+    /// the time this runs, and <see cref="OnDismissing"/> is the place to refuse one.
     /// </remarks>
     [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
 
     /// <summary>
+    /// A callback function invoked before the Dialog closes, letting the closing be refused.
+    /// </summary>
+    /// <remarks>
+    /// Set <c>Cancel</c> on the provided <see cref="BitDialogDismissArgs"/> to leave the Dialog where it
+    /// is, and read its <c>Reason</c> to tell the gestures apart - holding on to a part-filled form when the
+    /// Escape key is pressed is not the same as refusing the Cancel button the user has just pressed on
+    /// purpose. Since the callback is awaited, it can run asynchronous work of its own, a confirmation of
+    /// its own among it.
+    /// <br />
+    /// A refused closing is played back exactly like a refused dismissal - the surface shakes once and
+    /// <see cref="OnDismissPrevented"/> is raised with the same reason - and leaves the showing unanswered,
+    /// so <see cref="Result"/> is put back to what it was before the button was pressed.
+    /// </remarks>
+    [Parameter] public EventCallback<BitDialogDismissArgs> OnDismissing { get; set; }
+
+    /// <summary>
     /// A callback function for when a dismissal was refused: the Escape key on a Dialog that does not take
-    /// it, or a click on the overlay of a blocking one.
+    /// it, a click on the overlay of a blocking one, or a closing <see cref="OnDismissing"/> turned down.
     /// </summary>
     /// <remarks>
     /// The Dialog answers a refused dismissal on its own by shaking, so the gesture is not simply swallowed.
@@ -408,6 +512,16 @@ public partial class BitDialog : BitComponentBase
     /// </remarks>
     [Parameter] public bool? TrapFocus { get; set; }
 
+    /// <summary>
+    /// The CSS width of the Dialog surface. A Dialog is as wide as its content by default.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="FullWidth"/> and <see cref="FullSize"/> take precedence over this, and the surface never
+    /// grows past <see cref="MaxWidth"/> - which is the width of the area the Dialog is positioned in
+    /// unless it is set to something else.
+    /// </remarks>
+    [Parameter] public string? Width { get; set; }
+
 
 
     /// <summary>
@@ -476,9 +590,15 @@ public partial class BitDialog : BitComponentBase
     /// <summary>
     /// Closes the Dialog.
     /// </summary>
+    /// <remarks>
+    /// This is the Dialog closing itself, so it goes the same way its own gestures do: <see cref="OnDismissing"/>
+    /// gets its say and can refuse it, <see cref="DismissReason"/> is named
+    /// <see cref="BitDialogDismissReason.Programmatic"/>, and <see cref="OnDismiss"/> is invoked once it is done.
+    /// The showing is left unanswered, so <see cref="Result"/> stays null and <see cref="Show"/> completes with it.
+    /// </remarks>
     public async Task Close()
     {
-        if (await AssignIsOpen(false) is false) return;
+        if (await DismissDialog(new MouseEventArgs(), BitDialogDismissReason.Programmatic) is false) return;
 
         StateHasChanged();
     }
@@ -500,6 +620,30 @@ public partial class BitDialog : BitComponentBase
         // shown empty: display:none takes it out of the layout, out of the tab order and out of the
         // accessibility tree, and lets the entrance animation play again on the next showing.
         ClassBuilder.Register(() => IsOpen ? string.Empty : "bit-dlg-hdn");
+
+        // The color of the Dialog is carried on the root so the tokens it sets reach the buttons at the
+        // bottom of the surface, wherever a template has put them.
+        ClassBuilder.Register(() => Color switch
+        {
+            BitColor.Primary => "bit-dlg-pri",
+            BitColor.Secondary => "bit-dlg-sec",
+            BitColor.Tertiary => "bit-dlg-ter",
+            BitColor.Info => "bit-dlg-inf",
+            BitColor.Success => "bit-dlg-suc",
+            BitColor.Warning => "bit-dlg-wrn",
+            BitColor.SevereWarning => "bit-dlg-swr",
+            BitColor.Error => "bit-dlg-err",
+            BitColor.PrimaryBackground => "bit-dlg-pbg",
+            BitColor.SecondaryBackground => "bit-dlg-sbg",
+            BitColor.TertiaryBackground => "bit-dlg-tbg",
+            BitColor.PrimaryForeground => "bit-dlg-pfg",
+            BitColor.SecondaryForeground => "bit-dlg-sfg",
+            BitColor.TertiaryForeground => "bit-dlg-tfg",
+            BitColor.PrimaryBorder => "bit-dlg-pbr",
+            BitColor.SecondaryBorder => "bit-dlg-sbr",
+            BitColor.TertiaryBorder => "bit-dlg-tbr",
+            _ => string.Empty
+        });
 
         ClassBuilder.Register(() => AbsolutePosition ? "bit-dlg-abs" : string.Empty);
         ClassBuilder.Register(() => IsModeless ? "bit-dlg-mls" : string.Empty);
@@ -744,25 +888,72 @@ public partial class BitDialog : BitComponentBase
         tcs.TrySetResult(result);
     }
 
-    private async Task DismissDialog(MouseEventArgs e, BitDialogDismissReason reason)
+    // The one way out of a showing, whichever gesture asked for it. It reports whether the Dialog actually
+    // closed, so a caller that has already written down an answer can take it back again when it did not.
+    private async Task<bool> DismissDialog(MouseEventArgs e, BitDialogDismissReason reason)
     {
-        if (IsEnabled is false) return;
-
         // AssignIsOpen reports success for a value it did not have to change, so an already-closed Dialog
         // is filtered out here to keep OnDismiss from firing for a dismissal that never happened.
-        if (IsOpen is false) return;
+        if (IsOpen is false) return false;
 
-        // Named before the assignment, since that is what runs OnSetIsOpen and raises IsOpenChanged - both
-        // of which a handler reads the reason from.
-        DismissReason = reason;
+        // OnDismissing is awaited, so a second gesture - another press of Escape while a confirmation of the
+        // consumer's own is still open - would otherwise start a second closing alongside the first.
+        if (_isDismissing) return false;
 
-        if (await AssignIsOpen(false) is false)
+        var refused = false;
+
+        _isDismissing = true;
+
+        try
         {
-            DismissReason = null;
-            return;
+            if (OnDismissing.HasDelegate)
+            {
+                var args = new BitDialogDismissArgs(reason);
+
+                await OnDismissing.InvokeAsync(args);
+
+                refused = args.Cancel;
+
+                // The consumer had its say and may well have closed the Dialog itself while it did.
+                if (refused is false && IsOpen is false) return false;
+            }
+
+            if (refused)
+            {
+                // A refused closing is a showing that was never answered, so an answer one of the two
+                // answering buttons had already written down is taken back with it.
+                Result = null;
+            }
+            else
+            {
+                // Named before the assignment, since that is what runs OnSetIsOpen and raises
+                // IsOpenChanged - both of which a handler reads the reason from.
+                DismissReason = reason;
+
+                if (await AssignIsOpen(false) is false)
+                {
+                    // The parent owns IsOpen and offered no way to change it, so the Dialog is still
+                    // standing and its showing is still unanswered.
+                    DismissReason = null;
+                    Result = null;
+                    return false;
+                }
+
+                await OnDismiss.InvokeAsync(e);
+
+                return true;
+            }
+        }
+        finally
+        {
+            _isDismissing = false;
         }
 
-        await OnDismiss.InvokeAsync(e);
+        // The refusal is played back with the guard already given up, since it outlasts the animation it
+        // starts: holding the guard for it would swallow the next gesture rather than refuse that one too.
+        await PreventDismiss(reason);
+
+        return false;
     }
 
     // A dismissal the Dialog will not act on is answered rather than swallowed: the surface shakes once, so
@@ -771,6 +962,8 @@ public partial class BitDialog : BitComponentBase
     private async Task PreventDismiss(BitDialogDismissReason reason)
     {
         await OnDismissPrevented.InvokeAsync(reason);
+
+        if (NoDismissPreventedAnimation) return;
 
         // Already playing one back: restarting it mid-flight would only cut the animation short.
         if (_dismissPrevented) return;
@@ -809,27 +1002,31 @@ public partial class BitDialog : BitComponentBase
         await OnOverlayClick.InvokeAsync(e);
 
         // The Ok callback is still running, so the showing has already been answered - a dismissal now would
-        // answer it a second time, over the top of work that has not finished.
-        if (_isLoading) return;
+        // answer it a second time, over the top of work that has not finished. A dismissal already in flight
+        // is the same story: an OnDismissing that is still deciding has not finished either.
+        if (_isLoading || _isDismissing) return;
+
+        // Reclaimed before the dismissal is attempted rather than after it, since a dismissal that is
+        // refused - by IsBlocking, or by an OnDismissing that says no - is played back for as long as the
+        // shake lasts, and the focus would sit outside the Dialog for the whole of it. Where the click does
+        // go on to close the Dialog, the focus lands on a surface that is about to leave, which is exactly
+        // what RestoreFocus is looking for when it hands the focus back to whatever opened it.
+        await ReclaimFocusAfterOverlayClick();
 
         if (IsBlocking)
         {
-            await ReclaimFocusAfterOverlayClick();
-
             await PreventDismiss(BitDialogDismissReason.OverlayClick);
             return;
         }
 
         await DismissDialog(e, BitDialogDismissReason.OverlayClick);
-
-        await ReclaimFocusAfterOverlayClick();
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
         if (e.Key is not "Escape") return;
 
-        if (IsEnabled is false || IsOpen is false || _isLoading) return;
+        if (IsEnabled is false || IsOpen is false || _isLoading || _isDismissing) return;
 
         // A blocking Dialog can only be answered with its buttons, which is as true of the keyboard as
         // it is of a click on the overlay.
@@ -844,7 +1041,7 @@ public partial class BitDialog : BitComponentBase
 
     private async Task HandleOnCloseClick(MouseEventArgs e)
     {
-        if (IsEnabled is false || _isLoading) return;
+        if (IsEnabled is false || _isLoading || _isDismissing) return;
 
         await OnClose.InvokeAsync(e);
 
@@ -853,7 +1050,7 @@ public partial class BitDialog : BitComponentBase
 
     private async Task HandleOnCancelClick(MouseEventArgs e)
     {
-        if (IsEnabled is false || _isLoading) return;
+        if (IsEnabled is false || _isLoading || _isDismissing) return;
 
         // The answer is in place before the callback runs, so a callback that closes the Dialog itself
         // still reports the answer it was given - and is taken back again when the callback throws, which
@@ -877,7 +1074,7 @@ public partial class BitDialog : BitComponentBase
     {
         // A second click while the first one is still being awaited would run the callback twice and
         // resolve the showing twice over, so the Ok button answers only once per showing.
-        if (IsEnabled is false || _isLoading) return;
+        if (IsEnabled is false || _isLoading || _isDismissing) return;
 
         Result = BitDialogResult.Ok;
 
@@ -959,6 +1156,23 @@ public partial class BitDialog : BitComponentBase
         BitDialogPosition.BottomEnd => "bit-dlg-be",
         _ => "bit-dlg-ctr",
     };
+
+    // The size of the surface is handed to the stylesheet as custom properties rather than as declarations
+    // of its own, which is what keeps the size classes (FullWidth and its two neighbours) winning over them
+    // - and what lets a consumer's own Styles.Container, which follows these in the same attribute, win
+    // over both.
+    private string? GetContainerStyle()
+    {
+        var size = string.Concat(
+            Width.HasValue() ? $"--bit-dlg-wid:{Width};" : null,
+            MinWidth.HasValue() ? $"--bit-dlg-mnw:{MinWidth};" : null,
+            MaxWidth.HasValue() ? $"--bit-dlg-mxw:{MaxWidth};" : null,
+            Height.HasValue() ? $"--bit-dlg-hei:{Height};" : null,
+            MinHeight.HasValue() ? $"--bit-dlg-mnh:{MinHeight};" : null,
+            MaxHeight.HasValue() ? $"--bit-dlg-mxh:{MaxHeight};" : null);
+
+        return size.HasValue() ? $"{size}{Styles?.Container}" : Styles?.Container;
+    }
 
     // An attribute selector rather than an id one, since an id is only a valid CSS identifier by accident:
     // a consumer-supplied Id can hold characters (a leading digit, a dot, a colon) that would make "#id"

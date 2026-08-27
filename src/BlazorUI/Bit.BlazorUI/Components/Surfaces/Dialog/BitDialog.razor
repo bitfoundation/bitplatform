@@ -34,7 +34,7 @@
                  aria-describedby="@GetDescribedBy()"
                  @onkeydown="HandleOnKeyDown"
                  @onkeydown:stopPropagation="true"
-                 style="@Styles?.Container"
+                 style="@GetContainerStyle()"
                  class="bit-dlg-ctn @(_dismissPrevented ? "bit-dlg-prv" : null) @Classes?.Container">
                 @if (HasHeader)
                 {
