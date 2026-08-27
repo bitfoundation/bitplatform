@@ -1,4 +1,4 @@
-@page "/getting-started"
+﻿@page "/getting-started"
 @inherits AppComponentBase
 
 <PageOutlet Url="getting-started"
@@ -223,11 +223,20 @@
         <CodeBox Language="markdown">
 ### bit BlazorUI
 
-- For all UI-related tasks in this Blazor project, you **MUST** use the bit BlazorUI MCP server.
-- Always start component discovery with the `GetBitBlazorUIComponentsList` tool.
-- For detailed API, parameters, and usage examples, call `GetBitBlazorUIComponentExamples`.
-- Prefer `Bit*` components over plain HTML/CSS or other UI libraries.
+- For all UI work in this Blazor project, you **MUST** use the bit BlazorUI MCP server.
+- Start with `SearchBitBlazorUI`: this library's name for a thing is often not the one the task
+  suggests (a select is `BitDropdown`, a toast is `BitSnackBar`, a skeleton is `BitShimmer`).
+- Before writing markup, call `GetBitBlazorUIComponent` for every component you are about to use,
+  and `GetBitBlazorUIComponentExamples` for the working code of anything non-obvious.
+- Prefer `Bit*` components over plain HTML/CSS or another UI library.
         </CodeBox>
+
+        <BitText Element="p">
+            The server also ships ready-made prompts - <b>add-bit-blazorui-to-app</b>,
+            <b>build-bit-blazorui-screen</b>, <b>migrate-to-bit-blazorui</b>,
+            <b>theme-bit-blazorui-app</b> and <b>debug-bit-blazorui-issue</b> - which any client that
+            supports MCP prompts lists as slash commands.
+        </BitText>
 
         <BitText Element="p">
             <b>Tip</b>: many agents - Cursor and Claude in particular - pick up the server
