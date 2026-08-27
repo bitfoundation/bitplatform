@@ -1,0 +1,35 @@
+@import '../Styles/abstracts/_docs.scss';
+
+.mcp-exchange {
+    gap: $doc-space-sm;
+    display: flex;
+    flex-flow: column nowrap;
+}
+
+// Side by side while there is room for two readable columns of JSON, stacked below that. A request
+// envelope is narrow and a response is not, so the two panes are given equal room rather than
+// sized by content: what a reader compares is the shape of one against the shape of the other.
+.mcp-panes {
+    gap: $doc-space-sm;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    @include lt-md {
+        grid-template-columns: 1fr;
+    }
+}
+
+.mcp-pane {
+    min-width: 0;
+    gap: $doc-space-3xs;
+    display: flex;
+    flex-flow: column nowrap;
+}
+
+// The URL beside the chips. It is the one piece of the header that can be long enough to wrap, and
+// wrapping it mid-path reads as two URLs, so it breaks anywhere instead.
+.mcp-endpoint {
+    overflow-wrap: anywhere;
+    font-size: $bit-typography-fs-2xs;
+    color: $bit-color-foreground-tertiary;
+}

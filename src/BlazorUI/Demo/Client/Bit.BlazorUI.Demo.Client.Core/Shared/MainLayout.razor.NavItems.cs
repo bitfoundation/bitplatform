@@ -7,6 +7,9 @@ public partial class MainLayout
     [
         new() { Text = "Overview", Url = "/overview" },
         new() { Text = "Getting started", Url = "/getting-started" },
+        // Right after Getting started: connecting an agent to the MCP server is the second thing an
+        // app does, and the page is a working client rather than a description of one.
+        new() { Text = "MCP server", Url = "/mcp-server", Description = "AI, Agent, Copilot, Cursor, Claude, Tools" },
         // The searchable index of the whole library. It used to share a route with Overview, which
         // meant the site had a "Docs" page and a "Components" page that were the same page.
         new() { Text = "All components", Url = "/components", Description = "Catalog, Gallery, Index" },
