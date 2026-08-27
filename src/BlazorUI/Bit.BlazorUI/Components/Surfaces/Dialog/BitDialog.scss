@@ -49,6 +49,30 @@
             transform: scale(1);
         }
     }
+
+    // Played once when a dismissal is refused - Escape on a Dialog that does not take it, a click on the
+    // overlay of a blocking one - so the gesture is visibly answered rather than swallowed. It is a nudge
+    // rather than a wobble: the surface stays put, which is the point being made.
+    @keyframes bit-dlg-prevented-animation {
+        0%, 100% {
+            transform: translateX(0);
+        }
+
+        20%, 60% {
+            transform: translateX(calc(-1 * #{spacing(0.75)}));
+        }
+
+        40%, 80% {
+            transform: translateX(spacing(0.75));
+        }
+    }
+}
+
+// Only a kept-mounted Dialog is rendered while closed. display:none rather than visibility or opacity: it
+// takes the Dialog out of the layout, out of the tab order and out of the accessibility tree, and lets the
+// entrance animation play again the next time it is shown.
+.bit-dlg-hdn {
+    display: none;
 }
 
 .bit-dlg-abs {
@@ -90,6 +114,12 @@
     // The surface is made programmatically focusable so the Escape key and the focus trap have somewhere
     // to land, which is a job the focus ring has no business advertising.
     outline: none;
+}
+
+// The refusal replaces the entrance animation for as long as it runs, since both drive transform on the
+// same element - and by the time a dismissal can be refused the entrance is long over.
+.bit-dlg-prv {
+    animation: bit-dlg-prevented-animation $mot-duration $mot-easing;
 }
 
 .bit-dlg-fwi {
@@ -211,6 +241,13 @@
         text-transform: $tg-ctrl-text-transform;
         transition: background-color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
+        // The Dialog opens with the focus on one of these as often as not - AutoFocusButton puts it on the
+        // safe answer of a destructive confirmation - so where the focus is has to be as plain here as it is
+        // on every other control in the library, rather than left to whatever the browser draws.
+        &:focus-visible {
+            @include focus-ring;
+        }
+
         &:disabled {
             cursor: default;
             opacity: $opa-dis;
@@ -319,6 +356,10 @@
         background-color: $clr-bg-pri-active;
     }
 
+    &:focus-visible {
+        @include focus-ring;
+    }
+
     &:disabled {
         cursor: default;
         opacity: $opa-dis;
@@ -394,5 +435,20 @@
     .bit-dlg-cr,
     .bit-dlg-br {
         justify-content: flex-start;
+    }
+}
+
+
+// A forced-colors mode throws away the overlay's tint and the shadow the surface casts, which between them
+// are the whole of what tells a Dialog apart from the page underneath it - leaving a floating block of text
+// with no edge. A rule in the system border color is restored so the Dialog still reads as a surface, and the
+// header keeps a rule under it so the title stays separated from the body it names.
+@media (forced-colors: active) {
+    .bit-dlg-ctn {
+        border: $shp-border-width $shp-border-style CanvasText;
+    }
+
+    .bit-dlg-hdr {
+        border-block-end: $shp-border-width $shp-border-style CanvasText;
     }
 }

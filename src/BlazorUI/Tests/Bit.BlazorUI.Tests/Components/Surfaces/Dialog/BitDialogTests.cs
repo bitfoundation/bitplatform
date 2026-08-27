@@ -195,6 +195,49 @@ public class BitDialogTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-dlg").ClassList.Contains("bit-dlg-mls"));
     }
 
+    [TestMethod]
+    public void BitDialogKeepMountedShouldRenderTheClosedDialogHidden()
+    {
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, false);
+            parameters.Add(p => p.KeepMounted, true);
+            parameters.Add(p => p.Title, "Test Title");
+        });
+
+        var root = component.Find(".bit-dlg");
+        Assert.IsTrue(root.ClassList.Contains("bit-dlg-hdn"));
+        Assert.AreEqual("Test Title", component.Find(".bit-dlg-ttl").TextContent);
+    }
+
+    [TestMethod]
+    public void BitDialogKeepMountedShouldDropTheHiddenClassWhenItOpens()
+    {
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, false);
+            parameters.Add(p => p.KeepMounted, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-dlg").ClassList.Contains("bit-dlg-hdn"));
+
+        component.Render(parameters => parameters.Add(p => p.IsOpen, true));
+
+        Assert.IsFalse(component.Find(".bit-dlg").ClassList.Contains("bit-dlg-hdn"));
+    }
+
+    [TestMethod]
+    public void BitDialogWithoutKeepMountedShouldStillRenderNothingWhenClosed()
+    {
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, false);
+            parameters.Add(p => p.Title, "Test Title");
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-dlg"));
+    }
+
     #endregion
 
     #region classes and styles
@@ -407,7 +450,7 @@ public class BitDialogTests : BunitTestContext
             }
         });
 
-        var roleDiv = component.Find("div[role]");
+        var roleDiv = component.Find(".bit-dlg-ctn");
 
         var expected = (isAlert ?? true) ? "alertdialog" : "dialog";
 
@@ -463,6 +506,21 @@ public class BitDialogTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDialogTitleShouldCarryHeadingSemantics()
+    {
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Title, "Title");
+        });
+
+        var title = component.Find(".bit-dlg-ttl");
+
+        Assert.AreEqual("heading", title.GetAttribute("role"));
+        Assert.AreEqual("2", title.GetAttribute("aria-level"));
+    }
+
+    [TestMethod]
     public void BitDialogTitleAriaIdShouldOverrideTheGeneratedOne()
     {
         var component = RenderComponent<BitDialog>(parameters =>
@@ -506,7 +564,7 @@ public class BitDialogTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDialogSubtitleShouldTakeOverTheDescriptionFromTheMessage()
+    public void BitDialogShouldDescribeItselfWithBothTheSubtitleAndTheMessage()
     {
         var component = RenderComponent<BitDialog>(parameters =>
         {
@@ -514,6 +572,23 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.Title, "Title");
             parameters.Add(p => p.Subtitle, "Subtitle");
             parameters.Add(p => p.Message, "Message");
+        });
+
+        var subtitleId = component.Find(".bit-dlg-sub").GetAttribute("id");
+        var messageId = component.Find(".bit-dlg-msg").GetAttribute("id");
+
+        // aria-describedby takes a list, so neither of the two descriptive lines is dropped.
+        Assert.AreEqual($"{subtitleId} {messageId}", component.Find(".bit-dlg-ctn").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitDialogSubtitleAloneShouldBeTheDescription()
+    {
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Title, "Title");
+            parameters.Add(p => p.Subtitle, "Subtitle");
         });
 
         var subtitleId = component.Find(".bit-dlg-sub").GetAttribute("id");
@@ -720,6 +795,239 @@ public class BitDialogTests : BunitTestContext
         component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Enter" });
 
         Assert.IsTrue(isOpen);
+    }
+
+    [TestMethod]
+    public void BitDialogOverlayClickShouldInvokeOnOverlayClickBeforeDismissing()
+    {
+        var isOpen = true;
+        var overlayClicks = 0;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.OnOverlayClick, () => overlayClicks++);
+        });
+
+        component.Find(".bit-dlg-ovl").Click();
+
+        Assert.AreEqual(1, overlayClicks);
+        Assert.IsFalse(isOpen);
+    }
+
+    [TestMethod]
+    public void BitDialogBlockingOverlayClickShouldStillInvokeOnOverlayClick()
+    {
+        var isOpen = true;
+        var overlayClicks = 0;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.IsBlocking, true);
+            parameters.Add(p => p.OnOverlayClick, () => overlayClicks++);
+        });
+
+        component.Find(".bit-dlg-ovl").Click();
+
+        Assert.AreEqual(1, overlayClicks);
+        Assert.IsTrue(isOpen);
+    }
+
+    [TestMethod]
+    [DataRow(true, true)]
+    [DataRow(false, false)]
+    public void BitDialogRefusedDismissShouldBePlayedBackAndReported(bool isBlocking, bool closeOnEscape)
+    {
+        var isOpen = true;
+        BitDialogDismissReason? prevented = null;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.IsBlocking, isBlocking);
+            parameters.Add(p => p.CloseOnEscape, closeOnEscape);
+            parameters.Add(p => p.OnDismissPrevented, (BitDialogDismissReason r) => prevented = r);
+        });
+
+        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsTrue(isOpen);
+        Assert.AreEqual(BitDialogDismissReason.Escape, prevented);
+        // The class is taken off again once the animation has had time to run.
+        component.WaitForAssertion(
+            () => Assert.IsFalse(component.Find(".bit-dlg-ctn").ClassList.Contains("bit-dlg-prv")),
+            TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public void BitDialogBlockingOverlayClickShouldReportTheRefusedDismiss()
+    {
+        var isOpen = true;
+        BitDialogDismissReason? prevented = null;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.IsBlocking, true);
+            parameters.Add(p => p.OnDismissPrevented, (BitDialogDismissReason r) => prevented = r);
+        });
+
+        component.Find(".bit-dlg-ovl").Click();
+
+        Assert.IsTrue(isOpen);
+        Assert.AreEqual(BitDialogDismissReason.OverlayClick, prevented);
+    }
+
+    [TestMethod]
+    public void BitDialogAcceptedDismissShouldNotBeReportedAsRefused()
+    {
+        var isOpen = true;
+        var preventedCount = 0;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.OnDismissPrevented, () => preventedCount++);
+        });
+
+        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsFalse(isOpen);
+        Assert.AreEqual(0, preventedCount);
+    }
+
+    #endregion
+
+    #region dismiss reason
+
+    [TestMethod]
+    public void BitDialogDismissReasonShouldBeNullWhileTheDialogIsOpen()
+    {
+        var component = RenderComponent<BitDialog>(parameters => parameters.Add(p => p.IsOpen, true));
+
+        Assert.IsNull(component.Instance.DismissReason);
+    }
+
+    [TestMethod]
+    public void BitDialogCloseButtonShouldReportItsDismissReason()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        component.Find(".bit-dlg-cls").Click();
+
+        Assert.AreEqual(BitDialogDismissReason.CloseButton, component.Instance.DismissReason);
+    }
+
+    [TestMethod]
+    public void BitDialogOverlayClickShouldReportItsDismissReason()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        component.Find(".bit-dlg-ovl").Click();
+
+        Assert.AreEqual(BitDialogDismissReason.OverlayClick, component.Instance.DismissReason);
+    }
+
+    [TestMethod]
+    public void BitDialogEscapeShouldReportItsDismissReason()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(BitDialogDismissReason.Escape, component.Instance.DismissReason);
+    }
+
+    [TestMethod]
+    public void BitDialogOkAndCancelShouldReportTheirDismissReasons()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        component.Find(".bit-dlg-okb").Click();
+        Assert.AreEqual(BitDialogDismissReason.OkButton, component.Instance.DismissReason);
+
+        isOpen = true;
+        component.Render(parameters => parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v));
+
+        component.Find(".bit-dlg-cnb").Click();
+        Assert.AreEqual(BitDialogDismissReason.CancelButton, component.Instance.DismissReason);
+    }
+
+    [TestMethod]
+    public async Task BitDialogProgrammaticCloseShouldReportItsDismissReason()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        await component.InvokeAsync(() => component.Instance.Close());
+
+        Assert.IsFalse(isOpen);
+
+        Assert.AreEqual(BitDialogDismissReason.Programmatic, component.Instance.DismissReason);
+    }
+
+    [TestMethod]
+    public void BitDialogDismissReasonShouldBeReadableFromOnDismiss()
+    {
+        var isOpen = true;
+        BitDialogDismissReason? seen = null;
+        BitDialog? dialog = null;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.OnDismiss, () => seen = dialog!.DismissReason);
+        });
+
+        dialog = component.Instance;
+
+        component.Find(".bit-dlg-cls").Click();
+
+        Assert.AreEqual(BitDialogDismissReason.CloseButton, seen);
+    }
+
+    [TestMethod]
+    public void BitDialogDismissReasonShouldResetOnReopen()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        component.Find(".bit-dlg-cls").Click();
+        Assert.AreEqual(BitDialogDismissReason.CloseButton, component.Instance.DismissReason);
+
+        isOpen = true;
+        component.Render(parameters => parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v));
+
+        Assert.IsNull(component.Instance.DismissReason);
     }
 
     #endregion
@@ -1008,6 +1316,43 @@ public class BitDialogTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDialogShouldHoldEveryOtherWayOutShutWhileOnOkIsRunning()
+    {
+        var gate = new TaskCompletionSource();
+        var isOpen = true;
+        var cancelCount = 0;
+        var closeCount = 0;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.OnOk, async () => await gate.Task);
+            parameters.Add(p => p.OnCancel, () => cancelCount++);
+            parameters.Add(p => p.OnClose, () => closeCount++);
+        });
+
+        component.Find(".bit-dlg-okb").Click();
+        component.WaitForAssertion(() => Assert.HasCount(1, component.FindAll(".bit-dlg-spn")), TimeSpan.FromSeconds(5));
+
+        // The showing has already been answered, so a second answer must not be able to get in.
+        Assert.IsTrue(component.Find(".bit-dlg-cnb").HasAttribute("disabled"));
+        Assert.IsTrue(component.Find(".bit-dlg-cls").HasAttribute("disabled"));
+
+        component.Find(".bit-dlg-ovl").Click();
+        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsTrue(isOpen);
+        Assert.AreEqual(0, cancelCount);
+        Assert.AreEqual(0, closeCount);
+
+        gate.SetResult();
+
+        component.WaitForAssertion(() => Assert.IsFalse(isOpen), TimeSpan.FromSeconds(5));
+        Assert.AreEqual(BitDialogResult.Ok, component.Instance.Result);
+        Assert.AreEqual(BitDialogDismissReason.OkButton, component.Instance.DismissReason);
+    }
+
+    [TestMethod]
     public void BitDialogShouldStayOpenWhenOnOkThrows()
     {
         var isOpen = true;
@@ -1021,6 +1366,82 @@ public class BitDialogTests : BunitTestContext
         Assert.ThrowsExactly<InvalidOperationException>(() => component.Find(".bit-dlg-okb").Click());
 
         Assert.IsTrue(isOpen);
+    }
+
+    [TestMethod]
+    public void BitDialogOkThatThrowsShouldLeaveNeitherASpinnerNorAnAnswerBehind()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.OnOk, () => throw new InvalidOperationException("nope"));
+        });
+
+        Assert.ThrowsExactly<InvalidOperationException>(() => component.Find(".bit-dlg-okb").Click());
+
+        Assert.IsTrue(isOpen);
+        // The Dialog is open and unanswered, so a later dismissal must not report the Ok that never happened.
+        Assert.IsNull(component.Instance.Result);
+        Assert.IsEmpty(component.FindAll(".bit-dlg-spn"));
+        Assert.IsFalse(component.Find(".bit-dlg-okb").HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void BitDialogCancelThatThrowsShouldLeaveNoAnswerBehind()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.OnCancel, () => throw new InvalidOperationException("nope"));
+        });
+
+        Assert.ThrowsExactly<InvalidOperationException>(() => component.Find(".bit-dlg-cnb").Click());
+
+        Assert.IsTrue(isOpen);
+        Assert.IsNull(component.Instance.Result);
+    }
+
+    [TestMethod]
+    public async Task BitDialogDismissedAfterAFailedOkShouldCompleteShowWithNull()
+    {
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.OnOk, () => throw new InvalidOperationException("nope"));
+        });
+
+        var showTask = component.Instance.Show();
+
+        component.WaitForState(() => component.FindAll(".bit-dlg-okb").Count == 1);
+
+        Assert.ThrowsExactly<InvalidOperationException>(() => component.Find(".bit-dlg-okb").Click());
+
+        component.Find(".bit-dlg-cls").Click();
+
+        Assert.IsNull(await showTask);
+    }
+
+    [TestMethod]
+    public void BitDialogOkThatClosesTheDialogItselfShouldStillReportOk()
+    {
+        var isOpen = true;
+        BitDialog? dialog = null;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.OnOk, async () => await dialog!.Close());
+        });
+
+        dialog = component.Instance;
+
+        component.Find(".bit-dlg-okb").Click();
+
+        Assert.IsFalse(isOpen);
+        Assert.AreEqual(BitDialogResult.Ok, component.Instance.Result);
     }
 
     #endregion
@@ -1097,6 +1518,78 @@ public class BitDialogTests : BunitTestContext
         });
 
         Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.focusFirstElement");
+    }
+
+    [TestMethod]
+    public void BitDialogBlockingOverlayClickShouldCheckTheFocusStillSitsInsideTheDialog()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.IsBlocking, true);
+        });
+
+        component.Find(".bit-dlg-ovl").Click();
+
+        // A click on the overlay leaves the body holding the focus, which is outside the trap - so the
+        // Dialog asks where the focus is before deciding to take it back.
+        component.WaitForAssertion(
+            () => Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.containsActiveElement"),
+            TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public void BitDialogModelessShouldNotReclaimTheFocusAfterAnOverlayClick()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.IsBlocking, true);
+            parameters.Add(p => p.TrapFocus, false);
+        });
+
+        component.Find(".bit-dlg-ovl").Click();
+
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.containsActiveElement"]);
+    }
+
+    [TestMethod]
+    public void BitDialogAutoFocusSelectorShouldBeHandedToTheFocusCall()
+    {
+        RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AutoFocusSelector, ".my-field");
+        });
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"][0];
+        Assert.AreEqual(".my-field", invocation.Arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitDialogWithoutAnAutoFocusSelectorShouldAskForTheFirstFocusableElement()
+    {
+        RenderComponent<BitDialog>(parameters => parameters.Add(p => p.IsOpen, true));
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"][0];
+        Assert.IsNull(invocation.Arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitDialogAutoFocusButtonShouldWinOverTheAutoFocusSelector()
+    {
+        RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AutoFocusButton, BitDialogButton.Cancel);
+            parameters.Add(p => p.AutoFocusSelector, ".my-field");
+        });
+
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"]);
     }
 
     [TestMethod]
@@ -1266,6 +1759,59 @@ public class BitDialogTests : BunitTestContext
         RenderComponent<BitDialog>(parameters => parameters.Add(p => p.IsOpen, true));
 
         Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"]);
+    }
+
+    [TestMethod]
+    public void BitDialogShouldNotTearDownDragHandlersItNeverRegistered()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        component.Find(".bit-dlg-cls").Click();
+
+        component.WaitForAssertion(
+            () => Assert.IsFalse(isOpen),
+            TimeSpan.FromSeconds(5));
+
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.DragDrop.remove"]);
+    }
+
+    [TestMethod]
+    public void BitDialogDefaultDragHandleShouldBeTheHeader()
+    {
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.IsDraggable, true);
+            parameters.Add(p => p.Title, "Draggable");
+        });
+
+        var containerId = component.Find(".bit-dlg-ctn").GetAttribute("id");
+        var selector = Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"][0].Arguments[2];
+
+        // A window is dragged by its title bar, so the content underneath it stays usable.
+        Assert.AreEqual($"[id=\"{containerId}\"] > .bit-dlg-hdr", selector);
+    }
+
+    [TestMethod]
+    public void BitDialogWithoutAHeaderShouldFallBackToTheWholeContainerAsTheDragHandle()
+    {
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.IsDraggable, true);
+            parameters.Add(p => p.ShowCloseButton, false);
+        });
+
+        var containerId = component.Find(".bit-dlg-ctn").GetAttribute("id");
+        var selector = Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"][0].Arguments[2];
+
+        Assert.IsEmpty(component.FindAll(".bit-dlg-hdr"));
+        Assert.AreEqual($"[id=\"{containerId}\"]", selector);
     }
 
     [TestMethod]

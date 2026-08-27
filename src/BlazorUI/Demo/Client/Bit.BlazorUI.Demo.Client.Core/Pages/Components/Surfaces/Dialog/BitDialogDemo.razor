@@ -5,7 +5,7 @@
             Description="A modal pop-up that puts a short decision - a confirmation, a warning, a choice - in front of the page and waits for an answer." />
 
 <DemoPage Name="Dialog"
-          Description="A modal pop-up that puts a short decision in front of the page and waits for an answer. It comes with a title, a message and an Ok/Cancel pair out of the box, takes the focus and holds it while it is open, closes on Escape or on a click outside, and hands back which button ended it - either through a two-way bound IsOpen or through an awaitable Show() call."
+          Description="A modal pop-up that puts a short decision in front of the page and waits for an answer. It comes with a title, a message and an Ok/Cancel pair out of the box, takes the focus and holds it while it is open, closes on Escape or on a click outside, and hands back both which button ended it and which gesture did - either through a two-way bound IsOpen or through an awaitable Show() call."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
@@ -26,15 +26,18 @@
             <b>IsBlocking</b> is the "you must answer this" switch: it turns off both the click-outside and the Escape
             key, and it promotes the ARIA role to
             <BitTag Color="BitColor.SecondaryBackground">alertdialog</BitTag> so the Dialog interrupts a screen reader.
-            Keep it for the cases that really cannot be walked away from - a blocking Dialog with no visible way out is
-            a trap. <b>IsModeless</b> is the opposite end: no overlay, the page behind stays clickable, the focus is
-            left where it was, and the Dialog announces itself with
-            <BitTag Color="BitColor.SecondaryBackground">aria-modal="false"</BitTag>.
+            A dismissal it refuses is answered with a shake rather than swallowed, so the gesture never reads as a page
+            that has stopped responding - but keep it for the cases that really cannot be walked away from.
+            <b>IsModeless</b> is the opposite end: no overlay, the page behind stays clickable, Tab is free to walk out
+            of the Dialog and on into it, and the Dialog announces itself with
+            <BitTag Color="BitColor.SecondaryBackground">aria-modal="false"</BitTag>. It still takes the focus when it
+            opens, the way any dialog does; turn <b>AutoFocus</b> off where it should not.
             <br /><br />
             The focus is the part that is easiest to get wrong. By default the Dialog moves the focus onto the first
             thing inside it, keeps Tab cycling within it, and hands the focus back to whatever opened it once it
             closes. For a destructive confirmation, point <b>AutoFocusButton</b> at the safe answer so a stray Enter
-            cannot carry the destructive one out.
+            cannot carry the destructive one out, and use <b>AutoFocusSelector</b> where the field the user came for
+            is not the first one in the Dialog.
             <br /><br />
             <b>AutoToggleScroll</b> is off by default, so the page behind the overlay still scrolls. Turn it on for a
             full-screen modal Dialog, and point <b>ScrollerSelector</b> or <b>ScrollerElement</b> at the right element
@@ -42,7 +45,11 @@
             <br /><br />
             <b>OnOk</b> is awaited: the Dialog shows a spinner in place of the Ok text while the callback runs and only
             closes once it returns, so a save can hold the Dialog open until it succeeds - and a callback that throws
-            leaves it open for another try.
+            leaves it open, unanswered, for another try.
+            <br /><br />
+            A Dialog is unmounted when it closes, which is what keeps a closed one costing nothing. <b>KeepMounted</b>
+            leaves it in the DOM, hidden, for the case where the content is expensive to build or holds state the user
+            is meant to come back to.
         </BitText>
     </NotesTemplate>
 
@@ -62,8 +69,8 @@
             <div>
                 <b>OkText</b> and <b>CancelText</b> relabel the two actions - say what will happen rather than "Ok",
                 so the answer is readable without the message above it. <b>ShowOkButton</b>, <b>ShowCancelButton</b>
-                and <b>ShowCloseButton</b> each remove one of the three ways out; removing all of them leaves a Dialog
-                only the page itself can close.
+                and <b>ShowCloseButton</b> each remove one of the three buttons; a Dialog with none of them left is
+                still closed by Escape and by a click outside, unless <b>IsBlocking</b> takes those away too.
             </div>
             <br />
             <div class="btn-container">
@@ -171,14 +178,17 @@
 
         <DemoExample Title="Result" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
-                <b>Result</b> reports how the last showing ended: <b>Ok</b> or <b>Cancel</b> when one of those buttons
-                ended it, and <b>null</b> when it was dismissed with the close button, a click outside or the Escape
-                key. It is reset each time the Dialog opens.
+                <b>Result</b> reports the answer the last showing was given: <b>Ok</b> or <b>Cancel</b> when one of
+                those buttons ended it, and <b>null</b> when it was dismissed with the close button, a click outside
+                or the Escape key. <b>DismissReason</b> reports the gesture instead, which is what tells those three
+                dismissals apart from one another. Both are reset each time the Dialog opens, and both are in place
+                before <b>OnDismiss</b> and <b>IsOpenChanged</b> run.
             </div>
             <br />
             <BitButton OnClick="@(() => IsOpen1 = true)">Open Dialog</BitButton>
             <br /><br />
-            <span>Result is: @(dialogRef?.Result?.ToString() ?? "(dismissed)")</span>
+            <div>Result is: @(dialogRef?.Result?.ToString() ?? "(dismissed)")</div>
+            <div>Dismiss reason is: @(dialogRef?.DismissReason?.ToString() ?? "-")</div>
             <BitDialog @ref="@dialogRef"
                        @bind-IsOpen="@IsOpen1"
                        Title="Missing Subject"
@@ -205,9 +215,11 @@
         <DemoExample Title="Events" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
                 <b>OnOpen</b> fires once the Dialog is on screen, <b>OnOk</b>, <b>OnCancel</b> and <b>OnClose</b> each
-                fire for their own button, and <b>OnDismiss</b> fires for every closing that came from the Dialog
+                fire for their own button, <b>OnOverlayClick</b> fires for every click on the overlay whether or not
+                it goes on to close the Dialog, and <b>OnDismiss</b> fires for every closing that came from the Dialog
                 itself. <b>OnOk</b> is awaited and the Ok button shows a spinner while it runs - press Ok below and
-                watch it wait a second before the Dialog closes.
+                watch it wait a second before the Dialog closes. A callback that throws leaves the Dialog open and
+                unanswered, so the user can try again.
             </div>
             <br />
             <BitButton OnClick="@(() => IsOpenEvent = true)">Open Dialog</BitButton>
@@ -220,6 +232,7 @@
                        OnOk="HandleSlowOk"
                        OnCancel="@(() => lastEvent = "OnCancel")"
                        OnClose="@(() => lastEvent = "OnClose")"
+                       OnOverlayClick="@(() => lastEvent = "OnOverlayClick")"
                        OnDismiss="@(() => lastEvent += " → OnDismiss")" />
         </DemoExample>
 
@@ -228,7 +241,8 @@
                 By default a click on the overlay and the Escape key both dismiss the Dialog. <b>IsBlocking</b> turns
                 off both and promotes the role to <b>alertdialog</b>, leaving the buttons as the only way out.
                 <b>CloseOnEscape</b> turns off only the key, and <b>IsModeless</b> removes the overlay altogether so
-                the page behind stays clickable.
+                the page behind stays clickable. Try pressing Escape or clicking outside the first two - a dismissal
+                the Dialog will not act on is answered with a shake rather than silently ignored.
             </div>
             <br />
             <div class="btn-container">
@@ -252,6 +266,24 @@
                        Position="BitDialogPosition.TopEnd"
                        Title="Modeless"
                        Message="There is no overlay, so the page behind this one is still usable." />
+
+            <BitSeparator Style="margin: 1rem 0" />
+
+            <div>
+                <b>OnDismissPrevented</b> fires with the gesture that was refused, so the Dialog can say why instead of
+                only shaking. Press Escape or click outside the one below.
+            </div>
+            <br />
+            <BitButton OnClick="@(() => isOpenPrevented = true)">Blocking with a hint</BitButton>
+            <BitDialog IsBlocking
+                       @bind-IsOpen="isOpenPrevented"
+                       Title="Two-factor code"
+                       Subtitle="@preventedHint"
+                       Message="Enter the six-digit code from your authenticator app to finish signing in."
+                       OkText="Verify"
+                       CancelText="Use another method"
+                       OnOpen="@(() => preventedHint = null)"
+                       OnDismissPrevented="@(r => preventedHint = $"{r} will not close this one - answer it with one of the buttons.")" />
         </DemoExample>
 
         <DemoExample Title="Focus management" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
@@ -302,14 +334,38 @@
                        Message="Every project, file and comment in it goes with it. This cannot be undone."
                        OkText="Delete workspace"
                        CancelText="Cancel" />
+
+            <BitSeparator Style="margin: 1rem 0" />
+
+            <div>
+                <b>AutoFocusSelector</b> names an element of your own instead. The Dialog below opens with a link
+                above the field, which is where the focus would otherwise land; the selector puts it in the field the
+                user actually came for. A selector that matches nothing visible falls back to the first focusable
+                element, so a Dialog whose content varies never opens with the focus left behind on the page.
+            </div>
+            <br />
+            <BitButton OnClick="@(() => isOpenFocusSelector = true)">Focus a field of your own</BitButton>
+            <BitDialog @bind-IsOpen="isOpenFocusSelector"
+                       Title="Invite a teammate"
+                       ShowCloseButton="false"
+                       AutoFocusSelector=".invite-email input"
+                       OkText="Send invite">
+                <div class="dialog-body">
+                    <BitLink Href="/components/dialog">What can a guest see?</BitLink>
+                    <br /><br />
+                    <BitTextField Class="invite-email" Label="Email" Placeholder="name@example.com" />
+                </div>
+            </BitDialog>
         </DemoExample>
 
         <DemoExample Title="Scroll locking" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>
                 <b>AutoToggleScroll</b> stops the page behind the overlay from scrolling for as long as the Dialog is
-                open, and gives it back afterwards - including when the Dialog is disposed while still open.
-                <b>ScrollerSelector</b> (or <b>ScrollerElement</b>) names what to lock when the Dialog sits over a
-                scrollable of its own rather than over the page.
+                open, and gives it back afterwards - including when the Dialog is disposed while still open. The width
+                the scrollbar leaves behind is given back as padding, so nothing on the page jumps sideways as the
+                Dialog appears, and a scroller locked by two overlays at once is only released by the second of them
+                to close. <b>ScrollerSelector</b> (or <b>ScrollerElement</b>) names what to lock when the Dialog sits
+                over a scrollable of its own rather than over the page.
             </div>
             <br />
             <div class="btn-container">
@@ -465,9 +521,12 @@
 
         <DemoExample Title="Draggable" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
-                <b>IsDraggable</b> lets the Dialog be moved around by dragging it, which is what a modeless Dialog the
-                user needs to look behind wants. <b>DragElementSelector</b> narrows the grab area to one element of
-                your own - a title bar, as a rule - so the rest of the content stays selectable.
+                <b>IsDraggable</b> lets the Dialog be moved around, which is what a modeless Dialog the user needs to
+                look behind wants. It is dragged by its header, the way a window is dragged by its title bar, so the
+                content underneath stays selectable and a scrolling body still scrolls on a touch screen; a Dialog
+                with no header at all is dragged by its whole surface instead. <b>DragElementSelector</b> points the
+                grab area at an element of your own. Either way the Dialog stays inside the area it was positioned
+                in, so it cannot be dragged off an edge and out of reach.
             </div>
             <br />
             <BitToggle Label="Is Draggable" @bind-Value="IsDraggable" />
@@ -506,7 +565,64 @@
             </BitDialog>
         </DemoExample>
 
-        <DemoExample Title="External Icons" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <DemoExample Title="Nested dialogs" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+            <div>
+                A Dialog opened from inside another one stacks on top of it, and the keyboard follows: Escape closes
+                only the Dialog that has the focus, so answering the inner one leaves the outer one standing rather
+                than tearing both of them down with a single key.
+            </div>
+            <br />
+            <BitButton OnClick="@(() => isOpenOuter = true)">Open Dialog</BitButton>
+            <BitDialog @bind-IsOpen="isOpenOuter"
+                       Title="Publish this version?"
+                       Message="Everyone in the workspace will see this version as soon as it goes out."
+                       OkText="Publish">
+                <div class="dialog-body">
+                    <BitButton Variant="BitVariant.Text" OnClick="@(() => isOpenInner = true)">What changed?</BitButton>
+
+                    <BitDialog @bind-IsOpen="isOpenInner"
+                               Title="Changes in 4.2.0"
+                               Subtitle="18 changed files"
+                               ShowOkButton="false"
+                               CancelText="Back"
+                               Message="Press Escape here and only this Dialog closes." />
+                </div>
+            </BitDialog>
+        </DemoExample>
+
+        <DemoExample Title="Keep mounted" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+            <div>
+                A Dialog is unmounted when it closes, so its content is built afresh - and starts empty - the next
+                time it opens. <b>KeepMounted</b> leaves it in the DOM, hidden, which keeps whatever the user had
+                typed. Type into both of the Dialogs below, close them, and open them again.
+            </div>
+            <br />
+            <div class="btn-container">
+                <BitButton OnClick="@(() => isOpenKeptMounted = true)">KeepMounted</BitButton>
+                <BitButton OnClick="@(() => isOpenUnmounted = true)">Default</BitButton>
+            </div>
+
+            <BitDialog KeepMounted
+                       @bind-IsOpen="isOpenKeptMounted"
+                       Title="Report an issue"
+                       ShowCloseButton="false"
+                       OkText="Send">
+                <div class="dialog-body">
+                    <BitTextField Label="What happened?" Multiline Rows="4" />
+                </div>
+            </BitDialog>
+
+            <BitDialog @bind-IsOpen="isOpenUnmounted"
+                       Title="Report an issue"
+                       ShowCloseButton="false"
+                       OkText="Send">
+                <div class="dialog-body">
+                    <BitTextField Label="What happened?" Multiline Rows="4" />
+                </div>
+            </BitDialog>
+        </DemoExample>
+
+        <DemoExample Title="External Icons" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
             <div>
                 The close button takes the <b>Cancel</b> glyph from the built-in Fluent set by default.
                 <b>CloseIconName</b> swaps it for another built-in one, and <b>CloseIcon</b> takes a
@@ -556,7 +672,7 @@
                        CloseIconName="@BitIconName.ChromeClose" />
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+        <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
             <div>
                 Beyond the root <b>Style</b> and <b>Class</b>, the <b>Styles</b> and <b>Classes</b> parameters take a
                 <BitLink Href="#class-styles">BitDialogClassStyles</BitLink> that targets each part on its own - the
@@ -594,7 +710,7 @@
                        })" />
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+        <DemoExample Title="RTL" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
             <div>
                 Set <b>Dir</b> to <b>Rtl</b> to lay the Dialog out for right-to-left languages: the close button moves
                 to the left of the header, the action buttons mirror, and a <b>Start</b>/<b>End</b> position follows

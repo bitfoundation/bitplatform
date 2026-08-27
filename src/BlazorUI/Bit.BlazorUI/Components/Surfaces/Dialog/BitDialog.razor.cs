@@ -15,13 +15,24 @@ public partial class BitDialog : BitComponentBase
     /// </summary>
     internal const string DefaultCloseButtonTitle = "Close";
 
+    /// <summary>
+    /// How long the container carries the class that plays back a refused dismissal, in milliseconds.
+    /// It outlasts the animation itself, whose duration comes from the motion tokens and collapses to
+    /// nothing under prefers-reduced-motion.
+    /// </summary>
+    private const int DismissPreventedDuration = 300;
+
     private bool _isLoading;
     private float _offsetTop;
     private bool _internalIsOpen;
+    private bool _dismissPrevented;
     private string _containerId = default!;
     private string _titleId = default!;
     private string _subtitleId = default!;
     private string _messageId = default!;
+
+    // The surface itself, so the focus can be put back on it after a click that took it out of the Dialog.
+    private ElementReference _containerRef;
 
     // The Dialog's own buttons, so AutoFocusButton can put the focus on one of them by hand.
     private ElementReference _okButtonRef;
@@ -82,9 +93,23 @@ public partial class BitDialog : BitComponentBase
     /// <remarks>
     /// A Dialog that confirms something irreversible should open with the focus on the answer that does the
     /// least damage, so a stray Enter or Space cannot carry the destructive one out. A button that is not
-    /// being shown is ignored, and the focus falls back to the first focusable element.
+    /// being shown is ignored, and the focus falls back to <see cref="AutoFocusSelector"/> or to the first
+    /// focusable element.
     /// </remarks>
     [Parameter] public BitDialogButton? AutoFocusButton { get; set; }
+
+    /// <summary>
+    /// The CSS selector of the element inside the Dialog that <see cref="AutoFocus"/> lands on, instead of
+    /// the first focusable element it holds.
+    /// </summary>
+    /// <remarks>
+    /// The first focusable element is rarely the wrong place to start, but it is when the Dialog opens with
+    /// a link or a segmented control above the field the user came to fill in. The selector is matched
+    /// inside the Dialog only, and a selector that matches nothing visible falls back to the first focusable
+    /// element - so a Dialog whose content varies never opens with the focus nowhere.
+    /// <see cref="AutoFocusButton"/> takes precedence over this when both are set.
+    /// </remarks>
+    [Parameter] public string? AutoFocusSelector { get; set; }
 
     /// <summary>
     /// Enables the auto scrollbar toggle behavior of the Dialog.
@@ -146,8 +171,15 @@ public partial class BitDialog : BitComponentBase
     [Parameter] public bool CloseOnEscape { get; set; } = true;
 
     /// <summary>
-    /// The CSS selector of the drag element. by default it's the Dialog container.
+    /// The CSS selector of the element the Dialog is dragged by. By default it is the header when the
+    /// Dialog has one, and the whole container when it has none.
     /// </summary>
+    /// <remarks>
+    /// A title bar is what a window is dragged by everywhere else, and for good reason: a surface that is
+    /// draggable all over turns selecting a word, reaching for a field or flicking through a scrolling body
+    /// on a touch screen into a move. Point this at a header of your own when the Dialog is built from
+    /// custom content, or at the container to make the whole surface the handle.
+    /// </remarks>
     [Parameter] public string? DragElementSelector { get; set; }
 
     /// <summary>
@@ -211,9 +243,20 @@ public partial class BitDialog : BitComponentBase
     /// <summary>
     /// Whether the Dialog is displayed.
     /// </summary>
-    [Parameter, TwoWayBound]
+    [Parameter, TwoWayBound, ResetClassBuilder]
     [CallOnSet(nameof(OnSetIsOpen))]
     public bool IsOpen { get; set; }
+
+    /// <summary>
+    /// Keeps the Dialog in the DOM while it is closed, hidden, instead of removing it.
+    /// </summary>
+    /// <remarks>
+    /// A Dialog is unmounted when it closes, which is what a Dialog should do: nothing is rendered, nothing
+    /// is measured, and the next showing starts clean. Turn this on for the Dialog whose content is
+    /// expensive to build or has state worth keeping - a part-filled form the user is meant to come back
+    /// to - at the cost of that content living, and rendering, for as long as the page does.
+    /// </remarks>
+    [Parameter] public bool KeepMounted { get; set; }
 
     /// <summary>
     /// The message to display in the dialog.
@@ -242,15 +285,36 @@ public partial class BitDialog : BitComponentBase
     /// <summary>
     /// A callback function for when the the dialog is dismissed (closed).
     /// </summary>
+    /// <remarks>
+    /// <see cref="DismissReason"/> reports which gesture ended the showing by the time this runs.
+    /// </remarks>
     [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
+
+    /// <summary>
+    /// A callback function for when a dismissal was refused: the Escape key on a Dialog that does not take
+    /// it, or a click on the overlay of a blocking one.
+    /// </summary>
+    /// <remarks>
+    /// The Dialog answers a refused dismissal on its own by shaking, so the gesture is not simply swallowed.
+    /// This is for saying why - a hint under the buttons, or a message pointing at what is still unanswered.
+    /// </remarks>
+    [Parameter] public EventCallback<BitDialogDismissReason> OnDismissPrevented { get; set; }
+
+    /// <summary>
+    /// A callback function for when the overlay of the Dialog is clicked, whether or not the click goes on
+    /// to dismiss the Dialog.
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnOverlayClick { get; set; }
 
     /// <summary>
     /// A callback function for when the Ok button is clicked.
     /// </summary>
     /// <remarks>
     /// The Dialog waits for this callback before it closes, and shows a spinner in place of the Ok text
-    /// while it waits, so an Ok that saves something can hold the Dialog open until the save is done.
-    /// A callback that throws leaves the Dialog open.
+    /// while it waits, so an Ok that saves something can hold the Dialog open until the save is done. The
+    /// showing has already been answered by then, so every other way out - the Cancel and close buttons, the
+    /// Escape key, a click on the overlay - is held shut for as long as the callback runs. A callback that
+    /// throws leaves the Dialog open and unanswered, ready for another try.
     /// </remarks>
     [Parameter] public EventCallback<MouseEventArgs> OnOk { get; set; }
 
@@ -353,9 +417,24 @@ public partial class BitDialog : BitComponentBase
     public BitDialogResult? Result { get; private set; }
 
     /// <summary>
+    /// What ended the last showing of the Dialog: the gesture that closed it, and null while it is open or
+    /// before it has been shown at all.
+    /// </summary>
+    /// <remarks>
+    /// This is set before <see cref="OnDismiss"/> and <see cref="BitDialog.IsOpenChanged"/> run, so a handler
+    /// can tell an Escape from a click on the overlay - a distinction <see cref="Result"/> cannot make, since
+    /// neither of them leaves an answer.
+    /// </remarks>
+    public BitDialogDismissReason? DismissReason { get; private set; }
+
+    /// <summary>
     /// Opens the Dialog and waits for it to close, reporting how it closed: Ok or Cancel when one of
     /// those buttons ended it, and null when it was dismissed without an answer.
     /// </summary>
+    /// <remarks>
+    /// Whatever ends the showing completes the task - a button, a dismissal, or the page closing the Dialog
+    /// itself - so it never hangs, and <see cref="DismissReason"/> tells the three answerless endings apart.
+    /// </remarks>
     public async Task<BitDialogResult?> Show()
     {
         var tcs = new TaskCompletionSource<BitDialogResult?>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -368,6 +447,7 @@ public partial class BitDialog : BitComponentBase
 
             _tcs = tcs;
             Result = null;
+            DismissReason = null;
 
             if (await AssignIsOpen(true) is false)
             {
@@ -415,6 +495,11 @@ public partial class BitDialog : BitComponentBase
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        // Only a kept-mounted Dialog is ever rendered while it is closed, and it is hidden rather than
+        // shown empty: display:none takes it out of the layout, out of the tab order and out of the
+        // accessibility tree, and lets the entrance animation play again on the next showing.
+        ClassBuilder.Register(() => IsOpen ? string.Empty : "bit-dlg-hdn");
 
         ClassBuilder.Register(() => AbsolutePosition ? "bit-dlg-abs" : string.Empty);
         ClassBuilder.Register(() => IsModeless ? "bit-dlg-mls" : string.Empty);
@@ -504,14 +589,28 @@ public partial class BitDialog : BitComponentBase
 
     private async Task HandleClosed()
     {
+        // A refused dismissal that was still being played back has nothing left to refuse.
+        _dismissPrevented = false;
+
         await DisposeFocusTrap();
 
-        await InvokeJs(_js.BitDragDropRemove(_containerId, _dragElementSelectorOnSetup ?? GetDragElementSelector()));
-        _dragElementSelectorOnSetup = null;
+        await RemoveDragHandlers();
 
         await ToggleScroll(false);
 
         await RestoreSavedFocus();
+    }
+
+    // The drag handlers are torn down only where they were actually registered, so a Dialog that was never
+    // draggable does not pay a round trip to the JS side every time it closes.
+    private async Task RemoveDragHandlers()
+    {
+        if (_dragElementSelectorOnSetup is null) return;
+
+        var selector = _dragElementSelectorOnSetup;
+        _dragElementSelectorOnSetup = null;
+
+        await InvokeJs(_js.BitDragDropRemove(_containerId, selector));
     }
 
     private async Task ToggleScroll(bool isOpen)
@@ -543,8 +642,9 @@ public partial class BitDialog : BitComponentBase
     }
 
     // Puts the focus where the Dialog was asked to open it: on one of its own buttons where AutoFocusButton
-    // names one that is actually being shown, and otherwise on the first focusable element it holds - which
-    // the JS side falls back from onto the Dialog itself when it holds nothing focusable.
+    // names one that is actually being shown, on what AutoFocusSelector points at next, and otherwise on the
+    // first focusable element it holds - which the JS side falls back from onto the Dialog itself when it
+    // holds nothing focusable.
     private async Task FocusAutoTarget()
     {
         var target = AutoFocusButton switch
@@ -563,7 +663,7 @@ public partial class BitDialog : BitComponentBase
             }
             else
             {
-                await _js.BitUtilsFocusFirstElement(_containerId);
+                await _js.BitUtilsFocusFirstElement(_containerId, AutoFocusSelector);
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
@@ -622,13 +722,16 @@ public partial class BitDialog : BitComponentBase
         {
             // A fresh showing starts without the answer of the previous one.
             Result = null;
+            DismissReason = null;
             return;
         }
 
         // Whatever closed the Dialog - one of its buttons, a dismissal, or the parent setting IsOpen
         // itself - is what ends the showing, so the awaiter Show handed out is released here rather
-        // than in any one of those paths.
+        // than in any one of those paths. Anything that came through the Dialog's own gestures has
+        // already named itself; what is left is the page closing the Dialog behind its back.
         _isLoading = false;
+        DismissReason ??= BitDialogDismissReason.Programmatic;
         CompletePending(Result);
     }
 
@@ -641,7 +744,7 @@ public partial class BitDialog : BitComponentBase
         tcs.TrySetResult(result);
     }
 
-    private async Task DismissDialog(MouseEventArgs e)
+    private async Task DismissDialog(MouseEventArgs e, BitDialogDismissReason reason)
     {
         if (IsEnabled is false) return;
 
@@ -649,49 +752,125 @@ public partial class BitDialog : BitComponentBase
         // is filtered out here to keep OnDismiss from firing for a dismissal that never happened.
         if (IsOpen is false) return;
 
-        if (await AssignIsOpen(false) is false) return;
+        // Named before the assignment, since that is what runs OnSetIsOpen and raises IsOpenChanged - both
+        // of which a handler reads the reason from.
+        DismissReason = reason;
+
+        if (await AssignIsOpen(false) is false)
+        {
+            DismissReason = null;
+            return;
+        }
 
         await OnDismiss.InvokeAsync(e);
     }
 
+    // A dismissal the Dialog will not act on is answered rather than swallowed: the surface shakes once, so
+    // the gesture is visibly refused instead of appearing to have missed. Without it, a blocking Dialog
+    // whose way out is not obvious reads as a page that has stopped responding.
+    private async Task PreventDismiss(BitDialogDismissReason reason)
+    {
+        await OnDismissPrevented.InvokeAsync(reason);
+
+        // Already playing one back: restarting it mid-flight would only cut the animation short.
+        if (_dismissPrevented) return;
+
+        _dismissPrevented = true;
+        StateHasChanged();
+
+        await Task.Delay(DismissPreventedDuration);
+
+        if (IsDisposed) return;
+
+        _dismissPrevented = false;
+        StateHasChanged();
+    }
+
+    // A click on the overlay lands on an element the focus cannot rest on, which leaves the document body
+    // holding it - outside the Dialog, and so outside the trap that was keeping Tab inside it. Where the
+    // Dialog is still up and still trapping, the focus is put back on its surface.
+    private async Task ReclaimFocusAfterOverlayClick()
+    {
+        if (IsOpen is false || ShouldTrapFocus is false) return;
+
+        try
+        {
+            if (await _js.BitUtilsContainsActiveElement(_containerId)) return;
+
+            await _containerRef.FocusAsync();
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
     private async Task HandleOnOverlayClick(MouseEventArgs e)
     {
-        if (IsBlocking) return;
+        if (IsEnabled is false) return;
 
-        await DismissDialog(e);
+        await OnOverlayClick.InvokeAsync(e);
+
+        // The Ok callback is still running, so the showing has already been answered - a dismissal now would
+        // answer it a second time, over the top of work that has not finished.
+        if (_isLoading) return;
+
+        if (IsBlocking)
+        {
+            await ReclaimFocusAfterOverlayClick();
+
+            await PreventDismiss(BitDialogDismissReason.OverlayClick);
+            return;
+        }
+
+        await DismissDialog(e, BitDialogDismissReason.OverlayClick);
+
+        await ReclaimFocusAfterOverlayClick();
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
         if (e.Key is not "Escape") return;
 
-        if (IsEnabled is false || IsOpen is false) return;
+        if (IsEnabled is false || IsOpen is false || _isLoading) return;
 
         // A blocking Dialog can only be answered with its buttons, which is as true of the keyboard as
         // it is of a click on the overlay.
-        if (CloseOnEscape is false || IsBlocking) return;
+        if (CloseOnEscape is false || IsBlocking)
+        {
+            await PreventDismiss(BitDialogDismissReason.Escape);
+            return;
+        }
 
-        await DismissDialog(new MouseEventArgs());
+        await DismissDialog(new MouseEventArgs(), BitDialogDismissReason.Escape);
     }
 
     private async Task HandleOnCloseClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (IsEnabled is false || _isLoading) return;
 
         await OnClose.InvokeAsync(e);
 
-        await DismissDialog(e);
+        await DismissDialog(e, BitDialogDismissReason.CloseButton);
     }
 
     private async Task HandleOnCancelClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (IsEnabled is false || _isLoading) return;
 
+        // The answer is in place before the callback runs, so a callback that closes the Dialog itself
+        // still reports the answer it was given - and is taken back again when the callback throws, which
+        // leaves the Dialog open and therefore unanswered.
         Result = BitDialogResult.Cancel;
 
-        await OnCancel.InvokeAsync(e);
+        try
+        {
+            await OnCancel.InvokeAsync(e);
+        }
+        catch
+        {
+            Result = null;
+            throw;
+        }
 
-        await DismissDialog(e);
+        await DismissDialog(e, BitDialogDismissReason.CancelButton);
     }
 
     private async Task HandleOnOkClick(MouseEventArgs e)
@@ -714,13 +893,21 @@ public partial class BitDialog : BitComponentBase
             {
                 await OnOk.InvokeAsync(e);
             }
-            finally
+            catch
             {
+                // The Dialog stays open for another try, so the button has to come back with it - and the
+                // render that normally follows an event handler never arrives for one that faulted, which
+                // would otherwise leave the spinner turning over a Dialog that is waiting for nothing.
                 _isLoading = false;
+                Result = null;
+                StateHasChanged();
+                throw;
             }
+
+            _isLoading = false;
         }
 
-        await DismissDialog(e);
+        await DismissDialog(e, BitDialogDismissReason.OkButton);
     }
 
     private string GetRole() => (IsAlert ?? (IsBlocking && IsModeless is false)) ? "alertdialog" : "dialog";
@@ -738,10 +925,20 @@ public partial class BitDialog : BitComponentBase
     {
         if (SubtitleAriaId.HasValue()) return SubtitleAriaId;
 
-        if (Subtitle.HasValue() && HeaderTemplate is null) return _subtitleId;
+        // aria-describedby takes a list, so a Dialog carrying both a subtitle and a message describes itself
+        // with the two of them rather than dropping whichever came second - and the message is usually the
+        // half that says what is actually being decided.
+        if (Subtitle.HasValue() && HeaderTemplate is null)
+        {
+            return Message.HasValue() ? $"{_subtitleId} {_messageId}" : _subtitleId;
+        }
 
         return Message.HasValue() ? _messageId : null;
     }
+
+    // The same condition the header is rendered under, so the parts that have to know whether there is one
+    // - the drag handle, above all - cannot drift away from what was actually rendered.
+    private bool HasHeader => HeaderTemplate is not null || Title.HasValue() || Subtitle.HasValue() || ShowCloseButton;
 
     private string GetPositionClass() => Position switch
     {
@@ -768,7 +965,15 @@ public partial class BitDialog : BitComponentBase
     // parse as something else entirely.
     private string ContainerSelector => $"[id=\"{_containerId}\"]";
 
-    private string GetDragElementSelector() => DragElementSelector ?? ContainerSelector;
+    // A window is dragged by its title bar: making the whole surface the handle costs the content underneath
+    // it - text selection, pointer-driven fields, touch scrolling - for a gesture the header alone offers
+    // just as well. The container is the handle only where there is no header to grab.
+    private string GetDragElementSelector()
+    {
+        if (DragElementSelector.HasValue()) return DragElementSelector!;
+
+        return HasHeader ? $"{ContainerSelector} > .bit-dlg-hdr" : ContainerSelector;
+    }
 
 
 
@@ -787,7 +992,11 @@ public partial class BitDialog : BitComponentBase
             {
                 await DisposeFocusTrap();
 
-                await _js.BitDragDropRemove(_containerId, _dragElementSelectorOnSetup ?? GetDragElementSelector());
+                if (_dragElementSelectorOnSetup is not null)
+                {
+                    await _js.BitDragDropRemove(_containerId, _dragElementSelectorOnSetup);
+                    _dragElementSelectorOnSetup = null;
+                }
 
                 await ToggleScroll(false);
             }

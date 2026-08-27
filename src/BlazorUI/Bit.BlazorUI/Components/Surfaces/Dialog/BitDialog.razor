@@ -1,7 +1,7 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-@if (IsOpen)
+@if (IsOpen || KeepMounted)
 {
     <div @ref="RootElement" @attributes="HtmlAttributes"
          id="@_Id"
@@ -19,8 +19,13 @@
                content lives in - a wrapper above the overlay would put the overlay inside the dialog for a
                screen reader. It is made programmatically focusable so that a Dialog holding nothing focusable
                still has somewhere to put the focus, which is what both the Escape key and the focus trap need:
-               a keydown only reaches Blazor from inside the element it is bound to. *@
-            <div id="@_containerId"
+               a keydown only reaches Blazor from inside the element it is bound to.
+
+               The keydown stops here rather than carrying on up the tree, which is what keeps a Dialog opened
+               from inside another one from closing both of them with a single Escape - and it stops only
+               Blazor's own bubbling, so native listeners (the focus trap among them) still see the key. *@
+            <div @ref="_containerRef"
+                 id="@_containerId"
                  role="@GetRole()"
                  tabindex="-1"
                  aria-modal="@GetAriaModal()"
@@ -28,9 +33,10 @@
                  aria-labelledby="@GetLabelledBy()"
                  aria-describedby="@GetDescribedBy()"
                  @onkeydown="HandleOnKeyDown"
+                 @onkeydown:stopPropagation="true"
                  style="@Styles?.Container"
-                 class="bit-dlg-ctn @Classes?.Container">
-                @if (HeaderTemplate is not null || Title.HasValue() || Subtitle.HasValue() || ShowCloseButton)
+                 class="bit-dlg-ctn @(_dismissPrevented ? "bit-dlg-prv" : null) @Classes?.Container">
+                @if (HasHeader)
                 {
                     <div style="@Styles?.Header" class="bit-dlg-hdr @Classes?.Header">
                         @if (HeaderTemplate is not null)
@@ -42,7 +48,10 @@
                             <div class="bit-dlg-htc">
                                 @if (Title.HasValue())
                                 {
-                                    <div id="@_titleId" style="@Styles?.Title" class="bit-dlg-ttl @Classes?.Title">@Title</div>
+                                    @* A heading rather than a plain div: the title is the heading of the
+                                       Dialog, and a screen reader user navigating by heading expects to
+                                       find it there rather than only through the accessible name. *@
+                                    <div id="@_titleId" role="heading" aria-level="2" style="@Styles?.Title" class="bit-dlg-ttl @Classes?.Title">@Title</div>
                                 }
 
                                 @if (Subtitle.HasValue())
@@ -61,7 +70,7 @@
                                     style="@Styles?.CloseButton"
                                     class="bit-dlg-cls @Classes?.CloseButton"
                                     type="button"
-                                    disabled="@(IsEnabled is false)"
+                                    disabled="@(IsEnabled is false || _isLoading)"
                                     title="@closeTitle"
                                     aria-label="@closeTitle">
                                 <span>
@@ -107,9 +116,12 @@
 
                             @if (ShowCancelButton)
                             {
+                                @* Disabled while the Ok callback is running: a Cancel let through there would
+                                   answer a showing the Ok has already answered, and hand that second answer to
+                                   an awaiter while the first one is still doing its work. *@
                                 <button @ref="_cancelButtonRef" @onclick="HandleOnCancelClick"
                                         type="button"
-                                        disabled="@(IsEnabled is false)"
+                                        disabled="@(IsEnabled is false || _isLoading)"
                                         style="@Styles?.CancelButton"
                                         class="bit-dlg-cnb @Classes?.CancelButton">
                                     @CancelText

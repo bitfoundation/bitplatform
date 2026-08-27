@@ -67,27 +67,42 @@
         // Moves the focus to the first focusable element inside the given container, falling back to the
         // container itself (which the caller makes programmatically focusable with tabindex="-1") when it
         // holds nothing focusable, so the focus never stays behind on the element that opened the popup.
-        public static focusFirstElement(elementId: string) {
+        public static focusFirstElement(elementId: string, selector?: string | null) {
             const container = document.getElementById(elementId);
             if (!container) return;
+
+            // offsetParent is null for a display:none subtree, which is how a hidden part of the
+            // content (e.g. a collapsed section) is skipped without measuring every ancestor. It is
+            // also null for a fixed-positioned element that is perfectly visible, so those are
+            // checked by hand instead: a hidden one has no box at all, and visibility:hidden leaves
+            // a box the focus still cannot land in.
+            const isVisible = (el: HTMLElement) => {
+                if (el.offsetParent !== null) return true;
+
+                const style = getComputedStyle(el);
+                return style.position === 'fixed'
+                    && style.visibility !== 'hidden'
+                    && el.getClientRects().length > 0;
+            };
+
+            // A caller-supplied selector says where the focus belongs when the first focusable element is
+            // not it. It is tried on its own so a selector that is invalid, or that matches nothing
+            // visible, falls through to the default rather than leaving the focus behind on the page.
+            if (selector) {
+                try {
+                    const preferred = Array.from(container.querySelectorAll<HTMLElement>(selector)).find(isVisible);
+                    if (preferred) {
+                        preferred.focus();
+                        return;
+                    }
+                } catch (e) { console.error("BitBlazorUI.Utils.focusFirstElement:", e); }
+            }
 
             try {
                 // The same set the focus trap cycles through, so the element the focus lands on when the
                 // popup opens is the same one Shift+Tab wraps back to from the end of it.
                 const candidates = Array.from(container.querySelectorAll<HTMLElement>(Utils._focusables));
-                // offsetParent is null for a display:none subtree, which is how a hidden part of the
-                // content (e.g. a collapsed section) is skipped without measuring every ancestor. It is
-                // also null for a fixed-positioned element that is perfectly visible, so those are
-                // checked by hand instead: a hidden one has no box at all, and visibility:hidden leaves
-                // a box the focus still cannot land in.
-                const target = candidates.find(el => {
-                    if (el.offsetParent !== null) return true;
-
-                    const style = getComputedStyle(el);
-                    return style.position === 'fixed'
-                        && style.visibility !== 'hidden'
-                        && el.getClientRects().length > 0;
-                });
+                const target = candidates.find(isVisible);
                 (target ?? container).focus();
             } catch (e) { console.error("BitBlazorUI.Utils.focusFirstElement:", e); }
         }
@@ -137,10 +152,30 @@
             element.addEventListener('keydown', e => {
                 if (e.key !== 'Tab') return;
 
+                // A trap registered on something nested inside this one - a dialog opened from inside this
+                // dialog - owns the key first, and the event carries on bubbling up to here afterwards.
+                // Without this the outer trap would wrap the focus a second time, over the decision the
+                // inner one has already made, and land it somewhere neither of them meant.
+                if (Utils.hasNearerFocusTrap(element, e.target as Element | null)) return;
+
                 Utils.wrapFocus(element, e);
             }, { signal: controller.signal });
 
             Utils._focusTraps.set(elementId, controller);
+        }
+
+        // Whether a trap is registered on something between the given container and the element the key was
+        // pressed on - the container itself excluded, since that is the trap asking.
+        private static hasNearerFocusTrap(root: HTMLElement, target: Element | null) {
+            let node = target;
+
+            while (node && node !== root) {
+                if (node.id && Utils._focusTraps.has(node.id)) return true;
+
+                node = node.parentElement;
+            }
+
+            return false;
         }
 
         public static disposeFocusTrap(elementId: string) {
@@ -607,13 +642,66 @@
             } catch (e) { console.error("BitBlazorUI.Utils.setStyle:", e); }
         }
 
+        // What each locked scroller looked like before the lock, kept against the element itself so two
+        // popups over the same scroller cannot undo each other: the count is what decides when the scroll
+        // is actually handed back, and the saved inline values are what it is handed back to.
+        private static _overflowLocks = new WeakMap<HTMLElement, { count: number, overflow: string, padding: string }>();
+
         public static toggleOverflow(selector: string | HTMLElement, isOpen: boolean) {
             const element = selector instanceof HTMLElement ? selector : document.querySelector(selector) as HTMLElement;
 
             if (!element) return 0;
 
             try {
-                element.style.overflow = isOpen ? "hidden" : "";
+                const lock = Utils._overflowLocks.get(element);
+
+                if (isOpen) {
+                    // Already locked by another popup: this one only deepens the count, so the first of
+                    // them to close does not give the page its scroll back under the second.
+                    if (lock) {
+                        lock.count++;
+                        return element.scrollTop;
+                    }
+
+                    Utils._overflowLocks.set(element, {
+                        count: 1,
+                        overflow: element.style.overflow,
+                        padding: element.style.paddingInlineEnd
+                    });
+
+                    // Taking the scrollbar away widens the content by exactly its width, which the page
+                    // pays for as a jump the moment the popup appears. The width is measured as the
+                    // difference the lock itself makes rather than assumed, which is the only reading
+                    // that stays right for an overlay scrollbar (no jump at all) and for a page that
+                    // already reserves the gutter with scrollbar-gutter (no jump either).
+                    const isViewport = element === document.body || element === document.documentElement;
+                    const measure = () => isViewport ? document.documentElement.clientWidth : element.clientWidth;
+
+                    const before = measure();
+                    element.style.overflow = "hidden";
+                    const gained = measure() - before;
+
+                    // padding-inline-end rather than padding-right: the scrollbar sits on the left of an
+                    // RTL document, which is the inline end there just as the right is in an LTR one.
+                    if (gained > 0) {
+                        const current = parseFloat(getComputedStyle(element).paddingInlineEnd) || 0;
+                        element.style.paddingInlineEnd = `${current + gained}px`;
+                    }
+
+                    return element.scrollTop;
+                }
+
+                // Nothing to unlock. An unbalanced unlock is left alone rather than clearing an overflow
+                // the page set for itself.
+                if (!lock) return element.scrollTop;
+
+                if (--lock.count > 0) return element.scrollTop;
+
+                Utils._overflowLocks.delete(element);
+
+                element.style.overflow = lock.overflow;
+                element.style.paddingInlineEnd = lock.padding;
+
                 return element.scrollTop;
             } catch (e) {
                 console.error("BitBlazorUI.Utils.toggleOverflow:", e);
