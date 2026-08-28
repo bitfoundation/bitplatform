@@ -9,9 +9,20 @@
             <NotFound>
                 <NotFoundComponent />
             </NotFound>
-            <Navigating>
-                <LoadingComponent />
-            </Navigating>
+            @* No <Navigating> template on purpose. It exists to cover an OnNavigateAsync that is
+               still running - lazy assembly loading - and this router has no OnNavigateAsync, so it
+               could only ever be shown for the one frame the framework spends deciding it has
+               nothing to wait for: Router.RunOnNavigateAsync assigns _previousOnNavigateTask a
+               task that has not completed yet and then calls Refresh, which sees an unfinished
+               task and renders this template instead of routing. The real route is rendered by the
+               Refresh that follows.
+               A template here therefore turns every navigation into page -> spinner -> page, and
+               that middle frame REPLACES the page component rather than re-rendering it: the
+               instance is disposed and a new one built, losing everything it held. On a page that
+               writes its state into the address bar - the icon browser, the component gallery -
+               that happens on every keystroke and every click, and reads as the page reloading.
+               With no template the same frame renders nothing at all, the DOM is left untouched,
+               and the routed render that follows is diffed against the page already on screen. *@
         </Router>
     </LayoutView>
 </BitErrorBoundary>
