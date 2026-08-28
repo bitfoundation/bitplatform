@@ -1813,4 +1813,27 @@
     <value>邀请已拒绝。</value>
   </data>
   <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>时区</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>选择时区</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>查找时区</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotifications" xml:space="preserve">
+    <value>推送通知</value>
+  </data>
+    <data name="TurnPushNotificationsOn" xml:space="preserve">
+    <value>开启推送通知</value>
+  </data>
+    <data name="TurnPushNotificationsOff" xml:space="preserve">
+    <value>关闭推送通知</value>
+  </data>
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>此应用的推送通知已被阻止。请在浏览器或操作系统设置中允许通知，然后重试。</value>
+  </data>
+  <!--#endif-->
 </root>

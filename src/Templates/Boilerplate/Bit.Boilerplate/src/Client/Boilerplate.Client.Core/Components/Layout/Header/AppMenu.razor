@@ -104,7 +104,7 @@
 
                         <BitActionButton IconName="@BitIconName.WorldClock" FullWidth OnClick="WrapHandled(ShowTimeZones)">
                             <BitStack Horizontal Gap="0" Grows VerticalAlign="BitAlignment.Center">
-                                @Localizer["Time zone"]
+                                @Localizer[nameof(AppStrings.TimeZone)]
                                 <BitSpacer />
                                 <BitIcon Size="BitSize.Small"
                                          Color="BitColor.SecondaryForeground"
@@ -119,7 +119,7 @@
                                 <BitActionButton Style="flex-grow:1"
                                                  OnClick="WrapHandled(TogglePushNotifications)"
                                                  IconName="@(pushNotificationsEnabled ? BitIconName.Ringer : BitIconName.RingerOff)">
-                                    @Localizer["Push notifications"]
+                                    @Localizer[nameof(AppStrings.PushNotifications)]
                                 </BitActionButton>
                                 @* One-way bound on purpose: the preference lives in the push notification service, so the switch only reports the click. *@
                                 <BitToggle AriaLabel="@PushNotificationsToggleLabel"
@@ -185,15 +185,15 @@
                     <BitStack HorizontalAlign="BitAlignment.Start" AutoSize>
                         <BitActionButton FullWidth
                                          Style="align-items:flex-end"
-                                         OnClick="() => showTimeZones = false"
+                                         OnClick="WrapHandled(() => showTimeZones = false)"
                                          IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)">
-                            @Localizer["Select time zone"]
+                            @Localizer[nameof(AppStrings.SelectTimeZone)]
                         </BitActionButton>
 
                         <BitSearchBox @bind-Value="timeZoneSearchText" Immediate DebounceTime="250"
                                       FullWidth FixedIcon
-                                      Placeholder="@Localizer["Find a time zone"]"
-                                      AriaLabel="@Localizer["Find a time zone"]" />
+                                      Placeholder="@Localizer[nameof(AppStrings.FindTimeZone)]"
+                                      AriaLabel="@Localizer[nameof(AppStrings.FindTimeZone)]" />
 
                         <BitSeparator />
 

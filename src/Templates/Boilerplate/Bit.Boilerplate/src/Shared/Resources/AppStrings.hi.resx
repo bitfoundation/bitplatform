@@ -1813,4 +1813,27 @@
     <value>निमंत्रण अस्वीकार कर दिया गया।</value>
   </data>
   <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>समय क्षेत्र</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>समय क्षेत्र चुनें</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>समय क्षेत्र खोजें</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotifications" xml:space="preserve">
+    <value>पुश सूचनाएँ</value>
+  </data>
+    <data name="TurnPushNotificationsOn" xml:space="preserve">
+    <value>पुश सूचनाएँ चालू करें</value>
+  </data>
+    <data name="TurnPushNotificationsOff" xml:space="preserve">
+    <value>पुश सूचनाएँ बंद करें</value>
+  </data>
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>इस ऐप के लिए पुश सूचनाएँ अवरुद्ध हैं। अपने ब्राउज़र या ऑपरेटिंग सिस्टम की सेटिंग में सूचनाओं की अनुमति दें और फिर से प्रयास करें।</value>
+  </data>
+  <!--#endif-->
 </root>

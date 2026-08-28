@@ -1813,4 +1813,27 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <value>Uitnodiging afgewezen.</value>
   </data>
   <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>Tijdzone</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>Tijdzone selecteren</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>Zoek een tijdzone</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotifications" xml:space="preserve">
+    <value>Pushmeldingen</value>
+  </data>
+    <data name="TurnPushNotificationsOn" xml:space="preserve">
+    <value>Pushmeldingen inschakelen</value>
+  </data>
+    <data name="TurnPushNotificationsOff" xml:space="preserve">
+    <value>Pushmeldingen uitschakelen</value>
+  </data>
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>Pushmeldingen zijn geblokkeerd voor deze app. Sta meldingen toe in de instellingen van je browser of besturingssysteem en probeer het opnieuw.</value>
+  </data>
+  <!--#endif-->
 </root>

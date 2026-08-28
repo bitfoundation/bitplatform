@@ -1813,4 +1813,27 @@
     <value>تم رفض الدعوة.</value>
   </data>
   <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>المنطقة الزمنية</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>اختر المنطقة الزمنية</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>ابحث عن منطقة زمنية</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotifications" xml:space="preserve">
+    <value>الإشعارات الفورية</value>
+  </data>
+    <data name="TurnPushNotificationsOn" xml:space="preserve">
+    <value>تشغيل الإشعارات الفورية</value>
+  </data>
+    <data name="TurnPushNotificationsOff" xml:space="preserve">
+    <value>إيقاف الإشعارات الفورية</value>
+  </data>
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>الإشعارات الفورية محظورة لهذا التطبيق. اسمح بالإشعارات في إعدادات المتصفح أو نظام التشغيل ثم حاول مرة أخرى.</value>
+  </data>
+  <!--#endif-->
 </root>

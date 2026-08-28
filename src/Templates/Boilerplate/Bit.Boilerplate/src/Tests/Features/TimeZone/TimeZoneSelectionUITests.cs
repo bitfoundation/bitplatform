@@ -42,7 +42,7 @@ public partial class TimeZoneSelectionUITests : AppPageTest
         // Narrow the hundreds of zones down through the panel's search box. The full list also contains the match,
         // so waiting for the label alone can hand the click a node that the debounced filter re-render is about to
         // replace, losing the click - waiting for the list to shrink is what proves the filtered render is on screen.
-        await callout.GetByPlaceholder("Find a time zone").FillAsync(searchTerm);
+        await callout.GetByPlaceholder(AppStrings.FindTimeZone).FillAsync(searchTerm);
         await Page.WaitForFunctionAsync(
             "() => { const n = document.querySelectorAll('.app-menu-callout input.bit-chg-inp').length; return n >= 1 && n <= 5; }");
 
@@ -88,8 +88,8 @@ public partial class TimeZoneSelectionUITests : AppPageTest
         await Page.Locator(".menu-chevron").ClickAsync();
         await Expect(callout).ToBeVisibleAsync();
 
-        await callout.GetByRole(AriaRole.Button, new() { Name = "Time zone" }).ClickAsync();
-        await Expect(callout.GetByPlaceholder("Find a time zone")).ToBeVisibleAsync();
+        await callout.GetByRole(AriaRole.Button, new() { Name = AppStrings.TimeZone }).ClickAsync();
+        await Expect(callout.GetByPlaceholder(AppStrings.FindTimeZone)).ToBeVisibleAsync();
         await Expect(callout.Locator("input.bit-chg-inp").First).ToBeAttachedAsync();
     }
 }

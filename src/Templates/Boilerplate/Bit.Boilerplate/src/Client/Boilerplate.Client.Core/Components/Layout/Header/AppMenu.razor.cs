@@ -103,8 +103,8 @@ public partial class AppMenu
     }
 
     private string PushNotificationsToggleLabel => pushNotificationsEnabled
-        ? Localizer["Turn push notifications off"].Value
-        : Localizer["Turn push notifications on"].Value;
+        ? Localizer[nameof(AppStrings.TurnPushNotificationsOff)].Value
+        : Localizer[nameof(AppStrings.TurnPushNotificationsOn)].Value;
 
     private async Task TogglePushNotifications()
     {
@@ -116,7 +116,7 @@ public partial class AppMenu
 
             if (await pushNotificationService.IsAvailable(CurrentCancellationToken) is false)
             {
-                SnackBarService.Error(Localizer["Push notifications are blocked for this app. Allow notifications in your browser or OS settings and try again."]);
+                SnackBarService.Error(Localizer[nameof(AppStrings.PushNotificationsBlockedMessage)]);
                 return; // The switch stays off; reporting success for a device that can never receive a push would be a lie.
             }
         }

@@ -10,6 +10,14 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
 
     private const string PushNotificationsDisabledStoreKey = "PushNotificationsDisabled";
 
+    /// <summary>
+    /// Orders <see cref="Subscribe"/>, <see cref="Unsubscribe"/> and <see cref="SetEnabled"/> against each other.
+    /// Without it, the automatic subscribe that runs on every auth-state change (See AppClientCoordinator) could pass
+    /// the opt-out check, lose the race to a SetEnabled(false) that stores the opt-out and removes the server row,
+    /// and then recreate that row.
+    /// </summary>
+    private readonly SemaphoreSlim gate = new(1, 1);
+
     public virtual string? Token { get; set; }
     public virtual Task<bool> IsAvailable(CancellationToken cancellationToken) => Task.FromResult(false);
     public abstract Task<PushNotificationSubscriptionDto?> GetSubscription(CancellationToken cancellationToken);
@@ -19,23 +27,59 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
 
     public async Task SetEnabled(bool enabled, CancellationToken cancellationToken)
     {
-        if (enabled)
+        await gate.WaitAsync(cancellationToken);
+        try
         {
-            await StorageService.RemoveItem(PushNotificationsDisabledStoreKey);
-            await Subscribe(cancellationToken);
+            if (enabled)
+            {
+                await StorageService.RemoveItem(PushNotificationsDisabledStoreKey);
+                await SubscribeCore(cancellationToken);
+            }
+            else
+            {
+                await StorageService.SetItem(PushNotificationsDisabledStoreKey, "true", persistent: true);
+                await UnsubscribeCore(cancellationToken);
+            }
         }
-        else
+        finally
         {
-            await StorageService.SetItem(PushNotificationsDisabledStoreKey, "true", persistent: true);
-            await Unsubscribe(cancellationToken);
+            gate.Release();
         }
     }
 
     public async Task Subscribe(CancellationToken cancellationToken)
     {
-        if (await IsEnabled() is false)
-            return; // The automatic subscribe on every auth-state change (See AppClientCoordinator) must not undo the user's opt-out.
+        await gate.WaitAsync(cancellationToken);
+        try
+        {
+            // Checked under the gate: a SetEnabled(false) ahead of this call has stored the opt-out by the time this
+            // runs, so the automatic subscribe on every auth-state change (See AppClientCoordinator) cannot undo it.
+            if (await IsEnabled() is false)
+                return;
 
+            await SubscribeCore(cancellationToken);
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
+    public async Task Unsubscribe(CancellationToken cancellationToken)
+    {
+        await gate.WaitAsync(cancellationToken);
+        try
+        {
+            await UnsubscribeCore(cancellationToken);
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
+    private async Task SubscribeCore(CancellationToken cancellationToken)
+    {
         if (await IsAvailable(cancellationToken) is false)
         {
             Logger.LogWarning("Notifications are not supported/allowed on this platform/device.");
@@ -50,7 +94,12 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
         await pushNotificationController.Subscribe(subscription, cancellationToken);
     }
 
-    public virtual async Task Unsubscribe(CancellationToken cancellationToken)
+    /// <summary>
+    /// The native platforms' <see cref="GetSubscription"/> is a pure token lookup, so this base implementation may
+    /// use it to identify the server row. The web's is not - it CREATES a browser subscription when none exists -
+    /// which is why WebPushNotificationService overrides this with a non-creating lookup.
+    /// </summary>
+    protected virtual async Task UnsubscribeCore(CancellationToken cancellationToken)
     {
         if (await IsAvailable(cancellationToken) is false)
             return;
