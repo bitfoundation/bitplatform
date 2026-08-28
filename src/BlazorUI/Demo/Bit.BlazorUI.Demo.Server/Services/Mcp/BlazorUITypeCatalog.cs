@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Collections.Frozen;
 using Microsoft.AspNetCore.Components;
 
@@ -142,6 +142,8 @@ public static class BlazorUITypeCatalog
     private static BlazorUIType? Nested(string dotted)
     {
         var parts = dotted.Split('.', StringSplitOptions.RemoveEmptyEntries);
+
+        if (parts.Length == 0) return null;
 
         if (_byName.Value.TryGetValue(parts[0], out var root) is false &&
             _byName.Value.TryGetValue($"Bit{parts[0]}", out root) is false) return null;

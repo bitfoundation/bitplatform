@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
 using System.Diagnostics;
 using System.Net.Http.Headers;
@@ -158,6 +158,11 @@ public partial class McpServerPage
     private string? _serverName;
     private string? _instructions;
     private int? _componentCount;
+
+    // The count is read off the server's own instructions, so it is never typed on this page - and
+    // the sentence still reads before the handshake that supplies it has answered.
+    private string CompletionsDescription
+        => $"How a client's picker offers the {(_componentCount is null ? "component" : $"{_componentCount} component")} names, the type names and the theming chapters without anyone typing one blind.";
 
     private string _selectedTool = string.Empty;
     private string? _selectedDescription;
@@ -610,6 +615,8 @@ public partial class McpServerPage
         var url = $"{HttpEndpoint}{_httpTool}{(string.IsNullOrWhiteSpace(_httpQuery) ? "" : $"?{_httpQuery.TrimStart('?')}")}";
 
         _busy = true;
+        StateHasChanged();
+
         var stopwatch = Stopwatch.StartNew();
 
         HttpResponseMessage response;

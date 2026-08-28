@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 
 namespace Bit.BlazorUI.Demo.Server.Services.Mcp;
 
@@ -224,14 +224,14 @@ public static class BlazorUIMarkdown
 
                 builder.AppendLine($"Stopped here to stay within one answer. Also available, one at a time via `GetBitBlazorUIComponentExamples(name: \"{component.Name}\", example: \"...\")`: {string.Join(", ", remaining)}.");
 
-                return builder.ToString();
+                return Truncate(builder.ToString());
             }
 
             builder.Append(section);
             written++;
         }
 
-        return builder.ToString();
+        return Truncate(builder.ToString());
     }
 
     /// <summary>The library-wide types, grouped by kind - the answer when no type was named.</summary>

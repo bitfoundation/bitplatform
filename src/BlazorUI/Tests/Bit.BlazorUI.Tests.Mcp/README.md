@@ -1,4 +1,4 @@
-# Bit.BlazorUI.Tests.Mcp
+﻿# Bit.BlazorUI.Tests.Mcp
 
 The suite for the bit BlazorUI MCP server - the tools an AI agent calls to build a Blazor UI with
 this library without guessing at it. The server lives in
@@ -19,7 +19,7 @@ rendered by the real components through the real request pipeline. Each of those
 can answer nothing in production while answering perfectly against an in-memory host, so the suite
 runs the app the way the app runs.
 
-```
+```shell
 dotnet run --project Tests/Bit.BlazorUI.Tests.Mcp
 ```
 

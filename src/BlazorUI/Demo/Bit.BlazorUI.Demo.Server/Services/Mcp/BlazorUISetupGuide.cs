@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 
 namespace Bit.BlazorUI.Demo.Server.Services.Mcp;
 
@@ -80,7 +80,7 @@ public static class BlazorUISetupGuide
 
         builder.AppendLine("`@Assets[\"\"]` and the `<Script>`/`<Link>` components only work in `App.razor`, which a")
                .AppendLine("standalone WebAssembly app does not have. Append the library version by hand instead:")
-               .AppendLine("`?v=10.6.0` - or whatever version the project references.").AppendLine();
+               .AppendLine($"`?v={BlazorUIAssemblies.Version}` - or whatever version the project references.").AppendLine();
 
         Optional(builder);
         Verify(builder);

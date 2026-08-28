@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Server.Services.Mcp;
+﻿namespace Bit.BlazorUI.Demo.Server.Services.Mcp;
 
 /// <summary>
 /// The server's <c>instructions</c>: the text an MCP client is handed at <c>initialize</c> and
@@ -49,7 +49,7 @@ public static class BlazorUIMcpInstructions
 
         Six things hold across the whole library. Apply them without being asked:
         1. Call AddBitBlazorUIServices() in EVERY DI container that renders components - a Blazor Web App
-           with an interactive client has two - and put <link href="_content/Bit.BlazorUI/styles/bit.blazorui.css">
+           with an interactive client has two - and put <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css">
            and <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"> in the host page. Neither
            omission is a build error: the first throws inside a component, the second renders your app as
            unstyled HTML whose callouts and dropdowns never open.
