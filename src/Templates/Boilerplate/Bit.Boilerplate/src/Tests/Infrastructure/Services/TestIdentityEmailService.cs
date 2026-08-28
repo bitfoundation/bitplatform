@@ -25,12 +25,13 @@ public class TestIdentityEmailService : IdentityEmailService
     public TestIdentityEmailService(
         EmailCaptureStore captureStore,
         IBackgroundJobClient backgroundJobClient,
+        AppDbContext dbContext,
         IStringLocalizer<EmailStrings> emailLocalizer,
         IHostEnvironment hostEnvironment,
         HtmlRenderer htmlRenderer,
         IHttpContextAccessor httpContextAccessor,
         ILogger<IdentityEmailService> logger)
-        : base(backgroundJobClient, emailLocalizer, hostEnvironment, htmlRenderer, httpContextAccessor, logger)
+        : base(backgroundJobClient, dbContext, emailLocalizer, hostEnvironment, htmlRenderer, httpContextAccessor, logger)
     {
         this.captureStore = captureStore;
     }

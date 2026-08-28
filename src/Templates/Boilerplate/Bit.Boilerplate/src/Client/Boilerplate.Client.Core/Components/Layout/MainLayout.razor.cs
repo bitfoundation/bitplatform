@@ -15,6 +15,7 @@ public partial class MainLayout : IAsyncDisposable
     [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
 
+    [AutoInject] private Document document = default!;
     [AutoInject] private Keyboard keyboard = default!;
     [AutoInject] private AuthManager authManager = default!;
     [AutoInject] private ThemeService themeService = default!;
@@ -70,6 +71,7 @@ public partial class MainLayout : IAsyncDisposable
             unsubscribers.Add(pubSubService.Subscribe(ClientAppMessages.CULTURE_CHANGED, async _ =>
             {
                 SetCurrentDir();
+                await ApplyCultureToDocument();
                 StateHasChanged();
             }));
 
@@ -137,6 +139,10 @@ public partial class MainLayout : IAsyncDisposable
         if (firstRender)
         {
             await keyboard.Add(ButilKeyCodes.KeyX, OpenDiagnosticModal, ButilModifiers.Ctrl | ButilModifiers.Shift);
+
+            // Stamps the booted culture onto <html> for the static hosts, whose index.html carries no lang/dir;
+            // a no-op re-stamp on Server.Web, where App.razor already rendered the same values.
+            await ApplyCultureToDocument();
         }
     }
 
@@ -212,6 +218,19 @@ public partial class MainLayout : IAsyncDisposable
     private void SetCurrentDir()
     {
         currentDir = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? BitDir.Rtl : null;
+    }
+
+    /// <summary>
+    /// Stamps the current culture's name and directionality onto the &lt;html&gt; element, so assistive technologies,
+    /// css <c>:lang()</c> rules and the document's layout direction follow the rendered language.
+    /// </summary>
+    private async Task ApplyCultureToDocument()
+    {
+        if (CultureInfoManager.InvariantGlobalization || RendererInfo.IsInteractive is false) return;
+
+        var culture = CultureInfo.CurrentUICulture;
+        await document.SetLang(culture.Name);
+        await document.SetDir(culture.TextInfo.IsRightToLeft ? DocumentDir.Rtl : DocumentDir.Ltr);
     }
 
     private void SetRouteData()

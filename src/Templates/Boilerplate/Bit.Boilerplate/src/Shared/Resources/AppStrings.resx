@@ -1813,4 +1813,27 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Invitation declined.</value>
   </data>
   <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>Time zone</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>Select time zone</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>Find a time zone</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotifications" xml:space="preserve">
+    <value>Push notifications</value>
+  </data>
+    <data name="TurnPushNotificationsOn" xml:space="preserve">
+    <value>Turn push notifications on</value>
+  </data>
+    <data name="TurnPushNotificationsOff" xml:space="preserve">
+    <value>Turn push notifications off</value>
+  </data>
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>Push notifications are blocked for this app. Allow notifications in your browser or OS settings and try again.</value>
+  </data>
+  <!--#endif-->
 </root>

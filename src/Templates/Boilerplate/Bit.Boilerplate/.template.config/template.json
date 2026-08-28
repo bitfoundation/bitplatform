@@ -248,6 +248,142 @@
             "defaultValue": "false",
             "description": "Replaces the built-in Blazor Router with bit Brouter, bringing advanced routing features - nested routes, route guards, data loaders, keep-alive pages and view transitions - inspired by the routers of Vue.js, React and Angular."
         },
+        "theme": {
+            "displayName": "Theme",
+            "type": "parameter",
+            "datatype": "choice",
+            "defaultValue": "Fluent2",
+            "choices": [
+                {
+                    "choice": "Fluent2",
+                    "description": "Fluent 2 design system"
+                },
+                {
+                    "choice": "Fluent",
+                    "description": "Fluent design system"
+                },
+                {
+                    "choice": "Cupertino",
+                    "description": "Cupertino design system (experimental)"
+                },
+                {
+                    "choice": "Material",
+                    "description": "Material design system (experimental)"
+                }
+            ],
+            "description": "The design system the app's UI ships with, powered by bit BlazorUI theming."
+        },
+        // The host pages pin the chosen design system twice: as bit-theme-light / bit-theme-dark preset names in the
+        // index.html files and as BitThemePresets / BitExtraThemePresets constants in App.razor. Both spellings are
+        // rewritten here, so the host pages need no conditional directives around those attributes.
+        "themeLightName": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "fluent2-light",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(theme == 'Fluent')",
+                        "value": "fluent-light"
+                    },
+                    {
+                        "condition": "(theme == 'Cupertino')",
+                        "value": "cupertino-light"
+                    },
+                    {
+                        "condition": "(theme == 'Material')",
+                        "value": "material-light"
+                    },
+                    {
+                        "condition": "",
+                        "value": "fluent2-light"
+                    }
+                ]
+            }
+        },
+        "themeDarkName": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "fluent2-dark",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(theme == 'Fluent')",
+                        "value": "fluent-dark"
+                    },
+                    {
+                        "condition": "(theme == 'Cupertino')",
+                        "value": "cupertino-dark"
+                    },
+                    {
+                        "condition": "(theme == 'Material')",
+                        "value": "material-dark"
+                    },
+                    {
+                        "condition": "",
+                        "value": "fluent2-dark"
+                    }
+                ]
+            }
+        },
+        "themeLightConstant": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "BitExtraThemePresets.Fluent2Light",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(theme == 'Fluent')",
+                        "value": "BitThemePresets.FluentLight"
+                    },
+                    {
+                        "condition": "(theme == 'Cupertino')",
+                        "value": "BitExtraThemePresets.CupertinoLight"
+                    },
+                    {
+                        "condition": "(theme == 'Material')",
+                        "value": "BitExtraThemePresets.MaterialLight"
+                    },
+                    {
+                        "condition": "",
+                        "value": "BitExtraThemePresets.Fluent2Light"
+                    }
+                ]
+            }
+        },
+        "themeDarkConstant": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "BitExtraThemePresets.Fluent2Dark",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(theme == 'Fluent')",
+                        "value": "BitThemePresets.FluentDark"
+                    },
+                    {
+                        "condition": "(theme == 'Cupertino')",
+                        "value": "BitExtraThemePresets.CupertinoDark"
+                    },
+                    {
+                        "condition": "(theme == 'Material')",
+                        "value": "BitExtraThemePresets.MaterialDark"
+                    },
+                    {
+                        "condition": "",
+                        "value": "BitExtraThemePresets.Fluent2Dark"
+                    }
+                ]
+            }
+        },
         "nameToLower": {
             "type": "generated",
             "generator": "casing",
@@ -580,6 +716,7 @@
                         "src/Tests/Features/TemplateConfig/PwaManifestShortcutTests.cs",
                         "src/Tests/Features/Culture/CultureSwitchRebuildTests.cs",
                         "src/Tests/Features/Culture/CultureCookieParsingTests.cs",
+                        "src/Tests/Features/Culture/CultureUrlRedirectionTests.cs",
                         "src/Tests/Features/Culture/ResxParityTests.cs",
                         "src/Tests/Features/TemplateConfig/BitComponentParameterTests.cs",
                         "src/Tests/Features/Products/AddOrEditProductPageTests.cs",
@@ -609,6 +746,7 @@
                         "src/Tests/Features/Seo/**",
                         "src/Tests/Features/Tenants/TenantInvitationUITests.cs",
                         "src/Tests/Features/Tenants/TenantInvitationIsolationTests.cs",
+                        "src/Tests/Features/Tenants/TenantInvitationEmailCultureTests.cs",
                         "src/Tests/Features/MinimalApiSample/IntegrationTests.cs",
                         "src/Tests/Features/Configuration/AppConfigurationBuilderTests.cs",
                         "src/Tests/Features/Configuration/ServiceRegistrationTests.cs",
@@ -617,6 +755,7 @@
                         "src/Tests/Features/Attachments/UserProfilePictureWebPTests.cs",
                         "src/Tests/Features/WellKnown/AppleAppSiteAssociationTests.cs",
                         "src/Tests/Features/Theme/ThemeTogglePersistenceUITests.cs",
+                        "src/Tests/Features/TimeZone/TimeZoneSelectionUITests.cs",
                         "src/Tests/Features/Culture/CultureSelectionUITests.cs",
                         "src/Tests/Features/Identity/PhoneNumberNormalizationTests.cs",
                         "src/Tests/Features/Identity/WebAuthnPasswordlessUITests.cs",
@@ -760,6 +899,7 @@
                         "src/Client/Boilerplate.Client.Maui/Platforms/iOS/Extensions/NSDataExtensions.cs",
                         "src/Client/Boilerplate.Client.Maui/Platforms/iOS/Services/AppUNUserNotificationCenterDelegate.cs",
                         "src/Client/Boilerplate.Client.Maui/Platforms/iOS/Services/iOSPushNotificationService.cs",
+                        "src/Client/Boilerplate.Client.Web/AdsPushVapidOptions.cs",
                         "src/Client/Boilerplate.Client.Web/Infrastructure/Services/WebPushNotificationService.cs",
                         "src/Client/Boilerplate.Client.Windows/Infrastructure/Services/WindowsPushNotificationService.cs",
                         "src/Server/Boilerplate.Server.Api/Features/PushNotification/**",
@@ -783,6 +923,7 @@
                     "condition": "(appInsights != true)",
                     "exclude": [
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AppInsightsJsSdkService.cs",
+                        "src/Shared/ApplicationInsightsOptions.cs",
                         "src/Tests/Features/Diagnostics/AppInsightsReadinessTests.cs"
                     ]
                 },
@@ -830,6 +971,7 @@
                         "src/Server/Boilerplate.Server.Api/Features/Identity/Services/AppRoleValidator.cs",
                         "src/Tests/Features/Tenants/TenantInvitationUITests.cs",
                         "src/Tests/Features/Tenants/TenantInvitationIsolationTests.cs",
+                        "src/Tests/Features/Tenants/TenantInvitationEmailCultureTests.cs",
                         "src/Tests/Features/Tenants/TenantMembershipStateTests.cs",
                         "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
                         "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs",

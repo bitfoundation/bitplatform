@@ -230,7 +230,10 @@ public class TemplateConfigurationTests
             "src/Tests/Features/Identity/IntegrationTests.cs",
             "src/Tests/Features/Identity/UITests.cs",
             "src/Tests/Features/Identity/BunitUITests.cs",
-            "src/Tests/Features/Identity/TestData.cs"
+            "src/Tests/Features/Identity/TestData.cs",
+            // Deliberately kept: adding a language happens in generated projects, and this is the test that keeps
+            // CultureInfoManager, MainActivity's DataPathPrefixes and Bit.ResxTranslator.json in step when it does.
+            "src/Tests/Features/Culture/SupportedCultureContractTests.cs"
         ];
 
         var (templateRoot, template) = LoadTemplateJson();

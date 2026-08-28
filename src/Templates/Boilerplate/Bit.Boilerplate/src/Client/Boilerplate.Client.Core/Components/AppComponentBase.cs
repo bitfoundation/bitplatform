@@ -38,6 +38,11 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
     [AutoInject] protected ITelemetryContext TelemetryContext = default!;
 
     /// <summary>
+    /// <inheritdoc cref="Infrastructure.Services.TimeZoneService"/>
+    /// </summary>
+    [AutoInject] protected TimeZoneService TimeZoneService = default!;
+
+    /// <summary>
     /// <inheritdoc cref="ISharedServiceCollectionExtensions.ConfigureAuthorizationCore"/>
     /// </summary>
     [AutoInject] protected IAuthorizationService AuthorizationService = default!;

@@ -181,10 +181,10 @@ public partial class HostPageRenderTests
     /// changed independently.
     /// </para>
     /// <para>
-    /// Only <c>Output</c> is asserted, deliberately: a pre-rendered page has its edge and client caching switched off
-    /// for every caller anyway (<c>IsBlazorPageContext()</c> plus non-invariant globalization), so an
-    /// <c>Edge:-1</c> assertion here would hold no matter what the carve-out did. The edge half of the carve-out is
-    /// pinned on a non-page endpoint instead, in <see cref="ACrawlersSiteMap_Should_StillBeShareable"/>.
+    /// The edge is part of the same decision: since pages carry their culture in the url (See
+    /// <c>UseCultureUrlRedirection</c>), a pre-rendered page IS edge cacheable for an ordinary visitor - which is
+    /// exactly what makes <c>Edge:-1</c> for the script-less callers a real assertion rather than one that would hold
+    /// no matter what the carve-out did.
     /// </para>
     /// </summary>
     [TestMethod]
@@ -209,6 +209,7 @@ public partial class HostPageRenderTests
             // The two halves of the same decision, asserted together on the same response.
             Assert.DoesNotContain(BlazorBootScript, html, $"'{userAgent}' is expected to be served a script-less document.");
             Assert.Contains("Output:-1", appCacheResponse, $"The script-less response for '{userAgent}' was stored in the output cache.");
+            Assert.Contains("Edge:-1", appCacheResponse, $"The script-less response for '{userAgent}' was offered to the CDN edge.");
         }
 
         // The control: an ordinary browser still gets the scripts AND is still cached, so the exclusion above is
@@ -217,6 +218,12 @@ public partial class HostPageRenderTests
 
         Assert.Contains(BlazorBootScript, browserHtml);
         Assert.DoesNotContain("Output:-1", browserCacheResponse, "An ordinary visitor's page should still be cached.");
+        if (CultureInfoManager.InvariantGlobalization is false)
+        {
+            // The bare "/" was 302ed onto its /{culture}/ form (See UseCultureUrlRedirection) before this final
+            // response was produced, which is what makes the page edge cacheable at all.
+            Assert.DoesNotContain("Edge:-1", browserCacheResponse, "An ordinary visitor's culture-prefixed page should still be offerable to the CDN edge.");
+        }
     }
 
     /// <summary>

@@ -108,6 +108,8 @@ public static partial class Program
             //#endif
             app.UseAuthorization();
 
+            app.UseCultureUrlRedirection();
+
             app.UseOutputCache();
 
             app.UseAntiforgery();

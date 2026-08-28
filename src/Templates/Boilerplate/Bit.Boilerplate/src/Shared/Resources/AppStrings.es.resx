@@ -1813,4 +1813,27 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <value>Invitación rechazada.</value>
   </data>
   <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>Zona horaria</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>Seleccionar zona horaria</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>Buscar una zona horaria</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotifications" xml:space="preserve">
+    <value>Notificaciones push</value>
+  </data>
+    <data name="TurnPushNotificationsOn" xml:space="preserve">
+    <value>Activar las notificaciones push</value>
+  </data>
+    <data name="TurnPushNotificationsOff" xml:space="preserve">
+    <value>Desactivar las notificaciones push</value>
+  </data>
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>Las notificaciones push están bloqueadas para esta aplicación. Permite las notificaciones en la configuración de tu navegador o sistema operativo e inténtalo de nuevo.</value>
+  </data>
+  <!--#endif-->
 </root>

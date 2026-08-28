@@ -53,7 +53,15 @@
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
+    <!--#if (theme == "Cupertino")-->
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.cupertino.css" />
+    <!--#endif-->
+    <!--#if (theme == "Material")-->
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.material.css" />
+    <!--#endif-->
+    <!--#if (theme == "Fluent2")-->
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.fluent2.css" />
+    <!--#endif-->
     <link rel="stylesheet" href="_content/Boilerplate.Client.Core/styles/app.css" />
     <!-- This one physical page is the host for BOTH hybrid heads (Boilerplate.Client.Windows.csproj links it), and
          each project emits only its own scoped css bundle, so exactly one of the next two lines resolves and the

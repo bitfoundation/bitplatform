@@ -1813,4 +1813,27 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Einladung abgelehnt.</value>
   </data>
   <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>Zeitzone</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>Zeitzone auswählen</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>Zeitzone suchen</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotifications" xml:space="preserve">
+    <value>Push-Benachrichtigungen</value>
+  </data>
+    <data name="TurnPushNotificationsOn" xml:space="preserve">
+    <value>Push-Benachrichtigungen einschalten</value>
+  </data>
+    <data name="TurnPushNotificationsOff" xml:space="preserve">
+    <value>Push-Benachrichtigungen ausschalten</value>
+  </data>
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>Push-Benachrichtigungen sind für diese App blockiert. Erlauben Sie Benachrichtigungen in den Einstellungen Ihres Browsers oder Betriebssystems und versuchen Sie es erneut.</value>
+  </data>
+  <!--#endif-->
 </root>

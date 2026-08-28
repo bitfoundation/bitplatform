@@ -28,14 +28,22 @@ public partial class IntegrationTests
         var siteMap = await httpClient.GetStringAsync("sitemap.xml", TestContext.CancellationToken);
 
         Assert.Contains("<urlset", siteMap);
-        // Public (anonymous) pages are listed...
-        Assert.Contains($"<loc>{new Uri(server.WebAppServerAddress, PageUrls.Terms)}</loc>", siteMap);
-        Assert.Contains($"<loc>{new Uri(server.WebAppServerAddress, PageUrls.PrivacyPolicy)}</loc>", siteMap);
 
-        if (CultureInfoManager.InvariantGlobalization is false)
+        if (CultureInfoManager.InvariantGlobalization)
         {
-            // ...along with their culture-prefixed SEO variants.
-            Assert.Contains($"fa-IR{PageUrls.Terms}", siteMap);
+            // Public (anonymous) pages are listed under their bare urls.
+            Assert.Contains($"<loc>{new Uri(server.WebAppServerAddress, PageUrls.Terms)}</loc>", siteMap);
+            Assert.Contains($"<loc>{new Uri(server.WebAppServerAddress, PageUrls.PrivacyPolicy)}</loc>", siteMap);
+        }
+        else
+        {
+            // On a multilingual build a page is only ever served under its culture-prefixed url - the bare url 302s
+            // to it (See UseCultureUrlRedirection) - so public pages are listed once per supported culture and the
+            // always-redirecting bare form is not advertised at all.
+            Assert.Contains($"<loc>{new Uri(server.WebAppServerAddress, $"en-US{PageUrls.Terms}")}</loc>", siteMap);
+            Assert.Contains($"<loc>{new Uri(server.WebAppServerAddress, $"fa-IR{PageUrls.Terms}")}</loc>", siteMap);
+            Assert.Contains($"<loc>{new Uri(server.WebAppServerAddress, $"fa-IR{PageUrls.PrivacyPolicy}")}</loc>", siteMap);
+            Assert.DoesNotContain($"<loc>{new Uri(server.WebAppServerAddress, PageUrls.Terms)}</loc>", siteMap);
         }
 
         // Authenticated pages are excluded because their type carries an [Authorize] attribute, which is an unwritten
@@ -188,13 +196,26 @@ public partial class IntegrationTests
 
         Assert.DoesNotContain(defaultHomeMessage, html);
         Assert.Contains(faHomeMessage, html);
+
+        // The document must SAY it is Persian: without lang a screen reader guesses the voice for this fully
+        // pre-rendered page, and without dir the first paint lays the whole page out left-to-right until the Bit
+        // components' own dir attributes hydrate (See App.razor's html tag).
+        Assert.Contains("lang=\"fa-IR\"", html, "The pre-rendered document must declare the language it is rendered in.");
+        Assert.Contains("dir=\"rtl\"", html, "A right-to-left culture's document must declare its directionality.");
+
+        // hreflang: every culture of this page is advertised as a translation of one document, and x-default names
+        // the culture-less url whose 302 acts as the language chooser (See App.razor's alternate links).
+        Assert.Contains($"hreflang=\"en-US\" href=\"{new Uri(server.WebAppServerAddress, "en-US/")}\"", html,
+            "Each supported culture's url must be advertised as an alternate of this page.");
+        Assert.Contains($"hreflang=\"x-default\" href=\"{server.WebAppServerAddress}\"", html,
+            "The culture-less (redirecting) url must be advertised as the x-default alternate.");
     }
 
     /// <summary>
     /// A browser can advertise the <b>neutral</b> culture "fa" (rather than the specific "fa-IR") in its Accept-Language
     /// header. AppAcceptLanguageRequestCultureProvider maps that neutral name up to the supported specific culture
-    /// "fa-IR", so the (culture-less) home page must still be served in Persian - resolved purely from the header, with
-    /// no culture in the URL.
+    /// "fa-IR", so requesting the culture-less home page must still end in Persian: UseCultureUrlRedirection resolves
+    /// the redirect target from that very header, 302s onto /fa-IR/, and the followed redirect renders the Persian page.
     /// <para>
     /// <b>Why a bare <see cref="HttpClient"/> here</b>, unlike the tests above: the header IS the input, and the app's own
     /// <c>RequestHeadersDelegatingHandler</c> adds an Accept-Language of its own (from <c>CurrentUICulture</c>) to every

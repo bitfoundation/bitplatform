@@ -63,7 +63,9 @@ public partial class ThemeTogglePersistenceUITests : AppPageTest
     /// Opens the header user menu - available to anonymous users - by clicking its chevron opener, then flips the
     /// dark/light theme using the BitToggle switch (role="switch") inside the app menu callout. The BitToggle is
     /// used instead of the theme action button because that button's label reflects the current theme and therefore
-    /// is not a stable target across toggles.
+    /// is not a stable target across toggles. The accessible name is matched by the word "theme", because the menu
+    /// carries more than one switch (push notifications) and the theme switch's exact label flips with the theme
+    /// ("Switch to the dark theme" / "Switch to the light theme").
     /// </summary>
     private async Task ToggleThemeFromUserMenu()
     {
@@ -73,6 +75,6 @@ public partial class ThemeTogglePersistenceUITests : AppPageTest
         var callout = Page.Locator(".app-menu-callout");
         await Expect(callout).ToBeVisibleAsync();
 
-        await callout.GetByRole(AriaRole.Switch).ClickAsync();
+        await callout.GetByRole(AriaRole.Switch, new() { NameRegex = new("theme", System.Text.RegularExpressions.RegexOptions.IgnoreCase) }).ClickAsync();
     }
 }

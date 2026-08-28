@@ -1813,4 +1813,27 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <value>Inbjudan avböjd.</value>
   </data>
   <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>Tidszon</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>Välj tidszon</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>Sök tidszon</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotifications" xml:space="preserve">
+    <value>Pushnotiser</value>
+  </data>
+    <data name="TurnPushNotificationsOn" xml:space="preserve">
+    <value>Slå på pushnotiser</value>
+  </data>
+    <data name="TurnPushNotificationsOff" xml:space="preserve">
+    <value>Stäng av pushnotiser</value>
+  </data>
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>Pushnotiser är blockerade för den här appen. Tillåt notiser i webbläsarens eller operativsystemets inställningar och försök igen.</value>
+  </data>
+  <!--#endif-->
 </root>

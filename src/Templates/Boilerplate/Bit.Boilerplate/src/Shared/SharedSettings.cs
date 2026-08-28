@@ -23,10 +23,3 @@ public partial class SharedSettings : IValidatableObject
         return validationResults;
     }
 }
-
-//#if (appInsights == true)
-public class ApplicationInsightsOptions
-{
-    public string? ConnectionString { get; set; }
-}
-//#endif

@@ -1813,4 +1813,27 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Invitation refusée.</value>
   </data>
   <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>Fuseau horaire</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>Sélectionner le fuseau horaire</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>Rechercher un fuseau horaire</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotifications" xml:space="preserve">
+    <value>Notifications push</value>
+  </data>
+    <data name="TurnPushNotificationsOn" xml:space="preserve">
+    <value>Activer les notifications push</value>
+  </data>
+    <data name="TurnPushNotificationsOff" xml:space="preserve">
+    <value>Désactiver les notifications push</value>
+  </data>
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>Les notifications push sont bloquées pour cette application. Autorisez les notifications dans les paramètres de votre navigateur ou de votre système d&apos;exploitation, puis réessayez.</value>
+  </data>
+  <!--#endif-->
 </root>

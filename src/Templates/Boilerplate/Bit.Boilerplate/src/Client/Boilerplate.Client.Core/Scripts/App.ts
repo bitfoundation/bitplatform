@@ -16,10 +16,6 @@ export class App {
         return App.jsBridgeObj?.invokeMethodAsync('PublishMessage', message, payload);
     }
 
-    public static getTimeZone(): string {
-        return Intl.DateTimeFormat().resolvedOptions().timeZone;
-    }
-
     private static readonly erudaUrl = 'https://cdn.jsdelivr.net/npm/eruda@3.4.3/eruda.min.js';
     private static readonly erudaIntegrity = 'sha384-F7xQBvh3l6dG/mMD6QPIeVmXtzWT4Ce3ZDu8ysPuzMWMx9bFOIMGnRPUhLuQipss';
     private static readonly erudaScriptId = 'app-eruda-script';

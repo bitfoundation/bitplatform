@@ -1813,4 +1813,27 @@
     <value>دعوت رد شد.</value>
   </data>
   <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>منطقه زمانی</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>انتخاب منطقه زمانی</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>جستجوی منطقه زمانی</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotifications" xml:space="preserve">
+    <value>اعلان‌های پوش</value>
+  </data>
+    <data name="TurnPushNotificationsOn" xml:space="preserve">
+    <value>روشن کردن اعلان‌های پوش</value>
+  </data>
+    <data name="TurnPushNotificationsOff" xml:space="preserve">
+    <value>خاموش کردن اعلان‌های پوش</value>
+  </data>
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>اعلان‌های پوش برای این برنامه مسدود شده‌اند. در تنظیمات مرورگر یا سیستم‌عامل، اعلان‌ها را مجاز کنید و دوباره تلاش کنید.</value>
+  </data>
+  <!--#endif-->
 </root>
