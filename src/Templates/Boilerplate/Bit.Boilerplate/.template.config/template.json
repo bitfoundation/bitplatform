@@ -799,6 +799,7 @@
                 {
                     "condition": "(advancedTests != true || module != Sales)",
                     "exclude": [
+                        "src/Tests/Features/Products/ProductNotFoundPreRenderTests.cs",
                         "src/Tests/Features/Identity/QuickSignInUITests.cs",
                         "src/Tests/Features/Identity/MagicLinkReturnUrlTests.cs"
                     ]
