@@ -36,6 +36,12 @@
         }
     }
 
+    .time-zone-list {
+        width: 100%;
+        overflow-y: auto;
+        max-height: min(50vh, 400px);
+    }
+
     .accent-color-switcher {
         width: 100%;
         padding: 0 8px;

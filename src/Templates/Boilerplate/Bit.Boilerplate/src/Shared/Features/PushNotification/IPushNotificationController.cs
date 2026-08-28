@@ -5,4 +5,7 @@ public interface IPushNotificationController : IAppController
 {
     [HttpPost]
     Task Subscribe([Required] PushNotificationSubscriptionDto subscription, CancellationToken cancellationToken);
+
+    [HttpPost]
+    Task Unsubscribe([Required] PushNotificationSubscriptionDto subscription, CancellationToken cancellationToken);
 }

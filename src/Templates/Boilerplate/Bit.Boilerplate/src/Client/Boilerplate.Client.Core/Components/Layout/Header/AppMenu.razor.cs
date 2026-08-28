@@ -15,7 +15,10 @@ public partial class AppMenu
     [AutoInject] private CultureService cultureService = default!;
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private SignInModalService signInModalService = default!;
-    //#if (brouter == true && multitenant == true)
+    //#if (notification == true)
+    [AutoInject] private IPushNotificationService pushNotificationService = default!;
+    //#endif
+    //#if (brouter == true)
     [AutoInject] private IBrouter brouter = default!;
     //#endif
 
@@ -24,6 +27,13 @@ public partial class AppMenu
     private bool showCultures;
     private bool isSignOutConfirmOpen;
     private BitChoiceGroupItem<string>[] cultures = default!;
+    private bool showTimeZones;
+    private string? currentTimeZoneId;
+    private string? timeZoneSearchText;
+    private BitChoiceGroupItem<string>[] timeZones = [];
+    //#if (notification == true)
+    private bool pushNotificationsEnabled = true;
+    //#endif
     //#if (multitenant == true)
     private bool showTenants;
     private string? currentTenantId;
@@ -33,10 +43,16 @@ public partial class AppMenu
 
     private bool ShowMainMenu =>
         showCultures is false
+        && showTimeZones is false
         //#if (multitenant == true)
         && showTenants is false
         //#endif
         ;
+
+    private BitChoiceGroupItem<string>[] FilteredTimeZones =>
+        string.IsNullOrWhiteSpace(timeZoneSearchText)
+            ? timeZones
+            : [.. timeZones.Where(tz => tz.Text!.Contains(timeZoneSearchText, StringComparison.OrdinalIgnoreCase))];
 
 
     private string? ProfileImageUrl => CurrentUser?.GetProfileImageUrl(AbsoluteServerAddress);
@@ -75,6 +91,90 @@ public partial class AppMenu
     private async Task OnCultureChanged(string? cultureName)
     {
         await cultureService.ChangeCulture(cultureName);
+    }
+
+    //#if (notification == true)
+    protected override async Task OnAfterFirstRenderAsync()
+    {
+        await base.OnAfterFirstRenderAsync();
+
+        pushNotificationsEnabled = await pushNotificationService.IsEnabled();
+        StateHasChanged();
+    }
+
+    private string PushNotificationsToggleLabel => pushNotificationsEnabled
+        ? Localizer["Turn push notifications off"].Value
+        : Localizer["Turn push notifications on"].Value;
+
+    private async Task TogglePushNotifications()
+    {
+        var enable = pushNotificationsEnabled is false;
+
+        if (enable)
+        {
+            await pushNotificationService.RequestPermission(CurrentCancellationToken);
+
+            if (await pushNotificationService.IsAvailable(CurrentCancellationToken) is false)
+            {
+                SnackBarService.Error(Localizer["Push notifications are blocked for this app. Allow notifications in your browser or OS settings and try again."]);
+                return; // The switch stays off; reporting success for a device that can never receive a push would be a lie.
+            }
+        }
+
+        pushNotificationsEnabled = enable;
+        await pushNotificationService.SetEnabled(enable, CurrentCancellationToken);
+    }
+    //#endif
+
+    private async Task ShowTimeZones()
+    {
+        showTimeZones = true;
+        timeZoneSearchText = null;
+        currentTimeZoneId = (await TimeZoneService.GetCurrentTimeZone()).Id;
+
+        // Rebuilt on every open rather than cached, because the current zone leads the list and changes with it.
+        timeZones = [.. TimeZoneInfo.GetSystemTimeZones()
+            .OrderByDescending(tz => string.Equals(tz.Id, currentTimeZoneId, StringComparison.OrdinalIgnoreCase))
+            .ThenBy(tz => tz.BaseUtcOffset)
+            .ThenBy(tz => tz.Id, StringComparer.OrdinalIgnoreCase)
+            .Select(tz => new BitChoiceGroupItem<string> { Value = tz.Id, Text = GetTimeZoneDisplayText(tz) })];
+    }
+
+    private static string GetTimeZoneDisplayText(TimeZoneInfo timeZone)
+    {
+        // Windows display names already carry the "(UTC+01:00) ..." prefix; elsewhere (browser, Android, iOS) the
+        // display name is the bare IANA id, so the offset is stitched on to keep the list searchable both by place
+        // name and by offset.
+        if (timeZone.DisplayName.StartsWith('(')) return timeZone.DisplayName;
+
+        var offset = timeZone.BaseUtcOffset;
+        return $"(UTC{(offset < TimeSpan.Zero ? '-' : '+')}{offset:hh\\:mm}) {timeZone.DisplayName}";
+    }
+
+    private async Task OnTimeZoneChanged(string? timeZoneId)
+    {
+        if (string.IsNullOrEmpty(timeZoneId) || timeZoneId == currentTimeZoneId)
+            return;
+
+        currentTimeZoneId = timeZoneId;
+
+        await TimeZoneService.ChangeTimeZone(timeZoneId);
+
+        showTimeZones = false; // Back to the main menu panel, the way the tenant panel hands control back after a switch.
+
+        // Re-renders the current page so every displayed date/time reflects the new time zone.
+        //#if (brouter == true)
+        brouter.ClearKeepAlive();
+        await brouter.ReloadAsync();
+        //#else
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
+        NavigationManager.RefreshCurrentPage();
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
+        //#endif
     }
 
     //#if (multitenant == true)
@@ -156,6 +256,7 @@ public partial class AppMenu
     private void OnDropMenuDismiss()
     {
         showCultures = false;
+        showTimeZones = false;
         //#if (multitenant == true)
         showTenants = false;
         //#endif

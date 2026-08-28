@@ -200,7 +200,7 @@ public partial class UsersPage
         if (string.IsNullOrWhiteSpace(sessionSearchText) is false)
         {
             var t = sessionSearchText.Trim();
-            filteredUserSessions = [.. allUserSessions.Where(us => string.Join('|', us.IP, us.Address, us.DeviceInfo, us.RenewedOnDateTimeOffset.ToLocalTime(), us.Id).Contains(t, StringComparison.InvariantCultureIgnoreCase))];
+            filteredUserSessions = [.. allUserSessions.Where(us => string.Join('|', us.IP, us.Address, us.DeviceInfo, TimeZoneService.ToLocalTime(us.RenewedOnDateTimeOffset), us.Id).Contains(t, StringComparison.InvariantCultureIgnoreCase))];
         }
     }
 

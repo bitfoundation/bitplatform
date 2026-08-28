@@ -66,6 +66,13 @@ public partial class WebPushNotificationService : PushNotificationServiceBase
 
     public override async Task<bool> IsAvailable(CancellationToken cancellationToken) => string.IsNullOrEmpty(clientWebSettings.AdsPushVapid?.PublicKey) is false && await notification.IsNotificationAvailable();
 
+    public override async Task Unsubscribe(CancellationToken cancellationToken)
+    {
+        await base.Unsubscribe(cancellationToken); // Removes the server-side subscription row, which needs the DeviceId of the browser subscription that is about to go away.
+
+        await push.Unsubscribe();
+    }
+
     public override async Task RequestPermission(CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(clientWebSettings.AdsPushVapid?.PublicKey))

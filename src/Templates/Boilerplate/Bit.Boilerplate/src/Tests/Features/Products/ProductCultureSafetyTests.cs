@@ -4,8 +4,8 @@ using Boilerplate.Shared.Features.Products;
 namespace Boilerplate.Tests.Features.Products;
 
 /// <summary>
-/// Two culture bugs in the catalog that a machine set to en-US can never see, which is why they survived so long.
-/// Neither needs a server; both need the ambient culture swapped, so they run without <c>AppTestServer</c>.
+/// Culture bugs in the catalog that a machine set to en-US can never see, which is why they survived so long.
+/// None needs a server; all need the ambient culture swapped, so they run without <c>AppTestServer</c>.
 /// </summary>
 [TestClass, TestCategory("UnitTest")]
 public partial class ProductCultureSafetyTests
@@ -53,6 +53,54 @@ public partial class ProductCultureSafetyTests
             Assert.IsNotNull(dbContext.Model,
                 $"The EF model must build under '{cultureName}'. Entity configuration must never read " +
                 $"CultureInfo.CurrentCulture: OnModelCreating runs on the ambient culture of whoever started the process.");
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+        }
+    }
+
+    /// <summary>
+    /// A price is an amount of the product's own currency (<c>ProductDto.CurrencyIso</c>); the viewer's culture may
+    /// only re-format it - digits, separators, symbol placement - never re-denominate it. The old behavior formatted
+    /// with <c>CurrentCulture</c>'s own currency symbol, so the same product read $12,345.00 in New York and
+    /// 12.345,00&#160;€ in Berlin: different amounts of actual money for one database value, and the reason the
+    /// output cache had to defend itself with a formatting-culture vary dimension
+    /// (See <c>ProductResponseCacheTests.OutputCache_Should_NotServe_ABodyFormattedInAnotherCulture</c>).
+    /// </summary>
+    [TestMethod]
+    public void FormattedPrice_Should_KeepTheProductsCurrency_WhateverCultureFormatsIt()
+    {
+        if (CultureInfoManager.InvariantGlobalization)
+        {
+            Assert.Inconclusive("Invariant globalization formats every price the same way, so there is no viewer culture to leak a currency from.");
+        }
+
+        var product = new ProductDto { Price = 12_345M }; // CurrencyIso and CurrencySymbol are null, which falls back to $.
+
+        var originalCulture = CultureInfo.CurrentCulture;
+
+        try
+        {
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
+
+            var formatted = product.FormattedPrice;
+
+            // The German viewer gets German SEPARATORS...
+            Assert.Contains("12.345,00", formatted, "The viewer's culture must format the number.");
+            // ...of a price that stays in the product's own currency.
+            Assert.Contains("$", formatted, "The product's currency must survive the viewer's culture.");
+            Assert.DoesNotContain("€", formatted,
+                "Formatting with the viewer culture's own currency symbol re-denominates the price instead of translating it.");
+
+            product.CurrencyIso = "EUR";
+            product.CurrencySymbol = "€";
+            Assert.Contains("€", product.FormattedPrice, "An explicitly euro-priced product must render in euros for every viewer.");
+
+            product.CurrencyIso = "CHF";
+            product.CurrencySymbol = null;
+            Assert.Contains("CHF", product.FormattedPrice,
+                "A product whose row carries no symbol must render its ISO code rather than guessing a symbol.");
         }
         finally
         {

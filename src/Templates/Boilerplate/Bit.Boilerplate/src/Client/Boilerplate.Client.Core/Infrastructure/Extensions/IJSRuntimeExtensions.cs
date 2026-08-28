@@ -5,11 +5,6 @@ public static partial class IJSRuntimeExtensions
 {
     extension(IJSRuntime jsRuntime)
     {
-        public ValueTask<string> GetTimeZone()
-        {
-            return jsRuntime.InvokeAsync<string>("App.getTimeZone");
-        }
-
         //#if (captcha == "reCaptcha")
         public ValueTask<string> GoogleRecaptchaGetResponse()
         {

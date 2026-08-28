@@ -87,10 +87,12 @@ public partial class ProductResponseCacheTests
             // actually returned.
             using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
 
-            // The same page, requested four ways. Each of them gets its own output cache entry - the path is part of the
-            // key, the entry varies by culture, and QueryKeys = "*" gives every query string its own entry - yet they all
-            // carry the one tag AppResponseCachePolicy derives from the bare, culture-less path. So the single purge that
-            // the admin's edit triggers in step 2 has to clear all four at once.
+            // The same page, requested four ways. The bare url no longer has an entry of its own - UseCultureUrlRedirection
+            // 302s it onto its culture-prefixed form, so requesting it exercises the redirect and lands on the en-US entry -
+            // while the rest each get their own: the (culture-prefixed) path is part of the key, the entry varies by
+            // culture, and QueryKeys = "*" gives every query string its own entry. They all carry the one tag
+            // AppResponseCachePolicy derives from the bare, culture-less path. So the single purge that the admin's edit
+            // triggers in step 2 has to clear all of them at once.
             string[] pageUrls =
             [
                 $"{PageUrls.Product}/{productShortId}",
@@ -268,6 +270,73 @@ public partial class ProductResponseCacheTests
     }
 
     /// <summary>
+    /// The whole point of keeping the culture in a page's url (See <c>UseCultureUrlRedirection</c>): a pre-rendered
+    /// page becomes CDN edge cacheable, because the url alone now identifies its language variant. Before that, pages
+    /// had their edge (and client) caching unconditionally switched off on multilingual builds - the language lived in
+    /// the culture cookie and <c>Accept-Language</c>, dimensions an edge cache cannot key on. The Persian and English
+    /// urls must also carry the <b>same</b> <c>Cache-Tag</c>, or one of them would survive the product's purge on the
+    /// edge until it expired on its own.
+    /// </summary>
+    [TestMethod]
+    public async Task EdgeCaching_Should_BeEnabled_ForCulturePrefixedPrerenderedPages()
+    {
+        if (CultureInfoManager.InvariantGlobalization)
+        {
+            Assert.Inconclusive("Culture-prefixed page urls do not exist on an invariant globalization build.");
+        }
+
+        await using var server = new AppTestServer();
+
+        await server.Build(
+            configureTestServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
+            configureTestConfigurations: configuration =>
+            {
+                configuration["WebAppRender:PrerenderEnabled"] = "true";
+                configuration["ResponseCaching:EnableCdnEdgeCaching"] = "true";
+            }).Start(TestContext.CancellationToken);
+
+        var marker = Guid.NewGuid().ToString("N");
+        var (productId, productShortId) = await CreateProduct(server, $"edge-cached-product-{marker}", $"description-{marker}");
+
+        try
+        {
+            // A bare HttpClient, so the headers asserted below are the ones the server actually wrote.
+            using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+
+            string? enCacheTag = null;
+
+            foreach (var culturePrefix in new[] { "/en-US", "/fa-IR" })
+            {
+                var pageUrl = $"{culturePrefix}{PageUrls.Product}/{productShortId}";
+
+                using var response = await visitorHttpClient.GetAsync(pageUrl, TestContext.CancellationToken);
+                response.EnsureSuccessStatusCode();
+
+                Assert.IsTrue(response.Headers.TryGetValues("App-Cache-Response", out var appCacheResponse));
+                Assert.DoesNotContain("Edge:-1", string.Concat(appCacheResponse!),
+                    $"Edge caching should be active for the culture-prefixed pre-rendered page at '{pageUrl}'.");
+
+                // Cache-Control itself cannot be asserted here: the test server runs as Development, where a
+                // Program.Middlewares OnStarting callback overwrites every response with `no-store` on purpose.
+                // App-Cache-Response and Cache-Tag are the policy's own report of the edge decision.
+                Assert.IsTrue(response.Headers.TryGetValues(AppResponseCachePolicy.CacheTagHeaderName, out var cacheTag),
+                    $"An edge cacheable page must tell the CDN which tag to store it under, otherwise it could never be purged.");
+
+                enCacheTag ??= string.Concat(cacheTag!);
+                Assert.AreEqual(enCacheTag, string.Concat(cacheTag!),
+                    "Every culture of the page must carry the same tag, or a purge of the bare path would leave some cultures stranded on the edge.");
+            }
+
+            Assert.AreEqual(AppResponseCachePolicy.CreateCacheTag($"{PageUrls.Product}/{productShortId}"), enCacheTag,
+                "The tag on the page must be the bare, culture-less path ResponseCacheService purges it by.");
+        }
+        finally
+        {
+            await DeleteProduct(server, productId);
+        }
+    }
+
+    /// <summary>
     /// A response body can depend on <b>both</b> cultures - text comes from <c>CurrentUICulture</c> while prices, dates
     /// and numbers come from <c>CurrentCulture</c> (See <c>ProductDto.FormatPrice</c>) - and the
     /// <c>.AspNetCore.Culture</c> cookie can set the two apart as <c>c=&lt;culture&gt;|uic=&lt;uiCulture&gt;</c>. So a
@@ -306,15 +375,17 @@ public partial class ProductResponseCacheTests
 
             var poisoningBody = await poisoningResponse.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
-            // Non-vacuity: the requested formatting culture has to actually reach the body, or the assertion below cannot fail.
-            Assert.Contains("€", poisoningBody, "The formatting culture the cookie asked for never reached the response body.");
+            // Non-vacuity: the requested formatting culture has to actually reach the body, or the assertion below
+            // cannot fail. German formatting shows in the SEPARATORS of the 12345 price ("12.345,00"), not in the
+            // currency symbol - the currency belongs to the product, not to the viewer (See ProductDto.FormattedPrice).
+            Assert.Contains("12.345,00", poisoningBody, "The formatting culture the cookie asked for never reached the response body.");
 
             using var victimResponse = await visitorHttpClient.GetAsync(requestPath, TestContext.CancellationToken);
             victimResponse.EnsureSuccessStatusCode();
 
             var victimBody = await victimResponse.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
-            Assert.DoesNotContain("€", victimBody,
+            Assert.DoesNotContain("12.345,00", victimBody,
                 "A visitor sending no culture cookie was served the cache entry of a request that asked for a different formatting culture.");
         }
         finally

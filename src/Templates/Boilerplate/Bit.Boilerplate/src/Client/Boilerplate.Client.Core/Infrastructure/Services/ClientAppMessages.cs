@@ -76,6 +76,12 @@ public partial class ClientAppMessages
     public const string CULTURE_CHANGED = nameof(CULTURE_CHANGED);
 
     /// <summary>
+    /// A publisher that publishes this message notifies that the user's preferred time zone has changed.
+    /// The payload is the new time zone id (See <c>TimeZoneService</c>).
+    /// </summary>
+    public const string TIME_ZONE_CHANGED = nameof(TIME_ZONE_CHANGED);
+
+    /// <summary>
     /// A publisher that publishes this message notifies that the online status of the app has changed.
     /// <inheritdoc cref="Parameters.IsOnline"/>
     /// </summary>

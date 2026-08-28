@@ -102,6 +102,33 @@
                         </AuthorizeView>
                         @*#endif*@
 
+                        <BitActionButton IconName="@BitIconName.WorldClock" FullWidth OnClick="WrapHandled(ShowTimeZones)">
+                            <BitStack Horizontal Gap="0" Grows VerticalAlign="BitAlignment.Center">
+                                @Localizer["Time zone"]
+                                <BitSpacer />
+                                <BitIcon Size="BitSize.Small"
+                                         Color="BitColor.SecondaryForeground"
+                                         IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.ChevronLeft : BitIconName.ChevronRight)" />
+                            </BitStack>
+                        </BitActionButton>
+
+                        @*#if (notification == true)*@
+                        @if (AppPlatform.IsWindows is false)
+                        {
+                            <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
+                                <BitActionButton Style="flex-grow:1"
+                                                 OnClick="WrapHandled(TogglePushNotifications)"
+                                                 IconName="@(pushNotificationsEnabled ? BitIconName.Ringer : BitIconName.RingerOff)">
+                                    @Localizer["Push notifications"]
+                                </BitActionButton>
+                                @* One-way bound on purpose: the preference lives in the push notification service, so the switch only reports the click. *@
+                                <BitToggle AriaLabel="@PushNotificationsToggleLabel"
+                                           OnChange="WrapHandled(TogglePushNotifications)"
+                                           Value="pushNotificationsEnabled" />
+                            </BitStack>
+                        }
+                        @*#endif*@
+
                         <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
                             <BitActionButton Style="flex-grow:1"
                                              OnClick="WrapHandled(ToggleTheme)"
@@ -151,6 +178,39 @@
                                 </BitStack>
                             </ItemTemplate>
                         </BitChoiceGroup>
+                    </BitStack>
+                }
+                else if (showTimeZones)
+                {
+                    <BitStack HorizontalAlign="BitAlignment.Start" AutoSize>
+                        <BitActionButton FullWidth
+                                         Style="align-items:flex-end"
+                                         OnClick="() => showTimeZones = false"
+                                         IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)">
+                            @Localizer["Select time zone"]
+                        </BitActionButton>
+
+                        <BitSearchBox @bind-Value="timeZoneSearchText" Immediate DebounceTime="250"
+                                      FullWidth FixedIcon
+                                      Placeholder="@Localizer["Find a time zone"]"
+                                      AriaLabel="@Localizer["Find a time zone"]" />
+
+                        <BitSeparator />
+
+                        <div class="time-zone-list">
+                            <BitChoiceGroup Items="FilteredTimeZones" NoCircle Style="width:100%"
+                                            DefaultValue="@currentTimeZoneId"
+                                            OnChange="WrapHandled((string? tz) => OnTimeZoneChanged(tz))"
+                                            Styles="@(new() { ItemLabel = "flex-grow:1" })">
+                                <ItemTemplate Context="item">
+                                    <BitStack Horizontal VerticalAlign="BitAlignment.Center" Style="cursor:pointer">
+                                        <BitText Typography="BitTypography.Body2" Style="@(item.IsSelected ? "font-weight:bold" : "")">
+                                            @item.Text
+                                        </BitText>
+                                    </BitStack>
+                                </ItemTemplate>
+                            </BitChoiceGroup>
+                        </div>
                     </BitStack>
                 }
                 @*#if (multitenant == true)*@

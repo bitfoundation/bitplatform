@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Runtime.Loader;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Extensions;
 using System.Text.RegularExpressions;
 //#if(module == "Sales")
 using Boilerplate.Shared.Features.Products;
@@ -13,6 +14,72 @@ public static partial class WebApplicationExtensions
 {
     extension(WebApplication app)
     {
+        /// <summary>
+        /// Makes <c>/{culture}/...</c> the one url a Blazor page is served under: 302s <c>/about</c>,
+        /// <c>/about?culture=fa-IR</c> and <c>/FA-ir/about</c> onto the canonical form. With the culture in the path
+        /// the url alone identifies the language variant, which is what lets pre-rendered pages be cached on the CDN
+        /// edge and in the browser (See <c>AppResponseCachePolicy</c>) while one purge by the bare path still clears
+        /// every culture of a page. The redirect target is whatever <c>UseLocalization</c>'s provider chain resolved
+        /// (query, route, cookie, Accept-Language) - the user's preference decides where a culture-less url lands,
+        /// while a url that names a culture is served in that culture for everyone. The redirect itself is
+        /// per-caller: 302 and never cacheable.
+        /// </summary>
+        public WebApplication UseCultureUrlRedirection()
+        {
+            if (CultureInfoManager.InvariantGlobalization)
+                return app;
+
+            app.Use(async (context, next) =>
+            {
+                var request = context.Request;
+
+                if ((HttpMethods.IsGet(request.Method) || HttpMethods.IsHead(request.Method)) is false
+                    || context.IsBlazorPageContext() is false
+                    // The service worker's app-shell request must be served as requested: a service worker may not
+                    // answer a navigation with a `redirected` response - and with `no-prerender` nothing is rendered.
+                    || request.Query.ContainsKey("no-prerender"))
+                {
+                    await next(context);
+                    return;
+                }
+
+                // What UseLocalization resolved for this request; always one of the supported cultures.
+                var culture = CultureInfo.CurrentUICulture.Name;
+
+                var path = request.Path.Value ?? "/";
+                var segments = path.Split('/'); // The path always starts with '/', so segments[0] is empty.
+                var firstSegment = segments.Length > 1 ? segments[1] : string.Empty;
+
+                var hasCultureQueryParameter = request.Query.ContainsKey("culture");
+
+                if (hasCultureQueryParameter is false && string.Equals(firstSegment, culture, StringComparison.Ordinal))
+                {
+                    await next(context); // Already canonical.
+                    return;
+                }
+
+                // A miscased or query-overruled culture segment is replaced rather than prefixed twice.
+                var barePath = CultureInfoManager.GetCultureInfo(firstSegment) is not null
+                    ? $"/{string.Join('/', segments.Skip(2))}"
+                    : path;
+
+                var query = request.QueryString;
+                if (hasCultureQueryParameter)
+                {
+                    var queryParameters = AppQueryStringCollection.Parse(query.Value ?? string.Empty);
+                    queryParameters.Remove("culture");
+                    query = queryParameters is { Count: > 0 } ? new QueryString($"?{queryParameters}") : QueryString.Empty;
+                }
+
+                // 302 and never cacheable: the target depends on the caller's cookie and Accept-Language, and a
+                // remembered redirect would pin one user's language onto a url forever.
+                context.Response.GetTypedHeaders().CacheControl = new() { NoStore = true, Private = true };
+                context.Response.Redirect(UriHelper.BuildRelative(request.PathBase, $"/{culture}{barePath}", query));
+            });
+
+            return app;
+        }
+
         public WebApplication UseSiteMap()
         {
             const string siteMapHeader = @"<?xml version=""1.0"" encoding=""UTF-8""?>
@@ -52,8 +119,10 @@ public static partial class WebApplicationExtensions
                      .Except([PageUrls.NotFound, PageUrls.NotAuthorized])
                      .ToArray();
 
+                // Culture-prefixed urls only: the bare url always 302s (See UseCultureUrlRedirection), and a sitemap
+                // entry that always redirects is one crawlers flag rather than index.
                 urls = CultureInfoManager.InvariantGlobalization is false
-                        ? urls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => urls.Select(url => $"{sc.Culture.Name}{url}"))).ToArray()
+                        ? [.. CultureInfoManager.SupportedCultures.SelectMany(sc => urls.Select(url => $"{sc.Culture.Name}{url}"))]
                         : urls;
 
                 var baseUrl = context.Request.GetBaseUrl();
@@ -103,7 +172,7 @@ public static partial class WebApplicationExtensions
                 // anonymous request reads the whole Products table and materializes a url per row per culture.
                 // A catalogue larger than this needs the document split into /products-1.xml, /products-2.xml, ...
                 // listed in sitemap_index.xml; until then the tail is not advertised, and the warning below says so.
-                var maxProducts = 50_000 / (CultureInfoManager.InvariantGlobalization ? 1 : CultureInfoManager.SupportedCultures.Length + 1);
+                var maxProducts = 50_000 / (CultureInfoManager.InvariantGlobalization ? 1 : CultureInfoManager.SupportedCultures.Length);
                 const int pageSize = 100; // The largest $top Program.Services.cs's EnableQueryFeatures(maxTopValue) accepts.
 
                 List<string> pagedProductsUrls = [];
@@ -133,8 +202,9 @@ public static partial class WebApplicationExtensions
 
                 var productsUrls = pagedProductsUrls.Take(maxProducts).ToArray();
 
+                // Culture-prefixed urls only, for the same reason as sitemap.xml above: the bare product url redirects.
                 productsUrls = CultureInfoManager.InvariantGlobalization is false
-                    ? productsUrls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => productsUrls.Select(url => $"{sc.Culture.Name}{url}"))).ToArray()
+                    ? [.. CultureInfoManager.SupportedCultures.SelectMany(sc => productsUrls.Select(url => $"{sc.Culture.Name}{url}"))]
                     : productsUrls;
 
                 var productsMap = @$"{siteMapHeader}

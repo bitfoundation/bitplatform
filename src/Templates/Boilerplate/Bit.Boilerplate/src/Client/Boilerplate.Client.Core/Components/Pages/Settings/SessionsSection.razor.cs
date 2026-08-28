@@ -118,7 +118,7 @@ public partial class SessionsSection
     {
         return TimeProvider.GetUtcNow() - renewedOn < TimeSpan.FromMinutes(5) ? Localizer[nameof(AppStrings.Online)]
                     : TimeProvider.GetUtcNow() - renewedOn < TimeSpan.FromMinutes(15) ? Localizer[nameof(AppStrings.Recently)]
-                    : renewedOn.ToLocalTime().ToString("g");
+                    : TimeZoneService.ToLocalTime(renewedOn).ToString("g");
     }
 
     //#if (signalR == true || notification == true)

@@ -21,14 +21,13 @@ public partial class AppClientCoordinator : AppComponentBase
     [AutoInject] private Notification notification = default!;
     [AutoInject] private ThemeService themeService = default!;
     [AutoInject] private HubConnection hubConnection = default!;
-    [AutoInject] private CultureService cultureService = default!;
     [AutoInject] private SignInModalService signInModalService = default!;
     //#endif
+    [AutoInject] private CultureService cultureService = default!;
     //#if (appInsights == true)
     [AutoInject] private IApplicationInsights appInsights = default!;
     //#endif
     [AutoInject] private UserAgent userAgent = default!;
-    [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private ILogger<Navigator> navigatorLogger = default!;
@@ -81,8 +80,7 @@ public partial class AppClientCoordinator : AppComponentBase
                 var userAgentData = await userAgent.Extract();
                 TelemetryContext.Platform = string.Join(' ', [userAgentData.Manufacturer, userAgentData.OsName, userAgentData.Name, "browser"]);
             }
-            TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
-            TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
+            await TimeZoneService.ApplyPreferredTimeZone();
             TelemetryContext.PageUrl = new Uri(NavigationManager.Uri).GetUrlWithMaskedQueryValues();
 
             //#if (appInsights == true)
@@ -92,7 +90,7 @@ public partial class AppClientCoordinator : AppComponentBase
                 {
                     ["ai.application.ver"] = TelemetryContext.AppVersion,
                     ["ai.session.id"] = TelemetryContext.AppSessionId,
-                    ["ai.device.locale"] = TelemetryContext.Culture
+                    ["ai.device.locale"] = CultureInfo.CurrentUICulture.Name
                 }
             });
             //#endif

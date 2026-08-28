@@ -17,4 +17,12 @@ public partial class PushNotificationController : AppControllerBase, IPushNotifi
 
         await pushNotificationService.Subscribe(subscription, cancellationToken);
     }
+
+    [HttpPost]
+    public async Task Unsubscribe([Required] PushNotificationSubscriptionDto subscription, CancellationToken cancellationToken)
+    {
+        HttpContext.ThrowIfContainsExpiredAccessToken();
+
+        await pushNotificationService.Unsubscribe(subscription.DeviceId!, cancellationToken);
+    }
 }

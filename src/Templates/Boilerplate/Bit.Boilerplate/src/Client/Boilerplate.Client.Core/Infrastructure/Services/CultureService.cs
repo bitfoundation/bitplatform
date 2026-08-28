@@ -8,6 +8,7 @@ public partial class CultureService
     [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private NavigationManager navigationManager = default!;
+    [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private ClientExceptionHandlerBase clientExceptionHandlerBase = default!;
 
     public async Task ChangeCulture(string? cultureName)
@@ -31,14 +32,26 @@ public partial class CultureService
             });
         }
 
+        var currentUri = new Uri(navigationManager.Uri);
+
         if (AppPlatform.IsBlazorHybridOrBrowser && await EnsureCultureResourcesLoaded(cultureName))
         {
             CultureInfoManager.SetCurrentCulture(cultureName);
             pubSubService.Publish(ClientAppMessages.CULTURE_CHANGED, cultureName);
+
+            // A url carrying a culture outranks the cookie on its next load (See UseCultureUrlRedirection), so the
+            // old culture must not stay in the address bar. A culture-less url is left untouched.
+            if (currentUri.GetCulture() is string cultureInUrl
+                && string.Equals(cultureInUrl, cultureName, StringComparison.InvariantCultureIgnoreCase) is false)
+            {
+                navigationManager.NavigateTo(currentUri.GetUrlWithCulture(cultureName), forceLoad: false, replace: true);
+            }
             return;
         }
 
-        navigationManager.NavigateTo(new Uri(navigationManager.Uri).GetUrlWithoutCulture(), forceLoad: true, replace: true);
+        // Blazor Server (no in-place switch there) and the wasm satellite-failure fall-back: a full reload of the
+        // current url, re-addressed to the new culture when the url carries one.
+        navigationManager.NavigateTo(currentUri.GetUrlWithCulture(cultureName), forceLoad: true, replace: true);
     }
 
     private static readonly HashSet<string> loadedSatelliteLanguages = new(StringComparer.OrdinalIgnoreCase);
@@ -71,10 +84,8 @@ public partial class CultureService
         {
             // The DI HttpClient points at the api server and runs the auth handler chain; this is a static asset
             // of the web host itself, so fetch it from the page's own origin with a plain client.
-            // Boilerplate.Shared is the app's only localized assembly (AppStrings, IdentityStrings); add any other
-            // assembly that gets its own resx files here.
             using var httpClient = new HttpClient { BaseAddress = new Uri(navigationManager.BaseUri) };
-            using var response = await httpClient.GetAsync($"_framework/{languageName}/Boilerplate.Shared.resources.{(AppEnvironment.IsDevelopment() ? "dll" : "wasm")}");
+            using var response = await httpClient.GetAsync(GetSatelliteAssemblyUrl(languageName));
 
             response.EnsureSuccessStatusCode();
 
@@ -89,5 +100,14 @@ public partial class CultureService
             clientExceptionHandlerBase.Handle(exp.WithData("CurrentCulture", cultureName).WithData("Language", languageName));
             return false;
         }
+    }
+
+    /// <summary>
+    /// Boilerplate.Shared is the app's only localized assembly (AppStrings, IdentityStrings); add any other assembly
+    /// that gets its own resx files wherever this is fetched.
+    /// </summary>
+    private static string GetSatelliteAssemblyUrl(string languageName)
+    {
+        return $"_framework/{languageName}/Boilerplate.Shared.resources.{(AppEnvironment.IsDevelopment() ? "dll" : "wasm")}";
     }
 }
