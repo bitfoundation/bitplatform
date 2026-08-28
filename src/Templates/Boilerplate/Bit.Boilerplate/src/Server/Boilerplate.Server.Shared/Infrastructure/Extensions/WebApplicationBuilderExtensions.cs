@@ -50,7 +50,7 @@ public static class WebApplicationBuilderExtensions
                     var policyBuilder = policy.AddPolicy<AppResponseCachePolicy>();
                 }, excludeDefaultPolicy: true);
             });
-            if (settings.ResponseCaching?.EnableCdnEdgeCaching is true)
+            if (settings.ResponseCaching?.EnableCdnEdgeCaching is true || settings.ResponseCaching?.EnableOutputCaching is true)
             {
                 services.AddSingleton<AspNetCore.Antiforgery.IAntiforgery, SharedResponseCacheCompatibleAntiforgery>();
             }
