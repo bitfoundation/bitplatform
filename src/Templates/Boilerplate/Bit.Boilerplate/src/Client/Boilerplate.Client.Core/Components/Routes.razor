@@ -29,10 +29,12 @@
                         </NotAuthorized>
                     </AuthorizeRouteView>
                 </Found>
+                @*#if (brouter == true)*@
                 <NotFound>
                     <AppRouteDataPublisher RouteData="@null" />
                     <NotFoundPage />
                 </NotFound>
+                @*#endif*@
                 <Navigating>
                     <LoadingComponent />
                 </Navigating>
