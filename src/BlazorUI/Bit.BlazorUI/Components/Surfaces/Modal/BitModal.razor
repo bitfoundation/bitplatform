@@ -21,7 +21,14 @@
          aria-hidden="@(IsOpen ? null : "true")">
         @if (_params.ShowOverlay ?? true)
         {
+            @* Pressing something that cannot hold the focus is what takes the focus off whatever had it, and
+               the overlay is the largest such thing on the screen while a Modal is open. A press on it would
+               otherwise leave the keyboard on the body: the Escape handler sits on the Modal and the focus
+               trap on its content, so neither of them is reached from there, and the next Tab walks into the
+               page the overlay is there to keep out of reach. The default of the press is refused so that the
+               focus stays where the Modal put it - the click itself still arrives, and still dismisses. *@
             <div @onclick="HandleOnOverlayClick"
+                 @onmousedown:preventDefault="true"
                  aria-hidden="true"
                  style="@GetOverlayStyles()"
                  class="@GetOverlayClasses()" />

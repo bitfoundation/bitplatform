@@ -58,6 +58,11 @@ public class BitModalParameters
     public bool? FullWidth { get; set; }
 
     /// <summary>
+    /// The CSS height of the Modal (any CSS length). <c>null</c> means not set (the Modal is as tall as its content).
+    /// </summary>
+    public string? Height { get; set; }
+
+    /// <summary>
     /// Determines the ARIA role of the Modal (alertdialog/dialog).
     /// </summary>
     public bool? IsAlert { get; set; }
@@ -66,6 +71,16 @@ public class BitModalParameters
     /// Keeps the Modal in the page while it is closed instead of building it again the next time it opens. <c>null</c> means not set (defaults to <c>false</c>).
     /// </summary>
     public bool? KeepMounted { get; set; }
+
+    /// <summary>
+    /// The CSS height the Modal is not to grow past (any CSS length). <c>null</c> means not set (the height of the screen is the cap).
+    /// </summary>
+    public string? MaxHeight { get; set; }
+
+    /// <summary>
+    /// The CSS width the Modal is not to grow past (any CSS length). <c>null</c> means not set (the width of the screen is the cap).
+    /// </summary>
+    public string? MaxWidth { get; set; }
 
     /// <summary>
     /// Prevents the Modal from moving the focus into itself when it opens. <c>null</c> means not set (defaults to <c>false</c>).
@@ -139,6 +154,11 @@ public class BitModalParameters
     /// </summary>
     public string? TitleAriaId { get; set; }
 
+    /// <summary>
+    /// The CSS width of the Modal (any CSS length). <c>null</c> means not set (the Modal is as wide as its content).
+    /// </summary>
+    public string? Width { get; set; }
+
 
     /// <summary>
     /// Merges two sets of <see cref="BitModalParameters"/> giving precedence to the values of the first one.
@@ -162,8 +182,11 @@ public class BitModalParameters
             Classes = BitModalClassStyles.Merge(params1.Classes, params2.Classes),
             FullHeight = params1.FullHeight ?? params2.FullHeight,
             FullWidth = params1.FullWidth ?? params2.FullWidth,
+            Height = params1.Height ?? params2.Height,
             IsAlert = params1.IsAlert ?? params2.IsAlert,
             KeepMounted = params1.KeepMounted ?? params2.KeepMounted,
+            MaxHeight = params1.MaxHeight ?? params2.MaxHeight,
+            MaxWidth = params1.MaxWidth ?? params2.MaxWidth,
             NoAutoFocus = params1.NoAutoFocus ?? params2.NoAutoFocus,
             NoDismissOnEscape = params1.NoDismissOnEscape ?? params2.NoDismissOnEscape,
             NoFocusTrap = params1.NoFocusTrap ?? params2.NoFocusTrap,
@@ -178,6 +201,7 @@ public class BitModalParameters
             Styles = BitModalClassStyles.Merge(params1.Styles, params2.Styles),
             SubtitleAriaId = params1.SubtitleAriaId ?? params2.SubtitleAriaId,
             TitleAriaId = params1.TitleAriaId ?? params2.TitleAriaId,
+            Width = params1.Width ?? params2.Width,
         };
     }
 

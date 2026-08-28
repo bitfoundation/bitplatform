@@ -35,6 +35,20 @@ public class BitModalParametersTests
     }
 
     [TestMethod]
+    public void MergeShouldCarryEverySizeAcrossWithTheFirstWinning()
+    {
+        var first = new BitModalParameters { Width = "20rem", MaxWidth = "28rem" };
+        var second = new BitModalParameters { Width = "30rem", Height = "12rem", MaxHeight = "16rem" };
+
+        var merged = BitModalParameters.Merge(first, second)!;
+
+        Assert.AreEqual("20rem", merged.Width);      // first wins
+        Assert.AreEqual("28rem", merged.MaxWidth);   // only set on first
+        Assert.AreEqual("12rem", merged.Height);     // only set on second
+        Assert.AreEqual("16rem", merged.MaxHeight);  // only set on second
+    }
+
+    [TestMethod]
     public void MergeShouldFallBackToSecondForUnsetNullableValues()
     {
         var first = new BitModalParameters();

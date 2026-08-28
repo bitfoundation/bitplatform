@@ -1,0 +1,19 @@
+@* A Modal declared inside the content of another one, which is the shape a confirmation asked for from
+   inside a form takes. Each of the two keeps its own half of the dialog contract: the Escape that dismisses
+   the inner one stops there, and both of them hold the page behind them until the last one closes. *@
+<BitModal @bind-IsOpen="IsOuterOpen" Class="outer-modal">
+    <div>
+        <button class="outer-button">Outer</button>
+
+        <BitModal @bind-IsOpen="IsInnerOpen" Class="inner-modal">
+            <div>
+                <button class="inner-button">Inner</button>
+            </div>
+        </BitModal>
+    </div>
+</BitModal>
+
+@code {
+    [Parameter] public bool IsOuterOpen { get; set; }
+    [Parameter] public bool IsInnerOpen { get; set; }
+}

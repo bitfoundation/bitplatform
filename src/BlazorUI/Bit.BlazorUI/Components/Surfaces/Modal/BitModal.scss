@@ -67,6 +67,12 @@
     position: absolute;
     pointer-events: all;
     box-sizing: border-box;
+
+    // The surface paints both halves of its own pair. A Modal declared inside something that already paints
+    // a foreground of its own - a card wearing a color role, a section on a dark band - would otherwise take
+    // that foreground onto the page background it paints for itself, which is the one pairing nothing
+    // guarantees is legible.
+    color: $clr-fg-pri;
     background-color: $clr-bg-pri;
     box-shadow: $box-shadow-dialog;
     border-radius: $shp-radius-dialog;

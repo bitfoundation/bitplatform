@@ -57,6 +57,13 @@ public partial class BitModalDemo
         },
         new()
         {
+            Name = "Height",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The CSS height of the Modal (any CSS length). A Modal is as tall as its content when this is not set. It is written as an inline style on the content box, so it takes precedence over FullHeight, and it is capped by MaxHeight - or, when that is not set either, by the height of the screen.",
+        },
+        new()
+        {
             Name = "IsAlert",
             Type = "bool?",
             DefaultValue = "null",
@@ -75,6 +82,20 @@ public partial class BitModalDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Keeps the Modal in the page while it is closed instead of taking it out and building it again the next time it opens, so the content - and whatever state it holds - survives being closed. Nothing is rendered before the first time the Modal opens, and a kept Modal is inert and hidden from assistive technologies while it is closed.",
+        },
+        new()
+        {
+            Name = "MaxHeight",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The CSS height the Modal is not to grow past, however long its content is (any CSS length). The height of the screen is the cap when this is not set, which is what keeps a Modal longer than the screen reachable: it scrolls inside itself rather than running off both ends of the page.",
+        },
+        new()
+        {
+            Name = "MaxWidth",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The CSS width the Modal is not to grow past, however wide its content is (any CSS length). The width of the screen is the cap when this is not set, which leaves a Modal as wide as its content - and on a wide screen that can be a line of text too long to read comfortably.",
         },
         new()
         {
@@ -171,6 +192,13 @@ public partial class BitModalDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "ARIA id for the title of the Modal, if any.",
+        },
+        new()
+        {
+            Name = "Width",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The CSS width of the Modal (any CSS length). A Modal is as wide as its content when this is not set. It is written as an inline style on the content box, so it takes precedence over FullWidth, and it is capped by MaxWidth - or, when that is not set either, by the width of the screen.",
         }
     ];
 
@@ -248,6 +276,9 @@ public partial class BitModalDemo
     private bool isOpenScrollLock;
     private bool isOpenNoScrollLock;
 
+    private bool isOpenMaxWidth;
+    private bool isOpenMaxHeight;
+    private bool isOpenFixedSize;
     private bool isOpenFullWidth;
     private bool isOpenFullHeight;
     private bool isOpenFullSize;
@@ -302,6 +333,14 @@ public partial class BitModalDemo
     }
 
     private BitModal refModal = default!;
+
+    private bool isOpenOuter;
+    private bool isOpenInner;
+    private void HandleNestedDelete()
+    {
+        isOpenInner = false;
+        isOpenOuter = false;
+    }
 
     private bool isOpenStyle;
     private bool isOpenClass;
@@ -494,6 +533,37 @@ private bool isOpenScrollLock;
 private bool isOpenNoScrollLock;";
 
     private readonly string example7RazorCode = @"
+<BitButton OnClick=""() => isOpenMaxWidth = true"">MaxWidth</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""() => isOpenFixedSize = true"">Width & Height</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""() => isOpenMaxHeight = true"">MaxHeight</BitButton>
+
+<BitModal @bind-IsOpen=""isOpenMaxWidth"" MaxWidth=""32rem"">
+    <div class=""modal-content modal-content-wide"">
+        <BitText Typography=""BitTypography.H6"">MaxWidth</BitText>
+        <BitText>
+            However long this paragraph gets, the Modal stops growing at 32rem and the text wraps
+            instead - which is what keeps a line short enough to be read on a wide screen.
+        </BitText>
+        <BitButton OnClick=""() => isOpenMaxWidth = false"">Close</BitButton>
+    </div>
+</BitModal>
+
+<BitModal @bind-IsOpen=""isOpenFixedSize"" Width=""24rem"" Height=""18rem"">
+    <div class=""modal-content"">
+        <BitText Typography=""BitTypography.H6"">Width & Height</BitText>
+        <BitText>This Modal is 24rem by 18rem whatever is put in it, so it never resizes under the user.</BitText>
+        <BitButton OnClick=""() => isOpenFixedSize = false"">Close</BitButton>
+    </div>
+</BitModal>
+
+<BitModal @bind-IsOpen=""isOpenMaxHeight"" MaxWidth=""30rem"" MaxHeight=""16rem"">
+    <div class=""modal-content"">
+        <BitText Typography=""BitTypography.H6"">MaxHeight</BitText>
+        <BitText>The Modal stops at 16rem and scrolls inside itself from there, short of the edge of the screen. ...</BitText>
+        <BitButton OnClick=""() => isOpenMaxHeight = false"">Close</BitButton>
+    </div>
+</BitModal>
+
 <BitButton OnClick=""() => isOpenFullWidth = true"">FullWidth</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => isOpenFullHeight = true"">FullHeight</BitButton>
 <BitButton Variant=""BitVariant.Text"" OnClick=""() => isOpenFullSize = true"">Both</BitButton>
@@ -522,6 +592,9 @@ private bool isOpenNoScrollLock;";
     </div>
 </BitModal>";
     private readonly string example7CsharpCode = @"
+private bool isOpenMaxWidth;
+private bool isOpenMaxHeight;
+private bool isOpenFixedSize;
 private bool isOpenFullWidth;
 private bool isOpenFullHeight;
 private bool isOpenFullSize;";
@@ -679,6 +752,40 @@ private void HandleOnEscapeKeyDown()
 private BitModal refModal = default!;";
 
     private readonly string example13RazorCode = @"
+<BitButton OnClick=""() => isOpenOuter = true"">Open Modal</BitButton>
+
+<BitModal @bind-IsOpen=""isOpenOuter"" MaxWidth=""30rem"">
+    <div class=""modal-content"">
+        <BitText Typography=""BitTypography.H6"">Project settings</BitText>
+        <BitTextField Label=""Project name"" />
+        <BitStack Horizontal Gap=""0.5rem"" AutoHeight>
+            <BitButton OnClick=""() => isOpenOuter = false"">Save</BitButton>
+            <BitButton Variant=""BitVariant.Outline"" Color=""BitColor.Error"" OnClick=""() => isOpenInner = true"">Delete</BitButton>
+        </BitStack>
+
+        <BitModal @bind-IsOpen=""isOpenInner"" IsAlert Blocking AriaLabel=""Confirm the deletion"">
+            <div class=""modal-content"">
+                <BitText Typography=""BitTypography.H6"">Delete this project?</BitText>
+                <BitText>Escape closes this one and leaves the settings behind it open.</BitText>
+                <BitStack Horizontal Gap=""0.5rem"" AutoHeight>
+                    <BitButton Color=""BitColor.Error"" OnClick=""HandleNestedDelete"">Delete</BitButton>
+                    <BitButton Variant=""BitVariant.Outline"" OnClick=""() => isOpenInner = false"">Cancel</BitButton>
+                </BitStack>
+            </div>
+        </BitModal>
+    </div>
+</BitModal>";
+    private readonly string example13CsharpCode = @"
+private bool isOpenOuter;
+private bool isOpenInner;
+
+private void HandleNestedDelete()
+{
+    isOpenInner = false;
+    isOpenOuter = false;
+}";
+
+    private readonly string example14RazorCode = @"
 <style>
     .custom-class {
         border: 0.5rem solid tomato;
@@ -770,13 +877,13 @@ private BitModal refModal = default!;";
         are boundless. This space is yours to craft, yours to shape, yours to bring to life.
     </div>
 </BitModal>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private bool isOpenStyle;
 private bool isOpenClass;
 private bool isOpenStyles;
 private bool isOpenClasses;";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <div dir=""rtl"">
     <BitButton Dir=""BitDir.Rtl"" OnClick=""() => isOpenRtl = true"">باز کردن مُدال</BitButton>
 </div>
@@ -801,6 +908,6 @@ private bool isOpenClasses;";
         </p>
     </div>
 </BitModal>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private bool isOpenRtl;";
 }

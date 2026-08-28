@@ -32,6 +32,12 @@
     align-items: flex-start;
 }
 
+// The sizing example lets the Modal itself decide the measure, so the content box inside it must not cap
+// the width a second time.
+.modal-content-wide {
+    max-width: none;
+}
+
 .modal-content-header {
     gap: 1rem;
     width: 100%;

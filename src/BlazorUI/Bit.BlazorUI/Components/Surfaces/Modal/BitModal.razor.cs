@@ -19,6 +19,9 @@ public partial class BitModal : BitComponentBase
     private bool _focusTrapped;
     private bool _focusStored;
     private bool _scrollLocked;
+    // The selector the current hold was taken with, so that a selector changed while the Modal is open is
+    // noticed: the hold is registered against the element the selector resolved to, not against the selector.
+    private string? _lockedScrollerSelector;
     private bool _hasBeenOpened;
     private bool _contentFocused;
     private string _containerId = default!;
@@ -125,6 +128,21 @@ public partial class BitModal : BitComponentBase
     public bool FullWidth { get; set; }
 
     /// <summary>
+    /// The CSS height of the Modal, for the Modals whose height is not the one their content happens to have.
+    /// </summary>
+    /// <remarks>
+    /// Any CSS length (<c>24rem</c>, <c>60vh</c>, <c>480px</c>). A Modal is as tall as what is inside it when
+    /// this is not set, capped to the room the screen has - which is what a dialog usually wants. Set it where
+    /// the height has to stand still whatever is inside it: a step of a flow whose panes are of different
+    /// lengths, a surface with a scrolling list in it.
+    /// <br/>
+    /// It is written as an inline style on the content box, so it takes precedence over
+    /// <see cref="FullHeight"/> and over the height a stylesheet gives the Modal, and it is capped by
+    /// <see cref="MaxHeight"/> - or, when that is not set either, by the height of the screen.
+    /// </remarks>
+    [Parameter] public string? Height { get; set; }
+
+    /// <summary>
     /// Determines the ARIA role of the Modal (alertdialog/dialog).
     /// </summary>
     [Parameter] public bool? IsAlert { get; set; }
@@ -149,6 +167,28 @@ public partial class BitModal : BitComponentBase
     /// opens, so a Modal that is never opened still costs nothing.
     /// </remarks>
     [Parameter] public bool KeepMounted { get; set; }
+
+    /// <summary>
+    /// The CSS height the Modal is not to grow past, however long its content is.
+    /// </summary>
+    /// <remarks>
+    /// Any CSS length (<c>32rem</c>, <c>80vh</c>, <c>640px</c>). The height of the screen is the cap when this
+    /// is not set, which is what keeps a Modal longer than the screen reachable: it scrolls inside itself
+    /// rather than running off both ends of a page whose own scrolling never brings it back. A smaller cap
+    /// leaves the Modal short of the screen edge and starts its scrolling sooner.
+    /// </remarks>
+    [Parameter] public string? MaxHeight { get; set; }
+
+    /// <summary>
+    /// The CSS width the Modal is not to grow past, however wide its content is.
+    /// </summary>
+    /// <remarks>
+    /// Any CSS length (<c>40rem</c>, <c>90vw</c>, <c>600px</c>). The width of the screen is the cap when this
+    /// is not set, which leaves a Modal as wide as its content - and on a wide screen that can be a line of
+    /// text too long to read comfortably. This is the parameter that gives a Modal the measure a dialog wants,
+    /// and the one the <c>small</c> / <c>large</c> sizes of other dialog components amount to.
+    /// </remarks>
+    [Parameter] public string? MaxWidth { get; set; }
 
     /// <summary>
     /// Prevents the Modal from moving the focus into itself when it opens, for the cases where the focus is
@@ -270,6 +310,21 @@ public partial class BitModal : BitComponentBase
     /// ARIA id for the title of the Modal, if any.
     /// </summary>
     [Parameter] public string? TitleAriaId { get; set; }
+
+    /// <summary>
+    /// The CSS width of the Modal, for the Modals whose width is not the one their content happens to have.
+    /// </summary>
+    /// <remarks>
+    /// Any CSS length (<c>32rem</c>, <c>50vw</c>, <c>560px</c>). A Modal is as wide as what is inside it when
+    /// this is not set, capped to the width of the screen. Set it where the width has to stand still whatever
+    /// is inside it - the panes of a wizard, a dialog whose content is loaded after it opens - so that the
+    /// Modal does not resize under the user as its content arrives.
+    /// <br/>
+    /// It is written as an inline style on the content box, so it takes precedence over <see cref="FullWidth"/>
+    /// and over the width a stylesheet gives the Modal, and it is capped by <see cref="MaxWidth"/> - or, when
+    /// that is not set either, by the width of the screen.
+    /// </remarks>
+    [Parameter] public string? Width { get; set; }
 
 
 
@@ -417,6 +472,14 @@ public partial class BitModal : BitComponentBase
             await DisposeFocusTrap();
         }
 
+        // The hold is taken on the element the selector named at the time it was taken, so a selector that
+        // changes while the Modal is open has to be let go of and taken again - the Modal would otherwise be
+        // holding the element it was pointed at before while the page it is pointed at now carries on scrolling.
+        if (_scrollLocked && _lockedScrollerSelector != _params.ScrollerSelector)
+        {
+            await UnlockScroll();
+        }
+
         if (ShouldLockScroll)
         {
             await LockScroll();
@@ -539,9 +602,30 @@ public partial class BitModal : BitComponentBase
         return JoinClasses("bit-mdl-ovl", Classes?.Overlay, _params.Classes?.Overlay);
     }
 
+    // The four size parameters are written ahead of the styles the consumer gave the content, so that a
+    // declaration in Styles.Content still has the last word over the parameter that named the same property:
+    // within one style attribute the later declaration is the one that stands.
     private string? GetContentStyles()
     {
-        return JoinStyles(Styles?.Content, _params.Styles?.Content);
+        return JoinStyles(GetSizeStyles(), JoinStyles(Styles?.Content, _params.Styles?.Content));
+    }
+
+    // Nothing at all for the Modal that was given no size, which is the common case: the content box then
+    // carries only what the stylesheet gives it, and is as big as what is inside it.
+    private string? GetSizeStyles()
+    {
+        var width = _params.Width;
+        var height = _params.Height;
+        var maxWidth = _params.MaxWidth;
+        var maxHeight = _params.MaxHeight;
+
+        if (width.HasNoValue() && height.HasNoValue() && maxWidth.HasNoValue() && maxHeight.HasNoValue()) return null;
+
+        return string.Concat(
+            width.HasValue() ? $"width:{width};" : string.Empty,
+            height.HasValue() ? $"height:{height};" : string.Empty,
+            maxWidth.HasValue() ? $"max-width:{maxWidth};" : string.Empty,
+            maxHeight.HasValue() ? $"max-height:{maxHeight};" : string.Empty);
     }
 
     private string GetContentClasses()
@@ -708,10 +792,11 @@ public partial class BitModal : BitComponentBase
         if (ShouldLockScroll is false || _scrollLocked || IsDisposed) return;
 
         _scrollLocked = true;
+        _lockedScrollerSelector = _params.ScrollerSelector;
 
         try
         {
-            await _js.BitUtilsLockScroll(_containerId, _params.ScrollerSelector);
+            await _js.BitUtilsLockScroll(_containerId, _lockedScrollerSelector);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -723,6 +808,7 @@ public partial class BitModal : BitComponentBase
         if (_scrollLocked is false) return;
 
         _scrollLocked = false;
+        _lockedScrollerSelector = null;
 
         try
         {
@@ -776,9 +862,12 @@ public partial class BitModal : BitComponentBase
             FullHeight = FullHeight ? true : p.FullHeight,
             // Can only force on (default is off): see remarks on asymmetric merge.
             FullWidth = FullWidth ? true : p.FullWidth,
+            Height = Height ?? p.Height,
             IsAlert = IsAlert ?? p.IsAlert,
             // Can only force on (default is off): see remarks on asymmetric merge.
             KeepMounted = KeepMounted ? true : p.KeepMounted,
+            MaxHeight = MaxHeight ?? p.MaxHeight,
+            MaxWidth = MaxWidth ?? p.MaxWidth,
             // Can only force on (default is off): see remarks on asymmetric merge.
             NoAutoFocus = NoAutoFocus ? true : p.NoAutoFocus,
             // Can only force on (default is off): see remarks on asymmetric merge.
@@ -799,6 +888,7 @@ public partial class BitModal : BitComponentBase
             Styles = p.Styles,
             SubtitleAriaId = SubtitleAriaId ?? p.SubtitleAriaId,
             TitleAriaId = TitleAriaId ?? p.TitleAriaId,
+            Width = Width ?? p.Width,
         };
     }
 

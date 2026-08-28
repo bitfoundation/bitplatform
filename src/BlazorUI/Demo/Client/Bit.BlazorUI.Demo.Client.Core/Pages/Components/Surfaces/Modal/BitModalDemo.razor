@@ -6,7 +6,7 @@
 
 <DemoPage Name="Modal"
           SecondaryNames="@(["Dialog", "Popup"])"
-          Description="Modal is a temporary surface that covers the page and takes it over until it is dealt with. It hosts whatever is put in it - a form, a license agreement, a confirmation - centered over an overlay that dims what is behind it, and it behaves the way a dialog is expected to: the focus moves into it when it opens, Tab keeps cycling inside it while it is open, the page behind it stops scrolling, Escape and a click on the overlay dismiss it, and the focus goes back to whatever opened it once it closes. Each of those can be turned off on its own, and the Modal can be driven either by binding IsOpen or through its Open, Close and Toggle methods."
+          Description="Modal is a temporary surface that covers the page and takes it over until it is dealt with. It hosts whatever is put in it - a form, a license agreement, a confirmation - centered over an overlay that dims what is behind it, and it behaves the way a dialog is expected to: the focus moves into it when it opens, Tab keeps cycling inside it while it is open, the page behind it stops scrolling, Escape and a click on the overlay dismiss it, and the focus goes back to whatever opened it once it closes. Each of those can be turned off on its own. It is as big as its content unless it is given a width, a height or a cap on either, it can be driven by binding IsOpen or through its Open, Close and Toggle methods, and it can be kept in the page while closed so the state of what is inside it survives."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
@@ -262,18 +262,67 @@
             </BitModal>
         </DemoExample>
 
-        <DemoExample Title="Full width & height" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <DemoExample Title="Sizing" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                A Modal is as big as what is inside it, capped to the screen so that all of it stays reachable.
+                <b>Width</b>, <b>Height</b>, <b>MaxWidth</b> and <b>MaxHeight</b> take any CSS length and give it a
+                size of its own instead. <b>MaxWidth</b> is the one most Modals want: it gives the text a measure to
+                be read at rather than letting it run the width of a wide screen. <b>Width</b> makes the Modal stand
+                still while its content changes - the panes of a wizard, a body that arrives after the Modal opened -
+                and <b>MaxHeight</b> starts the Modal's own scrolling before it reaches the edge of the screen.
+            </div>
+            <br />
             <div>
                 <b>FullWidth</b> and <b>FullHeight</b> stretch the Modal to the width and the height of the area it
                 is placed in - the viewport, for a Modal rendered at the page level. Set both for a Modal that takes
-                the whole screen, which is what a small screen usually wants from a surface with a form on it.
+                the whole screen, which is what a small screen usually wants from a surface with a form on it. The
+                four lengths are written as inline styles, so each of them takes precedence over the matching Full
+                parameter and over anything a stylesheet gives the Modal.
             </div>
             <br />
             <div class="example-box">
-                <BitButton OnClick="() => isOpenFullWidth = true">FullWidth</BitButton>
-                <BitButton Variant="BitVariant.Outline" OnClick="() => isOpenFullHeight = true">FullHeight</BitButton>
+                <BitButton OnClick="() => isOpenMaxWidth = true">MaxWidth</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => isOpenFixedSize = true">Width & Height</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => isOpenMaxHeight = true">MaxHeight</BitButton>
+            </div>
+            <br />
+            <div class="example-box">
+                <BitButton Variant="BitVariant.Text" OnClick="() => isOpenFullWidth = true">FullWidth</BitButton>
+                <BitButton Variant="BitVariant.Text" OnClick="() => isOpenFullHeight = true">FullHeight</BitButton>
                 <BitButton Variant="BitVariant.Text" OnClick="() => isOpenFullSize = true">Both</BitButton>
             </div>
+            <BitModal @bind-IsOpen="isOpenMaxWidth" MaxWidth="32rem">
+                <div class="modal-content modal-content-wide">
+                    <BitText Typography="BitTypography.H6">MaxWidth</BitText>
+                    <BitText>
+                        However long this paragraph gets, the Modal stops growing at 32rem and the text wraps
+                        instead - which is what keeps a line short enough to be read on a wide screen.
+                    </BitText>
+                    <BitButton OnClick="() => isOpenMaxWidth = false">Close</BitButton>
+                </div>
+            </BitModal>
+            <BitModal @bind-IsOpen="isOpenFixedSize" Width="24rem" Height="18rem">
+                <div class="modal-content">
+                    <BitText Typography="BitTypography.H6">Width & Height</BitText>
+                    <BitText>This Modal is 24rem by 18rem whatever is put in it, so it never resizes under the user.</BitText>
+                    <BitButton OnClick="() => isOpenFixedSize = false">Close</BitButton>
+                </div>
+            </BitModal>
+            <BitModal @bind-IsOpen="isOpenMaxHeight" MaxWidth="30rem" MaxHeight="16rem">
+                <div class="modal-content">
+                    <BitText Typography="BitTypography.H6">MaxHeight</BitText>
+                    <BitText>
+                        The Modal stops at 16rem and scrolls inside itself from there, short of the edge of the
+                        screen. Every story starts with a blank canvas, a quiet space waiting to be filled with
+                        ideas, emotions, and dreams. These placeholder words symbolize the beginning - a moment of
+                        possibility where creativity has yet to take shape. Imagine this text as the scaffolding of
+                        something remarkable, a foundation upon which connections and inspirations will be built.
+                        Soon, these lines will transform into narratives that provoke thought, spark emotion, and
+                        resonate with those who encounter them.
+                    </BitText>
+                    <BitButton OnClick="() => isOpenMaxHeight = false">Close</BitButton>
+                </div>
+            </BitModal>
             <BitModal @bind-IsOpen="isOpenFullWidth" FullWidth>
                 <div class="modal-content">
                     <BitText Typography="BitTypography.H6">FullWidth</BitText>
@@ -469,7 +518,46 @@
             </BitModal>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <DemoExample Title="Nested modals" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+            <div>
+                A Modal declared inside the content of another one opens on top of it, which is what a
+                confirmation asked for from inside a form looks like. Each of them keeps its own half of the
+                dialog contract: Escape dismisses the innermost one and leaves the one underneath open, the
+                overlays stack so a click only ever reaches the topmost, and the focus goes back to the button
+                inside the first Modal that opened the second.
+            </div>
+            <br />
+            <div>
+                The holds on the page are counted rather than toggled, so both Modals hold it and it is only
+                handed back once the last of them closes. Keep the nesting to the one step it takes to answer a
+                question: a stack the user has to climb back down is a flow that wanted to be a page.
+            </div>
+            <br />
+            <BitButton OnClick="() => isOpenOuter = true">Open Modal</BitButton>
+            <BitModal @bind-IsOpen="isOpenOuter" MaxWidth="30rem">
+                <div class="modal-content">
+                    <BitText Typography="BitTypography.H6">Project settings</BitText>
+                    <BitTextField Label="Project name" />
+                    <BitStack Horizontal Gap="0.5rem" AutoHeight>
+                        <BitButton OnClick="() => isOpenOuter = false">Save</BitButton>
+                        <BitButton Variant="BitVariant.Outline" Color="BitColor.Error" OnClick="() => isOpenInner = true">Delete</BitButton>
+                    </BitStack>
+
+                    <BitModal @bind-IsOpen="isOpenInner" IsAlert Blocking AriaLabel="Confirm the deletion">
+                        <div class="modal-content">
+                            <BitText Typography="BitTypography.H6">Delete this project?</BitText>
+                            <BitText>Escape closes this one and leaves the settings behind it open.</BitText>
+                            <BitStack Horizontal Gap="0.5rem" AutoHeight>
+                                <BitButton Color="BitColor.Error" OnClick="HandleNestedDelete">Delete</BitButton>
+                                <BitButton Variant="BitVariant.Outline" OnClick="() => isOpenInner = false">Cancel</BitButton>
+                            </BitStack>
+                        </div>
+                    </BitModal>
+                </div>
+            </BitModal>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root element of the Modal - the layer that covers the page -
                 while <b>Styles</b> and <b>Classes</b> reach each of its three parts by name: <b>Root</b>,
@@ -554,7 +642,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <DemoExample Title="RTL" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
             <div>
                 Set <b>Dir</b> to <b>BitDir.Rtl</b> to lay the Modal and everything inside it out right to left.
             </div>

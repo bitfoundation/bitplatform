@@ -1453,5 +1453,257 @@ public class BitModalTests : BunitTestContext
     }
 
 
+    [TestMethod]
+    public void BitModalShouldTakeTheHoldOnTheNewScrollerWhenTheSelectorChangesWhileItIsOpen()
+    {
+        // The hold is registered against the element the selector resolved to, so a selector changed while
+        // the Modal is open has to be let go of and taken again - the Modal would otherwise be holding the
+        // element it was pointed at before while the one it is pointed at now carries on scrolling.
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ScrollerSelector, ".first-main");
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ScrollerSelector, ".second-main");
+        });
+
+        com.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count);
+            Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
+        });
+
+        Assert.AreEqual(".second-main", Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][^1].Arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitModalShouldNotTakeTheHoldAgainWhileTheScrollerItWasPointedAtIsUnchanged()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ScrollerSelector, ".app-main");
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ScrollerSelector, ".app-main");
+            parameters.Add(p => p.AriaLabel, "Something else");
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count);
+    }
+
+
+
+    // ------------------------------------------------------------------------------------------------
+    // Sizing
+    // ------------------------------------------------------------------------------------------------
+
+    [TestMethod]
+    public void BitModalShouldWriteTheSizeItWasGivenOntoItsContent()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Width, "24rem");
+            parameters.Add(p => p.Height, "18rem");
+            parameters.Add(p => p.MaxWidth, "32rem");
+            parameters.Add(p => p.MaxHeight, "16rem");
+        });
+
+        Assert.AreEqual("width:24rem;height:18rem;max-width:32rem;max-height:16rem;", com.Find(".bit-mdl-ctn").GetAttribute("style"));
+
+        // The size belongs to the box that is the dialog, not to the layer that also holds the overlay.
+        Assert.IsFalse(com.Find(".bit-mdl").GetAttribute("style")?.Contains("max-width") ?? false);
+    }
+
+    [TestMethod]
+    public void BitModalShouldWriteOnlyTheSizesItWasGiven()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.MaxWidth, "32rem");
+        });
+
+        Assert.AreEqual("max-width:32rem;", com.Find(".bit-mdl-ctn").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitModalShouldNotWriteASizeItWasNotGiven()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            // Whitespace is not a length, so it is treated as nothing rather than written out as one.
+            parameters.Add(p => p.Width, "  ");
+        });
+
+        Assert.IsFalse(com.Find(".bit-mdl-ctn").HasAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitModalShouldLetTheContentStylesHaveTheLastWordOverTheSizeParameters()
+    {
+        // Within one style attribute the later declaration is the one that stands, so the styles the
+        // consumer gave the content are written after the size parameters.
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.MaxWidth, "32rem");
+            parameters.Add(p => p.Styles, new BitModalClassStyles { Content = "max-width:40rem" });
+        });
+
+        Assert.AreEqual("max-width:32rem; max-width:40rem", com.Find(".bit-mdl-ctn").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitModalShouldTakeTheCascadedSize()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.AddCascadingValue(new BitModalParameters
+            {
+                Width = "20rem",
+                Height = "10rem",
+                MaxWidth = "28rem",
+                MaxHeight = "14rem",
+            });
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        Assert.AreEqual("width:20rem;height:10rem;max-width:28rem;max-height:14rem;", com.Find(".bit-mdl-ctn").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitModalShouldPreferItsOwnSizeOverTheCascadedOne()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.AddCascadingValue(new BitModalParameters { MaxWidth = "28rem", MaxHeight = "14rem" });
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.MaxWidth, "32rem");
+        });
+
+        // The one the component was given wins; the one it was not given still comes from the cascade.
+        Assert.AreEqual("max-width:32rem;max-height:14rem;", com.Find(".bit-mdl-ctn").GetAttribute("style"));
+    }
+
+
+
+    // ------------------------------------------------------------------------------------------------
+    // The overlay
+    // ------------------------------------------------------------------------------------------------
+
+    [TestMethod]
+    public void BitModalShouldRefuseTheDefaultOfAPressOnItsOverlay()
+    {
+        // Pressing something that cannot hold the focus is what takes the focus off whatever had it, and a
+        // press on the overlay would otherwise leave the keyboard on the body - out of reach of the Escape
+        // handler on the Modal and of the focus trap on its content.
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        Assert.IsTrue(com.Find(".bit-mdl-ovl").HasAttribute("blazor:onmousedown:preventdefault"));
+    }
+
+    [TestMethod]
+    public void BitModalShouldStillBeDismissedByAClickOnTheOverlayItRefusedTheDefaultOf()
+    {
+        var isOpen = true;
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+        });
+
+        com.Find(".bit-mdl-ovl").Click();
+
+        Assert.IsFalse(isOpen);
+        Assert.AreEqual(0, com.FindAll(".bit-mdl").Count);
+    }
+
+
+
+
+    // ------------------------------------------------------------------------------------------------
+    // Nesting
+    // ------------------------------------------------------------------------------------------------
+
+    [TestMethod]
+    public void BitModalShouldDismissOnlyTheInnermostOfTwoNestedModalsOnEscape()
+    {
+        // A Modal opened from inside another one renders inside that one's content, so an Escape left to
+        // carry on up would dismiss the Modal the keyboard is still working inside of along with the one it
+        // was meant for.
+        var com = RenderComponent<BitModalNestedTest>(parameters =>
+        {
+            parameters.Add(p => p.IsOuterOpen, true);
+            parameters.Add(p => p.IsInnerOpen, true);
+        });
+
+        Assert.AreEqual(1, com.FindAll(".inner-modal").Count);
+        Assert.AreEqual(1, com.FindAll(".outer-modal").Count);
+
+        com.Find(".inner-modal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, com.FindAll(".inner-modal").Count);
+        Assert.AreEqual(1, com.FindAll(".outer-modal").Count);
+    }
+
+    [TestMethod]
+    public void BitModalShouldHoldThePageOnceForEachOfTwoNestedModals()
+    {
+        // The holds are counted rather than toggled: both Modals hold the page and it is only handed back
+        // once the last of them closes.
+        var com = RenderComponent<BitModalNestedTest>(parameters =>
+        {
+            parameters.Add(p => p.IsOuterOpen, true);
+            parameters.Add(p => p.IsInnerOpen, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+
+        // Each Modal holds under a key of its own, so one letting go never releases what the other holds.
+        var firstKey = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][0].Arguments[0];
+        var secondKey = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][1].Arguments[0];
+        Assert.AreNotEqual(firstKey, secondKey);
+
+        com.Find(".inner-modal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count));
+        Assert.AreEqual(secondKey, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"][^1].Arguments[0]);
+    }
+
+    [TestMethod]
+    public void BitModalShouldTrapTheFocusOfEachOfTwoNestedModalsSeparately()
+    {
+        var com = RenderComponent<BitModalNestedTest>(parameters =>
+        {
+            parameters.Add(p => p.IsOuterOpen, true);
+            parameters.Add(p => p.IsInnerOpen, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count));
+
+        // The inner Modal's trap is registered against its own content box, not against the one it renders
+        // inside of, so Tab cycles within the Modal the keyboard is actually in.
+        var innerContainerId = com.Find(".inner-modal .bit-mdl-ctn").Id;
+        Assert.AreEqual(innerContainerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"][^1].Arguments[0]);
+    }
+
+
     private void HandleIsOpenChanged(bool isOpen) => isModalOpen = isOpen;
 }
