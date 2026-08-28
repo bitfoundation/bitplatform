@@ -90,7 +90,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
     [AllowAnonymous]
     [HttpGet("{attachmentId}/{kind}")]
-    [AppResponseCache(MaxAge = 3600 * 24 * 7, UserAgnostic = true)]
+    [AppResponseCache(MaxAge = 3600 * 24 * 7, UserAgnostic = true, SkipOutputCache = true)]
     public async Task<IActionResult> GetAttachment(Guid attachmentId, AttachmentKind kind, CancellationToken cancellationToken = default)
     {
         // If the backend is hosted behind a CDN (which is recommended for production), the GetAttachment method's returned stream will be cached on CDN edge servers.

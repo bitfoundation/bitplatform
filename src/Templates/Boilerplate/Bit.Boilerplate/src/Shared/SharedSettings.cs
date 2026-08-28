@@ -1,5 +1,4 @@
 //+:cnd:noEmit
-using Microsoft.Extensions.Caching.Memory;
 
 namespace Boilerplate.Shared;
 

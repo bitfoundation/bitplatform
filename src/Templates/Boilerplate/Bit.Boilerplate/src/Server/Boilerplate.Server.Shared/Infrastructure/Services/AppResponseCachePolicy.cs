@@ -99,6 +99,12 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
         {
             outputCacheTtl = -1;
         }
+        if (responseCacheAtt.SkipOutputCache)
+        {
+            // A file response (See AttachmentController.GetAttachment): too big for the byte-bounded memory cache the
+            // output cache stores bodies in. The edge keeps caching it. See SkipOutputCache.
+            outputCacheTtl = -1;
+        }
         if (env.IsDevelopment())
         {
             clientCacheTtl = -1;
