@@ -23,7 +23,7 @@ public partial class BitModalDemo
             Name = "AutoToggleScroll",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables the auto scrollbar toggle behavior of the Modal, which takes the overflow off the scroller while it is open and hands it back once it closes. A Modal that does this holds its own scroller, so the hold it would otherwise take on the page is stood down for it.",
+            Description = "Enables the auto scrollbar toggle behavior of the Modal, which takes the overflow off the scroller while it is open and hands it back once it closes. A Modal that does this holds its own scroller, so the hold it would otherwise take on the page is stood down for it. The scroller is the one named by ScrollerElement or ScrollerSelector, then the one of the BitAppShell the Modal is inside of, and the page when it is inside none.",
         },
         new()
         {
@@ -282,14 +282,14 @@ public partial class BitModalDemo
             Name = "ScrollerElement",
             Type = "ElementReference?",
             DefaultValue = "null",
-            Description = "The element reference of the scroller the Modal toggles the overflow of while it is open. Takes precedence over ScrollerSelector, and is only read by a Modal that toggles the scroll itself (see AutoToggleScroll).",
+            Description = "The element reference of the scroller the Modal holds while it is open. Takes precedence over ScrollerSelector and over the scroller a BitAppShell cascades, and is read by both holds: the one the Modal takes by default and the overflow toggle of AutoToggleScroll.",
         },
         new()
         {
             Name = "ScrollerSelector",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The CSS selector of the element whose scrolling the Modal holds while it is open. The page (body) is what is held when this is not set, which is the scroller of an ordinary page; an application shell that scrolls a region of its own names that region here.",
+            Description = "The CSS selector of the element whose scrolling the Modal holds while it is open. A Modal inside a BitAppShell holds the shell's scroller without being told to, since the shell cascades it; the page (body) is what is held when there is no shell and this is not set. Any other layout that scrolls a region of its own names that region here, since holding a page that never scrolls holds nothing.",
         },
         new()
         {
@@ -297,13 +297,6 @@ public partial class BitModalDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Shows the close button of the Modal, which closes it without a handler of its own.",
-        },
-        new()
-        {
-            Name = "ShowOverlay",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Whether the overlay should be rendered. Without it the page behind the Modal keeps its own clicks, and there is no click left to light dismiss the Modal by.",
         },
         new()
         {
@@ -465,13 +458,13 @@ public partial class BitModalDemo
 
 
     private bool isOpenBasic;
+    private bool isOpenNoBorder;
 
     private bool isOpenCustomContent;
 
     private bool isOpenHeaderText;
     private bool isOpenHeaderTemplate;
     private bool isOpenFooter;
-    private bool isOpenNoBorder;
 
     private bool isOpenBlocking;
 
@@ -494,7 +487,6 @@ public partial class BitModalDemo
     private bool isOpenFullHeight;
     private bool isOpenFullSize;
 
-    private bool isOpenNoOverlay;
     private bool isOpenModeFull;
     private bool isOpenModeless;
 
@@ -581,6 +573,7 @@ public partial class BitModalDemo
 
     private readonly string example1RazorCode = @"
 <BitButton OnClick=""() => isOpenBasic = true"">Open Modal</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""() => isOpenNoBorder = true"">NoBorder</BitButton>
 
 <BitModal @bind-IsOpen=""isOpenBasic"">
     <div style=""padding:1rem;max-width:40rem"">
@@ -596,9 +589,28 @@ public partial class BitModalDemo
         idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
         begins here, in this quiet moment where everything is possible.
     </div>
+</BitModal>
+
+<BitModal @bind-IsOpen=""isOpenNoBorder"" NoBorder>
+    <div style=""padding:1rem;max-width:40rem"">
+        The accent line along the top edge of the Modal is gone.
+        <br />
+        In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+        to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+        possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+        vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+        shaped into meaning, and the emotions ready to resonate with every reader.
+        <br />
+        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+        each word has the power to transform into something extraordinary. Here lies the start of something new-an
+        opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+        idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+        begins here, in this quiet moment where everything is possible.
+    </div>
 </BitModal>";
     private readonly string example1CsharpCode = @"
-private bool isOpenBasic;";
+private bool isOpenBasic;
+private bool isOpenNoBorder;";
 
     private readonly string example2RazorCode = @"
 <style>
@@ -652,7 +664,6 @@ private bool isOpenCustomContent;";
 <BitButton OnClick=""() => isOpenHeaderText = true"">HeaderText</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => isOpenHeaderTemplate = true"">Header template</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => isOpenFooter = true"">Header &amp; Footer</BitButton>
-<BitButton Variant=""BitVariant.Text"" OnClick=""() => isOpenNoBorder = true"">NoBorder</BitButton>
 
 <BitModal @bind-IsOpen=""isOpenHeaderText"" MaxWidth=""32rem"" ShowCloseButton HeaderText=""Release notes"">
     <BitText>
@@ -683,16 +694,11 @@ private bool isOpenCustomContent;";
             <BitButton Variant=""BitVariant.Outline"" OnClick=""() => isOpenFooter = false"">Discard</BitButton>
         </BitStack>
     </Footer>
-</BitModal>
-
-<BitModal @bind-IsOpen=""isOpenNoBorder"" MaxWidth=""32rem"" NoBorder ShowCloseButton HeaderText=""No top border"">
-    <BitText>The accent line along the top edge of the Modal is gone.</BitText>
 </BitModal>";
     private readonly string example3CsharpCode = @"
 private bool isOpenHeaderText;
 private bool isOpenHeaderTemplate;
-private bool isOpenFooter;
-private bool isOpenNoBorder;";
+private bool isOpenFooter;";
 
     private readonly string example4RazorCode = @"
 <BitButton OnClick=""() => isOpenBlocking = true"">Open blocking Modal</BitButton>
@@ -880,8 +886,7 @@ private bool isOpenFullSize;";
 
     private readonly string example9RazorCode = @"
 <BitButton OnClick=""() => isOpenModeFull = true"">ModeFull</BitButton>
-<BitButton Variant=""BitVariant.Outline"" OnClick=""() => isOpenNoOverlay = true"">No overlay</BitButton>
-<BitButton Variant=""BitVariant.Text"" OnClick=""() => isOpenModeless = !isOpenModeless"">Modeless</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""() => isOpenModeless = !isOpenModeless"">Modeless</BitButton>
 
 <BitModal @bind-IsOpen=""isOpenModeFull"" ModeFull>
     <div class=""modal-content"">
@@ -891,19 +896,10 @@ private bool isOpenFullSize;";
     </div>
 </BitModal>
 
-<BitModal @bind-IsOpen=""isOpenNoOverlay"" ShowOverlay=""false"" AriaModal=""false"">
-    <div class=""modal-content"">
-        <BitText Typography=""BitTypography.H6"">No overlay</BitText>
-        <BitText>The page behind this Modal is still clickable, and this text can still be selected.</BitText>
-        <BitButton OnClick=""() => isOpenNoOverlay = false"">Close</BitButton>
-    </div>
-</BitModal>
-
-<BitModal @bind-IsOpen=""isOpenModeless"" Modeless Position=""BitPosition.BottomRight"" ShowCloseButton HeaderText=""Modeless"" MaxWidth=""22rem"">
+<BitModal @bind-IsOpen=""isOpenModeless"" Modeless ShowCloseButton HeaderText=""Modeless"" MaxWidth=""22rem"">
     <BitText>Carry on with the page while this one is open: it holds neither the pointer, nor the keyboard, nor the scroll.</BitText>
 </BitModal>";
     private readonly string example9CsharpCode = @"
-private bool isOpenNoOverlay;
 private bool isOpenModeFull;
 private bool isOpenModeless;";
 
@@ -911,7 +907,7 @@ private bool isOpenModeless;";
 <style>
     .relative-container {
         width: 100%;
-        height: 400px;
+        height: 20rem;
         overflow: auto;
         margin-top: 1rem;
         position: relative;

@@ -1,0 +1,39 @@
+﻿@* The content of a modal with something to lose. It reports whether it is dirty, and the CanClose guard the
+   modal was shown with answers a dismissal with that - so Escape and the overlay are turned down while there
+   is an unsaved change, and the two buttons here are the ways out. *@
+<BitStack Style="padding:1rem;min-width:18rem" Gap="1rem">
+    <BitText Typography="BitTypography.H6">Rename the project</BitText>
+    <BitTextField Label="Name" Value="@value" ValueChanged="OnValueChanged" Immediate />
+    <BitStack Horizontal Gap="0.5rem" AutoHeight>
+        <BitButton OnClick="Save">Save</BitButton>
+        <BitButton Variant="BitVariant.Outline" OnClick="Discard">Discard</BitButton>
+    </BitStack>
+</BitStack>
+
+@code {
+    [CascadingParameter] private BitModalReference modalReference { get; set; } = default!;
+
+    [Parameter] public EventCallback<bool> HasChangesChanged { get; set; }
+
+    private string? value;
+
+    private async Task OnValueChanged(string? newValue)
+    {
+        value = newValue;
+
+        await HasChangesChanged.InvokeAsync(true);
+    }
+
+    private async Task Save()
+    {
+        await HasChangesChanged.InvokeAsync(false);
+        await modalReference.CloseWith(value);
+    }
+
+    // Discarding is the way out the guard leaves open: the changes are dropped first, so the close goes through.
+    private async Task Discard()
+    {
+        await HasChangesChanged.InvokeAsync(false);
+        await modalReference.Dismiss();
+    }
+}

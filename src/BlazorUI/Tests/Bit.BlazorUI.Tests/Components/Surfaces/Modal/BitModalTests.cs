@@ -227,16 +227,18 @@ public class BitModalTests : BunitTestContext
         Assert.AreEqual("-1", com.Find(".bit-mdl-ctn").GetAttribute("tabindex"));
     }
 
+    // The overlay is the only thing in the layer that catches a pointer, so a Modal renders it whenever it
+    // is modal at all and leaves it out only for the one case that is not: a modeless Modal.
     [TestMethod,
-        DataRow(true, 1),
-        DataRow(false, 0)
+        DataRow(false, 1),
+        DataRow(true, 0)
     ]
-    public void BitModalShouldRenderTheOverlayOnlyWhenAskedFor(bool showOverlay, int expectedCount)
+    public void BitModalShouldRenderTheOverlayUnlessItIsModeless(bool modeless, int expectedCount)
     {
         var com = RenderComponent<BitModal>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.ShowOverlay, showOverlay);
+            parameters.Add(p => p.Modeless, modeless);
         });
 
         Assert.AreEqual(expectedCount, com.FindAll(".bit-mdl-ovl").Count);
@@ -751,7 +753,7 @@ public class BitModalTests : BunitTestContext
                 AriaLabel = "Cascaded label",
                 FullWidth = true,
                 IsAlert = true,
-                ShowOverlay = false,
+                Modeless = true,
             });
             parameters.Add(p => p.IsOpen, true);
         });
@@ -975,6 +977,70 @@ public class BitModalTests : BunitTestContext
 
         com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count));
 
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
+    }
+
+    [TestMethod]
+    public void BitModalShouldHoldTheScrollerOfTheApplicationShellItIsInside()
+    {
+        // An application shell scrolls a region of its own, so the body of such an app never scrolls and a
+        // hold taken on it would hold nothing. BitAppShell cascades its scroller under this name, and a Modal
+        // that has not been pointed at a scroller of its own holds that one instead of the page.
+        var shell = new ElementReference("shell-container");
+
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.AddCascadingValue("BitAppShell.Container", (ElementReference?)shell);
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+
+        var arguments = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][0].Arguments;
+
+        Assert.AreEqual(shell, arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitModalShouldPreferTheScrollerItWasPointedAtOverTheOneOfTheShell()
+    {
+        // The shell is the fallback, not the answer: a Modal told which scroller to hold holds that one.
+        var shell = new ElementReference("shell-container");
+
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.AddCascadingValue("BitAppShell.Container", (ElementReference?)shell);
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ScrollerSelector, "#own-scroller");
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+
+        var arguments = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][0].Arguments;
+
+        Assert.AreEqual("#own-scroller", arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitModalShouldToggleTheOverflowOfTheShellScrollerRatherThanTheBody()
+    {
+        // AutoToggleScroll takes the overflow off the scroller it is given, and the shell's is the one it is
+        // given when the Modal is inside a shell and has been pointed at nothing of its own.
+        var shell = new ElementReference("shell-container");
+
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.AddCascadingValue("BitAppShell.Container", (ElementReference?)shell);
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AutoToggleScroll, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+
+        var arguments = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0].Arguments;
+
+        Assert.AreEqual(shell, arguments[0]);
+        // The two holds are never both taken: the Modal that toggles the overflow itself holds its scroller.
         Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
     }
 

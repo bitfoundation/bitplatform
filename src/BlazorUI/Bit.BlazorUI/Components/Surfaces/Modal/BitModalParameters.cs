@@ -5,7 +5,7 @@
 /// </summary>
 /// <remarks>
 /// BREAKING CHANGE: the boolean members (<see cref="IsEnabled"/>, <see cref="AriaModal"/>, <see cref="Blocking"/>,
-/// <see cref="FullHeight"/>, <see cref="FullWidth"/>, <see cref="ShowOverlay"/>) are nullable (<c>bool?</c>)
+/// <see cref="FullHeight"/>, <see cref="FullWidth"/>) are nullable (<c>bool?</c>)
 /// instead of <c>bool</c>. A <c>null</c> value means "not set" and the corresponding <see cref="BitModal"/> default
 /// is used (or the cascaded value, when merged). Code that read these members as non-nullable <c>bool</c> must be updated.
 /// </remarks>
@@ -58,6 +58,21 @@ public class BitModalParameters
     public RenderFragment? Body { get; set; }
 
     /// <summary>
+    /// Asked whether the Modal may close, for the Modals that have something to lose by closing - a half-filled
+    /// form, an upload still running. Answering <c>false</c> keeps the Modal open.
+    /// </summary>
+    /// <remarks>
+    /// This guards the ways the user closes a Modal (the close button, the overlay, the Escape key) and the
+    /// explicit <see cref="BitModalReferenceBase{TReference, TParameters}.TryClose"/>. It is deliberately not
+    /// asked by <c>Close</c> / <c>CloseWith</c> / <c>CloseAll</c> or by a close on navigation: those are the
+    /// application closing the Modal on its own terms, which a guard meant for the user is not to refuse.
+    /// <br/>
+    /// A guard set on the container-level parameters is the default for every Modal it renders, and a Modal that
+    /// declares one of its own is asked that one instead - the two are not both asked.
+    /// </remarks>
+    public Func<Task<bool>>? CanClose { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the BitModal component.
     /// </summary>
     public BitModalClassStyles? Classes { get; set; }
@@ -76,6 +91,20 @@ public class BitModalParameters
     /// The name of the icon of the close button, from the built-in Fluent UI icons.
     /// </summary>
     public string? CloseIconName { get; set; }
+
+    /// <summary>
+    /// Whether the Modal closes when the app navigates somewhere else. <c>null</c> means not set (defaults to
+    /// <c>true</c>).
+    /// </summary>
+    /// <remarks>
+    /// A modal belongs to the page it was opened from, so it is closed - with a <c>null</c> result - when the
+    /// route changes under it, which is what keeps a modal from being left lying over a page it says nothing
+    /// about. Only a change of path counts; a query string or a fragment changed on the same page does not.
+    /// <br/>
+    /// Set it to <c>false</c> for the modals that outlive a route change - a sign-in prompt, a running upload -
+    /// which is usually the same set of modals that are shown as <c>persistent</c>.
+    /// </remarks>
+    public bool? CloseOnNavigation { get; set; }
 
     /// <summary>
     /// The CSS selector of the drag element, which is the content of the Modal by default.
@@ -230,11 +259,6 @@ public class BitModalParameters
     public bool? ShowCloseButton { get; set; }
 
     /// <summary>
-    /// Whether the overlay should be rendered. <c>null</c> means not set (defaults to <c>true</c>).
-    /// </summary>
-    public bool? ShowOverlay { get; set; }
-
-    /// <summary>
     /// Custom CSS styles for different parts of the BitModal component.
     /// </summary>
     public BitModalClassStyles? Styles { get; set; }
@@ -282,10 +306,12 @@ public class BitModalParameters
             AutoToggleScroll = params1.AutoToggleScroll ?? params2.AutoToggleScroll,
             Blocking = params1.Blocking ?? params2.Blocking,
             Body = params1.Body ?? params2.Body,
+            CanClose = params1.CanClose ?? params2.CanClose,
             Classes = BitModalClassStyles.Merge(params1.Classes, params2.Classes),
             CloseButtonTitle = params1.CloseButtonTitle ?? params2.CloseButtonTitle,
             CloseIcon = params1.CloseIcon ?? params2.CloseIcon,
             CloseIconName = params1.CloseIconName ?? params2.CloseIconName,
+            CloseOnNavigation = params1.CloseOnNavigation ?? params2.CloseOnNavigation,
             DragElementSelector = params1.DragElementSelector ?? params2.DragElementSelector,
             Draggable = params1.Draggable ?? params2.Draggable,
             Footer = params1.Footer ?? params2.Footer,
@@ -316,7 +342,6 @@ public class BitModalParameters
             ScrollerElement = params1.ScrollerElement ?? params2.ScrollerElement,
             ScrollerSelector = params1.ScrollerSelector ?? params2.ScrollerSelector,
             ShowCloseButton = params1.ShowCloseButton ?? params2.ShowCloseButton,
-            ShowOverlay = params1.ShowOverlay ?? params2.ShowOverlay,
             Styles = BitModalClassStyles.Merge(params1.Styles, params2.Styles),
             SubtitleAriaId = params1.SubtitleAriaId ?? params2.SubtitleAriaId,
             TitleAriaId = params1.TitleAriaId ?? params2.TitleAriaId,

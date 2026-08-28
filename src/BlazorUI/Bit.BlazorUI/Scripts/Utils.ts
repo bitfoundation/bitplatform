@@ -235,11 +235,16 @@
         // the first one closes and leave the second one over a scrolling page.
         // Taking the scrollbar away narrows the element by its width, which shifts the whole page sideways
         // in the same frame the popup appears in; the room it took is added back as padding so nothing moves.
-        public static lockScroll(key: string, selector: string | null) {
+        // The scroller is named by the caller, as an element or as a selector; the page is what is held when
+        // it names neither. An application shell that scrolls a region of its own names that region, since
+        // the body of such a page never scrolls and holding it would hold nothing.
+        public static lockScroll(key: string, scroller: string | HTMLElement | null) {
             try {
                 if (Utils._scrollLockOwners.has(key)) return;
 
-                const element = (selector ? document.querySelector(selector) : document.body) as HTMLElement | null;
+                const element = (scroller instanceof HTMLElement
+                    ? scroller
+                    : (scroller ? document.querySelector(scroller) : document.body)) as HTMLElement | null;
                 if (!element) return;
 
                 Utils._scrollLockOwners.set(key, element);

@@ -26,6 +26,9 @@ public partial class BitModal : BitComponentBase
     // The selector the current hold was taken with, so that a selector changed while the Modal is open is
     // noticed: the hold is registered against the element the selector resolved to, not against the selector.
     private string? _lockedScrollerSelector;
+    // The element the current hold was taken on, for the same reason and for the holds taken on an element
+    // rather than on a selector - the scroller of an application shell, first of all.
+    private ElementReference? _lockedScrollerElement;
     private bool _hasBeenOpened;
     private bool _contentFocused;
     private string _containerId = default!;
@@ -111,8 +114,9 @@ public partial class BitModal : BitComponentBase
     /// <remarks>
     /// This is the Modal holding the scroller itself, so the hold it would otherwise take on the page through
     /// <see cref="NoScrollLock"/> is stood down for it - the two would else both be holding the same page.
-    /// The scroller is named by <see cref="ScrollerElement"/> or <see cref="ScrollerSelector"/>, and is the
-    /// page when neither is set.
+    /// The scroller is named by <see cref="ScrollerElement"/> or <see cref="ScrollerSelector"/>; when neither
+    /// is set it is the scroller of the application shell the Modal is inside of, and the page when it is
+    /// inside none.
     /// </remarks>
     [Parameter] public bool AutoToggleScroll { get; set; }
 
@@ -185,6 +189,15 @@ public partial class BitModal : BitComponentBase
         get => _modalParameters;
         set => _modalParameters = value ?? new();
     }
+
+    // The scroller of the application shell the Modal was declared inside of, cascaded by BitAppShell under
+    // this well-known name. A shell scrolls a region of its own rather than the page, so the body of such an
+    // app never scrolls and a hold taken on it would hold nothing: this is the element to hold instead, for a
+    // Modal that has not been pointed at a scroller of its own. The name is written out rather than taken
+    // from BitAppShell.Container because the shell lives in Bit.BlazorUI.Extras, which this assembly cannot
+    // reference - the string is the contract between the two.
+    [CascadingParameter(Name = "BitAppShell.Container")]
+    private ElementReference? AppShellContainer { get; set; }
 
     // The effective parameters: this component's own parameters merged with the cascaded
     // BitModalParameters (the latter supplied by the BitModalService). The component's own
@@ -449,8 +462,9 @@ public partial class BitModal : BitComponentBase
     /// The element reference of the scroller the Modal toggles the overflow of while it is open.
     /// </summary>
     /// <remarks>
-    /// Takes precedence over <see cref="ScrollerSelector"/> when both are set, and is only read by a Modal
-    /// that toggles the scroll itself (see <see cref="AutoToggleScroll"/>).
+    /// Takes precedence over <see cref="ScrollerSelector"/> when both are set, and over the scroller a
+    /// <c>BitAppShell</c> cascades. Read by both scroll holds: the one the Modal takes on the page by
+    /// default and the overflow toggle of <see cref="AutoToggleScroll"/>.
     /// </remarks>
     [Parameter] public ElementReference? ScrollerElement { get; set; }
 
@@ -459,10 +473,11 @@ public partial class BitModal : BitComponentBase
     /// whose scroller is not the page itself.
     /// </summary>
     /// <remarks>
-    /// The page (<c>body</c>) is what is held when this is not set, which is the scroller of an ordinary
-    /// page. An application shell that scrolls a region of its own instead - a layout with a fixed header
-    /// and a scrolling main area - names that region here, since holding a page that never scrolls holds
-    /// nothing. Ignored by a Modal that holds nothing in the first place (see <see cref="NoScrollLock"/>).
+    /// A Modal inside a <c>BitAppShell</c> holds the shell's scroller without being told to, since the shell
+    /// cascades it; the page (<c>body</c>) is what is held when there is no shell and this is not set, which
+    /// is the scroller of an ordinary page. Any other layout that scrolls a region of its own - a fixed
+    /// header over a scrolling main area - names that region here, since holding a page that never scrolls
+    /// holds nothing. Ignored by a Modal that holds nothing in the first place (see <see cref="NoScrollLock"/>).
     /// </remarks>
     [Parameter] public string? ScrollerSelector { get; set; }
 
@@ -470,11 +485,6 @@ public partial class BitModal : BitComponentBase
     /// Shows the close button of the Modal.
     /// </summary>
     [Parameter] public bool ShowCloseButton { get; set; }
-
-    /// <summary>
-    /// Whether the overlay should be rendered.
-    /// </summary>
-    [Parameter] public bool ShowOverlay { get; set; } = true;
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitModal component.
@@ -684,7 +694,8 @@ public partial class BitModal : BitComponentBase
         // The hold is taken on the element the selector named at the time it was taken, so a selector that
         // changes while the Modal is open has to be let go of and taken again - the Modal would otherwise be
         // holding the element it was pointed at before while the page it is pointed at now carries on scrolling.
-        if (_scrollLocked && _lockedScrollerSelector != _params.ScrollerSelector)
+        if (_scrollLocked && (_lockedScrollerSelector != _params.ScrollerSelector ||
+                              Nullable.Equals(_lockedScrollerElement, ScrollerElementTarget) is false))
         {
             await UnlockScroll();
         }
@@ -949,7 +960,12 @@ public partial class BitModal : BitComponentBase
 
     private bool IsAriaModal => (_params.AriaModal ?? true) && IsModeless is false;
 
-    private bool ShowsOverlay => (_params.ShowOverlay ?? true) && IsModeless is false;
+    // The overlay is the only thing in the layer that catches a pointer - the root is pointer-events:none -
+    // so whether it is rendered is the same question as whether the Modal is modal at all. A Modal that is
+    // to leave the page behind it usable says so with Modeless, which stands the overlay down along with the
+    // focus trap, the scroll lock and the modality it reports: dropping the overlay on its own would leave
+    // the pointer free of a surface still holding the keyboard and still announcing itself modal.
+    private bool ShowsOverlay => IsModeless is false;
 
     private bool IsFullHeight => (_params.FullHeight ?? false) || (_params.FullSize ?? false);
 
@@ -965,6 +981,14 @@ public partial class BitModal : BitComponentBase
     // behind a surface the pointer is free to leave reads as a page that broke rather than one that is
     // covered. A Modal that toggles the scroll itself already holds its scroller, so it does not take a
     // second hold on the same page here.
+    // What the two scroll holds act on, in the order the consumer's intent is expressed: the element it
+    // named, then the selector it named, then the scroller of the application shell the Modal is inside of,
+    // and the page when it is inside none. The shell is the reason a default of "the page" is not enough on
+    // its own: an app whose shell scrolls a region of its own has a body that never scrolls, so holding it
+    // takes nothing away and the page carries on moving behind the Modal.
+    private ElementReference? ScrollerElementTarget => _params.ScrollerElement
+                                                      ?? (_params.ScrollerSelector.HasValue() ? null : AppShellContainer);
+
     private bool ShouldLockScroll => (_params.NoScrollLock ?? false) is false
                                      && (_params.AutoToggleScroll ?? false) is false
                                      && IsAriaModal
@@ -1064,10 +1088,19 @@ public partial class BitModal : BitComponentBase
 
         _scrollLocked = true;
         _lockedScrollerSelector = _params.ScrollerSelector;
+        var element = ScrollerElementTarget;
+        _lockedScrollerElement = element;
 
         try
         {
-            await _js.BitUtilsLockScroll(_containerId, _lockedScrollerSelector);
+            if (element.HasValue)
+            {
+                await _js.BitUtilsLockScroll(_containerId, element.Value);
+            }
+            else
+            {
+                await _js.BitUtilsLockScroll(_containerId, _lockedScrollerSelector);
+            }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1080,6 +1113,7 @@ public partial class BitModal : BitComponentBase
 
         _scrollLocked = false;
         _lockedScrollerSelector = null;
+        _lockedScrollerElement = null;
 
         try
         {
@@ -1134,7 +1168,7 @@ public partial class BitModal : BitComponentBase
 
             // Snapshot the scroller target at open time so the close restores the same scroller, even if
             // ScrollerElement/ScrollerSelector changed in the meantime.
-            _scrollerElementOnToggle = _params.ScrollerElement;
+            _scrollerElementOnToggle = ScrollerElementTarget;
             _scrollerSelectorOnToggle = _params.ScrollerSelector;
         }
         else
@@ -1171,7 +1205,7 @@ public partial class BitModal : BitComponentBase
     /// <see cref="NoRestoreFocus"/>, <see cref="NoScrollLock"/>, <see cref="ShowCloseButton"/>:
     /// the component param can only force the behavior <b>on</b>
     /// (<c>X ? true : p.X</c>); it can never force it off.</item>
-    /// <item><see cref="AriaModal"/>, <see cref="ShowOverlay"/>, <see cref="BitComponentBase.IsEnabled"/>:
+    /// <item><see cref="AriaModal"/>, <see cref="BitComponentBase.IsEnabled"/>:
     /// the component param can only force the behavior <b>off</b> (<c>X is false ? false : p.X</c>); it
     /// can never force it on. These default to <c>true</c>, so opting out is the meaningful override.</item>
     /// </list>
@@ -1201,10 +1235,14 @@ public partial class BitModal : BitComponentBase
             // Can only force on (default is off): see remarks on asymmetric merge.
             Blocking = Blocking ? true : p.Blocking,
             Body = Body ?? p.Body,
+            // Service-level knobs the Modal itself has no say in: carried through the merge so that the
+            // effective parameters stay a faithful picture of what the Modal was shown with.
+            CanClose = p.CanClose,
             Classes = p.Classes,
             CloseButtonTitle = CloseButtonTitle ?? p.CloseButtonTitle,
             CloseIcon = CloseIcon ?? p.CloseIcon,
             CloseIconName = CloseIconName ?? p.CloseIconName,
+            CloseOnNavigation = p.CloseOnNavigation,
             DragElementSelector = DragElementSelector ?? p.DragElementSelector,
             // Can only force on (default is off): see remarks on asymmetric merge.
             Draggable = Draggable ? true : p.Draggable,
@@ -1249,8 +1287,6 @@ public partial class BitModal : BitComponentBase
             ScrollerSelector = ScrollerSelector ?? p.ScrollerSelector,
             // Can only force on (default is off): see remarks on asymmetric merge.
             ShowCloseButton = ShowCloseButton ? true : p.ShowCloseButton,
-            // Can only force off (default is enabled): see remarks on asymmetric merge.
-            ShowOverlay = ShowOverlay is false ? false : p.ShowOverlay,
             Styles = p.Styles,
             SubtitleAriaId = SubtitleAriaId ?? p.SubtitleAriaId,
             TitleAriaId = TitleAriaId ?? p.TitleAriaId,

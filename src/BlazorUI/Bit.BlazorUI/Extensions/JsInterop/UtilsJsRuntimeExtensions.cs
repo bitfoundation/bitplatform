@@ -109,6 +109,13 @@ internal static class UtilsJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.lockScroll", key, selector);
     }
 
+    // The same hold, taken on an element the caller already has a reference to rather than on one named by a
+    // selector - the scroller of an application shell, which no selector of the consumer's is needed to find.
+    internal static ValueTask BitUtilsLockScroll(this IJSRuntime jsRuntime, string key, ElementReference scroller)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.lockScroll", key, scroller);
+    }
+
 
     // Releases the scroll lock held under the given key.
     internal static ValueTask BitUtilsUnlockScroll(this IJSRuntime jsRuntime, string key)

@@ -52,11 +52,11 @@ public class BitModalParametersTests
     public void MergeShouldFallBackToSecondForUnsetNullableValues()
     {
         var first = new BitModalParameters();
-        var second = new BitModalParameters { ShowOverlay = false, AriaModal = false };
+        var second = new BitModalParameters { NoScrollLock = true, AriaModal = false };
 
         var merged = BitModalParameters.Merge(first, second)!;
 
-        Assert.AreEqual(false, merged.ShowOverlay);
+        Assert.AreEqual(true, merged.NoScrollLock);
         Assert.AreEqual(false, merged.AriaModal);
     }
 
@@ -143,7 +143,7 @@ public class BitModalParametersTests
         Assert.IsNull(merged.NoFocusTrap);
         Assert.IsNull(merged.NoRestoreFocus);
         Assert.IsNull(merged.AriaModal);
-        Assert.IsNull(merged.ShowOverlay);
+        Assert.IsNull(merged.Modeless);
         Assert.IsNull(merged.AriaLabel);
     }
 

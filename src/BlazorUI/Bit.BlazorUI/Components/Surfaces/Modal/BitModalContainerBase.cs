@@ -1,4 +1,7 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics;
+using Microsoft.AspNetCore.Components.Routing;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The shared base for a container component that renders the modals shown through a modal service.
@@ -15,6 +18,20 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
     private TParameters? _lastModalParameters;
     private readonly Dictionary<TReference, TParameters?> _mergedParametersCache = [];
 
+    // The path the app was on when this container last looked. A modal belongs to the page it was opened from,
+    // so a change of this - and only of this, not of a query string or a fragment - closes the modals that
+    // didn't ask to outlive it.
+    private string? _currentPath;
+
+
+
+    // Resolved through the provider rather than injected, for the same reason the snack bar does it: a
+    // container has to keep working in a host that has no router at all - a MAUI window, a test bed - where
+    // injecting a NavigationManager would take the whole container down over a feature it never uses.
+    [Inject] private IServiceProvider _serviceProvider { get; set; } = default!;
+
+    private NavigationManager? _navigationManager;
+
 
 
     [Parameter] public TParameters ModalParameters { get; set; } = new();
@@ -30,6 +47,14 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
     /// Merges the per-modal parameters (taking precedence) with the container-level <see cref="ModalParameters"/>.
     /// </summary>
     protected abstract TParameters? MergeParameters(TParameters? modalParameters, TParameters? containerParameters);
+
+    /// <summary>
+    /// Whether the given modal asked to be closed when the app navigates somewhere else, or <c>null</c> where it
+    /// said nothing - in which case it is closed, which is what a modal belonging to the page it was opened from
+    /// wants. The base type has no opinion on what a set of parameters looks like, so a concrete container reads
+    /// this from the parameters its modals are shown with.
+    /// </summary>
+    protected virtual bool? GetCloseOnNavigation(TReference modalRef) => null;
 
 
 
@@ -61,6 +86,8 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
     /// </summary>
     public Task Refresh()
     {
+        if (_disposed) return Task.CompletedTask;
+
         return InvokeAsync(() =>
         {
             _mergedParametersCache.Clear();
@@ -74,6 +101,8 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
     /// </summary>
     public Task Refresh(TReference modalRef)
     {
+        if (_disposed) return Task.CompletedTask;
+
         return InvokeAsync(() =>
         {
             _mergedParametersCache.Remove(modalRef);
@@ -91,10 +120,22 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
         return _modalRefs;
     }
 
+    /// <summary>
+    /// The parameters the given modal effectively carries: its own merged with the container-level ones. This
+    /// is what the service reads for the options it acts on itself, so that a container-level default reaches
+    /// them the same way it reaches the ones the modal renders with.
+    /// </summary>
+    internal TParameters? GetEffectiveParameters(TReference modalRef)
+    {
+        return GetMergedParameters(modalRef);
+    }
+
     internal void InjectPersistentModals(IReadOnlyList<TReference> modals)
     {
         foreach (var modalRef in modals)
         {
+            if (modalRef.IsClosed) continue;
+
             if (_modalRefs.Contains(modalRef)) continue;
 
             _modalRefs.Add(modalRef);
@@ -111,12 +152,37 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
 
         ModalService.OnAddModal += OnModalAdd;
         ModalService.OnCloseModal += OnCloseModal;
+
+        _navigationManager = _serviceProvider?.GetService(typeof(NavigationManager)) as NavigationManager;
+
+        if (_navigationManager is not null)
+        {
+            _currentPath = GetPath(_navigationManager.Uri);
+            _navigationManager.LocationChanged += OnLocationChanged;
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+
+        // Everything in the list is on the screen by the time this runs, which is what a caller waiting to
+        // reach the content of a modal it has just shown is waiting for. Reporting it more than once costs
+        // nothing: only the first render of a modal is the one that completes its task.
+        foreach (var modalRef in _modalRefs)
+        {
+            modalRef.MarkRendered();
+        }
     }
 
 
 
     private Task OnModalAdd(TReference modalRef)
     {
+        // Only the container the service is currently rendering through takes new modals. Mounting more than
+        // one container is not supported, and without this every one of them would render the same modal.
+        if (_disposed || ModalService.IsActiveContainer(this) is false) return Task.CompletedTask;
+
         return InvokeAsync(() =>
         {
             if (_modalRefs.Contains(modalRef)) return;
@@ -128,6 +194,8 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
 
     private Task OnCloseModal(TReference modalRef)
     {
+        if (_disposed) return Task.CompletedTask;
+
         return InvokeAsync(() =>
         {
             _modalRefs.Remove(modalRef);
@@ -136,17 +204,87 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
         });
     }
 
+    // A modal belongs to the page it was opened from: leaving that page leaves the modal saying nothing about
+    // the page it is now lying over, so it is closed with the rest of what is being left behind. Only a change
+    // of path counts - a query string or a fragment changed on the same page is still the same page - and a
+    // modal that asked to outlive the route change is left alone.
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (_disposed) return;
+
+        var newPath = GetPath(e.Location);
+
+        if (string.Equals(_currentPath, newPath, StringComparison.OrdinalIgnoreCase)) return;
+
+        _currentPath = newPath;
+
+        foreach (var modalRef in _modalRefs.ToArray())
+        {
+            if (modalRef.IsClosed) continue;
+
+            if (GetCloseOnNavigation(modalRef) is false) continue;
+
+            CloseInBackground(modalRef);
+        }
+    }
+
+    // Closing is asynchronous and both callers - the navigation handler and the teardown - are not, so the
+    // task is awaited here rather than dropped: an unobserved failure of a consumer's close handler would
+    // otherwise resurface much later, on the finalizer thread, with nothing left to say where it came from.
+    private async void CloseInBackground(TReference modalRef)
+    {
+        try
+        {
+            await ModalService.Close(modalRef);
+        }
+        catch (ObjectDisposedException) { } // the scope went away with the modal; nothing left to close
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"A close handler threw while closing a modal the container left behind: {ex}");
+        }
+    }
+
+    private string? GetPath(string uri)
+    {
+        return _navigationManager?.ToAbsoluteUri(uri).AbsolutePath.TrimEnd('/');
+    }
+
 
 
     public void Dispose()
     {
-        if (_disposed) return;
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
+        _disposed = true;
 
         ModalService.OnAddModal -= OnModalAdd;
         ModalService.OnCloseModal -= OnCloseModal;
         ModalService.RemoveContainer(this);
 
-        _disposed = true;
-        GC.SuppressFinalize(this);
+        if (_navigationManager is not null)
+        {
+            _navigationManager.LocationChanged -= OnLocationChanged;
+            _navigationManager = null;
+        }
+
+        // The modals this container was rendering are off the screen the moment it is gone. A persistent one
+        // is meant to survive that and is re-injected into the next container that mounts, but every other one
+        // is over - and left unclosed it would leave whoever is awaiting its Result waiting forever. The
+        // handlers are already detached above, so closing them here doesn't reach back into this container.
+        foreach (var modalRef in _modalRefs.ToArray())
+        {
+            if (modalRef.Persistent || modalRef.IsClosed) continue;
+
+            CloseInBackground(modalRef);
+        }
+
+        _modalRefs.Clear();
+        _mergedParametersCache.Clear();
     }
 }

@@ -2,19 +2,25 @@
 
 <PageOutlet Url="components/modalservice"
             Title="ModalService"
-            Description="BitModalService shows a BitModal with any content from anywhere in the app." />
+            Description="BitModalService shows a BitModal with any content from anywhere in the app, and hands back a reference that closes it and completes with its answer." />
 
 <DemoPage Name="ModalService"
-          Description="BitModalService shows a BitModal with any content from anywhere in the app - a service, a view model, a handler - rather than from the markup of the page the modal belongs to. Every modal it shows is rendered by the single BitModalContainer mounted in the layout, and each Show hands back a reference that closes the modal, carries its content component, and completes with the result it was closed with."
+          Description="BitModalService shows a BitModal with any content from anywhere in the app - a service, a view model, a handler - rather than from the markup of the page the modal belongs to. Every modal it shows is rendered by the single BitModalContainer mounted in the layout, and each Show hands back a reference: it carries the content component, closes the modal, completes with the result the modal was answered with, and says whether the user was the one who closed it. The modal around the content is customized with a BitModalParameters, which covers the same ground as the BitModal parameters and adds the two things only a service can offer - a guard that turns down a close, and the policy for what happens when the app navigates away. Modals close on navigation by default, survive it when asked to, and can be shown persistent so they outlive the container that renders them."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           GitHubUrl="Surfaces/Modal/BitModalService.cs"
           GitHubDemoUrl="Surfaces/Modal/BitModalServiceDemo.razor">
     <NotesTemplate>
         <BitText>
-            A <b>BitModalContainer</b> must be mounted once, in the layout, for the shown modals to render. Register
-            the service as <b>Scoped</b> on Blazor Server, where a singleton would be shared between circuits;
-            a singleton is only safe for the single-user hosting models (WebAssembly and Hybrid).
+            A <b>BitModalContainer</b> must be mounted once, in the layout, for the shown modals to render - a
+            modal shown with no container is not rendered, and the service reports that through the logger.
+            Register the service as <b>Scoped</b> on Blazor Server, where a singleton would be shared between
+            circuits; a singleton is only safe for the single-user hosting models (WebAssembly and Hybrid).
+        </BitText>
+        <br />
+        <BitText>
+            The container takes a <b>ModalParameters</b> of its own, which every modal it renders starts from and
+            each modal can override - the place for the house style: a maximum width, a close button, a position.
         </BitText>
     </NotesTemplate>
     <Examples>
@@ -24,6 +30,11 @@
                 <b>BitModalParameters</b> that customizes the modal around it - the same set of options the
                 <BitLink Href="/components/modal">BitModal</BitLink> parameters cover. The content reaches its own
                 modal through the cascaded <b>BitModalReference</b>, which is how it closes itself.
+            </div>
+            <br />
+            <div>
+                An overload takes the component type as a <b>Type</b> instead, for the callers that pick their
+                content from a map or a route rather than by naming it in code.
             </div>
             <br />
             <BitButton OnClick="ShowModal">Show</BitButton>
@@ -43,9 +54,15 @@
         <DemoExample Title="Awaiting a result" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>
                 <b>CloseWith</b> takes the value the modal is answered with, and the reference's <b>Result</b> completes
-                with it - which turns a modal into a question the calling code can await. A modal dismissed rather
-                than answered (Escape, a click on the overlay) completes with <b>null</b>, so that is the case to
-                treat as "no answer".
+                with it - which turns a modal into a question the calling code can await. <b>GetResult&lt;T&gt;</b> is
+                the typed way of reading it: a modal that was dismissed rather than answered gives back the default of
+                the type instead of a null to guard against.
+            </div>
+            <br />
+            <div>
+                A dismissal completes with <b>null</b> either way, so <b>IsDismissed</b> is what tells "walked away
+                from" apart from "answered with nothing" - the reference records whether the user was the one who
+                closed the modal.
             </div>
             <br />
             <BitButton OnClick="ShowConfirmModal">Delete the project</BitButton>
@@ -53,7 +70,26 @@
             <div>Answer: [@confirmAnswer]</div>
         </DemoExample>
 
-        <DemoExample Title="Markup as content" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <DemoExample Title="Reaching the content" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                The content component is only instantiated when the container renders the modal, which is after the
+                Show call returns - so <b>Content</b> is still null right afterwards. <b>Rendered</b> completes once
+                the modal is on the screen, and <b>GetContentAsync&lt;T&gt;</b> waits for it and hands the instance
+                back, which is how the calling code reaches into its content to focus a field or load its data.
+            </div>
+            <br />
+            <div>
+                The other direction is the <b>parameters factory</b> overload: it is handed the reference before the
+                content is built, so a parameter of the content can be a callback that closes this very modal -
+                without the window a reference captured only after Show returns leaves open.
+            </div>
+            <br />
+            <BitButton OnClick="ShowContentReachingModal">Show and count</BitButton>
+            <br />
+            <div>The content reported: [@contentReport]</div>
+        </DemoExample>
+
+        <DemoExample Title="Markup as content" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
                 <b>Show</b> also takes plain markup, for the content that is not worth a component of its own -
                 a line of text, a note, a fragment the calling code already has in hand. The modal around it is
@@ -69,16 +105,117 @@
             <BitButton OnClick="ShowMarkupModal">Show markup</BitButton>
         </DemoExample>
 
-        <DemoExample Title="Closing every modal" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <DemoExample Title="Guarding the close" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
-                <b>CloseAll</b> closes every modal the service currently has open, each with a null result. It is
-                what a sign-out or a navigation reaches for: whatever was left open belongs to the state that is
-                being left behind.
+                <b>CanClose</b> is asked before the user closes a modal - the close button, the overlay, the Escape
+                key - and answering false keeps it open. It is what a modal with something to lose reaches for: a
+                half-filled form, an upload still running. The modal below turns down every dismissal while the
+                field has an unsaved change; <b>Save</b> and <b>Discard</b> are the ways out.
+            </div>
+            <br />
+            <div>
+                The guard is only asked of the user. <b>Close</b>, <b>CloseWith</b> and <b>CloseAll</b> are the
+                application closing the modal on its own terms and go through regardless, and so does a close on
+                navigation. <b>TryClose</b> is the programmatic call that does ask, and answers whether the modal
+                actually closed.
+            </div>
+            <br />
+            <BitButton OnClick="ShowGuardedModal">Rename the project</BitButton>
+            <br /><br />
+            <BitButton Variant="BitVariant.Outline" OnClick="TryCloseGuardedModal">TryClose it from here</BitButton>
+            <br />
+            <div>Last attempt: [@guardReport]</div>
+        </DemoExample>
+
+        <DemoExample Title="Updating an open modal" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <b>Update</b> replaces the parameters of a modal that is already on the screen and re-renders it,
+                which is how a modal changes its title, grows a close button or turns blocking part-way through
+                whatever it is doing - a long save that is not to be interrupted, a wizard whose steps are titled
+                differently.
+            </div>
+            <br />
+            <div>
+                Mutating the members of the parameters object already handed to the modal works too, since it is the
+                same object the modal reads - but nothing notices such a change on its own, so follow it with
+                <b>Refresh</b>, which is also how the container-level parameters are re-read.
+            </div>
+            <br />
+            <BitButton OnClick="ShowUpdatingModal">Show, then update it</BitButton>
+        </DemoExample>
+
+        <DemoExample Title="Persistent modals" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                A modal shown as <b>persistent</b> outlives the container that renders it: it is tracked by the
+                service, and injected into the next container that mounts. That is what keeps it on the screen
+                across a layout change, and what lets it be shown before any container has mounted at all - during
+                start-up, from a handler that runs before the first render.
+            </div>
+            <br />
+            <div>
+                Everything else is the same: it closes the same ways, and closing it stops it from coming back.
+                Every other modal is over the moment its container is gone, and is closed with a null result rather
+                than left with a <b>Result</b> nobody will ever complete.
+            </div>
+            <br />
+            <BitButton OnClick="ShowPersistentModal">Show a persistent modal</BitButton>
+        </DemoExample>
+
+        <DemoExample Title="Closing on navigation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                A modal belongs to the page it was opened from, so the modals on the screen are closed when the app
+                navigates somewhere else - leaving one lying over a page it says nothing about is the alternative.
+                Only a change of path counts: a query string or a fragment changed on the same page is still the
+                same page, which the pair of buttons below shows.
+            </div>
+            <br />
+            <div>
+                <b>CloseOnNavigation</b> is the opt-out, for the modals that outlive the route change - a sign-in
+                prompt, a running upload - and it can be set for every modal at once through the container's own
+                parameters.
+            </div>
+            <br />
+            <BitButton OnClick="ShowModal">Show a modal</BitButton>
+            <br /><br />
+            <BitButton Variant="BitVariant.Outline" OnClick="NavigateWithQuery">Change the query string (it stays)</BitButton>
+        </DemoExample>
+
+        <DemoExample Title="What is open" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                <b>OpenModals</b> is a snapshot of what the service currently has open, in the order it was opened,
+                and <b>GetModal</b> finds one again by the id its reference carries - for the code that only kept
+                the id. <b>CloseAll</b> closes all of them, each with a null result: what a sign-out or a navigation
+                reaches for, since whatever was left open belongs to the state being left behind.
+            </div>
+            <br />
+            <div>
+                <b>IsContainerAvailable</b> reports whether a container is mounted right now, which is whether a
+                Show would actually render anything. It is live state rather than registration, so it is the check
+                for the code that runs before the layout has rendered.
             </div>
             <br />
             <BitButton OnClick="ShowModal">Show one more</BitButton>
             <br /><br />
-            <BitButton Variant="BitVariant.Outline" OnClick="() => modalService.CloseAll()">Close all</BitButton>
+            <div>Open: [@modalService.OpenModals.Count] &nbsp; Container mounted: [@modalService.IsContainerAvailable]</div>
+            <br />
+            <BitButton Variant="BitVariant.Outline" OnClick="CloseAllModals">Close all</BitButton>
+        </DemoExample>
+
+        <DemoExample Title="Watching every modal" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>
+                <b>OnAddModal</b> and <b>OnCloseModal</b> are raised for every modal the service shows and closes,
+                whoever showed it. They are where cross-cutting behavior goes: logging what was opened, pausing a
+                poll while a modal is up, telling analytics what the user was asked.
+            </div>
+            <br />
+            <div>
+                Both are awaited, so a handler can do real work - and a handler that throws does not leave a
+                half-shown modal behind: the show is rolled back and the failure is reported to the caller.
+            </div>
+            <br />
+            <BitButton OnClick="ShowModal">Show</BitButton>
+            <br />
+            <div>Shown: [@shownCount] &nbsp; Closed: [@closedCount]</div>
         </DemoExample>
     </Examples>
 </DemoPage>
