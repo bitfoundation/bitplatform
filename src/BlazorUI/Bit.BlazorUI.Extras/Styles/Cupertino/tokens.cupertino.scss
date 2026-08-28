@@ -94,6 +94,8 @@
     --bit-layout-dialog-actions-direction: column;
     --bit-layout-dialog-actions-justify: center;
     --bit-layout-dialog-actions-align: stretch;
+    // UIAlertController is 270pt wide whatever it has to say, which is the narrowest alert of the three.
+    --bit-siz-dialog-max-width: 16.875rem; //270px
 
     /*---- Typography ----*/
     // The San Francisco stack Apple's own sites use. SF is not redistributable, so off Apple

@@ -681,6 +681,7 @@ public static partial class BitCss
 
             public const string SpinnerStroke = "--bit-siz-spinner-stroke";
             public const string PopupMaxHeight = "--bit-siz-popup-max-height";
+            public const string DialogMaxWidth = "--bit-siz-dialog-max-width";
         }
 
         public static class Opacity

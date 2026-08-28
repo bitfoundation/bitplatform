@@ -28,6 +28,7 @@ namespace BitBlazorUI {
 
             listeners['pointerdown'] = handlePointerDown;
             listeners['dragElement'] = dragElement;
+            listeners['element'] = element;
             dragElement.addEventListener('pointerdown', handlePointerDown);
             dragElement.style.cursor = 'move';
             dragElement.classList.add('bit-mdl-nta');
@@ -118,6 +119,18 @@ namespace BitBlazorUI {
                 dragElement.classList.remove('bit-mdl-nta');
             }
 
+            // The drag writes the surface's position onto it - and pins its width, so the box cannot reflow
+            // under the pointer mid-move - and both outlive the surface wherever it is kept in the DOM
+            // between showings. A surface that comes back is a new showing, so it comes back where it was
+            // laid out rather than where it was last left, which is what it already does everywhere it is
+            // unmounted instead.
+            const element = listeners['element'] as HTMLElement;
+            if (element) {
+                element.style.left = '';
+                element.style.top = '';
+                element.style.width = '';
+            }
+
             document.removeEventListener('pointermove', listeners['pointermove']);
             document.removeEventListener('pointerup', listeners['pointerup']);
             document.removeEventListener('pointercancel', listeners['pointercancel']);
@@ -127,6 +140,7 @@ namespace BitBlazorUI {
             delete listeners['pointerup'];
             delete listeners['pointercancel'];
             delete listeners['dragElement'];
+            delete listeners['element'];
             delete DragDrop._listeners[key];
         }
     }

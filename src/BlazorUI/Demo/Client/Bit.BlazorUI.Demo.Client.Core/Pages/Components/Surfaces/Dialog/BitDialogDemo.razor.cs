@@ -177,6 +177,13 @@ public partial class BitDialogDemo
         },
         new()
         {
+            Name = "IsCancelButtonEnabled",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether the Cancel button of the Dialog can be pressed. Unlike IsEnabled, which turns the whole Dialog off, this leaves every other way out of the Dialog working."
+        },
+        new()
+        {
             Name = "IsDraggable",
             Type = "bool",
             DefaultValue = "false",
@@ -188,6 +195,13 @@ public partial class BitDialogDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the Dialog should be modeless (e.g. not dismiss when focusing/clicking outside of the Dialog). If true, IsBlocking is ignored, there will be no overlay, and the focus is not trapped - though the Dialog still takes it when it opens unless AutoFocus is turned off."
+        },
+        new()
+        {
+            Name = "IsOkButtonEnabled",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether the Ok button of the Dialog can be pressed. This is what holds the answer shut until the content of the Dialog provides it - a consent to tick, a name to type - without turning the rest of the Dialog off the way IsEnabled would."
         },
         new()
         {
@@ -830,6 +844,8 @@ public partial class BitDialogDemo
     private bool isOpenLabels = false;
     private bool isOpenAcknowledge = false;
     private bool isOpenNoClose = false;
+    private bool isOpenGated = false;
+    private bool agreed = false;
 
     private bool isOpenSubtitle = false;
     private bool isOpenHeaderTemplate = false;
@@ -952,6 +968,14 @@ public partial class BitDialogDemo
 private bool IsOpen = false;";
 
     private readonly string example2RazorCode = @"
+<style>
+    .dialog-body {
+        max-width: 40rem;
+        overflow-y: hidden;
+        padding: 0 24px 24px;
+    }
+</style>
+
 <BitButton OnClick=""@(() => isOpenLabels = true)"">Custom labels</BitButton>
 <BitButton OnClick=""@(() => isOpenAcknowledge = true)"">Single action</BitButton>
 <BitButton OnClick=""@(() => isOpenNoClose = true)"">No close button</BitButton>
@@ -971,11 +995,25 @@ private bool IsOpen = false;";
 <BitDialog @bind-IsOpen=""isOpenNoClose""
            ShowCloseButton=""false""
            Title=""Missing Subject""
-           Message=""Do you want to send this message without a subject?"" />";
+           Message=""Do you want to send this message without a subject?"" />
+
+
+<BitButton OnClick=""@(() => { agreed = false; isOpenGated = true; })"">Open Dialog</BitButton>
+<BitDialog @bind-IsOpen=""isOpenGated""
+           IsOkButtonEnabled=""agreed""
+           Title=""Before you continue""
+           ShowCloseButton=""false""
+           OkText=""Accept"">
+    <div class=""dialog-body"">
+        <BitCheckbox @bind-Value=""agreed"" Label=""I have read and agree to the terms"" />
+    </div>
+</BitDialog>";
     private readonly string example2CsharpCode = @"
 private bool isOpenLabels = false;
 private bool isOpenAcknowledge = false;
-private bool isOpenNoClose = false;";
+private bool isOpenNoClose = false;
+private bool isOpenGated = false;
+private bool agreed = false;";
 
     private readonly string example3RazorCode = @"
 <style>

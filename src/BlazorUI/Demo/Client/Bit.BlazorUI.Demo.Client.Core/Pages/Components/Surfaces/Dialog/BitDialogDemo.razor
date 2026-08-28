@@ -45,7 +45,8 @@
             <br /><br />
             <b>OnOk</b> is awaited: the Dialog shows a spinner in place of the Ok text while the callback runs and only
             closes once it returns, so a save can hold the Dialog open until it succeeds - and a callback that throws
-            leaves it open, unanswered, for another try.
+            leaves it open, unanswered, for another try. <b>IsOkButtonEnabled</b> is the other half of that:
+            it holds the Ok button shut until the content of the Dialog has produced the answer it is asking for.
             <br /><br />
             <b>OnDismissing</b> runs before every closing the Dialog carries out itself, <b>Close()</b> and
             <b>Toggle()</b> among them, and setting <b>Cancel</b> on its arguments refuses that closing - which is how
@@ -56,10 +57,10 @@
             leaves it in the DOM, hidden, for the case where the content is expensive to build or holds state the user
             is meant to come back to.
             <br /><br />
-            A Dialog is as wide and as tall as its content and never outgrows the area it is positioned in.
-            <b>MaxWidth</b> is where most Dialogs want a value of their own - <b>min(100%, 32rem)</b> stops it growing
-            on a desktop without breaking it on a phone - and <b>Color</b> paints its two action buttons, which is
-            what <b>Error</b> alongside an <b>AutoFocusButton</b> of <b>Cancel</b> is for.
+            A Dialog is as wide and as tall as its content, never outgrows the area it is positioned in, and stops
+            widening at the width the theme names, so a short confirmation never spans a desktop screen.
+            <b>MaxWidth</b> replaces that ceiling where a Dialog wants a wider one, and <b>Color</b> paints its two
+            action buttons, which is what <b>Error</b> alongside an <b>AutoFocusButton</b> of <b>Cancel</b> is for.
         </BitText>
     </NotesTemplate>
 
@@ -105,6 +106,28 @@
                        ShowCloseButton="false"
                        Title="Missing Subject"
                        Message="Do you want to send this message without a subject?" />
+
+            <BitSeparator Style="margin: 1rem 0" />
+
+            <div>
+                The answer a Dialog asks for is not always available the moment it opens. <b>IsOkButtonEnabled</b>
+                holds the Ok button shut until it is - a consent that has to be ticked, a name that has to be typed -
+                and <b>IsCancelButtonEnabled</b> does the same for Cancel. Unlike <b>IsEnabled</b>, which turns the
+                whole Dialog off, they leave every other way out working, so a Dialog whose Ok is gated is still a
+                Dialog that can be walked away from. The focus skips a button it cannot land on: point
+                <b>AutoFocusButton</b> at a disabled Ok and it falls back to the first focusable element instead.
+            </div>
+            <br />
+            <BitButton OnClick="@(() => { agreed = false; isOpenGated = true; })">Open Dialog</BitButton>
+            <BitDialog @bind-IsOpen="isOpenGated"
+                       IsOkButtonEnabled="agreed"
+                       Title="Before you continue"
+                       ShowCloseButton="false"
+                       OkText="Accept">
+                <div class="dialog-body">
+                    <BitCheckbox @bind-Value="agreed" Label="I have read and agree to the terms" />
+                </div>
+            </BitDialog>
         </DemoExample>
 
         <DemoExample Title="Header & footer" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
@@ -252,10 +275,13 @@
         <DemoExample Title="Dismiss behavior" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 By default a click on the overlay and the Escape key both dismiss the Dialog. <b>IsBlocking</b> turns
-                off both and promotes the role to <b>alertdialog</b>, leaving the buttons as the only way out.
+                off both and promotes the role to <b>alertdialog</b>, leaving the buttons as the only way out;
+                <b>IsAlert</b> sets that role by hand where a Dialog should interrupt a screen reader without being
+                blocking, or should stay a plain <b>dialog</b> while it is.
                 <b>CloseOnEscape</b> turns off only the key, and <b>IsModeless</b> removes the overlay altogether so
                 the page behind stays clickable. Try pressing Escape or clicking outside the first two - a dismissal
-                the Dialog will not act on is answered with a shake rather than silently ignored.
+                the Dialog will not act on is answered with a shake rather than silently ignored, and with a ring
+                around the surface where the reader has asked for less motion.
             </div>
             <br />
             <div class="btn-container">
@@ -551,9 +577,13 @@
                 <b>IsDraggable</b> lets the Dialog be moved around, which is what a modeless Dialog the user needs to
                 look behind wants. It is dragged by its header, the way a window is dragged by its title bar, so the
                 content underneath stays selectable and a scrolling body still scrolls on a touch screen; a Dialog
-                with no header at all is dragged by its whole surface instead. <b>DragElementSelector</b> points the
-                grab area at an element of your own. Either way the Dialog stays inside the area it was positioned
-                in, so it cannot be dragged off an edge and out of reach.
+                with no header at all is dragged by its whole surface instead - and its body still scrolls under a
+                finger, since a body that cannot be scrolled is a worse trade than one that has to be dragged by its
+                edges. <b>DragElementSelector</b> points the grab area at an element of your own. Either way the
+                Dialog stays inside the area it was positioned in, so it cannot be dragged off an edge and out of
+                reach, and it comes back where it was laid out the next time it is shown rather than where it was
+                last left. Both are read again on every render, so the toggle below takes effect on a Dialog that is
+                already open.
             </div>
             <br />
             <BitToggle Label="Is Draggable" @bind-Value="IsDraggable" />
@@ -625,7 +655,9 @@
             <div>
                 A Dialog is unmounted when it closes, so its content is built afresh - and starts empty - the next
                 time it opens. <b>KeepMounted</b> leaves it in the DOM, hidden, which keeps whatever the user had
-                typed. Type into both of the Dialogs below, close them, and open them again.
+                typed, at the cost of that content living and re-rendering for as long as the page does - so it is
+                for the Dialog whose state is worth coming back to rather than for every Dialog.
+                Type into both of the Dialogs below, close them, and open them again.
             </div>
             <br />
             <div class="btn-container">
@@ -732,12 +764,14 @@
         <DemoExample Title="Size" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
             <div>
                 A Dialog is as wide and as tall as its content, and never grows past the area it is positioned in.
+                It stops widening at the width the theme names (<b>--bit-siz-dialog-max-width</b>, 520px in Fluent,
+                600px in Fluent 2, 560px in Material, 270pt in Cupertino), so a two-sentence confirmation cannot
+                span a desktop screen with its message on one long line.
                 <b>Width</b>, <b>MinWidth</b>, <b>MaxWidth</b>, <b>Height</b>, <b>MinHeight</b> and <b>MaxHeight</b>
-                each take any CSS length and put a size of your own on the surface. <b>MaxWidth</b> is the one to
-                reach for most: <b>min(100%, 32rem)</b> is the whole of a Dialog that stops growing with its content
-                on a desktop and still fits a phone, since setting it replaces the 100% cap rather than adding to it.
-                <b>FullWidth</b>, <b>FullHeight</b> and <b>FullSize</b> stretch the Dialog across that area instead,
-                which is what a Dialog on a phone screen usually wants, and take precedence over the six.
+                each take any CSS length and put a size of your own on the surface, replacing that default:
+                <b>min(100%, 40rem)</b> is the whole of a wider Dialog that still fits a phone.
+                <b>FullWidth</b>, <b>FullHeight</b> and <b>FullSize</b> stretch the Dialog across the whole area
+                instead, which is what a Dialog on a phone screen usually wants, and take precedence over the six.
             </div>
             <br />
             <div class="btn-container">

@@ -92,7 +92,11 @@
                 // The consumer naming the element the focus should land on, for the popups whose first
                 // focusable element is not the one worth starting at - a dismiss button ahead of the field
                 // the popup was opened to fill in. The first focusable element is the fallback.
-                const requested = candidates.find(el => el.hasAttribute('data-autofocus') && Utils.isFocusable(el));
+                // The standard autofocus attribute says the same thing and is what a native dialog reads,
+                // so it is honoured alongside the data- one: the browser only ever acts on it for markup
+                // that was in the document when it was parsed, which a popup's content never is.
+                const requested = candidates.find(el =>
+                    (el.hasAttribute('data-autofocus') || el.hasAttribute('autofocus')) && Utils.isFocusable(el));
 
                 (requested ?? candidates.find(Utils.isFocusable) ?? container).focus();
             } catch (e) { console.error("BitBlazorUI.Utils.focusFirstElement:", e); }

@@ -98,7 +98,7 @@
                                    takes - so the label is kept as the accessible name for that stretch. *@
                                 <button @ref="_okButtonRef" @onclick="HandleOnOkClick"
                                         type="button"
-                                        disabled="@(IsEnabled is false || _isLoading)"
+                                        disabled="@(IsEnabled is false || IsOkButtonEnabled is false || _isLoading)"
                                         aria-busy="@(_isLoading ? "true" : null)"
                                         aria-label="@(_isLoading ? OkText : null)"
                                         style="@Styles?.OkButton"
@@ -121,7 +121,7 @@
                                    an awaiter while the first one is still doing its work. *@
                                 <button @ref="_cancelButtonRef" @onclick="HandleOnCancelClick"
                                         type="button"
-                                        disabled="@(IsEnabled is false || _isLoading)"
+                                        disabled="@(IsEnabled is false || IsCancelButtonEnabled is false || _isLoading)"
                                         style="@Styles?.CancelButton"
                                         class="bit-dlg-cnb @Classes?.CancelButton">
                                     @CancelText

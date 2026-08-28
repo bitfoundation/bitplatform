@@ -262,8 +262,25 @@ public partial class BitDialog : BitComponentBase
     [Parameter] public bool IsBlocking { get; set; }
 
     /// <summary>
+    /// Whether the Cancel button of the Dialog can be pressed.
+    /// <br />
+    /// The default value is <strong>true</strong>.
+    /// </summary>
+    /// <remarks>
+    /// This is the Cancel button on its own, unlike <see cref="BitComponentBase.IsEnabled"/>, which turns
+    /// the whole Dialog off. Turning it off leaves every other way out of the Dialog open, so a Dialog whose
+    /// Cancel is disabled is still not a Dialog that cannot be left.
+    /// </remarks>
+    [Parameter] public bool IsCancelButtonEnabled { get; set; } = true;
+
+    /// <summary>
     /// Whether the Dialog can be dragged around.
     /// </summary>
+    /// <remarks>
+    /// This and <see cref="DragElementSelector"/> are both read again on every render, so a Dialog that is
+    /// handed a different answer while it is standing picks it up there and then. A Dialog dragged out of
+    /// place comes back where it was laid out the next time it is shown, kept mounted or not.
+    /// </remarks>
     [Parameter] public bool IsDraggable { get; set; }
 
     /// <summary>
@@ -275,6 +292,20 @@ public partial class BitDialog : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool IsModeless { get; set; }
+
+    /// <summary>
+    /// Whether the Ok button of the Dialog can be pressed.
+    /// <br />
+    /// The default value is <strong>true</strong>.
+    /// </summary>
+    /// <remarks>
+    /// The answer a Dialog is asking for is not always available the moment it opens: a consent that has to
+    /// be ticked, a name that has to be typed, a code that has to be six digits long. This holds the Ok
+    /// button shut until it is, without turning the rest of the Dialog off the way
+    /// <see cref="BitComponentBase.IsEnabled"/> would - the Cancel and close buttons, the Escape key and a
+    /// click on the overlay all keep working, so the Dialog can still be walked away from.
+    /// </remarks>
+    [Parameter] public bool IsOkButtonEnabled { get; set; } = true;
 
     /// <summary>
     /// Whether the Dialog is displayed.
@@ -348,6 +379,9 @@ public partial class BitDialog : BitComponentBase
     /// that has stopped responding, so it is worth replacing with something rather than simply removing -
     /// a hint under the buttons raised from <see cref="OnDismissPrevented"/>, as a rule. The callback is
     /// raised either way.
+    /// <br />
+    /// This turns off the ring the surface is given in place of the shake under
+    /// <c>prefers-reduced-motion</c> along with it, since the two are the same answer told two ways.
     /// </remarks>
     [Parameter] public bool NoDismissPreventedAnimation { get; set; }
 
@@ -509,6 +543,9 @@ public partial class BitDialog : BitComponentBase
     /// Trapping the focus is what makes a modal dialog modal for the keyboard: without it the tab order
     /// runs on into the page behind the overlay, which is a page every click is being swallowed on.
     /// A modeless Dialog leaves the page usable on purpose, so it does not trap by default.
+    /// <br />
+    /// This is read again on every render, so a Dialog told to let the keyboard go while it is standing
+    /// lets it go there and then rather than at the end of the showing.
     /// </remarks>
     [Parameter] public bool? TrapFocus { get; set; }
 
@@ -675,17 +712,32 @@ public partial class BitDialog : BitComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (_internalIsOpen == IsOpen) return;
+        if (_internalIsOpen != IsOpen)
+        {
+            _internalIsOpen = IsOpen;
 
-        _internalIsOpen = IsOpen;
+            if (IsOpen)
+            {
+                await HandleOpened();
+            }
+            else
+            {
+                await HandleClosed();
+            }
 
+            return;
+        }
+
+        // The two things the Dialog registers on the JS side are set up when it opens, which would leave a
+        // Dialog that is handed a different answer while it is standing - a drag turned on, a handle moved,
+        // a header that has only now been given a title - carrying the answer it was opened with until it
+        // is closed and opened again. They are re-read on every render instead, and each of them is a
+        // comparison against what is actually registered, so a render that changed neither costs nothing.
         if (IsOpen)
         {
-            await HandleOpened();
-        }
-        else
-        {
-            await HandleClosed();
+            await SyncDragHandlers();
+
+            await SyncFocusTrap();
         }
     }
 
@@ -701,11 +753,7 @@ public partial class BitDialog : BitComponentBase
             await SaveFocus();
         }
 
-        if (IsDraggable)
-        {
-            _dragElementSelectorOnSetup = GetDragElementSelector();
-            await InvokeJs(_js.BitDragDropSetup(_containerId, ContainerSelector, _dragElementSelectorOnSetup));
-        }
+        await SyncDragHandlers();
 
         // Reset before ToggleScroll: when AutoToggleScroll is false it returns early without
         // recalculating, which would otherwise leave a stale top-offset from a previous open.
@@ -743,6 +791,24 @@ public partial class BitDialog : BitComponentBase
         await ToggleScroll(false);
 
         await RestoreSavedFocus();
+    }
+
+    // Brings what is registered on the JS side into line with what the Dialog is currently asking for. The
+    // selector that was actually registered is what the comparison is made against, so the handlers are torn
+    // down from the element they were put on rather than from whatever the selector names now.
+    private async Task SyncDragHandlers()
+    {
+        var wanted = IsDraggable ? GetDragElementSelector() : null;
+
+        if (wanted == _dragElementSelectorOnSetup) return;
+
+        await RemoveDragHandlers();
+
+        if (wanted is null) return;
+
+        _dragElementSelectorOnSetup = wanted;
+
+        await InvokeJs(_js.BitDragDropSetup(_containerId, ContainerSelector, wanted));
     }
 
     // The drag handlers are torn down only where they were actually registered, so a Dialog that was never
@@ -791,10 +857,13 @@ public partial class BitDialog : BitComponentBase
     // holds nothing focusable.
     private async Task FocusAutoTarget()
     {
+        // A disabled button is not a place the focus can land - the browser refuses it and leaves the focus
+        // where it was, which for a Dialog that has just opened is the page behind it - so a button that is
+        // not being shown and one that cannot be pressed fall back the same way.
         var target = AutoFocusButton switch
         {
-            BitDialogButton.Ok when ShowOkButton => _okButtonRef,
-            BitDialogButton.Cancel when ShowCancelButton => _cancelButtonRef,
+            BitDialogButton.Ok when ShowOkButton && IsOkButtonEnabled => _okButtonRef,
+            BitDialogButton.Cancel when ShowCancelButton && IsCancelButtonEnabled => _cancelButtonRef,
             BitDialogButton.Close when ShowCloseButton => _closeButtonRef,
             _ => (ElementReference?)null
         };
@@ -821,6 +890,10 @@ public partial class BitDialog : BitComponentBase
 
         await InvokeJs(_js.BitUtilsSetupFocusTrap(_containerId));
     }
+
+    // The same for the trap: a Dialog told to stop holding the keyboard while it is standing lets it go
+    // there and then, rather than at the end of a showing the caller has just changed its mind about.
+    private Task SyncFocusTrap() => ShouldTrapFocus ? SetupFocusTrap() : DisposeFocusTrap();
 
     private async Task DisposeFocusTrap()
     {
@@ -1050,7 +1123,7 @@ public partial class BitDialog : BitComponentBase
 
     private async Task HandleOnCancelClick(MouseEventArgs e)
     {
-        if (IsEnabled is false || _isLoading || _isDismissing) return;
+        if (IsEnabled is false || IsCancelButtonEnabled is false || _isLoading || _isDismissing) return;
 
         // The answer is in place before the callback runs, so a callback that closes the Dialog itself
         // still reports the answer it was given - and is taken back again when the callback throws, which
@@ -1074,7 +1147,7 @@ public partial class BitDialog : BitComponentBase
     {
         // A second click while the first one is still being awaited would run the callback twice and
         // resolve the showing twice over, so the Ok button answers only once per showing.
-        if (IsEnabled is false || _isLoading || _isDismissing) return;
+        if (IsEnabled is false || IsOkButtonEnabled is false || _isLoading || _isDismissing) return;
 
         Result = BitDialogResult.Ok;
 
@@ -1166,13 +1239,26 @@ public partial class BitDialog : BitComponentBase
         var size = string.Concat(
             Width.HasValue() ? $"--bit-dlg-wid:{Width};" : null,
             MinWidth.HasValue() ? $"--bit-dlg-mnw:{MinWidth};" : null,
-            MaxWidth.HasValue() ? $"--bit-dlg-mxw:{MaxWidth};" : null,
+            MaxWidth.HasValue() ? $"--bit-dlg-mxw:{MaxWidth};" : DefaultMaxWidth,
             Height.HasValue() ? $"--bit-dlg-hei:{Height};" : null,
             MinHeight.HasValue() ? $"--bit-dlg-mnh:{MinHeight};" : null,
             MaxHeight.HasValue() ? $"--bit-dlg-mxh:{MaxHeight};" : null);
 
         return size.HasValue() ? $"{size}{Styles?.Container}" : Styles?.Container;
     }
+
+    // A Dialog is as wide as its content, and a message of two sentences is a good deal wider than a Dialog
+    // has any business being: without a ceiling a confirmation spans a desktop screen and its message reads
+    // as a single line the eye has to walk. The ceiling is the one the design system names, so the packaged
+    // presets each keep the width of their own dialog (Fluent 2: 600px, Material: 560px, Cupertino: 270pt).
+    // It is capped at the area the Dialog is positioned in as well, so it can never be wider than the screen.
+    //
+    // It is emitted here rather than declared in the stylesheet so that it applies only where nothing else
+    // has already decided how wide the Dialog is: a Dialog given a width of its own would otherwise be
+    // squeezed back under this, and a full-width one is asking for the whole of the area by name.
+    private string? DefaultMaxWidth => (Width.HasValue() || FullWidth || FullSize)
+                                        ? null
+                                        : $"--bit-dlg-mxw:min(100%,var({BitCss.Var.Size.DialogMaxWidth}));";
 
     // An attribute selector rather than an id one, since an id is only a valid CSS identifier by accident:
     // a consumer-supplied Id can hold characters (a leading digit, a dot, a colon) that would make "#id"

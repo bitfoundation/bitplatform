@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The dimensions a design system decides once and every component repeats (<c>--bit-siz-*</c>):
@@ -57,6 +57,9 @@ public class BitThemeSizes
 
     /// <summary>The tallest a popup list (dropdown, search suggestions, breadcrumb overflow) grows before it scrolls (<c>--bit-siz-popup-max-height</c>).</summary>
     public string? PopupMaxHeight { get; set; }
+
+    /// <summary>The widest a dialog grows on its own before its message wraps (<c>--bit-siz-dialog-max-width</c>); a dialog given a width or a max width of its own ignores it.</summary>
+    public string? DialogMaxWidth { get; set; }
 }
 
 /// <summary>

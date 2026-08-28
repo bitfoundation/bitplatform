@@ -140,6 +140,18 @@
     animation: bit-dlg-prevented-animation $mot-duration $mot-easing;
 }
 
+// The drag handle takes touch-action away from itself and everything under it, so a finger that lands on it
+// moves the window instead of being read as a pan the browser has already started. Where the handle is the
+// whole surface - a Dialog with no header to grab - that reaches the scrolling body too, and a body that
+// cannot be scrolled by touch is a worse Dialog than one that has to be dragged by its edges. The scrolling
+// region takes its gestures back.
+.bit-dlg-ctn.bit-mdl-nta .bit-dlg-scr-cnt {
+    &,
+    * {
+        touch-action: auto;
+    }
+}
+
 .bit-dlg-fwi {
     .bit-dlg-ctn {
         width: 100%;
@@ -197,6 +209,10 @@
     min-height: 0;
     overflow-y: auto;
     flex-direction: column;
+    // A body scrolled to its end goes on scrolling the page behind the overlay otherwise, which is a
+    // page the Dialog has taken over - and on a touch screen it is the gesture the reader is already
+    // making, so the page arrives underneath without them asking for it.
+    overscroll-behavior: contain;
 }
 
 .bit-dlg-msg {
@@ -468,6 +484,19 @@
     .bit-dlg-cr,
     .bit-dlg-br {
         justify-content: flex-start;
+    }
+}
+
+
+// The shake is the whole of what tells the user a dismissal was refused rather than missed, and under
+// prefers-reduced-motion its duration collapses to nothing - which would leave the gesture unanswered for
+// exactly the readers least able to guess why. The surface is ringed in the Dialog's own color for as long
+// as the class is on it instead, which says the same thing without moving anything. It overrides the
+// outline:none the surface carries because it comes later, at the same specificity.
+@media (prefers-reduced-motion: reduce) {
+    .bit-dlg-prv {
+        outline: $shp-border-width-thick $shp-border-style var(--bit-dlg-clr);
+        outline-offset: calc(-1 * #{$shp-border-width-thick});
     }
 }
 

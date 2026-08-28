@@ -94,6 +94,8 @@
     --bit-layout-dialog-actions-direction: row;
     --bit-layout-dialog-actions-justify: flex-end;
     --bit-layout-dialog-actions-align: center;
+    // M3 caps its basic dialog at 560px.
+    --bit-siz-dialog-max-width: 35rem; //560px
 
     /*---- Typography ----*/
     // Roboto is only installed on Android / ChromeOS; the Bit.BlazorUI.Assets stylesheet ships a

@@ -124,6 +124,8 @@
     --bit-layout-dialog-actions-direction: row;
     --bit-layout-dialog-actions-justify: flex-end;
     --bit-layout-dialog-actions-align: center;
+    // Fluent 2's dialog surface is 600px wide at its medium size.
+    --bit-siz-dialog-max-width: 37.5rem; //600px
 
     /*---- Typography ----*/
     // Segoe UI Variable is the Fluent 2 typeface (Windows 11 and the Office web apps ship it); the
