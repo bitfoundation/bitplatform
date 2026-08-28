@@ -29,7 +29,18 @@
             <BitButton OnClick="ShowModal">Show</BitButton>
         </DemoExample>
 
-        <DemoExample Title="Awaiting a result" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <DemoExample Title="Header &amp; Footer" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                The chrome of the modal is part of the parameters too, so a modal shown through the service gets
+                its title, its close button and its footer without the content having to draw any of them:
+                <b>HeaderText</b>, <b>ShowCloseButton</b> and <b>FooterText</b> on the <b>BitModalParameters</b>.
+                What the content is left with is the body.
+            </div>
+            <br />
+            <BitButton OnClick="ShowChromeModal">Show</BitButton>
+        </DemoExample>
+
+        <DemoExample Title="Awaiting a result" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>
                 <b>CloseWith</b> takes the value the modal is answered with, and the reference's <b>Result</b> completes
                 with it - which turns a modal into a question the calling code can await. A modal dismissed rather
@@ -42,7 +53,7 @@
             <div>Answer: [@confirmAnswer]</div>
         </DemoExample>
 
-        <DemoExample Title="Markup as content" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <DemoExample Title="Markup as content" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
                 <b>Show</b> also takes plain markup, for the content that is not worth a component of its own -
                 a line of text, a note, a fragment the calling code already has in hand. The modal around it is
@@ -58,7 +69,7 @@
             <BitButton OnClick="ShowMarkupModal">Show markup</BitButton>
         </DemoExample>
 
-        <DemoExample Title="Closing every modal" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <DemoExample Title="Closing every modal" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
                 <b>CloseAll</b> closes every modal the service currently has open, each with a null result. It is
                 what a sign-out or a navigation reaches for: whatever was left open belongs to the state that is

@@ -29,7 +29,7 @@ public class BitModalService : BitModalServiceBase<BitModalReference, BitModalPa
             // AssignIsOpen succeeds, and BitModal short-circuits (without calling AssignIsOpen)
             // when Blocking is set, so a Blocking modal won't light-dismiss on overlay click.
             // Wiring through OnOverlayClick instead would call Close() before BitModal's Blocking
-            // guard runs, bypassing Blocking. This mirrors how BitProModalService wires dismissal.
+            // guard runs, bypassing Blocking.
             builder.AddComponentParameter(seq++, nameof(BitModal.IsOpenChanged), EventCallback.Factory.Create<bool>(modalReference, () => modalReference.Close()));
             builder.AddComponentParameter(seq++, nameof(BitModal.ChildContent), content);
             builder.CloseComponent();

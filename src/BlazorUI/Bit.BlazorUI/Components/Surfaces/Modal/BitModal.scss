@@ -35,12 +35,23 @@
     display: none;
 }
 
+// A Modal placed over the element it was declared inside of rather than over the screen. The z-index goes
+// with the fixed positioning: inside a stacking context of its own, a value meant to clear the page would
+// only push it past its own siblings.
+.bit-mdl-abs {
+    z-index: unset;
+    position: absolute;
+}
+
 .bit-mdl-ovl {
     inset: 0;
     z-index: 0;
     position: absolute;
     pointer-events: all;
-    background-color: $clr-bg-overlay;
+
+    // The overlay catches the clicks meant for the page behind it either way; whether it also dims that
+    // page is what ModeFull decides.
+    background-color: transparent;
 
     // The backdrop is put into the page in the same frame as the content it dims, so it fades in with it
     // rather than appearing under it in one frame. The duration collapses to nothing under reduced motion,
@@ -49,6 +60,12 @@
     animation-name: bit-fade-show;
     animation-duration: $mot-duration-short;
     animation-timing-function: $mot-easing-decelerate;
+}
+
+.bit-mdl-mfl {
+    .bit-mdl-ovl {
+        background-color: $clr-bg-overlay;
+    }
 }
 
 .bit-mdl-ctn {
@@ -91,6 +108,21 @@
     animation-timing-function: $mot-easing-decelerate;
 }
 
+// The surface of a Modal that renders a chrome of its own: the header and the footer stay put at the two
+// ends while the body takes the room that is left and scrolls inside it. A Modal given nothing but its
+// content is left as the plain box it was, since the column is only a layout for parts it does not have.
+.bit-mdl-chr {
+    display: flex;
+    flex-direction: column;
+}
+
+// The accent the Modal wears along its top edge, which NoBorder takes away.
+.bit-mdl-bdr {
+    .bit-mdl-ctn {
+        border-top: spacing(0.5) $shp-border-style $clr-pri;
+    }
+}
+
 // The answer to a dismissal the Modal turns down - a click on the overlay of a blocking Modal, or an Escape
 // it does not leave on. Two classes carrying the same movement under different names, so that the second
 // refusal in a row restarts it: an animation only starts over when the animation-name it resolves to
@@ -122,6 +154,150 @@
     .bit-mdl-ctn {
         width: 100%;
     }
+}
+
+// Position utilities map 1:1 to the BitPosition enum. The "start/end" (st/en)
+// variants are the logical/RTL-aware counterparts of the physical "left/right"
+// (lf/rg) variants, so they intentionally share the same LTR rules below while
+// remaining distinct public class names.
+.bit-mdl-tlf {
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.bit-mdl-tcr {
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.bit-mdl-trg {
+    align-items: flex-start;
+    justify-content: flex-end;
+}
+
+// logical equivalent of .bit-mdl-tlf (TopStart)
+.bit-mdl-tst {
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+// logical equivalent of .bit-mdl-trg (TopEnd)
+.bit-mdl-ten {
+    align-items: flex-start;
+    justify-content: flex-end;
+}
+
+.bit-mdl-clf {
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.bit-mdl-ctr {
+    align-items: center;
+    justify-content: center;
+}
+
+.bit-mdl-crg {
+    align-items: center;
+    justify-content: flex-end;
+}
+
+// logical equivalent of .bit-mdl-clf (CenterStart)
+.bit-mdl-cst {
+    align-items: center;
+    justify-content: flex-start;
+}
+
+// logical equivalent of .bit-mdl-crg (CenterEnd)
+.bit-mdl-cen {
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.bit-mdl-blf {
+    align-items: flex-end;
+    justify-content: flex-start;
+}
+
+.bit-mdl-bcr {
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.bit-mdl-brg {
+    align-items: flex-end;
+    justify-content: flex-end;
+}
+
+// logical equivalent of .bit-mdl-blf (BottomStart)
+.bit-mdl-bst {
+    align-items: flex-end;
+    justify-content: flex-start;
+}
+
+// logical equivalent of .bit-mdl-brg (BottomEnd)
+.bit-mdl-ben {
+    align-items: flex-end;
+    justify-content: flex-end;
+}
+
+// The header stays in view while the body scrolls under it, which is what keeps the title - and the close
+// button next to it - reachable in a Modal longer than the room it has.
+.bit-mdl-hcn {
+    top: 0;
+    z-index: 1;
+    display: flex;
+    position: sticky;
+    font-weight: $tg-fw-semibold;
+    color: $clr-fg-pri;
+    overflow-wrap: anywhere;
+    background-color: $clr-bg-pri;
+    padding: spacing(2) spacing(2) 0;
+}
+
+.bit-mdl-hdr {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    font-size: $tg-fs-xl;
+}
+
+.bit-mdl-cls {
+    display: flex;
+    cursor: pointer;
+    width: spacing(5);
+    height: spacing(5);
+    align-items: center;
+    justify-content: center;
+    font-size: $tg-fs-sm;
+    border-radius: $shp-radius-control;
+    background-color: transparent;
+
+    @media (hover: hover) {
+        &:hover {
+            color: $clr-fg-pri-hover;
+            background-color: $clr-bg-pri-hover;
+        }
+    }
+
+    &:active {
+        color: $clr-fg-pri-active;
+        background-color: $clr-bg-pri-active;
+    }
+}
+
+.bit-mdl-bdy {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: spacing(2);
+}
+
+.bit-mdl-fcn {
+    bottom: 0;
+    z-index: 1;
+    position: sticky;
+    background-color: $clr-bg-pri;
+    padding: 0 spacing(2) spacing(2) spacing(2);
 }
 
 // The Modal grows into place out of the middle rather than appearing in one frame, which is the movement

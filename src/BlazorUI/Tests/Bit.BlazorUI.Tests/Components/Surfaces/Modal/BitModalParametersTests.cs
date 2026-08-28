@@ -231,4 +231,89 @@ public class BitModalParametersTests
             new[] { "dismiss-first", "dismiss-second", "overlay-first", "overlay-second" },
             order);
     }
+
+    [TestMethod]
+    public void MergeShouldCarryTheChromeAcrossWithTheFirstWinning()
+    {
+        var first = new BitModalParameters
+        {
+            HeaderText = "first",
+            ShowCloseButton = true,
+            CloseButtonTitle = "first-close",
+            Visibility = BitVisibility.Hidden,
+        };
+        var second = new BitModalParameters
+        {
+            HeaderText = "second",
+            FooterText = "second-footer",
+            CloseIconName = "Cancel",
+            Visibility = BitVisibility.Collapsed,
+        };
+
+        var merged = BitModalParameters.Merge(first, second)!;
+
+        Assert.AreEqual("first", merged.HeaderText);           // first wins
+        Assert.AreEqual("first-close", merged.CloseButtonTitle); // only set on first
+        Assert.AreEqual(true, merged.ShowCloseButton);           // only set on first
+        Assert.AreEqual("second-footer", merged.FooterText);     // only set on second
+        Assert.AreEqual("Cancel", merged.CloseIconName);         // only set on second
+        Assert.AreEqual(BitVisibility.Hidden, merged.Visibility);
+    }
+
+    [TestMethod]
+    public void MergeShouldCarryTheLayoutAndScrollHandlingAcrossWithTheFirstWinning()
+    {
+        var first = new BitModalParameters
+        {
+            Position = BitPosition.TopRight,
+            AbsolutePosition = true,
+            Draggable = true,
+        };
+        var second = new BitModalParameters
+        {
+            Position = BitPosition.BottomLeft,
+            ModeFull = true,
+            Modeless = true,
+            NoBorder = true,
+            FullSize = true,
+            AutoToggleScroll = true,
+            DragElementSelector = "#handle",
+        };
+
+        var merged = BitModalParameters.Merge(first, second)!;
+
+        Assert.AreEqual(BitPosition.TopRight, merged.Position); // first wins
+        Assert.AreEqual(true, merged.AbsolutePosition);
+        Assert.AreEqual(true, merged.Draggable);
+        Assert.AreEqual(true, merged.ModeFull);
+        Assert.AreEqual(true, merged.Modeless);
+        Assert.AreEqual(true, merged.NoBorder);
+        Assert.AreEqual(true, merged.FullSize);
+        Assert.AreEqual(true, merged.AutoToggleScroll);
+        Assert.AreEqual("#handle", merged.DragElementSelector);
+    }
+
+    [TestMethod]
+    public void MergeShouldMergeTheClassesAndStylesOfEveryChromePart()
+    {
+        var first = new BitModalParameters
+        {
+            Classes = new BitModalClassStyles { HeaderContainer = "first-hcn", Body = "first-bdy" },
+            Styles = new BitModalClassStyles { Header = "color:red" },
+        };
+        var second = new BitModalParameters
+        {
+            Classes = new BitModalClassStyles { HeaderContainer = "second-hcn", Footer = "second-fcn", CloseIcon = "second-cic" },
+            Styles = new BitModalClassStyles { Header = "color:green", CloseButton = "color:blue" },
+        };
+
+        var merged = BitModalParameters.Merge(first, second)!;
+
+        Assert.AreEqual("first-hcn", merged.Classes!.HeaderContainer); // first wins
+        Assert.AreEqual("first-bdy", merged.Classes.Body);             // only set on first
+        Assert.AreEqual("second-fcn", merged.Classes.Footer);          // only set on second
+        Assert.AreEqual("second-cic", merged.Classes.CloseIcon);       // only set on second
+        Assert.AreEqual("color:red", merged.Styles!.Header);           // first wins
+        Assert.AreEqual("color:blue", merged.Styles.CloseButton);      // only set on second
+    }
 }

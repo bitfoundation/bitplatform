@@ -4,17 +4,21 @@
 /// Modals are temporary pop-ups that take focus from the page or app and require people to interact with them.
 /// </summary>
 /// <remarks>
-/// There are two different modal components available for different purposes: BitModal is a basic, lightweight modal
-/// for simple pop-up content, while BitProModal (in the Bit.BlazorUI.Extras package) is an advanced modal with extra
-/// features such as dragging, blocking, modeless, positioning, full-size and scroll handling. Use BitProModal if you
-/// need any of those advanced behaviors.
+/// The dialog behaviors every modal owes its user are handled here: the focus moves into the Modal when it opens,
+/// Tab keeps cycling inside it while it is open, Escape dismisses it, and the focus goes back to whatever opened it
+/// once it closes. Each of those can be turned off on its own.
 /// <br/>
-/// Whichever of the two is used, the dialog behaviors every modal owes its user are handled here: the focus moves
-/// into the Modal when it opens, Tab keeps cycling inside it while it is open, Escape dismisses it, and the focus
-/// goes back to whatever opened it once it closes. Each of those can be turned off on its own.
+/// The Modal is a surface first: what goes in it is the content of the consumer. It also offers a header / body /
+/// footer chrome of its own - a title, a close button, a footer for the actions - which is rendered only for the
+/// Modals that ask for it, so a Modal given nothing but its content still renders nothing but that content.
 /// </remarks>
 public partial class BitModal : BitComponentBase
 {
+    /// <summary>
+    /// The default title (and aria-label) used for the close button when none is provided.
+    /// </summary>
+    internal const string DefaultCloseButtonTitle = "Close";
+
     private bool _internalIsOpen;
     private bool _focusTrapped;
     private bool _focusStored;
@@ -25,6 +29,21 @@ public partial class BitModal : BitComponentBase
     private bool _hasBeenOpened;
     private bool _contentFocused;
     private string _containerId = default!;
+
+    // The room the scroller gave back when its overflow was toggled off, which an absolutely positioned Modal
+    // is pushed down by so that it stays where the eye left it rather than jumping to the top of the scroller.
+    private float _offsetTop;
+    // Whether the overflow of a scroller was actually toggled during the open sequence, so the close sequence
+    // toggles it back if and only if it was toggled, regardless of later changes to AutoToggleScroll.
+    private bool _scrollToggledOnOpen;
+    // Snapshots of the scroller target captured during open, so the close sequence restores the exact same
+    // scroller even if ScrollerElement/ScrollerSelector changed since the Modal was opened.
+    private ElementReference? _scrollerElementOnToggle;
+    private string? _scrollerSelectorOnToggle;
+    // Snapshots the drag element selector the drag handlers were registered with, so teardown unregisters the
+    // exact same selector even if DragElementSelector changed since the Modal was opened.
+    private string? _dragElementSelectorOnSetup;
+    private bool _dragSetup;
 
     // Which of the two interchangeable "refused" animations the content is carrying, 0 for none. Two
     // classes carrying the same movement under different names are alternated rather than one being added
@@ -65,6 +84,17 @@ public partial class BitModal : BitComponentBase
 
 
     /// <summary>
+    /// When true, the Modal is positioned absolute instead of fixed, so that it covers the element it was
+    /// declared inside of rather than the screen.
+    /// </summary>
+    /// <remarks>
+    /// The element it is declared inside of has to establish a containing block of its own
+    /// (<c>position: relative</c>) for this to place the Modal over it rather than over the page.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool AbsolutePosition { get; set; }
+
+    /// <summary>
     /// Whether the Modal should be announced as modal to assistive technologies.
     /// </summary>
     /// <remarks>
@@ -73,6 +103,18 @@ public partial class BitModal : BitComponentBase
     /// behind it reachable with the keyboard the way it is reachable with the pointer.
     /// </remarks>
     [Parameter] public bool AriaModal { get; set; } = true;
+
+    /// <summary>
+    /// Enables the auto scrollbar toggle behavior of the Modal, which takes the overflow off the scroller
+    /// while the Modal is open and hands it back once it closes.
+    /// </summary>
+    /// <remarks>
+    /// This is the Modal holding the scroller itself, so the hold it would otherwise take on the page through
+    /// <see cref="NoScrollLock"/> is stood down for it - the two would else both be holding the same page.
+    /// The scroller is named by <see cref="ScrollerElement"/> or <see cref="ScrollerSelector"/>, and is the
+    /// page when neither is set.
+    /// </remarks>
+    [Parameter] public bool AutoToggleScroll { get; set; }
 
     /// <summary>
     /// When enabled, prevents the Modal from being light dismissed by clicking outside the Modal (on the overlay).
@@ -84,6 +126,15 @@ public partial class BitModal : BitComponentBase
     [Parameter] public bool Blocking { get; set; }
 
     /// <summary>
+    /// The content of the body section of the Modal, the alias of <see cref="ChildContent"/>.
+    /// </summary>
+    /// <remarks>
+    /// Takes precedence over <see cref="ChildContent"/>, which is what a Modal that also declares a
+    /// <see cref="Header"/> or a <see cref="Footer"/> uses to keep the three of them side by side.
+    /// </remarks>
+    [Parameter] public RenderFragment? Body { get; set; }
+
+    /// <summary>
     /// The content of the Modal, it can be any custom tag or text.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -92,6 +143,32 @@ public partial class BitModal : BitComponentBase
     /// Custom CSS classes for different parts of the BitModal component.
     /// </summary>
     [Parameter] public BitModalClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The title (and aria-label) of the close button for accessibility and localization.
+    /// Defaults to "Close" when not set.
+    /// </summary>
+    [Parameter] public string? CloseButtonTitle { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon to display in the close button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="CloseIconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="CloseIconName"/> instead.
+    /// </remarks>
+    [Parameter] public BitIconInfo? CloseIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to display in the close button from the built-in Fluent UI icons.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.Cancel</c>).
+    /// <br />
+    /// For external icon libraries, use <see cref="CloseIcon"/> instead.
+    /// </remarks>
+    [Parameter] public string? CloseIconName { get; set; }
 
     /// <summary>
     /// The initial opening state of the Modal in the uncontrolled mode, which is when the
@@ -116,16 +193,61 @@ public partial class BitModal : BitComponentBase
 
 
     /// <summary>
+    /// The CSS selector of the drag element, which is the content of the Modal by default.
+    /// </summary>
+    /// <remarks>
+    /// Ignored by a Modal that is not <see cref="Draggable"/>. Naming a part of the content - a header bar -
+    /// is what keeps the rest of the Modal usable while it is draggable: a drag started anywhere on the
+    /// content is a drag the selection and the scrolling inside it never get.
+    /// </remarks>
+    [Parameter] public string? DragElementSelector { get; set; }
+
+    /// <summary>
+    /// Whether the Modal can be dragged around.
+    /// </summary>
+    [Parameter] public bool Draggable { get; set; }
+
+    /// <summary>
+    /// The template used to render the footer section of the Modal.
+    /// </summary>
+    [Parameter] public RenderFragment? Footer { get; set; }
+
+    /// <summary>
+    /// The text of the footer section of the Modal.
+    /// </summary>
+    [Parameter] public string? FooterText { get; set; }
+
+    /// <summary>
     /// Makes the Modal height 100% of its parent container.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool FullHeight { get; set; }
 
     /// <summary>
+    /// Makes the Modal width and height 100% of its parent container.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FullSize { get; set; }
+
+    /// <summary>
     /// Makes the Modal width 100% of its parent container.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool FullWidth { get; set; }
+
+    /// <summary>
+    /// The template used to render the header section of the Modal.
+    /// </summary>
+    /// <remarks>
+    /// Takes precedence over <see cref="HeaderText"/> when both are set. Point <see cref="TitleAriaId"/> at
+    /// the title inside it so that the Modal is announced by the name it shows.
+    /// </remarks>
+    [Parameter] public RenderFragment? Header { get; set; }
+
+    /// <summary>
+    /// The text of the header section of the Modal.
+    /// </summary>
+    [Parameter] public string? HeaderText { get; set; }
 
     /// <summary>
     /// The CSS height of the Modal, for the Modals whose height is not the one their content happens to have.
@@ -145,6 +267,11 @@ public partial class BitModal : BitComponentBase
     /// <summary>
     /// Determines the ARIA role of the Modal (alertdialog/dialog).
     /// </summary>
+    /// <remarks>
+    /// A <see cref="Blocking"/> Modal that is not <see cref="Modeless"/> announces itself as an
+    /// <c>alertdialog</c> when this is not set, since a surface that refuses to be dismissed by a click
+    /// outside of it is one that is waiting to be answered.
+    /// </remarks>
     [Parameter] public bool? IsAlert { get; set; }
 
     /// <summary>
@@ -191,6 +318,27 @@ public partial class BitModal : BitComponentBase
     [Parameter] public string? MaxWidth { get; set; }
 
     /// <summary>
+    /// Renders the overlay in full mode that gives it an opaque background.
+    /// </summary>
+    /// <remarks>
+    /// The overlay catches the clicks meant for the page behind it either way; this is what makes it dim that
+    /// page as well, for the Modals that are to be the only thing being read.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool ModeFull { get; set; }
+
+    /// <summary>
+    /// Whether the Modal should be modeless (e.g. not dismiss when focusing/clicking outside of the Modal).
+    /// If true: <see cref="Blocking"/> is ignored, and there will be no overlay.
+    /// </summary>
+    /// <remarks>
+    /// A modeless Modal leaves the page behind it usable, so it neither reports itself modal (see
+    /// <see cref="AriaModal"/>), nor holds the keyboard, nor holds the page still.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Modeless { get; set; }
+
+    /// <summary>
     /// Prevents the Modal from moving the focus into itself when it opens, for the cases where the focus is
     /// placed by the consumer instead.
     /// </summary>
@@ -206,6 +354,12 @@ public partial class BitModal : BitComponentBase
     /// neither of them applies for as long as the focus stays outside of it.
     /// </remarks>
     [Parameter] public bool NoAutoFocus { get; set; }
+
+    /// <summary>
+    /// Removes the default top border of the Modal.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool NoBorder { get; set; }
 
     /// <summary>
     /// Prevents the Modal from being dismissed by pressing the Escape key.
@@ -241,8 +395,10 @@ public partial class BitModal : BitComponentBase
     /// shifts nothing sideways, and the locks are counted: two Modals open at once both hold the page and it
     /// is only handed back once the last of them closes.
     /// <br/>
-    /// A Modal that reports itself modeless (see <see cref="AriaModal"/>) never holds the page in the first
-    /// place, since it is meant to leave what is behind it usable.
+    /// A Modal that reports itself modeless (see <see cref="Modeless"/>) never holds the page in the first
+    /// place, since it is meant to leave what is behind it usable, and a Modal that does its own scroll
+    /// handling through <see cref="AutoToggleScroll"/> holds its scroller itself, so this hold is stood down
+    /// for it whether or not this is set.
     /// </remarks>
     [Parameter] public bool NoScrollLock { get; set; }
 
@@ -280,6 +436,25 @@ public partial class BitModal : BitComponentBase
     [Parameter] public EventCallback<MouseEventArgs> OnOverlayClick { get; set; }
 
     /// <summary>
+    /// Position of the Modal on the screen.
+    /// </summary>
+    /// <remarks>
+    /// The Modal sits in the middle of the screen when this is not set. The <c>Start</c> / <c>End</c> members
+    /// are the direction-aware counterparts of the <c>Left</c> / <c>Right</c> ones.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitPosition? Position { get; set; }
+
+    /// <summary>
+    /// The element reference of the scroller the Modal toggles the overflow of while it is open.
+    /// </summary>
+    /// <remarks>
+    /// Takes precedence over <see cref="ScrollerSelector"/> when both are set, and is only read by a Modal
+    /// that toggles the scroll itself (see <see cref="AutoToggleScroll"/>).
+    /// </remarks>
+    [Parameter] public ElementReference? ScrollerElement { get; set; }
+
+    /// <summary>
     /// The CSS selector of the element whose scrolling the Modal holds while it is open, for the layouts
     /// whose scroller is not the page itself.
     /// </summary>
@@ -290,6 +465,11 @@ public partial class BitModal : BitComponentBase
     /// nothing. Ignored by a Modal that holds nothing in the first place (see <see cref="NoScrollLock"/>).
     /// </remarks>
     [Parameter] public string? ScrollerSelector { get; set; }
+
+    /// <summary>
+    /// Shows the close button of the Modal.
+    /// </summary>
+    [Parameter] public bool ShowCloseButton { get; set; }
 
     /// <summary>
     /// Whether the overlay should be rendered.
@@ -367,14 +547,38 @@ public partial class BitModal : BitComponentBase
         ClassBuilder.Register(() => Classes?.Root);
         ClassBuilder.Register(() => _params.Classes?.Root);
 
-        ClassBuilder.Register(() => (_params.FullHeight ?? false) ? "bit-mdl-fhe" : string.Empty);
-        ClassBuilder.Register(() => (_params.FullWidth ?? false) ? "bit-mdl-fwi" : string.Empty);
+        ClassBuilder.Register(() => IsFullHeight ? "bit-mdl-fhe" : string.Empty);
+        ClassBuilder.Register(() => IsFullWidth ? "bit-mdl-fwi" : string.Empty);
+        ClassBuilder.Register(() => (_params.ModeFull ?? false) ? "bit-mdl-mfl" : string.Empty);
+        ClassBuilder.Register(() => (_params.NoBorder ?? false) ? string.Empty : "bit-mdl-bdr");
+        ClassBuilder.Register(() => (_params.AbsolutePosition ?? false) ? "bit-mdl-abs" : string.Empty);
+        ClassBuilder.Register(() => _params.Position switch
+        {
+            BitPosition.TopLeft => "bit-mdl-tlf",
+            BitPosition.TopCenter => "bit-mdl-tcr",
+            BitPosition.TopRight => "bit-mdl-trg",
+            BitPosition.TopStart => "bit-mdl-tst",
+            BitPosition.TopEnd => "bit-mdl-ten",
+            BitPosition.CenterLeft => "bit-mdl-clf",
+            BitPosition.Center => "bit-mdl-ctr",
+            BitPosition.CenterRight => "bit-mdl-crg",
+            BitPosition.CenterStart => "bit-mdl-cst",
+            BitPosition.CenterEnd => "bit-mdl-cen",
+            BitPosition.BottomLeft => "bit-mdl-blf",
+            BitPosition.BottomCenter => "bit-mdl-bcr",
+            BitPosition.BottomRight => "bit-mdl-brg",
+            BitPosition.BottomStart => "bit-mdl-bst",
+            BitPosition.BottomEnd => "bit-mdl-ben",
+            _ => string.Empty
+        });
     }
 
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
         StyleBuilder.Register(() => _params.Styles?.Root);
+
+        StyleBuilder.Register(() => _offsetTop > 0 ? FormattableString.Invariant($"top:{_offsetTop}px") : string.Empty);
     }
 
     protected override void OnInitialized()
@@ -433,6 +637,11 @@ public partial class BitModal : BitComponentBase
         var paramsClassesRoot = _params.Classes?.Root;
         if (previous.FullHeight != _params.FullHeight ||
             previous.FullWidth != _params.FullWidth ||
+            previous.FullSize != _params.FullSize ||
+            previous.ModeFull != _params.ModeFull ||
+            previous.NoBorder != _params.NoBorder ||
+            previous.AbsolutePosition != _params.AbsolutePosition ||
+            previous.Position != _params.Position ||
             _lastClassesRoot != classesRoot ||
             _lastParamsClassesRoot != paramsClassesRoot)
         {
@@ -526,6 +735,22 @@ public partial class BitModal : BitComponentBase
 
         await LockScroll();
 
+        await SetupDrag();
+
+        // Reset before ToggleScroll: a Modal that no longer toggles the scroll returns early from it and
+        // would else be left with a stale top-offset from a previous opening.
+        _offsetTop = 0;
+
+        await ToggleScroll(true);
+
+        // The top-offset only means anything to an absolutely positioned Modal, so only that one is asked to
+        // render again for the style ToggleScroll may just have changed.
+        if (_params.AbsolutePosition ?? false)
+        {
+            StyleBuilder.Reset();
+            StateHasChanged();
+        }
+
         await FocusContent();
 
         await _params.OnOpen.InvokeAsync();
@@ -538,6 +763,10 @@ public partial class BitModal : BitComponentBase
         await DisposeFocusTrap();
 
         await UnlockScroll();
+
+        await RemoveDrag();
+
+        await ToggleScroll(false);
 
         await RestoreFocus();
     }
@@ -576,6 +805,13 @@ public partial class BitModal : BitComponentBase
         await AssignIsOpen(false);
     }
 
+    private async Task HandleOnCloseClick(MouseEventArgs e)
+    {
+        if (_params.IsEnabled is false) return;
+
+        await AssignIsOpen(false);
+    }
+
     // Answers a dismissal the Modal turns down with a movement rather than with nothing at all: a click on
     // the overlay of a blocking Modal, or an Escape it does not leave on, otherwise reads as a page that has
     // stopped responding rather than as a surface waiting to be answered. The movement collapses to nothing
@@ -585,9 +821,12 @@ public partial class BitModal : BitComponentBase
         _bounce = _bounce == 1 ? 2 : 1;
     }
 
+    // A blocking Modal that is not modeless is a surface waiting to be answered rather than one that can be
+    // walked away from, which is what the alertdialog role says - so that is what it reports when nothing
+    // else was asked for.
     private string GetRole()
     {
-        return (_params.IsAlert ?? false) ? "alertdialog" : "dialog";
+        return (_params.IsAlert ?? ((_params.Blocking ?? false) && IsModeless is false)) ? "alertdialog" : "dialog";
     }
 
     // Null rather than an empty string when there is nothing to render, so a Modal that was given no
@@ -630,12 +869,16 @@ public partial class BitModal : BitComponentBase
 
     private string GetContentClasses()
     {
-        return JoinClasses(_bounce switch
+        var baseClasses = _bounce switch
         {
             1 => "bit-mdl-ctn bit-mdl-bna",
             2 => "bit-mdl-ctn bit-mdl-bnb",
             _ => "bit-mdl-ctn"
-        }, Classes?.Content, _params.Classes?.Content);
+        };
+
+        // The chrome lays the content out as a column of header, body and footer, which is only what a Modal
+        // that renders any of them wants: one given nothing but its content keeps that content as it is.
+        return JoinClasses(HasChrome ? $"{baseClasses} bit-mdl-chr" : baseClasses, Classes?.Content, _params.Classes?.Content);
     }
 
     // A kept-mounted Modal that is closed is still in the page, so it is taken out of the way of it rather
@@ -691,19 +934,47 @@ public partial class BitModal : BitComponentBase
         });
     }
 
+    // Whether the Modal renders a chrome of its own around the content. Everything the chrome is made of is
+    // opt-in, so a Modal given nothing but its content renders nothing but that content - which is what
+    // keeps the surface usable for the markup that brings its own header and footer.
+    private bool HasChrome => HasHeader || HasFooter || (_params.Body is not null);
+
+    private bool HasHeader => _params.Header is not null || _params.HeaderText.HasValue() || (_params.ShowCloseButton ?? false);
+
+    private bool HasFooter => _params.Footer is not null || _params.FooterText.HasValue();
+
+    // A modeless Modal is one that leaves the page behind it usable, so it neither reports itself modal nor
+    // renders an overlay over what it is meant to leave reachable.
+    private bool IsModeless => _params.Modeless ?? false;
+
+    private bool IsAriaModal => (_params.AriaModal ?? true) && IsModeless is false;
+
+    private bool ShowsOverlay => (_params.ShowOverlay ?? true) && IsModeless is false;
+
+    private bool IsFullHeight => (_params.FullHeight ?? false) || (_params.FullSize ?? false);
+
+    private bool IsFullWidth => (_params.FullWidth ?? false) || (_params.FullSize ?? false);
+
     // Whether the keyboard is the Modal's to hold. Only a Modal that reports itself modal takes the tab
     // sequence over: a modeless one is meant to leave the page behind it usable, and a trap would take the
     // keyboard half of that away while leaving the pointer half in place.
-    private bool ShouldTrapFocus => (_params.NoFocusTrap ?? false) is false && (_params.AriaModal ?? true) && IsShown;
+    private bool ShouldTrapFocus => (_params.NoFocusTrap ?? false) is false && IsAriaModal && IsShown;
 
     // Whether the page behind the Modal is the Modal's to hold. As with the focus trap, only a Modal that
     // reports itself modal takes it: a modeless one is meant to leave the page usable, and a page held still
-    // behind a surface the pointer is free to leave reads as a page that broke rather than one that is covered.
-    private bool ShouldLockScroll => (_params.NoScrollLock ?? false) is false && (_params.AriaModal ?? true) && IsShown;
+    // behind a surface the pointer is free to leave reads as a page that broke rather than one that is
+    // covered. A Modal that toggles the scroll itself already holds its scroller, so it does not take a
+    // second hold on the same page here.
+    private bool ShouldLockScroll => (_params.NoScrollLock ?? false) is false
+                                     && (_params.AutoToggleScroll ?? false) is false
+                                     && IsAriaModal
+                                     && IsShown;
 
     // A Modal that was taken out of view carries none of the behaviors that only make sense for one the user
     // can see: it neither holds the keyboard nor the page behind it.
     private bool IsShown => Visibility == BitVisibility.Visible;
+
+    private string _dragElementSelector => _params.DragElementSelector ?? $"#{_containerId}";
 
     // Moved once per opening: the call is made again whenever the Modal becomes something the user can see
     // while it is already open, so that a Modal opened out of view still starts with the keyboard in it once
@@ -817,6 +1088,72 @@ public partial class BitModal : BitComponentBase
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
+    private async Task SetupDrag()
+    {
+        if ((_params.Draggable ?? false) is false || _dragSetup || IsDisposed) return;
+
+        _dragSetup = true;
+        // The selector is recorded as the handlers are registered against it, so that teardown reaches the
+        // same element even if the parameter has changed in the meantime.
+        _dragElementSelectorOnSetup = _dragElementSelector;
+
+        try
+        {
+            await _js.BitDragDropSetup(_containerId, $"#{_containerId}", _dragElementSelectorOnSetup);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    private async Task RemoveDrag()
+    {
+        if (_dragSetup is false) return;
+
+        _dragSetup = false;
+
+        var selector = _dragElementSelectorOnSetup ?? _dragElementSelector;
+        _dragElementSelectorOnSetup = null;
+
+        try
+        {
+            await _js.BitDragDropRemove(_containerId, selector);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    // The scroll handling a Modal does itself, as opposed to the hold it takes on the page through
+    // LockScroll: the overflow of the scroller is taken away while the Modal is open and handed back once it
+    // closes, and the room that gave back is what an absolutely positioned Modal is pushed down by.
+    private async Task ToggleScroll(bool isOpen)
+    {
+        if (isOpen)
+        {
+            // Snapshot the decision at open time; the close reuses it instead of re-reading
+            // AutoToggleScroll, which may have changed since the Modal was opened.
+            _scrollToggledOnOpen = (_params.AutoToggleScroll ?? false) && IsDisposed is false;
+            if (_scrollToggledOnOpen is false) return;
+
+            // Snapshot the scroller target at open time so the close restores the same scroller, even if
+            // ScrollerElement/ScrollerSelector changed in the meantime.
+            _scrollerElementOnToggle = _params.ScrollerElement;
+            _scrollerSelectorOnToggle = _params.ScrollerSelector;
+        }
+        else
+        {
+            // Only hand the overflow back if it was actually taken away, regardless of the current value.
+            if (_scrollToggledOnOpen is false) return;
+
+            _scrollToggledOnOpen = false;
+        }
+
+        try
+        {
+            _offsetTop = _scrollerElementOnToggle.HasValue
+                ? await _js.BitUtilsToggleOverflow(_scrollerElementOnToggle.Value, isOpen)
+                : await _js.BitUtilsToggleOverflow(_scrollerSelectorOnToggle ?? "body", isOpen);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
     /// <summary>
     /// Builds the effective parameters by merging this component's own parameters with the cascaded
     /// <see cref="BitModalParameters"/>. The component's own values take precedence, preserving the
@@ -827,9 +1164,11 @@ public partial class BitModal : BitComponentBase
     /// Non-nullable bools cannot distinguish "not set" from "explicitly false", so they merge
     /// asymmetrically and the component param only expresses the "stronger" intent for that flag:
     /// <list type="bullet">
-    /// <item><see cref="Blocking"/>, <see cref="FullHeight"/>, <see cref="FullWidth"/>,
-    /// <see cref="KeepMounted"/>, <see cref="NoAutoFocus"/>, <see cref="NoDismissOnEscape"/>,
-    /// <see cref="NoFocusTrap"/>, <see cref="NoRestoreFocus"/>, <see cref="NoScrollLock"/>:
+    /// <item><see cref="AbsolutePosition"/>, <see cref="AutoToggleScroll"/>, <see cref="Blocking"/>,
+    /// <see cref="Draggable"/>, <see cref="FullHeight"/>, <see cref="FullSize"/>, <see cref="FullWidth"/>,
+    /// <see cref="KeepMounted"/>, <see cref="ModeFull"/>, <see cref="Modeless"/>, <see cref="NoAutoFocus"/>,
+    /// <see cref="NoBorder"/>, <see cref="NoDismissOnEscape"/>, <see cref="NoFocusTrap"/>,
+    /// <see cref="NoRestoreFocus"/>, <see cref="NoScrollLock"/>, <see cref="ShowCloseButton"/>:
     /// the component param can only force the behavior <b>on</b>
     /// (<c>X ? true : p.X</c>); it can never force it off.</item>
     /// <item><see cref="AriaModal"/>, <see cref="ShowOverlay"/>, <see cref="BitComponentBase.IsEnabled"/>:
@@ -851,17 +1190,34 @@ public partial class BitModal : BitComponentBase
             // caller can still assign null. Coalesce to empty dictionaries so the Concat in
             // MergeHtmlAttributes (and the snapshot copies) never NRE, mirroring BitModalParameters.Merge.
             HtmlAttributes = MergeHtmlAttributes(p.HtmlAttributes ?? [], HtmlAttributes ?? []),
+            // Can only force on (default is off): see remarks on asymmetric merge.
+            AbsolutePosition = AbsolutePosition ? true : p.AbsolutePosition,
             Dir = Dir ?? p.Dir,
             AriaLabel = AriaLabel ?? p.AriaLabel,
             // Can only force off (default is enabled): see remarks on asymmetric merge.
             AriaModal = AriaModal is false ? false : p.AriaModal,
             // Can only force on (default is off): see remarks on asymmetric merge.
+            AutoToggleScroll = AutoToggleScroll ? true : p.AutoToggleScroll,
+            // Can only force on (default is off): see remarks on asymmetric merge.
             Blocking = Blocking ? true : p.Blocking,
+            Body = Body ?? p.Body,
             Classes = p.Classes,
+            CloseButtonTitle = CloseButtonTitle ?? p.CloseButtonTitle,
+            CloseIcon = CloseIcon ?? p.CloseIcon,
+            CloseIconName = CloseIconName ?? p.CloseIconName,
+            DragElementSelector = DragElementSelector ?? p.DragElementSelector,
+            // Can only force on (default is off): see remarks on asymmetric merge.
+            Draggable = Draggable ? true : p.Draggable,
+            Footer = Footer ?? p.Footer,
+            FooterText = FooterText ?? p.FooterText,
             // Can only force on (default is off): see remarks on asymmetric merge.
             FullHeight = FullHeight ? true : p.FullHeight,
             // Can only force on (default is off): see remarks on asymmetric merge.
+            FullSize = FullSize ? true : p.FullSize,
+            // Can only force on (default is off): see remarks on asymmetric merge.
             FullWidth = FullWidth ? true : p.FullWidth,
+            Header = Header ?? p.Header,
+            HeaderText = HeaderText ?? p.HeaderText,
             Height = Height ?? p.Height,
             IsAlert = IsAlert ?? p.IsAlert,
             // Can only force on (default is off): see remarks on asymmetric merge.
@@ -869,7 +1225,13 @@ public partial class BitModal : BitComponentBase
             MaxHeight = MaxHeight ?? p.MaxHeight,
             MaxWidth = MaxWidth ?? p.MaxWidth,
             // Can only force on (default is off): see remarks on asymmetric merge.
+            ModeFull = ModeFull ? true : p.ModeFull,
+            // Can only force on (default is off): see remarks on asymmetric merge.
+            Modeless = Modeless ? true : p.Modeless,
+            // Can only force on (default is off): see remarks on asymmetric merge.
             NoAutoFocus = NoAutoFocus ? true : p.NoAutoFocus,
+            // Can only force on (default is off): see remarks on asymmetric merge.
+            NoBorder = NoBorder ? true : p.NoBorder,
             // Can only force on (default is off): see remarks on asymmetric merge.
             NoDismissOnEscape = NoDismissOnEscape ? true : p.NoDismissOnEscape,
             // Can only force on (default is off): see remarks on asymmetric merge.
@@ -878,16 +1240,23 @@ public partial class BitModal : BitComponentBase
             NoRestoreFocus = NoRestoreFocus ? true : p.NoRestoreFocus,
             // Can only force on (default is off): see remarks on asymmetric merge.
             NoScrollLock = NoScrollLock ? true : p.NoScrollLock,
-            ScrollerSelector = ScrollerSelector ?? p.ScrollerSelector,
             OnDismiss = _onDismiss,
             OnEscapeKeyDown = _onEscapeKeyDown,
             OnOpen = _onOpen,
             OnOverlayClick = _onOverlayClick,
+            Position = Position ?? p.Position,
+            ScrollerElement = ScrollerElement ?? p.ScrollerElement,
+            ScrollerSelector = ScrollerSelector ?? p.ScrollerSelector,
+            // Can only force on (default is off): see remarks on asymmetric merge.
+            ShowCloseButton = ShowCloseButton ? true : p.ShowCloseButton,
             // Can only force off (default is enabled): see remarks on asymmetric merge.
             ShowOverlay = ShowOverlay is false ? false : p.ShowOverlay,
             Styles = p.Styles,
             SubtitleAriaId = SubtitleAriaId ?? p.SubtitleAriaId,
             TitleAriaId = TitleAriaId ?? p.TitleAriaId,
+            // Can only force off (default is Visible): own value wins only when it is a meaningful
+            // (non-default) override, otherwise the cascaded value is used.
+            Visibility = Visibility != BitVisibility.Visible ? Visibility : p.Visibility,
             Width = Width ?? p.Width,
         };
     }
@@ -937,17 +1306,23 @@ public partial class BitModal : BitComponentBase
         if (IsDisposed || disposing is false) return;
 
         // A Modal disposed while it is still open never reaches its close, so the registrations it made on
-        // the JS side - the focus trap, the hold on the page behind it - are taken back here instead. The
-        // stored focus is dropped rather than restored: there is no close for it to be handed back on, and
-        // the map would keep the element alive without this.
-        if (_focusTrapped || _focusStored || _scrollLocked)
+        // the JS side - the focus trap, the hold on the page behind it, the drag handlers, the overflow it
+        // took off its scroller - are taken back here instead. The stored focus is dropped rather than
+        // restored: there is no close for it to be handed back on, and the map would keep the element alive
+        // without this.
+        if (_focusTrapped || _focusStored || _scrollLocked || _dragSetup || _scrollToggledOnOpen)
         {
             var trapped = _focusTrapped;
             var stored = _focusStored;
             var locked = _scrollLocked;
+            var dragged = _dragSetup;
+            var toggled = _scrollToggledOnOpen;
+            var dragSelector = _dragElementSelectorOnSetup ?? _dragElementSelector;
             _focusTrapped = false;
             _focusStored = false;
             _scrollLocked = false;
+            _dragSetup = false;
+            _scrollToggledOnOpen = false;
 
             try
             {
@@ -959,6 +1334,23 @@ public partial class BitModal : BitComponentBase
                 if (locked)
                 {
                     await _js.BitUtilsUnlockScroll(_containerId);
+                }
+
+                if (dragged)
+                {
+                    await _js.BitDragDropRemove(_containerId, dragSelector);
+                }
+
+                if (toggled)
+                {
+                    if (_scrollerElementOnToggle.HasValue)
+                    {
+                        await _js.BitUtilsToggleOverflow(_scrollerElementOnToggle.Value, false);
+                    }
+                    else
+                    {
+                        await _js.BitUtilsToggleOverflow(_scrollerSelectorOnToggle ?? "body", false);
+                    }
                 }
 
                 if (stored)

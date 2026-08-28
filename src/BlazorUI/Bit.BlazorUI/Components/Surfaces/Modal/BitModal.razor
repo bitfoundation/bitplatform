@@ -19,7 +19,7 @@
          dir="@_params.Dir?.ToString().ToLower()"
          inert="@(IsOpen is false)"
          aria-hidden="@(IsOpen ? null : "true")">
-        @if (_params.ShowOverlay ?? true)
+        @if (ShowsOverlay)
         {
             @* Pressing something that cannot hold the focus is what takes the focus off whatever had it, and
                the overlay is the largest such thing on the screen while a Modal is open. A press on it would
@@ -46,9 +46,72 @@
              aria-label="@_params.AriaLabel"
              aria-labelledby="@_params.TitleAriaId"
              aria-describedby="@_params.SubtitleAriaId"
-             aria-modal="@((_params.AriaModal ?? true).ToString().ToLowerInvariant())"
+             aria-modal="@(IsAriaModal.ToString().ToLowerInvariant())"
              role="@GetRole()">
-            @ChildContent
+            @* Everything the chrome is made of is opt-in: a Modal that declares none of it renders its
+               content on its own, as the bare surface it was before the chrome existed. *@
+            @if (HasChrome)
+            {
+                @if (HasHeader)
+                {
+                    <div style="@JoinStyles(Styles?.HeaderContainer, _params.Styles?.HeaderContainer)"
+                         class="@JoinClasses("bit-mdl-hcn", Classes?.HeaderContainer, _params.Classes?.HeaderContainer)">
+                        @if (_params.Header is not null)
+                        {
+                            <div style="@JoinStyles(Styles?.Header, _params.Styles?.Header)"
+                                 class="@JoinClasses("bit-mdl-hdr", Classes?.Header, _params.Classes?.Header)">
+                                @_params.Header
+                            </div>
+                        }
+                        else if (_params.HeaderText.HasValue())
+                        {
+                            <div style="@JoinStyles(Styles?.Header, _params.Styles?.Header)"
+                                 class="@JoinClasses("bit-mdl-hdr", Classes?.Header, _params.Classes?.Header)">
+                                @_params.HeaderText
+                            </div>
+                        }
+
+                        @if (_params.ShowCloseButton ?? false)
+                        {
+                            var closeIcon = BitIconInfo.From(_params.CloseIcon, _params.CloseIconName ?? "Cancel");
+
+                            <button @onclick="HandleOnCloseClick"
+                                    type="button"
+                                    title="@(_params.CloseButtonTitle ?? DefaultCloseButtonTitle)"
+                                    aria-label="@(_params.CloseButtonTitle ?? DefaultCloseButtonTitle)"
+                                    style="@JoinStyles(Styles?.CloseButton, _params.Styles?.CloseButton)"
+                                    class="@JoinClasses("bit-mdl-cls", Classes?.CloseButton, _params.Classes?.CloseButton)">
+                                <i style="@JoinStyles(Styles?.CloseIcon, _params.Styles?.CloseIcon)"
+                                   class="@JoinClasses(closeIcon?.GetCssClasses() ?? string.Empty, Classes?.CloseIcon, _params.Classes?.CloseIcon)" />
+                            </button>
+                        }
+                    </div>
+                }
+
+                <div style="@JoinStyles(Styles?.Body, _params.Styles?.Body)"
+                     class="@JoinClasses("bit-mdl-bdy", Classes?.Body, _params.Classes?.Body)">
+                    @(_params.Body ?? ChildContent)
+                </div>
+
+                @if (HasFooter)
+                {
+                    <div style="@JoinStyles(Styles?.Footer, _params.Styles?.Footer)"
+                         class="@JoinClasses("bit-mdl-fcn", Classes?.Footer, _params.Classes?.Footer)">
+                        @if (_params.Footer is not null)
+                        {
+                            @_params.Footer
+                        }
+                        else
+                        {
+                            @_params.FooterText
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                @ChildContent
+            }
         </div>
     </div>
 }

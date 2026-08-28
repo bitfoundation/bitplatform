@@ -289,8 +289,6 @@ public static class ComponentCatalog
         ["NavPanel"] = "A vertical navigation panel with search, grouping and a collapsed rail.",
         ["PdfViewer"] = "A pure-C# PDF viewer: no pdf.js, works in every render mode.",
         ["PhoneInput"] = "A phone number field with a searchable country selector and flags.",
-        ["ProModal"] = "The modal, extended: draggable, resizable, stackable, with a header slot.",
-        ["ProModalService"] = "Opens ProModals from anywhere in the app, with any content.",
         ["ProPanel"] = "The panel, extended: modeless, full-screen, and scroll-aware modes.",
         ["RichTextEditor"] = "A native WYSIWYG editor written in C#, with a configurable toolbar.",
         ["TextShimmer"] = "A gradient band sweeping across text, for AI-style streaming states.",

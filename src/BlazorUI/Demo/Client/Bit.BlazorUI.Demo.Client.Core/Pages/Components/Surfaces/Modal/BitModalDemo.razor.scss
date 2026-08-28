@@ -6,7 +6,6 @@
     font-weight: 600;
     align-items: center;
     font-size: rem2(24px);
-    border-top: rem2(4px) solid #0054C6;
     padding: rem2(12px) rem2(12px) rem2(14px) rem2(24px);
 }
 
@@ -54,7 +53,44 @@
     align-items: center;
 }
 
+// The scrolling box the AbsolutePosition example puts its modals over: it establishes a containing block
+// of its own, which is what an absolutely positioned modal lands on instead of the page.
+.relative-container {
+    width: 100%;
+    overflow: auto;
+    margin-top: 1rem;
+    position: relative;
+    height: rem2(400px);
+    border: rem2(2px) solid lightgreen;
+}
+
+// The grid of buttons that opens the Position example in each of the nine places.
+.position-btn {
+    gap: 1rem;
+    display: flex;
+    flex-flow: column nowrap;
+
+    div {
+        display: flex;
+        justify-content: space-between;
+    }
+}
+
+// The bar the DragElementSelector example drags its modal by.
+.modal-drag-handle {
+    width: 100%;
+    color: white;
+    padding: 1rem;
+    cursor: move;
+    background: brown;
+    border-radius: 0.25rem;
+}
+
 ::deep {
+    .position-button {
+        width: rem2(130px);
+    }
+
     .custom-class {
         border: 0.5rem solid tomato;
         background-color: darkgoldenrod;
@@ -73,5 +109,26 @@
         box-shadow: 0 0 10rem purple;
         border-end-end-radius: 1rem;
         border-end-start-radius: 1rem;
+    }
+
+    .custom-header-container {
+        padding: 1.5rem;
+        background-color: tomato;
+    }
+
+    .custom-header {
+        font-size: 2rem;
+    }
+
+    .custom-body {
+        color: black;
+        background-color: lightseagreen;
+    }
+
+    .custom-footer {
+        color: brown;
+        padding: 1.5rem;
+        font-size: 1.5rem;
+        background-color: tomato;
     }
 }

@@ -271,4 +271,42 @@ public class BitModalServiceTests : BunitTestContext
 
         Assert.AreEqual("answered", await modalRef.Result);
     }
+
+    [TestMethod]
+    public async Task BitModalServiceShouldRenderTheChromeFromTheParametersItWasShownWith()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        await ModalService.Show<TestModalContent>(new BitModalParameters
+        {
+            HeaderText = "the header",
+            FooterText = "the footer",
+            ShowCloseButton = true
+        });
+
+        container.WaitForAssertion(() =>
+        {
+            Assert.AreEqual("the header", container.Find(".bit-mdl-hdr").TextContent);
+            Assert.AreEqual("the footer", container.Find(".bit-mdl-fcn").TextContent);
+            Assert.AreEqual(1, container.FindAll(".bit-mdl-cls").Count);
+        });
+    }
+
+    [TestMethod]
+    public async Task BitModalServiceShouldCloseTheModalFromItsCloseButton()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var modalRef = await ModalService.Show<TestModalContent>(new BitModalParameters { ShowCloseButton = true });
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+
+        container.Find(".bit-mdl-cls").Click();
+
+        container.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(0, container.FindAll(".bit-mdl").Count);
+            Assert.IsTrue(modalRef.IsClosed);
+        });
+    }
 }

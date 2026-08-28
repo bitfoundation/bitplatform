@@ -159,6 +159,18 @@ public partial class BitModalServiceDemo
         await modalService.Show<ModalContent>(new BitModalParameters() { FullWidth = true });
     }
 
+    private async Task ShowChromeModal()
+    {
+        await modalService.Show<ModalBodyContent>(new BitModalParameters
+        {
+            MaxWidth = "32rem",
+            HeaderText = "Shown by the service",
+            ShowCloseButton = true,
+            FooterText = "The footer of the modal."
+        });
+    }
+
+
     private string confirmAnswer = "-";
     private async Task ShowConfirmModal()
     {
@@ -200,6 +212,27 @@ private async Task ShowModal()
 }";
 
     private readonly string example2RazorCode = @"
+<BitButton OnClick=""ShowChromeModal"">Show</BitButton>
+
+<BitModalContainer />
+
+@* ModalBodyContent.razor *@
+<BitText>The header, the close button and the footer all come from the parameters the modal was shown with.</BitText>";
+    private readonly string example2CsharpCode = @"
+[AutoInject] private BitModalService modalService = default!;
+
+private async Task ShowChromeModal()
+{
+    await modalService.Show<ModalBodyContent>(new BitModalParameters
+    {
+        MaxWidth = ""32rem"",
+        HeaderText = ""Shown by the service"",
+        ShowCloseButton = true,
+        FooterText = ""The footer of the modal.""
+    });
+}";
+
+    private readonly string example3RazorCode = @"
 <BitButton OnClick=""ShowConfirmModal"">Delete the project</BitButton>
 
 <div>Answer: [@confirmAnswer]</div>
@@ -213,7 +246,7 @@ private async Task ShowModal()
         <BitButton Variant=""BitVariant.Outline"" OnClick=""() => modalReference.CloseWith(false)"">No</BitButton>
     </BitStack>
 </BitStack>";
-    private readonly string example2CsharpCode = @"
+    private readonly string example3CsharpCode = @"
 // ConfirmModalContent.razor
 [CascadingParameter] private BitModalReference modalReference { get; set; } = default!;
 
@@ -236,9 +269,9 @@ private async Task ShowConfirmModal()
     StateHasChanged();
 }";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example4RazorCode = @"
 <BitButton OnClick=""ShowMarkupModal"">Show markup</BitButton>";
-    private readonly string example3CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 [AutoInject] private BitModalService modalService = default!;
 
 private async Task ShowMarkupModal()
@@ -252,11 +285,11 @@ private async Task ShowMarkupModal()
     });
 }";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitButton OnClick=""ShowModal"">Show one more</BitButton>
 
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => modalService.CloseAll()"">Close all</BitButton>";
-    private readonly string example4CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 [AutoInject] private BitModalService modalService = default!;
 
 private async Task ShowModal()
