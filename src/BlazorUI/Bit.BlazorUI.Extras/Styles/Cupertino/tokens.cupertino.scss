@@ -41,30 +41,41 @@
     --bit-shp-radius-selection: 0.3125rem; //5px
     // The platform look is hairline separators and mostly borderless controls.
     --bit-shp-brd-width: 0.5px;
-    // macOS/iPadOS keyboard focus ring is a thick halo.
+    // macOS/iPadOS keyboard focus ring is a thick halo drawn tight against the control, rather than
+    // the 2px gap Fluent leaves; the offset is set here so the ring hugs a capsule button instead of
+    // floating 2px clear of it.
     --bit-shp-focus-ring-width: 0.1875rem; //3px
+    --bit-shp-focus-ring-offset: 0.0625rem; //1px
 
     /*---- Size ----*/
-    --bit-siz-ctrl-sm: 1.75rem; //28px - small button / segmented control segment
-    --bit-siz-ctrl-md: 2.25rem; //36px - text/search field
-    --bit-siz-ctrl-lg: 2.75rem; //44px - the 44pt tap target / large button
-    --bit-siz-ctrl-pad-x-sm: 0.75rem; //12px
-    --bit-siz-ctrl-pad-x-md: 0.9375rem; //15px
-    --bit-siz-ctrl-pad-x-lg: 1.25rem; //20px
-    --bit-siz-ctrl-pad-y-sm: 0.375rem; //6px
-    --bit-siz-ctrl-pad-y-md: 0.4375rem; //7px
-    --bit-siz-ctrl-pad-y-lg: 0.6875rem; //11px
+    // iOS fixes its control geometry in pt, and every one of these numbers is a whole step of the
+    // 8pt grid - so they are written as spacing multiples rather than as absolute lengths, and the
+    // compact / spacious density presets (BitThemeDensityPresets, which move
+    // --bit-layout-density-scale) keep reaching the control heights under this preset exactly as
+    // they do under Fluent. At the default scale of 1 every line below resolves to the pt value its
+    // comment names.
+    --bit-siz-ctrl-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.5); //28px - small button / segmented control segment
+    --bit-siz-ctrl-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4.5); //36px - text/search field
+    --bit-siz-ctrl-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5.5); //44px - the 44pt tap target / large button
+    --bit-siz-ctrl-pad-x-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
+    --bit-siz-ctrl-pad-x-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.875); //15px
+    --bit-siz-ctrl-pad-x-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
+    --bit-siz-ctrl-pad-y-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 0.75); //6px
+    --bit-siz-ctrl-pad-y-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 0.875); //7px
+    --bit-siz-ctrl-pad-y-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.375); //11px
+    // iOS imposes no minimum width on a labeled button; the 44pt floor it does impose is a height.
     --bit-siz-ctrl-min-width: auto;
+    // Glyphs: rem, like type, so density does not shrink them.
     --bit-siz-icon-sm: 1.0625rem; //17px - SF small scale
     --bit-siz-icon-md: 1.25rem; //20px - SF medium (body) scale
     --bit-siz-icon-lg: 1.375rem; //22px - SF large scale
-    --bit-siz-sel-sm: 0.875rem; //14px - the iOS checkbox box
-    --bit-siz-sel-md: 1.25rem; //20px
-    --bit-siz-sel-lg: 1.5rem; //24px
-    --bit-siz-item-sm: 2.25rem; //36px
-    --bit-siz-item-md: 2.75rem; //44px - the standard iOS list row
-    --bit-siz-item-lg: 3.5rem; //56px - two-line row
-    --bit-siz-tab: 2.75rem; //44px - nav-bar height
+    --bit-siz-sel-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.75); //14px - the iOS checkbox box
+    --bit-siz-sel-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
+    --bit-siz-sel-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+    --bit-siz-item-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4.5); //36px
+    --bit-siz-item-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5.5); //44px - the standard iOS list row
+    --bit-siz-item-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 7); //56px - two-line row
+    --bit-siz-tab: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5.5); //44px - nav-bar height
     --bit-siz-tab-indicator: 0.125rem; //2px
     --bit-siz-divider: 0.5px; //the hairline separator
     --bit-siz-track-sm: 0.125rem; //2px - the iOS slider/progress track
@@ -73,22 +84,27 @@
     // UISwitch: a 51x31 track with a 27pt thumb at the medium anchor; sm and lg scale around it.
     // The knob's inset from the track edge is derived from the two, so it stays the 2pt inset less
     // the hairline stroke - which is what centers the knob - at every size.
-    --bit-siz-switch-w-sm: 2.5625rem; //41px
-    --bit-siz-switch-w-md: 3.1875rem; //51px
-    --bit-siz-switch-w-lg: 3.8125rem; //61px
-    --bit-siz-switch-h-sm: 1.5625rem; //25px
-    --bit-siz-switch-h-md: 1.9375rem; //31px
-    --bit-siz-switch-h-lg: 2.3125rem; //37px
-    --bit-siz-switch-thumb-sm: 1.3125rem; //21px
-    --bit-siz-switch-thumb-md: 1.6875rem; //27px
-    --bit-siz-switch-thumb-lg: 2.0625rem; //33px
+    --bit-siz-switch-w-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5.125); //41px
+    --bit-siz-switch-w-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 6.375); //51px
+    --bit-siz-switch-w-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 7.625); //61px
+    --bit-siz-switch-h-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.125); //25px
+    --bit-siz-switch-h-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.875); //31px
+    --bit-siz-switch-h-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4.625); //37px
+    --bit-siz-switch-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.625); //21px
+    --bit-siz-switch-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.375); //27px
+    --bit-siz-switch-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4.125); //33px
     // UISlider: the 28pt knob at the medium anchor, on the 2pt track above.
-    --bit-siz-slider-thumb-sm: 1.5rem; //24px
-    --bit-siz-slider-thumb-md: 1.75rem; //28px
-    --bit-siz-slider-thumb-lg: 2rem; //32px
+    --bit-siz-slider-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+    --bit-siz-slider-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.5); //28px
+    --bit-siz-slider-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4); //32px
+
+    /*---- Opacity ----*/
+    // --bit-opa-dis is left at the core stylesheet's 0.5, which is already the platform value:
+    // Flutter's CupertinoButton.disabledOpacity is 0.5, and UIKit dims a disabled control by the
+    // same half. There is nothing to retune here.
 
     /*---- Spacing / layout ----*/
-    --bit-spa-dialog: 1.25rem; //20px - alert edge inset
+    --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px - alert edge inset
     // iOS alerts stack their actions full-width and centred; the stretch is what runs them the
     // whole width of the alert, separated by the margins the actions already carry.
     --bit-layout-dialog-actions-direction: column;
@@ -100,6 +116,10 @@
     // devices (and without a locally installed SF Pro) this lands on Helvetica / Arial - which is
     // what apple.com itself renders there.
     --bit-tpg-font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    // iOS sets the label of a control it wants tapped - a filled button, the selected segment, an
+    // alert's default action - in semibold, where Fluent uses medium. This is the same weight the
+    // BitText button variant takes below.
+    --bit-tpg-font-weight: 600;
     // The SF text styles: footnote 13 / subheadline 15 / body 17; size classes map sm->13, md->15, lg->17.
     --bit-tpg-fs-2xs: 0.6875rem; //11px caption2
     --bit-tpg-fs-xs: 0.8125rem; //13px footnote
@@ -113,7 +133,11 @@
     // SF tracks its text sizes slightly tight; buttons are sentence-case, never uppercase.
     --bit-tpg-ctrl-letter-spacing: -0.024em;
     --bit-tpg-ctrl-text-transform: none;
-    // BitText variants mapped onto the SF text styles.
+    // BitText variants mapped onto the SF text styles. Unlike the Fluent and Material ramps these
+    // do NOT step down below 600px, and the absence of an lt-sm block here is the decision rather
+    // than an omission: the SF text styles ARE the phone sizes - iOS renders the same 34pt large
+    // title on an iPhone as on an iPad - and the preset's (0,2,0) declarations already outrank the
+    // core stylesheet's plain-`:root` step-down at every width.
     --bit-tpg-h1-font-size: 2.125rem; //large title 34px
     --bit-tpg-h1-font-weight: 400;
     --bit-tpg-h1-line-height: 1.206;
@@ -169,14 +193,25 @@
     --bit-tpg-overline-text-transform: uppercase;
 
     /*---- Motion ----*/
-    // iOS: quick fades (~200ms), 335ms sheets, ~500ms navigation; ease default, the sheet curve for
-    // entries and its mirror for exits.
+    // iOS: quick fades (~200ms), 335ms sheets, ~500ms navigation; Core Animation's default curve for
+    // state changes, the sheet curve for entries and its mirror for exits. Only the -full tokens are
+    // set: the plain ones are what the reduced-motion query collapses, and declaring them here would
+    // outweigh it. The core stylesheet re-substitutes the plain tokens on any element carrying a
+    // bit-theme attribute, so a scoped cupertino region reads these durations rather than the
+    // document's (see motion.fluent.scss).
     --bit-mot-duration-short-full: 120ms;
     --bit-mot-duration-full: 250ms;
     --bit-mot-duration-long-full: 400ms;
-    --bit-mot-easing: cubic-bezier(0.25, 0.1, 0.25, 1);
+    // kCAMediaTimingFunctionEaseInEaseOut - the curve UIKit and SwiftUI animate a state change with,
+    // rather than the CSS `ease` default, whose control points are a web convention Apple never uses.
+    --bit-mot-easing: cubic-bezier(0.42, 0, 0.58, 1);
     --bit-mot-easing-decelerate: cubic-bezier(0.32, 0.72, 0, 1);
     --bit-mot-easing-accelerate: cubic-bezier(0.67, 0.03, 0.65, 0.09);
+    // The iOS activity indicator turns its spokes once a second and never eases - the fade runs
+    // round the ring at a constant rate. Fluent's 1.3s eased sweep is the wrong cadence and the
+    // wrong motion for it.
+    --bit-mot-duration-spinner-full: 1s;
+    --bit-mot-easing-spinner-full: linear;
 
     /*---- Elevation ----*/
     // Cupertino separates surfaces with hairlines and dimming, not shadows; what remains is the
@@ -192,6 +227,49 @@
     // App bars separate with the hairline, drawn as a half-pixel shadow toward the content.
     --bit-shd-appbar-top: 0 0.5px 0 rgba(0, 0, 0, 0.3);
     --bit-shd-appbar-bottom: 0 -0.5px 0 rgba(0, 0, 0, 0.3);
+
+    // The generic size ramp and the inset shadow. iOS has no elevation ladder of its own, so this is
+    // one continuous soft ascent in the platform's idiom - low offsets, wide blur, thin alpha -
+    // rather than the ambient+key pairs Fluent and Material stack. Declaring them matters even
+    // though iOS barely uses shadows: left out, every .bit-css-shd-* utility on a Cupertino page
+    // would keep the core stylesheet's Fabric depth ramp, and in a scoped region inside a dark
+    // document it would be the WHITE one Fluent's dark palette declares.
+    --bit-shd-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
+    --bit-shd-nm: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --bit-shd-md: 0 3px 8px rgba(0, 0, 0, 0.12);
+    --bit-shd-lg: 0 6px 16px rgba(0, 0, 0, 0.14);
+    --bit-shd-xl: 0 10px 30px rgba(0, 0, 0, 0.16);
+    --bit-shd-2xl: 0 20px 50px rgba(0, 0, 0, 0.2);
+    --bit-shd-inner: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+
+    // BitCard's Elevation (1..24) predates the family tier and is still a public API, so the
+    // numbered ramp is retuned onto the same six soft steps, four levels each, rather than left on
+    // the core stylesheet's Fabric depths - which is the one thing on an iOS-flavoured page that
+    // would read as another platform entirely.
+    --bit-shd-1: 0 1px 2px rgba(0, 0, 0, 0.08);
+    --bit-shd-2: 0 1px 2px rgba(0, 0, 0, 0.08);
+    --bit-shd-3: 0 1px 2px rgba(0, 0, 0, 0.08);
+    --bit-shd-4: 0 1px 2px rgba(0, 0, 0, 0.08);
+    --bit-shd-5: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --bit-shd-6: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --bit-shd-7: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --bit-shd-8: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --bit-shd-9: 0 3px 8px rgba(0, 0, 0, 0.12);
+    --bit-shd-10: 0 3px 8px rgba(0, 0, 0, 0.12);
+    --bit-shd-11: 0 3px 8px rgba(0, 0, 0, 0.12);
+    --bit-shd-12: 0 3px 8px rgba(0, 0, 0, 0.12);
+    --bit-shd-13: 0 6px 16px rgba(0, 0, 0, 0.14);
+    --bit-shd-14: 0 6px 16px rgba(0, 0, 0, 0.14);
+    --bit-shd-15: 0 6px 16px rgba(0, 0, 0, 0.14);
+    --bit-shd-16: 0 6px 16px rgba(0, 0, 0, 0.14);
+    --bit-shd-17: 0 10px 30px rgba(0, 0, 0, 0.16);
+    --bit-shd-18: 0 10px 30px rgba(0, 0, 0, 0.16);
+    --bit-shd-19: 0 10px 30px rgba(0, 0, 0, 0.16);
+    --bit-shd-20: 0 10px 30px rgba(0, 0, 0, 0.16);
+    --bit-shd-21: 0 20px 50px rgba(0, 0, 0, 0.2);
+    --bit-shd-22: 0 20px 50px rgba(0, 0, 0, 0.2);
+    --bit-shd-23: 0 20px 50px rgba(0, 0, 0, 0.2);
+    --bit-shd-24: 0 20px 50px rgba(0, 0, 0, 0.2);
 }
 
 // The dark scheme redraws the hairline app-bar shadows in white, matching the iOS dark separators.

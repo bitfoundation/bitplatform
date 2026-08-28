@@ -226,13 +226,21 @@ function registerWindowResizeListener(id: string, dotnetObj: any, methodName: st
 }
 
 // The first caller wins: the header's search box registers on every page, and a second copy of the
-// control (the gallery's) must not steal the shortcut from it.
+// control (the gallery's) must not steal the shortcut from it. A claim only lives as long as the
+// element that made it, though: the home page renders its finder in the hero instead of the header,
+// so navigating away from it leaves the claim pointing at an element that is gone, and the next box
+// to register takes over. The listener itself is attached once, whoever holds the claim.
 let searchShortcutRootId: string | null = null;
+let searchShortcutListening = false;
 
 function registerSearchShortcut(rootElementId: string) {
-    if (searchShortcutRootId != null) return;
+    if (searchShortcutRootId != null && document.getElementById(searchShortcutRootId) != null) return;
 
     searchShortcutRootId = rootElementId;
+
+    if (searchShortcutListening) return;
+
+    searchShortcutListening = true;
 
     window.addEventListener('keydown', (e: KeyboardEvent) => {
         const isCommandK = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k';
@@ -296,6 +304,12 @@ function unobserveElementWidth(id: string) {
     delete elementWidthObservers[id];
 }
 
+// Keyed by a token the caller owns, not by the element id. Demo pages reuse the same ids from one
+// page to the next - every component page has an "example1", and one "api-tables" - and a page being
+// navigated away from tears its registrations down asynchronously, well after the page replacing it
+// has put its own in. Keyed by id, that teardown disconnects the observers of the page that replaced
+// it, and the examples they were watching never mount - not on scroll either, since nothing is
+// watching them any more. A per-instance token lets a component only ever unregister itself.
 const visibilityObservers: { [key: string]: IntersectionObserver } = {};
 
 // Reports - once, and then never again - that the element with the given id has come within reach of
@@ -310,32 +324,39 @@ const visibilityObservers: { [key: string]: IntersectionObserver } = {};
 // so mounting can never change the height of the page above the scroll position - which would slide
 // the page under them, and land a restored scroll position or an "#example12" deep link in the wrong
 // place.
-function observeVisibility(id: string, dotnetObj: any, methodName: string) {
-    unobserveVisibility(id);
+function observeVisibility(key: string, id: string, dotnetObj: any, methodName: string) {
+    unobserveVisibility(key);
 
+    // No element to watch means nothing will ever report - and the caller is holding a block of the
+    // page back until something does. Answering straight away is the only safe reading of that: the
+    // block gets built, rather than left empty for the life of the page with nothing left to trigger
+    // it and scrolling to it doing nothing.
     const element = document.getElementById(id);
-    if (element == null) return;
+    if (element == null) {
+        dotnetObj.invokeMethodAsync(methodName);
+        return;
+    }
 
     const observer = new IntersectionObserver((entries) => {
         if (entries.some(entry => entry.isIntersecting) === false) return;
 
         // Before the callback, not after: invokeMethodAsync resolves on a later turn, and a second
         // entry arriving in the meantime would report the same element twice.
-        unobserveVisibility(id);
+        unobserveVisibility(key);
 
         dotnetObj.invokeMethodAsync(methodName);
     }, { rootMargin: '100000px 0px 1200px 0px' });
 
     observer.observe(element);
-    visibilityObservers[id] = observer;
+    visibilityObservers[key] = observer;
 }
 
-function unobserveVisibility(id: string) {
-    const observer = visibilityObservers[id];
+function unobserveVisibility(key: string) {
+    const observer = visibilityObservers[key];
     if (observer == null) return;
 
     observer.disconnect();
-    delete visibilityObservers[id];
+    delete visibilityObservers[key];
 }
 
 // The height the element with the given id takes in the document right now, or 0 when there is no
@@ -351,6 +372,10 @@ function getElementHeight(id: string) {
     return element == null ? 0 : element.getBoundingClientRect().height;
 }
 
+// Keyed by a per-instance token for the same reason the visibility observers are: the page being
+// left cancels its idle work asynchronously, and under a key shared by every demo page that
+// cancellation lands on the queue of the page that replaced it - which then never fills anything in,
+// because the chain that would have rescheduled it is exactly what was cancelled.
 const idleWorkHandles: { [key: string]: { handle: number, isIdle: boolean } } = {};
 
 // Calls the named method the next time the browser has nothing better to do. It is how a demo page
@@ -360,27 +385,27 @@ const idleWorkHandles: { [key: string]: { handle: number, isIdle: boolean } } = 
 //
 // One call mounts one preview and then asks for the next slice, rather than draining the queue in a
 // single callback: the point is to leave the main thread between two of them.
-function requestIdleWork(id: string, dotnetObj: any, methodName: string) {
-    cancelIdleWork(id);
+function requestIdleWork(key: string, dotnetObj: any, methodName: string) {
+    cancelIdleWork(key);
 
     const run = () => {
-        delete idleWorkHandles[id];
+        delete idleWorkHandles[key];
         dotnetObj.invokeMethodAsync(methodName);
     };
 
     // Safari still has no requestIdleCallback; a short timeout is the same shape of promise, minus
     // the browser's opinion about when it is idle.
     const idle = (window as any).requestIdleCallback;
-    idleWorkHandles[id] = idle
+    idleWorkHandles[key] = idle
         ? { handle: idle(run, { timeout: 500 }), isIdle: true }
         : { handle: window.setTimeout(run, 32), isIdle: false };
 }
 
-function cancelIdleWork(id: string) {
-    const entry = idleWorkHandles[id];
+function cancelIdleWork(key: string) {
+    const entry = idleWorkHandles[key];
     if (entry == null) return;
 
-    delete idleWorkHandles[id];
+    delete idleWorkHandles[key];
 
     if (entry.isIdle) {
         (window as any).cancelIdleCallback?.(entry.handle);

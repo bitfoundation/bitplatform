@@ -522,6 +522,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/GettingStartedPage.razor.css",
+        "inputFile": "Pages/GettingStartedPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Home/HomePage.razor.css",
         "inputFile": "Pages/Home/HomePage.razor.scss",
         "minify": { "enabled": false },

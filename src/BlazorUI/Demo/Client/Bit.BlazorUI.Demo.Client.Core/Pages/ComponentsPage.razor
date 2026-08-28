@@ -8,10 +8,44 @@
 
 <DocsArticle Eyebrow="Documentation"
              Title="Components"
-             Lead="Every component in the library, with what it is for. Search by name, by the name another library uses for it, or by what you want it to do."
+             Lead="Every component in the library, with what it is for and which package it ships in. Search by name, by the name another library uses for it, or by what you want it to do."
              GitHubUrl="ComponentsPage.razor"
              HideSideRail>
-    <ComponentGallery InitialFilter="@Query" />
+
+    @* The three facts a reader checks before browsing an index this long: how much there is, what
+       it costs, and whether any of it is a wrapper around something they would rather not ship. *@
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground"
+                Text="@($"{ComponentCatalog.Items.Count} components")" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground"
+                Text="100% C#" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground"
+                Text="MIT licensed" />
+    </Badges>
+
+    <Actions>
+        <BitButton Href="/getting-started"
+                   IconPosition="BitIconPosition.End"
+                   IconName="@BitIconName.ChevronRightSmall">
+            Get started
+        </BitButton>
+        <BitButton Href="/theming"
+                   Variant="BitVariant.Outline"
+                   IconName="@BitIconName.Color">
+            Theming
+        </BitButton>
+        <BitButton Href="/iconography"
+                   Variant="BitVariant.Text"
+                   Color="BitColor.SecondaryForeground"
+                   IconName="@BitIconName.Emoji2">
+            Iconography
+        </BitButton>
+    </Actions>
+
+    <ChildContent>
+        <ComponentGallery InitialFilter="@Query" InitialCategory="@Category" />
+    </ChildContent>
+
 </DocsArticle>
 
 @code {
@@ -20,4 +54,11 @@
     /// Landing here already filtered is what makes that a results page rather than a dead end.
     /// </summary>
     [SupplyParameterFromQuery(Name = "q")] public string? Query { get; set; }
+
+    /// <summary>
+    /// The category the home page's grid and the overview's list link into. A category is a filter
+    /// rather than a search term, so it narrows exactly - <c>?q=Layouts</c> would also have matched
+    /// every component whose summary happens to mention a layout.
+    /// </summary>
+    [SupplyParameterFromQuery(Name = "category")] public string? Category { get; set; }
 }

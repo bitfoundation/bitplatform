@@ -21,16 +21,17 @@
 :root [bit-theme="fluent2-dark"] {
     /*---- Shape ----*/
     // The corner scale is Fluent 2's borderRadius ramp: none 0 / small 2 / medium 4 / large 6 /
-    // xLarge 8 / 2xLarge 12 / 3xLarge 16 / circular. Medium (4px) is the default corner - Fluent 1
-    // rounded controls at 2px, which is the single most visible difference between the two.
+    // xLarge 8 / circular. Medium (4px) is the default corner - Fluent 1 rounded controls at 2px,
+    // which is the single most visible difference between the two. Fluent 2's own ramp stops at
+    // xLarge, so the library's last two steps continue it at 12 and 16 rather than repeating 8.
     --bit-shp-brd-radius: 0.25rem; //4px - borderRadiusMedium
     --bit-shp-radius-none: 0;
     --bit-shp-radius-xs: 0.125rem; //2px - borderRadiusSmall
     --bit-shp-radius-sm: 0.25rem; //4px - borderRadiusMedium
     --bit-shp-radius-md: 0.375rem; //6px - borderRadiusLarge
     --bit-shp-radius-lg: 0.5rem; //8px - borderRadiusXLarge
-    --bit-shp-radius-xl: 0.75rem; //12px - borderRadius2XLarge
-    --bit-shp-radius-2xl: 1rem; //16px - borderRadius3XLarge
+    --bit-shp-radius-xl: 0.75rem; //12px
+    --bit-shp-radius-2xl: 1rem; //16px
     --bit-shp-radius-full: 9999px; //borderRadiusCircular
     // Per family: fields, buttons, tags, cards, menus and tooltips all take borderRadiusMedium;
     // only the dialog surface goes up to borderRadiusXLarge.
@@ -116,6 +117,12 @@
     --bit-siz-slider-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
     --bit-siz-slider-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
 
+    /*---- Opacity ----*/
+    // --bit-opa-dis is left at the core stylesheet's 0.5. Fluent 2 does not dim a disabled element
+    // wholesale: it recolors it through colorNeutralForegroundDisabled / colorNeutralBackground-
+    // Disabled, which is what the $clr-*-dis tokens already carry. The one token is the fallback for
+    // an element that keeps its own colors (an image, a color swatch), where Fluent 2 has no opinion.
+
     /*---- Spacing / layout ----*/
     // Fluent 2's dialog inset is 24px and its actions run in a row hugging the trailing edge, which
     // is what the core Fluent tokens already say; they are re-declared rather than inherited so a
@@ -190,7 +197,9 @@
     // durationFaster / durationNormal / durationSlow, and the curves Fluent 2 names for state
     // changes (curveEasyEase) and for popup entry and exit (curveDecelerateMax, curveAccelerateMax).
     // Only the -full tokens are set: the plain ones are what the reduced-motion query collapses, and
-    // declaring them here would outweigh it.
+    // declaring them here would outweigh it. The core stylesheet re-substitutes the plain tokens on
+    // any element carrying a bit-theme attribute, so a scoped fluent2 region reads these durations
+    // rather than the document's (see motion.fluent.scss).
     --bit-mot-duration-short-full: 100ms;
     --bit-mot-duration-full: 200ms;
     --bit-mot-duration-long-full: 300ms;

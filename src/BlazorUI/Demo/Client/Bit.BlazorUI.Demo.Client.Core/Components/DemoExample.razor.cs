@@ -23,6 +23,16 @@ public partial class DemoExample
     private DotNetObjectReference<DemoExample>? _dotnetObj;
 
     /// <summary>
+    /// What this example's visibility registration is filed under on the JS side. It has to belong to
+    /// the instance rather than to the element, because the element ids do not: every component page
+    /// has an "example1", and the page being navigated away from unregisters asynchronously - after
+    /// the page that replaced it has already registered its own. Under the id, that teardown would
+    /// stop the new page's examples from being watched at all, and they would never mount, scrolling
+    /// included.
+    /// </summary>
+    private readonly string _visibilityKey = Guid.NewGuid().ToString("n");
+
+    /// <summary>
     /// The delegate this example put in the page's backfill queue, kept so that disposing can take
     /// it back out again - see <see cref="DisposeAsync"/>.
     /// </summary>
@@ -126,17 +136,37 @@ public partial class DemoExample
 
         if (firstRender && _isPreviewMounted is false)
         {
-            _dotnetObj = DotNetObjectReference.Create(this);
-            await JSRuntime.ObserveVisibility(_previewElementId!, _dotnetObj, nameof(OnPreviewReached));
-
             // And, failing that, in the browser's own time: the observer only ever answers for what
             // the reader approaches, and a page that stays half-built is one where a deep link lands
             // in the wrong place and find-in-page misses half the words. Registered here rather than
             // in OnInit so the queue is in document order - a child's OnAfterRender runs before its
             // parent's, and the page starts the backfill from its own.
+            //
+            // Before the observer is registered, not after: the queue is the fallback for everything
+            // the observer misses, and an interop call that throws between the two would leave this
+            // example with neither of them - blank for the life of the page, scrolling included. The
+            // await below is also a real one off WebAssembly, and the queue is only in document order
+            // while it is filled before anything yields.
             if (Page is not null)
             {
                 Page.QueueBackfill(_backfillMount = MountPreviewAsync);
+            }
+
+            _dotnetObj = DotNetObjectReference.Create(this);
+
+            try
+            {
+                await JSRuntime.ObserveVisibility(_visibilityKey, _previewElementId!, _dotnetObj, nameof(OnPreviewReached));
+            }
+            catch (Exception exp)
+            {
+                // Nothing is watching this example now - a stale cached script that predates
+                // observeVisibility, a torn-down circuit - so the reader could scroll to it forever
+                // and it would stay empty. Building it here is the only reading that cannot strand
+                // it.
+                ExceptionHandler.Handle(exp);
+
+                await MountPreviewAsync(stillObserved: false);
             }
         }
 
@@ -245,22 +275,28 @@ public partial class DemoExample
 
         _isPreviewMounted = true;
 
+        // The render first, and everything that can throw after it. The flag above is one-way - it is
+        // what stops the observer and the backfill from building this preview twice - so anything
+        // that threw between setting it and rendering would leave the example latched as mounted with
+        // nothing ever rendered into it: empty for the life of the page, and scrolling to it does
+        // nothing, because the observer's report is turned away by that same flag.
+        await InvokeAsync(StateHasChanged);
+
         // Only the backfill leaves a live observer behind.
         if (stillObserved)
         {
             try
             {
-                await JSRuntime.UnobserveVisibility(_previewElementId!);
+                await JSRuntime.UnobserveVisibility(_visibilityKey);
             }
             catch (JSDisconnectedException) { } // the circuit is already gone, nothing left to unregister
+            catch (Exception exp) { ExceptionHandler.Handle(exp); } // the preview is up either way
         }
 
         // The observer has nothing left to report, so the reference it was holding has nothing left
         // to reach.
         _dotnetObj?.Dispose();
         _dotnetObj = null;
-
-        await InvokeAsync(StateHasChanged);
 
         return true;
     }
@@ -283,7 +319,7 @@ public partial class DemoExample
             {
                 try
                 {
-                    await JSRuntime.UnobserveVisibility(_previewElementId!);
+                    await JSRuntime.UnobserveVisibility(_visibilityKey);
                 }
                 catch (JSDisconnectedException) { } // the circuit is already gone, nothing left to unregister
 

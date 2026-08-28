@@ -7,9 +7,6 @@ public partial class DemoPage
     /// <summary>The element the visibility observer watches to know the reader has reached the API tables.</summary>
     private const string API_ELEMENT_ID = "api-tables";
 
-    /// <summary>The id the browser's idle queue is registered under. One per page is all it takes.</summary>
-    private const string BACKFILL_ELEMENT_ID = "demo-page-backfill";
-
     /// <summary>The anchor of the section that holds the examples.</summary>
     private const string USAGE_ELEMENT_ID = "usage-section";
 
@@ -29,6 +26,17 @@ public partial class DemoPage
     private int _pendingApiHeight;
 
     private DotNetObjectReference<DemoPage>? _dotnetObj;
+
+    /// <summary>
+    /// What this page's two JS-side registrations - the API section's visibility observer and its own
+    /// idle queue - are filed under. Both have to belong to the page instance rather than to anything
+    /// on the page: "api-tables" is the same id on every component page, there is one idle queue per
+    /// page and no element behind it at all, and a page unregisters asynchronously, after the page
+    /// that replaced it has already registered its own. Under a shared key, leaving one page unwatches
+    /// and de-queues the next one, which then stays half-built for good - nothing is left to schedule
+    /// the fill-in, and nothing is watching for the reader to arrive.
+    /// </summary>
+    private readonly string _jsKey = Guid.NewGuid().ToString("n");
 
     // What this page is still holding back, in document order, and how far the backfill has walked
     // it. Held here rather than in the scoped deferral service so that its lifetime is the page's:
@@ -128,11 +136,24 @@ public partial class DemoPage
 
         if (_isApiMounted is false)
         {
-            _dotnetObj = DotNetObjectReference.Create(this);
-            await JSRuntime.ObserveVisibility(API_ELEMENT_ID, _dotnetObj, nameof(OnApiReached));
-
-            // Last in the queue, as it is last on the page.
+            // Last in the queue, as it is last on the page. Queued before the observer is registered:
+            // an interop call that throws in between would otherwise take the whole rest of this
+            // method with it - the queue would never be walked and every example on the page would
+            // stay empty, with nothing watching for the reader either.
             QueueBackfill(MountApiAsync);
+
+            _dotnetObj = DotNetObjectReference.Create(this);
+
+            try
+            {
+                await JSRuntime.ObserveVisibility(_jsKey, API_ELEMENT_ID, _dotnetObj, nameof(OnApiReached));
+            }
+            catch (Exception exp)
+            {
+                // The backfill below is what builds the tables now; it is the one thing that must
+                // still be reached.
+                ExceptionHandler.Handle(exp);
+            }
         }
 
         // From here on the page on screen is one this app built, not the prerendered one, so every
@@ -206,7 +227,7 @@ public partial class DemoPage
 
         try
         {
-            await JSRuntime.RequestIdleWork(BACKFILL_ELEMENT_ID, _idleObj, nameof(OnIdleBackfill));
+            await JSRuntime.RequestIdleWork(_jsKey, _idleObj, nameof(OnIdleBackfill));
         }
         catch (JSDisconnectedException)
         {
@@ -222,6 +243,32 @@ public partial class DemoPage
             _isBackfillScheduled = false;
 
             ExceptionHandler.Handle(ex);
+
+            // Nothing is going to call back now, so the queue would sit exactly where it is and the
+            // page would stay half-built for good. Building the rest here costs one long frame -
+            // which is the very stall the idle queue exists to avoid - but a page that is whole and
+            // stuttered once beats a page that never becomes whole at all.
+            await DrainBackfillAsync();
+        }
+    }
+
+    /// <summary>
+    /// Walks what is left of the queue in one go, for when the browser has stopped calling back. Only
+    /// ever the fallback: the idle queue is what keeps the fill-in off the main thread.
+    /// </summary>
+    private async Task DrainBackfillAsync()
+    {
+        while (_backfillIndex < _backfill.Count)
+        {
+            var mount = _backfill[_backfillIndex++];
+
+            try
+            {
+                await mount();
+            }
+            catch (JSDisconnectedException) { return; } // the circuit is gone; there is nobody left to fill in for
+            catch (ObjectDisposedException) { } // that example is already gone; the next one may not be
+            catch (Exception ex) { ExceptionHandler.Handle(ex); } // one bad example must not strand the rest
         }
     }
 
@@ -275,20 +322,24 @@ public partial class DemoPage
 
         _isApiMounted = true;
 
+        // The render first, and everything that can throw after it: the flag above is one-way, so
+        // anything that threw in between would leave the block latched as mounted and permanently
+        // empty - the observer's own report is turned away by that same flag.
+        await InvokeAsync(StateHasChanged);
+
         // Only the backfill leaves a live observer behind.
         if (stillObserved)
         {
             try
             {
-                await JSRuntime.UnobserveVisibility(API_ELEMENT_ID);
+                await JSRuntime.UnobserveVisibility(_jsKey);
             }
             catch (JSDisconnectedException) { } // the circuit is already gone, nothing left to unregister
+            catch (Exception ex) { ExceptionHandler.Handle(ex); } // the tables are up either way
         }
 
         _dotnetObj?.Dispose();
         _dotnetObj = null;
-
-        await InvokeAsync(StateHasChanged);
 
         return true;
     }
@@ -301,7 +352,7 @@ public partial class DemoPage
             {
                 try
                 {
-                    await JSRuntime.UnobserveVisibility(API_ELEMENT_ID);
+                    await JSRuntime.UnobserveVisibility(_jsKey);
                 }
                 catch (JSDisconnectedException) { } // the circuit is already gone, nothing left to unregister
 
@@ -313,7 +364,7 @@ public partial class DemoPage
             {
                 try
                 {
-                    await JSRuntime.CancelIdleWork(BACKFILL_ELEMENT_ID);
+                    await JSRuntime.CancelIdleWork(_jsKey);
                 }
                 catch (JSDisconnectedException) { }
 
