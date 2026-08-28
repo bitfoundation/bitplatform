@@ -121,7 +121,10 @@
         background-color: $bit-color-primary;
     }
 
+    // Same reason as the Iconography toolbar: BitIcon paints itself primary unless told
+    // otherwise, which vanishes against the primary background .active lays behind it.
     ::deep .bit-ico {
+        color: inherit;
         font-size: rem2(15px);
     }
 }

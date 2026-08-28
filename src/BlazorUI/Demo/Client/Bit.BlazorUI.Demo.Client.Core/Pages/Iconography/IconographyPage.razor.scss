@@ -108,7 +108,11 @@
                 border-color $bit-motion-duration-short $bit-motion-easing,
                 background-color $bit-motion-duration-short $bit-motion-easing;
 
+    // BitIcon always emits a color class of its own, so the glyph would stay primary-blue
+    // through every state of the button - invisible once .active paints the primary background
+    // behind it. The icon is part of the label here, so it follows the label's color.
     ::deep .bit-ico {
+        color: inherit;
         font-size: rem2(15px);
     }
 
@@ -524,6 +528,7 @@
     }
 
     ::deep .bit-ico {
+        color: inherit;
         font-size: rem2(15px);
     }
 }
