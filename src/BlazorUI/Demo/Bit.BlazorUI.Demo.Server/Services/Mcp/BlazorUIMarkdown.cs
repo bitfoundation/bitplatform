@@ -50,8 +50,11 @@ public static class BlazorUIMarkdown
         }
 
         builder.AppendLine("Every one of them also takes the parameters of `BitComponentBase` - `Class`, `Style`, `Id`,")
-               .AppendLine("`IsEnabled`, `Dir`, `Visibility`, `HtmlAttributes` and the rest. Those are documented once, by")
-               .AppendLine("`GetBitBlazorUIComponent(name: \"BitComponentBase\")`, rather than repeated on each component.");
+               .AppendLine("`IsEnabled`, `Dir`, `Visibility`, `HtmlAttributes` and the rest; the inputs add those of")
+               .AppendLine("`BitInputBase` - `Value` and its `@bind-Value`, `Required`, `ReadOnly`, `OnChange`, and what an")
+               .AppendLine("EditForm validates them by - and the ones that are typed into add `BitTextInputBase`. Each set is")
+               .AppendLine("documented once, by `GetBitBlazorUIComponent` under its own name, rather than repeated on each")
+               .AppendLine("component that carries it; a component's own answer names which of them it has.");
 
         return builder.ToString();
     }
@@ -62,6 +65,15 @@ public static class BlazorUIMarkdown
         var builder = new StringBuilder();
 
         builder.AppendLine($"# {component.Name}{component.TypeParameters}").AppendLine();
+
+        // The constraints of a generic component, which decide what its type arguments may be and
+        // are written nowhere else: a TItem in a parameter table does not say it has to be a
+        // reference type with a parameterless constructor, and the compiler is where that is
+        // otherwise found out.
+        if (component.ComponentType is not null && BlazorUITypeNames.ConstraintsOf(component.ComponentType) is string constraints)
+        {
+            builder.AppendLine($"`{constraints}`").AppendLine();
+        }
 
         builder.Append(component.Category).Append(" · ").Append(component.Package.PackageId);
         if (component.Url.StartsWith("/components", StringComparison.Ordinal)) builder.Append(" · ").Append(SiteUrl).Append(component.Url);
@@ -98,9 +110,12 @@ public static class BlazorUIMarkdown
         AppendMembers(builder, component.IsComponent ? "Parameters" : "Members", component.Parameters);
         AppendMembers(builder, "Public members", component.PublicMembers);
 
+        AppendInherited(builder, component);
+        AppendBindable(builder, component);
+
         foreach (var type in component.OwnTypes)
         {
-            builder.AppendLine($"## {type.Name} ({(type.IsEnum ? "enum" : "class")})").AppendLine();
+            builder.AppendLine($"## {type.Name} ({Kind(type)})").AppendLine();
 
             if (string.IsNullOrWhiteSpace(type.Description) is false) builder.AppendLine(type.Description).AppendLine();
 
@@ -110,19 +125,7 @@ public static class BlazorUIMarkdown
             builder.AppendLine();
         }
 
-        if (component.SharedTypes.Count > 0)
-        {
-            builder.AppendLine("## Library types used here").AppendLine();
-            builder.AppendLine("Named with their members only - these are shared across the library and documented in full")
-                   .AppendLine("by `GetBitBlazorUIType`.").AppendLine();
-
-            foreach (var type in component.SharedTypes)
-            {
-                builder.AppendLine($"- `{type.Name}` ({(type.IsEnum ? "enum" : "class")}): {string.Join(", ", type.Members.Select(m => m.Name))}");
-            }
-
-            builder.AppendLine();
-        }
+        AppendReferencedTypes(builder, component);
 
         if (component.Examples.Count > 0)
         {
@@ -150,11 +153,6 @@ public static class BlazorUIMarkdown
             }
 
             builder.AppendLine();
-        }
-
-        if (component.InheritsBase)
-        {
-            builder.AppendLine($"Inherits the `BitComponentBase` parameters (`Class`, `Style`, `Id`, `IsEnabled`, `Dir`, `Visibility`, `HtmlAttributes`, `AriaLabel`, `TabIndex`, `ForceAnimation`) - `GetBitBlazorUIComponent(name: \"BitComponentBase\")` documents them.");
         }
 
         return Truncate(builder.ToString());
@@ -296,6 +294,129 @@ public static class BlazorUIMarkdown
         BlazorUIReflection.AppendMembers(builder, clr, type.Name);
 
         return Truncate(builder.ToString());
+    }
+
+    /// <summary>
+    /// Every other type this answer's tables name, with its members but without their prose.
+    /// <para>
+    /// Two kinds end up here. The shared ones - <c>BitColor</c>, <c>BitVariant</c>,
+    /// <c>BitIconInfo</c> - appear on nearly every component, so repeating their descriptions 110
+    /// times is the redundancy this server exists to avoid. The rest are the types a signature
+    /// names that nothing above documents: a <c>BitDropdownItemsProviderRequest</c> read off an
+    /// <c>ItemsProvider</c> parameter is a name an agent has no other way to resolve, since a type
+    /// belonging to one component is deliberately left out of the type listing.
+    /// </para>
+    /// <para>
+    /// Both are answered the same way, because a reader wants the same thing of them: enough to
+    /// recognise the type here, and the call that returns it in full.
+    /// </para>
+    /// </summary>
+    private static void AppendReferencedTypes(StringBuilder builder, BlazorUIComponent component)
+    {
+        var documented = component.OwnTypes.Select(t => t.Name)
+            .Concat(component.SharedTypes.Select(t => t.Name))
+            .Concat(component.Inherited.Select(b => b.Name))
+            .Append(component.Name)
+            .Select(name => name.Split('<')[0])
+            .ToHashSet(StringComparer.Ordinal);
+
+        var texts = component.Parameters.Concat(component.PublicMembers)
+            .Concat(component.OwnTypes.SelectMany(t => t.Members))
+            .Select(m => m.Type);
+
+        var extra = BlazorUITypeCatalog.Referenced(texts)
+            .Where(type => documented.Contains(type.Name) is false)
+            .Select(type => $"- `{type.Name}` ({type.Kind}): {Members(type)}".TrimEnd(':', ' '));
+
+        var shared = component.SharedTypes.Select(type => $"- `{type.Name}` ({Kind(type)}): {string.Join(", ", type.Members.Select(m => m.Name))}");
+
+        var lines = shared.Concat(extra).ToArray();
+
+        if (lines.Length == 0) return;
+
+        builder.AppendLine("## Library types used here").AppendLine();
+        builder.AppendLine("Named with their members only. `GetBitBlazorUIType` documents each in full.").AppendLine();
+
+        foreach (var line in lines) builder.AppendLine(line);
+
+        builder.AppendLine();
+    }
+
+    /// <summary>
+    /// As much of a type as a one-line listing has room for: an enum's values, a class's property
+    /// names, and - for a delegate, which has neither - the signature it is called with, since that
+    /// is the whole of what it is and it names the types it hands over and takes back.
+    /// </summary>
+    private static string Members(BlazorUIType type)
+    {
+        if (type.Clr.IsEnum) return string.Join(", ", Enum.GetNames(type.Clr));
+
+        if (typeof(Delegate).IsAssignableFrom(type.Clr) && type.Clr.GetMethod("Invoke") is { } invoke)
+        {
+            return $"{BlazorUITypeNames.Of(invoke.ReturnType)}({string.Join(", ", invoke.GetParameters().Select(p => BlazorUITypeNames.Of(p.ParameterType)))})";
+        }
+
+        return string.Join(", ", type.Clr
+            .GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.DeclaredOnly)
+            .Where(p => p.GetIndexParameters().Length == 0)
+            .Select(p => p.Name));
+    }
+
+    /// <summary>
+    /// The parameters this component inherits, named but not described.
+    /// <para>
+    /// The same three tables hold for every component that has them, so their prose is documented
+    /// once and pointed at rather than printed 110 times. The names themselves are printed, though:
+    /// a reader who cannot see that <c>Value</c> is up there has no reason to suspect it exists,
+    /// and the whole point of the inherited half is that it is not visible on the component.
+    /// </para>
+    /// </summary>
+    private static void AppendInherited(StringBuilder builder, BlazorUIComponent component)
+    {
+        if (component.Inherited.Count == 0) return;
+
+        builder.AppendLine("## Inherited parameters").AppendLine();
+
+        foreach (var @base in component.Inherited)
+        {
+            builder.AppendLine($"- `{@base.Name}` - {string.Join(", ", @base.Parameters.Select(p => $"`{p}`"))}. `GetBitBlazorUIComponent(name: \"{@base.Lookup}\")` describes them.");
+        }
+
+        builder.AppendLine();
+    }
+
+    /// <summary>
+    /// The parameters that are two-way bindable, which is the one thing about a parameter that its
+    /// row cannot say: a component declares the binding by carrying a <c>XChanged</c> callback
+    /// beside <c>X</c>, and the pair is two rows a reader has to notice belong together. Named here
+    /// in the form they are written in, since <c>@bind-Value</c> is what goes in the markup.
+    /// </summary>
+    private static void AppendBindable(StringBuilder builder, BlazorUIComponent component)
+    {
+        var names = component.Parameters.Select(p => p.Name)
+                             .Concat(component.Inherited.SelectMany(b => b.Parameters))
+                             .ToHashSet(StringComparer.Ordinal);
+
+        var bindable = names.Where(n => n.EndsWith("Changed", StringComparison.Ordinal) is false && names.Contains($"{n}Changed"))
+                            .OrderBy(n => n, StringComparer.Ordinal)
+                            .ToArray();
+
+        if (bindable.Length == 0) return;
+
+        builder.AppendLine($"Two-way bindable: {string.Join(", ", bindable.Select(n => $"`@bind-{n}`"))}.").AppendLine();
+    }
+
+    /// <summary>
+    /// What a type named beside a component is - a class it takes an instance of, an enum one of
+    /// its parameters is, or a component of its own that goes inside its markup. The third is the
+    /// one worth telling apart: a <c>BitDropdownOption</c> that reads as a class is one an agent
+    /// will try to construct rather than write as a tag.
+    /// </summary>
+    private static string Kind(ComponentSubType type)
+    {
+        if (type.IsEnum) return "enum";
+
+        return BlazorUITypeCatalog.Find(type.Name)?.Kind == "component" ? "component" : "class";
     }
 
     /// <summary>A table of parameters or members, or nothing at all when there are none.</summary>

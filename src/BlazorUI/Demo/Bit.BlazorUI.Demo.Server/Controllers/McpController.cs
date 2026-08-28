@@ -53,7 +53,7 @@ public partial class McpController : AppControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(SearchBitBlazorUI), Title = "Search everything about bit BlazorUI",
                    ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
-    [Description("Searches everything known about bit BlazorUI at once - every component with the names other libraries use for it, every parameter of every component, every worked example, every public type and enum value, and every chapter of the theming reference - and returns the best matches, each with the exact follow-up tool call that returns its full text. Use this first whenever you do not already know which component does the job. Example queries: 'let the user pick a date range', 'toast notification', 'searchable multi select with chips', 'virtualized table with sorting', 'dark mode', 'file upload with progress'.")]
+    [Description("Searches everything known about bit BlazorUI at once - every component with the names other libraries use for it, every parameter of every component, every worked example, every public type and enum value, and every chapter of the theming reference - and returns the best matches, each with the exact follow-up tool call that returns its full text. Ask it by capability rather than by name: 'let the user pick a date range', 'toast notification', 'searchable multi select with chips', 'virtualized table with sorting', 'dark mode', 'file upload with progress'.")]
     public string SearchBitBlazorUI(
         [Description("What the UI has to do, in your own words - the capability rather than a component name.")] string query,
         [Description("How many matches to return. The default is enough to choose from without reading a catalog.")] int limit = 12)
@@ -62,9 +62,9 @@ public partial class McpController : AppControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(GetBitBlazorUIComponent), Title = "Full API of one component",
                    ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
-    [Description("Gets the full reference of one bit BlazorUI component: which package it ships in and what that package needs wired up, every parameter with its type, its default and what it does, its public members, the classes and enums it owns (its per-part Classes/Styles bag, its item class), the library types its parameters take, and the titles of its worked examples. Call it before writing the markup for a component you are not certain of - the defaults are the behaviour, and a guessed parameter name is a compile error at best and silently ignored at worst. Accepts the type name, the name without the Bit prefix, the demo page's route or one of the aliases ('Select', 'Toast', 'Skeleton'). Omit the name to get the catalog of every component instead, grouped by category with its package and a line on what it is for.")]
+    [Description("Gets the full reference of one bit BlazorUI component: which package it ships in and what that package needs wired up, every parameter with its type, its default and what it does, its public members, the classes and child components it owns (its per-part Classes/Styles bag, its item class), the library types its parameters take, the parameters it inherits, which of them are two-way bindable and what constrains its type arguments, and the titles of its worked examples. Accepts the type name, the name without the Bit prefix, the demo page's route or one of the aliases ('Select', 'Toast', 'Skeleton'). Omit the name to get the catalog of every component instead, grouped by category with its package and a line on what it is for.")]
     public string GetBitBlazorUIComponent(
-        [Description("The component, e.g. 'BitDropdown', 'DatePicker', 'Toast'. Omitted, the whole catalog is returned. Pass 'BitComponentBase' for the parameters every component shares.")] string? name = null)
+        [Description("The component, e.g. 'BitDropdown', 'DatePicker', 'Toast'. Omitted, the whole catalog is returned. 'BitComponentBase', 'BitInputBase' and 'BitTextInputBase' are the inherited parameter sets each component's answer names.")] string? name = null)
     {
         if (string.IsNullOrWhiteSpace(name)) return BlazorUIMarkdown.ComponentCatalog();
 
@@ -85,7 +85,7 @@ public partial class McpController : AppControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(GetBitBlazorUIComponentExamples), Title = "Working code for one component",
                    ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
-    [Description("Gets the worked examples of one component as the Razor and C# they are written in - the same code the documentation site runs, one section per feature, each with the paragraph that explains it. This is the fastest route from a request to correct markup, and the only place the non-obvious parts show up: which parameters go together, what the templates receive, how the component is bound in an EditForm. Narrow it with 'example' rather than reading all of them; the section titles come back from GetBitBlazorUIComponent. A multi-API component answers with its first tab unless another is named.")]
+    [Description("Gets the worked examples of one component as the Razor and C# they are written in - the same code the documentation site runs, one section per feature, each with the paragraph that explains it. This is the only place the non-obvious parts show up: which parameters go together, what the templates receive, how the component is bound in an EditForm. Narrow it with 'example' rather than reading all of them; the section titles come back from GetBitBlazorUIComponent. A multi-API component answers with its first tab unless another is named.")]
     public string GetBitBlazorUIComponentExamples(
         [Description("The component, e.g. 'BitDataGrid', 'SearchBox'.")] string name,
         [Description("Optional. A section title, part of one, or a tab name of a multi-API component ('Item', 'Custom', 'Option'). Omitted, every section is returned - or, for a multi-API component, every section of its first tab.")] string? example = null)
@@ -107,7 +107,7 @@ public partial class McpController : AppControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(GetBitBlazorUIType), Title = "Full reference of one type",
                    ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
-    [Description("Gets the full reference of one public type of the library, read straight out of the shipped assembly: an enum with every value and what it means, a class with its properties and methods, an injectable service, or a static catalog of constants. Call it whenever a parameter's type is a name you have not seen - 'BitColor', 'BitVariant', 'BitSize', 'BitDropdownItem', 'BitModalService', 'BitTheme', 'BitThemePresets' - rather than inferring the values from the name. Dotted names reach a nested catalog, e.g. 'BitCss.Var.Color.Primary'. Omit the name to list the library-wide types instead; the ones named after a component are documented by GetBitBlazorUIComponent for that component.")]
+    [Description("Gets the full reference of one public type of the library, read straight out of the shipped assembly rather than inferred from its name: an enum with every value and what it means, a class with its properties and methods, an injectable service, or a static catalog of constants - 'BitColor', 'BitVariant', 'BitDropdownItem', 'BitModalService', 'BitThemePresets'. Dotted names reach a nested catalog, e.g. 'BitCss.Var.Color.Primary'. Omit the name to list the library-wide types instead; the ones named after a component are documented by GetBitBlazorUIComponent for that component.")]
     public string GetBitBlazorUIType(
         [Description("The type, with or without the Bit prefix and with or without its generic arguments, e.g. 'BitColor', 'BitDropdownItem<TValue>', 'ModalService'.")] string? typeName = null)
     {
@@ -127,7 +127,7 @@ public partial class McpController : AppControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(GetBitBlazorUISetupGuide), Title = "Setup guide for one hosting model",
                    ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
-    [Description("Gets everything needed to add bit BlazorUI to a Blazor app in one hosting model: the packages, the namespace import, the service registration, the stylesheet and script tags, the optional packages with the whole of what each one takes, and the check that proves it worked. Call this before writing any setup code - how many DI containers register the services, which file holds the host page, and whether the services may be singletons all differ per hosting model, and every one of those mistakes compiles.")]
+    [Description("Gets everything needed to add bit BlazorUI to a Blazor app in one hosting model: the packages, the namespace import, the service registration, the stylesheet and script tags, the optional packages with the whole of what each one takes, and the check that proves it worked. How many DI containers register the services, which file holds the host page and whether the services may be singletons all differ per hosting model, and every one of those mistakes compiles.")]
     public string GetBitBlazorUISetupGuide(
         [Description("'web-app' (a server project plus a .Client project), 'wasm' (standalone WebAssembly), 'server' (Blazor Server) or 'hybrid' (MAUI, WPF, WinForms).")] string hostingModel)
     {
@@ -138,7 +138,7 @@ public partial class McpController : AppControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(GetBitBlazorUIThemingGuide), Title = "One chapter of the theming reference",
                    ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
-    [Description("Gets one chapter of the bit BlazorUI theming reference, rendered from the documentation site itself: the design tokens and how to override one, the packaged presets (Fluent, Fluent 2, Material, Cupertino) and how to author your own, deriving a whole palette from one brand color, contrast checking, density and RTL, the C# and JavaScript APIs, and how to stop a server-rendered app flashing the wrong theme on the first frame. Call it for anything about color, dark mode, spacing scales or brand fit - a theme here is data rather than a stylesheet fork, so the answer is almost never 'write CSS'. Omit the chapter to get the index of them.")]
+    [Description("Gets one chapter of the bit BlazorUI theming reference, rendered from the documentation site itself: the design tokens and how to override one, the packaged presets (Fluent, Fluent 2, Material, Cupertino) and how to author your own, deriving a whole palette from one brand color, contrast checking, density and RTL, the C# and JavaScript APIs, and how to stop a server-rendered app flashing the wrong theme on the first frame. A theme here is data rather than a stylesheet fork, so the answer to a question about color, dark mode, spacing or brand fit is almost never 'write CSS'. Omit the chapter to get the index of them.")]
     public async Task<string> GetBitBlazorUIThemingGuide(
         [Description("A chapter of the reference, e.g. 'Design tokens', 'Presets', 'Color derivation and contrast', 'The C# API', 'Server-side rendering'. Sub-headings resolve too. Omitted, the index is returned.")] string? section = null)
         => await BlazorUIThemingGuide.Get(htmlRenderer, logger, section);
@@ -146,7 +146,7 @@ public partial class McpController : AppControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(FindBitBlazorUIIcons), Title = "Find a glyph by what it shows",
                    ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
-    [Description("Finds BitIconName glyphs by what they depict. The set is Microsoft's Fabric (MDL2) icons and there are over two thousand of them, so they are searched rather than listed - a listing would cost more than every other answer this server gives put together. Names are matched word by word, so 'add friend' finds AddFriend. Call it before putting a name in an IconName parameter: a name that does not exist is not a compile error, it is an empty box on the page.")]
+    [Description("Finds BitIconName glyphs by what they depict. The set is Microsoft's Fabric (MDL2) icons and there are over two thousand of them, so they are searched rather than listed. Names are matched word by word, so 'add friend' finds AddFriend. A glyph name that does not exist is not a compile error, it is an empty box on the page.")]
     public string FindBitBlazorUIIcons(
         [Description("What the glyph shows, e.g. 'save', 'chevron down', 'shopping cart', 'calendar'.")] string query,
         [Description("How many names to return.")] int limit = 40)

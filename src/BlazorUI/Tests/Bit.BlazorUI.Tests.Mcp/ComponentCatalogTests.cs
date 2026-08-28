@@ -129,7 +129,102 @@ public class ComponentCatalogTests : McpTestBase
         }
 
         // It is the one component whose answer must not point at itself.
-        Assert.DoesNotContain("Inherits the `BitComponentBase` parameters", answer);
+        Assert.DoesNotContain("## Inherited parameters", answer);
+    }
+
+    /// <summary>
+    /// The parameters an input takes from <c>BitInputBase</c> are the ones a form is built out of,
+    /// and no input's own table names them: without this line an agent has no way to learn that
+    /// <c>Value</c>, let alone <c>@bind-Value</c>, exists on the component it is about to write.
+    /// </summary>
+    [TestMethod]
+    [DataRow("BitTextField", "BitInputBase<string>", "BitTextInputBase<string>")]
+    [DataRow("BitDropdown", "BitInputBase<TValue>", null)]
+    [DataRow("BitCheckbox", "BitInputBase<bool>", null)]
+    public async Task An_input_names_the_parameters_it_takes_from_its_base(string component, string inputBase, string? textInputBase)
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = component });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(answer, "## Inherited parameters");
+        StringAssert.Contains(answer, inputBase, $"{component} no longer says which BitInputBase it closes.");
+        StringAssert.Contains(answer, "`Value`", $"{component} names no Value parameter.");
+        StringAssert.Contains(answer, "`@bind-Value`", $"{component} does not say its value is two-way bindable.");
+        StringAssert.Contains(answer, "GetBitBlazorUIComponent(name: \"BitInputBase\")");
+
+        if (textInputBase is not null) StringAssert.Contains(answer, textInputBase);
+    }
+
+    /// <summary>
+    /// Each of the three inherited sets answers on its own, since that is what every component that
+    /// has one points at.
+    /// </summary>
+    [TestMethod]
+    [DataRow("BitInputBase", "Value", "ValueChanged", "ValueExpression", "Required", "ReadOnly", "OnChange")]
+    [DataRow("BitTextInputBase", "AutoComplete", "AutoFocus", "DebounceTime", "Immediate", "ThrottleTime")]
+    public async Task Each_inherited_set_answers_under_its_own_name(string name, params string[] expected)
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name });
+
+        var parameters = TableRows(answer, "## Parameters").Select(row => row[0]).ToArray();
+
+        using var scope = Assert.Scope();
+
+        foreach (var parameter in expected)
+        {
+            CollectionAssert.Contains(parameters, parameter, $"{name} no longer documents {parameter}.");
+        }
+    }
+
+    /// <summary>
+    /// The tables are hand-written on the demo pages and the components go on gaining parameters, so
+    /// what is answered is the table plus whatever the compiled type has that the table has not
+    /// caught up with. A parameter this server does not name is one no agent will use.
+    /// </summary>
+    [TestMethod]
+    [DataRow("BitModal", "ShowOverlay")]
+    [DataRow("BitText", "Align")]
+    [DataRow("BitMarkdownEditor", "SyncScroll")]
+    [DataRow("BitCircularTimePicker", "DisablePast")]
+    public async Task A_parameter_the_demo_page_never_listed_is_answered_from_the_type(string component, string parameter)
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = component });
+
+        var parameters = TableRows(answer, "## Parameters").Select(row => row[0]).ToArray();
+
+        CollectionAssert.Contains(parameters, parameter, $"{component}.{parameter} exists on the type but is not answered.");
+    }
+
+    /// <summary>
+    /// A generic component's constraints decide what its type arguments may be, and nothing else in
+    /// an answer says so - a table full of <c>TItem</c> does not tell a caller it has to be a
+    /// reference type with a parameterless constructor.
+    /// </summary>
+    [TestMethod]
+    public async Task A_generic_component_states_its_type_constraints()
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitDropdown" });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.StartsWith(answer, "# BitDropdown<TItem, TValue>");
+        StringAssert.Contains(answer, "where TItem : class, new()");
+    }
+
+    /// <summary>
+    /// A type that goes inside a component's markup is told apart from one it takes an instance of:
+    /// a BitDropdownOption that reads as a class is one an agent constructs rather than writes.
+    /// </summary>
+    [TestMethod]
+    [DataRow("BitPivot", "## BitPivotItem (component)")]
+    [DataRow("BitDropdown", "## BitDropdownOption<TValue> (component)")]
+    [DataRow("BitDropdown", "## BitDropdownItem<TValue> (class)")]
+    public async Task A_child_component_is_named_as_a_component_rather_than_a_class(string component, string heading)
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = component });
+
+        StringAssert.Contains(answer, heading);
     }
 
     [TestMethod]
@@ -188,5 +283,31 @@ public class ComponentCatalogTests : McpTestBase
 
         StringAssert.Contains(answer, "BitIconInfo");
         Assert.DoesNotContain("has no public type called", icon, "BitIconInfo does not resolve by name.");
+    }
+
+    /// <summary>
+    /// The rule the answer above states for one parameter, held to across the whole table: every
+    /// library type a component's signatures name is reachable from the answer that names it.
+    /// A type belonging to one component is deliberately left out of the type listing, so a name
+    /// this answer does not carry is one an agent would have to guess at.
+    /// </summary>
+    [TestMethod]
+    [DataRow("BitButton", "BitLinkRels", "BitPosition")]
+    [DataRow("BitDropdown", "BitDropdownItemsProvider", "BitDropDirection")]
+    [DataRow("BitChart", "BitChartOptions", "BitChartType")]
+    public async Task A_type_a_signature_names_is_named_back_with_its_members(string component, params string[] expected)
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = component });
+
+        using var scope = Assert.Scope();
+
+        foreach (var type in expected)
+        {
+            StringAssert.Contains(answer, $"`{type}`", $"{component} names {type} in a signature but nowhere else in its answer.");
+
+            var reference = await CallAsync("GetBitBlazorUIType", new { typeName = type });
+
+            Assert.DoesNotContain("has no public type called", reference, $"{type} does not resolve by name.");
+        }
     }
 }

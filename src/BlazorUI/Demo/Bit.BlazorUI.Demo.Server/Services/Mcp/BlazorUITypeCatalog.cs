@@ -79,6 +79,20 @@ public static class BlazorUITypeCatalog
     }
 
     /// <summary>
+    /// The library types written in a run of type texts, resolved and deduplicated - what a reader
+    /// of those signatures has to be able to look up. Names that resolve to nothing (the framework's
+    /// own <c>IEnumerable</c>, <c>EventCallback</c>, a generic parameter) are left out.
+    /// </summary>
+    public static IEnumerable<BlazorUIType> Referenced(IEnumerable<string?> typeTexts)
+    {
+        return typeTexts.SelectMany(Identifiers)
+                        .Distinct(StringComparer.Ordinal)
+                        .Select(Find)
+                        .OfType<BlazorUIType>()
+                        .DistinctBy(t => t.Name, StringComparer.Ordinal);
+    }
+
+    /// <summary>
     /// The identifiers written in a type as the tables spell it - <c>IEnumerable&lt;BitNavItem&gt;?</c>
     /// is <c>IEnumerable</c> and <c>BitNavItem</c>. Anything that cannot be part of a C# name ends
     /// the one being read.

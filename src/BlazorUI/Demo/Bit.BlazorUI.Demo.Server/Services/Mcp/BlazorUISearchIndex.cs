@@ -285,7 +285,10 @@ public static class BlazorUISearchIndex
     {
         var entries = new List<Entry>(8192);
 
-        foreach (var component in BlazorUIComponentCatalog.Components)
+        // The base classes alongside the components: their parameters are the ones no component's
+        // own table names, so a search for "debounce", "read only" or "ValueExpression" has nowhere
+        // else to land.
+        foreach (var component in BlazorUIComponentCatalog.Components.Concat(BlazorUIComponentCatalog.Bases))
         {
             var call = $"GetBitBlazorUIComponent(name: \"{component.Name}\")";
 

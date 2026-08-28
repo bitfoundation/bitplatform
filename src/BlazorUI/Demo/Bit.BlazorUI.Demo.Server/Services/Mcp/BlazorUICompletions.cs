@@ -63,7 +63,7 @@ public static class BlazorUICompletions
         ResourceTemplateReference template => template.Uri switch
         {
             "bitblazorui://components/{name}" or "bitblazorui://components/{name}/examples" when argument is "name"
-                => [.. BlazorUIComponentCatalog.Components.Select(c => c.Name)],
+                => [.. BlazorUIComponentCatalog.Components.Concat(BlazorUIComponentCatalog.Bases).Select(c => c.Name)],
             "bitblazorui://types/{typeName}" when argument is "typeName"
                 => [.. BlazorUITypeCatalog.LibraryWide.Select(t => t.Name)],
             "bitblazorui://setup/{hostingModel}" when argument is "hostingModel"

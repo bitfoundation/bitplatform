@@ -134,9 +134,26 @@ the nav is all it takes for it to appear in the catalog, the search index and th
   interpolated from the catalogs, never typed.
 - **Redundancy is designed out of the answers, not just the tools.** A component's own types are
   documented in full; the library-wide enums it takes are named with their values and left to
-  `GetBitBlazorUIType`. The `BitComponentBase` parameters are one lookup rather than 110 repetitions.
-  A multi-API component's tabs are the same sections in a different API, so the examples tool answers
-  with the first tab and says the others exist.
+  `GetBitBlazorUIType`. The three inherited parameter sets - `BitComponentBase` on nearly every
+  component, `BitInputBase` on the inputs, `BitTextInputBase` on the ones typed into - are three
+  lookups rather than three hundred repetitions: each component's answer NAMES the parameters it
+  takes from each (as that component closes it, so BitTextField's is `BitInputBase<string>`) and
+  points at the set for the prose. A multi-API component's tabs are the same sections in a different
+  API, so the examples tool answers with the first tab and says the others exist. What is never left
+  out is a NAME: every library type a component's signatures mention is named back with its members
+  and the call that returns it, because a type belonging to one component is kept out of the type
+  listing and would otherwise have to be guessed at.
+- **The type has the last word on what exists, the demo page on how it is described.** The
+  hand-written tables are the better prose and are what the site renders, but a parameter added
+  without the page being updated is invisible in them - and a parameter this server does not name is
+  one an agent will not use. So every answer is the table plus every `[Parameter]` on the compiled
+  type it does not already name, with the default read off a constructed instance. The same merge
+  covers the public members, less what is public only to be called from elsewhere (the
+  `[JSInvokable]` callbacks, the generated `Assign*` setters).
+- **What a table cannot say is derived rather than left out**: which parameters are two-way bindable
+  (a `X` with an `XChanged` beside it, printed as `@bind-X`), what constrains a generic component's
+  type arguments, and whether a type named beside a component is a class it takes or a component
+  that goes inside its markup.
 - **A miss answers with the nearest names** (`BlazorUISuggest`, edit distance over the names with
   their shared `Bit` prefix removed) rather than with a refusal, and never as a failed tool call.
 
