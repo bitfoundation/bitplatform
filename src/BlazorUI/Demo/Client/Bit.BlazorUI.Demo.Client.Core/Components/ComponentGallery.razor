@@ -166,10 +166,10 @@ else
 @code {
     private string GridClass => _view is GalleryView.List ? "gallery-list" : "gallery-grid";
 
-    @* One card, two layouts. The glyph is what makes 113 cards scannable rather than readable, the
-       package badge answers the question an index is asked most often after "what is it" - which
-       NuGet package do I need - and the category rides along only in a ranked result list, where
-       there is no heading above the card to say where it came from. *@
+    @* One card, two layouts. The glyph is what makes a hundred-odd cards scannable rather than
+       readable, the package badge answers the question an index is asked most often after "what is
+       it" - which NuGet package do I need - and the category rides along only in a ranked result
+       list, where there is no heading above the card to say where it came from. *@
     private RenderFragment<(ComponentCatalogItem Item, bool ShowCategory)> _card = context =>
         @<a class="gallery-card" href="@context.Item.Url">
             <span class="gallery-card-icon" aria-hidden="true">

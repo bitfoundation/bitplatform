@@ -1,207 +1,661 @@
-﻿@page "/getting-started"
+@page "/getting-started"
 @inherits AppComponentBase
 
 <PageOutlet Url="getting-started"
-            Title="Getting Started"
-            Description="Install bit BlazorUI, import the namespace, add the shared styles and scripts, set up cache busting, and connect your AI coding agent." />
+            Title="Getting started"
+            Keywords="Blazor UI getting started, install Blazor component library, Bit.BlazorUI setup, Blazor Web App UI library, Blazor WebAssembly components, Blazor MAUI Hybrid UI"
+            Description="Install bit BlazorUI in four steps - the package, the namespace, the services and the two lines in your host file - then render your first component. With per-hosting-model setup, cache busting, troubleshooting and the MCP server for AI agents." />
 
 <DocsArticle Eyebrow="Documentation"
              Title="Getting started"
-             Lead="Install the library, import the namespace, add the shared styles and scripts, and make sure updates reach your users without cache hiccups. Everything past step 3 is optional."
+             Lead="Four steps, about five minutes, and no build tooling: add the package, import the namespace, register the services, and put two lines in your host file. Step 5 is where you confirm it worked. Everything after that is optional."
              GitHubUrl="GettingStartedPage.razor">
 
-    <DocSection Id="install" Title="1. Install"
-                Description="bit BlazorUI ships as a NuGet package. Any of these three routes installs it.">
+    @* The three things a reader checks before following any install guide: which version it
+       describes, what it costs, and whether it runs on their framework. *@
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground"
+                Text="@($"v{Bit.BlazorUI.Info.Version}")" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground"
+                Text="MIT licensed" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground"
+                Text=".NET 8, 9 and 10" />
+    </Badges>
 
-        <BitText Element="p">
-            <b>Command line</b> - run this in your project directory:
-        </BitText>
-        <CodeBox>dotnet add package Bit.BlazorUI</CodeBox>
-
-        <BitText Element="p">
-            <b>Package Manager Console</b> - in Visual Studio:
-        </BitText>
-        <CodeBox>Install-Package Bit.BlazorUI</CodeBox>
-
-        <BitText Element="p">
-            <b>Visual Studio</b> - or use the NuGet Package Manager UI and search for
-            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI/" Target="_blank">Bit.BlazorUI</BitLink>.
-        </BitText>
-
-        <BitAccordion Title="Optional packages">
-            <BitText Element="p">
-                <b>Extra components</b> - the larger components (BitChart, BitDataGrid, BitMap,
-                BitPdfViewer, the editors) live in
-                <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras/" Target="_blank">Bit.BlazorUI.Extras</BitLink>.
-                Every component page says which package it comes from.
-            </BitText>
-            <CodeBox>dotnet add package Bit.BlazorUI.Extras</CodeBox>
-
-            <BitText Element="p">
-                <b>Assets</b> - the Segoe UI and Roboto web fonts behind the Fluent and Material type
-                ramps, for clients that do not have them installed:
-                <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Assets/" Target="_blank">Bit.BlazorUI.Assets</BitLink>.
-            </BitText>
-            <CodeBox>dotnet add package Bit.BlazorUI.Assets</CodeBox>
-
-            <BitText Element="p">
-                <b>Icon pack</b> - the Fabric (MDL2) icons the <code>BitIconName</code> class names:
-                <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Icons/" Target="_blank">Bit.BlazorUI.Icons</BitLink>.
-            </BitText>
-            <CodeBox>dotnet add package Bit.BlazorUI.Icons</CodeBox>
-        </BitAccordion>
-    </DocSection>
-
-    <DocSection Id="namespace" Title="2. Namespace"
-                Description="One using, once, so no page has to repeat it.">
-        <BitText Element="p">
-            Add this line to your app's <code>_Imports.razor</code>:
-        </BitText>
-        <CodeBox Language="cshtml">&#64;using Bit.BlazorUI</CodeBox>
-    </DocSection>
-
-    <DocSection Id="styles-and-scripts" Title="3. Styles and scripts"
-                Description="The one stylesheet and the one script the whole library shares.">
-        <BitText Element="p">
-            Open <code>App.razor</code> (or <code>index.html</code> in a standalone WASM app)
-            and add the stylesheet:
-        </BitText>
-        <CodeBox Language="html">&lt;link href="_content/Bit.BlazorUI/styles/bit.blazorui.css" rel="stylesheet" /></CodeBox>
-
-        <BitText Element="p">Then the script:</BitText>
-        <CodeBox Language="html">&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js">&lt;/script></CodeBox>
-
-        <BitAccordion Title="Assets for the optional packages">
-            <BitText Element="p">
-                <b>Extra components</b> - if you installed <code>Bit.BlazorUI.Extras</code>:
-            </BitText>
-            <CodeBox Language="html">&lt;link href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" rel="stylesheet" />
-&lt;script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js">&lt;/script></CodeBox>
-
-            <BitText Element="p">
-                <b>Assets</b> - if you installed <code>Bit.BlazorUI.Assets</code>:
-            </BitText>
-            <CodeBox Language="html">&lt;link href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" rel="stylesheet" /></CodeBox>
-
-            <BitText Element="p">
-                <b>Icon pack</b> - if you installed <code>Bit.BlazorUI.Icons</code>:
-            </BitText>
-            <CodeBox Language="html">&lt;link href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" rel="stylesheet" /></CodeBox>
-        </BitAccordion>
-    </DocSection>
-
-    <DocSection Id="cache-busting" Title="4. Cache busting"
-                Description="Without this, the browsers of people already using your app will keep serving them the previous version of the library's css and js.">
-
-        <BitText Element="p">
-            On .NET 9 or later, the built-in <code>@@Assets[""]</code> feature fingerprints the
-            resource files for you.
-        </BitText>
-
-        <BitText Element="p">
-            bit BlazorUI also publishes its own version, which you can append as a query string:
-        </BitText>
-        <CodeBox Language="html">&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js?v=@@Bit.BlazorUI.Info.Version">&lt;/script></CodeBox>
-
-        <BitText Element="p">
-            <b>Note</b>: that expression only works in <code>App.razor</code>. For other root
-            files - <code>index.html</code> in a standalone WASM project, for instance - the
-            version has to be added another way.
-        </BitText>
-
-        <BitAccordion Title="Automatic fingerprinting components">
-            <BitText Element="p">
-                <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Assets/" Target="_blank">Bit.BlazorUI.Assets</BitLink>
-                ships two drop-in components for <code>App.razor</code> that hash the file's actual
-                content, so the URL changes exactly when the file does.
-            </BitText>
-
-            <BitText Element="p">
-                <b>Script</b> - a replacement for <code>&lt;script></code>:
-            </BitText>
-            <CodeBox Language="cshtml">&lt;Script Src="_content/Bit.BlazorUI/scripts/bit.blazorui.js">&lt;/Script></CodeBox>
-            <BitText Element="p">renders as:</BitText>
-            <CodeBox Language="html">&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js?v=sha256-Z5yBv0K89OBRVurhAVzatpp3aGXsNn00e3GzQiTq_Z4">&lt;/script></CodeBox>
-
-            <BitText Element="p">
-                <b>Link</b> - a replacement for <code>&lt;link></code>:
-            </BitText>
-            <CodeBox Language="cshtml">&lt;Link Href="_content/Bit.BlazorUI/styles/bit.blazorui.css" rel="stylesheet" /></CodeBox>
-            <BitText Element="p">renders as:</BitText>
-            <CodeBox Language="html">&lt;link href="_content/Bit.BlazorUI/styles/bit.blazorui.css?v=sha256-VI6BIGZLTtmyhn3V-4RH-Yyi0Ud3p0g5dHvByeaoZ9Y" rel="stylesheet" /></CodeBox>
-
-            <BitText Element="p">
-                This very site uses both - see
-                <BitLink Target="_blank"
-                         Href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Components/App.razor">
-                    its App.razor
-                </BitLink>.
-            </BitText>
-        </BitAccordion>
-    </DocSection>
-
-    <DocSection Id="legacy-components" Title="5. Legacy components"
-                Description="Only if you are upgrading a project that used the previous implementations of Chart, DataGrid, the editors or the PDF reader.">
-
-        <BitText Element="p">
-            Some of the older components were re-implemented with new APIs - the native SVG
-            <code>BitChart</code>, the new <code>BitDataGrid</code>,
-            <code>BitMarkdownViewer</code>, <code>BitMarkdownEditor</code>,
-            <code>BitRichTextEditor</code> and <code>BitPdfViewer</code>. Their previous
-            versions are preserved unchanged in
-            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Legacy/" Target="_blank">Bit.BlazorUI.Legacy</BitLink>,
-            under their own namespace, so the two generations can live side by side without conflict.
-        </BitText>
-
-        <BitText Element="p">The package ships:</BitText>
-        <ul>
-            <li><b>BitChartLegacy</b> - the original Chart.js based charting component.</li>
-            <li><b>BitDataGridLegacy</b> - the original data grid (previously renamed to <code>BitQuickGrid</code>).</li>
-            <li><b>BitMarkdownViewerLegacy</b> - the original marked.js based markdown viewer.</li>
-            <li><b>BitMarkdownEditorLegacy</b> - the original markdown editor.</li>
-            <li><b>BitRichTextEditorLegacy</b> - the original Quill based rich text editor.</li>
-            <li><b>BitPdfReaderLegacy</b> - the original pdf.js based PDF reader.</li>
-        </ul>
-
-        <BitText Element="p"><b>1. Install</b> the package:</BitText>
-        <CodeBox>dotnet add package Bit.BlazorUI.Legacy</CodeBox>
-
-        <BitText Element="p"><b>2. Import</b> the namespace in <code>_Imports.razor</code>:</BitText>
-        <CodeBox Language="cshtml">&#64;using Bit.BlazorUI.Legacy</CodeBox>
-
-        <BitText Element="p">
-            <b>3. Register</b> its services (this also registers the core bit BlazorUI services):
-        </BitText>
-        <CodeBox Language="csharp">services.AddBitBlazorUILegacyServices();</CodeBox>
-
-        <BitText Element="p"><b>4. Add</b> its stylesheet and script:</BitText>
-        <CodeBox Language="html">&lt;link href="_content/Bit.BlazorUI.Legacy/styles/bit.blazorui.legacy.css" rel="stylesheet" />
-&lt;script src="_content/Bit.BlazorUI.Legacy/scripts/bit.blazorui.legacy.js">&lt;/script></CodeBox>
-    </DocSection>
-
-    <DocSection Id="ai-mcp" Title="6. AI and MCP integration"
-                Description="Point your coding agent at the library's MCP server and it discovers components, pulls accurate examples, and follows the library's conventions on its own.">
-
-        <BitText Element="p">
-            This documentation site is also an MCP server: the component catalog, every parameter
-            table, the worked examples and the theming reference are exposed as tools a coding agent
-            can call, answered from the packages this deployment actually references rather than from
-            what a model half-remembers. The endpoint is
-            <BitLink Href="https://blazorui.bitplatform.dev/mcp" Target="_blank">https://blazorui.bitplatform.dev/mcp</BitLink>,
-            and it works with GitHub Copilot, Cursor, Claude, Windsurf and anything else that speaks MCP.
-        </BitText>
-
-        <BitText Element="p">
-            The <BitLink Href="/mcp-server">MCP server</BitLink> page carries the setup - the
-            <b>mcp.json</b> for each client and the rules to add to your <b>agents.md</b> - and is a
-            working client for the server besides: it talks to this very deployment and shows both
-            halves of every exchange.
-        </BitText>
-
-        <BitButton Href="/mcp-server" Variant="BitVariant.Outline"
-                   IconName="@BitIconName.ChevronRightSmall" IconPosition="BitIconPosition.End">
-            Connect your agent
+    <Actions>
+        <BitButton Size="BitSize.Large"
+                   Href="/components"
+                   IconName="@BitIconName.Puzzle">
+            Browse components
         </BitButton>
-    </DocSection>
+        <BitButton Target="_blank"
+                   Size="BitSize.Large"
+                   Variant="BitVariant.Outline"
+                   IconName="@BitIconName.Play"
+                   Href="https://codespaces.new/bitfoundation/bit-blazorui-playground/tree/dev">
+            Try it without installing
+        </BitButton>
+        <BitButton Target="_blank"
+                   Size="BitSize.Large"
+                   Variant="BitVariant.Text"
+                   Color="BitColor.SecondaryForeground"
+                   IconName="@BitIconName.Package"
+                   Href="https://www.nuget.org/packages/Bit.BlazorUI/">
+            Bit.BlazorUI on NuGet
+        </BitButton>
+    </Actions>
 
+    <ChildContent>
+        @* A plain wrapper: DocsArticle renders no element this file owns, and scoped CSS only lands
+           on elements written here - so without it the ::deep rules beside this page would have
+           nothing to descend from. It sits outside the DocSections rather than inside one, so every
+           section still holds its own .doc-prose and keeps the site-wide prose rhythm. *@
+        <div class="gs-doc">
+
+            <DocSection Id="prerequisites" Title="Prerequisites"
+                        Description="Three things, and there is deliberately no fourth. The library is a NuGet package with static web assets: no npm install, no bundler step, no JavaScript framework underneath it.">
+
+                <div class="req-grid">
+                    <div class="req">
+                        <BitIcon IconName="@BitIconName.Installation" Color="BitColor.Primary" Class="req-icon" />
+                        <span class="req-title">The .NET 8, 9 or 10 SDK</span>
+                        <span class="req-text">
+                            One package multi-targets all three, so moving the app to a newer framework
+                            never means changing the reference.
+                        </span>
+                    </div>
+                    <div class="req">
+                        <BitIcon IconName="@BitIconName.Globe" Color="BitColor.Primary" Class="req-icon" />
+                        <span class="req-title">A Blazor app</span>
+                        <span class="req-text">
+                            WebAssembly, Server, Hybrid (MAUI) or static SSR - the same markup and the
+                            same parameters render under all four.
+                        </span>
+                    </div>
+                    <div class="req">
+                        <BitIcon IconName="@BitIconName.CheckMark" Color="BitColor.Primary" Class="req-icon" />
+                        <span class="req-title">Nothing to build</span>
+                        <span class="req-text">
+                            The stylesheet and the script ship inside the package as static web assets.
+                            There is no Node toolchain to install and nothing to compile.
+                        </span>
+                    </div>
+                </div>
+
+                <BitMessage Color="BitColor.Info">
+                    Starting a brand new app? <code>dotnet new bit-empty</code> produces a solution with
+                    every step below already done - see
+                    <BitLink Href="/getting-started#template">Start from a template</BitLink>.
+                </BitMessage>
+            </DocSection>
+
+            <DocSection Id="install" Title="1. Install the package"
+                        Description="One package carries the whole core library. Pick whichever of the three routes matches how you work.">
+
+                @* MountAll: all three panels belong in the rendered HTML, so the route a reader did not
+                   click is still there for search engines and for anyone reading with a screen reader. *@
+                <BitPivot MountAll>
+                    <BitPivotItem HeaderText=".NET CLI">
+                        <div class="gs-stack">
+                            <BitText Element="p">Run this in the directory of the project your components live in:</BitText>
+                            <CodeBox>dotnet add package Bit.BlazorUI</CodeBox>
+                        </div>
+                    </BitPivotItem>
+
+                    <BitPivotItem HeaderText="Package Manager">
+                        <div class="gs-stack">
+                            <BitText Element="p">In the Visual Studio Package Manager Console:</BitText>
+                            <CodeBox>Install-Package Bit.BlazorUI</CodeBox>
+                        </div>
+                    </BitPivotItem>
+
+                    <BitPivotItem HeaderText="PackageReference">
+                        <div class="gs-stack">
+                            <BitText Element="p">Or add it to the <code>.csproj</code> by hand:</BitText>
+                            <CodeBox Language="xml">&lt;PackageReference Include="Bit.BlazorUI" Version="@Bit.BlazorUI.Info.Version" /></CodeBox>
+                        </div>
+                    </BitPivotItem>
+                </BitPivot>
+
+                <BitMessage Color="BitColor.Warning">
+                    In a Blazor Web App with a separate <code>.Client</code> project, the package belongs to
+                    whichever project holds your <code>.razor</code> files - which is usually both of them.
+                </BitMessage>
+
+                <BitText Element="h3" Typography="BitTypography.Subtitle1">Optional packages</BitText>
+
+                <BitText Element="p">
+                    Four more packages exist so that an app only ships the parts it asked for. Every
+                    component page says which package that component comes from.
+                </BitText>
+
+                <table class="gs-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Package</th>
+                            <th scope="col">Add it when</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">
+                                <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras/" Target="_blank">Bit.BlazorUI.Extras</BitLink>
+                            </th>
+                            <td>
+                                You use one of the heavier components - <code>BitDataGrid</code>,
+                                <code>BitChart</code>, <code>BitMap</code>, <code>BitPdfViewer</code>, the
+                                markdown and rich-text editors - or one of the Fluent&nbsp;2, Material and
+                                Cupertino design-system presets.
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Icons/" Target="_blank">Bit.BlazorUI.Icons</BitLink>
+                            </th>
+                            <td>
+                                You want the icons. The core package embeds only the two dozen glyphs its own
+                                components draw with - a 3&nbsp;KB font subset - and this one adds the full
+                                Fabric (MDL2) set that <code>BitIconName</code> names, browsable on the
+                                <BitLink Href="/iconography">iconography page</BitLink>.
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Assets/" Target="_blank">Bit.BlazorUI.Assets</BitLink>
+                            </th>
+                            <td>
+                                Your users may not have Segoe&nbsp;UI or Roboto installed - the fonts behind
+                                the Fluent and Material type ramps - or you want the <code>Script</code> and
+                                <code>Link</code> components that fingerprint an asset by its content.
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Legacy/" Target="_blank">Bit.BlazorUI.Legacy</BitLink>
+                            </th>
+                            <td>
+                                You are upgrading a project that used the previous chart, data grid, editors
+                                or PDF reader - see
+                                <BitLink Href="/getting-started#legacy-components">Legacy components</BitLink>.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <BitAccordion Title="Install the optional packages">
+                    <BitText Element="p">Add whichever of them you need:</BitText>
+                    <CodeBox>dotnet add package Bit.BlazorUI.Extras
+dotnet add package Bit.BlazorUI.Icons
+dotnet add package Bit.BlazorUI.Assets
+dotnet add package Bit.BlazorUI.Legacy</CodeBox>
+                    <BitText Element="p">
+                        Each brings its own stylesheet - and Extras and Legacy their own script - which
+                        <BitLink Href="/getting-started#styles-and-scripts">step 4</BitLink> links.
+                    </BitText>
+                </BitAccordion>
+            </DocSection>
+
+            <DocSection Id="namespace" Title="2. Import the namespace"
+                        Description="One using, stated once, so that no page has to repeat it.">
+
+                <BitText Element="p">
+                    Add this line to the <code>_Imports.razor</code> of every project that has
+                    <code>.razor</code> files - in a Blazor Web App with a WebAssembly client, that is the
+                    server project and the <code>.Client</code> project both:
+                </BitText>
+                <CodeBox Language="cshtml">&#64;using Bit.BlazorUI</CodeBox>
+
+                <BitText Element="p">
+                    Every component the library ships lives in this one namespace. If a
+                    <code>BitButton</code> comes back as <i>the type or namespace name could not be
+                    found</i>, this is the line missing from that project.
+                </BitText>
+            </DocSection>
+
+            <DocSection Id="services" Title="3. Register the services"
+                        Description="A few things the library does are driven from C# rather than from markup - opening a modal, switching the theme - and those are resolved from dependency injection.">
+
+                <BitText Element="p">
+                    Add this to <code>Program.cs</code>, beside the rest of your registrations:
+                </BitText>
+                <CodeBox Language="csharp">builder.Services.AddBitBlazorUIServices();</CodeBox>
+
+                <BitText Element="p">It registers five services:</BitText>
+                <ul>
+                    <li><code>BitModalService</code> - opens a modal from C# instead of from markup.</li>
+                    <li><code>BitThemeManager</code> - switches preset, toggles dark mode, overrides tokens at runtime.</li>
+                    <li><code>BitThemeNotifications</code> - raises <code>ThemeChanged</code> when any of that happens.</li>
+                    <li><code>BitExternalThemeLoader</code> - pulls a preset stylesheet in on demand.</li>
+                    <li><code>BitPageVisibility</code> - the browser's page-visibility state, as an event.</li>
+                </ul>
+
+                <BitMessage Color="BitColor.Warning">
+                    In a Blazor Web App with a WebAssembly client, call it in <b>both</b>
+                    <code>Program.cs</code> files. A component that renders on the server during
+                    prerendering and again in the browser afterwards has to find the service in both
+                    containers.
+                </BitMessage>
+
+                <BitText Element="h3" Typography="BitTypography.Subtitle1">The optional packages register on top</BitText>
+
+                <BitText Element="p">
+                    Each of these calls the core registration itself, so the one that matches your
+                    packages replaces the line above rather than joining it:
+                </BitText>
+                <CodeBox Language="csharp">builder.Services.AddBitBlazorUIExtrasServices(); // Bit.BlazorUI.Extras
+builder.Services.AddBitBlazorUILegacyServices(); // Bit.BlazorUI.Legacy</CodeBox>
+
+                <BitAccordion Title="One optimization, and the one place it is unsafe">
+                    <BitText Element="p">
+                        All three registrations take a <code>trySingleton</code> flag that registers the
+                        eligible services once for the process instead of once per scope:
+                    </BitText>
+                    <CodeBox Language="csharp">builder.Services.AddBitBlazorUIServices(trySingleton: true);</CodeBox>
+                    <BitText Element="p">
+                        Turn it on for <b>WebAssembly and Hybrid (MAUI) only</b> - the hosting models where
+                        the process serves exactly one user. Do <b>not</b> enable it on Blazor Server:
+                        <code>BitModalService</code> holds per-circuit rendering state, and a singleton
+                        would share it across circuits, leaking one visitor's modal into another's browser.
+                    </BitText>
+                </BitAccordion>
+            </DocSection>
+
+            <DocSection Id="styles-and-scripts" Title="4. Add the styles and scripts"
+                        Description="One stylesheet and one script, shared by the whole library. Which file they go in is the only thing that differs between hosting models.">
+
+                <BitText Element="p">Open the file that matches your app:</BitText>
+
+                <table class="gs-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Your app</th>
+                            <th scope="col">The file to open</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">Blazor Web App (.NET 8+)</th>
+                            <td><code>Components/App.razor</code></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Standalone WebAssembly</th>
+                            <td><code>wwwroot/index.html</code></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Blazor Hybrid (MAUI)</th>
+                            <td><code>wwwroot/index.html</code></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Blazor Server (.NET 6 / 7)</th>
+                            <td><code>Pages/_Host.cshtml</code> or <code>Pages/_Layout.cshtml</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <BitText Element="p">
+                    The stylesheet goes in <code>&lt;head&gt;</code>, and the script at the end of
+                    <code>&lt;body&gt;</code>, after the Blazor script:
+                </BitText>
+                <CodeBox Language="html">&lt;head>
+    ...
+    &lt;link href="_content/Bit.BlazorUI/styles/bit.blazorui.css" rel="stylesheet" />
+&lt;/head>
+&lt;body>
+    ...
+    &lt;script src="_framework/blazor.web.js">&lt;/script>
+    &lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js">&lt;/script>
+&lt;/body></CodeBox>
+
+                <BitMessage Color="BitColor.Info">
+                    <b>Order matters among the stylesheets.</b> A design-system preset is an
+                    override-only bundle of <code>--bit-*</code> tokens, so anything that re-skins the
+                    library - Fluent&nbsp;2, Material, Cupertino, or a block of your own - has to be
+                    linked <i>after</i> the core stylesheet. One linked before it does nothing at all.
+                </BitMessage>
+
+                <BitAccordion Title="Stylesheets and scripts for the optional packages">
+                    <BitText Element="p">
+                        Add only the lines for the packages you installed in step 1, in this order:
+                    </BitText>
+                    <CodeBox Language="html">&lt;!-- in head -->
+&lt;link href="_content/Bit.BlazorUI/styles/bit.blazorui.css" rel="stylesheet" />
+&lt;link href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" rel="stylesheet" />
+&lt;link href="_content/Bit.BlazorUI.Legacy/styles/bit.blazorui.legacy.css" rel="stylesheet" />
+&lt;link href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" rel="stylesheet" />
+&lt;link href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" rel="stylesheet" />
+
+&lt;!-- at the end of body -->
+&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js">&lt;/script>
+&lt;script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js">&lt;/script>
+&lt;script src="_content/Bit.BlazorUI.Legacy/scripts/bit.blazorui.legacy.js">&lt;/script></CodeBox>
+
+                    <BitText Element="p">
+                        The Fluent&nbsp;2, Material and Cupertino presets ship with
+                        <code>Bit.BlazorUI.Extras</code> as one stylesheet each, linked after the core one.
+                        The <BitLink Href="/theming">theming page</BitLink> has them, together with what
+                        each token controls.
+                    </BitText>
+                </BitAccordion>
+            </DocSection>
+
+            <DocSection Id="first-component" Title="5. Render your first component"
+                        Description="The setup is done. This is how you confirm it - and what a wrong answer here tells you.">
+
+                <BitText Element="p">Paste this into any page:</BitText>
+
+                <CodeBox Language="cshtml">&lt;BitButton IconName="@@BitIconName.Add">Click me&lt;/BitButton>
+
+&lt;BitTextField Label="Your name" Placeholder="Name" @@bind-Value="name" />
+
+&lt;BitDatePicker Label="Pick a date" />
+
+&lt;BitToggle Label="Notifications" DefaultValue="true" />
+
+@@code {
+    private string? name;
+}</CodeBox>
+
+                @* The one thing a screenshot cannot do: the components below are the real ones,
+                   rendered by the same library the reader just installed, on whichever preset and
+                   scheme they have the site set to. *@
+                <div class="gs-preview">
+                    <div class="gs-preview-head">
+                        <span class="gs-preview-label">Rendered result</span>
+                        <span class="gs-preview-note">Live on this page, from the markup above</span>
+                    </div>
+                    <div class="gs-preview-body">
+                        <BitButton IconName="@BitIconName.Add">Click me</BitButton>
+                        <BitTextField Label="Your name" Placeholder="Name" @bind-Value="_name" />
+                        <BitDatePicker Label="Pick a date" />
+                        <BitToggle Label="Notifications" DefaultValue="true" />
+                    </div>
+                </div>
+
+                <BitText Element="p">
+                    If the controls come out looking like plain unstyled HTML, the stylesheet from step 4
+                    is not reaching the browser. If they look right but the date picker's calendar never
+                    opens, it is the script.
+                    <BitLink Href="/getting-started#troubleshooting">Troubleshooting</BitLink> has the rest
+                    of the symptoms.
+                </BitText>
+
+                <BitText Element="p">
+                    Everything below this point is optional. The next thing worth reading is not on this
+                    page: it is <BitLink Href="/theming">theming</BitLink>, which is where the library
+                    stops looking like the default and starts looking like your product.
+                </BitText>
+
+                <BitStack Horizontal Wrap AutoHeight Gap="0.75rem" VerticalAlign="BitAlignment.Center">
+                    <BitButton Href="/components" Variant="BitVariant.Outline" IconName="@BitIconName.Puzzle">
+                        Browse the components
+                    </BitButton>
+                    <BitButton Href="/theming" Variant="BitVariant.Text"
+                               Color="BitColor.SecondaryForeground" IconName="@BitIconName.Color">
+                        Make it yours
+                    </BitButton>
+                </BitStack>
+            </DocSection>
+
+            <DocSection Id="template" Title="Start from a template"
+                        Description="Or skip all five steps: two commands produce a solution with the packages referenced, the services registered and the host file already written.">
+
+                <BitText Element="h3" Typography="BitTypography.Subtitle1">bit Blazor Empty</BitText>
+                <BitText Element="p">
+                    A clean solution wired for theming, static SSR and responsive layouts - the shortest
+                    path from nothing to a page of your own. Install the template once:
+                </BitText>
+                <CodeBox>dotnet new install Bit.BlazorEmpty</CodeBox>
+                <BitText Element="p">Then create an app from it:</BitText>
+                <CodeBox>dotnet new bit-empty -n MyBitBlazorApp</CodeBox>
+
+                <BitText Element="h3" Typography="BitTypography.Subtitle1">bit Boilerplate</BitText>
+                <BitText Element="p">
+                    The same wiring plus what a real product needs on day one - identity, an API, a
+                    database, localization, and the Android, iOS, macOS and Windows heads of one codebase:
+                </BitText>
+                <CodeBox>dotnet new install Bit.Boilerplate
+dotnet new bit-bp -n MyBitProject</CodeBox>
+
+                <BitText Element="p">
+                    Both are <code>dotnet new</code> templates rather than dependencies: what they produce
+                    is your source, with no runtime tie back to them.
+                </BitText>
+            </DocSection>
+
+            <DocSection Id="cache-busting" Title="Cache busting"
+                        Description="Worth doing before your first deployment rather than after it. Without it, the browser of someone already using your app keeps serving them the previous version of the library's css and js.">
+
+                <BitText Element="p">
+                    On .NET 9 or later, the built-in <code>@@Assets[""]</code> feature fingerprints the
+                    resource files for you.
+                </BitText>
+
+                <BitText Element="p">
+                    bit BlazorUI also publishes its own version, which you can append as a query string:
+                </BitText>
+                <CodeBox Language="html">&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js?v=@@Bit.BlazorUI.Info.Version">&lt;/script></CodeBox>
+
+                <BitText Element="p">
+                    <b>Note</b>: that expression only works in <code>App.razor</code>. For other root
+                    files - <code>index.html</code> in a standalone WebAssembly project, for instance - the
+                    version has to be added another way.
+                </BitText>
+
+                <BitAccordion Title="Automatic fingerprinting components">
+                    <BitText Element="p">
+                        <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Assets/" Target="_blank">Bit.BlazorUI.Assets</BitLink>
+                        ships two drop-in components for <code>App.razor</code> that hash the file's actual
+                        content, so the URL changes exactly when the file does - and only then.
+                    </BitText>
+
+                    <BitText Element="p">
+                        <b>Script</b> - a replacement for <code>&lt;script></code>:
+                    </BitText>
+                    <CodeBox Language="cshtml">&lt;Script Src="_content/Bit.BlazorUI/scripts/bit.blazorui.js">&lt;/Script></CodeBox>
+                    <BitText Element="p">renders as:</BitText>
+                    <CodeBox Language="html">&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js?v=sha256-Z5yBv0K89OBRVurhAVzatpp3aGXsNn00e3GzQiTq_Z4">&lt;/script></CodeBox>
+
+                    <BitText Element="p">
+                        <b>Link</b> - a replacement for <code>&lt;link></code>:
+                    </BitText>
+                    <CodeBox Language="cshtml">&lt;Link Href="_content/Bit.BlazorUI/styles/bit.blazorui.css" rel="stylesheet" /></CodeBox>
+                    <BitText Element="p">renders as:</BitText>
+                    <CodeBox Language="html">&lt;link href="_content/Bit.BlazorUI/styles/bit.blazorui.css?v=sha256-VI6BIGZLTtmyhn3V-4RH-Yyi0Ud3p0g5dHvByeaoZ9Y" rel="stylesheet" /></CodeBox>
+
+                    <BitText Element="p">
+                        This very site uses both - see
+                        <BitLink Target="_blank"
+                                 Href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Components/App.razor">
+                            its App.razor
+                        </BitLink>.
+                    </BitText>
+                </BitAccordion>
+            </DocSection>
+
+            <DocSection Id="troubleshooting" Title="Troubleshooting"
+                        Description="Nearly everything that goes wrong in the first hour is one of these seven, and each of them points back at the step it came from.">
+
+                @* Symptom first, because the symptom is what the reader arrives with. Hairline-separated
+                   rows rather than cards: this is a table someone scans for their own line, not a set of
+                   peers to be read through. *@
+                <div class="trouble-list">
+                    <div class="trouble">
+                        <p class="trouble-symptom">The components render, but look like plain unstyled HTML</p>
+                        <p class="trouble-fix">
+                            The stylesheet from
+                            <BitLink Href="/getting-started#styles-and-scripts">step 4</BitLink> is missing
+                            or is not being served. Look for <code>bit.blazorui.css</code> in the browser's
+                            network tab: a 404 there means the path is wrong, or that the app is not
+                            serving static web assets at all - <code>app.MapStaticAssets()</code> on .NET 9
+                            and later, <code>app.UseStaticFiles()</code> before that.
+                        </p>
+                    </div>
+                    <div class="trouble">
+                        <p class="trouble-symptom">Dropdowns, callouts and pickers never open</p>
+                        <p class="trouble-fix">
+                            <code>bit.blazorui.js</code> is missing, or its URL 404s. Everything that has to
+                            measure or position something in the live document - callouts, dropdowns,
+                            pickers, tooltips - goes through it, so the components still render without it
+                            and simply do nothing when clicked.
+                        </p>
+                    </div>
+                    <div class="trouble">
+                        <p class="trouble-symptom">Icons come out as empty boxes</p>
+                        <p class="trouble-fix">
+                            The core package embeds only the glyphs its own components draw with. Any other
+                            <code>BitIconName</code> needs the <code>Bit.BlazorUI.Icons</code> package
+                            <b>and</b> its stylesheet - one half without the other is what produces the box.
+                        </p>
+                    </div>
+                    <div class="trouble">
+                        <p class="trouble-symptom">The type or namespace name 'BitButton' could not be found</p>
+                        <p class="trouble-fix">
+                            <code>@@using Bit.BlazorUI</code> is missing from that project's
+                            <code>_Imports.razor</code>. In a Blazor Web App it has to be in the
+                            <code>.Client</code> project's copy too -
+                            <BitLink Href="/getting-started#namespace">step 2</BitLink>.
+                        </p>
+                    </div>
+                    <div class="trouble">
+                        <p class="trouble-symptom">There is no registered service of type 'BitModalService'</p>
+                        <p class="trouble-fix">
+                            Or <code>BitThemeManager</code>, or any of the other three:
+                            <code>AddBitBlazorUIServices()</code> has not run in the container that rendered
+                            the component. Under prerendering there are two of those, so the call belongs in
+                            both <code>Program.cs</code> files -
+                            <BitLink Href="/getting-started#services">step 3</BitLink>.
+                        </p>
+                    </div>
+                    <div class="trouble">
+                        <p class="trouble-symptom">A Material or Cupertino preset changes nothing</p>
+                        <p class="trouble-fix">
+                            A preset is an override-only bundle of <code>--bit-*</code> tokens, so its
+                            stylesheet has to be linked <b>after</b> the core one, and the matching
+                            <code>bit-theme</code> value has to be set on <code>&lt;html&gt;</code>. The
+                            <BitLink Href="/theming">theming page</BitLink> covers both.
+                        </p>
+                    </div>
+                    <div class="trouble">
+                        <p class="trouble-symptom">Your users still see the previous version's styles after a deploy</p>
+                        <p class="trouble-fix">
+                            Their browser is holding the old css and js. That is what
+                            <BitLink Href="/getting-started#cache-busting">cache busting</BitLink> exists to
+                            prevent, and it is the one step that is much easier to add before the first
+                            deployment than after it.
+                        </p>
+                    </div>
+                </div>
+
+                <BitText Element="p">
+                    Something else?
+                    <BitLink Href="https://github.com/bitfoundation/bitplatform/discussions" Target="_blank">Ask in discussions</BitLink> -
+                    the team develops the library on the same repository, so the answer comes from the
+                    people who wrote it.
+                </BitText>
+            </DocSection>
+
+            <DocSection Id="ai-mcp" Title="AI and MCP integration"
+                        Description="Point your coding agent at the library's MCP server and it discovers components, pulls accurate examples, and follows the library's conventions on its own.">
+
+                <BitText Element="p">
+                    This documentation site is also an MCP server: the component catalog, every parameter
+                    table, the worked examples and the theming reference are exposed as tools a coding agent
+                    can call, answered from the packages this deployment actually references rather than from
+                    what a model half-remembers. The endpoint is
+                    <BitLink Href="https://blazorui.bitplatform.dev/mcp" Target="_blank">https://blazorui.bitplatform.dev/mcp</BitLink>,
+                    and it works with GitHub Copilot, Cursor, Claude, Windsurf and anything else that speaks MCP.
+                </BitText>
+
+                <BitText Element="p">
+                    The <BitLink Href="/mcp-server">MCP server</BitLink> page carries the setup - the
+                    <b>mcp.json</b> for each client and the rules to add to your <b>agents.md</b> - and is a
+                    working client for the server besides: it talks to this very deployment and shows both
+                    halves of every exchange.
+                </BitText>
+
+                <BitButton Href="/mcp-server" Variant="BitVariant.Outline"
+                           IconName="@BitIconName.ChevronRightSmall" IconPosition="BitIconPosition.End">
+                    Connect your agent
+                </BitButton>
+            </DocSection>
+
+            <DocSection Id="legacy-components" Title="Legacy components"
+                        Description="Only if you are upgrading a project that used the previous implementations of Chart, DataGrid, the editors or the PDF reader.">
+
+                <BitText Element="p">
+                    Some of the older components were re-implemented with new APIs - the native SVG
+                    <code>BitChart</code>, the new <code>BitDataGrid</code>,
+                    <code>BitMarkdownViewer</code>, <code>BitMarkdownEditor</code>,
+                    <code>BitRichTextEditor</code> and <code>BitPdfViewer</code>. Their previous
+                    versions are preserved unchanged in
+                    <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Legacy/" Target="_blank">Bit.BlazorUI.Legacy</BitLink>,
+                    under their own namespace, so the two generations can live side by side without conflict.
+                </BitText>
+
+                <BitText Element="p">The package ships:</BitText>
+                <ul>
+                    <li><b>BitChartLegacy</b> - the original Chart.js based charting component.</li>
+                    <li><b>BitDataGridLegacy</b> - the original data grid (previously renamed to <code>BitQuickGrid</code>).</li>
+                    <li><b>BitMarkdownViewerLegacy</b> - the original marked.js based markdown viewer.</li>
+                    <li><b>BitMarkdownEditorLegacy</b> - the original markdown editor.</li>
+                    <li><b>BitRichTextEditorLegacy</b> - the original Quill based rich text editor.</li>
+                    <li><b>BitPdfReaderLegacy</b> - the original pdf.js based PDF reader.</li>
+                </ul>
+
+                <BitText Element="p"><b>1. Install</b> the package:</BitText>
+                <CodeBox>dotnet add package Bit.BlazorUI.Legacy</CodeBox>
+
+                <BitText Element="p"><b>2. Import</b> the namespace in <code>_Imports.razor</code>:</BitText>
+                <CodeBox Language="cshtml">&#64;using Bit.BlazorUI.Legacy</CodeBox>
+
+                <BitText Element="p">
+                    <b>3. Register</b> its services (this also registers the core bit BlazorUI services):
+                </BitText>
+                <CodeBox Language="csharp">builder.Services.AddBitBlazorUILegacyServices();</CodeBox>
+
+                <BitText Element="p"><b>4. Add</b> its stylesheet and script:</BitText>
+                <CodeBox Language="html">&lt;link href="_content/Bit.BlazorUI.Legacy/styles/bit.blazorui.legacy.css" rel="stylesheet" />
+&lt;script src="_content/Bit.BlazorUI.Legacy/scripts/bit.blazorui.legacy.js">&lt;/script></CodeBox>
+            </DocSection>
+
+            <DocSection Id="whats-next" Title="What's next"
+                        Description="The setup is behind you. These are the four pages that take an install to a finished product.">
+
+                <div class="next-grid">
+                    <a class="next" href="/components">
+                        <BitIcon IconName="@BitIconName.Puzzle" Color="BitColor.Primary" Class="next-icon" />
+                        <span class="next-title">Components</span>
+                        <span class="next-text">
+                            All @ComponentCatalog.Items.Count of them, each with live examples and its full
+                            API table.
+                        </span>
+                    </a>
+                    <a class="next" href="/theming">
+                        <BitIcon IconName="@BitIconName.Color" Color="BitColor.Primary" Class="next-icon" />
+                        <span class="next-title">Theming</span>
+                        <span class="next-text">
+                            Design tokens, the four presets, dark mode and scoped overrides - where it starts
+                            looking like your product.
+                        </span>
+                    </a>
+                    <a class="next" href="/iconography">
+                        <BitIcon IconName="@BitIconName.FileImage" Color="BitColor.Primary" Class="next-icon" />
+                        <span class="next-title">Iconography</span>
+                        <span class="next-text">
+                            The full Fabric (MDL2) set, searchable, with every name one click from your
+                            clipboard.
+                        </span>
+                    </a>
+                    <a class="next" href="/mcp-server">
+                        <BitIcon IconName="@BitIconName.Robot" Color="BitColor.Primary" Class="next-icon" />
+                        <span class="next-title">MCP server</span>
+                        <span class="next-text">
+                            Give your coding agent the real API instead of a half-remembered one.
+                        </span>
+                    </a>
+                </div>
+            </DocSection>
+
+        </div>
+    </ChildContent>
 </DocsArticle>
