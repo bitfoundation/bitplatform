@@ -1312,7 +1312,7 @@ private bool isOpenFocusSelector = false;";
 <style>
     .relative-container {
         width: 100%;
-        height: 400px;
+        height: 20rem;
         overflow: auto;
         padding: 0.5rem;
         margin-top: 1rem;
@@ -1395,7 +1395,7 @@ private void OpenDialogInPosition(BitDialogPosition positionValue)
 <style>
     .relative-container {
         width: 100%;
-        height: 400px;
+        height: 20rem;
         overflow: auto;
         padding: 0.5rem;
         margin-top: 1rem;
