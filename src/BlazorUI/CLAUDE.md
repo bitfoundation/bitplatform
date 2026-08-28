@@ -105,6 +105,63 @@ Three rules that are easy to get wrong:
   page restores the untouched `-full` values at `:root` and carries `bit-fam` on `.site-content`.
   Both halves live in `Styles/app.scss`, with the class gated by `MainLayout._isDemoPage`.
 
+## The MCP server
+
+`Demo/Bit.BlazorUI.Demo.Server` hosts the library's MCP server at `/mcp`, and mirrors every tool as
+a plain HTTP GET under `/api/mcp/...` so each one is inspectable from a browser. The tools are in
+`Controllers/McpController.cs`, with `McpPrompts` and `McpResources` beside them; everything they
+answer from is in `Services/Mcp`. `Tests/Bit.BlazorUI.Tests.Mcp` drives the whole thing over HTTP
+against the app as it is actually deployed.
+
+Nothing on it is written down twice. The nav (`MainLayout.NavItems`, via `ComponentCatalog`) decides
+which components exist and what they are also called; the loaded assemblies decide which package
+each ships in and what it is generic over; the demo pages carry the hand-written parameter tables
+and the worked examples; the XML documentation carries everything else. So **adding a component to
+the nav is all it takes for it to appear in the catalog, the search index and the completions.**
+
+- **Seven tools, and the count is the design.** A tool's description is paid for in every request of
+  every session. So a listing is not a tool - it is what a retrieval tool answers when called with
+  no argument (`GetBitBlazorUIComponent`, `GetBitBlazorUIType`, `GetBitBlazorUIThemingGuide` all do
+  this); a single-item lookup is not a tool when one that takes a set already resolves each member.
+- **Markdown, never JSON, and no output schemas.** A parameter table as JSON repeats its four field
+  names on every row, and a tool declared with `UseStructuredContent` sends the payload twice - once
+  as `structuredContent` and once as text, because the protocol asks a server to keep answering
+  clients that cannot read a schema.
+- **The server's `instructions` are the only thing it gets to say before it is asked anything**
+  (`BlazorUIMcpInstructions`), so they carry only what a per-tool description cannot: which tool to
+  call first, and the six rules that decide whether markup that compiles also looks right. Nothing
+  else on the server restates them - the prompts point at them instead. The counts in them are
+  interpolated from the catalogs, never typed.
+- **Redundancy is designed out of the answers, not just the tools.** A component's own types are
+  documented in full; the library-wide enums it takes are named with their values and left to
+  `GetBitBlazorUIType`. The three inherited parameter sets - `BitComponentBase` on nearly every
+  component, `BitInputBase` on the inputs, `BitTextInputBase` on the ones typed into - are three
+  lookups rather than three hundred repetitions: each component's answer NAMES the parameters it
+  takes from each (as that component closes it, so BitTextField's is `BitInputBase<string>`) and
+  points at the set for the prose. A multi-API component's tabs are the same sections in a different
+  API, so the examples tool answers with the first tab and says the others exist. What is never left
+  out is a NAME: every library type a component's signatures mention is named back with its members
+  and the call that returns it, because a type belonging to one component is kept out of the type
+  listing and would otherwise have to be guessed at.
+- **The type has the last word on what exists, the demo page on how it is described.** The
+  hand-written tables are the better prose and are what the site renders, but a parameter added
+  without the page being updated is invisible in them - and a parameter this server does not name is
+  one an agent will not use. So every answer is the table plus every `[Parameter]` on the compiled
+  type it does not already name, with the default read off a constructed instance. The same merge
+  covers the public members, less what is public only to be called from elsewhere (the
+  `[JSInvokable]` callbacks, the generated `Assign*` setters).
+- **What a table cannot say is derived rather than left out**: which parameters are two-way bindable
+  (a `X` with an `XChanged` beside it, printed as `@bind-X`), what constrains a generic component's
+  type arguments, and whether a type named beside a component is a class it takes or a component
+  that goes inside its markup.
+- **A miss answers with the nearest names** (`BlazorUISuggest`, edit distance over the names with
+  their shared `Bit` prefix removed) rather than with a refusal, and never as a failed tool call.
+
+The demo pages' `.razor` files are embedded into the **server** assembly by its .csproj - the client
+would otherwise ship four megabytes to every WebAssembly visitor. Only the markup that names and
+orders the example sections is read from them; the samples and the tables are reflected off the
+compiled page types, where reflection cannot misread them.
+
 ## Theme tokens in component SCSS
 
 Component stylesheets never hard-code a design-system decision; they read it from the global tokens

@@ -1,0 +1,175 @@
+@import '../Styles/abstracts/_docs.scss';
+
+// The page is a playground rather than a reference: every section is a row of controls, an exchange,
+// and the next section. The rhythm between those is already set globally by `.doc-prose > * + *`, and
+// the controls are library components that bring their own look - so what is left for this file is
+// the width of a picker and the shape of the two tables.
+.mcp-doc {
+
+    // The pickers keep a readable width; the buttons beside them sit on the field's baseline, which
+    // BitStack's End alignment already arranges.
+    ::deep .mcp-tool-picker {
+        min-width: rem2(260px);
+    }
+
+    ::deep .mcp-uri {
+        flex: 1 1 rem2(280px);
+        min-width: rem2(240px);
+    }
+
+    ::deep .mcp-arguments {
+        width: 100%;
+
+        textarea {
+            font-family: var(--demo-font-mono);
+        }
+    }
+
+    // The URL beside a chip. It is the one piece of a header row that can be long enough to wrap,
+    // and wrapping it mid-path reads as two URLs, so it breaks anywhere instead. McpExchange styles
+    // its own copy of this: scoped CSS does not cross a component boundary, and the alternative -
+    // an unscoped rule - would reach into every example on the site that happens to use the name.
+    .mcp-endpoint {
+        overflow-wrap: anywhere;
+        font-size: $bit-typography-fs-2xs;
+        color: $bit-color-foreground-tertiary;
+    }
+
+    // The tool table. Same hairline grid and sticky header as a component page's API tables, which
+    // is where a reader of this site has already learned to read one.
+    .table-view {
+        width: 100%;
+        display: block;
+        overflow: auto;
+        max-height: 32rem;
+        border-spacing: 0;
+        box-sizing: border-box;
+        border: rem2(1px) solid $bit-color-border-secondary;
+        border-radius: $bit-shape-radius-surface;
+
+        @include doc-scrollbar(8px);
+    }
+
+    .th-row {
+        top: 0;
+        display: flex;
+        position: sticky;
+        min-height: rem2(42px);
+        color: $bit-color-foreground-primary;
+        background-color: $bit-color-background-secondary;
+        border-bottom: rem2(1px) solid $bit-color-border-secondary;
+    }
+
+    .tdata-row {
+        display: flex;
+        min-width: max-content;
+        border-bottom: rem2(1px) solid $bit-color-border-secondary;
+
+        &:hover {
+            background-color: $bit-color-background-secondary;
+        }
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        // The tool the section below is currently loaded with, so "Try it" is visibly a selection
+        // rather than a one-shot button.
+        &.current {
+            background-color: $bit-color-background-secondary;
+            box-shadow: inset rem2(3px) 0 0 0 $bit-color-primary;
+        }
+    }
+
+    .th-cell {
+        display: flex;
+        text-align: left;
+        overflow: hidden;
+        align-items: center;
+        padding: $doc-space-xs;
+        box-sizing: border-box;
+        font-size: $bit-typography-fs-xs;
+        font-weight: $bit-typography-fw-semibold;
+    }
+
+    .td-cell {
+        display: flex;
+        line-height: 1.6;
+        text-align: left;
+        white-space: normal;
+        padding: $doc-space-xs;
+        box-sizing: border-box;
+        word-break: break-word;
+        align-items: flex-start;
+        font-size: $bit-typography-fs-xs;
+        color: $bit-color-foreground-secondary;
+    }
+
+    // Three fixed columns: the reader scans down the first, so the name and the button are held to
+    // a width and the description takes whatever is left.
+    .mcp-tools {
+
+        .th-cell,
+        .td-cell {
+            &:nth-child(1) {
+                width: 24rem;
+            }
+
+            &:nth-child(3) {
+                width: 7rem;
+                justify-content: flex-end;
+            }
+
+            &:nth-child(2) {
+                flex: 1 1 22rem;
+                min-width: rem2(280px);
+            }
+        }
+    }
+
+    // One tool's cell: its name, its argument list under it, and the annotations beside them.
+    .mcp-tool {
+        gap: $doc-space-3xs;
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+
+        code {
+            width: 100%;
+            font-size: $bit-typography-fs-xs;
+            color: $bit-color-foreground-primary;
+            font-weight: $bit-typography-fw-semibold;
+        }
+    }
+
+    .mcp-args {
+        font-family: var(--demo-font-mono);
+        font-size: $bit-typography-fs-2xs;
+        color: $bit-color-foreground-tertiary;
+    }
+
+    // The closing inventory is a two-column definition list wearing a table's clothes: no header
+    // row, because the columns are "what" and "why" and naming them would say less than the rows do.
+    .mcp-facts {
+
+        .td-cell {
+            &:nth-child(1) {
+                width: 11rem;
+                color: $bit-color-foreground-primary;
+                font-weight: $bit-typography-fw-semibold;
+            }
+
+            &:nth-child(2) {
+                width: 20rem;
+                overflow-wrap: anywhere;
+                font-family: var(--demo-font-mono);
+                font-size: $bit-typography-fs-2xs;
+            }
+
+            &:nth-child(3) {
+                flex: 1 1 24rem;
+                min-width: rem2(280px);
+            }
+        }
+    }
+}

@@ -76,4 +76,15 @@
         </EmbeddedResource>
     </ItemGroup>
 
+    <!-- The demo pages the MCP server reads to answer with each component's examples: their titles,
+         their explanatory prose and which code field each one shows. The parameter tables and the
+         code samples themselves are reflected off the compiled page types; only the markup that
+         orders and names them lives here, and only in this assembly - embedding them in the client
+         would add four megabytes to what a WebAssembly visitor downloads. -->
+    <ItemGroup>
+        <EmbeddedResource Include="..\Client\Bit.BlazorUI.Demo.Client.Core\Pages\**\*.razor">
+            <LogicalName>BitBlazorUIDemoSource/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+    </ItemGroup>
+
 </Project>

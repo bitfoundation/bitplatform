@@ -1,4 +1,4 @@
-[
+﻿[
     {
         "outputFile": "Components/CodeBox.razor.css",
         "inputFile": "Components/CodeBox.razor.scss",
@@ -554,6 +554,12 @@
     {
         "outputFile": "Pages/Iconography/IconographyPage.razor.css",
         "inputFile": "Pages/Iconography/IconographyPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/McpServerPage.razor.css",
+        "inputFile": "Pages/McpServerPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

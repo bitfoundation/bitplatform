@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <LangVersion>14.0</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+
+        <!-- The repo's global.json mandates the Microsoft.Testing.Platform runner. EnableMSTestRunner
+             builds that test host into the assembly itself, and it only generates the entry point
+             for an executable project - as a library the runner never runs. -->
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+        <OutputType>Exe</OutputType>
+
+        <!-- Assert.Scope, which collects several assertion failures into one report, is still marked
+             experimental by MSTest. Most of the fixtures here check a whole answer at once - every
+             component in the catalog, every tool's annotations - and are worth far less if the
+             report stops at the first row that broke. -->
+        <NoWarn>$(NoWarn);MSTESTEXP</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MSTest" Version="4.3.3" />
+        <!-- The client half of the same SDK the server is built on. The suite drives /mcp with a
+             real protocol client rather than hand-rolled JSON-RPC, so what it exercises is what an
+             editor, an agent host or a coding agent exercises - the handshake included. -->
+        <PackageReference Include="ModelContextProtocol.Core" Version="2.2.0" />
+    </ItemGroup>
+
+    <!-- Deliberately NO ProjectReference to Bit.BlazorUI.Demo.Server. Everything here is asserted
+         from outside the process, over HTTP, against the server as it is actually deployed: the
+         demo pages embedded by the .csproj, the XML documentation read from next to the assemblies,
+         and the theming page rendered by the real components. A test that reached into the server's
+         own types could pass while the shipped app answered nothing at all. -->
+
+</Project>
