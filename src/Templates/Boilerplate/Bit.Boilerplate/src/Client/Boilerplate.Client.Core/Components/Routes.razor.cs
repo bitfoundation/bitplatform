@@ -87,13 +87,16 @@ public partial class Routes : ComponentBase, IDisposable
 public class AppRouter :
     //#if (brouter == true)
     Brouter
+{ }
 //#else
 //#if (IsInsideProjectTemplate == true)
 /*
 //#endif
 Microsoft.AspNetCore.Components.Routing.Router
+{
+    public AppRouter() => NotFoundPage = typeof(Pages.NotFoundPage);
+}
 //#if (IsInsideProjectTemplate == true)
 */
 //#endif
 //#endif
-{ }

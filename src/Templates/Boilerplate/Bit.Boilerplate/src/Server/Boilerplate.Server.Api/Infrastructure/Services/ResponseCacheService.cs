@@ -53,10 +53,6 @@ public partial class ResponseCacheService
     }
 
     //#if (module == "Sales" || module == "Admin")
-    //#if (api == "Standalone")
-    //#if (IsInsideProjectTemplate == true)
-    /*
-    //#endif
     public async Task PurgeProductCache(int shortId)
     {
         await PurgeCache("/", $"/product/{shortId}", $"/api/v1/ProductView/Get/{shortId}");
@@ -65,19 +61,6 @@ public partial class ResponseCacheService
     {
         await PurgeCache("/");
     }
-    //#if (IsInsideProjectTemplate == true)
-    */
-    //#endif
-    //#else
-    public async Task PurgeProductCache(int shortId)
-    {
-        await PurgeCache(PageUrls.Home, $"{PageUrls.Product}/{shortId}", $"/api/v1/ProductView/Get/{shortId}");
-    }
-    public async Task PurgeHomePage()
-    {
-        await PurgeCache(PageUrls.Home);
-    }
-    //#endif
     //#endif
 
     //#if (cloudflare == true)
