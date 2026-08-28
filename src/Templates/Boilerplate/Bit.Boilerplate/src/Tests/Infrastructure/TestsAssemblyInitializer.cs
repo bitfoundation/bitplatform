@@ -89,8 +89,9 @@ public partial class TestsAssemblyInitializer
     //#endif
 
     //#if (database  == 'Sqlite')
-    //SQLite database in in-memory mode only lives as long as at least one connection to it is open
-    //This connection is required to keep the database alive during the test run.
+    // The app's SQLite database is file-based in every shipped configuration, so this keep-alive connection only
+    // matters when ConnectionStrings__sqlite is overridden to an in-memory database (Mode=Memory), which lives
+    // only as long as at least one connection to it stays open.
     private static SqliteConnection connection = null!;
     //#endif
     private static async Task InitializeDatabase(AppTestServer testServer)

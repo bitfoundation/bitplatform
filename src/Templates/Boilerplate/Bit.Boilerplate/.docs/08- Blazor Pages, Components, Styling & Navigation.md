@@ -57,7 +57,7 @@ This file contains the **UI markup** using Razor syntax and Bit.BlazorUI compone
 This file contains the **component logic** - all C# code for the component:
 
 ```csharp
-using Boilerplate.Shared.Dtos.Products;
+using Boilerplate.Shared.Features.Products;
 using Boilerplate.Shared.Controllers.Products;
 
 namespace Boilerplate.Client.Core.Components.Pages.Products;

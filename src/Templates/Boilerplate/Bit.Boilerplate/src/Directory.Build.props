@@ -102,4 +102,14 @@
         <Delete Files="@(ResidualRazorCssFiles)" />
     </Target>
 
+    <!--
+    A no-op fallback so that `dotnet build Boilerplate.slnx -t:BeforeBuildTasks` succeeds for the whole solution.
+    Only the four Client projects define real BeforeBuildTasks work (npm install, tsc, sass); the Server, Shared and
+    Tests projects have none, and MSBuild fails a solution-wide `-t:` with MSB4057 for every project that does not
+    declare the target. Because Directory.Build.props is imported at the TOP of each csproj, a project that declares
+    its own BeforeBuildTasks later simply redefines this one and wins. `.vscode/tasks.json` runs that command on
+    folder open, and the CD pipelines run it per-project.
+    -->
+    <Target Name="BeforeBuildTasks" />
+
 </Project>

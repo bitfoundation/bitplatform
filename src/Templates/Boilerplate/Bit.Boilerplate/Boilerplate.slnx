@@ -62,9 +62,9 @@
     <File Path=".docs/22- Messaging.md" />
     <File Path=".docs/23- Diagnostic Modal.md" />
     <File Path=".docs/24- WebAuthn and Passwordless Authentication (Advanced).md" />
-    <!--#if (database == "PostgreSQL" || database == "SqlServer")-->
+    <!--#if ((database == "PostgreSQL" || database == "SqlServer") && (module == "Admin" || module == "Sales"))-->
     <File Path=".docs/25- RAG - Semantic Search with Vector Embeddings (Advanced).md" />
-    <!--#endif-->    
+    <!--#endif-->
   </Folder>
 <!--#if (pipeline == "GitHub")-->
   <Folder Name="/.SolutionItems/.github/workflows/">
@@ -84,7 +84,7 @@
   </Folder>
   <Folder Name="/.SolutionItems/.grafana/">
     <File Path=".grafana/dashboard.json" />
-    <File Path=".grafana/README.MD" />
+    <File Path=".grafana/README.md" />
   </Folder>
   <Folder Name="/Client/">
     <Project Path="src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj" />

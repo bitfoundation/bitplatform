@@ -37,7 +37,11 @@ You will be working with the following key technologies:
 
 The solution is organized into the following projects. Understand their roles to locate and modify the correct files.
 
+<!--#if (signalR == true)-->
 *   **Boilerplate.Server.Api**: Houses API controllers, mappers, the `DbContext`, EF Core migrations, email templates, action filters, SignalR hubs, and server-specific configuration.
+<!--#else-->
+*   **Boilerplate.Server.Api**: Houses API controllers, mappers, the `DbContext`, EF Core migrations, email templates, action filters, and server-specific configuration.
+<!--#endif-->
 *   **Boilerplate.Server.Web**: The application's default startup project and entry point. It hosts `App.razor` and configures Blazor Server and server-side rendering (SSR).
 *   **Boilerplate.Server.Shared**: (Also known as Aspire's ServiceDefaults) Contains common code shared between the `Boilerplate.Server.Api` and `Boilerplate.Server.Web` projects.
 <!--#if (aspire == true)-->
@@ -81,9 +85,9 @@ Before implementing any changes, you **MUST** complete the following:
     -   **Windows** (`Boilerplate.Client.Windows`): Development builds start WebView2 with `--remote-debugging-port=9222`, exposing the **Chrome DevTools Protocol (CDP)** at `http://localhost:9222`. Attach Playwright to it via a custom `playwright-core` script (`chromium.connectOverCDP('http://localhost:9222')` and use the existing page.
     -   **Android**: the WebView is debuggable, and its CDP endpoint is a local abstract socket on the device. Expose it with `adb shell pidof <applicationId>` then `adb forward tcp:9222 localabstract:webview_devtools_remote_<pid>` (pick another local port if the Windows app already holds 9222), and attach with Playwright exactly like Windows.
 -   **Assume hot reload is working**: `.cs`, `.razor`, `.scss` and `.ts` changes are picked up automatically by the running app, so after an edit do NOT rebuild the project and do NOT reload/refresh the web app. Only rebuild or refresh if you can't see what you were expecting after your change.
--   **Run tests**: Run `dotnet test` in src/Tests/Boilerplate.Tests project directory.
+-   **Run tests**: Run `dotnet test` in the src/Tests directory.
 -   **Add new migrations**: Run `dotnet ef migrations add <MigrationName> --output-dir Infrastructure/Data/Migrations --verbose` in src/Server/Boilerplate.Server.Api project directory.
--   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in src/Shared/Boilerplate.Shared project directory.
+-   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in the src/Shared directory.
 
 ## 5. Coding Conventions & Best Practices
 
