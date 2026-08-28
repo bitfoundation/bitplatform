@@ -75,6 +75,26 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // Remembers the element the focus was on when a popup took it over, so the popup can hand the keyboard
+    // back to where it came from once it closes.
+    internal static ValueTask BitUtilsCaptureFocusOrigin(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.captureFocusOrigin", elementId);
+    }
+
+
+    internal static ValueTask BitUtilsRestoreFocusOrigin(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.restoreFocusOrigin", elementId);
+    }
+
+
+    internal static ValueTask BitUtilsDisposeFocusOrigin(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeFocusOrigin", elementId);
+    }
+
+
     internal static ValueTask BitUtilsPreventDefaultKeys(this IJSRuntime jsRuntime, string elementId, string[] keys)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.preventDefaultKeys", elementId, keys);

@@ -1,24 +1,47 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
+@* The Escape key is handled on the root rather than on the container so that it is caught wherever the
+   keyboard actually is while the panel is open - inside the content, or on the overlay that took the click.
+   The key stops here when the panel acts on it: a panel opened from inside another one sits in that one's
+   content, where an Escape left to carry on up would dismiss the panel the keyboard is still working inside
+   of along with the one it was meant for. *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
+     @onkeydown="HandleOnKeyDown" @onkeydown:stopPropagation="DismissesOnEscape"
      id="@_Id"
-     role="dialog"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
 
-    @if (IsOpen && Modeless is false)
+    @* The overlay stays in the page while the panel is closed so that it fades out with the panel instead
+       of vanishing under it in one frame. It is hidden rather than removed, which also takes it out of the
+       way of the clicks the page is meant to keep while the panel is closed. *@
+    @if (Modeless is false)
     {
-        <div @onclick="OnOverlayClicked"
-             aria-hidden="true" 
-             style="@Styles?.Overlay" 
-             class="bit-pnl-ovl @Classes?.Overlay" />
+        <div @onclick="HandleOnOverlayClick"
+             aria-hidden="true"
+             style="@Styles?.Overlay"
+             class="@GetOverlayCssClasses()" />
     }
 
+    @* The container is the surface the panel actually is, so it is the element that carries the dialog role
+       and the name that goes with it - a role on the wrapper around the overlay would name the whole page
+       region a dialog. It is made programmatically focusable so that a panel holding nothing focusable still
+       has somewhere to put the keyboard, and it is marked inert while the panel is closed so that neither
+       Tab nor a screen reader ever reaches a content that is off the screen. *@
     <div id="@_containerId"
+         tabindex="-1"
+         role="@GetRole()"
+         inert="@(IsOpen is false)"
+         aria-label="@AriaLabel"
+         aria-modal="@GetAriaModal()"
+         aria-labelledby="@TitleAriaId"
+         aria-describedby="@SubtitleAriaId"
          style="@GetContainerCssStyles()"
          class="@GetContainerCssClasses()">
-        @ChildContent
+        @if (ContentRendered)
+        {
+            @(Content ?? ChildContent)
+        }
     </div>
 </div>

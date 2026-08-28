@@ -172,6 +172,54 @@
             Utils._focusTraps.delete(elementId);
         }
 
+        private static _focusOrigins = new Map<string, HTMLElement>();
+
+        // Remembers the element the focus was on at the moment a popup took it over, keyed by the popup, so
+        // that closing the popup can hand the keyboard back to where it came from. A popup that moves the
+        // focus into itself and then takes its content away leaves the focus on the body, which sends the
+        // keyboard back to the top of the page - the one thing the WAI-ARIA dialog pattern asks not to happen.
+        public static captureFocusOrigin(elementId: string) {
+            try {
+                const active = document.activeElement as HTMLElement | null;
+
+                // The body is not somewhere the focus can be handed back to, and neither is an element that
+                // is inside the popup itself: the focus was already there, so there is nothing to restore.
+                if (!active || active === document.body) return;
+
+                const container = document.getElementById(elementId);
+                if (container?.contains(active)) return;
+
+                Utils._focusOrigins.set(elementId, active);
+            } catch (e) { console.error("BitBlazorUI.Utils.captureFocusOrigin:", e); }
+        }
+
+        // Hands the focus back to the element captureFocusOrigin remembered, and forgets it either way, so a
+        // popup that is opened again captures anew. The focus is only ours to hand back while it is still in
+        // the popup - or was dropped to the body by the popup being hidden - so a focus the user has since
+        // moved somewhere else of their own accord is left alone.
+        public static restoreFocusOrigin(elementId: string) {
+            try {
+                const origin = Utils._focusOrigins.get(elementId);
+                if (!origin) return;
+
+                Utils._focusOrigins.delete(elementId);
+
+                // The element that held the focus may have been taken off the page while the popup was open.
+                if (!origin.isConnected) return;
+
+                const active = document.activeElement;
+                const container = document.getElementById(elementId);
+                const ours = active == null || active === document.body || (container?.contains(active) ?? false);
+                if (!ours) return;
+
+                origin.focus();
+            } catch (e) { console.error("BitBlazorUI.Utils.restoreFocusOrigin:", e); }
+        }
+
+        public static disposeFocusOrigin(elementId: string) {
+            Utils._focusOrigins.delete(elementId);
+        }
+
         private static _preventedKeys = new Map<string, AbortController>();
 
         // Suppresses the default behavior (page scrolling) of the given keys on an element, for the

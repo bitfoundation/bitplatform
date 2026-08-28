@@ -9,33 +9,48 @@
           IsEnabled="IsEnabled"
           Style="@StyleBuilder.Value"
           Visibility="Visibility"
+          AbsolutePosition="AbsolutePosition"
           AutoToggleScroll="AutoToggleScroll"
           Blocking="Blocking"
           Classes="Classes"
+          FullSize="FullSize"
+          IsAlert="IsAlert"
           IsOpen="IsOpen"
           IsOpenChanged="AssignIsOpen"
+          LazyRender="LazyRender"
           Modeless="Modeless"
+          NoAutoFocus="NoAutoFocus"
+          NoDismissOnEscape="NoDismissOnEscape"
+          NoFocusTrap="NoFocusTrap"
+          NoSwipe="NoSwipe"
           OnDismiss="OnDismiss"
+          OnOpen="OnOpen"
+          OnOverlayClick="OnOverlayClick"
           OnSwipeStart="OnSwipeStart"
           OnSwipeMove="OnSwipeMove"
           OnSwipeEnd="OnSwipeEnd"
+          OnToggle="OnToggle"
           Position="Position"
           Size="Size"
           ScrollerSelector="@ScrollerSelector"
           Styles="Styles"
-          SwipeTrigger="SwipeTrigger">
+          SubtitleAriaId="@SubtitleAriaId"
+          SwipeTrigger="SwipeTrigger"
+          TitleAriaId="@GetTitleAriaId()">
     @if (Header is not null || HeaderText is not null || ShowCloseButton)
     {
         <div style="@Styles?.HeaderContainer" class="bit-ppl-hcn @Classes?.HeaderContainer">
+            @* The header is what a panel that has one is named by, so it carries the id the dialog points its
+               aria-labelledby at - unless the consumer named the panel themselves, which wins over it. *@
             @if (Header is not null)
             {
-                <div style="@Styles?.Header" class="bit-ppl-hdr @Classes?.Header">
+                <div id="@_headerId" style="@Styles?.Header" class="bit-ppl-hdr @Classes?.Header">
                     @Header
                 </div>
             }
             else if (HeaderText is not null)
             {
-                <div style="@Styles?.Header" class="bit-ppl-hdr @Classes?.Header">
+                <div id="@_headerId" style="@Styles?.Header" class="bit-ppl-hdr @Classes?.Header">
                     @HeaderText
                 </div>
             }
@@ -46,8 +61,8 @@
 
                 <button @onclick="ClosePanel"
                         type="button"
-                        title="Close"
-                        aria-label="Close"
+                        title="@(CloseButtonAriaLabel ?? "Close")"
+                        aria-label="@(CloseButtonAriaLabel ?? "Close")"
                         style="@Styles?.CloseButton"
                         class="bit-ppl-cls @Classes?.CloseButton">
                     <i style="@Styles?.CloseIcon"

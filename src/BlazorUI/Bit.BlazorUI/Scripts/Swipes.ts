@@ -29,7 +29,11 @@
             let startY = -1;
             let originalTransform: string;
             let orientation = BitSwipeOrientation.None;
-            const bcr = element.getBoundingClientRect();
+            // How far the surface has to be dragged is a fraction of how big it is, so the box is measured
+            // when the gesture starts rather than when it is registered: a surface that is resized while it
+            // is registered - a panel given a new size, a callout whose content grew - would otherwise be
+            // weighed against a box it no longer has.
+            let bcr = element.getBoundingClientRect();
             const isTouchDevice = Utils.isTouchDevice();
 
             const getX = (e: TouchEvent | PointerEvent) => isTouchDevice ? (e as TouchEvent).touches[0].screenX : (e as PointerEvent).screenX;
@@ -38,6 +42,8 @@
             const onStart = async (e: TouchEvent | PointerEvent): Promise<void> => {
                 startX = getX(e);
                 startY = getY(e);
+
+                bcr = element.getBoundingClientRect();
 
                 element.style.transitionDuration = '0s';
                 originalTransform = element.style.transform;
@@ -163,8 +169,13 @@
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
                     }
-                    element.style.transform = originalTransform;
                 } finally {
+                    // The transform the drag wrote onto the element is taken off again however the gesture
+                    // ended, the dismissal included: an inline transform left behind outlives the gesture and
+                    // overrides whatever the stylesheet has to say about where the surface sits, so the next
+                    // time it is shown it would come back offset by however far the last drag got.
+                    element.style.transform = originalTransform;
+
                     await dotnetObj.invokeMethodAsync('OnEnd', diffX, diffY);
                     diffX = diffY = 0;
                     orientation = BitSwipeOrientation.None;

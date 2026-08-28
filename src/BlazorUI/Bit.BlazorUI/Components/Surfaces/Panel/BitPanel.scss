@@ -12,22 +12,59 @@
     }
 }
 
+// A panel laid out against a container of the page rather than against the screen. The root takes the size
+// of that container so its own children have something to be placed against, which also makes it the
+// stacking context the overlay and the panel are layered inside of - so a contained panel never lifts itself
+// over the chrome of the page the way a screen-level one is meant to. The root itself must stay out of the
+// way of the clicks that container keeps while the panel is closed, so the pointer is handed back to the two
+// parts that are meant to take it.
+.bit-pnl-abs {
+    inset: 0;
+    position: absolute;
+    pointer-events: none;
+
+    > .bit-pnl-ovl,
+    > .bit-pnl-cnt {
+        position: absolute;
+        pointer-events: auto;
+    }
+}
+
+// The overlay stays in the page while the panel is closed so that it fades out with the panel rather than
+// vanishing under it in one frame. It is hidden rather than removed, and a hidden element takes neither the
+// clicks of the page nor a place in the accessibility tree, so a closed panel leaves the page untouched.
 .bit-pnl-ovl {
     inset: 0;
+    opacity: 0;
     width: 100%;
     height: 100%;
     position: fixed;
+    visibility: hidden;
     z-index: $zindex-overlay;
+    transition: opacity $mot-duration-short $mot-easing-accelerate, visibility 0s linear $mot-duration-short;
 }
 
+.bit-pnl-ovl-opn {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity $mot-duration $mot-easing-decelerate, visibility 0s linear 0s;
+}
+
+// The panel itself. It is hidden while it is closed, which is what keeps a content that is only translated
+// off the screen out of the tab order and out of the accessibility tree; the visibility is switched at the
+// end of the exit transition so that the panel is still seen sliding away.
 .bit-pnl-cnt {
     opacity: 0;
     position: fixed;
+    visibility: hidden;
+    outline: transparent;
     box-sizing: border-box;
     z-index: $zindex-callout;
     background-color: $clr-bg-pri;
     box-shadow: $box-shadow-sheet;
-    transition: transform $mot-duration $mot-easing-decelerate, opacity $mot-duration-short $mot-easing-accelerate;
+    transition: transform $mot-duration $mot-easing-decelerate,
+                opacity $mot-duration-short $mot-easing-accelerate,
+                visibility 0s linear $mot-duration;
 }
 
 .bit-pnl-start {
@@ -69,4 +106,25 @@
     inset-inline: 0;
     height: fit-content;
     transform: translateY(100%);
+}
+
+// The full-size panel takes the whole of the screen along both axes, which also lifts the cap that otherwise
+// leaves a strip of the page showing beside it. It follows the four edges so that it still slides in from the
+// one it belongs to.
+.bit-pnl-fsz {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+// The open state, declared after the four edges so that it takes the panel back off the transform each of
+// them parks it at.
+.bit-pnl-opn {
+    opacity: 1;
+    visibility: visible;
+    transform: translate3d(0, 0, 0);
+    transition: transform $mot-duration $mot-easing-decelerate,
+                opacity $mot-duration-short $mot-easing-accelerate,
+                visibility 0s linear 0s;
 }
