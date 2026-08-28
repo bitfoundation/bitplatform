@@ -18,8 +18,8 @@ public class BitPanelDismissArgs
     }
 
     /// <summary>
-    /// What is closing the panel: a click on the overlay, the Escape key, a swipe, or the code that
-    /// opened it.
+    /// What is closing the panel: the close button, a click on the overlay, the Escape key, a swipe, or
+    /// the code that opened it.
     /// </summary>
     public BitPanelDismissReason Reason { get; }
 

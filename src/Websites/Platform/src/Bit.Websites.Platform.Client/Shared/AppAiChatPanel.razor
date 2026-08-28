@@ -14,12 +14,12 @@
                IconUrl="/images/ai-chat-icon-64.webp"
                FloatPosition="BitPosition.BottomRight" />
 
-    <BitProPanel ShowCloseButton
-                 @bind-IsOpen="isOpen"
-                 ModeFull="isSmallScreen is true"
-                 Modeless="isSmallScreen is false"
-                 OnDismiss="WrapHandled(HandleOnDismissPanel)"
-                 Classes="@(new() { Container = $"panel-cnt{(isMaximized ? " maximized" : null)}" })">
+    <BitPanel ShowCloseButton
+              @bind-IsOpen="isOpen"
+              Dimmed="isSmallScreen is true"
+              Modeless="isSmallScreen is false"
+              OnDismiss="WrapHandled(HandleOnDismissPanel)"
+              Classes="@(new() { Container = $"panel-cnt{(isMaximized ? " maximized" : null)}" })">
         <Header>
             <BitStack Horizontal Alignment="BitAlignment.Center">
                 <BitText Typography="BitTypography.H5">AI chat panel</BitText>
@@ -149,5 +149,5 @@
                 </BitStack>
             </BitStack>
         </Body>
-    </BitProPanel>
+    </BitPanel>
 </section>

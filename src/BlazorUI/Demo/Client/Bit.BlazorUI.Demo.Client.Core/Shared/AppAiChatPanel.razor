@@ -17,12 +17,12 @@
                IconName="@BitIconName.ChatBot"
                FloatPosition="BitPosition.BottomRight" />
 
-    <BitProPanel @bind-IsOpen="_isOpen"
-                 ShowCloseButton
-                 ModeFull="_isSmallScreen is true"
-                 Modeless="_isSmallScreen is false"
-                 OnDismiss="WrapHandled(HandleOnDismissPanel)"
-                 Classes="@(new() { Container = $"panel-cnt{(_isMaximized ? " maximized" : null)}" })">
+    <BitPanel @bind-IsOpen="_isOpen"
+              ShowCloseButton
+              Dimmed="_isSmallScreen is true"
+              Modeless="_isSmallScreen is false"
+              OnDismiss="WrapHandled(HandleOnDismissPanel)"
+              Classes="@(new() { Container = $"panel-cnt{(_isMaximized ? " maximized" : null)}" })">
         <Header>
             <BitStack Horizontal Alignment="BitAlignment.Center">
                 <BitText Typography="BitTypography.H4">AI chat panel</BitText>
@@ -136,5 +136,5 @@
                 </BitStack>
             </BitStack>
         </Body>
-    </BitProPanel>
+    </BitPanel>
 </section>

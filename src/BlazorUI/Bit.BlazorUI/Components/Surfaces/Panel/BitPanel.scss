@@ -136,6 +136,78 @@
     max-height: 100%;
 }
 
+// A panel that was given a header, a footer or a close button lays them out around a body of its own. The
+// scrolling moves from the panel to that body, which is what keeps the parts around it put while the
+// content between them moves.
+.bit-pnl-sec {
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+}
+
+// The header row: the title of the panel beside the close button, at the edge the panel slid in from.
+.bit-pnl-hcn {
+    display: flex;
+    color: $clr-fg-pri;
+    overflow-wrap: anywhere;
+    font-weight: $tg-fw-semibold;
+    background-color: $clr-bg-pri;
+    padding: spacing(2) spacing(2) 0;
+}
+
+.bit-pnl-hdr {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    font-size: $tg-fs-xl;
+}
+
+.bit-pnl-cls {
+    display: flex;
+    cursor: pointer;
+    width: spacing(5);
+    height: spacing(5);
+    align-items: center;
+    justify-content: center;
+    font-size: $tg-fs-sm;
+    border-radius: $shp-radius-button;
+    background-color: transparent;
+
+    @media (hover: hover) {
+        &:hover {
+            color: $clr-fg-pri-hover;
+            background-color: $clr-bg-pri-hover;
+        }
+    }
+
+    &:active {
+        color: $clr-fg-pri-active;
+        background-color: $clr-bg-pri-active;
+    }
+
+    &:disabled {
+        cursor: default;
+        opacity: $opa-dis;
+        background-color: transparent;
+    }
+}
+
+// The part that gives way when the panel is capped to the screen it slides over: it takes the scrolling the
+// panel itself gave up, so the header and the footer stay where they are however far it is scrolled.
+.bit-pnl-bdy {
+    flex-grow: 1;
+    overflow: hidden auto;
+    padding: spacing(2);
+    // The scrolling stops at the body rather than carrying on into the page underneath, which the panel
+    // itself no longer does for it now that it is the body that scrolls.
+    overscroll-behavior: contain;
+}
+
+.bit-pnl-ftr {
+    background-color: $clr-bg-pri;
+    padding: 0 spacing(2) spacing(2);
+}
+
 // The open state, declared after the four edges so that it takes the panel back off the transform each of
 // them parks it at.
 .bit-pnl-opn {

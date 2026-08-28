@@ -126,12 +126,6 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/Extras/ProPanel/BitProPanelDemo.razor.css",
-        "inputFile": "Pages/Components/Extras/ProPanel/BitProPanelDemo.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Pages/Components/Extras/RichTextEditor/BitRichTextEditorDemo.razor.css",
         "inputFile": "Pages/Components/Extras/RichTextEditor/BitRichTextEditorDemo.razor.scss",
         "minify": { "enabled": false },

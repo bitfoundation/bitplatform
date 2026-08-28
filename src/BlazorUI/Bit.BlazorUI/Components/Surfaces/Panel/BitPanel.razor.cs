@@ -9,9 +9,10 @@
 /// the finger - each of which it can be asked to refuse.
 /// </summary>
 /// <remarks>
-/// There are two panel components available for different purposes: BitPanel is the plain surface described
-/// here, while BitProPanel (in the Bit.BlazorUI.Extras package) builds a header, a close button, a scrolling
-/// body and a footer on top of it. Use BitProPanel where that chrome is what you would otherwise write by hand.
+/// A panel given a <see cref="Header"/>, a <see cref="Footer"/> or a <see cref="ShowCloseButton"/> builds
+/// the chrome that goes with them - a header row with the close button in it, a body that takes the
+/// scrolling, and a footer - around its content. A panel given none of them is the plain surface it has
+/// always been, and its content fills it however it likes.
 /// </remarks>
 public partial class BitPanel : BitComponentBase
 {
@@ -21,6 +22,7 @@ public partial class BitPanel : BitComponentBase
     private bool _scrollLocked;
     private string? _lockedScroller;
     private string? _swipesKey;
+    private string _headerId = default!;
     private string _containerId = default!;
     private MouseEventArgs? _dismissArgs;
     private DotNetObjectReference<BitPanel>? _dotnetObj;
@@ -68,6 +70,12 @@ public partial class BitPanel : BitComponentBase
     [Parameter] public bool Blocking { get; set; }
 
     /// <summary>
+    /// Alias for <see cref="ChildContent"/>, named for the body it becomes on a panel that was given a
+    /// header or a footer to lay out around it.
+    /// </summary>
+    [Parameter] public RenderFragment? Body { get; set; }
+
+    /// <summary>
     /// The content of the panel.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -76,6 +84,32 @@ public partial class BitPanel : BitComponentBase
     /// Custom CSS classes for different parts of the panel.
     /// </summary>
     [Parameter] public BitPanelClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The accessible name of the close button, which is what a screen reader reads out for it and what the
+    /// pointer shows as its tooltip. It defaults to "Close".
+    /// </summary>
+    [Parameter] public string? CloseButtonAriaLabel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon to display in the close button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="CloseIconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="CloseIconName"/> instead.
+    /// </remarks>
+    [Parameter] public BitIconInfo? CloseIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to display in the close button from the built-in Fluent UI icons.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.Cancel</c>).
+    /// <br />
+    /// For external icon libraries, use <see cref="CloseIcon"/> instead.
+    /// </remarks>
+    [Parameter] public string? CloseIconName { get; set; }
 
     /// <summary>
     /// Alias for ChildContent.
@@ -92,10 +126,43 @@ public partial class BitPanel : BitComponentBase
     [Parameter] public bool Dimmed { get; set; }
 
     /// <summary>
+    /// The footer of the panel, which stays put at the far edge of it while the content between it and the
+    /// header scrolls.
+    /// </summary>
+    /// <remarks>
+    /// It is where the actions that finish what the panel was opened for belong, so that they are still
+    /// reachable however far the content has been scrolled.
+    /// </remarks>
+    [Parameter] public RenderFragment? Footer { get; set; }
+
+    /// <summary>
+    /// The text of the footer of the panel, for the footer that is nothing but a line of text.
+    /// <see cref="Footer"/> takes precedence over it.
+    /// </summary>
+    [Parameter] public string? FooterText { get; set; }
+
+    /// <summary>
     /// Stretches the panel over the whole of the screen, which takes over from <see cref="Size"/> and from
     /// the cap that otherwise leaves a strip of the page showing beside it.
     /// </summary>
     [Parameter] public bool FullSize { get; set; }
+
+    /// <summary>
+    /// The header of the panel, which stays put at the edge the panel slid in from while the content below
+    /// it scrolls.
+    /// </summary>
+    /// <remarks>
+    /// A panel that renders a header of its own is already showing the name it should be announced under, so
+    /// the header is what the dialog points its <c>aria-labelledby</c> at unless
+    /// <see cref="TitleAriaId"/> or <see cref="BitComponentBase.AriaLabel"/> names it instead.
+    /// </remarks>
+    [Parameter] public RenderFragment? Header { get; set; }
+
+    /// <summary>
+    /// The text of the header of the panel, for the header that is nothing but a title.
+    /// <see cref="Header"/> takes precedence over it.
+    /// </summary>
+    [Parameter] public string? HeaderText { get; set; }
 
     /// <summary>
     /// Reports the panel to assistive technologies as an alert dialog rather than a plain one, for the
@@ -174,9 +241,9 @@ public partial class BitPanel : BitComponentBase
     /// A callback function for when the panel is dismissed.
     /// </summary>
     /// <remarks>
-    /// It is called for every closing of the panel, however it happened: a click on the overlay, the Escape
-    /// key, a swipe, the Close and Toggle methods, and the IsOpen parameter being set to false from the
-    /// outside. The event arguments carry the click that dismissed the panel where there was one.
+    /// It is called for every closing of the panel, however it happened: the close button, a click on the
+    /// overlay, the Escape key, a swipe, the Close and Toggle methods, and the IsOpen parameter being set to
+    /// false from the outside. The event arguments carry the click that dismissed the panel where there was one.
     /// </remarks>
     [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
 
@@ -185,7 +252,7 @@ public partial class BitPanel : BitComponentBase
     /// </summary>
     /// <remarks>
     /// Set <c>Cancel</c> on the provided <see cref="BitPanelDismissArgs"/> to leave the panel open, and read
-    /// its <c>Reason</c> to tell a click on the overlay, the Escape key, a swipe and a
+    /// its <c>Reason</c> to tell a click on the overlay, the Escape key, a swipe, the close button and a
     /// <see cref="Close"/> call apart - refusing to let a stray swipe throw away a half-filled form is not
     /// the same as refusing the Close the form itself asked for. Since the callback is awaited, it can also
     /// run asynchronous work like a confirmation prompt.
@@ -277,6 +344,17 @@ public partial class BitPanel : BitComponentBase
     [Parameter] public string? ScrollerSelector { get; set; }
 
     /// <summary>
+    /// Shows the close button of the panel, at the end of the header row.
+    /// </summary>
+    /// <remarks>
+    /// It is what a panel that cannot be dismissed by a click on the overlay - a <see cref="Blocking"/> or a
+    /// <see cref="Modeless"/> one - needs to be closable with the pointer at all. The dismissal it performs
+    /// is reported through <see cref="OnDismissing"/> as <see cref="BitPanelDismissReason.CloseButton"/>,
+    /// which is what tells it apart from the gestures that could be a slip.
+    /// </remarks>
+    [Parameter] public bool ShowCloseButton { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the panel component.
     /// </summary>
     [Parameter] public BitPanelClassStyles? Styles { get; set; }
@@ -296,7 +374,8 @@ public partial class BitPanel : BitComponentBase
 
     /// <summary>
     /// The ARIA id of the element that names the panel, which is what a screen reader reads out when the
-    /// panel opens. <see cref="BitComponentBase.AriaLabel"/> names the panel where there is no such element.
+    /// panel opens. It defaults to the <see cref="Header"/> of the panel, which is the name the panel is
+    /// already showing, and <see cref="BitComponentBase.AriaLabel"/> takes precedence over both.
     /// </summary>
     [Parameter] public string? TitleAriaId { get; set; }
 
@@ -434,6 +513,7 @@ public partial class BitPanel : BitComponentBase
 
     protected override void OnInitialized()
     {
+        _headerId = $"BitPanel-{UniqueId}-header";
         _containerId = $"BitPanel-{UniqueId}-container";
 
         _contentRendered = IsOpen;
@@ -595,6 +675,13 @@ public partial class BitPanel : BitComponentBase
         await ClosePanel(BitPanelDismissReason.Overlay, e);
     }
 
+    private async Task HandleOnCloseClick(MouseEventArgs e)
+    {
+        await ClosePanel(BitPanelDismissReason.CloseButton, e);
+
+        StateHasChanged();
+    }
+
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
         if (DismissesOnEscape is false) return;
@@ -623,7 +710,28 @@ public partial class BitPanel : BitComponentBase
     // panel the user can still click out of would leave them unable to tab back to what they clicked on.
     private bool ShouldTrapFocus => NoFocusTrap is false && Modeless is false;
 
+    // Whether the panel builds the chrome that goes around a body of its own. The close button counts: it is
+    // rendered in the header row, so a panel that shows one has that row whether or not it was given a title
+    // to put in it.
+    private bool HasSections => Header is not null
+                             || HeaderText.HasValue()
+                             || Footer is not null
+                             || FooterText.HasValue()
+                             || ShowCloseButton;
+
     private string GetRole() => IsAlert ? "alertdialog" : "dialog";
+
+    // A dialog needs an accessible name, and a panel that renders a header of its own is already showing the
+    // name it should be given. A name set by hand wins over it, and so does an AriaLabel, which the panel
+    // renders instead of pointing at an element.
+    private string? GetTitleAriaId()
+    {
+        if (TitleAriaId.HasValue()) return TitleAriaId;
+
+        if (AriaLabel.HasValue()) return null;
+
+        return (Header is not null || HeaderText.HasValue()) ? _headerId : null;
+    }
 
     // Only a panel that actually holds the page back is a modal one, and only while it is open: a panel that
     // reports itself as modal while the page behind it is still usable is telling a screen reader something
@@ -694,6 +802,13 @@ public partial class BitPanel : BitComponentBase
         if (FullSize)
         {
             classes.Add("bit-pnl-fsz");
+        }
+
+        // The scrolling moves from the panel to the body between the header and the footer, which is what
+        // keeps those two put while the content underneath them moves.
+        if (HasSections)
+        {
+            classes.Add("bit-pnl-sec");
         }
 
         if (IsOpen)

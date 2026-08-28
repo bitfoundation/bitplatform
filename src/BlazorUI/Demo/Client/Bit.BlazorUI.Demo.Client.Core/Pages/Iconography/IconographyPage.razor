@@ -74,12 +74,12 @@
 </DocsArticle>
 
 <div class="icon-details-panel-scope">
-    <BitProPanel AutoToggleScroll Modeless ShowCloseButton
-                 @bind-IsOpen="isIconPanelOpen"
-                 Size="IconPanelSize"
-                 Position="BitPanelPosition.End"
-                 HeaderText="Icon details"
-                 OnDismiss="HandleIconPanelDismissed">
+    <BitPanel AutoToggleScroll Modeless ShowCloseButton
+              @bind-IsOpen="isIconPanelOpen"
+              Size="IconPanelSize"
+              Position="BitPanelPosition.End"
+              HeaderText="Icon details"
+              OnDismiss="HandleIconPanelDismissed">
         <Body>
             @if (selectedIcon is not null)
             {
@@ -217,5 +217,5 @@
                 </BitStack>
             }
         </Body>
-    </BitProPanel>
+    </BitPanel>
 </div>

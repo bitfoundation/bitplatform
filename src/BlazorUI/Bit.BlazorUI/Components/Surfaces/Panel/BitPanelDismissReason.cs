@@ -26,4 +26,9 @@ public enum BitPanelDismissReason
     /// The user swiped the panel towards the edge it slid in from.
     /// </summary>
     Swipe,
+
+    /// <summary>
+    /// The user clicked the close button the panel renders in its own header.
+    /// </summary>
+    CloseButton,
 }

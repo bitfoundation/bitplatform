@@ -29,6 +29,13 @@ public partial class BitPanelDemo
         },
         new()
         {
+            Name = "Body",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Alias for ChildContent, named for the body it becomes on a panel that was given a header or a footer to lay out around it.",
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -42,6 +49,27 @@ public partial class BitPanelDemo
             Description = "Custom CSS classes for different parts of the panel.",
             Href = "#class-styles",
             LinkType = LinkType.Link,
+        },
+        new()
+        {
+            Name = "CloseButtonAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The accessible name of the close button, which is what a screen reader reads out for it and what the pointer shows as its tooltip. It defaults to \"Close\".",
+        },
+        new()
+        {
+            Name = "CloseIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon of the close button, given as the CSS classes of an external icon library. It takes precedence over CloseIconName.",
+        },
+        new()
+        {
+            Name = "CloseIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the built-in Fluent UI icon of the close button. It defaults to Cancel.",
         },
         new()
         {
@@ -59,10 +87,38 @@ public partial class BitPanelDemo
         },
         new()
         {
+            Name = "Footer",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The footer of the panel, which stays put at the far edge of it while the content between it and the header scrolls.",
+        },
+        new()
+        {
+            Name = "FooterText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text of the footer of the panel, for the footer that is nothing but a line of text. Footer takes precedence over it.",
+        },
+        new()
+        {
             Name = "FullSize",
             Type = "bool",
             DefaultValue = "false",
             Description = "Stretches the panel over the whole of the screen, which takes over from Size and from the cap that otherwise leaves a strip of the page showing beside it.",
+        },
+        new()
+        {
+            Name = "Header",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The header of the panel, which stays put at the edge the panel slid in from while the content below it scrolls. It is also what names the panel to a screen reader, unless TitleAriaId or AriaLabel names it instead.",
+        },
+        new()
+        {
+            Name = "HeaderText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text of the header of the panel, for the header that is nothing but a title. Header takes precedence over it.",
         },
         new()
         {
@@ -124,7 +180,7 @@ public partial class BitPanelDemo
         {
             Name = "OnDismiss",
             Type = "EventCallback<MouseEventArgs>",
-            Description = "A callback function for when the panel is dismissed. It is called for every closing of the panel: the overlay, the Escape key, a swipe, the Close and Toggle methods, and the IsOpen parameter being set to false from the outside.",
+            Description = "A callback function for when the panel is dismissed. It is called for every closing of the panel: the close button, the overlay, the Escape key, a swipe, the Close and Toggle methods, and the IsOpen parameter being set to false from the outside.",
         },
         new()
         {
@@ -208,6 +264,13 @@ public partial class BitPanelDemo
         },
         new()
         {
+            Name = "ShowCloseButton",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows the close button of the panel, at the end of the header row. It is what a Blocking or a Modeless panel needs to be closable with the pointer at all.",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitPanelClassStyles?",
             DefaultValue = "null",
@@ -234,7 +297,7 @@ public partial class BitPanelDemo
             Name = "TitleAriaId",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The ARIA id of the element that names the panel, which is what a screen reader reads out when the panel opens. AriaLabel names the panel where there is no such element.",
+            Description = "The ARIA id of the element that names the panel, which is what a screen reader reads out when the panel opens. It defaults to the Header of the panel, and AriaLabel takes precedence over both.",
         },
         new()
         {
@@ -302,6 +365,48 @@ public partial class BitPanelDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the container of the BitPanel, which is the panel surface itself."
+               },
+               new()
+               {
+                   Name = "HeaderContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the header container of the BitPanel, which holds the header beside the close button."
+               },
+               new()
+               {
+                   Name = "Header",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the header of the BitPanel."
+               },
+               new()
+               {
+                   Name = "CloseButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the close button of the BitPanel."
+               },
+               new()
+               {
+                   Name = "CloseIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the icon of the close button of the BitPanel."
+               },
+               new()
+               {
+                   Name = "Body",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the body of the BitPanel, which is the part that scrolls between the header and the footer."
+               },
+               new()
+               {
+                   Name = "Footer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the footer of the BitPanel."
                }
             ]
         },
@@ -316,7 +421,7 @@ public partial class BitPanelDemo
                    Name = "Reason",
                    Type = "BitPanelDismissReason",
                    DefaultValue = "",
-                   Description = "What is closing the panel: a click on the overlay, the Escape key, a swipe, or the code that opened it.",
+                   Description = "What is closing the panel: the close button, a click on the overlay, the Escape key, a swipe, or the code that opened it.",
                    Href = "#dismiss-reason-enum",
                    LinkType = LinkType.Link,
                },
@@ -363,7 +468,8 @@ public partial class BitPanelDemo
                 new() { Name = "Programmatic", Description = "The code that opened the panel closed it, through the Close or Toggle method.", Value = "0" },
                 new() { Name = "Overlay", Description = "The user clicked the overlay that covers the page behind the panel.", Value = "1" },
                 new() { Name = "Escape", Description = "The user pressed the Escape key while the keyboard was inside the panel.", Value = "2" },
-                new() { Name = "Swipe", Description = "The user swiped the panel towards the edge it slid in from.", Value = "3" }
+                new() { Name = "Swipe", Description = "The user swiped the panel towards the edge it slid in from.", Value = "3" },
+                new() { Name = "CloseButton", Description = "The user clicked the close button the panel renders in its own header.", Value = "4" }
             ]
         }
     ];
@@ -372,6 +478,12 @@ public partial class BitPanelDemo
 
     private bool isBasicPanelOpen;
     private BitPanel basicPanelRef = default!;
+
+    private string lastCloseReason = "-";
+    private bool isHeaderPanelOpen;
+    private bool isHeaderTextPanelOpen;
+    private bool isFooterTextPanelOpen;
+    private bool isCloseButtonPanelOpen;
 
     private double customPanelSize = 300;
     private bool isOpenInPositionStart;
@@ -423,6 +535,8 @@ public partial class BitPanelDemo
     private bool isPanelStylesOpen;
     private bool isPanelClassesOpen;
 
+    private bool isExternalIconPanelOpen;
+
     private bool isRtlPanelOpenStart;
     private bool isRtlPanelOpenEnd;
 
@@ -468,6 +582,76 @@ private bool isBasicPanelOpen;
 private BitPanel basicPanelRef = default!;";
 
     private readonly string example2RazorCode = @"
+<BitButton OnClick=""() => isHeaderTextPanelOpen = true"">HeaderText</BitButton>
+<BitButton OnClick=""() => isHeaderPanelOpen = true"">Header & Footer</BitButton>
+<BitButton OnClick=""() => isFooterTextPanelOpen = true"">FooterText</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""() => isCloseButtonPanelOpen = true"">ShowCloseButton & Blocking</BitButton>
+
+<BitPanel @bind-IsOpen=""isHeaderTextPanelOpen"" Size=""320"" HeaderText=""A panel with a HeaderText"" ShowCloseButton>
+    <div>
+        Once upon a time, stories wove connections between people, a symphony of voices crafting
+        shared dreams. Each word carried meaning, each pause brought understanding. Placeholder
+        text reminds us of that moment when possibilities are limitless, waiting for content to
+        emerge.
+    </div>
+</BitPanel>
+
+<BitPanel @bind-IsOpen=""isHeaderPanelOpen"" Size=""320"" ShowCloseButton>
+    <Header>
+        <BitStack Gap=""0.5rem"" FillContent>
+            <div>A panel with a Header</div>
+            <BitSearchBox Placeholder=""Search here..."" />
+        </BitStack>
+    </Header>
+    <Body>
+        <div>
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas,
+            emotions, and dreams. These placeholder words symbolize the beginning - a moment of
+            possibility where creativity has yet to take shape.
+        </div>
+    </Body>
+    <Footer>
+        <BitStack Horizontal Gap=""0.5rem"">
+            <BitButton OnClick=""() => isHeaderPanelOpen = false"">Save</BitButton>
+            <BitButton Variant=""BitVariant.Outline"" OnClick=""() => isHeaderPanelOpen = false"">Cancel</BitButton>
+        </BitStack>
+    </Footer>
+</BitPanel>
+
+<BitPanel @bind-IsOpen=""isFooterTextPanelOpen""
+          Size=""320""
+          HeaderText=""A panel with a FooterText""
+          FooterText=""This is a footer text!""
+          ShowCloseButton>
+    <div>
+        In the beginning, there is silence - a blank canvas yearning to be filled, a quiet space
+        where creativity waits to awaken. These words are temporary, standing in place of ideas
+        yet to come, a glimpse into the infinite possibilities that lie ahead.
+    </div>
+</BitPanel>
+
+<BitPanel @bind-IsOpen=""isCloseButtonPanelOpen""
+          Blocking
+          Dimmed
+          Size=""320""
+          HeaderText=""Blocking""
+          ShowCloseButton
+          CloseButtonAriaLabel=""Dismiss the panel""
+          OnDismissing=""args => lastCloseReason = args.Reason.ToString()"">
+    <div>
+        A click on the overlay does nothing here, so the close button is the only pointer left
+        that gets this panel closed.
+    </div>
+    <div>Last reason reported by OnDismissing: <b>@lastCloseReason</b></div>
+</BitPanel>";
+    private readonly string example2CsharpCode = @"
+private string lastCloseReason = ""-"";
+private bool isHeaderPanelOpen;
+private bool isHeaderTextPanelOpen;
+private bool isFooterTextPanelOpen;
+private bool isCloseButtonPanelOpen;";
+
+    private readonly string example3RazorCode = @"
 <BitNumberField @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
 
 <BitButton OnClick=""() => isOpenInPositionStart = true"">Start</BitButton>
@@ -532,7 +716,7 @@ private BitPanel basicPanelRef = default!;";
         <BitButton OnClick=""() => isCssSizePanelOpen = false"">Close</BitButton>
     </div>
 </BitPanel>";
-    private readonly string example2CsharpCode = @"
+    private readonly string example3CsharpCode = @"
 private double customPanelSize = 300;
 private bool isOpenInPositionStart;
 private bool isOpenPositionEnd;
@@ -541,7 +725,7 @@ private bool isOpenInPositionBottom;
 private bool isFullSizePanelOpen;
 private bool isCssSizePanelOpen;";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example4RazorCode = @"
 <BitButton OnClick=""() => isBlockingPanelOpen = true"">Blocking</BitButton>
 <BitButton OnClick=""() => isDimmedPanelOpen = true"">Dimmed</BitButton>
 <BitButton OnClick=""() => isModelessPanelOpen = true"">Modeless</BitButton>
@@ -602,7 +786,7 @@ private bool isCssSizePanelOpen;";
         <BitButton OnClick=""() => isNoEscapePanelOpen = false"">Close</BitButton>
     </div>
 </BitPanel>";
-    private readonly string example3CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 private int dismissCount;
 private int overlayClickCount;
 private string lastDismissReason = ""-"";
@@ -622,7 +806,7 @@ private void HandleOnDismissing(BitPanelDismissArgs args)
     lastDismissReason = args.Reason.ToString();
 }";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitToggle @bind-Value=""guardPanel"" Label=""Refuse the dismissals the user asks for"" />
 <BitButton OnClick=""() => isGuardedPanelOpen = true"">Open guarded panel</BitButton>
 
@@ -639,7 +823,7 @@ private void HandleOnDismissing(BitPanelDismissArgs args)
         <BitButton OnClick=""() => guardedPanelRef.Close()"">Close</BitButton>
     </div>
 </BitPanel>";
-    private readonly string example4CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private bool guardPanel = true;
 private bool guardedRefused;
 private bool isGuardedPanelOpen;
@@ -654,7 +838,7 @@ private void HandleOnGuardedDismissing(BitPanelDismissArgs args)
     guardedRefused = args.Cancel;
 }";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitButton OnClick=""() => isFocusPanelOpen = true"">Auto focus</BitButton>
 <BitButton OnClick=""() => isNoFocusPanelOpen = true"">NoAutoFocus & NoFocusTrap</BitButton>
 
@@ -680,11 +864,11 @@ private void HandleOnGuardedDismissing(BitPanelDismissArgs args)
         <BitButton OnClick=""() => isNoFocusPanelOpen = false"">Close</BitButton>
     </div>
 </BitPanel>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private bool isFocusPanelOpen;
 private bool isNoFocusPanelOpen;";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitButton OnClick=""() => isAutoToggleScrollPanelOpen = true"">AutoToggleScroll</BitButton>
 
 <BitPanel @bind-IsOpen=""isAutoToggleScrollPanelOpen"" AutoToggleScroll AriaLabel=""A panel that holds the page still"">
@@ -697,10 +881,10 @@ private bool isNoFocusPanelOpen;";
         <BitButton OnClick=""() => isAutoToggleScrollPanelOpen = false"">Close</BitButton>
     </div>
 </BitPanel>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private bool isAutoToggleScrollPanelOpen;";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitNumberField @bind-Value=""swipeTrigger"" Step=""0.05"" Min=""0.05"" Max=""1"" Mode=""BitSpinButtonMode.Inline"" Label=""SwipeTrigger"" />
 
 <BitButton OnClick=""() => isSwipePanelOpen = true"">Swipe</BitButton>
@@ -729,14 +913,14 @@ private bool isAutoToggleScrollPanelOpen;";
         <BitButton OnClick=""() => isNoSwipePanelOpen = false"">Close</BitButton>
     </div>
 </BitPanel>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private double swipeTrigger = 0.25;
 private decimal swipeStart;
 private decimal swipeDiff;
 private bool isSwipePanelOpen;
 private bool isNoSwipePanelOpen;";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitButton OnClick=""() => isOuterPanelOpen = true"">Open outer panel</BitButton>
 
 <BitPanel @bind-IsOpen=""isOuterPanelOpen"" Size=""320"" Dimmed AriaLabel=""The outer panel"">
@@ -760,11 +944,11 @@ private bool isNoSwipePanelOpen;";
         </BitPanel>
     </div>
 </BitPanel>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private bool isOuterPanelOpen;
 private bool isInnerPanelOpen;";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <div class=""absolute-container"">
     <div>The panel below opens inside this box, not over the page.</div>
     <BitButton OnClick=""() => isAbsolutePanelOpen = true"">Open</BitButton>
@@ -780,10 +964,10 @@ private bool isInnerPanelOpen;";
         </div>
     </BitPanel>
 </div>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private bool isAbsolutePanelOpen;";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitButton OnClick=""() => isLazyPanelOpen = true"">LazyRender</BitButton>
 <BitButton OnClick=""() => isUnrenderPanelOpen = true"">UnrenderOnClose</BitButton>
 
@@ -812,14 +996,32 @@ private bool isAbsolutePanelOpen;";
         <BitButton OnClick=""() => isUnrenderPanelOpen = false"">Close</BitButton>
     </div>
 </BitPanel>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private int openCount;
 private bool lastToggleState;
 private bool lastSettledState;
 private bool isLazyPanelOpen;
 private bool isUnrenderPanelOpen;";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitButton OnClick=""() => isExternalIconPanelOpen = true"">External close icon</BitButton>
+
+<BitPanel @bind-IsOpen=""isExternalIconPanelOpen""
+          Size=""320""
+          ShowCloseButton
+          HeaderText=""External close icon""
+          CloseIcon=""@BitIconInfo.Fa(""solid xmark"")"">
+    <div>
+        The close button of this panel is drawn by FontAwesome instead of by the built-in icon
+        set.
+    </div>
+</BitPanel>";
+    private readonly string example12CsharpCode = @"
+private bool isExternalIconPanelOpen;";
+
+    private readonly string example13RazorCode = @"
 <BitButton OnClick=""() => isStyledPanelOpen = true"">Open Styled panel</BitButton>
 <BitButton OnClick=""() => isClassedPanelOpen = true"">Open Classed panel</BitButton>
 <BitButton OnClick=""() => isPanelStylesOpen = true"">Open panel Styles</BitButton>
@@ -853,21 +1055,28 @@ private bool isUnrenderPanelOpen;";
 </BitPanel>
 
 <BitPanel @bind-IsOpen=""isPanelClassesOpen""
+          ShowCloseButton
+          HeaderText=""Classes""
+          FooterText=""This is a footer text!""
           AriaLabel=""A panel with custom Classes""
           Classes=""@(new() { Container = ""custom-container"",
-                             Overlay = ""custom-overlay"" })"">
+                             Overlay = ""custom-overlay"",
+                             HeaderContainer = ""custom-header-container"",
+                             Header = ""custom-header"",
+                             Body = ""custom-body"",
+                             Footer = ""custom-footer"" })"">
     <div>
         BitPanel with <b>Classes</b> to customize its elements.
         <BitButton OnClick=""() => isPanelClassesOpen = false"">Close</BitButton>
     </div>
 </BitPanel>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private bool isStyledPanelOpen;
 private bool isClassedPanelOpen;
 private bool isPanelStylesOpen;
 private bool isPanelClassesOpen;";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitButton OnClick=""() => isRtlPanelOpenStart = true"">آغاز</BitButton>
 <BitButton OnClick=""() => isRtlPanelOpenEnd = true"">پایان</BitButton>
 
@@ -892,7 +1101,7 @@ private bool isPanelClassesOpen;";
         <BitButton OnClick=""() => isRtlPanelOpenEnd = false"">بستن</BitButton>
     </div>
 </BitPanel>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private bool isRtlPanelOpenStart;
 private bool isRtlPanelOpenEnd;";
 }

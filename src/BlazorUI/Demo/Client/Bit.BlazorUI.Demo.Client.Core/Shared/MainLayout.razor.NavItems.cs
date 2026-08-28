@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Shared;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Shared;
 
 public partial class MainLayout
 {
@@ -178,7 +178,6 @@ public partial class MainLayout
                 new() { Text = "PhoneInput", Url = "/components/phoneinput" },
                 new() { Text = "ProModal", Url = "/components/promodal" },
                 new() { Text = "ProModalService", Url = "/components/promodalservice" },
-                new() { Text = "ProPanel", Url = "/components/propanel" },
                 new() { Text = "RichTextEditor", Url = "/components/richtexteditor" },
                 new() { Text = "TextShimmer", Url = "/components/textshimmer", Description = "Skeleton, Loading, AI" },
                 new() { Text = "Virtualize", Url = "/components/virtualize", Description = "VirtualScroll, Windowing" },

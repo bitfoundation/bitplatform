@@ -1097,4 +1097,310 @@ public class BitPanelTests : BunitTestContext
         // The gesture has to know the direction too, since the edge the panel slides in from is a logical one.
         Assert.AreEqual(true, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"][^1].Arguments[3]);
     }
+
+    // A panel given none of the header, the footer or the close button is the plain surface it has always
+    // been: nothing is laid out around its content and the panel itself keeps the scrolling.
+    [TestMethod]
+    public void BitPanelShouldBuildNoChromeWhenItWasGivenNone()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.AddChildContent("<div>Test Content</div>");
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-pnl-hcn").Count);
+        Assert.AreEqual(0, com.FindAll(".bit-pnl-bdy").Count);
+        Assert.AreEqual(0, com.FindAll(".bit-pnl-ftr").Count);
+        Assert.IsFalse(com.Find(".bit-pnl-cnt").ClassList.Contains("bit-pnl-sec"));
+    }
+
+    [TestMethod,
+        DataRow("HeaderText"),
+        DataRow("FooterText"),
+        DataRow("ShowCloseButton")
+    ]
+    public void BitPanelShouldBuildTheChromeAroundABodyOfItsOwn(string parameter)
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+
+            if (parameter is "HeaderText") parameters.Add(p => p.HeaderText, "Header Text");
+            if (parameter is "FooterText") parameters.Add(p => p.FooterText, "Footer Text");
+            if (parameter is "ShowCloseButton") parameters.Add(p => p.ShowCloseButton, true);
+
+            parameters.AddChildContent("<div>Test Content</div>");
+        });
+
+        com.Find(".bit-pnl-bdy").MarkupMatches("<div class=\"bit-pnl-bdy\"><div>Test Content</div></div>");
+
+        // The scrolling moves from the panel to the body, so the parts around it stay put while it scrolls.
+        Assert.IsTrue(com.Find(".bit-pnl-cnt").ClassList.Contains("bit-pnl-sec"));
+    }
+
+    [TestMethod]
+    public void BitPanelBodyAliasTest()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.HeaderText, "Header Text");
+            parameters.Add(p => p.Body, Markup("<div>Aliased Body</div>"));
+        });
+
+        Assert.AreEqual("Aliased Body", com.Find(".bit-pnl-bdy").TextContent);
+    }
+
+    [TestMethod]
+    public void BitPanelHeaderContentTest()
+    {
+        const string headerContent = "<div>Test Header Content</div>";
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Header, headerContent);
+        });
+
+        com.Find(".bit-pnl-hcn :first-child :first-child").MarkupMatches(headerContent);
+    }
+
+    [TestMethod]
+    public void BitPanelFooterContentTest()
+    {
+        const string footerContent = "<div>Test Footer Content</div>";
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Footer, footerContent);
+        });
+
+        com.Find(".bit-pnl-ftr :first-child").MarkupMatches(footerContent);
+    }
+
+    [TestMethod]
+    public void BitPanelShouldRenderHeaderTextAndCloseButton()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.HeaderText, "Header Text");
+            parameters.Add(p => p.ShowCloseButton, true);
+        });
+
+        Assert.IsNotNull(com.Find(".bit-pnl-cls"));
+        Assert.AreEqual("Header Text", com.Find(".bit-pnl-hdr").TextContent);
+    }
+
+    // The template is the richer of the two, so it is what a panel given both renders.
+    [TestMethod]
+    public void BitPanelHeaderAndFooterTemplatesShouldWinOverTheirText()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Header, "<div>Header Template</div>");
+            parameters.Add(p => p.HeaderText, "Header Text");
+            parameters.Add(p => p.Footer, "<div>Footer Template</div>");
+            parameters.Add(p => p.FooterText, "Footer Text");
+        });
+
+        Assert.AreEqual("Header Template", com.Find(".bit-pnl-hdr").TextContent);
+        Assert.AreEqual("Footer Template", com.Find(".bit-pnl-ftr").TextContent);
+    }
+
+    [TestMethod]
+    public void BitPanelShouldRenderFooterTextWhenFooterTemplateMissing()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.FooterText, "Footer Text");
+        });
+
+        Assert.AreEqual("Footer Text", com.Find(".bit-pnl-ftr").TextContent);
+    }
+
+    [TestMethod]
+    public void BitPanelShouldDismissOnTheCloseButton()
+    {
+        var dismissed = 0;
+        var isOpen = true;
+        BitPanelDismissReason? reason = null;
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.ShowCloseButton, true);
+            parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, () => dismissed++));
+            parameters.Add(p => p.OnDismissing, EventCallback.Factory.Create<BitPanelDismissArgs>(this, args => reason = args.Reason));
+        });
+
+        com.Find(".bit-pnl-cls").Click();
+
+        com.WaitForAssertion(() =>
+        {
+            Assert.IsFalse(isOpen);
+            // The dismissal is reported once, by the render that closed the panel, however it was closed.
+            Assert.AreEqual(1, dismissed);
+            // The close button is a dismissal of its own, so a panel that refuses the gestures which could be
+            // a slip can still let through the button the user aimed at.
+            Assert.AreEqual(BitPanelDismissReason.CloseButton, reason);
+        });
+    }
+
+    [TestMethod]
+    public void BitPanelOnDismissingShouldBeAbleToRefuseTheCloseButton()
+    {
+        var isOpen = true;
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.ShowCloseButton, true);
+            parameters.Add(p => p.OnDismissing, EventCallback.Factory.Create<BitPanelDismissArgs>(this, args => args.Cancel = true));
+        });
+
+        com.Find(".bit-pnl-cls").Click();
+
+        com.WaitForAssertion(() => Assert.IsTrue(isOpen));
+    }
+
+    [TestMethod]
+    public void BitPanelCloseButtonShouldDoNothingWhenDisabled()
+    {
+        var isOpen = true;
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.ShowCloseButton, true);
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        var button = com.Find(".bit-pnl-cls");
+
+        Assert.IsTrue(button.HasAttribute("disabled"));
+
+        button.Click();
+
+        com.WaitForAssertion(() => Assert.IsTrue(isOpen));
+    }
+
+    // A dialog needs an accessible name, and a panel that renders a header of its own is already showing the
+    // name it should be given.
+    [TestMethod]
+    public void BitPanelShouldNameTheDialogByItsHeader()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.HeaderText, "Header Text");
+        });
+
+        Assert.AreEqual(com.Find(".bit-pnl-hdr").Id, com.Find(".bit-pnl-cnt").GetAttribute("aria-labelledby"));
+
+        // A name set by hand wins over the header the panel is already showing.
+        com.Render(p => p.Add(x => x.TitleAriaId, "named-by-hand"));
+        Assert.AreEqual("named-by-hand", com.Find(".bit-pnl-cnt").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitPanelAriaLabelShouldWinOverTheHeader()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.HeaderText, "Header Text");
+            parameters.Add(p => p.AriaLabel, "Named by hand");
+        });
+
+        var container = com.Find(".bit-pnl-cnt");
+
+        Assert.IsNull(container.GetAttribute("aria-labelledby"));
+        Assert.AreEqual("Named by hand", container.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitPanelShouldNameTheCloseButton()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowCloseButton, true);
+        });
+
+        Assert.AreEqual("Close", com.Find(".bit-pnl-cls").GetAttribute("aria-label"));
+        Assert.AreEqual("Close", com.Find(".bit-pnl-cls").GetAttribute("title"));
+
+        com.Render(p => p.Add(x => x.CloseButtonAriaLabel, "Dismiss"));
+
+        Assert.AreEqual("Dismiss", com.Find(".bit-pnl-cls").GetAttribute("aria-label"));
+        Assert.AreEqual("Dismiss", com.Find(".bit-pnl-cls").GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitPanelCloseIconShouldTakeOverFromTheBuiltInOne()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowCloseButton, true);
+        });
+
+        Assert.IsTrue(com.Find(".bit-pnl-cli").ClassList.Contains("bit-icon--Cancel"));
+
+        com.Render(p => p.Add(x => x.CloseIconName, "ChromeClose"));
+        Assert.IsTrue(com.Find(".bit-pnl-cli").ClassList.Contains("bit-icon--ChromeClose"));
+
+        // The external icon takes precedence over the built-in one named beside it.
+        com.Render(p => p.Add(x => x.CloseIcon, BitIconInfo.Fa("solid xmark")));
+        Assert.IsFalse(com.Find(".bit-pnl-cli").ClassList.Contains("bit-icon--ChromeClose"));
+    }
+
+    [TestMethod]
+    public void BitPanelShouldRenderTheClassesAndStylesOfItsSections()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.HeaderText, "Header Text");
+            parameters.Add(p => p.FooterText, "Footer Text");
+            parameters.Add(p => p.ShowCloseButton, true);
+            parameters.Add(p => p.Classes, new BitPanelClassStyles
+            {
+                HeaderContainer = "custom-header-container",
+                Header = "custom-header",
+                CloseButton = "custom-close-button",
+                CloseIcon = "custom-close-icon",
+                Body = "custom-body",
+                Footer = "custom-footer"
+            });
+            parameters.Add(p => p.Styles, new BitPanelClassStyles
+            {
+                HeaderContainer = "color:red",
+                Header = "color:blue",
+                CloseButton = "color:green",
+                CloseIcon = "color:purple",
+                Body = "padding:1rem",
+                Footer = "margin:1rem"
+            });
+        });
+
+        Assert.IsTrue(com.Find(".bit-pnl-hcn").ClassList.Contains("custom-header-container"));
+        Assert.IsTrue(com.Find(".bit-pnl-hdr").ClassList.Contains("custom-header"));
+        Assert.IsTrue(com.Find(".bit-pnl-cls").ClassList.Contains("custom-close-button"));
+        Assert.IsTrue(com.Find(".bit-pnl-cli").ClassList.Contains("custom-close-icon"));
+        Assert.IsTrue(com.Find(".bit-pnl-bdy").ClassList.Contains("custom-body"));
+        Assert.IsTrue(com.Find(".bit-pnl-ftr").ClassList.Contains("custom-footer"));
+
+        StringAssert.Contains(com.Find(".bit-pnl-hcn").GetAttribute("style"), "color:red");
+        StringAssert.Contains(com.Find(".bit-pnl-hdr").GetAttribute("style"), "color:blue");
+        StringAssert.Contains(com.Find(".bit-pnl-cls").GetAttribute("style"), "color:green");
+        StringAssert.Contains(com.Find(".bit-pnl-cli").GetAttribute("style"), "color:purple");
+        StringAssert.Contains(com.Find(".bit-pnl-bdy").GetAttribute("style"), "padding:1rem");
+        StringAssert.Contains(com.Find(".bit-pnl-ftr").GetAttribute("style"), "margin:1rem");
+    }
 }

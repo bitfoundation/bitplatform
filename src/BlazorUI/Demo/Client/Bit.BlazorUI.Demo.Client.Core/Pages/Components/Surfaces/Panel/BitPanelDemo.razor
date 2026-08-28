@@ -47,7 +47,100 @@
             </BitPanel>
         </DemoExample>
 
-        <DemoExample Title="Position and size" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <DemoExample Title="Header and footer" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                A panel given a <b>Header</b>, a <b>Footer</b> or a <b>ShowCloseButton</b> builds the chrome
+                that goes with them: a header row at the edge it slid in from, a body that takes the
+                scrolling, and a footer at the far edge. The two parts around the body stay put however far
+                the content between them is scrolled, which is what a panel whose actions have to stay
+                reachable needs. A panel given none of the three is the plain surface of the section above,
+                and its content fills it however it likes.
+            </div>
+            <br />
+            <div>
+                <b>HeaderText</b> and <b>FooterText</b> are the shorthands for the header and the footer that
+                are nothing but a line of text, and the templates take precedence over them. <b>Body</b> is
+                the alias of the content that reads right beside them - it is the same slot as
+                <b>ChildContent</b>, named for what it becomes here.
+            </div>
+            <br />
+            <div>
+                <b>ShowCloseButton</b> is what a panel that cannot be dismissed by a click on the page behind
+                it - a <b>Blocking</b> or a <b>Modeless</b> one - needs to be closable with the pointer at
+                all. It names itself "Close" to a screen reader unless <b>CloseButtonAriaLabel</b> says
+                otherwise, and <b>CloseIconName</b> replaces the glyph in it. The header also names the panel:
+                a screen reader reads it out when the panel opens, without <b>TitleAriaId</b> having to point
+                anywhere.
+            </div>
+            <br />
+            <div class="btn-container">
+                <BitButton OnClick="() => isHeaderTextPanelOpen = true">HeaderText</BitButton>
+                <BitButton OnClick="() => isHeaderPanelOpen = true">Header &amp; Footer</BitButton>
+                <BitButton OnClick="() => isFooterTextPanelOpen = true">FooterText</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => isCloseButtonPanelOpen = true">ShowCloseButton &amp; Blocking</BitButton>
+            </div>
+
+            <BitPanel @bind-IsOpen="isHeaderTextPanelOpen" Size="320" HeaderText="A panel with a HeaderText" ShowCloseButton>
+                <div>
+                    Once upon a time, stories wove connections between people, a symphony of voices crafting
+                    shared dreams. Each word carried meaning, each pause brought understanding. Placeholder
+                    text reminds us of that moment when possibilities are limitless, waiting for content to
+                    emerge.
+                </div>
+            </BitPanel>
+
+            <BitPanel @bind-IsOpen="isHeaderPanelOpen" Size="320" ShowCloseButton>
+                <Header>
+                    <BitStack Gap="0.5rem" FillContent>
+                        <div>A panel with a Header</div>
+                        <BitSearchBox Placeholder="Search here..." />
+                    </BitStack>
+                </Header>
+                <Body>
+                    <div>
+                        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas,
+                        emotions, and dreams. These placeholder words symbolize the beginning - a moment of
+                        possibility where creativity has yet to take shape.
+                    </div>
+                </Body>
+                <Footer>
+                    <BitStack Horizontal Gap="0.5rem">
+                        <BitButton OnClick="() => isHeaderPanelOpen = false">Save</BitButton>
+                        <BitButton Variant="BitVariant.Outline" OnClick="() => isHeaderPanelOpen = false">Cancel</BitButton>
+                    </BitStack>
+                </Footer>
+            </BitPanel>
+
+            <BitPanel @bind-IsOpen="isFooterTextPanelOpen"
+                      Size="320"
+                      HeaderText="A panel with a FooterText"
+                      FooterText="This is a footer text!"
+                      ShowCloseButton>
+                <div>
+                    In the beginning, there is silence - a blank canvas yearning to be filled, a quiet space
+                    where creativity waits to awaken. These words are temporary, standing in place of ideas
+                    yet to come, a glimpse into the infinite possibilities that lie ahead.
+                </div>
+            </BitPanel>
+
+            <BitPanel @bind-IsOpen="isCloseButtonPanelOpen"
+                      Blocking
+                      Dimmed
+                      Size="320"
+                      HeaderText="Blocking"
+                      ShowCloseButton
+                      CloseButtonAriaLabel="Dismiss the panel"
+                      OnDismissing="args => lastCloseReason = args.Reason.ToString()">
+                <div>
+                    A click on the overlay does nothing here, so the close button is the only pointer left
+                    that gets this panel closed.
+                </div>
+                <br />
+                <div>Last reason reported by OnDismissing: <b>@lastCloseReason</b></div>
+            </BitPanel>
+        </DemoExample>
+
+        <DemoExample Title="Position and size" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>
                 <b>Position</b> is the edge the panel slides in from. <b>Start</b> and <b>End</b> are the
                 logical edges, so they follow the direction of the panel and swap over in right-to-left, while
@@ -136,7 +229,7 @@
             </BitPanel>
         </DemoExample>
 
-        <DemoExample Title="Overlay and dismissal" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <DemoExample Title="Overlay and dismissal" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
                 A panel covers the page with an overlay that takes the clicks meant for what is behind it, and
                 a click on that overlay dismisses the panel. <b>Blocking</b> keeps the overlay and takes away
@@ -226,7 +319,7 @@
             </BitPanel>
         </DemoExample>
 
-        <DemoExample Title="Refusing a dismissal" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <DemoExample Title="Refusing a dismissal" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
                 <b>OnDismissing</b> is called before the panel closes and is allowed to refuse the closing: set
                 <b>Cancel</b> on the arguments it is handed and the panel stays where it is. It is awaited, so
@@ -263,7 +356,7 @@
             </BitPanel>
         </DemoExample>
 
-        <DemoExample Title="Focus and the keyboard" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <DemoExample Title="Focus and the keyboard" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
                 A panel that opens takes the keyboard with it: the focus moves to the first focusable element
                 in it - or to the element marked <b>data-autofocus</b>, for the panels whose first one is not
@@ -319,7 +412,7 @@
             </BitPanel>
         </DemoExample>
 
-        <DemoExample Title="Page scrolling" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <DemoExample Title="Page scrolling" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 The page behind an open panel still scrolls, which takes the wheel and the touch away from the
                 panel and slides the page out from under it. <b>AutoToggleScroll</b> holds the page still while
@@ -352,7 +445,7 @@
             </BitPanel>
         </DemoExample>
 
-        <DemoExample Title="Swipe to dismiss" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <DemoExample Title="Swipe to dismiss" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>
                 Dragging the panel towards the edge it slid in from follows the pointer, and letting go past a
                 quarter of the size of the panel dismisses it. <b>SwipeTrigger</b> moves that point - it is a
@@ -399,7 +492,7 @@
             </BitPanel>
         </DemoExample>
 
-        <DemoExample Title="Nested panels" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <DemoExample Title="Nested panels" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>
                 A panel opened from inside another one sits at the same layer as the panel it came from, so its
                 overlay lands underneath that panel: a click there reaches the outer panel rather than
@@ -441,7 +534,7 @@
             </BitPanel>
         </DemoExample>
 
-        <DemoExample Title="Inside a container" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <DemoExample Title="Inside a container" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
                 <b>AbsolutePosition</b> lays the panel out against the nearest positioned ancestor instead of
                 against the screen, so the panel and its overlay stay inside a container of the page rather
@@ -466,7 +559,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Rendering and events" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <DemoExample Title="Rendering and events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div>
                 A panel keeps its content in the page while it is closed, so that closing it still has
                 something to slide out; the content is hidden, which keeps it out of the tab order and out of
@@ -524,11 +617,37 @@
             </BitPanel>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <DemoExample Title="External Icons" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div>
+                <b>CloseIcon</b> takes the glyph of the close button from an external icon library -
+                FontAwesome, Material Icons, Bootstrap Icons - through the CSS classes that library asks for,
+                and takes precedence over the <b>CloseIconName</b> that names a built-in Fluent icon.
+            </div>
+            <br />
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+            <div class="btn-container">
+                <BitButton OnClick="() => isExternalIconPanelOpen = true">External close icon</BitButton>
+            </div>
+
+            <BitPanel @bind-IsOpen="isExternalIconPanelOpen"
+                      Size="320"
+                      ShowCloseButton
+                      HeaderText="External close icon"
+                      CloseIcon="@BitIconInfo.Fa("solid xmark")">
+                <div>
+                    The close button of this panel is drawn by FontAwesome instead of by the built-in icon
+                    set.
+                </div>
+            </BitPanel>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root element of the panel, and <b>Styles</b> and
-                <b>Classes</b> reach the three parts it is made of - the <b>Root</b>, the <b>Overlay</b> that
-                covers the page, and the <b>Container</b> that is the panel itself.
+                <b>Classes</b> reach every part it is made of - the <b>Root</b>, the <b>Overlay</b> that
+                covers the page, the <b>Container</b> that is the panel itself, and, on a panel that builds
+                the chrome, the <b>HeaderContainer</b>, the <b>Header</b>, the <b>CloseButton</b>, the
+                <b>CloseIcon</b>, the <b>Body</b> and the <b>Footer</b>.
             </div>
             <br />
             <div>
@@ -572,9 +691,16 @@
             </BitPanel>
 
             <BitPanel @bind-IsOpen="isPanelClassesOpen"
+                      ShowCloseButton
+                      HeaderText="Classes"
+                      FooterText="This is a footer text!"
                       AriaLabel="A panel with custom Classes"
                       Classes="@(new() { Container = "custom-container",
-                                         Overlay = "custom-overlay" })">
+                                         Overlay = "custom-overlay",
+                                         HeaderContainer = "custom-header-container",
+                                         Header = "custom-header",
+                                         Body = "custom-body",
+                                         Footer = "custom-footer" })">
                 <div>
                     BitPanel with <b>Classes</b> to customize its elements.
                     <BitButton OnClick="() => isPanelClassesOpen = false">Close</BitButton>
@@ -582,7 +708,7 @@
             </BitPanel>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <DemoExample Title="RTL" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
             <div>
                 <b>Dir</b> turns the panel right-to-left, which swaps the two logical edges over: a
                 <b>Start</b> panel now slides in from the right of the screen and an <b>End</b> one from the
