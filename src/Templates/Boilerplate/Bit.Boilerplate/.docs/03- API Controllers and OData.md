@@ -29,7 +29,7 @@ All API controllers in this project inherit from `AppControllerBase`, which is l
 **File**: [`src/Server/Boilerplate.Server.Api/Infrastructure/Controllers/AppControllerBase.cs`](/src/Server/Boilerplate.Server.Api/Infrastructure/Controllers/AppControllerBase.cs)
 
 ```csharp
-namespace Boilerplate.Server.Api.Controllers;
+namespace Boilerplate.Server.Api.Infrastructure.Controllers;
 
 public partial class AppControllerBase : ControllerBase
 {
@@ -691,8 +691,8 @@ This project uses a **strongly-typed HTTP client wrapper** pattern to call backe
 ### How It Works
 
 The pattern involves:
-1. Define an interface in `Shared/Controllers` (shared between client and server)
-2. Implement the interface in `Boilerplate.Server.Api/Controllers` (server-side)
+1. Define an interface in `src/Shared/Features/{Feature}/` (shared between client and server)
+2. Implement the interface in `src/Server/Boilerplate.Server.Api/Features/{Feature}/` (server-side)
 3. Client code injects the interface and calls methods as if they were local
 
 ### Step 1: Define the Interface
@@ -816,7 +816,7 @@ The `=> default!` tells the C# compiler this method has a default implementation
 
 You can also call external APIs using this pattern:
 
-**File**: [`src/Shared/Controllers/Statistics/IStatisticsController.cs`](/src/Shared/Controllers/Statistics/IStatisticsController.cs) (Example)
+**File**: [`src/Shared/Features/Statistics/IStatisticsController.cs`](/src/Shared/Features/Statistics/IStatisticsController.cs) (Example)
 
 ```csharp
 public interface IStatisticsController : IAppController

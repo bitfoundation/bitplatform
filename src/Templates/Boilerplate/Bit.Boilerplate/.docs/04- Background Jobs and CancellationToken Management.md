@@ -44,7 +44,7 @@ This ensures that server resources are not wasted processing requests that the u
 
 #### Server-Side Example
 
-Let's look at a real controller from the project - [`TodoItemController.cs`](/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemController.cs):
+Let's look at a real controller from the project - [`TodoItemController.cs`](/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemController.cs)
 
 ```csharp
 [HttpPost]
@@ -54,7 +54,7 @@ public async Task<TodoItemDto> Create(TodoItemDto dto, CancellationToken cancell
 
     entityToAdd.UserId = User.GetUserId();
 
-    entityToAdd.Date = DateTimeOffset.UtcNow;
+    entityToAdd.UpdatedAt = TimeProvider.GetUtcNow();
 
     await DbContext.TodoItems.AddAsync(entityToAdd, cancellationToken);
 
@@ -66,7 +66,9 @@ public async Task<TodoItemDto> Create(TodoItemDto dto, CancellationToken cancell
 [HttpPut]
 public async Task<TodoItemDto> Update(TodoItemDto dto, CancellationToken cancellationToken)
 {
-    var entityToUpdate = await DbContext.TodoItems.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken)
+    var userId = User.GetUserId();
+
+    var entityToUpdate = await DbContext.TodoItems.FirstOrDefaultAsync(t => t.Id == dto.Id && t.UserId == userId, cancellationToken)
         ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
 
     dto.Patch(entityToUpdate);
@@ -77,18 +79,26 @@ public async Task<TodoItemDto> Update(TodoItemDto dto, CancellationToken cancell
 }
 
 [HttpDelete("{id}")]
-public async Task Delete(Guid id, CancellationToken cancellationToken)
+public async Task Delete(string id, CancellationToken cancellationToken)
 {
-    DbContext.TodoItems.Remove(new() { Id = id });
+    var userId = User.GetUserId();
 
-    var affectedRows = await DbContext.SaveChangesAsync(cancellationToken);
-
-    if (affectedRows < 1)
+    // The UserId term is what scopes the delete to the caller; one round trip.
+    if (await DbContext.TodoItems
+        .Where(t => t.Id == id && t.UserId == userId)
+        .ExecuteDeleteAsync(cancellationToken) == 0)
+    {
         throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
+    }
 }
 ```
 
-Notice how every async operation (`AddAsync`, `SaveChangesAsync`, `FirstOrDefaultAsync`) receives the `cancellationToken` parameter. This allows Entity Framework Core to cancel database operations if the user abandons the request.
+Notice how every async operation (`AddAsync`, `SaveChangesAsync`, `FirstOrDefaultAsync`, `ExecuteDeleteAsync`) receives the `cancellationToken` parameter. This allows Entity Framework Core to cancel database operations if the user abandons the request.
+
+**Also notice the `t.UserId == userId` term in `Update` and `Delete`.** A todo item belongs to one user, so every
+write has to be scoped to the caller as well as to the id - otherwise any authenticated user holding the feature
+policy could modify another user's row just by supplying its id. Copy that shape, not just the cancellation
+token, when you write your own per-user controllers.
 
 ---
 

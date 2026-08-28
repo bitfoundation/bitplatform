@@ -62,7 +62,7 @@ public partial class ProfileRealtimeUpdateUITests : AppPageTest
         await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Save, Exact = true }).ClickAsync();
 
         // Browser A confirms the save round-tripped (See ProfileSection.SaveProfile -> SnackBarService.Success).
-        await Expect(Page.GetByText(AppStrings.ProfileUpdatedSuccessfullyMessage)).ToBeVisibleAsync();
+        await Expect(BitSnackBarUtils.GetSnackBar(Page, AppStrings.ProfileUpdatedSuccessfullyMessage)).ToBeVisibleAsync();
 
         // ---- Browser B: without any reload, its header persona reflects the new full name, pushed to it over SignalR. ----
         // The persona shows the user's DisplayName, which is FullName once it is set (See UserDto.DisplayName).

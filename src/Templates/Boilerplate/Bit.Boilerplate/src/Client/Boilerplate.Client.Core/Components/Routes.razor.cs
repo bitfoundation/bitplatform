@@ -1,38 +1,79 @@
 //+:cnd:noEmit
 namespace Boilerplate.Client.Core.Components;
 
-public partial class Routes
+public partial class Routes : ComponentBase, IDisposable
 {
     [Parameter] public Type? Layout { get; set; }
 
+    [AutoInject] private PubSubService pubSubService { get; set; } = default!;
+
+    private string? currentCulture;
+    private Action? unsubscribeCultureChanged;
+
+    protected override void OnInitialized()
+    {
+        currentCulture = CultureInfo.CurrentUICulture.Name;
+
+        unsubscribeCultureChanged = pubSubService.Subscribe(ClientAppMessages.CULTURE_CHANGED, payload => InvokeAsync(async () =>
+        {
+            currentCulture = payload as string ?? CultureInfo.CurrentUICulture.Name;
+            StateHasChanged();
+        }));
+
+        base.OnInitialized();
+    }
+
+    public void Dispose()
+    {
+        unsubscribeCultureChanged?.Invoke();
+        unsubscribeCultureChanged = null;
+        GC.SuppressFinalize(this);
+    }
+
     [AutoInject]
-    NavigationManager? navigationManager
+    IServiceProvider? serviceProvider
     {
         set
         {
             if (value is not null)
             {
-                current = value;
-                NavigationManagerProvider.TrySetResult();
+                currentServiceProvider = value;
+                ServiceProviderReady.TrySetResult();
             }
         }
         get;
     }
-    private static NavigationManager? current;
-    private static readonly TaskCompletionSource NavigationManagerProvider = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private static IServiceProvider? currentServiceProvider
+    {
+        get
+        {
+            if (AppPlatform.IsBlazorHybridOrBrowser is false)
+                throw new InvalidOperationException();
+
+            return field;
+        }
+        set;
+    }
+    private static readonly TaskCompletionSource ServiceProviderReady = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     public static async Task OpenUniversalLink(string url, bool forceLoad = false, bool replace = false)
     {
-        await NavigationManagerProvider.Task;
-
-        var navigationManager = current!;
-
-        if (CultureInfoManager.InvariantGlobalization is false &&
-            forceLoad == false &&
-            (AppPlatform.IsAndroid || AppPlatform.IsIos))
+        if (Uri.IsAppRelativeUrl(url, requireLeadingSlash: false) is false)
         {
-            var urlCulture = new Uri(new Uri(navigationManager.BaseUri), url).GetCulture();
-            forceLoad = urlCulture is not null && string.Equals(CultureInfo.CurrentUICulture.Name, urlCulture, StringComparison.InvariantCultureIgnoreCase) is false;
+            url = PageUrls.Home;
+        }
+
+        await ServiceProviderReady.Task;
+
+        var navigationManager = currentServiceProvider!.GetRequiredService<NavigationManager>();
+
+        if (CultureInfoManager.InvariantGlobalization is false
+            && navigationManager.ToAbsoluteUri(url).GetCulture() is string culture
+            && string.IsNullOrEmpty(culture) is false
+            && string.Equals(culture, CultureInfo.CurrentUICulture.Name, StringComparison.InvariantCultureIgnoreCase) is false)
+        {
+            CultureInfoManager.SetCurrentCulture(culture);
+            currentServiceProvider!.GetRequiredService<PubSubService>().Publish(ClientAppMessages.CULTURE_CHANGED, culture, persistent: true);
         }
 
         navigationManager.NavigateTo(url, forceLoad, replace);

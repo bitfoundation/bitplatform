@@ -106,6 +106,51 @@ public class AttachmentReplacementTests
     }
 
 
+    /// <summary>
+    /// The other rejection path this class's own header names as already paid for once: a file ImageMagick cannot
+    /// decode. It must be refused as bad input (400, like the too-small rejection) rather than surfacing as a 500
+    /// with a Critical log entry - and the picture the user already had must be exactly as it was.
+    /// </summary>
+    [TestMethod]
+    public async Task AnUndecodableUpload_Should_BeRejectedAsBadRequest_AndLeaveTheExistingPictureUntouched()
+    {
+        await using var server = await StartServer();
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+
+        var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+
+        try
+        {
+            await Upload(httpClient, SolidImage(MagickColors.Red));
+            var before = await Download(httpClient, userId);
+
+            // Deterministic non-image bytes, posted with a spoofed image/png content type: the server must judge the
+            // content, not the caller-controlled header. The DI HttpClient turns the non-success response into an
+            // exception (See ExceptionDelegatingHandler); the rejection body is plain text, so the status identifies it.
+            var garbageBytes = new byte[1024];
+            Array.Fill(garbageBytes, (byte)'x');
+            var rejected = await Assert.ThrowsExactlyAsync<HttpRequestException>(
+                () => Upload(httpClient, garbageBytes),
+                "A payload ImageMagick cannot decode must be refused as bad input.");
+
+            Assert.AreEqual(HttpStatusCode.BadRequest, rejected.StatusCode,
+                "An undecodable upload is the caller's fault: a 500 here means it reached the unknown-error handler " +
+                "and logged Critical from ordinary user input.");
+
+            Assert.AreSequenceEqual(before, await Download(httpClient, userId), "The refused upload must not have touched the stored blob.");
+
+            Assert.AreEqual(2, await CountAttachments(server, userId), "The refused upload must not have removed the existing rows.");
+
+            Assert.IsTrue(await HasProfilePicture(server, userId));
+        }
+        finally
+        {
+            await DeleteProfilePicture(httpClient);
+        }
+    }
+
+
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();

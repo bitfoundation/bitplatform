@@ -1,0 +1,77 @@
+@* One MCP call, shown the way a network tab would show it: what went over the wire and what came
+   back, side by side, with the status, the method and the round-trip time above them.
+
+   The point of the page this appears on is that the protocol is not magic - it is a JSON-RPC POST
+   with a JSON body - so the request pane is never summarised or prettified into something the
+   reader could not have typed themselves. *@
+
+@if (Call is null)
+{
+    <BitText Element="p" Typography="BitTypography.Body2" Color="BitColor.TertiaryForeground">@Placeholder</BitText>
+}
+else
+{
+    <div class="mcp-exchange">
+        <BitStack Horizontal Wrap AutoHeight Gap="0.5rem" VerticalAlign="BitAlignment.Center">
+            <BitTag Color="@(Call.Ok ? BitColor.Success : BitColor.Error)"
+                    Text="@(Call.Status == 0 ? "no response" : $"HTTP {Call.Status}")" />
+            <BitTag Color="BitColor.SecondaryBackground" Text="@Call.Method" />
+            <BitTag Color="BitColor.SecondaryBackground" Text="@($"{Call.Elapsed} ms")" />
+            <code class="mcp-endpoint">@Call.Verb @Call.Endpoint</code>
+        </BitStack>
+
+        <div class="mcp-panes">
+            <div class="mcp-pane">
+                <BitText Element="span" Typography="BitTypography.Overline" Color="BitColor.TertiaryForeground">Request</BitText>
+                <CodeBox Language="@Call.RequestLanguage" MaxHeight="20rem">@Call.Request</CodeBox>
+            </div>
+            <div class="mcp-pane">
+                <BitText Element="span" Typography="BitTypography.Overline" Color="BitColor.TertiaryForeground">Response</BitText>
+                <CodeBox Language="json" MaxHeight="20rem">@Call.Response</CodeBox>
+            </div>
+        </div>
+
+        @if (string.IsNullOrWhiteSpace(Call.Result) is false)
+        {
+            @* The payload an MCP client actually hands to the model: the same bytes as in the
+               response pane, with the JSON string escaping undone so it can be read. *@
+            <div class="mcp-pane">
+                <BitText Element="span" Typography="BitTypography.Overline" Color="BitColor.TertiaryForeground">@Call.ResultLabel</BitText>
+                <CodeBox Language="markdown" MaxHeight="26rem">@Call.Result</CodeBox>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public Roundtrip? Call { get; set; }
+
+    [Parameter] public string Placeholder { get; set; } = "Nothing sent yet.";
+
+    /// <summary>One request/response pair, already formatted for reading.</summary>
+    /// <param name="Method">The JSON-RPC method, or the tool name for a plain HTTP call.</param>
+    /// <param name="Verb">The HTTP verb the call used.</param>
+    /// <param name="Endpoint">The URL it went to.</param>
+    /// <param name="Request">The request body, or the URL for a GET.</param>
+    /// <param name="Response">The response body, pretty-printed and clipped.</param>
+    /// <param name="Result">The useful text inside the response, unescaped - null when there is none.</param>
+    /// <param name="ResultLabel">Where in the response <paramref name="Result"/> came from.</param>
+    /// <param name="Status">The HTTP status, or 0 when the request never got one.</param>
+    /// <param name="Elapsed">Round-trip time in milliseconds.</param>
+    /// <param name="Ok">Whether the call succeeded, protocol errors included.</param>
+    public record Roundtrip(
+        string Method,
+        string Verb,
+        string Endpoint,
+        string Request,
+        string Response,
+        string? Result,
+        string ResultLabel,
+        int Status,
+        long Elapsed,
+        bool Ok)
+    {
+        /// <summary>A GET carries no body, so its "request" pane holds the URL rather than JSON.</summary>
+        public string RequestLanguage => Verb == "GET" ? "http" : "json";
+    }
+}

@@ -179,7 +179,7 @@ This file defines C# extension methods that call the JavaScript functions in `Ap
 
 ```csharp
 using System.Reflection;
-using Boilerplate.Shared.Dtos.PushNotification;
+using Boilerplate.Shared.Features.PushNotification;
 
 namespace Microsoft.JSInterop;
 
@@ -288,7 +288,7 @@ export class App {
 
 ### Step 4: Add C# Extension Method
 
-Add this method to [`Extensions/IJSRuntimeExtensions.cs`](/src/Client/Boilerplate.Client.Core/Extensions/IJSRuntimeExtensions.cs):
+Add this method to [`Infrastructure/Extensions/IJSRuntimeExtensions.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Extensions/IJSRuntimeExtensions.cs):
 
 ```csharp
 public static ValueTask<string> GenerateUuid(this IJSRuntime jsRuntime)

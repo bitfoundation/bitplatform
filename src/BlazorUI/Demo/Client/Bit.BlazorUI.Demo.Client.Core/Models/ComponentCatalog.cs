@@ -444,7 +444,7 @@ public static class ComponentCatalog
         // Surfaces
         ["Accordion"] = "Shows and hides one section of related content at a time.",
         ["Callout"] = "An anchored tip that teaches or guides without blocking the app.",
-        ["Card"] = "A container that wraps a piece of content into a surface of its own.",
+        ["Card"] = "A surface that wraps one subject, with a cover, a header, a body and a footer of its own.",
         ["Collapse"] = "Animates a block of content open and shut.",
         ["Dialog"] = "A temporary pop-up that takes focus and asks for a decision.",
         ["Modal"] = "A full overlay for content that has to be dealt with before anything else.",

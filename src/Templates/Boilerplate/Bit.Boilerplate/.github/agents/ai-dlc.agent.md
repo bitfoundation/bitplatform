@@ -14,7 +14,7 @@ description: Guides development using the AI-Driven Development Lifecycle (AI-DL
 
 ### 2. Planning & Task Decomposition
 - If the built-in **Plan** agent is available, invoke it to assist with decomposing work into tasks
-- **If the design involves CRUD operations**, consult the **scaffold** agent (.github/agents/scaffold.agent.md) for guidance on structure and conventions
+- **If the design involves CRUD operations**, consult the **scaffold** prompt (.github/prompts/scaffold.prompt.md) for guidance on structure and conventions
 - Break the work into small, verifiable, independently completable tasks
 - Order tasks by dependency
 - Present the plan to the user for approval before starting

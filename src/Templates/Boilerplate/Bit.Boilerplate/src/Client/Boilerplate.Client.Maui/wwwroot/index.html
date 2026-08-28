@@ -7,7 +7,8 @@
      - src/Client/Boilerplate.Client.Web/wwwroot/index.html
 -->
 
-<html bit-theme-system bit-theme-persist bit-theme-view-transition>
+<html bit-theme-system bit-theme-persist bit-theme-view-transition
+      bit-theme-light="fluent2-light" bit-theme-dark="fluent2-dark">
 <head>
     <base href="/" />
     <meta charset="utf-8" />
@@ -16,7 +17,7 @@
          The OS media queries only cover the first paint: Scripts/theme.ts rewrites BOTH tags on every theme change, so a
          theme pinned against the OS wins as well. Keep in sync with: src/Client/Boilerplate.Client.Core/Styles/ThemeColors.cs -->
     <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#0F1318" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#1A1A1A" media="(prefers-color-scheme: dark)">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
     <!--#if (captcha == "reCaptcha")-->
@@ -52,6 +53,7 @@
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.fluent2.css" />
     <link rel="stylesheet" href="_content/Boilerplate.Client.Core/styles/app.css" />
     <!-- This one physical page is the host for BOTH hybrid heads (Boilerplate.Client.Windows.csproj links it), and
          each project emits only its own scoped css bundle, so exactly one of the next two lines resolves and the

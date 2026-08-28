@@ -19,6 +19,7 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
                         DataPaths = [PageUrls.Home],
                         DataPathPrefixes = [
                             "/en-US", "/en-GB", "/nl-NL", "/fa-IR", "/sv-SE", "/hi-IN", "/zh-CN", "/es-ES", "/fr-FR", "/ar-SA", "/de-DE",
+                            "/en-us", "/en-gb", "/nl-nl", "/fa-ir", "/sv-se", "/hi-in", "/zh-cn", "/es-es", "/fr-fr", "/ar-sa", "/de-de",
                             PageUrls.Confirm, PageUrls.ForgotPassword, PageUrls.Settings, PageUrls.ResetPassword, PageUrls.SignIn,
                             PageUrls.SignUp, PageUrls.NotAuthorized, PageUrls.NotFound, PageUrls.Terms, PageUrls.PrivacyPolicy, PageUrls.About,
                             PageUrls.Roles, PageUrls.Users, 
@@ -41,7 +42,7 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
                             //#endif
                             ],
                         AutoVerify = true,
-                        Categories = [Intent.ActionView, Intent.CategoryDefault, Intent.CategoryBrowsable])]
+                        Categories = [Intent.CategoryDefault, Intent.CategoryBrowsable])]
 
 [Activity(Theme = "@style/Maui.SplashTheme", MainLauncher = true, LaunchMode = LaunchMode.SingleTask,
     ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize | ConfigChanges.Density)]
@@ -61,22 +62,50 @@ public partial class MainActivity : MauiAppCompatActivity
 
         base.OnCreate(savedInstanceState);
 
-        var url = Intent?.DataString; // Handling universal deep links handling when the app was closed.
-        if (string.IsNullOrWhiteSpace(url) is false)
-        {
-            _ = Routes.OpenUniversalLink(new URL(url).File ?? PageUrls.Home);
-        }
+        OpenDeepLink(Intent); // Handling universal deep links handling when the app was closed.
 
         //#if (notification == true)
         HandlePushNotificationTap(Intent); // Handling push notification taps when the app was closed.
         PushNotificationService.IsAvailable(default).ContinueWith(task =>
         {
+            if (task.IsFaulted)
+            {
+                MauiProgram.LogException(task.Exception, reportedBy: nameof(IPushNotificationService.IsAvailable));
+                return;
+            }
+
             if (task.Result)
             {
                 Services.AndroidPushNotificationService.Configure();
             }
-        });
+        }, TaskScheduler.Default);
         //#endif
+    }
+
+    /// <summary>
+    /// The activity is exported (it is the launcher activity), so any app on the device can send it an explicit
+    /// intent whose data is not an http(s) url at all. <c>new URL("myscheme://x")</c> throws MalformedURLException,
+    /// and an unhandled throw inside <c>OnCreate</c> kills the process on launch, so the parse is guarded here.
+    /// <c>Routes.OpenUniversalLink</c> validates the resulting path before navigating to it.
+    /// </summary>
+    private static void OpenDeepLink(Intent? intent)
+    {
+        var url = intent?.DataString;
+        if (string.IsNullOrWhiteSpace(url))
+            return;
+
+        string? path;
+        try
+        {
+            path = new URL(url).File;
+        }
+        catch (Exception exp)
+        {
+            MauiProgram.LogException(exp, reportedBy: nameof(OpenDeepLink));
+            return;
+        }
+
+        _ = Routes.OpenUniversalLink(string.IsNullOrEmpty(path) ? PageUrls.Home : path);
     }
 
     //#if (notification == true)
@@ -89,17 +118,24 @@ public partial class MainActivity : MauiAppCompatActivity
         string? pageUrl = null;
         if (string.IsNullOrEmpty(dataString) is false)
         {
-            var request = JsonSerializer.Deserialize<NotificationRequest>(dataString, options: new()
+            try
             {
-                NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals
-            });
-            if (request?.ReturningData is not null)
-            {
-                var returningData = JsonSerializer.Deserialize<Dictionary<string, object>>(request.ReturningData);
-                if (returningData?.ContainsKey("pageUrl") is true)
+                var request = JsonSerializer.Deserialize<NotificationRequest>(dataString, options: new()
                 {
-                    pageUrl = returningData["pageUrl"]?.ToString(); // The time that the notification received, the app was open. (See PushNotificationFirebaseMessagingService's OnMessageReceived)
+                    NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals
+                });
+                if (request?.ReturningData is not null)
+                {
+                    var returningData = JsonSerializer.Deserialize<Dictionary<string, object>>(request.ReturningData);
+                    if (returningData?.ContainsKey("pageUrl") is true)
+                    {
+                        pageUrl = returningData["pageUrl"]?.ToString(); // The time that the notification received, the app was open. (See PushNotificationFirebaseMessagingService's OnMessageReceived)
+                    }
                 }
+            }
+            catch (JsonException exp)
+            {
+                MauiProgram.LogException(exp, reportedBy: nameof(HandlePushNotificationTap));
             }
         }
 
@@ -115,11 +151,9 @@ public partial class MainActivity : MauiAppCompatActivity
     {
         base.OnNewIntent(intent);
 
-        var action = intent!.Action; // Handling universal deep links handling when the is running.
-        var url = intent.DataString;
-        if (action is Intent.ActionView && string.IsNullOrWhiteSpace(url) is false)
+        if (intent!.Action is Intent.ActionView) // Handling universal deep links handling when the is running.
         {
-            _ = Routes.OpenUniversalLink(new URL(url).File ?? PageUrls.Home);
+            OpenDeepLink(intent);
         }
 
         //#if (notification == true)

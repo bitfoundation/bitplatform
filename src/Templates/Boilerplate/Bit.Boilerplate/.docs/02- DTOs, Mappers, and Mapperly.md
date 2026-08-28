@@ -24,7 +24,7 @@ Welcome to **Stage 2** of the Boilerplate project tutorial! In this stage, you'l
 Let's look at a real DTO from the project: [`CategoryDto`](/src/Shared/Features/Categories/CategoryDto.cs)
 
 ```csharp
-namespace Boilerplate.Shared.Dtos.Categories;
+namespace Boilerplate.Shared.Features.Categories;
 
 [DtoResourceType(typeof(AppStrings))]
 public partial class CategoryDto

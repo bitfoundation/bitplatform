@@ -70,7 +70,20 @@ public partial class AndroidPushNotificationService : PushNotificationServiceBas
     {
         if (_isConfigured)
             return;
+
+        FirebaseMessaging.Instance.GetToken()
+            .AddOnSuccessListener((MainActivity)Platform.CurrentActivity!)
+            .AddOnFailureListener(new ConfigureFailureListener());
+
         _isConfigured = true;
-        FirebaseMessaging.Instance.GetToken().AddOnSuccessListener((MainActivity)Platform.CurrentActivity!);
+    }
+
+    private sealed class ConfigureFailureListener : Java.Lang.Object, global::Android.Gms.Tasks.IOnFailureListener
+    {
+        public void OnFailure(Java.Lang.Exception e)
+        {
+            _isConfigured = false;
+            MauiProgram.LogException(new InvalidOperationException(e.ToString()), reportedBy: nameof(Configure));
+        }
     }
 }

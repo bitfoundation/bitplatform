@@ -88,7 +88,7 @@ public partial class WebAuthnPasswordlessUITests : AppPageTest
 
         // credentials.create() against the virtual authenticator succeeds: the success snackbar shows and the button
         // flips to its "disable" state (isConfigured == true).
-        await Expect(Page.GetByText(AppStrings.EnablePasswordlessSucsessMessage)).ToBeVisibleAsync();
+        await Expect(BitSnackBarUtils.GetSnackBar(Page, AppStrings.EnablePasswordlessSucsessMessage)).ToBeVisibleAsync();
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.DisablePasswordless })).ToBeVisibleAsync();
 
         // 3. She signs out. Sign-out clears only the auth tokens; the bit-webauthn marker survives, so the passkey option
@@ -149,7 +149,8 @@ public partial class WebAuthnPasswordlessUITests : AppPageTest
     {
         await MagicLinkSignInUtils.RequestMagicLinkAndOtp(page, appBaseUrl, email);
 
-        // A brand-new account's confirmation e-mail carries the OTP; we only need the code, not the (127.0.0.1-based) link.
+        // A brand-new account's confirmation e-mail carries the OTP; we only need the code, not the link (which this
+        // test's ServerAddress override makes localhost-based rather than the default 127.0.0.1).
         var (_, otpCode) = await MagicLinkSignInUtils.ReadConfirmationEmail(server, email, TestContext.CancellationToken);
         await BitOtpInputUtils.FillOtpInputs(page, otpCode);
 

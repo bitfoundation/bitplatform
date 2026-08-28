@@ -38,8 +38,8 @@ public partial class TwoFactorAuthTests : AppPageTest
         await EnableTwoFactor(Page, authenticatorSecret);
 
         // 3. Enabling 2FA succeeds and warns her she'll be signed out of all devices within a few minutes.
-        await Expect(Page.GetByText(AppStrings.TwoFactorAuthenticationEnabled)).ToBeVisibleAsync();
-        await Expect(Page.GetByText(AppStrings.SignOutOfAllDevicesWarningMessage)).ToBeVisibleAsync();
+        await Expect(BitSnackBarUtils.GetSnackBar(Page, AppStrings.TwoFactorAuthenticationEnabled)).ToBeVisibleAsync();
+        await Expect(BitSnackBarUtils.GetSnackBar(Page, AppStrings.SignOutOfAllDevicesWarningMessage)).ToBeVisibleAsync();
 
         // 4. She signs out.
         await SignOut(Page);

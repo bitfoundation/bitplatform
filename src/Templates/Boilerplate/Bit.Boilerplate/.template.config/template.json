@@ -29,7 +29,7 @@
             "generator": "guid",
             "replaces": "AC87AA5B-4B37-4E52-8468-2D5DF24AF256",
             "parameters": {
-                "defaultFormat": "D" //Guid format 
+                "defaultFormat": "D" //Guid format
             }
         },
         "SeedDataProductCreatedOn": {
@@ -365,6 +365,13 @@
                     {
                         "regex": "^(https|http):\/\/",
                         "replacement": ""
+                    },
+                    // A pasted url carries a trailing slash, and this value lands in bare-host positions
+                    // (iOS/MacCatalyst `applinks:` entitlements, Android `DataHosts`) where `host/` never matches.
+                    // Only the trailing slash is stripped - a base path is legitimate in ServerAddress.
+                    {
+                        "regex": "\/+$",
+                        "replacement": ""
                     }
                 ]
             },
@@ -386,6 +393,11 @@
                 "steps": [
                     {
                         "regex": "^(https|http):\/\/",
+                        "replacement": ""
+                    },
+                    // See normalizedServerUrl: a trailing slash breaks the bare-host call sites.
+                    {
+                        "regex": "\/+$",
                         "replacement": ""
                     }
                 ]
@@ -448,6 +460,11 @@
                         ".vs/**",
                         "**/[Bb]in/**",
                         "**/[Oo]bj/**",
+                        // Build / tooling output that a local `dotnet pack` would otherwise carry into the
+                        // nupkg (node_modules alone is ~50MB) and from there into every generated project.
+                        "**/node_modules/**",
+                        "**/[Tt]est[Rr]esults/**",
+                        ".playwright-mcp/**",
                         ".template.config/**",
                         "**/*.filelist",
                         "**/*.user",
@@ -513,7 +530,7 @@
                         // Covers ProductConfiguration's seed and ProductDto.FormattedPrice, both of which this rule removes.
                         "src/Tests/Features/Products/ProductCultureSafetyTests.cs"
                     ]
-                },
+                },  
                 {
                     "condition": "(sample != true && offlineDb != true)",
                     "exclude": [
@@ -526,9 +543,7 @@
                 {
                     "condition": "(offlineDb == true)",
                     "exclude": [
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/TodoPage.*",
-                        "src/Shared/Features/Todo/ITodoItemController.cs",
-                        "src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemController.cs"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/TodoPage.*"
                     ]
                 },
                 {
@@ -552,6 +567,7 @@
                         "src/Tests/Features/Identity/AccessTokenParsingTests.cs",
                         "src/Tests/Features/Identity/IStorageServiceContractTests.cs",
                         "src/Tests/Infrastructure/Components/BitOtpInputUtils.cs",
+                        "src/Tests/Infrastructure/Components/BitSnackBarUtils.cs",
                         "src/Tests/Features/Todo/OfflineTodoTests.cs",
                         "src/Tests/Features/Urls/ODataQueryFilterTests.cs",
                         "src/Tests/Features/Diagnostics/TelemetryScopeTests.cs",
@@ -560,6 +576,11 @@
                         "src/Tests/Features/Diagnostics/DiagnosticModalVirtualizationTests.cs",
                         "src/Tests/Features/TemplateConfig/SourceNameLeakTests.cs",
                         "src/Tests/Features/TemplateConfig/HybridHostHardeningTests.cs",
+                        "src/Tests/Features/TemplateConfig/VelopackPackagingContractTests.cs",
+                        "src/Tests/Features/TemplateConfig/PwaManifestShortcutTests.cs",
+                        "src/Tests/Features/Culture/CultureSwitchRebuildTests.cs",
+                        "src/Tests/Features/Culture/CultureCookieParsingTests.cs",
+                        "src/Tests/Features/Culture/ResxParityTests.cs",
                         "src/Tests/Features/TemplateConfig/BitComponentParameterTests.cs",
                         "src/Tests/Features/Products/AddOrEditProductPageTests.cs",
                         "src/Tests/Features/Ads/AdsServiceTests.cs",
@@ -570,6 +591,7 @@
                         "src/Tests/Features/Identity/TwoFactorAuthTests.cs",
                         "src/Tests/Features/Identity/PrivilegedSessionTests.cs",
                         "src/Tests/Features/Identity/PrivilegedSessionTenantSwitchTests.cs",
+                        "src/Tests/Features/Identity/UserManagementTenantScopingTests.cs",
                         "src/Tests/Features/Identity/RefreshTokenRotationTests.cs",
                         "src/Tests/Features/Identity/ReturnUrlHardeningTests.cs",
                         "src/Tests/Features/Identity/OneTimeTokenTests.cs",
@@ -617,6 +639,9 @@
                         "src/Tests/Features/Json/JsonOptionsContractTests.cs",
                         "src/Tests/Features/Urls/AppQueryStringCollectionTests.cs",
                         "src/Tests/Features/TemplateConfig/TemplateConfigurationTests.cs",
+                        "src/Tests/Features/Documentation/DocumentationTruthTests.cs",
+                        "src/Tests/Features/TemplateConfig/SolutionAndRepoFilesTests.cs",
+                        "src/Tests/Features/TemplateConfig/PipelineFilesTests.cs",
                         "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
                         "src/Tests/Features/OpenApi/OpenApiParameterContractTests.cs",
                         "src/Tests/Features/Urls/WebAppUrlOriginHardeningTests.cs",
@@ -808,7 +833,8 @@
                         "src/Tests/Features/Tenants/TenantMembershipStateTests.cs",
                         "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
                         "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs",
-                        "src/Tests/Features/Identity/PrivilegedSessionTenantSwitchTests.cs"
+                        "src/Tests/Features/Identity/PrivilegedSessionTenantSwitchTests.cs",
+                        "src/Tests/Features/Identity/UserManagementTenantScopingTests.cs"
                     ]
                 },
                 {

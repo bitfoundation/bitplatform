@@ -20,7 +20,7 @@ public class ClientWebSettings : ClientCoreSettings
 
             if (AppEnvironment.IsDevelopment() is false && AdsPushVapid.PublicKey is "BDSNUvuIISD8NQVByQANEtZ2foKaENIcIGUxsiQs9kDz11fQik8c9WeiMwUHs3iTgNNH4nvXioNQIEsn4OAjTKc")
             {
-                validationResults.Add(new ValidationResult("Please set your own AdsPushVapid.PublicKey in Client.Core's appsettings.json"));
+                validationResults.Add(new ValidationResult("Please set your own AdsPushVapid.PublicKey in Client.Web's appsettings.json"));
             }
         }
         //#endif
@@ -41,3 +41,4 @@ public class AdsPushVapidOptions
     [Required]
     public string PublicKey { get; set; } = default!;
 }
+//#endif

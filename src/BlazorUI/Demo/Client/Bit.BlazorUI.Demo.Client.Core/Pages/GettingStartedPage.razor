@@ -1,4 +1,4 @@
-@page "/getting-started"
+﻿@page "/getting-started"
 @inherits AppComponentBase
 
 <PageOutlet Url="getting-started"
@@ -183,56 +183,25 @@
                 Description="Point your coding agent at the library's MCP server and it discovers components, pulls accurate examples, and follows the library's conventions on its own.">
 
         <BitText Element="p">
-            The endpoint is
+            This documentation site is also an MCP server: the component catalog, every parameter
+            table, the worked examples and the theming reference are exposed as tools a coding agent
+            can call, answered from the packages this deployment actually references rather than from
+            what a model half-remembers. The endpoint is
             <BitLink Href="https://blazorui.bitplatform.dev/mcp" Target="_blank">https://blazorui.bitplatform.dev/mcp</BitLink>,
             and it works with GitHub Copilot, Cursor, Claude, Windsurf and anything else that speaks MCP.
         </BitText>
 
-        <BitText Element="h3" Typography="BitTypography.Subtitle1">Register the server</BitText>
-
-        <BitText Element="p"><b>.vscode/mcp.json</b></BitText>
-        <CodeBox Language="json">{
-    "servers": {
-        "bitBlazorUI": {
-            "type": "http",
-            "url": "https://blazorui.bitplatform.dev/mcp"
-        }
-    }
-}</CodeBox>
-
-        <BitText Element="p"><b>mcp.json</b></BitText>
-        <CodeBox Language="json">{
-  "mcpServers": {
-    "bitBlazorUI": {
-      "type": "http",
-      "url": "https://blazorui.bitplatform.dev/mcp",
-      "tools": [
-        "*"
-      ]
-    }
-  }
-}</CodeBox>
-
-        <BitText Element="h3" Typography="BitTypography.Subtitle1">Tell the agent to use it</BitText>
-
         <BitText Element="p">
-            Add these rules to your <b>agents.md</b>, <b>copilot-instructions.md</b>,
-            <b>.cursor/rules</b>, or whatever your agent reads:
+            The <BitLink Href="/mcp-server">MCP server</BitLink> page carries the setup - the
+            <b>mcp.json</b> for each client and the rules to add to your <b>agents.md</b> - and is a
+            working client for the server besides: it talks to this very deployment and shows both
+            halves of every exchange.
         </BitText>
 
-        <CodeBox Language="markdown">
-### bit BlazorUI
-
-- For all UI-related tasks in this Blazor project, you **MUST** use the bit BlazorUI MCP server.
-- Always start component discovery with the `GetBitBlazorUIComponentsList` tool.
-- For detailed API, parameters, and usage examples, call `GetBitBlazorUIComponentExamples`.
-- Prefer `Bit*` components over plain HTML/CSS or other UI libraries.
-        </CodeBox>
-
-        <BitText Element="p">
-            <b>Tip</b>: many agents - Cursor and Claude in particular - pick up the server
-            automatically once those instructions are in place.
-        </BitText>
+        <BitButton Href="/mcp-server" Variant="BitVariant.Outline"
+                   IconName="@BitIconName.ChevronRightSmall" IconPosition="BitIconPosition.End">
+            Connect your agent
+        </BitButton>
     </DocSection>
 
 </DocsArticle>

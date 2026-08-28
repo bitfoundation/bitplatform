@@ -269,6 +269,8 @@ public static partial class Program
         {
             options.ReportApiVersions = true;
             options.ApiVersionReader = new UrlSegmentApiVersionReader();
+            options.AssumeDefaultVersionWhenUnspecified = true;
+            options.DefaultApiVersion = new ApiVersion(1);
         })
         .AddMvc() // For API Controllers
         .AddApiExplorer(options =>

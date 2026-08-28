@@ -57,13 +57,7 @@ public static partial class Program
 
         if (CultureInfoManager.InvariantGlobalization is false)
         {
-            var cultureCookie = await host.Services.GetRequiredService<Cookie>().GetValue(".AspNetCore.Culture");
-
-            if (cultureCookie is not null)
-            {
-                cultureCookie = Uri.UnescapeDataString(cultureCookie);
-                cultureCookie = cultureCookie[(cultureCookie.IndexOf("|uic=") + 5)..];
-            }
+            var cultureCookie = ExtractUiCulture(await host.Services.GetRequiredService<Cookie>().GetValue(".AspNetCore.Culture"));
 
             var navigationManager = host.Services.GetRequiredService<NavigationManager>();
 
@@ -75,6 +69,24 @@ public static partial class Program
         }
 
         await host.RunAsync();
+    }
+
+    public static string? ExtractUiCulture(string? cultureCookie)
+    {
+        if (cultureCookie is null)
+            return null;
+
+        cultureCookie = Uri.UnescapeDataString(cultureCookie);
+
+        const string uiCultureMarker = "|uic=";
+        var uiCultureIndex = cultureCookie.IndexOf(uiCultureMarker, StringComparison.InvariantCultureIgnoreCase);
+
+        if (uiCultureIndex is -1)
+            return null;
+
+        var uiCulture = cultureCookie[(uiCultureIndex + uiCultureMarker.Length)..];
+
+        return string.IsNullOrWhiteSpace(uiCulture) ? null : uiCulture;
     }
 
     private static void LogException(object? error, string reportedBy, WebAssemblyHost host)
