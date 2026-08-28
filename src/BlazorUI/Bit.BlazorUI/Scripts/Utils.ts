@@ -220,6 +220,40 @@
             Utils._focusOrigins.delete(elementId);
         }
 
+        private static _transitionEnds = new Map<string, AbortController>();
+
+        // Tells .NET when a surface has finished sliding in or out. What a component knows on its own is the
+        // frame the state changed on, which is the start of the animation rather than the end of it: the
+        // content of a closed surface cannot be taken out of the page before it has finished sliding away, and
+        // whatever is measured or focused after an opening has to wait for the surface to have arrived.
+        // Only the transform is listened for - a surface transitions its opacity and its visibility as well,
+        // and all three would report the same one movement - and only on the element itself, so a transition
+        // running somewhere in the content is not mistaken for the surface arriving.
+        public static setupTransitionEnd(elementId: string, dotnetObj: DotNetObject) {
+            Utils.disposeTransitionEnd(elementId);
+
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            const controller = new AbortController();
+
+            element.addEventListener('transitionend', (e: TransitionEvent) => {
+                if (e.target !== element || e.propertyName !== 'transform') return;
+
+                dotnetObj.invokeMethodAsync('OnTransitionEnd');
+            }, { signal: controller.signal });
+
+            Utils._transitionEnds.set(elementId, controller);
+        }
+
+        public static disposeTransitionEnd(elementId: string) {
+            const controller = Utils._transitionEnds.get(elementId);
+            if (!controller) return;
+
+            controller.abort();
+            Utils._transitionEnds.delete(elementId);
+        }
+
         private static _preventedKeys = new Map<string, AbortController>();
 
         // Suppresses the default behavior (page scrolling) of the given keys on an element, for the
@@ -638,16 +672,72 @@
             } catch (e) { console.error("BitBlazorUI.Utils.setStyle:", e); }
         }
 
-        public static toggleOverflow(selector: string | HTMLElement, isOpen: boolean) {
+        // The surfaces holding an element still, and what its own styles said before the first of them did.
+        // A page can carry more than one open surface that wants the scrolling stopped - a panel opened from
+        // inside another one, a dialog over a panel - and giving the scrollbar back when the first of them
+        // closes would hand the page underneath back to the wheel while it is still covered.
+        private static _overflowLocks = new Map<HTMLElement, { keys: Set<string>, overflow: string, padding: string }>();
+
+        public static toggleOverflow(selector: string | HTMLElement, isOpen: boolean, key: string = '') {
             const element = selector instanceof HTMLElement ? selector : document.querySelector(selector) as HTMLElement;
 
             if (!element) return 0;
 
             try {
-                element.style.overflow = isOpen ? "hidden" : "";
+                const lock = Utils._overflowLocks.get(element);
+
+                if (isOpen) {
+                    if (lock) {
+                        lock.keys.add(key);
+                    } else {
+                        const gap = Utils.getScrollbarGap(element);
+
+                        Utils._overflowLocks.set(element, {
+                            keys: new Set([key]),
+                            overflow: element.style.overflow,
+                            padding: element.style.paddingInlineEnd
+                        });
+
+                        element.style.overflow = 'hidden';
+
+                        // Taking the scrollbar away takes its width out of the page with it, and everything
+                        // laid out against the edge jumps sideways by that much for as long as the surface is
+                        // open. The room it took is given back as padding instead - on the inline end, which
+                        // is the side the browser puts the scrollbar on in both directions.
+                        if (gap > 0) {
+                            element.style.paddingInlineEnd = `${gap}px`;
+                        }
+                    }
+                } else if (lock) {
+                    lock.keys.delete(key);
+
+                    if (lock.keys.size === 0) {
+                        Utils._overflowLocks.delete(element);
+                        element.style.overflow = lock.overflow;
+                        element.style.paddingInlineEnd = lock.padding;
+                    }
+                } else {
+                    element.style.overflow = '';
+                }
+
                 return element.scrollTop;
             } catch (e) {
                 console.error("BitBlazorUI.Utils.toggleOverflow:", e);
+                return 0;
+            }
+        }
+
+        // How much room the scrollbar of an element takes, which is nothing at all on the platforms whose
+        // scrollbars are drawn over the content. The scrollbar of the document belongs to the viewport rather
+        // than to either of the two elements that can be asked to stop scrolling it.
+        private static getScrollbarGap(element: HTMLElement) {
+            try {
+                if (element === document.body || element === document.documentElement) {
+                    return window.innerWidth - document.documentElement.clientWidth;
+                }
+
+                return element.offsetWidth - element.clientWidth;
+            } catch (e) {
                 return 0;
             }
         }

@@ -3,9 +3,10 @@
 /// <summary>
 /// Panel is an overlay surface that slides in from an edge of the screen to host supplementary content -
 /// a form, a filter, a set of details, a navigation menu - without taking the user away from the page
-/// behind it. It can slide in from any of the four edges, be sized along the axis it slides on, dim the
-/// page or leave it usable, hold the page still while it is open, and be dismissed by a click on the
-/// overlay, the Escape key or a swipe of the finger.
+/// behind it. It can slide in from any of the four edges, be sized along the axis it slides on, scroll
+/// whatever it cannot fit, dim the page or leave it usable, hold the page still while it is open, take the
+/// keyboard over and hand it back, and be dismissed by a click on the overlay, the Escape key or a swipe of
+/// the finger - each of which it can be asked to refuse.
 /// </summary>
 /// <remarks>
 /// There are two panel components available for different purposes: BitPanel is the plain surface described
@@ -22,6 +23,7 @@ public partial class BitPanel : BitComponentBase
     private string? _swipesKey;
     private string _containerId = default!;
     private MouseEventArgs? _dismissArgs;
+    private DotNetObjectReference<BitPanel>? _dotnetObj;
     private DotNetObjectReference<BitPanel>? _swipesDotnetObj;
 
 
@@ -81,8 +83,17 @@ public partial class BitPanel : BitComponentBase
     [Parameter] public RenderFragment? Content { get; set; }
 
     /// <summary>
-    /// Stretches the panel to the full size of the screen along the axis it is sized on, which takes over
-    /// from <see cref="Size"/> and from the cap that otherwise leaves a strip of the page showing beside it.
+    /// Dims the page behind the panel, by giving the overlay that covers it a background of its own instead
+    /// of leaving it the transparent catcher of clicks it is by default.
+    /// </summary>
+    /// <remarks>
+    /// A <see cref="Modeless"/> panel renders no overlay at all, so there is nothing there to dim with.
+    /// </remarks>
+    [Parameter] public bool Dimmed { get; set; }
+
+    /// <summary>
+    /// Stretches the panel over the whole of the screen, which takes over from <see cref="Size"/> and from
+    /// the cap that otherwise leaves a strip of the page showing beside it.
     /// </summary>
     [Parameter] public bool FullSize { get; set; }
 
@@ -127,6 +138,9 @@ public partial class BitPanel : BitComponentBase
     /// <br />
     /// An element in the content marked with a <c>data-autofocus</c> attribute takes the focus instead of the
     /// first focusable one, for the panels whose first focusable element is not the one worth starting at.
+    /// <br />
+    /// The Escape key reaches the panel from wherever the keyboard is inside it, so a panel that never took
+    /// the keyboard over is also a panel Escape does not reach until the user has tabbed or clicked into it.
     /// </remarks>
     [Parameter] public bool NoAutoFocus { get; set; }
 
@@ -167,6 +181,22 @@ public partial class BitPanel : BitComponentBase
     [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
 
     /// <summary>
+    /// A callback function invoked before the panel closes, which lets the closing be refused.
+    /// </summary>
+    /// <remarks>
+    /// Set <c>Cancel</c> on the provided <see cref="BitPanelDismissArgs"/> to leave the panel open, and read
+    /// its <c>Reason</c> to tell a click on the overlay, the Escape key, a swipe and a
+    /// <see cref="Close"/> call apart - refusing to let a stray swipe throw away a half-filled form is not
+    /// the same as refusing the Close the form itself asked for. Since the callback is awaited, it can also
+    /// run asynchronous work like a confirmation prompt.
+    /// <br />
+    /// It only gets its say over the closings the panel performs itself. The <see cref="IsOpen"/> parameter
+    /// being set to false from the outside has already happened by the time the panel sees it, so it is
+    /// reported through <see cref="OnDismiss"/> without passing through here.
+    /// </remarks>
+    [Parameter] public EventCallback<BitPanelDismissArgs> OnDismissing { get; set; }
+
+    /// <summary>
     /// A callback function for when the panel is opened.
     /// </summary>
     [Parameter] public EventCallback OnOpen { get; set; }
@@ -201,10 +231,33 @@ public partial class BitPanel : BitComponentBase
     [Parameter] public EventCallback<bool> OnToggle { get; set; }
 
     /// <summary>
+    /// A callback function for when the panel has finished sliding in or out, called with the state it
+    /// settled in.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="OnOpen"/>, <see cref="OnDismiss"/> and <see cref="OnToggle"/> are called on the frame the
+    /// panel changed state on, which is the start of the movement rather than the end of it. This is the one
+    /// to wait for where the panel has to have arrived: measuring it, scrolling something into view inside
+    /// it, or starting the work its arrival was the cue for.
+    /// </remarks>
+    [Parameter] public EventCallback<bool> OnTransitionEnd { get; set; }
+
+    /// <summary>
     /// The edge of the screen the panel slides in from. Start and End are the logical edges, so they follow
     /// the direction of the panel. It defaults to End.
     /// </summary>
     [Parameter] public BitPanelPosition? Position { get; set; }
+
+    /// <summary>
+    /// The ARIA role the panel reports itself under, which takes over from the <c>dialog</c> it is announced
+    /// as by default (or the <c>alertdialog</c> of an <see cref="IsAlert"/> panel).
+    /// </summary>
+    /// <remarks>
+    /// It is for the panel that is not a dialog at all: a <see cref="Modeless"/> panel that sits alongside
+    /// the page rather than over it is better announced as a <c>complementary</c> or a <c>region</c>, since
+    /// a screen reader tells the user a dialog is something to deal with and leave.
+    /// </remarks>
+    [Parameter] public string? Role { get; set; }
 
     /// <summary>
     /// The size of the panel in pixels along the axis it slides on: the width of a panel at the start or the
@@ -247,6 +300,33 @@ public partial class BitPanel : BitComponentBase
     /// </summary>
     [Parameter] public string? TitleAriaId { get; set; }
 
+    /// <summary>
+    /// Takes the content of the panel back out of the page once the panel has finished sliding out, so that
+    /// the next opening builds it again from nothing.
+    /// </summary>
+    /// <remarks>
+    /// It is for the content that has to start over every time - a form that should not still hold what was
+    /// typed into it the last time, a view whose data is stale by the time the panel is opened again - and
+    /// for the content that is expensive enough to be worth not keeping. It waits for the panel to have slid
+    /// away first, so the closing is still seen with the content in it.
+    /// <br />
+    /// It keeps the content out of the page until the first opening as well, the way
+    /// <see cref="LazyRender"/> does.
+    /// </remarks>
+    [Parameter] public bool UnrenderOnClose { get; set; }
+
+    /// <summary>
+    /// The layer the panel and its overlay are stacked at, which takes over from the one the whole library
+    /// shares. The overlay takes this value and the panel itself sits one above it.
+    /// </summary>
+    /// <remarks>
+    /// It is what a panel opened from inside another one needs: the two panels sit at the same layer
+    /// otherwise, where the overlay of the inner one lands underneath the panel it was opened from and a
+    /// click there reaches that panel rather than dismissing the inner one.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public int? ZIndex { get; set; }
+
 
 
     /// <summary>
@@ -264,13 +344,14 @@ public partial class BitPanel : BitComponentBase
     }
 
     /// <summary>
-    /// Closes the panel. A panel that is already closed is left alone.
+    /// Closes the panel. A panel that is already closed is left alone, and one whose
+    /// <see cref="OnDismissing"/> refuses the closing stays open.
     /// </summary>
     public async Task Close()
     {
         if (IsOpen is false) return;
 
-        if (await AssignIsOpen(false) is false) return;
+        if (await ClosePanel(BitPanelDismissReason.Programmatic) is false) return;
 
         StateHasChanged();
     }
@@ -303,10 +384,27 @@ public partial class BitPanel : BitComponentBase
         await OnSwipeEnd.InvokeAsync(diff);
     }
 
+    [JSInvokable("OnTransitionEnd")]
+    public async Task _OnTransitionEnd()
+    {
+        if (IsDisposed) return;
+
+        // The content of a closed panel is only taken out of the page once the panel has finished sliding
+        // away with it, so the closing is still seen with something in it.
+        if (IsOpen is false && UnrenderOnClose && _contentRendered)
+        {
+            _contentRendered = false;
+
+            await InvokeAsync(StateHasChanged);
+        }
+
+        await OnTransitionEnd.InvokeAsync(IsOpen);
+    }
+
     [JSInvokable("OnClose")]
     public async Task _OnClose()
     {
-        await ClosePanel(new());
+        await ClosePanel(BitPanelDismissReason.Swipe);
 
         await InvokeAsync(StateHasChanged);
     }
@@ -325,6 +423,13 @@ public partial class BitPanel : BitComponentBase
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+
+        // The two layers are written as variables on the root rather than onto the two elements, so that the
+        // panel keeps the one thing the layering contract of the library asks of it - the surface above the
+        // overlay it comes with - wherever the pair of them is moved to.
+        StyleBuilder.Register(() => ZIndex is null
+            ? string.Empty
+            : FormattableString.Invariant($"--bit-pnl-zin-ovl:{ZIndex};--bit-pnl-zin-cnt:{ZIndex + 1}"));
     }
 
     protected override void OnInitialized()
@@ -373,6 +478,14 @@ public partial class BitPanel : BitComponentBase
 
         if (AutoToggleScroll)
         {
+            // The scrollbar was taken off the element the selector named when the panel opened, so a selector
+            // that has changed since has to be followed: the element it named before would otherwise be left
+            // without its scrollbar and the one it names now would keep the scrolling the panel asked for.
+            if (_scrollLocked && _lockedScroller != (ScrollerSelector ?? "body"))
+            {
+                await DisposeScrollLock();
+            }
+
             await SetupScrollLock();
         }
         else
@@ -387,6 +500,8 @@ public partial class BitPanel : BitComponentBase
 
         if (firstRender)
         {
+            await SetupTransitionEnd();
+
             await SetupSwipes();
         }
 
@@ -433,19 +548,40 @@ public partial class BitPanel : BitComponentBase
 
 
 
-    private async Task ClosePanel(MouseEventArgs e)
+    // Every closing the panel performs itself comes through here, so that the one callback that can refuse a
+    // closing is asked about all of them and the reason it is given is the real one. It reports whether the
+    // panel was actually closed, which is what the callers that have to re-render on it go by.
+    private async Task<bool> ClosePanel(BitPanelDismissReason reason, MouseEventArgs? e = null)
     {
-        if (IsEnabled is false || IsOpen is false) return;
+        if (IsOpen is false) return false;
+
+        // A disabled panel takes nothing from the user, but the code that owns it can always close it: a
+        // panel disabled while it was open would otherwise be left on the screen with no way off it.
+        if (IsEnabled is false && reason is not BitPanelDismissReason.Programmatic) return false;
+
+        if (OnDismissing.HasDelegate)
+        {
+            var args = new BitPanelDismissArgs(reason, e);
+
+            await OnDismissing.InvokeAsync(args);
+
+            // The panel may have been closed - or taken off the page - while the callback was awaited, in
+            // which case there is nothing left here to close.
+            if (args.Cancel || IsDisposed || IsOpen is false) return false;
+        }
 
         // Kept for the dismissal callback, which is invoked from the render that closes the panel rather than
         // from here, so that it is called for every way the panel can be closed and never before the page
         // shows it closed.
-        _dismissArgs = e;
+        _dismissArgs = e ?? new();
 
         if (await AssignIsOpen(false) is false)
         {
             _dismissArgs = null;
+            return false;
         }
+
+        return true;
     }
 
     private async Task HandleOnOverlayClick(MouseEventArgs e)
@@ -456,7 +592,7 @@ public partial class BitPanel : BitComponentBase
 
         if (Blocking) return;
 
-        await ClosePanel(e);
+        await ClosePanel(BitPanelDismissReason.Overlay, e);
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
@@ -465,7 +601,7 @@ public partial class BitPanel : BitComponentBase
 
         if (e.Key is not "Escape") return;
 
-        await ClosePanel(new());
+        await ClosePanel(BitPanelDismissReason.Escape);
 
         StateHasChanged();
     }
@@ -479,8 +615,9 @@ public partial class BitPanel : BitComponentBase
     private bool IsHorizontal => (Position ?? BitPanelPosition.End) is BitPanelPosition.Start or BitPanelPosition.End;
 
     // Whether the content of the panel is in the page. A lazy panel leaves it out until the panel is opened
-    // for the first time, and keeps it from then on, so the state the content holds survives a close.
-    private bool ContentRendered => LazyRender is false || _contentRendered;
+    // for the first time, and keeps it from then on, so the state the content holds survives a close; a panel
+    // that unrenders on close never has it there while it is closed, so every opening starts over.
+    private bool ContentRendered => (LazyRender is false && UnrenderOnClose is false) || _contentRendered;
 
     // A modeless panel leaves the page usable, so the keyboard is meant to reach it: trapping the focus in a
     // panel the user can still click out of would leave them unable to tab back to what they clicked on.
@@ -490,12 +627,23 @@ public partial class BitPanel : BitComponentBase
 
     // Only a panel that actually holds the page back is a modal one, and only while it is open: a panel that
     // reports itself as modal while the page behind it is still usable is telling a screen reader something
-    // the user can prove wrong by clicking.
-    private string? GetAriaModal() => (IsOpen && Modeless is false) ? "true" : null;
+    // the user can prove wrong by clicking. The property belongs to the two dialog roles and to nothing else,
+    // so a panel announced as something the user can walk past never carries it either.
+    private string? GetAriaModal()
+    {
+        if (IsOpen is false || Modeless) return null;
+
+        return (Role ?? GetRole()) is "dialog" or "alertdialog" ? "true" : null;
+    }
 
     private string GetOverlayCssClasses()
     {
         List<string> classes = ["bit-pnl-ovl"];
+
+        if (Dimmed)
+        {
+            classes.Add("bit-pnl-ovl-dim");
+        }
 
         if (IsOpen)
         {
@@ -623,6 +771,19 @@ public partial class BitPanel : BitComponentBase
         _swipesDotnetObj = null;
     }
 
+    private async Task SetupTransitionEnd()
+    {
+        if (IsDisposed) return;
+
+        _dotnetObj = DotNetObjectReference.Create(this);
+
+        try
+        {
+            await _js.BitUtilsSetupTransitionEnd(_containerId, _dotnetObj);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
     private async Task SetupFocusTrap()
     {
         if (ShouldTrapFocus is false || _focusTrapped || IsDisposed || IsRendered is false) return;
@@ -695,7 +856,7 @@ public partial class BitPanel : BitComponentBase
 
         try
         {
-            await _js.BitUtilsToggleOverflow(_lockedScroller, true);
+            await _js.BitUtilsToggleOverflow(_lockedScroller, true, _containerId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -710,7 +871,7 @@ public partial class BitPanel : BitComponentBase
 
         try
         {
-            await _js.BitUtilsToggleOverflow(scroller, false);
+            await _js.BitUtilsToggleOverflow(scroller, false, _containerId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -734,6 +895,15 @@ public partial class BitPanel : BitComponentBase
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
         await DisposeSwipes();
+
+        try
+        {
+            await _js.BitUtilsDisposeTransitionEnd(_containerId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+
+        _dotnetObj?.Dispose();
+        _dotnetObj = null;
 
         await base.DisposeAsync(disposing);
     }

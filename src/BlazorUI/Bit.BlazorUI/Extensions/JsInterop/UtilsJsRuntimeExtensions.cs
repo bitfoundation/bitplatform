@@ -95,6 +95,21 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // Reports the end of the transform transition of an element back to .NET, which is when a surface that
+    // slides has actually finished sliding.
+    internal static ValueTask BitUtilsSetupTransitionEnd<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime, string elementId, DotNetObjectReference<T> dotnetObj) where T : class
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setupTransitionEnd", elementId, dotnetObj);
+    }
+
+
+    internal static ValueTask BitUtilsDisposeTransitionEnd(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeTransitionEnd", elementId);
+    }
+
+
     internal static ValueTask BitUtilsPreventDefaultKeys(this IJSRuntime jsRuntime, string elementId, string[] keys)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.preventDefaultKeys", elementId, keys);
@@ -180,13 +195,16 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    internal static ValueTask<float> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, string scrollerSelector, bool isHidden)
+    // The key names the holder of the lock, so that an element several surfaces are holding still at once
+    // gets its scrolling back when the last of them lets go rather than when the first one does. Callers that
+    // pass none share one anonymous holder, which is the behaviour of a single lock.
+    internal static ValueTask<float> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, string scrollerSelector, bool isHidden, string? key = null)
     {
-        return jsRuntime.Invoke<float>("BitBlazorUI.Utils.toggleOverflow", scrollerSelector, isHidden);
+        return jsRuntime.Invoke<float>("BitBlazorUI.Utils.toggleOverflow", scrollerSelector, isHidden, key ?? string.Empty);
     }
 
-    internal static ValueTask<float> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, ElementReference scrollerElement, bool isHidden)
+    internal static ValueTask<float> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, ElementReference scrollerElement, bool isHidden, string? key = null)
     {
-        return jsRuntime.Invoke<float>("BitBlazorUI.Utils.toggleOverflow", scrollerElement, isHidden);
+        return jsRuntime.Invoke<float>("BitBlazorUI.Utils.toggleOverflow", scrollerElement, isHidden, key ?? string.Empty);
     }
 }

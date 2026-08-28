@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -757,6 +758,328 @@ public class BitPanelTests : BunitTestContext
         StringAssert.Contains(com.Find(".bit-pnl").GetAttribute("style"), "color:red");
         StringAssert.Contains(com.Find(".bit-pnl-ovl").GetAttribute("style"), "background-color:blue");
         StringAssert.Contains(com.Find(".bit-pnl-cnt").GetAttribute("style"), "padding:1rem");
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public void BitPanelDimmedShouldGiveTheOverlayABackgroundOfItsOwn(bool dimmed)
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.Dimmed, dimmed);
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        Assert.AreEqual(dimmed, com.Find(".bit-pnl-ovl").ClassList.Contains("bit-pnl-ovl-dim"));
+    }
+
+    // A panel that is not a dialog at all - one left beside the page rather than over it - is better
+    // announced as something the user can walk past.
+    [TestMethod]
+    public void BitPanelRoleShouldTakeOverFromTheDialogItIsAnnouncedAs()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.Modeless, true);
+            parameters.Add(p => p.Role, "complementary");
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        Assert.AreEqual("complementary", com.Find(".bit-pnl-cnt").GetAttribute("role"));
+
+        // It wins over the alert dialog of an IsAlert panel too.
+        com.Render(p => p.Add(x => x.IsAlert, true));
+        Assert.AreEqual("complementary", com.Find(".bit-pnl-cnt").GetAttribute("role"));
+    }
+
+    // aria-modal belongs to the two dialog roles and to nothing else, so a panel announced as something the
+    // user can walk past never carries it.
+    [TestMethod]
+    public void BitPanelShouldNotReportAModalOnARoleThatIsNotADialog()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.Role, "complementary");
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        Assert.IsFalse(com.Find(".bit-pnl-cnt").HasAttribute("aria-modal"));
+
+        com.Render(p => p.Add(x => x.Role, "alertdialog"));
+        Assert.AreEqual("true", com.Find(".bit-pnl-cnt").GetAttribute("aria-modal"));
+    }
+
+    // The panel and the overlay it comes with are lifted as a pair, and the panel stays above the overlay.
+    [TestMethod]
+    public void BitPanelZIndexShouldLiftThePanelAndItsOverlayTogether()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.ZIndex, 1310);
+        });
+
+        var style = com.Find(".bit-pnl").GetAttribute("style");
+
+        StringAssert.Contains(style, "--bit-pnl-zin-ovl:1310");
+        StringAssert.Contains(style, "--bit-pnl-zin-cnt:1311");
+
+        com.Render(p => p.Add(x => x.ZIndex, null));
+
+        Assert.IsFalse((com.Find(".bit-pnl").GetAttribute("style") ?? string.Empty).Contains("--bit-pnl-zin"));
+    }
+
+    [TestMethod]
+    public void BitPanelOnDismissingShouldTellTheOverlayFromTheEscapeKey()
+    {
+        var isOpen = true;
+        var reasons = new System.Collections.Generic.List<BitPanelDismissReason>();
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.OnDismissing, (BitPanelDismissArgs args) => reasons.Add(args.Reason));
+        });
+
+        com.Find(".bit-pnl-ovl").Click();
+        com.Render(p => p.Add(x => x.IsOpen, true));
+
+        com.Find(".bit-pnl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        CollectionAssert.AreEqual(
+            new[] { BitPanelDismissReason.Overlay, BitPanelDismissReason.Escape },
+            reasons);
+    }
+
+    [TestMethod]
+    public async Task BitPanelOnDismissingShouldReportTheSwipeAndTheCloseMethod()
+    {
+        var isOpen = true;
+        var reasons = new System.Collections.Generic.List<BitPanelDismissReason>();
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.OnDismissing, (BitPanelDismissArgs args) => reasons.Add(args.Reason));
+        });
+
+        await com.InvokeAsync(() => com.Instance._OnClose());
+        com.Render(p => p.Add(x => x.IsOpen, true));
+
+        await com.InvokeAsync(() => com.Instance.Close());
+
+        CollectionAssert.AreEqual(
+            new[] { BitPanelDismissReason.Swipe, BitPanelDismissReason.Programmatic },
+            reasons);
+    }
+
+    // The click that dismissed the panel is handed to the callback, so a consumer never has to reach for the
+    // pointer through the reason.
+    [TestMethod]
+    public void BitPanelOnDismissingShouldCarryTheClickOfAnOverlayDismissal()
+    {
+        var isOpen = true;
+        BitPanelDismissArgs? received = null;
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.OnDismissing, (BitPanelDismissArgs args) => received = args);
+        });
+
+        com.Find(".bit-pnl-ovl").Click(new MouseEventArgs { ClientX = 12, ClientY = 34 });
+
+        Assert.IsNotNull(received);
+        Assert.AreEqual(BitPanelDismissReason.Overlay, received.Reason);
+        Assert.IsNotNull(received.Mouse);
+        Assert.AreEqual(12, received.Mouse.ClientX);
+
+        // Nothing but a pointer dismissal has a click to carry.
+        com.Render(p => p.Add(x => x.IsOpen, true));
+        com.Find(".bit-pnl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(BitPanelDismissReason.Escape, received.Reason);
+        Assert.IsNull(received.Mouse);
+    }
+
+    [TestMethod]
+    public async Task BitPanelOnDismissingShouldBeAbleToRefuseTheDismissal()
+    {
+        var isOpen = true;
+        var dismissed = 0;
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.OnDismiss, () => dismissed++);
+            parameters.Add(p => p.OnDismissing, (BitPanelDismissArgs args) => args.Cancel = true);
+        });
+
+        com.Find(".bit-pnl-ovl").Click();
+        Assert.IsTrue(isOpen);
+
+        com.Find(".bit-pnl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.IsTrue(isOpen);
+
+        await com.InvokeAsync(() => com.Instance.Close());
+        Assert.IsTrue(isOpen);
+
+        Assert.IsTrue(com.Find(".bit-pnl-cnt").ClassList.Contains("bit-pnl-opn"));
+        // A dismissal that never happened is never reported.
+        Assert.AreEqual(0, dismissed);
+    }
+
+    // The flag has already been set by the time the panel sees it, so there is nothing left to refuse.
+    [TestMethod]
+    public void BitPanelOnDismissingShouldNotSeeTheFlagBeingSetFromTheOutside()
+    {
+        var called = 0;
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.OnDismissing, (BitPanelDismissArgs args) => { called++; args.Cancel = true; });
+        });
+
+        com.Render(p => p.Add(x => x.IsOpen, false));
+
+        Assert.AreEqual(0, called);
+        Assert.IsFalse(com.Find(".bit-pnl-cnt").ClassList.Contains("bit-pnl-opn"));
+    }
+
+    // A disabled panel takes nothing from the user, but the code that owns it can always close it.
+    [TestMethod]
+    public async Task BitPanelCloseShouldStillWorkOnADisabledPanel()
+    {
+        var isOpen = true;
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        await com.InvokeAsync(() => com.Instance.Close());
+
+        Assert.IsFalse(isOpen);
+    }
+
+    // The lock is named after the panel that holds it, so an element several panels are holding still at once
+    // gets its scrolling back when the last of them lets go rather than when the first one does.
+    [TestMethod]
+    public void BitPanelShouldNameItselfAsTheHolderOfTheScrollLock()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.AutoToggleScroll, true);
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        com.WaitForAssertion(() =>
+        {
+            var locked = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
+            Assert.AreEqual(3, locked.Arguments.Count);
+            Assert.IsNotNull(locked.Arguments[2]);
+            StringAssert.Contains(locked.Arguments[2]!.ToString(), "container");
+        });
+    }
+
+    // The scrollbar was taken off the element the selector named when the panel opened, so a selector that has
+    // changed since has to be followed.
+    [TestMethod]
+    public void BitPanelShouldFollowTheScrollerSelectorWhileItIsOpen()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.AutoToggleScroll, true);
+            parameters.Add(p => p.ScrollerSelector, ".first");
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+
+        com.Render(p => p.Add(x => x.ScrollerSelector, ".second"));
+
+        com.WaitForAssertion(() =>
+        {
+            var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"];
+
+            Assert.IsTrue(invocations.Any(i => Equals(i.Arguments[0], ".first") && Equals(i.Arguments[1], false)));
+
+            var locked = invocations[^1];
+            Assert.AreEqual(".second", locked.Arguments[0]);
+            Assert.AreEqual(true, locked.Arguments[1]);
+        });
+    }
+
+    // The end of the movement is only known to the page, so the panel is told about it from there.
+    [TestMethod]
+    public async Task BitPanelOnTransitionEndShouldReportTheStateThePanelSettledIn()
+    {
+        var settled = new System.Collections.Generic.List<bool>();
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, false);
+            parameters.Add(p => p.OnTransitionEnd, (bool v) => settled.Add(v));
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupTransitionEnd"].Count));
+
+        com.Render(p => p.Add(x => x.IsOpen, true));
+        await com.InvokeAsync(() => com.Instance._OnTransitionEnd());
+
+        com.Render(p => p.Add(x => x.IsOpen, false));
+        await com.InvokeAsync(() => com.Instance._OnTransitionEnd());
+
+        CollectionAssert.AreEqual(new[] { true, false }, settled);
+    }
+
+    // The content is only taken out once the panel has finished sliding away with it, so the closing is still
+    // seen with something in it.
+    [TestMethod]
+    public async Task BitPanelUnrenderOnCloseShouldKeepTheContentUntilThePanelHasSlidAway()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.UnrenderOnClose, true);
+            parameters.Add(p => p.IsOpen, false);
+            parameters.AddChildContent("<div class=\"body\">Body</div>");
+        });
+
+        // It keeps the content out of the page until the first opening, the way LazyRender does.
+        Assert.AreEqual(0, com.FindAll(".body").Count);
+
+        com.Render(p => p.Add(x => x.IsOpen, true));
+        Assert.AreEqual(1, com.FindAll(".body").Count);
+
+        com.Render(p => p.Add(x => x.IsOpen, false));
+        Assert.AreEqual(1, com.FindAll(".body").Count);
+
+        await com.InvokeAsync(() => com.Instance._OnTransitionEnd());
+        Assert.AreEqual(0, com.FindAll(".body").Count);
+
+        // And the next opening builds it again.
+        com.Render(p => p.Add(x => x.IsOpen, true));
+        Assert.AreEqual(1, com.FindAll(".body").Count);
+    }
+
+    // A panel that keeps its content keeps it whatever the page reports about the movement.
+    [TestMethod]
+    public async Task BitPanelWithoutUnrenderOnCloseShouldKeepTheContentAfterTheTransition()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.LazyRender, true);
+            parameters.Add(p => p.IsOpen, true);
+            parameters.AddChildContent("<div class=\"body\">Body</div>");
+        });
+
+        com.Render(p => p.Add(x => x.IsOpen, false));
+        await com.InvokeAsync(() => com.Instance._OnTransitionEnd());
+
+        Assert.AreEqual(1, com.FindAll(".body").Count);
     }
 
     [TestMethod]

@@ -106,7 +106,7 @@
                 }
 
                 if (position === BitSwipePosition.Top) {
-                    if (diffY < 0) {
+                    if (diffY < 0 && !canScrollAway()) {
                         element.style.transform = `translateY(${diffY}px)`;
                     } else {
                         element.style.transform = originalTransform;
@@ -114,7 +114,7 @@
                 }
 
                 if (position === BitSwipePosition.Bottom) {
-                    if (diffY > 0) {
+                    if (diffY > 0 && !canScrollAway()) {
                         element.style.transform = `translateY(${diffY}px)`;
                     } else {
                         element.style.transform = originalTransform;
@@ -122,6 +122,19 @@
                 }
 
                 await dotnetObj.invokeMethodAsync('OnMove', diffX, diffY);
+
+                // A surface that scrolls its own content is dragged away only from the end of that content:
+                // pulling a bottom sheet down while it is scrolled means scrolling it back up, and it is the
+                // gesture the finger is already making. The surfaces whose content scrolls in an element of
+                // their own never scroll themselves, so this leaves them where they were.
+                function canScrollAway() {
+                    const scrollable = element!.scrollHeight - element!.clientHeight;
+                    if (scrollable <= 1) return false;
+
+                    return position === BitSwipePosition.Bottom
+                        ? element!.scrollTop > 1
+                        : element!.scrollTop < scrollable - 1;
+                }
 
                 function cancel() {
                     if (!e.cancelable) return;
@@ -158,13 +171,21 @@
                         }
                     }
 
-                    if (position === BitSwipePosition.Top && diffY < 0) {
+                    // The two vertical edges weigh the drag against the same content scrolling the drag
+                    // itself was checked against, so a gesture that only scrolled the surface never ends by
+                    // throwing it away.
+                    const scrollable = element.scrollHeight - element.clientHeight;
+                    const scrolled = scrollable > 1 && (position === BitSwipePosition.Bottom
+                        ? element.scrollTop > 1
+                        : element.scrollTop < scrollable - 1);
+
+                    if (position === BitSwipePosition.Top && diffY < 0 && !scrolled) {
                         if ((Math.abs(diffY) / bcr.height) > trigger) {
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
                     }
 
-                    if (position === BitSwipePosition.Bottom && diffY > 0) {
+                    if (position === BitSwipePosition.Bottom && diffY > 0 && !scrolled) {
                         if ((diffY / bcr.height) > trigger) {
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }

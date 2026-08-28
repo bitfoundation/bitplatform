@@ -52,10 +52,17 @@ public partial class BitPanelDemo
         },
         new()
         {
+            Name = "Dimmed",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Dims the page behind the panel, by giving the overlay that covers it a background of its own instead of leaving it the transparent catcher of clicks it is by default.",
+        },
+        new()
+        {
             Name = "FullSize",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Stretches the panel to the full size of the screen along the axis it is sized on, which takes over from Size and from the cap that otherwise leaves a strip of the page showing beside it.",
+            Description = "Stretches the panel over the whole of the screen, which takes over from Size and from the cap that otherwise leaves a strip of the page showing beside it.",
         },
         new()
         {
@@ -90,7 +97,7 @@ public partial class BitPanelDemo
             Name = "NoAutoFocus",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Leaves the focus where it is when the panel opens, instead of moving it into the panel. An element in the content marked with a data-autofocus attribute takes the focus instead of the first focusable one.",
+            Description = "Leaves the focus where it is when the panel opens, instead of moving it into the panel. An element in the content marked with a data-autofocus attribute takes the focus instead of the first focusable one. The Escape key reaches the panel from wherever the keyboard is inside it, so a panel that never took the keyboard over is also one Escape does not reach until the user has tabbed or clicked into it.",
         },
         new()
         {
@@ -118,6 +125,14 @@ public partial class BitPanelDemo
             Name = "OnDismiss",
             Type = "EventCallback<MouseEventArgs>",
             Description = "A callback function for when the panel is dismissed. It is called for every closing of the panel: the overlay, the Escape key, a swipe, the Close and Toggle methods, and the IsOpen parameter being set to false from the outside.",
+        },
+        new()
+        {
+            Name = "OnDismissing",
+            Type = "EventCallback<BitPanelDismissArgs>",
+            Description = "A callback function invoked before the panel closes, which lets the closing be refused by setting Cancel on the arguments it is given, and tells the closings apart through their Reason. The IsOpen parameter being set to false from the outside never passes through it.",
+            Href = "#dismiss-args",
+            LinkType = LinkType.Link,
         },
         new()
         {
@@ -157,12 +172,25 @@ public partial class BitPanelDemo
         },
         new()
         {
+            Name = "OnTransitionEnd",
+            Type = "EventCallback<bool>",
+            Description = "A callback function for when the panel has finished sliding in or out, called with the state it settled in. OnOpen, OnDismiss and OnToggle are called on the frame the panel changed state on, which is the start of the movement rather than the end of it.",
+        },
+        new()
+        {
             Name = "Position",
             Type = "BitPanelPosition?",
             DefaultValue = "null",
             Description = "The edge of the screen the panel slides in from. Start and End are the logical edges, so they follow the direction of the panel. It defaults to End.",
             Href = "#position-enum",
             LinkType = LinkType.Link,
+        },
+        new()
+        {
+            Name = "Role",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The ARIA role the panel reports itself under, which takes over from the dialog it is announced as by default. It is for the panel that is not a dialog at all: a Modeless panel left beside the page is better announced as a complementary or a region.",
         },
         new()
         {
@@ -208,6 +236,20 @@ public partial class BitPanelDemo
             DefaultValue = "null",
             Description = "The ARIA id of the element that names the panel, which is what a screen reader reads out when the panel opens. AriaLabel names the panel where there is no such element.",
         },
+        new()
+        {
+            Name = "UnrenderOnClose",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Takes the content of the panel back out of the page once the panel has finished sliding out, so that the next opening builds it again from nothing. It keeps the content out of the page until the first opening as well, the way LazyRender does.",
+        },
+        new()
+        {
+            Name = "ZIndex",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The layer the panel and its overlay are stacked at, which takes over from the one the whole library shares. The overlay takes this value and the panel itself sits one above it, which is what a panel opened from inside another one needs.",
+        },
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =
@@ -222,7 +264,7 @@ public partial class BitPanelDemo
         {
             Name = "Close",
             Type = "Task",
-            Description = "Closes the panel. A panel that is already closed is left alone.",
+            Description = "Closes the panel. A panel that is already closed is left alone, and one whose OnDismissing refuses the closing stays open.",
         },
         new()
         {
@@ -262,6 +304,37 @@ public partial class BitPanelDemo
                    Description = "Custom CSS classes/styles for the container of the BitPanel, which is the panel surface itself."
                }
             ]
+        },
+        new()
+        {
+            Id = "dismiss-args",
+            Title = "BitPanelDismissArgs",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Reason",
+                   Type = "BitPanelDismissReason",
+                   DefaultValue = "",
+                   Description = "What is closing the panel: a click on the overlay, the Escape key, a swipe, or the code that opened it.",
+                   Href = "#dismiss-reason-enum",
+                   LinkType = LinkType.Link,
+               },
+               new()
+               {
+                   Name = "Mouse",
+                   Type = "MouseEventArgs?",
+                   DefaultValue = "null",
+                   Description = "The click that is closing the panel, which is only there for a dismissal that came from a pointer."
+               },
+               new()
+               {
+                   Name = "Cancel",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Set to true to refuse the dismissal and leave the panel open."
+               }
+            ]
         }
     ];
 
@@ -278,6 +351,19 @@ public partial class BitPanelDemo
                 new() { Name = "End", Description = "The logical end edge of the screen: the right in left-to-right, the left in right-to-left.", Value = "1" },
                 new() { Name = "Top", Description = "The top edge of the screen.", Value = "2" },
                 new() { Name = "Bottom", Description = "The bottom edge of the screen.", Value = "3" }
+            ]
+        },
+        new()
+        {
+            Id = "dismiss-reason-enum",
+            Name = "BitPanelDismissReason",
+            Description = "What closed the panel, reported to OnDismissing.",
+            Items =
+            [
+                new() { Name = "Programmatic", Description = "The code that opened the panel closed it, through the Close or Toggle method.", Value = "0" },
+                new() { Name = "Overlay", Description = "The user clicked the overlay that covers the page behind the panel.", Value = "1" },
+                new() { Name = "Escape", Description = "The user pressed the Escape key while the keyboard was inside the panel.", Value = "2" },
+                new() { Name = "Swipe", Description = "The user swiped the panel towards the edge it slid in from.", Value = "3" }
             ]
         }
     ];
@@ -297,11 +383,18 @@ public partial class BitPanelDemo
 
     private int dismissCount;
     private int overlayClickCount;
-    private bool lastDismissWasOverlayClick;
+    private string lastDismissReason = "-";
     private bool isBlockingPanelOpen;
+    private bool isDimmedPanelOpen;
     private bool isModelessPanelOpen;
     private bool isNoEscapePanelOpen;
     private BitPanel modelessPanelRef = default!;
+
+    private bool guardPanel = true;
+    private bool guardedRefused;
+    private bool isGuardedPanelOpen;
+    private BitPanelDismissReason? guardedReason;
+    private BitPanel guardedPanelRef = default!;
 
     private bool isFocusPanelOpen;
     private bool isNoFocusPanelOpen;
@@ -314,11 +407,16 @@ public partial class BitPanelDemo
     private bool isSwipePanelOpen;
     private bool isNoSwipePanelOpen;
 
+    private bool isOuterPanelOpen;
+    private bool isInnerPanelOpen;
+
     private bool isAbsolutePanelOpen;
 
     private int openCount;
     private bool lastToggleState;
+    private bool lastSettledState;
     private bool isLazyPanelOpen;
+    private bool isUnrenderPanelOpen;
 
     private bool isStyledPanelOpen;
     private bool isClassedPanelOpen;
@@ -331,8 +429,20 @@ public partial class BitPanelDemo
     private void HandleOnDismiss(MouseEventArgs e)
     {
         dismissCount++;
-        // A dismissal that did not come from a pointer carries the empty arguments the panel makes for it.
-        lastDismissWasOverlayClick = e.ClientX != 0 || e.ClientY != 0;
+    }
+
+    // OnDismissing is what carries the reason, so the panel never has to be asked what closed it.
+    private void HandleOnDismissing(BitPanelDismissArgs args)
+    {
+        lastDismissReason = args.Reason.ToString();
+    }
+
+    private void HandleOnGuardedDismissing(BitPanelDismissArgs args)
+    {
+        guardedReason = args.Reason;
+        // The Close the panel's own button asked for is let through; the gestures that could be a slip are not.
+        args.Cancel = guardPanel && args.Reason is not BitPanelDismissReason.Programmatic;
+        guardedRefused = args.Cancel;
     }
 
 
@@ -433,6 +543,7 @@ private bool isCssSizePanelOpen;";
 
     private readonly string example3RazorCode = @"
 <BitButton OnClick=""() => isBlockingPanelOpen = true"">Blocking</BitButton>
+<BitButton OnClick=""() => isDimmedPanelOpen = true"">Dimmed</BitButton>
 <BitButton OnClick=""() => isModelessPanelOpen = true"">Modeless</BitButton>
 <BitButton OnClick=""() => isNoEscapePanelOpen = true"">NoDismissOnEscape</BitButton>
 
@@ -440,6 +551,7 @@ private bool isCssSizePanelOpen;";
           Blocking
           AriaLabel=""A blocking panel""
           OnDismiss=""HandleOnDismiss""
+          OnDismissing=""HandleOnDismissing""
           OnOverlayClick=""() => overlayClickCount++"">
     <div class=""panel-body"">
         <h3>Blocking</h3>
@@ -451,11 +563,24 @@ private bool isCssSizePanelOpen;";
     </div>
 </BitPanel>
 
+<BitPanel @bind-IsOpen=""isDimmedPanelOpen""
+          Dimmed
+          AriaLabel=""A panel that dims the page""
+          OnDismiss=""HandleOnDismiss""
+          OnDismissing=""HandleOnDismissing"">
+    <div class=""panel-body"">
+        <h3>Dimmed</h3>
+        <div>The page behind this panel is dimmed by the overlay instead of only being covered by it.</div>
+        <BitButton OnClick=""() => isDimmedPanelOpen = false"">Close</BitButton>
+    </div>
+</BitPanel>
+
 <BitPanel @bind-IsOpen=""isModelessPanelOpen""
           @ref=""modelessPanelRef""
           Modeless
           AriaLabel=""A modeless panel""
-          OnDismiss=""HandleOnDismiss"">
+          OnDismiss=""HandleOnDismiss""
+          OnDismissing=""HandleOnDismissing"">
     <div class=""panel-body"">
         <h3>Modeless</h3>
         <div>
@@ -469,7 +594,8 @@ private bool isCssSizePanelOpen;";
 <BitPanel @bind-IsOpen=""isNoEscapePanelOpen""
           NoDismissOnEscape
           AriaLabel=""A panel that ignores the Escape key""
-          OnDismiss=""HandleOnDismiss"">
+          OnDismiss=""HandleOnDismiss""
+          OnDismissing=""HandleOnDismissing"">
     <div class=""panel-body"">
         <h3>NoDismissOnEscape</h3>
         <div>The Escape key does nothing here. A click on the overlay still dismisses the panel.</div>
@@ -479,8 +605,9 @@ private bool isCssSizePanelOpen;";
     private readonly string example3CsharpCode = @"
 private int dismissCount;
 private int overlayClickCount;
-private bool lastDismissWasOverlayClick;
+private string lastDismissReason = ""-"";
 private bool isBlockingPanelOpen;
+private bool isDimmedPanelOpen;
 private bool isModelessPanelOpen;
 private bool isNoEscapePanelOpen;
 private BitPanel modelessPanelRef = default!;
@@ -488,11 +615,46 @@ private BitPanel modelessPanelRef = default!;
 private void HandleOnDismiss(MouseEventArgs e)
 {
     dismissCount++;
-    // A dismissal that did not come from a pointer carries the empty arguments the panel makes for it.
-    lastDismissWasOverlayClick = e.ClientX != 0 || e.ClientY != 0;
+}
+
+private void HandleOnDismissing(BitPanelDismissArgs args)
+{
+    lastDismissReason = args.Reason.ToString();
 }";
 
     private readonly string example4RazorCode = @"
+<BitToggle @bind-Value=""guardPanel"" Label=""Refuse the dismissals the user asks for"" />
+<BitButton OnClick=""() => isGuardedPanelOpen = true"">Open guarded panel</BitButton>
+
+<BitPanel @bind-IsOpen=""isGuardedPanelOpen""
+          @ref=""guardedPanelRef""
+          AriaLabel=""A panel that can refuse to close""
+          OnDismissing=""HandleOnGuardedDismissing"">
+    <div class=""panel-body"">
+        <h3>OnDismissing</h3>
+        <div>
+            While the toggle is on, the overlay, the Escape key and a swipe are all turned down -
+            only the button below gets this panel closed.
+        </div>
+        <BitButton OnClick=""() => guardedPanelRef.Close()"">Close</BitButton>
+    </div>
+</BitPanel>";
+    private readonly string example4CsharpCode = @"
+private bool guardPanel = true;
+private bool guardedRefused;
+private bool isGuardedPanelOpen;
+private BitPanelDismissReason? guardedReason;
+private BitPanel guardedPanelRef = default!;
+
+private void HandleOnGuardedDismissing(BitPanelDismissArgs args)
+{
+    guardedReason = args.Reason;
+    // The Close the panel's own button asked for is let through; the gestures that could be a slip are not.
+    args.Cancel = guardPanel && args.Reason is not BitPanelDismissReason.Programmatic;
+    guardedRefused = args.Cancel;
+}";
+
+    private readonly string example5RazorCode = @"
 <BitButton OnClick=""() => isFocusPanelOpen = true"">Auto focus</BitButton>
 <BitButton OnClick=""() => isNoFocusPanelOpen = true"">NoAutoFocus & NoFocusTrap</BitButton>
 
@@ -518,11 +680,11 @@ private void HandleOnDismiss(MouseEventArgs e)
         <BitButton OnClick=""() => isNoFocusPanelOpen = false"">Close</BitButton>
     </div>
 </BitPanel>";
-    private readonly string example4CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private bool isFocusPanelOpen;
 private bool isNoFocusPanelOpen;";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitButton OnClick=""() => isAutoToggleScrollPanelOpen = true"">AutoToggleScroll</BitButton>
 
 <BitPanel @bind-IsOpen=""isAutoToggleScrollPanelOpen"" AutoToggleScroll AriaLabel=""A panel that holds the page still"">
@@ -535,10 +697,10 @@ private bool isNoFocusPanelOpen;";
         <BitButton OnClick=""() => isAutoToggleScrollPanelOpen = false"">Close</BitButton>
     </div>
 </BitPanel>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private bool isAutoToggleScrollPanelOpen;";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitNumberField @bind-Value=""swipeTrigger"" Step=""0.05"" Min=""0.05"" Max=""1"" Mode=""BitSpinButtonMode.Inline"" Label=""SwipeTrigger"" />
 
 <BitButton OnClick=""() => isSwipePanelOpen = true"">Swipe</BitButton>
@@ -567,14 +729,42 @@ private bool isAutoToggleScrollPanelOpen;";
         <BitButton OnClick=""() => isNoSwipePanelOpen = false"">Close</BitButton>
     </div>
 </BitPanel>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private double swipeTrigger = 0.25;
 private decimal swipeStart;
 private decimal swipeDiff;
 private bool isSwipePanelOpen;
 private bool isNoSwipePanelOpen;";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
+<BitButton OnClick=""() => isOuterPanelOpen = true"">Open outer panel</BitButton>
+
+<BitPanel @bind-IsOpen=""isOuterPanelOpen"" Size=""320"" Dimmed AriaLabel=""The outer panel"">
+    <div class=""panel-body"">
+        <h3>Outer</h3>
+        <div>This panel sits at the layer every panel shares.</div>
+        <BitButton OnClick=""() => isInnerPanelOpen = true"">Open inner panel</BitButton>
+        <BitButton Variant=""BitVariant.Outline"" OnClick=""() => isOuterPanelOpen = false"">Close</BitButton>
+
+        <BitPanel @bind-IsOpen=""isInnerPanelOpen""
+                  Size=""240""
+                  Dimmed
+                  ZIndex=""1310""
+                  AriaLabel=""The inner panel""
+                  Position=""BitPanelPosition.Start"">
+            <div class=""panel-body"">
+                <h3>Inner</h3>
+                <div>Lifted over the panel it was opened from, so its own overlay covers it.</div>
+                <BitButton OnClick=""() => isInnerPanelOpen = false"">Close</BitButton>
+            </div>
+        </BitPanel>
+    </div>
+</BitPanel>";
+    private readonly string example8CsharpCode = @"
+private bool isOuterPanelOpen;
+private bool isInnerPanelOpen;";
+
+    private readonly string example9RazorCode = @"
 <div class=""absolute-container"">
     <div>The panel below opens inside this box, not over the page.</div>
     <BitButton OnClick=""() => isAbsolutePanelOpen = true"">Open</BitButton>
@@ -590,29 +780,46 @@ private bool isNoSwipePanelOpen;";
         </div>
     </BitPanel>
 </div>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private bool isAbsolutePanelOpen;";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitButton OnClick=""() => isLazyPanelOpen = true"">LazyRender</BitButton>
+<BitButton OnClick=""() => isUnrenderPanelOpen = true"">UnrenderOnClose</BitButton>
 
 <BitPanel @bind-IsOpen=""isLazyPanelOpen""
           LazyRender
           AriaLabel=""A lazily rendered panel""
           OnOpen=""() => openCount++""
-          OnToggle=""v => lastToggleState = v"">
+          OnToggle=""v => lastToggleState = v""
+          OnTransitionEnd=""v => lastSettledState = v"">
     <div class=""panel-body"">
         <h3>LazyRender</h3>
         <div>This content was not in the page until the panel was first opened.</div>
+        <BitTextField Label=""Type something, then close and reopen"" />
         <BitButton OnClick=""() => isLazyPanelOpen = false"">Close</BitButton>
     </div>
+</BitPanel>
+
+<BitPanel @bind-IsOpen=""isUnrenderPanelOpen""
+          UnrenderOnClose
+          AriaLabel=""A panel that starts over every time""
+          OnTransitionEnd=""v => lastSettledState = v"">
+    <div class=""panel-body"">
+        <h3>UnrenderOnClose</h3>
+        <div>This content is built again from nothing every time the panel is opened.</div>
+        <BitTextField Label=""Type something, then close and reopen"" />
+        <BitButton OnClick=""() => isUnrenderPanelOpen = false"">Close</BitButton>
+    </div>
 </BitPanel>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private int openCount;
 private bool lastToggleState;
-private bool isLazyPanelOpen;";
+private bool lastSettledState;
+private bool isLazyPanelOpen;
+private bool isUnrenderPanelOpen;";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitButton OnClick=""() => isStyledPanelOpen = true"">Open Styled panel</BitButton>
 <BitButton OnClick=""() => isClassedPanelOpen = true"">Open Classed panel</BitButton>
 <BitButton OnClick=""() => isPanelStylesOpen = true"">Open panel Styles</BitButton>
@@ -654,13 +861,13 @@ private bool isLazyPanelOpen;";
         <BitButton OnClick=""() => isPanelClassesOpen = false"">Close</BitButton>
     </div>
 </BitPanel>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private bool isStyledPanelOpen;
 private bool isClassedPanelOpen;
 private bool isPanelStylesOpen;
 private bool isPanelClassesOpen;";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitButton OnClick=""() => isRtlPanelOpenStart = true"">آغاز</BitButton>
 <BitButton OnClick=""() => isRtlPanelOpenEnd = true"">پایان</BitButton>
 
@@ -685,7 +892,7 @@ private bool isPanelClassesOpen;";
         <BitButton OnClick=""() => isRtlPanelOpenEnd = false"">بستن</BitButton>
     </div>
 </BitPanel>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private bool isRtlPanelOpenStart;
 private bool isRtlPanelOpenEnd;";
 }

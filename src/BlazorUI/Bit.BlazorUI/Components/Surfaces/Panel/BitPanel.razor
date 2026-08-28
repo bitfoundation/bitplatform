@@ -15,10 +15,15 @@
 
     @* The overlay stays in the page while the panel is closed so that it fades out with the panel instead
        of vanishing under it in one frame. It is hidden rather than removed, which also takes it out of the
-       way of the clicks the page is meant to keep while the panel is closed. *@
+       way of the clicks the page is meant to keep while the panel is closed.
+       The pointer press on it is refused its default action so that the click never takes the focus out of
+       the panel: the overlay is not focusable, so a browser left to itself drops the focus on the body,
+       which takes the Escape key away from the panel and starts the next Tab at the top of the very page
+       the overlay is there to keep the user off. *@
     @if (Modeless is false)
     {
         <div @onclick="HandleOnOverlayClick"
+             @onmousedown:preventDefault
              aria-hidden="true"
              style="@Styles?.Overlay"
              class="@GetOverlayCssClasses()" />
@@ -31,7 +36,7 @@
        Tab nor a screen reader ever reaches a content that is off the screen. *@
     <div id="@_containerId"
          tabindex="-1"
-         role="@GetRole()"
+         role="@(Role ?? GetRole())"
          inert="@(IsOpen is false)"
          aria-label="@AriaLabel"
          aria-modal="@GetAriaModal()"

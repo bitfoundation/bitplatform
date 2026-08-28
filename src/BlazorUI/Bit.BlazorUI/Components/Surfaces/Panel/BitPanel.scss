@@ -6,6 +6,9 @@
     z-index: $zindex-modal;
     font-family: $tg-font-family;
     --bit-pnl-transform-factor: 1;
+    // How much of the screen a panel that is not FullSize is allowed to take along the axis it slides on.
+    // It is read from the root so that a consumer can move the cap through the Root member of Styles.
+    --bit-pnl-max: 85%;
 
     &.bit-rtl {
         --bit-pnl-transform-factor: -1;
@@ -40,8 +43,17 @@
     height: 100%;
     position: fixed;
     visibility: hidden;
-    z-index: $zindex-overlay;
+    // The two layers are read from the root, where the ZIndex parameter writes them, so that a panel opened
+    // from inside another one can be lifted over it as a pair. Unset, they fall back to the layer the whole
+    // library shares.
+    z-index: var(--bit-pnl-zin-ovl, #{$zindex-overlay});
     transition: opacity $mot-duration-short $mot-easing-accelerate, visibility 0s linear $mot-duration-short;
+}
+
+// The overlay is a transparent catcher of clicks unless it is asked to dim what it covers, so that a panel
+// shown beside the work rather than instead of it does not darken the page it is meant to be read against.
+.bit-pnl-ovl-dim {
+    background-color: $clr-bg-overlay;
 }
 
 .bit-pnl-ovl-opn {
@@ -56,12 +68,18 @@
 .bit-pnl-cnt {
     opacity: 0;
     position: fixed;
+    overflow: auto;
     visibility: hidden;
     outline: transparent;
     box-sizing: border-box;
-    z-index: $zindex-callout;
     background-color: $clr-bg-pri;
     box-shadow: $box-shadow-sheet;
+    z-index: var(--bit-pnl-zin-cnt, #{$zindex-callout});
+    // The panel is capped to the screen it slides over, so a content taller than the cap has to be reachable
+    // from inside the panel: left to overflow it runs off the screen with nothing to scroll it back. The
+    // scrolling stops at the panel rather than carrying on into the page underneath, which would otherwise
+    // take the page out from under an open panel at the very moment the reader hits the end of it.
+    overscroll-behavior: contain;
     transition: transform $mot-duration $mot-easing-decelerate,
                 opacity $mot-duration-short $mot-easing-accelerate,
                 visibility 0s linear $mot-duration;
@@ -69,21 +87,21 @@
 
 .bit-pnl-start {
     height: 100%;
-    max-width: 85%;
     inset-block: 0;
     max-height: 100%;
     width: fit-content;
     inset-inline-start: 0;
+    max-width: var(--bit-pnl-max, 85%);
     transform: translateX(calc(var(--bit-pnl-transform-factor) * -100%));
 }
 
 .bit-pnl-end {
     height: 100%;
-    max-width: 85%;
     inset-block: 0;
     max-height: 100%;
     width: fit-content;
     inset-inline-end: 0;
+    max-width: var(--bit-pnl-max, 85%);
     transform: translateX(calc(var(--bit-pnl-transform-factor) * 100%));
 }
 
@@ -91,9 +109,9 @@
     top: 0;
     width: 100%;
     max-width: 100%;
-    max-height: 85%;
     inset-inline: 0;
     height: fit-content;
+    max-height: var(--bit-pnl-max, 85%);
     transform: translateY(-100%);
 }
 
@@ -102,9 +120,9 @@
     top: unset;
     width: 100%;
     max-width: 100%;
-    max-height: 85%;
     inset-inline: 0;
     height: fit-content;
+    max-height: var(--bit-pnl-max, 85%);
     transform: translateY(100%);
 }
 
