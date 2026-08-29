@@ -67,6 +67,14 @@
         border: 1px solid #999;
     }
 
+    // The pane of the PreserveScroll example, and the one place in these pages that turns the browser's
+    // own scroll anchoring off: with it on, every engine but WebKit keeps the reader's place by itself and
+    // the toggle of that example would have nothing to show. Opting out of it is what puts the pane on the
+    // side of the line PreserveScroll is there for, on any engine.
+    .no-anchor {
+        overflow-anchor: none;
+    }
+
     // The Style & Class example: a pane restyled from a class of its own, including the custom properties
     // the Modern scrollbar reads for its thickness and for the three states of its thumb.
     .custom-pane {

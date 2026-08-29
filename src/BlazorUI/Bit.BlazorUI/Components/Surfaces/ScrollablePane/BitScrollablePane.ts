@@ -19,6 +19,7 @@
         momentum: boolean; // whether a released drag carries on and slows to a stop
         wheel: boolean;
         preserve: boolean; // whether the reader's place is kept when content lands above what they see
+        autoHide: boolean; // whether the Modern scrollbar is only painted while the pane is being used
     }
 
     interface ScrollOffset {
@@ -356,6 +357,7 @@
         // asked for either pays for neither - the wheel one most of all, since it cannot be passive.
         private _dragAbortController?: AbortController;
         private _wheelAbortController?: AbortController;
+        private _autoHideAbortController?: AbortController;
 
         private _frame = 0;
         private _reportTimer = 0;
@@ -377,6 +379,12 @@
         // own: two changes can land between two frames, and each one has to be answered by what IT added
         // rather than by the total since the pane was last measured.
         private _anchorHeight = 0;
+
+        // Whether the browser is keeping the reader's place on THIS pane on its own: the engine has scroll
+        // anchoring at all AND the pane has not opted out of it in CSS. A pane carrying
+        // `overflow-anchor: none` is one nothing anchors, whatever the engine is capable of, and it is the
+        // one place a browser WITH anchoring still needs the compensation made for it.
+        private _anchored = false;
 
         // How tall a line of a wheel that counts in lines rather than in pixels is on this pane, read off
         // the computed style the first time such a wheel arrives and kept, since it is a style read.
@@ -447,6 +455,8 @@
             this.observe();
             this.bind();
 
+            this.readAnchoring();
+
             // The first measurement is taken once the browser has laid the content out, so a pane that
             // starts out with nothing to scroll does not paint a fade over an edge it will not have.
             this.schedule();
@@ -480,6 +490,8 @@
             }
 
             this.bind();
+
+            this.readAnchoring();
 
             this.refresh();
         }
@@ -524,6 +536,7 @@
             // again would otherwise draw the fade of wherever it last stood until it is measured afresh.
             this.clearFade();
             this.cancelDrag();
+            this.idle(false);
 
             this._disposed = true;
 
@@ -535,6 +548,9 @@
 
             this._wheelAbortController?.abort();
             this._wheelAbortController = undefined;
+
+            this._autoHideAbortController?.abort();
+            this._autoHideAbortController = undefined;
 
             this._resizeObserver?.disconnect();
             this._resizeObserver = undefined;
@@ -622,6 +638,57 @@
             } else if (this._options.wheel === false && this._wheelAbortController) {
                 this._wheelAbortController.abort();
                 this._wheelAbortController = undefined;
+            }
+
+            if (this._options.autoHide && this._autoHideAbortController === undefined) {
+                const ac = new AbortController();
+                this._autoHideAbortController = ac;
+
+                // enter and leave rather than over and out: the pane is one region here, and a pointer
+                // crossing from the content onto something inside it is not a pointer that left the pane.
+                this._element.addEventListener('pointerenter', () => this.idle(false), { passive: true, signal: ac.signal });
+                this._element.addEventListener('pointerleave', () => this.idle(true), { passive: true, signal: ac.signal });
+
+                // focusin and focusout rather than focus and blur, because what keeps the scrollbar on the
+                // screen is the focus being anywhere INSIDE the pane - and those two do not bubble.
+                this._element.addEventListener('focusin', () => this.idle(false), { passive: true, signal: ac.signal });
+                this._element.addEventListener('focusout', () => this.idle(true), { passive: true, signal: ac.signal });
+
+                // A pane that is already being pointed at or typed in when the flag is turned on is one the
+                // scrollbar belongs on: the two events that would say so have already been and gone.
+                this.idle(this.used() === false);
+            } else if (this._options.autoHide === false && this._autoHideAbortController) {
+                this._autoHideAbortController.abort();
+                this._autoHideAbortController = undefined;
+
+                this.idle(false);
+            }
+        }
+
+        // Whether the pane is being used right now, for the one moment nothing was listening to say so.
+        private used(): boolean {
+            try {
+                return this._element.matches(':hover') || this._element.contains(document.activeElement);
+            } catch {
+                return false; // :hover is unmatchable in a browser that never had a pointer
+            }
+        }
+
+        // Whether the Modern scrollbar of an auto hiding pane is currently painted, written onto the
+        // element for the stylesheet to read. It is driven from here rather than from :hover and
+        // :focus-within in the stylesheet, because Chromium does not repaint a ::-webkit-scrollbar
+        // pseudo-element when the state of the element it belongs to changes: the thumb would stay as it
+        // was last painted until something else on the pane forced a repaint - which is a scrollbar that
+        // never appears, and then one that never goes away again. Writing an attribute invalidates the
+        // element itself, which is a repaint of its scrollbars with it.
+        //
+        // An attribute, and not a class or an inline custom property, for the reason the fade uses one:
+        // Blazor rewrites both of those whole on every render and would wipe whatever this side added.
+        private idle(idle: boolean) {
+            if (idle) {
+                this._element.setAttribute('data-bit-scp-idle', '');
+            } else {
+                this._element.removeAttribute('data-bit-scp-idle');
             }
         }
 
@@ -752,6 +819,24 @@
             this._pinTimer = setTimeout(() => { this._pinning = false; this._pinTimer = 0; }, smooth ? 700 : 80);
         }
 
+        // Whether this pane is anchored by the browser, read off the computed style rather than off the
+        // engine alone: `overflow-anchor: none` on the pane turns the browser's own anchoring off, and a
+        // pane that opted out of it is exactly one that needs the compensation made for it. It is a style
+        // read, so it is taken once at setup and once per change of the options rather than per mutation,
+        // and only for a pane that asked to keep the reader's place at all.
+        private readAnchoring() {
+            if (BitScrollablePane._supportsScrollAnchoring === false || this._options.preserve === false) {
+                this._anchored = false;
+                return;
+            }
+
+            try {
+                this._anchored = getComputedStyle(this._element).getPropertyValue('overflow-anchor').trim() !== 'none';
+            } catch {
+                this._anchored = true; // the style cannot be read, so the browser's own anchoring is the safer half to trust
+            }
+        }
+
         // Keeps the reader's place when content lands ABOVE what they are looking at: without it the
         // arrival of a page of older messages at the top of a list pushes everything the reader was
         // reading down the screen by the height of what arrived.
@@ -764,7 +849,7 @@
         // that would have painted it, so the pane is put back before anything is drawn out of place.
         private preserve(records: MutationRecord[]) {
             if (this._disposed || this._options.preserve === false) return;
-            if (BitScrollablePane._hasScrollAnchoring) return;
+            if (this._anchored) return;
 
             // Nothing has been measured yet, so there is no height for this one to have grown from - and
             // a pane that has not been laid out has no place worth keeping either.
@@ -1248,10 +1333,12 @@
 
         private static _hasScrollEnd = typeof window !== 'undefined' && 'onscrollend' in window;
 
-        // Whether the browser keeps the reader's place on its own when content lands above what they are
-        // looking at. Every engine but WebKit does, and the one that does not is the reason PreserveScroll
-        // exists - so the compensation is only ever made where there is none already.
-        private static _hasScrollAnchoring = typeof CSS !== 'undefined'
+        // Whether the ENGINE keeps the reader's place on its own when content lands above what they are
+        // looking at. Every one but WebKit does, and the one that does not is the reason PreserveScroll
+        // exists - so the compensation is only ever made where there is none already. Which PANE it is
+        // made on is readAnchoring's answer: an engine that supports anchoring is not the same as a pane
+        // that is anchored by it.
+        private static _supportsScrollAnchoring = typeof CSS !== 'undefined'
             && typeof CSS.supports === 'function'
             && CSS.supports('overflow-anchor', 'auto');
     }

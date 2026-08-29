@@ -47,10 +47,15 @@ public partial class BitScrollablePane : BitComponentBase
                                            || DragScroll
                                            || HorizontalWheel
                                            || PreserveScroll
+                                           || _autoHides
                                            || OnScroll.HasDelegate
                                            || OnScrollStart.HasDelegate
                                            || OnScrollEnd.HasDelegate
                                            || _watchesContent);
+
+    // Whether the browser side has a scrollbar to take out of sight. Only the Modern one is ever hidden,
+    // since it is the only one the library draws, so the flag on its own is nothing for JavaScript to do.
+    private bool _autoHides => Modern && AutoHideScrollbar;
 
     // Whether anything the pane draws or reports depends on the size of its content rather than only on
     // where it stands, which is what makes a change of content worth re-measuring after.
@@ -126,6 +131,10 @@ public partial class BitScrollablePane : BitComponentBase
     /// <br />
     /// A scrollbar that is not on the screen is not saying that there is more content, so it is worth
     /// pairing with <see cref="Fade"/>.
+    /// <br />
+    /// Which of the two the bar is showing for is decided in the browser rather than in the stylesheet,
+    /// because Chromium does not repaint a custom scrollbar when the state of its element changes - so
+    /// this needs the JavaScript of the library, and a pane rendered without it keeps its bar on screen.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool AutoHideScrollbar { get; set; }
@@ -554,8 +563,9 @@ public partial class BitScrollablePane : BitComponentBase
     /// they were looking at does not move at all.
     /// <br />
     /// Every engine but WebKit already does this on its own (it is the CSS <c>overflow-anchor</c>
-    /// behavior), so this changes nothing where the browser has it and brings the rest - Safari, most of
-    /// all - up to the same behavior. Only content that lands above the visible area counts, so an
+    /// behavior), so this changes nothing where the browser is anchoring the pane and brings the rest -
+    /// Safari, most of all - up to the same behavior. A pane that sets <c>overflow-anchor: none</c> on
+    /// itself has turned that anchoring off, so this takes it over on every engine. Only content that lands above the visible area counts, so an
     /// arrival at the bottom is left alone, and a pane standing at the very top of its content has no
     /// place to keep and is left alone as well - which is what makes it safe to pair with
     /// <see cref="OnReachedTop"/>, whose <see cref="ReachOffset"/> is worth a screenful so that the fetch
@@ -1196,6 +1206,7 @@ public partial class BitScrollablePane : BitComponentBase
         Momentum = DragMomentum,
         Wheel = HorizontalWheel,
         Preserve = PreserveScroll,
+        AutoHide = _autoHides,
     };
 
 

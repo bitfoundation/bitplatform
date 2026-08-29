@@ -545,7 +545,7 @@ private async Task AddAutoScrollContent()
     private readonly string example14RazorCode = @"
 <BitToggle @bind-Value=""preserveScroll"" Label=""PreserveScroll"" />
 
-<BitScrollablePane Height=""14rem"" Class=""pane"" Fade
+<BitScrollablePane Height=""14rem"" Class=""pane no-anchor"" Fade
                    PreserveScroll=""preserveScroll""
                    ReachOffset=""60""
                    OnReachedTop=""LoadOlderMessages"">
@@ -553,9 +553,11 @@ private async Task AddAutoScrollContent()
     {
         <div class=""item"">Loading older messages...</div>
     }
+    @* Keyed, so the older messages are new elements at the TOP rather than new text in the elements
+       that were already there - which is what there is a place to keep for. *@
     @foreach (var message in conversation)
     {
-        <div class=""item"">@message</div>
+        <div @key=""message"" class=""item"">@message</div>
     }
 </BitScrollablePane>
 

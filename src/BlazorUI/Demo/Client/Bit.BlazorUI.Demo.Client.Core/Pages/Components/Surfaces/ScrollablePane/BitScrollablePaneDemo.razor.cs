@@ -330,7 +330,7 @@ public partial class BitScrollablePaneDemo
             Name = "PreserveScroll",
             Type = "bool",
             DefaultValue= "false",
-            Description = "Keeps the reader's place when content is added above what they are looking at, which is what a conversation that loads older messages at its top needs. Every engine but WebKit already does this on its own.",
+            Description = "Keeps the reader's place when content is added above what they are looking at, which is what a conversation that loads older messages at its top needs. Every engine but WebKit already does this on its own, so it only steps in where the browser is not anchoring the pane - which a pane setting overflow-anchor: none on itself is not, on any engine.",
         },
         new()
         {

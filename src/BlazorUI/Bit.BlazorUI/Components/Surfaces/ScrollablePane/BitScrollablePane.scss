@@ -88,6 +88,18 @@
 }
 
 .bit-scp-mod {
+    // scrollbar-color is an inherited property, and Chromium 121 and later let any non-auto standard
+    // value win over the pseudo-elements below - so a page that themes its own scrollbar on html or body
+    // hands that value down to every pane inside it and takes this whole rendering off the screen, the
+    // auto-hiding with it. Putting the property back to auto on the pane keeps the Modern scrollbar the
+    // pane's own decision. It is guarded, because in an engine with no pseudo-elements to fall back on -
+    // Firefox - auto is the plain operating system bar and the standard properties further down are the
+    // rendering. The ScrollbarColor parameter is unaffected: it writes an inline style, which outranks
+    // this.
+    @supports selector(::-webkit-scrollbar-thumb) {
+        scrollbar-color: auto;
+    }
+
     &::-webkit-scrollbar {
         width: var(--bit-scp-sbs);
         height: var(--bit-scp-sbs);
@@ -125,22 +137,29 @@
 // only painted while the pointer is over the pane, while something inside it holds the focus, or while
 // the pane itself does - so it is never hidden from a reader who is scrolling it with the keyboard.
 // Only the color goes away: the bar keeps its room, so nothing in the pane moves as it comes and goes.
-.bit-scp-mod.bit-scp-ahs {
+//
+// Which of those the pane is in is written onto the element by the browser side rather than matched here
+// with :hover and :focus-within, because Chromium does not repaint a ::-webkit-scrollbar pseudo-element
+// when the state of the element it belongs to changes: the thumb would keep whatever it was last painted
+// in until something else forced a repaint of the pane - a bar that does not appear when the pointer
+// arrives, and then does not go away when it leaves. Writing an attribute invalidates the element, and
+// its scrollbars with it. It also decides the rule the safe way round: a pane whose JavaScript never ran
+// carries no attribute and keeps its scrollbar, rather than hiding one that nothing can bring back.
+//
+// A drag is left out of it: the pointer leaves the pane the moment a drag of it captures the pointer,
+// and a bar that vanished under the hand dragging the pane is the one place it must not go.
+.bit-scp-mod.bit-scp-ahs[data-bit-scp-idle]:not([data-bit-scp-drag]) {
     &::-webkit-scrollbar-thumb {
         background-color: transparent;
-    }
 
-    &:hover, &:focus, &:focus-within, &[data-bit-scp-drag] {
-        &::-webkit-scrollbar-thumb {
-            background-color: var(--bit-scp-sbc);
+        // The pointer can arrive on the scrollbar itself without ever crossing the content - a pane at the
+        // edge of the window, a thumb grabbed in one movement - and that is a pointer the bar is wanted by.
+        &:hover {
+            background-color: var(--bit-scp-sbch);
+        }
 
-            &:hover {
-                background-color: var(--bit-scp-sbch);
-            }
-
-            &:active {
-                background-color: var(--bit-scp-sbca);
-            }
+        &:active {
+            background-color: var(--bit-scp-sbca);
         }
     }
 }
@@ -149,18 +168,19 @@
 // reach its scrollbar at all. They are kept away from the engines that DO support the pseudo-elements,
 // because Chromium 121 and later let any non-auto standard value win over them - which would take the
 // rendering above off the screen everywhere it actually works.
-@supports not selector(::-webkit-scrollbar) {
+//
+// The thumb, and not the bare ::-webkit-scrollbar, is what the two guards ask about: Gecko parses that
+// one name for compatibility and answers the query with a yes it does not mean, and only that one - so
+// asking about a part it never took on is what tells an engine that PAINTS these from one that merely
+// reads them without complaining.
+@supports not selector(::-webkit-scrollbar-thumb) {
     .bit-scp-mod {
         scrollbar-width: thin;
         scrollbar-color: var(--bit-scp-sbc) transparent;
     }
 
-    .bit-scp-mod.bit-scp-ahs {
+    .bit-scp-mod.bit-scp-ahs[data-bit-scp-idle]:not([data-bit-scp-drag]) {
         scrollbar-color: transparent transparent;
-
-        &:hover, &:focus, &:focus-within, &[data-bit-scp-drag] {
-            scrollbar-color: var(--bit-scp-sbc) transparent;
-        }
     }
 }
 

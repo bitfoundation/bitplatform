@@ -98,4 +98,9 @@ internal record class BitScrollablePaneOptions
     /// Whether the reader's place is kept when content lands above what they are looking at.
     /// </summary>
     public bool Preserve { get; set; }
+
+    /// <summary>
+    /// Whether the Modern scrollbar of the pane is only painted while the pane is being used.
+    /// </summary>
+    public bool AutoHide { get; set; }
 }

@@ -765,13 +765,23 @@
                 <div>
                     Every engine but WebKit already does this on its own (it is the CSS
                     <i>overflow-anchor</i> behavior), so the parameter changes nothing where the browser has
-                    it and brings the rest - Safari, most of all - up to the same behavior. Scroll to the top
-                    of the pane below to load the messages before it, with the toggle on and then off.
+                    it and brings the rest - Safari, most of all - up to the same behavior. Which is why the
+                    pane below sets <i>overflow-anchor: none</i> on itself, through a class of the page:
+                    that turns the browser's own anchoring off, so every engine behaves like WebKit here and
+                    the toggle has something to show wherever you are reading this. A pane of your own needs
+                    none of that - leave the anchoring alone and <b>PreserveScroll</b> steps in only on the
+                    engines that lack it.
+                </div>
+                <br />
+                <div>
+                    Scroll to the top of the pane below to load the messages before it, with the toggle on
+                    and then off. With it on, the message you were reading stays where it is; with it off,
+                    eight messages arrive above it and push it down the screen.
                 </div>
                 <br /><br />
                 <BitToggle @bind-Value="preserveScroll" Label="PreserveScroll" />
                 <br />
-                <BitScrollablePane Height="14rem" Class="pane" Fade
+                <BitScrollablePane Height="14rem" Class="pane no-anchor" Fade
                                    PreserveScroll="preserveScroll"
                                    ReachOffset="60"
                                    OnReachedTop="LoadOlderMessages">
@@ -779,9 +789,17 @@
                     {
                         <div class="item">Loading older messages...</div>
                     }
+                    @*
+                        Keyed, and it has to be: without a key Blazor matches the items of the list by
+                        POSITION, so eight messages arriving at the top are rendered as new text in the
+                        eight divs that were already there plus eight divs appended at the bottom. Nothing
+                        lands above the reader then - neither the browser's anchoring nor PreserveScroll has
+                        anything to keep - and the content simply changes underneath them. With the key, the
+                        new messages are new elements at the top, which is the arrival both are there for.
+                    *@
                     @foreach (var message in conversation)
                     {
-                        <div class="item">@message</div>
+                        <div @key="message" class="item">@message</div>
                     }
                 </BitScrollablePane>
                 <br />
