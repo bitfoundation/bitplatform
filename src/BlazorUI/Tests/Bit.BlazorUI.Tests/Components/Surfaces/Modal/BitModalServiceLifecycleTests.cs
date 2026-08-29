@@ -131,6 +131,25 @@ public class BitModalServiceLifecycleTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitModalReferenceShouldLetGoOfWhoeverWaitsForAModalShownWithNothingToRenderIt()
+    {
+        // A modal shown while no container is mounted is never going to be rendered, and nothing is going to
+        // close it either - it is not tracked anywhere. Whoever is waiting on its content has to be let go
+        // there and then, rather than on a close that nobody is ever going to call.
+        var modalRef = await ModalService.Show<TestModalContent>();
+
+        // Bounded, so that a modal left waiting fails this test instead of hanging it.
+        await Task.WhenAny(modalRef.Rendered, Task.Delay(2000));
+
+        Assert.IsTrue(modalRef.Rendered.IsCompleted);
+        Assert.IsFalse(await modalRef.Rendered);
+        Assert.IsNull(await modalRef.GetContentAsync<TestModalContent>());
+
+        // And nobody closed it to get that answer.
+        Assert.IsFalse(modalRef.IsClosed);
+    }
+
+    [TestMethod]
     public async Task BitModalReferenceShouldHandBackItsResultTyped()
     {
         RenderComponent<BitModalContainer>();
@@ -257,6 +276,78 @@ public class BitModalServiceLifecycleTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitModalServiceShouldKeepTheContentOfAModalWhoseGuardTurnsDownADismissal()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var log = new List<string>();
+        var asked = 0;
+        var dismissals = 0;
+
+        var modalRef = await ModalService.Show<TestModalStateContent>(
+            new Dictionary<string, object> { { nameof(TestModalStateContent.Log), log } },
+            new BitModalParameters
+            {
+                CanClose = () => { asked++; return Task.FromResult(false); },
+                OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(this, () => dismissals++)
+            });
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+        Assert.AreEqual(1, log.Count);
+
+        container.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        // The guard has had its say by now, so whatever the dismissal was going to do it has done.
+        container.WaitForAssertion(() => Assert.AreEqual(1, asked));
+        await Task.Delay(100);
+
+        // The half-filled form the guard is there to protect is the one the user was filling in: a dismissal
+        // that was turned down never takes the content away and builds it again from scratch.
+        Assert.AreEqual(1, log.Count);
+
+        // And a dismissal that did not go through is not one the consumer is told about.
+        Assert.AreEqual(0, dismissals);
+
+        Assert.IsFalse(modalRef.IsClosed);
+        Assert.AreEqual(1, container.FindAll(".bit-mdl").Count);
+    }
+
+    [TestMethod]
+    public async Task BitModalServiceShouldNotOpenAModalAgainWhenItsAsyncGuardTurnsDownADismissal()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var log = new List<string>();
+        var asked = 0;
+        var opens = 0;
+
+        // A guard that has to go and ask - a confirmation of its own, a save still running - answers later
+        // than the click that set it off, which is the case the modal has to stay put through.
+        var modalRef = await ModalService.Show<TestModalStateContent>(
+            new Dictionary<string, object> { { nameof(TestModalStateContent.Log), log } },
+            new BitModalParameters
+            {
+                CanClose = async () => { await Task.Delay(1); asked++; return false; },
+                OnOpen = EventCallback.Factory.Create(this, () => opens++)
+            });
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, opens));
+
+        container.Find(".bit-mdl-ovl").Click();
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, asked));
+        await Task.Delay(100);
+
+        // The modal never left the screen, so it never arrived on it a second time either: an opening
+        // reported twice for one modal is a consumer running its opening work twice.
+        Assert.AreEqual(1, opens);
+        Assert.AreEqual(1, log.Count);
+
+        Assert.IsFalse(modalRef.IsClosed);
+        Assert.AreEqual(1, container.FindAll(".bit-mdl").Count);
+    }
+
+    [TestMethod]
     public async Task BitModalServiceShouldNotAskTheGuardWhenTheApplicationClosesTheModal()
     {
         RenderComponent<BitModalContainer>();
@@ -309,6 +400,42 @@ public class BitModalServiceLifecycleTests : BunitTestContext
 
         Assert.IsFalse(modalRef.IsClosed);
         Assert.AreEqual(1, container.FindAll(".bit-mdl").Count);
+    }
+
+    [TestMethod]
+    public async Task BitModalServiceShouldKeepAPersistentModalWhenTheAppNavigatesSomewhereElse()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        // A persistent modal is the one thing that outlives the container it happens to be rendering in, so
+        // it is not something a route change gets to end: closing it would take it out of the service's
+        // hands for good, and nothing could ever bring it back.
+        var persistent = await ModalService.Show<TestModalContent>(persistent: true);
+        var ordinary = await ModalService.Show<TestModalContent>();
+
+        // Being persistent is not the same as saying so, though: a persistent modal that asked to be closed
+        // on a route change is closed on a route change.
+        var persistentClosing = await ModalService.Show<TestModalContent>(new BitModalParameters { CloseOnNavigation = true }, persistent: true);
+
+        container.WaitForAssertion(() => Assert.AreEqual(3, container.FindAll(".bit-mdl").Count));
+
+        Services.GetRequiredService<NavigationManager>().NavigateTo("/somewhere-else");
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+
+        Assert.IsFalse(persistent.IsClosed);
+        Assert.IsTrue(ordinary.IsClosed);
+        Assert.IsTrue(persistentClosing.IsClosed);
+
+        // Still tracked, which is what a persistent modal being open means: the next container to mount takes
+        // it back on, and it is the only one that does.
+        CollectionAssert.AreEqual(new[] { persistent }, ModalService.OpenModals.ToArray());
+
+        await Context.DisposeComponentsAsync();
+
+        var remounted = RenderComponent<BitModalContainer>();
+
+        remounted.WaitForAssertion(() => Assert.AreEqual(1, remounted.FindAll(".bit-mdl").Count));
     }
 
     [TestMethod]

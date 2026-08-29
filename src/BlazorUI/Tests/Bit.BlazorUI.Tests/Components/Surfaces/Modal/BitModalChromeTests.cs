@@ -347,6 +347,77 @@ public class BitModalChromeTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitModalShouldMoveTheDragHandlersWhileItIsOpen()
+    {
+        // Dragging is turned on - and pointed at another handle - by the same parameters as everything else,
+        // and a parameter of an open Modal says something the moment it is set: a Modal that only read them
+        // as it opened would say nothing at all until it had been closed and opened again.
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count));
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"].Count);
+
+        var containerId = com.Find(".bit-mdl-ctn").Id;
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Draggable, true);
+        });
+
+        // The whole content box is the handle of a Modal that was not pointed at one.
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"].Count));
+        Assert.AreEqual($"#{containerId}", Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"][0].Arguments[2]);
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Draggable, true);
+            parameters.Add(p => p.DragElementSelector, "#the-handle");
+        });
+
+        // The handlers are registered against the element the selector named, so a Modal pointed somewhere
+        // else takes them back off the old handle before it puts them on the new one.
+        com.WaitForAssertion(() => Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"].Count));
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.DragDrop.remove"].Count);
+        Assert.AreEqual($"#{containerId}", Context.JSInterop.Invocations["BitBlazorUI.DragDrop.remove"][0].Arguments[1]);
+        Assert.AreEqual("#the-handle", Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"][1].Arguments[2]);
+    }
+
+    [TestMethod]
+    public void BitModalShouldTakeTheOverflowOffItsScrollerWhenItStartsTogglingItWhileItIsOpen()
+    {
+        // Holding the page and taking the overflow off a scroller are two ways of doing the one job, and a
+        // Modal switching between them while it is open has to end up doing one of them: a Modal left doing
+        // neither leaves the page scrolling behind a surface that is meant to be holding it still.
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AutoToggleScroll, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+
+        // The hold on the page is given up, and the overflow of the scroller is what holds it instead.
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count);
+
+        // The key is the first argument and the scroller the second; the third is whether the overflow is
+        // being taken away.
+        Assert.AreEqual(true, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0].Arguments[2]);
+    }
+
+    [TestMethod]
     public void BitModalShouldNotRegisterTheDragHandlersWhenItIsNotDraggable()
     {
         var com = RenderComponent<BitModal>(parameters =>

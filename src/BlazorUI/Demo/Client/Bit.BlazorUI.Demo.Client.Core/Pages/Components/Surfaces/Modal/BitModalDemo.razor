@@ -1,4 +1,5 @@
 ﻿@page "/components/modal"
+@page "/components/promodal"
 
 <PageOutlet Url="components/modal"
             Title="Modal"
@@ -21,6 +22,18 @@
             package no longer ships a modal of its own. Replace <b>BitProModal</b> with <b>BitModal</b>,
             <b>BitProModalService</b> with <b>BitModalService</b>, and the matching Container, Reference,
             Parameters and ClassStyles types with theirs.
+        </BitText>
+        <br />
+        <BitText>
+            Four things changed shape rather than name. <b>ShowOverlay</b> is gone: <b>Modeless</b> is what a
+            Modal that leaves the page behind it usable says now, and it stands down the modality the Modal
+            reports and the hold it takes on the page along with the overlay. A BitProModal always put its
+            content in a padded, scrolling body; BitModal renders the content on its own unless a part of the
+            chrome - a header, a footer, a close button - asks for one, so a migrated Modal that relied on
+            that padding wants padding of its own. A Modal shown through the service now closes when the app
+            navigates to another path, which <b>CloseOnNavigation</b> turns off. And <b>Blocking</b> blocks
+            the pointer only: Escape still dismisses a blocking Modal unless <b>NoDismissOnEscape</b> says
+            otherwise, so that a keyboard user is never left without a way out.
         </BitText>
         <br />
         <BitText>

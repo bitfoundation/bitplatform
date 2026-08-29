@@ -293,6 +293,78 @@ public class BitModalServiceTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitModalServiceShouldLeaveANestedModalOutOfTheParametersItRendersTheOuterOneWith()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        // The parameters a modal is shown with are for that modal. A Modal declared inside its content - the
+        // confirmation a form asks for - is a modal of its own, and one handed the outer one's header, close
+        // button and blocking could not turn any of them off: they merge as "either side can switch it on".
+        await ModalService.Show<BitModalNestedServiceTest>(new BitModalParameters
+        {
+            HeaderText = "the outer header",
+            ShowCloseButton = true,
+            Blocking = true
+        });
+
+        container.WaitForAssertion(() => Assert.AreEqual(2, container.FindAll(".bit-mdl").Count));
+
+        // One header and one close button between the two of them, and they are the outer one's.
+        Assert.AreEqual(1, container.FindAll(".bit-mdl-hdr").Count);
+        Assert.AreEqual("the outer header", container.Find(".bit-mdl-hdr").TextContent);
+        Assert.AreEqual(1, container.FindAll(".bit-mdl-cls").Count);
+        Assert.AreEqual(0, container.FindAll(".inner-modal .bit-mdl-hdr").Count);
+        Assert.AreEqual(0, container.FindAll(".inner-modal .bit-mdl-cls").Count);
+
+        container.Find(".inner-modal .bit-mdl-ovl").Click();
+
+        // The outer modal is the one that refuses to be dismissed by a click outside of it; the inner one
+        // was never asked to.
+        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".inner-modal").Count));
+        Assert.AreEqual(1, container.FindAll(".bit-mdl").Count);
+    }
+
+    [TestMethod,
+        DataRow(BitVisibility.Collapsed, "display:none"),
+        DataRow(BitVisibility.Hidden, "visibility:hidden")
+    ]
+    public async Task BitModalServiceShouldTakeAModalOutOfViewWhenItsParametersSaySo(BitVisibility visibility, string expectedStyle)
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        await ModalService.Show<TestModalContent>(new BitModalParameters { Visibility = visibility });
+
+        // The focus is recorded whether or not the modal can be seen, so this is the point at which a modal
+        // that was going to take the keyboard and the page would have taken them.
+        container.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"].Count));
+
+        StringAssert.Contains(container.Find(".bit-mdl").GetAttribute("style"), expectedStyle);
+
+        // A modal the user cannot see carries none of the behaviors of one they can: holding either of them
+        // would leave the page unusable behind a surface nobody can find.
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitModalServiceShouldRenderThroughTheContainerThatIsStillMountedWhenTheActiveOneGoesAway()
+    {
+        var first = RenderComponent<BitModalContainer>();
+        var second = RenderComponent<BitModalContainer>();
+
+        // The last container to mount is the one modals are rendered through, and the one before it is still
+        // on the screen: a container that only came along for one page must not take every later modal down
+        // with it when that page goes.
+        await second.InvokeAsync(() => second.Instance.Dispose());
+
+        Assert.IsTrue(ModalService.IsContainerAvailable);
+
+        await ModalService.Show<TestModalContent>();
+
+        first.WaitForAssertion(() => Assert.AreEqual(1, first.FindAll(".bit-mdl").Count));
+    }
+
+    [TestMethod]
     public async Task BitModalServiceShouldCloseTheModalFromItsCloseButton()
     {
         var container = RenderComponent<BitModalContainer>();

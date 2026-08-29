@@ -793,7 +793,8 @@ private async Task ShowUpdatingModal()
         Blocking = true
     });
 
-    await SaveAsync();
+    // Standing in for the work: the modal blocks while it runs, and grows its way out once it is done.
+    await Task.Delay(2000);
 
     await modal.Update(new BitModalParameters
     {
@@ -841,6 +842,22 @@ private async Task RenameTheOpenModal(BitModalReference modal)
             @modalReference.Modal
         </CascadingValue>
     </CascadingValue>
+}
+
+@code {
+    [Parameter, EditorRequired] public BitModalService Service { get; set; } = default!;
+
+    protected override BitModalServiceBase<BitModalReference, BitModalParameters> ModalService => Service;
+
+    protected override BitModalParameters? MergeParameters(BitModalParameters? modalParameters, BitModalParameters? containerParameters)
+    {
+        return BitModalParameters.Merge(modalParameters, containerParameters);
+    }
+
+    protected override bool? GetCloseOnNavigation(BitModalReference modalReference)
+    {
+        return GetMergedParameters(modalReference)?.CloseOnNavigation;
+    }
 }";
     private readonly string example8CsharpCode = @"
 private readonly BitModalService demoModalService = new();

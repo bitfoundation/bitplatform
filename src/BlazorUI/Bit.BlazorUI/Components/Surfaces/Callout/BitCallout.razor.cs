@@ -1285,7 +1285,7 @@ public partial class BitCallout : BitComponentBase
 
         try
         {
-            await _js.BitUtilsToggleOverflow("body", true);
+            await _js.BitUtilsToggleOverflow(UniqueId, "body", true);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1298,7 +1298,7 @@ public partial class BitCallout : BitComponentBase
 
         try
         {
-            await _js.BitUtilsToggleOverflow("body", false);
+            await _js.BitUtilsToggleOverflow(UniqueId, "body", false);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1606,7 +1606,7 @@ public partial class BitCallout : BitComponentBase
                 // still unable to scroll again, with nothing left on the page to release it.
                 if (_scrollLocked)
                 {
-                    await _js.BitUtilsToggleOverflow("body", false);
+                    await _js.BitUtilsToggleOverflow(UniqueId, "body", false);
                 }
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here

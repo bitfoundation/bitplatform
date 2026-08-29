@@ -41,6 +41,10 @@ public abstract class BitModalServiceBase<TReference, TParameters>
     private readonly List<TReference> _persistentModals = [];
     private readonly object _persistentModalsLock = new();
 
+    // Every container currently mounted, most recently initialized last. Only the last of them renders,
+    // but the ones before it are kept so that the service has somewhere to go when that one is disposed.
+    private readonly List<BitModalContainerBase<TReference, TParameters>> _containers = [];
+
     private readonly ILogger? _logger;
     // The missing container is reported once rather than once per modal: an app without a container shows
     // every one of its modals into nothing, and one clear line is the message - a line per modal is noise.
@@ -76,9 +80,46 @@ public abstract class BitModalServiceBase<TReference, TParameters>
     /// re-initializes the service. The most recently initialized container becomes the active one and the
     /// still-open persistent modals are (re-)injected into it. Mounting multiple containers simultaneously
     /// is not supported; the last one to initialize wins, and the ones before it stop taking new modals so
-    /// that a modal is never rendered twice.
+    /// that a modal is never rendered twice - but they are remembered, so that disposing the active one
+    /// hands the service to the most recent of them rather than leaving it with nothing to render through.
     /// </remarks>
     public void InitContainer(BitModalContainerBase<TReference, TParameters> container)
+    {
+        ArgumentNullException.ThrowIfNull(container);
+
+        if (_containers.Contains(container) is false)
+        {
+            _containers.Add(container);
+        }
+
+        Activate(container);
+    }
+
+    /// <summary>
+    /// Detaches the given container if it is the one currently in use. Called when the container is disposed
+    /// so the service doesn't keep a reference to (and try to render through) a torn-down container.
+    /// </summary>
+    public void RemoveContainer(BitModalContainerBase<TReference, TParameters> container)
+    {
+        _containers.Remove(container);
+
+        if (ReferenceEquals(_container, container) is false) return;
+
+        _container = null;
+
+        // A container mounted before this one may still be on the screen and still able to render. Handing
+        // the service to the most recent of those is what stops a container that only came along for one
+        // page from taking every later modal down with it when that page goes: without it the service is
+        // left with nothing to render through while a perfectly good container is sitting right there.
+        if (_containers.Count > 0)
+        {
+            Activate(_containers[^1]);
+        }
+    }
+
+    // Makes the given container the one modals are rendered through, and hands it whatever persistent modals
+    // are still open so they carry on where they left off.
+    private void Activate(BitModalContainerBase<TReference, TParameters> container)
     {
         _container = container;
 
@@ -89,18 +130,6 @@ public abstract class BitModalServiceBase<TReference, TParameters>
         }
 
         _container.InjectPersistentModals(persistentModals);
-    }
-
-    /// <summary>
-    /// Detaches the given container if it is the one currently in use. Called when the container is disposed
-    /// so the service doesn't keep a reference to (and try to render through) a torn-down container.
-    /// </summary>
-    public void RemoveContainer(BitModalContainerBase<TReference, TParameters> container)
-    {
-        if (ReferenceEquals(_container, container))
-        {
-            _container = null;
-        }
     }
 
     /// <summary>
@@ -271,6 +300,15 @@ public abstract class BitModalServiceBase<TReference, TParameters>
     internal Task<bool> Dismiss(TReference modalRef, object? result)
     {
         return TryClose(modalRef, result, true);
+    }
+
+    // The dismissal a modal reports once it has already put the close guard to the user itself. It is the
+    // same guard this service reads - the modal sees it on its effective parameters - so asking again would
+    // ask the user twice for one dismissal. The modal only reports a dismissal it went through with, so
+    // there is nothing left here to turn down.
+    internal Task DismissFromModal(TReference modalRef, object? result)
+    {
+        return Close(modalRef, result, true);
     }
 
     private async Task<bool> TryClose(TReference modalRef, object? result, bool dismissed)
@@ -542,6 +580,11 @@ public abstract class BitModalServiceBase<TReference, TParameters>
         if (_container is null && persistent is false)
         {
             LogMissingContainer();
+
+            // Nothing is ever going to render it: it is not tracked anywhere, and a container mounting later
+            // takes on the persistent modals only. Saying so here is what lets go of a caller awaiting
+            // Rendered, or the content behind it, instead of leaving them on a render that cannot come.
+            modalReference.MarkNeverRendered();
         }
 
         var modalAdd = OnAddModal;
@@ -576,12 +619,15 @@ public abstract class BitModalServiceBase<TReference, TParameters>
                 // The modal never made it onto the screen, so it is marked closed before the rollback runs:
                 // that is what lets go of anyone waiting on its Result or on it being rendered, and it is
                 // what the close handlers below see when they ask.
-                modalReference.MarkClosed(null);
+                // A handler may have closed the modal itself before throwing, in which case the close
+                // handlers have already run for it and this call answers false. Rolling back anyway would
+                // report one modal closed twice, which is the one thing Close promises never to do.
+                var closedHere = modalReference.MarkClosed(null);
 
                 // Earlier handlers may have already added (and rendered) the modal in a container.
                 // Roll that state back by invoking the close handlers so a failed Show doesn't leave
                 // a partially-added, visible modal behind. Removing an unknown modal is a no-op.
-                var modalCloseRollback = OnCloseModal;
+                var modalCloseRollback = closedHere ? OnCloseModal : null;
                 if (modalCloseRollback is not null)
                 {
                     foreach (var handler in modalCloseRollback.GetInvocationList().Cast<Func<TReference, Task>>())

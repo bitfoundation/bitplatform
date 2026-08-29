@@ -717,7 +717,10 @@ public class BitModalTests : BunitTestContext
         await Context.DisposeComponentsAsync();
 
         Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"].Count);
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.forgetFocus"].Count);
+        // The focus is handed back here rather than dropped: this dispose is the only close a Modal shown
+        // through the service ever gets, since its container takes it out of the page rather than rendering
+        // it closed.
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"].Count);
     }
 
     [TestMethod]
@@ -1039,7 +1042,8 @@ public class BitModalTests : BunitTestContext
 
         var arguments = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0].Arguments;
 
-        Assert.AreEqual(shell, arguments[0]);
+        // The first argument is the key the hold is counted under; the scroller is the second.
+        Assert.AreEqual(shell, arguments[1]);
         // The two holds are never both taken: the Modal that toggles the overflow itself holds its scroller.
         Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
     }

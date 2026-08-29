@@ -52,9 +52,11 @@ public class BitModalService : BitModalServiceBase<BitModalReference, BitModalPa
             // Wiring through OnOverlayClick instead would call Close() before BitModal's Blocking
             // guard runs, bypassing Blocking.
             //
-            // It goes through Dismiss rather than Close so that the close guard gets its say and the
-            // reference records that the user was the one who closed the modal.
-            builder.AddComponentParameter(seq++, nameof(BitModal.IsOpenChanged), EventCallback.Factory.Create<bool>(modalReference, () => modalReference.Dismiss()));
+            // The reference records that the user was the one who closed the modal. The close guard has
+            // already had its say by this point - BitModal puts it to the user before it takes itself off
+            // the screen, so that a refusal never tears the content down and builds it again - which is why
+            // this goes through DismissFromModal rather than Dismiss: the latter would ask a second time.
+            builder.AddComponentParameter(seq++, nameof(BitModal.IsOpenChanged), EventCallback.Factory.Create<bool>(modalReference, () => modalReference.DismissFromModal()));
             builder.AddComponentParameter(seq++, nameof(BitModal.ChildContent), content);
             builder.CloseComponent();
         });

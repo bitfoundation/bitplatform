@@ -22,6 +22,9 @@ public partial class BitModal : BitComponentBase
     private bool _internalIsOpen;
     private bool _focusTrapped;
     private bool _focusStored;
+    // Which opening or closing is the current one, so that a run still waiting on the browser can tell it
+    // has been overtaken by the next.
+    private int _lifecycle;
     private bool _scrollLocked;
     // The selector the current hold was taken with, so that a selector changed while the Modal is open is
     // noticed: the hold is registered against the element the selector resolved to, not against the selector.
@@ -358,6 +361,15 @@ public partial class BitModal : BitComponentBase
     public bool Modeless { get; set; }
 
     /// <summary>
+    /// Whether the overlay is rendered behind the Modal.
+    /// </summary>
+    [Obsolete("Use Modeless instead. ShowOverlay=\"false\" is Modeless=\"true\", which stands the overlay down " +
+              "along with the modality the Modal reports, the focus trap and the hold it takes on the page - " +
+              "the three things a Modal rendering no overlay was never really doing anyway.")]
+    [Parameter, ResetClassBuilder]
+    public bool ShowOverlay { get; set; } = true;
+
+    /// <summary>
     /// Prevents the Modal from moving the focus into itself when it opens, for the cases where the focus is
     /// placed by the consumer instead.
     /// </summary>
@@ -602,6 +614,16 @@ public partial class BitModal : BitComponentBase
         StyleBuilder.Register(() => _params.Styles?.Root);
 
         StyleBuilder.Register(() => _offsetTop > 0 ? FormattableString.Invariant($"top:{_offsetTop}px") : string.Empty);
+
+        // The base builder registers this same rule off the component's own Visibility, which is blind to
+        // the one the service cascades; this one reads the effective value, so both ways of asking for it
+        // reach the rendered style.
+        StyleBuilder.Register(() => EffectiveVisibility switch
+        {
+            BitVisibility.Hidden => "visibility:hidden",
+            BitVisibility.Collapsed => "display:none",
+            _ => string.Empty
+        });
     }
 
     protected override void OnInitialized()
@@ -675,7 +697,8 @@ public partial class BitModal : BitComponentBase
 
         var stylesRoot = Styles?.Root;
         var paramsStylesRoot = _params.Styles?.Root;
-        if (_lastStylesRoot != stylesRoot ||
+        if (previous.Visibility != _params.Visibility ||
+            _lastStylesRoot != stylesRoot ||
             _lastParamsStylesRoot != paramsStylesRoot)
         {
             StyleBuilder.Reset();
@@ -702,6 +725,15 @@ public partial class BitModal : BitComponentBase
         else
         {
             await DisposeFocusTrap();
+        }
+
+        // Holding the page and taking the overflow off a scroller of its own are two ways of doing the one
+        // job, and which of them a Modal is doing can change while it is open. Both are counted against the
+        // same Modal, so the one it is no longer doing has to let go here, before the one it is doing now
+        // is taken below - a hold asked for while the Modal already has one is no hold at all.
+        if ((_params.AutoToggleScroll ?? false) is false)
+        {
+            await ToggleScroll(false);
         }
 
         // The hold is taken on the element the selector named at the time it was taken, so a selector that
@@ -739,6 +771,32 @@ public partial class BitModal : BitComponentBase
             await StopForwardScroll();
         }
 
+        // The drag handlers are registered against the element the selector named when they were made, so a
+        // Modal made draggable - or pointed at another handle - while it is open has to have them taken back
+        // and made again, exactly as the hold and the forwarding above do. Left out of here, Draggable and
+        // DragElementSelector said nothing at all until the Modal was closed and opened again.
+        if (_dragSetup && ((_params.Draggable ?? false) is false ||
+                           _dragElementSelectorOnSetup != _dragElementSelector))
+        {
+            await RemoveDrag();
+        }
+
+        await SetupDrag();
+
+        // The other half of the hand-over begun above: the way the Modal holds its scroller now is taken up
+        // once the way it held it before has let go, so that a Modal switching between the two is never left
+        // holding neither.
+        if ((_params.AutoToggleScroll ?? false) && _scrollToggledOnOpen is false)
+        {
+            await ToggleScroll(true);
+
+            if (_params.AbsolutePosition ?? false)
+            {
+                StyleBuilder.Reset();
+                StateHasChanged();
+            }
+        }
+
         await FocusContent();
     }
 
@@ -750,9 +808,16 @@ public partial class BitModal : BitComponentBase
 
         _internalIsOpen = IsOpen;
 
+        // Each open and each close is a run of its own. Opening reaches the browser several times over, and
+        // on a circuit every one of those waits: a close that lands while an open is still waiting would
+        // otherwise tear down what the open has done so far and then let the open carry on and put all of it
+        // back - the focus trap, the hold on the page, the drag handlers - on a Modal that is no longer on
+        // the screen, where nothing takes them away again until it is opened and closed a second time.
+        var generation = ++_lifecycle;
+
         if (IsOpen)
         {
-            await HandleOnOpened();
+            await HandleOnOpened(generation);
         }
         else
         {
@@ -762,29 +827,39 @@ public partial class BitModal : BitComponentBase
 
 
 
-    private async Task HandleOnOpened()
+    private async Task HandleOnOpened(int generation)
     {
         // Remembered from the first opening on, so that a kept-mounted Modal stays in the page from then on
         // while one that has never been opened is never rendered at all.
         _hasBeenOpened = true;
 
+        // Whether a close has started since this opening did, in which case this one is over: the close has
+        // already stood down everything the steps below would otherwise go on to register.
+        bool Overtaken() => _lifecycle != generation;
+
         // The focus is recorded before anything is done with it, while it is still on whatever opened the
         // Modal: this is the element it goes back to once the Modal closes.
         await StoreFocus();
+        if (Overtaken()) return;
 
         await SetupFocusTrap();
+        if (Overtaken()) return;
 
         await LockScroll();
+        if (Overtaken()) return;
 
         await ForwardScroll();
+        if (Overtaken()) return;
 
         await SetupDrag();
+        if (Overtaken()) return;
 
         // Reset before ToggleScroll: a Modal that no longer toggles the scroll returns early from it and
         // would else be left with a stale top-offset from a previous opening.
         _offsetTop = 0;
 
         await ToggleScroll(true);
+        if (Overtaken()) return;
 
         // The top-offset only means anything to an absolutely positioned Modal, so only that one is asked to
         // render again for the style ToggleScroll may just have changed.
@@ -795,6 +870,7 @@ public partial class BitModal : BitComponentBase
         }
 
         await FocusContent();
+        if (Overtaken()) return;
 
         await _params.OnOpen.InvokeAsync();
     }
@@ -828,7 +904,7 @@ public partial class BitModal : BitComponentBase
             return;
         }
 
-        await AssignIsOpen(false);
+        await TryDismiss();
     }
 
     // Escape dismisses the Modal from anywhere inside it, as the dialog pattern requires. The key is only
@@ -847,14 +923,34 @@ public partial class BitModal : BitComponentBase
             return;
         }
 
-        await AssignIsOpen(false);
+        await TryDismiss();
     }
 
     private async Task HandleOnCloseClick(MouseEventArgs e)
     {
         if (_params.IsEnabled is false) return;
 
+        await TryDismiss();
+    }
+
+    // A dismissal is put to the close guard before it is acted on rather than after it already has been.
+    // Taking the Modal off the screen and putting it back once the guard turns it down builds the content
+    // again from scratch - the half-filled form the guard is there to protect comes back empty - and reports
+    // a dismissal to the consumer that never actually happened. The service is only ever told about a
+    // dismissal that went through, and knows not to put the same guard to the user a second time.
+    private async Task<bool> TryDismiss()
+    {
+        var canClose = _params.CanClose;
+
+        if (canClose is not null && await canClose() is false)
+        {
+            Bounce();
+            return false;
+        }
+
         await AssignIsOpen(false);
+
+        return true;
     }
 
     // Answers a dismissal the Modal turns down with a movement rather than with nothing at all: a click on
@@ -1047,7 +1143,13 @@ public partial class BitModal : BitComponentBase
 
     // A Modal that was taken out of view carries none of the behaviors that only make sense for one the user
     // can see: it neither holds the keyboard nor the page behind it.
-    private bool IsShown => Visibility == BitVisibility.Visible;
+    private bool IsShown => EffectiveVisibility == BitVisibility.Visible;
+
+    // The visibility the Modal is actually rendered at. The base component reads its own Visibility
+    // parameter, which a Modal shown through the service never has: that one is given its visibility on the
+    // parameters instead, and reading only the own value left the parameter doing nothing at all - the Modal
+    // rendered in full, took the focus and held the page while it was asked to be out of sight.
+    private BitVisibility EffectiveVisibility => _params.Visibility ?? BitVisibility.Visible;
 
     private string _dragElementSelector => _params.DragElementSelector ?? $"#{_containerId}";
 
@@ -1276,8 +1378,8 @@ public partial class BitModal : BitComponentBase
         try
         {
             _offsetTop = _scrollerElementOnToggle.HasValue
-                ? await _js.BitUtilsToggleOverflow(_scrollerElementOnToggle.Value, isOpen)
-                : await _js.BitUtilsToggleOverflow(_scrollerSelectorOnToggle ?? "body", isOpen);
+                ? await _js.BitUtilsToggleOverflow(_containerId, _scrollerElementOnToggle.Value, isOpen)
+                : await _js.BitUtilsToggleOverflow(_containerId, _scrollerSelectorOnToggle ?? "body", isOpen);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1359,7 +1461,9 @@ public partial class BitModal : BitComponentBase
             // Can only force on (default is off): see remarks on asymmetric merge.
             ModeFull = ModeFull ? true : p.ModeFull,
             // Can only force on (default is off): see remarks on asymmetric merge.
-            Modeless = Modeless ? true : p.Modeless,
+#pragma warning disable CS0618 // read here on purpose: the obsolete parameter still has to work
+            Modeless = (Modeless || ShowOverlay is false) ? true : p.Modeless,
+#pragma warning restore CS0618
             // Can only force on (default is off): see remarks on asymmetric merge.
             NoAutoFocus = NoAutoFocus ? true : p.NoAutoFocus,
             // Can only force on (default is off): see remarks on asymmetric merge.
@@ -1409,7 +1513,7 @@ public partial class BitModal : BitComponentBase
         // dictionaries differs from what was captured here and forces a rebuild.
         _lastCascadedHtmlAttributes = new Dictionary<string, object>(cascaded);
         _lastOwnHtmlAttributes = new Dictionary<string, object>(own);
-        _mergedHtmlAttributes = cascaded.Concat(own).GroupBy(kv => kv.Key).ToDictionary(g => g.Key, g => g.Last().Value);
+        _mergedHtmlAttributes = BitModalParameters.MergeHtmlAttributes(cascaded, own);
 
         return _mergedHtmlAttributes;
     }
@@ -1437,9 +1541,11 @@ public partial class BitModal : BitComponentBase
 
         // A Modal disposed while it is still open never reaches its close, so the registrations it made on
         // the JS side - the focus trap, the hold on the page behind it, the gestures it was handing to the
-        // page, the drag handlers, the overflow it took off its scroller - are taken back here instead. The
-        // stored focus is dropped rather than restored: there is no close for it to be handed back on, and
-        // the map would keep the element alive without this.
+        // page, the drag handlers, the overflow it took off its scroller - are taken back here instead, and
+        // the focus is handed back here too. This is the only close a Modal shown through the service ever
+        // gets: its container takes it out of the page rather than rendering it closed, so it is disposed
+        // before its own close can run, and dropping the stored focus here left every keyboard user who
+        // closed one standing on the body instead of back on whatever opened it.
         if (_focusTrapped || _focusStored || _scrollLocked || _scrollForwarded || _dragSetup || _scrollToggledOnOpen)
         {
             var trapped = _focusTrapped;
@@ -1482,17 +1588,20 @@ public partial class BitModal : BitComponentBase
                 {
                     if (_scrollerElementOnToggle.HasValue)
                     {
-                        await _js.BitUtilsToggleOverflow(_scrollerElementOnToggle.Value, false);
+                        await _js.BitUtilsToggleOverflow(_containerId, _scrollerElementOnToggle.Value, false);
                     }
                     else
                     {
-                        await _js.BitUtilsToggleOverflow(_scrollerSelectorOnToggle ?? "body", false);
+                        await _js.BitUtilsToggleOverflow(_containerId, _scrollerSelectorOnToggle ?? "body", false);
                     }
                 }
 
                 if (stored)
                 {
-                    await _js.BitUtilsForgetFocus(_containerId);
+                    // Only a focus that was actually lost is taken back, so a close handler that put the
+                    // focus somewhere deliberately keeps it. The recording is dropped either way, which is
+                    // what stops the map holding on to the element.
+                    await _js.BitUtilsRestoreFocus(_containerId);
                 }
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here

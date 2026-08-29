@@ -21,6 +21,10 @@ public abstract class BitModalReferenceBase<TReference, TParameters>
     // waiting for its content has to be let go rather than left waiting forever.
     private readonly TaskCompletionSource<bool> _renderSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
+    // Which call was the one that closed this modal, so that the answer does not depend on the result task
+    // having been completed - the result is handed over after IsDismissed is settled, not before.
+    private int _closed;
+
 
 
     public string Id { get; init; }
@@ -130,6 +134,17 @@ public abstract class BitModalReferenceBase<TReference, TParameters>
     }
 
     /// <summary>
+    /// Reports that this modal will never be rendered, which is what a modal shown while no container was
+    /// mounted is: nothing tracks it, and a container mounting later takes on the persistent modals only.
+    /// Whoever is awaiting <see cref="Rendered"/> - or the content behind it - is let go here rather than
+    /// left waiting on a render that was never going to come.
+    /// </summary>
+    internal void MarkNeverRendered()
+    {
+        _renderSource.TrySetResult(false);
+    }
+
+    /// <summary>
     /// Marks this reference closed with the given result, returning whether this call is the one that closed it:
     /// false for a modal that was already closed, whose original result stands.
     /// </summary>
@@ -137,11 +152,15 @@ public abstract class BitModalReferenceBase<TReference, TParameters>
     {
         IsClosed = true;
 
-        // TrySet rather than Set: a modal can be asked to close more than once (a close button and the
-        // overlay racing, a container tearing down mid-close), and only the first answer is the answer.
-        if (_resultSource.TrySetResult(result) is false) return false;
+        // A modal can be asked to close more than once (a close button and the overlay racing, a container
+        // tearing down mid-close), and only the first answer is the answer.
+        if (Interlocked.Exchange(ref _closed, 1) == 1) return false;
 
+        // Settled before the result is handed over: completing the task is what schedules whoever is
+        // awaiting it, and they read this to tell a dismissal from a close that carried a null result.
         IsDismissed = dismissed;
+
+        _resultSource.TrySetResult(result);
 
         // A modal closed before it was ever rendered is one that will never be rendered, so whoever is waiting
         // on its content is let go here rather than left waiting on a render that is no longer coming.
@@ -201,6 +220,14 @@ public abstract class BitModalReferenceBase<TReference, TParameters>
     public Task<bool> Dismiss()
     {
         return _modalService.Dismiss((TReference)this, null);
+    }
+
+    // The dismissal the Modal itself reports, once it has already put its close guard to the user. The guard
+    // it asked is the same one the service reads, so this close does not ask again: a guard that puts a
+    // confirmation on the screen would otherwise put a second one there for the same dismissal.
+    internal Task DismissFromModal()
+    {
+        return _modalService.DismissFromModal((TReference)this, null);
     }
 
     /// <summary>

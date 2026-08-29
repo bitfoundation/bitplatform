@@ -1,5 +1,5 @@
-﻿using System.Diagnostics;
-using Microsoft.AspNetCore.Components.Routing;
+﻿using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.Extensions.Logging;
 
 namespace Bit.BlazorUI;
 
@@ -31,6 +31,10 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
     [Inject] private IServiceProvider _serviceProvider { get; set; } = default!;
 
     private NavigationManager? _navigationManager;
+
+    // Resolved the same optional way as the navigation manager above: a host that registered no logging is
+    // still a host this container works in.
+    private ILogger? _logger;
 
 
 
@@ -153,6 +157,8 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
         ModalService.OnAddModal += OnModalAdd;
         ModalService.OnCloseModal += OnCloseModal;
 
+        _logger = (_serviceProvider?.GetService(typeof(ILoggerFactory)) as ILoggerFactory)?.CreateLogger(GetType());
+
         _navigationManager = _serviceProvider?.GetService(typeof(NavigationManager)) as NavigationManager;
 
         if (_navigationManager is not null)
@@ -222,7 +228,15 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
         {
             if (modalRef.IsClosed) continue;
 
-            if (GetCloseOnNavigation(modalRef) is false) continue;
+            var closeOnNavigation = GetCloseOnNavigation(modalRef);
+
+            if (closeOnNavigation is false) continue;
+
+            // A persistent modal is the one thing that outlives the container it happens to be rendering in,
+            // and closing it here would end it for good rather than move it: a closed modal stops being
+            // tracked, so no later container takes it back on. It goes only where it asked to, which is the
+            // same exemption the teardown below makes.
+            if (closeOnNavigation is null && modalRef.Persistent) continue;
 
             CloseInBackground(modalRef);
         }
@@ -240,7 +254,10 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
         catch (ObjectDisposedException) { } // the scope went away with the modal; nothing left to close
         catch (Exception ex)
         {
-            Debug.WriteLine($"A close handler threw while closing a modal the container left behind: {ex}");
+            // Not Debug.WriteLine: that call is compiled out of a release build, and this is the only report
+            // a consumer's failing close handler gets. The service goes to the trouble of collecting those
+            // failures and rethrowing them together, and they would otherwise end here in silence.
+            _logger?.LogError(ex, "A close handler threw while closing a modal the container left behind.");
         }
     }
 

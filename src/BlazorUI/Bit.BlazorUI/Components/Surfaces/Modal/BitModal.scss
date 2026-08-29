@@ -49,9 +49,10 @@
     position: absolute;
     pointer-events: all;
 
-    // The overlay catches the clicks meant for the page behind it either way; whether it also dims that
-    // page is what ModeFull decides.
-    background-color: transparent;
+    // The overlay both catches the clicks meant for the page behind it and dims that page. The dimming is
+    // not decoration: an overlay that swallows every click while leaving the page looking untouched reads
+    // as a page that has stopped responding rather than as one that is covered.
+    background-color: $clr-bg-overlay;
 
     // The backdrop is put into the page in the same frame as the content it dims, so it fades in with it
     // rather than appearing under it in one frame. The duration collapses to nothing under reduced motion,
@@ -60,12 +61,6 @@
     animation-name: bit-fade-show;
     animation-duration: $mot-duration-short;
     animation-timing-function: $mot-easing-decelerate;
-}
-
-.bit-mdl-mfl {
-    .bit-mdl-ovl {
-        background-color: $clr-bg-overlay;
-    }
 }
 
 .bit-mdl-ctn {
@@ -252,7 +247,7 @@
     color: $clr-fg-pri;
     overflow-wrap: anywhere;
     background-color: $clr-bg-pri;
-    padding: spacing(2) spacing(2) 0;
+    padding: $spa-dialog $spa-dialog 0;
 }
 
 .bit-mdl-hdr {
@@ -265,8 +260,8 @@
 .bit-mdl-cls {
     display: flex;
     cursor: pointer;
-    width: spacing(5);
-    height: spacing(5);
+    width: $siz-ctrl-md;
+    height: $siz-ctrl-md;
     align-items: center;
     justify-content: center;
     font-size: $tg-fs-sm;
@@ -289,7 +284,7 @@
 .bit-mdl-bdy {
     flex-grow: 1;
     overflow-y: auto;
-    padding: spacing(2);
+    padding: $spa-dialog;
 }
 
 .bit-mdl-fcn {
@@ -297,7 +292,7 @@
     z-index: 1;
     position: sticky;
     background-color: $clr-bg-pri;
-    padding: 0 spacing(2) spacing(2) spacing(2);
+    padding: 0 $spa-dialog $spa-dialog $spa-dialog;
 }
 
 // The Modal grows into place out of the middle rather than appearing in one frame, which is the movement

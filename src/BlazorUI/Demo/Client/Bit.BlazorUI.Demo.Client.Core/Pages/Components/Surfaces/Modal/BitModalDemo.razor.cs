@@ -531,23 +531,17 @@ public partial class BitModalDemo
         await Task.Delay(3000);
         isDismissed = false;
     }
-    private void HandleOnOverlayClick()
+    private async Task HandleOnOverlayClick()
     {
         isOverlayClicked = true;
-        _ = Task.Delay(2000).ContinueWith(_ =>
-            {
-                isOverlayClicked = false;
-                InvokeAsync(StateHasChanged);
-            });
+        await Task.Delay(2000);
+        isOverlayClicked = false;
     }
-    private void HandleOnEscapeKeyDown()
+    private async Task HandleOnEscapeKeyDown()
     {
         isEscapePressed = true;
-        _ = Task.Delay(2000).ContinueWith(_ =>
-            {
-                isEscapePressed = false;
-                InvokeAsync(StateHasChanged);
-            });
+        await Task.Delay(2000);
+        isEscapePressed = false;
     }
 
     private BitModal refModal = default!;
@@ -792,6 +786,7 @@ private readonly Dictionary<string, object> autoFocusAttributes = new() { { ""da
     private readonly string example7RazorCode = @"
 <BitButton OnClick=""() => isOpenScrollLock = true"">Holds the page</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => isOpenNoScrollLock = true"">NoScrollLock</BitButton>
+<BitButton Variant=""BitVariant.Text"" OnClick=""() => isOpenAutoToggleScroll = true"">AutoToggleScroll</BitButton>
 
 <BitModal @bind-IsOpen=""isOpenScrollLock"">
     <div class=""modal-content"">
@@ -849,9 +844,9 @@ private bool isOpenAutoToggleScroll;";
     </div>
 </BitModal>
 
-<BitButton OnClick=""() => isOpenFullWidth = true"">FullWidth</BitButton>
-<BitButton Variant=""BitVariant.Outline"" OnClick=""() => isOpenFullHeight = true"">FullHeight</BitButton>
-<BitButton Variant=""BitVariant.Text"" OnClick=""() => isOpenFullSize = true"">Both</BitButton>
+<BitButton Variant=""BitVariant.Text"" OnClick=""() => isOpenFullWidth = true"">FullWidth</BitButton>
+<BitButton Variant=""BitVariant.Text"" OnClick=""() => isOpenFullHeight = true"">FullHeight</BitButton>
+<BitButton Variant=""BitVariant.Text"" OnClick=""() => isOpenFullSize = true"">FullSize</BitButton>
 
 <BitModal @bind-IsOpen=""isOpenFullWidth"" FullWidth>
     <div class=""modal-content"">
@@ -1083,24 +1078,18 @@ private async Task HandleOnDismiss()
     isDismissed = false;
 }
 
-private void HandleOnOverlayClick()
+private async Task HandleOnOverlayClick()
 {
     isOverlayClicked = true;
-    _ = Task.Delay(2000).ContinueWith(_ =>
-    {
-        isOverlayClicked = false;
-        InvokeAsync(StateHasChanged);
-    });
+    await Task.Delay(2000);
+    isOverlayClicked = false;
 }
 
-private void HandleOnEscapeKeyDown()
+private async Task HandleOnEscapeKeyDown()
 {
     isEscapePressed = true;
-    _ = Task.Delay(2000).ContinueWith(_ =>
-    {
-        isEscapePressed = false;
-        InvokeAsync(StateHasChanged);
-    });
+    await Task.Delay(2000);
+    isEscapePressed = false;
 }";
 
     private readonly string example15RazorCode = @"
@@ -1186,6 +1175,27 @@ private bool isOpenExternalIcon;";
         box-shadow: 0 0 10rem purple;
         border-end-end-radius: 1rem;
         border-end-start-radius: 1rem;
+    }
+
+    .custom-header-container {
+        padding: 1.5rem;
+        background-color: tomato;
+    }
+
+    .custom-header {
+        font-size: 2rem;
+    }
+
+    .custom-body {
+        color: black;
+        background-color: lightseagreen;
+    }
+
+    .custom-footer {
+        color: brown;
+        padding: 1.5rem;
+        font-size: 1.5rem;
+        background-color: tomato;
     }
 </style>
 

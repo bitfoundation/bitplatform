@@ -21,6 +21,14 @@ public class BitModalParameters
     /// </summary>
     public Dictionary<string, object> HtmlAttributes { get; set; } = [];
 
+    // Attributes named by both sides resolve to the stronger side's value. Kept in one place because the
+    // component merges its own attributes over the cascaded ones with the very same rule, and two copies of
+    // a precedence rule written out in mirrored argument orders are two copies that can come to disagree.
+    internal static Dictionary<string, object> MergeHtmlAttributes(Dictionary<string, object>? weaker, Dictionary<string, object>? stronger)
+    {
+        return (weaker ?? []).Concat(stronger ?? []).GroupBy(kv => kv.Key).ToDictionary(g => g.Key, g => g.Last().Value);
+    }
+
     /// <summary>
     /// When true, the Modal is positioned absolute instead of fixed. <c>null</c> means not set (defaults to <c>false</c>).
     /// </summary>
@@ -187,6 +195,17 @@ public class BitModalParameters
     public bool? Modeless { get; set; }
 
     /// <summary>
+    /// Whether the overlay is rendered behind the modal.
+    /// </summary>
+    [Obsolete("Use Modeless instead: ShowOverlay=false is Modeless=true, which stands the overlay down along " +
+              "with the modality the modal reports, the focus trap and the hold it takes on the page.")]
+    public bool? ShowOverlay
+    {
+        get => Modeless is null ? null : Modeless is false;
+        set => Modeless = value is null ? null : value is false;
+    }
+
+    /// <summary>
     /// Prevents the Modal from moving the focus into itself when it opens. <c>null</c> means not set (defaults to <c>false</c>).
     /// </summary>
     public bool? NoAutoFocus { get; set; }
@@ -298,7 +317,7 @@ public class BitModalParameters
         return new BitModalParameters
         {
             IsEnabled = params1.IsEnabled ?? params2.IsEnabled,
-            HtmlAttributes = (params2.HtmlAttributes ?? []).Concat(params1.HtmlAttributes ?? []).GroupBy(kv => kv.Key).ToDictionary(g => g.Key, g => g.Last().Value),
+            HtmlAttributes = MergeHtmlAttributes(params2.HtmlAttributes, params1.HtmlAttributes),
             AbsolutePosition = params1.AbsolutePosition ?? params2.AbsolutePosition,
             Dir = params1.Dir ?? params2.Dir,
             AriaLabel = params1.AriaLabel ?? params2.AriaLabel,
