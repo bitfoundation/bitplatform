@@ -115,8 +115,14 @@ if (await crypto.IsSupported() is false) { /* SubtleCrypto is https-only */ }
 """) />
 
     <DemoSection Title="One API stops working after publish, the rest are fine"
-                 Description="A published WebAssembly app rebuilds bit-butil.js from the modules its trimmed assembly still calls, so the JavaScript for an API the trimmer decided was unreachable is genuinely not in the bundle - and the symptom is the missing-bridge error above, for that one API. It is almost always correct: the API really is only reached from code that was trimmed away, or only through reflection, which the trimmer cannot follow. Inject the service somewhere the trimmer can see, or set BitButilTrimScripts to false to publish the whole bundle and confirm that is the cause."
+                 Description="A published app rebuilds bit-butil.js from the modules it can still reach, so the JavaScript for an API that neither the trimmer nor BitButilScriptScan could see is genuinely not in the bundle - and the symptom is the missing-bridge error above, for that one API. It is almost always correct: the API really is only reached from code that was trimmed away, or only through reflection, which neither can follow. Name the module - or the Bit.Butil class behind it - in BitButilScriptModule, which is added to whatever they concluded; or set BitButilTrimScripts to false to publish the whole bundle and confirm that is the cause first."
                  Code=@("""
+<!-- Keep this one whatever the publish concluded -->
+<ItemGroup>
+  <BitButilScriptModule Include="Clipboard" />
+</ItemGroup>
+
+<!-- Or rule trimming out as the cause entirely -->
 <PropertyGroup>
   <BitButilTrimScripts>false</BitButilTrimScripts>
 </PropertyGroup>

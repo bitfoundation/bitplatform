@@ -19,12 +19,11 @@
                                  false   (default) Bundle mode: the app references bit-butil.js itself and
                                          the per-module files are dropped from its static web assets.
 
-      BitButilTrimScripts        true    In bundle mode, when the app is published trimmed, rebuild
-                                         bit-butil.js from only the modules the trimmed Bit.Butil.dll
-                                         still calls - the JavaScript equivalent of the IL trimming the
+      BitButilTrimScripts        true    In bundle mode, rebuild bit-butil.js from only the modules this app
+                                         can still call - the JavaScript equivalent of the IL trimming the
                                          library already supports. Wherever the per-module files are
-                                         published too, the same signal narrows them: only the modules that
-                                         assembly can still import are published, the rest of modules/ is
+                                         published too, the same signal narrows them: only the modules the
+                                         app can still import are published, the rest of modules/ is
                                          dropped, and nothing can 404 over it - the identifier that would
                                          have imported a dropped module left with the module.
                                          Publish only: a build - and everything development runs on top of
@@ -33,7 +32,46 @@
                                          Default: true in a Blazor WebAssembly project (the one case where
                                          the assembly that is trimmed is the assembly that calls the served
                                          JavaScript), false elsewhere.
-                                 false   Publish the full bundle even when trimming.
+                                 false   Publish the full bundle, whatever the signals below say.
+
+                                         The switch decides *whether* to trim; the three below are *what it
+                                         knows*, and with none of them in play it does nothing at all.
+
+      PublishTrimmed             true    (not a Bit.Butil property) The most precise signal there is: the
+                                         interop identifiers ILLink left in the trimmed Bit.Butil.dll are
+                                         exactly what the surviving code can call. In play whenever the
+                                         publish is trimmed, and it then supersedes BitButilScriptScan -
+                                         the same question, better answered.
+
+      BitButilScriptScan         None    (default) Do not read the app's own assemblies.
+                       TypeReferences    Read them, and take every Bit.Butil type they reference - an
+                                         @inject Clipboard is a reference to Bit.Butil.Clipboard - through
+                                         to the modules that type needs. The signal for an app published
+                                         WITHOUT trimming, and the mode to use of the two: on this
+                                         repository's own trimming harness it produces the same module set
+                                         ILLink does, exactly.
+                            TypeNames    The same idea without reading the metadata tables: match the
+                                         library's type names against the names in each assembly's string
+                                         heap. Cheaper to reason about, and coarser - an app with a class
+                                         of its own called Window, Console or Storage pulls in that
+                                         module too. It over-includes, never misses.
+                                         Ignored outright when PublishTrimmed is true.
+
+      BitButilScriptModule               An item, not a property: modules or Bit.Butil class names this app
+                                         needs whatever the above concluded.
+                                           <ItemGroup>
+                                             <BitButilScriptModule Include="Clipboard;geolocation" />
+                                           </ItemGroup>
+                                         Always ADDED to what the other signals found, never instead of
+                                         them, and it is the way to keep a module reached from somewhere
+                                         none of them can see - by reflection, or from an app's own
+                                         JavaScript. A name that is neither a module nor a Bit.Butil class
+                                         fails the build rather than being ignored.
+
+      BitButilScriptScanAssembly         An item: which assemblies BitButilScriptScan reads. Defaults to
+                                         this project's own assembly and its copy-local references, which
+                                         is the app; set it only if that is not where the code calling
+                                         Bit.Butil lives.
 
       BitButilIncludeScriptBundle / BitButilIncludeScriptModules
                                          Fine-grained overrides of which shape ends up in the app's static
@@ -42,14 +80,17 @@
                                          BitButilIncludeScriptModules=true, written out in the csproj, is
                                          also what publishes every module file through a trimmed publish:
                                          asking for them by name outranks the trimming, which otherwise
-                                         keeps only the ones the assembly's own interop calls can reach.
+                                         keeps only the ones the app can reach.
 
-    Trimming the bundle relies on Bit.Butil.dll being trimmed in *this* project's publish, so it is on by
-    default only for a standalone Blazor WebAssembly app (or PWA). A server host that references a
-    WebAssembly client keeps its own, full copy of the bundle - and must not trim it from its own trimmed
-    assembly set, which does not reflect what the client calls - so use lazy scripts there. Any other
-    project that runs ILLink over Bit.Butil.dll and serves the JavaScript to that same code can opt in with
-    BitButilTrimScripts=true.
+    Which signal suits which app. A standalone Blazor WebAssembly app (or PWA) publishes trimmed by default
+    and is the one case where the assembly ILLink trims is the assembly that calls the served JavaScript, so
+    BitButilTrimScripts defaults to true there and needs nothing else. An app published untrimmed - a
+    WebAssembly app with PublishTrimmed off, a Blazor Server app, a server host that prerenders - has no
+    ILLink to ask, and BitButilScriptScan=TypeReferences is what replaces it. A server host that references
+    a WebAssembly client is the case to think about: scanning covers the host and the client alike, because
+    the client's assembly is one of the host's references, but ILLink's answer for such a host is about the
+    host's own code only - which is why trimming there wants the scan (or lazy scripts) rather than
+    PublishTrimmed.
     -->
 
     <!-- The package carries the same targets file under buildTransitive\ and build\, and tooling that
@@ -68,6 +109,10 @@
         <BitButilLazyScripts Condition="'$(BitButilLazyScripts)' == ''">false</BitButilLazyScripts>
         <BitButilTrimScripts Condition="'$(BitButilTrimScripts)' == '' and ('$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' or '$(UsingMicrosoftNETSdkWebAssembly)' == 'true')">true</BitButilTrimScripts>
         <BitButilTrimScripts Condition="'$(BitButilTrimScripts)' == ''">false</BitButilTrimScripts>
+        <!-- Off by default everywhere. Reading a publish's assemblies is a cost and a judgement about what
+             the app calls, and neither belongs in a default: an app gets the scan because its csproj asked
+             for it, having decided which of the two modes it wants. -->
+        <BitButilScriptScan Condition="'$(BitButilScriptScan)' == ''">None</BitButilScriptScan>
         <BitButilIncludeScriptBundle Condition="'$(BitButilIncludeScriptBundle)' == '' and '$(BitButilLazyScripts)' == 'true'">false</BitButilIncludeScriptBundle>
         <BitButilIncludeScriptBundle Condition="'$(BitButilIncludeScriptBundle)' == ''">true</BitButilIncludeScriptBundle>
         <!-- Whether the consumer asked for the per-module files by name, as opposed to getting them from
@@ -88,7 +133,13 @@
              keep whatever it already holds, and so do the WebAssembly SDK's additions. This is the same
              stage at which the WebAssembly SDK swaps in its trimmed assemblies, after ILLink has run and
              before compressed variants, service-worker manifests and fingerprinted endpoints are computed. -->
-        <ResolvePublishStaticWebAssetsDependsOn>$(ResolvePublishStaticWebAssetsDependsOn);BitButilTrimScriptBundle;BitButilTrimScriptModules</ResolvePublishStaticWebAssetsDependsOn>
+        <!-- _BitButilResolveScriptTrimming is named here as well as in the DependsOnTargets of the target
+             that needs it, and first in the list on purpose: MSBuild evaluates a target's own Condition
+             before it builds that target's DependsOnTargets, so a gate the dependency sets would be read
+             while it is still unset. Listed here, it has run by the time either target is reached. -->
+        <!-- BitButilSelectPublishScriptAssets first of the four: it drops the shape of the JavaScript this app
+             does not use, and the two trimming targets after it only ever narrow what is left. -->
+        <ResolvePublishStaticWebAssetsDependsOn>$(ResolvePublishStaticWebAssetsDependsOn);_BitButilResolveScriptTrimming;BitButilSelectPublishScriptAssets;BitButilTrimScriptBundle;BitButilTrimScriptModules</ResolvePublishStaticWebAssetsDependsOn>
 
         <!-- Same appending trick, for the stage that gathers the assets themselves (see
              BitButilSelectScriptAssets). The SDK collects them from three places in a fixed order - the
@@ -143,15 +194,18 @@
 
     <!--
     Drops the shape of the JavaScript the app does not use from its static web assets, so a bundle-mode app
-    does not publish 65 module files it never requests and a lazy-mode app does not publish a bundle it
-    never loads. Runs once the SDK has gathered the assets from every source (see the DependsOn properties
-    above) and long before the build manifest publish later resumes from is written, so the removed items
-    reach neither the build output nor the publish output.
+    does not carry 65 module files it never requests and a lazy-mode app does not carry a bundle it never
+    loads. Runs once the SDK has gathered the assets from every source (see the DependsOn properties above)
+    and long before the build manifest is written, so the removed items reach neither the build output nor
+    that manifest.
 
     Gathering assets from every source is what makes this work for a ProjectReference to Bit.Butil - the
     layout the repository's own samples and tests use - as well as for the PackageReference a consumer has:
     a referenced project contributes its assets after the package ones, so a step that ran any earlier
-    would find nothing to drop and silently publish the whole set.
+    would find nothing to drop and silently keep the whole set.
+
+    This is the build half only. A publish rebuilds the asset list from scratch and has to be told again -
+    see BitButilSelectPublishScriptAssets below for why, and why it cannot be this same target.
     -->
     <Target Name="BitButilSelectScriptAssets"
             Condition="'$(BitButilIncludeScriptBundle)' != 'true' or '$(BitButilIncludeScriptModules)' != 'true'">
@@ -189,12 +243,62 @@
         </ItemGroup>
     </Target>
 
+    <!--
+    The same selection again, on the publish asset list, because a publish does not inherit the build's.
+    ResolveCorePublishStaticWebAssets empties @(StaticWebAsset), reloads it from the build manifest - which is
+    correct, and is where the removals above did land - and then asks every referenced project for its own
+    *publish* assets and merges those back in wholesale. Bit.Butil, asked that question, answers with the whole
+    of its wwwroot: it has no idea which shape the consuming app chose. So a bundle-mode app that references
+    Bit.Butil as a project ends up publishing all 65 module files, and a lazy-scripts app publishes the bundle
+    it never loads, even though neither is in its build output or its build manifest.
+
+    Written out twice rather than shared: a target runs at most once per project build, so one target hooked
+    into both stages would run at the first and be skipped at the second - which is the very thing that leaves
+    the publish output wrong. The two bodies are identical, and are meant to stay that way.
+    -->
+    <Target Name="BitButilSelectPublishScriptAssets"
+            Condition="'$(BitButilIncludeScriptBundle)' != 'true' or '$(BitButilIncludeScriptModules)' != 'true'">
+        <ItemGroup>
+            <_BitButilAsset Include="@(StaticWebAsset)" Condition="'%(StaticWebAsset.SourceId)' == 'Bit.Butil'" />
+            <_BitButilAsset>
+                <_Path>$([MSBuild]::NormalizePath('%(FullPath)'))</_Path>
+                <_MatchPath>$([MSBuild]::NormalizePath('%(FullPath)'))</_MatchPath>
+            </_BitButilAsset>
+            <!-- A derived asset - a pre-compressed .gz/.br variant the package ships - is classified by the
+                 asset it was derived from, so that it leaves together with it instead of staying behind with
+                 a RelatedAsset pointing at a file that is no longer part of the app. -->
+            <_BitButilAsset Condition="'%(_BitButilAsset.RelatedAsset)' != ''">
+                <_MatchPath>$([MSBuild]::NormalizePath('%(_BitButilAsset.RelatedAsset)'))</_MatchPath>
+            </_BitButilAsset>
+            <_BitButilAsset>
+                <_IsBundle>$([System.String]::Copy('%(_MatchPath)').EndsWith('bit-butil.js', System.StringComparison.OrdinalIgnoreCase))</_IsBundle>
+                <_IsModule>$([System.String]::Copy('%(_MatchPath)').Replace('\', '/').Contains('/modules/'))</_IsModule>
+            </_BitButilAsset>
+
+            <_BitButilRemovedAsset Include="@(_BitButilAsset)" Condition="'$(BitButilIncludeScriptBundle)' != 'true' and '%(_BitButilAsset._IsBundle)' == 'True'" />
+            <_BitButilRemovedAsset Include="@(_BitButilAsset)" Condition="'$(BitButilIncludeScriptModules)' != 'true' and '%(_BitButilAsset._IsModule)' == 'True'" />
+
+            <!-- Endpoints (.NET 9 SDK and later) are keyed by the asset file they serve. -->
+            <_BitButilRemovedEndpointKey Include="@(_BitButilRemovedAsset)">
+                <AssetFile>%(_BitButilRemovedAsset._Path)</AssetFile>
+            </_BitButilRemovedEndpointKey>
+
+            <StaticWebAsset Remove="@(_BitButilRemovedAsset)" />
+            <StaticWebAssetEndpoint Remove="@(_BitButilRemovedEndpointKey)" MatchOnMetadata="AssetFile" MatchOnMetadataOptions="PathLike" />
+
+            <_BitButilAsset Remove="@(_BitButilAsset)" />
+            <_BitButilRemovedAsset Remove="@(_BitButilRemovedAsset)" />
+            <_BitButilRemovedEndpointKey Remove="@(_BitButilRemovedEndpointKey)" />
+        </ItemGroup>
+    </Target>
+
 
     <!--
-    Publish-time bundle trimming. After ILLink has produced the trimmed Bit.Butil.dll, replace the package's
-    bit-butil.js static web asset with one assembled from just the modules that assembly still calls. The
-    replacement is a fresh asset defined through the SDK's own tasks, so its fingerprint, integrity, endpoints
-    and (afterwards) compressed variants are all computed from the new content.
+    Publish-time bundle trimming. Replace the package's bit-butil.js static web asset with one assembled from
+    just the modules this app can still call - read from the trimmed Bit.Butil.dll where ILLink produced one,
+    and from the app's own assemblies where it did not. The replacement is a fresh asset defined through the
+    SDK's own tasks, so its fingerprint, integrity, endpoints and (afterwards) compressed variants are all
+    computed from the new content.
 
     Three targets rather than one because the .NET 8 SDK has neither endpoints nor content fingerprinting, and
     MSBuild rejects an unknown task (or task parameter) even under a false condition: the pieces that need the
@@ -204,41 +308,101 @@
       _BitButilAssembleTrimmedBundle   runs the bundler and prepares the candidate asset + the stale set
       _BitButilDefineTrimmedBundle     defines the asset (plain form here, fingerprinted form in the 9+ file)
       BitButilTrimScriptBundle         swaps the assets and endpoints in the static web asset lists
-      BitButilTrimScriptModules        drops the per-module files the trimmed app can no longer import
+      BitButilTrimScriptModules        drops the per-module files the app can no longer import
     -->
     <PropertyGroup>
-        <!-- Publish only, on three counts: every target these gate hangs off ResolvePublishStaticWebAssets,
-             which no build reaches; PublishTrimmed only ever produces the trimmed assembly that is read here
-             during a publish; and a design-time build is excluded outright. A build, and so dotnet run and
-             dotnet watch, keeps the JavaScript exactly as the package ships it - what a developer debugs is
-             always the full, untrimmed set. -->
-        <_BitButilPublishTrimming>false</_BitButilPublishTrimming>
-        <_BitButilPublishTrimming Condition="'$(BitButilTrimScripts)' == 'true' and '$(PublishTrimmed)' == 'true' and '$(WasmBuildingForNestedPublish)' != 'true' and '$(DesignTimeBuild)' != 'true'">true</_BitButilPublishTrimming>
-
-        <!-- The bundle half: rebuild bit-butil.js from the surviving modules. Needs a bundle to rebuild. -->
-        <_BitButilTrimEnabled>false</_BitButilTrimEnabled>
-        <_BitButilTrimEnabled Condition="'$(_BitButilPublishTrimming)' == 'true' and '$(BitButilIncludeScriptBundle)' == 'true'">true</_BitButilTrimEnabled>
-
-        <!-- The per-module half: publish only the module files the trimmed assembly can still import. The
-             same signal, applied to the other shape of the same JavaScript - a module no surviving code
-             names is a file nothing can ever request. Skipped when the csproj asked for the modules by
-             name, which is how an app that loads them from somewhere this cannot see keeps the full set. -->
-        <_BitButilTrimModulesEnabled>false</_BitButilTrimModulesEnabled>
-        <_BitButilTrimModulesEnabled Condition="'$(_BitButilPublishTrimming)' == 'true' and '$(BitButilIncludeScriptModules)' == 'true' and '$(_BitButilScriptModulesRequested)' != 'true'">true</_BitButilTrimModulesEnabled>
-
-        <_BitButilTrimAnyEnabled>false</_BitButilTrimAnyEnabled>
-        <_BitButilTrimAnyEnabled Condition="'$(_BitButilTrimEnabled)' == 'true' or '$(_BitButilTrimModulesEnabled)' == 'true'">true</_BitButilTrimAnyEnabled>
-
+        <!-- Evaluation time, because the Import at the foot of this file conditions on it. Everything else
+             the trimming is gated on is decided in _BitButilResolveScriptTrimming instead: it has to read
+             @(BitButilScriptModule), and MSBuild evaluates every property in every import before it reaches
+             any item, so a property that read that item here would always find it empty. -->
         <_BitButilSdkHasEndpoints>false</_BitButilSdkHasEndpoints>
         <_BitButilSdkHasEndpoints Condition="'$(NETCoreSdkVersion)' != '' and $([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '9.0'))">true</_BitButilSdkHasEndpoints>
     </PropertyGroup>
 
-    <Target Name="_BitButilAssembleTrimmedBundle" Condition="'$(_BitButilTrimAnyEnabled)' == 'true'">
+    <!--
+    Which signal the trimming runs on, and whether it runs at all. A target rather than a plain property
+    group because it reads @(BitButilScriptModule), and MSBuild evaluates every property of every import
+    before it reaches any item - a property group here would read that item while it is still empty.
+
+    Reached two ways, and it needs both. Naming it in DependsOnTargets of the target that uses its output is
+    what makes it run for a direct invocation; naming it FIRST in ResolvePublishStaticWebAssetsDependsOn is
+    what makes it run early enough, because MSBuild evaluates a target's own Condition before building that
+    target's DependsOnTargets - so a gate set only by the dependency is still unset when the gate is read.
+    -->
+    <Target Name="_BitButilResolveScriptTrimming">
 
         <PropertyGroup>
-            <_BitButilTrimmedAssembly>$(IntermediateLinkDir)Bit.Butil.dll</_BitButilTrimmedAssembly>
+            <!-- ILLink's answer supersedes the scan rather than joining it: both answer "what can this app
+                 call", and the identifiers left in a trimmed assembly answer it from what survived rather
+                 than from what was referenced. Running both would only ever widen the precise answer with
+                 the approximate one. -->
+            <_BitButilScanMode>None</_BitButilScanMode>
+            <_BitButilScanMode Condition="'$(PublishTrimmed)' != 'true'">$(BitButilScriptScan)</_BitButilScanMode>
+
+            <!-- Nothing to go on is not a reason to trim to nothing: with no ILLink, no scan and no module
+                 named in the csproj, the whole feature stands down and the full bundle is published. -->
+            <_BitButilHasSignal>false</_BitButilHasSignal>
+            <_BitButilHasSignal Condition="'$(PublishTrimmed)' == 'true' or ('$(_BitButilScanMode)' != '' and '$(_BitButilScanMode)' != 'None') or '@(BitButilScriptModule)' != ''">true</_BitButilHasSignal>
+
+            <!-- Publish only, on three counts: every target these gate hangs off ResolvePublishStaticWebAssets,
+                 which no build reaches; the assemblies read here are a publish's; and a design-time build is
+                 excluded outright. A build, and so dotnet run and dotnet watch, keeps the JavaScript exactly
+                 as the package ships it - what a developer debugs is always the full, untrimmed set. -->
+            <_BitButilPublishTrimming>false</_BitButilPublishTrimming>
+            <_BitButilPublishTrimming Condition="'$(BitButilTrimScripts)' == 'true' and '$(_BitButilHasSignal)' == 'true' and '$(WasmBuildingForNestedPublish)' != 'true' and '$(DesignTimeBuild)' != 'true'">true</_BitButilPublishTrimming>
+
+            <!-- The bundle half: rebuild bit-butil.js from the modules the app can reach. Needs a bundle to
+                 rebuild. -->
+            <_BitButilTrimEnabled>false</_BitButilTrimEnabled>
+            <_BitButilTrimEnabled Condition="'$(_BitButilPublishTrimming)' == 'true' and '$(BitButilIncludeScriptBundle)' == 'true'">true</_BitButilTrimEnabled>
+
+            <!-- The per-module half: publish only the module files the app can still import. The same signal,
+                 applied to the other shape of the same JavaScript - a module no reachable code names is a
+                 file nothing can ever request. Skipped when the csproj asked for the modules by name, which
+                 is how an app that loads them from somewhere this cannot see keeps the full set. -->
+            <_BitButilTrimModulesEnabled>false</_BitButilTrimModulesEnabled>
+            <_BitButilTrimModulesEnabled Condition="'$(_BitButilPublishTrimming)' == 'true' and '$(BitButilIncludeScriptModules)' == 'true' and '$(_BitButilScriptModulesRequested)' != 'true'">true</_BitButilTrimModulesEnabled>
+
+            <_BitButilTrimAnyEnabled>false</_BitButilTrimAnyEnabled>
+            <_BitButilTrimAnyEnabled Condition="'$(_BitButilTrimEnabled)' == 'true' or '$(_BitButilTrimModulesEnabled)' == 'true'">true</_BitButilTrimAnyEnabled>
+        </PropertyGroup>
+
+        <Message Importance="normal" Condition="'$(PublishTrimmed)' == 'true' and '$(BitButilScriptScan)' != '' and '$(BitButilScriptScan)' != 'None'"
+                 Text="Bit.Butil: this publish is trimmed, so &lt;BitButilScriptScan&gt;$(BitButilScriptScan)&lt;/BitButilScriptScan&gt; is not used - the trimmed assembly answers the same question more precisely." />
+
+        <!-- The app's own assemblies: this project's output and everything copied next to it. Overridable in
+             the csproj for the app whose Bit.Butil calls live somewhere this cannot see. Only gathered when
+             a scan is actually going to read them. -->
+        <ItemGroup Condition="'$(_BitButilScanMode)' != '' and '$(_BitButilScanMode)' != 'None' and '@(BitButilScriptScanAssembly)' == ''">
+            <BitButilScriptScanAssembly Include="@(IntermediateAssembly->'%(FullPath)')" />
+            <BitButilScriptScanAssembly Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' == '.dll'" />
+        </ItemGroup>
+
+    </Target>
+
+    <Target Name="_BitButilAssembleTrimmedBundle" DependsOnTargets="_BitButilResolveScriptTrimming" Condition="'$(_BitButilTrimAnyEnabled)' == 'true'">
+
+        <PropertyGroup>
+            <!-- Only set when ILLink is in play: the task reads "a path was given but the file is not there"
+                 as "this publish was set up to be trimmed and Bit.Butil was not", and keeps the full bundle.
+                 Left empty, the scan and the csproj are what it goes on instead. -->
+            <_BitButilTrimmedAssembly Condition="'$(PublishTrimmed)' == 'true'">$(IntermediateLinkDir)Bit.Butil.dll</_BitButilTrimmedAssembly>
             <_BitButilTrimmedBundleDir>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'bit-butil'))</_BitButilTrimmedBundleDir>
             <_BitButilTrimmedBundle>$(_BitButilTrimmedBundleDir)bit-butil.js</_BitButilTrimmedBundle>
+        </PropertyGroup>
+
+        <!-- The untrimmed Bit.Butil.dll, which is what says which module each Bit.Butil class needs. Needed
+             by a scan, and by a csproj that names classes rather than modules; the task says so itself if it
+             turns out to be needed and missing. -->
+        <ItemGroup>
+            <_BitButilReferencedAssembly Include="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)%(Extension)' == 'Bit.Butil.dll'" />
+        </ItemGroup>
+
+        <PropertyGroup>
+            <_BitButilUntrimmedAssembly>@(_BitButilReferencedAssembly->'%(FullPath)')</_BitButilUntrimmedAssembly>
+            <!-- More than one, and there is no telling which is the Bit.Butil this app compiled against.
+                 Empty is the honest answer: the task then says what it could not read, and why it needed to. -->
+            <_BitButilUntrimmedAssembly Condition="'$(_BitButilUntrimmedAssembly)' != '' and $(_BitButilUntrimmedAssembly.Contains(';'))"></_BitButilUntrimmedAssembly>
         </PropertyGroup>
 
         <ItemGroup Condition="'$(_BitButilTrimEnabled)' == 'true'">
@@ -255,19 +419,27 @@
                Text="Bit.Butil: expected a single primary bit-butil.js static web asset but found @(_BitButilBundleAsset->Count()): @(_BitButilBundleAsset->'%(FullPath)', ', '). Set &lt;BitButilTrimScripts&gt;false&lt;/BitButilTrimScripts&gt; to publish the full bundle instead." />
 
         <!-- No OutputPath when there is no bundle to rebuild: the task then only works out which modules the
-             trimmed assembly can still reach, which is all the per-module half below needs. -->
+             app can still reach, which is all the per-module half below needs. -->
         <PropertyGroup>
             <_BitButilTrimmedBundleOutput Condition="'@(_BitButilBundleAsset)' != ''">$(_BitButilTrimmedBundle)</_BitButilTrimmedBundleOutput>
         </PropertyGroup>
 
         <TrimButilScripts Condition="'@(_BitButilBundleAsset)' != '' or '$(_BitButilTrimModulesEnabled)' == 'true'"
                           TrimmedAssembly="$(_BitButilTrimmedAssembly)"
+                          ButilAssembly="$(_BitButilUntrimmedAssembly)"
+                          ScanMode="$(_BitButilScanMode)"
+                          ScanAssemblies="@(BitButilScriptScanAssembly)"
+                          ExplicitModules="@(BitButilScriptModule)"
                           ChunksDirectory="$(BitButilChunksDirectory)"
                           ManifestPath="$(BitButilScriptManifest)"
                           OutputPath="$(_BitButilTrimmedBundleOutput)">
             <Output TaskParameter="Skipped" PropertyName="_BitButilTrimSkipped" />
             <Output TaskParameter="IncludedModules" ItemName="BitButilIncludedScriptModule" />
         </TrimButilScripts>
+
+        <ItemGroup>
+            <_BitButilReferencedAssembly Remove="@(_BitButilReferencedAssembly)" />
+        </ItemGroup>
 
         <ItemGroup Condition="'@(_BitButilBundleAsset)' != '' and '$(_BitButilTrimSkipped)' != 'true'">
             <!-- The old bundle, plus anything derived from it (a build-time compressed variant points back
@@ -358,7 +530,7 @@
             Condition="'$(_BitButilTrimModulesEnabled)' == 'true'">
 
         <!-- The reachable set as a delimited string, so a module name can be looked up in it from an item
-             condition. Empty when the bundler found no trimmed assembly to read (_BitButilTrimSkipped), and
+             condition. Empty when the bundler had nothing to work from (_BitButilTrimSkipped), and
              the target then leaves every module in place rather than dropping the lot. -->
         <PropertyGroup>
             <_BitButilKeptModules>;@(BitButilIncludedScriptModule);</_BitButilKeptModules>
@@ -397,7 +569,7 @@
         </ItemGroup>
 
         <Message Importance="normal" Condition="'@(_BitButilRemovedModule)' != ''"
-                 Text="Bit.Butil: dropped @(_BitButilRemovedModule->Count()) per-module script file(s) the trimmed app can no longer import. Set &lt;BitButilIncludeScriptModules&gt;true&lt;/BitButilIncludeScriptModules&gt; to publish every module instead." />
+                 Text="Bit.Butil: dropped @(_BitButilRemovedModule->Count()) per-module script file(s) this app can no longer import. Set &lt;BitButilIncludeScriptModules&gt;true&lt;/BitButilIncludeScriptModules&gt; to publish every module instead." />
 
         <ItemGroup>
             <_BitButilModuleCandidate Remove="@(_BitButilModuleCandidate)" />

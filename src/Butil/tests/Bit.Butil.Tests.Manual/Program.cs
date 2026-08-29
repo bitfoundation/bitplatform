@@ -168,6 +168,16 @@ internal static class Program
         Console.WriteLine($"  {bundlingPassed} checks passed, {bundlingFailed} failed");
         Console.WriteLine();
 
+        // The other two signals a publish can trim on, which stand in for ILLink when it never runs: the
+        // class-to-module map, and the scan of a consumer's own assemblies that uses it. Checked against the
+        // very set trimming produces for the very same code, so the three cannot drift apart.
+        Console.WriteLine("--- script scanning ---");
+        var (scanningPassed, scanningFailed) = ScriptScanning.Run(string.IsNullOrEmpty(assembly.Location) ? null : assembly.Location, trimmed, failures);
+        Console.WriteLine(trimmed
+            ? "  not checked in a trimmed run - the map is a question about the untrimmed library"
+            : $"  {scanningPassed} checks passed, {scanningFailed} failed");
+        Console.WriteLine();
+
         Console.WriteLine("--- lazy scripts ---");
         var (lazyPassed, lazyFailed) = await LazyScripts.Run(failures);
         Console.WriteLine($"  {lazyPassed} checks passed, {lazyFailed} failed");

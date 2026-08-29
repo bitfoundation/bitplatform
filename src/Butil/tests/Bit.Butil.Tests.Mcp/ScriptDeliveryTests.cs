@@ -36,6 +36,15 @@ public class ScriptDeliveryTests : McpTestBase
 
     private const string ModulesProperty = "BitButilIncludeScriptModules";
 
+    /// <summary>
+    /// What an app publishing WITHOUT trimming has to be told, and the escape hatch beside it. Both are new
+    /// answers to a question the older properties answer only for a trimmed publish, so an agent that knows
+    /// <see cref="TrimProperty"/> and not these tells an untrimmed app the feature does not apply to it.
+    /// </summary>
+    private const string ScanProperty = "BitButilScriptScan";
+
+    private const string ModuleItem = "BitButilScriptModule";
+
     [TestMethod]
     public async Task Every_setup_guide_names_both_ways_to_tree_shake_the_javascript()
     {
@@ -51,6 +60,12 @@ public class ScriptDeliveryTests : McpTestBase
             {
                 Assert.Contains(LazyProperty, text, $"The '{model}' guide never mentions {LazyProperty}.");
                 Assert.Contains(TrimProperty, text, $"The '{model}' guide never mentions {TrimProperty}.");
+
+                // The switch that decides WHETHER to trim is useless on its own to an app publishing
+                // untrimmed, which most hosting models here are: without this one named beside it, the
+                // agent reads "on by default in WebAssembly" and concludes the feature is not for them.
+                Assert.Contains(ScanProperty, text, $"The '{model}' guide never mentions {ScanProperty}, so an untrimmed publish has nothing to tree-shake against.");
+                Assert.Contains(ModuleItem, text, $"The '{model}' guide never mentions {ModuleItem}, which is the only way to keep a module nothing static can see.");
             }
         }
     }
@@ -113,6 +128,11 @@ public class ScriptDeliveryTests : McpTestBase
             Assert.Contains(TrimProperty, section);
             Assert.Contains(ModulesProperty, section);
             Assert.Contains("_content/Bit.Butil/modules/", section);
+
+            // And what the bundle trimming works FROM, which is a separate question from whether it
+            // runs: an agent that only ever sees TrimProperty has no answer for an untrimmed publish.
+            Assert.Contains(ScanProperty, section);
+            Assert.Contains(ModuleItem, section);
         }
     }
 
@@ -221,6 +241,7 @@ public class ScriptDeliveryTests : McpTestBase
             Assert.Contains(LazyProperty, page);
             Assert.Contains(TrimProperty, page);
             Assert.Contains(ModulesProperty, page);
+            Assert.Contains(ScanProperty, page);
             Assert.Contains("AddBitButilServices", page);
         }
     }
@@ -256,6 +277,8 @@ public class ScriptDeliveryTests : McpTestBase
                 $"The page never names {ModulesProperty}, which is the fix when the module files were not published.");
             Assert.Contains(TrimProperty, page,
                 $"The page never names {TrimProperty}, which is how a trimmed bundle is ruled in or out as the cause.");
+            Assert.Contains(ModuleItem, page,
+                $"The page never names {ModuleItem}, which is the fix once a trimmed bundle IS the cause and the API is reached by reflection.");
         }
     }
 
