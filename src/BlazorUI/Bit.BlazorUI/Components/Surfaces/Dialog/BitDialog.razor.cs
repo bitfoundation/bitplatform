@@ -178,7 +178,13 @@ public partial class BitDialog : BitComponentBase
     {
         await InvokeAsync(async () =>
         {
-            _ = _js.BitUtilsToggleOverflow(ScrollerSelector, true);
+            // Only where the Dialog hands the scroller back again. The hold is given up in OnAfterRender,
+            // which returns early when AutoToggleScroll is off: taking one here regardless left the page
+            // held by a Dialog that had long since closed, with nothing that would ever let go of it.
+            if (AutoToggleScroll)
+            {
+                _ = _js.BitUtilsToggleOverflow(UniqueId, ScrollerSelector, true);
+            }
 
             Result = null;
 
@@ -247,7 +253,7 @@ public partial class BitDialog : BitComponentBase
 
         if (AutoToggleScroll is false) return;
 
-        _offsetTop = await _js.BitUtilsToggleOverflow(ScrollerSelector, IsOpen);
+        _offsetTop = await _js.BitUtilsToggleOverflow(UniqueId, ScrollerSelector, IsOpen);
 
         if (AbsolutePosition is false) return;
 

@@ -182,7 +182,7 @@ public partial class BitPanel : BitComponentBase
 
         if (AutoToggleScroll is false) return;
 
-        _offsetTop = await _js.BitUtilsToggleOverflow(ScrollerSelector ?? "body", IsOpen);
+        _offsetTop = await _js.BitUtilsToggleOverflow(UniqueId, ScrollerSelector ?? "body", IsOpen);
 
         StyleBuilder.Reset();
         StateHasChanged();
