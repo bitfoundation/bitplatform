@@ -54,6 +54,7 @@ internal static class ScriptScanning
         CheckScanFindsTheSameModules(checks, map);
         CheckExplicitNames(checks, butilAssemblyPath, map);
         CheckUnreadableInputs(checks, workspace, butilAssemblyPath, map);
+        CheckScannedBundleRuns(checks, workspace, map);
 
         return (checks.Passed, checks.Failed);
     }
@@ -222,6 +223,52 @@ internal static class ScriptScanning
         checks.That(scan.Skipped.Count == 3 && scan.Scanned.Count == 0 && scan.Modules.Count == 0,
             "a scan passes over what it cannot read instead of failing the publish",
             $"{scan.Skipped.Count} skipped, {scan.Scanned.Count} read, {scan.Modules.Count} module(s)");
+    }
+
+    /// <summary>
+    /// The end of it: assemble the bundle a scan-trimmed publish of this harness would serve, and run it.
+    /// </summary>
+    /// <remarks>
+    /// Every check above compares one list of module names with another, and a module set that is right on
+    /// paper still ships broken JavaScript if the chunks behind it do not stand alone - a module whose
+    /// dependency the manifest does not record evaluates to a <c>BitButil.x is undefined</c> the moment
+    /// something calls it. <c>verify-bundle.mjs</c> evaluates the assembled file and asks which
+    /// <c>BitButil</c> namespaces it registered, which is the only check here that the browser would agree
+    /// with. <see cref="ScriptBundling"/> does the same for the bundle ILLink's own answer produces; this is
+    /// the same artifact for the publish that never ran ILLink.
+    /// </remarks>
+    private static void CheckScannedBundleRuns(ScriptBundling.Checks checks, string workspace, ButilTypeModules map)
+    {
+        var verifier = Path.Combine(AppContext.BaseDirectory, ScriptBundling.VerifierFileName);
+        var butilRoot = ScriptTrimming.LocateButilProject();
+        var self = typeof(ScriptScanning).Assembly.Location;
+        if (butilRoot is null || string.IsNullOrEmpty(self)) return;   // Already reported above.
+
+        var chunks = Path.Combine(butilRoot, "obj", "butil-js", "chunks");
+        var manifestPath = Path.Combine(chunks, "manifest.txt");
+        if (File.Exists(verifier) is false || File.Exists(manifestPath) is false)
+        {
+            checks.That(false, "the scanned bundle was not run", $"{ScriptBundling.VerifierFileName} or the module manifest is missing");
+            return;
+        }
+
+        var manifest = ButilScriptBundler.ReadManifest(manifestPath);
+
+        // Exactly what the MSBuild task assembles for an untrimmed publish: the scan's modules, plus the ones
+        // named in a csproj, closed over the manifest's dependencies.
+        var scan = ButilConsumerScan.Scan([self], map, ButilScanMode.TypeReferences);
+        var referenced = new SortedSet<string>(scan.Modules, StringComparer.Ordinal);
+        referenced.UnionWith(ButilScriptBundler.ResolveNames(["Battery"], manifest, map, out _));
+
+        var included = ButilScriptBundler.Resolve(manifest, referenced, out var unknown);
+        checks.That(unknown.Count == 0, "everything a scan concludes is a module the library ships", $"[{string.Join(", ", unknown)}] is not");
+        checks.That(included.Contains("battery"),
+            "a module named in the csproj survives into the bundle beside the ones the scan found",
+            $"the bundle holds [{string.Join(", ", included)}]");
+
+        var bundle = Path.Combine(workspace, "scanned-bundle.js");
+        ButilScriptBundler.WriteBundle(chunks, included, bundle);
+        ScriptBundling.RunVerifier(checks, verifier, ScriptBundling.Keys(included), bundle);
     }
 
     private static void Compare(ScriptBundling.Checks checks, IEnumerable<string> expected, IEnumerable<string> actual,

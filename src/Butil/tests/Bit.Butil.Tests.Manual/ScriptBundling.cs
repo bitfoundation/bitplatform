@@ -27,7 +27,7 @@ namespace ButilTests.Manual;
 internal static class ScriptBundling
 {
     /// <summary>The script that evaluates an assembled bundle, copied next to the executable by the csproj.</summary>
-    private const string VerifierFileName = "verify-bundle.mjs";
+    internal const string VerifierFileName = "verify-bundle.mjs";
 
     /// <summary>
     /// An interop identifier naming a module Bit.Butil does not ship, present in this assembly for the
@@ -527,10 +527,10 @@ internal static class ScriptBundling
     }
 
     /// <summary>The <c>BitButil.&lt;key&gt;</c> namespaces a set of modules registers between them.</summary>
-    private static string Keys(IEnumerable<string> modules)
+    internal static string Keys(IEnumerable<string> modules)
         => string.Join(",", modules.Select(module => module == "butil" ? "version" : module));
 
-    private static void RunVerifier(Checks checks, string verifier, string expectedKeys, params string[] scripts)
+    internal static void RunVerifier(Checks checks, string verifier, string expectedKeys, params string[] scripts)
     {
         var what = string.Join(" + ", scripts.Select(Path.GetFileName));
         var process = new Process

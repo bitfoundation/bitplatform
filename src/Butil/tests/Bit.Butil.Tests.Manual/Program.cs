@@ -178,6 +178,17 @@ internal static class Program
             : $"  {scanningPassed} checks passed, {scanningFailed} failed");
         Console.WriteLine();
 
+        // And the same feature as MSBuild actually runs it: a real consumer app published with each
+        // combination of the switches, and the JavaScript that came out read back off disk. The only checks
+        // here that go through a publish rather than through a method call.
+        Console.WriteLine("--- script publishing ---");
+        var publishingStarted = DateTime.UtcNow;
+        var (publishingPassed, publishingFailed) = ScriptPublishing.Run(trimmed, failures);
+        Console.WriteLine(trimmed
+            ? "  not checked in a trimmed run - this process publishes the fixture itself, to the same answers either way"
+            : $"  {publishingPassed} checks passed, {publishingFailed} failed ({(DateTime.UtcNow - publishingStarted).TotalSeconds:N0}s)");
+        Console.WriteLine();
+
         Console.WriteLine("--- lazy scripts ---");
         var (lazyPassed, lazyFailed) = await LazyScripts.Run(failures);
         Console.WriteLine($"  {lazyPassed} checks passed, {lazyFailed} failed");
