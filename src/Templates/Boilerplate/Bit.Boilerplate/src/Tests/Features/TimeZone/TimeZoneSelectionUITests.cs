@@ -41,10 +41,21 @@ public partial class TimeZoneSelectionUITests : AppPageTest
 
         // Narrow the hundreds of zones down through the panel's search box. The full list also contains the match,
         // so waiting for the label alone can hand the click a node that the debounced filter re-render is about to
-        // replace, losing the click - waiting for the list to shrink is what proves the filtered render is on screen.
+        // replace, losing the click. The list is virtualized, so its row count says nothing about whether the filter
+        // has run - waiting for the leading row (the very one clicked below) to actually carry the term is what proves
+        // the filtered render is on screen, since every filtered entry matches it (See AppMenu.FilteredTimeZones).
+        var firstZoneTextBeforeFilter = await Page.EvaluateAsync<string?>(
+            "() => document.querySelector('.app-menu-callout .time-zone-item')?.innerText.trim()");
+
         await callout.GetByPlaceholder(AppStrings.FindTimeZone).FillAsync(searchTerm);
         await Page.WaitForFunctionAsync(
-            "() => { const n = document.querySelectorAll('.app-menu-callout .time-zone-item').length; return n >= 1 && n <= 5; }");
+            """
+            ([term, before]) => {
+                const text = document.querySelector('.app-menu-callout .time-zone-item')?.innerText.trim();
+                return text != null && (text.toLowerCase().includes(term.toLowerCase()) || text !== before);
+            }
+            """,
+            new[] { searchTerm, firstZoneTextBeforeFilter });
 
         var pickedZoneText = await Page.EvaluateAsync<string?>(
             "() => document.querySelector('.app-menu-callout .time-zone-item')?.innerText.trim()");
