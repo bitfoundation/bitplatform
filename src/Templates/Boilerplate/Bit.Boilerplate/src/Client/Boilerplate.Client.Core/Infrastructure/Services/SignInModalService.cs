@@ -11,16 +11,16 @@ namespace Boilerplate.Client.Core.Infrastructure.Services;
 /// </summary>
 public partial class SignInModalService : IAsyncDisposable
 {
-    public SignInModalService(BitModalService modalService, NavigationManager navigationManager)
+    public SignInModalService(BitProModalService modalService, NavigationManager navigationManager)
     {
         this.modalService = modalService;
         this.navigationManager = navigationManager;
         this.navigationManager.LocationChanged += NavigationManager_LocationChanged;
     }
 
-    private BitModalService modalService;
+    private BitProModalService modalService;
     private NavigationManager navigationManager;
-    private BitModalReference? modalReference = null;
+    private BitProModalReference? modalReference = null;
     private TaskCompletionSource<bool>? signInModalTcs;
 
     public async Task<bool> SignIn(string? returnUrl = null)
@@ -33,7 +33,7 @@ public partial class SignInModalService : IAsyncDisposable
         // caller nobody cancelled, closing the wrong dialog, and then throwing InvalidOperationException out of a
         // Blazor click handler on the second click (which tears down the circuit in Blazor Server).
         var currentTcs = new TaskCompletionSource<bool>();
-        BitModalReference? currentModalReference = null;
+        BitProModalReference? currentModalReference = null;
 
         signInModalTcs = currentTcs;
 
@@ -43,7 +43,7 @@ public partial class SignInModalService : IAsyncDisposable
             { nameof(SignInModal.OnClose), () => { currentTcs.TrySetResult(false); currentModalReference?.Close(); } },
             { nameof(SignInModal.OnSuccess), () => { currentTcs.TrySetResult(true); currentModalReference?.Close(); } },
         };
-        var modalParameters = new BitModalParameters()
+        var modalParameters = new BitProModalParameters()
         {
             Draggable = true,
             DragElementSelector = ".header-stack",

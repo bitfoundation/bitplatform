@@ -75,10 +75,10 @@ public partial class WebAuthnPasswordlessUITests : AppPageTest
         // OTP is not elevated, so an elevated access token is e-mailed and its OTP prompt opens. Nothing else happens
         // until that prompt is answered - credentials.create() is never reached and no snackbar ever shows.
         // (See WebAuthnEnrolmentElevationTests for the server side half of the same rule.)
-        // The code goes into the prompt's own BitOtpInput, addressed through the prompt (a BitModal, ".bit-mdl"):
+        // The code goes into the prompt's own BitOtpInput, addressed through the prompt (a BitProModal, ".bit-pmd"):
         // this page already renders another one in its two-factor section, and that one comes first in the DOM, so
         // filling "the page's OTP input" submits the code as a 2fa enable attempt and leaves the prompt unanswered.
-        var elevatedAccessPrompt = Page.Locator(".bit-mdl").Filter(new() { HasText = AppStrings.EnterElevatedAccessToken });
+        var elevatedAccessPrompt = Page.Locator(".bit-pmd").Filter(new() { HasText = AppStrings.EnterElevatedAccessToken });
         await Expect(elevatedAccessPrompt).ToBeVisibleAsync();
 
         var elevatedAccessEmail = await server.WaitForCapturedEmail(email,
