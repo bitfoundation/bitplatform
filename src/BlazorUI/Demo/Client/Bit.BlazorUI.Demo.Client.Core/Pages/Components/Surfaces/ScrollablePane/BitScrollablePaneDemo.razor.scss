@@ -1,14 +1,64 @@
 ﻿.item {
     color: black;
-    height: 2.75rem;
     margin: 0.5rem 0;
     background-color: #777;
     padding: 0.5rem 1.25rem;
+}
+
+// The row of chips the Horizontal example scrolls: the pane settles the wrapping and the axes, the
+// layout of the items is the consumer's, which is the whole point that example has to make.
+.chip-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.wide-grid {
+    display: flex;
+    gap: 0.5rem;
+    width: max-content;
+    flex-direction: column;
+}
+
+.wide-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.chip {
+    color: #fff;
+    flex: 0 0 auto;
+    white-space: nowrap;
+    border-radius: 1rem;
+    background-color: #777;
+    padding: 0.25rem 0.75rem;
+}
+
+// The header the ScrollPadding of the pane keeps out of the way of anything scrolled to underneath it.
+.sticky-head {
+    top: 0;
+    z-index: 1;
+    color: #fff;
+    position: sticky;
+    padding: 0.25rem 0.5rem;
+    background-color: #4A4A4A;
+}
+
+.readout {
+    font-family: monospace;
+    color: var(--bit-clr-fg-sec);
 }
 
 ::deep {
     .pane {
         padding: 0 0.25rem;
         border: 1px solid #999;
+    }
+
+    .custom-pane {
+        color: #fff;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        background-color: #4A4A4A;
+        --bit-scp-sbs: 0.5rem;
     }
 }

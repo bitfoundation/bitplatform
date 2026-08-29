@@ -2,17 +2,62 @@
 
 .bit-scp {
     overflow: auto;
-    scrollbar-width: auto;
-    scrollbar-gutter: auto;
+
+    // The thickness of the scrollbar the Modern style draws, and how far the Fade reaches into the pane.
+    // Both are declared here rather than only where they are read, so a pane can retune either of them
+    // from its own Style attribute without having to know which class implements it.
+    --bit-scp-sbs: #{spacing(0.75)};
+    --bit-scp-fsz: #{spacing(4)};
+
+    // A disabled pane is not interactive, which for a box whose whole interaction is scrolling means the
+    // wheel, the drag and the content inside it alike. The keyboard half of it is the tabindex, which the
+    // component takes off in the markup.
+    &.bit-dis {
+        user-select: none;
+        pointer-events: none;
+    }
+
+    // A pane is only ever focused because Focusable (or a TabIndex) put it in the tab order, and a tab stop
+    // with nothing to show for itself is one a keyboard reader loses. focus-visible rather than focus, so a
+    // pane clicked with the pointer is not ringed.
+    &:focus-visible {
+        @include focus-ring;
+    }
+}
+
+// A single line that scrolls sideways. Only the wrapping is decided here: the two overflow axes are
+// written into the style attribute, so the overflow parameters can still override either of them, and
+// the layout of the content is left to the consumer - a row of block level children is a flex or a grid,
+// and imposing one here would break every pane holding something else.
+.bit-scp-hor {
+    white-space: nowrap;
+}
+
+// Applies to every move the pane does not make by hand: the scrolling API of the component, a fragment
+// navigation into it, and the browser bringing a focused element inside it into view.
+.bit-scp-smt {
+    scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bit-scp-smt:not(.bit-fam) {
+        scroll-behavior: auto;
+    }
 }
 
 .bit-scp-mod {
     &::-webkit-scrollbar {
-        width: spacing(0.5);
-        height: spacing(0.75);
+        width: var(--bit-scp-sbs);
+        height: var(--bit-scp-sbs);
     }
 
     &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    // Where the two scrollbars meet. Left unpainted it is a square of the UA's own track color sitting in
+    // the corner of a pane whose scrollbars are otherwise invisible.
+    &::-webkit-scrollbar-corner {
         background: transparent;
     }
 
@@ -31,5 +76,58 @@
 
     &::-webkit-scrollbar-button {
         display: none;
+    }
+}
+
+// Firefox has no ::-webkit-scrollbar pseudo-elements, so the two standard properties are the only way to
+// reach its scrollbar at all. They are kept away from the engines that DO support the pseudo-elements,
+// because Chromium 121 and later let any non-auto standard value win over them - which would take the
+// rendering above off the screen everywhere it actually works.
+@supports not selector(::-webkit-scrollbar) {
+    .bit-scp-mod {
+        scrollbar-width: thin;
+        scrollbar-color: $clr-fg-ter transparent;
+    }
+}
+
+// The fade over the edges that still have content beyond them. It is a mask rather than a pair of
+// gradient overlays, so it works over any background and needs no element of its own inside a pane whose
+// content the consumer owns; and it is two masks composited together, so the two axes fade independently.
+//
+// Which edges are faded is decided in the browser and written onto the element as data attributes. A
+// class or an inline custom property would be the obvious carrier, but Blazor rewrites both of those
+// whole on every render of the component and anything the browser side added to them would be wiped;
+// nothing removes an attribute the renderer never knew about.
+//
+// Everything is behind the @supports, since a mask with no compositing would fade the two edges of one
+// axis over the whole of the other - a permanently dimmed pane is worse than no fade at all.
+@supports (mask-composite: intersect) {
+    .bit-scp-fad {
+        --bit-scp-fbs: 0px;
+        --bit-scp-fbe: 0px;
+        --bit-scp-fis: 0px;
+        --bit-scp-fie: 0px;
+
+        mask-repeat: no-repeat;
+        mask-size: 100% 100%;
+        mask-composite: intersect;
+        mask-image: linear-gradient(to bottom, transparent 0, #000 var(--bit-scp-fbs), #000 calc(100% - var(--bit-scp-fbe)), transparent 100%),
+                    linear-gradient(to right, transparent 0, #000 var(--bit-scp-fis), #000 calc(100% - var(--bit-scp-fie)), transparent 100%);
+
+        &[data-bit-scp-ft] {
+            --bit-scp-fbs: var(--bit-scp-fsz);
+        }
+
+        &[data-bit-scp-fb] {
+            --bit-scp-fbe: var(--bit-scp-fsz);
+        }
+
+        &[data-bit-scp-fl] {
+            --bit-scp-fis: var(--bit-scp-fsz);
+        }
+
+        &[data-bit-scp-fr] {
+            --bit-scp-fie: var(--bit-scp-fsz);
+        }
     }
 }

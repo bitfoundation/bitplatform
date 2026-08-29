@@ -2,336 +2,827 @@
 
 <PageOutlet Url="components/scrollablepane"
             Title="ScrollablePane"
-            Description="A ScrollablePane is a component for scrolling through content that doesn't fit entirely on the screen." />
+            Description="A ScrollablePane is a box that scrolls whatever is put in it: it sizes the box, picks the axes, styles the scrollbars, fades the edges that have more beyond them, reports where it stands and scrolls itself from code." />
 
 <div>
     <DemoPage Name="ScrollablePane"
-              SecondaryNames="@(["ScrollView"])"
-              Description="A ScrollablePane is a component for scrolling through content that doesn't fit entirely on the screen."
+              SecondaryNames="@(["ScrollView", "ScrollArea", "ScrollViewer"])"
+              Description="ScrollablePane is a box that scrolls whatever is put in it, for content that does not fit in the room the page has for it. The scrolling is the browser's own, so the momentum, the keyboard and the assistive technology of the platform come with it; what the component adds is everything around that. It sizes the box - fixed, full, fit, or growing up to a maximum before it starts scrolling - picks which axes scroll, keeps a scroll from carrying on into the page behind it, reserves the gutter so the layout does not jump, restyles the scrollbars in the colors of the theme, fades the edges that still have content beyond them, and puts the box in the tab order for readers who scroll with the keyboard. It reports where it stands as it moves and calls back as each edge is reached, which is what an endless list is built on; it can be driven from code with ScrollTo, ScrollBy, ScrollToStart, ScrollToEnd and ScrollToElement; and it can pin itself to the end of its content as the content grows, without ever dragging back a reader who scrolled up to look at something."
               Parameters="componentParameters"
               PublicMembers="componentPublicMembers"
+              SubClasses="componentSubClasses"
               SubEnums="componentSubEnums"
               GitHubUrl="Surfaces/ScrollablePane/BitScrollablePane.razor"
               GitHubDemoUrl="Surfaces/ScrollablePane/BitScrollablePaneDemo.razor">
-        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-            <BitScrollablePane Style="height:350px;" Class="pane">
-                Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                <br />
-                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-                <br />
-                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                shaped into meaning, and the emotions ready to resonate with every reader.
-                <br />
-                In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-                each word has the power to transform into something extraordinary. Here lies the start of something new-an
-                opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
-                idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
-                begins here, in this quiet moment where everything is possible.
-                <br />
-                Imagine this space as a window into the future empty yet alive with the energy of endless possibilities.
-                These words stand as temporary guides, placeholders that whisper of what is to come.
-                They hold the promise of stories waiting to unfold, ideas eager to take shape, and
-                connections that will soon emerge to inspire and resonate. This is not an empty page;
-                it is a canvas, rich with potential and ready to transform into something meaningful.
-                <br />
-                For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the symphony,
-                the foundation upon which your creativity will build. Soon, this space will hold your thoughts, your visions,
-                and your voice a reflection of who you are and what you wish to share with the world. Every sentence will carry
-                purpose, every word will invite others to connect, to think, to feel. So take a moment to dream, to imagine
-                what this blank slate can become. Whether it’s a story, an idea, or a message that matters, this is your
-                starting point. The possibilities are endless, and the journey begins now.
-            </BitScrollablePane>
-        </DemoExample>
-
-        <DemoExample Title="Width & Height" RazorCode="@example2RazorCode" Id="example2">
-            <div>Height:</div><br />
-            <BitScrollablePane Height="15rem" Class="pane">
-                Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                <br />
-                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-                <br />
-                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                shaped into meaning, and the emotions ready to resonate with every reader.
-                <br />
-                In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-                each word has the power to transform into something extraordinary. Here lies the start of something new-an
-                opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
-                idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
-                begins here, in this quiet moment where everything is possible.
-            </BitScrollablePane>
-            <br /><br /><br /><br />
-            <div>Width:</div><br />
-            <BitScrollablePane Width="300px" Class="pane" Style="white-space:nowrap">
-                Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                <br />
-                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-                <br />
-                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                shaped into meaning, and the emotions ready to resonate with every reader.
-                <br />
-                In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-                each word has the power to transform into something extraordinary. Here lies the start of something new-an
-                opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
-                idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
-                begins here, in this quiet moment where everything is possible.
-            </BitScrollablePane>
-        </DemoExample>
-
-        <DemoExample Title="Overflow" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-            <div style="max-width: 19rem;">
-                <BitChoiceGroup @bind-Value="overflow"
-                                Horizontal
-                                Label="Overflow"
-                                TItem="BitChoiceGroupOption<BitOverflow>" TValue="BitOverflow">
-                    <BitChoiceGroupOption Text="Auto" Value="BitOverflow.Auto" />
-                    <BitChoiceGroupOption Text="Hidden" Value="BitOverflow.Hidden" />
-                    <BitChoiceGroupOption Text="Scroll" Value="BitOverflow.Scroll" />
-                    <BitChoiceGroupOption Text="Visible" Value="BitOverflow.Visible" />
-                </BitChoiceGroup>
-                <br />
-                <BitNumberField Label="Items count" Min="4" @bind-Value="@overflowItemsCount" />
-                <br />
-                <BitScrollablePane Overflow="@overflow" Height="16rem" Class="pane">
-                    @for (int i = 0; i < overflowItemsCount; i++)
-                    {
-                        var index = i;
-                        <div class="item">@index</div>
-                    }
-                </BitScrollablePane>
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Scrollbar gutter" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-            <div style="max-width: 19rem;">
-                <BitChoiceGroup @bind-Value="gutter"
-                                Horizontal
-                                Label="Scrollbar gutter"
-                                TItem="BitChoiceGroupOption<BitScrollbarGutter>" TValue="BitScrollbarGutter">
-                    <BitChoiceGroupOption Text="Auto" Value="BitScrollbarGutter.Auto" />
-                    <BitChoiceGroupOption Text="Stable" Value="BitScrollbarGutter.Stable" />
-                    <BitChoiceGroupOption Text="BothEdges" Value="BitScrollbarGutter.BothEdges" />
-                </BitChoiceGroup>
-                <br />
-                <BitNumberField Label="Items count" Min="4" @bind-Value="@gutterItemsCount" />
-                <br />
-                <BitScrollablePane Gutter="@gutter" Height="16rem" Class="pane">
-                    @for (int i = 0; i < gutterItemsCount; i++)
-                    {
-                        var index = i;
-                        <div class="item">@index</div>
-                    }
-                </BitScrollablePane>
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="ScrollbarWidth" RazorCode="@example5RazorCode" Id="example5">
-            <div>You can change the width of the scrollbar using the ScrollbarWidth parameter. Its default value is Auto.</div>
-            <br /><br />
-            <div>Thin:</div><br />
-            <BitScrollablePane Style="height:300px;" Class="pane" ScrollbarWidth="BitScrollbarWidth.Thin">
-                Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                <br />
-                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-                <br />
-                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                shaped into meaning, and the emotions ready to resonate with every reader.
-                <br />
-                In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-                each word has the power to transform into something extraordinary. Here lies the start of something new-an
-                opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
-                idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
-                begins here, in this quiet moment where everything is possible.
-            </BitScrollablePane>
-            <br /><br /><br /><br />
-            <div>None:</div><br />
-            <BitScrollablePane Style="height:300px;" Class="pane" ScrollbarWidth="BitScrollbarWidth.None">
-                Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                <br />
-                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-                <br />
-                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                shaped into meaning, and the emotions ready to resonate with every reader.
-                <br />
-                In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-                each word has the power to transform into something extraordinary. Here lies the start of something new-an
-                opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
-                idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
-                begins here, in this quiet moment where everything is possible.
-            </BitScrollablePane>
-        </DemoExample>
-
-        <DemoExample Title="ScrollbarColor" RazorCode="@example6RazorCode" Id="example6">
-            <div>The colors of the scrollbar can be changed using the ScrollbarColor parameter.</div>
-            <br /><br />
-            <BitScrollablePane Style="height:300px;" Class="pane" ScrollbarColor="red blue">
-                Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                <br />
-                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-                <br />
-                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                shaped into meaning, and the emotions ready to resonate with every reader.
-                <br />
-                In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-                each word has the power to transform into something extraordinary. Here lies the start of something new-an
-                opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
-                idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
-                begins here, in this quiet moment where everything is possible.
-            </BitScrollablePane>
-        </DemoExample>
-
-        <DemoExample Title="AutoScroll" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-            <div>Discover the AutoScroll feature of the BitScrollablePane in action here:</div>
+        <NotesTemplate>
+            <BitText>
+                A pane costs nothing on the browser side until it is asked for something only the browser can
+                answer. Sizing, the overflow axes, the gutter and the scrollbar styling are all CSS, so such a
+                pane is a single element with a style attribute. The scroll listener, the observers and the
+                round trips appear only once <b>AutoScroll</b>, <b>Fade</b>, <b>OnScroll</b> or one of the four
+                <b>OnReached*</b> callbacks is used.
+            </BitText>
             <br />
-            <BitButton OnClick="AddAutoScrollContent">Add content periodically</BitButton>
-            <br /><br />
-            <BitScrollablePane Style="height:300px;" Class="pane" AutoScroll>
-                Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                <br />
-                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-                <br />
-                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                shaped into meaning, and the emotions ready to resonate with every reader.
-                <br />
-                In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-                each word has the power to transform into something extraordinary. Here lies the start of something new-an
-                opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
-                idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
-                begins here, in this quiet moment where everything is possible.
-                <br /><br /><br />
-                <div>additional content:</div>
+            <BitText>
+                Two things here are the browser's to decide. <b>Smooth</b> is motion, so it collapses to an
+                instant move when the OS or the browser reports <i>prefers-reduced-motion: reduce</i> - use the
+                ForceAnimation toggle at the top of this page to see it animate anyway. And the scrollbar
+                itself is drawn by the engine: <b>Modern</b> restyles it fully in Chromium and Safari and
+                thins it to the theme colors in Firefox, while <b>ScrollbarWidth</b> and <b>ScrollbarColor</b>
+                are the standard CSS properties, which Chromium lets win over Modern - so use one or the
+                other on a given pane, not both.
+            </BitText>
+        </NotesTemplate>
 
-                <pre style="all:revert">
-                    @autoScrollContent
-                </pre>
-            </BitScrollablePane>
-        </DemoExample>
+        <Examples>
+            <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+                <div>
+                    A pane is a box with a size and some content. Give it a size the content will not fit in -
+                    here a <b>Height</b> - and whatever does not fit scrolls, with the scrollbar of the platform
+                    and all of its keyboard, wheel and touch handling intact. A pane whose content does fit shows
+                    no scrollbar and behaves like the plain box it is.
+                </div>
+                <br /><br />
+                <BitScrollablePane Height="12rem" Class="pane">
+                    <p>
+                        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take
+                        shape. Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                        inspirations will be built.
+                    </p>
+                    <p>
+                        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity
+                        waits to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the
+                        infinite possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now
+                        with the vibrant narratives of tomorrow.
+                    </p>
+                    <p>
+                        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely
+                        and each word has the power to transform into something extraordinary. Here lies the start of something new,
+                        an opportunity to craft, inspire, and create.
+                    </p>
+                    <p>
+                        Whether it is a tale of adventure, a reflection of truth, or an idea that sparks change, these lines are
+                        yours to fill, to shape, and to make uniquely yours. The journey begins here, in this quiet moment where
+                        everything is possible.
+                    </p>
+                    <p>
+                        For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the
+                        symphony, the foundation upon which your creativity will build. Soon, this space will hold your thoughts,
+                        your visions, and your voice.
+                    </p>
+                </BitScrollablePane>
+            </DemoExample>
 
-        <DemoExample Title="Modern" RazorCode="@example8RazorCode" Id="example8">
-            <div>The Modern flag parameter gives a modern look and feel to the scrollbars of the pane.</div>
-            <br /><br />
-            <div>Vertical:</div><br />
-            <BitScrollablePane Style="height:300px" Class="pane" Modern>
-                Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+            <DemoExample Title="Dimensions" RazorCode="@example2RazorCode" Id="example2">
+                <div>
+                    <b>Width</b> and <b>Height</b> take any CSS length. <b>MaxHeight</b> is the one that makes a
+                    pane grow with its content and only start scrolling once there is too much of it, which is what
+                    a list of results, a set of messages or a menu of unknown length wants - leave the height unset
+                    and cap it instead. <b>MinHeight</b>, <b>MinWidth</b> and <b>MaxWidth</b> round out the set.
+                </div>
                 <br />
-                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+                <div>
+                    The flag shortcuts spell out the three sizes that are always wanted: <b>FullHeight</b> /
+                    <b>FullWidth</b> / <b>FullSize</b> for 100%, <b>FitHeight</b> / <b>FitWidth</b> /
+                    <b>FitSize</b> for fit-content, and <b>AutoHeight</b> / <b>AutoWidth</b> / <b>AutoSize</b>
+                    for auto.
+                </div>
+                <br /><br />
+                <div>Height:</div><br />
+                <BitScrollablePane Height="10rem" Class="pane">
+                    <p>
+                        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take
+                        shape. Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                        inspirations will be built.
+                    </p>
+                    <p>
+                        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity
+                        waits to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the
+                        infinite possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now
+                        with the vibrant narratives of tomorrow.
+                    </p>
+                    <p>
+                        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely
+                        and each word has the power to transform into something extraordinary. Here lies the start of something new,
+                        an opportunity to craft, inspire, and create.
+                    </p>
+                    <p>
+                        Whether it is a tale of adventure, a reflection of truth, or an idea that sparks change, these lines are
+                        yours to fill, to shape, and to make uniquely yours. The journey begins here, in this quiet moment where
+                        everything is possible.
+                    </p>
+                    <p>
+                        For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the
+                        symphony, the foundation upon which your creativity will build. Soon, this space will hold your thoughts,
+                        your visions, and your voice.
+                    </p>
+                </BitScrollablePane>
+                <br /><br />
+                <div>Width:</div><br />
+                <BitScrollablePane Width="300px" Horizontal Class="pane">
+                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+                </BitScrollablePane>
+                <br /><br />
+                <div>MaxHeight, with a growing number of lines:</div><br />
+                <BitButton OnClick="() => maxHeightLines++">Add a line</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => maxHeightLines = 2">Reset</BitButton>
+                <br /><br />
+                <BitScrollablePane MaxHeight="10rem" Class="pane">
+                    @for (var i = 1; i <= maxHeightLines; i++)
+                    {
+                        <div class="item">Line @i</div>
+                    }
+                </BitScrollablePane>
+            </DemoExample>
+
+            <DemoExample Title="Overflow" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+                <div>
+                    <b>Overflow</b> says what happens to content that does not fit, on both axes at once:
+                    <b>Auto</b> shows a scrollbar only when there is something to scroll, <b>Scroll</b> always
+                    reserves one, <b>Hidden</b> clips the content and scrolls neither way, and <b>Visible</b>
+                    lets it spill out of the box. <b>OverflowX</b> and <b>OverflowY</b> say the same thing for
+                    one axis and have the last word over it, so a pane that scrolls down but never sideways is
+                    <b>OverflowY="BitOverflow.Auto" OverflowX="BitOverflow.Hidden"</b>.
+                </div>
                 <br />
-                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                shaped into meaning, and the emotions ready to resonate with every reader.
+                <div>
+                    <b>NoScroll</b> is the other kind of "no": the content is clipped and neither the wheel, a
+                    drag nor the keyboard moves it, but the content stays interactive and the scrolling API of
+                    the component still works - which is what a pane whose position is driven entirely from code
+                    wants. Disabling the pane with <b>IsEnabled="false"</b> takes the interaction away as well.
+                </div>
+                <br /><br />
+                <div style="max-width: 19rem;">
+                    <BitChoiceGroup @bind-Value="overflow"
+                                    Horizontal
+                                    Label="Overflow"
+                                    TItem="BitChoiceGroupOption<BitOverflow>" TValue="BitOverflow">
+                        <BitChoiceGroupOption Text="Auto" Value="BitOverflow.Auto" />
+                        <BitChoiceGroupOption Text="Hidden" Value="BitOverflow.Hidden" />
+                        <BitChoiceGroupOption Text="Scroll" Value="BitOverflow.Scroll" />
+                        <BitChoiceGroupOption Text="Visible" Value="BitOverflow.Visible" />
+                    </BitChoiceGroup>
+                    <br />
+                    <BitToggle @bind-Value="noScroll" Label="NoScroll" />
+                    <br />
+                    <BitNumberField Label="Items count" Min="4" @bind-Value="@overflowItemsCount" />
+                    <br />
+                    <BitScrollablePane Overflow="@overflow" NoScroll="noScroll" Height="16rem" Class="pane">
+                        @for (int i = 0; i < overflowItemsCount; i++)
+                        {
+                            var index = i;
+                            <div class="item">@index</div>
+                        }
+                    </BitScrollablePane>
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Horizontal" RazorCode="@example4RazorCode" Id="example4">
+                <div>
+                    <b>Horizontal</b> is the shortcut for a single line that scrolls sideways: the content stops
+                    wrapping (the pane sets <b>white-space:nowrap</b>, which the content inherits), the vertical
+                    axis stops scrolling and the horizontal one takes over. It leaves the layout of the content
+                    alone, so a row of block level children still needs a flex or grid container of its own
+                    inside the pane - what it settles is the wrapping and the axes, which is the part that is
+                    easy to get wrong.
+                </div>
                 <br />
-                In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-                each word has the power to transform into something extraordinary. Here lies the start of something new-an
-                opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
-                idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
-                begins here, in this quiet moment where everything is possible.
-            </BitScrollablePane>
-            <br /><br /><br /><br />
-            <div>Horizontal:</div><br />
-            <BitScrollablePane Style="width:300px;white-space:nowrap" Class="pane" Modern>
-                Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                Each word carried meaning, each pause brought understanding.
+                <div>
+                    The overflow parameters still have the last word on either axis, so a horizontal pane that
+                    should also scroll down can say <b>OverflowY="BitOverflow.Auto"</b>.
+                </div>
+                <br /><br />
+                <div>A long line of text:</div><br />
+                <BitScrollablePane Horizontal Width="20rem" Class="pane">
+                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+                    Each word carried meaning, each pause brought understanding.
+                </BitScrollablePane>
+                <br /><br />
+                <div>A row of items, laid out with a flex container inside the pane:</div><br />
+                <BitScrollablePane Horizontal Width="20rem" Class="pane">
+                    <div class="chip-row">
+                        @for (var i = 1; i <= 12; i++)
+                        {
+                            <div class="chip">Item @i</div>
+                        }
+                    </div>
+                </BitScrollablePane>
+            </DemoExample>
+
+            <DemoExample Title="Overscroll" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+                <div>
+                    <b>Overscroll</b> decides what a scroll does once the pane itself has nowhere left to go.
+                    <b>Auto</b> lets it carry on into whatever scrolls behind the pane - keep turning the wheel
+                    at the bottom of the pane and the page moves instead, which is how a reader loses their
+                    place. <b>Contain</b> stops the scroll at the edge of the pane, and <b>None</b> also
+                    suppresses the platform's own rubber band and pull to refresh, which is what a pane inside a
+                    dialog or a sheet on a touch device wants.
+                </div>
                 <br />
-                Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                Each word carried meaning, each pause brought understanding.
+                <div>
+                    <b>OverscrollX</b> and <b>OverscrollY</b> say the same for one axis. Scroll the pane below to
+                    its bottom and keep going: with <b>Contain</b> the outer box stays put.
+                </div>
+                <br /><br />
+                <div style="max-width: 19rem;">
+                    <BitChoiceGroup @bind-Value="overscroll"
+                                    Horizontal
+                                    Label="Overscroll"
+                                    TItem="BitChoiceGroupOption<BitOverscroll>" TValue="BitOverscroll">
+                        <BitChoiceGroupOption Text="Auto" Value="BitOverscroll.Auto" />
+                        <BitChoiceGroupOption Text="Contain" Value="BitOverscroll.Contain" />
+                        <BitChoiceGroupOption Text="None" Value="BitOverscroll.None" />
+                    </BitChoiceGroup>
+                </div>
                 <br />
-                Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                Each word carried meaning, each pause brought understanding.
-            </BitScrollablePane>
-        </DemoExample>
+                <BitScrollablePane Height="12rem" Width="22rem" Class="pane">
+                    <div class="item">The outer pane</div>
+                    <BitScrollablePane Height="8rem" Overscroll="overscroll" Class="pane">
+                        @for (var i = 1; i <= 12; i++)
+                        {
+                            <div class="item">Inner @i</div>
+                        }
+                    </BitScrollablePane>
+                    @for (var i = 1; i <= 6; i++)
+                    {
+                        <div class="item">Outer @i</div>
+                    }
+                </BitScrollablePane>
+            </DemoExample>
+
+            <DemoExample Title="Scrollbar gutter" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+                <div>
+                    A classic scrollbar takes room from the content the moment it appears, so a pane that grows
+                    past its height shifts everything in it sideways. <b>Gutter</b> reserves that room in
+                    advance: <b>Stable</b> keeps it whether or not there is anything to scroll, and
+                    <b>BothEdges</b> mirrors it on the opposite edge so the content stays centered. <b>Auto</b>,
+                    the default, reserves nothing.
+                </div>
+                <br />
+                <div>
+                    Add items until the pane starts scrolling and watch the numbers below: with <b>Auto</b> they
+                    jump, with the other two they do not. On a platform with overlay scrollbars there is no
+                    gutter to reserve and nothing moves either way.
+                </div>
+                <br /><br />
+                <div style="max-width: 19rem;">
+                    <BitChoiceGroup @bind-Value="gutter"
+                                    Horizontal
+                                    Label="Scrollbar gutter"
+                                    TItem="BitChoiceGroupOption<BitScrollbarGutter>" TValue="BitScrollbarGutter">
+                        <BitChoiceGroupOption Text="Auto" Value="BitScrollbarGutter.Auto" />
+                        <BitChoiceGroupOption Text="Stable" Value="BitScrollbarGutter.Stable" />
+                        <BitChoiceGroupOption Text="BothEdges" Value="BitScrollbarGutter.BothEdges" />
+                    </BitChoiceGroup>
+                    <br />
+                    <BitNumberField Label="Items count" Min="4" @bind-Value="@gutterItemsCount" />
+                    <br />
+                    <BitScrollablePane Gutter="@gutter" Height="16rem" Class="pane">
+                        @for (int i = 0; i < gutterItemsCount; i++)
+                        {
+                            var index = i;
+                            <div class="item">@index</div>
+                        }
+                    </BitScrollablePane>
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Scrollbar width & color" RazorCode="@example7RazorCode" Id="example7">
+                <div>
+                    <b>ScrollbarWidth</b> asks the engine for a <b>Thin</b> scrollbar, or for <b>None</b> at all -
+                    which takes the bar off the screen while leaving the pane scrollable by wheel, touch and
+                    keyboard. A hidden scrollbar leaves nothing saying the content carries on, so it is worth
+                    pairing with <b>Fade</b>.
+                </div>
+                <br />
+                <div>
+                    <b>ScrollbarColor</b> paints the thumb and the track, in that order and both at once:
+                    <b>ScrollbarColor="gray transparent"</b>. A single color is ignored by the browser. Both of
+                    these are the standard CSS properties, which Chromium lets win over the rendering
+                    <b>Modern</b> draws - use one or the other on a given pane.
+                </div>
+                <br /><br />
+                <div>Thin:</div><br />
+                <BitScrollablePane Height="10rem" Class="pane" ScrollbarWidth="BitScrollbarWidth.Thin">
+                    <p>
+                        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take
+                        shape. Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                        inspirations will be built.
+                    </p>
+                    <p>
+                        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity
+                        waits to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the
+                        infinite possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now
+                        with the vibrant narratives of tomorrow.
+                    </p>
+                    <p>
+                        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely
+                        and each word has the power to transform into something extraordinary. Here lies the start of something new,
+                        an opportunity to craft, inspire, and create.
+                    </p>
+                    <p>
+                        Whether it is a tale of adventure, a reflection of truth, or an idea that sparks change, these lines are
+                        yours to fill, to shape, and to make uniquely yours. The journey begins here, in this quiet moment where
+                        everything is possible.
+                    </p>
+                    <p>
+                        For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the
+                        symphony, the foundation upon which your creativity will build. Soon, this space will hold your thoughts,
+                        your visions, and your voice.
+                    </p>
+                </BitScrollablePane>
+                <br /><br />
+                <div>None, with a fade so the content still says it carries on:</div><br />
+                <BitScrollablePane Height="10rem" Class="pane" ScrollbarWidth="BitScrollbarWidth.None" Fade>
+                    <p>
+                        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take
+                        shape. Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                        inspirations will be built.
+                    </p>
+                    <p>
+                        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity
+                        waits to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the
+                        infinite possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now
+                        with the vibrant narratives of tomorrow.
+                    </p>
+                    <p>
+                        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely
+                        and each word has the power to transform into something extraordinary. Here lies the start of something new,
+                        an opportunity to craft, inspire, and create.
+                    </p>
+                    <p>
+                        Whether it is a tale of adventure, a reflection of truth, or an idea that sparks change, these lines are
+                        yours to fill, to shape, and to make uniquely yours. The journey begins here, in this quiet moment where
+                        everything is possible.
+                    </p>
+                    <p>
+                        For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the
+                        symphony, the foundation upon which your creativity will build. Soon, this space will hold your thoughts,
+                        your visions, and your voice.
+                    </p>
+                </BitScrollablePane>
+                <br /><br />
+                <div>Colored:</div><br />
+                <BitScrollablePane Height="10rem" Class="pane" ScrollbarColor="#0078D4 #DEECF9">
+                    <p>
+                        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take
+                        shape. Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                        inspirations will be built.
+                    </p>
+                    <p>
+                        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity
+                        waits to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the
+                        infinite possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now
+                        with the vibrant narratives of tomorrow.
+                    </p>
+                    <p>
+                        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely
+                        and each word has the power to transform into something extraordinary. Here lies the start of something new,
+                        an opportunity to craft, inspire, and create.
+                    </p>
+                    <p>
+                        Whether it is a tale of adventure, a reflection of truth, or an idea that sparks change, these lines are
+                        yours to fill, to shape, and to make uniquely yours. The journey begins here, in this quiet moment where
+                        everything is possible.
+                    </p>
+                    <p>
+                        For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the
+                        symphony, the foundation upon which your creativity will build. Soon, this space will hold your thoughts,
+                        your visions, and your voice.
+                    </p>
+                </BitScrollablePane>
+            </DemoExample>
+
+            <DemoExample Title="Modern" RazorCode="@example8RazorCode" Id="example8">
+                <div>
+                    <b>Modern</b> takes the scrollbar away from the operating system and gives it to the theme: a
+                    thin rounded thumb over a transparent track, with no arrow buttons and no corner, in the
+                    foreground colors of the current design system - so it re-skins with the rest of the library
+                    and looks the same on every platform.
+                </div>
+                <br />
+                <div>
+                    Chromium and Safari get the full rendering; Firefox, which has no scrollbar pseudo-elements,
+                    is given a thin bar in the same colors. The thickness is the <b>--bit-scp-sbs</b> custom
+                    property, so a pane can retune it from its own <b>Style</b>.
+                </div>
+                <br /><br />
+                <div>Vertical:</div><br />
+                <BitScrollablePane Height="10rem" Class="pane" Modern>
+                    <p>
+                        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take
+                        shape. Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                        inspirations will be built.
+                    </p>
+                    <p>
+                        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity
+                        waits to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the
+                        infinite possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now
+                        with the vibrant narratives of tomorrow.
+                    </p>
+                    <p>
+                        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely
+                        and each word has the power to transform into something extraordinary. Here lies the start of something new,
+                        an opportunity to craft, inspire, and create.
+                    </p>
+                    <p>
+                        Whether it is a tale of adventure, a reflection of truth, or an idea that sparks change, these lines are
+                        yours to fill, to shape, and to make uniquely yours. The journey begins here, in this quiet moment where
+                        everything is possible.
+                    </p>
+                    <p>
+                        For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the
+                        symphony, the foundation upon which your creativity will build. Soon, this space will hold your thoughts,
+                        your visions, and your voice.
+                    </p>
+                </BitScrollablePane>
+                <br /><br />
+                <div>Horizontal, with a thicker bar:</div><br />
+                <BitScrollablePane Horizontal Width="20rem" Class="pane" Modern Style="--bit-scp-sbs:0.75rem">
+                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+                    Each word carried meaning, each pause brought understanding.
+                </BitScrollablePane>
+            </DemoExample>
+
+            <DemoExample Title="Fade" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+                <div>
+                    An overlay scrollbar disappears when it is not being used, which leaves a pane scrolled to
+                    the middle of its content looking exactly like one whose content ends at its edge.
+                    <b>Fade</b> fades out each edge that still has something beyond it, and takes the fade off
+                    the moment that edge is reached - so the pane always says which way there is more.
+                </div>
+                <br />
+                <div>
+                    All four edges are covered, each one only while the pane can still be scrolled towards it, so
+                    a pane that only scrolls up and down never fades its sides. <b>FadeSize</b> sets how far the
+                    fade reaches (2rem by default). It is drawn with a mask, so it works over any background,
+                    needs no element of its own, and is simply not drawn by a browser that cannot composite masks.
+                </div>
+                <br /><br />
+                <BitToggle @bind-Value="fade" Label="Fade" />
+                <br />
+                <div style="max-width: 19rem;">
+                    <BitSlider Label="FadeSize (rem)" Min="0.5" Max="5" Step="0.5" @bind-Value="fadeSize" />
+                </div>
+                <br />
+                <BitScrollablePane Height="12rem" Class="pane" Fade="fade" FadeSize="@($"{fadeSize}rem")">
+                    <p>
+                        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take
+                        shape. Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                        inspirations will be built.
+                    </p>
+                    <p>
+                        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity
+                        waits to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the
+                        infinite possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now
+                        with the vibrant narratives of tomorrow.
+                    </p>
+                    <p>
+                        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely
+                        and each word has the power to transform into something extraordinary. Here lies the start of something new,
+                        an opportunity to craft, inspire, and create.
+                    </p>
+                    <p>
+                        Whether it is a tale of adventure, a reflection of truth, or an idea that sparks change, these lines are
+                        yours to fill, to shape, and to make uniquely yours. The journey begins here, in this quiet moment where
+                        everything is possible.
+                    </p>
+                    <p>
+                        For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the
+                        symphony, the foundation upon which your creativity will build. Soon, this space will hold your thoughts,
+                        your visions, and your voice.
+                    </p>
+                </BitScrollablePane>
+                <br /><br />
+                <div>Both axes at once:</div><br />
+                <BitScrollablePane Height="10rem" Width="22rem" Class="pane" Fade>
+                    <div class="wide-grid">
+                        @for (var row = 1; row <= 8; row++)
+                        {
+                            <div class="wide-row">
+                                @for (var col = 1; col <= 8; col++)
+                                {
+                                    <div class="chip">R@(row)C@(col)</div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </BitScrollablePane>
+            </DemoExample>
+
+            <DemoExample Title="Scroll events" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+                <div>
+                    <b>OnScroll</b> reports where the pane stands as it moves, as a <b>BitScrollOffset</b>: the
+                    two raw offsets, the size of the content, the size of the visible area, and the answers
+                    derived from them - how far along each axis the pane is (<b>PercentX</b> / <b>PercentY</b>),
+                    which edges it is standing at, and whether either axis can be scrolled at all. It is what a
+                    reading-progress bar, a "scroll to top" button or a synchronized pair of panes is built on.
+                </div>
+                <br />
+                <div>
+                    Reports are coalesced to at most one per animation frame. <b>ScrollThrottle</b> spaces them
+                    out further, in milliseconds, which is worth setting wherever each report costs a round trip -
+                    a Blazor Server circuit most of all. The last report of a scroll always arrives, so the page
+                    is never left holding a position the pane has moved on from.
+                </div>
+                <br /><br />
+                <div style="max-width: 19rem;">
+                    <BitNumberField Label="ScrollThrottle (ms)" Min="0" Step="50" @bind-Value="scrollThrottle" />
+                </div>
+                <br />
+                <BitProgress Value="@((scrollOffset?.PercentY ?? 0) * 100)" />
+                <br />
+                <BitScrollablePane Height="12rem" Class="pane"
+                                   ScrollThrottle="(int)scrollThrottle"
+                                   OnScroll="HandleScroll">
+                    @for (var i = 1; i <= 20; i++)
+                    {
+                        <div class="item">Row @i</div>
+                    }
+                </BitScrollablePane>
+                <br />
+                <div class="readout">
+                    Top: @((scrollOffset?.Top ?? 0).ToString("0")) of @((scrollOffset?.MaxTop ?? 0).ToString("0"))
+                    &nbsp;|&nbsp; PercentY: @(((scrollOffset?.PercentY ?? 0) * 100).ToString("0"))%
+                    &nbsp;|&nbsp; AtTop: @(scrollOffset?.AtTop.ToString() ?? "-")
+                    &nbsp;|&nbsp; AtBottom: @(scrollOffset?.AtBottom.ToString() ?? "-")
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Reaching the edges" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+                <div>
+                    <b>OnReachedTop</b>, <b>OnReachedBottom</b>, <b>OnReachedLeft</b> and <b>OnReachedRight</b>
+                    are called as each edge is reached rather than for as long as the pane stands at it, and are
+                    armed again once it has left - so coming to rest at the bottom is one call, not one per frame
+                    of getting there. The two horizontal ones are the edges on the screen, so they mean the same
+                    thing in a right-to-left pane.
+                </div>
+                <br />
+                <div>
+                    <b>ReachOffset</b> is how near an edge counts as having reached it. An endless list gives it
+                    a screenful or so, which is what makes the next page arrive before the reader gets to the
+                    bottom rather than after.
+                </div>
+                <br />
+                <div>
+                    Two things are never reported: the edges a pane is already standing at when it is first
+                    measured - every pane starts at the top, and a page told about that would fetch what comes
+                    before its first item before anything had been scrolled - and either edge of an axis with
+                    nothing to scroll, which stands at both at once.
+                </div>
+                <br /><br />
+                <div style="max-width: 19rem;">
+                    <BitNumberField Label="ReachOffset (px)" Min="0" Step="20" @bind-Value="reachOffset" />
+                </div>
+                <br />
+                <BitScrollablePane Height="14rem" Class="pane"
+                                   ReachOffset="(int)reachOffset"
+                                   OnReachedTop="HandleReachedTop"
+                                   OnReachedBottom="LoadMoreRows">
+                    @foreach (var row in endlessRows)
+                    {
+                        <div class="item">@row</div>
+                    }
+                    @if (loadingMore)
+                    {
+                        <div class="item">Loading...</div>
+                    }
+                </BitScrollablePane>
+                <br />
+                <div class="readout">Last edge reached: <b>@reachedEdge</b> &nbsp;|&nbsp; rows: <b>@endlessRows.Count</b></div>
+            </DemoExample>
+
+            <DemoExample Title="Scrolling the pane from code" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+                <div>
+                    A reference to the component gives the whole scrolling API: <b>ScrollToStart</b> and
+                    <b>ScrollToEnd</b> for the two ends, <b>ScrollTo</b> for an absolute position (an axis left
+                    null stays where it is), <b>ScrollBy</b> for a distance from wherever it stands,
+                    <b>ScrollToElement</b> for an element inside the pane, and <b>GetScrollOffset</b> to read the
+                    position at a moment of your own choosing. Offsets are given in reading order and clamped to
+                    the content, so a right-to-left pane takes the same numbers as any other.
+                </div>
+                <br />
+                <div>
+                    Every one of them takes an optional <b>smooth</b> argument, and the <b>Smooth</b> parameter
+                    is the default for all of them - along with fragment navigations into the pane and the
+                    browser bringing a focused element inside it into view. <b>ScrollToElement</b> moves the pane
+                    and nothing else: scrolling an element into view the browser's own way would scroll every
+                    ancestor of the pane too, moving the page under a reader who only asked the pane to move.
+                    Left without an offset of its own it keeps whatever room <b>ScrollPadding</b> asks for - the
+                    pane below has a sticky header and 2.5rem of it, so "To row 15" leaves the row clear of the
+                    header instead of tucking it underneath, exactly as a fragment navigation into the pane would.
+                </div>
+                <br />
+                <div>
+                    A pane that should open somewhere other than the top - a list you have navigated back to, a
+                    conversation you left in the middle of - is a <b>ScrollTo</b> from
+                    <b>OnAfterRenderAsync(firstRender)</b>; one that should open at the end is <b>AutoScroll</b>.
+                </div>
+                <br /><br />
+                <BitToggle @bind-Value="smooth" Label="Smooth" />
+                <br />
+                <BitStack Horizontal Wrap Gap="0.5rem">
+                    <BitButton OnClick="() => scrollablePane?.ScrollToStart()">To start</BitButton>
+                    <BitButton OnClick="() => scrollablePane?.ScrollToEnd()">To end</BitButton>
+                    <BitButton OnClick="() => scrollablePane?.ScrollTo(null, 200)">To 200px</BitButton>
+                    <BitButton OnClick="() => scrollablePane?.ScrollBy(0, 100)">Down 100px</BitButton>
+                    <BitButton OnClick='() => scrollablePane?.ScrollToElement("scp-row-15")'>To row 15</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="ReadScrollOffset">Read position</BitButton>
+                </BitStack>
+                <br />
+                <BitScrollablePane @ref="scrollablePane" Height="12rem" Class="pane" Smooth="smooth" ScrollPadding="2.5rem">
+                    <div class="sticky-head">A header of the pane's own, and 2.5rem of ScrollPadding under it</div>
+                    @for (var i = 1; i <= 25; i++)
+                    {
+                        <div class="item" id="@($"scp-row-{i}")">Row @i</div>
+                    }
+                </BitScrollablePane>
+                <br />
+                <div class="readout">@readPosition</div>
+            </DemoExample>
+
+            <DemoExample Title="AutoScroll" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+                <div>
+                    <b>AutoScroll</b> keeps the pane pinned to the end of its content as the content grows, which
+                    is what a chat, a log or a console wants. It pins the pane once as soon as it is turned on,
+                    and after that only while the reader left it standing at the end: scroll up to read something
+                    and the arriving lines stop dragging you back down, scroll to the bottom again and the
+                    pinning takes up where it left off.
+                </div>
+                <br />
+                <div>
+                    <b>AutoScrollThreshold</b> is how near the end still counts as being at it, in pixels - raise
+                    it where a line or two of slack should not count as having scrolled away. <b>Smooth</b>
+                    animates the moves it makes.
+                </div>
+                <br /><br />
+                <div style="max-width: 19rem;">
+                    <BitNumberField Label="AutoScrollThreshold (px)" Min="0" Step="10" @bind-Value="autoScrollThreshold" />
+                </div>
+                <br />
+                <BitButton OnClick="AddAutoScrollContent" IsEnabled="@(autoScrollRunning is false)">Add lines periodically</BitButton>
+                <br /><br />
+                <BitScrollablePane Height="14rem" Class="pane" AutoScroll AutoScrollThreshold="(int)autoScrollThreshold">
+                    <div class="item">The log starts here.</div>
+                    @foreach (var line in autoScrollLines)
+                    {
+                        <div class="item">@line</div>
+                    }
+                </BitScrollablePane>
+            </DemoExample>
+
+            <DemoExample Title="Keyboard & accessibility" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+                <div>
+                    A scrolling box that holds nothing focusable cannot be reached with a keyboard: there is
+                    nothing inside it to tab to, and the arrow keys only scroll what has the focus.
+                    <b>Focusable</b> puts the box itself in the tab order, which is what WCAG 2.1.1 asks of a
+                    scrolling region and what the "scrollable region must have keyboard access" rule checks for.
+                    Once it has the focus, the arrow keys, Page Up/Down, Home and End all scroll it.
+                </div>
+                <br />
+                <div>
+                    Turn it on for a pane of plain content - text, a table, an image - and leave it off for one
+                    that already holds links, buttons or fields, where it would only add a tab stop in front of
+                    them. A pane that is in the tab order is worth naming with <b>AriaLabel</b> and marking with
+                    a <b>Role</b> of <i>region</i> or <i>group</i>, so what took the focus is announced as
+                    something rather than as an unnamed stop. Setting <b>TabIndex</b> makes the pane focusable on
+                    its own, and a disabled pane is taken back out of the tab order.
+                </div>
+                <br /><br />
+                <BitToggle @bind-Value="focusable" Label="Focusable" />
+                <br />
+                <div>Tab into the pane below and scroll it with the arrow keys:</div><br />
+                <BitScrollablePane Height="10rem" Class="pane"
+                                   Focusable="focusable"
+                                   Role="region"
+                                   AriaLabel="Release notes">
+                    <p>
+                        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take
+                        shape. Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                        inspirations will be built.
+                    </p>
+                    <p>
+                        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity
+                        waits to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the
+                        infinite possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now
+                        with the vibrant narratives of tomorrow.
+                    </p>
+                    <p>
+                        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely
+                        and each word has the power to transform into something extraordinary. Here lies the start of something new,
+                        an opportunity to craft, inspire, and create.
+                    </p>
+                    <p>
+                        Whether it is a tale of adventure, a reflection of truth, or an idea that sparks change, these lines are
+                        yours to fill, to shape, and to make uniquely yours. The journey begins here, in this quiet moment where
+                        everything is possible.
+                    </p>
+                    <p>
+                        For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the
+                        symphony, the foundation upon which your creativity will build. Soon, this space will hold your thoughts,
+                        your visions, and your voice.
+                    </p>
+                </BitScrollablePane>
+            </DemoExample>
+
+            <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" Id="example15">
+                <div>
+                    The pane is a single element, so <b>Style</b> and <b>Class</b> land straight on the box that
+                    scrolls. <b>Style</b> is also where the two custom properties of the component are retuned:
+                    <b>--bit-scp-sbs</b> for the thickness of the <b>Modern</b> scrollbar and <b>--bit-scp-fsz</b>
+                    for how far the <b>Fade</b> reaches, which <b>FadeSize</b> sets for you.
+                </div>
+                <br /><br />
+                <div>Component's Style:</div><br />
+                <BitScrollablePane Height="8rem"
+                                   Style="border:2px solid #0078D4; border-radius:0.5rem; padding:0.5rem; background:#DEECF933">
+                    <p>
+                        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take
+                        shape. Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                        inspirations will be built.
+                    </p>
+                    <p>
+                        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity
+                        waits to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the
+                        infinite possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now
+                        with the vibrant narratives of tomorrow.
+                    </p>
+                    <p>
+                        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely
+                        and each word has the power to transform into something extraordinary. Here lies the start of something new,
+                        an opportunity to craft, inspire, and create.
+                    </p>
+                </BitScrollablePane>
+                <br /><br />
+                <div>Component's Class:</div><br />
+                <BitScrollablePane Height="8rem" Class="custom-pane" Modern>
+                    <p>
+                        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take
+                        shape. Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                        inspirations will be built.
+                    </p>
+                    <p>
+                        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity
+                        waits to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the
+                        infinite possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now
+                        with the vibrant narratives of tomorrow.
+                    </p>
+                    <p>
+                        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely
+                        and each word has the power to transform into something extraordinary. Here lies the start of something new,
+                        an opportunity to craft, inspire, and create.
+                    </p>
+                </BitScrollablePane>
+            </DemoExample>
+
+            <DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
+                <div>
+                    Setting <b>Dir</b> to <b>BitDir.Rtl</b> lays the pane out right to left, and everything that
+                    counts a distance counts it the same way it did before: <b>ScrollTo</b> and <b>ScrollBy</b>
+                    take offsets in reading order, so 0 is still the start of the content, and <b>AutoScroll</b>
+                    still pins the pane to the end of it. The two horizontal edge callbacks are the exception -
+                    they are named after the edges on the screen, so <b>OnReachedLeft</b> is the left hand edge
+                    either way.
+                </div>
+                <br /><br />
+                <BitScrollablePane Dir="BitDir.Rtl" Height="10rem" Class="pane" Modern>
+                    <p>
+                        داستان‌ها روزگاری پیوند میان مردم را می‌بافتند، سمفونی‌ای از صداها که رویاهای مشترک را می‌ساخت.
+                        هر واژه معنایی داشت و هر مکث فهمی به همراه می‌آورد.
+                    </p>
+                    <p>
+                        در آغاز، سکوت است؛ بومی سفید که در انتظار پر شدن است، فضایی آرام که در آن خلاقیت منتظر بیدار شدن است.
+                        این واژه‌ها موقتی‌اند و جای ایده‌هایی را گرفته‌اند که هنوز نیامده‌اند.
+                    </p>
+                    <p>
+                        در این فضا، امکان حکمرانی می‌کند. لحظه‌ای معلق در زمان، جایی که تخیل آزادانه می‌رقصد و هر واژه
+                        توان آن را دارد که به چیزی خارق‌العاده بدل شود.
+                    </p>
+                    <p>
+                        هر داستانی با بومی سفید آغاز می‌شود؛ فضایی آرام که منتظر پر شدن با ایده‌ها، احساس‌ها و رویاهاست.
+                        این واژه‌های موقت نشانهٔ آغازند؛ لحظه‌ای از امکان که هنوز خلاقیت در آن شکل نگرفته است.
+                    </p>
+                    <p>
+                        فعلاً این سطرها اینجا هستند تا زیبایی آغازها را به یاد بیاورند. آن‌ها سکوت پیش از سمفونی‌اند،
+                        بنیادی که خلاقیت شما بر آن ساخته خواهد شد.
+                    </p>
+                </BitScrollablePane>
+                <br /><br />
+                <div>A horizontal right-to-left pane:</div><br />
+                <BitScrollablePane Dir="BitDir.Rtl" Horizontal Width="20rem" Class="pane" Fade>
+                    داستان‌ها روزگاری پیوند میان مردم را می‌بافتند، سمفونی‌ای از صداها که رویاهای مشترک را می‌ساخت.
+                </BitScrollablePane>
+            </DemoExample>
+        </Examples>
     </DemoPage>
 </div>
