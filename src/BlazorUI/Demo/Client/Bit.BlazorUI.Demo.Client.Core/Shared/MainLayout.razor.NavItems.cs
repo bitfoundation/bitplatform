@@ -131,7 +131,7 @@ public partial class MainLayout
                 new() { Text = "ModalService", Url = "/components/modalservice" },
                 new() { Text = "Panel", Url = "/components/panel" },
                 new() { Text = "ScrollablePane", Url = "/components/scrollablepane", Description = "ScrollView" },
-                new() { Text = "Splitter", Url = "/components/splitter" },
+                new() { Text = "Splitter", Url = "/components/splitter", Description = "SplitPane, Resizable" },
                 new() { Text = "Tooltip", Url = "/components/tooltip" },
             ],
         },

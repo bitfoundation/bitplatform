@@ -3,7 +3,103 @@
 .bit-spl {
     height: 100%;
     display: flex;
+    box-sizing: border-box;
     --gutter-size: #{spacing(1.25)};
+}
+
+/*
+ * Both panels start as equal halves of the splitter - a flex basis of zero with the same growth - so a
+ * split with no sizes on it is a split down the middle whatever the two sides happen to hold. Giving a
+ * panel a size takes it off that: the size becomes its flex basis and the -grow variable beside it drops
+ * to zero, which is what pins it while the other one takes up the rest.
+ *
+ * The basis is the same property on both axes, so one pair of variables carries the width of a splitter
+ * laid out in a row and the height of one laid out in a column, and a size given as a percentage keeps
+ * its proportions while the container is resized.
+ */
+.bit-spl-pnl {
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+    flex-shrink: 1;
+    // The flex basis of a panel is the size the drag measured off the element, and the two of them are only
+    // the same number while the padding and the border of the panel are counted inside it.
+    box-sizing: border-box;
+}
+
+.bit-spl-fpn {
+    flex-grow: var(--first-panel-grow, 1);
+    flex-basis: var(--first-panel, 0);
+    max-width: var(--first-panel-max, none);
+    min-width: var(--first-panel-min, 0);
+}
+
+.bit-spl-spn {
+    flex-grow: var(--second-panel-grow, 1);
+    flex-basis: var(--second-panel, 0);
+    max-width: var(--second-panel-max, none);
+    min-width: var(--second-panel-min, 0);
+}
+
+.bit-spl-gtr {
+    display: flex;
+    flex-shrink: 0;
+    position: relative;
+    box-sizing: border-box;
+    cursor: col-resize;
+    touch-action: none;
+    align-items: center;
+    justify-content: center;
+    width: var(--gutter-size);
+    background-color: $clr-brd-sec;
+    transition: background-color $mot-duration-short $mot-easing;
+
+    &:hover {
+        background-color: $clr-brd-pri;
+    }
+
+    &:focus-visible {
+        // Over the panels beside it, so the ring is not cut in half by whichever of them paints last.
+        z-index: 1;
+        @include focus-ring;
+    }
+}
+
+/*
+ * A gutter is only a few pixels wide, which is well under the target size a pointer - a finger above all -
+ * can be expected to hit. The strip that answers the press is widened past what is drawn, on both sides,
+ * without moving anything in the layout.
+ */
+.bit-spl-gtr::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline: calc(-1 * #{spacing(0.5)});
+}
+
+.bit-spl-gti {
+    width: spacing(0.25);
+    height: spacing(2);
+    border-radius: $shp-radius-full;
+    background-color: $clr-brd-pri;
+}
+
+.bit-spl-gic {
+    font-size: $tg-fs-xs;
+    color: $clr-fg-sec;
+}
+
+// While a drag is running the pointer spends most of its time off the gutter, so the resize cursor and the
+// suppressed text selection belong to the whole splitter rather than to the strip that started it.
+.bit-spl-drg {
+    user-select: none;
+    cursor: col-resize;
+    -webkit-user-select: none;
+    overscroll-behavior: none;
+
+    .bit-spl-gtr {
+        background-color: $clr-brd-pri;
+    }
 }
 
 .bit-spl-vrt {
@@ -15,8 +111,13 @@
 
     .bit-spl-gtr {
         width: 100%;
-        cursor: row-resize;
         height: var(--gutter-size);
+        cursor: row-resize;
+
+        &::before {
+            inset-inline: 0;
+            inset-block: calc(-1 * #{spacing(0.5)});
+        }
     }
 
     .bit-spl-gti {
@@ -24,66 +125,65 @@
         height: spacing(0.25);
     }
 
+    // The constraints swap axes with the layout: what was a width on a row is a height on a column, and the
+    // width the panel is no longer measured on has to be let go of, or it would keep clamping the panel
+    // across the splitter instead of along it.
     .bit-spl-pnl {
-        width: unset;
-        min-width: unset;
-        max-width: unset;
+        max-width: none;
+        min-width: 0;
     }
 
     .bit-spl-fpn {
-        height: var(--first-panel);
-        max-height: var(--first-panel-max);
-        min-height: var(--first-panel-min);
+        max-height: var(--first-panel-max, none);
+        min-height: var(--first-panel-min, 0);
     }
 
     .bit-spl-spn {
-        height: var(--second-panel);
-        max-height: var(--second-panel-max);
-        min-height: var(--second-panel-min);
+        max-height: var(--second-panel-max, none);
+        min-height: var(--second-panel-min, 0);
     }
 }
 
-.bit-spl-drg {
-    user-select: none;
-    cursor: col-resize;
-    -webkit-user-select: none;
-    overscroll-behavior: none;
+// A collapsed panel is folded down to the size it was told to keep, past the minimum it holds while it is
+// open - the minimum is what a panel in use is worth reading, and a closed one is not in use.
+.bit-spl-col > .bit-spl-fpn {
+    flex-grow: 0;
+    overflow: hidden;
+    max-width: none;
+    min-width: 0;
+    flex-basis: var(--collapsed-size, 0px);
 }
 
-.bit-spl-pnl {
-    flex-grow: 1;
-    overflow: auto;
-    height: unset;
-    max-height: unset;
-    min-height: unset;
+.bit-spl-col.bit-spl-vrt > .bit-spl-fpn {
+    max-height: none;
+    min-height: 0;
 }
 
-.bit-spl-fpn {
-    width: var(--first-panel);
-    max-width: var(--first-panel-max);
-    min-width: var(--first-panel-min);
+// Neither a disabled nor a read-only splitter is up for resizing, so the gutter stops offering to be
+// dragged; the disabled one is dimmed by the shared bit-dis class on top of that.
+.bit-spl-rdo,
+.bit-spl.bit-dis {
+    .bit-spl-gtr {
+        cursor: default;
+
+        &:hover {
+            background-color: $clr-brd-sec;
+        }
+    }
 }
 
-.bit-spl-spn {
-    width: var(--second-panel);
-    max-width: var(--second-panel-max);
-    min-width: var(--second-panel-min);
-}
+// Forced colors replaces every background with the canvas, which would leave the gutter the same color as
+// the panels on either side of it and the grip the same color as the gutter.
+@media (forced-colors: active) {
+    .bit-spl-gtr {
+        background-color: CanvasText;
+    }
 
-.bit-spl-gtr {
-    height: unset;
-    display: flex;
-    flex-shrink: 0;
-    cursor: col-resize;
-    touch-action: none;
-    align-items: center;
-    width: var(--gutter-size);
-    justify-content: center;
-    background-color: $clr-brd-sec;
-}
+    .bit-spl-gti {
+        background-color: Canvas;
+    }
 
-.bit-spl-gti {
-    height: spacing(2);
-    width: spacing(0.25);
-    background-color: $clr-brd-pri;
+    .bit-spl-gic {
+        color: Canvas;
+    }
 }

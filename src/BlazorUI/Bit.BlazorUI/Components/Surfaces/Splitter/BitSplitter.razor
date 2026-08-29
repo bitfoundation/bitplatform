@@ -1,31 +1,69 @@
 @namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement" @attributes="HtmlAttributes" 
-     @ontouchmove="OnTouchMove" @ontouchend="OnDraggingEnd" @ontouchleave="OnDraggingEnd"
-     @onpointermove="OnPointerMove" @onpointerup="OnDraggingEnd" @onpointerleave="OnDraggingEnd" 
+@{
+    var icon = BitIconInfo.From(GutterIcon, GutterIconName);
+
+    @* A gutter nobody can move is not a control any more: it keeps its place in the layout but leaves the
+       tab order, so the keyboard is not stopped at something that answers to nothing. Read-only and disabled
+       differ only in the look - both take the resize away. *@
+    var interactive = _IsInteractive;
+
+    @* The separator reports where it stands as a percentage of the splitter, which is the range APG asks for.
+       It is only rendered from here once the value is known; until then the setup call measures the panels and
+       writes it onto the element itself, so a splitter that was never sized is not left claiming a position. *@
+    var valueNow = _ValueNow;
+}
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
-     aria-label="@AriaLabel"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    <div class="bit-spl-pnl bit-spl-fpn" @ref="_firstPanelRef">
+    <div id="@_FirstPanelId"
+         @ref="_firstPanelRef"
+         style="@Styles?.FirstPanel"
+         class="bit-spl-pnl bit-spl-fpn @Classes?.FirstPanel">
         @FirstPanel
     </div>
-    <div class="bit-spl-gtr" @ref="_splitterGutterRef" @onpointerdown="OnPointerDown" @onpointerdown:preventDefault @ontouchstart="OnTouchStart" @ontouchstart:preventDefault>
-        @{
-            var icon = BitIconInfo.From(GutterIcon, GutterIconName);
-        }
-        @if (icon is not null)
+
+    @* The separator is the control of a splitter - it is what the pointer drags, what the keyboard moves and
+       what a screen reader is handed - so the accessible name, the tab stop and the value all live on it
+       rather than on the box around it, where a name on a plain div would not be announced at all.
+
+       And only while it can be moved: a separator becomes the widget form of its role by being focusable, and
+       a position, a range and a name of its own are not attributes the structural form is allowed to carry.
+       One that cannot be moved is the plain rule it looks like. *@
+    <div @ref="_gutterRef"
+         role="separator"
+         tabindex="@(interactive ? (TabIndex ?? "0") : null)"
+         aria-orientation="@(Vertical ? "horizontal" : "vertical")"
+         aria-label="@(interactive ? AriaLabel : null)"
+         aria-controls="@(interactive ? _FirstPanelId : null)"
+         aria-valuemin="@(interactive ? "0" : null)"
+         aria-valuemax="@(interactive ? "100" : null)"
+         aria-valuenow="@(interactive && valueNow is not null ? Css(valueNow.Value) : null)"
+         aria-valuetext="@(interactive && valueNow is not null ? $"{Css(valueNow.Value)}%" : null)"
+         style="@Styles?.Gutter"
+         class="bit-spl-gtr @Classes?.Gutter">
+        @if (GutterTemplate is not null)
         {
-            <i class="bit-spl-gic @icon.GetCssClasses()" />
+            @GutterTemplate
+        }
+        else if (icon is not null)
+        {
+            <i aria-hidden="true" style="@Styles?.GutterIcon" class="bit-spl-gic @icon.GetCssClasses() @Classes?.GutterIcon" />
         }
         else
         {
-            <div class="bit-spl-gti"></div>
+            <div aria-hidden="true" style="@Styles?.GutterIndicator" class="bit-spl-gti @Classes?.GutterIndicator"></div>
         }
     </div>
-    <div class="bit-spl-pnl bit-spl-spn" @ref="_secondPanelRef">
+
+    <div id="@_SecondPanelId"
+         @ref="_secondPanelRef"
+         style="@Styles?.SecondPanel"
+         class="bit-spl-pnl bit-spl-spn @Classes?.SecondPanel">
         @SecondPanel
     </div>
 </div>

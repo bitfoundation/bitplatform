@@ -2,38 +2,70 @@
 
 internal static class BitSplitterJsRuntimeExtensions
 {
-    internal static ValueTask BitSplitterResetPaneDimensions(this IJSRuntime js, ElementReference element)
+    /// <remarks>
+    /// The whole drag lives on the JavaScript side: a pointer move that had to travel to .NET, be measured
+    /// there and travel back would put a round trip - a network one on Blazor Server - between the pointer
+    /// and the panel it is dragging. What comes back here is the outcome of a resize rather than the frames
+    /// of it, unless the app asked for the frames too.
+    /// </remarks>
+    internal static ValueTask<string> BitSplitterSetup(this IJSRuntime js,
+                                                       DotNetObjectReference<BitSplitter> obj,
+                                                       ElementReference root,
+                                                       ElementReference firstPanel,
+                                                       ElementReference gutter,
+                                                       ElementReference secondPanel,
+                                                       bool vertical,
+                                                       bool disabled,
+                                                       bool collapsible,
+                                                       bool collapsed,
+                                                       int collapsedSize,
+                                                       int keyboardStep,
+                                                       bool resetOnDoubleClick,
+                                                       bool notifyResize,
+                                                       double? percent,
+                                                       string? persistKey,
+                                                       bool persistSession)
     {
-        return js.InvokeVoid("BitBlazorUI.Splitter.resetPaneDimensions", element);
+        return js.Invoke<string>("BitBlazorUI.Splitter.setup",
+                                 obj, root, firstPanel, gutter, secondPanel,
+                                 vertical, disabled, collapsible, collapsed,
+                                 collapsedSize, keyboardStep, resetOnDoubleClick, notifyResize,
+                                 percent, persistKey, persistSession);
     }
 
-    internal static ValueTask<double> BitSplitterGetSplitterWidth(this IJSRuntime js, ElementReference element)
+    internal static ValueTask BitSplitterUpdate(this IJSRuntime js,
+                                                string? id,
+                                                bool vertical,
+                                                bool disabled,
+                                                bool collapsible,
+                                                bool collapsed,
+                                                int collapsedSize,
+                                                int keyboardStep,
+                                                bool resetOnDoubleClick,
+                                                bool notifyResize,
+                                                double? percent,
+                                                string? persistKey,
+                                                bool persistSession)
     {
-        return js.Invoke<double>("BitBlazorUI.Splitter.getSplitterWidth", element);
+        return js.InvokeVoid("BitBlazorUI.Splitter.update",
+                             id, vertical, disabled, collapsible, collapsed,
+                             collapsedSize, keyboardStep, resetOnDoubleClick, notifyResize,
+                             percent, persistKey, persistSession);
     }
 
-    internal static ValueTask BitSplitterSetSplitterWidth(this IJSRuntime js, ElementReference element, double value)
+    /// <remarks>
+    /// The JavaScript side writes the size it dragged the panels to onto the root element itself, which is
+    /// not something Blazor is tracking - a render whose style attribute happens not to change leaves those
+    /// values standing. This is how the component puts them back in step whenever it has decided on
+    /// something other than what was dragged: a null share hands the panels back to their parameters.
+    /// </remarks>
+    internal static ValueTask BitSplitterSync(this IJSRuntime js, string? id, double? percent)
     {
-        return js.InvokeVoid("BitBlazorUI.Splitter.setSplitterWidth", element, value);
+        return js.InvokeVoid("BitBlazorUI.Splitter.sync", id, percent);
     }
 
-    internal static ValueTask<double> BitSplitterGetSplitterHeight(this IJSRuntime js, ElementReference element)
+    internal static ValueTask BitSplitterDispose(this IJSRuntime js, string? id)
     {
-        return js.Invoke<double>("BitBlazorUI.Splitter.getSplitterHeight", element);
-    }
-
-    internal static ValueTask BitSplitterSetSplitterHeight(this IJSRuntime js, ElementReference element, double value)
-    {
-        return js.InvokeVoid("BitBlazorUI.Splitter.setSplitterHeight", element, value);
-    }
-
-    internal static ValueTask BitSplitterHandleSplitterDragging(this IJSRuntime js, TouchEventArgs e)
-    {
-        return js.InvokeVoid("BitBlazorUI.Splitter.handleSplitterDragging", e);
-    }
-
-    internal static ValueTask BitSplitterHandleSplitterDraggingEnd(this IJSRuntime js)
-    {
-        return js.InvokeVoid("BitBlazorUI.Splitter.handleSplitterDraggingEnd");
+        return js.InvokeVoid("BitBlazorUI.Splitter.dispose", id);
     }
 }

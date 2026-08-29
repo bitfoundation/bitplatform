@@ -2,288 +2,451 @@
 
 <PageOutlet Url="components/splitter"
             Title="Splitter"
-            Description="The BitSplitter component divides a container into two adjustable sections, either horizontally or vertically." />
+            Description="The BitSplitter divides a container into two panels the reader can resize by dragging the gutter between them." />
 
 <DemoPage Name="Splitter"
-          Description="The BitSplitter component divides a container into two adjustable sections, either horizontally or vertically. Users can resize these sections by dragging the divider."
+          SecondaryNames="@(["SplitPane", "Resizable"])"
+          Description="The BitSplitter divides a container into two panels, side by side or stacked, with a gutter between them that the reader drags to give one panel more room and the other less. Each panel can declare a starting size and the minimum and maximum it is allowed to reach, the split is held as a percentage that survives the container being resized and can be bound, and the first panel can be collapsed away and brought back. The gutter is a WAI-ARIA window splitter: it takes the focus, moves with the arrow keys, and reports where it stands to a screen reader."
           Parameters="componentParameters"
+          PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
           GitHubUrl="Surfaces/Splitter/BitSplitter.razor"
           GitHubDemoUrl="Surfaces/Splitter/BitSplitterDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <BitSplitter>
+        <div>
+            Everything in <code>FirstPanel</code> and <code>SecondPanel</code> is laid out on either side of the gutter, which
+            starts halfway across whatever the two panels hold. Drag the gutter to move the split, or give it the focus and
+            move it with the arrow keys - <code>Page Up</code>, <code>Page Down</code> and <code>Shift</code> with an arrow
+            move it ten steps at a time, <code>Home</code> and <code>End</code> take it to the smallest and largest size the
+            panels allow, and <code>Escape</code> abandons a drag that is under way. A double-click puts the gutter back
+            where the parameters had it.
+        </div>
+        <br />
+        <BitSplitter Style="height:200px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
             <FirstPanel>
-                <div style="padding: 4px;">
-                    First Panel
-                    <br />
+                <div style="padding:0.5rem">
+                    First panel
+                    <br /><br />
                     Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
                 </div>
             </FirstPanel>
             <SecondPanel>
-                <div style="padding: 4px;">
-                    Second Panel
-                    <br />
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+                <div style="padding:0.5rem">
+                    Second panel
+                    <br /><br />
+                    Each word carried meaning, each pause brought understanding. The spaces here are open for growth.
                 </div>
             </SecondPanel>
         </BitSplitter>
     </DemoExample>
 
     <DemoExample Title="Vertical" RazorCode="@example2RazorCode" Id="example2">
-        <BitSplitter Vertical>
+        <div>
+            <code>Vertical</code> stacks the two panels instead of placing them side by side, and the gutter becomes a
+            horizontal bar that moves with the up and down arrow keys.
+        </div>
+        <br />
+        <BitSplitter Vertical Style="height:250px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
             <FirstPanel>
-                <div style="padding: 4px;">
-                    First Panel
-                    <div />
+                <div style="padding:0.5rem">
+                    First panel
+                    <br /><br />
                     Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
                 </div>
             </FirstPanel>
             <SecondPanel>
-                <div style="padding: 4px;">
-                    Second Panel
-                    <br />
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                </div>
-            </SecondPanel>
-        </BitSplitter>
-    </DemoExample>
-    
-    <DemoExample Title="Panel Size" RazorCode="@example3RazorCode" Id="example3">
-        <BitSplitter FirstPanelMinSize="128" FirstPanelSize="128" SecondPanelMinSize="64">
-            <FirstPanel>
-                <div style="padding: 4px;">
-                    First Panel
-                    <br />
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                </div>
-            </FirstPanel>
-            <SecondPanel>
-                <div style="padding: 4px;">
-                    Second Panel
-                    <br />
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+                <div style="padding:0.5rem">
+                    Second panel
+                    <br /><br />
+                    Each word carried meaning, each pause brought understanding. The spaces here are open for growth.
                 </div>
             </SecondPanel>
         </BitSplitter>
     </DemoExample>
 
-    <DemoExample Title="Nested" RazorCode="@example4RazorCode" Id="example4">
-        <BitSplitter>
+    <DemoExample Title="Panel size" RazorCode="@example3RazorCode" Id="example3">
+        <div>
+            <code>FirstPanelSize</code> and <code>SecondPanelSize</code> pin a panel to a size in pixels and let the other one
+            take whatever is left, which is the layout of a sidebar beside a document. They are the size the splitter starts
+            at: from the first drag on the split is held as a percentage, and a double-click on the gutter hands the layout
+            back to them.
+        </div>
+        <br />
+        <BitSplitter FirstPanelSize="150" Style="height:200px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
             <FirstPanel>
-                <div style="padding: 4px;">
-                    Root's first panel
-                    <br />
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                </div>
+                <div style="padding:0.5rem">A first panel that starts at 150px</div>
             </FirstPanel>
             <SecondPanel>
-                <BitSplitter Vertical>
+                <div style="padding:0.5rem">A second panel that takes the rest</div>
+            </SecondPanel>
+        </BitSplitter>
+        <br />
+        <BitSplitter SecondPanelSize="150" Style="height:200px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
+            <FirstPanel>
+                <div style="padding:0.5rem">A first panel that takes the rest</div>
+            </FirstPanel>
+            <SecondPanel>
+                <div style="padding:0.5rem">A second panel that starts at 150px</div>
+            </SecondPanel>
+        </BitSplitter>
+    </DemoExample>
+
+    <DemoExample Title="Min & max size" RazorCode="@example4RazorCode" Id="example4">
+        <div>
+            The four <code>MinSize</code> and <code>MaxSize</code> parameters, in pixels, are the range the gutter is held to -
+            by the pointer, by the keyboard and by <code>Percent</code> alike. What one panel asks for bounds the other from
+            the far side, so a minimum on the second panel is what keeps the first one from being dragged over it.
+        </div>
+        <br />
+        <BitSplitter FirstPanelSize="200" FirstPanelMinSize="120" FirstPanelMaxSize="320" SecondPanelMinSize="100"
+                     Style="height:200px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
+            <FirstPanel>
+                <div style="padding:0.5rem">Never narrower than 120px, never wider than 320px.</div>
+            </FirstPanel>
+            <SecondPanel>
+                <div style="padding:0.5rem">Never narrower than 100px, whatever the first panel does.</div>
+            </SecondPanel>
+        </BitSplitter>
+    </DemoExample>
+
+    <DemoExample Title="Percent" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <div>
+            <code>Percent</code> is the whole layout in one number: the share of the splitter the first panel takes up. Being a
+            share rather than a length, it keeps its proportions while the container is resized, and being bindable it works
+            both ways - every drag, key press and collapse reports back through <code>@@bind-Percent</code>, and writing to it
+            moves the gutter. It takes precedence over the two panel sizes while it has a value.
+        </div>
+        <br />
+        <BitSlider Label="@($"Percent: {PercentValue:F0}%")" @bind-Value="PercentValue" Min="0" Max="100" />
+        <br />
+        <BitSplitter @bind-Percent="percent" FirstPanelMinSize="60" SecondPanelMinSize="60"
+                     Style="height:200px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
+            <FirstPanel>
+                <div style="padding:0.5rem">First panel</div>
+            </FirstPanel>
+            <SecondPanel>
+                <div style="padding:0.5rem">Second panel</div>
+            </SecondPanel>
+        </BitSplitter>
+    </DemoExample>
+
+    <DemoExample Title="Collapsible" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <div>
+            <code>Collapsible</code> lets the first panel be folded away: press <code>Enter</code> on the gutter, drag it close
+            enough to the start of the splitter for it to snap shut, or press the gutter of an already folded panel to open it
+            again. <code>CollapsedSize</code> is the sliver it is left at, and <code>Collapsed</code> is bindable, so the page
+            always knows. Expanding puts the panel back at the size it had before it was folded.
+        </div>
+        <br />
+        <BitSplitter Collapsible CollapsedSize="8" @bind-Collapsed="isCollapsed" FirstPanelSize="180" FirstPanelMinSize="120"
+                     Style="height:200px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
+            <FirstPanel>
+                <div style="padding:0.5rem">A panel that can be folded away</div>
+            </FirstPanel>
+            <SecondPanel>
+                <div style="padding:0.5rem">Collapsed: @isCollapsed</div>
+            </SecondPanel>
+        </BitSplitter>
+    </DemoExample>
+
+    <DemoExample Title="Programmatic control" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <div>
+            A reference to the component gives the same moves to the page: <code>SetPercent</code> puts the gutter at a share
+            of the splitter (still held to the minimum and maximum sizes), <code>ResetSize</code> hands the layout back to the
+            panel size parameters, <code>Collapse</code>, <code>Expand</code> and <code>ToggleCollapse</code> fold the first
+            panel away and back, and <code>FocusAsync</code> puts the keyboard on the gutter.
+        </div>
+        <br />
+        <BitStack Horizontal Wrap Gap="0.5rem">
+            <BitButton OnClick="@(() => splitterRef.SetPercent(25))">25%</BitButton>
+            <BitButton OnClick="@(() => splitterRef.SetPercent(50))">50%</BitButton>
+            <BitButton OnClick="@(() => splitterRef.SetPercent(75))">75%</BitButton>
+            <BitButton OnClick="@(() => splitterRef.ToggleCollapse())">Toggle collapse</BitButton>
+            <BitButton OnClick="@(() => splitterRef.ResetSize())">Reset</BitButton>
+            <BitButton OnClick="@(() => splitterRef.FocusAsync())">Focus the gutter</BitButton>
+        </BitStack>
+        <br />
+        <BitSplitter @ref="splitterRef" Collapsible CollapsedSize="8" FirstPanelSize="180"
+                     Style="height:200px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
+            <FirstPanel>
+                <div style="padding:0.5rem">First panel</div>
+            </FirstPanel>
+            <SecondPanel>
+                <div style="padding:0.5rem">Second panel</div>
+            </SecondPanel>
+        </BitSplitter>
+    </DemoExample>
+
+    <DemoExample Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>
+            <code>OnResizeStart</code> and <code>OnResizeEnd</code> mark the two ends of a resize and <code>OnResize</code>
+            reports every frame of it, each of them with the share of the splitter the first panel takes up;
+            <code>OnCollapsedChange</code> reports the panel being folded away and brought back. A splitter with no handler for
+            <code>OnResize</code> makes no call at all while it is being dragged, so leave it unset where only the final
+            position matters.
+        </div>
+        <br />
+        <BitSplitter FirstPanelMinSize="60" SecondPanelMinSize="60"
+                     Collapsible CollapsedSize="8"
+                     OnResizeStart="@(p => resizeLog = $"Started at {p:F1}%")"
+                     OnResize="@(p => resizeLog = $"Resizing: {p:F1}%")"
+                     OnResizeEnd="@(p => resizeLog = $"Ended at {p:F1}%")"
+                     OnCollapsedChange="@(c => resizeLog = c ? "Collapsed" : "Expanded")"
+                     Style="height:200px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
+            <FirstPanel>
+                <div style="padding:0.5rem">First panel</div>
+            </FirstPanel>
+            <SecondPanel>
+                <div style="padding:0.5rem">Second panel</div>
+            </SecondPanel>
+        </BitSplitter>
+        <br />
+        <div>@resizeLog</div>
+    </DemoExample>
+
+    <DemoExample Title="Persistence" RazorCode="@example9RazorCode" Id="example9">
+        <div>
+            <code>PersistKey</code> has the splitter remember where the gutter was left - and whether the first panel was
+            folded away - so the reader finds the layout they arranged the last time they were here. It is kept in the
+            browser's local storage under that key, or in the session storage instead with
+            <code>PersistInSessionStorage</code>. Move the gutter below and reload the page.
+        </div>
+        <br />
+        <BitSplitter PersistKey="demo-splitter" Collapsible CollapsedSize="8" FirstPanelSize="150"
+                     Style="height:200px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
+            <FirstPanel>
+                <div style="padding:0.5rem">A panel that is where you left it</div>
+            </FirstPanel>
+            <SecondPanel>
+                <div style="padding:0.5rem">Second panel</div>
+            </SecondPanel>
+        </BitSplitter>
+    </DemoExample>
+
+    <DemoExample Title="Read-only & disabled" RazorCode="@example10RazorCode" Id="example10">
+        <div>
+            <code>ReadOnly</code> is a split that is not up for negotiation: the splitter looks exactly as it does anywhere
+            else, but the gutter cannot be dragged or moved from the keyboard. <code>IsEnabled="false"</code> takes the resize
+            away too and dims the whole component with it. Both leave the gutter out of the tab order and hand it back to a
+            screen reader as the plain rule it then is rather than as a control with a position; the public methods still
+            work in either case.
+        </div>
+        <br />
+        <BitSplitter ReadOnly FirstPanelSize="150" Style="height:150px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
+            <FirstPanel>
+                <div style="padding:0.5rem">Read-only</div>
+            </FirstPanel>
+            <SecondPanel>
+                <div style="padding:0.5rem">The gutter stays where it is.</div>
+            </SecondPanel>
+        </BitSplitter>
+        <br />
+        <BitSplitter IsEnabled="false" FirstPanelSize="150" Style="height:150px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
+            <FirstPanel>
+                <div style="padding:0.5rem">Disabled</div>
+            </FirstPanel>
+            <SecondPanel>
+                <div style="padding:0.5rem">The whole splitter is dimmed.</div>
+            </SecondPanel>
+        </BitSplitter>
+    </DemoExample>
+
+    <DemoExample Title="Nested" RazorCode="@example11RazorCode" Id="example11">
+        <div>
+            A splitter is ordinary content, so putting one in a panel of another gives the three-pane layout of an inbox or an
+            editor. Each of them keeps its own sizes and its own gutter.
+        </div>
+        <br />
+        <BitSplitter Style="height:250px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
+            <FirstPanel>
+                <div style="padding:0.5rem">The first panel of the outer splitter</div>
+            </FirstPanel>
+            <SecondPanel>
+                <BitSplitter Vertical AriaLabel="Resize the panels">
                     <FirstPanel>
-                        <div style="padding: 4px;">
-                            Nested's first panel
-                            <br />
-                            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                            for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                        </div>
+                        <div style="padding:0.5rem">The first panel of the nested splitter</div>
                     </FirstPanel>
                     <SecondPanel>
-                        <div style="padding: 4px;">
-                            Nested's second panel
-                            <br />
-                            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                            for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                        </div>
+                        <div style="padding:0.5rem">The second panel of the nested splitter</div>
                     </SecondPanel>
                 </BitSplitter>
             </SecondPanel>
         </BitSplitter>
     </DemoExample>
 
-    <DemoExample Title="Gutter Size" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="Gutter size" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
-            <BitSlider @bind-Value="gutterSize" Max="50" />
-            <br />
-            <BitSplitter GutterSize="@((int)gutterSize)">
-                <FirstPanel>
-                    <div style="padding: 4px;">
-                        First Panel
-                        <br />
-                        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                        for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                    </div>
-                </FirstPanel>
-                <SecondPanel>
-                    <div style="padding: 4px;">
-                        Second Panel
-                        <br />
-                        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                        for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                    </div>
-                </SecondPanel>
-            </BitSplitter>
+            <code>GutterSize</code> is the thickness of the gutter in pixels. However thin it is drawn, the strip that answers
+            a press reaches a few pixels past it on either side, so a narrow gutter is still something a finger can find.
         </div>
-    </DemoExample>
-
-    <DemoExample Title="Gutter Icon" RazorCode="@example6RazorCode" Id="example6">
-        <BitSplitter GutterIconName="@BitIconName.GripperDotsVertical">
+        <br />
+        <BitSlider Label="@($"Gutter size: {gutterSize:F0}px")" @bind-Value="gutterSize" Max="50" />
+        <br />
+        <BitSplitter GutterSize="@((int)gutterSize)" Style="height:200px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
             <FirstPanel>
-                <div style="padding: 4px;">
-                    First Panel
-                    <br />
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                </div>
+                <div style="padding:0.5rem">First panel</div>
             </FirstPanel>
             <SecondPanel>
-                <div style="padding: 4px;">
-                    Second Panel
-                    <br />
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                </div>
+                <div style="padding:0.5rem">Second panel</div>
             </SecondPanel>
         </BitSplitter>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Gutter icon" RazorCode="@example13RazorCode" Id="example13">
+        <div>
+            <code>GutterIconName</code> puts a built-in Fluent UI icon in the gutter in place of the default grip, which gives
+            the reader something to aim at on a wider gutter.
+        </div>
+        <br />
+        <BitSplitter GutterSize="16" GutterIconName="@BitIconName.GripperDotsVertical"
+                     Style="height:200px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
+            <FirstPanel>
+                <div style="padding:0.5rem">First panel</div>
+            </FirstPanel>
+            <SecondPanel>
+                <div style="padding:0.5rem">Second panel</div>
+            </SecondPanel>
+        </BitSplitter>
+    </DemoExample>
+
+    <DemoExample Title="Gutter template" RazorCode="@example14RazorCode" Id="example14">
+        <div>
+            <code>GutterTemplate</code> replaces what is drawn inside the gutter altogether. The gutter itself is the
+            separator - the thing the pointer drags and the keyboard moves - so what goes in here is decoration: a control of
+            its own in there would be a second tab stop on something a screen reader reports as a single separator.
+        </div>
+        <br />
+        <BitSplitter GutterSize="14" Style="height:200px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
+            <GutterTemplate>
+                <div style="display:flex;flex-direction:column;gap:2px">
+                    <div style="width:4px;height:4px;border-radius:50%;background:var(--bit-clr-fg-sec)"></div>
+                    <div style="width:4px;height:4px;border-radius:50%;background:var(--bit-clr-fg-sec)"></div>
+                    <div style="width:4px;height:4px;border-radius:50%;background:var(--bit-clr-fg-sec)"></div>
+                </div>
+            </GutterTemplate>
+            <FirstPanel>
+                <div style="padding:0.5rem">First panel</div>
+            </FirstPanel>
+            <SecondPanel>
+                <div style="padding:0.5rem">Second panel</div>
+            </SecondPanel>
+        </BitSplitter>
+    </DemoExample>
+
+    <DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15">
         <div>Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>GutterIcon</b> parameter (<BitLink Href="#bit-icon-info">BitIconInfo</BitLink>).</div>
 
-        <br />
         <br />
 
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
 
         <div>FontAwesome:</div>
         <br />
-        <BitSplitter GutterIcon="@("fa-solid fa-arrows-left-right")">
+        <BitSplitter GutterSize="16" GutterIcon="@("fa-solid fa-arrows-left-right")"
+                     Style="height:150px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
             <FirstPanel>
-                <div style="padding: 4px;">
-                    First Panel
-                    <br />
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                </div>
+                <div style="padding:0.5rem">First panel</div>
             </FirstPanel>
             <SecondPanel>
-                <div style="padding: 4px;">
-                    Second Panel
-                    <br />
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    <br/>
-                    "fa-solid fa-arrows-left-right"
-                </div>
+                <div style="padding:0.5rem">"fa-solid fa-arrows-left-right"</div>
             </SecondPanel>
         </BitSplitter>
 
         <br />
 
-        <BitSplitter GutterIcon="@BitIconInfo.Css("fa-solid fa-grip-vertical")">
+        <BitSplitter GutterSize="16" GutterIcon="@BitIconInfo.Css("fa-solid fa-grip-vertical")"
+                     Style="height:150px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
             <FirstPanel>
-                <div style="padding: 4px;">
-                    First Panel
-                    <br />
-                    BitIconInfo.Css("fa-solid fa-grip-vertical")
-                </div>
+                <div style="padding:0.5rem">First panel</div>
             </FirstPanel>
             <SecondPanel>
-                <div style="padding: 4px;">
-                    Second Panel
-                    <br />
-                    BitIconInfo.Css("fa-solid fa-grip-vertical")
-                </div>
+                <div style="padding:0.5rem">BitIconInfo.Css("fa-solid fa-grip-vertical")</div>
             </SecondPanel>
         </BitSplitter>
 
         <br />
 
-        <BitSplitter GutterIcon="@BitIconInfo.Fa("solid grip-lines-vertical")">
+        <BitSplitter GutterSize="16" GutterIcon="@BitIconInfo.Fa("solid grip-lines-vertical")"
+                     Style="height:150px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
             <FirstPanel>
-                <div style="padding: 4px;">
-                    First Panel
-                    <br />
-                    BitIconInfo.Fa("solid grip-lines-vertical")
-                </div>
+                <div style="padding:0.5rem">First panel</div>
             </FirstPanel>
             <SecondPanel>
-                <div style="padding: 4px;">
-                    Second Panel
-                    <br />
-                    BitIconInfo.Fa("solid grip-lines-vertical")
-                </div>
+                <div style="padding:0.5rem">BitIconInfo.Fa("solid grip-lines-vertical")</div>
             </SecondPanel>
         </BitSplitter>
 
-        <br /><br /><br /><br />
+        <br /><br />
 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
 
         <div>Bootstrap:</div>
         <br />
-        <BitSplitter GutterIcon="@("bi bi-grip-vertical")">
+        <BitSplitter GutterSize="16" GutterIcon="@("bi bi-grip-vertical")"
+                     Style="height:150px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
             <FirstPanel>
-                <div style="padding: 4px;">
-                    First Panel
-                    <br />
-                    Icon=@@("bi bi-grip-vertical")
-                </div>
+                <div style="padding:0.5rem">First panel</div>
             </FirstPanel>
             <SecondPanel>
-                <div style="padding: 4px;">
-                    Second Panel
-                    <br />
-                    Icon=@@("bi bi-grip-vertical")
-                </div>
+                <div style="padding:0.5rem">GutterIcon=@@("bi bi-grip-vertical")</div>
             </SecondPanel>
         </BitSplitter>
 
         <br />
 
-        <BitSplitter GutterIcon="@BitIconInfo.Bi("arrow-left-right")">
+        <BitSplitter GutterSize="16" GutterIcon="@BitIconInfo.Bi("arrow-left-right")"
+                     Style="height:150px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
             <FirstPanel>
-                <div style="padding: 4px;">
-                    First Panel
-                    <br />
-                    BitIconInfo.Bi("arrow-left-right")
-                </div>
+                <div style="padding:0.5rem">First panel</div>
             </FirstPanel>
             <SecondPanel>
-                <div style="padding: 4px;">
-                    Second Panel
-                    <br />
-                    BitIconInfo.Bi("arrow-left-right")
-                </div>
+                <div style="padding:0.5rem">BitIconInfo.Bi("arrow-left-right")</div>
+            </SecondPanel>
+        </BitSplitter>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example16RazorCode" Id="example16">
+        <div>
+            <code>Style</code> and <code>Class</code> dress the root element - which is where the height of a splitter is set,
+            since it fills whatever box it is put in - while <code>Styles</code> and <code>Classes</code> reach the parts
+            inside it: the two panels, the gutter, and the icon or grip drawn in the gutter.
+        </div>
+        <br />
+        <BitSplitter Style="height:150px;border:2px dashed var(--bit-clr-pri);border-radius:0.5rem" AriaLabel="Resize the panels">
+            <FirstPanel>
+                <div style="padding:0.5rem">A splitter with a Style of its own</div>
+            </FirstPanel>
+            <SecondPanel>
+                <div style="padding:0.5rem">Second panel</div>
+            </SecondPanel>
+        </BitSplitter>
+        <br />
+        <BitSplitter GutterSize="10"
+                     Styles="@(new() { FirstPanel = "background:var(--bit-clr-bg-sec)",
+                                       Gutter = "background:var(--bit-clr-pri)",
+                                       GutterIndicator = "background:var(--bit-clr-pri-text)" })"
+                     Style="height:150px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
+            <FirstPanel>
+                <div style="padding:0.5rem">A first panel with a background</div>
+            </FirstPanel>
+            <SecondPanel>
+                <div style="padding:0.5rem">A gutter painted through the Styles slots</div>
+            </SecondPanel>
+        </BitSplitter>
+    </DemoExample>
+
+    <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
+        <div>
+            In a right-to-left splitter the first panel is the one on the right, and the gutter follows: dragging it to the
+            left makes the first panel bigger, and so does the arrow key that points away from it.
+        </div>
+        <br />
+        <BitSplitter Dir="BitDir.Rtl" FirstPanelSize="150" Style="height:200px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="تغییر اندازه پنل‌ها">
+            <FirstPanel>
+                <div style="padding:0.5rem">پنل اول</div>
+            </FirstPanel>
+            <SecondPanel>
+                <div style="padding:0.5rem">پنل دوم</div>
             </SecondPanel>
         </BitSplitter>
     </DemoExample>
