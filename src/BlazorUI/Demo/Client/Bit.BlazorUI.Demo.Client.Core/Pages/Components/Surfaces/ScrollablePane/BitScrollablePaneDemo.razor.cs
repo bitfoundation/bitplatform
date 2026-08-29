@@ -41,6 +41,13 @@ public partial class BitScrollablePaneDemo
         },
         new()
         {
+            Name = "AutoHideScrollbar",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the Modern scrollbar of the pane out of sight until the pointer is over it or something in it holds the focus.",
+        },
+        new()
+        {
             Name = "Body",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -52,6 +59,13 @@ public partial class BitScrollablePaneDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The content of the pane, it can be any custom tag or text.",
+        },
+        new()
+        {
+            Name = "DragScroll",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lets the pane be scrolled by dragging its content with a mouse or a pen, which is how a strip that only scrolls sideways is reached without a horizontal wheel.",
         },
         new()
         {
@@ -141,6 +155,13 @@ public partial class BitScrollablePaneDemo
         },
         new()
         {
+            Name = "HorizontalWheel",
+            Type = "bool",
+            DefaultValue= "false",
+            Description = "Turns a vertical wheel over a pane that only scrolls sideways into a sideways scroll, and hands the scroll back to the page once the pane reaches that end.",
+        },
+        new()
+        {
             Name = "MaxHeight",
             Type = "string?",
             DefaultValue= "null",
@@ -210,6 +231,22 @@ public partial class BitScrollablePaneDemo
             Name = "OnScroll",
             Type = "EventCallback<BitScrollOffset>",
             Description = "Callback for when the pane is scrolled, carrying where it now stands.",
+            LinkType = LinkType.Link,
+            Href = "#scroll-offset-class",
+        },
+        new()
+        {
+            Name = "OnScrollEnd",
+            Type = "EventCallback<BitScrollOffset>",
+            Description = "Callback for when the pane has come to rest after being scrolled, carrying where it stopped.",
+            LinkType = LinkType.Link,
+            Href = "#scroll-offset-class",
+        },
+        new()
+        {
+            Name = "OnScrollStart",
+            Type = "EventCallback<BitScrollOffset>",
+            Description = "Callback for when the pane starts being scrolled, carrying where it stood as it set off.",
             LinkType = LinkType.Link,
             Href = "#scroll-offset-class",
         },
@@ -320,6 +357,24 @@ public partial class BitScrollablePaneDemo
         },
         new()
         {
+            Name = "Snap",
+            Type = "BitScrollSnap?",
+            DefaultValue= "null",
+            Description = "Makes the pane come to rest on the snap positions of its content instead of anywhere between them.",
+            LinkType = LinkType.Link,
+            Href = "#scroll-snap-enum",
+        },
+        new()
+        {
+            Name = "SnapAlign",
+            Type = "BitScrollSnapAlign?",
+            DefaultValue= "null",
+            Description = "Where the direct children of the pane come to rest in it while Snap is on.",
+            LinkType = LinkType.Link,
+            Href = "#scroll-snap-align-enum",
+        },
+        new()
+        {
             Name = "Width",
             Type = "string?",
             DefaultValue= "null",
@@ -329,6 +384,12 @@ public partial class BitScrollablePaneDemo
 
     private readonly List<ComponentParameter> componentPublicMembers =
     [
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask FocusAsync() / ValueTask FocusAsync(bool preventScroll)",
+            Description = "Gives the focus to the pane itself, which only takes it while Focusable or a TabIndex has put it in the tab order.",
+        },
         new()
         {
             Name = "GetScrollOffset",
@@ -347,31 +408,33 @@ public partial class BitScrollablePaneDemo
         {
             Name = "ScrollBy",
             Type = "ValueTask ScrollBy(double x, double y, bool? smooth = null)",
-            Description = "Scrolls the pane by a distance from wherever it currently stands, in pixels and in reading order.",
+            Description = "Scrolls the pane by a distance from wherever it currently stands, in pixels and measured on the screen: a positive x always moves the pane rightwards.",
         },
         new()
         {
             Name = "ScrollTo",
             Type = "ValueTask ScrollTo(double? left, double? top, bool? smooth = null)",
-            Description = "Scrolls the pane to an absolute position, in pixels. An axis that is left null stays where it is.",
+            Description = "Scrolls the pane to an absolute position, in pixels from the top and from the visual left edge of the content. An axis that is left null stays where it is.",
         },
         new()
         {
             Name = "ScrollToElement",
-            Type = "ValueTask ScrollToElement(string elementId, double offset = 0, bool? smooth = null)",
+            Type = "ValueTask ScrollToElement(string elementId, double offset = 0, bool? smooth = null, BitScrollAlignment alignment = BitScrollAlignment.Start)",
             Description = "Brings an element inside the pane into view by scrolling the pane itself, leaving every scrolling ancestor of it alone.",
+            LinkType = LinkType.Link,
+            Href = "#scroll-alignment-enum",
         },
         new()
         {
             Name = "ScrollToEnd",
             Type = "ValueTask ScrollToEnd(bool? smooth = null)",
-            Description = "Scrolls the pane to the end of its content, both horizontally and vertically.",
+            Description = "Scrolls the pane to the end of its content, both horizontally and vertically, which on the horizontal axis is the visual left edge of a right-to-left pane.",
         },
         new()
         {
             Name = "ScrollToStart",
             Type = "ValueTask ScrollToStart(bool? smooth = null)",
-            Description = "Scrolls the pane back to the start of its content, both horizontally and vertically.",
+            Description = "Scrolls the pane back to the start of its content, both horizontally and vertically, which on the horizontal axis is the visual right edge of a right-to-left pane.",
         },
     ];
 
@@ -425,6 +488,13 @@ public partial class BitScrollablePaneDemo
                     Type = "double",
                     DefaultValue = "0",
                     Description = "The height of the visible area of the pane, without its scrollbar."
+                },
+                new()
+                {
+                    Name = "Rtl",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Whether the pane was laid out right to left when it was measured, which is what tells the two readings of a Left of 0 apart."
                 },
                 new()
                 {
@@ -509,6 +579,99 @@ public partial class BitScrollablePaneDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
+        new()
+        {
+            Id = "scroll-alignment-enum",
+            Name = "BitScrollAlignment",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name = "Start",
+                    Value = "0",
+                    Description = "The element is brought to the start of the pane: its top edge to the top of the pane, and its leading edge to the leading edge of the pane."
+                },
+                new()
+                {
+                    Name = "Center",
+                    Value = "1",
+                    Description = "The element is centered in the pane along both axes."
+                },
+                new()
+                {
+                    Name = "End",
+                    Value = "2",
+                    Description = "The element is brought to the end of the pane: its bottom edge to the bottom of the pane, and its trailing edge to the trailing edge of the pane."
+                },
+                new()
+                {
+                    Name = "Nearest",
+                    Value = "3",
+                    Description = "The pane moves as little as it can: an element that is already fully in view is not moved to at all, and one that is not is brought to whichever edge it is nearest."
+                }
+            ]
+        },
+        new()
+        {
+            Id = "scroll-snap-enum",
+            Name = "BitScrollSnap",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name = "None",
+                    Value = "0",
+                    Description = "The pane does not snap, which is the initial value."
+                },
+                new()
+                {
+                    Name = "Proximity",
+                    Value = "1",
+                    Description = "The pane snaps to a position only when it comes to rest near one, so a scroll can still be left anywhere between two items."
+                },
+                new()
+                {
+                    Name = "Mandatory",
+                    Value = "2",
+                    Description = "The pane always comes to rest on a snap position, which is what a carousel or a row of pages wants."
+                }
+            ]
+        },
+        new()
+        {
+            Id = "scroll-snap-align-enum",
+            Name = "BitScrollSnapAlign",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name = "None",
+                    Value = "0",
+                    Description = "The children carry no snap position of their own."
+                },
+                new()
+                {
+                    Name = "Start",
+                    Value = "1",
+                    Description = "Each child comes to rest at the start of the pane."
+                },
+                new()
+                {
+                    Name = "Center",
+                    Value = "2",
+                    Description = "Each child comes to rest in the middle of the pane."
+                },
+                new()
+                {
+                    Name = "End",
+                    Value = "3",
+                    Description = "Each child comes to rest at the end of the pane."
+                }
+            ]
+        },
         new()
         {
             Id = "overflow-enum",
@@ -638,16 +801,21 @@ public partial class BitScrollablePaneDemo
     private double gutterItemsCount = 6;
     private BitScrollbarGutter gutter;
 
+    private bool autoHideScrollbar = true;
+
     private bool fade = true;
     private double fadeSize = 2;
 
     private double scrollThrottle;
+    private string scrollState = "-";
     private BitScrollOffset? scrollOffset;
     private void HandleScroll(BitScrollOffset offset)
     {
         scrollOffset = offset;
         StateHasChanged();
     }
+    private void HandleScrollStart() => scrollState = "scrolling...";
+    private void HandleScrollEnd(BitScrollOffset offset) => scrollState = $"stopped at {offset.Top:0} ({offset.PercentY * 100:0}%)";
 
     private bool loadingMore;
     private double reachOffset = 40;
@@ -711,4 +879,10 @@ public partial class BitScrollablePaneDemo
     }
 
     private bool focusable = true;
+
+    private BitScrollSnap snap = BitScrollSnap.Mandatory;
+    private BitScrollSnapAlign snapAlign = BitScrollSnapAlign.Start;
+
+    private bool dragScroll = true;
+    private bool horizontalWheel = true;
 }

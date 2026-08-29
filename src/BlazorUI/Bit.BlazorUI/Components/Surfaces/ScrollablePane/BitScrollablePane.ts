@@ -6,6 +6,8 @@
         offset: number;   // how near an edge counts as reaching it, in pixels
         throttle: number; // the shortest interval between two scroll reports, or 0 for one per frame
         scroll: boolean;
+        scrollStart: boolean;
+        scrollEnd: boolean;
         top: boolean;
         bottom: boolean;
         left: boolean;
@@ -13,6 +15,8 @@
         autoScroll: boolean;
         autoScrollThreshold: number;
         smooth: boolean;
+        drag: boolean;
+        wheel: boolean;
     }
 
     interface ScrollOffset {
@@ -22,6 +26,7 @@
         scrollHeight: number;
         clientWidth: number;
         clientHeight: number;
+        rtl: boolean;
     }
 
     // Where the pane stands along both axes, in the direction independent terms everything below is
@@ -36,6 +41,19 @@
     }
 
     type ScrollEdge = 'top' | 'bottom' | 'left' | 'right';
+
+    type ScrollAlignment = 'start' | 'center' | 'end' | 'nearest';
+
+    // What a drag of the pane started from: where the pointer went down, where the pane stood then, and
+    // whether the pointer has since moved far enough for this to be a drag rather than a click.
+    interface ScrollDrag {
+        id: number;
+        x: number;
+        y: number;
+        left: number;
+        top: number;
+        moved: boolean;
+    }
 
     export class ScrollablePane {
         private static _panes: Record<string, BitScrollablePane> = {};
@@ -86,12 +104,15 @@
         // The calls below act on an element rather than on a registered pane, so the public scrolling API
         // of the component works whether or not anything asked for a browser side instance.
 
+        // The two ends are the ends of the CONTENT rather than the two sides of the screen, so the
+        // horizontal one of them is the visual left edge of a right to left pane and the visual right
+        // edge of every other one.
         public static scrollToEnd(element: HTMLElement, smooth?: boolean) {
             if (!element) return;
 
             try {
                 const m = ScrollablePane.measure(element);
-                ScrollablePane.apply(element, m.maxX, m.maxY, m, smooth);
+                ScrollablePane.apply(element, m.rtl ? 0 : m.maxX, m.maxY, m, smooth);
             } catch (e) { console.error("BitBlazorUI.ScrollablePane.scrollToEnd:", e); }
         }
 
@@ -100,7 +121,7 @@
 
             try {
                 const m = ScrollablePane.measure(element);
-                ScrollablePane.apply(element, 0, 0, m, smooth);
+                ScrollablePane.apply(element, m.rtl ? m.maxX : 0, 0, m, smooth);
             } catch (e) { console.error("BitBlazorUI.ScrollablePane.scrollToStart:", e); }
         }
 
@@ -127,7 +148,7 @@
         // Brings a descendant of the pane into view by scrolling the pane itself, rather than by calling
         // scrollIntoView on the element: that would scroll every scrolling ancestor the pane sits in as
         // well, which moves the page under a reader who only asked the pane to move.
-        public static scrollToElement(element: HTMLElement, targetId: string, offset: number, smooth?: boolean) {
+        public static scrollToElement(element: HTMLElement, targetId: string, offset: number, smooth?: boolean, alignment?: ScrollAlignment) {
             if (!element || !targetId) return;
 
             try {
@@ -143,11 +164,46 @@
                 // the same clearance here that a fragment navigation into it would have got.
                 const padding = offset ? { x: offset, y: offset } : ScrollablePane.scrollPadding(element);
 
-                const x = m.x + (rect.left - paneRect.left) - element.clientLeft - padding.x;
-                const y = m.y + (rect.top - paneRect.top) - element.clientTop - padding.y;
+                // Where the element stands inside the content of the pane, which is where it is on the
+                // screen taken back to the top left corner of the scrolled content.
+                const x = m.x + (rect.left - paneRect.left) - element.clientLeft;
+                const y = m.y + (rect.top - paneRect.top) - element.clientTop;
 
-                ScrollablePane.apply(element, x, y, m, smooth);
+                ScrollablePane.apply(element,
+                    ScrollablePane.align(x, rect.width, m.x, element.clientWidth, padding.x, alignment, m.rtl),
+                    ScrollablePane.align(y, rect.height, m.y, element.clientHeight, padding.y, alignment),
+                    m, smooth);
             } catch (e) { console.error("BitBlazorUI.ScrollablePane.scrollToElement:", e); }
+        }
+
+        // Where the pane has to stand along one axis for an element to be left where the alignment asks
+        // for. `at` is where the element starts in the content, `size` how long it is along this axis,
+        // `from` where the pane stands now and `view` how much of the axis it shows.
+        private static align(at: number, size: number, from: number, view: number, padding: number, alignment?: ScrollAlignment, rtl?: boolean): number {
+            const start = at - padding;
+
+            // The start and the end of an axis are the start and the end of the CONTENT, so the two of
+            // them are the other way round on the horizontal axis of a right to left pane.
+            if (rtl && alignment === 'start') return at + size - view + padding;
+            if (rtl && alignment === 'end') return start;
+
+            switch (alignment) {
+                case 'center':
+                    return at - (view - size) / 2;
+
+                case 'end':
+                    return at + size - view + padding;
+
+                case 'nearest':
+                    // An element that is already in view is not moved to at all, and one that is not is
+                    // brought only as far as the edge it fell off, which is the least the pane can move.
+                    if (start < from) return start;
+                    if (at + size + padding > from + view) return at + size - view + padding;
+                    return from;
+
+                default:
+                    return start;
+            }
         }
 
         // The scroll-padding of the pane in pixels, along the two axes a move can be made on. The property
@@ -169,17 +225,28 @@
             };
         }
 
-        public static getOffset(element: HTMLElement): ScrollOffset | null {
+        // `rtl` is taken from a measurement that has already been made where there is one, since asking
+        // the computed style for it is a style read and a reporting pane is measured on every frame of
+        // every scroll.
+        public static getOffset(element: HTMLElement, rtl?: boolean): ScrollOffset | null {
             if (!element) return null;
 
             try {
+                const scrollWidth = element.scrollWidth;
+                const clientWidth = element.clientWidth;
+
                 return {
                     left: element.scrollLeft,
                     top: element.scrollTop,
-                    scrollWidth: element.scrollWidth,
+                    scrollWidth,
                     scrollHeight: element.scrollHeight,
-                    clientWidth: element.clientWidth,
+                    clientWidth,
                     clientHeight: element.clientHeight,
+                    // Which way the pane reads is what tells a scrollLeft of 0 at the visual left edge of a
+                    // left to right pane from the same 0 at the visual RIGHT edge of a right to left one.
+                    // It is only asked for where there is something to scroll sideways, since an axis with
+                    // nothing to scroll reads the same either way.
+                    rtl: rtl ?? (scrollWidth > clientWidth && getComputedStyle(element).direction === 'rtl'),
                 };
             } catch (e) {
                 console.error("BitBlazorUI.ScrollablePane.getOffset:", e);
@@ -241,6 +308,11 @@
         private _resizeObserver?: ResizeObserver;
         private _mutationObserver?: MutationObserver;
 
+        // The two optional interactions are bound and unbound as their flags flip, so a pane that never
+        // asked for either pays for neither - the wheel one most of all, since it cannot be passive.
+        private _dragAbortController?: AbortController;
+        private _wheelAbortController?: AbortController;
+
         private _frame = 0;
         private _reportTimer = 0;
         private _lastReport = 0;
@@ -248,6 +320,11 @@
 
         // The position that was last reported to .NET, so the same one is never reported twice.
         private _lastSignature = '';
+
+        // Whether a scroll is currently running, and the fallback that decides it has stopped where the
+        // browser has no scrollend event of its own to say so.
+        private _scrolling = false;
+        private _endTimer = 0;
 
         // Whether the pane was left standing at the end of each axis, which is the whole of what decides
         // if the next arrival of content pins it there. Both start out true, so a pane that is set up
@@ -259,6 +336,9 @@
         // along the way are not mistaken for a reader scrolling away from it.
         private _pinning = false;
         private _pinTimer = 0;
+
+        // The drag that is currently under way, if the pane is being dragged at all.
+        private _drag?: ScrollDrag;
 
         // Which edges the pane is standing at, so each one is reported as it is reached rather than on
         // every frame of the scroll that stays there.
@@ -284,9 +364,16 @@
 
             // Passive: nothing here ever prevents the scroll, and saying so keeps the browser from
             // waiting on this listener before it paints the next frame.
-            this._element.addEventListener('scroll', () => this.schedule(), { passive: true, signal: ac.signal });
+            this._element.addEventListener('scroll', () => this.scrolled(), { passive: true, signal: ac.signal });
+
+            // Where the browser has it, the end of a scroll is the browser's own answer rather than a
+            // guess at one: the finger lifted, the thumb released, the momentum spent, the animation over.
+            if (BitScrollablePane._hasScrollEnd) {
+                this._element.addEventListener('scrollend', () => this.ended(), { passive: true, signal: ac.signal });
+            }
 
             this.observe();
+            this.bind();
 
             // The first measurement is taken once the browser has laid the content out, so a pane that
             // starts out with nothing to scroll does not paint a fade over an edge it will not have.
@@ -312,6 +399,8 @@
                 this._lastSignature = '';
             }
 
+            this.bind();
+
             this.refresh();
         }
 
@@ -334,8 +423,11 @@
             const smooth = this._options.smooth && force === false;
 
             // The move is only made where there is somewhere to move to, so a pane that only scrolls up
-            // and down is not dragged sideways by a horizontal end it never had.
-            ScrollablePane.apply(this._element, pinX ? m.maxX : m.x, pinY ? m.maxY : m.y, m, smooth);
+            // and down is not dragged sideways by a horizontal end it never had. The end of the content
+            // is the visual LEFT edge of a right to left pane, which is where it is pinned to there.
+            const endX = m.rtl ? 0 : m.maxX;
+
+            ScrollablePane.apply(this._element, pinX ? endX : m.x, pinY ? m.maxY : m.y, m, smooth);
 
             if (pinX) this._stickX = true;
             if (pinY) this._stickY = true;
@@ -344,15 +436,22 @@
         }
 
         public dispose() {
-            // The fade attributes are the one thing this side leaves on the element, so they are taken back
-            // off before anything else: a pane that stops fading keeps its element, and one that is set up
+            // The attributes are the one thing this side leaves on the element, so they are taken back off
+            // before anything else: a pane that stops fading keeps its element, and one that is set up
             // again would otherwise draw the fade of wherever it last stood until it is measured afresh.
             this.clearFade();
+            this._element.removeAttribute('data-bit-scp-drag');
 
             this._disposed = true;
 
             this._abortController?.abort();
             this._abortController = undefined;
+
+            this._dragAbortController?.abort();
+            this._dragAbortController = undefined;
+
+            this._wheelAbortController?.abort();
+            this._wheelAbortController = undefined;
 
             this._resizeObserver?.disconnect();
             this._resizeObserver = undefined;
@@ -363,10 +462,13 @@
             if (this._frame) cancelAnimationFrame(this._frame);
             if (this._reportTimer) clearTimeout(this._reportTimer);
             if (this._pinTimer) clearTimeout(this._pinTimer);
+            if (this._endTimer) clearTimeout(this._endTimer);
 
             this._frame = 0;
             this._reportTimer = 0;
             this._pinTimer = 0;
+            this._endTimer = 0;
+            this._drag = undefined;
         }
 
 
@@ -398,6 +500,37 @@
             return o.fade || o.top || o.bottom || o.left || o.right;
         }
 
+        // Binds and unbinds the two interactions that are only worth a listener while they are asked for:
+        // dragging the content, and turning a vertical wheel into the sideways scroll of a strip. The
+        // wheel one has to be able to prevent the default, so it cannot be a passive listener - which is
+        // exactly why a pane that never asked for it must not carry one.
+        private bind() {
+            if (this._options.drag && this._dragAbortController === undefined) {
+                const ac = new AbortController();
+                this._dragAbortController = ac;
+
+                this._element.addEventListener('pointerdown', e => this.dragStart(e), { signal: ac.signal });
+                this._element.addEventListener('pointermove', e => this.dragMove(e), { signal: ac.signal });
+                this._element.addEventListener('pointerup', e => this.dragEnd(e), { signal: ac.signal });
+                this._element.addEventListener('pointercancel', e => this.dragEnd(e), { signal: ac.signal });
+            } else if (this._options.drag === false && this._dragAbortController) {
+                this._dragAbortController.abort();
+                this._dragAbortController = undefined;
+                this._drag = undefined;
+                this._element.removeAttribute('data-bit-scp-drag');
+            }
+
+            if (this._options.wheel && this._wheelAbortController === undefined) {
+                const ac = new AbortController();
+                this._wheelAbortController = ac;
+
+                this._element.addEventListener('wheel', e => this.wheel(e), { passive: false, signal: ac.signal });
+            } else if (this._options.wheel === false && this._wheelAbortController) {
+                this._wheelAbortController.abort();
+                this._wheelAbortController = undefined;
+            }
+        }
+
         // Every path into the measuring is coalesced onto the next animation frame, so a burst of scroll
         // events, a resize and a mutation landing together are one measurement rather than three.
         private schedule() {
@@ -417,9 +550,57 @@
             this.track(m);
             this.fade(m);
             this.edges(m);
-            this.report();
+            this.report(m);
 
             this._measured = true;
+        }
+
+        // Every scroll event of the element, whoever caused it. The start of a scroll is reported once
+        // rather than on every event of it, and where the browser has no scrollend of its own the end of
+        // one is a short idle after the last event.
+        private scrolled() {
+            this.began();
+
+            this.schedule();
+
+            if (BitScrollablePane._hasScrollEnd) return;
+
+            if (this._endTimer) clearTimeout(this._endTimer);
+
+            this._endTimer = setTimeout(() => { this._endTimer = 0; this.ended(); }, BitScrollablePane._endDelay);
+        }
+
+        private began() {
+            if (this._scrolling) return;
+
+            this._scrolling = true;
+
+            if (this._options.scrollStart === false) return;
+
+            this.send('OnScrollStart');
+        }
+
+        private ended() {
+            if (this._endTimer) {
+                clearTimeout(this._endTimer);
+                this._endTimer = 0;
+            }
+
+            // A pinning move of our own is over the moment the scrolling is, which is a better answer than
+            // the timer that has to stand in for it where a move raises no scroll event at all.
+            if (this._pinTimer) {
+                clearTimeout(this._pinTimer);
+                this._pinTimer = 0;
+            }
+            this._pinning = false;
+
+            if (this._scrolling === false) return;
+
+            this._scrolling = false;
+
+            if (this._options.scrollEnd === false) return;
+
+            this.send('OnScrollEnd');
         }
 
         // Whether the pane is still standing at the end of each axis, which is what AutoScroll reads the
@@ -430,7 +611,9 @@
 
             const threshold = Math.max(0, this._options.autoScrollThreshold) + 1;
 
-            this._stickX = (m.maxX - m.x) <= threshold;
+            // How far the pane still is from the END of its content, which on the horizontal axis of a
+            // right to left pane is the distance back to the visual left edge.
+            this._stickX = (m.rtl ? m.x : (m.maxX - m.x)) <= threshold;
             this._stickY = (m.maxY - m.y) <= threshold;
         }
 
@@ -439,8 +622,8 @@
 
             if (this._pinTimer) clearTimeout(this._pinTimer);
 
-            // Long enough for the move to have played out, short enough that a reader scrolling away
-            // straight afterwards is still noticed. An unanimated move is over within a frame or two.
+            // The scrollend event ends this the moment the move actually is over; the timer is what covers
+            // a move that raised no scroll event at all - the pane was already where it was pinned to.
             this._pinTimer = setTimeout(() => { this._pinning = false; this._pinTimer = 0; }, smooth ? 700 : 80);
         }
 
@@ -500,13 +683,13 @@
         // The scroll position is reported no more often than the interval asked for, with the last one
         // always following: a reader who stops mid-scroll leaves the page holding where they stopped
         // rather than wherever the last interval happened to fall.
-        private report() {
+        private report(m: ScrollMetrics) {
             if (this._options.scroll === false) return;
 
             const throttle = Math.max(0, this._options.throttle);
 
             if (throttle === 0) {
-                this.send();
+                this.sendPosition(m.rtl);
                 return;
             }
 
@@ -514,7 +697,7 @@
             const elapsed = now - this._lastReport;
 
             if (elapsed >= throttle) {
-                this.send();
+                this.sendPosition(m.rtl);
                 return;
             }
 
@@ -524,7 +707,9 @@
                 this._reportTimer = 0;
                 if (this._disposed) return;
 
-                this.send();
+                // The pane has not been measured since, so the direction is asked for afresh rather than
+                // taken from a measurement that may no longer be the one this report carries.
+                this.sendPosition();
             }, throttle - elapsed);
         }
 
@@ -532,17 +717,136 @@
         // round trip, this is what keeps a page that re-renders on OnScroll from re-rendering forever: a
         // render is what a refresh follows, a refresh is what a measurement follows, and a measurement
         // that reported the position it last reported would start the whole round again.
-        private send() {
-            const offset = ScrollablePane.getOffset(this._element);
+        private sendPosition(rtl?: boolean) {
+            // A report the throttle has been holding on to is dropped where the reporting was turned off
+            // while it waited, rather than delivered to a page that has stopped listening for it.
+            if (this._options.scroll === false) return;
+
+            const offset = ScrollablePane.getOffset(this._element, rtl);
             if (!offset) return;
 
-            const signature = `${offset.left}|${offset.top}|${offset.scrollWidth}|${offset.scrollHeight}|${offset.clientWidth}|${offset.clientHeight}`;
+            const signature = `${offset.left}|${offset.top}|${offset.scrollWidth}|${offset.scrollHeight}|${offset.clientWidth}|${offset.clientHeight}|${offset.rtl}`;
             if (signature === this._lastSignature) return;
 
             this._lastSignature = signature;
             this._lastReport = Date.now();
 
             this.invoke('OnScroll', offset);
+        }
+
+        // Where the pane stands, handed to one of the callbacks that carries a position of its own.
+        private send(method: string) {
+            const offset = ScrollablePane.getOffset(this._element);
+            if (!offset) return;
+
+            this.invoke(method, offset);
+        }
+
+
+
+        // Dragging the content of the pane with a pointer, for the mouse and the pen that have no other
+        // way of scrolling a strip sideways. A touch already drags the pane itself, so it is left alone.
+        private dragStart(e: PointerEvent) {
+            if (this._disposed || this._options.drag === false) return;
+            if (e.pointerType === 'touch' || e.button !== 0) return;
+
+            // A drag that starts on something the pointer is meant to be doing something else with - a
+            // field being selected in, a control being pressed - is not a drag of the pane.
+            const target = e.target as Element | null;
+            if (target?.closest?.(BitScrollablePane._noDragSelector)) return;
+
+            const m = ScrollablePane.measure(this._element);
+            if (m.maxX <= 0 && m.maxY <= 0) return;
+
+            this._drag = {
+                id: e.pointerId,
+                x: e.clientX,
+                y: e.clientY,
+                left: this._element.scrollLeft,
+                top: this._element.scrollTop,
+                moved: false,
+            };
+        }
+
+        private dragMove(e: PointerEvent) {
+            const drag = this._drag;
+            if (!drag || drag.id !== e.pointerId) return;
+
+            const dx = e.clientX - drag.x;
+            const dy = e.clientY - drag.y;
+
+            // Nothing happens until the pointer has actually travelled, so a click on something inside the
+            // pane is still a click and a press that never moved never took the pane anywhere.
+            if (drag.moved === false) {
+                if (Math.abs(dx) < BitScrollablePane._dragThreshold && Math.abs(dy) < BitScrollablePane._dragThreshold) return;
+
+                drag.moved = true;
+
+                this._element.setAttribute('data-bit-scp-drag', '');
+
+                try { this._element.setPointerCapture(drag.id); } catch { /* the pointer is already gone */ }
+            }
+
+            // The default of a pointer move over text is a selection, which is not what a drag of the pane
+            // is for. The raw offsets are used rather than the direction independent ones, since a delta
+            // needs no direction: the browser clamps whatever it is given to what the pane can reach.
+            e.preventDefault();
+
+            this._element.scrollTo({ left: drag.left - dx, top: drag.top - dy, behavior: 'instant' });
+        }
+
+        private dragEnd(e: PointerEvent) {
+            const drag = this._drag;
+            if (!drag || drag.id !== e.pointerId) return;
+
+            this._drag = undefined;
+
+            if (drag.moved === false) return;
+
+            this._element.removeAttribute('data-bit-scp-drag');
+
+            try { this._element.releasePointerCapture(drag.id); } catch { /* the pointer is already gone */ }
+
+            // The click a real drag ends with belongs to the drag, not to whatever card or link happened
+            // to be under the pointer when it stopped. It is swallowed on the way down, and the listener
+            // is taken off again straight after in case no click follows at all.
+            const swallow = (event: Event) => {
+                event.preventDefault();
+                event.stopPropagation();
+            };
+
+            this._element.addEventListener('click', swallow, { capture: true, once: true });
+
+            setTimeout(() => this._element.removeEventListener('click', swallow, true));
+        }
+
+        // A wheel mouse has no horizontal axis, so a pane that only scrolls sideways would be unreachable
+        // with one. This is deliberately the narrowest reading of that: only a wheel that carries nothing
+        // horizontal of its own, only over a pane that has somewhere to go sideways and nowhere to go up
+        // or down, and only until that pane reaches the end it is being pushed towards - after which the
+        // page gets the scroll back rather than being left stuck under the pointer.
+        private wheel(e: WheelEvent) {
+            if (this._disposed || this._options.wheel === false) return;
+            if (e.ctrlKey || e.deltaX !== 0 || e.deltaY === 0) return;
+
+            const m = ScrollablePane.measure(this._element);
+            if (m.maxX <= 0 || m.maxY > 0) return;
+
+            // A delta is in pixels, in lines, or in pages, and only the first of the three can be used as
+            // it stands.
+            const delta = e.deltaY * (e.deltaMode === 1 ? BitScrollablePane._lineHeight
+                : e.deltaMode === 2 ? this._element.clientWidth : 1);
+
+            // A wheel forwards means further into the content, which is towards the visual left edge of
+            // a right to left pane and towards the right one of every other.
+            const step = m.rtl ? -delta : delta;
+
+            if (step < 0 && m.x <= 0) return;
+            if (step > 0 && m.x >= m.maxX) return;
+
+            e.preventDefault();
+
+            ScrollablePane.apply(this._element, m.x + step, m.y, m, false);
         }
 
         private invoke(method: string, arg: any) {
@@ -557,5 +861,20 @@
             left: 'data-bit-scp-fl',
             right: 'data-bit-scp-fr',
         };
+
+        // Anything the pointer is meant to be doing something else with, plus an opt out for whatever the
+        // consumer knows a drag must not start on.
+        private static _noDragSelector = 'input,textarea,select,button,a,audio,video,[contenteditable=""],[contenteditable="true"],[draggable="true"],[data-bit-scp-nodrag]';
+
+        private static _dragThreshold = 4;
+
+        // How long after the last scroll event a scroll counts as over, where the browser has no scrollend
+        // event of its own. Long enough to bridge the gaps in a slow drag, short enough not to be noticed.
+        private static _endDelay = 140;
+
+        // A line of a wheel that counts in lines rather than in pixels, which is what Firefox reports.
+        private static _lineHeight = 16;
+
+        private static _hasScrollEnd = typeof window !== 'undefined' && 'onscrollend' in window;
     }
 }

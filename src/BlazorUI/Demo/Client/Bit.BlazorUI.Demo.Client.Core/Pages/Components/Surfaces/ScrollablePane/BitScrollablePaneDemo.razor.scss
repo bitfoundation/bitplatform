@@ -33,6 +33,19 @@
     padding: 0.25rem 0.75rem;
 }
 
+// The cards the snapping and the dragging examples scroll. They are direct children of the pane, which
+// is what the SnapAlign parameter writes the snap position onto, and inline blocks because the pane of a
+// horizontal example lays its content out on one line.
+.snap-card {
+    color: #fff;
+    width: 8rem;
+    height: 4rem;
+    padding: 0.5rem;
+    display: inline-block;
+    background-color: #777;
+    margin: 0.5rem 0.5rem 0.5rem 0;
+}
+
 // The header the ScrollPadding of the pane keeps out of the way of anything scrolled to underneath it.
 .sticky-head {
     top: 0;

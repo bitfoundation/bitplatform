@@ -273,7 +273,9 @@ private double gutterItemsCount = 6;";
 </BitScrollablePane>";
 
     private readonly string example8RazorCode = @"
-<BitScrollablePane Height=""10rem"" Class=""pane"" Modern>
+<BitToggle @bind-Value=""autoHideScrollbar"" Label=""AutoHideScrollbar"" />
+
+<BitScrollablePane Height=""10rem"" Class=""pane"" Modern AutoHideScrollbar=""autoHideScrollbar"">
     <p>
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
         These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take
@@ -303,10 +305,13 @@ private double gutterItemsCount = 6;";
     </p>
 </BitScrollablePane>
 
-<BitScrollablePane Horizontal Width=""20rem"" Class=""pane"" Modern Style=""--bit-scp-sbs:0.75rem"">
+<BitScrollablePane Horizontal Width=""20rem"" Class=""pane"" Modern
+                   AutoHideScrollbar=""autoHideScrollbar"" Style=""--bit-scp-sbs:0.75rem"">
     Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
     Each word carried meaning, each pause brought understanding.
 </BitScrollablePane>";
+    private readonly string example8CsharpCode = @"
+private bool autoHideScrollbar = true;";
 
     private readonly string example9RazorCode = @"
 <BitToggle @bind-Value=""fade"" Label=""Fade"" />
@@ -366,7 +371,9 @@ private double fadeSize = 2;";
 
 <BitScrollablePane Height=""12rem"" Class=""pane""
                    ScrollThrottle=""(int)scrollThrottle""
-                   OnScroll=""HandleScroll"">
+                   OnScroll=""HandleScroll""
+                   OnScrollStart=""HandleScrollStart""
+                   OnScrollEnd=""HandleScrollEnd"">
     @for (var i = 1; i <= 20; i++)
     {
         <div class=""item"">Row @i</div>
@@ -378,16 +385,22 @@ private double fadeSize = 2;";
     | PercentY: @(((scrollOffset?.PercentY ?? 0) * 100).ToString(""0""))%
     | AtTop: @(scrollOffset?.AtTop.ToString() ?? ""-"")
     | AtBottom: @(scrollOffset?.AtBottom.ToString() ?? ""-"")
-</div>";
+</div>
+<div>State: @scrollState</div>";
     private readonly string example10CsharpCode = @"
 private double scrollThrottle;
+private string scrollState = ""-"";
 private BitScrollOffset? scrollOffset;
 
 private void HandleScroll(BitScrollOffset offset)
 {
     scrollOffset = offset;
     StateHasChanged();
-}";
+}
+
+private void HandleScrollStart() => scrollState = ""scrolling..."";
+
+private void HandleScrollEnd(BitScrollOffset offset) => scrollState = $""stopped at {offset.Top:0} ({offset.PercentY * 100:0}%)"";";
 
     private readonly string example11RazorCode = @"
 <BitNumberField Label=""ReachOffset (px)"" Min=""0"" Step=""20"" @bind-Value=""reachOffset"" />
@@ -441,13 +454,16 @@ private async Task LoadMoreRows()
 <BitButton OnClick=""() => scrollablePane?.ScrollTo(null, 200)"">To 200px</BitButton>
 <BitButton OnClick=""() => scrollablePane?.ScrollBy(0, 100)"">Down 100px</BitButton>
 <BitButton OnClick='() => scrollablePane?.ScrollToElement(""scp-row-15"")'>To row 15</BitButton>
+<BitButton OnClick='() => scrollablePane?.ScrollToElement(""scp-row-15"", alignment: BitScrollAlignment.Center)'>To row 15, centered</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""ReadScrollOffset"">Read position</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""() => scrollablePane?.FocusAsync()"">Focus the pane</BitButton>
 
 <style>
     .sticky-head { position: sticky; top: 0; z-index: 1; padding: 0.25rem 0.5rem; background-color: #4A4A4A; color: #fff; }
 </style>
 
-<BitScrollablePane @ref=""scrollablePane"" Height=""12rem"" Class=""pane"" Smooth=""smooth"" ScrollPadding=""2.5rem"">
+<BitScrollablePane @ref=""scrollablePane"" Height=""12rem"" Class=""pane"" Smooth=""smooth""
+                   ScrollPadding=""2.5rem"" Focusable Role=""region"" AriaLabel=""Rows"">
     <div class=""sticky-head"">A header of the pane's own, and 2.5rem of ScrollPadding under it</div>
     @for (var i = 1; i <= 25; i++)
     {
@@ -549,6 +565,58 @@ private async Task AddAutoScrollContent()
 private bool focusable = true;";
 
     private readonly string example15RazorCode = @"
+<BitChoiceGroup @bind-Value=""snap""
+                Horizontal
+                Label=""Snap""
+                TItem=""BitChoiceGroupOption<BitScrollSnap>"" TValue=""BitScrollSnap"">
+    <BitChoiceGroupOption Text=""None"" Value=""BitScrollSnap.None"" />
+    <BitChoiceGroupOption Text=""Proximity"" Value=""BitScrollSnap.Proximity"" />
+    <BitChoiceGroupOption Text=""Mandatory"" Value=""BitScrollSnap.Mandatory"" />
+</BitChoiceGroup>
+
+<BitChoiceGroup @bind-Value=""snapAlign""
+                Horizontal
+                Label=""SnapAlign""
+                TItem=""BitChoiceGroupOption<BitScrollSnapAlign>"" TValue=""BitScrollSnapAlign"">
+    <BitChoiceGroupOption Text=""Start"" Value=""BitScrollSnapAlign.Start"" />
+    <BitChoiceGroupOption Text=""Center"" Value=""BitScrollSnapAlign.Center"" />
+    <BitChoiceGroupOption Text=""End"" Value=""BitScrollSnapAlign.End"" />
+</BitChoiceGroup>
+
+<style>
+    .snap-card { display: inline-block; width: 8rem; height: 4rem; margin: 0.5rem 0.5rem 0.5rem 0; padding: 0.5rem; color: #fff; background-color: #777; }
+</style>
+
+<BitScrollablePane Horizontal Width=""22rem"" Class=""pane"" Modern Snap=""snap"" SnapAlign=""snapAlign"">
+    @for (var i = 1; i <= 10; i++)
+    {
+        <div class=""snap-card"">Card @i</div>
+    }
+</BitScrollablePane>";
+    private readonly string example15CsharpCode = @"
+private BitScrollSnap snap = BitScrollSnap.Mandatory;
+private BitScrollSnapAlign snapAlign = BitScrollSnapAlign.Start;";
+
+    private readonly string example16RazorCode = @"
+<BitToggle @bind-Value=""dragScroll"" Label=""DragScroll"" />
+<BitToggle @bind-Value=""horizontalWheel"" Label=""HorizontalWheel"" />
+
+<style>
+    .snap-card { display: inline-block; width: 8rem; height: 4rem; margin: 0.5rem 0.5rem 0.5rem 0; padding: 0.5rem; color: #fff; background-color: #777; }
+</style>
+
+<BitScrollablePane Horizontal Width=""22rem"" Class=""pane"" Modern
+                   DragScroll=""dragScroll"" HorizontalWheel=""horizontalWheel"">
+    @for (var i = 1; i <= 10; i++)
+    {
+        <div class=""snap-card"">Card @i</div>
+    }
+</BitScrollablePane>";
+    private readonly string example16CsharpCode = @"
+private bool dragScroll = true;
+private bool horizontalWheel = true;";
+
+    private readonly string example17RazorCode = @"
 <style>
     .custom-pane {
         color: #fff;
@@ -600,8 +668,8 @@ private bool focusable = true;";
     </p>
 </BitScrollablePane>";
 
-    private readonly string example16RazorCode = @"
-<BitScrollablePane Dir=""BitDir.Rtl"" Height=""10rem"" Class=""pane"" Modern>
+    private readonly string example18RazorCode = @"
+<BitScrollablePane Dir=""BitDir.Rtl"" lang=""fa"" Height=""10rem"" Class=""pane"" Modern>
     <p>
         داستان‌ها روزگاری پیوند میان مردم را می‌بافتند، سمفونی‌ای از صداها که رویاهای مشترک را می‌ساخت.
         هر واژه معنایی داشت و هر مکث فهمی به همراه می‌آورد.
@@ -624,7 +692,7 @@ private bool focusable = true;";
     </p>
 </BitScrollablePane>
 
-<BitScrollablePane Dir=""BitDir.Rtl"" Horizontal Width=""20rem"" Class=""pane"" Fade>
+<BitScrollablePane Dir=""BitDir.Rtl"" lang=""fa"" Horizontal Width=""20rem"" Class=""pane"" Fade>
     داستان‌ها روزگاری پیوند میان مردم را می‌بافتند، سمفونی‌ای از صداها که رویاهای مشترک را می‌ساخت.
 </BitScrollablePane>";
 }

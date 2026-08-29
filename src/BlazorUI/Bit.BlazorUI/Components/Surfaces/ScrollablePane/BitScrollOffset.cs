@@ -45,13 +45,24 @@ public class BitScrollOffset
     /// </summary>
     public double ClientHeight { get; set; }
 
+    /// <summary>
+    /// Whether the pane was laid out right to left when it was measured.
+    /// </summary>
+    /// <remarks>
+    /// It is what tells the two readings of a <see cref="Left"/> of 0 apart: the visual left edge of a
+    /// left-to-right pane, and the visual right edge of a right-to-left one. It is only ever true for a
+    /// pane that has something to scroll sideways, since an axis with nothing to scroll reads the same
+    /// either way.
+    /// </remarks>
+    public bool Rtl { get; set; }
+
 
 
     /// <summary>
     /// The distance between the visual left edge of the content and the visual left edge of the pane,
     /// which is <see cref="Left"/> made positive and direction independent.
     /// </summary>
-    public double OffsetLeft => Left < 0 ? MaxLeft + Left : Left;
+    public double OffsetLeft => (Rtl || Left < 0) ? MaxLeft + Left : Left;
 
     /// <summary>
     /// The largest horizontal offset the pane can reach, which is how much of the content is out of sight.

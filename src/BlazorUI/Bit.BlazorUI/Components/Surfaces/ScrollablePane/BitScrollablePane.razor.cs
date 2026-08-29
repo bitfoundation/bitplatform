@@ -9,15 +9,16 @@
 /// assistive technology support of the platform it runs on and adds nothing between the reader and the
 /// content. What it adds is everything around that: the size the box takes, which axes it scrolls on,
 /// whether the scroll carries on into the page behind it, how the scrollbars look, a fade over the edges
-/// that still have content beyond them, a position reported back as it changes, a callback as each edge is
-/// reached, and a scrolling API - <see cref="ScrollToEnd"/>, <see cref="ScrollToStart"/>,
-/// <see cref="ScrollTo"/>, <see cref="ScrollBy"/>, <see cref="ScrollToElement"/> - that a page drives it
-/// with.
+/// that still have content beyond them, snap positions to come to rest on, a drag and a wheel that scroll
+/// a strip sideways, a position reported back as it changes, a callback as each edge is reached, and a
+/// scrolling API - <see cref="ScrollToEnd"/>, <see cref="ScrollToStart"/>, <see cref="ScrollTo"/>,
+/// <see cref="ScrollBy"/>, <see cref="ScrollToElement"/> - that a page drives it with.
 /// <br />
 /// Nothing on the browser side is set up for a pane that asked for none of it: a pane that only sizes a box
 /// and styles its scrollbars is a single div with a style attribute, and the scroll listener, the observers
 /// and the round trips only appear once <see cref="AutoScroll"/>, <see cref="Fade"/>,
-/// <see cref="OnScroll"/> or one of the four edge callbacks is used.
+/// <see cref="DragScroll"/>, <see cref="HorizontalWheel"/>, <see cref="OnScroll"/>,
+/// <see cref="OnScrollStart"/>, <see cref="OnScrollEnd"/> or one of the four edge callbacks is used.
 /// </remarks>
 public partial class BitScrollablePane : BitComponentBase
 {
@@ -41,7 +42,13 @@ public partial class BitScrollablePane : BitComponentBase
 
     // Whether anything the browser side does is asked for. Everything else this component offers is CSS,
     // so a pane that wants none of these never sets up a listener, an observer or a .NET object reference.
-    private bool _needsJs => IsEnabled && (AutoScroll || OnScroll.HasDelegate || _watchesContent);
+    private bool _needsJs => IsEnabled && (AutoScroll
+                                           || DragScroll
+                                           || HorizontalWheel
+                                           || OnScroll.HasDelegate
+                                           || OnScrollStart.HasDelegate
+                                           || OnScrollEnd.HasDelegate
+                                           || _watchesContent);
 
     // Whether anything the pane draws or reports depends on the size of its content rather than only on
     // where it stands, which is what makes a change of content worth re-measuring after.
@@ -105,6 +112,23 @@ public partial class BitScrollablePane : BitComponentBase
     public bool AutoWidth { get; set; }
 
     /// <summary>
+    /// Keeps the <see cref="Modern"/> scrollbar of the pane out of sight until the pointer is over it.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// This is the overlay behavior of a modern operating system, brought to a pane whose scrollbar the
+    /// theme draws: the bar is there the moment it is wanted and takes no attention while it is not. It
+    /// only applies to the scrollbar <see cref="Modern"/> draws, and the bar comes back for a pane that
+    /// holds the focus as well as for one under the pointer, so it is never hidden from a keyboard reader.
+    /// <br />
+    /// A scrollbar that is not on the screen is not saying that there is more content, so it is worth
+    /// pairing with <see cref="Fade"/>.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool AutoHideScrollbar { get; set; }
+
+    /// <summary>
     /// Alias for the ChildContent parameter.
     /// </summary>
     [Parameter] public RenderFragment? Body { get; set; }
@@ -113,6 +137,25 @@ public partial class BitScrollablePane : BitComponentBase
     /// The content of the pane, it can be any custom tag or text.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Lets the pane be scrolled by dragging its content with a pointer.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// This is what a strip of cards, a board or a wide diagram wants: a mouse has no obvious way of
+    /// scrolling sideways, and dragging the content is the way every map and every canvas on the web has
+    /// answered that. A touch already drags, so this is only ever applied to a mouse or a pen.
+    /// <br />
+    /// The drag only starts once the pointer has moved a few pixels, so a click on something inside the
+    /// pane is still a click, and the click that ends a real drag is swallowed rather than delivered to
+    /// whatever happened to be under the pointer. Drags that start on a form control, a link or a button
+    /// are left alone, as is anything marked <c>data-bit-scp-nodrag</c>, so selecting text in a field
+    /// inside the pane still works.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool DragScroll { get; set; }
 
     /// <summary>
     /// Fades out each edge of the pane that still has content beyond it.
@@ -226,6 +269,22 @@ public partial class BitScrollablePane : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool Horizontal { get; set; }
+
+    /// <summary>
+    /// Turns a vertical wheel over a pane that only scrolls sideways into a sideways scroll.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// A wheel mouse has no horizontal axis, so a strip that only scrolls sideways cannot be scrolled with
+    /// it at all unless the vertical wheel is taken to mean the only axis the pane has. That is the whole
+    /// of what this does, and it is deliberately narrow: it acts only while the pane has something to
+    /// scroll sideways and nothing to scroll up and down, it leaves a wheel that already carries a
+    /// horizontal delta - a trackpad, a tilt wheel - alone, and it hands the scroll back to the page as
+    /// soon as the pane reaches the end it is being pushed towards, so a page is never left unscrollable
+    /// under the pointer.
+    /// </remarks>
+    [Parameter] public bool HorizontalWheel { get; set; }
 
     /// <summary>
     /// The maximum height of the pane.
@@ -344,6 +403,29 @@ public partial class BitScrollablePane : BitComponentBase
     /// reached is better served by the four edge callbacks, which are made once per arrival.
     /// </remarks>
     [Parameter] public EventCallback<BitScrollOffset> OnScroll { get; set; }
+
+    /// <summary>
+    /// Callback for when the pane has come to rest after being scrolled, carrying where it stopped.
+    /// </summary>
+    /// <remarks>
+    /// It is the browser's own <c>scrollend</c>: one call once the scroll is over - the finger lifted, the
+    /// scrollbar released, the momentum spent, the animated move finished - rather than one per frame of
+    /// getting there. That makes it the right place for the work that is too expensive to do while a
+    /// scroll is running: saving the reading position, loading what the reader has settled on, or lighting
+    /// up the item a carousel came to rest at. Browsers without the event fall back to a short idle, so a
+    /// pane is never left without the call.
+    /// </remarks>
+    [Parameter] public EventCallback<BitScrollOffset> OnScrollEnd { get; set; }
+
+    /// <summary>
+    /// Callback for when the pane starts being scrolled, carrying where it stood as it set off.
+    /// </summary>
+    /// <remarks>
+    /// It is called once at the start of a scroll rather than for as long as one is running, which is what
+    /// a page that gets out of the way while the reader is moving - a toolbar that folds away, a hover card
+    /// that closes - wants. <see cref="OnScrollEnd"/> is the other half of it.
+    /// </remarks>
+    [Parameter] public EventCallback<BitScrollOffset> OnScrollStart { get; set; }
 
     /// <summary>
     /// Controls the visibility of scrollbars in the pane.
@@ -489,6 +571,38 @@ public partial class BitScrollablePane : BitComponentBase
     public bool Smooth { get; set; }
 
     /// <summary>
+    /// Makes the pane come to rest on the snap positions of its content instead of anywhere between them.
+    /// </summary>
+    /// <remarks>
+    /// This is the CSS <c>scroll-snap-type</c> property, which is how the platform itself builds a
+    /// carousel, a set of pages or a strip of cards that always stops on an item: the scrolling stays the
+    /// browser's, with all of its momentum and its keyboard handling, and only where it is allowed to come
+    /// to rest is decided here.
+    /// <br />
+    /// Snapping needs the content to say where a snap position is, which is what <see cref="SnapAlign"/>
+    /// puts on the direct children of the pane. Both axes are snapped, each one only where there is
+    /// something to scroll.
+    /// <br />
+    /// A pane that is also moved from code - by the scrolling API, or by the pinning <see cref="AutoScroll"/>
+    /// does - is worth keeping to <see cref="BitScrollSnap.Proximity"/>, since a mandatory snap pulls such a
+    /// move onto the nearest snap position rather than leaving it where it was put.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public BitScrollSnap? Snap { get; set; }
+
+    /// <summary>
+    /// Where the direct children of the pane come to rest in it while <see cref="Snap"/> is on.
+    /// </summary>
+    /// <remarks>
+    /// It is the CSS <c>scroll-snap-align</c> property, applied to the direct children of the pane. A pane
+    /// whose items sit inside a layout container of their own - the flex row a horizontal strip is laid
+    /// out with - has that container as its only child, so give the items the property directly there
+    /// instead of setting this.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitScrollSnapAlign? SnapAlign { get; set; }
+
+    /// <summary>
     /// The width of the pane.
     /// </summary>
     [Parameter, ResetStyleBuilder]
@@ -499,6 +613,10 @@ public partial class BitScrollablePane : BitComponentBase
     /// <summary>
     /// Scrolls the pane to the end of its content, both horizontally and vertically.
     /// </summary>
+    /// <remarks>
+    /// The end is the end of the content rather than a side of the screen, so on the horizontal axis it is
+    /// the visual left edge of a right-to-left pane and the visual right edge of every other one.
+    /// </remarks>
     /// <param name="smooth">
     /// Whether the move is animated. Leaving it unset follows the <see cref="Smooth"/> parameter of the pane.
     /// </param>
@@ -512,6 +630,10 @@ public partial class BitScrollablePane : BitComponentBase
     /// <summary>
     /// Scrolls the pane back to the start of its content, both horizontally and vertically.
     /// </summary>
+    /// <remarks>
+    /// The start is the start of the content rather than a side of the screen, so on the horizontal axis it
+    /// is the visual right edge of a right-to-left pane and the visual left edge of every other one.
+    /// </remarks>
     /// <param name="smooth">
     /// Whether the move is animated. Leaving it unset follows the <see cref="Smooth"/> parameter of the pane.
     /// </param>
@@ -527,12 +649,14 @@ public partial class BitScrollablePane : BitComponentBase
     /// </summary>
     /// <remarks>
     /// An axis that is left null stays where it is, so one call serves "scroll to the top", "scroll to this
-    /// column" and "scroll to both" alike. Positions outside the content are clamped to it, and a
-    /// right-to-left pane is given the same offsets as a left-to-right one: 0 is the start of the content
-    /// either way.
+    /// column" and "scroll to both" alike, and positions outside the content are clamped to it.
+    /// <br />
+    /// The horizontal offset is measured from the visual left edge of the content whichever way the pane
+    /// reads, which is the same way <see cref="BitScrollOffset.OffsetLeft"/> reports it: a position read
+    /// off the pane can be handed straight back here to return to it.
     /// </remarks>
     /// <param name="left">
-    /// How far from the start of the content, along the horizontal axis, or null to leave that axis alone.
+    /// How far from the visual left edge of the content, or null to leave that axis alone.
     /// </param>
     /// <param name="top">
     /// How far from the top of the content, or null to leave the vertical axis alone.
@@ -551,11 +675,13 @@ public partial class BitScrollablePane : BitComponentBase
     /// Scrolls the pane by a distance from wherever it currently stands, in pixels.
     /// </summary>
     /// <remarks>
-    /// The distances are measured in reading order, so a positive <paramref name="x"/> moves a
-    /// right-to-left pane leftwards, which is the way its content runs.
+    /// The horizontal distance is measured on the screen whichever way the pane reads, so a positive
+    /// <paramref name="x"/> always moves the pane rightwards - the same way <see cref="ScrollTo"/> counts
+    /// its offset. <see cref="ScrollToStart"/> and <see cref="ScrollToEnd"/> are the two calls that follow
+    /// the content rather than the screen.
     /// </remarks>
     /// <param name="x">
-    /// How far to move along the horizontal axis; negative values move back towards the start.
+    /// How far to move the pane rightwards; negative values move it leftwards.
     /// </param>
     /// <param name="y">
     /// How far to move down; negative values move back up.
@@ -589,12 +715,38 @@ public partial class BitScrollablePane : BitComponentBase
     /// <param name="smooth">
     /// Whether the move is animated. Leaving it unset follows the <see cref="Smooth"/> parameter of the pane.
     /// </param>
-    public ValueTask ScrollToElement(string elementId, double offset = 0, bool? smooth = null)
+    /// <param name="alignment">
+    /// Where in the pane the element is left. The default brings it to the start of the pane, which is what
+    /// a fragment navigation does; <see cref="BitScrollAlignment.Nearest"/> is the one that leaves a pane
+    /// that is already showing the element alone.
+    /// </param>
+    public ValueTask ScrollToElement(string elementId,
+                                     double offset = 0,
+                                     bool? smooth = null,
+                                     BitScrollAlignment alignment = BitScrollAlignment.Start)
     {
         if (IsRendered is false || elementId.HasNoValue()) return ValueTask.CompletedTask;
 
-        return _js.BitScrollablePaneScrollToElement(RootElement, elementId, offset, smooth ?? Smooth);
+        return _js.BitScrollablePaneScrollToElement(RootElement, elementId, offset, smooth ?? Smooth, _AlignmentMap[alignment]);
     }
+
+    /// <summary>
+    /// Gives the focus to the pane itself.
+    /// </summary>
+    /// <remarks>
+    /// A pane only takes the focus while something has put it in the tab order - <see cref="Focusable"/>,
+    /// or a <see cref="BitComponentBase.TabIndex"/> of its own - and once it holds the focus the arrow
+    /// keys, Page Up and Page Down, Home and End all scroll it.
+    /// </remarks>
+    public ValueTask FocusAsync() => RootElement.FocusAsync();
+
+    /// <summary>
+    /// Gives the focus to the pane itself, optionally without scrolling it into view.
+    /// </summary>
+    /// <param name="preventScroll">
+    /// Whether the browser is asked to leave the page where it is instead of bringing the pane into view.
+    /// </param>
+    public ValueTask FocusAsync(bool preventScroll) => RootElement.FocusAsync(preventScroll);
 
     /// <summary>
     /// Reads where the pane currently stands, straight from the browser.
@@ -635,6 +787,22 @@ public partial class BitScrollablePane : BitComponentBase
         if (IsDisposed || offset is null) return;
 
         await OnScroll.InvokeAsync(offset);
+    }
+
+    [JSInvokable("OnScrollStart")]
+    public async Task _OnScrollStart(BitScrollOffset offset)
+    {
+        if (IsDisposed || offset is null) return;
+
+        await OnScrollStart.InvokeAsync(offset);
+    }
+
+    [JSInvokable("OnScrollEnd")]
+    public async Task _OnScrollEnd(BitScrollOffset offset)
+    {
+        if (IsDisposed || offset is null) return;
+
+        await OnScrollEnd.InvokeAsync(offset);
     }
 
     [JSInvokable("OnReached")]
@@ -744,6 +912,16 @@ public partial class BitScrollablePane : BitComponentBase
 
         StyleBuilder.Register(() => ScrollPadding.HasValue() ? $"scroll-padding:{ScrollPadding}" : string.Empty);
 
+        // Both axes are asked for, each one snapping only where there is anything to scroll, so one pane
+        // does not have to say which way it runs twice.
+        StyleBuilder.Register(() => Snap switch
+        {
+            BitScrollSnap.None => "scroll-snap-type:none",
+            BitScrollSnap.Proximity => "scroll-snap-type:both proximity",
+            BitScrollSnap.Mandatory => "scroll-snap-type:both mandatory",
+            _ => string.Empty
+        });
+
         StyleBuilder.Register(() => FadeSize.HasValue() ? $"--bit-scp-fsz:{FadeSize}" : string.Empty);
     }
 
@@ -751,11 +929,24 @@ public partial class BitScrollablePane : BitComponentBase
     {
         ClassBuilder.Register(() => Modern ? "bit-scp-mod" : string.Empty);
 
+        ClassBuilder.Register(() => AutoHideScrollbar ? "bit-scp-ahs" : string.Empty);
+
         ClassBuilder.Register(() => Horizontal ? "bit-scp-hor" : string.Empty);
 
         ClassBuilder.Register(() => Smooth ? "bit-scp-smt" : string.Empty);
 
         ClassBuilder.Register(() => Fade ? "bit-scp-fad" : string.Empty);
+
+        ClassBuilder.Register(() => DragScroll ? "bit-scp-drg" : string.Empty);
+
+        ClassBuilder.Register(() => SnapAlign switch
+        {
+            BitScrollSnapAlign.None => "bit-scp-sna-non",
+            BitScrollSnapAlign.Start => "bit-scp-sna-str",
+            BitScrollSnapAlign.Center => "bit-scp-sna-cnt",
+            BitScrollSnapAlign.End => "bit-scp-sna-end",
+            _ => string.Empty
+        });
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -863,6 +1054,8 @@ public partial class BitScrollablePane : BitComponentBase
         Offset = Math.Max(0, ReachOffset),
         Throttle = Math.Max(0, ScrollThrottle),
         Scroll = OnScroll.HasDelegate,
+        ScrollStart = OnScrollStart.HasDelegate,
+        ScrollEnd = OnScrollEnd.HasDelegate,
         Top = OnReachedTop.HasDelegate,
         Bottom = OnReachedBottom.HasDelegate,
         Left = OnReachedLeft.HasDelegate,
@@ -870,9 +1063,19 @@ public partial class BitScrollablePane : BitComponentBase
         AutoScroll = AutoScroll,
         AutoScrollThreshold = Math.Max(0, AutoScrollThreshold),
         Smooth = Smooth,
+        Drag = DragScroll,
+        Wheel = HorizontalWheel,
     };
 
 
+
+    private static readonly Dictionary<BitScrollAlignment, string> _AlignmentMap = new()
+    {
+        { BitScrollAlignment.Start, "start" },
+        { BitScrollAlignment.Center, "center" },
+        { BitScrollAlignment.End, "end" },
+        { BitScrollAlignment.Nearest, "nearest" },
+    };
 
     private static readonly Dictionary<BitOverflow, string> _OverflowMap = new()
     {

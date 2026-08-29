@@ -33,6 +33,37 @@
     white-space: nowrap;
 }
 
+// A pane whose content is dragged with the pointer. The cursor is the whole of what says so before the
+// drag starts; once it is under way the browser side marks the element, and the selection is taken off
+// so that dragging over text drags the pane instead of highlighting what it passes over.
+.bit-scp-drg {
+    cursor: grab;
+
+    &[data-bit-scp-drag] {
+        cursor: grabbing;
+        user-select: none;
+    }
+}
+
+// Where the direct children of a snapping pane come to rest in it. It is written onto the children from
+// here rather than asked of the consumer, since scroll-snap-align belongs to the items and the items of
+// a pane are the consumer's - a class of the pane is the only place both sides can reach.
+.bit-scp-sna-non > * {
+    scroll-snap-align: none;
+}
+
+.bit-scp-sna-str > * {
+    scroll-snap-align: start;
+}
+
+.bit-scp-sna-cnt > * {
+    scroll-snap-align: center;
+}
+
+.bit-scp-sna-end > * {
+    scroll-snap-align: end;
+}
+
 // Applies to every move the pane does not make by hand: the scrolling API of the component, a fragment
 // navigation into it, and the browser bringing a focused element inside it into view.
 .bit-scp-smt {
@@ -79,6 +110,30 @@
     }
 }
 
+// The overlay behavior of a modern operating system, for the scrollbar the theme draws: the thumb is
+// only painted while the pointer is over the pane, while something inside it holds the focus, or while
+// the pane itself does - so it is never hidden from a reader who is scrolling it with the keyboard.
+// Only the color goes away: the bar keeps its room, so nothing in the pane moves as it comes and goes.
+.bit-scp-mod.bit-scp-ahs {
+    &::-webkit-scrollbar-thumb {
+        background-color: transparent;
+    }
+
+    &:hover, &:focus, &:focus-within, &[data-bit-scp-drag] {
+        &::-webkit-scrollbar-thumb {
+            background-color: $clr-fg-ter;
+
+            &:hover {
+                background-color: $clr-fg-ter-hover;
+            }
+
+            &:active {
+                background-color: $clr-fg-ter-active;
+            }
+        }
+    }
+}
+
 // Firefox has no ::-webkit-scrollbar pseudo-elements, so the two standard properties are the only way to
 // reach its scrollbar at all. They are kept away from the engines that DO support the pseudo-elements,
 // because Chromium 121 and later let any non-auto standard value win over them - which would take the
@@ -87,6 +142,14 @@
     .bit-scp-mod {
         scrollbar-width: thin;
         scrollbar-color: $clr-fg-ter transparent;
+    }
+
+    .bit-scp-mod.bit-scp-ahs {
+        scrollbar-color: transparent transparent;
+
+        &:hover, &:focus, &:focus-within, &[data-bit-scp-drag] {
+            scrollbar-color: $clr-fg-ter transparent;
+        }
     }
 }
 

@@ -35,6 +35,16 @@ internal record class BitScrollablePaneOptions
     public bool Scroll { get; set; }
 
     /// <summary>
+    /// Whether the start of a scroll is reported back.
+    /// </summary>
+    public bool ScrollStart { get; set; }
+
+    /// <summary>
+    /// Whether the end of a scroll is reported back.
+    /// </summary>
+    public bool ScrollEnd { get; set; }
+
+    /// <summary>
     /// Whether reaching the top of the content is reported back.
     /// </summary>
     public bool Top { get; set; }
@@ -68,4 +78,14 @@ internal record class BitScrollablePaneOptions
     /// Whether the moves the pane makes itself are animated.
     /// </summary>
     public bool Smooth { get; set; }
+
+    /// <summary>
+    /// Whether the pane can be scrolled by dragging its content with a pointer.
+    /// </summary>
+    public bool Drag { get; set; }
+
+    /// <summary>
+    /// Whether a vertical wheel over a pane that only scrolls sideways scrolls it sideways.
+    /// </summary>
+    public bool Wheel { get; set; }
 }

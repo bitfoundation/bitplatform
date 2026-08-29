@@ -549,6 +549,21 @@ public class BitScrollablePaneTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitScrollablePaneShouldRespectAutoHideScrollbar()
+    {
+        var component = RenderComponent<BitScrollablePane>(parameters =>
+        {
+            parameters.Add(p => p.Modern, true);
+            parameters.Add(p => p.AutoHideScrollbar, true);
+        });
+
+        var root = component.Find(".bit-scp");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-scp-mod"));
+        Assert.IsTrue(root.ClassList.Contains("bit-scp-ahs"));
+    }
+
+    [TestMethod]
     public void BitScrollablePaneShouldRespectFadeAndFadeSize()
     {
         var component = RenderComponent<BitScrollablePane>(parameters =>
@@ -561,6 +576,70 @@ public class BitScrollablePaneTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("bit-scp-fad"));
         Assert.IsTrue(root.GetAttribute("style")!.Contains("--bit-scp-fsz:3rem"));
+    }
+
+    #endregion
+
+
+
+    #region snapping
+
+    [TestMethod,
+        DataRow(BitScrollSnap.None, "scroll-snap-type:none"),
+        DataRow(BitScrollSnap.Proximity, "scroll-snap-type:both proximity"),
+        DataRow(BitScrollSnap.Mandatory, "scroll-snap-type:both mandatory")]
+    public void BitScrollablePaneShouldRespectSnap(BitScrollSnap snap, string expected)
+    {
+        var component = RenderComponent<BitScrollablePane>(parameters =>
+        {
+            parameters.Add(p => p.Snap, snap);
+        });
+
+        Assert.IsTrue(StyleOf(component).Contains(expected));
+    }
+
+    [TestMethod]
+    public void BitScrollablePaneShouldNotSnapByDefault()
+    {
+        var component = RenderComponent<BitScrollablePane>();
+
+        Assert.IsFalse(StyleOf(component).Contains("scroll-snap-type"));
+    }
+
+    [TestMethod,
+        DataRow(BitScrollSnapAlign.None, "bit-scp-sna-non"),
+        DataRow(BitScrollSnapAlign.Start, "bit-scp-sna-str"),
+        DataRow(BitScrollSnapAlign.Center, "bit-scp-sna-cnt"),
+        DataRow(BitScrollSnapAlign.End, "bit-scp-sna-end")]
+    public void BitScrollablePaneShouldRespectSnapAlign(BitScrollSnapAlign align, string expected)
+    {
+        var component = RenderComponent<BitScrollablePane>(parameters =>
+        {
+            parameters.Add(p => p.SnapAlign, align);
+        });
+
+        Assert.IsTrue(component.Find(".bit-scp").ClassList.Contains(expected));
+    }
+
+    [TestMethod]
+    public void BitScrollablePaneShouldNotAlignSnapPositionsByDefault()
+    {
+        var classes = RenderComponent<BitScrollablePane>().Find(".bit-scp").ClassList;
+
+        Assert.IsFalse(classes.Any(c => c.StartsWith("bit-scp-sna-")));
+    }
+
+    [TestMethod]
+    public void BitScrollablePaneShouldNotSetupJsForSnapping()
+    {
+        // Snapping is the browser's own, so it costs no listener, no observer and no round trip.
+        RenderComponent<BitScrollablePane>(parameters =>
+        {
+            parameters.Add(p => p.Snap, BitScrollSnap.Mandatory);
+            parameters.Add(p => p.SnapAlign, BitScrollSnapAlign.Center);
+        });
+
+        Assert.AreEqual(0, InvocationCount(Setup));
     }
 
     #endregion
@@ -580,7 +659,11 @@ public class BitScrollablePaneTests : BunitTestContext
     [TestMethod,
         DataRow("Fade"),
         DataRow("AutoScroll"),
+        DataRow("DragScroll"),
+        DataRow("HorizontalWheel"),
         DataRow("OnScroll"),
+        DataRow("OnScrollStart"),
+        DataRow("OnScrollEnd"),
         DataRow("OnReachedTop"),
         DataRow("OnReachedBottom"),
         DataRow("OnReachedLeft"),
@@ -593,7 +676,11 @@ public class BitScrollablePaneTests : BunitTestContext
             {
                 case "Fade": parameters.Add(p => p.Fade, true); break;
                 case "AutoScroll": parameters.Add(p => p.AutoScroll, true); break;
+                case "DragScroll": parameters.Add(p => p.DragScroll, true); break;
+                case "HorizontalWheel": parameters.Add(p => p.HorizontalWheel, true); break;
                 case "OnScroll": parameters.Add(p => p.OnScroll, _ => { }); break;
+                case "OnScrollStart": parameters.Add(p => p.OnScrollStart, _ => { }); break;
+                case "OnScrollEnd": parameters.Add(p => p.OnScrollEnd, _ => { }); break;
                 case "OnReachedTop": parameters.Add(p => p.OnReachedTop, () => { }); break;
                 case "OnReachedBottom": parameters.Add(p => p.OnReachedBottom, () => { }); break;
                 case "OnReachedLeft": parameters.Add(p => p.OnReachedLeft, () => { }); break;
@@ -602,6 +689,61 @@ public class BitScrollablePaneTests : BunitTestContext
         });
 
         Assert.AreEqual(1, InvocationCount(Setup));
+    }
+
+    [TestMethod]
+    public void BitScrollablePaneShouldRespectDragScroll()
+    {
+        var component = RenderComponent<BitScrollablePane>(parameters =>
+        {
+            parameters.Add(p => p.DragScroll, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-scp").ClassList.Contains("bit-scp-drg"));
+        Assert.AreEqual(true, Option(SetupOptions(), "Drag"));
+    }
+
+    [TestMethod]
+    public void BitScrollablePaneShouldRespectHorizontalWheel()
+    {
+        RenderComponent<BitScrollablePane>(parameters =>
+        {
+            parameters.Add(p => p.HorizontalWheel, true);
+        });
+
+        Assert.AreEqual(true, Option(SetupOptions(), "Wheel"));
+    }
+
+    [TestMethod]
+    public void BitScrollablePaneShouldHandOverTheScrollStartAndEndFlags()
+    {
+        RenderComponent<BitScrollablePane>(parameters =>
+        {
+            parameters.Add(p => p.OnScrollStart, _ => { });
+            parameters.Add(p => p.OnScrollEnd, _ => { });
+        });
+
+        var options = SetupOptions();
+
+        Assert.AreEqual(true, Option(options, "ScrollStart"));
+        Assert.AreEqual(true, Option(options, "ScrollEnd"));
+        Assert.AreEqual(false, Option(options, "Scroll"));
+    }
+
+    [TestMethod]
+    public void BitScrollablePaneShouldNotWatchTheContentForADragOrAWheelAlone()
+    {
+        // Neither of the two interactions is drawn from the size of the content, so a pane that asked
+        // only for them has nothing to re-measure after a render of it.
+        var component = RenderComponent<BitScrollablePane>(parameters =>
+        {
+            parameters.Add(p => p.DragScroll, true);
+            parameters.Add(p => p.HorizontalWheel, true);
+        });
+
+        component.Render();
+
+        Assert.AreEqual(0, InvocationCount(Refresh));
     }
 
     [TestMethod]
@@ -899,6 +1041,34 @@ public class BitScrollablePaneTests : BunitTestContext
 
         Assert.AreEqual("row-3", arguments[1]);
         Assert.AreEqual(16d, arguments[2]);
+        Assert.AreEqual("start", arguments[4]);
+    }
+
+    [TestMethod,
+        DataRow(BitScrollAlignment.Start, "start"),
+        DataRow(BitScrollAlignment.Center, "center"),
+        DataRow(BitScrollAlignment.End, "end"),
+        DataRow(BitScrollAlignment.Nearest, "nearest")]
+    public async Task BitScrollablePaneScrollToElementShouldHandOverTheAlignment(BitScrollAlignment alignment, string expected)
+    {
+        var component = RenderComponent<BitScrollablePane>();
+
+        await component.Instance.ScrollToElement("row-3", alignment: alignment);
+
+        Assert.AreEqual(expected, InvocationsOf(ScrollToElement).Single().Arguments[4]);
+    }
+
+    [TestMethod]
+    public async Task BitScrollablePaneFocusAsyncShouldFocusTheRootElement()
+    {
+        var component = RenderComponent<BitScrollablePane>(parameters =>
+        {
+            parameters.Add(p => p.Focusable, true);
+        });
+
+        await component.InvokeAsync(async () => await component.Instance.FocusAsync());
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase)));
     }
 
     [TestMethod]
@@ -1022,6 +1192,42 @@ public class BitScrollablePaneTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitScrollablePaneShouldInvokeOnScrollStartAndOnScrollEnd()
+    {
+        double? started = null;
+        double? ended = null;
+
+        var component = RenderComponent<BitScrollablePane>(parameters =>
+        {
+            parameters.Add(p => p.OnScrollStart, offset => started = offset.Top);
+            parameters.Add(p => p.OnScrollEnd, offset => ended = offset.Top);
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnScrollStart(new BitScrollOffset { Top = 10 }));
+        await component.InvokeAsync(() => component.Instance._OnScrollEnd(new BitScrollOffset { Top = 90 }));
+
+        Assert.AreEqual(10d, started);
+        Assert.AreEqual(90d, ended);
+    }
+
+    [TestMethod]
+    public async Task BitScrollablePaneShouldIgnoreANullScrollStartOrEndOffset()
+    {
+        var calls = 0;
+
+        var component = RenderComponent<BitScrollablePane>(parameters =>
+        {
+            parameters.Add(p => p.OnScrollStart, _ => calls++);
+            parameters.Add(p => p.OnScrollEnd, _ => calls++);
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnScrollStart(null!));
+        await component.InvokeAsync(() => component.Instance._OnScrollEnd(null!));
+
+        Assert.AreEqual(0, calls);
+    }
+
+    [TestMethod]
     public async Task BitScrollablePaneShouldIgnoreANullScrollOffset()
     {
         var scrolled = false;
@@ -1076,6 +1282,30 @@ public class BitScrollablePaneTests : BunitTestContext
         Assert.AreEqual(0.4, offset.PercentX);
         Assert.IsFalse(offset.AtLeft);
         Assert.IsFalse(offset.AtRight);
+    }
+
+    [TestMethod]
+    public void BitScrollOffsetShouldReadTheStartOfARightToLeftPaneAsItsRightEdge()
+    {
+        // The one reading the sign cannot settle on its own: a scrollLeft of 0 is the visual LEFT edge of
+        // a left to right pane and the visual RIGHT edge of a right to left one, which is what Rtl says.
+        var offset = new BitScrollOffset { Left = 0, ScrollWidth = 400, ClientWidth = 200, Rtl = true };
+
+        Assert.AreEqual(200, offset.OffsetLeft);
+        Assert.IsFalse(offset.AtLeft);
+        Assert.IsTrue(offset.AtRight);
+        Assert.AreEqual(1, offset.PercentX);
+    }
+
+    [TestMethod]
+    public void BitScrollOffsetShouldReadTheEndOfARightToLeftPaneAsItsLeftEdge()
+    {
+        var offset = new BitScrollOffset { Left = -200, ScrollWidth = 400, ClientWidth = 200, Rtl = true };
+
+        Assert.AreEqual(0, offset.OffsetLeft);
+        Assert.IsTrue(offset.AtLeft);
+        Assert.IsFalse(offset.AtRight);
+        Assert.AreEqual(0, offset.PercentX);
     }
 
     [TestMethod]

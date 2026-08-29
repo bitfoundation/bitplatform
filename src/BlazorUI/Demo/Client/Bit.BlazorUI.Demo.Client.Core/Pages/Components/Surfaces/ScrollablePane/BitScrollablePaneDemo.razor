@@ -2,12 +2,12 @@
 
 <PageOutlet Url="components/scrollablepane"
             Title="ScrollablePane"
-            Description="A ScrollablePane is a box that scrolls whatever is put in it: it sizes the box, picks the axes, styles the scrollbars, fades the edges that have more beyond them, reports where it stands and scrolls itself from code." />
+            Description="A ScrollablePane is a box that scrolls whatever is put in it: it sizes the box, picks the axes, styles the scrollbars, fades the edges that have more beyond them, snaps onto its items, scrolls to a drag or a wheel, reports where it stands and scrolls itself from code." />
 
 <div>
     <DemoPage Name="ScrollablePane"
               SecondaryNames="@(["ScrollView", "ScrollArea", "ScrollViewer"])"
-              Description="ScrollablePane is a box that scrolls whatever is put in it, for content that does not fit in the room the page has for it. The scrolling is the browser's own, so the momentum, the keyboard and the assistive technology of the platform come with it; what the component adds is everything around that. It sizes the box - fixed, full, fit, or growing up to a maximum before it starts scrolling - picks which axes scroll, keeps a scroll from carrying on into the page behind it, reserves the gutter so the layout does not jump, restyles the scrollbars in the colors of the theme, fades the edges that still have content beyond them, and puts the box in the tab order for readers who scroll with the keyboard. It reports where it stands as it moves and calls back as each edge is reached, which is what an endless list is built on; it can be driven from code with ScrollTo, ScrollBy, ScrollToStart, ScrollToEnd and ScrollToElement; and it can pin itself to the end of its content as the content grows, without ever dragging back a reader who scrolled up to look at something."
+              Description="ScrollablePane is a box that scrolls whatever is put in it, for content that does not fit in the room the page has for it. The scrolling is the browser's own, so the momentum, the keyboard and the assistive technology of the platform come with it; what the component adds is everything around that. It sizes the box - fixed, full, fit, or growing up to a maximum before it starts scrolling - picks which axes scroll, keeps a scroll from carrying on into the page behind it, reserves the gutter so the layout does not jump, restyles the scrollbars in the colors of the theme and hides them until they are wanted, fades the edges that still have content beyond them, snaps onto the items of a strip, answers a drag and a wheel where a mouse has no other way of scrolling sideways, and puts the box in the tab order for readers who scroll with the keyboard. It reports where it stands as it moves, brackets a whole scroll with a start and an end, and calls back as each edge is reached, which is what an endless list is built on; it can be driven from code with ScrollTo, ScrollBy, ScrollToStart, ScrollToEnd and ScrollToElement; and it can pin itself to the end of its content as the content grows, without ever dragging back a reader who scrolled up to look at something."
               Parameters="componentParameters"
               PublicMembers="componentPublicMembers"
               SubClasses="componentSubClasses"
@@ -17,10 +17,11 @@
         <NotesTemplate>
             <BitText>
                 A pane costs nothing on the browser side until it is asked for something only the browser can
-                answer. Sizing, the overflow axes, the gutter and the scrollbar styling are all CSS, so such a
-                pane is a single element with a style attribute. The scroll listener, the observers and the
-                round trips appear only once <b>AutoScroll</b>, <b>Fade</b>, <b>OnScroll</b> or one of the four
-                <b>OnReached*</b> callbacks is used.
+                answer. Sizing, the overflow axes, the gutter, the snapping and the scrollbar styling are all
+                CSS, so such a pane is a single element with a style attribute. The scroll listener, the
+                observers and the round trips appear only once <b>AutoScroll</b>, <b>Fade</b>,
+                <b>DragScroll</b>, <b>HorizontalWheel</b>, <b>OnScroll</b>, <b>OnScrollStart</b>,
+                <b>OnScrollEnd</b> or one of the four <b>OnReached*</b> callbacks is used.
             </BitText>
             <br />
             <BitText>
@@ -398,7 +399,7 @@
                 </BitScrollablePane>
             </DemoExample>
 
-            <DemoExample Title="Modern" RazorCode="@example8RazorCode" Id="example8">
+            <DemoExample Title="Modern" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
                 <div>
                     <b>Modern</b> takes the scrollbar away from the operating system and gives it to the theme: a
                     thin rounded thumb over a transparent track, with no arrow buttons and no corner, in the
@@ -411,9 +412,19 @@
                     is given a thin bar in the same colors. The thickness is the <b>--bit-scp-sbs</b> custom
                     property, so a pane can retune it from its own <b>Style</b>.
                 </div>
+                <br />
+                <div>
+                    <b>AutoHideScrollbar</b> adds the other half of an overlay scrollbar: the thumb is only
+                    painted while the pointer is over the pane or something in it holds the focus, so it is
+                    there the moment it is wanted and takes no attention while it is not - and never hidden
+                    from a reader scrolling with the keyboard. Only the color goes away, so nothing in the
+                    pane moves as the bar comes and goes.
+                </div>
                 <br /><br />
+                <BitToggle @bind-Value="autoHideScrollbar" Label="AutoHideScrollbar" />
+                <br />
                 <div>Vertical:</div><br />
-                <BitScrollablePane Height="10rem" Class="pane" Modern>
+                <BitScrollablePane Height="10rem" Class="pane" Modern AutoHideScrollbar="autoHideScrollbar">
                     <p>
                         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
                         These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take
@@ -444,7 +455,8 @@
                 </BitScrollablePane>
                 <br /><br />
                 <div>Horizontal, with a thicker bar:</div><br />
-                <BitScrollablePane Horizontal Width="20rem" Class="pane" Modern Style="--bit-scp-sbs:0.75rem">
+                <BitScrollablePane Horizontal Width="20rem" Class="pane" Modern
+                                   AutoHideScrollbar="autoHideScrollbar" Style="--bit-scp-sbs:0.75rem">
                     Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
                     Each word carried meaning, each pause brought understanding.
                 </BitScrollablePane>
@@ -532,6 +544,15 @@
                     a Blazor Server circuit most of all. The last report of a scroll always arrives, so the page
                     is never left holding a position the pane has moved on from.
                 </div>
+                <br />
+                <div>
+                    <b>OnScrollStart</b> and <b>OnScrollEnd</b> bracket the whole of a scroll with one call each:
+                    the second is the browser's own <i>scrollend</i> - the finger lifted, the scrollbar released,
+                    the momentum spent, the animated move finished - with a short idle standing in for it where
+                    the browser has no such event. That makes the end of a scroll the right place for the work
+                    that is too expensive to do while one is running: saving the reading position, loading what
+                    the reader settled on, lighting up the item a carousel came to rest at.
+                </div>
                 <br /><br />
                 <div style="max-width: 19rem;">
                     <BitNumberField Label="ScrollThrottle (ms)" Min="0" Step="50" @bind-Value="scrollThrottle" />
@@ -541,7 +562,9 @@
                 <br />
                 <BitScrollablePane Height="12rem" Class="pane"
                                    ScrollThrottle="(int)scrollThrottle"
-                                   OnScroll="HandleScroll">
+                                   OnScroll="HandleScroll"
+                                   OnScrollStart="HandleScrollStart"
+                                   OnScrollEnd="HandleScrollEnd">
                     @for (var i = 1; i <= 20; i++)
                     {
                         <div class="item">Row @i</div>
@@ -554,6 +577,7 @@
                     &nbsp;|&nbsp; AtTop: @(scrollOffset?.AtTop.ToString() ?? "-")
                     &nbsp;|&nbsp; AtBottom: @(scrollOffset?.AtBottom.ToString() ?? "-")
                 </div>
+                <div class="readout">State: @scrollState</div>
             </DemoExample>
 
             <DemoExample Title="Reaching the edges" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
@@ -618,12 +642,19 @@
                     Left without an offset of its own it keeps whatever room <b>ScrollPadding</b> asks for - the
                     pane below has a sticky header and 2.5rem of it, so "To row 15" leaves the row clear of the
                     header instead of tucking it underneath, exactly as a fragment navigation into the pane would.
+                    Its <b>alignment</b> argument says where the element is left: <b>Start</b> (the default),
+                    <b>Center</b>, <b>End</b>, or <b>Nearest</b>, which moves the pane as little as it can and
+                    not at all for an element that is already in view.
                 </div>
                 <br />
                 <div>
                     A pane that should open somewhere other than the top - a list you have navigated back to, a
                     conversation you left in the middle of - is a <b>ScrollTo</b> from
                     <b>OnAfterRenderAsync(firstRender)</b>; one that should open at the end is <b>AutoScroll</b>.
+                    <b>FocusAsync</b> hands the focus to the pane itself, for a pane that <b>Focusable</b> put in
+                    the tab order, and <b>Refresh</b> re-measures a pane whose content changed size without
+                    changing at all - a web font that finished loading, an image that settled at a size the
+                    markup never named - which is the one thing neither of the pane's own observers can see.
                 </div>
                 <br /><br />
                 <BitToggle @bind-Value="smooth" Label="Smooth" />
@@ -634,10 +665,13 @@
                     <BitButton OnClick="() => scrollablePane?.ScrollTo(null, 200)">To 200px</BitButton>
                     <BitButton OnClick="() => scrollablePane?.ScrollBy(0, 100)">Down 100px</BitButton>
                     <BitButton OnClick='() => scrollablePane?.ScrollToElement("scp-row-15")'>To row 15</BitButton>
+                    <BitButton OnClick='() => scrollablePane?.ScrollToElement("scp-row-15", alignment: BitScrollAlignment.Center)'>To row 15, centered</BitButton>
                     <BitButton Variant="BitVariant.Outline" OnClick="ReadScrollOffset">Read position</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => scrollablePane?.FocusAsync()">Focus the pane</BitButton>
                 </BitStack>
                 <br />
-                <BitScrollablePane @ref="scrollablePane" Height="12rem" Class="pane" Smooth="smooth" ScrollPadding="2.5rem">
+                <BitScrollablePane @ref="scrollablePane" Height="12rem" Class="pane" Smooth="smooth"
+                                   ScrollPadding="2.5rem" Focusable Role="region" AriaLabel="Rows">
                     <div class="sticky-head">A header of the pane's own, and 2.5rem of ScrollPadding under it</div>
                     @for (var i = 1; i <= 25; i++)
                     {
@@ -733,7 +767,89 @@
                 </BitScrollablePane>
             </DemoExample>
 
-            <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" Id="example15">
+            <DemoExample Title="Snapping" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+                <div>
+                    <b>Snap</b> makes the pane come to rest on the snap positions of its content instead of
+                    anywhere between them, which is how the platform itself builds a carousel, a set of pages
+                    or a strip that always stops on an item: the scrolling stays the browser's, with all of its
+                    momentum, wheel and keyboard handling, and only where it is allowed to stop is decided here.
+                    <b>Mandatory</b> always ends on an item, <b>Proximity</b> only when the scroll came to rest
+                    near one, and <b>None</b> turns it back off.
+                </div>
+                <br />
+                <div>
+                    The positions themselves belong to the items, and <b>SnapAlign</b> is what puts them there -
+                    <b>Start</b>, <b>Center</b> or <b>End</b>, applied to the direct children of the pane. A
+                    pane whose items sit inside a layout container of their own (the flex row a horizontal
+                    strip is usually laid out with) has that container as its only child, so give the items a
+                    <b>scroll-snap-align</b> of your own there instead. A pane that is also moved from code is
+                    worth keeping to <b>Proximity</b>: a mandatory snap pulls such a move onto the nearest item
+                    rather than leaving it where it was put.
+                </div>
+                <br /><br />
+                <div style="max-width: 19rem;">
+                    <BitChoiceGroup @bind-Value="snap"
+                                    Horizontal
+                                    Label="Snap"
+                                    TItem="BitChoiceGroupOption<BitScrollSnap>" TValue="BitScrollSnap">
+                        <BitChoiceGroupOption Text="None" Value="BitScrollSnap.None" />
+                        <BitChoiceGroupOption Text="Proximity" Value="BitScrollSnap.Proximity" />
+                        <BitChoiceGroupOption Text="Mandatory" Value="BitScrollSnap.Mandatory" />
+                    </BitChoiceGroup>
+                    <br />
+                    <BitChoiceGroup @bind-Value="snapAlign"
+                                    Horizontal
+                                    Label="SnapAlign"
+                                    TItem="BitChoiceGroupOption<BitScrollSnapAlign>" TValue="BitScrollSnapAlign">
+                        <BitChoiceGroupOption Text="Start" Value="BitScrollSnapAlign.Start" />
+                        <BitChoiceGroupOption Text="Center" Value="BitScrollSnapAlign.Center" />
+                        <BitChoiceGroupOption Text="End" Value="BitScrollSnapAlign.End" />
+                    </BitChoiceGroup>
+                </div>
+                <br />
+                <BitScrollablePane Horizontal Width="22rem" Class="pane" Modern Snap="snap" SnapAlign="snapAlign">
+                    @for (var i = 1; i <= 10; i++)
+                    {
+                        <div class="snap-card">Card @i</div>
+                    }
+                </BitScrollablePane>
+            </DemoExample>
+
+            <DemoExample Title="Dragging & the wheel" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+                <div>
+                    A mouse has no good way of scrolling a strip sideways: its wheel only has one axis, and the
+                    scrollbar of the strip is a long way from what the reader is looking at. <b>DragScroll</b>
+                    answers that the way every map and canvas on the web does - hold the pointer down and pull
+                    the content along - and <b>HorizontalWheel</b> answers it by taking the vertical wheel to
+                    mean the only axis such a pane has.
+                </div>
+                <br />
+                <div>
+                    Both are deliberately narrow. A drag only starts once the pointer has actually travelled, so
+                    a click inside the pane is still a click, and the click that ends a real drag is swallowed
+                    rather than delivered to whatever card it stopped over; drags that start on a field, a link
+                    or a button are left alone, as is anything marked <b>data-bit-scp-nodrag</b>; and a touch is
+                    left to the browser, which drags already. The wheel only acts while the pane has somewhere
+                    to go sideways and nowhere to go up or down, leaves a trackpad's own horizontal delta alone,
+                    and hands the scroll back to the page as soon as the pane reaches the end it is being pushed
+                    towards - so the page under the pointer is never left stuck.
+                </div>
+                <br /><br />
+                <BitStack Horizontal Wrap Gap="1rem">
+                    <BitToggle @bind-Value="dragScroll" Label="DragScroll" />
+                    <BitToggle @bind-Value="horizontalWheel" Label="HorizontalWheel" />
+                </BitStack>
+                <br />
+                <BitScrollablePane Horizontal Width="22rem" Class="pane" Modern
+                                   DragScroll="dragScroll" HorizontalWheel="horizontalWheel">
+                    @for (var i = 1; i <= 10; i++)
+                    {
+                        <div class="snap-card">Card @i</div>
+                    }
+                </BitScrollablePane>
+            </DemoExample>
+
+            <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" Id="example17">
                 <div>
                     The pane is a single element, so <b>Style</b> and <b>Class</b> land straight on the box that
                     scrolls. <b>Style</b> is also where the two custom properties of the component are retuned:
@@ -785,17 +901,26 @@
                 </BitScrollablePane>
             </DemoExample>
 
-            <DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
+            <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
                 <div>
-                    Setting <b>Dir</b> to <b>BitDir.Rtl</b> lays the pane out right to left, and everything that
-                    counts a distance counts it the same way it did before: <b>ScrollTo</b> and <b>ScrollBy</b>
-                    take offsets in reading order, so 0 is still the start of the content, and <b>AutoScroll</b>
-                    still pins the pane to the end of it. The two horizontal edge callbacks are the exception -
-                    they are named after the edges on the screen, so <b>OnReachedLeft</b> is the left hand edge
-                    either way.
+                    Setting <b>Dir</b> to <b>BitDir.Rtl</b> lays the pane out right to left, and each part of the
+                    API keeps meaning what its name says. The ones named after the content follow the content:
+                    <b>ScrollToStart</b>, <b>ScrollToEnd</b> and <b>AutoScroll</b> all treat the visual left edge
+                    of a right-to-left pane as the end of it, and <b>ScrollToElement</b> with an alignment of
+                    <b>Start</b> brings an item to the right hand edge. The ones named after the screen follow
+                    the screen: <b>OnReachedLeft</b> is the left hand edge either way, and <b>ScrollTo</b> and
+                    <b>ScrollBy</b> count from and towards the visual left, which is how <b>BitScrollOffset</b>
+                    reports a position - so what you read off a pane can be handed straight back to it.
+                </div>
+                <br />
+                <div>
+                    A right-to-left pane counts its raw <b>Left</b> down from 0 at the right edge into the
+                    negatives, which is why <b>BitScrollOffset</b> carries <b>Rtl</b> along with the position and
+                    derives <b>OffsetLeft</b>, <b>PercentX</b>, <b>AtLeft</b> and <b>AtRight</b> from both: they
+                    all mean the same thing on the screen whichever way the pane reads.
                 </div>
                 <br /><br />
-                <BitScrollablePane Dir="BitDir.Rtl" Height="10rem" Class="pane" Modern>
+                <BitScrollablePane Dir="BitDir.Rtl" lang="fa" Height="10rem" Class="pane" Modern>
                     <p>
                         داستان‌ها روزگاری پیوند میان مردم را می‌بافتند، سمفونی‌ای از صداها که رویاهای مشترک را می‌ساخت.
                         هر واژه معنایی داشت و هر مکث فهمی به همراه می‌آورد.
@@ -819,7 +944,7 @@
                 </BitScrollablePane>
                 <br /><br />
                 <div>A horizontal right-to-left pane:</div><br />
-                <BitScrollablePane Dir="BitDir.Rtl" Horizontal Width="20rem" Class="pane" Fade>
+                <BitScrollablePane Dir="BitDir.Rtl" lang="fa" Horizontal Width="20rem" Class="pane" Fade>
                     داستان‌ها روزگاری پیوند میان مردم را می‌بافتند، سمفونی‌ای از صداها که رویاهای مشترک را می‌ساخت.
                 </BitScrollablePane>
             </DemoExample>
