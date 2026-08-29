@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// What the browser does with a scroll that has already reached the edge of a <see cref="BitScrollablePane"/>.

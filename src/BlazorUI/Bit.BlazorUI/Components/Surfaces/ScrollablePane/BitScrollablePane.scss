@@ -81,8 +81,10 @@
     scroll-behavior: smooth;
 }
 
+// The force-animation class opts a whole SUBTREE out of the preference, so a pane inside one keeps its
+// smooth scrolling as well - which is what every other animated component in the library does with it.
 @media (prefers-reduced-motion: reduce) {
-    .bit-scp-smt:not(.bit-fam) {
+    .bit-scp-smt:not(.bit-fam):not(.bit-fam *) {
         scroll-behavior: auto;
     }
 }

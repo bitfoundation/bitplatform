@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Where inside a <see cref="BitScrollablePane"/> an element is left after it has been scrolled into view.

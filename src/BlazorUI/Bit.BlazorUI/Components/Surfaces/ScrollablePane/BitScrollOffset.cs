@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Where a <see cref="BitScrollablePane"/> stands, as measured in the browser.
@@ -83,7 +83,12 @@ public class BitScrollOffset
     /// The distance between the visual left edge of the content and the visual left edge of the pane,
     /// which is <see cref="Left"/> made positive and direction independent.
     /// </summary>
-    public double OffsetLeft => (Rtl || Left < 0) ? MaxLeft + Left : Left;
+    /// <remarks>
+    /// Only <see cref="Rtl"/> folds the sign away. A negative <see cref="Left"/> on a pane that reads
+    /// left-to-right is not a right-to-left reading: it is the elastic overscroll of a pane being bounced
+    /// past its left edge, and folding that one over would report it as standing at the far end instead.
+    /// </remarks>
+    public double OffsetLeft => Rtl ? MaxLeft + Left : Left;
 
     /// <summary>
     /// The largest horizontal offset the pane can reach, which is how much of the content is out of sight.

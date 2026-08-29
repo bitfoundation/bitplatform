@@ -782,6 +782,33 @@ public class BitScrollablePaneTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitScrollablePaneShouldTellTheBrowserSideThatItIsNotToBeScrolled()
+    {
+        // overflow:hidden stops the reader's own gestures and nothing else: the drag and the sideways
+        // wheel both move the pane through the scrolling API, which goes on working on a clipped element.
+        RenderComponent<BitScrollablePane>(parameters =>
+        {
+            parameters.Add(p => p.NoScroll, true);
+            parameters.Add(p => p.DragScroll, true);
+            parameters.Add(p => p.HorizontalWheel, true);
+        });
+
+        Assert.AreEqual(true, Option(SetupOptions(), "NoScroll"));
+    }
+
+    [TestMethod]
+    public void BitScrollablePaneShouldNotOfferTheGrabCursorOnAPaneThatIsNotToBeScrolled()
+    {
+        var component = RenderComponent<BitScrollablePane>(parameters =>
+        {
+            parameters.Add(p => p.NoScroll, true);
+            parameters.Add(p => p.DragScroll, true);
+        });
+
+        Assert.IsFalse(component.Find(".bit-scp").ClassList.Contains("bit-scp-drg"));
+    }
+
+    [TestMethod]
     public void BitScrollablePaneShouldRespectPreserveScroll()
     {
         RenderComponent<BitScrollablePane>(parameters =>
@@ -923,18 +950,22 @@ public class BitScrollablePaneTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitScrollablePaneShouldRefreshTheBrowserSideOnEveryOtherRenderWhenItDrawsFromItsContent()
+    public void BitScrollablePaneShouldNotCallTheBrowserSideAgainForARenderThatChangedNothing()
     {
+        // What a change of the content does to the fade and to the edge callbacks is the browser side's
+        // own to notice - it observes the content, attributes and all - so a render that changed none of
+        // the options is worth no round trip, however often the page around the pane re-renders.
         var component = RenderComponent<BitScrollablePane>(parameters =>
         {
             parameters.Add(p => p.Fade, true);
         });
 
-        Assert.AreEqual(0, InvocationCount(Refresh));
-
+        component.Render();
         component.Render();
 
-        Assert.AreEqual(1, InvocationCount(Refresh));
+        Assert.AreEqual(1, InvocationCount(Setup));
+        Assert.AreEqual(0, InvocationCount(Update));
+        Assert.AreEqual(0, InvocationCount(Refresh));
     }
 
     [TestMethod]
@@ -999,20 +1030,24 @@ public class BitScrollablePaneTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitScrollablePaneShouldForceOnlyTheFirstAutoScroll()
+    public void BitScrollablePaneShouldOnlyAskTheBrowserSideToPinOnce()
     {
+        // The first pinning is the one this side has to ask for, and it is forced: a pane that starts out
+        // with content already in it belongs at the end of it, and the browser side has nothing to compare
+        // against on its very first measurement. Every pinning after that is its own answer to content it
+        // watches for, so a render is worth no round trip of its own.
         var component = RenderComponent<BitScrollablePane>(parameters =>
         {
             parameters.Add(p => p.AutoScroll, true);
         });
 
         component.Render();
+        component.Render();
 
         var invocations = InvocationsOf(AutoScroll);
 
-        Assert.AreEqual(2, invocations.Length);
+        Assert.AreEqual(1, invocations.Length);
         Assert.AreEqual(true, invocations[0].Arguments[1]);
-        Assert.AreEqual(false, invocations[1].Arguments[1]);
     }
 
     [TestMethod]
@@ -1447,13 +1482,27 @@ public class BitScrollablePaneTests : BunitTestContext
     [TestMethod]
     public void BitScrollOffsetShouldFoldTheSignOfARightToLeftPaneAway()
     {
-        var offset = new BitScrollOffset { Left = -120, ScrollWidth = 400, ClientWidth = 200 };
+        var offset = new BitScrollOffset { Left = -120, ScrollWidth = 400, ClientWidth = 200, Rtl = true };
 
         Assert.AreEqual(200, offset.MaxLeft);
         Assert.AreEqual(80, offset.OffsetLeft);
         Assert.AreEqual(0.4, offset.PercentX);
         Assert.IsFalse(offset.AtLeft);
         Assert.IsFalse(offset.AtRight);
+    }
+
+    [TestMethod]
+    public void BitScrollOffsetShouldReadANegativeOffsetOfALeftToRightPaneAsOverscroll()
+    {
+        // Which way the pane reads is the only thing that folds the sign away. A negative scrollLeft on a
+        // pane that reads left to right is the elastic overscroll of one being bounced past its left edge,
+        // and folding it over would report a pane at the very start as standing at the very end.
+        var offset = new BitScrollOffset { Left = -5, ScrollWidth = 400, ClientWidth = 200 };
+
+        Assert.AreEqual(-5, offset.OffsetLeft);
+        Assert.IsTrue(offset.AtLeft);
+        Assert.IsFalse(offset.AtRight);
+        Assert.AreEqual(0, offset.PercentX);
     }
 
     [TestMethod]

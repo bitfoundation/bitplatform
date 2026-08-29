@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Where the direct children of a <see cref="BitScrollablePane"/> come to rest in it while it snaps.

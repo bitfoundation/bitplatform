@@ -84,6 +84,8 @@ public partial class BitScrollablePaneDemo
         <div class=""item"">Line @i</div>
     }
 </BitScrollablePane>";
+    private readonly string example2CsharpCode = @"
+private int maxHeightLines = 2;";
 
     private readonly string example3RazorCode = @"
 <BitChoiceGroup @bind-Value=""overflow""
@@ -347,6 +349,14 @@ private bool autoHideScrollbar = true;";
     </p>
 </BitScrollablePane>
 
+<style>
+    /* width: max-content is what makes the grid wider than the pane, which is what gives the second
+       axis something to fade over. */
+    .wide-grid { display: flex; flex-direction: column; gap: 0.5rem; width: max-content; }
+    .wide-row { display: flex; gap: 0.5rem; }
+    .chip { flex: 0 0 auto; padding: 0.25rem 0.75rem; border-radius: 1rem; background-color: #777; color: #fff; white-space: nowrap; }
+</style>
+
 <BitScrollablePane Height=""10rem"" Width=""22rem"" Class=""pane"" Fade>
     <div class=""wide-grid"">
         @for (var row = 1; row <= 8; row++)
@@ -543,6 +553,13 @@ private async Task AddAutoScrollContent()
 }";
 
     private readonly string example14RazorCode = @"
+<style>
+    /* Turning the browser's own scroll anchoring off is what puts the pane on the side of the line
+       PreserveScroll is there for: with it on, every engine but WebKit already keeps the reader's
+       place and the toggle below would have nothing to show. */
+    .no-anchor { overflow-anchor: none; }
+</style>
+
 <BitToggle @bind-Value=""preserveScroll"" Label=""PreserveScroll"" />
 
 <BitScrollablePane Height=""14rem"" Class=""pane no-anchor"" Fade

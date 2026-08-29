@@ -4,7 +4,12 @@ namespace Bit.BlazorUI;
 
 internal static class BitScrollablePaneJsRuntimeExtensions
 {
+    // Setup is what wires the callbacks up, so it is what has to keep the type they carry: a trimmed
+    // application that never reads the position at a moment of its own choosing would otherwise lose the
+    // members of BitScrollOffset with the GetOffset call below, and every OnScroll report would arrive
+    // with all six of its measurements deserialized into nothing.
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitScrollablePaneOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitScrollOffset))]
     internal static ValueTask BitScrollablePaneSetup(this IJSRuntime jsRuntime,
                                                      string id,
                                                      ElementReference element,

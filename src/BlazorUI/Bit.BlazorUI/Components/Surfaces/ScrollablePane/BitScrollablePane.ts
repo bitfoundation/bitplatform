@@ -20,6 +20,7 @@
         wheel: boolean;
         preserve: boolean; // whether the reader's place is kept when content lands above what they see
         autoHide: boolean; // whether the Modern scrollbar is only painted while the pane is being used
+        noScroll: boolean; // whether the pane is not to be moved by the reader at all
     }
 
     interface ScrollOffset {
@@ -58,6 +59,13 @@
         // auto scrolling pane has to be pinned again - costs no second layout read of its own.
         width: number;
         height: number;
+        // The rest of the reading the numbers above were derived from, so that the report a measured frame
+        // makes costs no second read of the same properties. `left` is the RAW scrollLeft rather than the
+        // direction independent `x`, since what is reported is the position the browser actually gave -
+        // elastic overscroll and all - rather than the clamped one the rest of this file works in.
+        left: number;
+        clientWidth: number;
+        clientHeight: number;
     }
 
     type ScrollEdge = 'top' | 'bottom' | 'left' | 'right';
@@ -264,37 +272,36 @@
             };
         }
 
-        // `rtl` is taken from a measurement that has already been made where there is one, since asking
-        // the computed style for it is a style read and a reporting pane is measured on every frame of
-        // every scroll.
-        public static getOffset(element: HTMLElement, rtl?: boolean): ScrollOffset | null {
+        public static getOffset(element: HTMLElement): ScrollOffset | null {
             if (!element) return null;
 
             try {
-                const scrollWidth = element.scrollWidth;
-                const clientWidth = element.clientWidth;
-
-                return {
-                    left: element.scrollLeft,
-                    top: element.scrollTop,
-                    scrollWidth,
-                    scrollHeight: element.scrollHeight,
-                    clientWidth,
-                    clientHeight: element.clientHeight,
-                    // Which way the pane reads is what tells a scrollLeft of 0 at the visual left edge of a
-                    // left to right pane from the same 0 at the visual RIGHT edge of a right to left one.
-                    // It is only asked for where there is something to scroll sideways, since an axis with
-                    // nothing to scroll reads the same either way.
-                    rtl: rtl ?? (scrollWidth > clientWidth && getComputedStyle(element).direction === 'rtl'),
-                    // A position read on its own has nothing to have moved from; the reporting path fills
-                    // these in against the position it last sent.
-                    deltaLeft: 0,
-                    deltaTop: 0,
-                };
+                return ScrollablePane.toOffset(ScrollablePane.measure(element));
             } catch (e) {
                 console.error("BitBlazorUI.ScrollablePane.getOffset:", e);
                 return null;
             }
+        }
+
+        // The position of the pane built from a measurement already in hand, so that the report a measured
+        // frame makes costs no second read of the six properties that frame was decided by - and lands on
+        // the same numbers rather than on whatever the layout had become a moment later.
+        public static toOffset(m: ScrollMetrics): ScrollOffset {
+            return {
+                left: m.left,
+                top: m.y,
+                scrollWidth: m.width,
+                scrollHeight: m.height,
+                clientWidth: m.clientWidth,
+                clientHeight: m.clientHeight,
+                // Which way the pane reads is what tells a scrollLeft of 0 at the visual left edge of a
+                // left to right pane from the same 0 at the visual RIGHT edge of a right to left one.
+                rtl: m.rtl,
+                // A position read on its own has nothing to have moved from; the reporting path fills
+                // these in against the position it last sent.
+                deltaLeft: 0,
+                deltaTop: 0,
+            };
         }
 
 
@@ -305,14 +312,29 @@
         public static measure(element: HTMLElement): ScrollMetrics {
             const width = element.scrollWidth;
             const height = element.scrollHeight;
-            const maxX = Math.max(0, width - element.clientWidth);
-            const maxY = Math.max(0, height - element.clientHeight);
+            const clientWidth = element.clientWidth;
+            const clientHeight = element.clientHeight;
+            const left = element.scrollLeft;
+            const top = element.scrollTop;
+            const maxX = Math.max(0, width - clientWidth);
+            const maxY = Math.max(0, height - clientHeight);
             // Which way the pane reads only matters where there is something to scroll sideways, and asking
             // for it is a style read on every frame of every scroll of every pane that has not.
             const rtl = maxX > 0 && getComputedStyle(element).direction === 'rtl';
-            const x = rtl ? maxX + element.scrollLeft : element.scrollLeft;
+            const x = rtl ? maxX + left : left;
 
-            return { x: Math.min(Math.max(x, 0), maxX), y: element.scrollTop, maxX, maxY, rtl, width, height };
+            return {
+                x: Math.min(Math.max(x, 0), maxX),
+                y: top,
+                maxX,
+                maxY,
+                rtl,
+                width,
+                height,
+                left,
+                clientWidth,
+                clientHeight,
+            };
         }
 
         // Scrolls to a direction independent position, turning it back into the signed scrollLeft the
@@ -335,7 +357,10 @@
         // the library's force-animation class has opted out of the preference and keeps the animation.
         private static animates(element: HTMLElement): boolean {
             try {
-                if (element.classList.contains('bit-fam')) return true;
+                // The class opts a whole SUBTREE out of the preference, so an ancestor carrying it counts
+                // for the pane inside it - which is how every other animated component in the library reads
+                // it, and what the ForceAnimation of a container around the pane is asking for.
+                if (element.closest('.bit-fam')) return true;
 
                 return matchMedia('(prefers-reduced-motion: reduce)').matches === false;
             } catch {
@@ -358,6 +383,11 @@
         private _dragAbortController?: AbortController;
         private _wheelAbortController?: AbortController;
         private _autoHideAbortController?: AbortController;
+
+        // The listeners of ONE drag, which live only for as long as that drag does and sit on the document
+        // rather than on the pane: a pointer that is released outside the pane - or before it has travelled
+        // far enough for the capture to be taken - still has to end the drag it started.
+        private _draggingAbortController?: AbortController;
 
         private _frame = 0;
         private _reportTimer = 0;
@@ -390,6 +420,12 @@
         // the computed style the first time such a wheel arrives and kept, since it is a style read.
         private _lineHeight = 0;
 
+        // Whether the READER can scroll the pane up and down at all, which is not the same as its content
+        // being taller than its box: a horizontal pane clips what overflows with `overflow-y: hidden`, and
+        // clipped overflow still counts towards scrollHeight. It is a style read, so it is taken at setup
+        // and on every change of the options rather than on every wheel event.
+        private _scrollsY = true;
+
         // Whether a scroll is currently running, and the fallback that decides it has stopped where the
         // browser has no scrollend event of its own to say so.
         private _scrolling = false;
@@ -416,12 +452,13 @@
         private _glideFrame = 0;
 
         // Which edges the pane is standing at, so each one is reported as it is reached rather than on
-        // every frame of the scroll that stays there.
-        private _reached: Record<ScrollEdge, boolean> = { top: false, bottom: false, left: false, right: false };
+        // every frame of the scroll that stays there. An edge is `undefined` until there is an answer to
+        // give for it at all - nobody asked about it, or its axis has nothing to scroll - and the first
+        // answer it does give is the one that may have to be kept quiet about; see setEdge.
+        private _reached: Record<ScrollEdge, boolean | undefined> = { top: undefined, bottom: undefined, left: undefined, right: undefined };
 
-        // Whether the pane has been measured at all yet. The first measurement only records which edges the
-        // pane starts at: every pane starts at the top, and a page that was told about it would fetch what
-        // comes before its first item before anything had been scrolled.
+        // Whether the pane has been measured at all yet, which is what tells a content size that GREW from
+        // the first one ever read.
         private _measured = false;
 
         // The fade attributes currently on the element, so the DOM is only written to when one flips.
@@ -456,6 +493,7 @@
             this.bind();
 
             this.readAnchoring();
+            this.readScrollsY();
 
             // The first measurement is taken once the browser has laid the content out, so a pane that
             // starts out with nothing to scroll does not paint a fade over an edge it will not have.
@@ -492,12 +530,15 @@
             this.bind();
 
             this.readAnchoring();
+            this.readScrollsY();
 
             this.refresh();
         }
 
         public refresh() {
             if (this._disposed) return;
+
+            this.readScrollsY();
 
             this.schedule();
         }
@@ -552,6 +593,9 @@
             this._autoHideAbortController?.abort();
             this._autoHideAbortController = undefined;
 
+            this._draggingAbortController?.abort();
+            this._draggingAbortController = undefined;
+
             this._resizeObserver?.disconnect();
             this._resizeObserver = undefined;
 
@@ -581,7 +625,14 @@
             // dialog that has not been opened yet - measures as nothing until it is on the screen, and no
             // scroll event is ever going to say otherwise.
             try {
-                this._resizeObserver = new ResizeObserver(() => this.schedule());
+                // A box that changed is a box whose overflow may have been what changed it - the axes a
+                // pane scrolls on are written into its style attribute, and turning one off takes its
+                // scrollbar out of the box - so what the sideways wheel reads is taken again here rather
+                // than only when the options change, which a purely visual parameter does not.
+                this._resizeObserver = new ResizeObserver(() => {
+                    this.readScrollsY();
+                    this.schedule();
+                });
                 this._resizeObserver.observe(this._element);
             } catch { /* no ResizeObserver: the scroll listener still covers every move of the pane */ }
 
@@ -602,7 +653,18 @@
                     this.preserve(records);
                     this.schedule();
                 });
-                this._mutationObserver.observe(this._element, { childList: true, subtree: true, characterData: true });
+                // Attributes as well as nodes and text, because the change to the size of the content that
+                // no added node and no rewritten text carries is exactly the one that resized what was
+                // already there - a style, a class or a hidden flipped by a render. The filter keeps that
+                // from meaning every attribute written anywhere in the subtree: those three are the ones a
+                // size can change under.
+                this._mutationObserver.observe(this._element, {
+                    childList: true,
+                    subtree: true,
+                    characterData: true,
+                    attributes: true,
+                    attributeFilter: ['style', 'class', 'hidden'],
+                });
             } catch { /* no MutationObserver: refresh() from .NET still covers every render */ }
         }
 
@@ -616,26 +678,31 @@
         // wheel one has to be able to prevent the default, so it cannot be a passive listener - which is
         // exactly why a pane that never asked for it must not carry one.
         private bind() {
-            if (this._options.drag && this._dragAbortController === undefined) {
+            // A pane the reader is not to be able to move is not one either of these belongs on: both of
+            // them scroll the element with the scrolling API, which `overflow: hidden` does not stop.
+            const drag = this._options.drag && this._options.noScroll === false;
+            const wheel = this._options.wheel && this._options.noScroll === false;
+
+            if (drag && this._dragAbortController === undefined) {
                 const ac = new AbortController();
                 this._dragAbortController = ac;
 
+                // Only the press is bound for the life of the pane. The move and the release belong to one
+                // drag and are bound by dragStart for as long as it lasts, so a pane nobody is dragging
+                // costs nothing per movement of a pointer across it.
                 this._element.addEventListener('pointerdown', e => this.dragStart(e), { signal: ac.signal });
-                this._element.addEventListener('pointermove', e => this.dragMove(e), { signal: ac.signal });
-                this._element.addEventListener('pointerup', e => this.dragEnd(e), { signal: ac.signal });
-                this._element.addEventListener('pointercancel', e => this.dragEnd(e), { signal: ac.signal });
-            } else if (this._options.drag === false && this._dragAbortController) {
+            } else if (drag === false && this._dragAbortController) {
                 this._dragAbortController.abort();
                 this._dragAbortController = undefined;
                 this.cancelDrag();
             }
 
-            if (this._options.wheel && this._wheelAbortController === undefined) {
+            if (wheel && this._wheelAbortController === undefined) {
                 const ac = new AbortController();
                 this._wheelAbortController = ac;
 
                 this._element.addEventListener('wheel', e => this.wheel(e), { passive: false, signal: ac.signal });
-            } else if (this._options.wheel === false && this._wheelAbortController) {
+            } else if (wheel === false && this._wheelAbortController) {
                 this._wheelAbortController.abort();
                 this._wheelAbortController = undefined;
             }
@@ -708,27 +775,33 @@
         private measured() {
             const m = ScrollablePane.measure(this._element);
 
-            this.track(m);
-            this.fade(m);
-            this.edges(m);
-            this.report(m);
-
             // Whether the CONTENT grew, which is the one thing an auto scrolling pane has to answer
             // without waiting for a render: an image that finished loading, a line of a stream that
             // arrived, anything appended by something other than the renderer.
             const grew = this._measured && (m.width > this._contentWidth || m.height > this._contentHeight);
 
+            // The re-pinning is answered BEFORE the stick flags are taken again, and this is the whole of
+            // why: what decides whether a pane follows its content is where the reader had left it, and
+            // this measurement is one the growth has already happened in. Reading the flags off it first
+            // would find every pane whose content grew by more than the threshold to have been "scrolled
+            // away from" - by the very arrival it is supposed to be following.
+            //
+            // Only a pane the reader left standing at the end is pinned, which is what autoScroll decides
+            // for itself; the move it may make raises no measurement of its own unless it actually moves
+            // the pane, so this cannot run away with itself.
+            if (grew && this._options.autoScroll) {
+                this.autoScroll(false);
+            }
+
+            this.track(m);
+            this.fade(m);
+            this.edges(m);
+            this.report(m);
+
             this._contentWidth = m.width;
             this._contentHeight = m.height;
             this._anchorHeight = m.height;
             this._measured = true;
-
-            // Only a pane the reader left standing at the end is pinned again, which is what autoScroll
-            // decides for itself; the move it may make raises no measurement of its own unless it
-            // actually moves the pane, so this cannot run away with itself.
-            if (grew && this._options.autoScroll) {
-                this.autoScroll(false);
-            }
         }
 
         // Every scroll event of the element, whoever caused it. The start of a scroll is reported once
@@ -801,7 +874,7 @@
                 }
             }
 
-            const threshold = Math.max(0, this._options.autoScrollThreshold) + 1;
+            const threshold = Math.max(0, this._options.autoScrollThreshold) + BitScrollablePane._edgeTolerance;
 
             // How far the pane still is from the END of its content, which on the horizontal axis of a
             // right to left pane is the distance back to the visual left edge.
@@ -834,6 +907,27 @@
                 this._anchored = getComputedStyle(this._element).getPropertyValue('overflow-anchor').trim() !== 'none';
             } catch {
                 this._anchored = true; // the style cannot be read, so the browser's own anchoring is the safer half to trust
+            }
+        }
+
+        // Whether the reader has a vertical axis to scroll at all, which is what the sideways wheel asks
+        // about and is NOT the same question as "is the content taller than the box": a horizontal pane
+        // clips what overflows with `overflow-y: hidden`, and clipped overflow still counts towards
+        // scrollHeight - so a strip whose own horizontal scrollbar makes it one pixel too short would
+        // otherwise be read as a pane the reader can scroll up and down, and the wheel handed back to a
+        // page for an axis that cannot move.
+        private readScrollsY() {
+            if (this._options.wheel === false) {
+                this._scrollsY = true;
+                return;
+            }
+
+            try {
+                const overflow = getComputedStyle(this._element).overflowY;
+
+                this._scrollsY = overflow !== 'hidden' && overflow !== 'clip' && overflow !== 'visible';
+            } catch {
+                this._scrollsY = true; // the style cannot be read, so the page keeps its wheel
             }
         }
 
@@ -874,6 +968,11 @@
                 // animated by the scroll-behavior a Smooth pane carries - which assigning scrollTop, or
                 // asking for the default behavior, would be.
                 this._element.scrollTo({ top: top + grew, behavior: 'instant' });
+
+                // And standing still is what the next report has to say as well. The position the last one
+                // was made from moves with the content, or the compensation made here would be reported as
+                // the reader having scrolled down by the height of what arrived above them.
+                this._lastTop += grew;
             } catch { /* the element is gone; there is nothing left to keep in place */ }
         }
 
@@ -913,10 +1012,15 @@
         private fade(m: ScrollMetrics) {
             if (this._options.fade === false) return;
 
-            this.setFade('top', m.y > 0);
-            this.setFade('bottom', m.y < m.maxY);
-            this.setFade('left', m.x > 0);
-            this.setFade('right', m.x < m.maxX);
+            // Within a pixel of an edge is at it: a scroll offset is fractional at a fractional zoom level
+            // and on a scaled display while the maxima are derived from whole numbers, so an exact
+            // comparison would leave the fade of an edge the pane is visibly standing at still painted.
+            const slack = BitScrollablePane._edgeTolerance;
+
+            this.setFade('top', m.y > slack);
+            this.setFade('bottom', m.y < m.maxY - slack);
+            this.setFade('left', m.x > slack);
+            this.setFade('right', m.x < m.maxX - slack);
         }
 
         private setFade(edge: ScrollEdge, on: boolean) {
@@ -942,20 +1046,50 @@
         // with nothing to scroll reports neither of its edges: it stands at both at once, and a pane that
         // announced that on setup would load a next page for a list that has not been scrolled at all.
         private edges(m: ScrollMetrics) {
-            const offset = Math.max(0, this._options.offset);
+            // The pixel of slack every comparison of a scroll offset against an edge in this component
+            // gives. Without it the default offset of 0 is a test a fractional scroll position can never
+            // pass, and the endless list whose next page this callback fetches never fetches one.
+            const slack = BitScrollablePane._edgeTolerance;
+            const offset = Math.max(0, this._options.offset) + slack;
 
-            this.setEdge('top', this._options.top && m.maxY > 0 && m.y <= offset);
-            this.setEdge('bottom', this._options.bottom && m.maxY > 0 && (m.maxY - m.y) <= offset);
-            this.setEdge('left', this._options.left && m.maxX > 0 && m.x <= offset);
-            this.setEdge('right', this._options.right && m.maxX > 0 && (m.maxX - m.x) <= offset);
+            this.setEdge('top', this._options.top && m.maxY > 0, m.y, offset, slack);
+            this.setEdge('bottom', this._options.bottom && m.maxY > 0, m.maxY - m.y, offset, slack);
+            this.setEdge('left', this._options.left && m.maxX > 0, m.x, offset, slack);
+            this.setEdge('right', this._options.right && m.maxX > 0, m.maxX - m.x, offset, slack);
         }
 
-        private setEdge(edge: ScrollEdge, reached: boolean) {
-            if (this._reached[edge] === reached) return;
+        // `live` is whether this edge has an answer to give at all: one nobody asked about, and either edge
+        // of an axis with nothing to scroll, has none rather than a false one. `distance` is how far the
+        // pane still is from it, `offset` how near counts as having reached it, and `slack` how near counts
+        // as standing ON it.
+        private setEdge(edge: ScrollEdge, live: boolean, distance: number, offset: number, slack: number) {
+            if (live === false) {
+                // The edge goes back to having no answer rather than to a false one, so that whenever it
+                // has one again - the flag turned on, the first page finally laid out - that answer is
+                // read as the pane's starting position rather than as an edge it has just arrived at.
+                this._reached[edge] = undefined;
+                return;
+            }
+
+            const reached = distance <= offset;
+            const previous = this._reached[edge];
+
+            if (previous === reached) return;
 
             this._reached[edge] = reached;
 
-            if (reached === false || this._measured === false) return;
+            if (reached === false) return;
+
+            // The first answer an edge ever gives is kept quiet about where the pane is standing AT that
+            // edge: every pane starts at the top of its content, and a page told about that would fetch
+            // what comes before its first item before anything had been scrolled.
+            //
+            // Standing at it, though, and not merely within the offset of it. A list whose first page is
+            // too short to fill the pane starts within a screenful of its bottom without being at it, and
+            // that is the endless list asking for its next page rather than an artifact of where panes
+            // start - so it is reported, and the list is not left waiting for a growth that only the
+            // report it never got would have brought.
+            if (previous === undefined && distance <= slack) return;
 
             this.invoke('OnReached', edge);
         }
@@ -969,7 +1103,7 @@
             const throttle = Math.max(0, this._options.throttle);
 
             if (throttle === 0) {
-                this.sendPosition(m.rtl);
+                this.sendPosition(m);
                 return;
             }
 
@@ -977,7 +1111,7 @@
             const elapsed = now - this._lastReport;
 
             if (elapsed >= throttle) {
-                this.sendPosition(m.rtl);
+                this.sendPosition(m);
                 return;
             }
 
@@ -987,8 +1121,8 @@
                 this._reportTimer = 0;
                 if (this._disposed) return;
 
-                // The pane has not been measured since, so the direction is asked for afresh rather than
-                // taken from a measurement that may no longer be the one this report carries.
+                // The pane has not been measured since, so this one is read afresh rather than reported off
+                // a measurement that is no longer where the pane stands.
                 this.sendPosition();
             }, throttle - elapsed);
         }
@@ -997,12 +1131,15 @@
         // round trip, this is what keeps a page that re-renders on OnScroll from re-rendering forever: a
         // render is what a refresh follows, a refresh is what a measurement follows, and a measurement
         // that reported the position it last reported would start the whole round again.
-        private sendPosition(rtl?: boolean) {
+        //
+        // The measurement of the frame this report belongs to is passed in where there is one, so that the
+        // report costs no second read of the properties that frame has just read.
+        private sendPosition(m?: ScrollMetrics) {
             // A report the throttle has been holding on to is dropped where the reporting was turned off
             // while it waited, rather than delivered to a page that has stopped listening for it.
             if (this._options.scroll === false) return;
 
-            const offset = ScrollablePane.getOffset(this._element, rtl);
+            const offset = m ? ScrollablePane.toOffset(m) : ScrollablePane.getOffset(this._element);
             if (!offset) return;
 
             const signature = `${offset.left}|${offset.top}|${offset.scrollWidth}|${offset.scrollHeight}|${offset.clientWidth}|${offset.clientHeight}|${offset.rtl}`;
@@ -1014,7 +1151,11 @@
             // a pane has nothing to have moved from and carries no direction.
             if (this._lastSignature) {
                 const maxLeft = Math.max(0, offset.scrollWidth - offset.clientWidth);
-                const visual = (left: number) => (offset.rtl || left < 0) ? maxLeft + left : left;
+                // Which way the pane reads is the only thing that folds the sign of a scrollLeft away. A
+                // NEGATIVE one on a pane that reads left to right is not a right to left reading, it is the
+                // elastic overscroll of a pane being bounced past its left edge - and folding that one over
+                // would report the pane as standing at the far end of its content.
+                const visual = (left: number) => offset.rtl ? maxLeft + left : left;
 
                 offset.deltaLeft = visual(offset.left) - visual(this._lastLeft);
                 offset.deltaTop = offset.top - this._lastTop;
@@ -1073,11 +1214,29 @@
                 vx: 0,
                 vy: 0,
             };
+
+            // The rest of the gesture is listened for on the DOCUMENT and only for as long as it lasts. On
+            // the element it would be missed altogether by a pointer that leaves the pane before it has
+            // travelled the few pixels that take the capture and is released outside - which leaves a drag
+            // standing that the next movement across the pane, with no button held at all, would take up.
+            const ac = new AbortController();
+            this._draggingAbortController = ac;
+
+            document.addEventListener('pointermove', event => this.dragMove(event), { signal: ac.signal });
+            document.addEventListener('pointerup', event => this.dragEnd(event), { signal: ac.signal });
+            document.addEventListener('pointercancel', event => this.dragEnd(event), { signal: ac.signal });
         }
 
         private dragMove(e: PointerEvent) {
             const drag = this._drag;
             if (!drag || drag.id !== e.pointerId) return;
+
+            // A release nothing reported - a native drag taking the pointer over, a window that lost the
+            // focus while the button was down - is a drag that is over whatever this side last saw.
+            if (e.buttons === 0) {
+                this.cancelDrag();
+                return;
+            }
 
             const dx = e.clientX - drag.x;
             const dy = e.clientY - drag.y;
@@ -1131,6 +1290,9 @@
             if (!drag || drag.id !== e.pointerId) return;
 
             this._drag = undefined;
+
+            this._draggingAbortController?.abort();
+            this._draggingAbortController = undefined;
 
             if (drag.moved === false) return;
 
@@ -1226,6 +1388,9 @@
 
             this._drag = undefined;
 
+            this._draggingAbortController?.abort();
+            this._draggingAbortController = undefined;
+
             this.stopGlide();
 
             this._element.removeAttribute('data-bit-scp-drag');
@@ -1244,8 +1409,17 @@
             if (this._disposed || this._options.wheel === false) return;
             if (e.ctrlKey || e.deltaX !== 0 || e.deltaY === 0) return;
 
+            const slack = BitScrollablePane._edgeTolerance;
+
             const m = ScrollablePane.measure(this._element);
-            if (m.maxX <= 0 || m.maxY > 0) return;
+            if (m.maxX <= 0) return;
+
+            // "Nowhere to go up or down" means nowhere the READER can go, which is not the same as the
+            // content fitting: a horizontal pane clips what overflows vertically, and clipped overflow
+            // still counts towards scrollHeight - so a strip whose own horizontal scrollbar leaves its
+            // content a pixel too tall for its box is still a strip with one axis, and handing the wheel
+            // back there would leave it unreachable with a wheel mouse altogether.
+            if (this._scrollsY && m.maxY > slack) return;
 
             // A delta is in pixels, in lines, or in pages, and only the first of the three can be used as
             // it stands. A line is the line of the pane itself rather than a constant, since a pane of
@@ -1257,8 +1431,10 @@
             // a right to left pane and towards the right one of every other.
             const step = m.rtl ? -delta : delta;
 
-            if (step < 0 && m.x <= 0) return;
-            if (step > 0 && m.x >= m.maxX) return;
+            // Within a pixel of the end is at it, or the pane the reader has already pushed as far as it
+            // goes keeps swallowing the wheel and the page behind it can never be scrolled.
+            if (step < 0 && m.x <= slack) return;
+            if (step > 0 && m.x >= m.maxX - slack) return;
 
             e.preventDefault();
 
@@ -1287,7 +1463,12 @@
 
         private invoke(method: string, arg: any) {
             try {
-                this._dotnetObj.invokeMethodAsync(method, arg);
+                // The rejection is consumed rather than left to surface as an unhandled one in the console
+                // of an application that did nothing wrong: a circuit that dropped, or a reference disposed
+                // between the frame that measured and the call that reports it, is nothing the page can act
+                // on - and the synchronous catch below can never see it, since this call reports its
+                // failures by rejecting the promise it returns.
+                this._dotnetObj.invokeMethodAsync(method, arg).catch(() => { });
             } catch (e) { console.error("BitBlazorUI.ScrollablePane:", e); }
         }
 
@@ -1303,6 +1484,14 @@
         private static _noDragSelector = 'input,textarea,select,button,a,audio,video,[contenteditable=""],[contenteditable="true"],[draggable="true"],[data-bit-scp-nodrag]';
 
         private static _dragThreshold = 4;
+
+        // How near an edge still counts as standing ON it, in pixels. A scroll offset is fractional at a
+        // fractional zoom level and on a scaled display, while the maxima it is compared against are
+        // derived from sizes the browser rounds to whole numbers - so a pane that has been scrolled as far
+        // as it goes comes to rest a fraction of a pixel short of its own maximum, and every exact
+        // comparison against an edge is one it can never pass. It is the same pixel of slack
+        // BitScrollOffset gives on the .NET side, and it is on top of whatever ReachOffset asks for.
+        private static _edgeTolerance = 1;
 
         // How many of the nodes a change added are asked where they landed before the answer is taken to
         // be "not above the reader". Each one is a rectangle read, and a render can add a great many.

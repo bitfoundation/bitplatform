@@ -28,6 +28,12 @@ public partial class BitScrollablePane : BitComponentBase
     private BitScrollablePaneOptions? _jsOptions;
     private DotNetObjectReference<BitScrollablePane>? _dotnetObj;
 
+    // The key the browser side was registered under, kept rather than recomputed on every call. Id is a
+    // parameter, so _Id is not the same string for the life of the component: a consumer that changes it
+    // would otherwise leave every later call - and the teardown most of all - addressed to a key nothing
+    // is registered under, silently doing nothing while the instance it meant to reach lived on.
+    private string? _jsId;
+
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -43,27 +49,27 @@ public partial class BitScrollablePane : BitComponentBase
 
     // Whether anything the browser side does is asked for. Everything else this component offers is CSS,
     // so a pane that wants none of these never sets up a listener, an observer or a .NET object reference.
+    //
+    // What is worth WATCHING once there is an instance - the content, the pane, both - is deliberately not
+    // decided here as well: the browser side works it out from the options it is handed, so there is one
+    // definition of it rather than two that a new content-dependent feature could be added to only one of.
     private bool _needsJs => IsEnabled && (AutoScroll
                                            || DragScroll
                                            || HorizontalWheel
                                            || PreserveScroll
+                                           || Fade
                                            || _autoHides
                                            || OnScroll.HasDelegate
                                            || OnScrollStart.HasDelegate
                                            || OnScrollEnd.HasDelegate
-                                           || _watchesContent);
+                                           || OnReachedTop.HasDelegate
+                                           || OnReachedBottom.HasDelegate
+                                           || OnReachedLeft.HasDelegate
+                                           || OnReachedRight.HasDelegate);
 
     // Whether the browser side has a scrollbar to take out of sight. Only the Modern one is ever hidden,
     // since it is the only one the library draws, so the flag on its own is nothing for JavaScript to do.
     private bool _autoHides => Modern && AutoHideScrollbar;
-
-    // Whether anything the pane draws or reports depends on the size of its content rather than only on
-    // where it stands, which is what makes a change of content worth re-measuring after.
-    private bool _watchesContent => Fade
-                                    || OnReachedTop.HasDelegate
-                                    || OnReachedBottom.HasDelegate
-                                    || OnReachedLeft.HasDelegate
-                                    || OnReachedRight.HasDelegate;
 
 
 
@@ -407,7 +413,7 @@ public partial class BitScrollablePane : BitComponentBase
     /// which is what a pane whose position is driven entirely from code wants. To take the interaction
     /// away as well, disable the pane with <see cref="BitComponentBase.IsEnabled"/>.
     /// </remarks>
-    [Parameter, ResetStyleBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool NoScroll { get; set; }
 
     /// <summary>
@@ -853,7 +859,15 @@ public partial class BitScrollablePane : BitComponentBase
     /// or a <see cref="BitComponentBase.TabIndex"/> of its own - and once it holds the focus the arrow
     /// keys, Page Up and Page Down, Home and End all scroll it.
     /// </remarks>
-    public ValueTask FocusAsync() => RootElement.FocusAsync();
+    public ValueTask FocusAsync()
+    {
+        // A pane that has not been rendered yet leaves an empty element reference behind, which throws
+        // instead of doing nothing when it is focused - where every other call on this component quietly
+        // does nothing until there is something to do it to.
+        if (IsRendered is false) return ValueTask.CompletedTask;
+
+        return RootElement.FocusAsync();
+    }
 
     /// <summary>
     /// Gives the focus to the pane itself, optionally without scrolling it into view.
@@ -861,7 +875,12 @@ public partial class BitScrollablePane : BitComponentBase
     /// <param name="preventScroll">
     /// Whether the browser is asked to leave the page where it is instead of bringing the pane into view.
     /// </param>
-    public ValueTask FocusAsync(bool preventScroll) => RootElement.FocusAsync(preventScroll);
+    public ValueTask FocusAsync(bool preventScroll)
+    {
+        if (IsRendered is false) return ValueTask.CompletedTask;
+
+        return RootElement.FocusAsync(preventScroll);
+    }
 
     /// <summary>
     /// Reads where the pane currently stands, straight from the browser.
@@ -891,7 +910,7 @@ public partial class BitScrollablePane : BitComponentBase
     {
         if (_jsSetupDone is false) return ValueTask.CompletedTask;
 
-        return _js.BitScrollablePaneRefresh(_Id);
+        return _js.BitScrollablePaneRefresh(_jsId!);
     }
 
 
@@ -1052,7 +1071,9 @@ public partial class BitScrollablePane : BitComponentBase
 
         ClassBuilder.Register(() => Fade ? "bit-scp-fad" : string.Empty);
 
-        ClassBuilder.Register(() => DragScroll ? "bit-scp-drg" : string.Empty);
+        // The grab cursor is the promise that the content can be dragged, so a pane the reader is not to be
+        // able to move must not make it, whatever DragScroll says.
+        ClassBuilder.Register(() => DragScroll && NoScroll is false ? "bit-scp-drg" : string.Empty);
 
         ClassBuilder.Register(() => SnapAlign switch
         {
@@ -1096,10 +1117,12 @@ public partial class BitScrollablePane : BitComponentBase
 
             try
             {
-                await _js.BitScrollablePaneDispose(_Id);
+                await _js.BitScrollablePaneDispose(_jsId!);
             }
             catch (JSDisconnectedException) { } // circuit gone; nothing to tear down
         }
+
+        _jsId = null;
 
         _dotnetObj?.Dispose();
         _dotnetObj = null;
@@ -1129,17 +1152,26 @@ public partial class BitScrollablePane : BitComponentBase
     // that a render which changed none of them costs a comparison rather than a round trip.
     private async Task SetupJs()
     {
+        // The render this follows may have been the last one: everything before it is awaited, so a pane
+        // taken off the page while one of those calls was in flight is disposed before this runs. Setting
+        // up then would hand the browser a .NET object reference the disposal has already been and gone
+        // for, leaving it - and the component it points at - alive for as long as the page is.
+        if (IsDisposed) return;
+
         try
         {
             if (_needsJs is false)
             {
                 if (_jsSetupDone is false) return;
 
+                var registered = _jsId!;
+
                 _jsSetupDone = false;
                 _autoScrolled = false;
                 _jsOptions = null;
+                _jsId = null;
 
-                await _js.BitScrollablePaneDispose(_Id);
+                await _js.BitScrollablePaneDispose(registered);
 
                 return;
             }
@@ -1151,32 +1183,29 @@ public partial class BitScrollablePane : BitComponentBase
                 _dotnetObj ??= DotNetObjectReference.Create(this);
                 _jsOptions = options;
                 _jsSetupDone = true;
+                _jsId = _Id;
 
-                await _js.BitScrollablePaneSetup(_Id, RootElement, _dotnetObj, options);
+                await _js.BitScrollablePaneSetup(_jsId, RootElement, _dotnetObj, options);
             }
             else if (options != _jsOptions)
             {
                 _jsOptions = options;
 
-                await _js.BitScrollablePaneUpdate(_Id, options);
-            }
-            else if (AutoScroll is false && _watchesContent)
-            {
-                // Nothing about the pane changed, but its content may have, and what it draws and reports
-                // is measured off that content. The browser side watches for the change itself, so this is
-                // the belt to that observer's braces - for the render whose effect on the size of the
-                // content a mutation record does not carry. A pane that only reports where it stands has
-                // nothing to re-measure here, and an auto scrolling one is measured by the call below.
-                await _js.BitScrollablePaneRefresh(_Id);
+                await _js.BitScrollablePaneUpdate(_jsId!, options);
             }
 
+            // The first pinning is the one this side has to ask for: it is unconditional - a pane that
+            // starts out with content already in it belongs at the end of it - and the browser side has
+            // nothing to compare against on its very first measurement. Every pinning after that is its
+            // own answer to content it watches for and re-pins off, without a round trip per render.
             if (AutoScroll)
             {
-                // The first pinning is unconditional - a pane that starts out with content already in it
-                // belongs at the end of it - and every one after that only holds a pane that was left there.
-                await _js.BitScrollablePaneAutoScroll(_Id, _autoScrolled is false);
+                if (_autoScrolled is false)
+                {
+                    _autoScrolled = true;
 
-                _autoScrolled = true;
+                    await _js.BitScrollablePaneAutoScroll(_jsId!, true);
+                }
             }
             else
             {
@@ -1207,6 +1236,7 @@ public partial class BitScrollablePane : BitComponentBase
         Wheel = HorizontalWheel,
         Preserve = PreserveScroll,
         AutoHide = _autoHides,
+        NoScroll = NoScroll,
     };
 
 

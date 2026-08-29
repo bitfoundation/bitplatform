@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Everything the browser side of a <see cref="BitScrollablePane"/> is driven with.
@@ -103,4 +103,15 @@ internal record class BitScrollablePaneOptions
     /// Whether the Modern scrollbar of the pane is only painted while the pane is being used.
     /// </summary>
     public bool AutoHide { get; set; }
+
+    /// <summary>
+    /// Whether the reader is not to be able to move the pane at all.
+    /// </summary>
+    /// <remarks>
+    /// The clipping itself is CSS, but <c>overflow: hidden</c> only stops the reader's own gestures: the
+    /// element stays scrollable through the scrolling API, which is what both the drag and the sideways
+    /// wheel move it with. So the browser side has to be told, or those two would go on moving a pane
+    /// whose whole point is that only its page decides where it stands.
+    /// </remarks>
+    public bool NoScroll { get; set; }
 }
