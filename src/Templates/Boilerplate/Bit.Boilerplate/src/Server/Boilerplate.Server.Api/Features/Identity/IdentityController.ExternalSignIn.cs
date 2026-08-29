@@ -80,6 +80,8 @@ public partial class IdentityController
                     await userPhoneNumberStore.SetPhoneNumberAsync(user, phoneNumber!, cancellationToken);
                 }
 
+                user.CreatedOn = TimeProvider.GetUtcNow();
+
                 if (info.LoginProvider is "Keycloak")
                 {
                     // Roles are supposed to be managed through the key cloack provider.

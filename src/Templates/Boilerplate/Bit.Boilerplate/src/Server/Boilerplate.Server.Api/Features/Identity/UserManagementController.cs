@@ -16,6 +16,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
     [AutoInject] private ServerApiSettings serverApiSettings = default!;
+    [AutoInject] private UserErasureService userErasureService = default!;
 
 
     [HttpGet, EnableQuery]
@@ -111,29 +112,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         }
         //#endif
 
-        //#if (signalR == true)
-        var userSessionConnectionIds = await DbContext.UserSessions.Where(us => us.UserId == userId && us.SignalRConnectionId != null)
-                                                                   .Select(us => us.SignalRConnectionId!)
-                                                                   .ToListAsync(cancellationToken);
-        //#endif
-
-        var strategy = DbContext.Database.CreateExecutionStrategy();
-        await strategy.ExecuteAsync(async () =>
-        {
-            await using var transaction = await DbContext.Database.BeginTransactionAsync(cancellationToken);
-
-            await DbContext.UserSessions.Where(us => us.UserId == userId).ExecuteDeleteAsync(cancellationToken);
-
-            // Re-read inside the delegate, same reason as UserController.Delete: on a retry the instance from the failed
-            // attempt is still tracked and already marked Deleted.
-            await userManager.DeleteAsync(await GetUserById(userId, cancellationToken));
-
-            await transaction.CommitAsync(cancellationToken);
-        });
-
-        //#if (signalR == true)
-        await RevokeSessions(userSessionConnectionIds, cancellationToken);
-        //#endif
+        await userErasureService.Erase(userId, exceptSessionId: null, cancellationToken);
     }
 
     [HttpPost("{id}")]
@@ -235,14 +214,6 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
 
         if (await DbContext.UserRoles.AnyAsync(ur => ur.UserId == targetUserId && ur.Role!.Name == AppRoles.GlobalAdmin, cancellationToken))
             throw new BadRequestException(errorMessage ?? Localizer[nameof(AppStrings.UserCantRevokeSuperAdminSessionsErrorMessage)]);
-    }
-
-    private async Task<User> GetUserById(Guid id, CancellationToken cancellationToken)
-    {
-        var user = await userManager.Users.FirstOrDefaultAsync(r => r.Id == id, cancellationToken)
-                    ?? throw new ResourceNotFoundException().WithData("Reason", "User not found.");
-
-        return user;
     }
 
     //#if (multitenant == true)

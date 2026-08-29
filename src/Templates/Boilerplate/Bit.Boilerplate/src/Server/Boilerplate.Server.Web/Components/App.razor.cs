@@ -20,7 +20,8 @@ public partial class App
         if (CultureInfoManager.InvariantGlobalization is false)
         {
             HttpContext?.Response.Cookies.Append(CookieRequestCultureProvider.DefaultCookieName,
-                                                 CookieRequestCultureProvider.MakeCookieValue(new(CultureInfo.CurrentUICulture)));
+                                                 CookieRequestCultureProvider.MakeCookieValue(new(CultureInfo.CurrentUICulture)),
+                                                 new() { IsEssential = true });
         }
     }
 }

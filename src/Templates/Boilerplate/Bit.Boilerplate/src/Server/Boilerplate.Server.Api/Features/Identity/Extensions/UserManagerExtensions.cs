@@ -66,6 +66,8 @@ public static partial class UserManagerExtensions
                 userToAdd.UserName = userToAdd.Email ?? userToAdd.PhoneNumber ?? Guid.CreateVersion7().ToString("N");
             }
 
+            userToAdd.CreatedOn = userManager.ServiceProvider.GetRequiredService<TimeProvider>().GetUtcNow();
+
             var result = await userManager.CreateAsync(userToAdd, password);
 
             if (result.Succeeded is false)

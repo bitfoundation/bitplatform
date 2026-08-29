@@ -1,5 +1,6 @@
 //+:cnd:noEmit
 using Microsoft.AspNetCore.OutputCaching;
+using Boilerplate.Shared.Features.Attachments;
 using Boilerplate.Server.Shared.Infrastructure.Services;
 
 namespace Boilerplate.Server.Api.Infrastructure.Services;
@@ -50,6 +51,12 @@ public partial class ResponseCacheService
             throw new NotImplementedException();
         }
         //#endif
+    }
+
+    public async Task PurgeUserProfileImagesCache(Guid userId)
+    {
+        await PurgeCache($"/api/v1/Attachment/GetAttachment/{userId}/{AttachmentKind.UserProfileImageSmall}",
+                         $"/api/v1/Attachment/GetAttachment/{userId}/{AttachmentKind.UserProfileImageOriginal}");
     }
 
     //#if (module == "Sales" || module == "Admin")

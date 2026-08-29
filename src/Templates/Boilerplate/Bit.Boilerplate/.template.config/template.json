@@ -826,7 +826,8 @@
                         "src/Tests/Features/Chatbot/AiChatPanelTestBase.cs",
                         "src/Tests/Features/Chatbot/AppChatbotHistoryTests.cs",
                         "src/Tests/Features/Chatbot/AiChatPanelAnswerRoutingTests.cs",
-                        "src/Tests/Features/Chatbot/TestChatClient.cs"
+                        "src/Tests/Features/Chatbot/TestChatClient.cs",
+                        "src/Tests/Features/Attachments/AiChatImagesRetentionTests.cs"
                     ]
                 },
                 {
@@ -834,6 +835,7 @@
                     "condition": "(advancedTests != true || notification != true)",
                     "exclude": [
                         "src/Tests/Features/PushNotification/PushSubscriptionOwnershipTests.cs",
+                        "src/Tests/Features/PushNotification/PushSubscriptionsRetentionTests.cs",
                         "src/Tests/Features/PushNotification/PushNotificationsToggleUITests.cs"
                     ]
                 },
@@ -866,6 +868,7 @@
                         "src/Shared/Infrastructure/Services/SharedAppMessages.cs",
                         "src/Server/Boilerplate.Server.Api/Infrastructure/SignalR/**",
                         "src/Server/Boilerplate.Server.Api/Features/Chatbot/**",
+                        "src/Server/Boilerplate.Server.Api/Features/Attachments/AiChatImagesRetentionJobRunner.cs",
                         "src/Server/Boilerplate.Server.Api/Infrastructure/Extensions/IClientProxyExtensions.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanel.*",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/SystemPromptsPage.*",

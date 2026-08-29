@@ -33,7 +33,7 @@ public partial class PushSubscriptionOwnershipTests
     /// <para>
     /// The previous user's <c>UserSession</c> is deliberately left alive here (nobody signs out), because that is the
     /// state an ownership check would trip over: sign out is not guaranteed to happen, and until
-    /// <c>UserSessionsCleanupJobRunner</c> removes it the row still points at a session nobody is using.
+    /// <c>UserSessionsRetentionJobRunner</c> removes it the row still points at a session nobody is using.
     /// </para>
     /// </summary>
     [TestMethod]
@@ -106,7 +106,7 @@ public partial class PushSubscriptionOwnershipTests
     /// <para>
     /// Clearing the tokens tells the server nothing, so the previous <c>UserSession</c> row is still there and the
     /// device's subscription is still pointing at it - for up to <c>Identity:RefreshTokenExpiration</c>, until
-    /// <c>UserSessionsCleanupJobRunner</c> removes it. Both the anonymous propagation that runs first and the
+    /// <c>UserSessionsRetentionJobRunner</c> removes it. Both the anonymous propagation that runs first and the
     /// authenticated one that follows therefore present a DeviceId whose row belongs to a session neither of them owns.
     /// Any ownership check refuses both and leaves that device without push for good, which is why the rule is simply
     /// that whoever presents the DeviceId gets the row (See <c>PushNotificationService.Subscribe</c>).
