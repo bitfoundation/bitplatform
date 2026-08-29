@@ -263,11 +263,14 @@ public partial class BitModalServiceDemo : IDisposable
     [AutoInject] private BitModalService modalService = default!;
     [AutoInject] private NavigationManager navigationManager = default!;
 
-
     protected override void OnInitialized()
     {
         modalService.OnAddModal += HandleOnAddModal;
         modalService.OnCloseModal += HandleOnCloseModal;
+
+        // The persistent example's own service: the ordinary modal is closed by the container that unmounts
+        // rather than by anything on this page, so the lines reporting the two modals are re-rendered from here.
+        demoModalService.OnCloseModal += HandleOnDemoModalClose;
 
         base.OnInitialized();
     }
@@ -342,6 +345,7 @@ public partial class BitModalServiceDemo : IDisposable
     private async Task ShowGuardedModal()
     {
         hasUnsavedChanges = false;
+        guardReport = "-";
 
         guardedModal = await modalService.Show<UnsavedModalContent>(
             new Dictionary<string, object>
@@ -350,10 +354,25 @@ public partial class BitModalServiceDemo : IDisposable
             },
             new BitModalParameters
             {
+                // Modeless only so the TryClose button of the page stays reachable while the modal is open;
+                // the guard is asked the same on a modal that holds the page.
+                Modeless = true,
                 ShowCloseButton = true,
                 HeaderText = "Rename the project",
-                CanClose = () => Task.FromResult(hasUnsavedChanges is false)
+                CanClose = GuardTheClose
             });
+    }
+
+    // The guard reports what it answered, so a dismissal it turns down - which leaves the modal exactly where
+    // it was - is visible as something having happened rather than as a click that did nothing.
+    private Task<bool> GuardTheClose()
+    {
+        var canClose = hasUnsavedChanges is false;
+
+        guardReport = canClose ? "let through" : "turned down (unsaved change)";
+        StateHasChanged();
+
+        return Task.FromResult(canClose);
     }
 
     private async Task TryCloseGuardedModal()
@@ -364,7 +383,7 @@ public partial class BitModalServiceDemo : IDisposable
             return;
         }
 
-        guardReport = await guardedModal.TryClose() ? "closed" : "turned down";
+        await guardedModal.TryClose();
     }
 
 
@@ -390,11 +409,72 @@ public partial class BitModalServiceDemo : IDisposable
     }
 
 
+    // A service of the example's own, so the container below can be unmounted without taking the modals of
+    // the rest of the page - which the layout's BitModalContainer renders - down with it. An app has one
+    // service and one container; two of each is what an example that unmounts a container costs.
+    private readonly BitModalService demoModalService = new();
+    private bool isDemoContainerMounted = true;
+    private BitModalReference? persistentModal;
+    private BitModalReference? ordinaryModal;
+
     private async Task ShowPersistentModal()
     {
-        await modalService.Show<ModalContent>(new BitModalParameters { MaxWidth = "28rem" }, persistent: true);
+        persistentModal = await demoModalService.Show<ModalContent>(
+            new BitModalParameters { MaxWidth = "28rem", HeaderText = "Persistent" },
+            persistent: true);
     }
 
+    private async Task ShowOrdinaryModal()
+    {
+        ordinaryModal = await demoModalService.Show<ModalContent>(
+            new BitModalParameters { MaxWidth = "28rem", HeaderText = "Ordinary" });
+    }
+
+    // Unmounting the container is what tells the two apart: the ordinary modal is closed by the container that
+    // was rendering it, and the persistent one is only taken off the screen until a container mounts again.
+    private void ToggleDemoContainer()
+    {
+        isDemoContainerMounted = isDemoContainerMounted is false;
+    }
+
+    private string DescribeModal(BitModalReference? modalRef)
+    {
+        if (modalRef is null) return "never shown";
+
+        if (modalRef.IsClosed) return "closed";
+
+        return isDemoContainerMounted ? "open" : "open, waiting for a container";
+    }
+
+
+    private BitModalReference? navigationModal;
+    private BitModalReference? lingeringModal;
+
+    // Both are shown Modeless so the navigation buttons of the page stay reachable while they are open, which
+    // is what the example is for; a modal that holds the page behaves the same way on a route change.
+    private async Task ShowNavigationModal()
+    {
+        navigationModal = await modalService.Show<ModalContent>(new BitModalParameters
+        {
+            MaxWidth = "28rem",
+            Modeless = true,
+            ShowCloseButton = true,
+            HeaderText = "Closes on navigation"
+        });
+    }
+
+    // The modals that outlive a route change say so themselves.
+    private async Task ShowLingeringModal()
+    {
+        lingeringModal = await modalService.Show<ModalContent>(new BitModalParameters
+        {
+            MaxWidth = "28rem",
+            Modeless = true,
+            ShowCloseButton = true,
+            HeaderText = "Stays across a route change",
+            CloseOnNavigation = false
+        });
+    }
 
     private void NavigateWithQuery()
     {
@@ -402,6 +482,44 @@ public partial class BitModalServiceDemo : IDisposable
         navigationManager.NavigateTo($"/components/modalservice?at={DateTime.Now.Ticks}#example9");
     }
 
+    private void NavigateToAnotherPage()
+    {
+        // A different path, which is what closes the modals of the page being left behind.
+        navigationManager.NavigateTo("/components/modal");
+    }
+
+    private static string DescribeNavigationModal(BitModalReference? modalRef)
+    {
+        if (modalRef is null) return "never shown";
+
+        return modalRef.IsClosed ? "closed" : "open";
+    }
+
+
+    // Shown Modeless and in a corner so the buttons of the page stay reachable and every modal of the stack stays
+    // visible, which is what makes the count and the CloseAll next to it something to watch.
+    private async Task ShowStackedModal()
+    {
+        var count = modalService.OpenModals.Count;
+
+        await modalService.Show<ModalContent>(new BitModalParameters
+        {
+            MaxWidth = "20rem",
+            Modeless = true,
+            ShowCloseButton = true,
+            HeaderText = $"Modal {count + 1}",
+            Position = StackedModalPosition(count)
+        });
+    }
+
+    private static BitPosition StackedModalPosition(int index) => (index % 5) switch
+    {
+        0 => BitPosition.TopStart,
+        1 => BitPosition.TopEnd,
+        2 => BitPosition.BottomStart,
+        3 => BitPosition.BottomEnd,
+        _ => BitPosition.Center
+    };
 
     private async Task CloseAllModals()
     {
@@ -411,6 +529,23 @@ public partial class BitModalServiceDemo : IDisposable
 
     private int shownCount;
     private int closedCount;
+
+    // Modeless and in a corner for the same reason as the one above: the counters are what the example is
+    // about, so the Show button has to stay clickable while the modals it shows are on the screen.
+    private async Task ShowWatchedModal()
+    {
+        var count = modalService.OpenModals.Count;
+
+        await modalService.Show<ModalContent>(new BitModalParameters
+        {
+            MaxWidth = "20rem",
+            Modeless = true,
+            ShowCloseButton = true,
+            HeaderText = $"Modal {count + 1}",
+            Position = StackedModalPosition(count)
+        });
+    }
+
     private Task HandleOnAddModal(BitModalReference modalRef)
     {
         shownCount++;
@@ -426,10 +561,18 @@ public partial class BitModalServiceDemo : IDisposable
     }
 
 
+    private Task HandleOnDemoModalClose(BitModalReference modalRef)
+    {
+        return InvokeAsync(StateHasChanged);
+    }
+
+
     public void Dispose()
     {
         modalService.OnAddModal -= HandleOnAddModal;
         modalService.OnCloseModal -= HandleOnCloseModal;
+
+        demoModalService.OnCloseModal -= HandleOnDemoModalClose;
 
         GC.SuppressFinalize(this);
     }
@@ -571,6 +714,12 @@ private async Task ShowMarkupModal()
 @* UnsavedModalContent.razor *@
 <BitStack Style=""padding:1rem;min-width:18rem"" Gap=""1rem"">
     <BitTextField Label=""Name"" Value=""@value"" ValueChanged=""OnValueChanged"" Immediate />
+    @if (hasChanges)
+    {
+        <BitMessage Color=""BitColor.Warning"">
+            Unsaved change: the close button, Escape and TryClose are turned down until you save or discard.
+        </BitMessage>
+    }
     <BitStack Horizontal Gap=""0.5rem"" AutoHeight>
         <BitButton OnClick=""Save"">Save</BitButton>
         <BitButton Variant=""BitVariant.Outline"" OnClick=""Discard"">Discard</BitButton>
@@ -584,6 +733,7 @@ private BitModalReference? guardedModal;
 private async Task ShowGuardedModal()
 {
     hasUnsavedChanges = false;
+    guardReport = ""-"";
 
     guardedModal = await modalService.Show<UnsavedModalContent>(
         new Dictionary<string, object>
@@ -592,10 +742,23 @@ private async Task ShowGuardedModal()
         },
         new BitModalParameters
         {
+            // Modeless only so the TryClose button of the page stays reachable while the modal is open.
+            Modeless = true,
             ShowCloseButton = true,
             HeaderText = ""Rename the project"",
-            CanClose = () => Task.FromResult(hasUnsavedChanges is false)
+            CanClose = GuardTheClose
         });
+}
+
+// The guard reports what it answered, so a dismissal it turns down is visible as something having happened.
+private Task<bool> GuardTheClose()
+{
+    var canClose = hasUnsavedChanges is false;
+
+    guardReport = canClose ? ""let through"" : ""turned down (unsaved change)"";
+    StateHasChanged();
+
+    return Task.FromResult(canClose);
 }
 
 private async Task TryCloseGuardedModal()
@@ -606,12 +769,14 @@ private async Task TryCloseGuardedModal()
         return;
     }
 
-    guardReport = await guardedModal.TryClose() ? ""closed"" : ""turned down"";
+    await guardedModal.TryClose();
 }
 
 // UnsavedModalContent.razor: the two ways out drop the changes first, so the guard lets the close through.
 private async Task Discard()
 {
+    hasChanges = false;
+
     await HasChangesChanged.InvokeAsync(false);
     await modalReference.Dismiss();
 }";
@@ -648,22 +813,113 @@ private async Task RenameTheOpenModal(BitModalReference modal)
 }";
 
     private readonly string example8RazorCode = @"
-<BitButton OnClick=""ShowPersistentModal"">Show a persistent modal</BitButton>";
+<BitButton OnClick=""ShowPersistentModal"">Show a persistent modal</BitButton>
+
+<BitButton Variant=""BitVariant.Outline"" OnClick=""ShowOrdinaryModal"">Show an ordinary one</BitButton>
+
+<BitButton Variant=""BitVariant.Text"" OnClick=""ToggleDemoContainer"">
+    @(isDemoContainerMounted ? ""Unmount the container"" : ""Mount the container again"")
+</BitButton>
+
+<div>Persistent modal: [@DescribeModal(persistentModal)]</div>
+<div>Ordinary modal: [@DescribeModal(ordinaryModal)]</div>
+
+@* An app mounts one container, in its layout: this one is the example's, so that unmounting it
+   leaves the modals of the rest of the page alone. *@
+@if (isDemoContainerMounted)
+{
+    <DemoModalContainer Service=""demoModalService"" />
+}
+
+@* DemoModalContainer.razor: a BitModalContainer that is handed the service it renders for. *@
+@inherits BitModalContainerBase<BitModalReference, BitModalParameters>
+
+@foreach (var modalReference in _modalRefs)
+{
+    <CascadingValue @key=""modalReference.Id"" Value=""modalReference"">
+        <CascadingValue Value=""GetMergedParameters(modalReference)"">
+            @modalReference.Modal
+        </CascadingValue>
+    </CascadingValue>
+}";
     private readonly string example8CsharpCode = @"
+private readonly BitModalService demoModalService = new();
+private bool isDemoContainerMounted = true;
+private BitModalReference? persistentModal;
+private BitModalReference? ordinaryModal;
+
 private async Task ShowPersistentModal()
 {
-    await modalService.Show<ModalContent>(new BitModalParameters { MaxWidth = ""28rem"" }, persistent: true);
+    persistentModal = await demoModalService.Show<ModalContent>(
+        new BitModalParameters { MaxWidth = ""28rem"", HeaderText = ""Persistent"" },
+        persistent: true);
+}
+
+private async Task ShowOrdinaryModal()
+{
+    ordinaryModal = await demoModalService.Show<ModalContent>(
+        new BitModalParameters { MaxWidth = ""28rem"", HeaderText = ""Ordinary"" });
+}
+
+// Unmounting the container is what tells the two apart: the ordinary modal is closed by the container that
+// was rendering it, and the persistent one is only taken off the screen until a container mounts again.
+private void ToggleDemoContainer()
+{
+    isDemoContainerMounted = isDemoContainerMounted is false;
+}
+
+private string DescribeModal(BitModalReference? modalRef)
+{
+    if (modalRef is null) return ""never shown"";
+
+    if (modalRef.IsClosed) return ""closed"";
+
+    return isDemoContainerMounted ? ""open"" : ""open, waiting for a container"";
 }";
 
     private readonly string example9RazorCode = @"
-<BitButton OnClick=""ShowModal"">Show a modal</BitButton>
+<BitButton OnClick=""ShowNavigationModal"">Show a modal</BitButton>
 
-<BitButton Variant=""BitVariant.Outline"" OnClick=""NavigateWithQuery"">Change the query string (it stays)</BitButton>
+<BitButton OnClick=""ShowLingeringModal"">Show one that stays</BitButton>
+
+<BitButton Variant=""BitVariant.Outline"" OnClick=""NavigateWithQuery"">Change the query string (both stay)</BitButton>
+
+<BitButton Variant=""BitVariant.Outline"" OnClick=""NavigateToAnotherPage"">Go to another page</BitButton>
+
+<div>Modal: [@DescribeNavigationModal(navigationModal)]</div>
+<div>Modal that stays: [@DescribeNavigationModal(lingeringModal)]</div>
 
 @* every modal of this container outlives the route change unless it says otherwise *@
 <BitModalContainer ModalParameters=""new BitModalParameters { CloseOnNavigation = false }"" />";
     private readonly string example9CsharpCode = @"
 [AutoInject] private NavigationManager navigationManager = default!;
+
+private BitModalReference? navigationModal;
+private BitModalReference? lingeringModal;
+
+private async Task ShowNavigationModal()
+{
+    navigationModal = await modalService.Show<ModalContent>(new BitModalParameters
+    {
+        MaxWidth = ""28rem"",
+        Modeless = true,
+        ShowCloseButton = true,
+        HeaderText = ""Closes on navigation""
+    });
+}
+
+// the modals that outlive a route change say so themselves
+private async Task ShowLingeringModal()
+{
+    lingeringModal = await modalService.Show<ModalContent>(new BitModalParameters
+    {
+        MaxWidth = ""28rem"",
+        Modeless = true,
+        ShowCloseButton = true,
+        HeaderText = ""Stays across a route change"",
+        CloseOnNavigation = false
+    });
+}
 
 private void NavigateWithQuery()
 {
@@ -671,20 +927,43 @@ private void NavigateWithQuery()
     navigationManager.NavigateTo($""/components/modalservice?at={DateTime.Now.Ticks}"");
 }
 
-// the modals that outlive a route change say so themselves
-private async Task ShowLingeringModal()
+private void NavigateToAnotherPage()
 {
-    await modalService.Show<ModalContent>(new BitModalParameters { CloseOnNavigation = false });
+    // A different path, which is what closes the modals of the page being left behind.
+    navigationManager.NavigateTo(""/components/modal"");
 }";
-
     private readonly string example10RazorCode = @"
-<BitButton OnClick=""ShowModal"">Show one more</BitButton>
+<BitButton OnClick=""ShowStackedModal"">Show one more</BitButton>
 
 <div>Open: [@modalService.OpenModals.Count] &nbsp; Container mounted: [@modalService.IsContainerAvailable]</div>
 
 <BitButton Variant=""BitVariant.Outline"" OnClick=""CloseAllModals"">Close all</BitButton>";
     private readonly string example10CsharpCode = @"
 [AutoInject] private BitModalService modalService = default!;
+
+// shown Modeless and in a corner so the page stays reachable and every modal of the stack stays visible
+private async Task ShowStackedModal()
+{
+    var count = modalService.OpenModals.Count;
+
+    await modalService.Show<ModalContent>(new BitModalParameters
+    {
+        MaxWidth = ""20rem"",
+        Modeless = true,
+        ShowCloseButton = true,
+        HeaderText = $""Modal {count + 1}"",
+        Position = StackedModalPosition(count)
+    });
+}
+
+private static BitPosition StackedModalPosition(int index) => (index % 5) switch
+{
+    0 => BitPosition.TopStart,
+    1 => BitPosition.TopEnd,
+    2 => BitPosition.BottomStart,
+    3 => BitPosition.BottomEnd,
+    _ => BitPosition.Center
+};
 
 private async Task CloseAllModals()
 {
@@ -703,12 +982,27 @@ private async Task CloseById(string id)
 }";
 
     private readonly string example11RazorCode = @"
-<BitButton OnClick=""ShowModal"">Show</BitButton>
+<BitButton OnClick=""ShowWatchedModal"">Show</BitButton>
 
 <div>Shown: [@shownCount] &nbsp; Closed: [@closedCount]</div>";
     private readonly string example11CsharpCode = @"
 private int shownCount;
 private int closedCount;
+
+// shown Modeless and in a corner so the Show button stays clickable while the counters are watched
+private async Task ShowWatchedModal()
+{
+    var count = modalService.OpenModals.Count;
+
+    await modalService.Show<ModalContent>(new BitModalParameters
+    {
+        MaxWidth = ""20rem"",
+        Modeless = true,
+        ShowCloseButton = true,
+        HeaderText = $""Modal {count + 1}"",
+        Position = StackedModalPosition(count)
+    });
+}
 
 protected override void OnInitialized()
 {

@@ -120,6 +120,14 @@
                 actually closed.
             </div>
             <br />
+            <div>
+                The modal below is shown <b>Modeless</b> so the <b>TryClose</b> button of the page stays
+                reachable while it is open - the only reason for it here; the guard is asked the same on a
+                modal that holds the page. A refusal leaves the modal exactly where it was, so both sides say
+                what happened: the modal shows the unsaved change it is turning the close down over, and the
+                line below reports what the guard last answered.
+            </div>
+            <br />
             <BitButton OnClick="ShowGuardedModal">Rename the project</BitButton>
             <br /><br />
             <BitButton Variant="BitVariant.Outline" OnClick="TryCloseGuardedModal">TryClose it from here</BitButton>
@@ -158,7 +166,29 @@
                 than left with a <b>Result</b> nobody will ever complete.
             </div>
             <br />
+            <div>
+                Which is what the container below is for: show one of each, unmount the container, and the ordinary
+                modal is closed while the persistent one is only off the screen - mounting a container again brings
+                it back. It renders for a modal service of its own so that unmounting it leaves the rest of the page
+                alone; an app mounts one container, in its layout.
+            </div>
+            <br />
             <BitButton OnClick="ShowPersistentModal">Show a persistent modal</BitButton>
+            <br /><br />
+            <BitButton Variant="BitVariant.Outline" OnClick="ShowOrdinaryModal">Show an ordinary one</BitButton>
+            <br /><br />
+            <BitButton Variant="BitVariant.Text" OnClick="ToggleDemoContainer">
+                @(isDemoContainerMounted ? "Unmount the container" : "Mount the container again")
+            </BitButton>
+            <br />
+            <div>Container: [@(isDemoContainerMounted ? "mounted" : "unmounted")]</div>
+            <div>Persistent modal: [@DescribeModal(persistentModal)]</div>
+            <div>Ordinary modal: [@DescribeModal(ordinaryModal)]</div>
+
+            @if (isDemoContainerMounted)
+            {
+                <DemoModalContainer Service="demoModalService" />
+            }
         </DemoExample>
 
         <DemoExample Title="Closing on navigation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
@@ -166,7 +196,7 @@
                 A modal belongs to the page it was opened from, so the modals on the screen are closed when the app
                 navigates somewhere else - leaving one lying over a page it says nothing about is the alternative.
                 Only a change of path counts: a query string or a fragment changed on the same page is still the
-                same page, which the pair of buttons below shows.
+                same page, which the buttons below show.
             </div>
             <br />
             <div>
@@ -175,9 +205,22 @@
                 parameters.
             </div>
             <br />
-            <BitButton OnClick="ShowModal">Show a modal</BitButton>
+            <div>
+                Show both, change the query string and they stay; go to another page and only the second one comes
+                along. Both are shown <b>Modeless</b> so the buttons stay reachable while they are open - a modal
+                that holds the page is closed by a route change just the same.
+            </div>
+            <br />
+            <BitButton OnClick="ShowNavigationModal">Show a modal</BitButton>
             <br /><br />
-            <BitButton Variant="BitVariant.Outline" OnClick="NavigateWithQuery">Change the query string (it stays)</BitButton>
+            <BitButton OnClick="ShowLingeringModal">Show one that stays</BitButton>
+            <br /><br />
+            <BitButton Variant="BitVariant.Outline" OnClick="NavigateWithQuery">Change the query string (both stay)</BitButton>
+            <br /><br />
+            <BitButton Variant="BitVariant.Outline" OnClick="NavigateToAnotherPage">Go to another page</BitButton>
+            <br />
+            <div>Modal: [@DescribeNavigationModal(navigationModal)]</div>
+            <div>Modal that stays: [@DescribeNavigationModal(lingeringModal)]</div>
         </DemoExample>
 
         <DemoExample Title="What is open" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
@@ -194,7 +237,7 @@
                 for the code that runs before the layout has rendered.
             </div>
             <br />
-            <BitButton OnClick="ShowModal">Show one more</BitButton>
+            <BitButton OnClick="ShowStackedModal">Show one more</BitButton>
             <br /><br />
             <div>Open: [@modalService.OpenModals.Count] &nbsp; Container mounted: [@modalService.IsContainerAvailable]</div>
             <br />
@@ -213,7 +256,7 @@
                 half-shown modal behind: the show is rolled back and the failure is reported to the caller.
             </div>
             <br />
-            <BitButton OnClick="ShowModal">Show</BitButton>
+            <BitButton OnClick="ShowWatchedModal">Show</BitButton>
             <br />
             <div>Shown: [@shownCount] &nbsp; Closed: [@closedCount]</div>
         </DemoExample>

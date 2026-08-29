@@ -1,0 +1,32 @@
+@* A container of the demo's own, so the "Persistent modals" example can mount and unmount one without
+   touching the BitModalContainer the layout mounts for the rest of the page. It is a BitModalContainer in
+   everything but where its service comes from: the one in the library takes it from DI, which makes every
+   container in the app render for the same service - and the modals of the app would then follow this one
+   around as it is mounted and unmounted. This one is handed the service it renders for as a parameter, so
+   the example runs against a service of its own. *@
+@inherits BitModalContainerBase<BitModalReference, BitModalParameters>
+
+@foreach (var modalReference in _modalRefs)
+{
+    <CascadingValue @key="modalReference.Id" Value="modalReference">
+        <CascadingValue Value="GetMergedParameters(modalReference)">
+            @modalReference.Modal
+        </CascadingValue>
+    </CascadingValue>
+}
+
+@code {
+    [Parameter, EditorRequired] public BitModalService Service { get; set; } = default!;
+
+    protected override BitModalServiceBase<BitModalReference, BitModalParameters> ModalService => Service;
+
+    protected override BitModalParameters? MergeParameters(BitModalParameters? modalParameters, BitModalParameters? containerParameters)
+    {
+        return BitModalParameters.Merge(modalParameters, containerParameters);
+    }
+
+    protected override bool? GetCloseOnNavigation(BitModalReference modalReference)
+    {
+        return GetMergedParameters(modalReference)?.CloseOnNavigation;
+    }
+}
