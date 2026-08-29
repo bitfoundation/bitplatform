@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
   <!-- 
@@ -1731,9 +1731,6 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="LeaveTenantConfirmMessage" xml:space="preserve">
     <value>Weet je zeker dat je de tenant {0} wilt verlaten?</value>
   </data>
-    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
-    <value>Je hebt de tenant succesvol verlaten.</value>
-  </data>
     <data name="SwitchTenant" xml:space="preserve">
     <value>Van tenant wisselen</value>
   </data>
@@ -1809,9 +1806,6 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
     <value>De uitnodiging voor {0} afwijzen? Dit kan niet ongedaan worden gemaakt - u hebt een nieuwe uitnodiging nodig om deel te nemen.</value>
   </data>
-  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
-    <value>Uitnodiging afgewezen.</value>
-  </data>
   <!--#endif-->
     <data name="TimeZone" xml:space="preserve">
     <value>Tijdzone</value>
@@ -1821,6 +1815,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   </data>
     <data name="FindTimeZone" xml:space="preserve">
     <value>Zoek een tijdzone</value>
+  </data>
+    <data name="NoTimeZoneMatchesSearchMessage" xml:space="preserve">
+    <value>Geen enkele tijdzone komt overeen met uw zoekopdracht.</value>
   </data>
   <!--#if (notification == true) -->
     <data name="PushNotifications" xml:space="preserve">

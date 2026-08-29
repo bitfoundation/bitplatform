@@ -233,7 +233,12 @@ public class TemplateConfigurationTests
             "src/Tests/Features/Identity/TestData.cs",
             // Deliberately kept: adding a language happens in generated projects, and this is the test that keeps
             // CultureInfoManager, MainActivity's DataPathPrefixes and Bit.ResxTranslator.json in step when it does.
-            "src/Tests/Features/Culture/SupportedCultureContractTests.cs"
+            "src/Tests/Features/Culture/SupportedCultureContractTests.cs",
+            // Deliberately kept: adding an endpoint that caches happens in generated projects, and this catches an
+            // [AppResponseCache] that silently does nothing there. It compiles and passes in the DEFAULT generation -
+            // AppTestServer, its two helpers and AppResponseCacheAttribute all ship, and the sitemap endpoints its
+            // non-vacuity assertion needs are mapped unconditionally.
+            "src/Tests/Features/Caching/ResponseCacheAttributeContractTests.cs"
         ];
 
         var (templateRoot, template) = LoadTemplateJson();

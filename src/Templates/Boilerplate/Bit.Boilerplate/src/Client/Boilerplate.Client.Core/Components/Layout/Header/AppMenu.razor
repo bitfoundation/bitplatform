@@ -4,6 +4,7 @@
 <section>
     <BitDropMenu Transparent @bind-IsOpen="isOpen" Responsive
                  OnDismiss="OnDropMenuDismiss"
+                 OnOpen="WrapHandled(OnDropMenuOpen)"
                  AriaLabel="@AccountMenuLabel"
                  Classes="@(new() { Callout = "app-menu-callout" })">
         <Template>
@@ -197,20 +198,28 @@
 
                         <BitSeparator />
 
-                        <div class="time-zone-list">
-                            <BitChoiceGroup Items="FilteredTimeZones" NoCircle Style="width:100%"
-                                            DefaultValue="@currentTimeZoneId"
-                                            OnChange="WrapHandled((string? tz) => OnTimeZoneChanged(tz))"
-                                            Styles="@(new() { ItemLabel = "flex-grow:1" })">
-                                <ItemTemplate Context="item">
-                                    <BitStack Horizontal VerticalAlign="BitAlignment.Center" Style="cursor:pointer">
-                                        <BitText Typography="BitTypography.Body2" Style="@(item.IsSelected ? "font-weight:bold" : "")">
-                                            @item.Text
-                                        </BitText>
-                                    </BitStack>
-                                </ItemTemplate>
-                            </BitChoiceGroup>
-                        </div>
+                        <BitBasicList Virtualize
+                                      ItemSize="44"
+                                      Role="radiogroup"
+                                      Class="time-zone-list"
+                                      Items="FilteredTimeZones"
+                                      AriaLabel="@Localizer[nameof(AppStrings.SelectTimeZone)]">
+                            <RowTemplate Context="timeZone">
+                                <BitActionButton FullWidth
+                                                 role="radio"
+                                                 Class="time-zone-item"
+                                                 aria-checked="@(IsCurrentTimeZone(timeZone) ? "true" : "false")"
+                                                 OnClick="WrapHandled(() => OnTimeZoneChanged(timeZone.Id))"
+                                                 Classes="@(new() { Content = IsCurrentTimeZone(timeZone) ? "time-zone-item-text selected" : "time-zone-item-text" })">
+                                    @timeZone.Text
+                                </BitActionButton>
+                            </RowTemplate>
+                            <EmptyContent>
+                                <BitText Class="time-zone-empty" Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">
+                                    @Localizer[nameof(AppStrings.NoTimeZoneMatchesSearchMessage)]
+                                </BitText>
+                            </EmptyContent>
+                        </BitBasicList>
                     </BitStack>
                 }
                 @*#if (multitenant == true)*@

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
     <!-- 
@@ -1731,9 +1731,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="LeaveTenantConfirmMessage" xml:space="preserve">
     <value>Are you sure you want to leave the {0} tenant?</value>
   </data>
-    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
-    <value>You have left the tenant successfully.</value>
-  </data>
     <data name="SwitchTenant" xml:space="preserve">
     <value>Switch tenant</value>
   </data>
@@ -1809,9 +1806,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
     <value>Decline the invitation to {0}? This can't be undone - you'll need a new invitation to join.</value>
   </data>
-  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
-    <value>Invitation declined.</value>
-  </data>
   <!--#endif-->
     <data name="TimeZone" xml:space="preserve">
     <value>Time zone</value>
@@ -1821,6 +1815,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="FindTimeZone" xml:space="preserve">
     <value>Find a time zone</value>
+  </data>
+    <data name="NoTimeZoneMatchesSearchMessage" xml:space="preserve">
+    <value>No time zone matches your search.</value>
   </data>
   <!--#if (notification == true) -->
     <data name="PushNotifications" xml:space="preserve">

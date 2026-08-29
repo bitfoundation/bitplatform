@@ -714,7 +714,6 @@
                         "src/Tests/Features/TemplateConfig/HybridHostHardeningTests.cs",
                         "src/Tests/Features/TemplateConfig/VelopackPackagingContractTests.cs",
                         "src/Tests/Features/TemplateConfig/PwaManifestShortcutTests.cs",
-                        "src/Tests/Features/Culture/CultureSwitchRebuildTests.cs",
                         "src/Tests/Features/Culture/CultureCookieParsingTests.cs",
                         "src/Tests/Features/Culture/CultureUrlRedirectionTests.cs",
                         "src/Tests/Features/Culture/ResxParityTests.cs",
@@ -751,6 +750,7 @@
                         "src/Tests/Features/Configuration/AppConfigurationBuilderTests.cs",
                         "src/Tests/Features/Configuration/ServiceRegistrationTests.cs",
                         "src/Tests/Features/PubSub/PubSubServiceTests.cs",
+                        "src/Tests/Features/PubSub/SoftRestartTests.cs",
                         "src/Tests/Features/Diagnostics/HealthCheckIntegrationTests.cs",
                         "src/Tests/Features/Attachments/UserProfilePictureWebPTests.cs",
                         "src/Tests/Features/WellKnown/AppleAppSiteAssociationTests.cs",
@@ -833,7 +833,8 @@
                     // The push notification feature, and therefore its dtos and entities, only exist under `notification`.
                     "condition": "(advancedTests != true || notification != true)",
                     "exclude": [
-                        "src/Tests/Features/PushNotification/PushSubscriptionOwnershipTests.cs"
+                        "src/Tests/Features/PushNotification/PushSubscriptionOwnershipTests.cs",
+                        "src/Tests/Features/PushNotification/PushNotificationsToggleUITests.cs"
                     ]
                 },
                 {

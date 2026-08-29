@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
   <!-- 
@@ -1731,9 +1731,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <data name="LeaveTenantConfirmMessage" xml:space="preserve">
     <value>Är du säker på att du vill lämna tenanten {0}?</value>
   </data>
-    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
-    <value>Du har lämnat tenanten.</value>
-  </data>
     <data name="SwitchTenant" xml:space="preserve">
     <value>Byt tenant</value>
   </data>
@@ -1809,9 +1806,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
     <value>Avböja inbjudan till {0}? Detta kan inte ångras - du behöver en ny inbjudan för att gå med.</value>
   </data>
-  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
-    <value>Inbjudan avböjd.</value>
-  </data>
   <!--#endif-->
     <data name="TimeZone" xml:space="preserve">
     <value>Tidszon</value>
@@ -1821,6 +1815,9 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   </data>
     <data name="FindTimeZone" xml:space="preserve">
     <value>Sök tidszon</value>
+  </data>
+    <data name="NoTimeZoneMatchesSearchMessage" xml:space="preserve">
+    <value>Ingen tidszon matchar din sökning.</value>
   </data>
   <!--#if (notification == true) -->
     <data name="PushNotifications" xml:space="preserve">

@@ -37,7 +37,8 @@ public partial class CultureService
         if (AppPlatform.IsBlazorHybridOrBrowser && await EnsureCultureResourcesLoaded(cultureName))
         {
             CultureInfoManager.SetCurrentCulture(cultureName);
-            pubSubService.Publish(ClientAppMessages.CULTURE_CHANGED, cultureName);
+
+            pubSubService.Publish(ClientAppMessages.SOFT_RESTART);
 
             // A url carrying a culture outranks the cookie on its next load (See UseCultureUrlRedirection), so the
             // old culture must not stay in the address bar. A culture-less url is left untouched.

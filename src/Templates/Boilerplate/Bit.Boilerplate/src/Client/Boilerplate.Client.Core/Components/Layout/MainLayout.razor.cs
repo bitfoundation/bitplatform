@@ -68,13 +68,6 @@ public partial class MainLayout : IAsyncDisposable
 
             authManager.AuthenticationStateChanged += AuthManager_AuthenticationStateChanged;
 
-            unsubscribers.Add(pubSubService.Subscribe(ClientAppMessages.CULTURE_CHANGED, async _ =>
-            {
-                SetCurrentDir();
-                await ApplyCultureToDocument();
-                StateHasChanged();
-            }));
-
             unsubscribers.Add(pubSubService.Subscribe(ClientAppMessages.THEME_CHANGED, async payload =>
             {
                 if (payload is null) return;
@@ -107,17 +100,6 @@ public partial class MainLayout : IAsyncDisposable
 
                 await InvokeAsync(StateHasChanged);
             }));
-
-            //#if (multitenant == true)
-            unsubscribers.Add(pubSubService.Subscribe(ClientAppMessages.CURRENT_TENANT_CHANGED, async payload =>
-            {
-                // Published by the pages/menus that change the current tenant (See ManageMyTenantsPage). Switching, signing in/out and
-                // leaving a tenant already update this through the authentication-state change, so this mainly covers renaming the current tenant.
-                currentTenant = (TenantDto?)payload;
-
-                await InvokeAsync(StateHasChanged);
-            }));
-            //#endif
 
             await SetCurrentUser(AuthenticationStateTask);
 
@@ -209,7 +191,7 @@ public partial class MainLayout : IAsyncDisposable
             return;
         }
 
-        if (currentTenant?.Id == tenantId) return; // Already showing this tenant (e.g. a page already published it).
+        if (currentTenant?.Id == tenantId) return;
 
         currentTenant = await tenantController.GetCurrentTenant(cancellationToken);
     }

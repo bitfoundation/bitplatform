@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
     <!-- 
@@ -1731,9 +1731,6 @@
     <data name="LeaveTenantConfirmMessage" xml:space="preserve">
     <value>آیا مطمئن هستید که می خواهید مستأجر {0} را ترک کنید؟</value>
   </data>
-    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
-    <value>شما با موفقیت مستأجر را ترک کردید.</value>
-  </data>
     <data name="SwitchTenant" xml:space="preserve">
     <value>تغییر مستأجر</value>
   </data>
@@ -1809,9 +1806,6 @@
   <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
     <value>دعوت به {0} رد شود؟ این کار قابل بازگشت نیست - برای پیوستن به دعوت تازه‌ای نیاز خواهید داشت.</value>
   </data>
-  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
-    <value>دعوت رد شد.</value>
-  </data>
   <!--#endif-->
     <data name="TimeZone" xml:space="preserve">
     <value>منطقه زمانی</value>
@@ -1821,6 +1815,9 @@
   </data>
     <data name="FindTimeZone" xml:space="preserve">
     <value>جستجوی منطقه زمانی</value>
+  </data>
+    <data name="NoTimeZoneMatchesSearchMessage" xml:space="preserve">
+    <value>هیچ منطقه زمانی با جستجوی شما مطابقت ندارد.</value>
   </data>
   <!--#if (notification == true) -->
     <data name="PushNotifications" xml:space="preserve">
