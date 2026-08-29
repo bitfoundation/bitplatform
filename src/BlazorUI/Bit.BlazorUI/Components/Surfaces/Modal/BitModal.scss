@@ -43,24 +43,30 @@
     position: absolute;
 }
 
+// The layer that catches the clicks meant for the page behind the Modal. It is see-through: the Modal is
+// the thing that was put on top of the page, and a page that is merely covered stays readable behind it,
+// which is what most Modals want. ModeFull is what dims it.
 .bit-mdl-ovl {
     inset: 0;
     z-index: 0;
     position: absolute;
     pointer-events: all;
+    background-color: transparent;
+}
 
-    // The overlay both catches the clicks meant for the page behind it and dims that page. The dimming is
-    // not decoration: an overlay that swallows every click while leaving the page looking untouched reads
-    // as a page that has stopped responding rather than as one that is covered.
-    background-color: $clr-bg-overlay;
+// ModeFull: the overlay dims the page as well as covering it, for the Modals that are meant to be the only
+// thing being read. The dimming is put into the page in the same frame as the content it dims, so it fades
+// in with it rather than appearing under it in one frame. The duration collapses to nothing under reduced
+// motion, which the motion tokens take care of.
+.bit-mdl-mfl {
+    .bit-mdl-ovl {
+        background-color: $clr-bg-overlay;
 
-    // The backdrop is put into the page in the same frame as the content it dims, so it fades in with it
-    // rather than appearing under it in one frame. The duration collapses to nothing under reduced motion,
-    // which the motion tokens take care of.
-    animation-fill-mode: both;
-    animation-name: bit-fade-show;
-    animation-duration: $mot-duration-short;
-    animation-timing-function: $mot-easing-decelerate;
+        animation-fill-mode: both;
+        animation-name: bit-fade-show;
+        animation-duration: $mot-duration-short;
+        animation-timing-function: $mot-easing-decelerate;
+    }
 }
 
 .bit-mdl-ctn {
