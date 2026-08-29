@@ -56,6 +56,27 @@ public class BitScrollOffset
     /// </remarks>
     public bool Rtl { get; set; }
 
+    /// <summary>
+    /// How far the pane has moved sideways since the position before this one was reported, measured on
+    /// the screen rather than in reading order: a positive value is a move to the right whichever way the
+    /// pane reads.
+    /// </summary>
+    /// <remarks>
+    /// It is the change in <see cref="OffsetLeft"/>, which is what a page reacting to the DIRECTION of a
+    /// scroll - a toolbar that folds away on the way down and comes back on the way up - reads instead of
+    /// keeping the previous position of its own. It is only carried by the reports
+    /// <see cref="BitScrollablePane.OnScroll"/> makes: a position asked for at a moment of the page's own
+    /// choosing, and the ones the start and the end of a scroll carry, have nothing to have moved from
+    /// and report 0.
+    /// </remarks>
+    public double DeltaLeft { get; set; }
+
+    /// <summary>
+    /// How far the pane has moved up or down since the position before this one was reported, positive
+    /// downwards. See <see cref="DeltaLeft"/> for when it is carried.
+    /// </summary>
+    public double DeltaTop { get; set; }
+
 
 
     /// <summary>
@@ -87,22 +108,36 @@ public class BitScrollOffset
     /// <summary>
     /// Whether the pane is standing at the visual left edge of its content.
     /// </summary>
-    public bool AtLeft => OffsetLeft <= 0;
+    /// <remarks>
+    /// A pane within a pixel of the edge counts as standing at it: a scroll offset is fractional at a
+    /// fractional zoom level and on a scaled display, so an exact comparison would leave a pane that is
+    /// visibly at its edge reporting that it is not.
+    /// </remarks>
+    public bool AtLeft => OffsetLeft <= Tolerance;
 
     /// <summary>
     /// Whether the pane is standing at the visual right edge of its content.
     /// </summary>
-    public bool AtRight => OffsetLeft >= MaxLeft;
+    /// <remarks>
+    /// A pane within a pixel of the edge counts as standing at it - see <see cref="AtLeft"/> for why.
+    /// </remarks>
+    public bool AtRight => OffsetLeft >= MaxLeft - Tolerance;
 
     /// <summary>
     /// Whether the pane is standing at the top of its content.
     /// </summary>
-    public bool AtTop => Top <= 0;
+    /// <remarks>
+    /// A pane within a pixel of the edge counts as standing at it - see <see cref="AtLeft"/> for why.
+    /// </remarks>
+    public bool AtTop => Top <= Tolerance;
 
     /// <summary>
     /// Whether the pane is standing at the bottom of its content.
     /// </summary>
-    public bool AtBottom => Top >= MaxTop;
+    /// <remarks>
+    /// A pane within a pixel of the edge counts as standing at it - see <see cref="AtLeft"/> for why.
+    /// </remarks>
+    public bool AtBottom => Top >= MaxTop - Tolerance;
 
     /// <summary>
     /// How far the pane has been scrolled sideways, from 0 at the visual left edge to 1 at the right one.
@@ -115,4 +150,35 @@ public class BitScrollOffset
     /// to scroll up and down reports 0.
     /// </summary>
     public double PercentY => MaxTop > 0 ? Math.Clamp(Top / MaxTop, 0, 1) : 0;
+
+    /// <summary>
+    /// Whether the move this report carries was downwards, which is what a header that gets out of the
+    /// way on the way down and comes back on the way up reads. It is derived from <see cref="DeltaTop"/>,
+    /// so it is only ever true on a report that carries one.
+    /// </summary>
+    public bool ScrollingDown => DeltaTop > 0;
+
+    /// <summary>
+    /// Whether the move this report carries was upwards. See <see cref="ScrollingDown"/>.
+    /// </summary>
+    public bool ScrollingUp => DeltaTop < 0;
+
+    /// <summary>
+    /// Whether the move this report carries was to the right on the screen, whichever way the pane reads.
+    /// See <see cref="ScrollingDown"/>.
+    /// </summary>
+    public bool ScrollingRight => DeltaLeft > 0;
+
+    /// <summary>
+    /// Whether the move this report carries was to the left on the screen, whichever way the pane reads.
+    /// See <see cref="ScrollingDown"/>.
+    /// </summary>
+    public bool ScrollingLeft => DeltaLeft < 0;
+
+
+
+    // How near an edge still counts as standing at it. A scroll offset is fractional at a fractional zoom
+    // level, so an exact comparison would leave a pane that is visibly at its edge reporting that it is
+    // not. It is the same pixel of slack the browser side gives an auto scrolling pane.
+    private const double Tolerance = 1;
 }

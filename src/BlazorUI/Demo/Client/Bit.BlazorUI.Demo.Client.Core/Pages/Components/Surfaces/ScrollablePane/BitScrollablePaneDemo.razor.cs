@@ -62,6 +62,13 @@ public partial class BitScrollablePaneDemo
         },
         new()
         {
+            Name = "DragMomentum",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lets a released drag carry on at the speed it was let go at and slow to a stop, instead of stopping dead with the button. It only applies to DragScroll.",
+        },
+        new()
+        {
             Name = "DragScroll",
             Type = "bool",
             DefaultValue = "false",
@@ -159,6 +166,20 @@ public partial class BitScrollablePaneDemo
             Type = "bool",
             DefaultValue= "false",
             Description = "Turns a vertical wheel over a pane that only scrolls sideways into a sideways scroll, and hands the scroll back to the page once the pane reaches that end.",
+        },
+        new()
+        {
+            Name = "InitialScrollLeft",
+            Type = "double?",
+            DefaultValue= "null",
+            Description = "Where the pane stands the first time it is rendered, measured from the visual left edge of the content in pixels. It is applied once and never animated.",
+        },
+        new()
+        {
+            Name = "InitialScrollTop",
+            Type = "double?",
+            DefaultValue= "null",
+            Description = "Where the pane stands the first time it is rendered, measured from the top of the content in pixels. It is applied once and never animated.",
         },
         new()
         {
@@ -306,6 +327,13 @@ public partial class BitScrollablePaneDemo
         },
         new()
         {
+            Name = "PreserveScroll",
+            Type = "bool",
+            DefaultValue= "false",
+            Description = "Keeps the reader's place when content is added above what they are looking at, which is what a conversation that loads older messages at its top needs. Every engine but WebKit already does this on its own.",
+        },
+        new()
+        {
             Name = "ReachOffset",
             Type = "int",
             DefaultValue= "0",
@@ -372,6 +400,13 @@ public partial class BitScrollablePaneDemo
             Description = "Where the direct children of the pane come to rest in it while Snap is on.",
             LinkType = LinkType.Link,
             Href = "#scroll-snap-align-enum",
+        },
+        new()
+        {
+            Name = "SnapStop",
+            Type = "bool",
+            DefaultValue= "false",
+            Description = "Keeps a fast scroll from passing over the snap positions it goes by, which is what turns a snapping strip into a carousel that moves one item per gesture.",
         },
         new()
         {
@@ -498,6 +533,20 @@ public partial class BitScrollablePaneDemo
                 },
                 new()
                 {
+                    Name = "DeltaLeft",
+                    Type = "double",
+                    DefaultValue = "0",
+                    Description = "How far the pane moved sideways since the position before this one was reported, positive rightwards on the screen. Only the reports OnScroll makes carry it."
+                },
+                new()
+                {
+                    Name = "DeltaTop",
+                    Type = "double",
+                    DefaultValue = "0",
+                    Description = "How far the pane moved up or down since the position before this one was reported, positive downwards. Only the reports OnScroll makes carry it."
+                },
+                new()
+                {
                     Name = "OffsetLeft",
                     Type = "double",
                     DefaultValue = "0",
@@ -572,6 +621,34 @@ public partial class BitScrollablePaneDemo
                     Type = "double",
                     DefaultValue = "0",
                     Description = "How far the pane has been scrolled down, from 0 at the top to 1 at the bottom."
+                },
+                new()
+                {
+                    Name = "ScrollingDown",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Whether the move this report carries was downwards, which is what a header that folds away on the way down reads."
+                },
+                new()
+                {
+                    Name = "ScrollingUp",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Whether the move this report carries was upwards."
+                },
+                new()
+                {
+                    Name = "ScrollingRight",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Whether the move this report carries was to the right on the screen, whichever way the pane reads."
+                },
+                new()
+                {
+                    Name = "ScrollingLeft",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Whether the move this report carries was to the left on the screen, whichever way the pane reads."
                 },
             ]
         }
@@ -808,10 +885,17 @@ public partial class BitScrollablePaneDemo
 
     private double scrollThrottle;
     private string scrollState = "-";
+    private string scrollDirection = "-";
     private BitScrollOffset? scrollOffset;
     private void HandleScroll(BitScrollOffset offset)
     {
         scrollOffset = offset;
+
+        // A report that carries no move of its own - the first one, or one the pane's own size changed -
+        // leaves the direction where it was rather than blanking it out.
+        if (offset.ScrollingDown) scrollDirection = $"down ({offset.DeltaTop:0.#}px)";
+        else if (offset.ScrollingUp) scrollDirection = $"up ({-offset.DeltaTop:0.#}px)";
+
         StateHasChanged();
     }
     private void HandleScrollStart() => scrollState = "scrolling...";
@@ -878,11 +962,35 @@ public partial class BitScrollablePaneDemo
         }
     }
 
+    private bool preserveScroll = true;
+    private bool loadingOlder;
+    private int oldestMessage = 1;
+    private readonly List<string> conversation = [.. Enumerable.Range(1, 14).Select(i => $"Message {i}")];
+    private async Task LoadOlderMessages()
+    {
+        if (loadingOlder || oldestMessage <= -40) return;
+
+        loadingOlder = true;
+        StateHasChanged();
+
+        await Task.Delay(500);
+
+        // The older messages go in at the TOP, which is what pushes everything the reader was looking at
+        // down the screen unless the pane keeps their place for them.
+        conversation.InsertRange(0, Enumerable.Range(oldestMessage - 8, 8).Select(i => $"Message {i}"));
+        oldestMessage -= 8;
+
+        loadingOlder = false;
+        StateHasChanged();
+    }
+
     private bool focusable = true;
 
+    private bool snapStop = true;
     private BitScrollSnap snap = BitScrollSnap.Mandatory;
     private BitScrollSnapAlign snapAlign = BitScrollSnapAlign.Start;
 
     private bool dragScroll = true;
+    private bool dragMomentum = true;
     private bool horizontalWheel = true;
 }

@@ -85,7 +85,17 @@ internal record class BitScrollablePaneOptions
     public bool Drag { get; set; }
 
     /// <summary>
+    /// Whether a released drag carries on at the speed it was let go at and slows to a stop.
+    /// </summary>
+    public bool Momentum { get; set; }
+
+    /// <summary>
     /// Whether a vertical wheel over a pane that only scrolls sideways scrolls it sideways.
     /// </summary>
     public bool Wheel { get; set; }
+
+    /// <summary>
+    /// Whether the reader's place is kept when content lands above what they are looking at.
+    /// </summary>
+    public bool Preserve { get; set; }
 }

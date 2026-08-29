@@ -17,8 +17,9 @@
 /// Nothing on the browser side is set up for a pane that asked for none of it: a pane that only sizes a box
 /// and styles its scrollbars is a single div with a style attribute, and the scroll listener, the observers
 /// and the round trips only appear once <see cref="AutoScroll"/>, <see cref="Fade"/>,
-/// <see cref="DragScroll"/>, <see cref="HorizontalWheel"/>, <see cref="OnScroll"/>,
-/// <see cref="OnScrollStart"/>, <see cref="OnScrollEnd"/> or one of the four edge callbacks is used.
+/// <see cref="DragScroll"/>, <see cref="HorizontalWheel"/>, <see cref="PreserveScroll"/>,
+/// <see cref="OnScroll"/>, <see cref="OnScrollStart"/>, <see cref="OnScrollEnd"/> or one of the four edge
+/// callbacks is used.
 /// </remarks>
 public partial class BitScrollablePane : BitComponentBase
 {
@@ -45,6 +46,7 @@ public partial class BitScrollablePane : BitComponentBase
     private bool _needsJs => IsEnabled && (AutoScroll
                                            || DragScroll
                                            || HorizontalWheel
+                                           || PreserveScroll
                                            || OnScroll.HasDelegate
                                            || OnScrollStart.HasDelegate
                                            || OnScrollEnd.HasDelegate
@@ -153,9 +155,30 @@ public partial class BitScrollablePane : BitComponentBase
     /// whatever happened to be under the pointer. Drags that start on a form control, a link or a button
     /// are left alone, as is anything marked <c>data-bit-scp-nodrag</c>, so selecting text in a field
     /// inside the pane still works.
+    /// <br />
+    /// <see cref="DragMomentum"/> is what makes a released drag carry on and slow to a stop instead of
+    /// stopping dead with the button.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool DragScroll { get; set; }
+
+    /// <summary>
+    /// Lets a released drag carry on at the speed it was let go at and slow to a stop.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// It is what every scrolling surface of every platform does with a flick, and what a strip of cards
+    /// dragged with a mouse is otherwise missing: without it a drag stops dead the moment the button comes
+    /// up, so crossing a long strip is a row of separate drags rather than one throw of it.
+    /// <br />
+    /// It only applies to <see cref="DragScroll"/>, and only to a release that was actually moving: a
+    /// pointer held still before it was lifted was not a flick, however fast the drag that led up to it
+    /// was. Anything the reader does next - a new drag, a wheel that reaches an end - takes the pane back,
+    /// and a pane whose <see cref="Snap"/> is <see cref="BitScrollSnap.Mandatory"/> is left to come to
+    /// rest on an item its own way rather than being glided onto one.
+    /// </remarks>
+    [Parameter] public bool DragMomentum { get; set; }
 
     /// <summary>
     /// Fades out each edge of the pane that still has content beyond it.
@@ -170,8 +193,16 @@ public partial class BitScrollablePane : BitComponentBase
     /// <br />
     /// All four edges are faded, each one only while the pane can still be scrolled towards it, so a pane
     /// that only scrolls up and down never fades its sides. <see cref="FadeSize"/> sets how far the fade
-    /// reaches. It is drawn with a mask, so it works over any background - and browsers that cannot
-    /// composite masks simply do not draw it.
+    /// reaches. It is drawn with a mask, so it works over any background and needs no element of its own
+    /// inside a pane whose content the consumer owns - and browsers that cannot composite masks simply do
+    /// not draw it.
+    /// <br />
+    /// A mask is drawn over the whole of the pane, which includes a classic scrollbar and anything held in
+    /// place inside it with <c>position: sticky</c>: the ends of the bar and a sticky header sitting in a
+    /// faded band are faded with the content behind them. That is what makes this worth pairing with a
+    /// scrollbar that is not on the screen anyway - <see cref="ScrollbarWidth"/> of
+    /// <see cref="BitScrollbarWidth.None"/>, or <see cref="Modern"/> with
+    /// <see cref="AutoHideScrollbar"/> - which is the pairing the fade is for in the first place.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Fade { get; set; }
@@ -287,6 +318,30 @@ public partial class BitScrollablePane : BitComponentBase
     [Parameter] public bool HorizontalWheel { get; set; }
 
     /// <summary>
+    /// Where the pane stands the first time it is rendered, measured from the visual left edge of the
+    /// content in pixels.
+    /// </summary>
+    /// <remarks>
+    /// This is what a list that is navigated back to, or a document a reader left in the middle of, opens
+    /// at: hand back the <see cref="BitScrollOffset.OffsetLeft"/> that was saved and the pane starts
+    /// there instead of at the start of its content. It is applied once, on the first render, so a later
+    /// change to it does not move a pane the reader has since scrolled; <see cref="ScrollTo"/> is what
+    /// moves a pane that is already on the screen.
+    /// <br />
+    /// It is not animated, whatever <see cref="Smooth"/> says - a pane that slid into place from the top
+    /// as it appeared would be an animation nobody asked for - and it is left to
+    /// <see cref="AutoScroll"/> where both are used, since a pane pinned to the end of its content has
+    /// already been told where to open.
+    /// </remarks>
+    [Parameter] public double? InitialScrollLeft { get; set; }
+
+    /// <summary>
+    /// Where the pane stands the first time it is rendered, measured from the top of the content in
+    /// pixels. See <see cref="InitialScrollLeft"/>.
+    /// </summary>
+    [Parameter] public double? InitialScrollTop { get; set; }
+
+    /// <summary>
     /// The maximum height of the pane.
     /// </summary>
     /// <remarks>
@@ -323,8 +378,9 @@ public partial class BitScrollablePane : BitComponentBase
     /// colors of the theme - so the scrollbar of the pane belongs to the design system rather than to the
     /// operating system, and re-skins with it.
     /// <br />
-    /// The thickness comes from the <c>--bit-scp-sbs</c> custom property, which can be retuned per pane
-    /// through <see cref="BitComponentBase.Style"/>. Note that <see cref="ScrollbarWidth"/> and
+    /// The thickness comes from the <c>--bit-scp-sbs</c> custom property and the three states of the thumb
+    /// from <c>--bit-scp-sbc</c>, <c>--bit-scp-sbch</c> and <c>--bit-scp-sbca</c>, all of which can be
+    /// retuned per pane through <see cref="BitComponentBase.Style"/>. Note that <see cref="ScrollbarWidth"/> and
     /// <see cref="ScrollbarColor"/> are the standard CSS properties, which Chromium lets win over the
     /// custom rendering this draws: use one or the other on a given pane, not both.
     /// </remarks>
@@ -386,7 +442,9 @@ public partial class BitScrollablePane : BitComponentBase
     /// </summary>
     /// <remarks>
     /// This is the other half of an endless list: a chat that loads the messages before the ones it is
-    /// showing asks for them here. See <see cref="OnReachedBottom"/> for when the callbacks are made.
+    /// showing asks for them here, and <see cref="PreserveScroll"/> is what keeps the reader where they
+    /// were once the messages arrive above them. See <see cref="OnReachedBottom"/> for when the callbacks
+    /// are made.
     /// </remarks>
     [Parameter] public EventCallback OnReachedTop { get; set; }
 
@@ -395,8 +453,15 @@ public partial class BitScrollablePane : BitComponentBase
     /// </summary>
     /// <remarks>
     /// The position is measured in the browser and handed over as a <see cref="BitScrollOffset"/>, which
-    /// carries both offsets, the size of the content, the size of the visible area, and the answers
-    /// derived from them - how far along each axis the pane is, and which edges it is standing at.
+    /// carries both offsets, the size of the content, the size of the visible area, how far the pane moved
+    /// to get here, and the answers derived from them - how far along each axis the pane is, which edges
+    /// it is standing at, and which way it was last going.
+    /// <br />
+    /// It reports a position rather than an event, so it is also called when the position means something
+    /// new without anything having been scrolled: the pane or its content changing size moves the end of
+    /// the content and the answers derived from it, which is what lets one callback drive a progress bar,
+    /// a set of arrows that light up while there is anywhere to go, and a header that folds away on the
+    /// way down alike.
     /// <br />
     /// Reports are coalesced to one per animation frame, and <see cref="ScrollThrottle"/> spaces them out
     /// further where each one costs a round trip. A callback that only needs to know that an edge was
@@ -476,6 +541,27 @@ public partial class BitScrollablePane : BitComponentBase
     /// </summary>
     [Parameter, ResetStyleBuilder]
     public BitOverscroll? OverscrollY { get; set; }
+
+    /// <summary>
+    /// Keeps the reader's place when content is added above what they are looking at.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// This is the other half of an endless list: a page of older messages arriving at the top of a
+    /// conversation is as tall as the messages in it, and without this it pushes everything the reader was
+    /// reading that far down the screen. With it the pane is moved down by exactly what arrived, so what
+    /// they were looking at does not move at all.
+    /// <br />
+    /// Every engine but WebKit already does this on its own (it is the CSS <c>overflow-anchor</c>
+    /// behavior), so this changes nothing where the browser has it and brings the rest - Safari, most of
+    /// all - up to the same behavior. Only content that lands above the visible area counts, so an
+    /// arrival at the bottom is left alone, and a pane standing at the very top of its content has no
+    /// place to keep and is left alone as well - which is what makes it safe to pair with
+    /// <see cref="OnReachedTop"/>, whose <see cref="ReachOffset"/> is worth a screenful so that the fetch
+    /// starts before the reader is at the top rather than once they are.
+    /// </remarks>
+    [Parameter] public bool PreserveScroll { get; set; }
 
     /// <summary>
     /// How near an edge (in pixels) counts as having reached it, for the four edge callbacks.
@@ -580,7 +666,8 @@ public partial class BitScrollablePane : BitComponentBase
     /// to rest is decided here.
     /// <br />
     /// Snapping needs the content to say where a snap position is, which is what <see cref="SnapAlign"/>
-    /// puts on the direct children of the pane. Both axes are snapped, each one only where there is
+    /// puts on the direct children of the pane, and <see cref="SnapStop"/> is what keeps a fast scroll
+    /// from passing over the positions it goes by. Both axes are snapped, each one only where there is
     /// something to scroll.
     /// <br />
     /// A pane that is also moved from code - by the scrolling API, or by the pinning <see cref="AutoScroll"/>
@@ -601,6 +688,24 @@ public partial class BitScrollablePane : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitScrollSnapAlign? SnapAlign { get; set; }
+
+    /// <summary>
+    /// Keeps a fast scroll from passing over the snap positions it goes by.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// It is the CSS <c>scroll-snap-stop</c> property, applied to the direct children of the pane the same
+    /// way <see cref="SnapAlign"/> is. Without it a flick of a strip comes to rest on whichever item the
+    /// momentum happened to run out over, several items along; with it the pane stops at the first one it
+    /// reaches, which is what turns a snapping strip into a carousel that moves one card per gesture.
+    /// <br />
+    /// It only has an effect while <see cref="Snap"/> is on and the children carry a snap position of
+    /// their own, and it applies to a flick, a wheel and a page key alike - the browser stops at the next
+    /// position however the scroll was started.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool SnapStop { get; set; }
 
     /// <summary>
     /// The width of the pane.
@@ -947,6 +1052,8 @@ public partial class BitScrollablePane : BitComponentBase
             BitScrollSnapAlign.End => "bit-scp-sna-end",
             _ => string.Empty
         });
+
+        ClassBuilder.Register(() => SnapStop ? "bit-scp-sns" : string.Empty);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -954,6 +1061,11 @@ public partial class BitScrollablePane : BitComponentBase
         await base.OnAfterRenderAsync(firstRender);
 
         if (IsDisposed) return;
+
+        if (firstRender)
+        {
+            await ApplyInitialScroll();
+        }
 
         await SetupJs();
     }
@@ -984,6 +1096,23 @@ public partial class BitScrollablePane : BitComponentBase
     }
 
 
+
+    // Where the pane opens, for the one render it can be decided on. It is never animated - a pane that
+    // slid into place from the top as it appeared would be an animation nobody asked for - and it is left
+    // to AutoScroll where both are used, since a pane pinned to the end has already been told where to
+    // open. A pane that asked for neither costs nothing here.
+    private async Task ApplyInitialScroll()
+    {
+        if (AutoScroll) return;
+        if (InitialScrollLeft.HasValue is false && InitialScrollTop.HasValue is false) return;
+
+        try
+        {
+            await _js.BitScrollablePaneScrollTo(RootElement, InitialScrollLeft, InitialScrollTop, false);
+        }
+        catch (JSDisconnectedException) { } // circuit gone; there is nothing to open
+        catch (ObjectDisposedException) { } // the component went away mid-call
+    }
 
     // Everything the browser side needs is decided here rather than at the call sites, so that turning the
     // last of the features off tears the instance back down instead of leaving a listener behind, and so
@@ -1064,7 +1193,9 @@ public partial class BitScrollablePane : BitComponentBase
         AutoScrollThreshold = Math.Max(0, AutoScrollThreshold),
         Smooth = Smooth,
         Drag = DragScroll,
+        Momentum = DragMomentum,
         Wheel = HorizontalWheel,
+        Preserve = PreserveScroll,
     };
 
 

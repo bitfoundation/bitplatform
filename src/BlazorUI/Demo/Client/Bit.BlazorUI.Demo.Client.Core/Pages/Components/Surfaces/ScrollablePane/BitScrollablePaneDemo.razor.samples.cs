@@ -386,15 +386,22 @@ private double fadeSize = 2;";
     | AtTop: @(scrollOffset?.AtTop.ToString() ?? ""-"")
     | AtBottom: @(scrollOffset?.AtBottom.ToString() ?? ""-"")
 </div>
-<div>State: @scrollState</div>";
+<div>State: @scrollState | Going: @scrollDirection</div>";
     private readonly string example10CsharpCode = @"
 private double scrollThrottle;
 private string scrollState = ""-"";
+private string scrollDirection = ""-"";
 private BitScrollOffset? scrollOffset;
 
 private void HandleScroll(BitScrollOffset offset)
 {
     scrollOffset = offset;
+
+    // A report that carries no move of its own - the first one, or one the pane's own size changed -
+    // leaves the direction where it was rather than blanking it out.
+    if (offset.ScrollingDown) scrollDirection = $""down ({offset.DeltaTop:0.#}px)"";
+    else if (offset.ScrollingUp) scrollDirection = $""up ({-offset.DeltaTop:0.#}px)"";
+
     StateHasChanged();
 }
 
@@ -471,7 +478,16 @@ private async Task LoadMoreRows()
     }
 </BitScrollablePane>
 
-<div>@readPosition</div>";
+<div>@readPosition</div>
+
+<div>A pane that opened 250px down, without ever having been at the top:</div>
+
+<BitScrollablePane Height=""8rem"" Class=""pane"" InitialScrollTop=""250"">
+    @for (var i = 1; i <= 25; i++)
+    {
+        <div class=""item"">Row @i</div>
+    }
+</BitScrollablePane>";
     private readonly string example12CsharpCode = @"
 private bool smooth = true;
 private string readPosition = ""-"";
@@ -527,6 +543,48 @@ private async Task AddAutoScrollContent()
 }";
 
     private readonly string example14RazorCode = @"
+<BitToggle @bind-Value=""preserveScroll"" Label=""PreserveScroll"" />
+
+<BitScrollablePane Height=""14rem"" Class=""pane"" Fade
+                   PreserveScroll=""preserveScroll""
+                   ReachOffset=""60""
+                   OnReachedTop=""LoadOlderMessages"">
+    @if (loadingOlder)
+    {
+        <div class=""item"">Loading older messages...</div>
+    }
+    @foreach (var message in conversation)
+    {
+        <div class=""item"">@message</div>
+    }
+</BitScrollablePane>
+
+<div>Oldest message loaded: <b>@oldestMessage</b> | messages: <b>@conversation.Count</b></div>";
+    private readonly string example14CsharpCode = @"
+private bool preserveScroll = true;
+private bool loadingOlder;
+private int oldestMessage = 1;
+private readonly List<string> conversation = [.. Enumerable.Range(1, 14).Select(i => $""Message {i}"")];
+
+private async Task LoadOlderMessages()
+{
+    if (loadingOlder || oldestMessage <= -40) return;
+
+    loadingOlder = true;
+    StateHasChanged();
+
+    await Task.Delay(500);
+
+    // The older messages go in at the TOP, which is what pushes everything the reader was looking at
+    // down the screen unless the pane keeps their place for them.
+    conversation.InsertRange(0, Enumerable.Range(oldestMessage - 8, 8).Select(i => $""Message {i}""));
+    oldestMessage -= 8;
+
+    loadingOlder = false;
+    StateHasChanged();
+}";
+
+    private readonly string example15RazorCode = @"
 <BitToggle @bind-Value=""focusable"" Label=""Focusable"" />
 
 <BitScrollablePane Height=""10rem"" Class=""pane""
@@ -561,10 +619,10 @@ private async Task AddAutoScrollContent()
         your visions, and your voice.
     </p>
 </BitScrollablePane>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private bool focusable = true;";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitChoiceGroup @bind-Value=""snap""
                 Horizontal
                 Label=""Snap""
@@ -583,22 +641,27 @@ private bool focusable = true;";
     <BitChoiceGroupOption Text=""End"" Value=""BitScrollSnapAlign.End"" />
 </BitChoiceGroup>
 
+<BitToggle @bind-Value=""snapStop"" Label=""SnapStop"" />
+
 <style>
     .snap-card { display: inline-block; width: 8rem; height: 4rem; margin: 0.5rem 0.5rem 0.5rem 0; padding: 0.5rem; color: #fff; background-color: #777; }
 </style>
 
-<BitScrollablePane Horizontal Width=""22rem"" Class=""pane"" Modern Snap=""snap"" SnapAlign=""snapAlign"">
+<BitScrollablePane Horizontal Width=""22rem"" Class=""pane"" Modern
+                   Snap=""snap"" SnapAlign=""snapAlign"" SnapStop=""snapStop"">
     @for (var i = 1; i <= 10; i++)
     {
         <div class=""snap-card"">Card @i</div>
     }
 </BitScrollablePane>";
-    private readonly string example15CsharpCode = @"
+    private readonly string example16CsharpCode = @"
+private bool snapStop = true;
 private BitScrollSnap snap = BitScrollSnap.Mandatory;
 private BitScrollSnapAlign snapAlign = BitScrollSnapAlign.Start;";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitToggle @bind-Value=""dragScroll"" Label=""DragScroll"" />
+<BitToggle @bind-Value=""dragMomentum"" Label=""DragMomentum"" />
 <BitToggle @bind-Value=""horizontalWheel"" Label=""HorizontalWheel"" />
 
 <style>
@@ -606,17 +669,19 @@ private BitScrollSnapAlign snapAlign = BitScrollSnapAlign.Start;";
 </style>
 
 <BitScrollablePane Horizontal Width=""22rem"" Class=""pane"" Modern
-                   DragScroll=""dragScroll"" HorizontalWheel=""horizontalWheel"">
+                   DragScroll=""dragScroll"" DragMomentum=""dragMomentum""
+                   HorizontalWheel=""horizontalWheel"">
     @for (var i = 1; i <= 10; i++)
     {
         <div class=""snap-card"">Card @i</div>
     }
 </BitScrollablePane>";
-    private readonly string example16CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 private bool dragScroll = true;
+private bool dragMomentum = true;
 private bool horizontalWheel = true;";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <style>
     .custom-pane {
         color: #fff;
@@ -624,6 +689,9 @@ private bool horizontalWheel = true;";
         border-radius: 0.5rem;
         background-color: #4A4A4A;
         --bit-scp-sbs: 0.5rem;
+        --bit-scp-sbc: #9FD5FF;
+        --bit-scp-sbch: #C6E6FF;
+        --bit-scp-sbca: #FFFFFF;
     }
 </style>
 
@@ -668,7 +736,7 @@ private bool horizontalWheel = true;";
     </p>
 </BitScrollablePane>";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitScrollablePane Dir=""BitDir.Rtl"" lang=""fa"" Height=""10rem"" Class=""pane"" Modern>
     <p>
         داستان‌ها روزگاری پیوند میان مردم را می‌بافتند، سمفونی‌ای از صداها که رویاهای مشترک را می‌ساخت.

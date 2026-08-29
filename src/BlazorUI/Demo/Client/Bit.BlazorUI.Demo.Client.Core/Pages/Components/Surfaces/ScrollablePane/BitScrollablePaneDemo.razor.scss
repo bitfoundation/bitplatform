@@ -67,11 +67,16 @@
         border: 1px solid #999;
     }
 
+    // The Style & Class example: a pane restyled from a class of its own, including the custom properties
+    // the Modern scrollbar reads for its thickness and for the three states of its thumb.
     .custom-pane {
         color: #fff;
         padding: 0.5rem;
         border-radius: 0.5rem;
         background-color: #4A4A4A;
         --bit-scp-sbs: 0.5rem;
+        --bit-scp-sbc: #9FD5FF;
+        --bit-scp-sbch: #C6E6FF;
+        --bit-scp-sbca: #FFFFFF;
     }
 }

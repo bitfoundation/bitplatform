@@ -3,10 +3,13 @@
 .bit-scp {
     overflow: auto;
 
-    // The thickness of the scrollbar the Modern style draws, and how far the Fade reaches into the pane.
-    // Both are declared here rather than only where they are read, so a pane can retune either of them
-    // from its own Style attribute without having to know which class implements it.
+    // The thickness and the three colors of the scrollbar the Modern style draws, and how far the Fade
+    // reaches into the pane. They are declared here rather than only where they are read, so a pane can
+    // retune any of them from its own Style attribute without having to know which class implements it.
     --bit-scp-sbs: #{spacing(0.75)};
+    --bit-scp-sbc: #{$clr-fg-ter};
+    --bit-scp-sbch: #{$clr-fg-ter-hover};
+    --bit-scp-sbca: #{$clr-fg-ter-active};
     --bit-scp-fsz: #{spacing(4)};
 
     // A disabled pane is not interactive, which for a box whose whole interaction is scrolling means the
@@ -64,6 +67,14 @@
     scroll-snap-align: end;
 }
 
+// Keeps a fast scroll from passing over the snap positions it goes by, which is what turns a snapping
+// strip into a carousel that moves one item per gesture. It sits on the children for the same reason the
+// alignment above does: the property belongs to the items, and a class of the pane is the only place both
+// sides can reach.
+.bit-scp-sns > * {
+    scroll-snap-stop: always;
+}
+
 // Applies to every move the pane does not make by hand: the scrolling API of the component, a fragment
 // navigation into it, and the browser bringing a focused element inside it into view.
 .bit-scp-smt {
@@ -94,14 +105,14 @@
 
     &::-webkit-scrollbar-thumb {
         border-radius: $shp-radius-full;
-        background-color: $clr-fg-ter;
+        background-color: var(--bit-scp-sbc);
 
         &:hover {
-            background-color: $clr-fg-ter-hover;
+            background-color: var(--bit-scp-sbch);
         }
 
         &:active {
-            background-color: $clr-fg-ter-active;
+            background-color: var(--bit-scp-sbca);
         }
     }
 
@@ -121,14 +132,14 @@
 
     &:hover, &:focus, &:focus-within, &[data-bit-scp-drag] {
         &::-webkit-scrollbar-thumb {
-            background-color: $clr-fg-ter;
+            background-color: var(--bit-scp-sbc);
 
             &:hover {
-                background-color: $clr-fg-ter-hover;
+                background-color: var(--bit-scp-sbch);
             }
 
             &:active {
-                background-color: $clr-fg-ter-active;
+                background-color: var(--bit-scp-sbca);
             }
         }
     }
@@ -141,14 +152,14 @@
 @supports not selector(::-webkit-scrollbar) {
     .bit-scp-mod {
         scrollbar-width: thin;
-        scrollbar-color: $clr-fg-ter transparent;
+        scrollbar-color: var(--bit-scp-sbc) transparent;
     }
 
     .bit-scp-mod.bit-scp-ahs {
         scrollbar-color: transparent transparent;
 
         &:hover, &:focus, &:focus-within, &[data-bit-scp-drag] {
-            scrollbar-color: $clr-fg-ter transparent;
+            scrollbar-color: var(--bit-scp-sbc) transparent;
         }
     }
 }
