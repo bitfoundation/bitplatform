@@ -98,6 +98,18 @@ serverWebProject.WithReference(redisPersistent).WaitFor(redisPersistent);
 //#endif
 //#endif
 
+// Drop the projects' http://*:port (wildcard) endpoints - Aspire can't reach a wildcard host from the ingress container.
+builder.RemoveWildcardEndpoints();
+
+//#if (cloudflare == true)
+// cloudflared connects straight to the projects (no reverse proxy) - possible now that RemoveWildcardEndpoints drops http2.
+builder.AddCloudflareTunnels(serverWebProject
+    //#if (api == "Standalone")
+    , serverApiProject
+    //#endif
+    );
+//#endif
+
 if (builder.ExecutionContext.IsRunMode) // The following project is only added for testing purposes.
 {
     // Blazor WebAssembly Standalone project.
@@ -117,12 +129,12 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
     //#if (api == "Standalone")
     builder.AddDevTunnel("api-dev-tunnel")
         .WithAnonymousAccess()
-        .WithReference(serverApiProject.WithHttpEndpoint(name: "devTunnel", port: 5031).GetEndpoint("devTunnel"));
+        .WithReference(serverApiProject);
     //#endif
 
     var tunnel = builder.AddDevTunnel("web-dev-tunnel")
         .WithAnonymousAccess()
-        .WithReference(serverWebProject.WithHttpEndpoint(name: "devTunnel", port: 5000).GetEndpoint("devTunnel"));
+        .WithReference(serverWebProject);
 
     if (OperatingSystem.IsWindows())
     {
