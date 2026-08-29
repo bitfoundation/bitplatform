@@ -1,4 +1,6 @@
-﻿using System.Globalization;
+﻿using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -23,6 +25,8 @@ public class BitSplitterTests : BunitTestContext
         </div>
     </div>
     <div class=""bit-spl-pnl bit-spl-spn"" id:ignore>
+    </div>
+    <div class=""bit-spl-prv"" aria-hidden=""true"">
     </div>
 </div>");
     }
@@ -264,6 +268,24 @@ public class BitSplitterTests : BunitTestContext
     {
         var component = RenderComponent<BitSplitter>(parameters =>
         {
+            parameters.Add(p => p.SecondPanelSize, 200);
+        });
+
+        var style = component.Find(".bit-spl").GetAttribute("style");
+
+        Assert.IsNotNull(style);
+        Assert.IsTrue(style.Contains("--second-panel:200px"));
+        Assert.IsTrue(style.Contains("--second-panel-grow:0"));
+    }
+
+    [TestMethod]
+    public void BitSplitterTwoPinnedPanelsShouldLeaveTheSecondOneToFillTheSplitter()
+    {
+        // Two panels pinned to lengths cannot add up to a container of any other width, so the second one
+        // keeps its size as a starting point and takes whatever is left over on top of it - a splitter with
+        // a gap at its end would be the alternative.
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
             parameters.Add(p => p.FirstPanelSize, 128);
             parameters.Add(p => p.SecondPanelSize, 200);
         });
@@ -271,8 +293,10 @@ public class BitSplitterTests : BunitTestContext
         var style = component.Find(".bit-spl").GetAttribute("style");
 
         Assert.IsNotNull(style);
+        Assert.IsTrue(style.Contains("--first-panel:128px"));
         Assert.IsTrue(style.Contains("--first-panel-grow:0"));
-        Assert.IsTrue(style.Contains("--second-panel-grow:0"));
+        Assert.IsTrue(style.Contains("--second-panel:200px"));
+        Assert.IsTrue(style.Contains("--second-panel-grow:1"));
     }
 
     [TestMethod]
@@ -310,6 +334,7 @@ public class BitSplitterTests : BunitTestContext
     public void BitSplitterPercentShouldBeWrittenInTheInvariantCulture()
     {
         var original = CultureInfo.CurrentCulture;
+        var originalDefault = CultureInfo.DefaultThreadCurrentCulture;
 
         try
         {
@@ -330,7 +355,7 @@ public class BitSplitterTests : BunitTestContext
         finally
         {
             CultureInfo.CurrentCulture = original;
-            CultureInfo.DefaultThreadCurrentCulture = null;
+            CultureInfo.DefaultThreadCurrentCulture = originalDefault;
         }
     }
 
@@ -482,6 +507,7 @@ public class BitSplitterTests : BunitTestContext
                 FirstPanel = "custom-first",
                 Gutter = "custom-gutter",
                 GutterIndicator = "custom-grip",
+                Preview = "custom-preview",
                 SecondPanel = "custom-second",
             });
             parameters.Add(p => p.Styles, new BitSplitterClassStyles
@@ -490,6 +516,7 @@ public class BitSplitterTests : BunitTestContext
                 FirstPanel = "color:green",
                 Gutter = "color:blue",
                 GutterIndicator = "color:teal",
+                Preview = "color:brown",
                 SecondPanel = "color:purple",
             });
         });
@@ -508,6 +535,9 @@ public class BitSplitterTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-spl-spn").ClassList.Contains("custom-second"));
         Assert.AreEqual("color:purple", component.Find(".bit-spl-spn").GetAttribute("style"));
+
+        Assert.IsTrue(component.Find(".bit-spl-prv").ClassList.Contains("custom-preview"));
+        Assert.AreEqual("color:brown", component.Find(".bit-spl-prv").GetAttribute("style"));
     }
 
     [TestMethod]
@@ -909,6 +939,272 @@ public class BitSplitterTests : BunitTestContext
 
         var style = component.Find(".bit-spl").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsTrue(style.Contains(expectedStyle));
+        // A visible splitter is not styled into view, it is simply never styled out of it - an empty
+        // expectation would be contained in any style at all, so it is asserted as the absence of both.
+        if (expectedStyle.Length == 0)
+        {
+            Assert.IsFalse(style.Contains("visibility:"), style);
+            Assert.IsFalse(style.Contains("display:"), style);
+        }
+        else
+        {
+            Assert.IsTrue(style.Contains(expectedStyle), style);
+        }
+    }
+
+    [TestMethod]
+    public void BitSplitterShouldRoundALongPositionBeforeWritingItIntoTheStyleAttribute()
+    {
+        // A share the page worked out for itself arrives with as many digits as a double has; the style
+        // attribute is given the same four decimals a drag reports back with.
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.Percent, 100d / 3d);
+        });
+
+        var style = component.Find(".bit-spl").GetAttribute("style");
+
+        Assert.IsNotNull(style);
+        Assert.IsTrue(style.Contains("--first-panel:33.3333%"));
+    }
+
+    [TestMethod]
+    public void BitSplitterShouldHandTheJavaScriptSideEverythingItActsOn()
+    {
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.DragStep, 25);
+            parameters.Add(p => p.SnapSize, 40);
+            parameters.Add(p => p.KeyboardStep, 15);
+            parameters.Add(p => p.CollapsedSize, 8);
+            parameters.Add(p => p.Collapsible, true);
+            parameters.Add(p => p.LazyResize, true);
+            parameters.Add(p => p.NoResetOnDoubleClick, true);
+            parameters.Add(p => p.OnGutterDoubleClick, EventCallback.Factory.Create(this, () => { }));
+        });
+
+        var setup = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Splitter.setup");
+
+        Assert.AreEqual(8, setup.Arguments[10]);
+        Assert.AreEqual(15, setup.Arguments[11]);
+        Assert.AreEqual(25, setup.Arguments[12]);
+        Assert.AreEqual(40, setup.Arguments[13]);
+        Assert.AreEqual(true, setup.Arguments[14]);
+        // The reset was turned off, nothing listens for the frames of a drag, and the double-click is
+        // wanted whether or not it also resets the splitter.
+        Assert.AreEqual(false, setup.Arguments[15]);
+        Assert.AreEqual(false, setup.Arguments[16]);
+        Assert.AreEqual(true, setup.Arguments[17]);
+
+        Assert.IsFalse(component.Instance.Collapsed);
+    }
+
+    [TestMethod]
+    public void BitSplitterShouldNotLetANegativeStepReachTheJavaScriptSide()
+    {
+        RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.DragStep, -25);
+            parameters.Add(p => p.SnapSize, -40);
+            parameters.Add(p => p.KeyboardStep, -15);
+        });
+
+        var setup = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Splitter.setup");
+
+        // A step of zero would leave the keyboard unable to move the gutter at all.
+        Assert.AreEqual(1, setup.Arguments[11]);
+        Assert.AreEqual(0, setup.Arguments[12]);
+        Assert.AreEqual(0, setup.Arguments[13]);
+    }
+
+    [TestMethod]
+    public void BitSplitterShouldTellTheJavaScriptSideOnlyAboutTheOptionsThatChanged()
+    {
+        Context.JSInterop.Setup<string>("BitBlazorUI.Splitter.setup", _ => true).SetResult("spl-1");
+
+        var component = RenderComponent<BitSplitter>();
+
+        // A render of the page around the splitter is not news for the drag engine.
+        component.Render();
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Splitter.update"));
+
+        component.Render(parameters => parameters.Add(p => p.Vertical, true));
+
+        var update = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Splitter.update");
+
+        Assert.AreEqual("spl-1", update.Arguments[0]);
+        Assert.AreEqual(true, update.Arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitSplitterShouldSayInItsClassListWhetherThePanelMayBeFolded()
+    {
+        // What the gutter of a folded panel offers to do - open it again, or nothing at all - is a cursor,
+        // and only the class list can tell the stylesheet which of the two it is.
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.Collapsible, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-spl").ClassList.Contains("bit-spl-cpb"));
+
+        component.Render(parameters => parameters.Add(p => p.Collapsible, false));
+
+        Assert.IsFalse(component.Find(".bit-spl").ClassList.Contains("bit-spl-cpb"));
+    }
+
+    [TestMethod]
+    public void BitSplitterShouldCarryTheLineALazyDragMovesWhetherOrNotItDragsLazily()
+    {
+        // The drag belongs to the JavaScript side from the pointer down onwards, and there is no render of
+        // the page between the two in which the line could be brought into being.
+        var component = RenderComponent<BitSplitter>();
+
+        var preview = component.Find(".bit-spl-prv");
+
+        Assert.AreEqual("true", preview.GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public async Task BitSplitterHandleGutterDoubleClickShouldReportTheDoubleClick()
+    {
+        var clicks = 0;
+
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.OnGutterDoubleClick, EventCallback.Factory.Create(this, () => clicks++));
+        });
+
+        await component.InvokeAsync(() => component.Instance.HandleGutterDoubleClick());
+
+        Assert.AreEqual(1, clicks);
+    }
+
+    [TestMethod]
+    public async Task BitSplitterOnCollapsingShouldBeAbleToLeaveThePanelAsItIs()
+    {
+        var changes = 0;
+
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.Collapsible, true);
+            parameters.Add(p => p.OnCollapsedChange, EventCallback.Factory.Create<bool>(this, _ => changes++));
+            parameters.Add(p => p.OnCollapsing, EventCallback.Factory.Create<BitSplitterCollapseArgs>(this, a => a.Cancel = true));
+        });
+
+        await component.InvokeAsync(() => component.Instance.Collapse());
+
+        Assert.IsFalse(component.Instance.Collapsed);
+        Assert.IsFalse(component.Find(".bit-spl").ClassList.Contains("bit-spl-col"));
+
+        // A fold that did not happen is not one to report as having happened.
+        Assert.AreEqual(0, changes);
+    }
+
+    [TestMethod]
+    public async Task BitSplitterOnCollapsingShouldSayWhichWayThePanelIsAboutToGo()
+    {
+        var collapsing = new List<bool>();
+
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.Collapsible, true);
+            parameters.Add(p => p.OnCollapsing, EventCallback.Factory.Create<BitSplitterCollapseArgs>(this, a => collapsing.Add(a.IsCollapsing)));
+        });
+
+        await component.InvokeAsync(() => component.Instance.Collapse());
+        await component.InvokeAsync(() => component.Instance.Expand());
+
+        CollectionAssert.AreEqual(new[] { true, false }, collapsing);
+    }
+
+    [TestMethod]
+    public async Task BitSplitterOnCollapsingShouldSayWhatAskedForTheFold()
+    {
+        var reasons = new List<BitSplitterCollapseReason>();
+
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.Collapsible, true);
+            parameters.Add(p => p.OnCollapsing, EventCallback.Factory.Create<BitSplitterCollapseArgs>(this, a => reasons.Add(a.Reason)));
+        });
+
+        await component.InvokeAsync(() => component.Instance.Collapse());
+        await component.InvokeAsync(() => component.Instance.HandleToggleCollapse());
+        await component.InvokeAsync(() => component.Instance.HandleResizeEnd(2, true));
+        await component.InvokeAsync(() => component.Instance.HandleToggleCollapse());
+        await component.InvokeAsync(() => component.Instance.HandleRestore(null, true));
+
+        CollectionAssert.AreEqual(new[]
+        {
+            BitSplitterCollapseReason.Method,
+            BitSplitterCollapseReason.Gutter,
+            BitSplitterCollapseReason.Drag,
+            BitSplitterCollapseReason.Gutter,
+            BitSplitterCollapseReason.Restore
+        }, reasons);
+    }
+
+    [TestMethod]
+    public async Task BitSplitterOnCollapsingShouldNotBeAskedAboutAFoldThatIsNotAChange()
+    {
+        var asked = 0;
+
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.Collapsible, true);
+            parameters.Add(p => p.OnCollapsing, EventCallback.Factory.Create<BitSplitterCollapseArgs>(this, _ => asked++));
+        });
+
+        await component.InvokeAsync(() => component.Instance.Expand());
+        Assert.AreEqual(0, asked);
+
+        await component.InvokeAsync(() => component.Instance.Collapse());
+        await component.InvokeAsync(() => component.Instance.Collapse());
+
+        Assert.AreEqual(1, asked);
+    }
+
+    [TestMethod]
+    public async Task BitSplitterACancelledSnapShouldLeaveTheSplitterWhereTheDragFoundIt()
+    {
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.Collapsible, true);
+            parameters.Add(p => p.OnCollapsing, EventCallback.Factory.Create<BitSplitterCollapseArgs>(this, a => a.Cancel = true));
+        });
+
+        await component.InvokeAsync(() => component.Instance.SetPercent(40));
+        await component.InvokeAsync(() => component.Instance.HandleResizeEnd(2, true));
+
+        // The panel did not fold, and the sliver the drag left it at is not a position it was allowed to
+        // keep either.
+        Assert.IsFalse(component.Instance.Collapsed);
+        Assert.AreEqual(40d, component.Instance.Percent);
+    }
+
+    [TestMethod]
+    public async Task BitSplitterShouldNotStartASecondFoldWhileOnCollapsingIsStillRunning()
+    {
+        var changes = 0;
+        BitSplitter? splitter = null;
+
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.Collapsible, true);
+            parameters.Add(p => p.OnCollapsedChange, EventCallback.Factory.Create<bool>(this, _ => changes++));
+            parameters.Add(p => p.OnCollapsing, EventCallback.Factory.Create<BitSplitterCollapseArgs>(this, async _ =>
+            {
+                // The gutter answering a second press while the first is still being decided.
+                if (splitter is not null) await splitter.ToggleCollapse();
+            }));
+        });
+
+        splitter = component.Instance;
+
+        await component.InvokeAsync(() => component.Instance.Collapse());
+
+        Assert.IsTrue(component.Instance.Collapsed);
+        Assert.AreEqual(1, changes);
     }
 }

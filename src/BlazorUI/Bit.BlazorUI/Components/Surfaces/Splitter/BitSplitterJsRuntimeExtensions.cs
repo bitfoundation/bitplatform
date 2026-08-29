@@ -14,22 +14,28 @@ internal static class BitSplitterJsRuntimeExtensions
                                                        ElementReference firstPanel,
                                                        ElementReference gutter,
                                                        ElementReference secondPanel,
+                                                       ElementReference preview,
                                                        bool vertical,
                                                        bool disabled,
                                                        bool collapsible,
                                                        bool collapsed,
                                                        int collapsedSize,
                                                        int keyboardStep,
+                                                       int dragStep,
+                                                       int snapSize,
+                                                       bool lazyResize,
                                                        bool resetOnDoubleClick,
                                                        bool notifyResize,
+                                                       bool notifyDoubleClick,
                                                        double? percent,
                                                        string? persistKey,
                                                        bool persistSession)
     {
         return js.Invoke<string>("BitBlazorUI.Splitter.setup",
-                                 obj, root, firstPanel, gutter, secondPanel,
+                                 obj, root, firstPanel, gutter, secondPanel, preview,
                                  vertical, disabled, collapsible, collapsed,
-                                 collapsedSize, keyboardStep, resetOnDoubleClick, notifyResize,
+                                 collapsedSize, keyboardStep, dragStep, snapSize, lazyResize,
+                                 resetOnDoubleClick, notifyResize, notifyDoubleClick,
                                  percent, persistKey, persistSession);
     }
 
@@ -41,15 +47,20 @@ internal static class BitSplitterJsRuntimeExtensions
                                                 bool collapsed,
                                                 int collapsedSize,
                                                 int keyboardStep,
+                                                int dragStep,
+                                                int snapSize,
+                                                bool lazyResize,
                                                 bool resetOnDoubleClick,
                                                 bool notifyResize,
+                                                bool notifyDoubleClick,
                                                 double? percent,
                                                 string? persistKey,
                                                 bool persistSession)
     {
         return js.InvokeVoid("BitBlazorUI.Splitter.update",
                              id, vertical, disabled, collapsible, collapsed,
-                             collapsedSize, keyboardStep, resetOnDoubleClick, notifyResize,
+                             collapsedSize, keyboardStep, dragStep, snapSize, lazyResize,
+                             resetOnDoubleClick, notifyResize, notifyDoubleClick,
                              percent, persistKey, persistSession);
     }
 

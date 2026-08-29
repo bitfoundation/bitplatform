@@ -66,4 +66,13 @@
          class="bit-spl-pnl bit-spl-spn @Classes?.SecondPanel">
         @SecondPanel
     </div>
+
+    @* The line a lazy drag moves in place of the panels. It is always here rather than rendered when the
+       drag starts, because the drag is the JavaScript side's from the pointer down onwards and there is no
+       render of the page between the two. It is out of the layout and out of the accessibility tree until a
+       lazy drag shows it. *@
+    <div @ref="_previewRef"
+         aria-hidden="true"
+         style="@Styles?.Preview"
+         class="bit-spl-prv @Classes?.Preview"></div>
 </div>

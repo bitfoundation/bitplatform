@@ -6,20 +6,20 @@
 
 <DemoPage Name="Splitter"
           SecondaryNames="@(["SplitPane", "Resizable"])"
-          Description="The BitSplitter divides a container into two panels, side by side or stacked, with a gutter between them that the reader drags to give one panel more room and the other less. Each panel can declare a starting size and the minimum and maximum it is allowed to reach, the split is held as a percentage that survives the container being resized and can be bound, and the first panel can be collapsed away and brought back. The gutter is a WAI-ARIA window splitter: it takes the focus, moves with the arrow keys, and reports where it stands to a screen reader."
+          Description="The BitSplitter divides a container into two panels, side by side or stacked, with a gutter between them that the reader drags to give one panel more room and the other less. Each panel can declare a starting size and the minimum and maximum it is allowed to reach, the split is held as a percentage that survives the container being resized and can be bound, and the first panel can be folded away and brought back - by the gutter, by a drag that snaps it shut, or from code. A splitter can remember where it was left, report every stage of a resize, and be held to a grid of its own. The gutter is a WAI-ARIA window splitter: it takes the focus, moves with the arrow keys, and reports where it stands to a screen reader."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
+          SubEnums="componentSubEnums"
           SubClasses="componentSubClasses"
           GitHubUrl="Surfaces/Splitter/BitSplitter.razor"
           GitHubDemoUrl="Surfaces/Splitter/BitSplitterDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>
             Everything in <code>FirstPanel</code> and <code>SecondPanel</code> is laid out on either side of the gutter, which
-            starts halfway across whatever the two panels hold. Drag the gutter to move the split, or give it the focus and
-            move it with the arrow keys - <code>Page Up</code>, <code>Page Down</code> and <code>Shift</code> with an arrow
-            move it ten steps at a time, <code>Home</code> and <code>End</code> take it to the smallest and largest size the
-            panels allow, and <code>Escape</code> abandons a drag that is under way. A double-click puts the gutter back
-            where the parameters had it.
+            starts halfway across the splitter. Drag the gutter to move the split, give it the focus and move it with the
+            arrow keys (<BitLink Href="#example8">the whole keyboard is below</BitLink>), or double-click it to put the panels
+            back where the parameters had them. A panel scrolls its own content, so neither side can push the other out of
+            the splitter.
         </div>
         <br />
         <BitSplitter Style="height:200px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
@@ -95,7 +95,9 @@
         <div>
             The four <code>MinSize</code> and <code>MaxSize</code> parameters, in pixels, are the range the gutter is held to -
             by the pointer, by the keyboard and by <code>Percent</code> alike. What one panel asks for bounds the other from
-            the far side, so a minimum on the second panel is what keeps the first one from being dragged over it.
+            the far side, so a minimum on the second panel is what keeps the first one from being dragged over it. The range
+            is measured off the panels rather than read back from these parameters, so a minimum or maximum a stylesheet puts
+            on a panel through <code>Classes</code> - as a percentage, or in any other unit - holds the gutter just as firmly.
         </div>
         <br />
         <BitSplitter FirstPanelSize="200" FirstPanelMinSize="120" FirstPanelMaxSize="320" SecondPanelMinSize="100"
@@ -130,12 +132,87 @@
         </BitSplitter>
     </DemoExample>
 
-    <DemoExample Title="Collapsible" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <DemoExample Title="Drag step" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>
-            <code>Collapsible</code> lets the first panel be folded away: press <code>Enter</code> on the gutter, drag it close
-            enough to the start of the splitter for it to snap shut, or press the gutter of an already folded panel to open it
-            again. <code>CollapsedSize</code> is the sliver it is left at, and <code>Collapsed</code> is bindable, so the page
-            always knows. Expanding puts the panel back at the size it had before it was folded.
+            <code>DragStep</code> is a grid, in pixels, that the split comes to rest on: the gutter follows the pointer but
+            lands on the nearest multiple of it rather than wherever the pointer happens to be, which is what lines a panel
+            up with a column of a grid, a tile or a row of text. The keyboard is held to the same multiples, so both ways of
+            moving the gutter agree on where it is allowed to stop.
+        </div>
+        <br />
+        <BitSlider Label="@($"Drag step: {dragStep:F0}px")" @bind-Value="dragStep" Max="100" Step="10" />
+        <br />
+        <BitSplitter DragStep="@((int)dragStep)" Style="height:200px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
+            <FirstPanel>
+                <div style="padding:0.5rem">A panel that stops every @dragStep pixels</div>
+            </FirstPanel>
+            <SecondPanel>
+                <div style="padding:0.5rem">Second panel</div>
+            </SecondPanel>
+        </BitSplitter>
+    </DemoExample>
+
+    <DemoExample Title="Lazy resize" RazorCode="@example7RazorCode" Id="example7">
+        <div>
+            A splitter lays its content out again on every frame of a drag, which is what makes the panels follow the pointer -
+            and what a panel holding a table of thousands of rows, an editor or a chart cannot keep up with.
+            <code>LazyResize</code> is the way to drag one of those: a line moves instead of the panels, and they are laid out
+            once, where the line was left. Everything else is unchanged - the keyboard, the minimum and maximum sizes, the
+            snap to collapse and the events all behave as they do on any other splitter.
+        </div>
+        <br />
+        <BitSplitter LazyResize FirstPanelMinSize="80" SecondPanelMinSize="80"
+                     Style="height:200px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
+            <FirstPanel>
+                <div style="padding:0.5rem">Drag the gutter: the line moves first, the panels follow when you let go.</div>
+            </FirstPanel>
+            <SecondPanel>
+                <div style="padding:0.5rem">Second panel</div>
+            </SecondPanel>
+        </BitSplitter>
+    </DemoExample>
+
+    <DemoExample Title="Keyboard" RazorCode="@example8RazorCode" Id="example8">
+        <div>
+            The gutter is a tab stop of its own and behaves as the WAI-ARIA window splitter pattern asks. The arrow keys
+            that lie along the splitter move it by <code>KeyboardStep</code> pixels - ten by default - and hold it inside
+            the minimum and maximum sizes of both panels; <code>Page Up</code>, <code>Page Down</code> and an arrow key
+            held with <code>Shift</code> move it ten steps at once; <code>Home</code> and <code>End</code> take it to the
+            smallest and the largest size the panels allow; <code>Escape</code> abandons a drag that is under way, putting
+            the panels back exactly as it found them. On a collapsible splitter <code>Enter</code> folds the first panel
+            away and brings it back, and so does <code>Ctrl</code> with the arrow key that points at it or away from it.
+            A double-click hands the layout back to the panel size parameters unless <code>NoResetOnDoubleClick</code>
+            takes that away.
+        </div>
+        <br />
+        <BitSplitter KeyboardStep="50" FirstPanelMinSize="80" SecondPanelMinSize="80"
+                     Style="height:150px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
+            <FirstPanel>
+                <div style="padding:0.5rem">One arrow key moves the gutter 50px.</div>
+            </FirstPanel>
+            <SecondPanel>
+                <div style="padding:0.5rem">Shift, Page Up and Page Down move it 500px.</div>
+            </SecondPanel>
+        </BitSplitter>
+        <br />
+        <BitSplitter NoResetOnDoubleClick FirstPanelSize="150"
+                     Style="height:150px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
+            <FirstPanel>
+                <div style="padding:0.5rem">Double-clicking the gutter</div>
+            </FirstPanel>
+            <SecondPanel>
+                <div style="padding:0.5rem">leaves this splitter where the reader put it.</div>
+            </SecondPanel>
+        </BitSplitter>
+    </DemoExample>
+
+    <DemoExample Title="Collapsible" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>
+            <code>Collapsible</code> lets the first panel be folded away: press <code>Enter</code> or <code>Ctrl</code> with an
+            arrow key on the gutter, drag it close enough to the start of the splitter for it to snap shut, or press the gutter
+            of an already folded panel to open it again. <code>CollapsedSize</code> is the sliver it is left at - a folded panel
+            keeps its content, and drops the minimum size it holds while it is open - and <code>Collapsed</code> is bindable, so
+            the page always knows. Expanding puts the panel back at the size it had before it was folded.
         </div>
         <br />
         <BitSplitter Collapsible CollapsedSize="8" @bind-Collapsed="isCollapsed" FirstPanelSize="180" FirstPanelMinSize="120"
@@ -147,9 +224,50 @@
                 <div style="padding:0.5rem">Collapsed: @isCollapsed</div>
             </SecondPanel>
         </BitSplitter>
+        <br />
+        <div>
+            Without a word on the subject, a drag closes the panel once it has taken it under half of its minimum size - or
+            under a twentieth of the splitter, where there is no minimum. <code>SnapSize</code> names that distance instead:
+            here the panel only shuts inside the first 40 pixels, so the whole of the range above it stays draggable.
+        </div>
+        <br />
+        <BitSplitter Collapsible CollapsedSize="8" SnapSize="40" FirstPanelSize="180" FirstPanelMinSize="120"
+                     Style="height:200px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
+            <FirstPanel>
+                <div style="padding:0.5rem">Drag the gutter to the first 40px to fold this away.</div>
+            </FirstPanel>
+            <SecondPanel>
+                <div style="padding:0.5rem">Second panel</div>
+            </SecondPanel>
+        </BitSplitter>
     </DemoExample>
 
-    <DemoExample Title="Programmatic control" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <DemoExample Title="Cancelling a collapse" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>
+            <code>OnCollapsing</code> is asked before the panel moves, with what is about to happen and what asked for it -
+            the gutter, a drag that snapped it shut, one of the methods, or the remembered position being restored. Setting
+            <code>Cancel</code> on the arguments leaves the panel exactly as it is, which is how a fold is made to wait for
+            a confirmation or a save. The callback is awaited, and nothing else folds the panel while it is running.
+        </div>
+        <br />
+        <BitToggle Label="Allow the panel to be folded away" @bind-Value="allowCollapse" />
+        <br />
+        <BitSplitter Collapsible CollapsedSize="8" FirstPanelSize="180" FirstPanelMinSize="120"
+                     OnCollapsing="@(args => { args.Cancel = args.IsCollapsing && allowCollapse is false;
+                                               collapseLog = $"{args.Reason} asked to {(args.IsCollapsing ? "collapse" : "expand")}: {(args.Cancel ? "refused" : "allowed")}"; })"
+                     Style="height:200px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
+            <FirstPanel>
+                <div style="padding:0.5rem">A panel that folds away only with permission</div>
+            </FirstPanel>
+            <SecondPanel>
+                <div style="padding:0.5rem">Second panel</div>
+            </SecondPanel>
+        </BitSplitter>
+        <br />
+        <div>@collapseLog</div>
+    </DemoExample>
+
+    <DemoExample Title="Programmatic control" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>
             A reference to the component gives the same moves to the page: <code>SetPercent</code> puts the gutter at a share
             of the splitter (still held to the minimum and maximum sizes), <code>ResetSize</code> hands the layout back to the
@@ -177,13 +295,14 @@
         </BitSplitter>
     </DemoExample>
 
-    <DemoExample Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoExample Title="Events" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
             <code>OnResizeStart</code> and <code>OnResizeEnd</code> mark the two ends of a resize and <code>OnResize</code>
             reports every frame of it, each of them with the share of the splitter the first panel takes up;
-            <code>OnCollapsedChange</code> reports the panel being folded away and brought back. A splitter with no handler for
-            <code>OnResize</code> makes no call at all while it is being dragged, so leave it unset where only the final
-            position matters.
+            <code>OnCollapsedChange</code> reports the panel being folded away and brought back, and
+            <code>OnGutterDoubleClick</code> the gutter being double-clicked, whether or not that also resets the splitter.
+            A splitter with no handler for <code>OnResize</code> makes no call at all while it is being dragged, so leave it
+            unset where only the final position matters.
         </div>
         <br />
         <BitSplitter FirstPanelMinSize="60" SecondPanelMinSize="60"
@@ -192,6 +311,7 @@
                      OnResize="@(p => resizeLog = $"Resizing: {p:F1}%")"
                      OnResizeEnd="@(p => resizeLog = $"Ended at {p:F1}%")"
                      OnCollapsedChange="@(c => resizeLog = c ? "Collapsed" : "Expanded")"
+                     OnGutterDoubleClick="@(() => resizeLog = "The gutter was double-clicked")"
                      Style="height:200px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
             <FirstPanel>
                 <div style="padding:0.5rem">First panel</div>
@@ -204,7 +324,7 @@
         <div>@resizeLog</div>
     </DemoExample>
 
-    <DemoExample Title="Persistence" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="Persistence" RazorCode="@example13RazorCode" Id="example13">
         <div>
             <code>PersistKey</code> has the splitter remember where the gutter was left - and whether the first panel was
             folded away - so the reader finds the layout they arranged the last time they were here. It is kept in the
@@ -223,7 +343,7 @@
         </BitSplitter>
     </DemoExample>
 
-    <DemoExample Title="Read-only & disabled" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="Read-only & disabled" RazorCode="@example14RazorCode" Id="example14">
         <div>
             <code>ReadOnly</code> is a split that is not up for negotiation: the splitter looks exactly as it does anywhere
             else, but the gutter cannot be dragged or moved from the keyboard. <code>IsEnabled="false"</code> takes the resize
@@ -251,7 +371,7 @@
         </BitSplitter>
     </DemoExample>
 
-    <DemoExample Title="Nested" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="Nested" RazorCode="@example15RazorCode" Id="example15">
         <div>
             A splitter is ordinary content, so putting one in a panel of another gives the three-pane layout of an inbox or an
             editor. Each of them keeps its own sizes and its own gutter.
@@ -274,7 +394,7 @@
         </BitSplitter>
     </DemoExample>
 
-    <DemoExample Title="Gutter size" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <DemoExample Title="Gutter size" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
         <div>
             <code>GutterSize</code> is the thickness of the gutter in pixels. However thin it is drawn, the strip that answers
             a press reaches a few pixels past it on either side, so a narrow gutter is still something a finger can find.
@@ -292,7 +412,7 @@
         </BitSplitter>
     </DemoExample>
 
-    <DemoExample Title="Gutter icon" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Gutter icon" RazorCode="@example17RazorCode" Id="example17">
         <div>
             <code>GutterIconName</code> puts a built-in Fluent UI icon in the gutter in place of the default grip, which gives
             the reader something to aim at on a wider gutter.
@@ -309,7 +429,7 @@
         </BitSplitter>
     </DemoExample>
 
-    <DemoExample Title="Gutter template" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Gutter template" RazorCode="@example18RazorCode" Id="example18">
         <div>
             <code>GutterTemplate</code> replaces what is drawn inside the gutter altogether. The gutter itself is the
             separator - the thing the pointer drags and the keyboard moves - so what goes in here is decoration: a control of
@@ -333,7 +453,7 @@
         </BitSplitter>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="External Icons" RazorCode="@example19RazorCode" Id="example19">
         <div>Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>GutterIcon</b> parameter (<BitLink Href="#bit-icon-info">BitIconInfo</BitLink>).</div>
 
         <br />
@@ -405,11 +525,11 @@
         </BitSplitter>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="Style & Class" RazorCode="@example20RazorCode" Id="example20">
         <div>
             <code>Style</code> and <code>Class</code> dress the root element - which is where the height of a splitter is set,
             since it fills whatever box it is put in - while <code>Styles</code> and <code>Classes</code> reach the parts
-            inside it: the two panels, the gutter, and the icon or grip drawn in the gutter.
+            inside it: the two panels, the gutter, the icon or grip drawn in the gutter, and the line a lazy drag moves.
         </div>
         <br />
         <BitSplitter Style="height:150px;border:2px dashed var(--bit-clr-pri);border-radius:0.5rem" AriaLabel="Resize the panels">
@@ -435,7 +555,7 @@
         </BitSplitter>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="RTL" RazorCode="@example21RazorCode" Id="example21">
         <div>
             In a right-to-left splitter the first panel is the one on the right, and the gutter follows: dragging it to the
             left makes the first panel bigger, and so does the arrow key that points away from it.

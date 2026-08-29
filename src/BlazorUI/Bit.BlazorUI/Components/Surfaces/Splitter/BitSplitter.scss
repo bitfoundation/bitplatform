@@ -3,6 +3,9 @@
 .bit-spl {
     height: 100%;
     display: flex;
+    // The line a lazy drag moves is placed against the splitter itself rather than against whatever
+    // happens to be positioned above it.
+    position: relative;
     box-sizing: border-box;
     --gutter-size: #{spacing(1.25)};
 }
@@ -75,6 +78,9 @@
     position: absolute;
     inset-block: 0;
     inset-inline: calc(-1 * #{spacing(0.5)});
+    // The strip answers the press, so the browser must not take the same touch for a scroll of the page
+    // behind it - the gutter says as much for itself, and touch-action is not inherited.
+    touch-action: none;
 }
 
 .bit-spl-gti {
@@ -82,6 +88,34 @@
     height: spacing(2);
     border-radius: $shp-radius-full;
     background-color: $clr-brd-pri;
+}
+
+/*
+ * The line a lazy drag moves in place of the panels. It is out of the layout in both senses - taken out of
+ * the flex row by being positioned, and taken out of the page altogether until a drag shows it - so a
+ * splitter that never drags lazily is exactly the splitter it was without it.
+ */
+.bit-spl-prv {
+    display: none;
+    position: absolute;
+    z-index: 2;
+    inset-block: 0;
+    width: var(--gutter-size);
+    background-color: $clr-pri;
+    // The pointer is captured by the gutter for the whole drag, and the line must not be in its way when
+    // the drag is over either.
+    pointer-events: none;
+}
+
+.bit-spl-prv-on {
+    display: block;
+}
+
+.bit-spl-vrt > .bit-spl-prv {
+    inset-block: auto;
+    inset-inline: 0;
+    width: auto;
+    height: var(--gutter-size);
 }
 
 .bit-spl-gic {
@@ -159,6 +193,16 @@
     min-height: 0;
 }
 
+// A folded panel has no size to drag, so the gutter offers the only thing a press on it can still do: open
+// the panel again, where the reader is allowed to, and nothing at all where they are not.
+.bit-spl-col > .bit-spl-gtr {
+    cursor: default;
+}
+
+.bit-spl-col.bit-spl-cpb > .bit-spl-gtr {
+    cursor: pointer;
+}
+
 // Neither a disabled nor a read-only splitter is up for resizing, so the gutter stops offering to be
 // dragged; the disabled one is dimmed by the shared bit-dis class on top of that.
 .bit-spl-rdo,
@@ -172,10 +216,50 @@
     }
 }
 
+// While a drag is running the pointer is captured by the gutter, so it goes on being reported wherever it
+// travels - with one exception the capture cannot cross. An iframe is a document of its own, and the
+// pointer entering one is the pointer leaving this one, so they are taken out of the way for as long as
+// the drag lasts. The cursor and the suppressed selection ride along with it, on the whole page rather
+// than on the splitter the pointer left behind long ago.
+body.bit-spl-drg-bdy {
+    cursor: col-resize;
+    user-select: none;
+    -webkit-user-select: none;
+    overscroll-behavior: none;
+
+    &.bit-spl-drg-vrt {
+        cursor: row-resize;
+    }
+
+    iframe {
+        pointer-events: none;
+    }
+}
+
+// A finger is a far coarser instrument than a mouse: where the pointer is the only one available, the
+// strip that answers a press is widened again, still without moving anything in the layout.
+@media (pointer: coarse) {
+    .bit-spl-gtr::before {
+        inset-inline: calc(-1 * #{spacing(1)});
+    }
+
+    .bit-spl-vrt .bit-spl-gtr::before {
+        inset-inline: 0;
+        inset-block: calc(-1 * #{spacing(1)});
+    }
+}
+
 // Forced colors replaces every background with the canvas, which would leave the gutter the same color as
 // the panels on either side of it and the grip the same color as the gutter.
 @media (forced-colors: active) {
-    .bit-spl-gtr {
+    // Every state of the gutter is painted the same way here: the hover, the drag and the two that take the
+    // resize away are all more specific than the plain selector, so a rule for that one alone would be given
+    // up again the moment the pointer reached the gutter.
+    .bit-spl-gtr,
+    .bit-spl-gtr:hover,
+    .bit-spl-drg .bit-spl-gtr,
+    .bit-spl-rdo .bit-spl-gtr:hover,
+    .bit-spl.bit-dis .bit-spl-gtr:hover {
         background-color: CanvasText;
     }
 
@@ -185,5 +269,9 @@
 
     .bit-spl-gic {
         color: Canvas;
+    }
+
+    .bit-spl-prv {
+        background-color: Highlight;
     }
 }

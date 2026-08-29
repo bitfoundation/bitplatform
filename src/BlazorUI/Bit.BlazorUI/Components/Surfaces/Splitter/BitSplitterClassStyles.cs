@@ -31,6 +31,11 @@ public class BitSplitterClassStyles
     public string? GutterIndicator { get; set; }
 
     /// <summary>
+    /// The custom CSS class/style for the line a lazy drag moves in place of the panels of the BitSplitter.
+    /// </summary>
+    public string? Preview { get; set; }
+
+    /// <summary>
     /// The custom CSS class/style for the second panel of the BitSplitter.
     /// </summary>
     public string? SecondPanel { get; set; }
