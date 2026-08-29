@@ -1,8 +1,18 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
+@* The keydown handler is on the root rather than on the tooltip, because the tooltip never takes the
+   focus: the keyboard is on the anchor inside the root while the tooltip is shown, so that is where an
+   Escape that dismisses it arrives (WCAG 1.4.13 "dismissible").
+
+   The description is on the root for as long as there is a tooltip to describe with, rather than only
+   while it is on the screen: a name computation follows an aria-describedby to the element it points at
+   even when that element is hidden, so a screen reader has the text the moment the anchor is reached,
+   instead of racing the render that shows the tooltip. *@
 <div @ref="RootElement"
+     aria-describedby="@(HasContent ? _tooltipId : null)"
      @attributes="HtmlAttributes"
+     @onkeydown="@HandleKeyDown"
      @onfocusin="@HandleFocusIn"
      @onfocusout="@HandleFocusOut"
      @onpointerup="@HandlePointerUp"
@@ -10,19 +20,26 @@
      @onpointerleave="@HandlePointerLeave"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
+     tabindex="@TabIndex"
      dir="@Dir?.ToString().ToLower()">
 
     @(Anchor ?? ChildContent)
 
     <div style="@Styles?.TooltipWrapper" class="bit-ttp-wrp @GetTooltipClasses() @Classes?.TooltipWrapper">
-        <div style="@Styles?.Tooltip" class="bit-ttp-ctn @Classes?.Tooltip">
-            @if (Template is not null)
+        <div role="tooltip"
+             id="@_tooltipId"
+             style="@Styles?.Tooltip"
+             class="bit-ttp-ctn @Classes?.Tooltip">
+            @if (_contentRendered)
             {
-                @Template
-            }
-            else
-            {
-                @Text
+                if (Template is not null)
+                {
+                    @Template
+                }
+                else
+                {
+                    @Text
+                }
             }
         </div>
         @if (HideArrow is false)

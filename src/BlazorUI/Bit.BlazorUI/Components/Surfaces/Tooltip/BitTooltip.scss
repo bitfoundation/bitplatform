@@ -4,10 +4,26 @@
     position: relative;
     display: inline-flex;
 
+    // One contract for every placement rule below, so a measurement is re-skinned - or handed over
+    // from C# as an inline custom property on this same element - in one place.
+    //
+    // The distance the tooltip is held off its anchor, which is also the room the arrow is drawn in.
+    --bit-ttp-offset: #{spacing(1.25)};
+    // The side of the square the arrow is rotated out of.
+    --bit-ttp-arrow-size: #{spacing(1.5)};
+    // The nudge that keeps that rotated square centred on the edge it points at. It is a sixth of the
+    // arrow, so an arrow given a size of its own keeps the geometry it has at the default one.
+    --bit-ttp-arrow-unit: calc(var(--bit-ttp-arrow-size) / 6);
+    --bit-ttp-arrow-shadow-color: #{translucent($clr-fg-pri, 10%)};
+    // The width a text wraps at instead of the tooltip growing on across the screen.
+    --bit-ttp-max-width: #{rem2(320px)};
+    --bit-ttp-padding: #{spacing(1.25)};
+    --bit-ttp-fontsize: #{$tg-fs-xs};
+    --bit-ttp-clr-bg: #{$clr-bg-sec};
+    --bit-ttp-clr-fg: #{$clr-fg-pri};
+
     &.bit-dis {
-        .bit-ttp-ctn {
-            color: $clr-fg-dis;
-        }
+        --bit-ttp-clr-fg: #{$clr-fg-dis};
     }
 }
 
@@ -21,25 +37,23 @@
     visibility: hidden;
     position: absolute;
     pointer-events: none;
-    transition: all $mot-duration linear;
-    --bit-ttp-arrow-spacing: #{spacing(1.25)};
-    // One contract for every placement rule below, so the arrow's shadow is re-skinned in one place.
-    --bit-ttp-arrow-shadow-color: #{translucent($clr-fg-pri, 10%)};
+    transition: opacity $mot-duration $mot-easing, visibility $mot-duration $mot-easing;
 }
 
 .bit-ttp-ctn {
-    height: auto;
-    font-weight: $tg-fw-medium;
     position: absolute;
     text-align: center;
     width: max-content;
     height: max-content;
-    padding: spacing(1.25);
-    font-size: $tg-fs-xs;
+    max-width: var(--bit-ttp-max-width);
+    padding: var(--bit-ttp-padding);
+    font-size: var(--bit-ttp-fontsize);
+    font-weight: $tg-fw-medium;
     border-radius: $shp-radius-popup;
-    z-index: $zindex-callout;
-    color: $clr-fg-pri;
-    background-color: $clr-bg-sec;
+    box-shadow: $box-shadow-tooltip;
+    z-index: var(--bit-ttp-zindex, #{$zindex-callout});
+    color: var(--bit-ttp-clr-fg);
+    background-color: var(--bit-ttp-clr-bg);
 }
 
 .bit-ttp-vis {
@@ -49,71 +63,93 @@
 
 .bit-ttp-arw {
     position: absolute;
-    width: spacing(1.5);
-    height: spacing(1.5);
-    z-index: $zindex-callout;
-    color: $clr-fg-pri;
-    background-color: $clr-bg-sec;
+    width: var(--bit-ttp-arrow-size);
+    height: var(--bit-ttp-arrow-size);
+    z-index: var(--bit-ttp-zindex, #{$zindex-callout});
+    color: var(--bit-ttp-clr-fg);
+    background-color: var(--bit-ttp-clr-bg);
+}
+
+// A tooltip the pointer may travel into takes its pointer events back from the wrapper, and bridges
+// the gap it is held off its anchor by with an invisible margin around itself, so that the pointer
+// never leaves the component on the way over and the tooltip is not hidden mid-crossing. The bridge
+// is painted behind the surface of the tooltip, so everything inside it keeps its own hit testing.
+.bit-ttp-itr {
+    .bit-ttp-ctn,
+    .bit-ttp-arw {
+        pointer-events: auto;
+    }
+
+    // The bridge reaches a little past the gap on every side, so that it meets the anchor rather than
+    // stopping a subpixel short of it on a fractional layout.
+    .bit-ttp-ctn::before {
+        content: '';
+        z-index: -1;
+        position: absolute;
+        inset: calc(-1 * (var(--bit-ttp-offset) + 2px));
+    }
+}
+
+.bit-ttp-nan {
+    .bit-ttp-wrp {
+        transition: none;
+    }
 }
 
 .bit-ttp-top {
     .bit-ttp-ctn {
         left: 50%;
         transform: translateX(-50%);
-        box-shadow: $box-shadow-tooltip;
-        bottom: calc(100% + var(--bit-ttp-arrow-spacing));
+        bottom: calc(100% + var(--bit-ttp-offset));
     }
 
     .bit-ttp-arw {
         bottom: 100%;
-        left: calc(50% - spacing(0.25));
+        left: calc(50% - var(--bit-ttp-arrow-unit));
         transform: rotate(45deg) translateX(-50%);
-        box-shadow: spacing(0.25) spacing(0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
+        box-shadow: var(--bit-ttp-arrow-unit) var(--bit-ttp-arrow-unit) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
 .bit-ttp-tlf {
     .bit-ttp-ctn {
-        right: calc(100% - var(--bit-ttp-arrow-spacing));
-        bottom: calc(100% + var(--bit-ttp-arrow-spacing));
-        box-shadow: $box-shadow-tooltip;
+        right: calc(100% - var(--bit-ttp-offset));
+        bottom: calc(100% + var(--bit-ttp-offset));
     }
 
     .bit-ttp-arw {
         bottom: 100%;
-        right: calc(100% - var(--bit-ttp-arrow-spacing));
+        right: calc(100% - var(--bit-ttp-offset));
         transform: rotate(45deg) translateX(-50%);
-        box-shadow: spacing(0.25) spacing(0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
+        box-shadow: var(--bit-ttp-arrow-unit) var(--bit-ttp-arrow-unit) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
 .bit-ttp-trg {
     .bit-ttp-ctn {
-        left: calc(100% - var(--bit-ttp-arrow-spacing));
-        bottom: calc(100% + var(--bit-ttp-arrow-spacing));
-        box-shadow: $box-shadow-tooltip;
+        left: calc(100% - var(--bit-ttp-offset));
+        bottom: calc(100% + var(--bit-ttp-offset));
     }
 
     .bit-ttp-arw {
         left: 100%;
         bottom: 100%;
         transform: rotate(45deg) translateX(-50%);
-        box-shadow: spacing(0.25) spacing(0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
+        box-shadow: var(--bit-ttp-arrow-unit) var(--bit-ttp-arrow-unit) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
 .bit-ttp-rtp {
     .bit-ttp-ctn {
-        left: calc(100% + var(--bit-ttp-arrow-spacing));
-        bottom: calc(100% - var(--bit-ttp-arrow-spacing));
-        box-shadow: $box-shadow-tooltip;
+        left: calc(100% + var(--bit-ttp-offset));
+        bottom: calc(100% - var(--bit-ttp-offset));
     }
 
     .bit-ttp-arw {
-        left: calc(100% + var(--bit-ttp-arrow-spacing));
-        bottom: calc(100% - var(--bit-ttp-arrow-spacing));
+        left: calc(100% + var(--bit-ttp-offset));
+        bottom: calc(100% - var(--bit-ttp-offset));
         transform: rotate(-45deg) translateY(-50%);
-        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
+        box-shadow: calc(-1 * var(--bit-ttp-arrow-unit)) calc(-1 * var(--bit-ttp-arrow-unit)) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
@@ -121,45 +157,42 @@
     .bit-ttp-ctn {
         bottom: 50%;
         transform: translateY(50%);
-        box-shadow: $box-shadow-tooltip;
-        left: calc(100% + var(--bit-ttp-arrow-spacing));
+        left: calc(100% + var(--bit-ttp-offset));
     }
 
     .bit-ttp-arw {
-        top: calc(50% - spacing(0.25));
-        left: calc(100% + var(--bit-ttp-arrow-spacing));
+        top: calc(50% - var(--bit-ttp-arrow-unit));
+        left: calc(100% + var(--bit-ttp-offset));
         transform: rotate(-45deg) translateY(-50%);
-        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
+        box-shadow: calc(-1 * var(--bit-ttp-arrow-unit)) calc(-1 * var(--bit-ttp-arrow-unit)) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
 .bit-ttp-rbm {
     .bit-ttp-ctn {
-        top: calc(100% - var(--bit-ttp-arrow-spacing));
-        left: calc(100% + var(--bit-ttp-arrow-spacing));
-        box-shadow: $box-shadow-tooltip;
+        top: calc(100% - var(--bit-ttp-offset));
+        left: calc(100% + var(--bit-ttp-offset));
     }
 
     .bit-ttp-arw {
-        top: calc(100% - var(--bit-ttp-arrow-spacing));
-        left: calc(100% + var(--bit-ttp-arrow-spacing));
+        top: calc(100% - var(--bit-ttp-offset));
+        left: calc(100% + var(--bit-ttp-offset));
         transform: rotate(-135deg) translateY(-50%);
-        box-shadow: spacing(0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
+        box-shadow: var(--bit-ttp-arrow-unit) calc(-1 * var(--bit-ttp-arrow-unit)) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
 .bit-ttp-brg {
     .bit-ttp-ctn {
-        top: calc(100% + var(--bit-ttp-arrow-spacing));
-        left: calc(100% - var(--bit-ttp-arrow-spacing));
-        box-shadow: $box-shadow-tooltip;
+        top: calc(100% + var(--bit-ttp-offset));
+        left: calc(100% - var(--bit-ttp-offset));
     }
 
     .bit-ttp-arw {
-        top: calc(100% + var(--bit-ttp-arrow-spacing));
-        left: calc(100% - var(--bit-ttp-arrow-spacing));
+        top: calc(100% + var(--bit-ttp-offset));
+        left: calc(100% - var(--bit-ttp-offset));
         transform: rotate(135deg) translateX(-50%);
-        box-shadow: spacing(-0.25) spacing(0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
+        box-shadow: calc(-1 * var(--bit-ttp-arrow-unit)) var(--bit-ttp-arrow-unit) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
@@ -167,45 +200,42 @@
     .bit-ttp-ctn {
         left: 50%;
         transform: translateX(-50%);
-        box-shadow: $box-shadow-tooltip;
-        top: calc(100% + var(--bit-ttp-arrow-spacing));
+        top: calc(100% + var(--bit-ttp-offset));
     }
 
     .bit-ttp-arw {
-        top: calc(100% + var(--bit-ttp-arrow-spacing));
-        left: calc(50% - spacing(0.25));
+        top: calc(100% + var(--bit-ttp-offset));
+        left: calc(50% - var(--bit-ttp-arrow-unit));
         transform: rotate(45deg) translateX(-50%);
-        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
+        box-shadow: calc(-1 * var(--bit-ttp-arrow-unit)) calc(-1 * var(--bit-ttp-arrow-unit)) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
 .bit-ttp-blf {
     .bit-ttp-ctn {
-        top: calc(100% + var(--bit-ttp-arrow-spacing));
-        right: calc(100% - var(--bit-ttp-arrow-spacing));
-        box-shadow: $box-shadow-tooltip;
+        top: calc(100% + var(--bit-ttp-offset));
+        right: calc(100% - var(--bit-ttp-offset));
     }
 
     .bit-ttp-arw {
-        top: calc(100% + var(--bit-ttp-arrow-spacing));
-        right: calc(100% - var(--bit-ttp-arrow-spacing));
+        top: calc(100% + var(--bit-ttp-offset));
+        right: calc(100% - var(--bit-ttp-offset));
         transform: rotate(45deg) translateX(-50%);
-        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
+        box-shadow: calc(-1 * var(--bit-ttp-arrow-unit)) calc(-1 * var(--bit-ttp-arrow-unit)) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
 .bit-ttp-lbm {
     .bit-ttp-ctn {
-        top: calc(100% - var(--bit-ttp-arrow-spacing));
-        right: calc(100% + var(--bit-ttp-arrow-spacing));
-        box-shadow: $box-shadow-tooltip;
+        top: calc(100% - var(--bit-ttp-offset));
+        right: calc(100% + var(--bit-ttp-offset));
     }
 
     .bit-ttp-arw {
-        top: calc(100% - var(--bit-ttp-arrow-spacing));
-        right: calc(100% + var(--bit-ttp-arrow-spacing));
+        top: calc(100% - var(--bit-ttp-offset));
+        right: calc(100% + var(--bit-ttp-offset));
         transform: rotate(-135deg) translateX(-50%);
-        box-shadow: spacing(-0.25) spacing(0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
+        box-shadow: calc(-1 * var(--bit-ttp-arrow-unit)) var(--bit-ttp-arrow-unit) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
@@ -213,29 +243,57 @@
     .bit-ttp-ctn {
         bottom: 50%;
         transform: translateY(50%);
-        box-shadow: $box-shadow-tooltip;
-        right: calc(100% + var(--bit-ttp-arrow-spacing));
+        right: calc(100% + var(--bit-ttp-offset));
     }
 
     .bit-ttp-arw {
-        top: calc(50% - spacing(0.25));
-        right: calc(100% + var(--bit-ttp-arrow-spacing));
+        top: calc(50% - var(--bit-ttp-arrow-unit));
+        right: calc(100% + var(--bit-ttp-offset));
         transform: rotate(135deg) translateX(-50%);
-        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
+        box-shadow: calc(-1 * var(--bit-ttp-arrow-unit)) calc(-1 * var(--bit-ttp-arrow-unit)) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
 .bit-ttp-ltp {
     .bit-ttp-ctn {
-        right: calc(100% + var(--bit-ttp-arrow-spacing));
-        bottom: calc(100% - var(--bit-ttp-arrow-spacing));
-        box-shadow: $box-shadow-tooltip;
+        right: calc(100% + var(--bit-ttp-offset));
+        bottom: calc(100% - var(--bit-ttp-offset));
     }
 
     .bit-ttp-arw {
-        right: calc(100% + var(--bit-ttp-arrow-spacing));
-        bottom: calc(100% - var(--bit-ttp-arrow-spacing));
+        right: calc(100% + var(--bit-ttp-offset));
+        bottom: calc(100% - var(--bit-ttp-offset));
         transform: rotate(135deg) translateX(-50%);
-        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
+        box-shadow: calc(-1 * var(--bit-ttp-arrow-unit)) calc(-1 * var(--bit-ttp-arrow-unit)) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
+    }
+}
+
+
+// The size classes move along the type ramp the library shares (sm -> xs, md -> sm, lg -> md); the
+// tooltip without one of them keeps the small end of it, which is what a tooltip is.
+.bit-ttp-sm {
+    --bit-ttp-fontsize: #{$tg-fs-xs};
+    --bit-ttp-padding: #{spacing(1)};
+}
+
+.bit-ttp-md {
+    --bit-ttp-fontsize: #{$tg-fs-sm};
+    --bit-ttp-padding: #{spacing(1.25)};
+}
+
+.bit-ttp-lg {
+    --bit-ttp-fontsize: #{$tg-fs-md};
+    --bit-ttp-padding: #{spacing(1.5)};
+}
+
+
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). The
+// arrow reads the same two slots as the surface, so it stays a part of it rather than a shape beside
+// it, and the shadow it casts is derived from the color it is given.
+@each $role, $tokens in $bit-color-roles {
+    .bit-ttp-#{$role} {
+        --bit-ttp-clr-bg: #{role($tokens, main)};
+        --bit-ttp-clr-fg: #{role($tokens, on)};
+        --bit-ttp-arrow-shadow-color: #{translucent(role($tokens, main), 20%)};
     }
 }

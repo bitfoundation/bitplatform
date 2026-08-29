@@ -2,51 +2,158 @@
 
 <PageOutlet Url="components/tooltip"
             Title="Tooltip"
-            Description="Tooltip component briefly describes unlabeled controls or provides a bit of additional information about labeled controls." />
+            Description="Tooltip briefly describes an unlabeled control or adds a bit of information to a labeled one." />
 
 <DemoPage Name="Tooltip"
-          Description="Tooltip component briefly describes unlabeled controls or provides a bit of additional information about labeled controls."
+          SecondaryNames="@(["Tip", "Hint"])"
+          Description="Tooltip briefly describes an unlabeled control or adds a bit of information to a labeled one, in a small surface shown next to what it belongs to. It is shown on hover and on focus, or on a click, after delays of your choosing, on any of twelve positions around its anchor, with an arrow pointing back at it. It holds a text or any content you give it, can be made hoverable so the pointer may travel into it, is dismissed by the Escape key, and can be driven from your own code through a two-way bound state or its Show, Hide and Toggle methods."
+          Notes="The tooltip is laid out entirely in CSS, next to its anchor and inside the flow of the page, which is what makes it free of any positioning pass and of any JavaScript. The two things that follow from it are worth knowing before you place one: it is clipped by an ancestor that hides its overflow, and it stays on the side you asked for rather than flipping to the one with room on it. A surface that has to escape an overflow, find its own room on the screen, or hold something to click or type in is a BitCallout rather than a tooltip."
           Parameters="componentParameters"
+          PublicMembers="componentPublicMembers"
           SubEnums="componentSubEnums"
           SubClasses="componentSubClasses"
           GitHubUrl="Surfaces/Tooltip/BitTooltip.razor"
           GitHubDemoUrl="Surfaces/Tooltip/BitTooltipDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <div>Explore the fundamental use of BitTooltip with a simple hover interaction on a BitButton.</div>
+        <div>
+            <b>Text</b> is what the tooltip says, and whatever is put inside the tooltip is the anchor it
+            belongs to and is shown next to. Out of the box the tooltip is shown when the pointer enters
+            the anchor and when the keyboard reaches it, and is hidden again when either of them leaves.
+            <b>IsEnabled</b> turns the tooltip off without touching the anchor, and hides one that is
+            already shown.
+        </div>
         <br />
-        <div class="tooltips-container">
+        <div class="tooltips-container row">
             <BitTooltip Text="This is the tooltip text">
                 <BitButton Variant="BitVariant.Outline">Hover over me</BitButton>
+            </BitTooltip>
+
+            <BitTooltip Text="This tooltip never shows" IsEnabled="false">
+                <BitButton Variant="BitVariant.Outline">Disabled tooltip</BitButton>
             </BitTooltip>
         </div>
     </DemoExample>
 
     <DemoExample Title="Position" RazorCode="@example2RazorCode" Id="example2">
-        <div>You can customize the Tooltip position to enhance the user experience.</div>
+        <div>
+            <b>Position</b> is the place the tooltip takes around its anchor: one of the four sides, each
+            of them also available lined up with either end of the anchor rather than centred on it. The
+            arrow follows the tooltip and keeps pointing back at the anchor from wherever it lands. All
+            twelve are shown open here at once; they are the same tooltip in every other respect.
+        </div>
         <br />
-        <div class="tooltips-container center">
-            <div class="tooltips-container">
-                <BitTooltip DefaultIsShown="true" Text="Text" Position="BitTooltipPosition.Top">
-                    <BitButton Variant="BitVariant.Outline">Top</BitButton>
+        <div class="position-grid">
+            @foreach (var position in tooltipPositionList)
+            {
+                <BitTooltip DefaultIsShown="true" Text="@position.Text" Position="position.Value">
+                    <BitButton Variant="BitVariant.Outline" Style="width: 100%;">@position.Text</BitButton>
                 </BitTooltip>
-                <BitTooltip DefaultIsShown="true" Text="Text" Position="BitTooltipPosition.Right">
-                    <BitButton Variant="BitVariant.Outline">Right</BitButton>
-                </BitTooltip>
-            </div>
-            <br />
-            <div class="tooltips-container">
-                <BitTooltip DefaultIsShown="true" Text="Text" Position="BitTooltipPosition.Left">
-                    <BitButton Variant="BitVariant.Outline" Style="width: 100%;">Left</BitButton>
-                </BitTooltip>
-                <BitTooltip DefaultIsShown="true" Text="Text" Position="BitTooltipPosition.Bottom">
-                    <BitButton Variant="BitVariant.Outline">Bottom</BitButton>
-                </BitTooltip>
-            </div>
+            }
         </div>
     </DemoExample>
 
-    <DemoExample Title="Custom content" RazorCode="@example3RazorCode" Id="example3">
-        <div>Here are some examples of customizing the tooltip content.</div>
+    <DemoExample Title="Triggers" RazorCode="@example3RazorCode" Id="example3">
+        <div>
+            Three switches decide what shows the tooltip. <b>ShowOnHover</b> (on by default) answers the
+            pointer entering the anchor, <b>ShowOnFocus</b> (on by default as well) answers the keyboard
+            reaching it, and <b>ShowOnClick</b> turns the anchor into a toggle. Turn the ones you do not
+            want off: a tooltip that answers nothing at all is left entirely to the state you bind to it.
+            On a touch screen there is no pointer that hovers, so a tap shows the tooltip and it hides
+            itself again after <b>TouchHideDelay</b> milliseconds.
+        </div>
+        <br />
+        <div class="tooltips-container row">
+            <BitTooltip Text="Shown by the pointer only" ShowOnFocus="false">
+                <BitButton Variant="BitVariant.Outline">Hover</BitButton>
+            </BitTooltip>
+
+            <BitTooltip Text="Shown by the keyboard only" ShowOnHover="false">
+                <BitButton Variant="BitVariant.Outline">Focus (tab to me)</BitButton>
+            </BitTooltip>
+
+            <BitTooltip Text="Toggled by a click" ShowOnClick ShowOnHover="false" ShowOnFocus="false">
+                <BitButton Variant="BitVariant.Outline">Click</BitButton>
+            </BitTooltip>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Delay" RazorCode="@example4RazorCode" Id="example4">
+        <div>
+            <b>ShowDelay</b> is how long the pointer has to rest on the anchor before the tooltip is
+            shown, which keeps a pointer merely crossing a row of controls from lighting all of them up.
+            <b>HideDelay</b> is how long the tooltip stays behind once the pointer has left, which stops
+            it flickering when the pointer slips off an edge and comes back. Both are cancelled by the
+            opposite move arriving first, and the show delay is for the pointer alone: a tooltip reached
+            with the keyboard or opened by a click is shown at once, since it was asked for.
+        </div>
+        <br />
+        <div class="tooltips-container row">
+            <BitTooltip Text="Waited 700ms for you" ShowDelay="700">
+                <BitButton Variant="BitVariant.Outline">ShowDelay</BitButton>
+            </BitTooltip>
+
+            <BitTooltip Text="Staying for a second" HideDelay="1000">
+                <BitButton Variant="BitVariant.Outline">HideDelay</BitButton>
+            </BitTooltip>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Arrow &amp; offset" RazorCode="@example5RazorCode" Id="example5">
+        <div>
+            The arrow points from the tooltip back at the anchor. <b>HideArrow</b> leaves it out,
+            <b>ArrowSize</b> sets the length of the side of the square it is drawn from, and
+            <b>Offset</b> is the distance in pixels the tooltip is held off the anchor, which is also the
+            room the arrow is drawn in. Leaving the last two unset keeps whatever the theme gives them.
+        </div>
+        <br />
+        <div class="tooltips-container row spaced">
+            <BitTooltip DefaultIsShown="true" Text="Default">
+                <BitButton Variant="BitVariant.Outline">Default</BitButton>
+            </BitTooltip>
+
+            <BitTooltip DefaultIsShown="true" Text="No arrow" HideArrow>
+                <BitButton Variant="BitVariant.Outline">HideArrow</BitButton>
+            </BitTooltip>
+
+            <BitTooltip DefaultIsShown="true" Text="A bigger arrow" ArrowSize="18">
+                <BitButton Variant="BitVariant.Outline">ArrowSize</BitButton>
+            </BitTooltip>
+
+            <BitTooltip DefaultIsShown="true" Text="Held further off" Offset="24">
+                <BitButton Variant="BitVariant.Outline">Offset</BitButton>
+            </BitTooltip>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Interactive" RazorCode="@example6RazorCode" Id="example6">
+        <div>
+            <b>Interactive</b> lets the pointer travel into the tooltip and rest there without it being
+            hidden, which is what WCAG 1.4.13 asks of anything shown on hover and what a tooltip whose
+            text has to be read across, magnified or selected needs. The gap between the anchor and the
+            tooltip is bridged, so the pointer never leaves the component on the way over. A tooltip that
+            holds something to click or to type in is a callout rather than a tooltip: it has to take the
+            focus, which a tooltip never does.
+        </div>
+        <br />
+        <div class="tooltips-container row">
+            <BitTooltip Interactive HideDelay="200" Position="BitTooltipPosition.Bottom"
+                        Text="Move onto me and I will stay. Select this text.">
+                <BitButton Variant="BitVariant.Outline">Interactive</BitButton>
+            </BitTooltip>
+
+            <BitTooltip HideDelay="200" Position="BitTooltipPosition.Bottom"
+                        Text="Move onto me and I am gone.">
+                <BitButton Variant="BitVariant.Outline">Not interactive</BitButton>
+            </BitTooltip>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Custom content" RazorCode="@example7RazorCode" Id="example7">
+        <div>
+            <b>Template</b> is the content of the tooltip when a plain <b>Text</b> is not enough, and
+            <b>Anchor</b> (an alias of ChildContent) is what it belongs to. Both are ordinary render
+            fragments, so anything may go in them - the tooltip is sized to what it holds.
+        </div>
         <br />
         <div class="tooltips-container">
             <BitTooltip>
@@ -63,57 +170,262 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Advanced" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <div>Here are some examples of advanced usage of tooltip.</div>
+    <DemoExample Title="Max width" RazorCode="@example8RazorCode" Id="example8">
+        <div>
+            A tooltip is only as wide as what it holds, up to a cap the theme sets, past which the text
+            wraps onto another line instead of the tooltip running on across the screen.
+            <b>MaxWidth</b> takes any CSS length to set that cap yourself, and the value "none" takes it
+            off for the tooltip that is meant to be a single line however long it is.
+        </div>
+        <br />
+        <div class="tooltips-container row spaced">
+            <BitTooltip DefaultIsShown="true" Position="BitTooltipPosition.Bottom" MaxWidth="10rem"
+                        Text="A narrow tooltip wraps its text sooner.">
+                <BitButton Variant="BitVariant.Outline">10rem</BitButton>
+            </BitTooltip>
+
+            <BitTooltip DefaultIsShown="true" Position="BitTooltipPosition.Bottom"
+                        Text="The default cap keeps a long line from running on across the whole screen.">
+                <BitButton Variant="BitVariant.Outline">Default</BitButton>
+            </BitTooltip>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Dismissal" RazorCode="@example9RazorCode" Id="example9">
+        <div>
+            The Escape key hides the tooltip while the keyboard is on the anchor, without the focus
+            having to move away first - the "dismissible" half of WCAG 1.4.13, and what a tooltip that
+            covers what is underneath it owes the reader. <b>NoDismissOnEscape</b> turns that off, which
+            is only for a tooltip that obscures nothing. Tab to either of these and press Escape.
+        </div>
+        <br />
+        <div class="tooltips-container row">
+            <BitTooltip Text="Press Escape to dismiss me">
+                <BitButton Variant="BitVariant.Outline">Dismissible</BitButton>
+            </BitTooltip>
+
+            <BitTooltip Text="Escape leaves me alone" NoDismissOnEscape>
+                <BitButton Variant="BitVariant.Outline">NoDismissOnEscape</BitButton>
+            </BitTooltip>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Lazy rendering" RazorCode="@example10RazorCode" Id="example10">
+        <div>
+            <b>LazyRender</b> keeps the content of the tooltip out of the DOM until the tooltip is first
+            shown, and keeps it rendered from then on, so a page carrying many tooltips over costly
+            content is not paying for all of them up front. The timestamp below is taken while the
+            content renders: the lazy one is stamped the moment you first hover it, the other one the
+            moment the page loaded.
+        </div>
+        <br />
+        <div class="tooltips-container row">
+            <BitTooltip LazyRender Position="BitTooltipPosition.Bottom">
+                <Template>
+                    <div>Rendered at @DateTime.Now.ToString("HH:mm:ss")</div>
+                </Template>
+                <Anchor>
+                    <BitButton Variant="BitVariant.Outline">LazyRender</BitButton>
+                </Anchor>
+            </BitTooltip>
+
+            <BitTooltip Position="BitTooltipPosition.Bottom">
+                <Template>
+                    <div>Rendered at @DateTime.Now.ToString("HH:mm:ss")</div>
+                </Template>
+                <Anchor>
+                    <BitButton Variant="BitVariant.Outline">Rendered up front</BitButton>
+                </Anchor>
+            </BitTooltip>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Binding" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <div>
+            <b>DefaultIsShown</b> is the state the tooltip starts in and then manages itself.
+            <b>@("@bind-IsShown")</b> hands that state to your own field instead: the tooltip keeps
+            answering its triggers and reports every change back, so the two stay in step. Handing
+            <b>IsShown</b> over without binding it makes the state entirely yours - the triggers are then
+            left alone and only your code shows and hides the tooltip.
+        </div>
+        <br />
+        <div class="tooltips-container">
+            <BitToggle @bind-Value="isShown" Label="IsShown" />
+            <div class="tooltips-container row">
+                <BitTooltip DefaultIsShown="true" Text="Shown to begin with" Position="BitTooltipPosition.Bottom">
+                    <BitButton Variant="BitVariant.Outline">DefaultIsShown</BitButton>
+                </BitTooltip>
+
+                <BitTooltip @bind-IsShown="isShown" Text="Bound to the toggle" Position="BitTooltipPosition.Bottom">
+                    <BitButton Variant="BitVariant.Outline">@("@bind-IsShown")</BitButton>
+                </BitTooltip>
+            </div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Methods" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <div>
+            A reference to the component gives you <b>Show</b>, <b>Hide</b> and <b>Toggle</b>, which act
+            at once and regardless of the triggers and the delays the tooltip is configured with. They
+            are what a tooltip driven by something happening elsewhere on the page needs - a validation
+            that has just failed, a step of a tour - rather than by the pointer on its anchor.
+        </div>
+        <br />
+        <div class="tooltips-container">
+            <div class="tooltips-container row">
+                <BitButton Variant="BitVariant.Outline" OnClick="@(() => tooltipRef?.Show())">Show</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="@(() => tooltipRef?.Hide())">Hide</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="@(() => tooltipRef?.Toggle())">Toggle</BitButton>
+            </div>
+            <BitTooltip @ref="tooltipRef" Text="Driven from the buttons above" Position="BitTooltipPosition.Bottom">
+                <BitButton Variant="BitVariant.Outline">Anchor</BitButton>
+            </BitTooltip>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Events" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <div>
+            <b>OnShow</b> and <b>OnHide</b> report the tooltip changing state, and <b>OnToggle</b> reports
+            both of them with the new state, so a single handler can follow the tooltip. They are called
+            once the delays have run out and the state has actually changed, never for a trigger that was
+            cancelled before it landed.
+        </div>
+        <br />
+        <div class="tooltips-container">
+            <BitTooltip Text="Watch the log below"
+                        OnShow="@(() => events.Insert(0, $"OnShow at {DateTime.Now:HH:mm:ss}"))"
+                        OnHide="@(() => events.Insert(0, $"OnHide at {DateTime.Now:HH:mm:ss}"))"
+                        OnToggle="@(v => events.Insert(0, $"OnToggle({v}) at {DateTime.Now:HH:mm:ss}"))">
+                <BitButton Variant="BitVariant.Outline">Hover over me</BitButton>
+            </BitTooltip>
+            <div class="event-log">
+                @foreach (var item in events.Take(6))
+                {
+                    <div>@item</div>
+                }
+            </div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Advanced" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <div>
+            Everything above on one tooltip, to try the combinations out on.
+        </div>
         <br />
         <div class="tooltips-container center">
             <div class="tooltips-container">
-                <BitTooltip @bind-IsShown="isShown"
+                <BitTooltip @bind-IsShown="isShownAdvanced"
                             Text="Text"
+                            Interactive="interactive"
                             HideArrow="hideArrow"
+                            ShowDelay="(int)showDelay"
                             HideDelay="(int)hideDelay"
                             ShowOnClick="showOnClick"
                             ShowOnHover="showOnHover"
+                            ShowOnFocus="showOnFocus"
                             Position="tooltipPosition">
                     <BitButton Variant="BitVariant.Outline" Style="width: 8rem;">Anchor</BitButton>
                 </BitTooltip>
                 <br />
                 <BitDropdown Label="Tooltip positions" Items="tooltipPositionList" @bind-Value="tooltipPosition" Style="width: 8rem;" />
                 <br />
+                <BitNumberField Label="Show delay" @bind-Value="showDelay" Mode="BitSpinButtonMode.Inline" Style="width: 8rem;" />
+                <br />
                 <BitNumberField Label="Hide delay" @bind-Value="hideDelay" Mode="BitSpinButtonMode.Inline" Style="width: 8rem;" />
             </div>
 
             <div class="tooltips-container">
-                <BitToggle @bind-Value="isShown" Text="Toggle tooltip state" />
+                <BitToggle @bind-Value="isShownAdvanced" Text="Toggle tooltip state" />
                 <br />
                 <BitToggle @bind-Value="hideArrow" Text="Hide tooltip arrow" />
+                <br />
+                <BitToggle @bind-Value="interactive" Text="Interactive tooltip" />
                 <br />
                 <BitToggle @bind-Value="showOnClick" Text="Show tooltip on click" />
                 <br />
                 <BitToggle @bind-Value="showOnHover" Text="Show tooltip on hover" />
+                <br />
+                <BitToggle @bind-Value="showOnFocus" Text="Show tooltip on focus" />
             </div>
         </div>
     </DemoExample>
 
-    <DemoExample Title="Styles & Classes" RazorCode="@example5RazorCode" Id="example5">
-        <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
-        <br /><br />
+    <DemoExample Title="Color" RazorCode="@example15RazorCode" Id="example15">
+        <div>
+            <b>Color</b> paints the surface of the tooltip and the arrow along with it, out of the same
+            palette the rest of the library reads, so the text on it stays legible in every theme. The
+            eight semantic colors carry a meaning worth spending on a tooltip - an error, a warning, a
+            confirmation - and the neutral background, foreground and border families are there for a
+            tooltip that has to sit against a particular surface.
+        </div>
+        <br />
+        <div class="color-grid">
+            @foreach (var color in Enum.GetValues<BitColor>())
+            {
+                <BitTooltip DefaultIsShown="true" Color="color" Text="@color.ToString()" Position="BitTooltipPosition.Bottom">
+                    <BitButton Variant="BitVariant.Outline" Style="width: 100%;">@color</BitButton>
+                </BitTooltip>
+            }
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16">
+        <div>
+            <b>Size</b> moves the tooltip along the type ramp the library shares and pads it to match. A
+            tooltip is small chrome by nature, so the one you do not size sits at the small end of that
+            ramp already; Medium and Large are for the tooltip whose text is the point rather than a
+            footnote.
+        </div>
+        <br />
+        <div class="tooltips-container row spaced">
+            <BitTooltip DefaultIsShown="true" Size="BitSize.Small" Text="Small" Position="BitTooltipPosition.Bottom">
+                <BitButton Variant="BitVariant.Outline">Small</BitButton>
+            </BitTooltip>
+
+            <BitTooltip DefaultIsShown="true" Size="BitSize.Medium" Text="Medium" Position="BitTooltipPosition.Bottom">
+                <BitButton Variant="BitVariant.Outline">Medium</BitButton>
+            </BitTooltip>
+
+            <BitTooltip DefaultIsShown="true" Size="BitSize.Large" Text="Large" Position="BitTooltipPosition.Bottom">
+                <BitButton Variant="BitVariant.Outline">Large</BitButton>
+            </BitTooltip>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Style &amp; Class" RazorCode="@example17RazorCode" Id="example17">
+        <div>
+            <b>Style</b> and <b>Class</b> reach the root element, and <b>Styles</b> and <b>Classes</b>
+            reach the parts inside it - the root, the wrapper the tooltip is placed by, the tooltip
+            surface itself and the arrow - so a single tooltip can be reshaped without a rule that
+            catches every other one on the page. <b>NoAnimation</b> takes the fade off, for a tooltip
+            that should simply be there.
+        </div>
+        <br />
         <div class="tooltips-container">
             <div><b>Styles</b>:</div>
             <BitTooltip Text="This is the tooltip text" Styles="@(new() { Tooltip = "box-shadow: aqua 0 0 0.5rem;" })">
                 <BitButton Variant="BitVariant.Outline">Hover over me</BitButton>
             </BitTooltip>
-            <br /><br />
+            <br />
             <div><b>Classes</b>:</div>
             <BitTooltip Text="This is the tooltip text" Classes="@(new() { Tooltip = "custom-tooltip", Arrow = "custom-arrow" })">
+                <BitButton Variant="BitVariant.Outline">Hover over me</BitButton>
+            </BitTooltip>
+            <br />
+            <div><b>NoAnimation</b>:</div>
+            <BitTooltip Text="No fade in or out" NoAnimation>
                 <BitButton Variant="BitVariant.Outline">Hover over me</BitButton>
             </BitTooltip>
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example6RazorCode" Id="example6">
-        <div>Use BitTooltip in right-to-left (RTL).</div>
-        <br /><br />
+    <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
+        <div>
+            Set <b>Dir</b> to Rtl to lay the content of the tooltip out right-to-left. The positions stay
+            what they say they are - Left is the left of the anchor in either direction - so a tooltip
+            that should follow the reading direction is placed with the position that matches it.
+        </div>
+        <br />
         <div class="tooltips-container">
             <BitTooltip Dir="BitDir.Rtl">
                 <Template>
