@@ -493,15 +493,18 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.ShowDelay, 50);
+            // Long enough that the assertion below is not racing the delay it is there to prove: a
+            // short one could elapse between the trigger and the read on a loaded machine.
+            parameters.Add(p => p.ShowDelay, 1000);
         });
 
         component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
 
         Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
 
-        component.WaitForAssertion(() =>
-            Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis")));
+        component.WaitForAssertion(
+            () => Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis")),
+            TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -954,6 +957,10 @@ public class BitTooltipTests : BunitTestContext
             p.AddChildContent("<button>Hover me</button>");
         });
 
+        // The pointer has to have arrived for the leave to be the one that starts the pending hide this
+        // test is about.
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+
         var root = component.Find(".bit-ttp");
         await component.InvokeAsync(() => root.TriggerEvent("onpointerleave", Mouse()));
 
@@ -982,5 +989,581 @@ public class BitTooltipTests : BunitTestContext
             Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis")));
 
         await Task.CompletedTask;
+    }
+
+
+
+    [TestMethod]
+    public void BitTooltipWithoutContentShouldRenderNoSurfaceAtAll()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.DefaultIsShown, true);
+            parameters.AddChildContent("<button>Anchor</button>");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-ttp-wrp").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-ttp-ctn").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-ttp-arw").Count);
+
+        component.Render(parameters => parameters.Add(p => p.Text, "Tip"));
+
+        Assert.AreEqual(1, component.FindAll(".bit-ttp-wrp").Count);
+    }
+
+    [TestMethod]
+    public void BitTooltipShouldRenderItsIdAndAriaLabelOnTheRoot()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Id, "the-tip");
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.AriaLabel, "The label");
+        });
+
+        var root = component.Find(".bit-ttp");
+
+        Assert.AreEqual("the-tip", root.Id);
+        Assert.AreEqual("The label", root.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitTooltipShouldExposeTheIdOfTheElementItsTextLandsIn()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Id, "the-tip");
+            parameters.Add(p => p.Text, "Tip");
+        });
+
+        Assert.AreEqual("the-tip-ttp", component.Instance.TooltipId);
+        Assert.AreEqual(component.Instance.TooltipId, component.Find(".bit-ttp-ctn").Id);
+    }
+
+
+
+    [TestMethod]
+    public void BitTooltipShouldDescribeItsAnchorByDefault()
+    {
+        var component = RenderComponent<BitTooltip>(parameters => parameters.Add(p => p.Text, "Tip"));
+
+        var root = component.Find(".bit-ttp");
+
+        Assert.AreEqual(component.Find(".bit-ttp-ctn").Id, root.GetAttribute("aria-describedby"));
+        Assert.IsNull(root.GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitTooltipRelationshipLabelShouldNameItsAnchorInstead()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Save");
+            parameters.Add(p => p.Relationship, BitTooltipRelationship.Label);
+        });
+
+        var root = component.Find(".bit-ttp");
+
+        Assert.AreEqual(component.Find(".bit-ttp-ctn").Id, root.GetAttribute("aria-labelledby"));
+        Assert.IsNull(root.GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitTooltipRelationshipNoneShouldDeclareNothing()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.Relationship, BitTooltipRelationship.None);
+        });
+
+        var root = component.Find(".bit-ttp");
+
+        Assert.IsNull(root.GetAttribute("aria-describedby"));
+        Assert.IsNull(root.GetAttribute("aria-labelledby"));
+
+        // The surface is still there: the relationship is about the accessibility tree, not about what
+        // is drawn on the screen.
+        Assert.AreEqual(1, component.FindAll(".bit-ttp-ctn").Count);
+    }
+
+    [TestMethod]
+    public void BitTooltipDisabledShouldDescribeNothing()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        Assert.IsNull(component.Find(".bit-ttp").GetAttribute("aria-describedby"));
+    }
+
+
+
+    [TestMethod]
+    public void BitTooltipShouldRenderTheZIndexAsACustomProperty()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.ZIndex, 9999);
+        });
+
+        StringAssert.Contains(component.Find(".bit-ttp").GetAttribute("style"), "--bit-ttp-zindex:9999");
+
+        component.Render(parameters => parameters.Add(p => p.ZIndex, (int?)null));
+
+        var style = component.Find(".bit-ttp").GetAttribute("style") ?? string.Empty;
+
+        Assert.IsFalse(style.Contains("--bit-ttp-zindex"));
+    }
+
+
+
+    [TestMethod]
+    public void BitTooltipShouldStayWhileTheKeyboardIsStillOnTheAnchor()
+    {
+        var component = RenderComponent<BitTooltip>(parameters => parameters.Add(p => p.Text, "Tip"));
+
+        component.Find(".bit-ttp").TriggerEvent("onfocusin", new FocusEventArgs());
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        // The pointer leaving does not take away the tooltip the keyboard is still asking for.
+        component.Find(".bit-ttp").TriggerEvent("onpointerleave", Mouse());
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        component.Find(".bit-ttp").TriggerEvent("onfocusout", new FocusEventArgs());
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipShouldStayWhileThePointerIsStillOnTheAnchor()
+    {
+        var component = RenderComponent<BitTooltip>(parameters => parameters.Add(p => p.Text, "Tip"));
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+        component.Find(".bit-ttp").TriggerEvent("onfocusin", new FocusEventArgs());
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        // The focus leaving does not take away the tooltip the pointer is still hovering.
+        component.Find(".bit-ttp").TriggerEvent("onfocusout", new FocusEventArgs());
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerleave", Mouse());
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipShouldNotAnswerTheFocusThatFollowsAPress()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.ShowOnHover, false);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerdown", new PointerEventArgs());
+        component.Find(".bit-ttp").TriggerEvent("onfocusin", new FocusEventArgs());
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        // What the press left behind is given up once the pointer has gone, so the keyboard reaching the
+        // same anchor afterwards is answered as the keyboard.
+        component.Find(".bit-ttp").TriggerEvent("onfocusout", new FocusEventArgs());
+        component.Find(".bit-ttp").TriggerEvent("onfocusin", new FocusEventArgs());
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+
+
+    [TestMethod]
+    public void BitTooltipHideOnClickShouldTakeAHoverTooltipAway()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.HideOnClick, true);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerup", new PointerEventArgs());
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipHideOnClickShouldLeaveTheSecondaryButtonAlone()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.HideOnClick, true);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerup", new PointerEventArgs { Button = 2 });
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipShowOnClickShouldWinOverHideOnClick()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.ShowOnClick, true);
+            parameters.Add(p => p.HideOnClick, true);
+            parameters.Add(p => p.ShowOnHover, false);
+            parameters.Add(p => p.ShowOnFocus, false);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerup", new PointerEventArgs());
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipAPointerUpInsideTheTooltipShouldNotToggleIt()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.Interactive, true);
+            parameters.Add(p => p.ShowOnClick, true);
+            parameters.Add(p => p.DefaultIsShown, true);
+        });
+
+        component.Find(".bit-ttp-ctn").TriggerEvent("onpointerup", new PointerEventArgs());
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+
+
+    [TestMethod]
+    public void BitTooltipNoTouchShouldIgnoreATap()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.NoTouch, true);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Touch());
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipNoTouchShouldStillAnswerThePointer()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.NoTouch, true);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+
+
+    [TestMethod]
+    public void BitTooltipEscapeShouldOutliveThePointerThatIsStillOnTheAnchor()
+    {
+        var component = RenderComponent<BitTooltip>(parameters => parameters.Add(p => p.Text, "Tip"));
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+        component.Find(".bit-ttp").TriggerEvent("onfocusin", new FocusEventArgs());
+
+        component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Escape" });
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        // Neither the pointer nor the keyboard leaving brings back what was dismissed.
+        component.Find(".bit-ttp").TriggerEvent("onpointerleave", Mouse());
+        component.Find(".bit-ttp").TriggerEvent("onfocusout", new FocusEventArgs());
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipDisabledShouldForgetTheTriggersItWasHeldBy()
+    {
+        var component = RenderComponent<BitTooltip>(parameters => parameters.Add(p => p.Text, "Tip"));
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        // The pointer that was over the anchor is no longer counted, so the leave that follows it hides
+        // nothing and the next enter shows the tooltip again from a clean state.
+        component.Find(".bit-ttp").TriggerEvent("onpointerleave", Mouse());
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+
+
+    [TestMethod]
+    public void BitTooltipGroupShouldHandItsDelaysToTheTooltipsThatHaveNone()
+    {
+        var component = RenderComponent<BitTooltipGroupTest>(parameters =>
+        {
+            parameters.Add(p => p.ShowDelay, 60);
+            parameters.Add(p => p.HideDelay, 0);
+        });
+
+        component.Find("#first").TriggerEvent("onpointerenter", Mouse());
+
+        Assert.IsFalse(component.Find("#first .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        component.WaitForAssertion(() =>
+            Assert.IsTrue(component.Find("#first .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis")));
+    }
+
+    [TestMethod]
+    public void BitTooltipGroupShouldLeaveADelayOfItsOwnAlone()
+    {
+        var component = RenderComponent<BitTooltipGroupTest>(parameters =>
+        {
+            parameters.Add(p => p.ShowDelay, 5000);
+            parameters.Add(p => p.HideDelay, 0);
+        });
+
+        // The third tooltip names a show delay of zero, which the group does not fill in over.
+        component.Find("#third").TriggerEvent("onpointerenter", Mouse());
+
+        Assert.IsTrue(component.Find("#third .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipGroupShouldSkipTheShowDelayWhileTheLastTooltipIsFresh()
+    {
+        var component = RenderComponent<BitTooltipGroupTest>(parameters =>
+        {
+            parameters.Add(p => p.ShowDelay, 5000);
+            parameters.Add(p => p.HideDelay, 0);
+            parameters.Add(p => p.SkipDelay, 5000);
+        });
+
+        // The first of a row waits, so it is shown by hand rather than waited out.
+        component.Find("#third").TriggerEvent("onpointerenter", Mouse());
+        component.Find("#third").TriggerEvent("onpointerleave", Mouse());
+
+        Assert.IsFalse(component.Find("#third .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        component.Find("#first").TriggerEvent("onpointerenter", Mouse());
+
+        Assert.IsTrue(component.Find("#first .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipGroupWithoutASkipWindowShouldMakeEveryTooltipWait()
+    {
+        var component = RenderComponent<BitTooltipGroupTest>(parameters =>
+        {
+            parameters.Add(p => p.ShowDelay, 5000);
+            parameters.Add(p => p.HideDelay, 0);
+            parameters.Add(p => p.SkipDelay, 0);
+        });
+
+        component.Find("#third").TriggerEvent("onpointerenter", Mouse());
+        component.Find("#third").TriggerEvent("onpointerleave", Mouse());
+
+        component.Find("#first").TriggerEvent("onpointerenter", Mouse());
+
+        Assert.IsFalse(component.Find("#first .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipGroupShouldShowOneTooltipAtATime()
+    {
+        var component = RenderComponent<BitTooltipGroupTest>(parameters =>
+        {
+            parameters.Add(p => p.ShowDelay, 0);
+            parameters.Add(p => p.HideDelay, 0);
+        });
+
+        component.Find("#first").TriggerEvent("onpointerenter", Mouse());
+        Assert.IsTrue(component.Find("#first .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        component.Find("#second").TriggerEvent("onpointerenter", Mouse());
+
+        Assert.IsTrue(component.Find("#second .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+        Assert.IsFalse(component.Find("#first .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipShouldRespectFullWidth()
+    {
+        var component = RenderComponent<BitTooltip>(parameters => parameters.Add(p => p.Text, "Tip"));
+
+        Assert.IsFalse(component.Find(".bit-ttp").ClassList.Contains("bit-ttp-flw"));
+
+        component.Render(parameters => parameters.Add(p => p.FullWidth, true));
+
+        Assert.IsTrue(component.Find(".bit-ttp").ClassList.Contains("bit-ttp-flw"));
+    }
+
+    [TestMethod]
+    public void BitTooltipShouldTreatAWhitespaceTextAsNoContent()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "   ");
+            parameters.Add(p => p.DefaultIsShown, true);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-ttp-wrp").Count);
+        Assert.IsNull(component.Find(".bit-ttp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitTooltipShownByATapShouldNotBeClosedByTheSameTap()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.TouchHideDelay, 0);
+            parameters.Add(p => p.ShowOnClick, true);
+        });
+
+        // The enter, the down and the up of one tap arrive one after another; only the enter acts.
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Touch());
+        component.Find(".bit-ttp").TriggerEvent("onpointerup", Touch());
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        // A second tap, whose enter did nothing because the pointer never left, does toggle it.
+        component.Find(".bit-ttp").TriggerEvent("onpointerup", Touch());
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipHideOnClickShouldNotUndoTheTapThatShowedIt()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.TouchHideDelay, 0);
+            parameters.Add(p => p.HideOnClick, true);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Touch());
+        component.Find(".bit-ttp").TriggerEvent("onpointerup", Touch());
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+
+
+    [DataTestMethod]
+    [DataRow(BitTooltipPosition.Top, "bit-ttp-top")]
+    [DataRow(BitTooltipPosition.TopLeft, "bit-ttp-trg")]
+    [DataRow(BitTooltipPosition.TopRight, "bit-ttp-tlf")]
+    [DataRow(BitTooltipPosition.RightTop, "bit-ttp-ltp")]
+    [DataRow(BitTooltipPosition.Right, "bit-ttp-lft")]
+    [DataRow(BitTooltipPosition.RightBottom, "bit-ttp-lbm")]
+    [DataRow(BitTooltipPosition.BottomRight, "bit-ttp-blf")]
+    [DataRow(BitTooltipPosition.Bottom, "bit-ttp-btm")]
+    [DataRow(BitTooltipPosition.BottomLeft, "bit-ttp-brg")]
+    [DataRow(BitTooltipPosition.LeftBottom, "bit-ttp-rbm")]
+    [DataRow(BitTooltipPosition.Left, "bit-ttp-rgt")]
+    [DataRow(BitTooltipPosition.LeftTop, "bit-ttp-rtp")]
+    public void BitTooltipMirrorInRtlShouldSwapTheTwoSides(BitTooltipPosition position, string expectedClass)
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.Position, position);
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.MirrorInRtl, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitTooltipMirrorInRtlShouldLeaveALeftToRightTooltipAlone()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.Position, BitTooltipPosition.Left);
+            parameters.Add(p => p.MirrorInRtl, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-lft"));
+    }
+
+    [TestMethod]
+    public void BitTooltipInRtlShouldKeepItsPositionWithoutMirrorInRtl()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.Position, BitTooltipPosition.Left);
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+        });
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-lft"));
+    }
+
+
+
+    [TestMethod]
+    public void BitTooltipGroupAllowMultipleShouldLetThemStandTogether()
+    {
+        var component = RenderComponent<BitTooltipGroupTest>(parameters =>
+        {
+            parameters.Add(p => p.ShowDelay, 0);
+            parameters.Add(p => p.HideDelay, 0);
+            parameters.Add(p => p.AllowMultiple, true);
+        });
+
+        component.Find("#first").TriggerEvent("onpointerenter", Mouse());
+        component.Find("#second").TriggerEvent("onpointerenter", Mouse());
+
+        Assert.IsTrue(component.Find("#first .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+        Assert.IsTrue(component.Find("#second .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipGroupShouldLetGoOfATooltipThatLeavesThePage()
+    {
+        var component = RenderComponent<BitTooltipGroupTest>(parameters =>
+        {
+            parameters.Add(p => p.ShowDelay, 0);
+            parameters.Add(p => p.HideDelay, 0);
+        });
+
+        component.Find("#third").TriggerEvent("onpointerenter", Mouse());
+        Assert.IsTrue(component.Find("#third .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        // The tooltip that was on the screen is taken off the page while it is still shown; the group
+        // must not go on holding it, or showing another one would reach a component that is gone.
+        component.Render(parameters => parameters.Add(p => p.RenderThird, false));
+
+        component.Find("#first").TriggerEvent("onpointerenter", Mouse());
+
+        Assert.IsTrue(component.Find("#first .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+        Assert.AreEqual(0, component.FindAll("#third").Count);
     }
 }

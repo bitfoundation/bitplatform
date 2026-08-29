@@ -1,0 +1,14 @@
+@* The stamp is taken once, when this component is first initialized, so it says when the content of
+   the tooltip was rendered rather than when it was last drawn. Reading DateTime.Now straight out of
+   the markup would restamp it on every rerender of the tooltip, and the lazily rendered one would
+   then look no different from the one rendered up front. *@
+<div>Rendered at @renderedAt.ToString("HH:mm:ss")</div>
+
+@code {
+    private DateTime renderedAt;
+
+    protected override void OnInitialized()
+    {
+        renderedAt = DateTime.Now;
+    }
+}

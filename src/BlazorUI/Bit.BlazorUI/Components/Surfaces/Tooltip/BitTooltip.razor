@@ -5,17 +5,21 @@
    focus: the keyboard is on the anchor inside the root while the tooltip is shown, so that is where an
    Escape that dismisses it arrives (WCAG 1.4.13 "dismissible").
 
-   The description is on the root for as long as there is a tooltip to describe with, rather than only
-   while it is on the screen: a name computation follows an aria-describedby to the element it points at
-   even when that element is hidden, so a screen reader has the text the moment the anchor is reached,
-   instead of racing the render that shows the tooltip. *@
+   The relationship is declared on the root for as long as there is a tooltip to declare it with, rather
+   than only while it is on the screen: a name computation follows an aria-describedby or an
+   aria-labelledby to the element it points at even when that element is hidden, so a screen reader has
+   the text the moment the anchor is reached, instead of racing the render that shows the tooltip. *@
 <div @ref="RootElement"
-     aria-describedby="@(HasContent ? _tooltipId : null)"
+     id="@_Id"
+     aria-label="@AriaLabel"
+     aria-describedby="@(HasAccessibleContent && Relationship == BitTooltipRelationship.Description ? _tooltipId : null)"
+     aria-labelledby="@(HasAccessibleContent && Relationship == BitTooltipRelationship.Label ? _tooltipId : null)"
      @attributes="HtmlAttributes"
      @onkeydown="@HandleKeyDown"
      @onfocusin="@HandleFocusIn"
      @onfocusout="@HandleFocusOut"
      @onpointerup="@HandlePointerUp"
+     @onpointerdown="@HandlePointerDown"
      @onpointerenter="@HandlePointerEnter"
      @onpointerleave="@HandlePointerLeave"
      style="@StyleBuilder.Value"
@@ -25,26 +29,37 @@
 
     @(Anchor ?? ChildContent)
 
-    <div style="@Styles?.TooltipWrapper" class="bit-ttp-wrp @GetTooltipClasses() @Classes?.TooltipWrapper">
-        <div role="tooltip"
-             id="@_tooltipId"
-             style="@Styles?.Tooltip"
-             class="bit-ttp-ctn @Classes?.Tooltip">
-            @if (_contentRendered)
+    @* A tooltip with nothing to say is no tooltip at all: the surface and the arrow are left off the page
+       altogether rather than shown as an empty box the moment something asks for them. *@
+    @if (HasContent)
+    {
+        @* A pointer released inside the tooltip is not a click on the anchor, so it is kept from reaching
+           the toggle on the root: an interactive tooltip would otherwise close itself the moment anything
+           inside it was clicked. *@
+        <div style="@Styles?.TooltipWrapper"
+             class="bit-ttp-wrp @GetTooltipClasses() @Classes?.TooltipWrapper"
+             @onpointerup="@SwallowPointerUp"
+             @onpointerup:stopPropagation="true">
+            <div role="tooltip"
+                 id="@_tooltipId"
+                 style="@Styles?.Tooltip"
+                 class="bit-ttp-ctn @Classes?.Tooltip">
+                @if (_contentRendered)
+                {
+                    if (Template is not null)
+                    {
+                        @Template
+                    }
+                    else
+                    {
+                        @Text
+                    }
+                }
+            </div>
+            @if (HideArrow is false)
             {
-                if (Template is not null)
-                {
-                    @Template
-                }
-                else
-                {
-                    @Text
-                }
+                <div style="@Styles?.Arrow" class="bit-ttp-arw @Classes?.Arrow"></div>
             }
         </div>
-        @if (HideArrow is false)
-        {
-            <div style="@Styles?.Arrow" class="bit-ttp-arw @Classes?.Arrow"></div>
-        }
-    </div>
+    }
 </div>

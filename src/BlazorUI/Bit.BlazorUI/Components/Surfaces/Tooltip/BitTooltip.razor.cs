@@ -8,9 +8,12 @@
 /// <remarks>
 /// The tooltip is shown on hover and on focus by default, is dismissed by the Escape key, and can be
 /// made hoverable so that the pointer may travel into it - the three things WCAG 1.4.13 asks of content
-/// shown on hover or focus. It is laid out purely in CSS, next to the anchor inside the flow of the
-/// page, so it needs no positioning pass and no JavaScript; a surface that has to escape an overflow,
-/// flip to the side with room, or hold interactive content of its own is what BitCallout is for.
+/// shown on hover or focus. It names or describes its anchor according to its
+/// <see cref="Relationship"/>, and a row of them wrapped in a <see cref="BitTooltipGroup"/> shares its
+/// delays and shows one tooltip at a time. It is laid out purely in CSS, next to the anchor inside the
+/// flow of the page, so it needs no positioning pass and no JavaScript; a surface that has to escape an
+/// overflow, flip to the side with room, or hold interactive content of its own is what BitCallout is
+/// for.
 /// </remarks>
 public partial class BitTooltip : BitComponentBase
 {
@@ -25,15 +28,49 @@ public partial class BitTooltip : BitComponentBase
     // a class change rather than a render of everything in it.
     private bool _contentRendered;
 
+    // The two reasons a tooltip is on the screen, kept apart so that one of them ending does not take the
+    // tooltip away while the other still holds it: a pointer leaving an anchor the keyboard is still on
+    // would otherwise hide a tooltip that the focus is asking for, and the other way round.
+    private bool _isPointerOver;
+    private bool _isFocusWithin;
+
+    // Whether the focus inside the anchor arrived there by being pressed on rather than tabbed to. A
+    // pointer that presses a control focuses it, and answering that focus would show the tooltip a second
+    // time for the same pointer and then keep it on the screen after the pointer has gone; this is what
+    // :focus-visible does for CSS, done by hand because the focus events carry no such flag.
+    private bool _isFocusFromPointer;
+
+    // Whether the tooltip on the screen is the one the tap that is still under way put there. A touch
+    // sends the enter, the down and the up of a single tap one after another, so without this the tap
+    // that shows the tooltip would be taken for a click on it as well and undo itself.
+    private bool _isShownByTouch;
+
 
 
     private string _tooltipId => $"{_Id}-ttp";
 
+    // The delays the group above fills in for a tooltip that was left without one of its own. A tooltip
+    // that names its delay keeps it, even where the value it names is the same as the default.
+    private int _ShowDelay => HasNotBeenSet(nameof(ShowDelay)) ? Group?.ShowDelay ?? ShowDelay : ShowDelay;
+
+    private int _HideDelay => HasNotBeenSet(nameof(HideDelay)) ? Group?.HideDelay ?? HideDelay : HideDelay;
+
     private bool HasContent => Template is not null || Text.HasValue();
+
+    // A tooltip that cannot be shown describes nothing, so nothing is pointed at it either.
+    private bool HasAccessibleContent => HasContent && IsEnabled;
 
     // A tooltip whose shown state is handed to it and never handed back cannot be driven by anything
     // that happens on the page: the page owns it, and the triggers below leave it alone.
     private bool IsControlledExternally => IsShownHasBeenSet && IsShownChanged.HasDelegate is false;
+
+
+
+    /// <summary>
+    /// The group this tooltip belongs to, which fills in the delays it was left without and keeps it the
+    /// only tooltip of the group on the screen.
+    /// </summary>
+    [CascadingParameter] private BitTooltipGroup? Group { get; set; }
 
 
 
@@ -69,6 +106,17 @@ public partial class BitTooltip : BitComponentBase
     [Parameter] public bool? DefaultIsShown { get; set; }
 
     /// <summary>
+    /// Expands the tooltip's own element to 100% of the available width, so that the anchor inside it
+    /// keeps the width it would have had without a tooltip around it.
+    /// </summary>
+    /// <remarks>
+    /// The tooltip wraps its anchor in an element of its own, which is laid out inline and is therefore
+    /// only as wide as what it holds. A block-level anchor - a text field, a button meant to fill a
+    /// column - would be shrunk to its content by that, and this is what keeps it stretched.
+    /// </remarks>
+    [Parameter, ResetClassBuilder] public bool FullWidth { get; set; }
+
+    /// <summary>
     /// Hides the arrow of tooltip.
     /// </summary>
     [Parameter] public bool HideArrow { get; set; }
@@ -79,9 +127,21 @@ public partial class BitTooltip : BitComponentBase
     /// <remarks>
     /// It is the grace an <see cref="Interactive"/> tooltip needs while the pointer crosses the gap
     /// between the anchor and the tooltip, and the pause that keeps a tooltip from flickering while the
-    /// pointer skims across a row of anchors.
+    /// pointer skims across a row of anchors. Leaving it alone inside a <see cref="BitTooltipGroup"/>
+    /// takes the delay the group sets for all of its tooltips.
     /// </remarks>
     [Parameter] public int HideDelay { get; set; } = 0;
+
+    /// <summary>
+    /// Hides the tooltip when the anchor is clicked, which is what a tooltip on a control that does
+    /// something when pressed - opening a dialog, submitting a form - owes the reader: its own text has
+    /// been read by then, and leaving it over whatever the click brought up only gets in the way.
+    /// </summary>
+    /// <remarks>
+    /// It is the plain hide of a tooltip shown by the hover or the focus. A tooltip the click is meant to
+    /// open and close instead is <see cref="ShowOnClick"/>, which takes over the click when it is on.
+    /// </remarks>
+    [Parameter] public bool HideOnClick { get; set; }
 
     /// <summary>
     /// Lets the pointer travel into the tooltip and stay there without it being hidden, which is what
@@ -104,7 +164,9 @@ public partial class BitTooltip : BitComponentBase
 
     /// <summary>
     /// Holds the content of the tooltip out of the DOM until the tooltip is first shown, and keeps it
-    /// rendered from then on.
+    /// rendered from then on. The element the relationship points at is still on the page from the
+    /// start, but it is empty until then, so the accessible name or description the tooltip provides
+    /// is only there once the tooltip has been shown for the first time.
     /// </summary>
     [Parameter] public bool LazyRender { get; set; }
 
@@ -114,6 +176,18 @@ public partial class BitTooltip : BitComponentBase
     /// it, and a value of "none" takes the cap off.
     /// </summary>
     [Parameter, ResetStyleBuilder] public string? MaxWidth { get; set; }
+
+    /// <summary>
+    /// Mirrors the position of the tooltip along the horizontal axis while the direction is right to
+    /// left, so that a position named for one side of the anchor lands on the side the reader starts at.
+    /// </summary>
+    /// <remarks>
+    /// The twelve positions are named for the sides of the screen rather than for the reading order, so
+    /// Left is the left of the anchor in either direction unless this is turned on. Turn it on for a
+    /// tooltip that follows the text - a hint beside a field, say - and leave it off for one that has to
+    /// stay where it is put, such as a tooltip aimed at the edge of a fixed layout.
+    /// </remarks>
+    [Parameter] public bool MirrorInRtl { get; set; }
 
     /// <summary>
     /// Removes the fade the tooltip is shown and hidden with, so that it simply appears.
@@ -128,6 +202,16 @@ public partial class BitTooltip : BitComponentBase
     /// for, so only turn it off for a tooltip that obscures nothing.
     /// </remarks>
     [Parameter] public bool NoDismissOnEscape { get; set; }
+
+    /// <summary>
+    /// Keeps a touch or a pen from showing the tooltip at all, leaving the anchor to answer the tap alone.
+    /// </summary>
+    /// <remarks>
+    /// A touch screen has no pointer that hovers, so a tap both presses the anchor and shows the tooltip
+    /// over whatever the press brought up. Turn it off for a tooltip that only repeats what a touch user
+    /// can already read; leave it on where the tooltip is the only place the text is.
+    /// </remarks>
+    [Parameter] public bool NoTouch { get; set; }
 
     /// <summary>
     /// The distance in pixels between the anchor and the tooltip, which is also the room the arrow is
@@ -157,11 +241,23 @@ public partial class BitTooltip : BitComponentBase
     public BitTooltipPosition Position { get; set; }
 
     /// <summary>
+    /// What the tooltip is to the anchor it belongs to: the description of a control that has a name of
+    /// its own, the name of one that has none, or nothing at all.
+    /// </summary>
+    /// <remarks>
+    /// It decides which of aria-describedby and aria-labelledby the anchor is given, and is declared for
+    /// as long as there is a tooltip to declare it with rather than only while it is on the screen.
+    /// </remarks>
+    [Parameter] public BitTooltipRelationship Relationship { get; set; }
+
+    /// <summary>
     /// Delay (in milliseconds) before showing the tooltip.
     /// </summary>
     /// <remarks>
     /// It applies to the pointer only: a tooltip reached with the keyboard or opened by a click is shown
-    /// at once, since the user asked for it rather than merely passed over it.
+    /// at once, since the user asked for it rather than merely passed over it. Leaving it alone inside a
+    /// <see cref="BitTooltipGroup"/> takes the delay the group sets for all of its tooltips, and the
+    /// group also drops the delay entirely while another of its tooltips is still fresh in mind.
     /// </remarks>
     [Parameter] public int ShowDelay { get; set; } = 0;
 
@@ -208,6 +304,31 @@ public partial class BitTooltip : BitComponentBase
     /// </summary>
     [Parameter] public int TouchHideDelay { get; set; } = 1500;
 
+    /// <summary>
+    /// The stacking order of the tooltip surface and its arrow. Leaving it unset keeps the one the theme
+    /// gives every popup surface in the library.
+    /// </summary>
+    /// <remarks>
+    /// The tooltip is laid out inside the flow of the page rather than at the end of the body, so it is
+    /// stacked against whatever the page puts around its anchor. This is the way past a neighbour that
+    /// would otherwise be painted over it.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder] public int? ZIndex { get; set; }
+
+
+
+    /// <summary>
+    /// The id of the element the text of the tooltip is rendered in, which is what an anchor of your own
+    /// points its aria-describedby or aria-labelledby at.
+    /// </summary>
+    /// <remarks>
+    /// The relationship the tooltip declares of its own accord is on the element wrapping the anchor. A
+    /// screen reader computes the description of the control that has the focus, so an anchor that is a
+    /// plain HTML element of yours is better off carrying the reference itself; give the tooltip an
+    /// <see cref="BitComponentBase.Id"/> and this is the id to point at.
+    /// </remarks>
+    public string TooltipId => _tooltipId;
+
 
 
     /// <summary>
@@ -245,6 +366,8 @@ public partial class BitTooltip : BitComponentBase
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => FullWidth ? "bit-ttp-flw" : string.Empty);
 
         ClassBuilder.Register(() => Interactive ? "bit-ttp-itr" : string.Empty);
 
@@ -292,10 +415,14 @@ public partial class BitTooltip : BitComponentBase
         StyleBuilder.Register(() => ArrowSize.HasValue ? $"--bit-ttp-arrow-size:{ArrowSize.Value}px" : string.Empty);
 
         StyleBuilder.Register(() => MaxWidth.HasValue() ? $"--bit-ttp-max-width:{MaxWidth}" : string.Empty);
+
+        StyleBuilder.Register(() => ZIndex.HasValue ? $"--bit-ttp-zindex:{ZIndex.Value}" : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()
     {
+        Group?.Register(this);
+
         if (IsShownHasBeenSet is false && DefaultIsShown.HasValue)
         {
             await AssignIsShown(DefaultIsShown.Value);
@@ -309,12 +436,20 @@ public partial class BitTooltip : BitComponentBase
     protected override async Task OnParametersSetAsync()
     {
         // A tooltip that is turned off while it is shown takes its content off the screen with it,
-        // instead of leaving behind a surface that nothing on the page can dismiss any more.
-        if (IsEnabled is false && IsShown)
+        // instead of leaving behind a surface that nothing on the page can dismiss any more. The reasons
+        // it was on the screen for go with it, so turning it back on does not bring it straight back.
+        if (IsEnabled is false)
         {
-            CancelPendingDelays();
+            _isPointerOver = false;
+            _isFocusWithin = false;
+            _isFocusFromPointer = false;
 
-            await SetIsShown(false);
+            if (IsShown)
+            {
+                CancelPendingDelays();
+
+                await SetIsShown(false);
+            }
         }
 
         if (IsShown)
@@ -404,10 +539,19 @@ public partial class BitTooltip : BitComponentBase
         {
             _contentRendered = true;
 
+            // A group holds one tooltip at a time, so the one that has just been shown takes the place of
+            // whichever of its siblings was on the screen before it.
+            if (Group is not null)
+            {
+                await Group.NotifyShown(this);
+            }
+
             await OnShow.InvokeAsync();
         }
         else
         {
+            Group?.NotifyHidden();
+
             await OnHide.InvokeAsync();
         }
 
@@ -418,15 +562,28 @@ public partial class BitTooltip : BitComponentBase
         await InvokeAsync(StateHasChanged);
     }
 
+    // Whether one of the two reasons a tooltip stays on the screen is still standing. It is what keeps a
+    // pointer leaving an anchor from taking away the tooltip the keyboard on it is still asking for.
+    private bool IsHeldByHover => ShowOnHover && _isPointerOver;
+
+    private bool IsHeldByFocus => ShowOnFocus && _isFocusWithin && _isFocusFromPointer is false;
+
     private async Task HandlePointerEnter(PointerEventArgs e)
     {
         if (IsControlledExternally) return;
+
+        if (IsTouch(e) && NoTouch) return;
+
+        _isPointerOver = true;
+
         if (ShowOnHover is false) return;
 
         // A touch has no pointer that hovers: the enter and the leave arrive back to back around the
         // tap, so the tooltip is shown at once and then hides itself after a while instead.
         if (IsTouch(e))
         {
+            _isShownByTouch = true;
+
             await ShowAfterDelay(0);
 
             if (TouchHideDelay > 0)
@@ -437,25 +594,48 @@ public partial class BitTooltip : BitComponentBase
             return;
         }
 
-        await ShowAfterDelay(ShowDelay);
+        // The group hands the tooltip its delay when it has none of its own, and takes the delay away
+        // altogether while another tooltip of the group is still fresh in mind.
+        await ShowAfterDelay(Group?.ShouldSkipShowDelay() is true ? 0 : _ShowDelay);
     }
 
     private async Task HandlePointerLeave(PointerEventArgs e)
     {
         if (IsControlledExternally) return;
-        if (ShowOnHover is false) return;
+
+        if (IsTouch(e) && NoTouch) return;
+
+        var wasHeldByHover = IsHeldByHover;
+
+        _isPointerOver = false;
+
+        // A press that has not been followed by a focus of its own leaves nothing behind once the pointer
+        // is gone, so the next keyboard arrival is answered as the keyboard rather than as that press.
+        if (_isFocusWithin is false) _isFocusFromPointer = false;
+
+        // A tap the pointer up of which never arrived - one that was cancelled, or taken by something
+        // else on the page - leaves nothing for the next tap to be measured against.
+        _isShownByTouch = false;
+
+        if (wasHeldByHover is false) return;
 
         // The leave that follows a tap would take the tooltip away the instant it was shown; the touch
         // timer the enter above started is what hides that one.
         if (IsTouch(e)) return;
 
-        await HideAfterDelay(HideDelay);
+        // The keyboard is still on the anchor, so the tooltip it asked for stays where it is.
+        if (IsHeldByFocus) return;
+
+        await HideAfterDelay(_HideDelay);
     }
 
     private async Task HandleFocusIn()
     {
         if (IsControlledExternally) return;
-        if (ShowOnFocus is false) return;
+
+        _isFocusWithin = true;
+
+        if (IsHeldByFocus is false) return;
 
         // Reaching a control with the keyboard is asking for the tooltip rather than passing over it, so
         // the hover delay - which is there to keep a pointer crossing the page quiet - does not apply.
@@ -465,27 +645,70 @@ public partial class BitTooltip : BitComponentBase
     private async Task HandleFocusOut()
     {
         if (IsControlledExternally) return;
-        if (ShowOnFocus is false) return;
 
-        await HideAfterDelay(HideDelay);
+        var wasHeldByFocus = IsHeldByFocus;
+
+        _isFocusWithin = false;
+        _isFocusFromPointer = false;
+
+        if (wasHeldByFocus is false) return;
+
+        // The pointer is still on the anchor, so the tooltip it is hovering stays where it is.
+        if (IsHeldByHover) return;
+
+        await HideAfterDelay(_HideDelay);
+    }
+
+    private void HandlePointerDown(PointerEventArgs e)
+    {
+        // The focus that follows a press is the press, not the keyboard, and the tooltip is already being
+        // shown by the pointer that made it. Recording it here is what lets the focus in the moment after
+        // be told apart from a tab that reached the same control.
+        if (e.Button != 0) return;
+
+        _isFocusFromPointer = true;
     }
 
     private async Task HandlePointerUp(PointerEventArgs e)
     {
         if (IsControlledExternally) return;
-        if (ShowOnClick is false) return;
 
-        // Only the primary button toggles: the secondary one belongs to the context menu of the page.
+        if (IsTouch(e) && NoTouch) return;
+
+        // Only the primary button acts: the secondary one belongs to the context menu of the page.
         if (e.Button != 0) return;
 
-        if (IsShown)
+        // The tap that has just put the tooltip on the screen is not also a click on it, or the same tap
+        // would show the tooltip and take it away again in the one gesture.
+        if (IsTouch(e) && _isShownByTouch)
         {
-            await HideAfterDelay(0);
+            _isShownByTouch = false;
+
+            return;
         }
-        else
+
+        if (ShowOnClick)
         {
-            await ShowAfterDelay(0);
+            if (IsShown)
+            {
+                await HideAfterDelay(0);
+            }
+            else
+            {
+                await ShowAfterDelay(0);
+            }
+
+            return;
         }
+
+        if (HideOnClick is false) return;
+
+        // The pointer that pressed the anchor is still on it, so the hover that showed the tooltip is
+        // given up along with it: nothing is left to put the tooltip back until the pointer leaves and
+        // comes again.
+        _isPointerOver = false;
+
+        await HideAfterDelay(0);
     }
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
@@ -495,25 +718,70 @@ public partial class BitTooltip : BitComponentBase
         if (IsShown is false) return;
         if (e.Key is not "Escape") return;
 
+        // The dismissal has to outlive the pointer and the focus that are still on the anchor, or the
+        // tooltip would be back the moment anything asked the triggers again.
+        _isPointerOver = false;
+        _isFocusFromPointer = true;
+
         await HideAfterDelay(0);
     }
 
     private static bool IsTouch(PointerEventArgs e) => e.PointerType is "touch" or "pen";
 
+    // Nothing is done with the event: it is bound only so that its propagation can be stopped, which is
+    // what keeps a pointer released inside the tooltip from reaching the toggle on the root.
+    private static void SwallowPointerUp(PointerEventArgs e) { }
+
+    // The way the group takes a sibling off the screen. It leaves a tooltip the page itself is driving
+    // alone, since a state that was handed over is not the group's to change, and it gives up the reasons
+    // the tooltip was shown for so that nothing puts it straight back.
+    internal async Task HideFromGroup()
+    {
+        if (IsControlledExternally) return;
+        if (IsShown is false) return;
+
+        _isPointerOver = false;
+        _isFocusWithin = false;
+        _isFocusFromPointer = false;
+
+        await Hide();
+    }
+
     protected override ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return ValueTask.CompletedTask;
+
+        Group?.Unregister(this);
 
         CancelPendingDelays();
 
         return base.DisposeAsync(disposing);
     }
 
+    // The horizontal half of a position swapped for its opposite. The vertical ones are left alone: Top
+    // is the top of the anchor in either direction, and a centred position has no side to swap.
+    private static BitTooltipPosition Mirror(BitTooltipPosition position) => position switch
+    {
+        BitTooltipPosition.TopLeft => BitTooltipPosition.TopRight,
+        BitTooltipPosition.TopRight => BitTooltipPosition.TopLeft,
+        BitTooltipPosition.RightTop => BitTooltipPosition.LeftTop,
+        BitTooltipPosition.Right => BitTooltipPosition.Left,
+        BitTooltipPosition.RightBottom => BitTooltipPosition.LeftBottom,
+        BitTooltipPosition.BottomRight => BitTooltipPosition.BottomLeft,
+        BitTooltipPosition.BottomLeft => BitTooltipPosition.BottomRight,
+        BitTooltipPosition.LeftBottom => BitTooltipPosition.RightBottom,
+        BitTooltipPosition.Left => BitTooltipPosition.Right,
+        BitTooltipPosition.LeftTop => BitTooltipPosition.RightTop,
+        _ => position
+    };
+
     private string GetTooltipClasses()
     {
         var visibility = IsShown ? "bit-ttp-vis " : string.Empty;
 
-        var position = Position switch
+        var placement = MirrorInRtl && Dir == BitDir.Rtl ? Mirror(Position) : Position;
+
+        var position = placement switch
         {
             BitTooltipPosition.Top => "bit-ttp-top",
             BitTooltipPosition.TopLeft => "bit-ttp-tlf",

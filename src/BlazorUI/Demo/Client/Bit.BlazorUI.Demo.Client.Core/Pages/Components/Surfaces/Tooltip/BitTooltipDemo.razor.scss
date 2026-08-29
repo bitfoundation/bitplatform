@@ -48,6 +48,17 @@
     grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
 }
 
+// The accessibility example needs an anchor that is a plain HTML control rather than a component, to
+// show an aria-describedby of the page's own pointed at the id the tooltip renders its text in.
+.plain-anchor {
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    color: var(--bit-clr-fg-pri);
+    border: 1px solid var(--bit-clr-brd-pri);
+    border-radius: var(--bit-shp-radius-button, 0.25rem);
+    background-color: transparent;
+}
+
 .event-log {
     gap: 0.25rem;
     display: flex;

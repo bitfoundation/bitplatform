@@ -14,6 +14,9 @@
     // The nudge that keeps that rotated square centred on the edge it points at. It is a sixth of the
     // arrow, so an arrow given a size of its own keeps the geometry it has at the default one.
     --bit-ttp-arrow-unit: calc(var(--bit-ttp-arrow-size) / 6);
+    // How far an interactive tooltip's bridge reaches back toward its anchor: the gap, plus the pixel
+    // or two that keeps it from landing a fraction short of it.
+    --bit-ttp-bridge: calc(-1 * (var(--bit-ttp-offset) + 2px));
     --bit-ttp-arrow-shadow-color: #{translucent($clr-fg-pri, 10%)};
     // The width a text wraps at instead of the tooltip growing on across the screen.
     --bit-ttp-max-width: #{rem2(320px)};
@@ -25,6 +28,13 @@
     &.bit-dis {
         --bit-ttp-clr-fg: #{$clr-fg-dis};
     }
+}
+
+// The element the tooltip wraps its anchor in is laid out inline, so a block-level anchor inside it
+// would be shrunk to its own content. This is what hands the width back to it.
+.bit-ttp-flw {
+    width: 100%;
+    display: flex;
 }
 
 .bit-ttp-wrp {
@@ -46,6 +56,9 @@
     width: max-content;
     height: max-content;
     max-width: var(--bit-ttp-max-width);
+    // A word longer than the cap - a URL, an identifier - is broken rather than left to run out past the
+    // edge of the surface it is drawn on.
+    overflow-wrap: break-word;
     padding: var(--bit-ttp-padding);
     font-size: var(--bit-ttp-fontsize);
     font-weight: $tg-fw-medium;
@@ -80,14 +93,43 @@
         pointer-events: auto;
     }
 
-    // The bridge reaches a little past the gap on every side, so that it meets the anchor rather than
-    // stopping a subpixel short of it on a fractional layout.
+    // The bridge reaches a little past the gap, so that it meets the anchor rather than stopping a
+    // subpixel short of it on a fractional layout. It is grown on the side the anchor is on and on
+    // that side alone: an all-sided inset would hang the same invisible band off the far edge, where
+    // there is nothing to bridge to and it would do nothing but intercept the pointer.
     .bit-ttp-ctn::before {
         content: '';
         z-index: -1;
         position: absolute;
-        inset: calc(-1 * (var(--bit-ttp-offset) + 2px));
+        inset: var(--bit-ttp-bridge-inset, 0);
     }
+}
+
+// Which side the anchor is on, per placement, written as the four-value inset the bridge takes. The
+// three placements of a family share the gap: a corner placement is shifted along the edge it sits
+// on, so it is still held off its anchor in the one direction.
+.bit-ttp-top,
+.bit-ttp-tlf,
+.bit-ttp-trg {
+    --bit-ttp-bridge-inset: 0 0 var(--bit-ttp-bridge) 0;
+}
+
+.bit-ttp-btm,
+.bit-ttp-blf,
+.bit-ttp-brg {
+    --bit-ttp-bridge-inset: var(--bit-ttp-bridge) 0 0 0;
+}
+
+.bit-ttp-rgt,
+.bit-ttp-rtp,
+.bit-ttp-rbm {
+    --bit-ttp-bridge-inset: 0 0 0 var(--bit-ttp-bridge);
+}
+
+.bit-ttp-lft,
+.bit-ttp-ltp,
+.bit-ttp-lbm {
+    --bit-ttp-bridge-inset: 0 var(--bit-ttp-bridge) 0 0;
 }
 
 .bit-ttp-nan {

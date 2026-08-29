@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Surfaces.Tooltip;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Surfaces.Tooltip;
 
 public partial class BitTooltipDemo
 {
@@ -52,6 +52,13 @@ public partial class BitTooltipDemo
         },
         new()
         {
+            Name = "FullWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Expands the tooltip's own element to 100% of the available width, so that the anchor inside it keeps the width it would have had without a tooltip around it. The tooltip wraps its anchor in an element laid out inline, which would otherwise shrink a block-level anchor to its content."
+        },
+        new()
+        {
             Name = "HideArrow",
             Type = "bool",
             DefaultValue = "false",
@@ -62,7 +69,14 @@ public partial class BitTooltipDemo
             Name = "HideDelay",
             Type = "int",
             DefaultValue = "0",
-            Description = "Delay (in milliseconds) before hiding the tooltip. It is the grace an interactive tooltip needs while the pointer crosses the gap between the anchor and the tooltip, and the pause that keeps a tooltip from flickering while the pointer skims across a row of anchors."
+            Description = "Delay (in milliseconds) before hiding the tooltip. It is the grace an interactive tooltip needs while the pointer crosses the gap between the anchor and the tooltip, and the pause that keeps a tooltip from flickering while the pointer skims across a row of anchors. Leaving it alone inside a BitTooltipGroup takes the delay the group sets."
+        },
+        new()
+        {
+            Name = "HideOnClick",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Hides the tooltip when the anchor is clicked, which is what a tooltip on a control that does something when pressed owes the reader. A tooltip the click is meant to open and close instead is ShowOnClick, which takes over the click when it is on."
         },
         new()
         {
@@ -101,6 +115,13 @@ public partial class BitTooltipDemo
         },
         new()
         {
+            Name = "MirrorInRtl",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Mirrors the position of the tooltip along the horizontal axis while the direction is right to left, so that a position named for one side of the anchor lands on the side the reader starts at. The positions are named for the sides of the screen rather than for the reading order, so Left is the left of the anchor in either direction unless this is turned on."
+        },
+        new()
+        {
             Name = "NoAnimation",
             Type = "bool",
             DefaultValue = "false",
@@ -112,6 +133,13 @@ public partial class BitTooltipDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Keeps the Escape key from dismissing the tooltip. Dismissing content shown on hover or focus without moving either of them is what WCAG 1.4.13 asks for, so only turn it off for a tooltip that obscures nothing."
+        },
+        new()
+        {
+            Name = "NoTouch",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps a touch or a pen from showing the tooltip at all, leaving the anchor to answer the tap alone. Turn it on for a tooltip that only repeats what a touch user can already read."
         },
         new()
         {
@@ -152,31 +180,40 @@ public partial class BitTooltipDemo
         },
         new()
         {
+            Name = "Relationship",
+            Type = "BitTooltipRelationship",
+            DefaultValue = "BitTooltipRelationship.Description",
+            Description = "What the tooltip is to the anchor it belongs to, which decides whether the anchor is given an aria-describedby, an aria-labelledby or neither.",
+            LinkType = LinkType.Link,
+            Href = "#tooltip-relationship-enum"
+        },
+        new()
+        {
             Name = "ShowDelay",
             Type = "int",
             DefaultValue = "0",
-            Description = "Delay (in milliseconds) before showing the tooltip. It applies to the pointer only: a tooltip reached with the keyboard or opened by a click is shown at once."
+            Description = "Delay (in milliseconds) before showing the tooltip. It applies to the pointer only: a tooltip reached with the keyboard or opened by a click is shown at once. Leaving it alone inside a BitTooltipGroup takes the delay the group sets, which the group also drops while another of its tooltips is still fresh in mind."
         },
         new()
         {
             Name = "ShowOnClick",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines shows tooltip on click."
+            Description = "Determines whether the tooltip is shown when the anchor is clicked."
         },
         new()
         {
             Name = "ShowOnFocus",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Determines shows tooltip on focus, so that a tooltip reached with the keyboard is shown the way it is to a pointer."
+            Description = "Determines whether the tooltip is shown when the anchor takes the focus, so that a tooltip reached with the keyboard is shown the way it is to a pointer. A focus that follows a press of the pointer is left to the pointer, the way :focus-visible does it in CSS."
         },
         new()
         {
             Name = "ShowOnHover",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Determines shows tooltip on hover."
+            Description = "Determines shows tooltip on hover. The hover and the focus are kept apart, so a pointer leaving an anchor the keyboard is still on does not take the tooltip away with it."
         },
         new()
         {
@@ -216,6 +253,13 @@ public partial class BitTooltipDemo
             Type = "int",
             DefaultValue = "1500",
             Description = "The time in milliseconds a tooltip shown by a touch stays before it hides itself. A touch leaves no pointer behind that can leave the anchor again. Zero leaves it shown until something else hides it."
+        },
+        new()
+        {
+            Name = "ZIndex",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The stacking order of the tooltip surface and its arrow. Leaving it unset keeps the one the theme gives every popup surface in the library."
         }
     ];
 
@@ -238,6 +282,12 @@ public partial class BitTooltipDemo
             Name = "Toggle",
             Type = "Task",
             Description = "Toggles the tooltip to show/hide it."
+        },
+        new()
+        {
+            Name = "TooltipId",
+            Type = "string",
+            Description = "The id of the element the text of the tooltip is rendered in, which is what an anchor of your own points its aria-describedby or aria-labelledby at."
         }
     ];
 
@@ -326,6 +376,33 @@ public partial class BitTooltipDemo
         },
         new()
         {
+            Id = "tooltip-relationship-enum",
+            Name = "BitTooltipRelationship",
+            Description = "Determines the accessible relationship between a tooltip and the anchor it belongs to.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Description",
+                    Value = "0",
+                    Description = "The tooltip adds information to an anchor that already has a name of its own, and is pointed at with aria-describedby."
+                },
+                new()
+                {
+                    Name = "Label",
+                    Value = "1",
+                    Description = "The tooltip is the name of an anchor that has none of its own - an icon-only button, above all - and is pointed at with aria-labelledby."
+                },
+                new()
+                {
+                    Name = "None",
+                    Value = "2",
+                    Description = "The tooltip is left out of the accessibility tree altogether, for the case where the anchor already carries the same text by another route."
+                }
+            ]
+        },
+        new()
+        {
             Id = "color-enum",
             Name = "BitColor",
             Description = "Defines the general colors available in the bit BlazorUI.",
@@ -366,6 +443,50 @@ public partial class BitTooltipDemo
 
     private readonly List<ComponentSubClass> componentSubClasses =
     [
+        new()
+        {
+            Id = "tooltip-group",
+            Title = "BitTooltipGroup",
+            Description = "Groups the tooltips inside it so that they share their delays, so that the second of them is shown without its delay while the first is still fresh in mind, and so that only one of them is on the screen at a time. It renders nothing of its own.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "AllowMultiple",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Lets more than one tooltip of the group be on the screen at a time. A group shows one tooltip at a time by default, which is what a row of controls with a tooltip each needs."
+                },
+                new()
+                {
+                    Name = "ChildContent",
+                    Type = "RenderFragment?",
+                    DefaultValue = "null",
+                    Description = "The tooltips the group is around."
+                },
+                new()
+                {
+                    Name = "HideDelay",
+                    Type = "int?",
+                    DefaultValue = "null",
+                    Description = "The delay in milliseconds before hiding, for every tooltip in the group that does not set one of its own."
+                },
+                new()
+                {
+                    Name = "ShowDelay",
+                    Type = "int?",
+                    DefaultValue = "null",
+                    Description = "The delay in milliseconds before showing, for every tooltip in the group that does not set one of its own."
+                },
+                new()
+                {
+                    Name = "SkipDelay",
+                    Type = "int",
+                    DefaultValue = "300",
+                    Description = "How long in milliseconds after a tooltip of the group has been hidden another one of them is shown at once rather than waiting out the show delay. Zero makes every tooltip wait out its own delay."
+                }
+            ]
+        },
         new()
         {
             Id = "tooltip-class-styles",
@@ -421,6 +542,7 @@ public partial class BitTooltipDemo
     private bool showOnClick = true;
     private bool showOnHover;
     private bool showOnFocus;
+    private bool hideOnClick;
     private bool hideArrow;
     private bool interactive;
     private double showDelay = 0;
@@ -490,6 +612,14 @@ public partial class BitTooltipDemo
 
 <BitTooltip Text=""Toggled by a click"" ShowOnClick ShowOnHover=""false"" ShowOnFocus=""false"">
     <BitButton Variant=""BitVariant.Outline"">Click</BitButton>
+</BitTooltip>
+
+<BitTooltip Text=""A click takes me away"" HideOnClick>
+    <BitButton Variant=""BitVariant.Outline"">HideOnClick</BitButton>
+</BitTooltip>
+
+<BitTooltip Text=""A tap leaves me out of it"" NoTouch>
+    <BitButton Variant=""BitVariant.Outline"">NoTouch</BitButton>
 </BitTooltip>";
 
     private readonly string example4RazorCode = @"
@@ -502,6 +632,25 @@ public partial class BitTooltipDemo
 </BitTooltip>";
 
     private readonly string example5RazorCode = @"
+<BitTooltipGroup ShowDelay=""700"" HideDelay=""100"" SkipDelay=""600"">
+    <BitTooltip Text=""Waited for, like the first of a row"">
+        <BitButton Variant=""BitVariant.Outline"">Bold</BitButton>
+    </BitTooltip>
+
+    <BitTooltip Text=""Shown at once, while the last one is fresh"">
+        <BitButton Variant=""BitVariant.Outline"">Italic</BitButton>
+    </BitTooltip>
+
+    <BitTooltip Text=""And so is this one"">
+        <BitButton Variant=""BitVariant.Outline"">Underline</BitButton>
+    </BitTooltip>
+
+    <BitTooltip Text=""I keep the delay I was given"" ShowDelay=""0"">
+        <BitButton Variant=""BitVariant.Outline"">No delay of my own</BitButton>
+    </BitTooltip>
+</BitTooltipGroup>";
+
+    private readonly string example6RazorCode = @"
 <BitTooltip DefaultIsShown=""true"" Text=""Default"">
     <BitButton Variant=""BitVariant.Outline"">Default</BitButton>
 </BitTooltip>
@@ -518,7 +667,7 @@ public partial class BitTooltipDemo
     <BitButton Variant=""BitVariant.Outline"">Offset</BitButton>
 </BitTooltip>";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitTooltip Interactive HideDelay=""200"" Position=""BitTooltipPosition.Bottom""
             Text=""Move onto me and I will stay. Select this text."">
     <BitButton Variant=""BitVariant.Outline"">Interactive</BitButton>
@@ -529,7 +678,7 @@ public partial class BitTooltipDemo
     <BitButton Variant=""BitVariant.Outline"">Not interactive</BitButton>
 </BitTooltip>";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitTooltip>
     <Template>
         <ul style=""padding: 0.5rem; margin: 0;"">
@@ -542,7 +691,7 @@ public partial class BitTooltipDemo
     </Anchor>
 </BitTooltip>";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitTooltip DefaultIsShown=""true"" Position=""BitTooltipPosition.Bottom"" MaxWidth=""10rem""
             Text=""A narrow tooltip wraps its text sooner."">
     <BitButton Variant=""BitVariant.Outline"">10rem</BitButton>
@@ -553,7 +702,7 @@ public partial class BitTooltipDemo
     <BitButton Variant=""BitVariant.Outline"">Default</BitButton>
 </BitTooltip>";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitTooltip Text=""Press Escape to dismiss me"">
     <BitButton Variant=""BitVariant.Outline"">Dismissible</BitButton>
 </BitTooltip>
@@ -562,10 +711,23 @@ public partial class BitTooltipDemo
     <BitButton Variant=""BitVariant.Outline"">NoDismissOnEscape</BitButton>
 </BitTooltip>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
+<BitTooltip Text=""Save the current document"" Relationship=""BitTooltipRelationship.Label"">
+    <BitButton Variant=""BitVariant.Outline"" IconName=""@BitIconName.Save"" />
+</BitTooltip>
+
+<BitTooltip Text=""Everything you have written since the last save"">
+    <BitButton Variant=""BitVariant.Outline"">Save</BitButton>
+</BitTooltip>
+
+<BitTooltip Id=""discard-tip"" Text=""Discard"" Relationship=""BitTooltipRelationship.None"">
+    <button class=""plain-anchor"" aria-describedby=""discard-tip-ttp"">Discard</button>
+</BitTooltip>";
+
+    private readonly string example12RazorCode = @"
 <BitTooltip LazyRender Position=""BitTooltipPosition.Bottom"">
     <Template>
-        <div>Rendered at @DateTime.Now.ToString(""HH:mm:ss"")</div>
+        <TooltipRenderStamp />
     </Template>
     <Anchor>
         <BitButton Variant=""BitVariant.Outline"">LazyRender</BitButton>
@@ -574,14 +736,27 @@ public partial class BitTooltipDemo
 
 <BitTooltip Position=""BitTooltipPosition.Bottom"">
     <Template>
-        <div>Rendered at @DateTime.Now.ToString(""HH:mm:ss"")</div>
+        <TooltipRenderStamp />
     </Template>
     <Anchor>
         <BitButton Variant=""BitVariant.Outline"">Rendered up front</BitButton>
     </Anchor>
-</BitTooltip>";
+</BitTooltip>
 
-    private readonly string example11RazorCode = @"
+@* TooltipRenderStamp.razor - the stamp is taken once, while the content is first rendered, rather
+   than on every rerender of the tooltip. *@
+<div>Rendered at @renderedAt.ToString(""HH:mm:ss"")</div>
+
+@code {
+    private DateTime renderedAt;
+
+    protected override void OnInitialized()
+    {
+        renderedAt = DateTime.Now;
+    }
+}";
+
+    private readonly string example13RazorCode = @"
 <BitToggle @bind-Value=""isShown"" Label=""IsShown"" />
 
 <BitTooltip DefaultIsShown=""true"" Text=""Shown to begin with"" Position=""BitTooltipPosition.Bottom"">
@@ -591,10 +766,10 @@ public partial class BitTooltipDemo
 <BitTooltip @bind-IsShown=""isShown"" Text=""Bound to the toggle"" Position=""BitTooltipPosition.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">@bind-IsShown</BitButton>
 </BitTooltip>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private bool isShown = true;";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitButton Variant=""BitVariant.Outline"" OnClick=""@(() => tooltipRef?.Show())"">Show</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""@(() => tooltipRef?.Hide())"">Hide</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""@(() => tooltipRef?.Toggle())"">Toggle</BitButton>
@@ -602,10 +777,10 @@ private bool isShown = true;";
 <BitTooltip @ref=""tooltipRef"" Text=""Driven from the buttons above"" Position=""BitTooltipPosition.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">Anchor</BitButton>
 </BitTooltip>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private BitTooltip? tooltipRef;";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitTooltip Text=""Watch the log below""
             OnShow=""@(() => events.Insert(0, $""OnShow at {DateTime.Now:HH:mm:ss}""))""
             OnHide=""@(() => events.Insert(0, $""OnHide at {DateTime.Now:HH:mm:ss}""))""
@@ -617,10 +792,10 @@ private BitTooltip? tooltipRef;";
 {
     <div>@item</div>
 }";
-    private readonly string example13CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private readonly List<string> events = [];";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitTooltip @bind-IsShown=""isShownAdvanced""
             Text=""Text""
             Interactive=""interactive""
@@ -630,6 +805,7 @@ private readonly List<string> events = [];";
             ShowOnClick=""showOnClick""
             ShowOnHover=""showOnHover""
             ShowOnFocus=""showOnFocus""
+            HideOnClick=""hideOnClick""
             Position=""tooltipPosition"">
     <BitButton Variant=""BitVariant.Outline"">Anchor</BitButton>
 </BitTooltip>
@@ -642,12 +818,14 @@ private readonly List<string> events = [];";
 <BitToggle @bind-Value=""interactive"" Text=""Interactive tooltip"" />
 <BitToggle @bind-Value=""showOnClick"" Text=""Show tooltip on click"" />
 <BitToggle @bind-Value=""showOnHover"" Text=""Show tooltip on hover"" />
-<BitToggle @bind-Value=""showOnFocus"" Text=""Show tooltip on focus"" />";
-    private readonly string example14CsharpCode = @"
+<BitToggle @bind-Value=""showOnFocus"" Text=""Show tooltip on focus"" />
+<BitToggle @bind-Value=""hideOnClick"" Text=""Hide tooltip on click"" />";
+    private readonly string example16CsharpCode = @"
 private bool isShownAdvanced = true;
 private bool showOnClick = true;
 private bool showOnHover;
 private bool showOnFocus;
+private bool hideOnClick;
 private bool hideArrow;
 private bool interactive;
 private double showDelay = 0;
@@ -664,7 +842,7 @@ private readonly List<BitDropdownItem<BitTooltipPosition>> tooltipPositionList =
     })
     .ToList();";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitTooltip DefaultIsShown=""true"" Color=""BitColor.Primary"" Text=""Primary"" Position=""BitTooltipPosition.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">Primary</BitButton>
 </BitTooltip>
@@ -692,14 +870,32 @@ private readonly List<BitDropdownItem<BitTooltipPosition>> tooltipPositionList =
 <BitTooltip DefaultIsShown=""true"" Color=""BitColor.PrimaryBackground"" Text=""PrimaryBackground"" Position=""BitTooltipPosition.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">PrimaryBackground</BitButton>
 </BitTooltip>
+<BitTooltip DefaultIsShown=""true"" Color=""BitColor.SecondaryBackground"" Text=""SecondaryBackground"" Position=""BitTooltipPosition.Bottom"">
+    <BitButton Variant=""BitVariant.Outline"">SecondaryBackground</BitButton>
+</BitTooltip>
+<BitTooltip DefaultIsShown=""true"" Color=""BitColor.TertiaryBackground"" Text=""TertiaryBackground"" Position=""BitTooltipPosition.Bottom"">
+    <BitButton Variant=""BitVariant.Outline"">TertiaryBackground</BitButton>
+</BitTooltip>
 <BitTooltip DefaultIsShown=""true"" Color=""BitColor.PrimaryForeground"" Text=""PrimaryForeground"" Position=""BitTooltipPosition.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">PrimaryForeground</BitButton>
 </BitTooltip>
+<BitTooltip DefaultIsShown=""true"" Color=""BitColor.SecondaryForeground"" Text=""SecondaryForeground"" Position=""BitTooltipPosition.Bottom"">
+    <BitButton Variant=""BitVariant.Outline"">SecondaryForeground</BitButton>
+</BitTooltip>
+<BitTooltip DefaultIsShown=""true"" Color=""BitColor.TertiaryForeground"" Text=""TertiaryForeground"" Position=""BitTooltipPosition.Bottom"">
+    <BitButton Variant=""BitVariant.Outline"">TertiaryForeground</BitButton>
+</BitTooltip>
 <BitTooltip DefaultIsShown=""true"" Color=""BitColor.PrimaryBorder"" Text=""PrimaryBorder"" Position=""BitTooltipPosition.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">PrimaryBorder</BitButton>
+</BitTooltip>
+<BitTooltip DefaultIsShown=""true"" Color=""BitColor.SecondaryBorder"" Text=""SecondaryBorder"" Position=""BitTooltipPosition.Bottom"">
+    <BitButton Variant=""BitVariant.Outline"">SecondaryBorder</BitButton>
+</BitTooltip>
+<BitTooltip DefaultIsShown=""true"" Color=""BitColor.TertiaryBorder"" Text=""TertiaryBorder"" Position=""BitTooltipPosition.Bottom"">
+    <BitButton Variant=""BitVariant.Outline"">TertiaryBorder</BitButton>
 </BitTooltip>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitTooltip DefaultIsShown=""true"" Size=""BitSize.Small"" Text=""Small"" Position=""BitTooltipPosition.Bottom"">
     <BitButton Variant=""BitVariant.Outline"">Small</BitButton>
 </BitTooltip>
@@ -712,7 +908,7 @@ private readonly List<BitDropdownItem<BitTooltipPosition>> tooltipPositionList =
     <BitButton Variant=""BitVariant.Outline"">Large</BitButton>
 </BitTooltip>";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example19RazorCode = @"
 <style>
     .custom-tooltip {
         color: tomato;
@@ -737,9 +933,21 @@ private readonly List<BitDropdownItem<BitTooltipPosition>> tooltipPositionList =
 
 <BitTooltip Text=""No fade in or out"" NoAnimation>
     <BitButton Variant=""BitVariant.Outline"">Hover over me</BitButton>
+</BitTooltip>
+
+<BitTooltip Text=""Lifted over what is around me"" ZIndex=""9999"">
+    <BitButton Variant=""BitVariant.Outline"">Hover over me</BitButton>
+</BitTooltip>
+
+<BitTooltip FullWidth Text=""The field keeps the width it was given"">
+    <BitTextField Label=""With FullWidth"" Placeholder=""Hover over me"" />
+</BitTooltip>
+
+<BitTooltip Text=""The field is shrunk to what it holds"">
+    <BitTextField Label=""Without FullWidth"" Placeholder=""Hover over me"" />
 </BitTooltip>";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitTooltip Dir=""BitDir.Rtl"">
     <Template>
         <ul style=""padding: 0.5rem; margin: 0;"">
@@ -750,5 +958,15 @@ private readonly List<BitDropdownItem<BitTooltipPosition>> tooltipPositionList =
     <Anchor>
         <BitButton Variant=""BitVariant.Outline"">نشانگر ماوس را روی من بیاورید</BitButton>
     </Anchor>
+</BitTooltip>
+
+<BitTooltip Dir=""BitDir.Rtl"" DefaultIsShown=""true"" Position=""BitTooltipPosition.Left""
+            Text=""سمت چپ لنگر"">
+    <BitButton Variant=""BitVariant.Outline"">Left</BitButton>
+</BitTooltip>
+
+<BitTooltip Dir=""BitDir.Rtl"" DefaultIsShown=""true"" Position=""BitTooltipPosition.Left"" MirrorInRtl
+            Text=""آینه‌شده به سمت راست"">
+    <BitButton Variant=""BitVariant.Outline"">Left + MirrorInRtl</BitButton>
 </BitTooltip>";
 }
