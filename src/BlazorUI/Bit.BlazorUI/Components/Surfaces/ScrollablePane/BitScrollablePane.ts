@@ -1215,10 +1215,18 @@
                 vy: 0,
             };
 
-            // The rest of the gesture is listened for on the DOCUMENT and only for as long as it lasts. On
-            // the element it would be missed altogether by a pointer that leaves the pane before it has
-            // travelled the few pixels that take the capture and is released outside - which leaves a drag
-            // standing that the next movement across the pane, with no button held at all, would take up.
+            // The pointer is taken here, on the press, rather than once the drag has passed its threshold:
+            // the few pixels before that are exactly the ones a quick press can cross while the pointer is
+            // already outside the pane, and a capture asked for then is one the element never gets. It
+            // costs a press that turns out to be a plain click nothing, since the element the pointer is
+            // captured to is the one the press landed in either way, and it is released again on the way
+            // out whether the drag ever moved or not.
+            try { this._element.setPointerCapture(e.pointerId); } catch { /* the pointer is already gone */ }
+
+            // The rest of the gesture is listened for on the DOCUMENT and only for as long as it lasts,
+            // rather than on the element, so that a capture the browser refused or dropped still leaves a
+            // release to be heard - without which a drag would be left standing by a button let go outside
+            // the pane, for the next movement across it, with nothing held at all, to take up.
             const ac = new AbortController();
             this._draggingAbortController = ac;
 
@@ -1249,8 +1257,6 @@
                 drag.moved = true;
 
                 this._element.setAttribute('data-bit-scp-drag', '');
-
-                try { this._element.setPointerCapture(drag.id); } catch { /* the pointer is already gone */ }
             }
 
             // The default of a pointer move over text is a selection, which is not what a drag of the pane
@@ -1294,11 +1300,13 @@
             this._draggingAbortController?.abort();
             this._draggingAbortController = undefined;
 
+            // The capture was taken on the press, so it is given back on every release and not only on the
+            // ones a drag came of.
+            try { this._element.releasePointerCapture(drag.id); } catch { /* the pointer is already gone */ }
+
             if (drag.moved === false) return;
 
             this._element.removeAttribute('data-bit-scp-drag');
-
-            try { this._element.releasePointerCapture(drag.id); } catch { /* the pointer is already gone */ }
 
             // The click a real drag ends with belongs to the drag, not to whatever card or link happened
             // to be under the pointer when it stopped. It is swallowed on the way down, and the listener

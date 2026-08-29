@@ -376,6 +376,8 @@ public class BitScrollablePaneTests : BunitTestContext
         var style = StyleOf(component);
 
         // An explicitly Auto axis has to be written out, or it would keep whatever the shorthand set.
+        Assert.IsTrue(style.Contains("overflow:scroll"));
+        Assert.IsTrue(style.Contains("overflow-x:auto"));
         Assert.IsTrue(style.IndexOf("overflow:scroll") < style.IndexOf("overflow-x:auto"));
     }
 
@@ -406,6 +408,8 @@ public class BitScrollablePaneTests : BunitTestContext
 
         var style = StyleOf(component);
 
+        Assert.IsTrue(style.Contains("overflow-y:hidden"));
+        Assert.IsTrue(style.Contains("overflow-y:auto"));
         Assert.IsTrue(style.IndexOf("overflow-y:hidden") < style.IndexOf("overflow-y:auto"));
     }
 
@@ -420,6 +424,8 @@ public class BitScrollablePaneTests : BunitTestContext
 
         var style = StyleOf(component);
 
+        Assert.IsTrue(style.Contains("overflow:scroll"));
+        Assert.IsTrue(style.Contains("overflow:hidden"));
         Assert.IsTrue(style.IndexOf("overflow:scroll") < style.IndexOf("overflow:hidden"));
     }
 

@@ -1120,6 +1120,7 @@ public partial class BitScrollablePane : BitComponentBase
                 await _js.BitScrollablePaneDispose(_jsId!);
             }
             catch (JSDisconnectedException) { } // circuit gone; nothing to tear down
+            catch (ObjectDisposedException) { } // the component went away mid-call
         }
 
         _jsId = null;
