@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
   <!-- 
@@ -1731,9 +1731,6 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <data name="LeaveTenantConfirmMessage" xml:space="preserve">
     <value>Sind Sie sicher, dass Sie den Mandanten {0} verlassen möchten?</value>
   </data>
-    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
-    <value>Sie haben den Mandanten erfolgreich verlassen.</value>
-  </data>
     <data name="SwitchTenant" xml:space="preserve">
     <value>Mandant wechseln</value>
   </data>
@@ -1809,9 +1806,6 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
     <value>Die Einladung zu {0} ablehnen? Dies kann nicht rückgängig gemacht werden - Sie benötigen eine neue Einladung, um beizutreten.</value>
   </data>
-  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
-    <value>Einladung abgelehnt.</value>
-  </data>
   <!--#endif-->
     <data name="TimeZone" xml:space="preserve">
     <value>Zeitzone</value>
@@ -1821,6 +1815,9 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   </data>
     <data name="FindTimeZone" xml:space="preserve">
     <value>Zeitzone suchen</value>
+  </data>
+    <data name="NoTimeZoneMatchesSearchMessage" xml:space="preserve">
+    <value>Keine Zeitzone entspricht Ihrer Suche.</value>
   </data>
   <!--#if (notification == true) -->
     <data name="PushNotifications" xml:space="preserve">

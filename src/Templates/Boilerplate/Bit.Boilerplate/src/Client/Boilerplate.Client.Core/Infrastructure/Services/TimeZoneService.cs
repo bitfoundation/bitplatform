@@ -88,6 +88,8 @@ public partial class TimeZoneService
 
         await ApplyPreferredTimeZone();
 
-        pubSubService.Publish(ClientAppMessages.TIME_ZONE_CHANGED, timeZoneId);
+        // Every rendered date/time was formatted in the previous zone, and they are spread across the layout, the
+        // current page and whatever else is on screen - so the whole tree is rebuilt rather than each subscribing.
+        pubSubService.Publish(ClientAppMessages.SOFT_RESTART);
     }
 }

@@ -8,12 +8,12 @@ public partial class TimeZoneSelectionUITests : AppPageTest
     /// <list type="number">
     /// <item>Open the public home page - no sign-in needed - and open the app-menu's "Time zone" panel. Like the
     /// culture and tenant panels it is a sub-panel of the same drop-menu, but this list holds hundreds of entries,
-    /// so it carries a search box (See <c>AppMenu.ShowTimeZones</c>).</item>
+    /// so it is virtualized and carries a search box (See <c>AppMenu.ShowTimeZones</c>).</item>
     /// <item>Search for a zone other than the device's current one and pick the first hit. Selecting stores the zone
     /// id on the device under the raw <c>time-zone</c> key (See <c>TimeZoneService.ChangeTimeZone</c> and
     /// <c>WebStorageService</c>), which is what makes it work without any signed-in user.</item>
-    /// <item>Picking a zone hands control back to the main menu panel and refreshes the current page, the way the
-    /// tenant panel does (See <c>AppMenu.OnTimeZoneChanged</c>).</item>
+    /// <item>Picking a zone soft restarts the app, so every date/time is re-rendered in the new zone and the menu
+    /// comes back closed rather than on its main panel (See <c>ClientAppMessages.SOFT_RESTART</c>).</item>
     /// <item>Reload the page, reopen the panel, and assert the stored zone is the one the list shows as selected -
     /// and that it leads the list, which is how the panel presents the current zone.</item>
     /// </list>
@@ -31,12 +31,12 @@ public partial class TimeZoneSelectionUITests : AppPageTest
 
         await OpenTimeZonePanel(callout);
 
-        // The panel opens on the device's own zone, and clicking an already-checked radio fires no change - so the
+        // The panel opens on the device's own zone, and clicking the already selected row changes nothing - so the
         // test must pick a zone that is NOT the current one. Both terms exist in both spellings the list can carry
-        // (the Windows display names "(UTC+03:30) Tehran" / "(UTC+09:00) Osaka, Sapporo, Tokyo" and the IANA ids
-        // "Asia/Tehran" / "Asia/Tokyo"), so the pick is host-OS agnostic.
+        // (the Windows display names "(UTC+03:30) Tehran" / "(UTC+09:00) Osaka, Sapporo, Tokyo" and the IANA ids,
+        // shown without their area: "Tehran" / "Tokyo"), so the pick is host-OS agnostic.
         var currentZone = await Page.EvaluateAsync<string?>(
-            "() => document.querySelector('.app-menu-callout input.bit-chg-inp:checked')?.value");
+            "() => document.querySelector('.app-menu-callout .time-zone-item[aria-checked=\"true\"]')?.innerText");
         var searchTerm = currentZone?.Contains("Tokyo", StringComparison.OrdinalIgnoreCase) is true ? "Tehran" : "Tokyo";
 
         // Narrow the hundreds of zones down through the panel's search box. The full list also contains the match,
@@ -44,17 +44,16 @@ public partial class TimeZoneSelectionUITests : AppPageTest
         // replace, losing the click - waiting for the list to shrink is what proves the filtered render is on screen.
         await callout.GetByPlaceholder(AppStrings.FindTimeZone).FillAsync(searchTerm);
         await Page.WaitForFunctionAsync(
-            "() => { const n = document.querySelectorAll('.app-menu-callout input.bit-chg-inp').length; return n >= 1 && n <= 5; }");
+            "() => { const n = document.querySelectorAll('.app-menu-callout .time-zone-item').length; return n >= 1 && n <= 5; }");
 
-        // The first filtered label pairs with the first filtered input, whose value is the id the click selects.
-        var pickedZoneId = await Page.EvaluateAsync<string?>(
-            "() => document.querySelector('.app-menu-callout input.bit-chg-inp')?.value");
+        var pickedZoneText = await Page.EvaluateAsync<string?>(
+            "() => document.querySelector('.app-menu-callout .time-zone-item')?.innerText.trim()");
 
-        await callout.Locator("label.bit-chg-itl", new() { HasText = searchTerm }).First.ClickAsync();
+        await callout.Locator(".time-zone-item").First.ClickAsync();
 
         // The selection is persisted on the device under the raw `time-zone` key - canonicalized to the IANA id, which
         // can differ from the id of the clicked (e.g. Windows) list entry (See TimeZoneService.ChangeTimeZone).
-        // Picking also refreshes the current page (See AppMenu.OnTimeZoneChanged), so let that settle before reloading.
+        // Picking also soft restarts the app, so let that settle before reloading.
         var persistedTimeZoneId = (await Page.WaitForFunctionAsync("() => localStorage.getItem('time-zone')")).ToString();
         Assert.IsFalse(string.IsNullOrEmpty(persistedTimeZoneId), "Picking a time zone should persist its id in localStorage.");
         await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
@@ -64,17 +63,18 @@ public partial class TimeZoneSelectionUITests : AppPageTest
 
         await OpenTimeZonePanel(callout);
 
-        var selectedValueAfterReload = await Page.EvaluateAsync<string?>(
-            "() => document.querySelector('.app-menu-callout input.bit-chg-inp:checked')?.value");
+        var selectedTextAfterReload = await Page.EvaluateAsync<string?>(
+            "() => document.querySelector('.app-menu-callout .time-zone-item[aria-checked=\"true\"]')?.innerText.trim()");
 
-        Assert.AreEqual(pickedZoneId, selectedValueAfterReload,
+        Assert.AreEqual(pickedZoneText, selectedTextAfterReload,
             $"Reopening the time zone panel after a refresh must show the previously picked zone as selected (persisted as '{persistedTimeZoneId}').");
 
-        // The current zone leads the list, so it never has to be searched for to be seen.
-        var firstListedValue = await Page.EvaluateAsync<string?>(
-            "() => document.querySelector('.app-menu-callout input.bit-chg-inp')?.value");
+        // The current zone leads the list, so it never has to be searched for. Virtualization renders the rows
+        // around the top of the scroll region, so the leading one is always among them.
+        var firstListedText = await Page.EvaluateAsync<string?>(
+            "() => document.querySelector('.app-menu-callout .time-zone-item')?.innerText.trim()");
 
-        Assert.AreEqual(selectedValueAfterReload, firstListedValue,
+        Assert.AreEqual(selectedTextAfterReload, firstListedText,
             "The current time zone must be the first entry of the list.");
     }
 
@@ -90,6 +90,6 @@ public partial class TimeZoneSelectionUITests : AppPageTest
 
         await callout.GetByRole(AriaRole.Button, new() { Name = AppStrings.TimeZone }).ClickAsync();
         await Expect(callout.GetByPlaceholder(AppStrings.FindTimeZone)).ToBeVisibleAsync();
-        await Expect(callout.Locator("input.bit-chg-inp").First).ToBeAttachedAsync();
+        await Expect(callout.Locator(".time-zone-item").First).ToBeVisibleAsync();
     }
 }

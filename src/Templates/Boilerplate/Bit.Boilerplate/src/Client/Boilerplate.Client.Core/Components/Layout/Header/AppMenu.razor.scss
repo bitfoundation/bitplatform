@@ -3,14 +3,16 @@
 
 ::deep {
     .app-menu-callout {
-        min-width: 225px;
+        width: 20rem;
+        max-width: calc(100vw - 1rem);
 
         @include lt-sm {
             height: unset;
             box-shadow: none;
+            width: min(20rem, 75vw);
             top: $bit-env-inset-top !important;
             bottom: $bit-env-inset-bottom !important;
-            inset-inline-end: $bit-env-inset-inline-start !important;
+            inset-inline-end: $bit-env-inset-inline-end !important;
         }
     }
 
@@ -38,8 +40,43 @@
 
     .time-zone-list {
         width: 100%;
-        overflow-y: auto;
-        max-height: min(50vh, 400px);
+        height: min(50vh, 25rem);
+
+        @include lt-sm {
+            height: calc(100vh - 9rem);
+            height: calc(100dvh - 9rem);
+        }
+    }
+
+    .time-zone-item {
+        height: 44px;
+        flex-shrink: 0;
+        align-items: center;
+        padding: 0 0.5rem;
+
+        .bit-acb-inn {
+            width: 100%;
+        }
+    }
+
+    .time-zone-item-text {
+        overflow: hidden;
+        direction: ltr;
+        text-align: start;
+        -webkit-line-clamp: 2;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        font-size: $bit-typography-body2-font-size;
+        line-height: 1.25rem;
+
+        &.selected {
+            font-weight: bold;
+        }
+    }
+
+    .time-zone-empty {
+        display: block;
+        padding: 1rem 0.5rem;
     }
 
     .accent-color-switcher {

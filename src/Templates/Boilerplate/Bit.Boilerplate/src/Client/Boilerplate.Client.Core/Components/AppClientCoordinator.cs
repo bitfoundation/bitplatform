@@ -159,8 +159,7 @@ public partial class AppClientCoordinator : AppComponentBase
 
             //#if (brouter == true)
             // KeepAlive routes are hidden rather than disposed, so a retained page would otherwise hand the next
-            // principal the previous one's search text and grid filters. This is what makes a full page reload
-            // unnecessary after a tenant switch (see NavigationManagerExtensions.RefreshCurrentPage).
+            // principal the previous one's search text and grid filters.
             brouter.ClearKeepAlive();
             //#endif
 
