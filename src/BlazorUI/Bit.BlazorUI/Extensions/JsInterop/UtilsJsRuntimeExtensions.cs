@@ -124,6 +124,30 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // Hands the wheel and the touch drag that land on the popup registered under the given key to the given
+    // scroller, for the popups that cover the page without holding it: their layer is fixed to the viewport,
+    // so a gesture on it is chained to the document rather than to the region an application shell scrolls.
+    internal static ValueTask BitUtilsForwardScroll(this IJSRuntime jsRuntime, string key, string rootId, string? selector = null)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.forwardScroll", key, rootId, selector);
+    }
+
+    // The same forwarding, aimed at an element the caller already has a reference to rather than at one named
+    // by a selector - the scroller of an application shell, first of all.
+    internal static ValueTask BitUtilsForwardScroll(this IJSRuntime jsRuntime, string key, string rootId, ElementReference scroller)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.forwardScroll", key, rootId, scroller);
+    }
+
+
+    // Takes back the gesture forwarding registered under the given key.
+    internal static ValueTask BitUtilsStopForwardScroll(this IJSRuntime jsRuntime, string key)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.stopForwardScroll", key);
+    }
+
+
+
     internal static ValueTask BitUtilsPreventDefaultKeys(this IJSRuntime jsRuntime, string elementId, string[] keys)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.preventDefaultKeys", elementId, keys);

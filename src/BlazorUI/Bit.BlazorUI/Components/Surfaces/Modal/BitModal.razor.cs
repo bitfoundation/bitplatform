@@ -29,6 +29,12 @@ public partial class BitModal : BitComponentBase
     // The element the current hold was taken on, for the same reason and for the holds taken on an element
     // rather than on a selector - the scroller of an application shell, first of all.
     private ElementReference? _lockedScrollerElement;
+    // Whether the gestures that land on the Modal are being handed to the scroller behind it, and what they
+    // are being handed to - recorded for the same reason the hold above records what it took: a Modal aimed
+    // somewhere else while it is open has to take the registration back and make it again.
+    private bool _scrollForwarded;
+    private string? _forwardedScrollerSelector;
+    private ElementReference? _forwardedScrollerElement;
     private bool _hasBeenOpened;
     private bool _contentFocused;
     private string _containerId = default!;
@@ -412,6 +418,13 @@ public partial class BitModal : BitComponentBase
     /// place, since it is meant to leave what is behind it usable, and a Modal that does its own scroll
     /// handling through <see cref="AutoToggleScroll"/> holds its scroller itself, so this hold is stood down
     /// for it whether or not this is set.
+    /// <br/>
+    /// The layer the Modal is drawn in is fixed to the viewport, so the wheel and the touch drag that
+    /// land on it are chained to the document rather than to whatever region the app scrolls: they are
+    /// handed to that region - the one <see cref="ScrollerElement"/> or <see cref="ScrollerSelector"/>
+    /// names, or the scroller of the application shell the Modal is inside of - for as long as a Modal
+    /// that leaves the page scrolling is open, so that the page moves under the gesture the way it would
+    /// with no Modal over it. Anything inside the Modal that scrolls itself takes its own gestures first.
     /// </remarks>
     [Parameter] public bool NoScrollLock { get; set; }
 
@@ -709,6 +722,23 @@ public partial class BitModal : BitComponentBase
             await UnlockScroll();
         }
 
+        // As with the hold, the forwarding is registered against the scroller it was aimed at when it was
+        // made, so a Modal aimed somewhere else while it is open takes it back and makes it again.
+        if (_scrollForwarded && (_forwardedScrollerSelector != _params.ScrollerSelector ||
+                                 Nullable.Equals(_forwardedScrollerElement, ScrollerElementTarget) is false))
+        {
+            await StopForwardScroll();
+        }
+
+        if (ShouldForwardScroll)
+        {
+            await ForwardScroll();
+        }
+        else
+        {
+            await StopForwardScroll();
+        }
+
         await FocusContent();
     }
 
@@ -746,6 +776,8 @@ public partial class BitModal : BitComponentBase
 
         await LockScroll();
 
+        await ForwardScroll();
+
         await SetupDrag();
 
         // Reset before ToggleScroll: a Modal that no longer toggles the scroll returns early from it and
@@ -774,6 +806,8 @@ public partial class BitModal : BitComponentBase
         await DisposeFocusTrap();
 
         await UnlockScroll();
+
+        await StopForwardScroll();
 
         await RemoveDrag();
 
@@ -994,6 +1028,23 @@ public partial class BitModal : BitComponentBase
                                      && IsAriaModal
                                      && IsShown;
 
+    // Whether the gestures that land on the Modal are the page's rather than nobody's. A Modal that leaves
+    // the page scrolling still covers it with an overlay, and the layer that overlay sits in is fixed to the
+    // viewport: the wheel and the touch drag that land on it are chained to the document, which in an
+    // application shell - or in any layout that scrolls a region of its own - is not the thing that scrolls,
+    // so the gesture reaches nothing at all and the page reads as held by a Modal that holds nothing. It is
+    // handed to that region by hand instead, for as long as such a Modal is open.
+    // Only the Modal showing the overlay needs it: a modeless one lets the pointer through to the page,
+    // which takes its own gestures. Only the Modal holding nothing wants it: one holding the page has
+    // nothing to forward, and one that took the overflow off its scroller (AutoToggleScroll) means that
+    // scroller to stay still, so moving it from here would undo what it did. And only the Modal aimed at a
+    // scroller of its own can use it: the page is what the browser already chains to.
+    private bool ShouldForwardScroll => ShowsOverlay
+                                        && IsShown
+                                        && ShouldLockScroll is false
+                                        && (_params.AutoToggleScroll ?? false) is false
+                                        && (ScrollerElementTarget.HasValue || _params.ScrollerSelector.HasValue());
+
     // A Modal that was taken out of view carries none of the behaviors that only make sense for one the user
     // can see: it neither holds the keyboard nor the page behind it.
     private bool IsShown => Visibility == BitVisibility.Visible;
@@ -1118,6 +1169,49 @@ public partial class BitModal : BitComponentBase
         try
         {
             await _js.BitUtilsUnlockScroll(_containerId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    // Hands the gestures that land on the Modal to the scroller behind it, for the Modal that covers a page
+    // it was told not to hold: what the layer catches would else be chained to a document that does not
+    // scroll. Only the gestures nothing inside the Modal took first are forwarded, which the script decides.
+    private async Task ForwardScroll()
+    {
+        if (ShouldForwardScroll is false || _scrollForwarded || IsDisposed) return;
+
+        _scrollForwarded = true;
+        _forwardedScrollerSelector = _params.ScrollerSelector;
+        var element = ScrollerElementTarget;
+        _forwardedScrollerElement = element;
+
+        try
+        {
+            if (element.HasValue)
+            {
+                await _js.BitUtilsForwardScroll(_containerId, _Id, element.Value);
+            }
+            else
+            {
+                await _js.BitUtilsForwardScroll(_containerId, _Id, _forwardedScrollerSelector);
+            }
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    // Takes the forwarding back, and only what was registered, so a Modal never ends up handing gestures to
+    // a scroller it has already let go of.
+    private async Task StopForwardScroll()
+    {
+        if (_scrollForwarded is false) return;
+
+        _scrollForwarded = false;
+        _forwardedScrollerSelector = null;
+        _forwardedScrollerElement = null;
+
+        try
+        {
+            await _js.BitUtilsStopForwardScroll(_containerId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1342,21 +1436,23 @@ public partial class BitModal : BitComponentBase
         if (IsDisposed || disposing is false) return;
 
         // A Modal disposed while it is still open never reaches its close, so the registrations it made on
-        // the JS side - the focus trap, the hold on the page behind it, the drag handlers, the overflow it
-        // took off its scroller - are taken back here instead. The stored focus is dropped rather than
-        // restored: there is no close for it to be handed back on, and the map would keep the element alive
-        // without this.
-        if (_focusTrapped || _focusStored || _scrollLocked || _dragSetup || _scrollToggledOnOpen)
+        // the JS side - the focus trap, the hold on the page behind it, the gestures it was handing to the
+        // page, the drag handlers, the overflow it took off its scroller - are taken back here instead. The
+        // stored focus is dropped rather than restored: there is no close for it to be handed back on, and
+        // the map would keep the element alive without this.
+        if (_focusTrapped || _focusStored || _scrollLocked || _scrollForwarded || _dragSetup || _scrollToggledOnOpen)
         {
             var trapped = _focusTrapped;
             var stored = _focusStored;
             var locked = _scrollLocked;
+            var forwarded = _scrollForwarded;
             var dragged = _dragSetup;
             var toggled = _scrollToggledOnOpen;
             var dragSelector = _dragElementSelectorOnSetup ?? _dragElementSelector;
             _focusTrapped = false;
             _focusStored = false;
             _scrollLocked = false;
+            _scrollForwarded = false;
             _dragSetup = false;
             _scrollToggledOnOpen = false;
 
@@ -1370,6 +1466,11 @@ public partial class BitModal : BitComponentBase
                 if (locked)
                 {
                     await _js.BitUtilsUnlockScroll(_containerId);
+                }
+
+                if (forwarded)
+                {
+                    await _js.BitUtilsStopForwardScroll(_containerId);
                 }
 
                 if (dragged)

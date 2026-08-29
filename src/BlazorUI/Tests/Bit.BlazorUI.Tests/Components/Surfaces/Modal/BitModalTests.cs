@@ -1076,6 +1076,160 @@ public class BitModalTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitModalShouldHandItsGesturesToTheShellScrollerWhenItLeavesThePageScrolling()
+    {
+        // The layer a Modal is drawn in is fixed to the viewport, so the wheel that lands on it is chained
+        // to the document - which an application shell never scrolls. A Modal that was told to leave the
+        // page scrolling hands those gestures to the region that does scroll, or "the page still scrolls"
+        // would be true of nothing at all.
+        var shell = new ElementReference("shell-container");
+
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.AddCascadingValue("BitAppShell.Container", (ElementReference?)shell);
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.NoScrollLock, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"].Count));
+
+        var arguments = Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"][0].Arguments;
+
+        Assert.AreEqual(com.Instance.UniqueId.ToString(), arguments[1]);
+        Assert.AreEqual(shell, arguments[2]);
+    }
+
+    [TestMethod]
+    public void BitModalShouldHandTheGesturesToTheScrollerItWasPointedAt()
+    {
+        var shell = new ElementReference("shell-container");
+
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.AddCascadingValue("BitAppShell.Container", (ElementReference?)shell);
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.NoScrollLock, true);
+            parameters.Add(p => p.ScrollerSelector, "#own-scroller");
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"].Count));
+
+        var arguments = Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"][0].Arguments;
+
+        Assert.AreEqual("#own-scroller", arguments[2]);
+    }
+
+    [TestMethod]
+    public void BitModalShouldStopHandingTheGesturesOnWhenItCloses()
+    {
+        var shell = new ElementReference("shell-container");
+        var isOpen = true;
+
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.AddCascadingValue("BitAppShell.Container", (ElementReference?)shell);
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+            parameters.Add(p => p.NoScrollLock, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"].Count));
+
+        com.Render(parameters => parameters.Add(p => p.IsOpen, false));
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.stopForwardScroll"].Count));
+    }
+
+    [TestMethod]
+    public void BitModalShouldNotHandItsGesturesOnWhileItHoldsThePage()
+    {
+        // A held page has nothing to forward: the gesture is meant to reach nothing.
+        var shell = new ElementReference("shell-container");
+
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.AddCascadingValue("BitAppShell.Container", (ElementReference?)shell);
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"].Count);
+    }
+
+    [TestMethod]
+    public void BitModalShouldNotHandItsGesturesOnWhileItTogglesTheOverflowItself()
+    {
+        // AutoToggleScroll means the scroller to stay still, so scrolling it from the layer would undo it.
+        var shell = new ElementReference("shell-container");
+
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.AddCascadingValue("BitAppShell.Container", (ElementReference?)shell);
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AutoToggleScroll, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"].Count);
+    }
+
+    [TestMethod]
+    public void BitModalShouldNotHandItsGesturesOnWhileItIsModeless()
+    {
+        // A modeless Modal renders no overlay, so the pointer reaches the page itself and the page takes
+        // its own gestures.
+        var shell = new ElementReference("shell-container");
+
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.AddCascadingValue("BitAppShell.Container", (ElementReference?)shell);
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Modeless, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count));
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"].Count);
+    }
+
+    [TestMethod]
+    public void BitModalShouldNotHandItsGesturesOnWithoutAScrollerOfItsOwn()
+    {
+        // Outside a shell and pointed at nothing, the page is what the browser chains a gesture on a fixed
+        // layer to on its own: there is nothing to hand on.
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.NoScrollLock, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count));
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"].Count);
+    }
+
+    [TestMethod]
+    public void BitModalShouldHandItsGesturesOnWhenTheHoldIsTurnedOffWhileItIsOpen()
+    {
+        var shell = new ElementReference("shell-container");
+
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.AddCascadingValue("BitAppShell.Container", (ElementReference?)shell);
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"].Count);
+
+        com.Render(parameters => parameters.Add(p => p.NoScrollLock, true));
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"].Count));
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count);
+    }
+
+    [TestMethod]
     public async Task BitModalShouldHandThePageBackWhenItIsDisposedWhileOpen()
     {
         var com = RenderComponent<BitModal>(parameters =>

@@ -242,7 +242,7 @@ public partial class BitModalDemo
             Name = "NoScrollLock",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Prevents the Modal from holding the page still while it is open. By default the page behind an open Modal is held, with the room the scrollbar took added back as padding so that nothing shifts sideways; the holds are counted, so the page is only handed back once the last open Modal closes. A Modeless Modal never holds the page in the first place, and a Modal that toggles the scroll itself (see AutoToggleScroll) holds its scroller instead.",
+            Description = "Prevents the Modal from holding the page still while it is open. By default the page behind an open Modal is held, with the room the scrollbar took added back as padding so that nothing shifts sideways; the holds are counted, so the page is only handed back once the last open Modal closes. A Modeless Modal never holds the page in the first place, and a Modal that toggles the scroll itself (see AutoToggleScroll) holds its scroller instead. The gestures that land on a Modal that leaves the page scrolling are handed to the scroller behind it - the one ScrollerElement or ScrollerSelector names, or the application shell's - since the layer the Modal is drawn in is fixed to the viewport, where the wheel would else reach a document that does not scroll.",
         },
         new()
         {

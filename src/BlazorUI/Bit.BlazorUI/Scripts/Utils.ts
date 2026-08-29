@@ -295,6 +295,119 @@
             } catch (e) { console.error("BitBlazorUI.Utils.unlockScroll:", e); }
         }
 
+        // Every popup currently handing its gestures on, against the listeners it registered to do so.
+        private static _scrollForwards = new Map<string, AbortController>();
+
+        // A popup that leaves the page scrolling still covers that page with a layer of its own, and the
+        // layer is fixed to the viewport: the wheel and the touch drag that land on it are chained to the
+        // document, which in an application shell - or in any layout that scrolls a region of its own -
+        // is not the thing that scrolls. The gesture is handed to that region here, so that the page a
+        // popup was told not to hold moves the way the user expects it to.
+        // Only what the browser would drop on the floor is forwarded: anything inside the layer that can
+        // take the gesture itself - content that overflows its own box - is left to take it.
+        public static forwardScroll(key: string, rootId: string, scroller: string | HTMLElement | null) {
+            try {
+                Utils.stopForwardScroll(key);
+
+                const root = document.getElementById(rootId);
+                const target = (scroller instanceof HTMLElement
+                    ? scroller
+                    : (scroller ? document.querySelector(scroller) : null)) as HTMLElement | null;
+                if (!root || !target) return;
+
+                const controller = new AbortController();
+                const signal = controller.signal;
+                Utils._scrollForwards.set(key, controller);
+
+                // Whether something between the gesture and the layer is a scroller with room left in the
+                // direction it is going, which is the thing the browser hands the gesture to on its own.
+                const taken = (from: EventTarget | null, x: number, y: number) => {
+                    let element = from instanceof HTMLElement ? from : (from instanceof Node ? from.parentElement : null);
+                    while (element && element !== root) {
+                        if (Utils.canScroll(element, x, y)) return true;
+                        element = element.parentElement;
+                    }
+                    return false;
+                };
+
+                const forward = (event: Event, x: number, y: number) => {
+                    if (x === 0 && y === 0) return;
+                    if (taken(event.target, x, y)) return;
+
+                    // Instant rather than the default: the region may carry scroll-behavior:smooth, which
+                    // would animate every notch of the wheel and leave the page lagging behind the gesture.
+                    target.scrollBy({ left: x, top: y, behavior: 'instant' });
+                };
+
+                root.addEventListener('wheel', (e: WheelEvent) => {
+                    // Lines and pages are turned into the pixels scrollBy takes, so that a wheel reporting
+                    // either of them moves the region by what the browser would have moved it by.
+                    const lines = e.deltaMode === 1;
+                    const pages = e.deltaMode === 2;
+                    const x = e.deltaX * (lines ? 16 : (pages ? target.clientWidth : 1));
+                    const y = e.deltaY * (lines ? 16 : (pages ? target.clientHeight : 1));
+                    forward(e, x, y);
+                }, { signal, passive: true });
+
+                let lastX = 0, lastY = 0, tracking = false;
+
+                root.addEventListener('touchstart', (e: TouchEvent) => {
+                    // A single finger is a drag; anything else is a pinch, which is not a scroll.
+                    tracking = e.touches.length === 1;
+                    if (!tracking) return;
+
+                    lastX = e.touches[0].clientX;
+                    lastY = e.touches[0].clientY;
+                }, { signal, passive: true });
+
+                root.addEventListener('touchmove', (e: TouchEvent) => {
+                    if (!tracking || e.touches.length !== 1) return;
+
+                    const touch = e.touches[0];
+                    // The finger and the content move opposite ways: dragging up scrolls down.
+                    const x = lastX - touch.clientX;
+                    const y = lastY - touch.clientY;
+                    lastX = touch.clientX;
+                    lastY = touch.clientY;
+                    forward(e, x, y);
+                }, { signal, passive: true });
+
+                const release = () => { tracking = false; };
+                root.addEventListener('touchend', release, { signal, passive: true });
+                root.addEventListener('touchcancel', release, { signal, passive: true });
+            } catch (e) { console.error("BitBlazorUI.Utils.forwardScroll:", e); }
+        }
+
+        // Takes back the forwarding registered under the given key, listeners and all.
+        public static stopForwardScroll(key: string) {
+            const controller = Utils._scrollForwards.get(key);
+            if (!controller) return;
+
+            Utils._scrollForwards.delete(key);
+            controller.abort();
+        }
+
+        // Whether the given element scrolls in the direction the gesture is going and still has room to do
+        // it in - an element already at the end of its content is one the browser would chain past.
+        private static canScroll(element: HTMLElement, x: number, y: number) {
+            const style = getComputedStyle(element);
+            const scrolls = (overflow: string) => overflow === 'auto' || overflow === 'scroll' || overflow === 'overlay';
+
+            if (y !== 0 && scrolls(style.overflowY)) {
+                const room = element.scrollHeight - element.clientHeight;
+                if (room > 1 && (y < 0 ? element.scrollTop > 1 : element.scrollTop < room - 1)) return true;
+            }
+
+            if (x !== 0 && scrolls(style.overflowX)) {
+                const room = element.scrollWidth - element.clientWidth;
+                // Right-to-left scrollers report a negative offset in some browsers; the distance is what matters.
+                const offset = Math.abs(element.scrollLeft);
+                if (room > 1 && (x < 0 ? offset > 1 : offset < room - 1)) return true;
+            }
+
+            return false;
+        }
+
         private static _preventedKeys = new Map<string, AbortController>();
 
         // Suppresses the default behavior (page scrolling) of the given keys on an element, for the
