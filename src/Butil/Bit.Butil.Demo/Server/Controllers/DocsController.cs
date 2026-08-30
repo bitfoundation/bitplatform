@@ -35,13 +35,21 @@ public class DocsController : ControllerBase
         Response.Headers.ETag = payload.ETag;
         Response.Headers[HeaderNames.Vary] = HeaderNames.AcceptEncoding;
 
-        if (Request.Headers.IfNoneMatch.Any(tag => string.Equals(tag, payload.ETag, StringComparison.Ordinal)))
+        // Both headers are lists with a syntax of their own - If-None-Match is comma-separated and its tags
+        // may be weak, Accept-Encoding carries q values - so they are read parsed rather than as raw strings.
+        var headers = Request.GetTypedHeaders();
+        var etag = EntityTagHeaderValue.Parse(payload.ETag);
+
+        if (headers.IfNoneMatch.Any(tag => tag.Equals(EntityTagHeaderValue.Any) ||
+                                           tag.Compare(etag, useStrongComparison: false)))
         {
             return StatusCode(StatusCodes.Status304NotModified);
         }
 
-        var acceptsGzip = Request.Headers.AcceptEncoding
-            .Any(encoding => encoding?.Contains("gzip", StringComparison.OrdinalIgnoreCase) is true);
+        // q=0 is a client saying it does not want gzip, which reads as "gzip" to a substring match.
+        var acceptsGzip = headers.AcceptEncoding
+            .Any(encoding => string.Equals(encoding.Value.Value, "gzip", StringComparison.OrdinalIgnoreCase) &&
+                             encoding.Quality != 0);
 
         if (acceptsGzip is false) return File(payload.Json, MediaTypeNames.Application.Json);
 

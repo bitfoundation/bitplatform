@@ -275,13 +275,13 @@ public static partial class ButilSetupGuide
         1. `dotnet add package Bit.Butil`.
         2. Add `<script src="_content/Bit.Butil/bit-butil.js"></script>` to the host page, BEFORE the Blazor script.
            The app boots as soon as the Blazor script runs, so `window.BitButil` has to exist by then. It is a static
-           web asset of the package - there is nothing to copy into your own wwwroot. Two optional csproj switches
+           web asset of the package - there is nothing to copy into your own wwwroot. Four optional csproj switches
            tree-shake that JavaScript, so a published app ships only the modules it can still reach.
            `<BitButilTrimScripts>` rebuilds `bit-butil.js` from just those modules, and publishes only those under
            `modules/` too - publish only, never a build. It is on by default in a standalone WebAssembly project,
            where the trimmed `Bit.Butil.dll` says what the app can still call; `false` opts out, and
            `<BitButilIncludeScriptModules>true</BitButilIncludeScriptModules>` publishes every module regardless.
-           Publishing WITHOUT trimming there is no trimmed assembly to read, so
+           Publishing WITHOUT trimming, there is no trimmed assembly to read, so
            `<BitButilScriptScan>TypeReferences</BitButilScriptScan>` answers the same question from the app's own
            assemblies - the Bit.Butil classes they reference - and works in every hosting model; it is ignored when
            the publish IS trimmed. `<BitButilScriptModule Include="Clipboard;geolocation" />` (an ItemGroup) adds

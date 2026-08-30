@@ -56,7 +56,7 @@
                     id="@($"header-search-option-{index}")"
                     aria-selected="@(index == _activeIndex ? "true" : "false")"
                     class="@(index == _activeIndex ? "active" : null)"
-                    @key="hit.Url"
+                    @key="@($"{index}:{hit.Url}")"
                     @onmousedown="() => Go(hit.Url)" @onmousedown:preventDefault>
                     <span class="header-search-result-text">
                         <span class="header-search-result-title">@hit.Title</span>

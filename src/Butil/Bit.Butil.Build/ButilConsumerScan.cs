@@ -81,11 +81,14 @@ public static class ButilConsumerScan
         {
             if (string.IsNullOrWhiteSpace(path)) continue;
             if (string.Equals(Path.GetFileName(path), ButilAssemblyFileName, StringComparison.OrdinalIgnoreCase)) continue;
-            if (seen.Add(Path.GetFullPath(path)) is false) continue;
 
             PeImage image;
             try
             {
+                // A path malformed enough that it cannot even be resolved is one of the unreadable entries
+                // this method passes over, so the guard covers it too.
+                if (seen.Add(Path.GetFullPath(path)) is false) continue;
+
                 image = PeImage.Load(path);
             }
             catch (Exception exception) when (exception is IOException or BadImageFormatException or UnauthorizedAccessException or NotSupportedException or ArgumentException)
