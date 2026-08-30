@@ -1330,6 +1330,33 @@ private bool isOpenFocusSelector = false;";
     }
 </style>
 
+<BitButton OnClick=""@(() => IsOpen6 = true)"">Open Dialog</BitButton>
+
+<div class=""relative-container"">
+    <BitDialog AbsolutePosition
+               @bind-IsOpen=""IsOpen6""
+               Title=""Missing Subject""
+               Message=""This Dialog covers the bordered box, not the page."" />
+
+    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
+</div>";
+    private readonly string example10CsharpCode = @"
+private bool IsOpen6 = false;";
+
+    private readonly string example11RazorCode = @"
+<style>
+    .relative-container {
+        width: 100%;
+        height: 20rem;
+        overflow: auto;
+        padding: 0.5rem;
+        margin-top: 1rem;
+        position: relative;
+        border: 2px lightgreen solid;
+    }
+</style>
+
 <BitButton OnClick=""@(() => IsOpen5 = true)"">AutoToggleScroll</BitButton>
 <BitButton OnClick=""@(() => IsOpen7 = true)"">ScrollerSelector</BitButton>
 
@@ -1349,11 +1376,11 @@ private bool isOpenFocusSelector = false;";
     Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
     when possibilities are limitless, waiting for content to emerge.
 </div>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private bool IsOpen5 = false;
 private bool IsOpen7 = false;";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.TopLeft)"">Top Left</BitButton>
 <BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.TopCenter)"">Top Center</BitButton>
 <BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.TopRight)"">Top Right</BitButton>
@@ -1388,7 +1415,7 @@ private bool IsOpen7 = false;";
            OkText=""تایید""
            CancelText=""انصراف""
            Message=""موقعیت منطقی: ابتدای جهت خواندن"" />";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private bool IsOpenInPosition = false;
 private BitDialogPosition position;
 private bool isOpenPhysical = false;
@@ -1399,33 +1426,6 @@ private void OpenDialogInPosition(BitDialogPosition positionValue)
     IsOpenInPosition = true;
     position = positionValue;
 }";
-
-    private readonly string example12RazorCode = @"
-<style>
-    .relative-container {
-        width: 100%;
-        height: 20rem;
-        overflow: auto;
-        padding: 0.5rem;
-        margin-top: 1rem;
-        position: relative;
-        border: 2px lightgreen solid;
-    }
-</style>
-
-<BitButton OnClick=""@(() => IsOpen6 = true)"">Open Dialog</BitButton>
-
-<div class=""relative-container"">
-    <BitDialog AbsolutePosition
-               @bind-IsOpen=""IsOpen6""
-               Title=""Missing Subject""
-               Message=""This Dialog covers the bordered box, not the page."" />
-
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-</div>";
-    private readonly string example12CsharpCode = @"
-private bool IsOpen6 = false;";
 
     private readonly string example13RazorCode = @"
 <style>

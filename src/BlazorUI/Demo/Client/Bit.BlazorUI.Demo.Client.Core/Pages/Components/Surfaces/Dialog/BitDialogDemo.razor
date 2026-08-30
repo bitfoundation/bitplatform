@@ -437,7 +437,32 @@
             </BitDialog>
         </DemoExample>
 
-        <DemoExample Title="Scroll locking" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <DemoExample Title="Absolute position" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                <b>AbsolutePosition</b> swaps the fixed positioning for absolute, so the Dialog covers its nearest
+                positioned ancestor instead of the screen. That is what puts a Dialog inside a card or a panel rather
+                than over the whole page.
+            </div>
+            <br />
+            <BitButton OnClick="@(() => IsOpen6 = true)">Open Dialog</BitButton>
+
+            <div class="relative-container">
+                <BitDialog AbsolutePosition
+                           @bind-IsOpen="IsOpen6"
+                           Title="Missing Subject"
+                           Message="This Dialog covers the bordered box, not the page." />
+
+                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
+                Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+                spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+                in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+                are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Scroll locking" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div>
                 <b>AutoToggleScroll</b> stops the page behind the overlay from scrolling for as long as the Dialog is
                 open, and gives it back afterwards - including when the Dialog is disposed while still open. The holds
@@ -491,7 +516,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Position" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <DemoExample Title="Position" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
                 <b>Position</b> moves the Dialog off the centre of the screen. The <b>Left</b> and <b>Right</b> values
                 are physical and stay on the same side in both reading directions; the <b>Start</b> and <b>End</b>
@@ -550,30 +575,6 @@
                        Message="موقعیت منطقی: ابتدای جهت خواندن" />
         </DemoExample>
 
-        <DemoExample Title="Absolute position" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
-            <div>
-                <b>AbsolutePosition</b> swaps the fixed positioning for absolute, so the Dialog covers its nearest
-                positioned ancestor instead of the screen. That is what puts a Dialog inside a card or a panel rather
-                than over the whole page.
-            </div>
-            <br />
-            <BitButton OnClick="@(() => IsOpen6 = true)">Open Dialog</BitButton>
-
-            <div class="relative-container">
-                <BitDialog AbsolutePosition
-                           @bind-IsOpen="IsOpen6"
-                           Title="Missing Subject"
-                           Message="This Dialog covers the bordered box, not the page." />
-
-                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-            </div>
-        </DemoExample>
 
         <DemoExample Title="Draggable" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
