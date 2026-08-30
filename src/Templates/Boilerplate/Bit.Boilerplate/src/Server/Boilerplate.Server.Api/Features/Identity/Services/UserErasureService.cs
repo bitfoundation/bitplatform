@@ -84,12 +84,12 @@ public partial class UserErasureService
             await transaction.CommitAsync(cancellationToken);
         });
 
+        await ErasePublishedBlobs(userId, blobPaths, cancellationToken);
+
         //#if (signalR == true)
-        // Ahead of the blobs: this is what the user's other devices are waiting on. See AppHub's comments.
+        // See AppHub's comments.
         await appHubContext.Clients.Clients(signalRConnectionIds).Publish(SharedAppMessages.SESSION_REVOKED, null, cancellationToken);
         //#endif
-
-        await ErasePublishedBlobs(userId, blobPaths, cancellationToken);
 
         // The only evidence the request was carried out.
         logger.LogInformation("Erased user {UserId} along with {BlobCount} attachment blob(s).", userId, blobPaths.Length);
