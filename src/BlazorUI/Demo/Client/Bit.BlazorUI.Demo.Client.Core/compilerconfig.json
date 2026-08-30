@@ -120,12 +120,6 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/Extras/ProModalService/BitProModalServiceDemo.razor.css",
-        "inputFile": "Pages/Components/Extras/ProModalService/BitProModalServiceDemo.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Pages/Components/Extras/RichTextEditor/BitRichTextEditorDemo.razor.css",
         "inputFile": "Pages/Components/Extras/RichTextEditor/BitRichTextEditorDemo.razor.scss",
         "minify": { "enabled": false },
@@ -512,6 +506,12 @@
     {
         "outputFile": "Pages/Components/Utilities/Text/BitTextDemo.razor.css",
         "inputFile": "Pages/Components/Utilities/Text/BitTextDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/GettingStartedPage.razor.css",
+        "inputFile": "Pages/GettingStartedPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

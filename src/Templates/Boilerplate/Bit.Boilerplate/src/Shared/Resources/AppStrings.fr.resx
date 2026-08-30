@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
   <!-- 
@@ -1731,9 +1731,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="LeaveTenantConfirmMessage" xml:space="preserve">
     <value>Êtes-vous sûr de vouloir quitter le locataire {0} ?</value>
   </data>
-    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
-    <value>Vous avez quitté le locataire avec succès.</value>
-  </data>
     <data name="SwitchTenant" xml:space="preserve">
     <value>Changer de locataire</value>
   </data>
@@ -1809,8 +1806,31 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
     <value>Refuser l'invitation à {0} ? Cette action est irréversible - vous aurez besoin d'une nouvelle invitation pour rejoindre.</value>
   </data>
-  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
-    <value>Invitation refusée.</value>
+  <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>Fuseau horaire</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>Sélectionner le fuseau horaire</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>Rechercher un fuseau horaire</value>
+  </data>
+    <data name="NoTimeZoneMatchesSearchMessage" xml:space="preserve">
+    <value>Aucun fuseau horaire ne correspond à votre recherche.</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotifications" xml:space="preserve">
+    <value>Notifications push</value>
+  </data>
+    <data name="TurnPushNotificationsOn" xml:space="preserve">
+    <value>Activer les notifications push</value>
+  </data>
+    <data name="TurnPushNotificationsOff" xml:space="preserve">
+    <value>Désactiver les notifications push</value>
+  </data>
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>Les notifications push sont bloquées pour cette application. Autorisez les notifications dans les paramètres de votre navigateur ou de votre système d&apos;exploitation, puis réessayez.</value>
   </data>
   <!--#endif-->
 </root>

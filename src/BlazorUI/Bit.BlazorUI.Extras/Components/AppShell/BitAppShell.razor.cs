@@ -101,6 +101,16 @@ public partial class BitAppShell : BitComponentBase
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender)
+        {
+            // The container element does not exist while the first render is being built, so the cascade of
+            // it published nothing on that render. Anything that came looking for the shell's scroller
+            // before the shell happened to render again - a Modal opened straight off the landing page -
+            // fell back to holding a body that a shell app never scrolls, and the region behind it went on
+            // scrolling. One more render is what puts the element into the cascade.
+            StateHasChanged();
+        }
+
         if (firstRender && PersistScroll)
         {
             if (_containerRef.HasValue is false) return;

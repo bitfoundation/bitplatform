@@ -1,109 +1,622 @@
 @page "/iconography"
+@inherits AppComponentBase
 
 <PageOutlet Url="iconography"
             Title="Iconography"
-            Description="Browse and search the full set of Fabric (MDL2) icons available in bit BlazorUI, and copy any icon name with a click." />
+            Keywords="Blazor icons, Fluent icons, MDL2 icons, Fabric icons, Blazor icon font, BitIconName"
+            Description="@($"Search all {IconCatalog.Items.Count} Fabric (MDL2) icons in bit BlazorUI, copy any name with a click, and learn how icons work across the library - sizing, color, accessibility and external icon sets.")" />
 
 <DocsArticle Eyebrow="Documentation"
              Title="Iconography"
-             Lead="bit BlazorUI uses a custom icon font from the MDL2 design system (Office UI Fabric icons). The glyphs scale, take the theme's colors, and cost nothing extra to render."
              GitHubUrl="Iconography/IconographyPage.razor">
 
-    <DocSection Id="install-icons" Title="Install the icon pack"
-                Description="The icons ship separately from the components, so an app that does not use them does not download them.">
-        <BitText Element="p">
-            Add the <code>Bit.BlazorUI.Icons</code> package and its stylesheet, as described in the
-            optional steps of the <BitLink Href="/getting-started#install">Getting started</BitLink> page.
+    <LeadTemplate>
+        <BitText Element="p" Typography="BitTypography.Subtitle1" Color="BitColor.SecondaryForeground">
+            bit BlazorUI draws its icons from Microsoft's Fabric (MDL2) set, shipped as a font rather than as
+            thousands of SVG files. A glyph is a character: it scales with <code>font-size</code>, takes
+            <code>currentColor</code>, costs one request for the whole set and nothing per icon after that.
+            Every component that shows an icon names one from this page.
         </BitText>
-        <CodeBox>dotnet add package Bit.BlazorUI.Icons</CodeBox>
-        <CodeBox Language="html">&lt;link href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" rel="stylesheet" /></CodeBox>
-    </DocSection>
+    </LeadTemplate>
 
-    <DocSection Id="icon-list" Title="Browse the icons"
-                Description="Click any icon to open its details: a preview at every size and semantic color, its name, constant, CSS class and glyph, and the snippets to paste.">
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground"
+                Text="@($"{IconCatalog.Items.Count} icons")" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground"
+                Text="Fabric MDL2" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground"
+                Text="Bit.BlazorUI.Icons" />
+    </Badges>
 
-        @* A plain wrapper, because everything inside it is a Bit component and scoped CSS only lands
-           on elements written in this file. Without it the rules below would have nothing to
-           descend from - the page's own root markup is all components. *@
-        <div class="icon-browser">
-            <BitSearchBox Immediate
-                          DebounceTime="300"
-                          OnClear="HandleClear"
-                          OnChange="HandleChange"
-                          Placeholder="Search icons"
-                          IconName="@BitIconName.Search"
-                          Class="iconography-search-box" />
+    <Actions>
+        <BitButton Href="/iconography#install" IconName="@BitIconName.Download">
+            Install the pack
+        </BitButton>
+        <BitButton Href="/components/icon"
+                   Variant="BitVariant.Outline"
+                   IconName="@BitIconName.Code">
+            BitIcon API
+        </BitButton>
+        <BitButton Target="_blank"
+                   Variant="BitVariant.Text"
+                   IconName="@BitIconName.NugetLogo"
+                   Color="BitColor.SecondaryForeground"
+                   Href="https://www.nuget.org/packages/Bit.BlazorUI.Icons/">
+            NuGet
+        </BitButton>
+    </Actions>
 
-            @* The icon font carries well over two thousand glyphs, which is more markup than a phone
-               can lay out in one go - so the grid is windowed. BitVirtualize windows a *vertical*
-               list, so the unit of virtualization is a row of icons rather than an icon: the cells
-               are chunked into rows of columnCount (see OnIconGridResized, which recomputes it from
-               the measured width of the scroller), and only the rows in view get rendered.
+    <ChildContent>
 
-               The cell is plain markup rather than a BitButton hosting a BitIcon and a BitText,
-               because at this count the per-component cost is the cost: everything the components
-               would have contributed here is a handful of rules in the stylesheet. *@
-            <BitVirtualize Id="@GRID_ELEMENT_ID"
-                           Items="iconRows"
-                           ItemSize="ICON_ROW_HEIGHT"
-                           OverscanCount="4"
-                           AriaLabel="Icons"
-                           Class="icon-scroller"
-                           Style="@($"--icon-cols: {columnCount}")">
-                <ItemTemplate>
-                    <div class="icon-row">
-                        @foreach (var icon in context)
-                        {
+        <DocSection Id="browse" Title="Browse the icons"
+                    Description="Search by name or by what another set calls the same thing, narrow by category, and open any icon for every string you might need to paste.">
+
+            <div class="icon-browser">
+
+                @* Search, size and the category chips travel together above one grid. The grid is
+                   its own scroller rather than part of the page's, so none of this ever scrolls
+                   away from the results it is filtering. *@
+                <div class="icon-toolbar">
+                    <div class="icon-toolbar-row">
+                        <BitSearchBox Immediate
+                                      DebounceTime="150"
+                                      Value="@_query"
+                                      ValueChanged="ApplyQuery"
+                                      Class="icon-search"
+                                      AriaLabel="Search icons"
+                                      IconName="@BitIconName.Search"
+                                      Placeholder="@($"Search {IconCatalog.Items.Count} icons - name, or what you would call it")" />
+
+                        <div class="icon-toolbar-controls">
+                            @* One choice with three positions, so a shared frame rather than three
+                               loose buttons. It is a browsing preference, not a filter: nothing
+                               about which icons are on show changes with it. *@
+                            <div class="icon-segment" role="group" aria-label="Grid size">
+                                @for (var index = 0; index < cells.Length; index++)
+                                {
+                                    var i = index;
+                                    var cell = cells[i];
+                                    var isActive = _cellIndex == i;
+                                    <button type="button"
+                                            title="@($"{cell.Label} icons")"
+                                            aria-label="@($"{cell.Label} icons")"
+                                            aria-pressed="@(isActive ? "true" : "false")"
+                                            class="@($"icon-segment-btn{(isActive ? " active" : null)}")"
+                                            @onclick="() => SelectCell(i)">
+                                        <span class="icon-segment-dot" style="@($"width:{6 + i * 4}px;height:{6 + i * 4}px")"></span>
+                                    </button>
+                                }
+                            </div>
+
+                            @* At rest the grid reads as a sheet of glyphs, which is how an icon is
+                               actually recognised, and a name appears under whichever one is
+                               pointed at. This pins every name down at once, for the reader who is
+                               scanning for a word rather than for a shape. *@
                             <button type="button"
-                                    title="@icon.Value"
-                                    @onclick="() => OpenIconPanel(icon)"
-                                    class="@($"icon-box {(selectedIcon?.Value == icon.Value ? "selected" : string.Empty)}")">
-                                <i aria-hidden="true" class="@($"bit-icon bit-icon--{icon.Value}")"></i>
-                                <span class="icon-name">@icon.Value</span>
+                                    class="@($"icon-toggle{(_showNames ? " active" : null)}")"
+                                    aria-pressed="@(_showNames ? "true" : "false")"
+                                    @onclick="ToggleNames">
+                                <BitIcon IconName="@BitIconName.TextField" />
+                                <span>Names</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    @* A chip carries its count, which turns the filter row into a table of
+                       contents. While a term is typed the counts become that term's own - how many
+                       of the matches are in each category - so the row says where the answer is,
+                       and a category the term does not reach is dimmed rather than removed,
+                       because a row that reflows under the pointer cannot be aimed at. *@
+                    <div class="icon-chips" role="group" aria-label="Filter by category">
+                        <button type="button"
+                                class="@($"icon-chip{(_category is null ? " active" : null)}")"
+                                aria-pressed="@(_category is null ? "true" : "false")"
+                                @onclick="() => SelectCategory(null)">
+                            All
+                            <span class="icon-chip-count">@_totalCount</span>
+                        </button>
+                        @for (var index = 0; index < IconCatalog.Categories.Count; index++)
+                        {
+                            var i = index;
+                            var name = IconCatalog.Categories[i];
+                            var count = _counts[i];
+                            var isActive = _category == name;
+                            <button type="button"
+                                    aria-pressed="@(isActive ? "true" : "false")"
+                                    class="@($"icon-chip{(isActive ? " active" : null)}{(count == 0 ? " empty" : null)}")"
+                                    @onclick="() => SelectCategory(name)">
+                                @name
+                                <span class="icon-chip-count">@count</span>
                             </button>
                         }
                     </div>
-                </ItemTemplate>
-                <EmptyTemplate>
-                    <BitText Element="p" Typography="BitTypography.Subtitle1">No icon matches that name.</BitText>
-                </EmptyTemplate>
-            </BitVirtualize>
-        </div>
-    </DocSection>
+                </div>
+
+                @* What the controls above have produced, said in words. It is the line that tells a
+                   reader their search worked before they have recognised a single glyph. *@
+                <div class="icon-status">
+                    <p class="icon-status-text" role="status">
+                        @if (_query.HasValue())
+                        {
+                            <b>@_results.Count</b>
+                            @(_results.Count == 1 ? " icon matches " : " icons match ")
+                            <b>&ldquo;@_query&rdquo;</b>
+                            @if (_category is not null)
+                            {
+                                <text> in @_category</text>
+                            }
+                        }
+                        else if (_category is not null)
+                        {
+                            <b>@_results.Count</b>
+                            <text> icons in @_category</text>
+                        }
+                        else
+                        {
+                            <b>@IconCatalog.Items.Count</b>
+                            <text> icons in the Fabric (MDL2) set, </text>
+                            <b>@IconCatalog.CoreItems.Count</b>
+                            <text> of them without the icons package</text>
+                        }
+                    </p>
+
+                    @if (IsFiltered)
+                    {
+                        <BitButton Size="BitSize.Small"
+                                   Variant="BitVariant.Text"
+                                   OnClick="ClearFilters"
+                                   Color="BitColor.SecondaryForeground"
+                                   IconName="@BitIconName.ClearFilter">
+                            Clear filters
+                        </BitButton>
+                    }
+                </div>
+
+                @* The icon font carries well over two thousand glyphs, which is more markup than a
+                   phone can lay out in one go - so the grid is windowed. BitVirtualize windows a
+                   *vertical* list, so the unit of virtualization is a row of icons rather than an
+                   icon: the cells are chunked into rows of _columnCount (see OnIconGridResized,
+                   which recomputes it from the measured width of the scroller), and only the rows
+                   in view get rendered.
+
+                   The cell is plain markup rather than a BitButton hosting a BitIcon and a
+                   BitText, because at this count the per-component cost is the cost: everything
+                   the components would have contributed here is a handful of rules in the
+                   stylesheet.
+
+                   Every number the layout needs is handed down from the code-behind as a custom
+                   property, so the geometry the virtualizer places rows at and the geometry the
+                   browser lays them out with are one set of numbers rather than two that have to
+                   be kept in agreement. *@
+                <BitVirtualize @ref="_grid"
+                               Items="_rows"
+                               Id="@GRID_ELEMENT_ID"
+                               OverscanCount="4"
+                               AriaLabel="Icons"
+                               ItemSize="@Cell.RowHeight"
+                               Class="@($"icon-scroller{(_showNames ? " show-names" : null)}")"
+                               Style="@($"--icon-cols:{_columnCount};--icon-gap:{GAP}px;--icon-cell-h:{Cell.Height}px;--icon-cell-glyph:{Cell.Glyph}px")">
+                    <ItemTemplate>
+                        <div class="icon-row">
+                            @foreach (var icon in context)
+                            {
+                                <button type="button"
+                                        title="@icon.Name"
+                                        aria-label="@icon.Name"
+                                        @onclick="() => OpenPanel(icon)"
+                                        class="@($"icon-box{(_selected?.Name == icon.Name ? " selected" : null)}")">
+                                    <i aria-hidden="true" class="@($"bit-icon bit-icon--{icon.Name}")"></i>
+                                    <span class="icon-name">@icon.Name</span>
+                                </button>
+                            }
+                        </div>
+                    </ItemTemplate>
+                    <EmptyTemplate>
+                        @* A dead end is the one thing a search must never be: this says what was
+                           searched for, what else it could have been called, and offers the way
+                           back to everything. *@
+                        <div class="icon-empty">
+                            <BitIcon IconName="@BitIconName.SearchIssue" Size="BitSize.Large" Color="BitColor.TertiaryForeground" />
+                            <BitText Element="p" Typography="BitTypography.Subtitle1">
+                                No icon matches &ldquo;@_query&rdquo;@(_category is not null ? $" in {_category}" : null)
+                            </BitText>
+                            <BitText Element="p" Color="BitColor.SecondaryForeground">
+                                MDL2 names things in its own words. Try a shorter term, or the word Microsoft
+                                would have used &mdash; <b>Ringer</b> for a bell, <b>Contact</b> for a user,
+                                <b>Cancel</b> for a close.
+                            </BitText>
+                            <BitStack Horizontal Wrap AutoSize Gap="0.75rem" Class="icon-empty-actions">
+                                @if (_category is not null)
+                                {
+                                    <BitButton IconName="@BitIconName.Search" OnClick="() => SelectCategory(null)">
+                                        Search every category
+                                    </BitButton>
+                                }
+                                <BitButton Variant="BitVariant.Outline" OnClick="ClearFilters" IconName="@BitIconName.ClearFilter">
+                                    Show all icons
+                                </BitButton>
+                            </BitStack>
+                        </div>
+                    </EmptyTemplate>
+                </BitVirtualize>
+            </div>
+        </DocSection>
+
+
+        <DocSection Id="install" Title="Install the icon pack"
+                    Description="The icons ship separately from the components, so an app that does not use them does not download them.">
+
+            <BitText Element="p">
+                Add the <code>Bit.BlazorUI.Icons</code> package and link its stylesheet &mdash; both halves,
+                or the glyphs come out as empty boxes. It is one of the optional steps of the
+                <BitLink Href="/getting-started#install">getting started</BitLink> page.
+            </BitText>
+
+            <CodeBox>dotnet add package Bit.BlazorUI.Icons</CodeBox>
+            <CodeBox Language="html">&lt;link href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" rel="stylesheet" /></CodeBox>
+
+            <BitText Element="p">
+                The core package embeds a @IconCatalog.CoreItems.Count-glyph subset of the same font &mdash; about 3&nbsp;KB &mdash;
+                because its own components draw with it. These render in an app that never installed
+                anything above, which is why a date picker has arrows and a message has a dismiss cross
+                before the icon pack is anywhere in the project:
+            </BitText>
+
+            <div class="core-glyphs">
+                @foreach (var icon in IconCatalog.CoreItems)
+                {
+                    <button type="button" class="core-glyph" title="@icon.Name" @onclick="() => OpenPanel(icon)">
+                        <BitIcon IconName="@icon.Name" />
+                        <span>@icon.Name</span>
+                    </button>
+                }
+            </div>
+
+            <BitText Element="p">
+                Anything else &mdash; every other name on this page &mdash; needs the package.
+            </BitText>
+        </DocSection>
+
+
+        <DocSection Id="usage" Title="Use an icon"
+                    Description="Three ways in, depending on whether the icon is the whole component, a part of one, or markup of your own.">
+
+            <DocSection Level="3" Id="usage-icon" Title="The BitIcon component">
+
+                <BitText Element="p">
+                    <code>BitIcon</code> renders one glyph. <code>IconName</code> takes a name from
+                    <code>BitIconName</code>, which is a class of string constants &mdash; so the compiler
+                    catches a typo that a raw string would not.
+                </BitText>
+
+                <div class="icon-demo">
+                    <div class="icon-demo-preview">
+                        <BitIcon IconName="@BitIconName.Rocket" />
+                        <BitIcon IconName="@BitIconName.CalendarWeek" />
+                        <BitIcon IconName="@BitIconName.Shield" />
+                        <BitIcon IconName="@BitIconName.Lightbulb" />
+                    </div>
+                    <CodeBox Language="cshtml">&lt;BitIcon IconName="@@BitIconName.Rocket" /&gt;
+&lt;BitIcon IconName="@@BitIconName.CalendarWeek" /&gt;
+&lt;BitIcon IconName="@@BitIconName.Shield" /&gt;
+&lt;BitIcon IconName="@@BitIconName.Lightbulb" /&gt;</CodeBox>
+                </div>
+
+                <BitText Element="p">
+                    The full parameter list &mdash; and every state of it &mdash; is on the
+                    <BitLink Href="/components/icon">BitIcon page</BitLink>.
+                </BitText>
+            </DocSection>
+
+            <DocSection Level="3" Id="usage-components" Title="On another component">
+
+                <BitText Element="p">
+                    Anything in the library that can show an icon takes the same name. The parameter is
+                    <code>IconName</code> on the component itself, or a property of the same name on the
+                    item type of a list-shaped one &mdash; a nav item, a menu item, a pivot header.
+                </BitText>
+
+                <div class="icon-demo">
+                    <div class="icon-demo-preview">
+                        <BitButton IconName="@BitIconName.Save">Save</BitButton>
+                        <BitButton IconOnly Variant="BitVariant.Outline" Title="Delete" AriaLabel="Delete" IconName="@BitIconName.Delete" />
+                        <BitTag IconName="@BitIconName.Tag" Text="Draft" />
+                        <BitMessage Color="BitColor.Success" IconName="@BitIconName.CheckMark">Saved</BitMessage>
+                    </div>
+                    <CodeBox Language="cshtml">&lt;BitButton IconName="@@BitIconName.Save"&gt;Save&lt;/BitButton&gt;
+&lt;BitButton IconOnly AriaLabel="Delete" IconName="@@BitIconName.Delete" /&gt;
+&lt;BitTag IconName="@@BitIconName.Tag" Text="Draft" /&gt;
+&lt;BitMessage IconName="@@BitIconName.CheckMark" Color="BitColor.Success"&gt;Saved&lt;/BitMessage&gt;</CodeBox>
+                </div>
+            </DocSection>
+
+            <DocSection Level="3" Id="usage-css" Title="From your own markup">
+
+                <BitText Element="p">
+                    The stylesheet is the whole API: a glyph is a <code>::before</code> on a class, so any
+                    element can carry one without a component around it. This is also what the browser above
+                    renders &mdash; two thousand components would cost more than two thousand glyphs are worth.
+                </BitText>
+
+                <div class="icon-demo">
+                    <div class="icon-demo-preview">
+                        <i aria-hidden="true" class="bit-icon bit-icon--Rocket"></i>
+                        <i aria-hidden="true" class="bit-icon bit-icon--CalendarWeek"></i>
+                        <i aria-hidden="true" class="bit-icon bit-icon--Shield"></i>
+                    </div>
+                    <CodeBox Language="html">&lt;i aria-hidden="true" class="bit-icon bit-icon--Rocket"&gt;&lt;/i&gt;</CodeBox>
+                </div>
+
+                <BitText Element="p">
+                    Every icon's panel carries that class ready to paste, and the code point behind it for
+                    CSS that draws the glyph itself:
+                </BitText>
+
+                <CodeBox Language="css">.my-button::before {
+    content: "\F3B3"; /* Rocket */
+    font-family: "Fabric MDL2";
+}</CodeBox>
+            </DocSection>
+        </DocSection>
+
+
+        <DocSection Id="appearance" Title="Size, color and variant"
+                    Description="An icon is text, so it inherits everything text does - and takes the same three scales every other component in the library takes.">
+
+            <BitText Element="p">
+                <code>Size</code> maps to the library's icon ramp, <code>Color</code> to its semantic
+                roles, and <code>Variant</code> decides whether the glyph is drawn bare, in a ring, or on
+                a filled chip. All three read from the theme, so an icon re-skins with the rest of the
+                page when a <BitLink Href="/theming">preset</BitLink> changes.
+            </BitText>
+
+            <div class="icon-matrix">
+                <div class="icon-matrix-block">
+                    <p class="icon-matrix-title">Size</p>
+                    <div class="icon-matrix-row">
+                        <span><BitIcon IconName="@BitIconName.Rocket" Size="BitSize.Small" /><em>Small</em></span>
+                        <span><BitIcon IconName="@BitIconName.Rocket" Size="BitSize.Medium" /><em>Medium</em></span>
+                        <span><BitIcon IconName="@BitIconName.Rocket" Size="BitSize.Large" /><em>Large</em></span>
+                        <span><BitIcon IconName="@BitIconName.Rocket" Style="font-size: 2.5rem;" /><em>font-size</em></span>
+                    </div>
+                </div>
+
+                <div class="icon-matrix-block">
+                    <p class="icon-matrix-title">Variant</p>
+                    <div class="icon-matrix-row">
+                        @foreach (var variant in previewVariants)
+                        {
+                            <span>
+                                <BitIcon IconName="@BitIconName.Rocket" Variant="variant.Value" />
+                                <em>@variant.Label</em>
+                            </span>
+                        }
+                    </div>
+                </div>
+
+                <div class="icon-matrix-block">
+                    <p class="icon-matrix-title">Color</p>
+                    <div class="icon-matrix-row">
+                        @foreach (var color in previewColors)
+                        {
+                            <span>
+                                <BitIcon IconName="@BitIconName.Rocket" Color="color.Value" />
+                                <em>@color.Label</em>
+                            </span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <BitText Element="p">
+                Nothing stops the glyph being sized and colored as the text it is. Anywhere the three
+                steps are not the right answer, set <code>font-size</code> and <code>color</code>
+                yourself and the icon follows:
+            </BitText>
+
+            <CodeBox Language="cshtml">&lt;BitIcon IconName="@@BitIconName.Rocket" Style="font-size: 2.5rem; color: tomato;" /&gt;</CodeBox>
+        </DocSection>
+
+
+        <DocSection Id="external" Title="Use another icon set"
+                    Description="Font Awesome, Bootstrap Icons, or anything else that renders a glyph from a CSS class - on the same components, through one parameter.">
+
+            <BitText Element="p">
+                Every component with an <code>IconName</code> also has an <code>Icon</code> parameter that
+                takes a <code>BitIconInfo</code>. It carries CSS classes rather than a Fabric name, which
+                is all any class-based icon library needs. <code>Icon</code> wins when both are set.
+            </BitText>
+
+            <BitText Element="p">
+                Three helpers cover the common sets, and <code>Css</code> covers the rest by passing the
+                classes through untouched:
+            </BitText>
+
+            <CodeBox Language="csharp">BitIconInfo.Fa("fa-solid fa-house")   // Font Awesome - the "fa-" prefix is added if missing
+BitIconInfo.Bi("house")               // Bootstrap Icons - renders "bi bi-house"
+BitIconInfo.Css("my-icon my-house")   // anything else - the classes, verbatim
+BitIconInfo.Bit("Home")               // back to the built-in set</CodeBox>
+
+            @* Font Awesome is not in this site's host page, so the section brings its own copy - which
+               is exactly the step being described, performed where it is described. *@
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+            <div class="icon-demo">
+                <div class="icon-demo-preview">
+                    <BitIcon Icon="@BitIconInfo.Fa("solid house")" />
+                    <BitIcon Icon="@BitIconInfo.Fa("brands github")" />
+                    <BitButton Icon="@BitIconInfo.Fa("solid rocket")">Launch</BitButton>
+                    <BitTag Icon="@BitIconInfo.Fa("solid heart")" Text="Font Awesome" />
+                </div>
+                <CodeBox Language="cshtml">&lt;BitIcon Icon="@@BitIconInfo.Fa("solid house")" /&gt;
+&lt;BitIcon Icon="@@BitIconInfo.Fa("brands github")" /&gt;
+&lt;BitButton Icon="@@BitIconInfo.Fa("solid rocket")"&gt;Launch&lt;/BitButton&gt;
+&lt;BitTag Icon="@@BitIconInfo.Fa("solid heart")" Text="Font Awesome" /&gt;</CodeBox>
+            </div>
+
+            <BitText Element="p">
+                The set's own stylesheet has to be referenced by the app &mdash; the library never fetches
+                one for you. Nothing else changes: sizing, coloring and disabled states are the component's,
+                not the icon set's.
+            </BitText>
+        </DocSection>
+
+
+        <DocSection Id="accessibility" Title="Accessibility"
+                    Description="An icon is either decoration or information, and the two are marked up differently. Deciding which is the whole job.">
+
+            <BitText Element="p">
+                <b>Decorative</b> &mdash; the icon repeats a label that is already there, and must add
+                nothing to what is announced. The library's components draw the glyph as an empty element
+                with no text of its own, so a <code>BitButton</code> with a word beside its icon announces
+                the word and nothing else. In markup you write yourself, mark the glyph
+                <code>aria-hidden="true"</code>.
+            </BitText>
+
+            <BitText Element="p">
+                <b>Informative</b> &mdash; the icon is the only thing saying what the control does. It needs
+                a text alternative, which on <code>BitIcon</code> and on every icon-only control is
+                <code>AriaLabel</code>. An icon-only button without one is a button screen readers announce
+                as nothing at all.
+            </BitText>
+
+            <div class="icon-demo">
+                <div class="icon-demo-preview">
+                    <BitButton IconName="@BitIconName.Save">Save</BitButton>
+                    <BitButton IconOnly Variant="BitVariant.Outline" AriaLabel="Save" Title="Save" IconName="@BitIconName.Save" />
+                    <BitIcon IconName="@BitIconName.Warning" Color="BitColor.Warning" AriaLabel="Warning" />
+                </div>
+                <CodeBox Language="cshtml">@@* Decorative: the word "Save" is the label *@@
+&lt;BitButton IconName="@@BitIconName.Save"&gt;Save&lt;/BitButton&gt;
+
+@@* Informative: the glyph is the label, so it needs one *@@
+&lt;BitButton IconOnly AriaLabel="Save" Title="Save" IconName="@@BitIconName.Save" /&gt;
+&lt;BitIcon IconName="@@BitIconName.Warning" AriaLabel="Warning" /&gt;</CodeBox>
+            </div>
+
+            <ul>
+                <li>
+                    <b>Never let color carry the meaning on its own.</b> A red glyph and a green glyph are
+                    the same glyph to a reader who cannot tell them apart &mdash; pair the color with a
+                    shape that differs, or with a word.
+                </li>
+                <li>
+                    <b>Give an icon-only control a real target.</b> The glyph is 16&nbsp;px; the button
+                    around it should be at least 24&nbsp;px, and 44&nbsp;px where a finger is expected.
+                    The library's own sizes already are.
+                </li>
+                <li>
+                    <b>Add <code>Title</code> as well as <code>AriaLabel</code></b> on an icon-only control.
+                    The label serves a screen reader; the tooltip serves everyone who simply does not
+                    recognise the glyph.
+                </li>
+            </ul>
+        </DocSection>
+
+
+        <DocSection Id="guidelines" Title="Guidelines"
+                    Description="What separates an interface that uses icons from one that is decorated with them.">
+
+            <div class="icon-rules">
+                <div class="icon-rule do">
+                    <p class="icon-rule-head">
+                        <BitIcon IconName="@BitIconName.CheckMark" />
+                        Do
+                    </p>
+                    <ul>
+                        <li>Stay inside one set. Fabric next to Font Awesome reads as two designs sharing a screen.</li>
+                        <li>Use the same icon for the same action everywhere &mdash; one delete glyph, not three.</li>
+                        <li>Let the icon sit beside a label wherever there is room for one.</li>
+                        <li>Size the glyph to the text it sits with, and let it take <code>currentColor</code>.</li>
+                        <li>Prefer the plainest glyph that says it. MDL2 offers a dozen mails; the one called <code>Mail</code> is almost always right.</li>
+                    </ul>
+                </div>
+
+                <div class="icon-rule dont">
+                    <p class="icon-rule-head">
+                        <BitIcon IconName="@BitIconName.Cancel" />
+                        Don't
+                    </p>
+                    <ul>
+                        <li>Don't use an icon for a concept it does not already carry. If it needs explaining, use a word.</li>
+                        <li>Don't rotate or mirror a glyph to mean something else &mdash; the set has a name for that direction.</li>
+                        <li>Don't put an icon on every row of a list. When everything is emphasised, nothing is.</li>
+                        <li>Don't scale a glyph past about 32&nbsp;px as an illustration; it is a UI icon and its strokes thin out.</li>
+                        <li>Don't ship the whole icon pack for the handful of glyphs a marketing page uses &mdash; the core subset may already have them.</li>
+                    </ul>
+                </div>
+            </div>
+        </DocSection>
+
+    </ChildContent>
 
 </DocsArticle>
 
-<div class="icon-details-panel-scope">
+
+@* The details of one icon: everything about it that is worth knowing, and everything about it that
+   is worth pasting. Modeless, so the grid stays live behind it and the reader can keep browsing
+   with it open - which is what makes the related-icons list at the bottom of it useful. *@
+<div class="icon-details-panel-scope" id="@PANEL_ELEMENT_ID">
     <BitPanel AutoToggleScroll Modeless ShowCloseButton
-              @bind-IsOpen="isIconPanelOpen"
-              Size="IconPanelSize"
+              @bind-IsOpen="_isPanelOpen"
+              Size="PANEL_SIZE"
               Position="BitPanelPosition.End"
-              HeaderText="Icon details"
-              OnDismiss="HandleIconPanelDismissed">
+              HeaderText="@(_selected?.Name ?? "Icon")"
+              OnDismiss="HandlePanelDismissed">
         <Body>
-            @if (selectedIcon is not null)
+            @if (_selected is not null)
             {
-                var glyphCode = GetGlyphCode(selectedIcon);
+                var glyphCode = GetGlyphCode(_selected);
 
                 <BitStack Gap="1rem" FillContent>
+
                     <BitCard FullWidth Background="BitColorKind.Secondary">
                         <BitStack Alignment="BitAlignment.Center" Gap="0.75rem">
-                            <BitIcon IconName="@selectedIcon.Value"
+                            <BitIcon IconName="@_selected.Name"
                                      Style="font-size: 3rem;"
                                      Color="BitColor.PrimaryForeground" />
+
                             <BitText Gutter ForceBreak Typography="BitTypography.H4">
-                                @selectedIcon.Value
+                                @_selected.Name
                             </BitText>
 
-                            <BitTag Color="BitColor.TertiaryBackground">
-                                @selectedIcon.ConstantReference
-                            </BitTag>
+                            <BitStack Horizontal Wrap AutoHeight Gap="0.5rem" HorizontalAlign="BitAlignment.Center">
+                                <BitTag Color="BitColor.TertiaryBackground" Text="@_selected.Constant" />
 
-                            <BitButton Size="BitSize.Small"
-                                       IconName="@(copyFeedbackKey == COPY_KEY_NAME ? BitIconName.Accept : BitIconName.Copy)"
-                                       OnClick="CopyIconName">
-                                @(copyFeedbackKey == COPY_KEY_NAME ? "Copied" : "Copy name")
-                            </BitButton>
+                                @* The one fact about an icon that changes what the app has to ship. *@
+                                @if (_selected.InCorePackage)
+                                {
+                                    <BitTag Size="BitSize.Small"
+                                            Color="BitColor.Success"
+                                            Variant="BitVariant.Outline"
+                                            IconName="@BitIconName.CheckMark"
+                                            Text="In the core package" />
+                                }
+                                else
+                                {
+                                    <BitTag Size="BitSize.Small"
+                                            Variant="BitVariant.Outline"
+                                            Color="BitColor.SecondaryForeground"
+                                            IconName="@BitIconName.Package"
+                                            Text="Bit.BlazorUI.Icons" />
+                                }
+                            </BitStack>
+
+                            <BitStack Horizontal Wrap AutoHeight Gap="0.5rem" HorizontalAlign="BitAlignment.Center">
+                                <BitButton Size="BitSize.Small"
+                                           OnClick="CopyName"
+                                           IconName="@(_copyFeedbackKey == COPY_KEY_NAME ? BitIconName.Accept : BitIconName.Copy)">
+                                    @(_copyFeedbackKey == COPY_KEY_NAME ? "Copied" : "Copy name")
+                                </BitButton>
+
+                                @* An icon someone can be sent, rather than a name they then have to find. *@
+                                <BitButton Size="BitSize.Small"
+                                           OnClick="CopyLink"
+                                           Variant="BitVariant.Outline"
+                                           IconName="@(_copyFeedbackKey == COPY_KEY_LINK ? BitIconName.Accept : BitIconName.Link)">
+                                    @(_copyFeedbackKey == COPY_KEY_LINK ? "Copied" : "Copy link")
+                                </BitButton>
+                            </BitStack>
                         </BitStack>
                     </BitCard>
 
@@ -113,22 +626,22 @@
                         </BitText>
                         <BitCard FullWidth>
                             <BitStack Gap="1rem" FillContent>
-                                <BitGrid Columns="3" Spacing="2rem">
+                                <BitGrid Columns="3" Spacing="1rem">
                                     <BitGridItem>
                                         <BitStack Alignment="BitAlignment.Center" Gap="0.375rem">
-                                            <BitIcon IconName="@selectedIcon.Value" Size="BitSize.Small" />
+                                            <BitIcon IconName="@_selected.Name" Size="BitSize.Small" />
                                             <BitText Typography="BitTypography.Caption2">Small</BitText>
                                         </BitStack>
                                     </BitGridItem>
                                     <BitGridItem>
                                         <BitStack Alignment="BitAlignment.Center" Gap="0.375rem">
-                                            <BitIcon IconName="@selectedIcon.Value" Size="BitSize.Medium" />
+                                            <BitIcon IconName="@_selected.Name" Size="BitSize.Medium" />
                                             <BitText Typography="BitTypography.Caption2">Medium</BitText>
                                         </BitStack>
                                     </BitGridItem>
                                     <BitGridItem>
                                         <BitStack Alignment="BitAlignment.Center" Gap="0.375rem">
-                                            <BitIcon IconName="@selectedIcon.Value" Size="BitSize.Large" />
+                                            <BitIcon IconName="@_selected.Name" Size="BitSize.Large" />
                                             <BitText Typography="BitTypography.Caption2">Large</BitText>
                                         </BitStack>
                                     </BitGridItem>
@@ -136,17 +649,37 @@
 
                                 <BitSeparator />
 
-                                <BitGrid Columns="4" Spacing="2rem">
+                                <BitGrid Columns="4" Spacing="1rem">
                                     @foreach (var color in previewColors)
                                     {
                                         <BitGridItem Title="@color.Label">
                                             <BitStack Alignment="BitAlignment.Center" Gap="0.375rem">
-                                                <BitIcon IconName="@selectedIcon.Value" Color="color.Value" />
+                                                <BitIcon IconName="@_selected.Name" Color="color.Value" />
                                                 <BitText Typography="BitTypography.Caption2">@color.Label</BitText>
                                             </BitStack>
                                         </BitGridItem>
                                     }
                                 </BitGrid>
+                            </BitStack>
+                        </BitCard>
+                    </section>
+
+                    @* What it looks like where it will actually be used. A glyph that reads well on its
+                       own can still be unrecognisable at button size, and this is the only place on the
+                       page that says so before the reader has written any markup. *@
+                    <section>
+                        <BitText Gutter Typography="BitTypography.Subtitle2" Foreground="BitColorKind.Secondary">
+                            In a component
+                        </BitText>
+                        <BitCard FullWidth>
+                            <BitStack Horizontal Wrap AutoHeight Gap="0.5rem" VerticalAlign="BitAlignment.Center">
+                                <BitButton Size="BitSize.Small" IconName="@_selected.Name">Button</BitButton>
+                                <BitButton IconOnly
+                                           Size="BitSize.Small"
+                                           Variant="BitVariant.Outline"
+                                           AriaLabel="@_selected.Name"
+                                           IconName="@_selected.Name" />
+                                <BitTag Size="BitSize.Small" IconName="@_selected.Name" Text="Tag" />
                             </BitStack>
                         </BitCard>
                     </section>
@@ -158,21 +691,21 @@
                         <BitCard FullWidth>
                             <BitStack Gap="0">
                                 <IconDetailRow Label="Name"
-                                               Value="@selectedIcon.Value"
+                                               Value="@_selected.Name"
                                                CopyKey="name-row"
-                                               CopyFeedbackKey="@copyFeedbackKey"
+                                               CopyFeedbackKey="@_copyFeedbackKey"
                                                OnCopy="HandleDetailCopy" />
                                 <hr style="width: 100%;" />
                                 <IconDetailRow Label="Constant"
-                                               Value="@selectedIcon.ConstantReference"
+                                               Value="@_selected.Constant"
                                                CopyKey="constant"
-                                               CopyFeedbackKey="@copyFeedbackKey"
+                                               CopyFeedbackKey="@_copyFeedbackKey"
                                                OnCopy="HandleDetailCopy" />
                                 <hr style="width: 100%;" />
                                 <IconDetailRow Label="CSS class"
-                                               Value="@selectedIcon.CssClass"
+                                               Value="@_selected.CssClass"
                                                CopyKey="css"
-                                               CopyFeedbackKey="@copyFeedbackKey"
+                                               CopyFeedbackKey="@_copyFeedbackKey"
                                                OnCopy="HandleDetailCopy" />
                                 @if (string.IsNullOrEmpty(glyphCode) is false)
                                 {
@@ -180,7 +713,7 @@
                                     <IconDetailRow Label="Glyph"
                                                    CopyKey="glyph"
                                                    Value="@glyphCode"
-                                                   CopyFeedbackKey="@copyFeedbackKey"
+                                                   CopyFeedbackKey="@_copyFeedbackKey"
                                                    OnCopy="HandleDetailCopy" />
                                 }
                             </BitStack>
@@ -199,7 +732,7 @@
                                 </BitText>
 
                                 <CodeBox Language="xml" MaxHeight="4.5rem">
-                                    @($"<BitIcon {selectedIcon.RazorIconName} />")
+                                    @($"<BitIcon {_selected.RazorIconName} />")
                                 </CodeBox>
                             </BitStack>
 
@@ -209,11 +742,47 @@
                                 </BitText>
 
                                 <CodeBox Language="xml" MaxHeight="4.5rem">
-                                    @($"<BitButton {selectedIcon.RazorIconInfo} />")
+                                    @($"<BitButton {_selected.RazorIconInfo} />")
+                                </CodeBox>
+                            </BitStack>
+
+                            <BitStack Gap="0.25rem">
+                                <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">
+                                    Plain markup
+                                </BitText>
+
+                                <CodeBox Language="xml" MaxHeight="4.5rem">
+                                    @($"<i aria-hidden=\"true\" class=\"{_selected.CssClass}\"></i>")
                                 </CodeBox>
                             </BitStack>
                         </BitStack>
                     </section>
+
+                    @* An icon set is chosen in families: the glyph a reader wants is usually a variant
+                       of the one they searched for, and finding it by name means guessing the suffix. *@
+                    @if (_related.Count > 0)
+                    {
+                        <section>
+                            <BitText Typography="BitTypography.Subtitle2" Gutter Foreground="BitColorKind.Secondary">
+                                Related icons
+                            </BitText>
+                            <BitCard FullWidth>
+                                <div class="icon-related">
+                                    @foreach (var related in _related)
+                                    {
+                                        <button type="button"
+                                                title="@related.Name"
+                                                aria-label="@related.Name"
+                                                class="icon-related-box"
+                                                @onclick="() => OpenPanel(related)">
+                                            <i aria-hidden="true" class="@($"bit-icon bit-icon--{related.Name}")"></i>
+                                            <span>@related.Name</span>
+                                        </button>
+                                    }
+                                </div>
+                            </BitCard>
+                        </section>
+                    }
                 </BitStack>
             }
         </Body>

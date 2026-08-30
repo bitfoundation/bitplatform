@@ -77,15 +77,23 @@ public static class IJSRuntimeExtensions
     /// and then stops watching it. This is what lets a demo page hold back the parts of itself the
     /// reader has not reached yet - an example's live preview, the API tables - instead of building the
     /// whole page on every navigation.
+    /// <para>
+    /// The registration is filed under <paramref name="key"/>, not under the element id, and that is
+    /// what <see cref="UnobserveVisibility"/> takes back. The ids on these pages are not unique over
+    /// time - every component page has an "example1" and one "api-tables" - and a page tears its
+    /// registrations down asynchronously, after the page that replaced it has already put its own in.
+    /// A key belonging to the component instance is what stops one page's teardown from unwatching
+    /// another page's elements, which leaves them unmounted for good.
+    /// </para>
     /// </summary>
-    public static async Task ObserveVisibility<T>(this IJSRuntime jsRuntime, string id, DotNetObjectReference<T> dotnetObj, string methodName) where T : class
+    public static async Task ObserveVisibility<T>(this IJSRuntime jsRuntime, string key, string id, DotNetObjectReference<T> dotnetObj, string methodName) where T : class
     {
-        await jsRuntime.InvokeVoid("observeVisibility", id, dotnetObj, methodName);
+        await jsRuntime.InvokeVoid("observeVisibility", key, id, dotnetObj, methodName);
     }
 
-    public static async Task UnobserveVisibility(this IJSRuntime jsRuntime, string id)
+    public static async Task UnobserveVisibility(this IJSRuntime jsRuntime, string key)
     {
-        await jsRuntime.InvokeVoid("unobserveVisibility", id);
+        await jsRuntime.InvokeVoid("unobserveVisibility", key);
     }
 
     /// <summary>
@@ -111,15 +119,21 @@ public static class IJSRuntimeExtensions
     /// Calls the named method once, the next time the browser is idle. A demo page uses it to fill in
     /// the parts of itself the reader has not reached, one at a time, so that holding them back never
     /// leaves the page permanently incomplete.
+    /// <para>
+    /// As with <see cref="ObserveVisibility"/>, <paramref name="key"/> has to belong to the component
+    /// instance: a key shared by every demo page means the page being navigated away from cancels the
+    /// idle queue of the page that replaced it, and that page then never fills anything in - the chain
+    /// that would have rescheduled it is exactly what was cancelled.
+    /// </para>
     /// </summary>
-    public static async Task RequestIdleWork<T>(this IJSRuntime jsRuntime, string id, DotNetObjectReference<T> dotnetObj, string methodName) where T : class
+    public static async Task RequestIdleWork<T>(this IJSRuntime jsRuntime, string key, DotNetObjectReference<T> dotnetObj, string methodName) where T : class
     {
-        await jsRuntime.InvokeVoid("requestIdleWork", id, dotnetObj, methodName);
+        await jsRuntime.InvokeVoid("requestIdleWork", key, dotnetObj, methodName);
     }
 
-    public static async Task CancelIdleWork(this IJSRuntime jsRuntime, string id)
+    public static async Task CancelIdleWork(this IJSRuntime jsRuntime, string key)
     {
-        await jsRuntime.InvokeVoid("cancelIdleWork", id);
+        await jsRuntime.InvokeVoid("cancelIdleWork", key);
     }
 
     /// <summary>

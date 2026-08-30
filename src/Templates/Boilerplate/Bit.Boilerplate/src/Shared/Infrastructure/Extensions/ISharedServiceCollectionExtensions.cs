@@ -4,7 +4,6 @@ using Boilerplate.Shared.Features.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

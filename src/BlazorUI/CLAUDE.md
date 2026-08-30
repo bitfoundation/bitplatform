@@ -82,8 +82,13 @@ Shared by both:
 - **`ComponentCatalog`** - the one list of components, DERIVED from `MainLayout.NavItems` rather
   than written out again. It powers the `/components` gallery, the home page's category grid, the
   header's search box, the category shown above a component's title, and the prev/next pager at the
-  foot of every demo page. Adding a component to the nav is all it takes; the only thing the catalog
-  adds of its own is a one-line summary per component and an icon per category.
+  foot of every demo page. Adding a component to the nav is all it takes; what the catalog adds of
+  its own is a one-line summary and a glyph per component, an icon and a blurb per category, and the
+  NuGet package a category's components ship in (derived from the category - Extras and Theming are
+  `Bit.BlazorUI.Extras`, Legacy is `Bit.BlazorUI.Legacy`, the rest is core). A component with no
+  glyph of its own falls back to its category's, so the map may lag the nav without leaving a card
+  blank. `ComponentCatalog.Search` ranks matches (name, then alias, then the words that only
+  describe it); the gallery uses it whenever a term is typed, and the header's box always.
 - **`Styles/abstracts/_docs.scss`** - the docs layer's own tokens and mixins (rhythm, measure,
   focus ring, surfaces, scrollbars, eyebrow, display type). Everything in it is either derived from
   a `--bit-*` token, so all four presets and both schemes re-skin the chrome for free, or is a pure

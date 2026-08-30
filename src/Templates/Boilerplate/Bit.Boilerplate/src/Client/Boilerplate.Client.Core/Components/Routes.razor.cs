@@ -6,17 +6,27 @@ public partial class Routes : ComponentBase, IDisposable
     [Parameter] public Type? Layout { get; set; }
 
     [AutoInject] private PubSubService pubSubService { get; set; } = default!;
+    //#if (brouter == true)
+    [AutoInject] private IBrouter brouter { get; set; } = default!;
+    //#endif
 
-    private string? currentCulture;
-    private Action? unsubscribeCultureChanged;
+    /// <summary>
+    /// The @key of the whole component tree: bumping it throws the current tree away and builds a fresh one. A plain
+    /// counter rather than the value behind the restart, so anything can ask for one without this component knowing
+    /// what changed, and two different changes never collide on the same key.
+    /// </summary>
+    private int softRestartKey = 1;
+    private Action? unsubscribeSoftRestart;
 
     protected override void OnInitialized()
     {
-        currentCulture = CultureInfo.CurrentUICulture.Name;
-
-        unsubscribeCultureChanged = pubSubService.Subscribe(ClientAppMessages.CULTURE_CHANGED, payload => InvokeAsync(async () =>
+        unsubscribeSoftRestart = pubSubService.Subscribe(ClientAppMessages.SOFT_RESTART, _ => InvokeAsync(() =>
         {
-            currentCulture = payload as string ?? CultureInfo.CurrentUICulture.Name;
+            //#if (brouter == true)
+            brouter.ClearLoaderCache();
+            //#endif
+
+            softRestartKey++;
             StateHasChanged();
         }));
 
@@ -25,8 +35,8 @@ public partial class Routes : ComponentBase, IDisposable
 
     public void Dispose()
     {
-        unsubscribeCultureChanged?.Invoke();
-        unsubscribeCultureChanged = null;
+        unsubscribeSoftRestart?.Invoke();
+        unsubscribeSoftRestart = null;
         GC.SuppressFinalize(this);
     }
 
@@ -73,7 +83,7 @@ public partial class Routes : ComponentBase, IDisposable
             && string.Equals(culture, CultureInfo.CurrentUICulture.Name, StringComparison.InvariantCultureIgnoreCase) is false)
         {
             CultureInfoManager.SetCurrentCulture(culture);
-            currentServiceProvider!.GetRequiredService<PubSubService>().Publish(ClientAppMessages.CULTURE_CHANGED, culture, persistent: true);
+            currentServiceProvider!.GetRequiredService<PubSubService>().Publish(ClientAppMessages.SOFT_RESTART);
         }
 
         navigationManager.NavigateTo(url, forceLoad, replace);
@@ -87,13 +97,16 @@ public partial class Routes : ComponentBase, IDisposable
 public class AppRouter :
     //#if (brouter == true)
     Brouter
+{ }
 //#else
 //#if (IsInsideProjectTemplate == true)
 /*
 //#endif
 Microsoft.AspNetCore.Components.Routing.Router
+{
+    public AppRouter() => NotFoundPage = typeof(Pages.NotFoundPage);
+}
 //#if (IsInsideProjectTemplate == true)
 */
 //#endif
 //#endif
-{ }

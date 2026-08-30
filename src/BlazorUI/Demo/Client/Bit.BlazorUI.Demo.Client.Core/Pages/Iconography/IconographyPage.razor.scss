@@ -1,28 +1,227 @@
 @import '../../Styles/abstracts/_docs.scss';
 
-// The height of one cell of the grid and the gap that follows it. In px, and duplicated by the
-// ICON_CELL_* constants in the code-behind, because the grid is virtualized by row: the virtualizer
-// places rows at absolute pixel offsets, so the row height it is handed - cell plus gap - has to be
-// exactly the height a row occupies here. rem would let a text-zoom move one side of that agreement
-// and not the other. How WIDE a cell is is not settled here: the code-behind divides the measured
-// width by a minimum cell width to get a column count, and the row shares its width out between
-// that many equal columns.
-$icon-cell-height: 68px;
-$icon-cell-gap: 8px;
-
+// ── The browser ───────────────────────────────────────────────────────────────────────────────
+// Toolbar, status line and grid, in one column. Every number the grid's own layout needs - how
+// wide a cell is, how tall, how big the glyph, how many fit across - is handed down from the
+// code-behind as a custom property on the scroller (see IconCell). It has to be one set of numbers
+// rather than two that agree: the virtualizer places rows at absolute pixel offsets, so the height
+// it is told a row takes must be exactly the height a row takes here, or the rows drift apart.
 .icon-browser {
     display: flex;
     gap: $doc-space-sm;
     flex-flow: column nowrap;
+}
 
-    ::deep .iconography-search-box {
-        max-width: rem2(320px);
+
+// ── Toolbar ───────────────────────────────────────────────────────────────────────────────────
+.icon-toolbar {
+    display: flex;
+    gap: $doc-space-xs;
+    flex-flow: column nowrap;
+}
+
+.icon-toolbar-row {
+    display: flex;
+    gap: $doc-space-sm;
+    align-items: center;
+}
+
+.icon-toolbar-controls {
+    display: flex;
+    flex-shrink: 0;
+    gap: $doc-space-2xs;
+    align-items: center;
+
+    // Both controls are browsing preferences over a grid with room to spare. At phone widths there
+    // is no room to spare and no pointer to hover with, so the size is the one that fits and the
+    // names are pinned on below (see the lt-md rule further down).
+    @include lt-md {
+        display: none;
+    }
+}
+
+// One choice with three positions, so a shared frame rather than three loose buttons.
+.icon-segment {
+    display: flex;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: $bit-shape-radius-control;
+    border: rem2(1px) solid $bit-color-border-secondary;
+}
+
+.icon-segment-btn {
+    border: none;
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    width: rem2(34px);
+    height: rem2(34px);
+    color: $bit-color-foreground-secondary;
+    background-color: $bit-color-background-primary;
+    transition: color $bit-motion-duration-short $bit-motion-easing,
+                background-color $bit-motion-duration-short $bit-motion-easing;
+
+    & + & {
+        border-inline-start: rem2(1px) solid $bit-color-border-secondary;
     }
 
-    // A fixed-height scroller, and the viewport the virtualizer windows against: the grid is the
-    // one place on this site where the number of nodes, not the layout, is what costs.
+    &:hover {
+        color: $bit-color-foreground-primary;
+        background-color: $bit-color-background-primary-hover;
+    }
+
+    &:focus-visible {
+        @include doc-focus-ring(-2px);
+    }
+
+    &.active {
+        color: $bit-color-primary-text;
+        background-color: $bit-color-primary;
+    }
+}
+
+// The control says what it does by being the shape it produces: three squares, the size of the
+// cells each step draws. A glyph would have had to stand for "bigger", which is a word.
+.icon-segment-dot {
+    display: block;
+    background-color: currentColor;
+    border-radius: $bit-shape-radius-xs;
+}
+
+.icon-toggle {
+    gap: $doc-space-3xs;
+    display: inline-flex;
+    cursor: pointer;
+    flex-shrink: 0;
+    align-items: center;
+    white-space: nowrap;
+    height: rem2(34px);
+    padding-inline: $doc-space-xs;
+    font-family: inherit;
+    font-size: $bit-typography-fs-xs;
+    color: $bit-color-foreground-secondary;
+    border-radius: $bit-shape-radius-control;
+    background-color: $bit-color-background-primary;
+    border: rem2(1px) solid $bit-color-border-secondary;
+    transition: color $bit-motion-duration-short $bit-motion-easing,
+                border-color $bit-motion-duration-short $bit-motion-easing,
+                background-color $bit-motion-duration-short $bit-motion-easing;
+
+    // BitIcon always emits a color class of its own, so the glyph would stay primary-blue
+    // through every state of the button - invisible once .active paints the primary background
+    // behind it. The icon is part of the label here, so it follows the label's color.
+    ::deep .bit-ico {
+        color: inherit;
+        font-size: rem2(15px);
+    }
+
+    &:hover {
+        color: $bit-color-foreground-primary;
+        border-color: $bit-color-border-primary;
+    }
+
+    &:focus-visible {
+        @include doc-focus-ring;
+    }
+
+    &.active {
+        color: $bit-color-primary-text;
+        border-color: $bit-color-primary;
+        background-color: $bit-color-primary;
+    }
+}
+
+
+// ── Category chips ────────────────────────────────────────────────────────────────────────────
+// A chip carries its count, which turns the filter row into a table of contents: the reader can
+// see that there are ninety weather icons and four hundred actions before choosing where to look.
+.icon-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $doc-space-3xs;
+}
+
+.icon-chip {
+    gap: $doc-space-3xs;
+    display: inline-flex;
+    cursor: pointer;
+    align-items: center;
+    white-space: nowrap;
+    font-family: inherit;
+    padding: rem2(5px) $doc-space-xs;
+    font-size: $bit-typography-fs-xs;
+    color: $bit-color-foreground-secondary;
+    border-radius: $bit-shape-radius-chip;
+    background-color: $bit-color-background-primary;
+    border: rem2(1px) solid $bit-color-border-secondary;
+    transition: color $bit-motion-duration-short $bit-motion-easing,
+                opacity $bit-motion-duration-short $bit-motion-easing,
+                border-color $bit-motion-duration-short $bit-motion-easing,
+                background-color $bit-motion-duration-short $bit-motion-easing;
+
+    &:hover {
+        color: $bit-color-foreground-primary;
+        border-color: $bit-color-border-primary;
+    }
+
+    &:focus-visible {
+        @include doc-focus-ring;
+    }
+
+    &.active {
+        color: $bit-color-primary-text;
+        border-color: $bit-color-primary;
+        background-color: $bit-color-primary;
+    }
+
+    // A category the current term does not reach at all. Dimmed rather than removed: a chip row
+    // that reflows while it is being read cannot be aimed at, and the zero is itself an answer.
+    &.empty:not(.active) {
+        opacity: 0.45;
+    }
+}
+
+.icon-chip-count {
+    opacity: 0.7;
+    font-size: $bit-typography-fs-2xs;
+    font-variant-numeric: tabular-nums;
+}
+
+
+// ── Status ────────────────────────────────────────────────────────────────────────────────────
+.icon-status {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $doc-space-2xs;
+    align-items: center;
+}
+
+.icon-status-text {
+    margin: 0;
+    margin-inline-end: auto;
+    font-size: $bit-typography-fs-xs;
+    color: $bit-color-foreground-secondary;
+
+    b {
+        font-variant-numeric: tabular-nums;
+        font-weight: $bit-typography-fw-semibold;
+        color: $bit-color-foreground-primary;
+    }
+}
+
+
+// ── The grid ──────────────────────────────────────────────────────────────────────────────────
+// A fixed-height scroller, and the viewport the virtualizer windows against: the grid is the one
+// place on this site where the number of nodes, not the layout, is what costs.
+.icon-browser {
+    ::deep .icon-search {
+        flex: 1 1 auto;
+        max-width: rem2(420px);
+    }
+
     ::deep .icon-scroller {
-        height: rem2(480px);
+        height: rem2(520px);
         padding: $doc-space-sm;
 
         @include doc-surface;
@@ -31,19 +230,21 @@ $icon-cell-gap: 8px;
 
     // One virtualized item. A grid of exactly the column count the code-behind measured, rather
     // than a row of fixed-width cells, so the last row stays aligned with the ones above it and no
-    // slack is left over on the right - which on a phone, three columns wide, is most of a cell.
+    // slack is left over on the right - which at a narrow width, a few columns wide, is most of a cell.
     // Its height is the cell plus the gap that follows it, so the trailing gap sits inside the row
-    // rather than between two absolutely positioned rows, where it would have nothing to push against.
+    // rather than between two absolutely positioned rows, where it would have nothing to push
+    // against.
     ::deep .icon-row {
         display: grid;
-        gap: $icon-cell-gap;
-        padding-bottom: $icon-cell-gap;
+        gap: var(--icon-gap, 8px);
+        padding-bottom: var(--icon-gap, 8px);
         grid-template-columns: repeat(var(--icon-cols, 1), minmax(0, 1fr));
     }
 
     // The label is revealed on hover and focus rather than always shown: at rest the grid should
-    // read as a sheet of glyphs, which is how an icon is actually recognised. Its box is reserved
-    // either way, so revealing it cannot move anything.
+    // read as a sheet of glyphs, which is how an icon is actually recognized. Its box is reserved
+    // either way, so revealing it cannot move anything - which is also what lets the Names toggle
+    // pin every label down without re-chunking a single row.
     ::deep .icon-box {
         gap: rem2(6px);
         border: none;
@@ -57,15 +258,16 @@ $icon-cell-gap: 8px;
         justify-content: center;
         flex-flow: column nowrap;
         background-color: transparent;
-        height: $icon-cell-height;
         padding: rem2(8px) rem2(4px);
+        height: var(--icon-cell-h, 72px);
         border-radius: $bit-shape-radius-surface;
         transition: background-color $bit-motion-duration-short $bit-motion-easing;
 
         > i {
             flex: none;
-            font-size: rem2(20px);
+            line-height: 1;
             color: $bit-color-foreground-secondary;
+            font-size: var(--icon-cell-glyph, 24px);
         }
 
         .icon-name {
@@ -86,6 +288,10 @@ $icon-cell-gap: 8px;
         &.selected {
             background-color: $bit-color-background-secondary;
 
+            > i {
+                color: $bit-color-foreground-primary;
+            }
+
             .icon-name {
                 opacity: 1;
             }
@@ -98,8 +304,289 @@ $icon-cell-gap: 8px;
             outline-offset: rem2(-2px);
         }
 
+        // Inset for the same reason as the focus ring above, and so a cell at the edge of the
+        // scroller is not clipped by its overflow.
         &.selected {
             outline: rem2(1px) solid $bit-color-primary;
+            outline-offset: rem2(-1px);
         }
+    }
+
+    ::deep .icon-scroller.show-names .icon-box .icon-name {
+        opacity: 1;
+    }
+
+    // There is no hover on a touch screen, and the toggle that would have pinned the names down is
+    // one of the controls hidden at this width - so below it the names are simply always on.
+    @include lt-md {
+        ::deep .icon-box .icon-name {
+            opacity: 1;
+        }
+    }
+
+    // A dead end is the one thing a search must never be. Centered inside the scroller rather than
+    // replacing it, so the grid does not collapse and then jump back to its height on the next
+    // keystroke.
+    ::deep .icon-empty {
+        display: flex;
+        text-align: center;
+        gap: $doc-space-2xs;
+        align-items: center;
+        flex-flow: column nowrap;
+        padding: $doc-space-3xl $doc-space-sm;
+    }
+
+    ::deep .icon-empty-actions {
+        margin-top: $doc-space-sm;
+        justify-content: center;
+    }
+}
+
+
+// ── The core subset ───────────────────────────────────────────────────────────────────────────
+// The two dozen glyphs that need no package, shown where the reader is deciding whether they need
+// one. Each is a way into the same details panel the grid opens, so the list is a shortcut rather
+// than a picture of one.
+.core-glyphs {
+    display: grid;
+    gap: $doc-space-2xs;
+    margin-block: $doc-space-sm;
+    grid-template-columns: repeat(auto-fill, minmax(rem2(132px), 1fr));
+}
+
+.core-glyph {
+    gap: $doc-space-2xs;
+    display: flex;
+    min-width: 0;
+    cursor: pointer;
+    align-items: center;
+    font-family: inherit;
+    text-align: start;
+    padding: $doc-space-2xs $doc-space-xs;
+    font-size: $bit-typography-fs-2xs;
+    color: $bit-color-foreground-secondary;
+
+    @include doc-surface;
+
+    transition: color $bit-motion-duration-short $bit-motion-easing,
+                border-color $bit-motion-duration-short $bit-motion-easing;
+
+    span {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    ::deep .bit-ico {
+        flex: none;
+        font-size: rem2(16px);
+        color: $bit-color-primary;
+    }
+
+    &:hover {
+        color: $bit-color-foreground-primary;
+        border-color: $bit-color-border-primary;
+    }
+
+    &:focus-visible {
+        @include doc-focus-ring;
+    }
+}
+
+
+// ── Worked examples ───────────────────────────────────────────────────────────────────────────
+// What it renders, above what to type. The preview leads because the reader is checking a shape,
+// and only then reaching for the markup that produces it.
+.icon-demo {
+    display: flex;
+    gap: $doc-space-2xs;
+    flex-flow: column nowrap;
+    margin-block: $doc-space-sm;
+}
+
+.icon-demo-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $doc-space-sm;
+    align-items: center;
+    padding: $doc-space-md $doc-space-sm;
+
+    @include doc-surface;
+
+    // The bare glyphs of the "from your own markup" example carry no component around them, so
+    // they are given the size and color the components beside them would have had.
+    > i.bit-icon {
+        font-size: rem2(20px);
+        color: $bit-color-foreground-primary;
+    }
+}
+
+
+// ── The three scales ──────────────────────────────────────────────────────────────────────────
+// One glyph under every value of Size, Variant and Color, so the three ramps can be compared
+// without reading three parameter tables.
+.icon-matrix {
+    display: flex;
+    gap: $doc-space-sm;
+    flex-flow: column nowrap;
+    margin-block: $doc-space-sm;
+}
+
+.icon-matrix-block {
+    padding: $doc-space-sm;
+
+    @include doc-surface;
+}
+
+.icon-matrix-title {
+    margin: 0 0 $doc-space-xs;
+
+    @include doc-eyebrow;
+}
+
+.icon-matrix-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $doc-space-md;
+    align-items: flex-end;
+
+    > span {
+        display: flex;
+        gap: rem2(6px);
+        min-width: rem2(56px);
+        align-items: center;
+        flex-flow: column nowrap;
+    }
+
+    em {
+        font-style: normal;
+        white-space: nowrap;
+        font-size: $bit-typography-fs-2xs;
+        color: $bit-color-foreground-tertiary;
+    }
+}
+
+
+// ── Do and don't ──────────────────────────────────────────────────────────────────────────────
+// Side by side, because the pair is the point: each line on the right is the failure mode of the
+// line on the left.
+.icon-rules {
+    display: grid;
+    gap: $doc-space-sm;
+    margin-block: $doc-space-sm;
+    grid-template-columns: repeat(auto-fit, minmax(rem2(280px), 1fr));
+}
+
+.icon-rule {
+    padding: $doc-space-sm $doc-space-md;
+
+    @include doc-surface;
+
+    // The rule the whole block is about is drawn on its leading edge, in the theme's own success
+    // and error roles rather than in a chosen green and red.
+    border-inline-start-width: rem2(3px);
+
+    &.do {
+        border-inline-start-color: $bit-color-success;
+    }
+
+    &.dont {
+        border-inline-start-color: $bit-color-error;
+    }
+
+    > ul {
+        margin: 0;
+        padding-inline-start: $doc-space-sm;
+    }
+
+    > ul > li {
+        line-height: 1.6;
+        margin-block: $doc-space-3xs;
+        font-size: $bit-typography-fs-xs;
+        color: $bit-color-foreground-secondary;
+
+        > code {
+            @include doc-code-inline;
+        }
+    }
+}
+
+.icon-rule-head {
+    gap: $doc-space-3xs;
+    display: flex;
+    margin: 0 0 $doc-space-2xs;
+    align-items: center;
+    font-weight: $bit-typography-fw-semibold;
+    font-size: $bit-typography-fs-sm;
+
+    .do & {
+        color: $bit-color-success;
+    }
+
+    .dont & {
+        color: $bit-color-error;
+    }
+
+    ::deep .bit-ico {
+        color: inherit;
+        font-size: rem2(15px);
+    }
+}
+
+
+// ── Related icons, in the panel ───────────────────────────────────────────────────────────────
+// The variants built on the same word. Each is a way of moving the panel onto that icon without
+// closing it, which is what turns a lookup into browsing a family.
+.icon-related {
+    display: grid;
+    gap: $doc-space-3xs;
+    grid-template-columns: repeat(auto-fill, minmax(rem2(84px), 1fr));
+}
+
+.icon-related-box {
+    border: none;
+    gap: rem2(4px);
+    display: flex;
+    cursor: pointer;
+    color: inherit;
+    overflow: hidden;
+    text-align: center;
+    align-items: center;
+    font-family: inherit;
+    justify-content: center;
+    flex-flow: column nowrap;
+    padding: $doc-space-2xs rem2(4px);
+    background-color: transparent;
+    border-radius: $bit-shape-radius-surface;
+    transition: background-color $bit-motion-duration-short $bit-motion-easing;
+
+    > i {
+        flex: none;
+        line-height: 1;
+        font-size: rem2(20px);
+        color: $bit-color-foreground-secondary;
+    }
+
+    > span {
+        overflow: hidden;
+        line-height: rem2(13px);
+        max-height: rem2(26px);
+        overflow-wrap: anywhere;
+        font-size: $bit-typography-fs-2xs;
+        color: $bit-color-foreground-tertiary;
+    }
+
+    &:hover {
+        background-color: $bit-color-background-secondary;
+
+        > i,
+        > span {
+            color: $bit-color-foreground-primary;
+        }
+    }
+
+    &:focus-visible {
+        outline: rem2(2px) solid $bit-color-primary;
+        outline-offset: rem2(-2px);
     }
 }

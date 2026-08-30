@@ -39,10 +39,11 @@ public interface ITelemetryContext
 
     public string? PageUrl { get; set; }
 
+    /// <summary>
+    /// The zone the app actually renders date/times in - the user's preference, kept fresh by
+    /// <c>TimeZoneService.ApplyPreferredTimeZone</c>; the device's zone until that first resolves.
+    /// </summary>
     public string? TimeZone { get; set; }
-    public string? Culture { get; set; }
-
-    public string? Environment { get; set; }
 
     /// <summary>
     /// <inheritdoc cref="Parameters.IsOnline"/>
@@ -59,10 +60,11 @@ public interface ITelemetryContext
         data[nameof(Platform)] = Platform;
         data[nameof(AppVersion)] = AppVersion;
         data[nameof(PageUrl)] = PageUrl;
-        data[nameof(TimeZone)] = TimeZone;
+        data[nameof(TimeZone)] = TimeZone ?? TimeZoneInfo.Local.Id;
         data["ClientDateTime"] = TimeProvider.GetUtcNow().ToString("u");
-        data[nameof(Culture)] = Culture;
-        data[nameof(Environment)] = Environment;
+        // Culture stays ambient - always current, where a stored one would go stale after an in-place language switch.
+        data["Culture"] = CultureInfo.CurrentUICulture.Name;
+        data["Environment"] = AppEnvironment.Current;
         data[nameof(IsOnline)] = IsOnline;
 
         if (AppPlatform.IsBlazorHybrid)

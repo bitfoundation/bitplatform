@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
   <!-- 
@@ -1731,9 +1731,6 @@
     <data name="LeaveTenantConfirmMessage" xml:space="preserve">
     <value>هل أنت متأكد أنك تريد مغادرة المستأجر {0}؟</value>
   </data>
-    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
-    <value>لقد غادرت المستأجر بنجاح.</value>
-  </data>
     <data name="SwitchTenant" xml:space="preserve">
     <value>تبديل المستأجر</value>
   </data>
@@ -1809,8 +1806,31 @@
   <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
     <value>رفض الدعوة إلى {0}؟ لا يمكن التراجع عن هذا الإجراء - ستحتاج إلى دعوة جديدة للانضمام.</value>
   </data>
-  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
-    <value>تم رفض الدعوة.</value>
+  <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>المنطقة الزمنية</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>اختر المنطقة الزمنية</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>ابحث عن منطقة زمنية</value>
+  </data>
+    <data name="NoTimeZoneMatchesSearchMessage" xml:space="preserve">
+    <value>لا توجد منطقة زمنية تطابق بحثك.</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotifications" xml:space="preserve">
+    <value>الإشعارات الفورية</value>
+  </data>
+    <data name="TurnPushNotificationsOn" xml:space="preserve">
+    <value>تشغيل الإشعارات الفورية</value>
+  </data>
+    <data name="TurnPushNotificationsOff" xml:space="preserve">
+    <value>إيقاف الإشعارات الفورية</value>
+  </data>
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>الإشعارات الفورية محظورة لهذا التطبيق. اسمح بالإشعارات في إعدادات المتصفح أو نظام التشغيل ثم حاول مرة أخرى.</value>
   </data>
   <!--#endif-->
 </root>

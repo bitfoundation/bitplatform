@@ -90,12 +90,7 @@ public partial class Program
             }
         });
 
-        var webViewArgs = "--unsafely-treat-insecure-origin-as-secure=https://0.0.0.1 --enable-notifications";
-        if (AppEnvironment.IsDevelopment())
-        {
-            webViewArgs += " --remote-debugging-port=9222";
-        }
-        Environment.SetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", webViewArgs);
+        Environment.SetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--unsafely-treat-insecure-origin-as-secure=https://0.0.0.1 --enable-notifications --remote-debugging-port=9222");
 
         var blazorWebView = new BlazorWebView
         {

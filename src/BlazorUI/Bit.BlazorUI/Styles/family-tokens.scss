@@ -40,9 +40,15 @@
     --bit-shp-radius-chip: var(--bit-shp-radius-control);
     --bit-shp-radius-selection: var(--bit-shp-radius-control);
 
-    // elevation per surface family - Fluent lifts every floating surface with the callout shadow and
-    // leaves toasts flat; app bars cast a foreground-tinted shadow towards the content they cover so
-    // it stays visible on a dark surface, downwards for the header and upwards for the footer.
+    // elevation per surface family - the FALLBACK tier: every family points at the callout shadow, so
+    // a consumer-defined theme that only sets --bit-shd-cal still lifts every floating surface, and a
+    // toast stays flat. The packaged themes all set these to concrete values afterwards - Fluent to
+    // the Fabric depth each surface actually sits at (Styles/Fluent/shadows.fluent-*.scss, loaded
+    // after this file), the Extras presets to their own levels - so what is here is what a theme
+    // reaches only by saying nothing.
+    // App bars are the exception and are decided here for every theme: they cast a foreground-tinted
+    // shadow towards the content they cover so it stays visible on a dark surface, downwards for the
+    // header and upwards for the footer.
     --bit-shd-card: var(--bit-shd-cal);
     --bit-shd-popup: var(--bit-shd-cal);
     --bit-shd-dialog: var(--bit-shd-cal);

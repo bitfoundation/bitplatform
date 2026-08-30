@@ -510,18 +510,15 @@ public class BitPanelTests : BunitTestContext
 
         com.WaitForAssertion(() =>
         {
-            var locked = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
-            Assert.AreEqual("body", locked.Arguments[0]);
-            Assert.AreEqual(true, locked.Arguments[1]);
+            var locked = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][^1];
+            Assert.AreEqual("body", locked.Arguments[1]);
         });
 
         com.Render(p => p.Add(x => x.IsOpen, false));
 
         com.WaitForAssertion(() =>
         {
-            var released = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
-            Assert.AreEqual("body", released.Arguments[0]);
-            Assert.AreEqual(false, released.Arguments[1]);
+            Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count);
         });
     }
 
@@ -539,8 +536,8 @@ public class BitPanelTests : BunitTestContext
 
         com.WaitForAssertion(() =>
         {
-            var locked = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
-            Assert.AreEqual(".scroller", locked.Arguments[0]);
+            var locked = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][^1];
+            Assert.AreEqual(".scroller", locked.Arguments[1]);
         });
     }
 
@@ -554,7 +551,7 @@ public class BitPanelTests : BunitTestContext
 
         com.Render(p => p.Add(x => x.IsOpen, true));
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
     }
 
     // A panel taken off the page while it was open would otherwise leave the page without its scrollbar.
@@ -567,12 +564,12 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+        com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
 
         com.Instance.DisposeAsync().AsTask().GetAwaiter().GetResult();
 
-        var released = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
-        Assert.AreEqual(false, released.Arguments[1]);
+        var released = Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"][^1];
+        Assert.AreEqual(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][^1].Arguments[0], released.Arguments[0]);
     }
 
     [TestMethod]
@@ -978,10 +975,10 @@ public class BitPanelTests : BunitTestContext
 
         com.WaitForAssertion(() =>
         {
-            var locked = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
-            Assert.AreEqual(3, locked.Arguments.Count);
-            Assert.IsNotNull(locked.Arguments[2]);
-            StringAssert.Contains(locked.Arguments[2]!.ToString(), "container");
+            var locked = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][^1];
+            Assert.AreEqual(2, locked.Arguments.Count);
+            Assert.IsNotNull(locked.Arguments[0]);
+            StringAssert.Contains(locked.Arguments[0]!.ToString(), "container");
         });
     }
 
@@ -997,19 +994,19 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+        com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
 
         com.Render(p => p.Add(x => x.ScrollerSelector, ".second"));
 
         com.WaitForAssertion(() =>
         {
-            var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"];
+            var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"];
 
-            Assert.IsTrue(invocations.Any(i => Equals(i.Arguments[0], ".first") && Equals(i.Arguments[1], false)));
+            Assert.IsTrue(invocations.Any(i => Equals(i.Arguments[1], ".first")));
+            Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count);
 
             var locked = invocations[^1];
-            Assert.AreEqual(".second", locked.Arguments[0]);
-            Assert.AreEqual(true, locked.Arguments[1]);
+            Assert.AreEqual(".second", locked.Arguments[1]);
         });
     }
 

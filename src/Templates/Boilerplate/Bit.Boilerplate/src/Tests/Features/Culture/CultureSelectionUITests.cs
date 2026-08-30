@@ -7,7 +7,7 @@ public partial class CultureSelectionUITests : AppPageTest
     /// An anonymous visitor changes the app language from the header app-menu and the UI re-renders in the chosen language:
     /// <list type="number">
     /// <item>Open the home page (no sign-in required) and confirm the default English home message is shown.</item>
-    /// <item>Open the header app-menu (the persona drop-menu), tap Language, and pick Persian (fa-IR) from the culture list. Selecting a culture writes the .AspNetCore.Culture cookie and force-reloads the culture-less URL (See <c>CultureService.ChangeCulture</c>).</item>
+    /// <item>Open the header app-menu (the persona drop-menu), tap Language, and pick Persian (fa-IR) from the culture list. Selecting a culture writes the .AspNetCore.Culture cookie and re-addresses the current URL to the new culture - in place where the runtime supports it, via a force-reload on Blazor Server (See <c>CultureService.ChangeCulture</c>).</item>
     /// <item>After the reload the home message now shows its Persian (fa-IR) translation, read from the resx for the fa-IR culture (never hard-coded), and the English message is gone.</item>
     /// <item>Switch back to English from the same menu and confirm the English home message returns, proving the switch is reversible.</item>
     /// </list>

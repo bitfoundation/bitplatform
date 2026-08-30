@@ -70,6 +70,24 @@ public static partial class UriExtensions
         }
 
         /// <summary>
+        /// The url re-addressed to <paramref name="cultureName"/>: an existing culture (leading path segment or
+        /// <c>?culture=</c>) is replaced by the new one as a leading path segment - the canonical form Server.Web
+        /// serves pages under (See its <c>UseCultureUrlRedirection</c>). A culture-less url is returned unchanged.
+        /// </summary>
+        public string GetUrlWithCulture(string cultureName)
+        {
+            if (uri.GetCulture() is null)
+                return uri.ToString();
+
+            var urlWithoutCulture = new Uri(uri.GetUrlWithoutCulture());
+
+            return new UriBuilder(urlWithoutCulture)
+            {
+                Path = $"/{cultureName}{urlWithoutCulture.AbsolutePath}"
+            }.Uri.ToString();
+        }
+
+        /// <summary>
         /// The url with every query value replaced by <c>***</c>, keeping the path and the parameter names.
         /// </summary>
         /// <remarks>

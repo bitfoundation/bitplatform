@@ -3,10 +3,12 @@
 
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
-     @onscroll="OnScroll"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()">
-    @ChildContent
+     dir="@Dir?.ToString().ToLower()"
+     role="@Role"
+     tabindex="@_tabIndex"
+     aria-label="@AriaLabel">
+    @(ChildContent ?? Body)
 </div>

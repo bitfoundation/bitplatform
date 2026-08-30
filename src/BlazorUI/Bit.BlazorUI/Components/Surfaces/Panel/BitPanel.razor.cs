@@ -971,7 +971,7 @@ public partial class BitPanel : BitComponentBase
 
         try
         {
-            await _js.BitUtilsToggleOverflow(_lockedScroller, true, _containerId);
+            await _js.BitUtilsLockScroll(_containerId, _lockedScroller);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -981,12 +981,11 @@ public partial class BitPanel : BitComponentBase
         if (_scrollLocked is false) return;
 
         _scrollLocked = false;
-        var scroller = _lockedScroller ?? "body";
         _lockedScroller = null;
 
         try
         {
-            await _js.BitUtilsToggleOverflow(scroller, false, _containerId);
+            await _js.BitUtilsUnlockScroll(_containerId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
