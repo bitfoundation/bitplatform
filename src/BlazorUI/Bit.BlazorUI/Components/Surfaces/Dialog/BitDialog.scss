@@ -63,7 +63,25 @@
     // Played once when a dismissal is refused - Escape on a Dialog that does not take it, a click on the
     // overlay of a blocking one - so the gesture is visibly answered rather than swallowed. It is a nudge
     // rather than a wobble: the surface stays put, which is the point being made.
-    @keyframes bit-dlg-prevented-animation {
+    //
+    // The same movement twice under two names: an animation restarts only when the animation-name it
+    // resolves to changes, so a second refusal arriving while the first one is still running is answered by
+    // handing the surface the other of the pair rather than by re-applying the one it already carries.
+    @keyframes bit-dlg-prevented-animation-a {
+        0%, 100% {
+            transform: translateX(0);
+        }
+
+        20%, 60% {
+            transform: translateX(calc(-1 * #{spacing(0.75)}));
+        }
+
+        40%, 80% {
+            transform: translateX(spacing(0.75));
+        }
+    }
+
+    @keyframes bit-dlg-prevented-animation-b {
         0%, 100% {
             transform: translateX(0);
         }
@@ -135,9 +153,19 @@
 }
 
 // The refusal replaces the entrance animation for as long as it runs, since both drive transform on the
-// same element - and by the time a dismissal can be refused the entrance is long over.
+// same element - and by the time a dismissal can be refused the entrance is long over. The timing is
+// written here, once, and only the name of the movement comes from the pair below.
 .bit-dlg-prv {
-    animation: bit-dlg-prevented-animation $mot-duration $mot-easing;
+    animation-duration: $mot-duration;
+    animation-timing-function: $mot-easing;
+}
+
+.bit-dlg-pva {
+    animation-name: bit-dlg-prevented-animation-a;
+}
+
+.bit-dlg-pvb {
+    animation-name: bit-dlg-prevented-animation-b;
 }
 
 // The drag handle takes touch-action away from itself and everything under it, so a finger that lands on it

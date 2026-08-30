@@ -1,18 +1,31 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-@if (IsOpen || KeepMounted)
+@if (IsOpen || KeptMounted)
 {
+    @* While a kept-mounted Dialog is closed it is still in the page, only hidden: inert and aria-hidden
+       take it out of the tab sequence and out of the reading order for the browsers that would otherwise
+       still reach into a display:none subtree through a stale reference. *@
     <div @ref="RootElement" @attributes="HtmlAttributes"
          id="@_Id"
          style="@StyleBuilder.Value"
          class="@ClassBuilder.Value"
-         dir="@Dir?.ToString().ToLower()">
+         dir="@Dir?.ToString().ToLower()"
+         inert="@(IsOpen is false)"
+         aria-hidden="@(IsOpen ? null : "true")">
 
         <div style="@Styles?.Document" class="bit-dlg-doc @GetPositionClass() @Classes?.Document">
             @if (IsModeless is false)
             {
-                <div style="@Styles?.Overlay" class="bit-dlg-ovl @Classes?.Overlay" aria-hidden="true" @onclick="HandleOnOverlayClick" />
+                @* Pressing something that cannot hold the focus is what takes the focus off whatever had it,
+                   and the overlay is the largest such thing on the screen while a Dialog is open. A press on
+                   it would otherwise leave the keyboard on the body: the Escape handler sits on the surface
+                   and the focus trap with it, so neither of them is reached from there, and the next Tab
+                   walks into the page the overlay is there to keep out of reach. The default of the press is
+                   refused so that the focus stays where the Dialog put it - the click itself still arrives,
+                   and still dismisses. *@
+                <div style="@Styles?.Overlay" class="bit-dlg-ovl @Classes?.Overlay" aria-hidden="true"
+                     @onclick="HandleOnOverlayClick" @onmousedown:preventDefault="true" />
             }
 
             @* The surface is what carries the role and the accessible name, since that is the element the
@@ -24,8 +37,7 @@
                The keydown stops here rather than carrying on up the tree, which is what keeps a Dialog opened
                from inside another one from closing both of them with a single Escape - and it stops only
                Blazor's own bubbling, so native listeners (the focus trap among them) still see the key. *@
-            <div @ref="_containerRef"
-                 id="@_containerId"
+            <div id="@_containerId"
                  role="@GetRole()"
                  tabindex="-1"
                  aria-modal="@GetAriaModal()"
@@ -35,7 +47,7 @@
                  @onkeydown="HandleOnKeyDown"
                  @onkeydown:stopPropagation="true"
                  style="@GetContainerStyle()"
-                 class="bit-dlg-ctn @(_dismissPrevented ? "bit-dlg-prv" : null) @Classes?.Container">
+                 class="bit-dlg-ctn @GetPreventedClasses() @Classes?.Container">
                 @if (HasHeader)
                 {
                     <div style="@Styles?.Header" class="bit-dlg-hdr @Classes?.Header">

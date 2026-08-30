@@ -26,14 +26,24 @@ public partial class BitDialog : BitComponentBase
     private float _offsetTop;
     private bool _internalIsOpen;
     private bool _isDismissing;
-    private bool _dismissPrevented;
+    private bool _hasBeenOpened;
     private string _containerId = default!;
     private string _titleId = default!;
     private string _subtitleId = default!;
     private string _messageId = default!;
 
-    // The surface itself, so the focus can be put back on it after a click that took it out of the Dialog.
-    private ElementReference _containerRef;
+    // Which opening or closing is the current one, so that a run still waiting on the browser can tell it
+    // has been overtaken by the next.
+    private int _lifecycle;
+
+    // Which of the two interchangeable "refused" movements the surface is carrying, 0 for none. Two classes
+    // playing the same movement under different names are alternated rather than one being taken off and put
+    // back on: an animation only restarts when the animation-name it resolves to changes, so a second refusal
+    // arriving while the first one is still running would otherwise be answered with nothing at all.
+    private int _dismissPrevented;
+    // Which refusal the pending clearing belongs to, so the delay left over from an earlier one does not take
+    // the movement off the refusal that has since replaced it.
+    private int _dismissPreventedGeneration;
 
     // The Dialog's own buttons, so AutoFocusButton can put the focus on one of them by hand.
     private ElementReference _okButtonRef;
@@ -56,6 +66,15 @@ public partial class BitDialog : BitComponentBase
     // Snapshot of the drag element selector used to register the drag handlers, so teardown unregisters
     // the exact same selector even if DragElementSelector changed since the Dialog was opened.
     private string? _dragElementSelectorOnSetup;
+
+    // The scroller of the application shell the Dialog was declared inside of, cascaded by BitAppShell under
+    // this well-known name. A shell scrolls a region of its own rather than the page, so the body of such an
+    // app never scrolls and a hold taken on it would hold nothing: this is the element to hold instead, for a
+    // Dialog that has not been pointed at a scroller of its own. The name is written out rather than taken
+    // from BitAppShell.Container because the shell lives in Bit.BlazorUI.Extras, which this assembly cannot
+    // reference - the string is the contract between the two.
+    [CascadingParameter(Name = "BitAppShell.Container")]
+    private ElementReference? AppShellContainer { get; set; }
 
     // The awaiter handed out by Show. It is completed exactly once, by whatever ends the showing - a
     // button, a dismissal, or the parent closing the Dialog itself - and nulled at the same time so a
@@ -195,6 +214,16 @@ public partial class BitDialog : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
+
+    /// <summary>
+    /// The initial opening state of the Dialog in the uncontrolled mode, which is when the
+    /// <see cref="IsOpen"/> parameter is not set.
+    /// </summary>
+    /// <remarks>
+    /// Read once, when the Dialog is initialized, so that a Dialog opened this way and then closed by one of
+    /// its own gestures stays closed rather than being reopened by the next render of the page around it.
+    /// </remarks>
+    [Parameter] public bool? DefaultIsOpen { get; set; }
 
     /// <summary>
     /// The CSS selector of the element the Dialog is dragged by. By default it is the header when the
@@ -475,14 +504,24 @@ public partial class BitDialog : BitComponentBase
 
     /// <summary>
     /// Set the element reference for which the Dialog disables its scroll if applicable.
-    /// Takes precedence over <see cref="ScrollerSelector"/> when both are set.
+    /// Takes precedence over <see cref="ScrollerSelector"/> when both are set, and over the scroller a
+    /// <c>BitAppShell</c> cascades.
     /// </summary>
     [Parameter] public ElementReference? ScrollerElement { get; set; }
 
     /// <summary>
-    /// Set the element selector for which the Dialog disables its scroll if applicable.
+    /// The CSS selector of the element whose scrolling the Dialog holds while it is open, for the layouts
+    /// whose scroller is not the page itself.
     /// </summary>
-    [Parameter] public string ScrollerSelector { get; set; } = "body";
+    /// <remarks>
+    /// A Dialog inside a <c>BitAppShell</c> holds the shell's scroller without being told to, since the shell
+    /// cascades it; the page (<c>body</c>) is what is held when there is no shell and this is not set, which
+    /// is the scroller of an ordinary page. Any other layout that scrolls a region of its own - a fixed
+    /// header over a scrolling main area - names that region here, since holding a page that never scrolls
+    /// holds nothing. Ignored by a Dialog that holds nothing in the first place (see
+    /// <see cref="AutoToggleScroll"/>).
+    /// </remarks>
+    [Parameter] public string? ScrollerSelector { get; set; }
 
     /// <summary>
     /// Shows or hides the cancel button of the Dialog.
@@ -705,6 +744,14 @@ public partial class BitDialog : BitComponentBase
         _subtitleId = $"BitDialog-{UniqueId}-subtitle";
         _messageId = $"BitDialog-{UniqueId}-message";
 
+        // The uncontrolled starting state, which only applies while the consumer is not driving IsOpen
+        // itself. It is read once here rather than every time the parameters are set, so that closing an
+        // uncontrolled Dialog is not undone by the next render.
+        if (IsOpenHasBeenSet is false && DefaultIsOpen.HasValue)
+        {
+            IsOpen = DefaultIsOpen.Value;
+        }
+
         return base.OnInitializedAsync();
     }
 
@@ -716,9 +763,17 @@ public partial class BitDialog : BitComponentBase
         {
             _internalIsOpen = IsOpen;
 
+            // Each opening and each closing is a run of its own. An opening reaches the browser several
+            // times over, and on a circuit every one of those waits: a closing that lands while an opening
+            // is still waiting would otherwise tear down what the opening has done so far and then let the
+            // opening carry on and put all of it back - the focus trap, the drag handlers, the hold on the
+            // scroller - on a Dialog that is no longer on the screen, where nothing takes them away again
+            // until it has been opened and closed a second time.
+            var generation = ++_lifecycle;
+
             if (IsOpen)
             {
-                await HandleOpened();
+                await HandleOpened(generation);
             }
             else
             {
@@ -743,23 +798,34 @@ public partial class BitDialog : BitComponentBase
 
 
 
-    private async Task HandleOpened()
+    private async Task HandleOpened(int generation)
     {
+        // Remembered from the first opening on, so that a kept-mounted Dialog stays in the page from then
+        // on while one that has never been opened is never rendered at all.
+        _hasBeenOpened = true;
+
+        // Whether a closing has started since this opening did, in which case this one is over: the closing
+        // has already stood down everything the steps below would otherwise go on to register.
+        bool Overtaken() => _lifecycle != generation;
+
         // Remembered before anything moves the focus, so the element the Dialog hands it back to is the
         // one that was carrying it when the Dialog appeared - the button that opened it, as a rule.
         if (RestoreFocus)
         {
             _focusSaved = true;
             await SaveFocus();
+            if (Overtaken()) return;
         }
 
         await SyncDragHandlers();
+        if (Overtaken()) return;
 
         // Reset before ToggleScroll: when AutoToggleScroll is false it returns early without
         // recalculating, which would otherwise leave a stale top-offset from a previous open.
         _offsetTop = 0;
 
         await ToggleScroll(true);
+        if (Overtaken()) return;
 
         if (AbsolutePosition)
         {
@@ -770,10 +836,12 @@ public partial class BitDialog : BitComponentBase
         }
 
         await SetupFocusTrap();
+        if (Overtaken()) return;
 
         if (AutoFocus)
         {
             await FocusAutoTarget();
+            if (Overtaken()) return;
         }
 
         await OnOpen.InvokeAsync();
@@ -782,7 +850,8 @@ public partial class BitDialog : BitComponentBase
     private async Task HandleClosed()
     {
         // A refused dismissal that was still being played back has nothing left to refuse.
-        _dismissPrevented = false;
+        _dismissPrevented = 0;
+        _dismissPreventedGeneration++;
 
         await DisposeFocusTrap();
 
@@ -832,7 +901,7 @@ public partial class BitDialog : BitComponentBase
             _scrollLocked = AutoToggleScroll;
             if (_scrollLocked is false) return;
 
-            _scrollerElementOnOpen = ScrollerElement;
+            _scrollerElementOnOpen = ScrollerElementTarget;
             _scrollerSelectorOnOpen = ScrollerSelector;
         }
         else
@@ -850,6 +919,14 @@ public partial class BitDialog : BitComponentBase
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
+
+    // The scroller the Dialog holds still while it is open, where that is an element rather than a selector:
+    // the one it was handed by reference, and otherwise the one the application shell it is inside of
+    // cascades. The page is the scroller of an ordinary page, but a shell scrolls a region of its own and
+    // its body never scrolls at all, so holding the body of such an app would hold nothing. A Dialog pointed
+    // at a scroller of its own by name has already said which one it means, so the shell is left out of it.
+    private ElementReference? ScrollerElementTarget => ScrollerElement
+                                                        ?? (ScrollerSelector.HasValue() ? null : AppShellContainer);
 
     // Puts the focus where the Dialog was asked to open it: on one of its own buttons where AutoFocusButton
     // names one that is actually being shown, on what AutoFocusSelector points at next, and otherwise on the
@@ -1038,34 +1115,22 @@ public partial class BitDialog : BitComponentBase
 
         if (NoDismissPreventedAnimation) return;
 
-        // Already playing one back: restarting it mid-flight would only cut the animation short.
-        if (_dismissPrevented) return;
+        // Alternated rather than taken off and put back on, so a second refusal arriving while the first one
+        // is still running replays the movement: an animation restarts only when the name it resolves to
+        // changes, and re-applying the same class changes nothing at all.
+        _dismissPrevented = _dismissPrevented == 1 ? 2 : 1;
 
-        _dismissPrevented = true;
+        var generation = ++_dismissPreventedGeneration;
+
         StateHasChanged();
 
         await Task.Delay(DismissPreventedDuration);
 
-        if (IsDisposed) return;
+        // Overtaken by a later refusal, which is now the one being played back and owns the clearing of it.
+        if (IsDisposed || _dismissPreventedGeneration != generation) return;
 
-        _dismissPrevented = false;
+        _dismissPrevented = 0;
         StateHasChanged();
-    }
-
-    // A click on the overlay lands on an element the focus cannot rest on, which leaves the document body
-    // holding it - outside the Dialog, and so outside the trap that was keeping Tab inside it. Where the
-    // Dialog is still up and still trapping, the focus is put back on its surface.
-    private async Task ReclaimFocusAfterOverlayClick()
-    {
-        if (IsOpen is false || ShouldTrapFocus is false) return;
-
-        try
-        {
-            if (await _js.BitUtilsContainsActiveElement(_containerId)) return;
-
-            await _containerRef.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
     private async Task HandleOnOverlayClick(MouseEventArgs e)
@@ -1078,13 +1143,6 @@ public partial class BitDialog : BitComponentBase
         // answer it a second time, over the top of work that has not finished. A dismissal already in flight
         // is the same story: an OnDismissing that is still deciding has not finished either.
         if (_isLoading || _isDismissing) return;
-
-        // Reclaimed before the dismissal is attempted rather than after it, since a dismissal that is
-        // refused - by IsBlocking, or by an OnDismissing that says no - is played back for as long as the
-        // shake lasts, and the focus would sit outside the Dialog for the whole of it. Where the click does
-        // go on to close the Dialog, the focus lands on a surface that is about to leave, which is exactly
-        // what RestoreFocus is looking for when it hands the focus back to whatever opened it.
-        await ReclaimFocusAfterOverlayClick();
 
         if (IsBlocking)
         {
@@ -1179,6 +1237,21 @@ public partial class BitDialog : BitComponentBase
 
         await DismissDialog(e, BitDialogDismissReason.OkButton);
     }
+
+    // Whether a closed Dialog is still to be rendered. Only one that has been open at least once is kept: a
+    // Dialog that has never opened has no state worth keeping, and rendering it up front would put the cost
+    // of every Dialog on the page onto that page's first render.
+    private bool KeptMounted => KeepMounted && _hasBeenOpened;
+
+    // The refusal marks the surface with two classes: one the reduced-motion fallback and the animation's
+    // own timing are written against, and one of the pair that names the movement - see PreventDismiss for
+    // why the name has to change from one refusal to the next.
+    private string? GetPreventedClasses() => _dismissPrevented switch
+    {
+        1 => "bit-dlg-prv bit-dlg-pva",
+        2 => "bit-dlg-prv bit-dlg-pvb",
+        _ => null
+    };
 
     private string GetRole() => (IsAlert ?? (IsBlocking && IsModeless is false)) ? "alertdialog" : "dialog";
 

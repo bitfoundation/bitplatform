@@ -41,7 +41,9 @@
             <br /><br />
             <b>AutoToggleScroll</b> is off by default, so the page behind the overlay still scrolls. Turn it on for a
             full-screen modal Dialog, and point <b>ScrollerSelector</b> or <b>ScrollerElement</b> at the right element
-            when the Dialog is inside a scrollable of its own rather than over the page.
+            when the Dialog is inside a scrollable of its own rather than over the page. A Dialog inside a
+            <BitLink Href="/components/appshell">BitAppShell</BitLink> holds the shell's scroller without being told
+            to, since the shell cascades it - the body of such an app never scrolls, so holding it would hold nothing.
             <br /><br />
             <b>OnOk</b> is awaited: the Dialog shows a spinner in place of the Ok text while the callback runs and only
             closes once it returns, so a save can hold the Dialog open until it succeeds - and a callback that throws
@@ -55,7 +57,8 @@
             <br /><br />
             A Dialog is unmounted when it closes, which is what keeps a closed one costing nothing. <b>KeepMounted</b>
             leaves it in the DOM, hidden, for the case where the content is expensive to build or holds state the user
-            is meant to come back to.
+            is meant to come back to - and nothing of it is rendered until the first time it opens, so a Dialog that
+            is never opened still costs nothing either.
             <br /><br />
             A Dialog is as wide and as tall as its content, never outgrows the area it is positioned in, and stops
             widening at the width the theme names, so a short confirmation never spans a desktop screen.
@@ -281,7 +284,8 @@
                 <b>CloseOnEscape</b> turns off only the key, and <b>IsModeless</b> removes the overlay altogether so
                 the page behind stays clickable. Try pressing Escape or clicking outside the first two - a dismissal
                 the Dialog will not act on is answered with a shake rather than silently ignored, and with a ring
-                around the surface where the reader has asked for less motion.
+                around the surface where the reader has asked for less motion. Press again while the shake is still
+                running and it starts over, so the second gesture is answered as plainly as the first.
             </div>
             <br />
             <div class="btn-container">
@@ -441,7 +445,8 @@
                 the scrollbar leaves behind is given back as padding, so nothing on the page jumps sideways as the
                 Dialog appears, and a scroller locked by two overlays at once is only released by the second of them
                 to close. <b>ScrollerSelector</b> (or <b>ScrollerElement</b>) names what to lock when the Dialog sits
-                over a scrollable of its own rather than over the page.
+                over a scrollable of its own rather than over the page; inside a <b>BitAppShell</b> the shell's own
+                scroller is held without either of them being set, since the body of such an app never scrolls.
             </div>
             <br />
             <div class="btn-container">
@@ -656,8 +661,9 @@
                 A Dialog is unmounted when it closes, so its content is built afresh - and starts empty - the next
                 time it opens. <b>KeepMounted</b> leaves it in the DOM, hidden, which keeps whatever the user had
                 typed, at the cost of that content living and re-rendering for as long as the page does - so it is
-                for the Dialog whose state is worth coming back to rather than for every Dialog.
-                Type into both of the Dialogs below, close them, and open them again.
+                for the Dialog whose state is worth coming back to rather than for every Dialog. Nothing is rendered
+                until the first opening, so the cost starts when the Dialog is first used rather than when the page
+                is first drawn. Type into both of the Dialogs below, close them, and open them again.
             </div>
             <br />
             <div class="btn-container">
@@ -685,7 +691,34 @@
             </BitDialog>
         </DemoExample>
 
-        <DemoExample Title="Color" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+        <DemoExample Title="Programmatic control" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+            <div>
+                A Dialog captured with <b>@@ref</b> can be driven through its <b>Open</b>, <b>Close</b> and
+                <b>Toggle</b> methods, which is the way to reach one from code that has no field to bind IsOpen to.
+                The methods and the binding are the same state, so a Dialog opened through <b>Open()</b> still
+                closes on Escape or on a click outside - and <b>Close()</b> goes the way the Dialog's own gestures
+                do, so <b>OnDismissing</b> can refuse it.
+            </div>
+            <br />
+            <div>
+                <b>DefaultIsOpen</b> is the state a Dialog starts in while it is left to manage its own openness -
+                that is, while IsOpen is not set at all. It is read once, so closing such a Dialog is not undone by
+                the next render of the page around it.
+            </div>
+            <br />
+            <div class="btn-container">
+                <BitButton OnClick="() => programmaticDialogRef.Open()">Open</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => programmaticDialogRef.Toggle()">Toggle</BitButton>
+            </div>
+
+            <BitDialog @ref="programmaticDialogRef"
+                       Title="Driven by methods"
+                       Message="This Dialog has no IsOpen of its own: it is opened and closed through the reference to it."
+                       ShowOkButton="false"
+                       CancelText="Close" />
+        </DemoExample>
+
+        <DemoExample Title="Color" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
             <div>
                 <b>Color</b> paints the Ok and Cancel buttons, the Ok spinner and the focus ring around either of
                 them. It leaves the surface, the title and the message alone, since the color of a Dialog belongs to
@@ -711,7 +744,7 @@
                        OnOk="HandleColorOk" />
         </DemoExample>
 
-        <DemoExample Title="External Icons" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+        <DemoExample Title="External Icons" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
             <div>
                 The close button takes the <b>Cancel</b> glyph from the built-in Fluent set by default.
                 <b>CloseIconName</b> swaps it for another built-in one, and <b>CloseIcon</b> takes a
@@ -761,7 +794,7 @@
                        CloseIconName="@BitIconName.ChromeClose" />
         </DemoExample>
 
-        <DemoExample Title="Size" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+        <DemoExample Title="Size" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
             <div>
                 A Dialog is as wide and as tall as its content, and never grows past the area it is positioned in.
                 It stops widening at the width the theme names (<b>--bit-siz-dialog-max-width</b>, 520px in Fluent,
@@ -827,7 +860,7 @@
                        Message="Do you want to send this message without a subject?" />
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+        <DemoExample Title="Style & Class" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
             <div>
                 Beyond the root <b>Style</b> and <b>Class</b>, the <b>Styles</b> and <b>Classes</b> parameters take a
                 <BitLink Href="#class-styles">BitDialogClassStyles</BitLink> that targets each part on its own - the
@@ -865,7 +898,7 @@
                        })" />
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+        <DemoExample Title="RTL" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
             <div>
                 Set <b>Dir</b> to <b>Rtl</b> to lay the Dialog out for right-to-left languages: the close button moves
                 to the left of the header, the action buttons mirror, and a <b>Start</b>/<b>End</b> position follows

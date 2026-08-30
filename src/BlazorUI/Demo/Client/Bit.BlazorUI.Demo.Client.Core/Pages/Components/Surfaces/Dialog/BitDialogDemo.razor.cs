@@ -39,7 +39,7 @@ public partial class BitDialogDemo
             Name = "AutoToggleScroll",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables the auto scrollbar toggle behavior of the Dialog, which stops the scroller from scrolling for as long as the Dialog is open."
+            Description = "Enables the auto scrollbar toggle behavior of the Dialog, which stops the scroller from scrolling for as long as the Dialog is open. The scroller is the one ScrollerElement or ScrollerSelector names, the one a surrounding BitAppShell cascades when neither does, and the page when there is no shell either."
         },
         new()
         {
@@ -111,6 +111,13 @@ public partial class BitDialogDemo
             Description = "The general color of the Dialog, which its Ok and Cancel buttons, the Ok spinner and the focus ring of both are painted in. Defaults to Primary.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
+        },
+        new()
+        {
+            Name = "DefaultIsOpen",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "The initial opening state of the Dialog in the uncontrolled mode, which is when the IsOpen parameter is not set. It is read once, at initialization, so closing such a Dialog is not undone by the next render."
         },
         new()
         {
@@ -222,7 +229,7 @@ public partial class BitDialogDemo
             Name = "KeepMounted",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Keeps the Dialog in the DOM while it is closed, hidden, instead of removing it - so its content, and whatever state it holds, survives until the next showing."
+            Description = "Keeps the Dialog in the DOM while it is closed, hidden, instead of removing it - so its content, and whatever state it holds, survives until the next showing. Nothing is rendered until the first time it opens, so a Dialog that is never opened still costs nothing."
         },
         new()
         {
@@ -359,9 +366,9 @@ public partial class BitDialogDemo
         new()
         {
             Name = "ScrollerSelector",
-            Type = "string",
-            DefaultValue = "body",
-            Description = "Set the element selector for which the Dialog disables its scroll if applicable."
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The CSS selector of the element whose scrolling the Dialog holds while it is open, for the layouts whose scroller is not the page itself. A Dialog inside a BitAppShell holds the shell's scroller without being told to; the page (body) is what is held when there is no shell and this is not set."
         },
         new()
         {
@@ -899,6 +906,8 @@ public partial class BitDialogDemo
 
     private bool isOpenKeptMounted = false;
     private bool isOpenUnmounted = false;
+
+    private BitDialog programmaticDialogRef = default!;
 
     private bool isOpenColor = false;
     private BitColor dialogColor = BitColor.Primary;
@@ -1532,6 +1541,18 @@ private bool isOpenKeptMounted = false;
 private bool isOpenUnmounted = false;";
 
     private readonly string example16RazorCode = @"
+<BitButton OnClick=""() => programmaticDialogRef.Open()"">Open</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""() => programmaticDialogRef.Toggle()"">Toggle</BitButton>
+
+<BitDialog @ref=""programmaticDialogRef""
+           Title=""Driven by methods""
+           Message=""This Dialog has no IsOpen of its own: it is opened and closed through the reference to it.""
+           ShowOkButton=""false""
+           CancelText=""Close"" />";
+    private readonly string example16CsharpCode = @"
+private BitDialog programmaticDialogRef = default!;";
+
+    private readonly string example17RazorCode = @"
 @foreach (var color in dialogColors)
 {
     <BitButton Color=""color"" OnClick=""() => OpenDialogInColor(color)"">@color</BitButton>
@@ -1544,7 +1565,7 @@ private bool isOpenUnmounted = false;";
            Message=""The two buttons, the ring around the focused one and the spinner the Ok button shows all follow the color.""
            OkText=""Confirm""
            OnOk=""HandleColorOk"" />";
-    private readonly string example16CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 private bool isOpenColor = false;
 private BitColor dialogColor = BitColor.Primary;
 private readonly BitColor[] dialogColors = Enum.GetValues<BitColor>();
@@ -1560,7 +1581,7 @@ private async Task HandleColorOk()
     await Task.Delay(1000);
 }";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitButton OnClick=""@(() => IsOpenExtIcon1 = true)"">Open Dialog (CloseIcon = fa)</BitButton>
@@ -1590,13 +1611,13 @@ private async Task HandleColorOk()
            Message=""This dialog uses CloseIconName to set a built-in Fluent UI icon for the close button.""
            CloseButtonTitle=""Dismiss""
            CloseIconName=""@BitIconName.ChromeClose"" />";
-    private readonly string example17CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 private bool IsOpenExtIcon1 = false;
 private bool IsOpenExtIcon2 = false;
 private bool IsOpenExtIcon3 = false;
 private bool IsOpenExtIcon4 = false;";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <style>
     .dialog-body {
         max-width: 40rem;
@@ -1645,14 +1666,14 @@ private bool IsOpenExtIcon4 = false;";
            @bind-IsOpen=""isOpenFullSize""
            Title=""Missing Subject""
            Message=""Do you want to send this message without a subject?"" />";
-    private readonly string example18CsharpCode = @"
+    private readonly string example19CsharpCode = @"
 private bool isOpenSized = false;
 private bool isOpenResponsive = false;
 private bool isOpenTall = false;
 private bool isOpenFullWidth = false;
 private bool isOpenFullSize = false;";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <style>
     .custom-container {
         border: 2px solid tomato;
@@ -1694,11 +1715,11 @@ private bool isOpenFullSize = false;";
                Header = ""custom-header"",
                OkButton = ""custom-ok""
            })"" />";
-    private readonly string example19CsharpCode = @"
+    private readonly string example20CsharpCode = @"
 private bool isOpenStyles = false;
 private bool isOpenClasses = false;";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <BitButton Dir=""BitDir.Rtl"" OnClick=""@(() => IsOpen10 = true)"">باز کردن پنجره پیام</BitButton>
 <BitDialog @bind-IsOpen=""IsOpen10""
            Dir=""BitDir.Rtl""
@@ -1707,6 +1728,6 @@ private bool isOpenClasses = false;";
            CancelText=""انصراف""
            CloseButtonTitle=""بستن""
            Message=""آیا می خواهید این پیام را بدون موضوع ارسال کنید؟"" />";
-    private readonly string example20CsharpCode = @"
+    private readonly string example21CsharpCode = @"
 private bool IsOpen10 = false;";
 }

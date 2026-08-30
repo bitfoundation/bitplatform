@@ -196,7 +196,7 @@ public class BitDialogTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDialogKeepMountedShouldRenderTheClosedDialogHidden()
+    public void BitDialogKeepMountedShouldRenderNothingUntilTheFirstOpening()
     {
         var component = RenderComponent<BitDialog>(parameters =>
         {
@@ -205,25 +205,61 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.Title, "Test Title");
         });
 
-        var root = component.Find(".bit-dlg");
-        Assert.IsTrue(root.ClassList.Contains("bit-dlg-hdn"));
-        Assert.AreEqual("Test Title", component.Find(".bit-dlg-ttl").TextContent);
+        // A Dialog that has never opened holds no state worth keeping, so it costs the page nothing.
+        Assert.IsEmpty(component.FindAll(".bit-dlg"));
     }
 
     [TestMethod]
-    public void BitDialogKeepMountedShouldDropTheHiddenClassWhenItOpens()
+    public void BitDialogKeepMountedShouldRenderTheClosedDialogHiddenOnceItHasBeenOpened()
     {
+        var isOpen = true;
+
         var component = RenderComponent<BitDialog>(parameters =>
         {
-            parameters.Add(p => p.IsOpen, false);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.KeepMounted, true);
+            parameters.Add(p => p.Title, "Test Title");
+        });
+
+        Assert.IsFalse(component.Find(".bit-dlg").ClassList.Contains("bit-dlg-hdn"));
+
+        component.Find(".bit-dlg-cls").Click();
+
+        component.WaitForAssertion(() =>
+        {
+            var root = component.Find(".bit-dlg");
+            Assert.IsTrue(root.ClassList.Contains("bit-dlg-hdn"));
+            // Hidden rather than gone: the content, and whatever state it holds, is still there.
+            Assert.AreEqual("Test Title", component.Find(".bit-dlg-ttl").TextContent);
+            // And out of the tab sequence and the reading order for as long as it is closed.
+            Assert.IsTrue(root.HasAttribute("inert"));
+            Assert.AreEqual("true", root.GetAttribute("aria-hidden"));
+        }, TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public void BitDialogKeepMountedShouldDropTheHiddenClassWhenItOpensAgain()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
             parameters.Add(p => p.KeepMounted, true);
         });
 
-        Assert.IsTrue(component.Find(".bit-dlg").ClassList.Contains("bit-dlg-hdn"));
+        component.Find(".bit-dlg-cls").Click();
+
+        component.WaitForAssertion(
+            () => Assert.IsTrue(component.Find(".bit-dlg").ClassList.Contains("bit-dlg-hdn")),
+            TimeSpan.FromSeconds(5));
 
         component.Render(parameters => parameters.Add(p => p.IsOpen, true));
 
-        Assert.IsFalse(component.Find(".bit-dlg").ClassList.Contains("bit-dlg-hdn"));
+        var root = component.Find(".bit-dlg");
+        Assert.IsFalse(root.ClassList.Contains("bit-dlg-hdn"));
+        Assert.IsFalse(root.HasAttribute("inert"));
+        Assert.IsFalse(root.HasAttribute("aria-hidden"));
     }
 
     [TestMethod]
@@ -861,6 +897,37 @@ public class BitDialogTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDialogSecondRefusalShouldReplayTheMovementRatherThanBeSwallowed()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.IsBlocking, true);
+        });
+
+        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        var first = component.Find(".bit-dlg-ctn").ClassList;
+        Assert.IsTrue(first.Contains("bit-dlg-prv"));
+        Assert.IsTrue(first.Contains("bit-dlg-pva"));
+
+        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        // An animation restarts only when the name it resolves to changes, so the second refusal is
+        // answered by the other of the two classes rather than by re-applying the one already there.
+        var second = component.Find(".bit-dlg-ctn").ClassList;
+        Assert.IsTrue(second.Contains("bit-dlg-prv"));
+        Assert.IsTrue(second.Contains("bit-dlg-pvb"));
+        Assert.IsFalse(second.Contains("bit-dlg-pva"));
+
+        component.WaitForAssertion(
+            () => Assert.IsFalse(component.Find(".bit-dlg-ctn").ClassList.Contains("bit-dlg-prv")),
+            TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
     public void BitDialogBlockingOverlayClickShouldReportTheRefusedDismiss()
     {
         var isOpen = true;
@@ -1372,6 +1439,39 @@ public class BitDialogTests : BunitTestContext
         component.WaitForAssertion(() => Assert.AreEqual(1, openedCount));
     }
 
+    [TestMethod]
+    public void BitDialogDefaultIsOpenShouldOpenTheUncontrolledDialog()
+    {
+        var component = RenderComponent<BitDialog>(parameters => parameters.Add(p => p.DefaultIsOpen, true));
+
+        Assert.HasCount(1, component.FindAll(".bit-dlg"));
+    }
+
+    [TestMethod]
+    public void BitDialogDefaultIsOpenShouldNotReopenTheDialogThatWasClosed()
+    {
+        var component = RenderComponent<BitDialog>(parameters => parameters.Add(p => p.DefaultIsOpen, true));
+
+        component.Find(".bit-dlg-cls").Click();
+
+        // Read once, at initialization: a render of the page around the Dialog does not put it back up.
+        component.Render(parameters => parameters.Add(p => p.Title, "Test Title"));
+
+        Assert.IsEmpty(component.FindAll(".bit-dlg"));
+    }
+
+    [TestMethod]
+    public void BitDialogDefaultIsOpenShouldBeIgnoredWhenIsOpenIsSet()
+    {
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.DefaultIsOpen, true);
+            parameters.Add(p => p.IsOpen, false);
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-dlg"));
+    }
+
     #endregion
 
     #region ok button loading
@@ -1671,27 +1771,17 @@ public class BitDialogTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDialogBlockingOverlayClickShouldCheckTheFocusStillSitsInsideTheDialog()
+    public void BitDialogOverlayShouldRefuseTheDefaultOfThePressSoTheFocusNeverLeaves()
     {
-        var isOpen = true;
+        var component = RenderComponent<BitDialog>(parameters => parameters.Add(p => p.IsOpen, true));
 
-        var component = RenderComponent<BitDialog>(parameters =>
-        {
-            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsBlocking, true);
-        });
-
-        component.Find(".bit-dlg-ovl").Click();
-
-        // A click on the overlay leaves the body holding the focus, which is outside the trap - so the
-        // Dialog asks where the focus is before deciding to take it back.
-        component.WaitForAssertion(
-            () => Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.containsActiveElement"),
-            TimeSpan.FromSeconds(5));
+        // Pressing the overlay is what would otherwise leave the body holding the focus, outside the trap.
+        // The default of the press is refused, so the focus stays where the Dialog put it.
+        StringAssert.Contains(component.Markup, "onmousedown:preventDefault");
     }
 
     [TestMethod]
-    public void BitDialogModelessShouldNotReclaimTheFocusAfterAnOverlayClick()
+    public void BitDialogOverlayClickShouldNotChaseTheFocusAcrossTheInterop()
     {
         var isOpen = true;
 
@@ -1699,11 +1789,12 @@ public class BitDialogTests : BunitTestContext
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
             parameters.Add(p => p.IsBlocking, true);
-            parameters.Add(p => p.TrapFocus, false);
         });
 
         component.Find(".bit-dlg-ovl").Click();
 
+        // The focus was never taken off the Dialog, so there is nothing to ask the browser about and
+        // nothing to put back - the round trip the Dialog used to pay for every overlay click is gone.
         Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.containsActiveElement"]);
     }
 
@@ -1837,6 +1928,85 @@ public class BitDialogTests : BunitTestContext
         var style = component.Find(".bit-dlg").GetAttribute("style") ?? string.Empty;
 
         Assert.IsFalse(style.Contains("top:"), $"A fixed Dialog must not carry a top offset, got '{style}'.");
+    }
+
+    [TestMethod]
+    public void BitDialogClosedWhileOpeningShouldNotRegisterWhatTheClosingHasAlreadyStoodDown()
+    {
+        // The opening reaches the browser several times over, and on a circuit every one of those waits. A
+        // closing that lands while the opening is still waiting must not let the opening carry on and put
+        // the focus trap and the hold on the scroller back on a Dialog that is no longer on the screen.
+        var saveFocus = Context.JSInterop.SetupVoid("BitBlazorUI.Utils.saveFocus", _ => true);
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AutoToggleScroll, true);
+        });
+
+        // The opening is now suspended on the very first thing it does.
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"]);
+
+        component.Render(parameters => parameters.Add(p => p.IsOpen, false));
+
+        saveFocus.SetVoidResult();
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"]);
+            Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"]);
+            Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]);
+        }, TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public void BitDialogShouldHoldTheScrollerOfTheApplicationShellItIsInside()
+    {
+        // An application shell scrolls a region of its own, so the body of such an app never scrolls and a
+        // hold taken on it would hold nothing. BitAppShell cascades its scroller under this name, and a
+        // Dialog that has not been pointed at a scroller of its own holds that one instead of the page.
+        var shell = new ElementReference("shell-container");
+
+        RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.AddCascadingValue("BitAppShell.Container", (ElementReference?)shell);
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AutoToggleScroll, true);
+        });
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
+        Assert.AreEqual(shell, invocation.Arguments[0]);
+    }
+
+    [TestMethod]
+    public void BitDialogShouldPreferTheScrollerItWasPointedAtOverTheOneOfTheShell()
+    {
+        // The shell is the fallback, not the answer: a Dialog told which scroller to hold holds that one.
+        var shell = new ElementReference("shell-container");
+
+        RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.AddCascadingValue("BitAppShell.Container", (ElementReference?)shell);
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AutoToggleScroll, true);
+            parameters.Add(p => p.ScrollerSelector, "#own-scroller");
+        });
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
+        Assert.AreEqual("#own-scroller", invocation.Arguments[0]);
+    }
+
+    [TestMethod]
+    public void BitDialogShouldHoldTheBodyWhenThereIsNoShellAndNoScrollerOfItsOwn()
+    {
+        RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AutoToggleScroll, true);
+        });
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
+        Assert.AreEqual("body", invocation.Arguments[0]);
     }
 
     [TestMethod]
@@ -2607,7 +2777,7 @@ public class BitDialogTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDialogRefusedOverlayClickShouldPutTheFocusBackBeforeItIsPlayedBack()
+    public void BitDialogRefusedOverlayClickShouldLeaveTheFocusWhereItWas()
     {
         var isOpen = true;
 
@@ -2619,9 +2789,10 @@ public class BitDialogTests : BunitTestContext
 
         component.Find(".bit-dlg-ovl").Click();
 
-        // The click left the body holding the focus and the Dialog is still standing, so the focus is
-        // asked about - and taken back - rather than being left outside the trap.
-        Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.containsActiveElement");
+        // The press on the overlay never took the focus off the Dialog in the first place, so a refusal -
+        // which leaves the Dialog standing for as long as the movement lasts and beyond - has no focus to
+        // go chasing after.
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.containsActiveElement"]);
         Assert.IsTrue(isOpen);
     }
 
