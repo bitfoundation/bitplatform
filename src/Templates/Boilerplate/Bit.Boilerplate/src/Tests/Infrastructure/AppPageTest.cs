@@ -49,6 +49,19 @@ public class AppPageTest : PageTest
     }
 
     /// <summary>
+    /// Runs the selected <c>BROWSER</c> on another computer when <c>PLAYWRIGHT_SERVER_ENDPOINT</c> (see .runsettings)
+    /// points at a Playwright server there - most usefully a mac, where webkit runs against the actual Apple frameworks
+    /// and is as close to Safari as automation gets, but chromium and firefox connect the same way.
+    /// </summary>
+    public override async Task<(string, BrowserTypeConnectOptions?)?> ConnectOptionsAsync()
+    {
+        if (Environment.GetEnvironmentVariable("PLAYWRIGHT_SERVER_ENDPOINT") is { Length: > 0 } playwrightServerEndpoint)
+            return (playwrightServerEndpoint, new());
+
+        return await base.ConnectOptionsAsync();
+    }
+
+    /// <summary>
     /// Runs the headless tests on <c>chromium-headless-shell</c> - the small headless-only build that plain
     /// <c>Headless = true</c> used to mean before Playwright 1.49 made the <c>chromium</c> channel launch the real Chrome
     /// browser in its new headless mode. The shell is what the suite actually needs and is markedly cheaper.

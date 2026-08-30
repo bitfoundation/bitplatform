@@ -108,4 +108,11 @@
       <Build Solution="DebugBlazorServer|*" Project="false" />
     </Project>
   </Folder>
+<!--#if (IsInsideProjectTemplate == true)-->
+  <Folder Name="/Internal/">
+    <Project Path="src/Internal/Boilerplate.Tests.E2E/Boilerplate.Tests.E2E.csproj">
+      <Build Solution="DebugBlazorServer|*" Project="false" />
+    </Project>
+  </Folder>
+<!--#endif-->
 </Solution>
