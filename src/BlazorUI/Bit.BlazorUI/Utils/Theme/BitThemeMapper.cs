@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 internal static class BitThemeMapper
 {
@@ -632,6 +632,7 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Size.SliderThumb.Lg, bitTheme.Size.SliderThumb.Lg);
         addCssVar(BitCss.Var.Size.SpinnerStroke, bitTheme.Size.SpinnerStroke);
         addCssVar(BitCss.Var.Size.PopupMaxHeight, bitTheme.Size.PopupMaxHeight);
+        addCssVar(BitCss.Var.Size.DialogMaxWidth, bitTheme.Size.DialogMaxWidth);
 
         addCssVar(BitCss.Var.Opacity.Disabled, bitTheme.Opacity.Disabled);
 
@@ -838,6 +839,7 @@ internal static class BitThemeMapper
             SliderThumb = src.SliderThumb ?? new(),
             SpinnerStroke = src.SpinnerStroke,
             PopupMaxHeight = src.PopupMaxHeight,
+            DialogMaxWidth = src.DialogMaxWidth,
         };
     }
 
@@ -1397,6 +1399,7 @@ internal static class BitThemeMapper
         result.Size.SliderThumb.Lg = bitTheme.Size.SliderThumb.Lg ?? other.Size.SliderThumb.Lg;
         result.Size.SpinnerStroke = bitTheme.Size.SpinnerStroke ?? other.Size.SpinnerStroke;
         result.Size.PopupMaxHeight = bitTheme.Size.PopupMaxHeight ?? other.Size.PopupMaxHeight;
+        result.Size.DialogMaxWidth = bitTheme.Size.DialogMaxWidth ?? other.Size.DialogMaxWidth;
 
         result.Opacity.Disabled = bitTheme.Opacity.Disabled ?? other.Opacity.Disabled;
 

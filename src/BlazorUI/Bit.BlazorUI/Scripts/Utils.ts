@@ -67,9 +67,22 @@
         // Moves the focus to the first focusable element inside the given container, falling back to the
         // container itself (which the caller makes programmatically focusable with tabindex="-1") when it
         // holds nothing focusable, so the focus never stays behind on the element that opened the popup.
-        public static focusFirstElement(elementId: string) {
+        public static focusFirstElement(elementId: string, selector?: string | null) {
             const container = document.getElementById(elementId);
             if (!container) return;
+
+            // A caller-supplied selector says where the focus belongs when the first focusable element is
+            // not it. It is tried on its own so a selector that is invalid, or that matches nothing
+            // visible, falls through to the default rather than leaving the focus behind on the page.
+            if (selector) {
+                try {
+                    const preferred = Array.from(container.querySelectorAll<HTMLElement>(selector)).find(Utils.isFocusable);
+                    if (preferred) {
+                        preferred.focus();
+                        return;
+                    }
+                } catch (e) { console.error("BitBlazorUI.Utils.focusFirstElement:", e); }
+            }
 
             try {
                 // The same set the focus trap cycles through, so the element the focus lands on when the
@@ -79,7 +92,11 @@
                 // The consumer naming the element the focus should land on, for the popups whose first
                 // focusable element is not the one worth starting at - a dismiss button ahead of the field
                 // the popup was opened to fill in. The first focusable element is the fallback.
-                const requested = candidates.find(el => el.hasAttribute('data-autofocus') && Utils.isFocusable(el));
+                // The standard autofocus attribute says the same thing and is what a native dialog reads,
+                // so it is honoured alongside the data- one: the browser only ever acts on it for markup
+                // that was in the document when it was parsed, which a popup's content never is.
+                const requested = candidates.find(el =>
+                    (el.hasAttribute('data-autofocus') || el.hasAttribute('autofocus')) && Utils.isFocusable(el));
 
                 (requested ?? candidates.find(Utils.isFocusable) ?? container).focus();
             } catch (e) { console.error("BitBlazorUI.Utils.focusFirstElement:", e); }
@@ -158,10 +175,30 @@
             element.addEventListener('keydown', e => {
                 if (e.key !== 'Tab') return;
 
+                // A trap registered on something nested inside this one - a dialog opened from inside this
+                // dialog - owns the key first, and the event carries on bubbling up to here afterwards.
+                // Without this the outer trap would wrap the focus a second time, over the decision the
+                // inner one has already made, and land it somewhere neither of them meant.
+                if (Utils.hasNearerFocusTrap(element, e.target as Element | null)) return;
+
                 Utils.wrapFocus(element, e);
             }, { signal: controller.signal });
 
             Utils._focusTraps.set(elementId, controller);
+        }
+
+        // Whether a trap is registered on something between the given container and the element the key was
+        // pressed on - the container itself excluded, since that is the trap asking.
+        private static hasNearerFocusTrap(root: HTMLElement, target: Element | null) {
+            let node = target;
+
+            while (node && node !== root) {
+                if (node.id && Utils._focusTraps.has(node.id)) return true;
+
+                node = node.parentElement;
+            }
+
+            return false;
         }
 
         public static disposeFocusTrap(elementId: string) {

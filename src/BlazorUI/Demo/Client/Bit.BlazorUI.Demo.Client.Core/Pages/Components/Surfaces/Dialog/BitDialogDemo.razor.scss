@@ -10,6 +10,14 @@
     padding: rem2(12px) rem2(12px) rem2(14px) rem2(24px);
 }
 
+.dialog-header {
+    gap: 0.5rem;
+    display: flex;
+    font-weight: 600;
+    align-items: center;
+    font-size: rem2(20px);
+}
+
 .dialog-body {
     max-width: 40rem;
     overflow-y: hidden;
@@ -42,10 +50,25 @@
 
 .relative-container {
     width: 100%;
+    height: 20rem;
     overflow: auto;
     padding: 0.5rem;
     margin-top: 1rem;
     position: relative;
-    height: rem2(400px);
     border: rem2(2px) lightgreen solid;
+}
+
+::deep {
+    .custom-container {
+        border: rem2(2px) solid tomato;
+    }
+
+    .custom-header {
+        background-color: #fff3f0;
+    }
+
+    .custom-ok {
+        border-color: tomato;
+        background-color: tomato;
+    }
 }
