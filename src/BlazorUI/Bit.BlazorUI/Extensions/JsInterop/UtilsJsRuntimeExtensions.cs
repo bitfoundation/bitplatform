@@ -34,9 +34,9 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    internal static ValueTask BitUtilsFocusFirstElement(this IJSRuntime jsRuntime, string elementId)
+    internal static ValueTask BitUtilsFocusFirstElement(this IJSRuntime jsRuntime, string elementId, string? selector = null)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.focusFirstElement", elementId);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.focusFirstElement", elementId, selector);
     }
 
 

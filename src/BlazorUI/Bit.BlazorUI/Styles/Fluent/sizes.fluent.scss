@@ -88,6 +88,12 @@
     //the tallest a popup list (dropdown, search suggestions, breadcrumb overflow) grows before it scrolls.
     --bit-siz-popup-max-height: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 88.875);
 
+    //the widest a dialog grows on its own before its message starts wrapping, which is what keeps a
+    //two-sentence confirmation from spanning a desktop screen. A dialog given a width or a max width of
+    //its own ignores this, and a full-width one is not capped at all (Fluent 2: 600px; Material's basic
+    //dialog: 560px; Cupertino's alert: 270pt).
+    --bit-siz-dialog-max-width: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 65); //520px
+
     //opacity of an element that is disabled but keeps its own colors (an image, a color swatch).
     --bit-opa-dis: 0.5;
 }
