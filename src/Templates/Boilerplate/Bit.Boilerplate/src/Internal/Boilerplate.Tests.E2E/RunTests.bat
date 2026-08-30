@@ -22,12 +22,12 @@ if errorlevel 1 set EXIT_CODE=1
 set BROWSER=
 set PLAYWRIGHT_SERVER_ENDPOINT=
 
-echo ================================== Windows app tests ==================================
-dotnet test --filter "TestCategory=Windows" --no-build
-if errorlevel 1 set EXIT_CODE=1
-
 echo ================================== Android app tests ==================================
 dotnet test --filter "TestCategory=Android" --no-build
+if errorlevel 1 set EXIT_CODE=1
+
+echo ================================== Windows app tests ==================================
+dotnet test --filter "TestCategory=Windows" --no-build
 if errorlevel 1 set EXIT_CODE=1
 
 exit /b %EXIT_CODE%
