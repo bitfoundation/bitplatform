@@ -29,15 +29,17 @@ public partial class WebPushNotificationService : PushNotificationServiceBase
             return null;
         }
 
-        return new()
-        {
-            DeviceId = $"{subscription.P256dh}-{subscription.Auth}",
-            Platform = "browser",
-            P256dh = subscription.P256dh,
-            Auth = subscription.Auth,
-            Endpoint = subscription.Endpoint
-        };
+        return ToDto(subscription);
     }
+
+    private static PushNotificationSubscriptionDto ToDto(PushSubscriptionInfo subscription) => new()
+    {
+        DeviceId = $"{subscription.P256dh}-{subscription.Auth}",
+        Platform = "browser",
+        P256dh = subscription.P256dh,
+        Auth = subscription.Auth,
+        Endpoint = subscription.Endpoint
+    };
 
     /// <summary>
     /// A push subscription is owned by the service worker registration, and <see cref="Push"/> reads that registration
@@ -65,6 +67,29 @@ public partial class WebPushNotificationService : PushNotificationServiceBase
     }
 
     public override async Task<bool> IsAvailable(CancellationToken cancellationToken) => string.IsNullOrEmpty(clientWebSettings.AdsPushVapid?.PublicKey) is false && await notification.IsNotificationAvailable();
+
+    /// <summary>
+    /// Not the base implementation: <see cref="GetSubscription"/> here CREATES a browser subscription when none
+    /// exists, so an opt-out could mint a fresh DeviceId and delete the wrong server row. This reads the existing
+    /// subscription without creating one, and the finally removes the browser subscription even when the server
+    /// cleanup fails - the orphaned row can deliver nothing and expires on its own.
+    /// </summary>
+    protected override async Task UnsubscribeCore(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var subscription = await push.GetSubscription();
+
+            if (subscription.IsActive)
+            {
+                await pushNotificationController.Unsubscribe(ToDto(subscription), cancellationToken);
+            }
+        }
+        finally
+        {
+            await push.Unsubscribe();
+        }
+    }
 
     public override async Task RequestPermission(CancellationToken cancellationToken)
     {

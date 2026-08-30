@@ -53,9 +53,9 @@ internal static class BitThemeSeedPalette
     /// How a family follows the seed. Only the primary family takes the lightness and chroma deltas -
     /// everywhere else the packaged tone is the designed one and only its hue travels.
     /// </summary>
-    private readonly record struct FamilyShift(double Hue, double Lightness, double ChromaScale)
+    private readonly record struct FamilyShift(double Hue, double AnchorLightness, double Lightness, double ChromaScale)
     {
-        internal static FamilyShift Rotate(double hue) => new(hue, 0, 1);
+        internal static FamilyShift Rotate(double hue) => new(hue, 0, 0, 1);
     }
 
     internal static BitTheme Generate(string seedHex, BitThemeColorScheme scheme, BitThemeSeedOptions options)
@@ -73,6 +73,7 @@ internal static class BitThemeSeedPalette
 
         var accentShift = new FamilyShift(
             Hue: SignedHueDelta(baseH, seedH),
+            AnchorLightness: baseL,
             Lightness: seedL - baseL,
             ChromaScale: baseC > AchromaticChroma ? seedC / baseC : 0);
 
@@ -282,12 +283,43 @@ internal static class BitThemeSeedPalette
 
         // An achromatic tone has no hue to rotate and no chroma to scale; rotating one would only
         // introduce a color the packaged palette deliberately left out.
-        if (c <= AchromaticChroma) return shiftLightness && shift.Lightness != 0 ? ToHex(l + shift.Lightness, c, h) : hex;
+        if (c <= AchromaticChroma) return shiftLightness && shift.Lightness != 0 ? ToHex(RemapLightness(l, shift), c, h) : hex;
 
         return ToHex(
-            shiftLightness ? l + shift.Lightness : l,
+            shiftLightness ? RemapLightness(l, shift) : l,
             c * shift.ChromaScale,
             h + shift.Hue);
+    }
+
+    /// <summary>
+    /// Moves a template tone's lightness onto the seed's as a remap rather than an addition: the
+    /// template primary's own lightness is pinned to the seed's, and the room left on either side of
+    /// it - down to black, up to white - is stretched or squeezed to fit. Both endpoints stay put and
+    /// the curve is strictly increasing, so a ramp keeps its order and its steps stay distinct.
+    /// </summary>
+    /// <remarks>
+    /// Adding the delta instead runs the far end of a ramp off the scale, where <c>ToRgb</c> clamps
+    /// it: seeding a light brand color (a marigold, a cyan) collapsed <c>light</c>,
+    /// <c>light-hover</c> and <c>light-active</c> onto one identical white in the light palette, and
+    /// <c>main</c>, <c>main-hover</c> and <c>main-active</c> in the dark one - three interactive
+    /// states rendering as the same color. The remap cannot produce that. It is the identity when the
+    /// seed sits at the template primary's own lightness, so seeding a packaged palette's primary
+    /// still reproduces that palette byte for byte.
+    /// </remarks>
+    private static double RemapLightness(double l, in FamilyShift shift)
+    {
+        if (shift.Lightness == 0) return l;
+
+        var anchor = shift.AnchorLightness;
+        var target = Math.Clamp(anchor + shift.Lightness, 0.0, 1.0);
+
+        // A template primary at pure black or pure white leaves no room on one side to scale, so
+        // there is no ramp to preserve: the whole family lands on the seed's own lightness.
+        if (anchor <= 0.0 || anchor >= 1.0) return target;
+
+        return l <= anchor
+            ? target * (l / anchor)
+            : 1.0 - ((1.0 - target) * ((1.0 - l) / (1.0 - anchor)));
     }
 
     /// <summary>
@@ -357,15 +389,19 @@ internal static class BitThemeSeedPalette
     }
 
     /// <summary>
-    /// Pulls a whole tier back toward <paramref name="mainHex"/>'s lightness by one shared factor
-    /// until every step in it clears <see cref="OnColorFloor"/> against the on-color. One factor for
-    /// the tier rather than one per step keeps the steps ordered and evenly spaced - repairing them
+    /// Pulls a whole tier back toward <paramref name="mainHex"/> by one shared factor until every
+    /// step in it clears <see cref="OnColorFloor"/> against the on-color. One factor for the tier
+    /// rather than one per step keeps the steps ordered and evenly spaced - repairing them
     /// individually would let a deeper step overtake a shallower one.
     /// </summary>
     /// <remarks>
     /// The search always succeeds. The on-color is one that reads on main (that is how it was
     /// resolved), and contrast against a fixed on-color changes monotonically as a step travels back
-    /// toward main, so factor 0 always clears and brackets the search.
+    /// toward main, so factor 0 always clears and brackets the search. That is why the travel is in
+    /// all three OKLCH coordinates rather than lightness alone: holding a step's own chroma and hue
+    /// leaves factor 0 a color that is main's lightness but NOT main, which can sit a hundredth
+    /// below the floor when main itself only just clears it - and the search then has no bracket and
+    /// gives up with the tier unrepaired.
     /// </remarks>
     private static void CompressTier(string mainHex, string textHex, Func<string?[]> get, Action<string[]> set)
     {
@@ -375,14 +411,20 @@ internal static class BitThemeSeedPalette
         var values = Array.ConvertAll(fills, f => f!);
         if (Array.TrueForAll(values, f => BitThemeColorContrast.GetContrastRatio(f, textHex) >= OnColorFloor)) return;
 
-        var (mainL, _, _) = Oklch(mainHex);
+        var (mainL, mainC, mainH) = Oklch(mainHex);
         var steps = Array.ConvertAll(values, Oklch);
+
+        string toward((double L, double C, double H) step, double factor)
+            => ToHex(
+                mainL + ((step.L - mainL) * factor),
+                mainC + ((step.C - mainC) * factor),
+                mainH + (SignedHueDelta(mainH, step.H) * factor));
 
         bool clears(double factor)
         {
-            foreach (var (l, c, h) in steps)
+            foreach (var step in steps)
             {
-                if (BitThemeColorContrast.GetContrastRatio(ToHex(mainL + ((l - mainL) * factor), c, h), textHex) < OnColorFloor) return false;
+                if (BitThemeColorContrast.GetContrastRatio(toward(step, factor), textHex) < OnColorFloor) return false;
             }
 
             return true;
@@ -396,7 +438,7 @@ internal static class BitThemeSeedPalette
             if (clears(mid)) low = mid; else high = mid;
         }
 
-        set(Array.ConvertAll(steps, step => ToHex(mainL + ((step.L - mainL) * low), step.C, step.H)));
+        set(Array.ConvertAll(steps, step => toward(step, low)));
     }
 
     /// <summary>

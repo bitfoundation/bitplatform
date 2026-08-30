@@ -1672,7 +1672,7 @@ public class BitDialogTests : BunitTestContext
 
         Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.setupFocusTrap");
         Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.focusFirstElement");
-        Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.saveFocus");
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.storeFocus");
     }
 
     [TestMethod]
@@ -1842,7 +1842,7 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.RestoreFocus, false);
         });
 
-        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.saveFocus"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"]);
     }
 
     [TestMethod]
@@ -1877,8 +1877,8 @@ public class BitDialogTests : BunitTestContext
         });
 
         var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
-        Assert.AreEqual(".my-scroller", invocation.Arguments[0]);
-        Assert.AreEqual(true, invocation.Arguments[1]);
+        Assert.AreEqual(".my-scroller", invocation.Arguments[1]);
+        Assert.AreEqual(true, invocation.Arguments[2]);
 
         component.Find(".bit-dlg-cls").Click();
 
@@ -1886,8 +1886,8 @@ public class BitDialogTests : BunitTestContext
         {
             var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"];
             Assert.HasCount(2, invocations);
-            Assert.AreEqual(".my-scroller", invocations[1].Arguments[0]);
-            Assert.AreEqual(false, invocations[1].Arguments[1]);
+            Assert.AreEqual(".my-scroller", invocations[1].Arguments[1]);
+            Assert.AreEqual(false, invocations[1].Arguments[2]);
         }, TimeSpan.FromSeconds(5));
     }
 
@@ -1936,7 +1936,7 @@ public class BitDialogTests : BunitTestContext
         // The opening reaches the browser several times over, and on a circuit every one of those waits. A
         // closing that lands while the opening is still waiting must not let the opening carry on and put
         // the focus trap and the hold on the scroller back on a Dialog that is no longer on the screen.
-        var saveFocus = Context.JSInterop.SetupVoid("BitBlazorUI.Utils.saveFocus", _ => true);
+        var storeFocus = Context.JSInterop.SetupVoid("BitBlazorUI.Utils.storeFocus", _ => true);
 
         var component = RenderComponent<BitDialog>(parameters =>
         {
@@ -1949,7 +1949,7 @@ public class BitDialogTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.IsOpen, false));
 
-        saveFocus.SetVoidResult();
+        storeFocus.SetVoidResult();
 
         component.WaitForAssertion(() =>
         {
@@ -1975,7 +1975,7 @@ public class BitDialogTests : BunitTestContext
         });
 
         var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
-        Assert.AreEqual(shell, invocation.Arguments[0]);
+        Assert.AreEqual(shell, invocation.Arguments[1]);
     }
 
     [TestMethod]
@@ -1993,7 +1993,7 @@ public class BitDialogTests : BunitTestContext
         });
 
         var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
-        Assert.AreEqual("#own-scroller", invocation.Arguments[0]);
+        Assert.AreEqual("#own-scroller", invocation.Arguments[1]);
     }
 
     [TestMethod]
@@ -2006,7 +2006,7 @@ public class BitDialogTests : BunitTestContext
         });
 
         var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
-        Assert.AreEqual("body", invocation.Arguments[0]);
+        Assert.AreEqual("body", invocation.Arguments[1]);
     }
 
     [TestMethod]
@@ -2038,8 +2038,8 @@ public class BitDialogTests : BunitTestContext
             var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"];
             Assert.HasCount(2, invocations);
             // The scroller that was locked is the one that gets unlocked, not the one named now.
-            Assert.AreEqual(".first-scroller", invocations[1].Arguments[0]);
-            Assert.AreEqual(false, invocations[1].Arguments[1]);
+            Assert.AreEqual(".first-scroller", invocations[1].Arguments[1]);
+            Assert.AreEqual(false, invocations[1].Arguments[2]);
         }, TimeSpan.FromSeconds(5));
     }
 
@@ -2058,7 +2058,7 @@ public class BitDialogTests : BunitTestContext
 
         var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"];
         Assert.HasCount(2, invocations);
-        Assert.AreEqual(false, invocations[1].Arguments[1]);
+        Assert.AreEqual(false, invocations[1].Arguments[2]);
     }
 
     [TestMethod]

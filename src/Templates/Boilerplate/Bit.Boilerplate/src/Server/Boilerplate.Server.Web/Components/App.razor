@@ -21,7 +21,9 @@
 }
 
 <!DOCTYPE html>
-<html @attributes="BitThemeSsr.BuildRootThemeAttributeMap(HttpContext.Request.Cookies[BitThemeCookie.PreferenceCookieName])"
+<html lang="@(string.IsNullOrEmpty(CultureInfo.CurrentUICulture.Name) ? null : CultureInfo.CurrentUICulture.Name)"
+      dir="@(CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? "rtl" : null)"
+      @attributes="BitThemeSsr.BuildRootThemeAttributeMap(HttpContext.Request.Cookies[BitThemeCookie.PreferenceCookieName])"
       bit-theme-system bit-theme-persist bit-theme-persist-cookie bit-theme-view-transition
       bit-theme-light="@BitExtraThemePresets.Fluent2Light" bit-theme-dark="@BitExtraThemePresets.Fluent2Dark">
 
@@ -41,6 +43,20 @@
     <meta name="theme-color" content="#1A1A1A" media="(prefers-color-scheme: dark)" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="description" content="@localizer[nameof(AppStrings.DescriptionMetaTagValue)]" />
+
+    @* hreflang marks the per-culture urls of this page as translations of ONE document, so their ranking signals
+       consolidate; x-default names the culture-less url, whose 302 (See UseCultureUrlRedirection) is the language
+       chooser. hreflang urls must be fully qualified; the culture and the query are stripped from the path. *@
+    @if (CultureInfoManager.InvariantGlobalization is false)
+    {
+        var alternateBaseUrl = HttpContext.Request.GetBaseUrl();
+        var alternateBarePath = new Uri(HttpContext.Request.GetUri().GetUrlWithoutCulture()).AbsolutePath;
+        foreach (var (_, supportedCulture) in CultureInfoManager.SupportedCultures)
+        {
+            <link rel="alternate" hreflang="@supportedCulture.Name" href="@(new Uri(alternateBaseUrl, $"/{supportedCulture.Name}{alternateBarePath}"))" />
+        }
+        <link rel="alternate" hreflang="x-default" href="@(new Uri(alternateBaseUrl, alternateBarePath))" />
+    }
 
     <Script>
         // disable auto-zoom of iOS Safari when focusing an input
@@ -72,7 +88,16 @@
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
+    @*#if (theme == "Cupertino")*@
+    <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.cupertino.css" />
+    @*#endif*@
+    @*#if (theme == "Material")*@
+    <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.material.css" />
+    @*#endif*@
+    @* The fluent2 bundle stays the last theme stylesheet, so the template's own tree (where every directive is a comment) renders with Fluent 2. *@
+    @*#if (theme == "Fluent2")*@
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.fluent2.css" />
+    @*#endif*@
     <Link rel="stylesheet" Href="_content/Boilerplate.Client.Core/styles/app.css" />
     <Link rel="stylesheet" Href="Boilerplate.Server.Web.styles.css" />
 

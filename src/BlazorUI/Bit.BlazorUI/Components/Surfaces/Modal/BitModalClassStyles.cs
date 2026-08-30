@@ -17,6 +17,36 @@ public class BitModalClassStyles
     /// </summary>
     public string? Content { get; set; }
 
+    /// <summary>
+    /// Custom CSS classes/styles for the header container of the BitModal.
+    /// </summary>
+    public string? HeaderContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the header of the BitModal.
+    /// </summary>
+    public string? Header { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the close button of the BitModal.
+    /// </summary>
+    public string? CloseButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the close icon of the BitModal.
+    /// </summary>
+    public string? CloseIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the body of the BitModal.
+    /// </summary>
+    public string? Body { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the footer of the BitModal.
+    /// </summary>
+    public string? Footer { get; set; }
+
 
     public static BitModalClassStyles? Merge(BitModalClassStyles? classStyles1, BitModalClassStyles? classStyles2)
     {
@@ -26,7 +56,13 @@ public class BitModalClassStyles
         {
             Root = classStyles1?.Root ?? classStyles2?.Root,
             Overlay = classStyles1?.Overlay ?? classStyles2?.Overlay,
-            Content = classStyles1?.Content ?? classStyles2?.Content
+            Content = classStyles1?.Content ?? classStyles2?.Content,
+            HeaderContainer = classStyles1?.HeaderContainer ?? classStyles2?.HeaderContainer,
+            Header = classStyles1?.Header ?? classStyles2?.Header,
+            CloseButton = classStyles1?.CloseButton ?? classStyles2?.CloseButton,
+            CloseIcon = classStyles1?.CloseIcon ?? classStyles2?.CloseIcon,
+            Body = classStyles1?.Body ?? classStyles2?.Body,
+            Footer = classStyles1?.Footer ?? classStyles2?.Footer
         };
     }
 }

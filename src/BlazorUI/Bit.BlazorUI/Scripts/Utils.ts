@@ -209,55 +209,287 @@
             Utils._focusTraps.delete(elementId);
         }
 
-        private static _savedFocus = new Map<string, HTMLElement>();
+        private static _focusOrigins = new Map<string, HTMLElement>();
 
-        // Remembers what held the focus when a popup took it over, so closing the popup can hand it back
-        // instead of dropping the keyboard at the top of the document. The element is kept by reference
-        // under a key of the caller's choosing, which is what lets a component that outlives many
-        // open/close cycles overwrite its own entry rather than accumulate one per cycle.
-        public static saveFocus(key: string) {
+        // Remembers the element the focus was on before a popup took it over, so that closing the popup can
+        // hand the focus back to whatever opened it. A popup that leaves the focus behind on an element it is
+        // about to remove drops the keyboard user back at the top of the page, which is the one place they
+        // never navigated to. The body is not an element worth handing anything back to, so it is recorded
+        // as "nothing to restore" rather than as an origin.
+        public static storeFocus(key: string) {
             try {
                 const active = document.activeElement as HTMLElement | null;
 
-                // document.body is where the focus sits when nothing holds it, and that is also where it
-                // lands on its own once the popup goes away, so there is nothing worth remembering.
-                if (!active || active === document.body) {
-                    Utils._savedFocus.delete(key);
+                if (!active || active === document.body || active === document.documentElement || typeof active.focus !== 'function') {
+                    Utils._focusOrigins.delete(key);
                     return;
                 }
 
-                Utils._savedFocus.set(key, active);
-            } catch (e) { console.error("BitBlazorUI.Utils.saveFocus:", e); }
+                Utils._focusOrigins.set(key, active);
+            } catch (e) { console.error("BitBlazorUI.Utils.storeFocus:", e); }
         }
 
-        // Hands the focus back to whatever saveFocus remembered under this key, and forgets it either way.
-        // An element that has since left the document - the trigger was inside content the dialog replaced,
-        // or the page navigated - is skipped rather than focused, since focusing a detached node silently
-        // throws the focus to the body instead.
-        public static restoreFocus(key: string) {
-            const element = Utils._savedFocus.get(key);
-            Utils._savedFocus.delete(key);
+        // Hands the focus back to the element storeFocus recorded under the same key, and forgets it either
+        // way - a stored origin is only ever restored once. `onlyWhenLost` is the guard for the usual case:
+        // the focus is only the popup's to hand back while it is still where the popup left it, which after
+        // the popup is taken out of the page means nowhere (the browser drops it on the body). A focus that
+        // has since moved somewhere else belongs to whoever moved it.
+        public static restoreFocus(key: string, onlyWhenLost: boolean) {
+            const element = Utils._focusOrigins.get(key);
+            Utils._focusOrigins.delete(key);
+
             if (!element) return;
 
             try {
-                if (!element.isConnected) return;
+                if (onlyWhenLost) {
+                    const active = document.activeElement;
+                    if (active && active !== document.body && active !== document.documentElement) return;
+                }
 
-                // Only the focus the popup itself orphaned is worth handing back. Taking the focus away from
-                // somewhere the user has since put it - a field on the page behind a modeless popup, or the
-                // trigger a popup never took it from - would be moving it, not restoring it. A popup that
-                // was holding the focus leaves the body holding it once its element is removed, which is
-                // the one case this can tell apart.
-                const active = document.activeElement;
-                if (active && active !== document.body && active !== document.documentElement) return;
+                if (!element.isConnected) return;
 
                 element.focus();
             } catch (e) { console.error("BitBlazorUI.Utils.restoreFocus:", e); }
         }
 
-        // Drops a remembered element without focusing it, for the component that is going away and would
-        // otherwise leave a detached node held by the map for the life of the page.
-        public static clearSavedFocus(key: string) {
-            Utils._savedFocus.delete(key);
+        // Drops a stored origin without focusing it, for a component that is disposed while its popup is
+        // still open: there is no close for the focus to be handed back on, and the map would otherwise keep
+        // the element alive for as long as the page lives.
+        public static forgetFocus(key: string) {
+            Utils._focusOrigins.delete(key);
+        }
+
+        // Every element currently held by one or more popups, against the inline values it carried before
+        // the first of them took it over, and the keys still holding it.
+        private static _scrollLocks = new Map<HTMLElement, { keys: Set<string>, overflow: string, paddingRight: string }>();
+        // The element each key holds, so that releasing a key hands back the one that key actually took.
+        private static _scrollLockOwners = new Map<string, HTMLElement>();
+
+        // The scroller a caller named, as an element or as a selector; the page is what is meant when it
+        // names neither.
+        private static resolveScroller(scroller: string | HTMLElement | null) {
+            return (scroller instanceof HTMLElement
+                ? scroller
+                : (scroller ? document.querySelector(scroller) : document.body)) as HTMLElement | null;
+        }
+
+        // The one place an element's overflow is taken over. Every popup that holds a scroller comes
+        // through here - the counted lock below and the older toggle further down alike - because two
+        // mechanisms writing element.style.overflow with bookkeeping of their own undo each other:
+        // whichever hands the element back last wins, which leaves the page scrolling behind a popup that
+        // is still open, or frozen after every popup has closed.
+        // The holds are counted rather than toggled: two popups open at once both hold the page, and the
+        // page is only handed back once the last of them lets go.
+        // Taking the scrollbar away narrows the element by its width, which shifts the whole page sideways
+        // in the same frame the popup appears in; the room it took is added back as padding so nothing
+        // moves. Only the callers that ask for that compensation get it, so the older toggle keeps behaving
+        // exactly as it always did.
+        private static holdScroll(key: string, element: HTMLElement | null, compensate: boolean) {
+            if (!element || Utils._scrollLockOwners.has(key)) return;
+
+            Utils._scrollLockOwners.set(key, element);
+
+            const held = Utils._scrollLocks.get(element);
+            if (held) {
+                held.keys.add(key);
+                return;
+            }
+
+            const style = element.style;
+            // What the element carried of its own, so that handing it back restores exactly that -
+            // including the case of it having carried nothing, which is an empty string here.
+            Utils._scrollLocks.set(element, { keys: new Set([key]), overflow: style.overflow, paddingRight: style.paddingRight });
+
+            if (compensate) {
+                const scrollbar = Utils.scrollbarWidth(element);
+                if (scrollbar > 0) {
+                    const current = parseFloat(getComputedStyle(element).paddingRight) || 0;
+                    style.paddingRight = `${current + scrollbar}px`;
+                }
+            }
+
+            style.overflow = 'hidden';
+        }
+
+        // Releases what the given key holds, and hands the element back what it carried before the first
+        // hold took it over - but only once no other key is still holding it.
+        private static releaseScroll(key: string) {
+            const element = Utils._scrollLockOwners.get(key);
+            if (!element) return;
+
+            Utils._scrollLockOwners.delete(key);
+
+            const held = Utils._scrollLocks.get(element);
+            if (!held) return;
+
+            held.keys.delete(key);
+            if (held.keys.size > 0) return;
+
+            Utils._scrollLocks.delete(element);
+
+            element.style.overflow = held.overflow;
+            element.style.paddingRight = held.paddingRight;
+        }
+
+        // The room the scrollbar takes from the element's content box. offsetWidth counts the borders along
+        // with the scrollbar, so measuring by offsetWidth alone compensates a bordered scroller by its
+        // border width on every hold - shifting the content sideways by the very amount the compensation
+        // exists to prevent, and doing it even where there is no scrollbar to take away at all.
+        private static scrollbarWidth(element: HTMLElement) {
+            if (element === document.body) return window.innerWidth - document.documentElement.clientWidth;
+
+            const style = getComputedStyle(element);
+            const borders = (parseFloat(style.borderLeftWidth) || 0) + (parseFloat(style.borderRightWidth) || 0);
+            return element.offsetWidth - element.clientWidth - borders;
+        }
+
+        // Stops the page behind a popup from scrolling while it is open, which is what keeps the wheel and
+        // the touch drag on the surface the user is looking at instead of on the page they cannot reach.
+        // The scroller is named by the caller, as an element or as a selector; the page is what is held when
+        // it names neither. An application shell that scrolls a region of its own names that region, since
+        // the body of such a page never scrolls and holding it would hold nothing.
+        public static lockScroll(key: string, scroller: string | HTMLElement | null) {
+            try {
+                Utils.holdScroll(key, Utils.resolveScroller(scroller), true);
+            } catch (e) { console.error("BitBlazorUI.Utils.lockScroll:", e); }
+        }
+
+        // Gives up the hold the given key took, if it still has one.
+        public static unlockScroll(key: string) {
+            try {
+                Utils.releaseScroll(key);
+            } catch (e) { console.error("BitBlazorUI.Utils.unlockScroll:", e); }
+        }
+
+        // Every popup currently handing its gestures on, against the listeners it registered to do so.
+        private static _scrollForwards = new Map<string, AbortController>();
+
+        // A popup that leaves the page scrolling still covers that page with a layer of its own, and the
+        // layer is fixed to the viewport: the wheel and the touch drag that land on it are chained to the
+        // document, which in an application shell - or in any layout that scrolls a region of its own -
+        // is not the thing that scrolls. The gesture is handed to that region here, so that the page a
+        // popup was told not to hold moves the way the user expects it to.
+        // Only what the browser would drop on the floor is forwarded: anything inside the layer that can
+        // take the gesture itself - content that overflows its own box - is left to take it.
+        public static forwardScroll(key: string, rootId: string, scroller: string | HTMLElement | null) {
+            try {
+                Utils.stopForwardScroll(key);
+
+                const root = document.getElementById(rootId);
+                const target = (scroller instanceof HTMLElement
+                    ? scroller
+                    : (scroller ? document.querySelector(scroller) : null)) as HTMLElement | null;
+                if (!root || !target) return;
+
+                const controller = new AbortController();
+                const signal = controller.signal;
+                Utils._scrollForwards.set(key, controller);
+
+                // Whether something between the gesture and the layer takes it, which is the thing the
+                // browser would hand it to on its own.
+                const taken = (from: EventTarget | null, x: number, y: number) => {
+                    let element = from instanceof HTMLElement ? from : (from instanceof Node ? from.parentElement : null);
+                    while (element && element !== root) {
+                        if (Utils.consumesScroll(element, x, y)) return true;
+                        element = element.parentElement;
+                    }
+                    return false;
+                };
+
+                const forward = (event: Event, x: number, y: number) => {
+                    if (x === 0 && y === 0) return;
+                    if (taken(event.target, x, y)) return;
+
+                    // Instant rather than the default: the region may carry scroll-behavior:smooth, which
+                    // would animate every notch of the wheel and leave the page lagging behind the gesture.
+                    target.scrollBy({ left: x, top: y, behavior: 'instant' });
+                };
+
+                root.addEventListener('wheel', (e: WheelEvent) => {
+                    // Lines and pages are turned into the pixels scrollBy takes, so that a wheel reporting
+                    // either of them moves the region by what the browser would have moved it by.
+                    const lines = e.deltaMode === 1;
+                    const pages = e.deltaMode === 2;
+                    const x = e.deltaX * (lines ? 16 : (pages ? target.clientWidth : 1));
+                    const y = e.deltaY * (lines ? 16 : (pages ? target.clientHeight : 1));
+                    forward(e, x, y);
+                }, { signal, passive: true });
+
+                let lastX = 0, lastY = 0, tracking = false;
+
+                root.addEventListener('touchstart', (e: TouchEvent) => {
+                    // A single finger is a drag; anything else is a pinch, which is not a scroll.
+                    tracking = e.touches.length === 1;
+                    if (!tracking) return;
+
+                    lastX = e.touches[0].clientX;
+                    lastY = e.touches[0].clientY;
+                }, { signal, passive: true });
+
+                root.addEventListener('touchmove', (e: TouchEvent) => {
+                    if (!tracking || e.touches.length !== 1) return;
+
+                    const touch = e.touches[0];
+                    // The finger and the content move opposite ways: dragging up scrolls down.
+                    const x = lastX - touch.clientX;
+                    const y = lastY - touch.clientY;
+                    lastX = touch.clientX;
+                    lastY = touch.clientY;
+                    forward(e, x, y);
+                }, { signal, passive: true });
+
+                const release = () => { tracking = false; };
+                root.addEventListener('touchend', release, { signal, passive: true });
+                root.addEventListener('touchcancel', release, { signal, passive: true });
+            } catch (e) { console.error("BitBlazorUI.Utils.forwardScroll:", e); }
+        }
+
+        // Takes back the forwarding registered under the given key, listeners and all.
+        public static stopForwardScroll(key: string) {
+            const controller = Utils._scrollForwards.get(key);
+            if (!controller) return;
+
+            Utils._scrollForwards.delete(key);
+            controller.abort();
+        }
+
+        // Whether the walk from the gesture up to the popup's own layer ends at the given element. It does
+        // when the element scrolls in the direction the gesture is going and still has room to do it in -
+        // the thing the browser hands the gesture to on its own - and it also does when the element is a
+        // scroller told to keep its overscroll to itself. That second case is what stops a gesture at the
+        // end of a popup's content rather than carrying it on into the page behind: the browser honours
+        // overscroll-behavior on its own everywhere else, but the layer that swallowed this gesture is
+        // fixed to the viewport, so the chaining is being done by hand here and has to honour it too.
+        private static consumesScroll(element: HTMLElement, x: number, y: number) {
+            const style = getComputedStyle(element);
+            const scrolls = (overflow: string) => overflow === 'auto' || overflow === 'scroll' || overflow === 'overlay';
+            const contained = (behavior: string) => behavior === 'contain' || behavior === 'none';
+
+            if (y !== 0 && scrolls(style.overflowY)) {
+                const room = element.scrollHeight - element.clientHeight;
+                if (room > 1 && (y < 0 ? element.scrollTop > 1 : element.scrollTop < room - 1)) return true;
+                if (contained(style.overscrollBehaviorY)) return true;
+            }
+
+            if (x !== 0 && scrolls(style.overflowX)) {
+                const room = element.scrollWidth - element.clientWidth;
+                if (room > 1) {
+                    const left = element.scrollLeft;
+                    // Which way the offset runs depends on the writing direction. A left-to-right scroller
+                    // reports 0 at its start and grows to the room it has; a right-to-left one reports 0 at
+                    // its start and falls to minus that room. Taking the distance alone would read the two
+                    // ends of a right-to-left scroller the wrong way round, so the range itself is what is
+                    // worked out here. A right-to-left scroller reporting a positive offset is one of the
+                    // older engines that never took up the negative range, and reads as the other case.
+                    const max = (style.direction === 'rtl' && left <= 0) ? 0 : room;
+                    const min = max - room;
+                    // scrollBy moves the offset the way the delta points, whichever range it runs in.
+                    if (x < 0 ? left > min + 1 : left < max - 1) return true;
+                }
+                if (contained(style.overscrollBehaviorX)) return true;
+            }
+
+            return false;
         }
 
         private static _preventedKeys = new Map<string, AbortController>();
@@ -678,65 +910,22 @@
             } catch (e) { console.error("BitBlazorUI.Utils.setStyle:", e); }
         }
 
-        // What each locked scroller looked like before the lock, kept against the element itself so two
-        // popups over the same scroller cannot undo each other: the count is what decides when the scroll
-        // is actually handed back, and the saved inline values are what it is handed back to.
-        private static _overflowLocks = new WeakMap<HTMLElement, { count: number, overflow: string, padding: string }>();
-
-        public static toggleOverflow(selector: string | HTMLElement, isOpen: boolean) {
-            const element = selector instanceof HTMLElement ? selector : document.querySelector(selector) as HTMLElement;
+        // The older shape of the hold above, for the components that take a scroller for as long as they
+        // are open and want its scroll offset back. It goes through the same counted registry, so one of
+        // these can no longer hand back a scroller that a lock - or another one of these - is still
+        // holding. The scrollbar room is not compensated for here, which is what these callers have
+        // always done.
+        public static toggleOverflow(key: string, selector: string | HTMLElement, isOpen: boolean) {
+            const element = Utils.resolveScroller(selector);
 
             if (!element) return 0;
 
             try {
-                const lock = Utils._overflowLocks.get(element);
-
                 if (isOpen) {
-                    // Already locked by another popup: this one only deepens the count, so the first of
-                    // them to close does not give the page its scroll back under the second.
-                    if (lock) {
-                        lock.count++;
-                        return element.scrollTop;
-                    }
-
-                    Utils._overflowLocks.set(element, {
-                        count: 1,
-                        overflow: element.style.overflow,
-                        padding: element.style.paddingInlineEnd
-                    });
-
-                    // Taking the scrollbar away widens the content by exactly its width, which the page
-                    // pays for as a jump the moment the popup appears. The width is measured as the
-                    // difference the lock itself makes rather than assumed, which is the only reading
-                    // that stays right for an overlay scrollbar (no jump at all) and for a page that
-                    // already reserves the gutter with scrollbar-gutter (no jump either).
-                    const isViewport = element === document.body || element === document.documentElement;
-                    const measure = () => isViewport ? document.documentElement.clientWidth : element.clientWidth;
-
-                    const before = measure();
-                    element.style.overflow = "hidden";
-                    const gained = measure() - before;
-
-                    // padding-inline-end rather than padding-right: the scrollbar sits on the left of an
-                    // RTL document, which is the inline end there just as the right is in an LTR one.
-                    if (gained > 0) {
-                        const current = parseFloat(getComputedStyle(element).paddingInlineEnd) || 0;
-                        element.style.paddingInlineEnd = `${current + gained}px`;
-                    }
-
-                    return element.scrollTop;
+                    Utils.holdScroll(key, element, false);
+                } else {
+                    Utils.releaseScroll(key);
                 }
-
-                // Nothing to unlock. An unbalanced unlock is left alone rather than clearing an overflow
-                // the page set for itself.
-                if (!lock) return element.scrollTop;
-
-                if (--lock.count > 0) return element.scrollTop;
-
-                Utils._overflowLocks.delete(element);
-
-                element.style.overflow = lock.overflow;
-                element.style.paddingInlineEnd = lock.padding;
 
                 return element.scrollTop;
             } catch (e) {

@@ -6,6 +6,7 @@ namespace Boilerplate.Server.Api.Features.Identity.Services;
 
 public partial class IdentityEmailService
 {
+    [AutoInject] private AppDbContext dbContext = default!;
     [AutoInject] private HtmlRenderer htmlRenderer = default!;
     [AutoInject] private ILogger<IdentityEmailService> logger = default!;
     [AutoInject] private IHostEnvironment hostEnvironment = default!;
@@ -115,6 +116,37 @@ public partial class IdentityEmailService
 
     //#if (multitenant == true)
     public virtual async Task SendTenantInvitation(User user, string inviterDisplayName, string tenantTitle, Uri link, CancellationToken cancellationToken)
+    {
+        // The invitation's recipient is NOT the caller: CurrentUICulture belongs to the INVITER's request, so prefer
+        // the culture the recipient's most recent session reported (See UserController.UpdateSession; sessions that
+        // never reported one are skipped). No session culture -> the inviter's language stays the best guess.
+        var recipientCulture = CultureInfoManager.GetCultureInfo(await dbContext.UserSessions
+            .Where(session => session.UserId == user.Id && session.CultureName != null)
+            .OrderByDescending(session => session.RenewedOn ?? session.StartedOn)
+            .Select(session => session.CultureName)
+            .FirstOrDefaultAsync(cancellationToken));
+
+        // Flow-scoped and restored below, so the rest of the inviter's request stays in their own culture.
+        var (originalCulture, originalUICulture) = (CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
+
+        if (recipientCulture is not null)
+        {
+            CultureInfo.CurrentCulture = recipientCulture;
+            CultureInfo.CurrentUICulture = recipientCulture;
+        }
+
+        try
+        {
+            await SendTenantInvitationCore(user, inviterDisplayName, tenantTitle, link);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+            CultureInfo.CurrentUICulture = originalUICulture;
+        }
+    }
+
+    private async Task SendTenantInvitationCore(User user, string inviterDisplayName, string tenantTitle, Uri link)
     {
         var subject = emailLocalizer[EmailStrings.TenantInvitationEmailSubject, tenantTitle];
 

@@ -1,4 +1,4 @@
-[
+﻿[
     {
         "outputFile": "Components/CodeBox.razor.css",
         "inputFile": "Components/CodeBox.razor.scss",
@@ -116,12 +116,6 @@
     {
         "outputFile": "Pages/Components/Surfaces/Modal/BitModalServiceDemo.razor.css",
         "inputFile": "Pages/Components/Surfaces/Modal/BitModalServiceDemo.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Pages/Components/Extras/ProModalService/BitProModalServiceDemo.razor.css",
-        "inputFile": "Pages/Components/Extras/ProModalService/BitProModalServiceDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -522,6 +516,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/GettingStartedPage.razor.css",
+        "inputFile": "Pages/GettingStartedPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Home/HomePage.razor.css",
         "inputFile": "Pages/Home/HomePage.razor.scss",
         "minify": { "enabled": false },
@@ -554,6 +554,12 @@
     {
         "outputFile": "Pages/Iconography/IconographyPage.razor.css",
         "inputFile": "Pages/Iconography/IconographyPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/McpServerPage.razor.css",
+        "inputFile": "Pages/McpServerPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

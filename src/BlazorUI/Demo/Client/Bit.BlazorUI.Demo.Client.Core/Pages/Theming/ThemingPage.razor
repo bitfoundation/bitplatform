@@ -254,7 +254,7 @@
                 <ul>
                     <li><code>--bit-siz-ctrl-{sm,md,lg}</code> &mdash; control heights: 26/32/40px</li>
                     <li><code>--bit-siz-ctrl-pad-x-{sm,md,lg}</code> / <code>--bit-siz-ctrl-pad-y-{sm,md,lg}</code> &mdash; control padding: 12/16/20px horizontal, 4/6/8px vertical</li>
-                    <li><code>--bit-siz-ctrl-min-width</code> &mdash; <code>auto</code> under Fluent; Material sets 64px</li>
+                    <li><code>--bit-siz-ctrl-min-width</code> &mdash; the floor under a labeled button: <code>auto</code> under Fluent and Cupertino; Material sets 64px, Fluent&nbsp;2 96px</li>
                     <li><code>--bit-siz-icon-{sm,md,lg}</code> &mdash; glyphs inside controls: 12/16/20px</li>
                     <li><code>--bit-siz-sel-{sm,md,lg}</code> &mdash; checkbox box / radio ring: 14/20/26px</li>
                     <li><code>--bit-siz-item-{sm,md,lg}</code> &mdash; popup list row heights: 30/36/44px</li>
@@ -318,7 +318,7 @@
                 </ul>
 
                 <BitText>
-                    <b>Opacity</b> &mdash; <code>--bit-opa-dis</code>: the alpha of a disabled element that keeps its own colors, e.g. an image.
+                    <b>Opacity</b> &mdash; <code>--bit-opa-dis</code>: the alpha of a disabled element that keeps its own colors, e.g. an image. <code>0.5</code> under Fluent, Fluent&nbsp;2 and Cupertino; Material sets the <code>0.38</code> that M3 names for the disabled state. A text-bearing control does not use it &mdash; it recolors through the <code>--bit-clr-*-dis</code> tokens instead.
                 </BitText>
             </DocSection>
 
@@ -582,6 +582,10 @@ await _bitThemeManager.SetThemeAsync(corporate);</CodeBox>
 
                 <BitText>
                     Scoped presets and <code>BitThemeProvider</code> are complementary: the attribute swaps a subtree to a <i>named palette</i> from CSS, the provider overlays <i>individual token values</i> from a C# <code>BitTheme</code> object &mdash; and they can nest. One caveat applies to both: components that render at the document level (modals, callouts with <code>AbsolutePosition</code> disabled, snackbars) escape the subtree in the DOM, so they inherit the document palette rather than the scoped one.
+                </BitText>
+
+                <BitText>
+                    <b>Why a preset declares a token twice.</b> A custom property's <code>var()</code> references are substituted <i>at the element that declares it</i>, and descendants inherit the already-substituted value. So a token whose value is an alias &mdash; <code>--bit-shp-radius-control</code>, <code>--bit-shd-popup</code>, <code>--bit-sem-*</code>, <code>--bit-mot-duration</code>, the composed <code>--bit-shd-focus-ring</code> &mdash; would freeze the <i>document's</i> value inside a scoped region if it were declared on <code>:root</code> alone. The core stylesheet therefore re-declares every alias tier on <code>:root [bit-theme]</code> as well, which re-runs the substitution against that region's own primitives. Two rules follow for a preset of your own: pair every <code>:root[bit-theme="x"]</code> selector with a <code>:root [bit-theme="x"]</code> twin, and re-declare a token you rely on even when its value is unchanged from the one you inherit &mdash; if that value is an alias, inheriting it is not the same as re-resolving it. The packaged presets are pinned to both rules by a contract test.
                 </BitText>
             </DocSection>
 
@@ -898,6 +902,10 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
 
             <BitText>
                 Density scales <i>rhythm</i>, not <i>type</i>: paddings, gaps, control heights (<code>--bit-siz-ctrl-*</code>) and selection sizes (<code>--bit-siz-sel-*</code>) follow the spacing unit times the density multiplier, while font sizes (<code>--bit-tpg-fs-*</code>) and glyph sizes (<code>--bit-siz-icon-*</code>) are <code>rem</code> values that follow the root font size only &mdash; the same split Material and Fluent make, so a compact UI keeps legible text.
+            </BitText>
+
+            <BitText>
+                This holds under every packaged preset, not only Fluent. Fluent&nbsp;2, Material and Cupertino all fix their control geometry on an 8px grid &mdash; 40dp Material buttons, the 44pt iOS tap target, Fluent&nbsp;2's 32px medium control &mdash; so each preset writes those measurements as spacing multiples rather than as absolute lengths, and the density multiplier reaches them exactly as it does under Fluent. A preset of your own should do the same wherever its geometry lands on the grid; where it does not, an absolute length is fine and simply opts that one measurement out of density.
             </BitText>
 
             <CodeBox Language="csharp">var theme = new BitTheme

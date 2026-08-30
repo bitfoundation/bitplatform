@@ -681,7 +681,7 @@ public static partial class Program
                     var prompt = dbContext.SystemPrompts.FirstOrDefault(p => p.PromptKind == promptKind);
                     return prompt?.Markdown ?? throw new ResourceNotFoundException().WithData("Reason", $"System prompt for '{promptKind}' not found.");
                 },
-                options => options.Duration = TimeSpan.FromHours(1));
+                options => options.SetDuration(TimeSpan.FromHours(1)).SetPriority(CacheItemPriority.High));
             return result;
         }
 

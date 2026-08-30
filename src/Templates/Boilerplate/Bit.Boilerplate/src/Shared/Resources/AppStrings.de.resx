@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
   <!-- 
@@ -1731,9 +1731,6 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <data name="LeaveTenantConfirmMessage" xml:space="preserve">
     <value>Sind Sie sicher, dass Sie den Mandanten {0} verlassen möchten?</value>
   </data>
-    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
-    <value>Sie haben den Mandanten erfolgreich verlassen.</value>
-  </data>
     <data name="SwitchTenant" xml:space="preserve">
     <value>Mandant wechseln</value>
   </data>
@@ -1809,8 +1806,31 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
     <value>Die Einladung zu {0} ablehnen? Dies kann nicht rückgängig gemacht werden - Sie benötigen eine neue Einladung, um beizutreten.</value>
   </data>
-  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
-    <value>Einladung abgelehnt.</value>
+  <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>Zeitzone</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>Zeitzone auswählen</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>Zeitzone suchen</value>
+  </data>
+    <data name="NoTimeZoneMatchesSearchMessage" xml:space="preserve">
+    <value>Keine Zeitzone entspricht Ihrer Suche.</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotifications" xml:space="preserve">
+    <value>Push-Benachrichtigungen</value>
+  </data>
+    <data name="TurnPushNotificationsOn" xml:space="preserve">
+    <value>Push-Benachrichtigungen einschalten</value>
+  </data>
+    <data name="TurnPushNotificationsOff" xml:space="preserve">
+    <value>Push-Benachrichtigungen ausschalten</value>
+  </data>
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>Push-Benachrichtigungen sind für diese App blockiert. Erlauben Sie Benachrichtigungen in den Einstellungen Ihres Browsers oder Betriebssystems und versuchen Sie es erneut.</value>
   </data>
   <!--#endif-->
 </root>

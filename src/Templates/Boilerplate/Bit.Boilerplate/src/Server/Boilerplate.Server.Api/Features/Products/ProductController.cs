@@ -112,6 +112,8 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
+        await responseCacheService.PurgeHomePage();
+
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
         //#endif

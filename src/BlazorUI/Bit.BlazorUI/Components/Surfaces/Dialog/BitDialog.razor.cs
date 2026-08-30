@@ -5,8 +5,8 @@
 /// </summary>
 /// <remarks>
 /// The Dialog is the confirmation-shaped member of the overlay family: a title, a message and a pair of
-/// actions, with an Ok/Cancel result a caller can await. Reach for BitModal (or BitProModal in the Extras
-/// package) where the overlay holds a form or a long document rather than a decision.
+/// actions, with an Ok/Cancel result a caller can await. Reach for BitModal where the overlay holds a form
+/// or a long document rather than a decision.
 /// </remarks>
 public partial class BitDialog : BitComponentBase
 {
@@ -914,8 +914,8 @@ public partial class BitDialog : BitComponentBase
         try
         {
             _offsetTop = _scrollerElementOnOpen.HasValue
-                ? await _js.BitUtilsToggleOverflow(_scrollerElementOnOpen.Value, isOpen)
-                : await _js.BitUtilsToggleOverflow(_scrollerSelectorOnOpen ?? "body", isOpen);
+                ? await _js.BitUtilsToggleOverflow(_containerId, _scrollerElementOnOpen.Value, isOpen)
+                : await _js.BitUtilsToggleOverflow(_containerId, _scrollerSelectorOnOpen ?? "body", isOpen);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -983,7 +983,7 @@ public partial class BitDialog : BitComponentBase
 
     private async Task SaveFocus()
     {
-        await InvokeJs(_js.BitUtilsSaveFocus(_containerId));
+        await InvokeJs(_js.BitUtilsStoreFocus(_containerId));
     }
 
     private async Task RestoreSavedFocus()
@@ -1380,7 +1380,7 @@ public partial class BitDialog : BitComponentBase
 
                 // The Dialog is going away rather than closing, so there is no telling whether handing the
                 // focus back is what the page wants: the remembered element is only released here.
-                await _js.BitUtilsClearSavedFocus(_containerId);
+                await _js.BitUtilsForgetFocus(_containerId);
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here

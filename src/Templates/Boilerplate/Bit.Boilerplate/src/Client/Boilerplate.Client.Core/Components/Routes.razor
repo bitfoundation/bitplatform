@@ -1,5 +1,5 @@
 @*+:cnd:noEmit*@
-<AppErrorBoundary @key="currentCulture">
+<AppErrorBoundary @key="softRestartKey">
     <CascadingAuthenticationState>
         <AppClientCoordinator />
         <LayoutView Layout="@(Layout ?? typeof(MainLayout))">
@@ -29,10 +29,12 @@
                         </NotAuthorized>
                     </AuthorizeRouteView>
                 </Found>
+                @*#if (brouter == true)*@
                 <NotFound>
                     <AppRouteDataPublisher RouteData="@null" />
                     <NotFoundPage />
                 </NotFound>
+                @*#endif*@
                 <Navigating>
                     <LoadingComponent />
                 </Navigating>

@@ -99,6 +99,12 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
         {
             outputCacheTtl = -1;
         }
+        if (responseCacheAtt.SkipOutputCache)
+        {
+            // A file response (See AttachmentController.GetAttachment): too big for the byte-bounded memory cache the
+            // output cache stores bodies in. The edge keeps caching it. See SkipOutputCache.
+            outputCacheTtl = -1;
+        }
         if (env.IsDevelopment())
         {
             clientCacheTtl = -1;
@@ -128,11 +134,13 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
         }
         //#endif
 
-        if (context.HttpContext.IsBlazorPageContext() && CultureInfoManager.InvariantGlobalization is false)
+        if (context.HttpContext.IsBlazorPageContext() && CultureInfoManager.InvariantGlobalization is false
+            && context.HttpContext.Request.GetUri().GetCulture() is null)
         {
-            // Note: Currently, we are not keeping the current culture in the URL.
-            // The edge and client caches do not support such variations, although the output cache does.
-            // As a temporary solution, client and edge caching are disabled for pre-rendered pages.
+            // A page url naming no culture renders in whatever the cookie or Accept-Language resolved to - dimensions
+            // the browser cache and CDN edge cannot key on. Server.Web's UseCultureUrlRedirection normally 302s such
+            // requests onto /{culture}/... before they get here; this is the backstop for the ones it lets through
+            // (the `no-prerender` app-shell request). The output cache is unaffected: it varies by culture itself.
             edgeCacheTtl = -1;
             clientCacheTtl = -1;
         }
@@ -257,7 +265,9 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
     /// A response that reports a failure or hands out cookies belongs to the caller that triggered it and may not be
     /// stored in any cache. Otherwise a 404 of a product that gets created a minute later stays alive on the edge for
     /// days, and one caller's cookies get replayed to everyone else.
-    /// The culture cookie is exempt because <see cref="CacheRequestAsync"/> varies the cache by culture.
+    /// The culture cookie is exempt: the output cache varies by culture, and an edge entry only ever lives under a
+    /// culture-prefixed url (See Server.Web's <c>UseCultureUrlRedirection</c>) - a replayed culture Set-Cookie names
+    /// that url's own culture, the value the origin would have written for any caller.
     /// </summary>
     private static bool IsResponseCacheable(HttpResponse response)
     {

@@ -47,6 +47,13 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
             {
                 Logger.LogError(exception, exceptionMessageToLog);
             }
+            else if (IsTransientException(exception))
+            {
+                // Same ladder as ApiServerExceptionHandler: a transient failure that reached this handler without
+                // being wrapped by ExceptionDelegatingHandler (a background HttpRequestException, a SignalR
+                // reconnect) is weather, not a bug - Critical is reserved for the unexpected.
+                Logger.LogWarning(exception, exceptionMessageToLog);
+            }
             else
             {
                 Logger.LogCritical(exception, exceptionMessageToLog);

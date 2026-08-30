@@ -228,12 +228,30 @@ html, body, .site-content, pre, .table-view, .side-rail {
         padding-top: 0;
     }
 
-    &:last-of-type {
-        padding-bottom: 0;
-    }
-
     @include sm {
         padding-block: $doc-space-lg;
+    }
+}
+
+// Which section opens the article and which one closes it is a property of the *article*, not of
+// whichever element happens to be the sections' parent. A page whose root markup is all components
+// has to wrap its sections in a plain element for its scoped CSS to have an anchor (.mcp-doc,
+// .theming-doc), and that wrapper puts them one level deeper than the closing feedback block, which
+// DocsArticle and DemoPage always append as a direct child of the article. The two rules above then
+// read that wrapper's last section as the article's last - dropping the air under it - and the
+// feedback section as the article's first - dropping the hairline that separates it from the page.
+// So both ends are named against .doc-main instead: only a section the article holds directly can
+// close it, and a section that follows a wrapper full of sections never opens it.
+.doc-main > .doc-section:last-of-type {
+    padding-bottom: 0;
+}
+
+.doc-main > :has(> .doc-section) ~ .doc-section {
+    padding-top: $doc-space-xl;
+    border-top: rem2(1px) solid $bit-color-border-secondary;
+
+    @include sm {
+        padding-top: $doc-space-lg;
     }
 }
 
@@ -461,12 +479,15 @@ code {
 // so ChartLegacy and Chart, or Toggle and ToggleButton, are told apart before the reader commits.
 // Global rather than scoped to ComponentSearchBox because the row is rendered inside BitSearchBox's
 // callout, which is not a DOM descendant of the box on every platform.
+// The row grows to hold both lines - BitSearchBox's item height is a minimum, not a fixed height.
+// The name drops Body2's 1.714 leading, which is meant for a paragraph of running text: stacked
+// over the category it only reads as a gap, and eight rows of it push the list past the callout.
 .cmp-search-item {
     overflow: hidden;
-    padding-block: rem2(2px);
 }
 
 .cmp-search-item-name {
+    line-height: 1.35;
     font-weight: $bit-typography-fw-medium;
 }
 

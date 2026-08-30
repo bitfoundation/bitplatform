@@ -340,11 +340,13 @@ public partial class AppAiChatPanel
     {
         try
         {
+            var timeZoneId = (await TimeZoneService.GetCurrentTimeZone()).Id;
+
             await foreach (var response in hubConnection.StreamAsync<string>(SharedAppMessages.StartChat,
                                                                              new StartChatRequest()
                                                                              {
                                                                                  CultureId = CultureInfo.CurrentCulture.LCID,
-                                                                                 TimeZoneId = TimeZoneInfo.Local.Id,
+                                                                                 TimeZoneId = timeZoneId,
                                                                                  DeviceInfo = TelemetryContext.Platform,
                                                                                  ChatMessagesHistory = chatMessages
                                                                              },

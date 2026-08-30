@@ -35,6 +35,10 @@ public partial class ProductPage
         {
             product = await productViewController.Get(Id, CurrentCancellationToken);
         }
+        catch (ResourceNotFoundException)
+        {
+            NavigationManager.NotFound();
+        }
         finally
         {
             isLoadingProduct = false;

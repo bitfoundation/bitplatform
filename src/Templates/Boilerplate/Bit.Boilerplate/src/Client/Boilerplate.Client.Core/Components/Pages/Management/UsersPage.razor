@@ -171,7 +171,7 @@
                                                 <BitText>@Localizer[nameof(AppStrings.Privileged)]: @session.Privileged</BitText>
                                                 <BitText>@Localizer[nameof(AppStrings.Culture)]: @session.CultureName</BitText>
                                                 <BitText>@Localizer[nameof(AppStrings.AppVersion)]: @session.AppVersion</BitText>
-                                                <BitText>@Localizer[nameof(AppStrings.RenewedOn)]: @session.RenewedOnDateTimeOffset.ToLocalTime()</BitText>
+                                                <BitText>@Localizer[nameof(AppStrings.RenewedOn)]: @TimeZoneService.ToLocalTime(session.RenewedOnDateTimeOffset)</BitText>
                                                 <BitText>
                                                     @Localizer[nameof(AppStrings.Id)]:
                                                     <BitTag Color="BitColor.SecondaryBackground" Size="BitSize.Large" Class="selectable">@session.Id</BitTag>

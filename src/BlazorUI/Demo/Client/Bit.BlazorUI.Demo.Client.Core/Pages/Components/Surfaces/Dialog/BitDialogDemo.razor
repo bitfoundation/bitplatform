@@ -16,8 +16,7 @@
         <BitText>
             A Dialog is for a <b>decision</b>, not for a document: a sentence of context and two buttons. Where the
             overlay has to hold a form, a wizard or a long read, reach for
-            <BitLink Href="/components/modal">Modal</BitLink> or
-            <BitLink Href="/components/promodal">ProModal</BitLink> instead.
+            <BitLink Href="/components/modal">Modal</BitLink> instead.
             <br /><br />
             The Dialog names itself to a screen reader from its <b>Title</b> and describes itself from its
             <b>Subtitle</b> or <b>Message</b>, so a Dialog built entirely from custom content has neither - give it an
@@ -441,9 +440,8 @@
         <DemoExample Title="Scroll locking" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
                 <b>AutoToggleScroll</b> stops the page behind the overlay from scrolling for as long as the Dialog is
-                open, and gives it back afterwards - including when the Dialog is disposed while still open. The width
-                the scrollbar leaves behind is given back as padding, so nothing on the page jumps sideways as the
-                Dialog appears, and a scroller locked by two overlays at once is only released by the second of them
+                open, and gives it back afterwards - including when the Dialog is disposed while still open. The holds
+                are counted, so a scroller held by two overlays at once is only released by the second of them
                 to close. <b>ScrollerSelector</b> (or <b>ScrollerElement</b>) names what to lock when the Dialog sits
                 over a scrollable of its own rather than over the page; inside a <b>BitAppShell</b> the shell's own
                 scroller is held without either of them being set, since the body of such an app never scrolls.

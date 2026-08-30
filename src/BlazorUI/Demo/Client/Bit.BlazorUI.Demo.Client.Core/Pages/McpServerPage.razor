@@ -1,0 +1,373 @@
+﻿@page "/mcp-server"
+@inherits AppComponentBase
+
+<PageOutlet Url="mcp-server"
+            Title="MCP server"
+            Description="This documentation site is also an MCP server: the component catalog, the full API of every component, the worked examples, the theming reference and the setup guides, exposed as tools an AI coding agent can call." />
+
+<DocsArticle Eyebrow="Documentation"
+             Title="MCP server"
+             GitHubUrl="McpServerPage.razor">
+
+    <LeadTemplate>
+        <BitText Element="p" Typography="BitTypography.Subtitle1" Color="BitColor.SecondaryForeground">
+            This site is also an MCP server. Everything the pages here render - the catalog of
+            @(_componentCount is null ? "every component" : $"all {_componentCount} components"), each one's full
+            parameter table, the worked examples, the theming reference and the per-hosting-model setup -
+            is exposed as tools an AI coding agent can call, answering from the packages this deployment
+            actually references rather than from what a model half-remembers.
+        </BitText>
+    </LeadTemplate>
+
+    <Badges>
+        <BitTag Color="BitColor.SecondaryBackground" IconName="@BitIconName.PlugConnected" Text="@_toolsBadge" />
+        <BitTag Color="BitColor.SecondaryBackground" Text="@_promptsBadge" />
+        <BitTag Color="BitColor.SecondaryBackground" Text="@_resourcesBadge" />
+    </Badges>
+
+    <ChildContent>
+        @* A plain wrapper: DocsArticle renders no element this file owns, and scoped CSS only lands
+           on elements written here - so without it the rules beside this page would have nothing to
+           descend from. *@
+        <div class="mcp-doc">
+
+            <DocSection Id="connect" Title="Connect your agent"
+                        Description="One endpoint, no SDK, no key. Point any MCP client at it and the tools appear.">
+
+                <BitText Element="p">
+                    The server speaks MCP over streamable HTTP at <code>/mcp</code> - one POST endpoint with
+                    JSON-RPC in the body. Every tool is <b>also</b> a plain GET under
+                    <code>/api/mcp/...</code>, which is what makes each of them inspectable from a browser
+                    address bar. Both URLs below are this deployment's own.
+                </BitText>
+
+                <BitStack Horizontal Wrap AutoHeight Gap="0.5rem" VerticalAlign="BitAlignment.Center">
+                    <BitTag Color="BitColor.Primary" Text="MCP" />
+                    <code class="mcp-endpoint">POST @McpEndpoint</code>
+                </BitStack>
+                <BitStack Horizontal Wrap AutoHeight Gap="0.5rem" VerticalAlign="BitAlignment.Center">
+                    <BitTag Color="BitColor.SecondaryBackground" Text="HTTP mirror" />
+                    <code class="mcp-endpoint">GET @HttpEndpoint{tool}?argument=value</code>
+                </BitStack>
+
+                <BitText Element="h3" Typography="BitTypography.Subtitle1">Register the server</BitText>
+
+                <BitText Element="p"><b>.vscode/mcp.json</b> - VS Code and GitHub Copilot:</BitText>
+                <CodeBox Language="json">@_vsCodeConfig</CodeBox>
+
+                <BitText Element="p"><b>mcp.json</b> - Cursor, Claude, Windsurf and anything else that speaks MCP:</BitText>
+                <CodeBox Language="json">@_clientConfig</CodeBox>
+
+                <BitText Element="h3" Typography="BitTypography.Subtitle1">Tell the agent to use it</BitText>
+
+                <BitText Element="p">
+                    Add these rules to your <b>agents.md</b>, <b>copilot-instructions.md</b>,
+                    <b>.cursor/rules</b>, or whatever your agent reads. Most of what an agent needs to know
+                    is already in the server's own <code>instructions</code> - see the handshake below - so
+                    these say only which server to prefer and when.
+                </BitText>
+                <CodeBox Language="markdown">@_agentRules</CodeBox>
+
+                <BitMessage Color="BitColor.Info">
+                    Installing the library itself - the packages, the shared styles and scripts, cache
+                    busting - is on the <BitLink Href="/getting-started">Getting started</BitLink> page.
+                </BitMessage>
+            </DocSection>
+
+            <DocSection Id="handshake" Title="1. Handshake"
+                        Description="Every session opens with initialize - and the answer carries the one block of text the server writes straight into the model's context.">
+
+                <BitText Element="p">
+                    The client states the protocol version it speaks and what it supports; the server answers
+                    with the same for itself. Each capability comes back as an empty object, which is the
+                    protocol working as intended: the key's presence is the declaration, and what goes inside
+                    is only the optional extras. A capability a server does not have is absent, not empty.
+                    Nothing here hands back a session id - streamable HTTP is stateless, so every request
+                    stands on its own and any replica can answer it. The client then sends an
+                    <code>initialized</code> notification, which takes no id and gets no result back. This
+                    page does both automatically when it loads.
+                </BitText>
+
+                <CodeBox Language="json">@_initializeSample</CodeBox>
+
+                <BitStack Horizontal Wrap AutoHeight Gap="0.75rem" VerticalAlign="BitAlignment.Center">
+                    <BitButton IconName="@BitIconName.PlugConnected" IsEnabled="@(_busy is false && _live)" OnClick="Handshake">
+                        Send initialize
+                    </BitButton>
+                    @if (_serverName is not null)
+                    {
+                        <BitTag Color="BitColor.Success" Text="@_serverName" />
+                        <BitTag Color="BitColor.SecondaryBackground" Text="@($"protocol {_protocolVersion}")" />
+                        <BitTag Color="BitColor.SecondaryBackground" Text="@(_sessionId is null ? "stateless" : $"session {_sessionId}")" />
+                    }
+                </BitStack>
+
+                @if (_live is false)
+                {
+                    <BitMessage Color="BitColor.Warning">
+                        This build of the demo has no HTTP origin to call - the live client below only runs
+                        where the site is served over http(s). Read it at
+                        <BitLink Href="https://blazorui.bitplatform.dev/mcp-server" Target="_blank">blazorui.bitplatform.dev/mcp-server</BitLink>.
+                    </BitMessage>
+                }
+
+                <McpExchange Call="_handshake" Placeholder="Connecting..." />
+
+                @if (string.IsNullOrEmpty(_instructions) is false)
+                {
+                    <BitAccordion Title="@($"The instructions this server sends ({_instructions.Length:N0} characters)")">
+                        <BitText Element="p">
+                            The only place a server gets to speak before it has been asked anything, and it is
+                            paid for on every request of every session - so it carries exactly two things a
+                            per-tool description cannot: which tool to reach for first, and the handful of
+                            facts that decide whether markup that compiles also looks right.
+                        </BitText>
+                        <CodeBox Language="markdown" MaxHeight="28rem">@_instructions</CodeBox>
+                    </BitAccordion>
+                }
+            </DocSection>
+
+            <DocSection Id="tools" Title="2. Discover the tools"
+                        Description="tools/list is how an agent learns what a server can do. Nothing about this list is configured on the client - which is the point of the protocol.">
+
+                <BitText Element="p">
+                    Every tool comes back with its name, the description the model reads to decide whether to
+                    call it, a JSON Schema for its arguments, and its annotations. There are seven, and the
+                    count is the design rather than what was left over: a tool's description is paid for in
+                    every request of every session, so a listing is not a tool here - it is what a retrieval
+                    tool answers when it is called with no argument.
+                </BitText>
+
+                <BitStack Horizontal Wrap AutoHeight Gap="0.75rem" VerticalAlign="BitAlignment.Center">
+                    <BitButton Variant="BitVariant.Outline" IsEnabled="@(_busy is false && _live)" OnClick="ListTools">
+                        Send tools/list
+                    </BitButton>
+                    @if (_tools.Count > 0)
+                    {
+                        <BitTag Color="BitColor.Success" Text="@($"{_tools.Count} tools")" />
+                        <BitTag Color="BitColor.SecondaryBackground" Text="read-only · idempotent · closed-world" />
+                    }
+                </BitStack>
+
+                @if (_tools.Count > 0)
+                {
+                    <table class="table-view mcp-tools">
+                        <tr class="th-row">
+                            <th class="th-cell">Tool</th>
+                            <th class="th-cell">What it answers</th>
+                            <th class="th-cell"></th>
+                        </tr>
+                        @foreach (var tool in _tools)
+                        {
+                            <tr class="tdata-row @(tool.Name == _selectedTool ? "current" : null)">
+                                <td class="td-cell">
+                                    <div class="mcp-tool">
+                                        <code>@tool.Name</code>
+                                        <span class="mcp-args">
+                                            @(tool.Arguments.Length == 0 ? "(no arguments)" : $"({string.Join(", ", tool.Arguments)})")
+                                        </span>
+                                        @* The annotations the server publishes, shown because they are what
+                                           a client reads to decide whether it may call a tool without
+                                           stopping to ask a person first. *@
+                                        @if (tool.ReadOnly)
+                                        {
+                                            <BitTag Color="BitColor.Success" Size="BitSize.Small" Text="read-only"
+                                                    Title="readOnlyHint: the tool changes nothing" />
+                                        }
+                                    </div>
+                                </td>
+                                <td class="td-cell">@Summarize(tool.Description, 190)</td>
+                                <td class="td-cell">
+                                    <BitButton Variant="BitVariant.Text" Size="BitSize.Small"
+                                               IsEnabled="@(_busy is false)" OnClick="@(() => TryTool(tool.Name))">
+                                        Try it
+                                    </BitButton>
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                }
+
+                <McpExchange Call="_discovery" Placeholder="Nothing sent yet." />
+            </DocSection>
+
+            @* "Try it" up in the tool table scrolls here: this section is a screen further down, and
+               a button whose whole effect happens off-screen reads as a button that does nothing. *@
+            <DocSection Id="@CallSectionId" Title="3. Call a tool"
+                        Description="The one that does the work. Pick a tool, edit its arguments, and send.">
+
+                <BitText Element="p">
+                    The response pane shows the JSON-RPC envelope the client receives; the pane under it
+                    shows the text inside it, which is what an agent would actually put in front of the
+                    model. Try <code>SearchBitBlazorUI</code> with a screen described in your own words,
+                    or <code>GetBitBlazorUIComponent</code> with the name of another library's component -
+                    <code>Select</code>, <code>Toast</code>, <code>Skeleton</code> all resolve. Three of
+                    the seven take no required argument: send <code>GetBitBlazorUIComponent</code> with an
+                    empty object and the whole catalog comes back instead of one component.
+                </BitText>
+
+                <BitStack Horizontal Wrap Gap="1rem" VerticalAlign="BitAlignment.End">
+                    <BitDropdown Label="Tool"
+                                 Items="_toolItems"
+                                 @bind-Value="_selectedTool"
+                                 @bind-Value:after="OnToolChanged"
+                                 IsEnabled="@(_toolItems.Count > 0)"
+                                 Class="mcp-tool-picker" />
+                    <BitButton IconName="@BitIconName.Send" IsEnabled="@(_busy is false && _live)" OnClick="CallTool">Send tools/call</BitButton>
+                    <BitButton Variant="BitVariant.Text" IsEnabled="@(_busy is false)" OnClick="ResetArguments">Reset arguments</BitButton>
+                </BitStack>
+
+                @if (string.IsNullOrEmpty(_selectedDescription) is false)
+                {
+                    <BitText Element="p" Typography="BitTypography.Body2" Color="BitColor.TertiaryForeground">
+                        @_selectedDescription
+                    </BitText>
+                }
+
+                <BitTextField Label="Arguments (JSON)" Multiline Rows="5" Resizable
+                              @bind-Value="_arguments" Class="mcp-arguments" />
+
+                <McpExchange Call="_call" Placeholder="Nothing sent yet." />
+            </DocSection>
+
+            <DocSection Id="prompts" Title="4. Prompts and resources"
+                        Description="The half of the server a person reaches rather than a model: ready-made workflows, and the same knowledge as documents to attach.">
+
+                <BitText Element="p">
+                    A <b>prompt</b> is a workflow a client lists as a slash command; each of these five spends
+                    its words on the order to call the tools in, because the failure mode of an agent here is
+                    not ignorance - it is writing markup from a remembered API before it has read the current
+                    one. A <b>resource</b> is a document addressed by URI, for a client that wants to attach
+                    documentation up front or let someone browse it. Both read the same catalogs the tools do,
+                    so neither can go stale relative to the other. <code>resources/list</code> deliberately
+                    leaves out the parameterised ones: a template is not a document, it is the shape of the
+                    URIs that address a family of them.
+                </BitText>
+
+                <BitStack Horizontal Wrap AutoHeight Gap="0.75rem" VerticalAlign="BitAlignment.Center">
+                    <BitButton Variant="BitVariant.Outline" IsEnabled="@(_busy is false && _live)" OnClick="ListPrompts">prompts/list</BitButton>
+                    <BitButton Variant="BitVariant.Outline" IsEnabled="@(_busy is false && _live)" OnClick="ListResources">resources/list</BitButton>
+                    <BitButton Variant="BitVariant.Outline" IsEnabled="@(_busy is false && _live)" OnClick="ListResourceTemplates">resources/templates/list</BitButton>
+                </BitStack>
+
+                <BitStack Horizontal Wrap Gap="1rem" VerticalAlign="BitAlignment.End">
+                    <BitDropdown Label="Prompt"
+                                 Items="_promptItems"
+                                 @bind-Value="_selectedPrompt"
+                                 IsEnabled="@(_promptItems.Count > 0)"
+                                 Class="mcp-tool-picker" />
+                    <BitButton IsEnabled="@(_busy is false && _live)" OnClick="GetPrompt">prompts/get</BitButton>
+                </BitStack>
+
+                <BitStack Horizontal Wrap Gap="1rem" VerticalAlign="BitAlignment.End">
+                    <BitTextField Label="Resource URI" @bind-Value="_resourceUri" Class="mcp-uri" />
+                    <BitButton IsEnabled="@(_busy is false && _live)" OnClick="ReadResource">resources/read</BitButton>
+                </BitStack>
+
+                <BitStack Horizontal Wrap AutoHeight Gap="0.5rem" VerticalAlign="BitAlignment.Center">
+                    @foreach (var uri in _resourceExamples)
+                    {
+                        <BitButton Variant="BitVariant.Text" Size="BitSize.Small"
+                                   IsEnabled="@(_busy is false && _live)" OnClick="@(() => ReadResource(uri))">
+                            @uri
+                        </BitButton>
+                    }
+                </BitStack>
+
+                <McpExchange Call="_extras" Placeholder="Nothing sent yet." />
+            </DocSection>
+
+            <DocSection Id="completions" Title="5. Completing an argument"
+                        Description="@CompletionsDescription">
+
+                <BitText Element="p">
+                    Every prompt argument and every template placeholder on this server is drawn from a closed
+                    set it already holds, so <code>completion/complete</code> can answer with the values that
+                    are valid for one argument, filtered by what has been typed so far. Type below and watch
+                    the request go out on each keystroke - which is exactly how an editor's picker uses it.
+                    Prefix matches come first, then anything containing what was typed.
+                </BitText>
+
+                <BitStack Horizontal Wrap Gap="1rem" VerticalAlign="BitAlignment.End">
+                    <BitDropdown Label="Argument"
+                                 Items="_completionItems"
+                                 @bind-Value="_completionTarget"
+                                 @bind-Value:after="Complete"
+                                 Class="mcp-tool-picker" />
+                    <BitTextField Label="Typed so far" Immediate @bind-Value="_completionValue"
+                                  OnChange="@(_ => Complete())" Class="mcp-uri" />
+                </BitStack>
+
+                @if (_completions.Length > 0)
+                {
+                    <BitStack Horizontal Wrap AutoHeight Gap="0.5rem" VerticalAlign="BitAlignment.Center">
+                        @foreach (var value in _completions.Take(MaxCompletionChips))
+                        {
+                            <BitTag Color="BitColor.SecondaryBackground" Size="BitSize.Small" Text="@value" />
+                        }
+                        @if (_completions.Length > MaxCompletionChips)
+                        {
+                            <BitText Element="span" Typography="BitTypography.Caption1" Color="BitColor.TertiaryForeground">
+                                and @(_completions.Length - MaxCompletionChips) more
+                            </BitText>
+                        }
+                    </BitStack>
+                }
+
+                <McpExchange Call="_completion" Placeholder="Nothing sent yet." />
+            </DocSection>
+
+            <DocSection Id="http" Title="6. The same tools over plain HTTP"
+                        Description="No envelope, no framing, no client - every tool is a GET you can open in a browser tab.">
+
+                <BitText Element="p">
+                    The MCP methods are ordinary controller actions, so each one is also reachable as
+                    <code>GET /api/mcp/{tool}</code>. That is the quickest way to see what a tool answers -
+                    and it is what makes this server inspectable by anything that can fetch a URL, including
+                    a shell script and a browser address bar.
+                </BitText>
+
+                <BitStack Horizontal Wrap Gap="1rem" VerticalAlign="BitAlignment.End">
+                    <BitDropdown Label="Tool"
+                                 Items="_toolItems"
+                                 @bind-Value="_httpTool"
+                                 @bind-Value:after="OnHttpToolChanged"
+                                 IsEnabled="@(_toolItems.Count > 0)"
+                                 Class="mcp-tool-picker" />
+                    <BitTextField Label="Query string" @bind-Value="_httpQuery" Class="mcp-uri" />
+                    <BitButton IconName="@BitIconName.Send" IsEnabled="@(_busy is false && _live)" OnClick="CallHttp">Send GET</BitButton>
+                </BitStack>
+
+                <McpExchange Call="_http" Placeholder="Nothing sent yet." />
+            </DocSection>
+
+            <DocSection Id="design" Title="What the server exposes"
+                        Description="And the three decisions behind it, because they are the ones that decide what a session costs.">
+
+                <table class="table-view mcp-facts">
+                    @foreach (var fact in _facts)
+                    {
+                        <tr class="tdata-row">
+                            <td class="td-cell mcp-fact-name">@fact.Name</td>
+                            <td class="td-cell mcp-fact-signature">@fact.Signature</td>
+                            <td class="td-cell">@fact.Description</td>
+                        </tr>
+                    }
+                </table>
+
+                <BitText Element="h3" Typography="BitTypography.Subtitle1">How it stays true</BitText>
+
+                <BitText Element="p">
+                    Nothing on this server is written down twice. The site's own navigation decides which
+                    components exist and what they are also called; the loaded assemblies decide which package
+                    each one ships in and what it is generic over; the demo pages carry the hand-written
+                    parameter tables and the worked examples; the XML documentation compiled beside the
+                    library carries everything else. Adding a component to the nav is all it takes for it to
+                    appear in the catalog, in the search index and in the completions above - so the tools
+                    cannot describe a version of bit BlazorUI that this deployment is not running.
+                </BitText>
+            </DocSection>
+
+        </div>
+    </ChildContent>
+</DocsArticle>

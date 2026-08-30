@@ -76,7 +76,7 @@ public partial class TenantProvider
                 IdsByDomain: tenants.Where(t => string.IsNullOrEmpty(t.Domain) is false)
                                     .ToDictionary(t => t.Domain!.ToLowerInvariant(), t => t.Id, StringComparer.OrdinalIgnoreCase));
         },
-        options => options.Duration = TimeSpan.FromHours(1));
+        options => options.SetDuration(TimeSpan.FromHours(1)).SetPriority(CacheItemPriority.High));
     }
 
     /// <summary>

@@ -268,7 +268,18 @@ public class PubSubServiceTests
         var pubSub = CreatePubSubService();
         var unobserved = new List<Exception>();
 
-        void OnUnobserved(object? sender, UnobservedTaskExceptionEventArgs e) => unobserved.Add(e.Exception);
+        void OnUnobserved(object? sender, UnobservedTaskExceptionEventArgs e)
+        {
+            // The listener is process-global, and the forced GC below finalizes every dead faulted task in the whole
+            // process - including fire-and-forget garbage from unrelated infrastructure (measured: FusionCache's
+            // best-practices advisor logging through the assembly-initializer test server's already-disposed EventLog
+            // logger). Only the exception this test's own handler throws is evidence about the continuation under
+            // test; counting anything else made this test fail on whatever background task happened to die nearby.
+            if (e.Exception.Flatten().InnerExceptions.Any(inner => inner.Message.Contains("handler blew up", StringComparison.Ordinal)))
+            {
+                unobserved.Add(e.Exception);
+            }
+        }
 
         TaskScheduler.UnobservedTaskException += OnUnobserved;
         try

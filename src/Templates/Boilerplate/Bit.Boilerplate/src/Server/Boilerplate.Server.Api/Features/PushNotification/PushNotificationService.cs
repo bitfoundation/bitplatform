@@ -101,6 +101,15 @@ public partial class PushNotificationService
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task Unsubscribe(string deviceId, CancellationToken cancellationToken)
+    {
+        // The same "DeviceId IS the device's credential" model as Subscribe (read the comment there): whoever presents
+        // a DeviceId gets that device's subscription removed, signed in or not.
+        await dbContext.PushNotificationSubscriptions
+            .Where(s => s.DeviceId == deviceId)
+            .ExecuteDeleteAsync(cancellationToken);
+    }
+
     public async Task RequestPush(PushNotificationRequest request,
         Expression<Func<PushNotificationSubscription, bool>>? customSubscriptionFilter = null,
         CancellationToken cancellationToken = default)

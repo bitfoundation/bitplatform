@@ -54,9 +54,7 @@ public partial class SharedAppMessages
 ```csharp
 public partial class ClientAppMessages // : SharedAppMessages, when signalR is enabled
 {    
-    // Theme and culture
     public const string THEME_CHANGED = nameof(THEME_CHANGED);
-    public const string CULTURE_CHANGED = nameof(CULTURE_CHANGED);
     
     // Diagnostics
     public const string SHOW_DIAGNOSTIC_MODAL = nameof(SHOW_DIAGNOSTIC_MODAL);

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Shared;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Shared;
 
 public partial class MainLayout
 {
@@ -7,6 +7,9 @@ public partial class MainLayout
     [
         new() { Text = "Overview", Url = "/overview" },
         new() { Text = "Getting started", Url = "/getting-started" },
+        // Right after Getting started: connecting an agent to the MCP server is the second thing an
+        // app does, and the page is a working client rather than a description of one.
+        new() { Text = "MCP server", Url = "/mcp-server", Description = "AI, Agent, Copilot, Cursor, Claude, Tools" },
         // The searchable index of the whole library. It used to share a route with Overview, which
         // meant the site had a "Docs" page and a "Components" page that were the same page.
         new() { Text = "All components", Url = "/components", Description = "Catalog, Gallery, Index" },
@@ -124,8 +127,8 @@ public partial class MainLayout
                 new() { Text = "Card", Url = "/components/card" },
                 new() { Text = "Collapse", Url = "/components/collapse" },
                 new() { Text = "Dialog", Url = "/components/dialog" },
-                new() { Text = "Modal", Url = "/components/modal" },
-                new() { Text = "ModalService", Url = "/components/modalservice" },
+                new() { Text = "Modal", Url = "/components/modal", AdditionalUrls = ["/components/promodal"] },
+                new() { Text = "ModalService", Url = "/components/modalservice", AdditionalUrls = ["/components/promodalservice"] },
                 new() { Text = "Panel", Url = "/components/panel" },
                 new() { Text = "ScrollablePane", Url = "/components/scrollablepane", Description = "ScrollView" },
                 new() { Text = "Splitter", Url = "/components/splitter" },
@@ -173,8 +176,6 @@ public partial class MainLayout
                 new() { Text = "NavPanel", Url = "/components/navpanel" },
                 new() { Text = "PdfViewer", Url = "/components/pdfviewer", Description = "PdfReader, Pdf", AdditionalUrls = ["/components/pdfreader"] },
                 new() { Text = "PhoneInput", Url = "/components/phoneinput" },
-                new() { Text = "ProModal", Url = "/components/promodal" },
-                new() { Text = "ProModalService", Url = "/components/promodalservice" },
                 new() { Text = "ProPanel", Url = "/components/propanel" },
                 new() { Text = "RichTextEditor", Url = "/components/richtexteditor" },
                 new() { Text = "TextShimmer", Url = "/components/textshimmer", Description = "Skeleton, Loading, AI" },

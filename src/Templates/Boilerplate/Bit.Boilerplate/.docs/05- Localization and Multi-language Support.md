@@ -618,8 +618,6 @@ While the `bit-resx` translator is a powerful tool for automatic translation, it
 - Leave less important languages (or less critical keys) untranslated or even omit them from the source code.
 - During the CD (Continuous Deployment) process, `bit-resx` will automatically fill in any missing translations for all supported languages before publishing.
 
-For example, in this project, the Swedish language file is much smaller than the English file and only contains keys that have been manually reviewed or improved. If some automatic translations are not satisfactory, you can simply add or override those specific keys manually. On the next CD run, only the missing keys will be auto-translated, and your manual translations will be preserved.
-
 This approach keeps your source code clean and focused, while ensuring that all languages are fully translated at deployment time.
 
 That's why `bit-resx` tool is added to the project CD pipelines. Here's how it's used in this project's GitHub Actions:
@@ -650,5 +648,51 @@ That's why `bit-resx` tool is added to the project CD pipelines. Here's how it's
 
 **In CD pipeline:**
 - As part of publish/deploy during CD
+
+---
+
+## 6. Culture in URLs - Canonicalization & Caching
+
+On multilingual builds (`InvariantGlobalization=false`), the culture a page is served in is part of its **URL**, as a
+leading path segment: `https://example.com/fa-IR/about`. Every page route also registers a `{culture?}` prefix variant
+for this (see `Routes.razor` / the `@attribute [Route("{culture?}" + ...)]` pattern).
+
+### How a request's culture is resolved
+
+`UseLocalization` (in `Server.Shared/Infrastructure/Extensions/WebApplicationExtensions.cs`) configures the request
+culture providers in this order:
+
+1. `QueryStringRequestCultureProvider` - `?culture=fa-IR`
+2. `RouteDataRequestCultureProvider` - the `{culture?}` route segment
+3. `CookieRequestCultureProvider` - the `.AspNetCore.Culture` cookie (the user's last choice)
+4. `AppAcceptLanguageRequestCultureProvider` - the browser's `Accept-Language`, with neutral names (`fa`) mapped up to
+   the supported specific culture (`fa-IR`)
+
+### Canonical URL redirection (Server.Web)
+
+`UseCultureUrlRedirection` (in `Server.Web/Infrastructure/Extensions/WebApplicationExtensions.cs`, registered before
+`UseOutputCache`) 302-redirects every Blazor page GET/HEAD request whose URL is not the canonical
+`/{culture}/...` form: `/about` → `/fa-IR/about`, and also `/about?culture=fa-IR` and `/FA-ir/about` onto the same
+canonical URL. The redirect target comes from the provider chain above, so the user's cookie preference (and failing
+that, the browser language) decides where a culture-less URL lands - while a URL that explicitly names a culture is
+served in that culture for everyone. The redirect itself is per-caller and `no-store`.
+
+This is what makes pre-rendered pages **CDN edge and browser cacheable**: the URL alone identifies the language
+variant, so no cache has to vary on a cookie or `Accept-Language`
+(see [Stage 14 - Response Caching System](/.docs/14-%20Response%20Caching%20System.md)). The
+service worker's `?no-prerender` app-shell request is exempt (a service worker may not answer a navigation with a
+redirected response), and `sitemap.xml` / `products.xml` advertise only the culture-prefixed URLs, since the bare ones
+always redirect.
+
+### Changing the culture at runtime
+
+`CultureService.ChangeCulture` persists the choice (the `.AspNetCore.Culture` cookie on web, `IStorageService` on
+hybrid), switches in place where possible, and keeps the URL truthful: if the current URL carries a culture, it is
+replaced with the new one (`UriExtensions.GetUrlWithCulture`) - otherwise the URL is left culture-less and the next
+document load localizes it (via the redirect on Server.Web, or the cookie/OS fallbacks on the other platforms).
+
+Blazor WebAssembly standalone, MAUI and Windows have no server to redirect them; they resolve their culture at startup
+from the URL first, then the stored preference, then the OS/browser settings (see `Client.Web/Program.cs` and
+`AppClientCoordinator.ConfigureUISetup`).
 
 ---
