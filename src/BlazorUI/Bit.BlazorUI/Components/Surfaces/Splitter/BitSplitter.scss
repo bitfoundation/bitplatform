@@ -273,7 +273,10 @@
     cursor: default;
 }
 
-.bit-spl-col.bit-spl-cpb > .bit-spl-gtr {
+// And only where they are allowed to: a read-only or disabled splitter does not open the panel either, so
+// its gutter must not offer to be pressed. The exclusion is written here rather than left to the rule below,
+// which a class less than this one carries and would lose to whatever the source order made of it.
+.bit-spl-col.bit-spl-cpb:not(.bit-spl-rdo):not(.bit-dis) > .bit-spl-gtr {
     cursor: pointer;
 }
 

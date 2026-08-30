@@ -21,23 +21,6 @@ public partial class BitSplitter : BitComponentBase
     // actually changed rather than after every render of the page around the splitter.
     private BitSplitterJsOptions? _jsOptions;
 
-    private readonly record struct BitSplitterJsOptions(bool Vertical,
-                                                        bool Disabled,
-                                                        bool Collapsible,
-                                                        bool CollapseSecond,
-                                                        bool Collapsed,
-                                                        int CollapsedSize,
-                                                        int KeyboardStep,
-                                                        int DragStep,
-                                                        int SnapSize,
-                                                        bool LazyResize,
-                                                        bool ResetOnDoubleClick,
-                                                        bool NotifyResize,
-                                                        bool NotifyDoubleClick,
-                                                        double? Percent,
-                                                        string? PersistKey,
-                                                        bool PersistSession);
-
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -724,28 +707,25 @@ public partial class BitSplitter : BitComponentBase
             var options = CurrentJsOptions();
             _jsOptions = options;
 
-            _controllerId = await _js.BitSplitterSetup(_dotnetObj,
-                                                       RootElement,
-                                                       _firstPanelRef,
-                                                       _gutterRef,
-                                                       _secondPanelRef,
-                                                       _previewRef,
-                                                       options.Vertical,
-                                                       options.Disabled,
-                                                       options.Collapsible,
-                                                       options.CollapseSecond,
-                                                       options.Collapsed,
-                                                       options.CollapsedSize,
-                                                       options.KeyboardStep,
-                                                       options.DragStep,
-                                                       options.SnapSize,
-                                                       options.LazyResize,
-                                                       options.ResetOnDoubleClick,
-                                                       options.NotifyResize,
-                                                       options.NotifyDoubleClick,
-                                                       options.Percent,
-                                                       options.PersistKey,
-                                                       options.PersistSession);
+            var id = await _js.BitSplitterSetup(_dotnetObj,
+                                                RootElement,
+                                                _firstPanelRef,
+                                                _gutterRef,
+                                                _secondPanelRef,
+                                                _previewRef,
+                                                options);
+
+            // The setup call is a round trip, and a component disposed while it was in flight has already
+            // been through the dispose that would have taken this controller down. What comes back is a
+            // controller nothing is left to release - listeners held against a .NET reference that is gone -
+            // so it is dropped here rather than kept under an id no one will pass to dispose again.
+            if (IsDisposed)
+            {
+                await _js.BitSplitterDispose(id);
+                return;
+            }
+
+            _controllerId = id;
         }
         else if (_controllerId.HasValue())
         {
@@ -755,23 +735,7 @@ public partial class BitSplitter : BitComponentBase
             {
                 _jsOptions = options;
 
-                await _js.BitSplitterUpdate(_controllerId,
-                                            options.Vertical,
-                                            options.Disabled,
-                                            options.Collapsible,
-                                            options.CollapseSecond,
-                                            options.Collapsed,
-                                            options.CollapsedSize,
-                                            options.KeyboardStep,
-                                            options.DragStep,
-                                            options.SnapSize,
-                                            options.LazyResize,
-                                            options.ResetOnDoubleClick,
-                                            options.NotifyResize,
-                                            options.NotifyDoubleClick,
-                                            options.Percent,
-                                            options.PersistKey,
-                                            options.PersistSession);
+                await _js.BitSplitterUpdate(_controllerId, options);
             }
         }
     }

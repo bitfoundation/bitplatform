@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -983,18 +984,18 @@ public class BitSplitterTests : BunitTestContext
             parameters.Add(p => p.OnGutterDoubleClick, EventCallback.Factory.Create(this, () => { }));
         });
 
-        var setup = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Splitter.setup");
+        var options = SetupOptions();
 
-        Assert.AreEqual(8, setup.Arguments[11]);
-        Assert.AreEqual(15, setup.Arguments[12]);
-        Assert.AreEqual(25, setup.Arguments[13]);
-        Assert.AreEqual(40, setup.Arguments[14]);
-        Assert.AreEqual(true, setup.Arguments[15]);
+        Assert.AreEqual(8, ReadOption(options, "CollapsedSize"));
+        Assert.AreEqual(15, ReadOption(options, "KeyboardStep"));
+        Assert.AreEqual(25, ReadOption(options, "DragStep"));
+        Assert.AreEqual(40, ReadOption(options, "SnapSize"));
+        Assert.AreEqual(true, ReadOption(options, "LazyResize"));
         // The reset was turned off, nothing listens for the frames of a drag, and the double-click is
         // wanted whether or not it also resets the splitter.
-        Assert.AreEqual(false, setup.Arguments[16]);
-        Assert.AreEqual(false, setup.Arguments[17]);
-        Assert.AreEqual(true, setup.Arguments[18]);
+        Assert.AreEqual(false, ReadOption(options, "ResetOnDoubleClick"));
+        Assert.AreEqual(false, ReadOption(options, "NotifyResize"));
+        Assert.AreEqual(true, ReadOption(options, "NotifyDoubleClick"));
 
         Assert.IsFalse(component.Instance.Collapsed);
     }
@@ -1009,12 +1010,12 @@ public class BitSplitterTests : BunitTestContext
             parameters.Add(p => p.KeyboardStep, -15);
         });
 
-        var setup = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Splitter.setup");
+        var options = SetupOptions();
 
         // A step of zero would leave the keyboard unable to move the gutter at all.
-        Assert.AreEqual(1, setup.Arguments[12]);
-        Assert.AreEqual(0, setup.Arguments[13]);
-        Assert.AreEqual(0, setup.Arguments[14]);
+        Assert.AreEqual(1, ReadOption(options, "KeyboardStep"));
+        Assert.AreEqual(0, ReadOption(options, "DragStep"));
+        Assert.AreEqual(0, ReadOption(options, "SnapSize"));
     }
 
     [TestMethod]
@@ -1033,7 +1034,7 @@ public class BitSplitterTests : BunitTestContext
         var update = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Splitter.update");
 
         Assert.AreEqual("spl-1", update.Arguments[0]);
-        Assert.AreEqual(true, update.Arguments[1]);
+        Assert.AreEqual(true, ReadOption(update.Arguments[1]!, "Vertical"));
     }
 
     [TestMethod]
@@ -1510,12 +1511,12 @@ public class BitSplitterTests : BunitTestContext
             parameters.Add(p => p.PersistInSessionStorage, true);
         });
 
-        var setup = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Splitter.setup");
+        var options = SetupOptions();
 
-        Assert.AreEqual(true, setup.Arguments[6]);
-        Assert.AreEqual(30d, setup.Arguments[19]);
-        Assert.AreEqual("a-key", setup.Arguments[20]);
-        Assert.AreEqual(true, setup.Arguments[21]);
+        Assert.AreEqual(true, ReadOption(options, "Vertical"));
+        Assert.AreEqual(30d, ReadOption(options, "Percent"));
+        Assert.AreEqual("a-key", ReadOption(options, "PersistKey"));
+        Assert.AreEqual(true, ReadOption(options, "PersistSession"));
     }
 
     [TestMethod]
@@ -1526,10 +1527,8 @@ public class BitSplitterTests : BunitTestContext
             parameters.Add(p => p.ReadOnly, true);
         });
 
-        var setup = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Splitter.setup");
-
         // Read-only and disabled are the same thing to the drag engine; only the look of them differs.
-        Assert.AreEqual(true, setup.Arguments[7]);
+        Assert.AreEqual(true, ReadOption(SetupOptions(), "Disabled"));
     }
 
     [TestMethod]
@@ -1630,11 +1629,11 @@ public class BitSplitterTests : BunitTestContext
             parameters.Add(p => p.CollapseSecondPanel, true);
         });
 
-        var setup = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Splitter.setup");
+        var options = SetupOptions();
 
         // The snap that closes a panel and the shortcut that folds it both point at the panel that folds.
-        Assert.AreEqual(true, setup.Arguments[8]);
-        Assert.AreEqual(true, setup.Arguments[9]);
+        Assert.AreEqual(true, ReadOption(options, "Collapsible"));
+        Assert.AreEqual(true, ReadOption(options, "CollapseSecond"));
     }
 
     [TestMethod]
@@ -1655,7 +1654,7 @@ public class BitSplitterTests : BunitTestContext
 
         var update = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Splitter.update");
 
-        Assert.AreEqual(true, update.Arguments[4]);
+        Assert.AreEqual(true, ReadOption(update.Arguments[1]!, "CollapseSecond"));
     }
 
     [DataTestMethod,
@@ -1760,5 +1759,47 @@ public class BitSplitterTests : BunitTestContext
 
         Assert.IsNull(await component.Instance.GetPercent());
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Splitter.getPercent"));
+    }
+
+
+    [TestMethod]
+    public async Task BitSplitterShouldTakeDownAControllerThatWasSetUpWhileItWasBeingDisposed()
+    {
+        var setup = Context.JSInterop.Setup<string>("BitBlazorUI.Splitter.setup", _ => true);
+
+        var component = RenderComponent<BitSplitter>();
+
+        // The setup is still in flight when the splitter goes away, so the dispose it goes through has no
+        // controller to take down - and the one the browser answers with a moment later is left holding the
+        // listeners of a component that is gone unless it is disposed where it arrives.
+        await component.Instance.DisposeAsync();
+
+        setup.SetResult("spl-1");
+
+        // What the browser answered with reaches the component on a continuation the renderer has yet to run.
+        await Context.Renderer.Dispatcher.InvokeAsync(() => { });
+
+        var dispose = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Splitter.dispose");
+
+        Assert.AreEqual("spl-1", dispose.Arguments[0]);
+    }
+
+
+
+    // Everything the drag engine is driven with reaches it as one object, so what a test asks about is the
+    // option by name rather than a position in an argument list that says nothing about what it holds.
+    private object SetupOptions()
+    {
+        return Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Splitter.setup").Arguments[6]!;
+    }
+
+    private static object? ReadOption(object options, string name)
+    {
+        // A member that was renamed away would otherwise read as null and quietly pass the assertions
+        // that compare it against a default of the same shape.
+        var property = options.GetType().GetProperty(name)
+            ?? throw new InvalidOperationException($"The '{name}' option is missing from {options.GetType().Name}.");
+
+        return property.GetValue(options);
     }
 }

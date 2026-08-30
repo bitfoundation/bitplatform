@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 internal static class BitSplitterJsRuntimeExtensions
 {
@@ -8,6 +10,7 @@ internal static class BitSplitterJsRuntimeExtensions
     /// and the panel it is dragging. What comes back here is the outcome of a resize rather than the frames
     /// of it, unless the app asked for the frames too.
     /// </remarks>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSplitterJsOptions))]
     internal static ValueTask<string> BitSplitterSetup(this IJSRuntime js,
                                                        DotNetObjectReference<BitSplitter> obj,
                                                        ElementReference root,
@@ -15,55 +18,16 @@ internal static class BitSplitterJsRuntimeExtensions
                                                        ElementReference gutter,
                                                        ElementReference secondPanel,
                                                        ElementReference preview,
-                                                       bool vertical,
-                                                       bool disabled,
-                                                       bool collapsible,
-                                                       bool collapseSecond,
-                                                       bool collapsed,
-                                                       int collapsedSize,
-                                                       int keyboardStep,
-                                                       int dragStep,
-                                                       int snapSize,
-                                                       bool lazyResize,
-                                                       bool resetOnDoubleClick,
-                                                       bool notifyResize,
-                                                       bool notifyDoubleClick,
-                                                       double? percent,
-                                                       string? persistKey,
-                                                       bool persistSession)
+                                                       BitSplitterJsOptions options)
     {
         return js.Invoke<string>("BitBlazorUI.Splitter.setup",
-                                 obj, root, firstPanel, gutter, secondPanel, preview,
-                                 vertical, disabled, collapsible, collapseSecond, collapsed,
-                                 collapsedSize, keyboardStep, dragStep, snapSize, lazyResize,
-                                 resetOnDoubleClick, notifyResize, notifyDoubleClick,
-                                 percent, persistKey, persistSession);
+                                 obj, root, firstPanel, gutter, secondPanel, preview, options);
     }
 
-    internal static ValueTask BitSplitterUpdate(this IJSRuntime js,
-                                                string? id,
-                                                bool vertical,
-                                                bool disabled,
-                                                bool collapsible,
-                                                bool collapseSecond,
-                                                bool collapsed,
-                                                int collapsedSize,
-                                                int keyboardStep,
-                                                int dragStep,
-                                                int snapSize,
-                                                bool lazyResize,
-                                                bool resetOnDoubleClick,
-                                                bool notifyResize,
-                                                bool notifyDoubleClick,
-                                                double? percent,
-                                                string? persistKey,
-                                                bool persistSession)
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSplitterJsOptions))]
+    internal static ValueTask BitSplitterUpdate(this IJSRuntime js, string? id, BitSplitterJsOptions options)
     {
-        return js.InvokeVoid("BitBlazorUI.Splitter.update",
-                             id, vertical, disabled, collapsible, collapseSecond, collapsed,
-                             collapsedSize, keyboardStep, dragStep, snapSize, lazyResize,
-                             resetOnDoubleClick, notifyResize, notifyDoubleClick,
-                             percent, persistKey, persistSession);
+        return js.InvokeVoid("BitBlazorUI.Splitter.update", id, options);
     }
 
     /// <remarks>
