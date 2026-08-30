@@ -60,15 +60,16 @@ Before implementing any changes, you **MUST** complete the following:
 *   If the user provides a **URL**, you **MUST** use the `fetch`, `WebFetch` or `get_web_pages` tools to retrieve its content.
 *   If the user provides a **git commit id/hash**, you **MUST** run the `git --no-pager show <commit-id>` command to retrieve its details.
 *   Only if the user **explicitly** asks about their uncommitted/current changes (e.g. "review my current changes", "what did I just change") you **MUST** run the `git --no-pager diff` and `git --no-pager diff --staged` commands.
-*   Every bit platform library this project builds on has its own MCP tools, each with a tool to get started, tools to find out which features the library actually offers, and tools that hand you working examples. You **MUST** reach for them before writing code against one of these libraries, rather than relying on what you already know about it:
-    *   `bit BlazorUI` for UI elements, icons, styling, layout and theming.
-    *   `bit Bmotion` for motions, animations and transitions.
-    *   `bit Butil` for browser features such as clipboard, geolocation, storage, media, keyboard, screen and network.
-    *   `bit Bswup` for PWA, offline support and service workers.
+*   Every bit platform library this project builds on has its own MCP tools: a `Search<Library>` tool that finds the right feature from a plain description of what it must **do**, a `Get<Library>SetupGuide` tool for wiring, plus tools that return an API's full reference and its working examples. You **MUST** reach for them before writing code against one of these libraries, rather than relying on what you already know about it - and you **MUST** start with the `Search` one, because the name a task suggests is rarely the name the library chose:
+    *   `bit BlazorUI` for UI elements, icons, styling, layout and theming: `SearchBitBlazorUI`, then `GetBitBlazorUIComponent`, `GetBitBlazorUIComponentExamples`, `GetBitBlazorUIType`, `GetBitBlazorUIThemingGuide` and `FindBitBlazorUIIcons`.
+    *   `bit Bmotion` for motions, animations and transitions: `SearchBmotion`, then `GetBmotionApiDetails`, `GetBmotionRecipe` and `ReviewBmotionCode`.
+    *   `bit Butil` for browser features such as clipboard, geolocation, storage, media, keyboard, screen and network: `SearchButil`, then `PlanButilFeature` and `GetButilApiDetails`.
+    *   `bit Bswup` for PWA, offline support and service workers: `SearchBswup`, then `GetBswupScriptOptions` and `InspectBswupServiceWorker`.
 <!--#if (brouter == true)-->
-    *   `bit Brouter` for routing.
+    *   `bit Brouter` for routing: `SearchBrouter`, then `GetBrouterApi` and `InspectBrouterRouteTemplates`.
 <!--#endif-->
 *   For the third party libraries this project builds on, you **MUST** use the `ask_question` tool, which answers from a library's own source code. Its description names the repository to ask for each of them.
+*   For .NET, ASP.NET Core and Azure documentation, use `microsoft_docs_search`, `microsoft_docs_fetch` and `microsoft_code_sample_search`.
 
 ## 4. Critical Command Reference
 

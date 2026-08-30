@@ -13,10 +13,11 @@ You are an expert at scaffolding complete entity implementations for the project
 
 * **If a `<BitDataGrid` is already present in the project:** Skip this research step and follow the existing project patterns.
 * **If NO `<BitDataGrid` can be found (First CRUD Implementation):** You **MUST** call the bit BlazorUI MCP tools -
-  `GetBitBlazorUIComponentDocs` for `BitDataGrid`, `BitDialog` and `BitForm`, plus `GetBitBlazorUIComponentsList`
-  when you need to find a component you do not already know the name of - to retrieve the authoritative component
-  APIs before writing any markup. Do **not** use `ask_question` for this: that tool's own description excludes the
-  bit platform libraries, which have dedicated tools on the same server.
+  `GetBitBlazorUIComponent` and `GetBitBlazorUIComponentExamples` for `BitDataGrid`, `BitDialog` and the form
+  inputs you need, plus `SearchBitBlazorUI` (describe what the control must **do**) whenever you need a component
+  whose name you do not already know - to retrieve the authoritative component APIs before writing any markup. Do
+  **not** use `ask_question` for this: that tool's own description excludes the bit platform libraries, which have
+  dedicated tools on the same server.
 
   There are **two types of CRUD pages** - choose the appropriate one based on the DTO being scaffolded:
   - **Modal Dialog CRUD** - suited for DTOs with a small number of simple properties.

@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using System.Web;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
@@ -79,6 +79,7 @@ public partial class AppClientCoordinator : AppComponentBase
             {
                 var userAgentData = await userAgent.Extract();
                 TelemetryContext.Platform = string.Join(' ', [userAgentData.Manufacturer, userAgentData.OsName, userAgentData.Name, "browser"]);
+                await cultureService.PersistCurrentCulture();
             }
             await TimeZoneService.ApplyPreferredTimeZone();
             TelemetryContext.PageUrl = new Uri(NavigationManager.Uri).GetUrlWithMaskedQueryValues();
