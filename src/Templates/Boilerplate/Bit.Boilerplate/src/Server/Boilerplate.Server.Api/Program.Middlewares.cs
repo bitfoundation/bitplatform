@@ -115,8 +115,6 @@ public static partial class Program
         //#endif
 
         //#if (signalR == true)
-        // Hourly rather than daily: the retention period is measured in hours (See AiChatImagesRetention), so a daily
-        // sweep would keep an expired picture for most of a day after it was due to go.
         recurringJobManager.AddOrUpdate<AiChatImagesRetentionJobRunner>(AiChatImagesRetentionJobRunner.RecurringJobId,
                                                                        runner => runner.EnforceRetention(CancellationToken.None),
                                                                        Cron.Hourly);
