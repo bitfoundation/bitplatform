@@ -188,6 +188,35 @@ public static class IDistributedApplicationBuilderExtensions
         }
         //#endif
 
+        //#if (cloudflare == true)
+        /// <summary>
+        /// Exposes the server projects through a Cloudflare Tunnel (cloudflared dials out, so the origin needs no
+        /// public ip). Opt-in: does nothing unless the <c>cloudflare-tunnel-*</c> parameters are set (see appsettings.Development.json).
+        /// </summary>
+        public void AddCloudflareTunnels(
+            IResourceBuilder<ProjectResource> serverWebProject
+            //#if (api == "Standalone")
+            , IResourceBuilder<ProjectResource> serverApiProject
+            //#endif
+            )
+        {
+            var domain = builder.Configuration["Parameters:cloudflare-tunnel-web-domain"];
+            if (string.IsNullOrEmpty(domain))
+                return;
+
+            var tunnel = builder.AddCloudflareTunnel("cloudflare-tunnel");
+
+            serverWebProject.WithCloudflareTunnel(tunnel, hostname: domain);
+
+            //#if (api == "Standalone")
+            // Standalone's API is a separate server, so expose it on its own hostname when one is configured.
+            var apiDomain = builder.Configuration["Parameters:cloudflare-tunnel-api-domain"];
+            if (string.IsNullOrEmpty(apiDomain) is false)
+                serverApiProject.WithCloudflareTunnel(tunnel, hostname: apiDomain);
+            //#endif
+        }
+        //#endif
+
         /// <summary>
         /// Adds the .NET MAUI Blazor Hybrid project and configures it for all supported device targets
         /// (Windows, macOS Catalyst, iOS Device, iOS Simulator, Android Device, Android Emulator).
@@ -239,6 +268,26 @@ public static class IDistributedApplicationBuilderExtensions
                 .WithReference(serverWebProject, tunnel);
 
             return mauiapp;
+        }
+
+        /// <summary>
+        /// Projects' launchSettings bind <c>http://*:port</c> so a direct <c>dotnet run</c> is reachable over the LAN
+        /// (e.g. from Android/iOS devices), but Aspire can't give a container a reachable address for a wildcard host,
+        /// so that endpoint only makes the ingress container fail to start. Drops every wildcard endpoint from the
+        /// model - run mode only, and launchSettings is untouched, so a direct run still binds every interface.
+        /// </summary>
+        public IDistributedApplicationBuilder RemoveWildcardEndpoints()
+        {
+            if (builder.ExecutionContext.IsRunMode is false)
+                return builder;
+
+            foreach (var project in builder.Resources.OfType<ProjectResource>().ToArray())
+            {
+                foreach (var wildcard in project.Annotations.OfType<EndpointAnnotation>().Where(endpoint => endpoint.TargetHost is "*").ToArray())
+                    project.Annotations.Remove(wildcard);
+            }
+
+            return builder;
         }
 
         /// <summary>

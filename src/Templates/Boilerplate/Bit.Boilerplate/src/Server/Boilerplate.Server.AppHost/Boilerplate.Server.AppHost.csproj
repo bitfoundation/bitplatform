@@ -10,6 +10,7 @@
 
     <ItemGroup>
         <PackageReference Include="Aspire.Hosting.DevTunnels" />
+        <PackageReference Condition="'$(cloudflare)' == 'true' OR '$(cloudflare)' == ''" Include="Shirubasoft.Aspire.CloudflareTunnels" />
         <PackageReference Include="Aspire.Hosting.Keycloak" />
         <PackageReference Include="Aspire.Hosting.Maui" />
         <PackageReference Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Aspire.Hosting.MySql" />

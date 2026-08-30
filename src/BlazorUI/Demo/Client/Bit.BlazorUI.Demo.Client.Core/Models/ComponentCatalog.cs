@@ -450,7 +450,7 @@ public static class ComponentCatalog
         ["Modal"] = "A full overlay for content that has to be dealt with before anything else.",
         ["ModalService"] = "Opens modals from anywhere in the app, with any content.",
         ["Panel"] = "A sheet that slides in from an edge for supplementary content.",
-        ["ScrollablePane"] = "A scrolling region with themed scrollbars and scroll helpers.",
+        ["ScrollablePane"] = "A scrolling box with themed scrollbars, faded edges and a scrolling API.",
         ["Splitter"] = "Divides a container into two sections the reader can resize.",
         ["Tooltip"] = "A short description that appears on hover or focus.",
 
@@ -486,8 +486,6 @@ public static class ComponentCatalog
         ["NavPanel"] = "A vertical navigation panel with search, grouping and a collapsed rail.",
         ["PdfViewer"] = "A pure-C# PDF viewer: no pdf.js, works in every render mode.",
         ["PhoneInput"] = "A phone number field with a searchable country selector and flags.",
-        ["ProModal"] = "The modal, extended: draggable, resizable, stackable, with a header slot.",
-        ["ProModalService"] = "Opens ProModals from anywhere in the app, with any content.",
         ["ProPanel"] = "The panel, extended: modeless, full-screen, and scroll-aware modes.",
         ["RichTextEditor"] = "A native WYSIWYG editor written in C#, with a configurable toolbar.",
         ["TextShimmer"] = "A gradient band sweeping across text, for AI-style streaming states.",

@@ -1017,16 +1017,17 @@ public class BitCalloutTests : BunitTestContext
 
         var opened = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
 
-        Assert.AreEqual("body", opened.Arguments[0]);
-        Assert.AreEqual(true, opened.Arguments[1]);
+        // The first argument is the key the hold is counted under; the scroller is the second.
+        Assert.AreEqual("body", opened.Arguments[1]);
+        Assert.AreEqual(true, opened.Arguments[2]);
 
         component.Find(".bit-clo-ovl").Click();
 
         // The page is handed back its scrolling when the callout that took it away goes.
         var closed = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
 
-        Assert.AreEqual("body", closed.Arguments[0]);
-        Assert.AreEqual(false, closed.Arguments[1]);
+        Assert.AreEqual("body", closed.Arguments[1]);
+        Assert.AreEqual(false, closed.Arguments[2]);
     }
 
     [TestMethod]
@@ -1061,8 +1062,8 @@ public class BitCalloutTests : BunitTestContext
 
         var released = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
 
-        Assert.AreEqual("body", released.Arguments[0]);
-        Assert.AreEqual(false, released.Arguments[1]);
+        Assert.AreEqual("body", released.Arguments[1]);
+        Assert.AreEqual(false, released.Arguments[2]);
     }
 
 

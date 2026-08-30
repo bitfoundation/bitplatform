@@ -75,6 +75,79 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // Records the element the focus is on right now under the given key, so that a popup which is about to
+    // take the focus over can hand it back to whatever opened it once it closes.
+    internal static ValueTask BitUtilsStoreFocus(this IJSRuntime jsRuntime, string key)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.storeFocus", key);
+    }
+
+
+    // Hands the focus back to the element stored under the given key and forgets it. With onlyWhenLost the
+    // focus is only handed back while nothing else holds it, which after the popup was taken out of the page
+    // is the case the restore exists for: a focus that has since moved elsewhere belongs to whoever moved it.
+    internal static ValueTask BitUtilsRestoreFocus(this IJSRuntime jsRuntime, string key, bool onlyWhenLost = true)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.restoreFocus", key, onlyWhenLost);
+    }
+
+
+    // Drops the element stored under the given key without focusing it, for a component disposed while its
+    // popup is still open.
+    internal static ValueTask BitUtilsForgetFocus(this IJSRuntime jsRuntime, string key)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.forgetFocus", key);
+    }
+
+
+    // Stops the given element (the page itself when no selector is given) from scrolling while the popup
+    // registered under the given key is open. The locks are counted, so a page held by more than one popup
+    // is only handed back once the last of them lets go, and the room the scrollbar took is added back as
+    // padding so that taking it away does not shift the page sideways.
+    internal static ValueTask BitUtilsLockScroll(this IJSRuntime jsRuntime, string key, string? selector = null)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.lockScroll", key, selector);
+    }
+
+    // The same hold, taken on an element the caller already has a reference to rather than on one named by a
+    // selector - the scroller of an application shell, which no selector of the consumer's is needed to find.
+    internal static ValueTask BitUtilsLockScroll(this IJSRuntime jsRuntime, string key, ElementReference scroller)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.lockScroll", key, scroller);
+    }
+
+
+    // Releases the scroll lock held under the given key.
+    internal static ValueTask BitUtilsUnlockScroll(this IJSRuntime jsRuntime, string key)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.unlockScroll", key);
+    }
+
+
+    // Hands the wheel and the touch drag that land on the popup registered under the given key to the given
+    // scroller, for the popups that cover the page without holding it: their layer is fixed to the viewport,
+    // so a gesture on it is chained to the document rather than to the region an application shell scrolls.
+    internal static ValueTask BitUtilsForwardScroll(this IJSRuntime jsRuntime, string key, string rootId, string? selector = null)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.forwardScroll", key, rootId, selector);
+    }
+
+    // The same forwarding, aimed at an element the caller already has a reference to rather than at one named
+    // by a selector - the scroller of an application shell, first of all.
+    internal static ValueTask BitUtilsForwardScroll(this IJSRuntime jsRuntime, string key, string rootId, ElementReference scroller)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.forwardScroll", key, rootId, scroller);
+    }
+
+
+    // Takes back the gesture forwarding registered under the given key.
+    internal static ValueTask BitUtilsStopForwardScroll(this IJSRuntime jsRuntime, string key)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.stopForwardScroll", key);
+    }
+
+
+
     internal static ValueTask BitUtilsPreventDefaultKeys(this IJSRuntime jsRuntime, string elementId, string[] keys)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.preventDefaultKeys", elementId, keys);
@@ -160,13 +233,16 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    internal static ValueTask<float> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, string scrollerSelector, bool isHidden)
+    // The key is the component holding the scroller, so that the hold is counted alongside every other
+    // popup holding the same one: a component letting go of a scroller another one is still holding would
+    // otherwise hand back a page that is meant to stay held.
+    internal static ValueTask<float> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, string key, string scrollerSelector, bool isHidden)
     {
-        return jsRuntime.Invoke<float>("BitBlazorUI.Utils.toggleOverflow", scrollerSelector, isHidden);
+        return jsRuntime.Invoke<float>("BitBlazorUI.Utils.toggleOverflow", key, scrollerSelector, isHidden);
     }
 
-    internal static ValueTask<float> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, ElementReference scrollerElement, bool isHidden)
+    internal static ValueTask<float> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, string key, ElementReference scrollerElement, bool isHidden)
     {
-        return jsRuntime.Invoke<float>("BitBlazorUI.Utils.toggleOverflow", scrollerElement, isHidden);
+        return jsRuntime.Invoke<float>("BitBlazorUI.Utils.toggleOverflow", key, scrollerElement, isHidden);
     }
 }
