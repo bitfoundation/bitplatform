@@ -52,7 +52,7 @@ public static partial class UriExtensions
 
             var culture = uri.GetCulture();
 
-            if (string.IsNullOrEmpty(culture))
+            if (string.IsNullOrWhiteSpace(culture))
                 return uri.ToString();
 
             // Only the leading path segment carries the culture. Replacing the culture everywhere in the url instead
@@ -141,7 +141,7 @@ public static partial class UriExtensions
         /// </param>
         public static bool IsAppRelativeUrl([NotNullWhen(true)] string? url, bool requireLeadingSlash = true)
         {
-            if (string.IsNullOrEmpty(url))
+            if (string.IsNullOrWhiteSpace(url))
                 return false;
 
             if (url[0] is '\\')

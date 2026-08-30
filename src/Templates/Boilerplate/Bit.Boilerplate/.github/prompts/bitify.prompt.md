@@ -12,7 +12,7 @@ and documentation pages that ship today, not from memory:
 
 - **`SearchBitBlazorUI(query, limit?)`** - searches components, parameters, examples, types, enum values and the
   theming reference at once, and returns the exact follow-up call for each match. Ask it by **capability**, not by
-  name: "searchable multi select with chips", "toast notification", "virtualized table with sorting". This is your
+  name: "searchable multi-select with chips", "toast notification", "virtualized table with sorting". This is your
   first call, even when a component name comes to mind - the name a task suggests is rarely the name this library
   chose (a "select" is `BitDropdown`, a "toast" is `BitSnackBar`, a "skeleton" is `BitShimmer`, an "expander" is
   `BitAccordion`, a "switch" is `BitToggle`).
@@ -38,7 +38,7 @@ and documentation pages that ship today, not from memory:
   **not** a compile error - it is an empty box on the page, so never type one from memory.
 - **`GetBitBlazorUISetupGuide(hostingModel)`** - only if a project is missing `AddBitBlazorUIServices()` or the
   `bit.blazorui.css` / `bit.blazorui.js` tags. This template is already wired up, so you normally will not need it.
-- **`ask_question`** - for the **third party** libraries its description names (Mapperly, Aspire, Hangfire,
+- **`ask_question`** - for the **third-party** libraries its description names (Mapperly, Aspire, Hangfire,
   FusionCache and the others). It explicitly excludes the bit platform libraries - never point it at Bit.BlazorUI.
 
 When any of these tools cannot resolve an argument it answers with the nearest candidates and the call that lists

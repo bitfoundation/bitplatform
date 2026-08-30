@@ -66,12 +66,12 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         await userStore.SetUserNameAsync(userToAdd, request.UserName!, cancellationToken);
 
-        if (string.IsNullOrEmpty(request.Email) is false)
+        if (string.IsNullOrWhiteSpace(request.Email) is false)
         {
             await userEmailStore.SetEmailAsync(userToAdd, request.Email!, cancellationToken);
         }
 
-        if (string.IsNullOrEmpty(request.PhoneNumber) is false)
+        if (string.IsNullOrWhiteSpace(request.PhoneNumber) is false)
         {
             await userPhoneNumberStore.SetPhoneNumberAsync(userToAdd, request.PhoneNumber!, cancellationToken);
         }
@@ -118,7 +118,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_ID, userSession.Id.ToString()));
 
-        bool isOtpSignIn = string.IsNullOrEmpty(request.Otp) is false;
+        bool isOtpSignIn = string.IsNullOrWhiteSpace(request.Otp) is false;
 
         var (signInResult, firstStepAuthenticationMethod) = isOtpSignIn
             ? await signInManager.OtpSignIn(user, request.Otp!)
@@ -139,7 +139,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (signInResult.RequiresTwoFactor)
         {
-            if (string.IsNullOrEmpty(request.TwoFactorCode) is false)
+            if (string.IsNullOrWhiteSpace(request.TwoFactorCode) is false)
             {
                 signInResult = await TwoFactorSignIn(user, request.TwoFactorCode);
 
@@ -324,7 +324,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
             var elevatedSessionExpiresOn = refreshTicket.Principal.GetElevatedSessionExpiresOn();
 
-            if (string.IsNullOrEmpty(request.ElevatedAccessToken) is false)
+            if (string.IsNullOrWhiteSpace(request.ElevatedAccessToken) is false)
             {
                 if (await userManager.IsLockedOutAsync(user))
                     throw UserLockedOutException(user);
@@ -500,7 +500,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (user.TwoFactorEnabled is false)
             throw new BadRequestException().WithData("UserId", user.Id);
 
-        bool isOtpSignIn = string.IsNullOrEmpty(request.Otp) is false;
+        bool isOtpSignIn = string.IsNullOrWhiteSpace(request.Otp) is false;
 
         var (signInResult, firstStepAuthenticationMethod) = isOtpSignIn
             ? await signInManager.OtpSignIn(user, request.Otp!)
@@ -568,13 +568,13 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"Otp_{originalAuthenticationMethod},{user.OtpRequestedOn?.ToUniversalTime()}"));
 
-        var identifier = string.IsNullOrEmpty(user.Email) is false
+        var identifier = string.IsNullOrWhiteSpace(user.Email) is false
                             ? $"email={Uri.EscapeDataString(user.Email)}"
                             : $"phoneNumber={Uri.EscapeDataString(user.PhoneNumber!)}";
 
         var url = $"{PageUrls.SignIn}?otp={Uri.EscapeDataString(token)}&{identifier}&culture={CultureInfo.CurrentUICulture.Name}";
 
-        if (string.IsNullOrEmpty(returnUrl) is false)
+        if (string.IsNullOrWhiteSpace(returnUrl) is false)
         {
             url += $"&return-url={Uri.EscapeDataString(returnUrl)}";
         }
@@ -584,12 +584,12 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
     private async Task SendConfirmationToken(User user, string? returnUrl, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(user.Email) is false)
+        if (string.IsNullOrWhiteSpace(user.Email) is false)
         {
             await SendConfirmEmailToken(user, returnUrl, cancellationToken);
         }
 
-        if (string.IsNullOrEmpty(user.PhoneNumber) is false)
+        if (string.IsNullOrWhiteSpace(user.PhoneNumber) is false)
         {
             await SendConfirmPhoneToken(user, cancellationToken);
         }

@@ -60,13 +60,23 @@ public partial class TimeZoneSelectionUITests : AppPageTest
         var pickedZoneText = await Page.EvaluateAsync<string?>(
             "() => document.querySelector('.app-menu-callout .time-zone-item')?.innerText.trim()");
 
+        // A host whose tz database carries the IANA links as ids of their own - Android's tzdata, a Linux host's
+        // zoneinfo directory - hands the panel "Iran" beside "Asia/Tehran" and "Japan" beside "Asia/Tokyo", which
+        // render the same text and would list the same zone twice (See AppMenu.ShowTimeZones). Both search terms
+        // above are zones carrying such a link, and the filtered rows are few enough to all be rendered.
+        var filteredZoneTexts = await Page.EvaluateAsync<string[]>(
+            "() => [...document.querySelectorAll('.app-menu-callout .time-zone-item')].map(item => item.innerText.trim())");
+
+        Assert.AreAllDistinct(filteredZoneTexts,
+            $"The time zone list must not offer the same zone twice: {string.Join(", ", filteredZoneTexts)}");
+
         await callout.Locator(".time-zone-item").First.ClickAsync();
 
         // The selection is persisted on the device under the raw `time-zone` key - canonicalized to the IANA id, which
         // can differ from the id of the clicked (e.g. Windows) list entry (See TimeZoneService.ChangeTimeZone).
         // Picking also soft restarts the app, so let that settle before reloading.
         var persistedTimeZoneId = (await Page.WaitForFunctionAsync("() => localStorage.getItem('time-zone')")).ToString();
-        Assert.IsFalse(string.IsNullOrEmpty(persistedTimeZoneId), "Picking a time zone should persist its id in localStorage.");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(persistedTimeZoneId), "Picking a time zone should persist its id in localStorage.");
         await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
         // A full page refresh must keep the choice, and the reopened panel must show it as the selected entry.

@@ -261,9 +261,9 @@ private async Task<BitDataGridReadResult<ProductDto>> LoadProducts(BitDataGridRe
     // Every value that goes into an OData string literal MUST have its single quotes doubled, or a name
     // containing an apostrophe terminates the literal and the request fails to parse.
     var filter = string.Join(" and ", req.Filters
-        .Where(f => string.IsNullOrEmpty(f.Value?.ToString()) is false)
+        .Where(f => string.IsNullOrWhiteSpace(f.Value?.ToString()) is false)
         .Select(f => $"contains(tolower({f.ColumnId}),'{f.Value!.ToString()!.ToLower().Replace("'", "''")}')"));
-    if (string.IsNullOrEmpty(filter) is false)
+    if (string.IsNullOrWhiteSpace(filter) is false)
     {
         query.Filter = filter;
     }

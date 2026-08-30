@@ -29,8 +29,8 @@ public partial class PushNotificationService
         // missing its own platform's field either reaches SaveChangesAsync and comes back as a 500 + LogCritical from
         // an anonymous endpoint, or silently stores a subscription that can never be delivered to.
         var pushChannelIsMissing = dto.Platform is "browser"
-            ? string.IsNullOrEmpty(dto.Endpoint) || string.IsNullOrEmpty(dto.P256dh) || string.IsNullOrEmpty(dto.Auth)
-            : string.IsNullOrEmpty(dto.PushChannel);
+            ? string.IsNullOrWhiteSpace(dto.Endpoint) || string.IsNullOrWhiteSpace(dto.P256dh) || string.IsNullOrWhiteSpace(dto.Auth)
+            : string.IsNullOrWhiteSpace(dto.PushChannel);
 
         if (pushChannelIsMissing)
             throw new BadRequestException().WithData("Reason", $"A '{dto.Platform}' push subscription is missing its push channel.");

@@ -63,7 +63,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase
 
             foreach (var attribute in validationAttributes)
             {
-                if (string.IsNullOrEmpty(attribute.ErrorMessage) is false)
+                if (string.IsNullOrWhiteSpace(attribute.ErrorMessage) is false)
                 {
                     attribute.ErrorMessageResourceName = attribute.ErrorMessage;
                     attribute.ErrorMessage = null;
@@ -136,7 +136,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase
 
                 foreach (var attribute in validationAttributes)
                 {
-                    if (string.IsNullOrEmpty(attribute.ErrorMessage) is false)
+                    if (string.IsNullOrWhiteSpace(attribute.ErrorMessage) is false)
                     {
                         attribute.ErrorMessageResourceName = attribute.ErrorMessage;
                         attribute.ErrorMessage = null;

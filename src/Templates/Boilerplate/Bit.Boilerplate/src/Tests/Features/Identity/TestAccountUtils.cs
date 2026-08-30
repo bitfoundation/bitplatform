@@ -72,7 +72,7 @@ public static class TestAccountUtils
         var accessToken = await scope.ServiceProvider.GetRequiredService<AuthManager>()
             .RefreshToken(requestedBy: nameof(MakeGlobalAdmin));
 
-        Assert.IsFalse(string.IsNullOrEmpty(accessToken), "Refreshing after the role grant should have produced a new access token.");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(accessToken), "Refreshing after the role grant should have produced a new access token.");
 
         var principal = IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: false);
 
@@ -124,7 +124,7 @@ public static class TestAccountUtils
         var accessToken = await scope.ServiceProvider.GetRequiredService<AuthManager>()
             .RefreshToken(requestedBy: nameof(Elevate), elevatedAccessToken: captured.Token);
 
-        Assert.IsFalse(string.IsNullOrEmpty(accessToken), "The elevation refresh should have produced a new access token.");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(accessToken), "The elevation refresh should have produced a new access token.");
     }
 
     /// <summary>

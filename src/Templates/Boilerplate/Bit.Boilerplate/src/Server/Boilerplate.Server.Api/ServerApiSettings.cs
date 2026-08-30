@@ -233,7 +233,7 @@ public class CloudflareOptions
     /// </summary>
     public string[] ZoneIds { get; set; } = [];
 
-    public bool Configured => string.IsNullOrEmpty(ApiToken) is false &&
+    public bool Configured => string.IsNullOrWhiteSpace(ApiToken) is false &&
         ZoneIds.Length > 0;
 }
 //#endif
@@ -244,9 +244,9 @@ public partial class SmsOptions
     public string? TwilioAccountSid { get; set; }
     public string? TwilioAutoToken { get; set; }
 
-    public bool Configured => string.IsNullOrEmpty(FromPhoneNumber) is false &&
-                              string.IsNullOrEmpty(TwilioAccountSid) is false &&
-                              string.IsNullOrEmpty(TwilioAutoToken) is false;
+    public bool Configured => string.IsNullOrWhiteSpace(FromPhoneNumber) is false &&
+                              string.IsNullOrWhiteSpace(TwilioAccountSid) is false &&
+                              string.IsNullOrWhiteSpace(TwilioAutoToken) is false;
 }
 
 public class HangfireOptions

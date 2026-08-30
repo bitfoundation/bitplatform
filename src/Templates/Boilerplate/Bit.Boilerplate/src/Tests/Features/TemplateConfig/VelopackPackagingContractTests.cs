@@ -82,7 +82,7 @@ public class VelopackPackagingContractTests
             .Where(line => line.Length > 0 && line.StartsWith("//", StringComparison.Ordinal) is false)
             .ToArray();
 
-        Assert.AreEqual(0, statementsBefore.Length,
+        Assert.IsEmpty(statementsBefore,
             "VelopackApp.Build().Run() must be the first statement of Main, because everything above it also runs " +
             "during every Velopack install/update/uninstall hook - and a throw there aborts the hook silently. " +
             $"Found before it: {string.Join(" | ", statementsBefore)}");

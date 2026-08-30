@@ -32,7 +32,7 @@
                                                       TabIndex="1"
                                                       Type="BitInputType.Email"
                                                       Label="@Localizer[nameof(AppStrings.Email)]"
-                                                      IsEnabled="string.IsNullOrEmpty(EmailQueryString)"
+                                                      IsEnabled="string.IsNullOrWhiteSpace(EmailQueryString)"
                                                       Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
                                         <ValidationMessage For="@(() => emailModel.Email)" />
 
@@ -104,7 +104,7 @@
                                                       TabIndex="1" FullWidth
                                                       DefaultCountry="@BitCountries.Current"
                                                       Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
-                                                      IsEnabled="string.IsNullOrEmpty(PhoneNumberQueryString)"
+                                                      IsEnabled="string.IsNullOrWhiteSpace(PhoneNumberQueryString)"
                                                       Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                                         <ValidationMessage For="@(() => phoneModel.PhoneNumber)" />
 

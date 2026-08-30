@@ -47,7 +47,7 @@ public class PwaManifestShortcutTests
             var name = shortcut.TryGetProperty("name", out var nameElement) ? nameElement.GetString() : url;
             checkedAny = true;
 
-            Assert.IsTrue(knownUrls.Contains(url),
+            Assert.Contains(url, knownUrls,
                 $"The manifest's \"{name}\" shortcut points at {url}, which is not a route this app serves. " +
                 $"An installed PWA offers it in the jump list and it lands on the not-found page. Known routes: " +
                 $"{string.Join(", ", knownUrls.OrderBy(u => u, StringComparer.Ordinal))}");

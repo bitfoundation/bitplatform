@@ -34,7 +34,7 @@ public partial class TimeZoneService
     {
         var storedTimeZoneId = await storageService.GetItem(TimeZoneStoreKey);
 
-        if (string.IsNullOrEmpty(storedTimeZoneId) is false
+        if (string.IsNullOrWhiteSpace(storedTimeZoneId) is false
             && TimeZoneInfo.TryFindSystemTimeZoneById(NormalizeToPlatformId(storedTimeZoneId), out var storedTimeZone))
         {
             return storedTimeZone;

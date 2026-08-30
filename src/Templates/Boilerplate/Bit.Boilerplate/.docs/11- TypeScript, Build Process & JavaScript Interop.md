@@ -309,7 +309,7 @@ Now you can use it in any Blazor component:
 
 <BitButton OnClick="GenerateNewUuid">Generate UUID</BitButton>
 
-@if (!string.IsNullOrEmpty(generatedUuid))
+@if (!string.IsNullOrWhiteSpace(generatedUuid))
 {
     <BitText>Generated UUID: @generatedUuid</BitText>
 }

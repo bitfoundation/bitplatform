@@ -149,8 +149,8 @@ public partial class SystemPromptContractTests
 
             foreach (var group in markers.GroupBy(m => m.Name))
             {
-                Assert.AreEqual(1, group.Count(m => m.Side is "BEGIN"), $"[[[{group.Key}_BEGIN]]] must appear exactly once.");
-                Assert.AreEqual(1, group.Count(m => m.Side is "END"), $"[[[{group.Key}_END]]] must appear exactly once.");
+                Assert.ContainsSingle(m => m.Side is "BEGIN", group, $"[[[{group.Key}_BEGIN]]] must appear exactly once.");
+                Assert.ContainsSingle(m => m.Side is "END", group, $"[[[{group.Key}_END]]] must appear exactly once.");
             }
         }
     }

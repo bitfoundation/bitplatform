@@ -309,7 +309,7 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
         {
             parameters[nameof(InPrerenderSession)] = InPrerenderSession;
         }
-        if (string.IsNullOrEmpty(argExpression) is false)
+        if (string.IsNullOrWhiteSpace(argExpression) is false)
         {
             parameters["Expression"] = argExpression;
         }

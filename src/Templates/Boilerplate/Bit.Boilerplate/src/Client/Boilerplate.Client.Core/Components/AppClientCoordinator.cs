@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Web;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
@@ -131,7 +131,7 @@ public partial class AppClientCoordinator : AppComponentBase
 
         var remainingQuery = parsedQuery.ToString();
 
-        return ($"{uriValue[..queryStartIndex]}{(string.IsNullOrEmpty(remainingQuery) ? "" : $"?{remainingQuery}")}", replace, forceLoad);
+        return ($"{uriValue[..queryStartIndex]}{(string.IsNullOrWhiteSpace(remainingQuery) ? "" : $"?{remainingQuery}")}", replace, forceLoad);
     }
 
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)

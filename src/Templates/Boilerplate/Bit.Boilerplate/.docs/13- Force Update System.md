@@ -269,7 +269,7 @@ public partial class WindowsAppUpdateService : IAppUpdateService
     public async Task ForceUpdate()
     {
         var windowsUpdateSettings = settings.WindowsUpdate;
-        if (string.IsNullOrEmpty(windowsUpdateSettings?.FilesUrl))
+        if (string.IsNullOrWhiteSpace(windowsUpdateSettings?.FilesUrl))
             return;
         windowsUpdateSettings.AutoReload = true; // Force update to reload the app after update
         await Update();
@@ -278,7 +278,7 @@ public partial class WindowsAppUpdateService : IAppUpdateService
     public async Task Update()
     {
         var windowsUpdateSettings = settings.WindowsUpdate;
-        if (string.IsNullOrEmpty(windowsUpdateSettings?.FilesUrl))
+        if (string.IsNullOrWhiteSpace(windowsUpdateSettings?.FilesUrl))
             return;
         var updateManager = new UpdateManager(windowsUpdateSettings.FilesUrl);
         var updateInfo = await updateManager.CheckForUpdatesAsync();

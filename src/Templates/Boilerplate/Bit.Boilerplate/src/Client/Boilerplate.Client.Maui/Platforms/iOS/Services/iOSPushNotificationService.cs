@@ -41,7 +41,7 @@ public partial class iOSPushNotificationService : PushNotificationServiceBase
 
         try
         {
-            while (string.IsNullOrEmpty(Token))
+            while (string.IsNullOrWhiteSpace(Token))
             {
                 // After the NotificationsSupported Task completes with a result of true,
                 // we use UNUserNotificationCenter.Current.Delegate.

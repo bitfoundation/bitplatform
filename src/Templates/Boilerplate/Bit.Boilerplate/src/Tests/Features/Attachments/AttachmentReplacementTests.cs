@@ -50,7 +50,7 @@ public class AttachmentReplacementTests
             Assert.AreEqual(2, await CountAttachments(server, userId),
                 "A re-upload must overwrite the existing rows, not add a second pair - the key is { Id, Kind } and the blob path is derived from it.");
 
-            CollectionAssert.AreNotEqual(first, await Download(httpClient, userId),
+            Assert.AreNotSequenceEqual(first, await Download(httpClient, userId),
                 "The served image must be the one just uploaded; an in-place overwrite that never wrote the new bytes would look identical here.");
         }
         finally

@@ -144,8 +144,10 @@ public partial class CultureUrlRedirectionTests
 
         using var response = await httpClient.GetAsync(PageUrls.Terms, TestContext.CancellationToken);
 
+        var hasNoStore = response.Headers.CacheControl?.NoStore is true;
+
         Assert.AreEqual(HttpStatusCode.Found, response.StatusCode);
-        Assert.IsTrue(response.Headers.CacheControl?.NoStore is true,
+        Assert.IsTrue(hasNoStore,
             "The redirect must carry `no-store`, or a shared cache could replay one caller's language choice to everyone.");
         Assert.IsFalse(response.Headers.Contains("App-Cache-Response"),
             "The redirect short-circuits before UseOutputCache, so AppResponseCachePolicy must never have run for it.");
@@ -216,6 +218,7 @@ public partial class CultureUrlRedirectionTests
         // cache may remember it.
         Assert.AreEqual(HttpStatusCode.Found, response.StatusCode,
             $"'{response.RequestMessage?.RequestUri?.PathAndQuery}' should have been redirected onto its canonical culture url.");
-        Assert.AreEqual(expectedLocation, response.Headers.Location?.OriginalString);
+        Assert.IsNotNull(response.Headers.Location);
+        Assert.AreEqual(expectedLocation, response.Headers.Location.OriginalString);
     }
 }

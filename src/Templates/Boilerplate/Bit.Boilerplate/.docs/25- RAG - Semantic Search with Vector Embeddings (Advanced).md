@@ -219,7 +219,7 @@ public async Task Embed(Product product, CancellationToken cancellationToken)
         (product.Category!.Name!, 0.9f)
     ];
     
-    if (string.IsNullOrEmpty(product.DescriptionText) is false)
+    if (string.IsNullOrWhiteSpace(product.DescriptionText) is false)
     {
         inputs.Add((product.DescriptionText, 0.7f));
     }

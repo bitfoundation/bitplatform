@@ -68,7 +68,7 @@ Before implementing any changes, you **MUST** complete the following:
 <!--#if (brouter == true)-->
     *   `bit Brouter` for routing: `SearchBrouter`, then `GetBrouterApi` and `InspectBrouterRouteTemplates`.
 <!--#endif-->
-*   For the third party libraries this project builds on, you **MUST** use the `ask_question` tool, which answers from a library's own source code. Its description names the repository to ask for each of them.
+*   For the third-party libraries this project builds on, you **MUST** use the `ask_question` tool, which answers from a library's own source code. Its description names the repository to ask for each of them.
 *   For .NET, ASP.NET Core and Azure documentation, use `microsoft_docs_search`, `microsoft_docs_fetch` and `microsoft_code_sample_search`.
 
 ## 4. Critical Command Reference

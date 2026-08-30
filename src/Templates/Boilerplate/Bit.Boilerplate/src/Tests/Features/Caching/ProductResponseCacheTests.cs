@@ -449,7 +449,7 @@ public partial class ProductResponseCacheTests
             await using var tenantUserScope = server.WebApp.Services.CreateAsyncScope();
             await SignIn(tenantUserScope, TenantUserEmail);
             var accessToken = await tenantUserScope.ServiceProvider.GetRequiredService<IStorageService>().GetItem("access_token");
-            Assert.IsFalse(string.IsNullOrEmpty(accessToken), "Signing in did not store an access token, so the read below would not be authenticated.");
+            Assert.IsFalse(string.IsNullOrWhiteSpace(accessToken), "Signing in did not store an access token, so the read below would not be authenticated.");
 
             using var tenantMemberRequest = new HttpRequestMessage(HttpMethod.Get, requestPath);
             tenantMemberRequest.Headers.Authorization = new("Bearer", accessToken);

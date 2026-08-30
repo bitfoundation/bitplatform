@@ -19,7 +19,7 @@ public partial class Prompt
 
     private void OnOkClick()
     {
-        if (string.IsNullOrEmpty(value)) return;
+        if (string.IsNullOrWhiteSpace(value)) return;
 
         OnOk?.Invoke(value);
     }

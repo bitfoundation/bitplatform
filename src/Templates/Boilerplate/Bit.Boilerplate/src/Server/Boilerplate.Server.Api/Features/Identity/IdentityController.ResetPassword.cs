@@ -33,7 +33,7 @@ public partial class IdentityController
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
 
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ResetPassword,{user.ResetPasswordTokenRequestedOn?.ToUniversalTime()}"));
-        var isEmail = string.IsNullOrEmpty(request.Email) is false;
+        var isEmail = string.IsNullOrWhiteSpace(request.Email) is false;
         var qs = $"{(isEmail ? "email" : "phoneNumber")}={Uri.EscapeDataString(isEmail ? request.Email! : request.PhoneNumber!)}";
         var returnUrl = Uri.IsAppRelativeUrl(request.ReturnUrl, requireLeadingSlash: false) ? request.ReturnUrl : PageUrls.Home;
         var url = $"{PageUrls.ResetPassword}?token={Uri.EscapeDataString(token)}&{qs}&culture={CultureInfo.CurrentUICulture.Name}&return-url={Uri.EscapeDataString(returnUrl)}";

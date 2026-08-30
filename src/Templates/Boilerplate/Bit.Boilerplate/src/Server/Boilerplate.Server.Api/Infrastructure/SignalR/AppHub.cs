@@ -59,7 +59,7 @@ public partial class AppHub : Hub
     {
         ClaimsPrincipal? user = null;
 
-        if (string.IsNullOrEmpty(accessToken) is false)
+        if (string.IsNullOrWhiteSpace(accessToken) is false)
         {
             var bearerTokenProtector = bearerTokenOptions.Get(IdentityConstants.BearerScheme).BearerTokenProtector;
             var accessTokenTicket = bearerTokenProtector.Unprotect(accessToken);
@@ -106,7 +106,7 @@ public partial class AppHub : Hub
             .Select(us => new { us.UserId, us.SignalRConnectionId })
             .FirstOrDefaultAsync(Context.ConnectionAborted);
 
-        if (userSession is null || string.IsNullOrEmpty(userSession.SignalRConnectionId))
+        if (userSession is null || string.IsNullOrWhiteSpace(userSession.SignalRConnectionId))
             return [];
 
         // Same rule as UserManagementController.EnsureCallerCanRevokeSessionsOf: Logs_View is delegable to an

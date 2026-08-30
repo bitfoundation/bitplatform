@@ -231,7 +231,7 @@ public partial class AppAiChatPanel
             // The container is in the bytes as well, but the header is what a proxy or a server side format check
             // reads first. Only the media type is kept: MediaRecorder reports codecs alongside it ("audio/webm;
             // codecs=opus"), which is not a valid Content-Type parameter list for every server to parse.
-            audioContent.Headers.ContentType = new(string.IsNullOrEmpty(mimeType) ? "application/octet-stream" : mimeType.Split(';')[0]);
+            audioContent.Headers.ContentType = new(string.IsNullOrWhiteSpace(mimeType) ? "application/octet-stream" : mimeType.Split(';')[0]);
             form.Add(audioContent, name: "file", fileName: "recording");
 
             using var response = await httpClient.PostAsync("api/v1/Chatbot/TranscribeSpeech", form, CurrentCancellationToken);

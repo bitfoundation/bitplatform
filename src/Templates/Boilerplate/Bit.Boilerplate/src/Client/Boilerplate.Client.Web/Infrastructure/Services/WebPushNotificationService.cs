@@ -66,7 +66,7 @@ public partial class WebPushNotificationService : PushNotificationServiceBase
         }
     }
 
-    public override async Task<bool> IsAvailable(CancellationToken cancellationToken) => string.IsNullOrEmpty(clientWebSettings.AdsPushVapid?.PublicKey) is false && await notification.IsNotificationAvailable();
+    public override async Task<bool> IsAvailable(CancellationToken cancellationToken) => string.IsNullOrWhiteSpace(clientWebSettings.AdsPushVapid?.PublicKey) is false && await notification.IsNotificationAvailable();
 
     /// <summary>
     /// Not the base implementation: <see cref="GetSubscription"/> here CREATES a browser subscription when none
@@ -93,7 +93,7 @@ public partial class WebPushNotificationService : PushNotificationServiceBase
 
     public override async Task RequestPermission(CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(clientWebSettings.AdsPushVapid?.PublicKey))
+        if (string.IsNullOrWhiteSpace(clientWebSettings.AdsPushVapid?.PublicKey))
             return;
 
         if (await notification.IsSupported() is false)

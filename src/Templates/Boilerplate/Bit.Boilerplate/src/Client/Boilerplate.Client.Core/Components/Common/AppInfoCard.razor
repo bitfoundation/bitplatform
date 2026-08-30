@@ -16,28 +16,28 @@
             <BitSeparator />
 
             <div class="info-grid">
-                @if (string.IsNullOrEmpty(Platform) is false)
+                @if (string.IsNullOrWhiteSpace(Platform) is false)
                 {
                     <div class="info-item">
                         <span class="info-label">Operating system</span>
                         <span class="info-value">@Platform</span>
                     </div>
                 }
-                @if (string.IsNullOrEmpty(WebView) is false)
+                @if (string.IsNullOrWhiteSpace(WebView) is false)
                 {
                     <div class="info-item">
                         <span class="info-label">Web view</span>
                         <span class="info-value">@WebView</span>
                     </div>
                 }
-                @if (string.IsNullOrEmpty(Oem) is false)
+                @if (string.IsNullOrWhiteSpace(Oem) is false)
                 {
                     <div class="info-item">
                         <span class="info-label">Manufacturer</span>
                         <span class="info-value">@Oem</span>
                     </div>
                 }
-                @if (string.IsNullOrEmpty(ProcessId) is false)
+                @if (string.IsNullOrWhiteSpace(ProcessId) is false)
                 {
                     <div class="info-item">
                         <span class="info-label">Process ID</span>

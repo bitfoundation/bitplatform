@@ -56,7 +56,7 @@ public static partial class HttpRequestExtensions
         {
             var userAgent = request.Headers[HeaderNames.UserAgent].ToString();
 
-            if (string.IsNullOrEmpty(userAgent)) return string.Empty;
+            if (string.IsNullOrWhiteSpace(userAgent)) return string.Empty;
 
             return userAgent.ToLowerInvariant();
         }

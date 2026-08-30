@@ -650,7 +650,7 @@ public abstract partial class AppPageBase : AppComponentBase
 
         if (firstRender)
         {
-            if (string.IsNullOrEmpty(culture) is false)
+            if (string.IsNullOrWhiteSpace(culture) is false)
             {
                 // Validates culture parameter
             }

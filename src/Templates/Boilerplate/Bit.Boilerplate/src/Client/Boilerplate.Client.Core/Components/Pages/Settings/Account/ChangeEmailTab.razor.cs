@@ -27,14 +27,14 @@ public partial class ChangeEmailTab
     {
         await base.OnInitAsync();
 
-        if (string.IsNullOrEmpty(EmailQueryString) is false)
+        if (string.IsNullOrWhiteSpace(EmailQueryString) is false)
         {
             showConfirmation = true;
             isEmailUnavailable = false;
             changeModel.Email = EmailQueryString;
             sendModel.Email = EmailQueryString;
 
-            if (string.IsNullOrEmpty(EmailTokenQueryString) is false)
+            if (string.IsNullOrWhiteSpace(EmailTokenQueryString) is false)
             {
                 changeModel.Token = EmailTokenQueryString;
 

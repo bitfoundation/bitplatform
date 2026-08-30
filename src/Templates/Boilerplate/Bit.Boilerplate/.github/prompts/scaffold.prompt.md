@@ -13,9 +13,9 @@ You are an expert at scaffolding complete entity implementations for the project
 
 * **If a `<BitDataGrid` is already present in the project:** Skip this research step and follow the existing project patterns.
 * **If NO `<BitDataGrid` can be found (First CRUD Implementation):** You **MUST** call the bit BlazorUI MCP tools -
+  starting with `SearchBitBlazorUI` (describe what each control must **do**) even when its name comes to mind, then
   `GetBitBlazorUIComponent` and `GetBitBlazorUIComponentExamples` for `BitDataGrid`, `BitDialog` and the form
-  inputs you need, plus `SearchBitBlazorUI` (describe what the control must **do**) whenever you need a component
-  whose name you do not already know - to retrieve the authoritative component APIs before writing any markup. Do
+  inputs you need - to retrieve the authoritative component APIs before writing any markup. Do
   **not** use `ask_question` for this: that tool's own description excludes the bit platform libraries, which have
   dedicated tools on the same server.
 

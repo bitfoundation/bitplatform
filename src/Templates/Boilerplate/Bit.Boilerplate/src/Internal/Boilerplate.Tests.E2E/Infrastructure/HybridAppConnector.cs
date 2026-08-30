@@ -79,7 +79,7 @@ public static class HybridAppConnector
             {
                 pid = (await RunAdb($"shell pidof {applicationId}", allowNonZeroExit: true)).Trim();
 
-                if (string.IsNullOrEmpty(pid) is false)
+                if (string.IsNullOrWhiteSpace(pid) is false)
                     break;
 
                 if (DateTimeOffset.UtcNow >= deadline)

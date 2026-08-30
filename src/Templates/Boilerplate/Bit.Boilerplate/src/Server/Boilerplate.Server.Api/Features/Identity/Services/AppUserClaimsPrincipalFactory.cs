@@ -77,11 +77,11 @@ public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsS
     private async Task RetrieveKeycloakClaims(User user, ClaimsIdentity aspnetCoreIdentityClaims)
     {
         var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"] ?? configuration["Authentication:Keycloak:KeycloakUrl"];
-        if (string.IsNullOrEmpty(keycloakBaseUrl))
+        if (string.IsNullOrWhiteSpace(keycloakBaseUrl))
             return; // Keycloak is not configured for this deployment.
 
         var keycloakRefreshToken = await UserManager.GetAuthenticationTokenAsync(user, "Keycloak", "refresh_token");
-        if (string.IsNullOrEmpty(keycloakRefreshToken)) return;
+        if (string.IsNullOrWhiteSpace(keycloakRefreshToken)) return;
 
         var realm = configuration["Authentication:Keycloak:Realm"] ?? throw new InvalidOperationException("Authentication:Keycloak:Realm configuration is required");
         string? keycloakAccessToken = await GetKeycloakAccessToken(user, keycloakRefreshToken, realm);
@@ -158,7 +158,7 @@ public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsS
         id.AddClaim(new Claim(Options.ClaimsIdentity.UserIdClaimType, userId));
         id.AddClaim(new Claim(Options.ClaimsIdentity.UserNameClaimType, userName!));
         var email = user.Email;
-        if (string.IsNullOrEmpty(email) is false)
+        if (string.IsNullOrWhiteSpace(email) is false)
         {
             id.AddClaim(new Claim(Options.ClaimsIdentity.EmailClaimType, email));
         }

@@ -72,7 +72,7 @@
                                             <BitMarkdownViewer Markdown="@($"![]({GetAttachmentUrl(attachmentId)})")"
                                                                ImageRendering="BitMarkdownViewerImageRendering.All" />
                                         }
-                                        @if (string.IsNullOrEmpty(message.Content) is false)
+                                        @if (string.IsNullOrWhiteSpace(message.Content) is false)
                                         {
                                             <BitText Element="pre">@message.Content</BitText>
                                         }

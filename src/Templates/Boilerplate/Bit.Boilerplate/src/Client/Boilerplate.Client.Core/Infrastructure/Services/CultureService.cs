@@ -1,4 +1,4 @@
-﻿using System.Runtime.Loader;
+using System.Runtime.Loader;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services;
 

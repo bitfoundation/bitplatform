@@ -30,10 +30,10 @@ public partial class ThemeTogglePersistenceUITests : AppPageTest
         // two theme NAMES it toggles between as `bit-theme-dark` / `bit-theme-light` (e.g. fluent2-dark). All three
         // are read dynamically instead of assuming literals, so the test survives a theme-preset change.
         var initialTheme = await htmlElement.GetAttributeAsync("bit-theme");
-        Assert.IsFalse(string.IsNullOrEmpty(initialTheme), "The <html> element should carry a bit-theme attribute.");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(initialTheme), "The <html> element should carry a bit-theme attribute.");
         var darkTheme = await htmlElement.GetAttributeAsync("bit-theme-dark");
         var lightTheme = await htmlElement.GetAttributeAsync("bit-theme-light");
-        Assert.IsFalse(string.IsNullOrEmpty(darkTheme) || string.IsNullOrEmpty(lightTheme),
+        Assert.IsFalse(string.IsNullOrWhiteSpace(darkTheme) || string.IsNullOrWhiteSpace(lightTheme),
             "The <html> element should declare its dark and light theme names (bit-theme-dark / bit-theme-light).");
         // Without these two, a preset whose dark and light names coincide - or an active theme that is neither -
         // makes toggledTheme equal initialTheme, and every assertion below passes on a theme that never changed.

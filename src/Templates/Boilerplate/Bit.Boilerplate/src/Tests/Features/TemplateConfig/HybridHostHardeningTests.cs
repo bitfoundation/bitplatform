@@ -89,7 +89,7 @@ public class HybridHostHardeningTests
         // then allowing everything anyway would satisfy the assertion above while changing nothing, so what is
         // required is the early-out between the two: every kind that is not on the allow list leaves the handler
         // before Handled/Allow are ever set, which is what preserves WebView2's own prompt for it.
-        Assert.IsTrue(preceding[kindCheck..].Contains("return"),
+        Assert.Contains("return", preceding[kindCheck..],
             $"{relativePath} inspects args.PermissionKind before granting, but nothing returns between the check and " +
             "CoreWebView2PermissionState.Allow - so the check does not gate the grant and every kind is still allowed. " +
             "Use an allow list that returns early for everything else, leaving those requests at Default.");
@@ -110,7 +110,7 @@ public class HybridHostHardeningTests
     {
         var gitIgnore = ReadTemplateFile(".gitignore");
 
-        Assert.IsTrue(gitIgnore.Split('\n').Any(line => line.Trim() == pattern),
+        Assert.Contains(line => line.Trim() == pattern, gitIgnore.Split('\n'),
             $".gitignore has no '{pattern}' rule. cd-template.yml and .azure-devops/workflows/cd.yml both materialise " +
             "Boilerplate.keystore into a tracked source directory, and the documented local workflow puts a real one " +
             "at the same path.");
@@ -251,7 +251,7 @@ public class HybridHostHardeningTests
         var dto = source.IndexOf("new PushNotificationSubscriptionDto", StringComparison.Ordinal);
 
         Assert.AreNotEqual(-1, dto, $"{relativePath} no longer builds a PushNotificationSubscriptionDto.");
-        Assert.IsTrue(catchBlock < dto, $"{relativePath} builds the subscription before the token wait, which this test cannot reason about.");
+        Assert.IsLessThan(dto, catchBlock, $"{relativePath} builds the subscription before the token wait, which this test cannot reason about.");
 
         Assert.IsTrue(source[catchBlock..dto].Contains("return null", StringComparison.Ordinal),
             $"{relativePath} falls through its token-wait catch into the PushNotificationSubscriptionDto, so a device " +
