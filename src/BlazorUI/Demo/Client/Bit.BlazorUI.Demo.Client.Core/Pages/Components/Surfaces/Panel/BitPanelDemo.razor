@@ -1,4 +1,5 @@
 ﻿@page "/components/panel"
+@page "/components/propanel"
 
 <PageOutlet Url="components/panel"
             Title="Panel"
@@ -60,14 +61,14 @@
             <div>
                 <b>HeaderText</b> and <b>FooterText</b> are the shorthands for the header and the footer that
                 are nothing but a line of text, and the templates take precedence over them. <b>Body</b> is
-                the alias of the content that reads right beside them - it is the same slot as
-                <b>ChildContent</b>, named for what it becomes here.
+                the content that reads right beside them - it is the same slot as <b>ChildContent</b>, named
+                for what it becomes here, and it takes precedence when both are given.
             </div>
             <br />
             <div>
                 <b>ShowCloseButton</b> is what a panel that cannot be dismissed by a click on the page behind
                 it - a <b>Blocking</b> or a <b>Modeless</b> one - needs to be closable with the pointer at
-                all. It names itself "Close" to a screen reader unless <b>CloseButtonAriaLabel</b> says
+                all. It names itself "Close" to a screen reader unless <b>CloseButtonTitle</b> says
                 otherwise, and <b>CloseIconName</b> replaces the glyph in it. The header also names the panel:
                 a screen reader reads it out when the panel opens, without <b>TitleAriaId</b> having to point
                 anywhere.
@@ -129,7 +130,7 @@
                       Size="320"
                       HeaderText="Blocking"
                       ShowCloseButton
-                      CloseButtonAriaLabel="Dismiss the panel"
+                      CloseButtonTitle="Dismiss the panel"
                       OnDismissing="args => lastCloseReason = args.Reason.ToString()">
                 <div>
                     A click on the overlay does nothing here, so the close button is the only pointer left
@@ -248,7 +249,9 @@
             <div>
                 <b>Modeless</b> leaves the page its own clicks by rendering no overlay at all, so the panel sits
                 alongside the work rather than instead of it. <b>NoDismissOnEscape</b> takes the Escape key
-                away from a panel that is only meant to be closed by its own content. <b>OnDismiss</b> is
+                away from a panel that is only meant to be closed by its own content, and
+                <b>OnEscapeKeyDown</b> still reports the key the way <b>OnOverlayClick</b> reports the click,
+                so a panel that turns the Escape down can answer it on terms of its own. <b>OnDismiss</b> is
                 called for every one of those closings - the overlay, the Escape key, a swipe, the Close and
                 Toggle methods and the flag being set from the outside - so it is the one place a panel has to
                 clean up in.
@@ -310,10 +313,14 @@
                       NoDismissOnEscape
                       AriaLabel="A panel that ignores the Escape key"
                       OnDismiss="HandleOnDismiss"
-                      OnDismissing="HandleOnDismissing">
+                      OnDismissing="HandleOnDismissing"
+                      OnEscapeKeyDown="() => escapeKeyCount++">
                 <div class="panel-body">
                     <h3>NoDismissOnEscape</h3>
-                    <div>The Escape key does nothing here. A click on the overlay still dismisses the panel.</div>
+                    <div>
+                        The Escape key does not dismiss this panel, but it is still reported:
+                        <b>@escapeKeyCount</b> so far. A click on the overlay still dismisses the panel.
+                    </div>
                     <BitButton OnClick="() => isNoEscapePanelOpen = false">Close</BitButton>
                 </div>
             </BitPanel>
@@ -362,8 +369,10 @@
                 in it - or to the element marked <b>data-autofocus</b>, for the panels whose first one is not
                 the one worth starting at - Tab and Shift+Tab cycle inside it instead of running on into the
                 page behind it, and closing the panel hands the focus back to whatever opened it.
-                <b>NoAutoFocus</b> leaves the focus where it is, and <b>NoFocusTrap</b> lets the keyboard walk
-                out of the panel. A <b>Modeless</b> panel never traps the focus, since the page behind it is
+                <b>NoAutoFocus</b> leaves the focus where it is, <b>NoFocusTrap</b> lets the keyboard walk
+                out of the panel, and <b>NoRestoreFocus</b> leaves the focus wherever the panel left it
+                instead of handing it back - for the panels whose closing is meant to move the keyboard on
+                somewhere else. A <b>Modeless</b> panel never traps the focus, since the page behind it is
                 meant to be reached. Escape reaches the panel from wherever the keyboard is inside it, so a
                 panel that never took the keyboard over is also one Escape does not reach until the user has
                 tabbed or clicked into it.
@@ -386,6 +395,7 @@
             <div class="btn-container">
                 <BitButton OnClick="() => isFocusPanelOpen = true">Auto focus</BitButton>
                 <BitButton OnClick="() => isNoFocusPanelOpen = true">NoAutoFocus &amp; NoFocusTrap</BitButton>
+                <BitButton OnClick="() => isNoRestoreFocusPanelOpen = true">NoRestoreFocus</BitButton>
             </div>
 
             <BitPanel @bind-IsOpen="isFocusPanelOpen"
@@ -410,17 +420,52 @@
                     <BitButton OnClick="() => isNoFocusPanelOpen = false">Close</BitButton>
                 </div>
             </BitPanel>
+
+            <BitPanel @bind-IsOpen="isNoRestoreFocusPanelOpen" NoRestoreFocus AriaLabel="A panel that does not hand the focus back">
+                <div class="panel-body">
+                    <h3>NoRestoreFocus</h3>
+                    <div>
+                        The keyboard came in with this panel as usual, but closing it leaves the focus where
+                        the panel left it rather than back on the button that opened it.
+                    </div>
+                    <BitButton OnClick="() => isNoRestoreFocusPanelOpen = false">Close</BitButton>
+                </div>
+            </BitPanel>
         </DemoExample>
 
         <DemoExample Title="Page scrolling" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
-                The page behind an open panel still scrolls, which takes the wheel and the touch away from the
-                panel and slides the page out from under it. <b>AutoToggleScroll</b> holds the page still while
-                the panel is open and gives the scrollbar back when it closes - including when the panel is
-                taken off the page while it is still open, so a navigation away from it never leaves the page
-                stuck. <b>ScrollerSelector</b> names the element that is held still, for the layouts that
-                scroll something other than the document. Several panels can hold the same element at once:
-                the scrollbar comes back when the last of them closes, not the first.
+                A panel that covers the page holds it still while it is open: a page that carried on scrolling
+                behind the panel would move what the user is coming back to out from under them. The scrollbar
+                comes back when the panel closes - including when the panel is taken off the page while it is
+                still open, so a navigation away from it never leaves the page stuck - and the room the
+                scrollbar took is added back as padding while it is held, so nothing shifts sideways. The holds
+                are counted: two panels open at once both hold the page, and it is handed back when the last of
+                them closes, not the first.
+            </div>
+            <br />
+            <div>
+                <b>ScrollerSelector</b> names the element that is held, for the layouts that scroll something
+                other than the document, and <b>ScrollerElement</b> hands one over directly where no selector
+                reaches it. A panel inside a <b>BitAppShell</b> holds the shell's scroller without being told
+                to, since the shell cascades it: the body of such a page never scrolls, so holding it would
+                hold nothing.
+            </div>
+            <br />
+            <div>
+                <b>NoScrollLock</b> gives that up, for the panel that is meant to leave the page moving. A
+                <b>Modeless</b> panel never holds the page in the first place. A panel that leaves the page
+                scrolling still covers it with an overlay, and that layer is fixed to the viewport - so the
+                wheel and the touch drag it catches are handed on to the scroller the panel names, and the page
+                moves under the gesture the way it would with no panel over it. Anything inside the panel that
+                scrolls itself takes its own gestures first.
+            </div>
+            <br />
+            <div>
+                <b>AutoToggleScroll</b> is the other way round: the panel takes the overflow off the scroller
+                itself instead of taking the counted hold, and the room that gave back is what an
+                <b>AbsolutePosition</b> panel is pushed down by so that it stays where the eye left it. The two
+                never both apply - a panel doing its own scroll handling stands the hold down.
             </div>
             <br />
             <div>
@@ -430,15 +475,35 @@
             </div>
             <br />
             <div class="btn-container">
+                <BitButton OnClick="() => isScrollLockPanelOpen = true">Held page</BitButton>
+                <BitButton OnClick="() => isNoScrollLockPanelOpen = true">NoScrollLock</BitButton>
                 <BitButton OnClick="() => isAutoToggleScrollPanelOpen = true">AutoToggleScroll</BitButton>
             </div>
 
-            <BitPanel @bind-IsOpen="isAutoToggleScrollPanelOpen" AutoToggleScroll AriaLabel="A panel that holds the page still">
+            <BitPanel @bind-IsOpen="isScrollLockPanelOpen" AriaLabel="A panel that holds the page still">
+                <div class="panel-body">
+                    <h3>Held page</h3>
+                    <div>
+                        The page behind this panel cannot be scrolled while it is open, and nothing on it
+                        shifted sideways when the scrollbar went away. Close the panel and it comes back.
+                    </div>
+                    <BitButton OnClick="() => isScrollLockPanelOpen = false">Close</BitButton>
+                </div>
+            </BitPanel>
+
+            <BitPanel @bind-IsOpen="isNoScrollLockPanelOpen" NoScrollLock AriaLabel="A panel that leaves the page scrolling">
+                <div class="panel-body">
+                    <h3>NoScrollLock</h3>
+                    <div>The page behind this panel carries on scrolling while it is open.</div>
+                    <BitButton OnClick="() => isNoScrollLockPanelOpen = false">Close</BitButton>
+                </div>
+            </BitPanel>
+
+            <BitPanel @bind-IsOpen="isAutoToggleScrollPanelOpen" AutoToggleScroll AriaLabel="A panel that toggles the overflow of the page">
                 <div class="panel-body">
                     <h3>AutoToggleScroll</h3>
                     <div>
-                        The page behind this panel cannot be scrolled while it is open. Close the panel and the
-                        scrollbar comes back where it was.
+                        This panel took the overflow off the page itself rather than taking the counted hold.
                     </div>
                     <BitButton OnClick="() => isAutoToggleScrollPanelOpen = false">Close</BitButton>
                 </div>
@@ -561,19 +626,17 @@
 
         <DemoExample Title="Rendering and events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div>
-                A panel keeps its content in the page while it is closed, so that closing it still has
-                something to slide out; the content is hidden, which keeps it out of the tab order and out of
-                the reach of a screen reader. <b>LazyRender</b> keeps it out of the page altogether until the
-                panel is first opened, for a content that is expensive enough that rendering it behind a closed
-                panel is a cost of its own. Once rendered it stays, so whatever state it holds survives the
-                panel closing.
+                A panel builds its content when it opens and takes it back out once it has finished sliding
+                away - it waits for the movement to end, so the closing is still seen with something in it.
+                Nothing of it is rendered until the first opening, so a panel that is never opened costs
+                nothing, and every opening starts over: a form inside one does not still hold the last thing
+                typed into it. Type into the field below, close the panel, and open it again.
             </div>
             <br />
             <div>
-                <b>UnrenderOnClose</b> gives that state up on purpose: the content is taken back out of the
-                page once the panel has finished sliding away, so the next opening builds it from nothing. It
-                is what a form that should not still hold the last thing typed into it needs - type into the
-                field below, close the panel, and open it again.
+                <b>KeepMounted</b> keeps it instead: the content goes into the page on the first opening and
+                stays from then on, hidden while the panel is closed - which keeps it out of the tab order and
+                out of the reach of a screen reader - so whatever state it holds survives the closing.
             </div>
             <br />
             <div>
@@ -585,34 +648,33 @@
             </div>
             <br />
             <div class="btn-container">
-                <BitButton OnClick="() => isLazyPanelOpen = true">LazyRender</BitButton>
-                <BitButton OnClick="() => isUnrenderPanelOpen = true">UnrenderOnClose</BitButton>
+                <BitButton OnClick="() => isUnrenderPanelOpen = true">Starts over</BitButton>
+                <BitButton OnClick="() => isKeptPanelOpen = true">KeepMounted</BitButton>
                 <div>Opened <b>@openCount</b> times, last toggled to <b>@lastToggleState</b>, settled at <b>@lastSettledState</b></div>
             </div>
 
-            <BitPanel @bind-IsOpen="isLazyPanelOpen"
-                      LazyRender
-                      AriaLabel="A lazily rendered panel"
+            <BitPanel @bind-IsOpen="isUnrenderPanelOpen"
+                      AriaLabel="A panel that starts over every time"
                       OnOpen="() => openCount++"
                       OnToggle="v => lastToggleState = v"
                       OnTransitionEnd="v => lastSettledState = v">
                 <div class="panel-body">
-                    <h3>LazyRender</h3>
-                    <div>This content was not in the page until the panel was first opened.</div>
-                    <BitTextField Label="Type something, then close and reopen" />
-                    <BitButton OnClick="() => isLazyPanelOpen = false">Close</BitButton>
-                </div>
-            </BitPanel>
-
-            <BitPanel @bind-IsOpen="isUnrenderPanelOpen"
-                      UnrenderOnClose
-                      AriaLabel="A panel that starts over every time"
-                      OnTransitionEnd="v => lastSettledState = v">
-                <div class="panel-body">
-                    <h3>UnrenderOnClose</h3>
+                    <h3>Starts over</h3>
                     <div>This content is built again from nothing every time the panel is opened.</div>
                     <BitTextField Label="Type something, then close and reopen" />
                     <BitButton OnClick="() => isUnrenderPanelOpen = false">Close</BitButton>
+                </div>
+            </BitPanel>
+
+            <BitPanel @bind-IsOpen="isKeptPanelOpen"
+                      KeepMounted
+                      AriaLabel="A panel that keeps its content"
+                      OnTransitionEnd="v => lastSettledState = v">
+                <div class="panel-body">
+                    <h3>KeepMounted</h3>
+                    <div>This content stays in the page once the panel has been opened for the first time.</div>
+                    <BitTextField Label="Type something, then close and reopen" />
+                    <BitButton OnClick="() => isKeptPanelOpen = false">Close</BitButton>
                 </div>
             </BitPanel>
         </DemoExample>

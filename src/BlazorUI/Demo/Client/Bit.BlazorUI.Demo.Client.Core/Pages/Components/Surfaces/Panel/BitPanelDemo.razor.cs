@@ -18,7 +18,7 @@ public partial class BitPanelDemo
             Name = "AutoToggleScroll",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Holds the page still while the panel is open, by taking the scrollbar off the element named by ScrollerSelector - the body of the document by default - and giving it back when the panel closes.",
+            Description = "Takes the overflow off the scroller itself while the panel is open and hands it back once it closes, instead of taking the counted hold the panel otherwise takes on the page - the two would else both be holding the same page. The room the scrollbar gave back is what an AbsolutePosition panel is pushed down by.",
         },
         new()
         {
@@ -52,10 +52,10 @@ public partial class BitPanelDemo
         },
         new()
         {
-            Name = "CloseButtonAriaLabel",
+            Name = "CloseButtonTitle",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The accessible name of the close button, which is what a screen reader reads out for it and what the pointer shows as its tooltip. It defaults to \"Close\".",
+            Description = "The title and accessible name of the close button, which is what a screen reader reads out for it and what the pointer shows as its tooltip. It defaults to \"Close\".",
         },
         new()
         {
@@ -70,13 +70,6 @@ public partial class BitPanelDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The name of the built-in Fluent UI icon of the close button. It defaults to Cancel.",
-        },
-        new()
-        {
-            Name = "Content",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "Alias for ChildContent.",
         },
         new()
         {
@@ -136,10 +129,10 @@ public partial class BitPanelDemo
         },
         new()
         {
-            Name = "LazyRender",
+            Name = "KeepMounted",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Keeps the content of the panel out of the page until the panel is opened for the first time. Once rendered it stays, so whatever state the content holds survives the panel closing.",
+            Description = "Keeps the content of the panel in the page once it has been opened, instead of taking it back out every time the panel closes. Nothing of it is rendered until the first opening either way.",
         },
         new()
         {
@@ -171,6 +164,20 @@ public partial class BitPanelDemo
         },
         new()
         {
+            Name = "NoRestoreFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Leaves the focus wherever the panel left it when it closes, instead of handing it back to the element that had it before the panel opened. Nothing is recorded for a panel that hands nothing back.",
+        },
+        new()
+        {
+            Name = "NoScrollLock",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Leaves the page scrolling behind the open panel, instead of holding it still. A Modeless panel never holds the page anyway, and one doing its own scroll handling through AutoToggleScroll holds its scroller itself. The gestures that land on a panel holding nothing are handed on to the scroller it names.",
+        },
+        new()
+        {
             Name = "NoSwipe",
             Type = "bool",
             DefaultValue = "false",
@@ -189,6 +196,12 @@ public partial class BitPanelDemo
             Description = "A callback function invoked before the panel closes, which lets the closing be refused by setting Cancel on the arguments it is given, and tells the closings apart through their Reason. The IsOpen parameter being set to false from the outside never passes through it.",
             Href = "#dismiss-args",
             LinkType = LinkType.Link,
+        },
+        new()
+        {
+            Name = "OnEscapeKeyDown",
+            Type = "EventCallback<KeyboardEventArgs>",
+            Description = "A callback function for when the Escape key is pressed inside the panel. It is called for every Escape, including the ones a panel with NoDismissOnEscape refuses to be dismissed by, which makes it the counterpart of OnOverlayClick for the keyboard.",
         },
         new()
         {
@@ -257,10 +270,17 @@ public partial class BitPanelDemo
         },
         new()
         {
+            Name = "ScrollerElement",
+            Type = "ElementReference?",
+            DefaultValue = "null",
+            Description = "The element reference of the scroller whose scrolling is taken away while the panel is open, for the layouts whose scroller cannot be named by a selector. It takes precedence over ScrollerSelector, and over the scroller a BitAppShell cascades.",
+        },
+        new()
+        {
             Name = "ScrollerSelector",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The CSS selector of the element whose scrolling is taken away while the panel is open, for AutoToggleScroll. It defaults to the body of the document.",
+            Description = "The CSS selector of the element whose scrolling is held while the panel is open, for the layouts whose scroller is not the page itself. A panel inside a BitAppShell holds the shell's scroller without being told to; the body of the document is what is held when there is no shell and this is not set.",
         },
         new()
         {
@@ -298,13 +318,6 @@ public partial class BitPanelDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The ARIA id of the element that names the panel, which is what a screen reader reads out when the panel opens. It defaults to the Header of the panel, and AriaLabel takes precedence over both.",
-        },
-        new()
-        {
-            Name = "UnrenderOnClose",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Takes the content of the panel back out of the page once the panel has finished sliding out, so that the next opening builds it again from nothing. It keeps the content out of the page until the first opening as well, the way LazyRender does.",
         },
         new()
         {
@@ -495,6 +508,7 @@ public partial class BitPanelDemo
 
     private int dismissCount;
     private int overlayClickCount;
+    private int escapeKeyCount;
     private string lastDismissReason = "-";
     private bool isBlockingPanelOpen;
     private bool isDimmedPanelOpen;
@@ -510,7 +524,10 @@ public partial class BitPanelDemo
 
     private bool isFocusPanelOpen;
     private bool isNoFocusPanelOpen;
+    private bool isNoRestoreFocusPanelOpen;
 
+    private bool isScrollLockPanelOpen;
+    private bool isNoScrollLockPanelOpen;
     private bool isAutoToggleScrollPanelOpen;
 
     private double swipeTrigger = 0.25;
@@ -527,7 +544,7 @@ public partial class BitPanelDemo
     private int openCount;
     private bool lastToggleState;
     private bool lastSettledState;
-    private bool isLazyPanelOpen;
+    private bool isKeptPanelOpen;
     private bool isUnrenderPanelOpen;
 
     private bool isStyledPanelOpen;
@@ -636,7 +653,7 @@ private BitPanel basicPanelRef = default!;";
           Size=""320""
           HeaderText=""Blocking""
           ShowCloseButton
-          CloseButtonAriaLabel=""Dismiss the panel""
+          CloseButtonTitle=""Dismiss the panel""
           OnDismissing=""args => lastCloseReason = args.Reason.ToString()"">
     <div>
         A click on the overlay does nothing here, so the close button is the only pointer left
@@ -779,16 +796,21 @@ private bool isCssSizePanelOpen;";
           NoDismissOnEscape
           AriaLabel=""A panel that ignores the Escape key""
           OnDismiss=""HandleOnDismiss""
-          OnDismissing=""HandleOnDismissing"">
+          OnDismissing=""HandleOnDismissing""
+          OnEscapeKeyDown=""() => escapeKeyCount++"">
     <div class=""panel-body"">
         <h3>NoDismissOnEscape</h3>
-        <div>The Escape key does nothing here. A click on the overlay still dismisses the panel.</div>
+        <div>
+            The Escape key does not dismiss this panel, but it is still reported:
+            <b>@escapeKeyCount</b> so far. A click on the overlay still dismisses the panel.
+        </div>
         <BitButton OnClick=""() => isNoEscapePanelOpen = false"">Close</BitButton>
     </div>
 </BitPanel>";
     private readonly string example4CsharpCode = @"
 private int dismissCount;
 private int overlayClickCount;
+private int escapeKeyCount;
 private string lastDismissReason = ""-"";
 private bool isBlockingPanelOpen;
 private bool isDimmedPanelOpen;
@@ -841,6 +863,7 @@ private void HandleOnGuardedDismissing(BitPanelDismissArgs args)
     private readonly string example6RazorCode = @"
 <BitButton OnClick=""() => isFocusPanelOpen = true"">Auto focus</BitButton>
 <BitButton OnClick=""() => isNoFocusPanelOpen = true"">NoAutoFocus & NoFocusTrap</BitButton>
+<BitButton OnClick=""() => isNoRestoreFocusPanelOpen = true"">NoRestoreFocus</BitButton>
 
 <BitPanel @bind-IsOpen=""isFocusPanelOpen""
           TitleAriaId=""panel-focus-title""
@@ -863,25 +886,59 @@ private void HandleOnGuardedDismissing(BitPanelDismissArgs args)
         <div>The focus stayed on the button that opened this panel, and Tab walks out of it.</div>
         <BitButton OnClick=""() => isNoFocusPanelOpen = false"">Close</BitButton>
     </div>
+</BitPanel>
+
+<BitPanel @bind-IsOpen=""isNoRestoreFocusPanelOpen"" NoRestoreFocus AriaLabel=""A panel that does not hand the focus back"">
+    <div class=""panel-body"">
+        <h3>NoRestoreFocus</h3>
+        <div>
+            The keyboard came in with this panel as usual, but closing it leaves the focus where
+            the panel left it rather than back on the button that opened it.
+        </div>
+        <BitButton OnClick=""() => isNoRestoreFocusPanelOpen = false"">Close</BitButton>
+    </div>
 </BitPanel>";
     private readonly string example6CsharpCode = @"
 private bool isFocusPanelOpen;
-private bool isNoFocusPanelOpen;";
+private bool isNoFocusPanelOpen;
+private bool isNoRestoreFocusPanelOpen;";
 
     private readonly string example7RazorCode = @"
+<BitButton OnClick=""() => isScrollLockPanelOpen = true"">Held page</BitButton>
+<BitButton OnClick=""() => isNoScrollLockPanelOpen = true"">NoScrollLock</BitButton>
 <BitButton OnClick=""() => isAutoToggleScrollPanelOpen = true"">AutoToggleScroll</BitButton>
 
-<BitPanel @bind-IsOpen=""isAutoToggleScrollPanelOpen"" AutoToggleScroll AriaLabel=""A panel that holds the page still"">
+<BitPanel @bind-IsOpen=""isScrollLockPanelOpen"" AriaLabel=""A panel that holds the page still"">
+    <div class=""panel-body"">
+        <h3>Held page</h3>
+        <div>
+            The page behind this panel cannot be scrolled while it is open, and nothing on it
+            shifted sideways when the scrollbar went away. Close the panel and it comes back.
+        </div>
+        <BitButton OnClick=""() => isScrollLockPanelOpen = false"">Close</BitButton>
+    </div>
+</BitPanel>
+
+<BitPanel @bind-IsOpen=""isNoScrollLockPanelOpen"" NoScrollLock AriaLabel=""A panel that leaves the page scrolling"">
+    <div class=""panel-body"">
+        <h3>NoScrollLock</h3>
+        <div>The page behind this panel carries on scrolling while it is open.</div>
+        <BitButton OnClick=""() => isNoScrollLockPanelOpen = false"">Close</BitButton>
+    </div>
+</BitPanel>
+
+<BitPanel @bind-IsOpen=""isAutoToggleScrollPanelOpen"" AutoToggleScroll AriaLabel=""A panel that toggles the overflow of the page"">
     <div class=""panel-body"">
         <h3>AutoToggleScroll</h3>
         <div>
-            The page behind this panel cannot be scrolled while it is open. Close the panel and the
-            scrollbar comes back where it was.
+            This panel took the overflow off the page itself rather than taking the counted hold.
         </div>
         <BitButton OnClick=""() => isAutoToggleScrollPanelOpen = false"">Close</BitButton>
     </div>
 </BitPanel>";
     private readonly string example7CsharpCode = @"
+private bool isScrollLockPanelOpen;
+private bool isNoScrollLockPanelOpen;
 private bool isAutoToggleScrollPanelOpen;";
 
     private readonly string example8RazorCode = @"
@@ -968,39 +1025,38 @@ private bool isInnerPanelOpen;";
 private bool isAbsolutePanelOpen;";
 
     private readonly string example11RazorCode = @"
-<BitButton OnClick=""() => isLazyPanelOpen = true"">LazyRender</BitButton>
-<BitButton OnClick=""() => isUnrenderPanelOpen = true"">UnrenderOnClose</BitButton>
+<BitButton OnClick=""() => isUnrenderPanelOpen = true"">Starts over</BitButton>
+<BitButton OnClick=""() => isKeptPanelOpen = true"">KeepMounted</BitButton>
 
-<BitPanel @bind-IsOpen=""isLazyPanelOpen""
-          LazyRender
-          AriaLabel=""A lazily rendered panel""
+<BitPanel @bind-IsOpen=""isUnrenderPanelOpen""
+          AriaLabel=""A panel that starts over every time""
           OnOpen=""() => openCount++""
           OnToggle=""v => lastToggleState = v""
           OnTransitionEnd=""v => lastSettledState = v"">
     <div class=""panel-body"">
-        <h3>LazyRender</h3>
-        <div>This content was not in the page until the panel was first opened.</div>
-        <BitTextField Label=""Type something, then close and reopen"" />
-        <BitButton OnClick=""() => isLazyPanelOpen = false"">Close</BitButton>
-    </div>
-</BitPanel>
-
-<BitPanel @bind-IsOpen=""isUnrenderPanelOpen""
-          UnrenderOnClose
-          AriaLabel=""A panel that starts over every time""
-          OnTransitionEnd=""v => lastSettledState = v"">
-    <div class=""panel-body"">
-        <h3>UnrenderOnClose</h3>
+        <h3>Starts over</h3>
         <div>This content is built again from nothing every time the panel is opened.</div>
         <BitTextField Label=""Type something, then close and reopen"" />
         <BitButton OnClick=""() => isUnrenderPanelOpen = false"">Close</BitButton>
+    </div>
+</BitPanel>
+
+<BitPanel @bind-IsOpen=""isKeptPanelOpen""
+          KeepMounted
+          AriaLabel=""A panel that keeps its content""
+          OnTransitionEnd=""v => lastSettledState = v"">
+    <div class=""panel-body"">
+        <h3>KeepMounted</h3>
+        <div>This content stays in the page once the panel has been opened for the first time.</div>
+        <BitTextField Label=""Type something, then close and reopen"" />
+        <BitButton OnClick=""() => isKeptPanelOpen = false"">Close</BitButton>
     </div>
 </BitPanel>";
     private readonly string example11CsharpCode = @"
 private int openCount;
 private bool lastToggleState;
 private bool lastSettledState;
-private bool isLazyPanelOpen;
+private bool isKeptPanelOpen;
 private bool isUnrenderPanelOpen;";
 
     private readonly string example12RazorCode = @"

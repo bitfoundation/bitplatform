@@ -77,8 +77,8 @@
 
                             <button @onclick="HandleOnCloseClick"
                                     type="button"
-                                    title="@(CloseButtonAriaLabel ?? "Close")"
-                                    aria-label="@(CloseButtonAriaLabel ?? "Close")"
+                                    title="@(CloseButtonTitle ?? "Close")"
+                                    aria-label="@(CloseButtonTitle ?? "Close")"
                                     disabled="@(IsEnabled is false)"
                                     style="@Styles?.CloseButton"
                                     class="bit-pnl-cls @Classes?.CloseButton">
@@ -91,7 +91,7 @@
                 }
 
                 <div style="@Styles?.Body" class="bit-pnl-bdy @Classes?.Body">
-                    @(Body ?? Content ?? ChildContent)
+                    @(Body ?? ChildContent)
                 </div>
 
                 if (Footer is not null)
@@ -109,7 +109,7 @@
             }
             else
             {
-                @(Body ?? Content ?? ChildContent)
+                @(Body ?? ChildContent)
             }
         }
     </div>

@@ -20,7 +20,27 @@ public partial class BitPanel : BitComponentBase
     private bool _contentRendered;
     private bool _focusTrapped;
     private bool _scrollLocked;
-    private string? _lockedScroller;
+    // What the current hold was taken on. The hold is registered against the element the parameters
+    // resolved to and not against the parameters themselves, so a panel pointed somewhere else while it is
+    // open has to let the old one go before taking the new one.
+    private string? _lockedScrollerSelector;
+    private ElementReference? _lockedScrollerElement;
+    // Whether the gestures that land on the panel are being handed to the scroller behind it, and what they
+    // are being handed to - recorded for the same reason the hold above records what it took: a panel aimed
+    // somewhere else while it is open has to take the registration back and make it again.
+    private bool _scrollForwarded;
+    private string? _forwardedScrollerSelector;
+    private ElementReference? _forwardedScrollerElement;
+    // The room the scroller gave back when its overflow was toggled off, which an absolutely positioned
+    // panel is pushed down by so that it stays where the eye left it rather than jumping to the top of the
+    // scroller it is laid out in.
+    private float _offsetTop;
+    // Whether the overflow of a scroller was actually toggled during the open sequence, so the close
+    // sequence hands it back if and only if it was taken, regardless of later changes to AutoToggleScroll.
+    // The scroller is snapshotted with it, so the close restores the same one.
+    private bool _scrollToggledOnOpen;
+    private ElementReference? _scrollerElementOnToggle;
+    private string? _scrollerSelectorOnToggle;
     private string? _swipesKey;
     private string _headerId = default!;
     private string _containerId = default!;
@@ -31,6 +51,14 @@ public partial class BitPanel : BitComponentBase
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    // The scroller of the application shell the panel was declared inside of, cascaded by BitAppShell under
+    // this name. Taken by name rather than off BitAppShell.Container because the shell lives in
+    // Bit.BlazorUI.Extras, which this assembly cannot reference.
+    [CascadingParameter(Name = "BitAppShell.Container")]
+    private ElementReference? AppShellContainer { get; set; }
 
 
 
@@ -48,13 +76,19 @@ public partial class BitPanel : BitComponentBase
     public bool AbsolutePosition { get; set; }
 
     /// <summary>
-    /// Holds the page still while the panel is open, by taking the scrollbar off the element named by
-    /// <see cref="ScrollerSelector"/> - the body of the document by default - and giving it back when the
-    /// panel closes.
+    /// Enables the auto scrollbar toggle behavior of the panel, which takes the overflow off the scroller
+    /// while the panel is open and hands it back once it closes.
     /// </summary>
     /// <remarks>
-    /// The page underneath is what would otherwise take the wheel and the touch away from the panel, and it
-    /// scrolls out from under an open panel that is anchored to the screen rather than to the page.
+    /// This is the panel holding the scroller itself, so the hold it would otherwise take on the page
+    /// through <see cref="NoScrollLock"/> is stood down for it - the two would else both be holding the same
+    /// page. The scroller is named by <see cref="ScrollerElement"/> or <see cref="ScrollerSelector"/>; when
+    /// neither is set it is the scroller of the application shell the panel is inside of, and the page when
+    /// it is inside none.
+    /// <br />
+    /// The room the scrollbar gave back is what an <see cref="AbsolutePosition"/> panel is pushed down by,
+    /// so that it stays where the eye left it rather than jumping to the top of the scroller it is laid out
+    /// in.
     /// </remarks>
     [Parameter] public bool AutoToggleScroll { get; set; }
 
@@ -89,7 +123,7 @@ public partial class BitPanel : BitComponentBase
     /// The accessible name of the close button, which is what a screen reader reads out for it and what the
     /// pointer shows as its tooltip. It defaults to "Close".
     /// </summary>
-    [Parameter] public string? CloseButtonAriaLabel { get; set; }
+    [Parameter] public string? CloseButtonTitle { get; set; }
 
     /// <summary>
     /// Gets or sets the icon to display in the close button using custom CSS classes for external icon libraries.
@@ -110,11 +144,6 @@ public partial class BitPanel : BitComponentBase
     /// For external icon libraries, use <see cref="CloseIcon"/> instead.
     /// </remarks>
     [Parameter] public string? CloseIconName { get; set; }
-
-    /// <summary>
-    /// Alias for ChildContent.
-    /// </summary>
-    [Parameter] public RenderFragment? Content { get; set; }
 
     /// <summary>
     /// Dims the page behind the panel, by giving the overlay that covers it a background of its own instead
@@ -177,11 +206,18 @@ public partial class BitPanel : BitComponentBase
     public bool IsOpen { get; set; }
 
     /// <summary>
-    /// Keeps the content of the panel out of the page until the panel is opened for the first time, for the
-    /// panels whose content is expensive enough that rendering it behind a closed panel is a cost of its own.
-    /// Once rendered it stays, so whatever state the content holds survives the panel closing.
+    /// Keeps the content of the panel in the page once it has been opened, instead of taking it back out
+    /// every time the panel closes.
     /// </summary>
-    [Parameter] public bool LazyRender { get; set; }
+    /// <remarks>
+    /// A panel builds its content when it opens and takes it away once it has finished sliding out, which is
+    /// what keeps a page that declares many of them cheap - and what makes each of them start over: a
+    /// half-filled form inside one is gone by the time it is opened again. Keeping it mounted hides it
+    /// instead, so its content, and whatever state that content holds, is still there the next time it
+    /// opens. Nothing of it is rendered until the first time it opens either way, so a panel that is never
+    /// opened still costs nothing.
+    /// </remarks>
+    [Parameter] public bool KeepMounted { get; set; }
 
     /// <summary>
     /// Leaves the page its own clicks while the panel is open, by not rendering the overlay that otherwise
@@ -228,6 +264,45 @@ public partial class BitPanel : BitComponentBase
     [Parameter] public bool NoFocusTrap { get; set; }
 
     /// <summary>
+    /// Leaves the focus wherever it is when the panel closes, instead of handing it back to the element that
+    /// had it before the panel opened.
+    /// </summary>
+    /// <remarks>
+    /// A panel that takes the keyboard over and then takes its content away drops the focus on the body,
+    /// which starts the next Tab at the top of the page the user never navigated to - so the focus is handed
+    /// back by default. It is only handed back while nothing else has taken it in the meantime, so a close
+    /// handler that deliberately places the focus somewhere keeps it there whether or not this is set.
+    /// <br />
+    /// Nothing is recorded for a panel that hands nothing back, so this also keeps the element the focus was
+    /// on out of the page's memory for as long as the panel is open.
+    /// </remarks>
+    [Parameter] public bool NoRestoreFocus { get; set; }
+
+    /// <summary>
+    /// Prevents the panel from holding the page still while it is open.
+    /// </summary>
+    /// <remarks>
+    /// A panel that covers the page takes it over, and a page that carries on scrolling behind it moves what
+    /// the user is coming back to out from under them, so the page is held for as long as the panel is open.
+    /// The room the scrollbar took is added back as padding while it is held, so that taking the scrollbar
+    /// away shifts nothing sideways, and the locks are counted: two panels open at once both hold the page
+    /// and it is only handed back once the last of them closes.
+    /// <br />
+    /// A <see cref="Modeless"/> panel never holds the page in the first place, since it is meant to leave
+    /// what is behind it usable, and a panel that does its own scroll handling through
+    /// <see cref="AutoToggleScroll"/> holds its scroller itself, so this hold is stood down for it whether or
+    /// not this is set.
+    /// <br />
+    /// The layer the panel is drawn in is fixed to the viewport, so the wheel and the touch drag that land on
+    /// it are chained to the document rather than to whatever region the app scrolls: they are handed to that
+    /// region - the one <see cref="ScrollerElement"/> or <see cref="ScrollerSelector"/> names, or the scroller
+    /// of the application shell the panel is inside of - for as long as a panel that leaves the page
+    /// scrolling is open, so that the page moves under the gesture the way it would with no panel over it.
+    /// Anything inside the panel that scrolls itself takes its own gestures first.
+    /// </remarks>
+    [Parameter] public bool NoScrollLock { get; set; }
+
+    /// <summary>
     /// Turns off the swipe gesture that otherwise dismisses the panel when it is dragged towards the edge it
     /// slid in from.
     /// </summary>
@@ -262,6 +337,19 @@ public partial class BitPanel : BitComponentBase
     /// reported through <see cref="OnDismiss"/> without passing through here.
     /// </remarks>
     [Parameter] public EventCallback<BitPanelDismissArgs> OnDismissing { get; set; }
+
+    /// <summary>
+    /// A callback function for when the Escape key is pressed inside the panel.
+    /// </summary>
+    /// <remarks>
+    /// It is called for every Escape, including the ones a panel with <see cref="NoDismissOnEscape"/> refuses
+    /// to be dismissed by, which makes it the counterpart of <see cref="OnOverlayClick"/> for the keyboard:
+    /// the place to react to a dismissal that was turned down, or to close a panel on terms of its own.
+    /// <br />
+    /// A dismissal the panel does perform is reported through <see cref="OnDismissing"/> - which can still
+    /// refuse it - and then through <see cref="OnDismiss"/>.
+    /// </remarks>
+    [Parameter] public EventCallback<KeyboardEventArgs> OnEscapeKeyDown { get; set; }
 
     /// <summary>
     /// A callback function for when the panel is opened.
@@ -338,9 +426,26 @@ public partial class BitPanel : BitComponentBase
     [Parameter] public double? Size { get; set; }
 
     /// <summary>
-    /// The CSS selector of the element whose scrolling is taken away while the panel is open, for
-    /// <see cref="AutoToggleScroll"/>. It defaults to the body of the document.
+    /// The element reference of the scroller whose scrolling is taken away while the panel is open, for the
+    /// layouts whose scroller is not the page and cannot be named by a selector.
     /// </summary>
+    /// <remarks>
+    /// Takes precedence over <see cref="ScrollerSelector"/> when both are set, and over the scroller a
+    /// <c>BitAppShell</c> cascades. Read only by <see cref="AutoToggleScroll"/>, which is what takes the hold.
+    /// </remarks>
+    [Parameter] public ElementReference? ScrollerElement { get; set; }
+
+    /// <summary>
+    /// The CSS selector of the element whose scrolling is taken away while the panel is open, for
+    /// <see cref="AutoToggleScroll"/>.
+    /// </summary>
+    /// <remarks>
+    /// A panel inside a <c>BitAppShell</c> holds the shell's scroller without being told to, since the shell
+    /// cascades it; the page (<c>body</c>) is what is held when there is no shell and this is not set, which
+    /// is the scroller of an ordinary page. Any other layout that scrolls a region of its own - a fixed
+    /// header over a scrolling main area - names that region here, since holding a page that never scrolls
+    /// holds nothing.
+    /// </remarks>
     [Parameter] public string? ScrollerSelector { get; set; }
 
     /// <summary>
@@ -378,21 +483,6 @@ public partial class BitPanel : BitComponentBase
     /// already showing, and <see cref="BitComponentBase.AriaLabel"/> takes precedence over both.
     /// </summary>
     [Parameter] public string? TitleAriaId { get; set; }
-
-    /// <summary>
-    /// Takes the content of the panel back out of the page once the panel has finished sliding out, so that
-    /// the next opening builds it again from nothing.
-    /// </summary>
-    /// <remarks>
-    /// It is for the content that has to start over every time - a form that should not still hold what was
-    /// typed into it the last time, a view whose data is stale by the time the panel is opened again - and
-    /// for the content that is expensive enough to be worth not keeping. It waits for the panel to have slid
-    /// away first, so the closing is still seen with the content in it.
-    /// <br />
-    /// It keeps the content out of the page until the first opening as well, the way
-    /// <see cref="LazyRender"/> does.
-    /// </remarks>
-    [Parameter] public bool UnrenderOnClose { get; set; }
 
     /// <summary>
     /// The layer the panel and its overlay are stacked at, which takes over from the one the whole library
@@ -470,7 +560,7 @@ public partial class BitPanel : BitComponentBase
 
         // The content of a closed panel is only taken out of the page once the panel has finished sliding
         // away with it, so the closing is still seen with something in it.
-        if (IsOpen is false && UnrenderOnClose && _contentRendered)
+        if (IsOpen is false && KeepMounted is false && _contentRendered)
         {
             _contentRendered = false;
 
@@ -509,6 +599,13 @@ public partial class BitPanel : BitComponentBase
         StyleBuilder.Register(() => ZIndex is null
             ? string.Empty
             : FormattableString.Invariant($"--bit-pnl-zin-ovl:{ZIndex};--bit-pnl-zin-cnt:{ZIndex + 1}"));
+
+        // Only an absolutely positioned panel is laid out inside the scroller AutoToggleScroll takes the
+        // overflow off, so only that one is pushed down by the room it gave back. A panel anchored to the
+        // screen is positioned against the viewport, which never moved.
+        StyleBuilder.Register(() => AbsolutePosition && _offsetTop > 0
+            ? FormattableString.Invariant($"top:{_offsetTop}px")
+            : string.Empty);
     }
 
     protected override void OnInitialized()
@@ -525,7 +622,8 @@ public partial class BitPanel : BitComponentBase
     {
         await base.OnParametersSetAsync();
 
-        // A lazy panel keeps its content out of the page until it is first opened, and keeps it from then on.
+        // The content goes into the page on the first opening; whether it stays once the panel closes is
+        // what KeepMounted decides, and the transition-end callback is where it goes back out.
         if (IsOpen)
         {
             _contentRendered = true;
@@ -556,21 +654,40 @@ public partial class BitPanel : BitComponentBase
             await DisposeFocusTrap();
         }
 
-        if (AutoToggleScroll)
+        // The hold is taken on the element the parameters resolved to at the time it was taken, so
+        // parameters that change while the panel is open have to be let go of and taken again - the panel
+        // would otherwise be holding the element it was pointed at before while the one it is pointed at now
+        // carries on scrolling.
+        if (_scrollLocked && (_lockedScrollerSelector != ScrollerSelector ||
+                              Nullable.Equals(_lockedScrollerElement, ScrollerElementTarget) is false))
         {
-            // The scrollbar was taken off the element the selector named when the panel opened, so a selector
-            // that has changed since has to be followed: the element it named before would otherwise be left
-            // without its scrollbar and the one it names now would keep the scrolling the panel asked for.
-            if (_scrollLocked && _lockedScroller != (ScrollerSelector ?? "body"))
-            {
-                await DisposeScrollLock();
-            }
+            await UnlockScroll();
+        }
 
-            await SetupScrollLock();
+        if (ShouldLockScroll)
+        {
+            await LockScroll();
         }
         else
         {
-            await DisposeScrollLock();
+            await UnlockScroll();
+        }
+
+        // As with the hold, the forwarding is registered against the scroller it was aimed at when it was
+        // made, so a panel aimed somewhere else while it is open takes it back and makes it again.
+        if (_scrollForwarded && (_forwardedScrollerSelector != ScrollerSelector ||
+                                 Nullable.Equals(_forwardedScrollerElement, ScrollerElementTarget) is false))
+        {
+            await StopForwardScroll();
+        }
+
+        if (ShouldForwardScroll)
+        {
+            await ForwardScroll();
+        }
+        else
+        {
+            await StopForwardScroll();
         }
     }
 
@@ -599,9 +716,25 @@ public partial class BitPanel : BitComponentBase
             // on when the panel opened rather than wherever it may have gone while the rest of this ran.
             await CaptureFocusOrigin();
 
-            await SetupScrollLock();
+            await LockScroll();
+
+            await ForwardScroll();
 
             await SetupFocusTrap();
+
+            // Reset before ToggleScroll: a panel that no longer toggles the scroll returns early from it and
+            // would else be left with a stale top-offset from a previous opening.
+            _offsetTop = 0;
+
+            await ToggleScroll(true);
+
+            // The top-offset only means anything to an absolutely positioned panel, so only that one is
+            // asked to render again for the style ToggleScroll may just have changed.
+            if (AbsolutePosition)
+            {
+                StyleBuilder.Reset();
+                StateHasChanged();
+            }
 
             await FocusPanel();
 
@@ -613,7 +746,11 @@ public partial class BitPanel : BitComponentBase
         {
             await DisposeFocusTrap();
 
-            await DisposeScrollLock();
+            await UnlockScroll();
+
+            await StopForwardScroll();
+
+            await ToggleScroll(false);
 
             await RestoreFocusOrigin();
 
@@ -684,9 +821,15 @@ public partial class BitPanel : BitComponentBase
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (DismissesOnEscape is false) return;
+        if (IsOpen is false || IsEnabled is false) return;
 
         if (e.Key is not "Escape") return;
+
+        // Reported before the dismissal is attempted, and reported whether or not there is going to be one,
+        // so that a panel which refuses the key still hears it.
+        await OnEscapeKeyDown.InvokeAsync(e);
+
+        if (NoDismissOnEscape) return;
 
         await ClosePanel(BitPanelDismissReason.Escape);
 
@@ -697,14 +840,51 @@ public partial class BitPanel : BitComponentBase
     // than carrying on up to whatever the panel was opened from.
     private bool DismissesOnEscape => IsOpen && IsEnabled && NoDismissOnEscape is false;
 
+    // The scroller the panel holds while it is open, as an element where one is to be had. A selector the
+    // consumer named beats the shell's scroller, since a panel inside a shell that names a region of its own
+    // means that region; naming neither inside a shell means the shell, whose scroller is the only thing on
+    // such a page that scrolls at all.
+    private ElementReference? ScrollerElementTarget => ScrollerElement
+                                                       ?? (ScrollerSelector.HasValue() ? null : AppShellContainer);
+
+    // A panel that was taken out of view carries none of the behaviors that only make sense for one the user
+    // can actually see, the hold on the page first of all.
+    private bool IsShown => Visibility == BitVisibility.Visible;
+
+    // Whether the page behind the panel is the panel's to hold. A modeless panel leaves it usable on
+    // purpose, and a panel doing its own scroll handling holds its scroller itself.
+    private bool ShouldLockScroll => NoScrollLock is false
+                                     && AutoToggleScroll is false
+                                     && Modeless is false
+                                     && IsOpen
+                                     && IsShown;
+
+    // Whether the gestures that land on the panel are the page's rather than nobody's. A panel that leaves
+    // the page scrolling still covers it with an overlay, and the layer that overlay sits in is fixed to the
+    // viewport: the wheel and the touch drag that land on it are chained to the document, which in an
+    // application shell - or in any layout that scrolls a region of its own - is not the thing that scrolls,
+    // so the gesture reaches nothing at all and the page reads as held by a panel that holds nothing. It is
+    // handed to that region by hand instead, for as long as such a panel is open.
+    // Only the panel showing the overlay needs it: a modeless one lets the pointer through to the page,
+    // which takes its own gestures. Only the panel holding nothing wants it: one holding the page has
+    // nothing to forward, and one that took the overflow off its scroller (AutoToggleScroll) means that
+    // scroller to stay still, so moving it from here would undo what it did. And only the panel aimed at a
+    // scroller of its own can use it: the page is what the browser already chains to.
+    private bool ShouldForwardScroll => Modeless is false
+                                        && IsOpen
+                                        && IsShown
+                                        && ShouldLockScroll is false
+                                        && AutoToggleScroll is false
+                                        && (ScrollerElementTarget.HasValue || ScrollerSelector.HasValue());
+
     // Whether the panel slides in along the horizontal axis, which is what decides both the axis the swipe
     // gesture is locked to and which of the two coordinates the swipe callbacks are given.
     private bool IsHorizontal => (Position ?? BitPanelPosition.End) is BitPanelPosition.Start or BitPanelPosition.End;
 
-    // Whether the content of the panel is in the page. A lazy panel leaves it out until the panel is opened
-    // for the first time, and keeps it from then on, so the state the content holds survives a close; a panel
-    // that unrenders on close never has it there while it is closed, so every opening starts over.
-    private bool ContentRendered => (LazyRender is false && UnrenderOnClose is false) || _contentRendered;
+    // Whether the content of the panel is in the page. It goes in on the first opening and comes back out
+    // once the panel has finished sliding away, so every opening starts over; a KeepMounted panel keeps it
+    // from the first opening on, so the state the content holds survives a close.
+    private bool ContentRendered => _contentRendered;
 
     // A modeless panel leaves the page usable, so the keyboard is meant to reach it: trapping the focus in a
     // panel the user can still click out of would leave them unable to tab back to what they clicked on.
@@ -927,7 +1107,9 @@ public partial class BitPanel : BitComponentBase
 
     private async Task CaptureFocusOrigin()
     {
-        if (NoAutoFocus || IsDisposed || IsRendered is false) return;
+        // Nothing is handed back by a panel that was told not to hand anything back, so nothing is recorded
+        // for it either - the map would otherwise keep the element alive until the panel closes.
+        if (NoAutoFocus || NoRestoreFocus || IsDisposed || IsRendered is false) return;
 
         try
         {
@@ -938,7 +1120,7 @@ public partial class BitPanel : BitComponentBase
 
     private async Task RestoreFocusOrigin()
     {
-        if (NoAutoFocus || IsDisposed) return;
+        if (NoAutoFocus || NoRestoreFocus || IsDisposed) return;
 
         try
         {
@@ -960,32 +1142,121 @@ public partial class BitPanel : BitComponentBase
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
-    private async Task SetupScrollLock()
+    private async Task LockScroll()
     {
-        if (AutoToggleScroll is false || _scrollLocked || IsDisposed || IsRendered is false) return;
+        if (ShouldLockScroll is false || _scrollLocked || IsDisposed || IsRendered is false) return;
 
         _scrollLocked = true;
-        // The selector the scrollbar was taken from, so that it is given back to the same element even when
-        // the parameter has changed in the meantime.
-        _lockedScroller = ScrollerSelector ?? "body";
+        // What the scrollbar was taken from, so that it is given back to the same element even when the
+        // parameters have changed in the meantime.
+        _lockedScrollerSelector = ScrollerSelector;
+        var element = ScrollerElementTarget;
+        _lockedScrollerElement = element;
 
         try
         {
-            await _js.BitUtilsLockScroll(_containerId, _lockedScroller);
+            if (element.HasValue)
+            {
+                await _js.BitUtilsLockScroll(_containerId, element.Value);
+            }
+            else
+            {
+                await _js.BitUtilsLockScroll(_containerId, _lockedScrollerSelector);
+            }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
-    private async Task DisposeScrollLock()
+    private async Task UnlockScroll()
     {
+        // Only what was taken is handed back, and the hold is given up whether or not the call goes through,
+        // so a panel can never end up holding a page it has already let go of.
         if (_scrollLocked is false) return;
 
         _scrollLocked = false;
-        _lockedScroller = null;
+        _lockedScrollerSelector = null;
+        _lockedScrollerElement = null;
 
         try
         {
             await _js.BitUtilsUnlockScroll(_containerId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    // Hands the gestures that land on the panel to the scroller behind it, for the panel that covers a page
+    // it was told not to hold: what the layer catches would else be chained to a document that does not
+    // scroll. Only the gestures nothing inside the panel took first are forwarded, which the script decides.
+    private async Task ForwardScroll()
+    {
+        if (ShouldForwardScroll is false || _scrollForwarded || IsDisposed || IsRendered is false) return;
+
+        _scrollForwarded = true;
+        _forwardedScrollerSelector = ScrollerSelector;
+        var element = ScrollerElementTarget;
+        _forwardedScrollerElement = element;
+
+        try
+        {
+            if (element.HasValue)
+            {
+                await _js.BitUtilsForwardScroll(_containerId, _Id, element.Value);
+            }
+            else
+            {
+                await _js.BitUtilsForwardScroll(_containerId, _Id, _forwardedScrollerSelector);
+            }
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    // Takes the forwarding back, and only what was registered, so a panel never ends up handing gestures to
+    // a scroller it has already let go of.
+    private async Task StopForwardScroll()
+    {
+        if (_scrollForwarded is false) return;
+
+        _scrollForwarded = false;
+        _forwardedScrollerSelector = null;
+        _forwardedScrollerElement = null;
+
+        try
+        {
+            await _js.BitUtilsStopForwardScroll(_containerId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    // The scroll handling a panel does itself, as opposed to the hold it takes on the page through
+    // LockScroll: the overflow of the scroller is taken away while the panel is open and handed back once it
+    // closes, and the room that gave back is what an absolutely positioned panel is pushed down by.
+    private async Task ToggleScroll(bool isOpen)
+    {
+        if (isOpen)
+        {
+            // The decision is taken at open time; the close reuses it instead of re-reading
+            // AutoToggleScroll, which may have changed since the panel was opened.
+            _scrollToggledOnOpen = AutoToggleScroll && IsDisposed is false && IsRendered;
+            if (_scrollToggledOnOpen is false) return;
+
+            // The scroller is snapshotted with it, so the close hands back the same one even if
+            // ScrollerElement / ScrollerSelector changed in the meantime.
+            _scrollerElementOnToggle = ScrollerElementTarget;
+            _scrollerSelectorOnToggle = ScrollerSelector;
+        }
+        else
+        {
+            // Only hand the overflow back if it was actually taken away, regardless of the current value.
+            if (_scrollToggledOnOpen is false) return;
+
+            _scrollToggledOnOpen = false;
+        }
+
+        try
+        {
+            _offsetTop = _scrollerElementOnToggle.HasValue
+                ? await _js.BitUtilsToggleOverflow(_containerId, _scrollerElementOnToggle.Value, isOpen)
+                : await _js.BitUtilsToggleOverflow(_containerId, _scrollerSelectorOnToggle ?? "body", isOpen);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -998,7 +1269,11 @@ public partial class BitPanel : BitComponentBase
 
         // A panel taken off the page while it was open would otherwise leave the page without its scrollbar
         // and with a focus trap registered on an element that no longer exists.
-        await DisposeScrollLock();
+        await UnlockScroll();
+
+        await StopForwardScroll();
+
+        await ToggleScroll(false);
 
         await DisposeFocusTrap();
 

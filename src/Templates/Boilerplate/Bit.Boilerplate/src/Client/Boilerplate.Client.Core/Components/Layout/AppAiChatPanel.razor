@@ -17,12 +17,12 @@
 
     <audio @ref="readAloudAudioRef" class="read-aloud-audio" @onended="WrapHandled(ReadAloudEnded)"></audio>
 
-    <BitPanel @bind-IsOpen="isOpen"
-              ShowCloseButton
-              Dimmed="isSmallScreen is true"
-              Modeless="isSmallScreen is false"
-              OnDismiss="WrapHandled(HandleOnDismissPanel)"
-              Classes="@(new() { Container = $"panel-cnt{(isMaximized ? " maximized" : null)}" })">
+    <BitProPanel @bind-IsOpen="isOpen"
+                 ShowCloseButton
+                 ModeFull="isSmallScreen is true"
+                 Modeless="isSmallScreen is false"
+                 OnDismiss="WrapHandled(HandleOnDismissPanel)"
+                 Classes="@(new() { Container = $"panel-cnt{(isMaximized ? " maximized" : null)}" })">
         <Header>
             <BitStack Horizontal Alignment="BitAlignment.Center">
                 <BitText Typography="BitTypography.H5">@Localizer[nameof(AppStrings.AiChatPanelTitle)]</BitText>
@@ -316,5 +316,5 @@
                 </BitFileUpload>
             </BitStack>
         </Body>
-    </BitPanel>
+    </BitProPanel>
 </section>

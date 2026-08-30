@@ -129,7 +129,7 @@ public partial class MainLayout
                 new() { Text = "Dialog", Url = "/components/dialog" },
                 new() { Text = "Modal", Url = "/components/modal", AdditionalUrls = ["/components/promodal"] },
                 new() { Text = "ModalService", Url = "/components/modalservice", AdditionalUrls = ["/components/promodalservice"] },
-                new() { Text = "Panel", Url = "/components/panel" },
+                new() { Text = "Panel", Url = "/components/panel", AdditionalUrls = ["/components/propanel"] },
                 new() { Text = "ScrollablePane", Url = "/components/scrollablepane", Description = "ScrollView" },
                 new() { Text = "Splitter", Url = "/components/splitter" },
                 new() { Text = "Tooltip", Url = "/components/tooltip" },

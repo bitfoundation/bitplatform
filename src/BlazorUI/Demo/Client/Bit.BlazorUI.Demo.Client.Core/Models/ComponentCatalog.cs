@@ -351,8 +351,6 @@ public static class ComponentCatalog
         ["NavPanel"] = BitIconName.DockLeft,
         ["PdfViewer"] = BitIconName.PDF,
         ["PhoneInput"] = BitIconName.Phone,
-        ["ProModal"] = BitIconName.WindowEdit,
-        ["ProModalService"] = BitIconName.Code,
         ["RichTextEditor"] = BitIconName.EditNote,
         ["TextShimmer"] = BitIconName.ChatBot,
         ["Virtualize"] = BitIconName.RowsGroup,
