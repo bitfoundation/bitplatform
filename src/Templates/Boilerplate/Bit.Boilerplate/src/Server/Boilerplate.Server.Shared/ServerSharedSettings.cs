@@ -76,10 +76,10 @@ public partial class ServerSharedSettings : SharedSettings
 
     //-:cnd:noEmit
     /// <summary>
-    /// Blazor Hybrid's webview, localhost, devtunnels, github codespaces.
+    /// Blazor Hybrid's webview, localhost, devtunnels, github codespaces, cloudflare quick tunnels.
     /// </summary>
 #if Development
-    [GeneratedRegex(@"^(http|https|app):\/\/(localhost|0\.0\.0\.0|0\.0\.0\.1|127\.0\.0\.1|[\w\-]+(\.[\w\-]+)*\.devtunnels\.ms|[\w\-]+(\.[\w\-]+)*\.github\.dev)(:\d+)?(\/.*)?$")]
+    [GeneratedRegex(@"^(http|https|app):\/\/(localhost|0\.0\.0\.0|0\.0\.0\.1|127\.0\.0\.1|[\w\-]+(\.[\w\-]+)*\.devtunnels\.ms|[\w\-]+(\.[\w\-]+)*\.github\.dev|[\w\-]+(\.[\w\-]+)*\.trycloudflare\.com)(:\d+)?(\/.*)?$")]
 #else
     [GeneratedRegex(@"^(http|https|app):\/\/(localhost|0\.0\.0\.0|0\.0\.0\.1|127\.0\.0\.1)(:\d+)?(\/.*)?$")]
 #endif
