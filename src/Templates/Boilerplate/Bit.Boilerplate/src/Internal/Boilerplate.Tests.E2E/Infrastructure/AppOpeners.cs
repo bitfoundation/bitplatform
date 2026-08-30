@@ -40,6 +40,7 @@ public sealed class WindowsAppOpener : IAppOpener
         {
             App.Todo => DeployedApps.TodoWindowsAppId,
             App.AdminPanel => DeployedApps.AdminPanelWindowsAppId,
+            App.Sales => DeployedApps.SalesWindowsAppId,
             _ => null,
         };
 

@@ -40,9 +40,7 @@ public static class DeployedApps
     /// <summary>Velopack app id of the published AdminPanel Windows app, for <see cref="HybridAppConnector.LaunchWindowsApp"/>.</summary>
     public const string AdminPanelWindowsAppId = "AdminPanel.Client.Windows";
 
-    /// <summary>Installer that puts the Todo Windows app where <see cref="HybridAppConnector.LaunchWindowsApp"/> expects it.</summary>
-    public const string TodoWindowsSetupUrl = "https://windows-todo.bitplatform.dev/TodoSample.Client.Windows-win-Setup.exe";
+    /// <summary>Velopack app id of the published Sales Windows app, for <see cref="HybridAppConnector.LaunchWindowsApp"/>.</summary>
+    public const string SalesWindowsAppId = "SalesModule.Client.Windows";
 
-    /// <summary>Installer that puts the AdminPanel Windows app where <see cref="HybridAppConnector.LaunchWindowsApp"/> expects it.</summary>
-    public const string AdminPanelWindowsSetupUrl = "https://windows-admin.bitplatform.dev/AdminPanel.Client.Windows-win-Setup.exe";
 }
