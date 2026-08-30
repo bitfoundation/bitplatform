@@ -8,7 +8,7 @@
         <Nullable>enable</Nullable>
         <UserSecretsId>154C08DF-B089-4D8F-91F3-A95D2A4A27D2</UserSecretsId>
         <RunSettingsFilePath>$(MSBuildProjectDirectory)\.runsettings</RunSettingsFilePath>
-        <TestingPlatformCommandLineArguments>--settings ./.runsettings --report-trx --report-trx-filename TestResults.trx --results-directory ./TestResults</TestingPlatformCommandLineArguments>
+        <TestingPlatformCommandLineArguments>--settings $(MSBuildProjectDirectory)/.runsettings --report-trx --report-trx-filename TestResults.trx --results-directory ./TestResults</TestingPlatformCommandLineArguments>
         <EnableMSTestRunner>true</EnableMSTestRunner>
     </PropertyGroup>
 
