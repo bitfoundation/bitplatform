@@ -450,7 +450,7 @@ public static class ComponentCatalog
         ["Modal"] = "A full overlay for content that has to be dealt with before anything else.",
         ["ModalService"] = "Opens modals from anywhere in the app, with any content.",
         ["Panel"] = "A sheet that slides in from an edge for supplementary content.",
-        ["ScrollablePane"] = "A scrolling region with themed scrollbars and scroll helpers.",
+        ["ScrollablePane"] = "A scrolling box with themed scrollbars, faded edges and a scrolling API.",
         ["Splitter"] = "Divides a container into two sections the reader can resize.",
         ["Tooltip"] = "A short description that appears on hover or focus.",
 
