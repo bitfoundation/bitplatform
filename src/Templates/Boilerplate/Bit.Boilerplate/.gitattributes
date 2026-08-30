@@ -1,5 +1,11 @@
 # Normalize line endings on commit; keep encoding as UTF-8 without BOM (enforced by CI).
-* text=auto
+# eol=lf matches .editorconfig's `end_of_line = lf`: without it a Windows checkout (core.autocrlf=true)
+# writes CRLF and every .cs file becomes an ENDOFLINE error for `dotnet format whitespace`.
+* text=auto eol=lf
 
 # Ensure shell scripts remain executable on Linux by enforcing LF line endings
 *.sh text eol=lf
+
+# cmd.exe mis-parses LF-only labels and multi-line blocks, so batch files keep CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf

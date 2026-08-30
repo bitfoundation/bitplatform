@@ -39,6 +39,9 @@ jobs:
       with:
         node-version: 24
 
+    - name: Verify formatting
+      run: dotnet format whitespace --folder . --verify-no-changes
+
     - name: Workload restore
       run: dotnet workload restore
 

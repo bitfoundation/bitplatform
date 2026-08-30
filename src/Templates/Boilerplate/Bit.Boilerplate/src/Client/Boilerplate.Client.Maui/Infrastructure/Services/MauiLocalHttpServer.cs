@@ -1,4 +1,4 @@
-﻿// [mirror] loopback interop server - endpoints, auth and static file serving - keep in sync with:
+// [mirror] loopback interop server - endpoints, auth and static file serving - keep in sync with:
 // - src/Client/Boilerplate.Client.Windows/Infrastructure/Services/WindowsLocalHttpServer.cs
 
 using System.Net;
