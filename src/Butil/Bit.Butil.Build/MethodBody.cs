@@ -56,7 +56,7 @@ public static class MethodBody
             0x70, 0x71, 0x72, 0x73, 0x74, 0x75,                                     // cpobj, ldobj, ldstr, newobj, castclass, isinst
             0x79,                                                                   // unbox
             0x7B, 0x7C, 0x7D, 0x7E, 0x7F, 0x80, 0x81,                               // ldfld .. stobj
-            0x8D, 0x8F,                                                             // newarr, ldelema
+            0x8C, 0x8D, 0x8F,                                                       // box, newarr, ldelema
             0xA3, 0xA4, 0xA5,                                                       // ldelem, stelem, unbox.any
             0xC2, 0xC6,                                                             // refanyval, mkrefany
             0xD0,                                                                   // ldtoken
