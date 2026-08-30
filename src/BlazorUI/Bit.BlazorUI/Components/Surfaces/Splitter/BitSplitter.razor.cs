@@ -24,6 +24,7 @@ public partial class BitSplitter : BitComponentBase
     private readonly record struct BitSplitterJsOptions(bool Vertical,
                                                         bool Disabled,
                                                         bool Collapsible,
+                                                        bool CollapseSecond,
                                                         bool Collapsed,
                                                         int CollapsedSize,
                                                         int KeyboardStep,
@@ -50,18 +51,36 @@ public partial class BitSplitter : BitComponentBase
     public BitSplitterClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Whether the first panel is currently collapsed. It can be bound, so a collapse the user carries out
-    /// on the gutter is reported back to the page.
+    /// The icon of the collapse button while the panel that folds is open, using <see cref="BitIconInfo"/>
+    /// for external icon library support. Takes precedence over <see cref="CollapseIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? CollapseIcon { get; set; }
+
+    /// <summary>
+    /// The name of the built-in Fluent UI icon shown on the collapse button while the panel that folds is
+    /// open. Ignored when <see cref="CollapseIcon"/> is also set.
+    /// </summary>
+    /// <remarks>
+    /// The default is a chevron pointing at the panel that is about to be folded away, which follows the
+    /// orientation of the splitter and the writing direction of the page.
+    /// </remarks>
+    [Parameter] public string? CollapseIconName { get; set; }
+
+    /// <summary>
+    /// Whether the panel that folds - the first one, or the second where <see cref="CollapseSecondPanel"/>
+    /// says so - is currently collapsed. It can be bound, so a collapse the user carries out on the gutter
+    /// is reported back to the page.
     /// </summary>
     /// <remarks>
     /// A collapsed panel keeps its content in the DOM and is folded down to <see cref="CollapsedSize"/>,
-    /// ignoring the minimum size it would otherwise hold. Expanding it puts it back where it was.
+    /// ignoring the minimum size it would otherwise hold, while the panel left standing takes the whole
+    /// splitter. Expanding it puts the split back where it was.
     /// </remarks>
-    [Parameter, ResetClassBuilder, TwoWayBound]
+    [Parameter, ResetClassBuilder, TwoWayBound, CallOnSet(nameof(OnSetCollapsed))]
     public bool Collapsed { get; set; }
 
     /// <summary>
-    /// The size, in pixels, the first panel is folded down to while it is collapsed.
+    /// The size, in pixels, the folded panel is held at while it is collapsed.
     /// <br />
     /// The default value is <strong>0</strong>.
     /// </summary>
@@ -69,12 +88,28 @@ public partial class BitSplitter : BitComponentBase
     public int CollapsedSize { get; set; }
 
     /// <summary>
-    /// Lets the first panel be collapsed: pressing Enter on the gutter folds it away and opens it again,
-    /// dragging the gutter close enough to the start of the splitter snaps it shut, and
-    /// <see cref="Collapse"/> / <see cref="Expand"/> / <see cref="ToggleCollapse"/> do the same from code.
+    /// Lets a panel be collapsed - the first one, or the second where <see cref="CollapseSecondPanel"/> says
+    /// so: pressing Enter on the gutter folds it away and opens it again, so does Ctrl with an arrow key and
+    /// the control <see cref="ShowCollapseButton"/> draws, dragging the gutter close enough to that panel's
+    /// own edge of the splitter snaps it shut, and <see cref="Collapse"/> / <see cref="Expand"/> /
+    /// <see cref="ToggleCollapse"/> do the same from code.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Collapsible { get; set; }
+
+    /// <summary>
+    /// Folds the second panel away rather than the first one, which is what an inspector, a properties
+    /// pane or a preview sitting at the far end of the splitter needs.
+    /// </summary>
+    /// <remarks>
+    /// It moves what <see cref="Collapsible"/> offers to the other side of the gutter and nothing else:
+    /// <see cref="Collapsed"/>, <see cref="CollapsedSize"/>, <see cref="SnapSize"/>, the keys, the control
+    /// on the gutter and the <see cref="Collapse"/>, <see cref="Expand"/> and <see cref="ToggleCollapse"/>
+    /// methods all go on meaning the one panel that folds. <see cref="Percent"/> still describes the first
+    /// panel, and the split it holds is what the second panel comes back to.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool CollapseSecondPanel { get; set; }
 
     /// <summary>
     /// The grid, in pixels, a drag of the gutter moves the split along: the first panel comes to rest on a
@@ -87,6 +122,22 @@ public partial class BitSplitter : BitComponentBase
     /// keyboard to the same multiples so that both ways of moving the gutter land in the same places.
     /// </remarks>
     [Parameter] public int DragStep { get; set; }
+
+    /// <summary>
+    /// The icon of the collapse button while the panel that folds is away, using <see cref="BitIconInfo"/>
+    /// for external icon library support. Takes precedence over <see cref="ExpandIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? ExpandIcon { get; set; }
+
+    /// <summary>
+    /// The name of the built-in Fluent UI icon shown on the collapse button while the panel that folds is
+    /// away. Ignored when <see cref="ExpandIcon"/> is also set.
+    /// </summary>
+    /// <remarks>
+    /// The default is a chevron pointing at the room the panel is about to come back into, which follows the
+    /// orientation of the splitter and the writing direction of the page.
+    /// </remarks>
+    [Parameter] public string? ExpandIconName { get; set; }
 
     /// <summary>
     /// The content for the first panel.
@@ -115,6 +166,20 @@ public partial class BitSplitter : BitComponentBase
     /// </summary>
     [Parameter, ResetStyleBuilder]
     public int? FirstPanelMinSize { get; set; }
+
+    /// <summary>
+    /// The smallest strip, in pixels, a pointer has to land in to take hold of the gutter.
+    /// <br />
+    /// The default value is <strong>24</strong>, the target size WCAG asks for, and <strong>44</strong>
+    /// wherever the pointer is a coarse one.
+    /// </summary>
+    /// <remarks>
+    /// A gutter drawn narrower than this still answers a press that lands within the strip: it reaches past
+    /// what is drawn, evenly on both sides, without taking any room from the panels. A gutter already at
+    /// least this thick is left as it is.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public int? GutterHitSize { get; set; }
 
     /// <summary>
     /// The icon for the BitSplitter gutter using <see cref="BitIconInfo"/> for external icon library support.
@@ -191,13 +256,13 @@ public partial class BitSplitter : BitComponentBase
     [Parameter] public bool NoResetOnDoubleClick { get; set; }
 
     /// <summary>
-    /// The callback invoked when the first panel is collapsed or expanded.
+    /// The callback invoked when the panel that folds is collapsed or expanded.
     /// </summary>
     [Parameter] public EventCallback<bool> OnCollapsedChange { get; set; }
 
     /// <summary>
-    /// The callback invoked before the first panel is collapsed or expanded, with what is about to happen
-    /// and what asked for it.
+    /// The callback invoked before the panel that folds is collapsed or expanded, with what is about to
+    /// happen and what asked for it.
     /// </summary>
     /// <remarks>
     /// Set <c>Cancel</c> on the provided <see cref="BitSplitterCollapseArgs"/> to leave the panel as it is -
@@ -225,6 +290,18 @@ public partial class BitSplitter : BitComponentBase
     /// matters: a splitter with no handler for it makes no interop call at all while it is being dragged.
     /// </remarks>
     [Parameter] public EventCallback<double> OnResize { get; set; }
+
+    /// <summary>
+    /// The callback invoked when a resize is abandoned rather than finished, with the share of the splitter
+    /// the first panel is put back to.
+    /// </summary>
+    /// <remarks>
+    /// Escape abandons a drag, and so does the browser taking the pointer away - a menu opening over the
+    /// gutter, a touch the system claims for a gesture of its own. Exactly one of this and
+    /// <see cref="OnResizeEnd"/> follows every <see cref="OnResizeStart"/>, so whatever a page put aside for
+    /// the duration of a resize has somewhere to be picked up again.
+    /// </remarks>
+    [Parameter] public EventCallback<double> OnResizeCancel { get; set; }
 
     /// <summary>
     /// The callback invoked when a resize has finished, with the share of the splitter the first panel
@@ -308,8 +385,21 @@ public partial class BitSplitter : BitComponentBase
     public int? SecondPanelMinSize { get; set; }
 
     /// <summary>
-    /// How close to the start of the splitter, in pixels, a drag has to leave the first panel for it to
-    /// snap shut instead of staying open.
+    /// Draws a control on the gutter that folds the collapsible panel away and brings it back, so that a
+    /// reader working with the pointer can see that the panel folds at all. Only a <see cref="Collapsible"/>
+    /// splitter has one.
+    /// </summary>
+    /// <remarks>
+    /// It is the pointer's way to what the gutter already does from the keyboard with Enter and with Ctrl
+    /// and an arrow key, so it stays out of the tab order and out of the accessibility tree: a screen reader
+    /// is handed the separator and the fold it offers once rather than twice.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool ShowCollapseButton { get; set; }
+
+    /// <summary>
+    /// How small, in pixels, a drag has to leave the panel that folds for it to snap shut instead of
+    /// staying open.
     /// <br />
     /// The default value is <strong>0</strong>, which leaves the splitter to work it out from the minimum
     /// size of the panel.
@@ -337,7 +427,7 @@ public partial class BitSplitter : BitComponentBase
 
 
     /// <summary>
-    /// Collapses the first panel. Does nothing if it is already collapsed.
+    /// Collapses the panel that folds. Does nothing if it is already collapsed.
     /// </summary>
     /// <remarks>
     /// A call of its own is not turned away by <see cref="Collapsible"/>, which is about what the reader is
@@ -347,7 +437,7 @@ public partial class BitSplitter : BitComponentBase
     public Task Collapse() => SetCollapsed(true, BitSplitterCollapseReason.Method);
 
     /// <summary>
-    /// Expands the first panel back to the size it had before it was collapsed.
+    /// Expands the panel that folds, putting the split back where it was before the fold.
     /// </summary>
     /// <remarks>
     /// Not turned away by <see cref="Collapsible"/>; see <see cref="Collapse"/>.
@@ -355,7 +445,7 @@ public partial class BitSplitter : BitComponentBase
     public Task Expand() => SetCollapsed(false, BitSplitterCollapseReason.Method);
 
     /// <summary>
-    /// Collapses the first panel if it is expanded and expands it if it is collapsed.
+    /// Collapses the panel that folds if it is expanded and expands it if it is collapsed.
     /// </summary>
     /// <remarks>
     /// Not turned away by <see cref="Collapsible"/>; see <see cref="Collapse"/>.
@@ -381,6 +471,28 @@ public partial class BitSplitter : BitComponentBase
         if (await AssignPercent(Math.Clamp(percent, 0, 100)) is false) return;
 
         await InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>
+    /// Reads the share of the splitter the first panel takes up at this moment, as a percentage, measured
+    /// off the panels themselves rather than read back from <see cref="Percent"/>.
+    /// </summary>
+    /// <remarks>
+    /// It is the only way to a split nobody has moved yet - one that is still whatever
+    /// <see cref="FirstPanelSize"/>, the constraints and the content made of it between them, which
+    /// <see cref="Percent"/> does not hold until the first drag. A splitter whose JavaScript side is not up,
+    /// and one laid out in a box with no room in it, have nothing to measure and answer null.
+    /// </remarks>
+    public async ValueTask<double?> GetPercent()
+    {
+        if (_controllerId.HasNoValue()) return null;
+
+        try
+        {
+            return await _js.BitSplitterGetPercent(_controllerId);
+        }
+        catch (JSException) { return null; }
+        catch (JSDisconnectedException) { return null; }
     }
 
     /// <summary>
@@ -450,10 +562,14 @@ public partial class BitSplitter : BitComponentBase
     }
 
     [JSInvokable(nameof(HandleResizeCancel))]
-    public async Task HandleResizeCancel()
+    public async Task HandleResizeCancel(double percent)
     {
         _isDragging = false;
         ClassBuilder.Reset();
+
+        // Nothing is assigned here: the drag put the panels back exactly where it found them, so what the
+        // component holds is already the position being reported.
+        await OnResizeCancel.InvokeAsync(percent);
 
         await InvokeAsync(StateHasChanged);
     }
@@ -487,8 +603,29 @@ public partial class BitSplitter : BitComponentBase
 
 
 
+    private Task HandleCollapseButtonClick() => SetCollapsed(Collapsed is false, BitSplitterCollapseReason.Gutter);
+
+
+
     internal string _FirstPanelId => $"{_Id}-fpn";
     internal string _SecondPanelId => $"{_Id}-spn";
+
+    // The chevron points at what the press is about to do: at the panel while it is there to be folded away,
+    // and at the room it is about to come back into once it is gone. Which way that is on the screen is the
+    // orientation of the splitter, which of the two panels folds, and - across a row - the writing direction
+    // of the page: the same turn the drag itself makes, so the two of them cannot end up pointing opposite
+    // ways.
+    private string _DefaultCollapseIconName
+    {
+        get
+        {
+            var towardsStart = Collapsed == CollapseSecondPanel;
+
+            return Vertical
+                 ? (towardsStart ? "ChevronRight bit-ico--r90" : "ChevronRight bit-ico-r90")
+                 : (towardsStart != (Dir == BitDir.Rtl) ? "ChevronRight bit-ico-r180" : "ChevronRight");
+        }
+    }
 
     // A gutter nobody can move is not a control any more, so it leaves the tab order and reports itself as
     // disabled rather than standing there as a stop that answers to nothing.
@@ -520,12 +657,20 @@ public partial class BitSplitter : BitComponentBase
         // again, and only the class list can tell the stylesheet that.
         ClassBuilder.Register(() => Collapsible ? "bit-spl-cpb" : string.Empty);
 
+        // Which of the two panels a fold takes away is a layout the stylesheet has to know about, since it
+        // is the one that holds the folded panel at its collapsed size and lets the other one fill in.
+        ClassBuilder.Register(() => CollapseSecondPanel ? "bit-spl-cse" : string.Empty);
+
         ClassBuilder.Register(() => _isDragging ? "bit-spl-drg" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => GutterSize.HasValue ? $"--gutter-size:{Math.Max(0, GutterSize.Value)}px" : string.Empty);
+
+        // The strip that answers a press is the wider of what is drawn and what a pointer can be expected to
+        // hit; the stylesheet works out the difference, so all it is handed is the floor.
+        StyleBuilder.Register(() => GutterHitSize.HasValue ? $"--gutter-hit-size:{Math.Max(0, GutterHitSize.Value)}px" : string.Empty);
 
         // The size of the first panel is the flex basis of a flex item, so one variable carries the width of
         // a splitter laid out in a row and the height of one laid out in a column, and a share given as a
@@ -588,6 +733,7 @@ public partial class BitSplitter : BitComponentBase
                                                        options.Vertical,
                                                        options.Disabled,
                                                        options.Collapsible,
+                                                       options.CollapseSecond,
                                                        options.Collapsed,
                                                        options.CollapsedSize,
                                                        options.KeyboardStep,
@@ -613,6 +759,7 @@ public partial class BitSplitter : BitComponentBase
                                             options.Vertical,
                                             options.Disabled,
                                             options.Collapsible,
+                                            options.CollapseSecond,
                                             options.Collapsed,
                                             options.CollapsedSize,
                                             options.KeyboardStep,
@@ -657,6 +804,10 @@ public partial class BitSplitter : BitComponentBase
             _dotnetObj = null;
         }
 
+        // Whatever was registered under it is gone, so nothing that runs after this - a sync a late callback
+        // asks for, above all - is left calling into the JavaScript side about a splitter it no longer knows.
+        _controllerId = null;
+
         await base.DisposeAsync(disposing);
     }
 
@@ -666,6 +817,7 @@ public partial class BitSplitter : BitComponentBase
         => new(Vertical,
                _IsInteractive is false,
                Collapsible,
+               CollapseSecondPanel,
                Collapsed,
                Math.Max(0, CollapsedSize),
                Math.Max(1, KeyboardStep),
@@ -678,6 +830,16 @@ public partial class BitSplitter : BitComponentBase
                Percent,
                PersistKey,
                PersistInSessionStorage);
+
+    // A page that folds the panel away by writing to Collapsed itself still has to find it where it left it
+    // when it opens it again, so the position is kept here as well as in the fold the component carries out.
+    private void OnSetCollapsed()
+    {
+        if (Collapsed)
+        {
+            _percentBeforeCollapse = Percent;
+        }
+    }
 
     private async Task<bool> SetCollapsed(bool value, BitSplitterCollapseReason reason)
     {

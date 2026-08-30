@@ -1,7 +1,7 @@
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// What made the first panel of a BitSplitter collapse or expand.
+/// What made the collapsible panel of a BitSplitter collapse or expand.
 /// </summary>
 public enum BitSplitterCollapseReason
 {
@@ -11,7 +11,7 @@ public enum BitSplitterCollapseReason
     Gutter,
 
     /// <summary>
-    /// The gutter was dragged close enough to the start of the splitter for the panel to snap shut.
+    /// The gutter was dragged close enough to the panel's own edge of the splitter for it to snap shut.
     /// </summary>
     Drag,
 

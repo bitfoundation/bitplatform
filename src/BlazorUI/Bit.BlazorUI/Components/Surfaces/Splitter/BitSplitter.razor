@@ -13,6 +13,13 @@
        It is only rendered from here once the value is known; until then the setup call measures the panels and
        writes it onto the element itself, so a splitter that was never sized is not left claiming a position. *@
     var valueNow = _ValueNow;
+
+    @* The pointer's way to fold the panel away. It is only ever offered where the reader is allowed to fold
+       the panel and allowed to touch the splitter at all - everywhere else the gutter is just a rule. *@
+    var collapseButton = interactive && Collapsible && ShowCollapseButton;
+    var collapseIcon = collapseButton ? BitIconInfo.From(Collapsed ? ExpandIcon : CollapseIcon,
+                                                         (Collapsed ? ExpandIconName : CollapseIconName) ?? _DefaultCollapseIconName)
+                                      : null;
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -57,6 +64,21 @@
         else
         {
             <div aria-hidden="true" style="@Styles?.GutterIndicator" class="bit-spl-gti @Classes?.GutterIndicator"></div>
+        }
+
+        @* Everything this does the separator around it already does from the keyboard, with Enter and with
+           Ctrl and an arrow key, so it is a way in for the pointer rather than a control of its own: out of
+           the tab order and out of the accessibility tree, where a screen reader would otherwise be read the
+           same action twice - once as a separator and once as a button sitting inside it. *@
+        @if (collapseButton)
+        {
+            <div aria-hidden="true"
+                 @onclick="HandleCollapseButtonClick"
+                 style="@Styles?.CollapseButton"
+                 class="bit-spl-cbt @Classes?.CollapseButton">
+                <i style="@Styles?.CollapseButtonIcon"
+                   class="bit-spl-cbi @collapseIcon?.GetCssClasses() @Classes?.CollapseButtonIcon" />
+            </div>
         }
     </div>
 

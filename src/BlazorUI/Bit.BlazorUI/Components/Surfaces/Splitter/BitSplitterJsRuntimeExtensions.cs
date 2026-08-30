@@ -18,6 +18,7 @@ internal static class BitSplitterJsRuntimeExtensions
                                                        bool vertical,
                                                        bool disabled,
                                                        bool collapsible,
+                                                       bool collapseSecond,
                                                        bool collapsed,
                                                        int collapsedSize,
                                                        int keyboardStep,
@@ -33,7 +34,7 @@ internal static class BitSplitterJsRuntimeExtensions
     {
         return js.Invoke<string>("BitBlazorUI.Splitter.setup",
                                  obj, root, firstPanel, gutter, secondPanel, preview,
-                                 vertical, disabled, collapsible, collapsed,
+                                 vertical, disabled, collapsible, collapseSecond, collapsed,
                                  collapsedSize, keyboardStep, dragStep, snapSize, lazyResize,
                                  resetOnDoubleClick, notifyResize, notifyDoubleClick,
                                  percent, persistKey, persistSession);
@@ -44,6 +45,7 @@ internal static class BitSplitterJsRuntimeExtensions
                                                 bool vertical,
                                                 bool disabled,
                                                 bool collapsible,
+                                                bool collapseSecond,
                                                 bool collapsed,
                                                 int collapsedSize,
                                                 int keyboardStep,
@@ -58,7 +60,7 @@ internal static class BitSplitterJsRuntimeExtensions
                                                 bool persistSession)
     {
         return js.InvokeVoid("BitBlazorUI.Splitter.update",
-                             id, vertical, disabled, collapsible, collapsed,
+                             id, vertical, disabled, collapsible, collapseSecond, collapsed,
                              collapsedSize, keyboardStep, dragStep, snapSize, lazyResize,
                              resetOnDoubleClick, notifyResize, notifyDoubleClick,
                              percent, persistKey, persistSession);
@@ -73,6 +75,16 @@ internal static class BitSplitterJsRuntimeExtensions
     internal static ValueTask BitSplitterSync(this IJSRuntime js, string? id, double? percent)
     {
         return js.InvokeVoid("BitBlazorUI.Splitter.sync", id, percent);
+    }
+
+    /// <remarks>
+    /// The split a splitter is showing is only held in .NET from the first drag on; before that it is
+    /// whatever the panel sizes, the constraints and the content made of it between them, and the browser
+    /// is the only place all of those have been resolved into one number.
+    /// </remarks>
+    internal static ValueTask<double?> BitSplitterGetPercent(this IJSRuntime js, string? id)
+    {
+        return js.Invoke<double?>("BitBlazorUI.Splitter.getPercent", id);
     }
 
     internal static ValueTask BitSplitterDispose(this IJSRuntime js, string? id)

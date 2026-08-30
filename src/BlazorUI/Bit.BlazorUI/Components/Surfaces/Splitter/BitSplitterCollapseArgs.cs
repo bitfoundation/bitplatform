@@ -10,10 +10,10 @@ public class BitSplitterCollapseArgs
     /// Creates a new instance of <see cref="BitSplitterCollapseArgs"/>.
     /// </summary>
     /// <param name="isCollapsing">
-    /// Whether the first panel is about to be folded away.
+    /// Whether the panel that folds is about to be folded away.
     /// </param>
     /// <param name="reason">
-    /// What made the first panel collapse or expand.
+    /// What made the panel collapse or expand.
     /// </param>
     public BitSplitterCollapseArgs(bool isCollapsing, BitSplitterCollapseReason reason)
     {
@@ -22,14 +22,14 @@ public class BitSplitterCollapseArgs
     }
 
     /// <summary>
-    /// The state the first panel is about to move to: true while it is being folded away, false while it
-    /// is being brought back.
+    /// The state the panel that folds is about to move to: true while it is being folded away, false while
+    /// it is being brought back.
     /// </summary>
     public bool IsCollapsing { get; }
 
     /// <summary>
-    /// What made the first panel collapse or expand: the gutter, a drag that snapped it shut, a call to one
-    /// of the Collapse, Expand and ToggleCollapse methods, or the remembered position being restored.
+    /// What made the panel collapse or expand: the gutter, a drag that snapped it shut, a call to one of
+    /// the Collapse, Expand and ToggleCollapse methods, or the remembered position being restored.
     /// </summary>
     public BitSplitterCollapseReason Reason { get; }
 

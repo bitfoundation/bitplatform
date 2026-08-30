@@ -3,6 +3,7 @@ namespace BitBlazorUI {
         vertical: boolean;
         disabled: boolean;
         collapsible: boolean;
+        collapseSecond: boolean;
         collapsed: boolean;
         collapsedSize: number;
         keyboardStep: number;
@@ -46,13 +47,18 @@ namespace BitBlazorUI {
     export class Splitter {
         private static _entries: { [id: string]: SplitterEntry } = {};
 
-        // The splitter a pointer is currently dragging. Only one can be, since the drag holds the pointer
-        // capture, and it is what tells a disposal whether the chrome on the body is its own to clear.
-        private static _dragging: string | null = null;
+        // The splitters a pointer is currently dragging. There is normally one, but a second finger can take
+        // hold of a second splitter, so the chrome on the body is only cleared once the last of them is done
+        // with it. It is also what tells a disposal whether that chrome is its own to clear.
+        private static _dragging: { [id: string]: boolean } = {};
 
         // The custom properties a drag writes onto the root. They are listed once so that taking a snapshot
         // of them, restoring it and clearing it cannot fall out of step with each other.
         private static readonly SIZE_PROPERTIES = ['--first-panel', '--first-panel-grow', '--second-panel', '--second-panel-grow'];
+
+        // The control on the gutter that folds the panel away. A press on it is not a drag of the gutter it
+        // sits on, and the two presses that make it up are not a double-click on the gutter either.
+        private static readonly COLLAPSE_BUTTON_SELECTOR = '.bit-spl-cbt';
 
         // Dragging the first panel below this share of its own minimum snaps it shut instead of leaving it
         // as a sliver nobody can read. It only applies to a splitter that was made collapsible; every other
@@ -87,6 +93,7 @@ namespace BitBlazorUI {
                             vertical: boolean,
                             disabled: boolean,
                             collapsible: boolean,
+                            collapseSecond: boolean,
                             collapsed: boolean,
                             collapsedSize: number,
                             keyboardStep: number,
@@ -115,7 +122,7 @@ namespace BitBlazorUI {
                 observer: null,
                 cancelDrag: () => { },
                 options: {
-                    vertical, disabled, collapsible, collapsed,
+                    vertical, disabled, collapsible, collapseSecond, collapsed,
                     collapsedSize, keyboardStep, dragStep, snapSize, lazyResize,
                     resetOnDoubleClick, notifyResize, notifyDoubleClick,
                     percent, persistKey, persistSession
@@ -145,6 +152,14 @@ namespace BitBlazorUI {
             let snapshot: (string)[] = [];
             let rafId = 0;
 
+            // Measuring the panels is what forces the browser to lay the page out, so a drag takes one
+            // measurement per pointer move and everything that runs off the back of it - the frame that
+            // writes the new size, the snap that decides whether the panel closes - is handed the same one
+            // rather than asking for its own. What cannot change under a drag is measured once at its start.
+            let latestBounds: SplitterBounds | null = null;
+            let axisSign = 1;
+            let previewOffset = 0;
+
             const invoke = (method: string, ...args: any[]) => {
                 if (signal.aborted) return;
 
@@ -171,16 +186,19 @@ namespace BitBlazorUI {
                 // only a line moves, so a drag costs one reflow at its end rather than one per frame - which
                 // is what makes a panel full of heavy content draggable at all.
                 if (entry.options.lazyResize) {
-                    Splitter.showPreview(entry, latestSize);
+                    Splitter.showPreview(entry, latestSize, previewOffset);
 
                     if (entry.options.notifyResize) {
-                        invoke('HandleResize', Splitter.previewPercent(entry, latestSize));
+                        invoke('HandleResize', Splitter.previewPercent(latestSize, latestBounds));
                     }
 
                     return;
                 }
 
-                appliedPercent = Splitter.applySize(entry, latestSize);
+                const applied = Splitter.applySize(entry, latestSize, latestBounds);
+                if (applied === null) return;
+
+                appliedPercent = applied;
 
                 if (entry.options.notifyResize) {
                     invoke('HandleResize', appliedPercent);
@@ -204,7 +222,7 @@ namespace BitBlazorUI {
 
                 dragging = false;
                 pending = false;
-                Splitter._dragging = null;
+                delete Splitter._dragging[entry.id];
 
                 Splitter.setDragChrome(entry, false);
                 Splitter.hidePreview(entry);
@@ -215,15 +233,29 @@ namespace BitBlazorUI {
                 if (cancelled) {
                     Splitter.restoreProperties(entry, snapshot);
                     Splitter.reportPosition(entry);
-                    if (moved) invoke('HandleResizeCancel');
+                    if (moved) invoke('HandleResizeCancel', startPercent);
                     return;
                 }
 
                 if (moved === false) return;
 
-                const collapse = Splitter.shouldSnapClosed(entry, latestSize);
+                // Nothing could be measured, so there is no position to report as the one the drag reached -
+                // and the panels were never moved to one either. It is the same outcome as an abandoned drag.
+                if (latestBounds === null) {
+                    invoke('HandleResizeCancel', startPercent);
+                    return;
+                }
 
-                invoke('HandleResizeEnd', collapse ? appliedPercent : Splitter.applySize(entry, latestSize), collapse);
+                const collapse = Splitter.shouldSnapClosed(entry, latestSize, latestBounds);
+
+                // A drag that closes the panel is still reported at the position it reached, whether or not
+                // the panels were laid out there along the way - a lazy splitter and an eager one describe
+                // the same gesture the same way.
+                const percent = collapse
+                    ? Splitter.toPercent(latestSize, latestBounds.total)
+                    : Splitter.applySize(entry, latestSize, latestBounds);
+
+                invoke('HandleResizeEnd', percent === null ? appliedPercent : percent, collapse);
             };
 
             // The panels have already moved by the time this runs; what it reports is where they ended up.
@@ -248,6 +280,12 @@ namespace BitBlazorUI {
                 if (keyResizing === false) {
                     keyResizing = true;
                     invoke('HandleResizeStart', from);
+                }
+
+                // The panels have moved, so a page watching a resize as it happens is told - the keyboard is
+                // as much a way of resizing a splitter as the pointer is.
+                if (entry.options.notifyResize) {
+                    invoke('HandleResize', percent);
                 }
 
                 // A press of its own is reported as it happens. Whatever a previous run of repeats had
@@ -278,6 +316,10 @@ namespace BitBlazorUI {
                 // Secondary and middle buttons open context menus and start autoscroll rather than a drag.
                 if (entry.options.disabled || e.button !== 0) return;
 
+                // The control that folds the panel away sits on the gutter, so a press meant for it would
+                // otherwise start a drag of the very thing it is about to fold.
+                if (Splitter.isCollapseButton(e.target)) return;
+
                 // There is nothing to drag on a folded panel - it is held at its collapsed size rather than
                 // at a share of the splitter - so the press opens it again instead, which is the only thing
                 // a pointer could sensibly mean there.
@@ -300,7 +342,10 @@ namespace BitBlazorUI {
 
                 dragging = true;
                 moved = false;
-                Splitter._dragging = entry.id;
+                Splitter._dragging[entry.id] = true;
+                latestBounds = bounds;
+                axisSign = Splitter.getAxisSign(entry);
+                previewOffset = entry.options.lazyResize ? Splitter.getPreviewOffset(entry) : 0;
                 startPosition = entry.options.vertical ? e.clientY : e.clientX;
                 startSize = bounds.current;
                 latestSize = bounds.current;
@@ -326,8 +371,10 @@ namespace BitBlazorUI {
                 const bounds = Splitter.getBounds(entry);
                 if (bounds === null) return;
 
+                latestBounds = bounds;
+
                 const position = entry.options.vertical ? e.clientY : e.clientX;
-                const delta = (position - startPosition) * Splitter.getAxisSign(entry);
+                const delta = (position - startPosition) * axisSign;
 
                 const size = Splitter.clamp(Splitter.applyDragStep(entry, startSize + delta), bounds.min, bounds.max);
                 if (moved === false && size === startSize) return;
@@ -355,8 +402,12 @@ namespace BitBlazorUI {
             // because the reader looked at another window in the middle of it.
             window.addEventListener('blur', () => endDrag(false), { signal });
 
-            gutter.addEventListener('dblclick', () => {
+            gutter.addEventListener('dblclick', e => {
                 if (entry.options.disabled) return;
+
+                // Two presses on the control that folds the panel away are two folds, not a reset of the
+                // gutter underneath it.
+                if (Splitter.isCollapseButton(e.target)) return;
 
                 if (entry.options.notifyDoubleClick) {
                     invoke('HandleGutterDoubleClick');
@@ -388,9 +439,12 @@ namespace BitBlazorUI {
 
                     e.preventDefault();
 
-                    // Towards the start of the splitter closes the panel and away from it opens it again,
-                    // whichever way round the writing direction puts the two of them.
-                    const collapse = Splitter.getAxisSign(entry) > 0 ? towardsStart : towardsEnd;
+                    // Towards the panel that folds closes it and away from it opens it again, whichever
+                    // end of the splitter that panel is at and whichever way round the writing direction
+                    // puts the two of them.
+                    const towardsPanel = entry.options.collapseSecond ? towardsEnd : towardsStart;
+                    const awayFromPanel = entry.options.collapseSecond ? towardsStart : towardsEnd;
+                    const collapse = Splitter.getAxisSign(entry) > 0 ? towardsPanel : awayFromPanel;
 
                     if (collapse !== entry.options.collapsed) invoke('HandleToggleCollapse');
                     return;
@@ -452,7 +506,10 @@ namespace BitBlazorUI {
 
                 const size = Splitter.clamp(Splitter.applyDragStep(entry, target), bounds.min, bounds.max);
 
-                notifyKeyResize(Splitter.applySize(entry, size), e.repeat, Splitter.toPercent(bounds.current, bounds.total));
+                const applied = Splitter.applySize(entry, size, bounds);
+                if (applied === null) return;
+
+                notifyKeyResize(applied, e.repeat, Splitter.toPercent(bounds.current, bounds.total));
             }, { signal });
 
             gutter.addEventListener('keyup', () => flushKeyResize(), { signal });
@@ -493,6 +550,7 @@ namespace BitBlazorUI {
                              vertical: boolean,
                              disabled: boolean,
                              collapsible: boolean,
+                             collapseSecond: boolean,
                              collapsed: boolean,
                              collapsedSize: number,
                              keyboardStep: number,
@@ -509,7 +567,7 @@ namespace BitBlazorUI {
             if (!entry) return;
 
             entry.options = {
-                vertical, disabled, collapsible, collapsed,
+                vertical, disabled, collapsible, collapseSecond, collapsed,
                 collapsedSize, keyboardStep, dragStep, snapSize, lazyResize,
                 resetOnDoubleClick, notifyResize, notifyDoubleClick,
                 percent, persistKey, persistSession
@@ -518,7 +576,7 @@ namespace BitBlazorUI {
             // A splitter that stops being resizable in the middle of a drag is put back where the drag
             // found it: going on moving a layout the page has just closed to negotiation would be the one
             // thing closing it was meant to prevent.
-            if (disabled && Splitter._dragging === id) {
+            if (disabled && Splitter._dragging[id]) {
                 entry.cancelDrag();
             }
 
@@ -543,15 +601,28 @@ namespace BitBlazorUI {
             }
         }
 
+        /// Measures the share of the splitter the first panel takes up at this moment. It is the one thing
+        /// .NET cannot work out for itself: until the gutter has been moved the split is whatever the panel
+        /// sizes, the constraints and the content between them made of it, and only the browser has that.
+        public static getPercent(id: string): number | null {
+            const entry = Splitter._entries[id];
+            if (!entry) return null;
+
+            const bounds = Splitter.getBounds(entry);
+            if (bounds === null) return null;
+
+            return Splitter.toPercent(bounds.current, bounds.total);
+        }
+
         public static dispose(id: string): void {
             const entry = Splitter._entries[id];
             if (!entry) return;
 
             // A splitter taken off the page in the middle of a drag would otherwise leave the body wearing
             // the resize cursor and unable to select text.
-            if (Splitter._dragging === id) {
+            if (Splitter._dragging[id]) {
+                delete Splitter._dragging[id];
                 Splitter.setDragChrome(entry, false);
-                Splitter._dragging = null;
             }
 
             entry.observer?.disconnect();
@@ -614,28 +685,39 @@ namespace BitBlazorUI {
         }
 
         // A drag that ends far enough inside the minimum of a collapsible panel closes it rather than
-        // leaving it at a size the minimum would have refused anyway.
-        private static shouldSnapClosed(entry: SplitterEntry, size: number): boolean {
+        // leaving it at a size the minimum would have refused anyway. What is measured is the panel that
+        // folds, which is the second one on a splitter that was told to fold that one: the far end of the
+        // range is the edge it is being dragged into.
+        private static shouldSnapClosed(entry: SplitterEntry, size: number, bounds: SplitterBounds | null): boolean {
             if (entry.options.collapsible === false) return false;
 
-            // A snap distance of its own is the whole answer: the panel closes within that many pixels of
-            // the start of the splitter and nowhere else.
-            if (entry.options.snapSize > 0) return size <= entry.options.snapSize;
-
-            const bounds = Splitter.getBounds(entry);
             if (bounds === null) return false;
 
-            const threshold = bounds.min > 0
-                ? bounds.min * Splitter.SNAP_RATIO
+            const second = entry.options.collapseSecond;
+            const panelSize = second ? bounds.space - size : size;
+
+            // A snap distance of its own is the whole answer: the panel closes within that many pixels of
+            // its own edge of the splitter and nowhere else.
+            if (entry.options.snapSize > 0) return panelSize <= entry.options.snapSize;
+
+            // Everything the panels are allowed to do is held in the range the first one may move through,
+            // so the smallest the second one may be is the room left over at the far end of it.
+            const panelMin = second ? bounds.space - bounds.max : bounds.min;
+
+            const threshold = panelMin > 0
+                ? panelMin * Splitter.SNAP_RATIO
                 : bounds.space * Splitter.SNAP_FALLBACK_RATIO;
 
-            return size <= Math.max(threshold, entry.options.collapsedSize);
+            return panelSize <= Math.max(threshold, entry.options.collapsedSize);
         }
 
-        private static applySize(entry: SplitterEntry, size: number): number {
-            const bounds = Splitter.getBounds(entry);
+        // Nothing is written without a measurement to write it against: a share worked out from a splitter
+        // that could not be measured is zero whatever the panels are actually doing, and applying it would
+        // fold the first panel away over a layout the browser simply had not settled yet.
+        private static applySize(entry: SplitterEntry, size: number, bounds: SplitterBounds | null): number | null {
+            if (bounds === null || bounds.total <= 0) return null;
 
-            return Splitter.applyPercent(entry, Splitter.toPercent(size, bounds === null ? 0 : bounds.total));
+            return Splitter.applyPercent(entry, Splitter.toPercent(size, bounds.total));
         }
 
         private static applyPercent(entry: SplitterEntry, percent: number): number {
@@ -657,20 +739,20 @@ namespace BitBlazorUI {
         // The line a lazy drag moves instead of the panels. It is placed where the gutter would end up, in
         // the same box the panels are laid out in, and it is taken down again the moment the drag is over -
         // whether the drag was kept or thrown away.
-        private static showPreview(entry: SplitterEntry, size: number): void {
+        private static showPreview(entry: SplitterEntry, size: number, offset: number): void {
             if (!entry.preview) return;
 
-            const offset = Math.max(0, size) + 'px';
+            const distance = Math.max(0, size) + offset + 'px';
 
             entry.preview.classList.add('bit-spl-prv-on');
 
             if (entry.options.vertical) {
-                entry.preview.style.insetBlockStart = offset;
+                entry.preview.style.insetBlockStart = distance;
                 entry.preview.style.insetInlineStart = '';
             } else {
                 // The inline start of the splitter is its right edge in a right-to-left page, which is the
                 // same edge the first panel is measured from, so the offset needs no sign of its own.
-                entry.preview.style.insetInlineStart = offset;
+                entry.preview.style.insetInlineStart = distance;
                 entry.preview.style.insetBlockStart = '';
             }
         }
@@ -681,9 +763,21 @@ namespace BitBlazorUI {
             entry.preview.classList.remove('bit-spl-prv-on');
         }
 
-        private static previewPercent(entry: SplitterEntry, size: number): number {
-            const bounds = Splitter.getBounds(entry);
+        // A line placed out of the flow is measured from the inside of the root's border, while the panels
+        // start after its padding as well - so a splitter given padding of its own would draw the line that
+        // much short of the gutter it stands for. It cannot change under a drag, so it is read once.
+        private static getPreviewOffset(entry: SplitterEntry): number {
+            try {
+                const style = getComputedStyle(entry.root);
+                const value = parseFloat(entry.options.vertical ? style.paddingBlockStart : style.paddingInlineStart);
 
+                return isNaN(value) ? 0 : value;
+            } catch {
+                return 0;
+            }
+        }
+
+        private static previewPercent(size: number, bounds: SplitterBounds | null): number {
             return Splitter.toPercent(size, bounds === null ? 0 : bounds.total);
         }
 
@@ -750,11 +844,23 @@ namespace BitBlazorUI {
                 entry.root.classList.add('bit-spl-drg');
                 body.classList.add('bit-spl-drg-bdy');
                 body.classList.toggle('bit-spl-drg-vrt', entry.options.vertical);
-            } else {
-                entry.root.classList.remove('bit-spl-drg');
-                body.classList.remove('bit-spl-drg-bdy');
-                body.classList.remove('bit-spl-drg-vrt');
+                return;
             }
+
+            entry.root.classList.remove('bit-spl-drg');
+
+            // A second finger can be dragging a second splitter, and the page is still being resized until
+            // the last of them lets go.
+            if (Object.keys(Splitter._dragging).length > 0) return;
+
+            body.classList.remove('bit-spl-drg-bdy');
+            body.classList.remove('bit-spl-drg-vrt');
+        }
+
+        // A press that lands on the control folding the panel away is that control's, not the gutter's,
+        // however much of the gutter the control happens to cover.
+        private static isCollapseButton(target: EventTarget | null): boolean {
+            return target instanceof Element && target.closest(Splitter.COLLAPSE_BUTTON_SELECTOR) !== null;
         }
 
         // Right to left turns the row around, so the first panel sits at the right of the splitter and a

@@ -11,6 +11,18 @@ public class BitSplitterClassStyles
     public string? Root { get; set; }
 
     /// <summary>
+    /// The custom CSS class/style for the control on the gutter that folds the first panel of the BitSplitter
+    /// away and brings it back.
+    /// </summary>
+    public string? CollapseButton { get; set; }
+
+    /// <summary>
+    /// The custom CSS class/style for the icon of the control on the gutter that folds the first panel of the
+    /// BitSplitter away and brings it back.
+    /// </summary>
+    public string? CollapseButtonIcon { get; set; }
+
+    /// <summary>
     /// The custom CSS class/style for the first panel of the BitSplitter.
     /// </summary>
     public string? FirstPanel { get; set; }
