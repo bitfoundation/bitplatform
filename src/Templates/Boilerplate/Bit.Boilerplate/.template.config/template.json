@@ -609,6 +609,9 @@
                         "**/*.nuspec",
                         "src/Server/**/Data/Migrations/**",
                         "src/**/App_Data/**",
+                        // E2E tests against the deployed demo apps (adminpanel/todo/sales.bitplatform.dev and friends),
+                        // which only exist for this repository - a generated project has no such deployments.
+                        "src/Internal/**",
                         // Needs ProductController (Admin module) and ProductViewController + the product page (Sales
                         // module) at once, and "module" is a single choice, so it can only ever run against the
                         // template's own source tree.
@@ -736,6 +739,7 @@
                         "src/Tests/Features/Identity/EmailUniquenessIndexTests.cs",
                         "src/Tests/Features/Identity/TestAccountUtils.cs",
                         "src/Tests/Features/Identity/AccountErasureTests.cs",
+                        "src/Tests/Features/Identity/UnconfirmedUsersRetentionTests.cs",
                         "src/Tests/Features/Attachments/AttachmentMetadataStrippingTests.cs",
                         "src/Tests/Features/Identity/RoleAdministrationGuardTests.cs",
                         "src/Tests/Features/Identity/ConfirmPageTwoFactorTests.cs",
