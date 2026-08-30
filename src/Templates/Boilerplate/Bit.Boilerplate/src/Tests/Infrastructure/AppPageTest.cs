@@ -69,6 +69,14 @@ public class AppPageTest : PageTest
             options.Channel = "chromium-headless-shell";
         }
 
+        if (PlaywrightSettingsProvider.BrowserName is Microsoft.Playwright.BrowserType.Firefox)
+        {
+            // An automated firefox neither grants nor refuses a notification permission: no doorhanger is ever shown
+            // and Notification.requestPermission() simply stays pending, which hangs whatever awaited it. 2 is deny,
+            // so the answer comes back right away - the same "denied" chromium reports here without being told to.
+            options.FirefoxUserPrefs = new Dictionary<string, object> { ["permissions.default.desktop-notification"] = 2 };
+        }
+
         return options;
     }
 

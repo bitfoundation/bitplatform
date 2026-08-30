@@ -10,7 +10,8 @@ namespace Boilerplate.Tests.Features.PushNotification;
 /// out before <c>SetEnabled</c>, leaving anyone who had opted out stuck that way and the automatic re-subscribe
 /// short circuited - while the same thing from the settings page, which has no such pre-flight check, worked.</item>
 /// </list>
-/// Playwright's chromium reports the permission as denied, which is the case both points are about.
+/// The permission has to be denied for either point to be observable, which is what chromium reports on its own and
+/// what firefox is launched to report (See AppPageTest.LaunchOptionsAsync).
 /// </summary>
 [TestClass, TestCategory("UITest"), Retry(2)]
 public partial class PushNotificationsToggleUITests : AppPageTest
@@ -26,10 +27,11 @@ public partial class PushNotificationsToggleUITests : AppPageTest
         await Page.GotoAsync(server.WebAppServerAddress.ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
 
         var permission = await Page.EvaluateAsync<string>("() => Notification.permission");
-        if (permission is "granted")
+        if (permission is not "denied")
         {
-            // Nothing below is meaningful where notifications are granted: no refusal can be observed.
-            Assert.Inconclusive("This test needs a browser that does not grant notification permission.");
+            // Nothing below is meaningful without a refusal to observe. "default" is no better than "granted" here:
+            // the request it leads to is answered by nobody in an automated browser, so it never settles at all.
+            Assert.Inconclusive($"This test needs a browser whose notification permission is denied, but it is '{permission}'.");
             return;
         }
 
