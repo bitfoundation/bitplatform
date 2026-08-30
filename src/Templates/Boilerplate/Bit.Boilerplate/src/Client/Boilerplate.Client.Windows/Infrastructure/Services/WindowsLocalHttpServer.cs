@@ -1,4 +1,4 @@
-// [mirror] loopback interop server - endpoints, auth and static file serving - keep in sync with:
+﻿// [mirror] loopback interop server - endpoints, auth and static file serving - keep in sync with:
 // - src/Client/Boilerplate.Client.Maui/Infrastructure/Services/MauiLocalHttpServer.cs
 
 using System.Net;
@@ -39,7 +39,9 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
 
         var webAppOrigin = clientWindowsSettings.WebAppUrl ?? absoluteServerAddressProvider.GetAddress();
 
-        var staticFiles = Directory.GetFiles(AppContext.BaseDirectory, "*.*", SearchOption.AllDirectories);
+        string[] staticFiles = Directory.Exists(AppContext.BaseDirectory)
+            ? Directory.GetFiles(AppContext.BaseDirectory, "*.*", SearchOption.AllDirectories)
+            : [];
 
         async Task GoBackToApp()
         {
