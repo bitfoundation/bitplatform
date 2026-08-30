@@ -36,7 +36,10 @@ public partial class ResponseCachePolicyClientCacheTests
     {
         var httpContext = await RunPolicy(tenantId: null);
 
-        Assert.AreEqual(TimeSpan.FromSeconds(MaxAgeSeconds), httpContext.Response.GetTypedHeaders().CacheControl?.MaxAge);
+        var cacheControl = httpContext.Response.GetTypedHeaders().CacheControl;
+
+        Assert.IsNotNull(cacheControl);
+        Assert.AreEqual(TimeSpan.FromSeconds(MaxAgeSeconds), cacheControl.MaxAge);
     }
 
     [TestMethod]

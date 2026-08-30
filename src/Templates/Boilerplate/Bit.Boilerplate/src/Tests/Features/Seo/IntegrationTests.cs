@@ -88,7 +88,7 @@ public partial class IntegrationTests
         var strayText = XDocument.Parse(siteMapIndex).Root!.Nodes()
             .OfType<XText>()
             .Select(text => text.Value.Trim())
-            .Where(text => string.IsNullOrEmpty(text) is false)
+            .Where(text => string.IsNullOrWhiteSpace(text) is false)
             .ToArray();
 
         Assert.IsEmpty(strayText, $"<sitemapindex> may only contain <sitemap> elements, but it also carries: {string.Join(" | ", strayText)}");

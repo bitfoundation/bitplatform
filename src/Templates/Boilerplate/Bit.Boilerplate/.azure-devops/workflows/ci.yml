@@ -28,6 +28,12 @@ jobs:
     displayName: 'Install Node.js'
 
   - task: Bash@3
+    displayName: 'Verify formatting'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet format whitespace --folder . --verify-no-changes'
+
+  - task: Bash@3
     displayName: 'Workload restore'
     inputs:
       targetType: 'inline'

@@ -67,7 +67,7 @@ public partial class TenantInvitationIsolationTests
 
         var membersWhilePending = await roleManagementController.GetUsers(demoRoleId, TestContext.CancellationToken);
 
-        Assert.IsFalse(membersWhilePending.Any(u => u.Id == inviteeUserId),
+        Assert.DoesNotContain(u => u.Id == inviteeUserId, membersWhilePending,
             $"A pending invitee was returned by RoleManagement/GetUsers, which hands the tenant admin her e-mail, phone number, full name, gender and birth date for an invitation she never accepted. Returned: [{string.Join(", ", membersWhilePending.Select(u => u.Email))}].");
 
         // Non-vacuity: the very same call must find her the moment the membership is accepted. Without this the
@@ -76,7 +76,7 @@ public partial class TenantInvitationIsolationTests
 
         var membersOnceAccepted = await roleManagementController.GetUsers(demoRoleId, TestContext.CancellationToken);
 
-        Assert.IsTrue(membersOnceAccepted.Any(u => u.Id == inviteeUserId),
+        Assert.Contains(u => u.Id == inviteeUserId, membersOnceAccepted,
             "Once the invitation is accepted the member must show up - otherwise the filter is simply hiding everyone and proves nothing.");
 
         // ---- Back to pending, and this time she declines it ----

@@ -94,7 +94,7 @@ public partial class SessionsSection
 
     private static string GetImageUrl(string? deviceInfo)
     {
-        if (string.IsNullOrEmpty(deviceInfo)) return "unknown.png";
+        if (string.IsNullOrWhiteSpace(deviceInfo)) return "unknown.png";
 
         var d = deviceInfo.ToLowerInvariant();
 

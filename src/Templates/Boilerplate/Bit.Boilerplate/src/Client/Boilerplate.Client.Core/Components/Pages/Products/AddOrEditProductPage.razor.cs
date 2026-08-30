@@ -128,7 +128,7 @@ public partial class AddOrEditProductPage
     private async Task HandleOnUploadFailed(BitFileInfo fileInfo)
     {
         isManagingFile = false;
-        SnackBarService.Error(string.IsNullOrEmpty(fileInfo.Message) ? Localizer[nameof(AppStrings.FileUploadFailed)] : fileInfo.Message);
+        SnackBarService.Error(string.IsNullOrWhiteSpace(fileInfo.Message) ? Localizer[nameof(AppStrings.FileUploadFailed)] : fileInfo.Message);
     }
 
     private async Task RemoveProductImage()

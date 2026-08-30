@@ -91,7 +91,7 @@ public class IdentityEmailDeliveryTests
         var captured = await server.WaitForCapturedEmail(email,
             e => e.Kind is CapturedEmailKind.ResetPassword, TestContext.CancellationToken);
 
-        Assert.IsFalse(string.IsNullOrEmpty(captured.Token),
+        Assert.IsFalse(string.IsNullOrWhiteSpace(captured.Token),
             "The legitimate request that follows must still deliver a usable reset-password code.");
     }
 

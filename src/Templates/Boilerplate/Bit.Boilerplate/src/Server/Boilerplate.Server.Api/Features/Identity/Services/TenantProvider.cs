@@ -44,7 +44,7 @@ public partial class TenantProvider
 
         var host = httpContext.Request.GetWebAppUrl().Host.ToLowerInvariant();
 
-        if (string.IsNullOrEmpty(host) is false)
+        if (string.IsNullOrWhiteSpace(host) is false)
         {
             var tenants = GetTenantsLookup();
 
@@ -73,7 +73,7 @@ public partial class TenantProvider
 #pragma warning restore NonAsyncEFCoreMethodsUsageAnalyzer
             return new TenantsLookup(
                 IdsByName: tenants.ToDictionary(t => t.Name!.ToLowerInvariant(), t => t.Id, StringComparer.OrdinalIgnoreCase),
-                IdsByDomain: tenants.Where(t => string.IsNullOrEmpty(t.Domain) is false)
+                IdsByDomain: tenants.Where(t => string.IsNullOrWhiteSpace(t.Domain) is false)
                                     .ToDictionary(t => t.Domain!.ToLowerInvariant(), t => t.Id, StringComparer.OrdinalIgnoreCase));
         },
         options => options.SetDuration(TimeSpan.FromHours(1)).SetPriority(CacheItemPriority.High));

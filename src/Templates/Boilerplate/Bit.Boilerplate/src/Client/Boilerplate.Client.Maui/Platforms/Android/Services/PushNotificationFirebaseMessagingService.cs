@@ -42,7 +42,7 @@ public partial class PushNotificationFirebaseMessagingService : FirebaseMessagin
             var title = notification!.Title;
             var body = notification.Body;
 
-            if (string.IsNullOrEmpty(title) is false)
+            if (string.IsNullOrWhiteSpace(title) is false)
             {
                 await LocalNotificationCenter.Current.Show(new()
                 {

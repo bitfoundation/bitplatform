@@ -60,10 +60,10 @@ public partial class AiChatPanelThemeUITests : AiChatPanelTestBase
         // NAME the app maps them to (declared on the element as bit-theme-dark / bit-theme-light, e.g. fluent2-dark) -
         // so what is requested and what is expected are tracked separately.
         var initialTheme = await htmlElement.GetAttributeAsync("bit-theme");
-        Assert.IsFalse(string.IsNullOrEmpty(initialTheme), "The <html> element should carry a bit-theme attribute.");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(initialTheme), "The <html> element should carry a bit-theme attribute.");
         var darkTheme = await htmlElement.GetAttributeAsync("bit-theme-dark");
         var lightTheme = await htmlElement.GetAttributeAsync("bit-theme-light");
-        Assert.IsFalse(string.IsNullOrEmpty(darkTheme) || string.IsNullOrEmpty(lightTheme),
+        Assert.IsFalse(string.IsNullOrWhiteSpace(darkTheme) || string.IsNullOrWhiteSpace(lightTheme),
             "The <html> element should declare its dark and light theme names (bit-theme-dark / bit-theme-light).");
         var requestedTheme = initialTheme == darkTheme ? "light" : "dark";
         var expectedThemeName = initialTheme == darkTheme ? lightTheme : darkTheme;

@@ -69,7 +69,7 @@ public partial class TwoFactorAuthTests : AppPageTest
             ?? throw new InvalidOperationException("The authenticator setup (otpauth) link was not found.");
 
         var secret = Regex.Match(authenticatorUri, "secret=([^&]+)").Groups[1].Value;
-        Assert.IsFalse(string.IsNullOrEmpty(secret), "Failed to read the authenticator shared secret from the QR link.");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(secret), "Failed to read the authenticator shared secret from the QR link.");
         return secret;
     }
 

@@ -47,7 +47,7 @@ public class AccountErasureTests
 
         var blobPaths = await ReadAttachmentPaths(server, userId);
 
-        Assert.AreEqual(2, blobPaths.Length, "One upload writes the small and the original kind, so there are two blobs to erase.");
+        Assert.HasCount(2, blobPaths, "One upload writes the small and the original kind, so there are two blobs to erase.");
 
         foreach (var blobPath in blobPaths)
         {

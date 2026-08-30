@@ -73,7 +73,7 @@ public class AppPageTest : PageTest
         // The shell has no UI at all, so a debugging run must keep the full browser. .runsettings documents both switches.
         var isHeadedRun = options.Headless is false
             || Environment.GetEnvironmentVariable("HEADED") is "1"
-            || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("PWDEBUG")) is false;
+            || string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("PWDEBUG")) is false;
 
         // The channel names a chromium build, so it must not be handed to a firefox / webkit run (See .runsettings' BROWSER).
         // Qualified because the inherited BrowserType property (an IBrowserType) shadows the type of the same name.

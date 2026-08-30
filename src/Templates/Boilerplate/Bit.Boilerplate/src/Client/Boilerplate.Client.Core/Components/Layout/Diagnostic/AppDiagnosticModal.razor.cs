@@ -159,7 +159,7 @@ public partial class AppDiagnosticModal
     {
         allLogs = logs;
 
-        var allCategories = allLogs.Where(c => string.IsNullOrEmpty(c.Category) is false)
+        var allCategories = allLogs.Where(c => string.IsNullOrWhiteSpace(c.Category) is false)
                                    .Select(l => l.Category!)
                                    .Distinct()
                                    .Order()
@@ -194,7 +194,7 @@ public partial class AppDiagnosticModal
 
         IEnumerable<DiagnosticLogDto> FilterSearchText(DiagnosticLogDto[] logs)
         {
-            if (string.IsNullOrEmpty(searchText)) return logs;
+            if (string.IsNullOrWhiteSpace(searchText)) return logs;
 
             if (enableRegExp)
             {

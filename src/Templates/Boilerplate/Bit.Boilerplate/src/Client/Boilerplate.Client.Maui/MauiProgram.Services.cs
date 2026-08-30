@@ -84,7 +84,7 @@ public static partial class MauiProgram
                 });
 
             var useOtlpExporter = string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false
-                || string.IsNullOrEmpty(builder.Configuration["OTEL_EXPORTER_OTLP_LOGS_ENDPOINT"]) is false;
+                || string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_LOGS_ENDPOINT"]) is false;
 
             if (useOtlpExporter)
             {
@@ -92,7 +92,7 @@ public static partial class MauiProgram
             }
 
             //#if (appInsights == true)
-            if (string.IsNullOrEmpty(settings.ApplicationInsights?.ConnectionString) is false)
+            if (string.IsNullOrWhiteSpace(settings.ApplicationInsights?.ConnectionString) is false)
             {
                 openTelemetry.UseAzureMonitorExporter(options =>
                 {

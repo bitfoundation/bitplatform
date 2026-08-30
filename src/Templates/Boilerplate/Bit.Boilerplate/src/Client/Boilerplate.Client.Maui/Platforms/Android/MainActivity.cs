@@ -105,7 +105,7 @@ public partial class MainActivity : MauiAppCompatActivity
             return;
         }
 
-        _ = Routes.OpenUniversalLink(string.IsNullOrEmpty(path) ? PageUrls.Home : path);
+        _ = Routes.OpenUniversalLink(string.IsNullOrWhiteSpace(path) ? PageUrls.Home : path);
     }
 
     //#if (notification == true)
@@ -116,7 +116,7 @@ public partial class MainActivity : MauiAppCompatActivity
 
         var dataString = intent.GetStringExtra(RequestConstants.ReturnRequest);
         string? pageUrl = null;
-        if (string.IsNullOrEmpty(dataString) is false)
+        if (string.IsNullOrWhiteSpace(dataString) is false)
         {
             try
             {
@@ -140,7 +140,7 @@ public partial class MainActivity : MauiAppCompatActivity
         }
 
         pageUrl ??= intent?.Extras?.Get("pageUrl")?.ToString();
-        if (string.IsNullOrEmpty(pageUrl) is false)
+        if (string.IsNullOrWhiteSpace(pageUrl) is false)
         {
             _ = Routes.OpenUniversalLink(pageUrl ?? PageUrls.Home); // The time that the notification received, the app was closed.
         }

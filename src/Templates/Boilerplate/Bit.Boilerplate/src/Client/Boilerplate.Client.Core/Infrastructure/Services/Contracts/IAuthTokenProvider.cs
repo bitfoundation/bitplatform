@@ -14,7 +14,7 @@ public interface IAuthTokenProvider
 
     public static ClaimsPrincipal ParseAccessToken(string? accessToken, bool validateExpiry)
     {
-        if (string.IsNullOrEmpty(accessToken) is true)
+        if (string.IsNullOrWhiteSpace(accessToken) is true)
             return Anonymous();
 
         IEnumerable<Claim>? claims;

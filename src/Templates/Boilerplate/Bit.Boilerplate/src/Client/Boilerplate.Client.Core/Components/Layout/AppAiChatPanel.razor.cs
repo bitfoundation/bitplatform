@@ -291,7 +291,7 @@ public partial class AppAiChatPanel
         greetingMessage = new()
         {
             Role = AiChatMessageRole.Assistant,
-            Content = Localizer[nameof(AppStrings.AiChatPanelInitialResponse), string.IsNullOrEmpty(CurrentUser?.DisplayName) ? string.Empty : $" {CurrentUser.DisplayName}"],
+            Content = Localizer[nameof(AppStrings.AiChatPanelInitialResponse), string.IsNullOrWhiteSpace(CurrentUser?.DisplayName) ? string.Empty : $" {CurrentUser.DisplayName}"],
         };
         chatMessages = [greetingMessage];
     }

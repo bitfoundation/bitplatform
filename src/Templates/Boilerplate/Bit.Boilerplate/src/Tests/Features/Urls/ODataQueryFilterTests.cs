@@ -61,7 +61,7 @@ public class ODataQueryFilterTests
     {
         Assert.AreEqual("IsActive eq true", new ODataQuery { AndFilter = "IsActive eq true" }.Filter);
 
-        // Empty, not just null: ToString() guards with IsNullOrEmpty, so an empty Filter is a state this type expects -
+        // Empty, not just null: ToString() guards with IsNullOrWhiteSpace, so an empty Filter is a state this type expects -
         // and appending to it used to produce a leading " and ", which is not valid OData.
         Assert.AreEqual("IsActive eq true", new ODataQuery { Filter = "", AndFilter = "IsActive eq true" }.Filter);
     }

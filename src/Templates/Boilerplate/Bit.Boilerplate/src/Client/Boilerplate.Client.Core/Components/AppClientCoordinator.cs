@@ -79,6 +79,7 @@ public partial class AppClientCoordinator : AppComponentBase
             {
                 var userAgentData = await userAgent.Extract();
                 TelemetryContext.Platform = string.Join(' ', [userAgentData.Manufacturer, userAgentData.OsName, userAgentData.Name, "browser"]);
+                await cultureService.PersistCurrentCulture();
             }
             await TimeZoneService.ApplyPreferredTimeZone();
             TelemetryContext.PageUrl = new Uri(NavigationManager.Uri).GetUrlWithMaskedQueryValues();
@@ -130,7 +131,7 @@ public partial class AppClientCoordinator : AppComponentBase
 
         var remainingQuery = parsedQuery.ToString();
 
-        return ($"{uriValue[..queryStartIndex]}{(string.IsNullOrEmpty(remainingQuery) ? "" : $"?{remainingQuery}")}", replace, forceLoad);
+        return ($"{uriValue[..queryStartIndex]}{(string.IsNullOrWhiteSpace(remainingQuery) ? "" : $"?{remainingQuery}")}", replace, forceLoad);
     }
 
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)

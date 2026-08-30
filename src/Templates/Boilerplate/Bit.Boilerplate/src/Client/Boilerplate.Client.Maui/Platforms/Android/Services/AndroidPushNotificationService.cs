@@ -41,7 +41,7 @@ public partial class AndroidPushNotificationService : PushNotificationServiceBas
             using CancellationTokenSource cts = new(TimeSpan.FromSeconds(15));
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
 
-            while (string.IsNullOrEmpty(Token))
+            while (string.IsNullOrWhiteSpace(Token))
             {
                 // After the NotificationsSupported Task completes with a result of true,
                 // we use FirebaseMessaging.Instance.GetToken.

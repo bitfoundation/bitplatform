@@ -23,7 +23,7 @@ public class CultureCookieParsingTests
     [DataRow("c%3Den-US%7Cuic%3Den-US", "en-US", DisplayName = "a percent-encoded cookie value")]
     public void AWellFormedCultureCookie_Should_YieldItsUiCulture(string cookieValue, string expected)
     {
-        Assert.AreEqual(expected, Boilerplate.Client.Web.Program.ExtractUiCulture(cookieValue));
+        Assert.AreEqual(expected, CultureService.ExtractUiCulture(cookieValue));
     }
 
     /// <summary>
@@ -43,7 +43,7 @@ public class CultureCookieParsingTests
     [DataRow("c=en-US|uic=   ", DisplayName = "a whitespace UI culture")]
     public void AMalformedCultureCookie_Should_BeIgnoredRatherThanGuessedAt(string? cookieValue)
     {
-        Assert.IsNull(Boilerplate.Client.Web.Program.ExtractUiCulture(cookieValue),
+        Assert.IsNull(CultureService.ExtractUiCulture(cookieValue),
             "Returning anything non-null here shadows the browser's own language, which is the fallback the user " +
             "would otherwise get; throwing aborts Main before RunAsync and the app never renders.");
     }

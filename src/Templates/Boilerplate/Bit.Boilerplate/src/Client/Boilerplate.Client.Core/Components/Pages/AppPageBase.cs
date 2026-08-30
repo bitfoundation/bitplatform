@@ -71,7 +71,7 @@ public abstract partial class AppPageBase : AppComponentBase
 
         if (InPrerenderSession) return;
 
-        if (string.IsNullOrEmpty(culture)) return;
+        if (string.IsNullOrWhiteSpace(culture)) return;
 
         if (CultureInfoManager.InvariantGlobalization || CultureInfoManager.SupportedCultures.Any(sc => string.Equals(sc.Culture.Name, culture, StringComparison.InvariantCultureIgnoreCase)) is false)
         {

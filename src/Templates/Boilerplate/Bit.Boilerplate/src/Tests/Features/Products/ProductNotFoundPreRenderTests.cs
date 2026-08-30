@@ -49,7 +49,9 @@ public partial class ProductNotFoundPreRenderTests
             "The 404 carried no not-found page - the pre-rendered html was discarded, leaving the visitor a blank page.");
 
         // A faulted response must never be stored, or the 404 outlives the product's creation.
-        Assert.IsFalse(response.Headers.CacheControl?.Public is true,
+        var isPubliclyCacheable = response.Headers.CacheControl?.Public is true;
+
+        Assert.IsFalse(isPubliclyCacheable,
             "A 404 must not be offered to shared caches.");
     }
 }

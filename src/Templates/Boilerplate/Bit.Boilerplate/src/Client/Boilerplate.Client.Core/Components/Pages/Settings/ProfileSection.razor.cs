@@ -113,7 +113,7 @@ public partial class ProfileSection
     private async Task HandleOnUploadFailed(BitFileInfo fileInfo)
     {
         isUploading = false;
-        SnackBarService.Error(string.IsNullOrEmpty(fileInfo.Message) ? Localizer[nameof(AppStrings.FileUploadFailed)] : fileInfo.Message);
+        SnackBarService.Error(string.IsNullOrWhiteSpace(fileInfo.Message) ? Localizer[nameof(AppStrings.FileUploadFailed)] : fileInfo.Message);
     }
 
     private void PublishUserDataUpdated()

@@ -4,6 +4,12 @@ namespace Boilerplate.Client.Core.Infrastructure.Services;
 
 public partial class CultureService
 {
+    /// <summary>
+    /// What the server resolves a culture-less url through (See <c>UseCultureUrlRedirection</c>) and what the WASM
+    /// head boots into before <c>host.RunAsync()</c>.
+    /// </summary>
+    public const string CultureCookieName = ".AspNetCore.Culture";
+
     [AutoInject] private Cookie cookie = default!;
     [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private IStorageService storageService = default!;
@@ -21,15 +27,7 @@ public partial class CultureService
         }
         else
         {
-            await cookie.Set(new()
-            {
-                Name = ".AspNetCore.Culture",
-                Value = $"c={cultureName}|uic={cultureName}",
-                MaxAge = 3600 * 24 * 30,
-                Path = "/",
-                SameSite = SameSite.Strict,
-                Secure = AppEnvironment.IsDevelopment() is false
-            });
+            await SetCultureCookie(cultureName);
         }
 
         var currentUri = new Uri(navigationManager.Uri);
@@ -53,6 +51,63 @@ public partial class CultureService
         // Blazor Server (no in-place switch there) and the wasm satellite-failure fall-back: a full reload of the
         // current url, re-addressed to the new culture when the url carries one.
         navigationManager.NavigateTo(currentUri.GetUrlWithCulture(cultureName), forceLoad: true, replace: true);
+    }
+
+    /// <summary>
+    /// Server.Web may not write the culture cookie on a pre-rendered page - a Set-Cookie makes the whole response
+    /// ineligible for the CDN edge cache (See <c>App.razor.cs</c>) - so a visitor who lands directly on a
+    /// <c>/{culture}/</c> url, from a search result or a shared link, has that culture persisted here instead, once
+    /// the client is running. Without it their next culture-less visit would fall back to <c>Accept-Language</c>.
+    /// </summary>
+    public async Task PersistCurrentCulture()
+    {
+        if (CultureInfoManager.InvariantGlobalization || AppPlatform.IsBlazorHybrid)
+            return; // Hybrid persists the culture in storage instead, and has no culture-prefixed urls to land on.
+
+        var currentCulture = CultureInfo.CurrentUICulture.Name;
+
+        if (string.Equals(ExtractUiCulture(await cookie.GetValue(CultureCookieName)), currentCulture, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        await SetCultureCookie(currentCulture);
+    }
+
+    private async Task SetCultureCookie(string cultureName)
+    {
+        await cookie.Set(new()
+        {
+            Name = CultureCookieName,
+            Value = $"c={cultureName}|uic={cultureName}",
+            MaxAge = 3600 * 24 * 30,
+            Path = "/",
+            // Lax, not Strict: a Strict cookie is withheld on a cross-site top level navigation, so a visitor arriving
+            // from a search result at a culture-less url would be redirected into their browser's language rather than
+            // the one they picked.
+            SameSite = SameSite.Lax,
+            Secure = AppEnvironment.IsDevelopment() is false
+        });
+    }
+
+    /// <summary>
+    /// The cookie carries both cultures as <c>c=&lt;culture&gt;|uic=&lt;uiCulture&gt;</c>; only the UI culture is read
+    /// back, and a value that names none is treated as absent rather than as the default culture.
+    /// </summary>
+    public static string? ExtractUiCulture(string? cultureCookie)
+    {
+        if (cultureCookie is null)
+            return null;
+
+        cultureCookie = Uri.UnescapeDataString(cultureCookie);
+
+        const string uiCultureMarker = "|uic=";
+        var uiCultureIndex = cultureCookie.IndexOf(uiCultureMarker, StringComparison.InvariantCultureIgnoreCase);
+
+        if (uiCultureIndex is -1)
+            return null;
+
+        var uiCulture = cultureCookie[(uiCultureIndex + uiCultureMarker.Length)..];
+
+        return string.IsNullOrWhiteSpace(uiCulture) ? null : uiCulture;
     }
 
     private static readonly HashSet<string> loadedSatelliteLanguages = new(StringComparer.OrdinalIgnoreCase);

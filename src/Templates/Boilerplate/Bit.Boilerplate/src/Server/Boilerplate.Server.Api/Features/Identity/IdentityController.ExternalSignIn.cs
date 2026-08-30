@@ -50,7 +50,7 @@ public partial class IdentityController
 
             var isLinked = user is not null;
 
-            if (user is null && (string.IsNullOrEmpty(email) is false || string.IsNullOrEmpty(phoneNumber) is false))
+            if (user is null && (string.IsNullOrWhiteSpace(email) is false || string.IsNullOrWhiteSpace(phoneNumber) is false))
             {
                 user = await userManager.FindUser(new() { Email = email, PhoneNumber = phoneNumber });
             }
@@ -70,12 +70,12 @@ public partial class IdentityController
 
                 await userStore.SetUserNameAsync(user, Guid.CreateVersion7().ToString(), cancellationToken);
 
-                if (string.IsNullOrEmpty(email) is false)
+                if (string.IsNullOrWhiteSpace(email) is false)
                 {
                     await userEmailStore.SetEmailAsync(user, email, cancellationToken);
                 }
 
-                if (string.IsNullOrEmpty(phoneNumber) is false)
+                if (string.IsNullOrWhiteSpace(phoneNumber) is false)
                 {
                     await userPhoneNumberStore.SetPhoneNumberAsync(user, phoneNumber!, cancellationToken);
                 }
@@ -115,13 +115,13 @@ public partial class IdentityController
             }
 
             // Confirmation is only as good as the provider's own verification of the identifier
-            if (string.IsNullOrEmpty(email) is false && string.Equals(email, user.Email, StringComparison.OrdinalIgnoreCase) && await userManager.IsEmailConfirmedAsync(user) is false)
+            if (string.IsNullOrWhiteSpace(email) is false && string.Equals(email, user.Email, StringComparison.OrdinalIgnoreCase) && await userManager.IsEmailConfirmedAsync(user) is false)
             {
                 await userEmailStore.SetEmailConfirmedAsync(user, true, cancellationToken);
                 await userManager.UpdateAsync(user);
             }
 
-            if (string.IsNullOrEmpty(phoneNumber) is false && string.Equals(phoneNumber, user.PhoneNumber, StringComparison.OrdinalIgnoreCase) && await userManager.IsPhoneNumberConfirmedAsync(user) is false)
+            if (string.IsNullOrWhiteSpace(phoneNumber) is false && string.Equals(phoneNumber, user.PhoneNumber, StringComparison.OrdinalIgnoreCase) && await userManager.IsPhoneNumberConfirmedAsync(user) is false)
             {
                 await userPhoneNumberStore.SetPhoneNumberConfirmedAsync(user, true, cancellationToken);
                 await userManager.UpdateAsync(user);
@@ -133,19 +133,19 @@ public partial class IdentityController
             var refreshToken = info.AuthenticationTokens?.FirstOrDefault(t => t.Name == "refresh_token")?.Value;
             var accessToken = info.AuthenticationTokens?.FirstOrDefault(t => t.Name == "access_token")?.Value;
             var expiresAt = info.AuthenticationTokens?.FirstOrDefault(t => t.Name == "expires_at")?.Value;
-            if (string.IsNullOrEmpty(idToken) is false)
+            if (string.IsNullOrWhiteSpace(idToken) is false)
             {
                 await userManager.SetAuthenticationTokenAsync(user, info.LoginProvider, "id_token", idToken);
             }
-            if (string.IsNullOrEmpty(refreshToken) is false)
+            if (string.IsNullOrWhiteSpace(refreshToken) is false)
             {
                 await userManager.SetAuthenticationTokenAsync(user, info.LoginProvider, "refresh_token", refreshToken);
             }
-            if (string.IsNullOrEmpty(accessToken) is false)
+            if (string.IsNullOrWhiteSpace(accessToken) is false)
             {
                 await userManager.SetAuthenticationTokenAsync(user, info.LoginProvider, "access_token", accessToken);
             }
-            if (string.IsNullOrEmpty(expiresAt) is false)
+            if (string.IsNullOrWhiteSpace(expiresAt) is false)
             {
                 await userManager.SetAuthenticationTokenAsync(user, info.LoginProvider, "expires_at", expiresAt);
             }
@@ -181,7 +181,7 @@ public partial class IdentityController
         var schemes = await authenticationSchemeProvider.GetAllSchemesAsync();
 
         var providers = schemes
-            .Where(s => string.IsNullOrEmpty(s.DisplayName) is false && s.Name != IdentityConstants.ExternalScheme)
+            .Where(s => string.IsNullOrWhiteSpace(s.DisplayName) is false && s.Name != IdentityConstants.ExternalScheme)
             .Select(s => s.Name)
             .ToArray();
 

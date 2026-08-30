@@ -201,7 +201,7 @@ public static class IDistributedApplicationBuilderExtensions
             )
         {
             var domain = builder.Configuration["Parameters:cloudflare-tunnel-web-domain"];
-            if (string.IsNullOrEmpty(domain))
+            if (string.IsNullOrWhiteSpace(domain))
                 return;
 
             var tunnel = builder.AddCloudflareTunnel("cloudflare-tunnel");
@@ -211,7 +211,7 @@ public static class IDistributedApplicationBuilderExtensions
             //#if (api == "Standalone")
             // Standalone's API is a separate server, so expose it on its own hostname when one is configured.
             var apiDomain = builder.Configuration["Parameters:cloudflare-tunnel-api-domain"];
-            if (string.IsNullOrEmpty(apiDomain) is false)
+            if (string.IsNullOrWhiteSpace(apiDomain) is false)
                 serverApiProject.WithCloudflareTunnel(tunnel, hostname: apiDomain);
             //#endif
         }

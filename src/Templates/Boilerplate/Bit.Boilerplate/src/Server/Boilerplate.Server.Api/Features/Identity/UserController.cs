@@ -375,7 +375,7 @@ public partial class UserController : AppControllerBase, IUserController
         {
             if (request.ResetSharedKey)
                 throw new BadRequestException(Localizer[nameof(AppStrings.TfaResetSharedKeyError)]);
-            else if (string.IsNullOrEmpty(request.TwoFactorCode))
+            else if (string.IsNullOrWhiteSpace(request.TwoFactorCode))
                 throw new BadRequestException(Localizer[nameof(AppStrings.TfaEmptyCodeError)]);
             else if (await userManager.VerifyTwoFactorTokenAsync(user, userManager.Options.Tokens.AuthenticatorTokenProvider, request.TwoFactorCode) is false)
                 throw new BadRequestException(Localizer[nameof(AppStrings.TfaInvalidCodeError)]);
@@ -405,7 +405,7 @@ public partial class UserController : AppControllerBase, IUserController
         //}
 
         var unformattedKey = await userManager.GetAuthenticatorKeyAsync(user);
-        if (string.IsNullOrEmpty(unformattedKey))
+        if (string.IsNullOrWhiteSpace(unformattedKey))
         {
             IUserAuthenticatorKeyStore<User> userAuthenticatorKeyStore = (IUserAuthenticatorKeyStore<User>)userStore;
             await userAuthenticatorKeyStore.SetAuthenticatorKeyAsync(user,
@@ -413,7 +413,7 @@ public partial class UserController : AppControllerBase, IUserController
             await userStore.UpdateAsync(user, cancellationToken);
             unformattedKey = await userManager.GetAuthenticatorKeyAsync(user);
 
-            if (string.IsNullOrEmpty(unformattedKey))
+            if (string.IsNullOrWhiteSpace(unformattedKey))
             {
                 throw new NotSupportedException("The user manager must produce an authenticator key after reset.");
             }

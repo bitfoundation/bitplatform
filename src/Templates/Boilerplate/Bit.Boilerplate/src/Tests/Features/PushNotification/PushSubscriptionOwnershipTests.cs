@@ -429,7 +429,8 @@ public partial class PushSubscriptionOwnershipTests
             var secondRow = await ReadSubscription(server, secondDeviceId, TestContext.CancellationToken);
             var firstRowAfterwards = await ReadSubscription(server, firstDeviceId, TestContext.CancellationToken);
 
-            Assert.AreEqual(firstRow.UserSessionId, secondRow?.UserSessionId,
+            Assert.IsNotNull(secondRow);
+            Assert.AreEqual(firstRow.UserSessionId, secondRow.UserSessionId,
                 "The device the session now reports must end up owning it.");
 
             Assert.IsNull(firstRowAfterwards?.UserSessionId,
@@ -498,7 +499,8 @@ public partial class PushSubscriptionOwnershipTests
             resubscribeResponse.EnsureSuccessStatusCode();
 
             var afterResubscribe = await ReadSubscription(server, deviceId, TestContext.CancellationToken);
-            Assert.AreEqual("channel-on-again", afterResubscribe?.PushChannel, "Toggling back on must store a fresh, deliverable subscription.");
+            Assert.IsNotNull(afterResubscribe);
+            Assert.AreEqual("channel-on-again", afterResubscribe.PushChannel, "Toggling back on must store a fresh, deliverable subscription.");
         }
         finally
         {

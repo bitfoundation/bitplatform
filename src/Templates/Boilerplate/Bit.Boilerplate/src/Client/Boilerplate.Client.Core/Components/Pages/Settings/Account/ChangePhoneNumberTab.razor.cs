@@ -27,14 +27,14 @@ public partial class ChangePhoneNumberTab
     {
         await base.OnInitAsync();
 
-        if (string.IsNullOrEmpty(PhoneNumberQueryString) is false)
+        if (string.IsNullOrWhiteSpace(PhoneNumberQueryString) is false)
         {
             showConfirmation = true;
             isPhoneNumberUnavailable = false;
             changeModel.PhoneNumber = PhoneNumberQueryString;
             sendModel.PhoneNumber = PhoneNumberQueryString;
 
-            if (string.IsNullOrEmpty(PhoneNumberTokenQueryString) is false)
+            if (string.IsNullOrWhiteSpace(PhoneNumberTokenQueryString) is false)
             {
                 changeModel.Token = PhoneNumberTokenQueryString;
 

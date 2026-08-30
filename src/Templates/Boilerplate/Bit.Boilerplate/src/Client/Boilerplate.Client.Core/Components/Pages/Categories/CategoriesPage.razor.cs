@@ -39,9 +39,9 @@ public partial class CategoriesPage
             };
 
             var filter = string.Join(" and ", req.Filters
-                .Where(f => string.IsNullOrEmpty(f.Value?.ToString()) is false)
+                .Where(f => string.IsNullOrWhiteSpace(f.Value?.ToString()) is false)
                 .Select(f => $"contains(tolower({f.ColumnId}),'{f.Value!.ToString()!.ToLower().Replace("'", "''")}')"));
-            if (string.IsNullOrEmpty(filter) is false)
+            if (string.IsNullOrWhiteSpace(filter) is false)
             {
                 query.Filter = filter;
             }

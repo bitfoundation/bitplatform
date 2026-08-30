@@ -154,11 +154,14 @@ public partial class AppMenu
         currentTimeZoneId = (await TimeZoneService.GetCurrentTimeZone()).Id;
 
         // Rebuilt on every open rather than cached, because the current zone leads the list and changes with it.
+        // Android's tzdata carries the IANA links as ids of their own ("Iran" beside "Asia/Tehran"), and both render
+        // the same text, so rows that read alike are dropped - after the ordering, which keeps the current zone's one.
         timeZones = [.. TimeZoneInfo.GetSystemTimeZones()
             .OrderByDescending(tz => string.Equals(tz.Id, currentTimeZoneId, StringComparison.OrdinalIgnoreCase))
             .ThenBy(tz => tz.BaseUtcOffset)
             .ThenBy(tz => tz.Id, StringComparer.OrdinalIgnoreCase)
-            .Select(tz => new TimeZoneOption(tz.Id, GetTimeZoneDisplayText(tz)))];
+            .Select(tz => new TimeZoneOption(tz.Id, GetTimeZoneDisplayText(tz)))
+            .DistinctBy(tz => tz.Text, StringComparer.OrdinalIgnoreCase)];
     }
 
     /// <summary>

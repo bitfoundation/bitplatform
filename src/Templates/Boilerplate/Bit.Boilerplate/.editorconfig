@@ -126,6 +126,24 @@ csharp_space_between_method_call_empty_parameter_list_parentheses = false
 csharp_preserve_single_line_statements = true
 csharp_preserve_single_line_blocks = true
 dotnet_diagnostic.NonAsyncEFCoreMethodsUsageAnalyzer.severity = error
+# MSTest ships its assert rules as IDE-only suggestions, easy to scroll past. Each has a mechanical fix towards the
+# newer Assert API, so they fail the build instead: 0017 arg order, 0023 negated bool assert, 0025 always-false
+# condition, 0026 conditional access in assert args, 0032 always-true condition, 0037 proper assert method, 0038
+# AreSame on value types, 0039 newer Assert.Throws, 0044 TestMethod over DataTestMethod, 0046 StringAssert, 0064 async
+# assert methods, 0065 AreEqual on collections, 0068 CollectionAssert.
+dotnet_diagnostic.MSTEST0017.severity = error
+dotnet_diagnostic.MSTEST0023.severity = error
+dotnet_diagnostic.MSTEST0025.severity = error
+dotnet_diagnostic.MSTEST0026.severity = error
+dotnet_diagnostic.MSTEST0032.severity = error
+dotnet_diagnostic.MSTEST0037.severity = error
+dotnet_diagnostic.MSTEST0038.severity = error
+dotnet_diagnostic.MSTEST0039.severity = error
+dotnet_diagnostic.MSTEST0044.severity = error
+dotnet_diagnostic.MSTEST0046.severity = error
+dotnet_diagnostic.MSTEST0064.severity = error
+dotnet_diagnostic.MSTEST0065.severity = error
+dotnet_diagnostic.MSTEST0068.severity = error
 ###############################
 # VB Coding Conventions       #
 ###############################

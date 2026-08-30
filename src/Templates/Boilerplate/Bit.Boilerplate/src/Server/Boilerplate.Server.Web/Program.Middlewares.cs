@@ -133,7 +133,7 @@ public static partial class Program
             }).WithTags("Test").CacheOutput("AppResponseCachePolicy").ExcludeFromDescription();
 
             //#if (signalR == true)
-            if (string.IsNullOrEmpty(configuration["Azure:SignalR:ConnectionString"]) is false
+            if (string.IsNullOrWhiteSpace(configuration["Azure:SignalR:ConnectionString"]) is false
                 && settings.WebAppRender.BlazorMode is not BlazorWebAppMode.BlazorWebAssembly)
             {
                 // Azure SignalR is going to send blazor server / auto messages to the Azure Cloud which is useless in this case,

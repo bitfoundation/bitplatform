@@ -143,7 +143,7 @@ public static partial class Program
             // User agent and referrer headers are also included to provide the API with necessary request context. 
 
             var serverSettings = sp.GetRequiredService<ServerWebSettings>();
-            var serverAddressString = string.IsNullOrEmpty(serverSettings.ServerSideHttpClientBaseAddress) is false ?
+            var serverAddressString = string.IsNullOrWhiteSpace(serverSettings.ServerSideHttpClientBaseAddress) is false ?
                 serverSettings.ServerSideHttpClientBaseAddress : configuration.GetServerAddress();
 
             if (Uri.TryCreate(serverAddressString, UriKind.RelativeOrAbsolute, out var serverAddress) is false)

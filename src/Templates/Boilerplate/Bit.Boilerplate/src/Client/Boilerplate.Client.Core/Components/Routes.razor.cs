@@ -79,7 +79,7 @@ public partial class Routes : ComponentBase, IDisposable
 
         if (CultureInfoManager.InvariantGlobalization is false
             && navigationManager.ToAbsoluteUri(url).GetCulture() is string culture
-            && string.IsNullOrEmpty(culture) is false
+            && string.IsNullOrWhiteSpace(culture) is false
             && string.Equals(culture, CultureInfo.CurrentUICulture.Name, StringComparison.InvariantCultureIgnoreCase) is false)
         {
             CultureInfoManager.SetCurrentCulture(culture);

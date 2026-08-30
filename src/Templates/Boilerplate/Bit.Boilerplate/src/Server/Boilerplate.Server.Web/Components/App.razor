@@ -21,7 +21,7 @@
 }
 
 <!DOCTYPE html>
-<html lang="@(string.IsNullOrEmpty(CultureInfo.CurrentUICulture.Name) ? null : CultureInfo.CurrentUICulture.Name)"
+<html lang="@(string.IsNullOrWhiteSpace(CultureInfo.CurrentUICulture.Name) ? null : CultureInfo.CurrentUICulture.Name)"
       dir="@(CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? "rtl" : null)"
       @attributes="BitThemeSsr.BuildRootThemeAttributeMap(HttpContext.Request.Cookies[BitThemeCookie.PreferenceCookieName])"
       bit-theme-system bit-theme-persist bit-theme-persist-cookie bit-theme-view-transition
