@@ -281,7 +281,7 @@
 }
 
 // Neither a disabled nor a read-only splitter is up for resizing, so the gutter stops offering to be
-// dragged; the disabled one is dimmed by the shared bit-dis class on top of that.
+// dragged in either case.
 .bit-spl-rdo,
 .bit-spl.bit-dis {
     .bit-spl-gtr {
@@ -291,6 +291,14 @@
             background-color: $clr-brd-sec;
         }
     }
+}
+
+// And that is where the two part company: a read-only splitter is a split that is simply not up for
+// negotiation, so it looks exactly like any other, while a disabled one is out of use altogether and is
+// dimmed as a whole - the panels with it, since what a splitter nobody may touch is holding is not in use
+// either. Nothing else here dims it, so without this the two would be drawn the same way.
+.bit-spl.bit-dis {
+    opacity: $opa-dis;
 }
 
 // While a drag is running the pointer is captured by the gutter, so it goes on being reported wherever it

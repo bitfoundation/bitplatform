@@ -617,28 +617,63 @@
             and the line a lazy drag moves. A minimum or maximum a class puts on a panel holds the gutter just as firmly as
             the parameters do, and in any unit, because the range is measured off the panels rather than read back from C#.
         </div>
+        <br /><br />
+        <div>Component's <b>Style</b> &amp; <b>Class</b>:</div>
         <br />
-        <BitSplitter Style="height:150px;border:2px dashed var(--bit-clr-pri);border-radius:0.5rem" AriaLabel="Resize the panels">
-            <FirstPanel>
-                <div style="padding:0.5rem">A splitter with a Style of its own</div>
-            </FirstPanel>
-            <SecondPanel>
-                <div style="padding:0.5rem">Second panel</div>
-            </SecondPanel>
-        </BitSplitter>
+        <div class="example-content">
+            <BitSplitter Style="height:150px;background:var(--bit-clr-bg-pri);border:2px dashed var(--bit-clr-pri);border-radius:0.5rem"
+                         AriaLabel="Resize the panels">
+                <FirstPanel>
+                    <div style="padding:0.5rem">A splitter with a Style of its own</div>
+                </FirstPanel>
+                <SecondPanel>
+                    <div style="padding:0.5rem">Second panel</div>
+                </SecondPanel>
+            </BitSplitter>
+
+            <BitSplitter Class="custom-splitter" AriaLabel="Resize the panels">
+                <FirstPanel>
+                    <div style="padding:0.5rem">A splitter with a Class of its own</div>
+                </FirstPanel>
+                <SecondPanel>
+                    <div style="padding:0.5rem">Second panel</div>
+                </SecondPanel>
+            </BitSplitter>
+        </div>
+        <br /><br />
+        <div><b>Styles</b> &amp; <b>Classes</b>:</div>
         <br />
-        <BitSplitter GutterSize="10"
-                     Styles="@(new() { FirstPanel = "background:var(--bit-clr-bg-sec)",
-                                       Gutter = "background:var(--bit-clr-pri)",
-                                       GutterIndicator = "background:var(--bit-clr-pri-text)" })"
-                     Style="height:150px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
-            <FirstPanel>
-                <div style="padding:0.5rem">A first panel with a background</div>
-            </FirstPanel>
-            <SecondPanel>
-                <div style="padding:0.5rem">A gutter painted through the Styles slots</div>
-            </SecondPanel>
-        </BitSplitter>
+        <div class="example-content">
+            <BitSplitter GutterSize="10"
+                         Style="height:150px;border:1px solid var(--bit-clr-brd-sec)"
+                         Styles="@(new() { FirstPanel = "background:color-mix(in srgb, var(--bit-clr-pri) 12%, var(--bit-clr-bg-pri))",
+                                           SecondPanel = "background:var(--bit-clr-bg-pri)",
+                                           Gutter = "background:var(--bit-clr-pri)",
+                                           GutterIndicator = "background:var(--bit-clr-pri-text)" })"
+                         AriaLabel="Resize the panels">
+                <FirstPanel>
+                    <div style="padding:0.5rem">Panels and gutter painted</div>
+                </FirstPanel>
+                <SecondPanel>
+                    <div style="padding:0.5rem">through the Styles slots</div>
+                </SecondPanel>
+            </BitSplitter>
+
+            <BitSplitter GutterSize="10"
+                         Style="height:150px;border:1px solid var(--bit-clr-brd-sec)"
+                         Classes="@(new() { FirstPanel = "custom-first-panel",
+                                            SecondPanel = "custom-second-panel",
+                                            Gutter = "custom-gutter",
+                                            GutterIndicator = "custom-gutter-indicator" })"
+                         AriaLabel="Resize the panels">
+                <FirstPanel>
+                    <div style="padding:0.5rem">Panels and gutter painted</div>
+                </FirstPanel>
+                <SecondPanel>
+                    <div style="padding:0.5rem">through the Classes slots</div>
+                </SecondPanel>
+            </BitSplitter>
+        </div>
     </DemoExample>
 
     <DemoExample Title="RTL" RazorCode="@example22RazorCode" Id="example22">

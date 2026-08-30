@@ -432,6 +432,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Surfaces/Splitter/BitSplitterDemo.razor.css",
+        "inputFile": "Pages/Components/Surfaces/Splitter/BitSplitterDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Surfaces/Tooltip/BitTooltipDemo.razor.css",
         "inputFile": "Pages/Components/Surfaces/Tooltip/BitTooltipDemo.razor.scss",
         "minify": { "enabled": false },

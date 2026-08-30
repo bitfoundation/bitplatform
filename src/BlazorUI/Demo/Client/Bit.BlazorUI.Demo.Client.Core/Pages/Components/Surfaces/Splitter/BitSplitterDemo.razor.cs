@@ -949,7 +949,34 @@ private double gutterSize = 10;";
 </BitSplitter>";
 
     private readonly string example21RazorCode = @"
-<BitSplitter Style=""height:150px;border:2px dashed var(--bit-clr-pri);border-radius:0.5rem"" AriaLabel=""Resize the panels"">
+<style>
+    .custom-splitter {
+        height: 150px;
+        border-radius: 0.5rem;
+        border: 2px solid mediumpurple;
+        box-shadow: mediumpurple 0 0 0.5rem;
+        background: var(--bit-clr-bg-pri);
+    }
+
+    .custom-first-panel {
+        background: color-mix(in srgb, mediumpurple 15%, var(--bit-clr-bg-pri));
+    }
+
+    .custom-second-panel {
+        background: var(--bit-clr-bg-pri);
+    }
+
+    .custom-gutter {
+        background: mediumpurple;
+    }
+
+    .custom-gutter-indicator {
+        background: white;
+    }
+</style>
+
+<BitSplitter Style=""height:150px;background:var(--bit-clr-bg-pri);border:2px dashed var(--bit-clr-pri);border-radius:0.5rem""
+             AriaLabel=""Resize the panels"">
     <FirstPanel>
         <div style=""padding:0.5rem"">A splitter with a Style of its own</div>
     </FirstPanel>
@@ -958,16 +985,42 @@ private double gutterSize = 10;";
     </SecondPanel>
 </BitSplitter>
 
-<BitSplitter GutterSize=""10""
-             Styles=""@(new() { FirstPanel = ""background:var(--bit-clr-bg-sec)"",
-                               Gutter = ""background:var(--bit-clr-pri)"",
-                               GutterIndicator = ""background:var(--bit-clr-pri-text)"" })""
-             Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
+<BitSplitter Class=""custom-splitter"" AriaLabel=""Resize the panels"">
     <FirstPanel>
-        <div style=""padding:0.5rem"">A first panel with a background</div>
+        <div style=""padding:0.5rem"">A splitter with a Class of its own</div>
     </FirstPanel>
     <SecondPanel>
-        <div style=""padding:0.5rem"">A gutter painted through the Styles slots</div>
+        <div style=""padding:0.5rem"">Second panel</div>
+    </SecondPanel>
+</BitSplitter>
+
+<BitSplitter GutterSize=""10""
+             Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)""
+             Styles=""@(new() { FirstPanel = ""background:color-mix(in srgb, var(--bit-clr-pri) 12%, var(--bit-clr-bg-pri))"",
+                               SecondPanel = ""background:var(--bit-clr-bg-pri)"",
+                               Gutter = ""background:var(--bit-clr-pri)"",
+                               GutterIndicator = ""background:var(--bit-clr-pri-text)"" })""
+             AriaLabel=""Resize the panels"">
+    <FirstPanel>
+        <div style=""padding:0.5rem"">Panels and gutter painted</div>
+    </FirstPanel>
+    <SecondPanel>
+        <div style=""padding:0.5rem"">through the Styles slots</div>
+    </SecondPanel>
+</BitSplitter>
+
+<BitSplitter GutterSize=""10""
+             Style=""height:150px;border:1px solid var(--bit-clr-brd-sec)""
+             Classes=""@(new() { FirstPanel = ""custom-first-panel"",
+                                SecondPanel = ""custom-second-panel"",
+                                Gutter = ""custom-gutter"",
+                                GutterIndicator = ""custom-gutter-indicator"" })""
+             AriaLabel=""Resize the panels"">
+    <FirstPanel>
+        <div style=""padding:0.5rem"">Panels and gutter painted</div>
+    </FirstPanel>
+    <SecondPanel>
+        <div style=""padding:0.5rem"">through the Classes slots</div>
     </SecondPanel>
 </BitSplitter>";
 
