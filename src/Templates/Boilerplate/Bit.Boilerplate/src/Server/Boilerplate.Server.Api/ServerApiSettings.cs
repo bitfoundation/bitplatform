@@ -26,6 +26,12 @@ public partial class ServerApiSettings : ServerSharedSettings
     //#if (signalR == true)
     [Required]
     public string AiChatImagesDir { get; set; } = default!;
+
+    /// <summary>
+    /// How long an image attached to an AI chat message is kept before <c>AiChatImagesRetentionJobRunner</c> deletes it
+    /// and its blob.
+    /// </summary>
+    public TimeSpan AiChatImagesRetention { get; set; }
     //#endif
 
     //#if (captcha == "reCaptcha")
@@ -90,11 +96,25 @@ public partial class ServerApiSettings : ServerSharedSettings
             Validator.TryValidateObject(SupportedAppVersions, new ValidationContext(SupportedAppVersions), validationResults, true);
         }
 
+        //#if (signalR == true)
+        if (AiChatImagesRetention <= TimeSpan.Zero)
+        {
+            validationResults.Add(new ValidationResult($"{nameof(AiChatImagesRetention)} must be greater than zero.", [nameof(AiChatImagesRetention)]));
+        }
+        //#endif
+
+        if (Identity.UnconfirmedUsersRetention <= TimeSpan.Zero)
+        {
+            validationResults.Add(new ValidationResult($"{nameof(AppIdentityOptions.UnconfirmedUsersRetention)} must be greater than zero.", [nameof(Identity)]));
+        }
+
         if (AppEnvironment.IsDevelopment() is false)
         {
-            if (ConnectionStrings?.GetValueOrDefault("smtp") is "Endpoint=smtp://smtp.ethereal.email:587;UserName=madisen7@ethereal.email;Password=QYcYfjBXjqxMAZfZya")
+            // Matched on the host, not on the shipped literal: editing the sample's user name or password still leaves
+            // every outgoing mail - confirmation codes and magic links included - in a public shared test mailbox.
+            if (ConnectionStrings?.GetValueOrDefault("smtp")?.Contains("ethereal.email", StringComparison.OrdinalIgnoreCase) is true)
             {
-                throw new InvalidOperationException("The smtp connection string is not set. Please set it in the server's appsettings.json file.");
+                throw new InvalidOperationException("The smtp connection string still points at the shared ethereal.email test mailbox. Please set it in the server's appsettings.json file.");
             }
 
             //#if (captcha == "reCaptcha")
@@ -123,6 +143,11 @@ public partial class AppIdentityOptions : IdentityOptions
     /// </summary>
     public TimeSpan BearerTokenExpiration { get; set; }
     public TimeSpan RefreshTokenExpiration { get; set; }
+
+    /// <summary>
+    /// How long an unconfirmed, never-signed-in account is kept (See <see cref="Features.Identity.UnconfirmedUsersRetentionJobRunner"/>).
+    /// </summary>
+    public TimeSpan UnconfirmedUsersRetention { get; set; }
 
     [Required]
     public string Issuer { get; set; } = default!;

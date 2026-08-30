@@ -60,10 +60,9 @@ public static partial class Program
                 {
                     if (env.IsDevelopment())
                     {
-                        context.Response.GetTypedHeaders().CacheControl = new()
-                        {
-                            NoCache = true
-                        };
+                        var cacheControl = context.Response.GetTypedHeaders().CacheControl ?? new();
+                        cacheControl.NoCache = true;
+                        context.Response.GetTypedHeaders().CacheControl = cacheControl;
                     }
                     else
                     {

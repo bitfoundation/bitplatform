@@ -22,6 +22,8 @@ public partial class User : IdentityUser<Guid>
     [PersonalData]
     public DateTimeOffset? BirthDate { get; set; }
 
+    public DateTimeOffset CreatedOn { get; set; }
+
     /// <summary>
     /// The date and time of the last token request. Ensures only the latest generated token is valid and can only be used once.
     /// </summary>

@@ -119,7 +119,7 @@ public partial class PushNotificationService
         // userRelatedPush: it's not practical to send a push notification carrying sensitive information, like an OTP
         // code, to a device the user hasn't opened the app on for longer than Identity:RefreshTokenExpiration (14 days
         // by default). Even if she opens the app, her session has expired and she is signed out right away.
-        // Same window, same setting as UserSessionsCleanupJobRunner, which deletes those sessions.
+        // Same window, same setting as UserSessionsRetentionJobRunner, which deletes those sessions.
 
         var query = dbContext.PushNotificationSubscriptions
             .Where(sub => sub.ExpirationTime > now)

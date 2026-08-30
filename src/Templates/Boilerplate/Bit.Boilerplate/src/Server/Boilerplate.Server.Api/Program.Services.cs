@@ -80,8 +80,11 @@ public static partial class Program
         services.AddScoped<EmailServiceJobsRunner>();
         services.AddScoped<PhoneService>();
         services.AddScoped<PhoneServiceJobsRunner>();
-        services.AddScoped<UserSessionsCleanupJobRunner>();
+        services.AddScoped<UserErasureService>();
+        services.AddScoped<UserSessionsRetentionJobRunner>();
+        services.AddScoped<UnconfirmedUsersRetentionJobRunner>();
         //#if (signalR == true)
+        services.AddScoped<Features.Attachments.AiChatImagesRetentionJobRunner>();
         // Add MCP server with chatbot tools
         services.AddMcpServer()
             .WithHttpTransport()
@@ -173,6 +176,7 @@ public static partial class Program
         });
         services.AddScoped<PushNotificationService>();
         services.AddScoped<PushNotificationJobRunner>();
+        services.AddScoped<PushSubscriptionsRetentionJobRunner>();
         //#endif
 
         // Register distributed lock factory

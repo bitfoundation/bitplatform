@@ -24,6 +24,7 @@ public partial class UserController : AppControllerBase, IUserController
     [AutoInject] private IHostEnvironment hostEnvironment = default!;
     [AutoInject] private SignInManager<User> signInManager = default!;
     [AutoInject] private IUserEmailStore<User> userEmailStore = default!;
+    [AutoInject] private UserErasureService userErasureService = default!;
 
     //#if (notification == true)
     [AutoInject] private PushNotificationService pushNotificationService = default!;
@@ -339,45 +340,9 @@ public partial class UserController : AppControllerBase, IUserController
     [HttpDelete, Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task Delete(CancellationToken cancellationToken)
     {
-        var userId = User.GetUserId();
-
-        var user = await userManager.FindByIdAsync(userId.ToString())
-                    ?? throw new ResourceNotFoundException();
-
-        var currentSessionId = User.GetSessionId();
-
-        //#if (signalR == true)
-        var userSessionConnectionIds = await DbContext.UserSessions
-            .Where(us => us.UserId == userId && us.Id != currentSessionId && us.SignalRConnectionId != null)
-            .Select(us => us.SignalRConnectionId!)
-            .ToArrayAsync(cancellationToken);
-        //#endif
-
-        await DbContext.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
-        {
-            await using var transaction = await DbContext.Database.BeginTransactionAsync(cancellationToken);
-
-            await DbContext.UserSessions.Where(us => us.UserId == userId).ExecuteDeleteAsync(cancellationToken);
-
-            // Re-read inside the delegate: on a retry the instance from the failed attempt is still tracked, already
-            // marked Deleted and carrying the concurrency stamp it was loaded with, so deleting it again would either
-            // fault or run against a stale stamp.
-            var userToDelete = await userManager.FindByIdAsync(userId.ToString()) ?? throw new ResourceNotFoundException();
-
-            var result = await userManager.DeleteAsync(userToDelete);
-
-            if (result.Succeeded is false)
-                throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
-
-            await transaction.CommitAsync(cancellationToken);
-        });
+        await userErasureService.Erase(User.GetUserId(), exceptSessionId: User.GetSessionId(), cancellationToken);
 
         await signInManager.SignOutAsync();
-
-        //#if (signalR == true)
-        // Check out AppHub's comments for more info.
-        await appHubContext.Clients.Clients(userSessionConnectionIds).Publish(SharedAppMessages.SESSION_REVOKED, null, cancellationToken);
-        //#endif
 
         if (IsWebPlatformRequest() is false)
             return;
