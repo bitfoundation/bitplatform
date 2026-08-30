@@ -25,6 +25,9 @@ namespace BitBlazorUI {
 
             let x = 0;
             let y = 0;
+            // What the surface declared for itself before a drag pinned its width over the top, for as long as
+            // that pin is in place and null the rest of the time.
+            let pinnedOver: string | null = null;
 
             listeners['pointerdown'] = handlePointerDown;
             listeners['dragElement'] = dragElement;
@@ -43,7 +46,13 @@ namespace BitBlazorUI {
                 x = e.clientX;
                 y = e.clientY;
 
+                // The box is pinned to the width it has right now, so it cannot reflow under the pointer
+                // mid-move. What it declared for itself is remembered rather than thrown away: a Modal renders
+                // a real inline width of its own from its Width parameter, and Blazor does not rewrite a style
+                // attribute it has not changed, so blanking the property would drop that width for good.
                 const { width } = element.getBoundingClientRect();
+                pinnedOver = element.style.width;
+                listeners['pinnedOver'] = pinnedOver;
                 element.style.width = `${width}px`;
 
                 document.addEventListener('pointermove', handlePointerMove);
@@ -83,6 +92,14 @@ namespace BitBlazorUI {
             }
 
             function handlePointerUp() {
+                // The pin was only ever for the length of the move, so the surface is given its own width
+                // declaration back the moment the pointer comes up.
+                if (pinnedOver !== null) {
+                    element.style.width = pinnedOver;
+                    pinnedOver = null;
+                    delete listeners['pinnedOver'];
+                }
+
                 document.removeEventListener('pointermove', handlePointerMove);
                 document.removeEventListener('pointerup', handlePointerUp);
                 document.removeEventListener('pointercancel', handlePointerUp);
@@ -119,16 +136,20 @@ namespace BitBlazorUI {
                 dragElement.classList.remove('bit-mdl-nta');
             }
 
-            // The drag writes the surface's position onto it - and pins its width, so the box cannot reflow
-            // under the pointer mid-move - and both outlive the surface wherever it is kept in the DOM
-            // between showings. A surface that comes back is a new showing, so it comes back where it was
-            // laid out rather than where it was last left, which is what it already does everywhere it is
-            // unmounted instead.
+            // The drag writes the surface's position onto it, and that outlives the surface wherever it is
+            // kept in the DOM between showings. A surface that comes back is a new showing, so it comes back
+            // where it was laid out rather than where it was last left, which is what it already does
+            // everywhere it is unmounted instead. The width is not blanked along with it - the surface may
+            // have declared one of its own, and blanking would take that away with nothing to put it back -
+            // so only a pin this cleanup has landed in the middle of is given back here.
             const element = listeners['element'] as HTMLElement;
             if (element) {
                 element.style.left = '';
                 element.style.top = '';
-                element.style.width = '';
+
+                if (listeners['pinnedOver'] !== undefined) {
+                    element.style.width = listeners['pinnedOver'];
+                }
             }
 
             document.removeEventListener('pointermove', listeners['pointermove']);
@@ -141,6 +162,7 @@ namespace BitBlazorUI {
             delete listeners['pointercancel'];
             delete listeners['dragElement'];
             delete listeners['element'];
+            delete listeners['pinnedOver'];
             delete DragDrop._listeners[key];
         }
     }

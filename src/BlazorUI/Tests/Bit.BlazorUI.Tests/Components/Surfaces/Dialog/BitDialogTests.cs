@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -928,6 +929,102 @@ public class BitDialogTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDialogPlayedBackRefusalShouldNotResolveBackToTheEntranceAnimation()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.IsBlocking, true);
+        });
+
+        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        // An animation starts when the animation-name it resolves to changes, so a surface handed none of the
+        // refusal classes back resolves to the entrance animation and grows back into place. The played-back
+        // refusal is a class of its own, which pins the name off until the Dialog closes.
+        component.WaitForAssertion(
+            () => Assert.IsTrue(component.Find(".bit-dlg-ctn").ClassList.Contains("bit-dlg-pvn")),
+            TimeSpan.FromSeconds(5));
+
+        var settled = component.Find(".bit-dlg-ctn").ClassList;
+        Assert.IsFalse(settled.Contains("bit-dlg-prv"));
+        Assert.IsFalse(settled.Contains("bit-dlg-pva"));
+        Assert.IsFalse(settled.Contains("bit-dlg-pvb"));
+    }
+
+    [TestMethod]
+    public void BitDialogRefusalAfterAPlayedBackOneShouldStillReplayTheMovement()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.IsBlocking, true);
+        });
+
+        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        component.WaitForAssertion(
+            () => Assert.IsTrue(component.Find(".bit-dlg-ctn").ClassList.Contains("bit-dlg-pvn")),
+            TimeSpan.FromSeconds(5));
+
+        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        // The name has to change for the movement to run at all, and the settled class is a name of its own,
+        // so the refusal that follows one is answered with the first of the pair rather than with nothing.
+        component.WaitForAssertion(() =>
+        {
+            var again = component.Find(".bit-dlg-ctn").ClassList;
+            Assert.IsTrue(again.Contains("bit-dlg-prv"));
+            Assert.IsTrue(again.Contains("bit-dlg-pva"));
+            Assert.IsFalse(again.Contains("bit-dlg-pvn"));
+        }, TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public void BitDialogClosingShouldTakeThePlayedBackRefusalOffSoTheEntrancePlaysAgain()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.IsBlocking, true);
+            parameters.Add(p => p.KeepMounted, true);
+        });
+
+        component.Find(".bit-dlg-ctn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        component.WaitForAssertion(
+            () => Assert.IsTrue(component.Find(".bit-dlg-ctn").ClassList.Contains("bit-dlg-pvn")),
+            TimeSpan.FromSeconds(5));
+
+        // A kept-mounted Dialog stays in the DOM while it is closed, so the class that pins the entrance
+        // animation off has to be given up with the closing - the opening that follows is where the entrance
+        // is meant to play from, and it only plays where the name it resolves to has changed.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, false);
+            parameters.Add(p => p.IsBlocking, true);
+            parameters.Add(p => p.KeepMounted, true);
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.IsBlocking, true);
+            parameters.Add(p => p.KeepMounted, true);
+        });
+
+        var reopened = component.Find(".bit-dlg-ctn").ClassList;
+        Assert.IsFalse(reopened.Contains("bit-dlg-pvn"));
+        Assert.IsFalse(reopened.Contains("bit-dlg-prv"));
+    }
+
+    [TestMethod]
     public void BitDialogBlockingOverlayClickShouldReportTheRefusedDismiss()
     {
         var isOpen = true;
@@ -1744,6 +1841,25 @@ public class BitDialogTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow(BitDialogButton.Ok)]
+    [DataRow(BitDialogButton.Cancel)]
+    [DataRow(BitDialogButton.Close)]
+    public void BitDialogAutoFocusButtonShouldFallBackWhenTheWholeDialogIsDisabled(BitDialogButton button)
+    {
+        // A disabled Dialog disables all three of its buttons, so naming one of them is naming somewhere the
+        // focus cannot land - and the fall back has to be taken for the same reason it is taken for a button
+        // that is disabled on its own.
+        RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.AutoFocusButton, button);
+        });
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.focusFirstElement");
+    }
+
+    [TestMethod]
     public void BitDialogAutoFocusButtonShouldStillLandOnAButtonThatIsOnlyDisabledOnTheOtherSide()
     {
         // Gating one button says nothing about the other one.
@@ -1862,6 +1978,52 @@ public class BitDialogTests : BunitTestContext
             Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.disposeFocusTrap");
             Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.restoreFocus");
         }, TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public async Task BitDialogReopeningWhileTheCloseIsStillWaitingShouldNotTearTheNewOpenDown()
+    {
+        // On a circuit every step of a closing waits on the browser, so an opening that lands while one is
+        // still waiting would otherwise be undone by the rest of that closing: the trap, the hold on the
+        // scroller and the focus all handed back on a Dialog that is on the screen, with nothing to take them
+        // again until it has been closed and opened a second time.
+        var parked = Context.JSInterop.SetupVoid("BitBlazorUI.Utils.disposeFocusTrap", _ => true);
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.IsDraggable, true);
+            parameters.Add(p => p.AutoToggleScroll, true);
+        });
+
+        // The closing starts and parks on the first thing it asks the browser for.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, false);
+            parameters.Add(p => p.IsDraggable, true);
+            parameters.Add(p => p.AutoToggleScroll, true);
+        });
+
+        // The opening lands while it is still parked, and registers everything again.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.IsDraggable, true);
+            parameters.Add(p => p.AutoToggleScroll, true);
+        });
+
+        // Only now does the closing get to carry on. The rest of it is waiting on nothing, so a turn of the
+        // renderer's own queue taken after it is enough to see it through to the end - what it would go on
+        // to do, it has done by the time this returns.
+        parked.SetVoidResult();
+        await component.InvokeAsync(() => { });
+
+        Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"]);
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.DragDrop.remove"]);
+        Assert.IsFalse(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]
+                              .Any(i => i.Arguments[^1] is false));
     }
 
     [TestMethod]

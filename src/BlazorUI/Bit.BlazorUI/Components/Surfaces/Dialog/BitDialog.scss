@@ -19,6 +19,7 @@
     z-index: $zindex-modal;
     font-size: $tg-fs-sm;
     font-family: $tg-font-family;
+
     // The root spans the whole screen but is only a frame for the two layers that are actually there:
     // the overlay and the container each take their own pointer events back. A modeless Dialog has no
     // overlay at all, and without this its invisible frame would swallow every click on the page it is
@@ -129,6 +130,7 @@
 .bit-dlg-ctn {
     z-index: 1;
     display: flex;
+
     // The six sizing parameters arrive as custom properties on this element, so a Dialog that was given
     // none of them keeps the shrink-to-fit box it has always had and the ones it was given are the only
     // declarations that change. The caps default to the area the Dialog is positioned in, which is what
@@ -147,6 +149,7 @@
     border-radius: $shp-radius-dialog;
     background-color: $clr-bg-pri;
     animation: bit-dlg-container-animation $mot-duration $mot-easing-decelerate;
+
     // The surface is made programmatically focusable so the Escape key and the focus trap have somewhere
     // to land, which is a job the focus ring has no business advertising.
     outline: none;
@@ -166,6 +169,15 @@
 
 .bit-dlg-pvb {
     animation-name: bit-dlg-prevented-animation-b;
+}
+
+// What the surface carries once the refusal has been played back. It cannot simply go back to carrying none
+// of the three: animation-name would resolve to the entrance animation again, and a change of animation-name
+// is what starts an animation - so the Dialog would grow back into place after every refused gesture, as if
+// it had just been opened. The name is pinned off instead, until the Dialog closes and the class goes with
+// the refusal that put it there, which is where the entrance is meant to play again from.
+.bit-dlg-pvn {
+    animation-name: none;
 }
 
 // The drag handle takes touch-action away from itself and everything under it, so a finger that lands on it
@@ -237,6 +249,7 @@
     min-height: 0;
     overflow-y: auto;
     flex-direction: column;
+
     // A body scrolled to its end goes on scrolling the page behind the overlay otherwise, which is a
     // page the Dialog has taken over - and on a touch screen it is the gesture the reader is already
     // making, so the page arrives underneath without them asking for it.
@@ -263,6 +276,7 @@
     z-index: 1;
     display: flex;
     position: sticky;
+
     // All three come from the theme so a Cupertino preset can stack the actions full-width and
     // centred (column + center + stretch) while Fluent and Material keep the trailing row of
     // buttons hugging their own content (row + flex-end + center).
@@ -272,6 +286,7 @@
     padding: 0 $spa-dialog $spa-dialog;
     background-color: $clr-bg-pri;
     margin-top: auto;
+
     // The actions are the last opaque band of a Dialog without a footer, so they take the bottom corners
     // with them - an opaque band squared off inside a rounded container shows at the corners as soon as a
     // consumer gives it a background of its own. Where a footer does follow, this is simply invisible.
@@ -282,6 +297,7 @@
         display: flex;
         cursor: pointer;
         text-decoration: none;
+
         // A fixed 64px floor rather than $siz-ctrl-min-width: the token's Fluent value is `auto`,
         // which is invalid inside max(), and 64px already equals Material's button minimum.
         min-width: spacing(8);
@@ -294,6 +310,7 @@
         padding: $siz-ctrl-pad-y-sm $siz-ctrl-pad-x-md;
         border-width: $shp-border-width;
         border-style: $shp-border-style;
+
         // The actions are buttons, so they take the corner of the button family rather than the
         // plain control one - a preset that pills its buttons pills these along with them.
         border-radius: $shp-radius-button;

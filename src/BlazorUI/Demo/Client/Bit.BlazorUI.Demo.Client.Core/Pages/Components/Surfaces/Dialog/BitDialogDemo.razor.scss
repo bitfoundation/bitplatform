@@ -58,15 +58,17 @@
     border: rem2(2px) lightgreen solid;
 }
 
-.custom-container {
-    border: rem2(2px) solid tomato;
-}
+::deep {
+    .custom-container {
+        border: rem2(2px) solid tomato;
+    }
 
-.custom-header {
-    background-color: #fff3f0;
-}
+    .custom-header {
+        background-color: #fff3f0;
+    }
 
-.custom-ok {
-    border-color: tomato;
-    background-color: tomato;
+    .custom-ok {
+        border-color: tomato;
+        background-color: tomato;
+    }
 }

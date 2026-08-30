@@ -223,7 +223,7 @@
             <br />
             <BitButton OnClick="@(() => IsOpen1 = true)">Open Dialog</BitButton>
             <br /><br />
-            <div>Result is: @(dialogRef?.Result?.ToString() ?? "(dismissed)")</div>
+            <div>Result is: @(dialogRef?.Result?.ToString() ?? "(none yet)")</div>
             <div>Dismiss reason is: @(dialogRef?.DismissReason?.ToString() ?? "-")</div>
             <BitDialog @ref="@dialogRef"
                        @bind-IsOpen="@IsOpen1"
@@ -795,9 +795,10 @@
         <DemoExample Title="Size" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
             <div>
                 A Dialog is as wide and as tall as its content, and never grows past the area it is positioned in.
-                It stops widening at the width the theme names (<b>--bit-siz-dialog-max-width</b>, 520px in Fluent,
-                600px in Fluent 2, 560px in Material, 270pt in Cupertino), so a two-sentence confirmation cannot
-                span a desktop screen with its message on one long line.
+                It stops widening at the width the theme names (<b>--bit-siz-dialog-max-width</b>, a calculated value
+                that lands on 520px in Fluent by default, 600px in Fluent 2, 560px in Material, 270px in
+                Cupertino), so a two-sentence confirmation cannot span a desktop screen with its message on
+                one long line.
                 <b>Width</b>, <b>MinWidth</b>, <b>MaxWidth</b>, <b>Height</b>, <b>MinHeight</b> and <b>MaxHeight</b>
                 each take any CSS length and put a size of your own on the surface, replacing that default:
                 <b>min(100%, 40rem)</b> is the whole of a wider Dialog that still fits a phone.

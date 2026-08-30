@@ -243,7 +243,7 @@ public partial class BitDialogDemo
             Name = "MaxWidth",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The CSS maximum width of the Dialog surface. Defaults to 100% of the area the Dialog is positioned in, and setting it replaces that default rather than adding to it - min(100%, 32rem) is the whole of a responsive Dialog."
+            Description = "The CSS maximum width of the Dialog surface. Defaults to the narrower of 100% of the area the Dialog is positioned in and the --bit-siz-dialog-max-width theme token, and setting it replaces that default rather than adding to it - min(100%, 32rem) is the whole of a responsive Dialog."
         },
         new()
         {
@@ -1130,7 +1130,7 @@ private BitDialog customDialogRef = default!;";
 
     private readonly string example5RazorCode = @"
 <BitButton OnClick=""@(() => IsOpen1 = true)"">Open Dialog</BitButton>
-<div>Result is: @(dialogRef?.Result?.ToString() ?? ""(dismissed)"")</div>
+<div>Result is: @(dialogRef?.Result?.ToString() ?? ""(none yet)"")</div>
 <div>Dismiss reason is: @(dialogRef?.DismissReason?.ToString() ?? ""-"")</div>
 
 <BitDialog @ref=""@dialogRef""

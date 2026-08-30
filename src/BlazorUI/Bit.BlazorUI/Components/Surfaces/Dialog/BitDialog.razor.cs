@@ -36,10 +36,13 @@ public partial class BitDialog : BitComponentBase
     // has been overtaken by the next.
     private int _lifecycle;
 
-    // Which of the two interchangeable "refused" movements the surface is carrying, 0 for none. Two classes
-    // playing the same movement under different names are alternated rather than one being taken off and put
-    // back on: an animation only restarts when the animation-name it resolves to changes, so a second refusal
-    // arriving while the first one is still running would otherwise be answered with nothing at all.
+    // Which of the two interchangeable "refused" movements the surface is carrying: 0 for a Dialog that has
+    // not refused anything since it opened, 1 and 2 for the movement itself, and 3 for a refusal that has been
+    // played back. Two classes playing the same movement under different names are alternated rather than one
+    // being taken off and put back on: an animation only restarts when the animation-name it resolves to
+    // changes, so a second refusal arriving while the first one is still running would otherwise be answered
+    // with nothing at all - and for the same reason the played-back state is a class of its own rather than
+    // the absence of all three, which would resolve the name back to the entrance animation and replay it.
     private int _dismissPrevented;
     // Which refusal the pending clearing belongs to, so the delay left over from an earlier one does not take
     // the movement off the refusal that has since replaced it.
@@ -777,7 +780,7 @@ public partial class BitDialog : BitComponentBase
             }
             else
             {
-                await HandleClosed();
+                await HandleClosed(generation);
             }
 
             return;
@@ -847,17 +850,27 @@ public partial class BitDialog : BitComponentBase
         await OnOpen.InvokeAsync();
     }
 
-    private async Task HandleClosed()
+    private async Task HandleClosed(int generation)
     {
+        // Whether an opening has started since this closing did, in which case this one is over: standing the
+        // rest of it down would take the focus trap, the hold on the scroller and the focus itself away from
+        // a Dialog that is on the screen again - and nothing puts them back until it has been closed and
+        // opened a second time. What has already been stood down above the guard the opening has already set
+        // up again, and what has not been reached is still held by the key the opening is holding it under.
+        bool Overtaken() => _lifecycle != generation;
+
         // A refused dismissal that was still being played back has nothing left to refuse.
         _dismissPrevented = 0;
         _dismissPreventedGeneration++;
 
         await DisposeFocusTrap();
+        if (Overtaken()) return;
 
         await RemoveDragHandlers();
+        if (Overtaken()) return;
 
         await ToggleScroll(false);
+        if (Overtaken()) return;
 
         await RestoreSavedFocus();
     }
@@ -936,12 +949,16 @@ public partial class BitDialog : BitComponentBase
     {
         // A disabled button is not a place the focus can land - the browser refuses it and leaves the focus
         // where it was, which for a Dialog that has just opened is the page behind it - so a button that is
-        // not being shown and one that cannot be pressed fall back the same way.
+        // not being shown and one that cannot be pressed fall back the same way. Each arm asks exactly what
+        // the markup asks when it decides whether to disable that button, since anything less names a button
+        // the browser will not take.
+        var pressable = IsEnabled && _isLoading is false;
+
         var target = AutoFocusButton switch
         {
-            BitDialogButton.Ok when ShowOkButton && IsOkButtonEnabled => _okButtonRef,
-            BitDialogButton.Cancel when ShowCancelButton && IsCancelButtonEnabled => _cancelButtonRef,
-            BitDialogButton.Close when ShowCloseButton => _closeButtonRef,
+            BitDialogButton.Ok when pressable && ShowOkButton && IsOkButtonEnabled => _okButtonRef,
+            BitDialogButton.Cancel when pressable && ShowCancelButton && IsCancelButtonEnabled => _cancelButtonRef,
+            BitDialogButton.Close when pressable && ShowCloseButton => _closeButtonRef,
             _ => (ElementReference?)null
         };
 
@@ -1129,7 +1146,9 @@ public partial class BitDialog : BitComponentBase
         // Overtaken by a later refusal, which is now the one being played back and owns the clearing of it.
         if (IsDisposed || _dismissPreventedGeneration != generation) return;
 
-        _dismissPrevented = 0;
+        // Handed the played-back state rather than none at all - see the field for why the surface has to go
+        // on carrying a class of the set once the movement is over.
+        _dismissPrevented = 3;
         StateHasChanged();
     }
 
@@ -1245,11 +1264,14 @@ public partial class BitDialog : BitComponentBase
 
     // The refusal marks the surface with two classes: one the reduced-motion fallback and the animation's
     // own timing are written against, and one of the pair that names the movement - see PreventDismiss for
-    // why the name has to change from one refusal to the next.
+    // why the name has to change from one refusal to the next. Once the movement is over only a third class
+    // is left, which carries none of that and says only that the entrance animation is not to be resolved
+    // back to and played a second time.
     private string? GetPreventedClasses() => _dismissPrevented switch
     {
         1 => "bit-dlg-prv bit-dlg-pva",
         2 => "bit-dlg-prv bit-dlg-pvb",
+        3 => "bit-dlg-pvn",
         _ => null
     };
 
@@ -1323,7 +1345,7 @@ public partial class BitDialog : BitComponentBase
     // A Dialog is as wide as its content, and a message of two sentences is a good deal wider than a Dialog
     // has any business being: without a ceiling a confirmation spans a desktop screen and its message reads
     // as a single line the eye has to walk. The ceiling is the one the design system names, so the packaged
-    // presets each keep the width of their own dialog (Fluent 2: 600px, Material: 560px, Cupertino: 270pt).
+    // presets each keep the width of their own dialog (Fluent 2: 600px, Material: 560px, Cupertino: 270px).
     // It is capped at the area the Dialog is positioned in as well, so it can never be wider than the screen.
     //
     // It is emitted here rather than declared in the stylesheet so that it applies only where nothing else
