@@ -735,6 +735,8 @@
                         "src/Tests/Features/Identity/IdentityEmailDeliveryTests.cs",
                         "src/Tests/Features/Identity/EmailUniquenessIndexTests.cs",
                         "src/Tests/Features/Identity/TestAccountUtils.cs",
+                        "src/Tests/Features/Identity/AccountErasureTests.cs",
+                        "src/Tests/Features/Attachments/AttachmentMetadataStrippingTests.cs",
                         "src/Tests/Features/Identity/RoleAdministrationGuardTests.cs",
                         "src/Tests/Features/Identity/ConfirmPageTwoFactorTests.cs",
                         "src/Tests/Features/Identity/SignInPanelCredentialStateTests.cs",
