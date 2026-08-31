@@ -66,7 +66,9 @@ public partial class UserErasureService
             // may throw: the account is already gone. See IPersonalDataSource.ErasePublished.
             try
             {
-                await source.ErasePublished(context, cancellationToken);
+                // Not the request's token: the rows are already committed, so a caller that walks away mid-cleanup
+                // would leave blobs behind that nothing references and nothing will come back for.
+                await source.ErasePublished(context, CancellationToken.None);
             }
             catch (Exception exp)
             {

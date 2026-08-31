@@ -19,8 +19,10 @@ public partial class MauiFileSaveService : FileSaveService
             return;
         }
 
-        // App-private and cleared by the OS. The copy outlives the call: the app shared into may still be reading it.
-        var filePath = Path.Combine(FileSystem.Current.CacheDirectory, fileName);
+        // App-private and cleared by the OS. The copy outlives the call: the app shared into may still be reading it -
+        // which is also why each export gets its own folder, so a second one cannot overwrite it mid-read.
+        var directory = Directory.CreateDirectory(Path.Combine(FileSystem.Current.CacheDirectory, Guid.NewGuid().ToString("N"))).FullName;
+        var filePath = Path.Combine(directory, fileName);
 
         await File.WriteAllBytesAsync(filePath, content);
 

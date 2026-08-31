@@ -72,6 +72,14 @@ public partial class AdsService : IAdsService, IAsyncDisposable
 
     public async Task<AdWatchResult> Watch()
     {
+        // Checked again here, not just in Init: withdrawing consent does not destroy a slot that is already loaded,
+        // so without this the user can still be shown the ad they just refused.
+        if (await consentService.IsGranted(ConsentCategory.Advertising) is false)
+        {
+            initTsc = null; // The slot is no longer ours to show; the next Init has to define a new one.
+            return AdWatchResult.Failed;
+        }
+
         watchTsc?.TrySetCanceled();
         var tsc = watchTsc = new();
 

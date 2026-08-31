@@ -618,10 +618,12 @@ public static partial class Program
         //#endif
         //#endif
 
+        var hangfireOptions = appSettings.Hangfire ?? throw new InvalidOperationException($"The {nameof(ServerApiSettings.Hangfire)} configuration section is required.");
+
         // Configure Hangfire to use Redis for persistent background job storage
         services.AddHangfire((sp, hangfireConfiguration) =>
         {
-            if (appSettings.Hangfire?.UseIsolatedStorage is not true)
+            if (hangfireOptions.UseIsolatedStorage is not true)
             {
                 //#if (redis == true)
                 //#if (IsInsideProjectTemplate == true)
@@ -631,7 +633,7 @@ public static partial class Program
                 {
                     Prefix = "Boilerplate:Hangfire:",
                     Db = 1, // Use a dedicated Redis database for Hangfire
-                }).WithJobExpirationTimeout(appSettings.Hangfire!.JobExpiration);
+                }).WithJobExpirationTimeout(hangfireOptions.JobExpiration);
                 //#if (IsInsideProjectTemplate == true)
                 */
                 //#endif
@@ -640,7 +642,7 @@ public static partial class Program
                 {
                     Schema = "jobs",
                     QueuePollInterval = new TimeSpan(0, 0, 1)
-                }).WithJobExpirationTimeout(appSettings.Hangfire!.JobExpiration);
+                }).WithJobExpirationTimeout(hangfireOptions.JobExpiration);
                 //#endif
             }
             else
@@ -657,7 +659,7 @@ public static partial class Program
                     QueuePollInterval = new TimeSpan(0, 0, 1)
                 })
                 .UseDatabaseCreator()
-                .WithJobExpirationTimeout(appSettings.Hangfire!.JobExpiration);
+                .WithJobExpirationTimeout(hangfireOptions.JobExpiration);
             }
 
             hangfireConfiguration.UseRecommendedSerializerSettings();

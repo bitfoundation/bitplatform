@@ -19,6 +19,8 @@ public partial class ConsentService
     /// <summary>Cached: every gate calls this, and the store behind it is a JS interop call on the web.</summary>
     private Dictionary<ConsentCategory, bool>? decisions;
 
+    private readonly SemaphoreSlim writeLock = new(1, 1);
+
     /// <summary>
     /// The categories this deployment can ask about. Empty means nothing non-essential is wired up, so there is no
     /// question worth asking - see <c>AppConsentBanner</c>.
@@ -52,12 +54,23 @@ public partial class ConsentService
 
     public async Task Set(ConsentCategory category, bool granted)
     {
-        var current = new Dictionary<ConsentCategory, bool>(await Read())
-        {
-            [category] = granted
-        };
+        // Read-modify-write over one storage key: two toggles flipped together would otherwise each write a snapshot
+        // taken before the other, and the loser's category would silently revert.
+        await writeLock.WaitAsync();
 
-        await Set(current);
+        try
+        {
+            var current = new Dictionary<ConsentCategory, bool>(await Read())
+            {
+                [category] = granted
+            };
+
+            await Set(current);
+        }
+        finally
+        {
+            writeLock.Release();
+        }
     }
 
     private async Task Set(Dictionary<ConsentCategory, bool> values)
