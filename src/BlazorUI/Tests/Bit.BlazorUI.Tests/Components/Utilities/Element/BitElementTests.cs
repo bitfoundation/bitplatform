@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
 namespace Bit.BlazorUI.Tests.Components.Utilities.Element;
@@ -82,7 +83,7 @@ public class BitElementTests : BunitTestContext
         }
         else
         {
-            component.MarkupMatches(@"<div class=""bit-elm bit-dis"" aria-disabled=""true"" id:ignore></div>");
+            component.MarkupMatches(@"<div class=""bit-elm bit-dis"" tabindex=""-1"" aria-disabled=""true"" id:ignore></div>");
         }
     }
 
@@ -107,6 +108,8 @@ public class BitElementTests : BunitTestContext
 
         Assert.IsTrue(el.HasAttribute("disabled"));
         Assert.AreEqual("true", el.GetAttribute("aria-disabled"));
+        // The browser takes an element it disables itself out of the tab order, so nothing has to be forced here.
+        Assert.IsFalse(el.HasAttribute("tabindex"));
     }
 
     [TestMethod,
@@ -126,6 +129,29 @@ public class BitElementTests : BunitTestContext
 
         Assert.IsFalse(el.HasAttribute("disabled"));
         Assert.AreEqual("true", el.GetAttribute("aria-disabled"));
+        // Nothing the browser does takes such an element out of the tab order, so the tab stop is removed here.
+        Assert.AreEqual("-1", el.GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitElementShouldRemoveTheHrefOfADisabledAnchor()
+    {
+        var component = RenderComponent<BitElementHtmlAttributesTest>();
+
+        var element = component.FindAll(".bit-elm")[6];
+
+        // An anchor with an href is focusable of itself and follows that href on the enter key, which neither the
+        // forced tab stop nor the pointer events of the disabled class reach, so the href goes while it is disabled.
+        Assert.IsFalse(element.HasAttribute("href"));
+        Assert.AreEqual("true", element.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitElementShouldKeepTheHrefOfAnEnabledAnchor()
+    {
+        var component = RenderComponent<BitElementHtmlAttributesTest>();
+
+        Assert.AreEqual("https://bitplatform.dev/", component.FindAll(".bit-elm")[5].GetAttribute("href"));
     }
 
     [TestMethod]
@@ -140,7 +166,7 @@ public class BitElementTests : BunitTestContext
             parameters.Add(p => p.IsEnabled, false);
         });
 
-        component.MarkupMatches(@"<div class=""bit-elm bit-dis"" aria-disabled=""true"" id:ignore></div>");
+        component.MarkupMatches(@"<div class=""bit-elm bit-dis"" tabindex=""-1"" aria-disabled=""true"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -384,12 +410,16 @@ public class BitElementTests : BunitTestContext
     [TestMethod,
         DataRow("area"),
         DataRow("base"),
+        DataRow("basefont"),
+        DataRow("bgsound"),
         DataRow("br"),
         DataRow("col"),
         DataRow("embed"),
+        DataRow("frame"),
         DataRow("hr"),
         DataRow("img"),
         DataRow("input"),
+        DataRow("keygen"),
         DataRow("link"),
         DataRow("meta"),
         DataRow("param"),
@@ -587,13 +617,245 @@ public class BitElementTests : BunitTestContext
         Assert.IsTrue(elements[0].ClassList.Contains("cascaded"));
         StringAssert.Contains(elements[0].OuterHtml, "onclick:stoppropagation");
         StringAssert.Contains(elements[0].OuterHtml, "onclick:preventdefault");
+        StringAssert.Contains(elements[0].OuterHtml, "ondblclick:stoppropagation");
+        StringAssert.Contains(elements[0].OuterHtml, "oncontextmenu:preventdefault");
 
-        // The second one sets its own tag, which the cascading parameters must not overwrite.
+        // The second one sets its own tag and its own stopped events, which the cascading parameters must not
+        // overwrite - and a parameter it did set is not filled in from them even in part.
         Assert.AreEqual("ARTICLE", elements[1].TagName);
         Assert.IsTrue(elements[1].ClassList.Contains("cascaded"));
+        StringAssert.Contains(elements[1].OuterHtml, "onpointerdown:stoppropagation");
+        Assert.IsFalse(elements[1].OuterHtml.Contains("ondblclick:stoppropagation"));
+        StringAssert.Contains(elements[1].OuterHtml, "oncontextmenu:preventdefault");
 
         // The third one is unwrapped by the cascading parameters, so it is not among the rendered elements at all.
         Assert.AreEqual(2, elements.Count);
         StringAssert.Contains(component.Markup, "unwrapped");
+    }
+
+    [TestMethod,
+        DataRow("1div"),
+        DataRow("-custom"),
+        DataRow("div onclick=alert(1)"),
+        DataRow("div>"),
+        DataRow("<div"),
+        DataRow("a/b"),
+        DataRow("a&b"),
+        DataRow("a=b"),
+        DataRow("a\"b"),
+        DataRow("a'b"),
+        DataRow("a`b")
+    ]
+    public void BitElementShouldFallBackToDivForAnUnusableElementName(string element)
+    {
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+            parameters.AddChildContent("content");
+        });
+
+        // A tag name carrying whitespace or any of the characters that end a tag would write markup of its own
+        // rather than name an element, and one that does not begin with a letter names no element at all.
+        component.MarkupMatches(@"<div class=""bit-elm"" id:ignore>content</div>");
+    }
+
+    [TestMethod,
+        DataRow("linearGradient"),
+        DataRow("clipPath"),
+        DataRow("feGaussianBlur"),
+        DataRow("my-badge"),
+        DataRow("x_y"),
+        DataRow("a.b")
+    ]
+    public void BitElementShouldKeepAValidSvgOrCustomElementName(string element)
+    {
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+        });
+
+        component.MarkupMatches(@$"<{element} class=""bit-elm"" id:ignore></{element}>");
+    }
+
+    [TestMethod]
+    public void BitElementShouldForceTheTabIndexOfADisabledElementThatHtmlCannotDisable()
+    {
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.Add(p => p.Element, "a");
+            parameters.Add(p => p.TabIndex, "3");
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        // The tab stop of the parameter is the one thing that would still reach a disabled element of a tag the
+        // browser does not disable of itself, so the disabled state has the last word on it.
+        Assert.AreEqual("-1", component.Find("a").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitElementShouldKeepTheTabIndexOfADisabledElementThatHtmlDisables()
+    {
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.Add(p => p.Element, "button");
+            parameters.Add(p => p.TabIndex, "3");
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        var el = component.Find("button");
+
+        Assert.IsTrue(el.HasAttribute("disabled"));
+        Assert.AreEqual("3", el.GetAttribute("tabindex"));
+    }
+
+    [TestMethod,
+        DataRow(BitVisibility.Visible),
+        DataRow(BitVisibility.Hidden),
+        DataRow(BitVisibility.Collapsed)
+    ]
+    public void BitElementShouldRespectVisibilityWhileUnwrapped(BitVisibility visibility)
+    {
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.Add(p => p.NoWrapper, true);
+            parameters.Add(p => p.Visibility, visibility);
+            parameters.AddChildContent("content");
+        });
+
+        // A collapsed component is one asked to be out of the DOM, which needs no element of its own to mean
+        // something. Hiding an unwrapped element while keeping its space does need one, so it renders as it is.
+        Assert.AreEqual(visibility is BitVisibility.Collapsed ? string.Empty : "content", component.Markup);
+    }
+
+    [TestMethod]
+    public void BitElementShouldRespectCollapsingAnUnwrappedElementAfterRender()
+    {
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.Add(p => p.NoWrapper, true);
+            parameters.AddChildContent("content");
+        });
+
+        Assert.AreEqual("content", component.Markup);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.NoWrapper, true);
+            parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
+            parameters.AddChildContent("content");
+        });
+
+        Assert.AreEqual(string.Empty, component.Markup);
+    }
+
+    [TestMethod,
+        DataRow("dblclick", "ondblclick:stopPropagation"),
+        DataRow("ondblclick", "ondblclick:stopPropagation"),
+        DataRow("onKeyDown", "onkeydown:stopPropagation"),
+        DataRow(" pointerdown ", "onpointerdown:stopPropagation")
+    ]
+    public void BitElementShouldRespectStopPropagationEvents(string @event, string expected)
+    {
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.Add(p => p.StopPropagationEvents, new[] { @event });
+        });
+
+        StringAssert.Contains(component.Markup, expected);
+    }
+
+    [TestMethod,
+        DataRow("contextmenu", "oncontextmenu:preventDefault"),
+        DataRow("oncontextmenu", "oncontextmenu:preventDefault"),
+        DataRow("onDragOver", "ondragover:preventDefault"),
+        DataRow(" submit ", "onsubmit:preventDefault")
+    ]
+    public void BitElementShouldRespectPreventDefaultEvents(string @event, string expected)
+    {
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.Add(p => p.PreventDefaultEvents, new[] { @event });
+        });
+
+        StringAssert.Contains(component.Markup, expected);
+    }
+
+    [TestMethod]
+    public void BitElementShouldRenderEveryNamedEventModifier()
+    {
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.Add(p => p.StopPropagationEvents, new[] { "dblclick", "pointerdown" });
+            parameters.Add(p => p.PreventDefaultEvents, new[] { "contextmenu", "dragover" });
+        });
+
+        StringAssert.Contains(component.Markup, "ondblclick:stopPropagation");
+        StringAssert.Contains(component.Markup, "onpointerdown:stopPropagation");
+        StringAssert.Contains(component.Markup, "oncontextmenu:preventDefault");
+        StringAssert.Contains(component.Markup, "ondragover:preventDefault");
+    }
+
+    [TestMethod]
+    public void BitElementShouldIgnoreTheEmptyNamesAmongTheEventModifiers()
+    {
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.Add(p => p.StopPropagationEvents, new[] { "", "   ", "dblclick" });
+            parameters.Add(p => p.PreventDefaultEvents, []);
+        });
+
+        StringAssert.Contains(component.Markup, "ondblclick:stopPropagation");
+        Assert.IsFalse(component.Markup.Contains("on:stopPropagation"));
+        Assert.IsFalse(component.Markup.Contains(":preventDefault"));
+    }
+
+    [TestMethod]
+    public void BitElementShouldRespectEventModifiersChangingAfterRender()
+    {
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.Add(p => p.StopPropagationEvents, new[] { "dblclick" });
+            parameters.AddChildContent("<span>content</span>");
+        });
+
+        StringAssert.Contains(component.Markup, "ondblclick:stopPropagation");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.StopPropagationEvents, new[] { "pointerdown", "keydown" });
+            parameters.AddChildContent("<span>content</span>");
+        });
+
+        Assert.IsFalse(component.Markup.Contains("ondblclick:stopPropagation"));
+        StringAssert.Contains(component.Markup, "onpointerdown:stopPropagation");
+        StringAssert.Contains(component.Markup, "onkeydown:stopPropagation");
+        // The frames of the content follow a block of attribute frames as long as the list, so a sequence number
+        // that moved with that length would have thrown the content away and built it again.
+        StringAssert.Contains(component.Markup, "<span>content</span>");
+    }
+
+    [TestMethod]
+    public void BitElementShouldKeepASplattedAriaDisabledAttributeOfAnEnabledElement()
+    {
+        var component = RenderComponent<BitElementHtmlAttributesTest>();
+
+        var element = component.FindAll(".bit-elm")[4];
+
+        Assert.AreEqual("true", element.GetAttribute("aria-disabled"));
+        Assert.IsFalse(element.ClassList.Contains("bit-dis"));
+        Assert.IsFalse(element.HasAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public async Task BitElementFocusAsyncShouldDoNothingWhileUnwrapped()
+    {
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.Add(p => p.NoWrapper, true);
+            parameters.AddChildContent("content");
+        });
+
+        // Nothing is rendered, so there is no element to focus and no interop call to make of it either.
+        await component.Instance.FocusAsync();
     }
 }

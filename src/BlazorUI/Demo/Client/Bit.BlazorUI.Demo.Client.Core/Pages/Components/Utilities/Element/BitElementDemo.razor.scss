@@ -13,15 +13,26 @@
         margin: 0;
     }
 
-    // The class below lands on a BitElement, which is a component: the scope attribute of this stylesheet only
-    // lands on the plain elements written in the page, so it is reached through the container that carries it.
-    > ::deep .demo-boxed {
+    // An undefined custom element is an unknown inline box with no styling of its own, so it needs one to be
+    // recognizable as the element it is in the example.
+    > ::deep demo-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 1rem;
+        border: 1px solid gray;
+        display: inline-block;
+    }
+
+    // The classes below land on a BitElement, which is a component: the scope attribute of this stylesheet only
+    // lands on the plain elements written in the page, so they are reached through the container that carries it.
+    // The box is nested inside a card in one of the examples, so it is matched at any depth rather than as a
+    // direct child - which is safe here in a way a bare tag name would not be, since it is a class of the page.
+    ::deep .demo-boxed {
         padding: 0.5rem;
         border: 1px solid gray;
     }
 }
 
-// The clickable ancestor of the click modifiers example, which the two buttons inside it either reach by
+// The clickable ancestor of the event modifiers example, which the elements inside it either reach by
 // bubbling or do not.
 .demo-card {
     gap: 0.5rem;

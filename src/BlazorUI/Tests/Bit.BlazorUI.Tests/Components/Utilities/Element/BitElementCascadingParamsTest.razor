@@ -9,10 +9,12 @@
                                  Class = "cascaded",
                                  StopPropagation = true,
                                  PreventDefault = true,
+                                 StopPropagationEvents = ["dblclick"],
+                                 PreventDefaultEvents = ["contextmenu"],
                              }
                          })">
     <BitElement>cascaded</BitElement>
-    <BitElement Element="article">own</BitElement>
+    <BitElement Element="article" StopPropagationEvents="@(new[] { "pointerdown" })">own</BitElement>
 </BitParams>
 
 <BitParams Parameters="@(new BitElementParams[] { new() { NoWrapper = true } })">

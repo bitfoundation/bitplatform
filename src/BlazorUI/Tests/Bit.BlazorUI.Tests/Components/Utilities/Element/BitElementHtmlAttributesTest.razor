@@ -24,3 +24,13 @@
 @* An enabled element must keep a disabled attribute of its own: the component only writes that attribute
    while it is disabled itself, since writing it as false would remove the splatted one instead. *@
 <BitElement Element="button" disabled="true">I'm a self-disabled element</BitElement>
+
+@* The same holds of the aria attribute, and of the tab stop the component takes away from a disabled element:
+   an element the component was not asked to disable is left with whatever the page wrote on it. *@
+<BitElement aria-disabled="true">I'm a self-aria-disabled element</BitElement>
+
+@* An href is only useful splatted, and it is the one splatted attribute a disabled element cannot keep: an anchor
+   with an href is focusable of itself and follows that href on the enter key whatever the tab order says. *@
+<BitElement Element="a" href="https://bitplatform.dev/">I'm a link</BitElement>
+
+<BitElement Element="a" href="https://bitplatform.dev/" IsEnabled="false">I'm a disabled link</BitElement>

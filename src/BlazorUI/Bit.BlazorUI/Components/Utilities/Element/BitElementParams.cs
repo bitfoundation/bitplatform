@@ -37,9 +37,19 @@ public class BitElementParams : BitComponentBaseParams, IBitComponentParams
     public bool? PreventDefault { get; set; }
 
     /// <summary>
+    /// Gets or sets the names of the events whose default browser action is prevented on the element.
+    /// </summary>
+    public IEnumerable<string>? PreventDefaultEvents { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether the click event of the element is stopped from bubbling up to its ancestors.
     /// </summary>
     public bool? StopPropagation { get; set; }
+
+    /// <summary>
+    /// Gets or sets the names of the events that are stopped from bubbling up from the element to its ancestors.
+    /// </summary>
+    public IEnumerable<string>? StopPropagationEvents { get; set; }
 
 
 
@@ -75,9 +85,19 @@ public class BitElementParams : BitComponentBaseParams, IBitComponentParams
             bitElement.PreventDefault = PreventDefault.Value;
         }
 
+        if (PreventDefaultEvents is not null && bitElement.HasNotBeenSet(nameof(PreventDefaultEvents)))
+        {
+            bitElement.PreventDefaultEvents = PreventDefaultEvents;
+        }
+
         if (StopPropagation.HasValue && bitElement.HasNotBeenSet(nameof(StopPropagation)))
         {
             bitElement.StopPropagation = StopPropagation.Value;
+        }
+
+        if (StopPropagationEvents is not null && bitElement.HasNotBeenSet(nameof(StopPropagationEvents)))
+        {
+            bitElement.StopPropagationEvents = StopPropagationEvents;
         }
     }
 }
