@@ -1,0 +1,16 @@
+﻿<BitParams Parameters="_params">
+    <BitIcon />
+</BitParams>
+
+@code {
+    private readonly List<IBitComponentParams> _params =
+    [
+        new BitIconParams
+        {
+            Color = BitColor.Error,
+            Size = BitSize.Large,
+            Variant = BitVariant.Outline,
+            FixedWidth = true
+        }
+    ];
+}

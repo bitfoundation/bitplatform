@@ -1,6 +1,10 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-ico {
+    // An icon font class brings its own inline-block, but an icon named by a bare CSS class, drawn as
+    // an inline svg, or written as a ligature brings nothing - and an inline box takes neither the
+    // padding nor the rule that the filled and outlined variants are drawn with.
+    display: inline-block;
     padding: spacing(0.5);
     border-radius: $shp-radius-control;
     border-style: $shp-border-style;
@@ -133,4 +137,209 @@
 
 .bit-ico-lg {
     font-size: $siz-icon-lg;
+}
+
+
+// Rotation and mirroring compose into one transform through these three custom properties: two rules
+// each setting `transform` would leave only the later one standing, so the classes below set nothing
+// but the parts, and this one draws them. The transform also needs a box to act on - it does nothing
+// at all to an inline non-replaced element - which is why the display is set here rather than on the
+// base class, where it would change the flow of every icon in the library.
+.bit-ico-trn {
+    display: inline-block;
+    transform: rotate(var(--bit-ico-rotate, 0deg))
+               scaleX(calc(var(--bit-ico-scale-x, 1) * var(--bit-ico-rtl-scale-x, 1)))
+               scaleY(var(--bit-ico-scale-y, 1));
+}
+
+.bit-ico-rt90 {
+    --bit-ico-rotate: 90deg;
+}
+
+.bit-ico-rt180 {
+    --bit-ico-rotate: 180deg;
+}
+
+.bit-ico-rt270 {
+    --bit-ico-rotate: 270deg;
+}
+
+.bit-ico-flh {
+    --bit-ico-scale-x: -1;
+}
+
+.bit-ico-flv {
+    --bit-ico-scale-y: -1;
+}
+
+.bit-ico-flb {
+    --bit-ico-scale-x: -1;
+    --bit-ico-scale-y: -1;
+}
+
+// The direction is read off the rendered document rather than off the component's own parameter, so
+// an icon inside an RTL subtree mirrors without having been told the direction itself. It multiplies
+// with an explicit Flip rather than replacing it - a glyph asked to mirror both ways ends up the way
+// it started, which is what a mirrored arrow in a mirrored layout should look like.
+[dir="rtl"] .bit-ico-frt,
+.bit-ico-frt.bit-rtl {
+    --bit-ico-rtl-scale-x: -1;
+}
+
+
+// The glyphs of an icon font are not all the same width, which is what makes the labels of a menu or
+// a nav start at a different place on every row. 1.25em is the widest glyph of the Fabric MDL2 set
+// plus the room the design system leaves around it.
+.bit-ico-fxw {
+    width: 1.25em;
+    text-align: center;
+    display: inline-block;
+}
+
+
+// Every animation below loops for as long as the icon is on the page, so none of them may use the
+// one-shot duration tokens, which collapse to near zero under reduced motion and would render as a
+// flicker. The turning ones take the spinner tokens, so an icon spun as a loader turns at the speed
+// of every other loader in the library; the rest multiply their own duration by the loop factor. Both
+// slow down rather than stop under reduced motion, and ForceAnimation restores them through the same
+// inheritance - so none of these needs a media query of its own.
+.bit-ico-spn,
+.bit-ico-spr,
+.bit-ico-pls,
+.bit-ico-bet,
+.bit-ico-shk {
+    display: inline-block;
+}
+
+.bit-ico-spn {
+    animation: bit-ico-spin-anm $mot-duration-spinner $mot-easing-spinner infinite;
+}
+
+.bit-ico-spr {
+    animation: bit-ico-spin-anm $mot-duration-spinner $mot-easing-spinner infinite reverse;
+}
+
+.bit-ico-pls {
+    animation: bit-ico-spin-anm calc(1s * #{$mot-loop-factor}) infinite steps(8);
+}
+
+.bit-ico-bet {
+    animation: bit-ico-beat-anm calc(1s * #{$mot-loop-factor}) $mot-easing infinite alternate;
+}
+
+// The only one that composes with Rotate and Flip, since opacity is not a transform.
+.bit-ico-fad {
+    animation: bit-ico-fade-anm calc(1s * #{$mot-loop-factor}) $mot-easing infinite alternate;
+}
+
+.bit-ico-shk {
+    animation: bit-ico-shake-anm calc(1s * #{$mot-loop-factor}) linear infinite;
+}
+
+@keyframes bit-ico-spin-anm {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes bit-ico-beat-anm {
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(1.25);
+    }
+}
+
+@keyframes bit-ico-fade-anm {
+    from {
+        opacity: 0.4;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes bit-ico-shake-anm {
+    0% { transform: rotate(-15deg); }
+    4% { transform: rotate(15deg); }
+    8%, 24% { transform: rotate(-18deg); }
+    12%, 28% { transform: rotate(18deg); }
+    16% { transform: rotate(-22deg); }
+    20% { transform: rotate(22deg); }
+    32% { transform: rotate(-12deg); }
+    36% { transform: rotate(12deg); }
+    40%, 100% { transform: rotate(0deg); }
+}
+
+
+// An icon given a click handler is announced and operated as a button, so it also has to look and
+// focus like one. It keeps the icon's own shape - the ring follows the border radius of the variant
+// it is drawn in - and a disabled one stops answering the pointer entirely.
+.bit-ico-int {
+    cursor: pointer;
+    position: relative;
+    // A double click on a control should not leave the glyph - or, for a ligature-based set, the word
+    // behind it - selected.
+    user-select: none;
+
+    // A small size class puts the glyph well under the 24x24 CSS pixels WCAG 2.2 asks of a target, and
+    // the icon is now a target. This grows the area that answers the pointer without growing the icon:
+    // a pseudo-element is part of its host for hit testing, so a press anywhere in this box is a press
+    // on the icon, while the layout keeps the size the glyph was given.
+    &::after {
+        content: "";
+        top: 50%;
+        left: 50%;
+        position: absolute;
+        width: max(100%, 1.5rem);
+        height: max(100%, 1.5rem);
+        transform: translate(-50%, -50%);
+    }
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-ico-clr));
+    }
+
+    &.bit-dis {
+        cursor: default;
+        pointer-events: none;
+    }
+}
+
+
+// A forced-colors mode throws away every color the icon paints, which would leave the filled and the
+// outlined variants indistinguishable from the plain glyph, and a disabled icon looking enabled. All
+// three are re-established here in the system colors, which are the only ones such a mode keeps.
+@media (forced-colors: active) {
+    .bit-ico-fil {
+        color: Canvas;
+        border-color: CanvasText;
+        background-color: CanvasText;
+    }
+
+    .bit-ico-out {
+        border-color: CanvasText;
+    }
+
+    .bit-ico.bit-dis {
+        color: GrayText;
+    }
+
+    .bit-ico-fil.bit-dis {
+        color: Canvas;
+        border-color: GrayText;
+        background-color: GrayText;
+    }
+
+    .bit-ico-out.bit-dis {
+        color: GrayText;
+        border-color: GrayText;
+    }
 }

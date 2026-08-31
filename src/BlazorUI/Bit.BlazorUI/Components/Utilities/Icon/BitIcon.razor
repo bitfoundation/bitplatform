@@ -1,10 +1,59 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
+@{
+    var icon = BitIconInfo.From(Icon, IconName);
+
+    var interactive = OnClick.HasDelegate;
+
+    @* An attribute written after the splat wins over the one the app passed in through HtmlAttributes,
+       and a null one takes it off the element altogether. Everything the icon decides below therefore
+       has to read what came in with the attributes and write it back, or setting it that way would
+       stop working. *@
+    var splattedLabel = HtmlAttributes.TryGetValue("aria-label", out var sal) ? sal?.ToString() : null;
+    var splattedTitle = HtmlAttributes.TryGetValue("title", out var stl) ? stl?.ToString() : null;
+    var splattedRole = HtmlAttributes.TryGetValue("role", out var srl) ? srl?.ToString() : null;
+    var splattedTabIndex = HtmlAttributes.TryGetValue("tabindex", out var sti) ? sti?.ToString() : null;
+    var splattedHidden = HtmlAttributes.TryGetValue("aria-hidden", out var shd) ? shd?.ToString() : null;
+
+    var label = AriaLabel ?? splattedLabel;
+    var title = Title ?? splattedTitle;
+
+    @* An icon is decorative until something names it. Named, it is a picture worth announcing and takes
+       the img role; unnamed, it is the glyph beside a label that already says the same thing - and an
+       img with no accessible name is a node a screen reader stops at with nothing to read out. So the
+       role and the name arrive together, and an unnamed icon is hidden the way every glyph the other
+       components of this library render inline is hidden. An aria-hidden or a role of the app's own is
+       left exactly as it was given. *@
+    var named = label.HasValue() || title.HasValue() || HtmlAttributes.ContainsKey("aria-labelledby");
+    var hidden = interactive is false && named is false && HtmlAttributes.ContainsKey("aria-hidden") is false;
+    var ariaHidden = hidden ? "true" : splattedHidden;
+    var role = splattedRole ?? (interactive ? "button" : (named ? "img" : null));
+
+    @* An icon with a handler is a tab stop; a disabled one leaves the tab order but stays in the
+       document, so whatever pointed at it still has something to point at. Everywhere else the tab
+       index is whatever was asked for and nothing more - an icon is not focusable by itself. *@
+    var tabIndex = TabIndex ?? splattedTabIndex;
+    var rootTabIndex = interactive ? (IsEnabled ? (tabIndex ?? "0") : "-1") : tabIndex;
+
+    @* Nothing is listening on an icon that does nothing: an empty handler still costs a round trip to
+       the server on every click and every keystroke of a Blazor Server app. *@
+    var onClick = interactive ? EventCallback.Factory.Create<MouseEventArgs>(this, HandleOnClick) : default;
+    var onKeyDown = interactive ? EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleOnKeyDown) : default;
+    var onKeyUp = interactive ? EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleOnKeyUp) : default;
+}
+
 <i @ref="RootElement" @attributes="HtmlAttributes"
    id="@_Id"
-   role="img"
-   aria-label="@AriaLabel"
+   role="@role"
+   title="@title"
+   tabindex="@rootTabIndex"
+   aria-label="@label"
+   aria-hidden="@ariaHidden"
+   aria-disabled="@(interactive && IsEnabled is false ? "true" : null)"
    style="@StyleBuilder.Value"
    class="@ClassBuilder.Value"
-   dir="@Dir?.ToString().ToLower()" />
+   dir="@Dir?.ToString().ToLower()"
+   @onclick="onClick"
+   @onkeydown="onKeyDown"
+   @onkeyup="onKeyUp">@icon?.Content@ChildContent</i>
