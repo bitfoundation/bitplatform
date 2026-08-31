@@ -708,7 +708,7 @@ internal static class ScriptBundling
     /// <summary>A target's body, comments and layout removed, so two of them can be compared for what they do.</summary>
     private static string TargetBody(string targets, string name)
     {
-        var match = Regex.Match(targets, $"<Target Name=\"{Regex.Escape(name)}\"(?<body>.*?)</Target>", RegexOptions.Singleline);
+        var match = Regex.Match(targets, $"<Target Name=\"{Regex.Escape(name)}\"[^>]*>(?<body>.*?)</Target>", RegexOptions.Singleline);
         if (match.Success is false) return string.Empty;
 
         var body = Regex.Replace(match.Groups["body"].Value, "<!--.*?-->", " ", RegexOptions.Singleline);

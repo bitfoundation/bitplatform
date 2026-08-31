@@ -275,7 +275,7 @@
     private static string[] Terms(string query)
     {
         var terms = query
-            .Split([' ', '\t', '.', ',', '(', ')', '/', ':', '?'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Split([' ', '\t', '.', ',', '(', ')', '/', ':', '?', '-', '_'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Where(term => term.Length > 1)
             .Select(term => term.ToLowerInvariant())
             .Distinct(StringComparer.Ordinal)
