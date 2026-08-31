@@ -3,3 +3,13 @@
     border: 1px solid red;
     max-width: max-content;
 }
+
+::deep .custom-root {
+    text-transform: uppercase;
+    letter-spacing: 0.05rem;
+}
+
+::deep .custom-optional {
+    color: mediumseagreen;
+    font-style: italic;
+}

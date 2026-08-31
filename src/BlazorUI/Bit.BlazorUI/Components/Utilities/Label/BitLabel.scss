@@ -14,13 +14,67 @@
 
     &.bit-dis {
         color: $clr-fg-dis;
+        // The label itself is never disabled - only the control it names is - so the pointer over it would still
+        // promise a click that the disabled control has nothing to do with.
+        cursor: default;
     }
 }
 
-.bit-lbl-req {
-    &::after {
-        content: "*";
-        color: $clr-req;
-        margin-left: spacing(0.625);
+// Size classes follow the type ramp of the library: the unset default is the medium one, which is what keeps a
+// standalone label in step with the labels the input components render of their own.
+.bit-lbl-sm {
+    font-size: $tg-fs-xs;
+}
+
+.bit-lbl-md {
+    font-size: $tg-fs-sm;
+}
+
+.bit-lbl-lg {
+    font-size: $tg-fs-md;
+}
+
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-lbl-#{$role} {
+        color: role($tokens, main);
     }
+}
+
+// The necessity indicators. The margin is logical rather than left-handed, so the gap between the caption and its
+// mark stays after the caption in a right-to-left direction instead of jumping to the other side of it.
+.bit-lbl-rqi {
+    color: $clr-req;
+    margin-inline-start: spacing(0.625);
+}
+
+.bit-lbl-opi {
+    color: $clr-fg-sec;
+    font-weight: $tg-fw-regular;
+    margin-inline-start: spacing(0.625);
+}
+
+.bit-lbl-nwr {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.bit-lbl-nsl {
+    user-select: none;
+    -webkit-user-select: none; // Safari still needs the prefixed property.
+}
+
+// Out of the page but still in the accessibility tree: a zero-sized box would be dropped from it by some screen
+// readers, so the label keeps a pixel of its own and is clipped away from it.
+.bit-lbl-vhd {
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+    clip: rect(0 0 0 0);
 }
