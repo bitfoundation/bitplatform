@@ -995,7 +995,7 @@ private bool isInnerPanelOpen;";
               AbsolutePosition
               Size=""200""
               AriaLabel=""A panel inside a container""
-              Styles=""@(new() { Overlay = ""background-color:#00000033"" })"">
+              ModeFull>
         <div class=""panel-body"">
             <h3>AbsolutePosition</h3>
             <BitButton OnClick=""() => isAbsolutePanelOpen = false"">Close</BitButton>

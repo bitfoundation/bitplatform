@@ -651,6 +651,53 @@ public class BitPanelTests : BunitTestContext
         Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"].Count);
     }
 
+    // An absolutely positioned panel covers a container of the page rather than the page, so the page it
+    // never covered is not its to take the scrollbar off.
+    [TestMethod]
+    public void BitPanelShouldNotTakeTheScrollbarOffThePageForAnAbsolutelyPositionedPanel()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.AbsolutePosition, true);
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+    }
+
+    // A scroller it was pointed at by hand is still held: that is how a contained panel holds the container
+    // it is laid out in.
+    [TestMethod]
+    public void BitPanelShouldTakeTheScrollbarOffTheNamedScrollerOfAnAbsolutelyPositionedPanel()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.AbsolutePosition, true);
+            parameters.Add(p => p.ScrollerSelector, ".scroller");
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        com.WaitForAssertion(() =>
+        {
+            var locked = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][^1];
+            Assert.AreEqual(".scroller", locked.Arguments[1]);
+        });
+    }
+
+    // Its layer is laid out inside the container rather than fixed to the viewport, so its gestures already
+    // reach what scrolls behind it and forwarding them would move that scroller twice over.
+    [TestMethod]
+    public void BitPanelShouldNotForwardTheGesturesOfAnAbsolutelyPositionedPanel()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.AbsolutePosition, true);
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"].Count));
+    }
+
     [TestMethod]
     public void BitPanelShouldNotForwardTheGesturesOfAPanelAimedAtNoScrollerOfItsOwn()
     {

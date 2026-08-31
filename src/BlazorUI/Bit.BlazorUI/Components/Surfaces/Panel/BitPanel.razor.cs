@@ -71,6 +71,12 @@ public partial class BitPanel : BitComponentBase
     /// The container it is laid out in has to establish a containing block of its own (a position other
     /// than static), and the panel is clipped by it where it hides its overflow. The panel takes no clicks
     /// away from that container while it is closed.
+    /// <br />
+    /// Such a panel leaves the page alone as well: the hold it would otherwise take on the page while it is
+    /// open is stood down, since taking the scrollbar off the whole page for a panel that covers one box of
+    /// it moves the page around the very container the user is looking at. A scroller named by
+    /// <see cref="ScrollerElement"/> or <see cref="ScrollerSelector"/> is still held, so a contained panel
+    /// that is meant to hold the container it is laid out in names it there.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool AbsolutePosition { get; set; }
@@ -293,14 +299,18 @@ public partial class BitPanel : BitComponentBase
     /// A <see cref="Modeless"/> panel never holds the page in the first place, since it is meant to leave
     /// what is behind it usable, and a panel that does its own scroll handling through
     /// <see cref="AutoToggleScroll"/> holds its scroller itself, so this hold is stood down for it whether or
-    /// not this is set.
+    /// not this is set. An <see cref="AbsolutePosition"/> panel covers a container rather than the page, so
+    /// it holds only a scroller it was pointed at by <see cref="ScrollerElement"/> or
+    /// <see cref="ScrollerSelector"/> and never the page it never covered.
     /// <br />
     /// The layer the panel is drawn in is fixed to the viewport, so the wheel and the touch drag that land on
     /// it are chained to the document rather than to whatever region the app scrolls: they are handed to that
     /// region - the one <see cref="ScrollerElement"/> or <see cref="ScrollerSelector"/> names, or the scroller
     /// of the application shell the panel is inside of - for as long as a panel that leaves the page
     /// scrolling is open, so that the page moves under the gesture the way it would with no panel over it.
-    /// Anything inside the panel that scrolls itself takes its own gestures first.
+    /// Anything inside the panel that scrolls itself takes its own gestures first. An
+    /// <see cref="AbsolutePosition"/> panel is laid out inside its container rather than fixed to the
+    /// viewport, so its gestures already reach what scrolls behind it and none are forwarded.
     /// </remarks>
     [Parameter] public bool NoScrollLock { get; set; }
 
@@ -853,11 +863,21 @@ public partial class BitPanel : BitComponentBase
     // can actually see, the hold on the page first of all.
     private bool IsShown => Visibility == BitVisibility.Visible;
 
+    // Whether a scroller was named by the consumer, as opposed to the one an application shell cascades or
+    // the page the script falls back to. It is what decides whether an absolutely positioned panel holds
+    // anything at all: such a panel covers a container of the page rather than the page, so the page it
+    // never covered is not its to take the scrollbar off - only a scroller it was pointed at by hand is.
+    private bool HasNamedScroller => ScrollerElement.HasValue || ScrollerSelector.HasValue();
+
     // Whether the page behind the panel is the panel's to hold. A modeless panel leaves it usable on
-    // purpose, and a panel doing its own scroll handling holds its scroller itself.
+    // purpose, a panel doing its own scroll handling holds its scroller itself, and an absolutely positioned
+    // panel holds nothing it was not pointed at: it is laid out inside a container, and taking the scrollbar
+    // off the whole page for a panel that covers one box of it moves the page around the very container the
+    // user is looking at.
     private bool ShouldLockScroll => NoScrollLock is false
                                      && AutoToggleScroll is false
                                      && Modeless is false
+                                     && (AbsolutePosition is false || HasNamedScroller)
                                      && IsOpen
                                      && IsShown;
 
@@ -872,11 +892,15 @@ public partial class BitPanel : BitComponentBase
     // nothing to forward, and one that took the overflow off its scroller (AutoToggleScroll) means that
     // scroller to stay still, so moving it from here would undo what it did. And only the panel aimed at a
     // scroller of its own can use it: the page is what the browser already chains to.
+    // And only a panel whose layer is fixed to the viewport needs it at all: an absolutely positioned one is
+    // laid out inside the container it covers, where the gesture already reaches whatever scrolls behind it,
+    // so forwarding it as well would move that scroller twice over.
     private bool ShouldForwardScroll => Modeless is false
                                         && IsOpen
                                         && IsShown
                                         && ShouldLockScroll is false
                                         && AutoToggleScroll is false
+                                        && AbsolutePosition is false
                                         && (ScrollerElementTarget.HasValue || ScrollerSelector.HasValue());
 
     // Whether the panel slides in along the horizontal axis, which is what decides both the axis the swipe

@@ -593,6 +593,14 @@
                 against, and it clips the panel where it hides its overflow.
             </div>
             <br />
+            <div>
+                It leaves the page alone as well: the hold such a panel would otherwise take on the page is
+                stood down, since taking the scrollbar off the whole page for a panel that covers one box of
+                it moves the page around the very container being looked at. A scroller named by
+                <b>ScrollerSelector</b> or <b>ScrollerElement</b> is still held, so a contained panel that is
+                meant to hold the container it sits in names it there.
+            </div>
+            <br />
             <div class="absolute-container">
                 <div>The panel below opens inside this box, not over the page.</div>
                 <BitButton OnClick="() => isAbsolutePanelOpen = true">Open</BitButton>
@@ -601,7 +609,7 @@
                           AbsolutePosition
                           Size="200"
                           AriaLabel="A panel inside a container"
-                          Styles="@(new() { Overlay = "background-color:#00000033" })">
+                          ModeFull>
                     <div class="panel-body">
                         <h3>AbsolutePosition</h3>
                         <BitButton OnClick="() => isAbsolutePanelOpen = false">Close</BitButton>
