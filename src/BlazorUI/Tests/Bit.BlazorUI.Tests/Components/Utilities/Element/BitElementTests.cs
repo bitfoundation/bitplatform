@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -644,7 +645,31 @@ public class BitElementTests : BunitTestContext
         DataRow("a=b"),
         DataRow("a\"b"),
         DataRow("a'b"),
-        DataRow("a`b")
+        DataRow("a`b"),
+        // The symbols below end no tag, so the markup would still read them as a tag name - but the browsers do not
+        // agree on which of them name an element, and the one that refuses a name throws where it builds it.
+        DataRow("a@b"),
+        DataRow("a#b"),
+        DataRow("a!b"),
+        DataRow("a$b"),
+        DataRow("a%b"),
+        DataRow("a^b"),
+        DataRow("a*b"),
+        DataRow("a+b"),
+        DataRow("a~b"),
+        DataRow("a|b"),
+        DataRow("a,b"),
+        DataRow("a;b"),
+        DataRow("a?b"),
+        DataRow("a(b"),
+        DataRow("a)b"),
+        DataRow("a[b"),
+        DataRow("a]b"),
+        DataRow("a{b"),
+        DataRow("a}b"),
+        DataRow("a\\b"),
+        // A non-breaking space is no ASCII whitespace, and no letter or digit of any alphabet either.
+        DataRow("a b")
     ]
     public void BitElementShouldFallBackToDivForAnUnusableElementName(string element)
     {
@@ -665,7 +690,11 @@ public class BitElementTests : BunitTestContext
         DataRow("feGaussianBlur"),
         DataRow("my-badge"),
         DataRow("x_y"),
-        DataRow("a.b")
+        DataRow("a.b"),
+        DataRow("h1"),
+        DataRow("a:b"),
+        // A custom element name may be written in any alphabet, so the letters outside ASCII are names too.
+        DataRow("bit-αβ")
     ]
     public void BitElementShouldKeepAValidSvgOrCustomElementName(string element)
     {
@@ -857,5 +886,205 @@ public class BitElementTests : BunitTestContext
 
         // Nothing is rendered, so there is no element to focus and no interop call to make of it either.
         await component.Instance.FocusAsync();
+        await component.Instance.FocusAsync(true);
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public async Task BitElementFocusAsyncShouldReachTheRenderedElement(bool preventScroll)
+    {
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.Add(p => p.Element, "input");
+        });
+
+        if (preventScroll)
+        {
+            await component.Instance.FocusAsync(true);
+        }
+        else
+        {
+            await component.Instance.FocusAsync();
+        }
+
+        var invocations = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
+
+        // The focus of the captured element is one interop call, and the flag it carries is the one asked for here:
+        // the overload taking it is what focuses the element without scrolling the document to bring it into view.
+        Assert.AreEqual(1, invocations.Count);
+        Assert.AreEqual(component.Instance.RootElement, invocations[0].Arguments[0]);
+        Assert.AreEqual(preventScroll, invocations[0].Arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitElementShouldRemoveTheHrefOfADisabledImageMapArea()
+    {
+        var component = RenderComponent<BitElementHtmlAttributesTest>();
+
+        var element = component.FindAll(".bit-elm")[8];
+
+        // An area is the other tag that is a hyperlink of its own, and it has no box for the pointer events of the
+        // disabled class to turn off, so the href it is followed through is all there is to take away from it.
+        Assert.AreEqual("AREA", element.TagName);
+        Assert.IsFalse(element.HasAttribute("href"));
+        Assert.AreEqual("true", element.GetAttribute("aria-disabled"));
+        Assert.AreEqual("-1", element.GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitElementShouldKeepTheHrefOfAnEnabledImageMapArea()
+    {
+        var component = RenderComponent<BitElementHtmlAttributesTest>();
+
+        var element = component.FindAll(".bit-elm")[7];
+
+        Assert.AreEqual("AREA", element.TagName);
+        Assert.AreEqual("https://bitplatform.dev/", element.GetAttribute("href"));
+    }
+
+    [TestMethod]
+    public void BitElementShouldLetTheNamedClickModifiersWinOverTheParametersOfTheClick()
+    {
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.Add(p => p.StopPropagation, false);
+            parameters.Add(p => p.PreventDefault, false);
+            parameters.Add(p => p.StopPropagationEvents, new[] { "click" });
+            parameters.Add(p => p.PreventDefaultEvents, new[] { "onclick" });
+        });
+
+        // The names are written after the two parameters of the click, and the later of two attributes of a name is
+        // the one the render tree keeps, so naming the click turns the modifier on whatever the parameter says.
+        StringAssert.Contains(component.Markup, "onclick:stopPropagation");
+        StringAssert.Contains(component.Markup, "onclick:preventDefault");
+    }
+
+    [TestMethod]
+    public void BitElementShouldRenderANamedEventModifierOnlyOnceWhenItIsRepeated()
+    {
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.Add(p => p.StopPropagationEvents, new[] { "dblclick", "ondblclick", " DblClick " });
+        });
+
+        // The three names are one event written three ways, and one attribute of a name is all an element can carry.
+        Assert.AreEqual(1, Regex.Matches(component.Markup, "ondblclick:stopPropagation").Count);
+    }
+
+    [TestMethod]
+    public void BitElementShouldRemoveTheClickModifiersTurnedOffAfterRender()
+    {
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.Add(p => p.StopPropagation, true);
+            parameters.Add(p => p.PreventDefault, true);
+        });
+
+        StringAssert.Contains(component.Markup, "onclick:stopPropagation");
+        StringAssert.Contains(component.Markup, "onclick:preventDefault");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.StopPropagation, false);
+            parameters.Add(p => p.PreventDefault, false);
+        });
+
+        // A modifier that is off writes no attribute at all, so the one the first render wrote is taken away by
+        // the renderer not finding it here rather than by a false written over it.
+        Assert.IsFalse(component.Markup.Contains("onclick:stopPropagation"));
+        Assert.IsFalse(component.Markup.Contains("onclick:preventDefault"));
+    }
+
+    [TestMethod]
+    public void BitElementShouldRespectTheElementTurningVoidAfterRender()
+    {
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.Add(p => p.Element, "span");
+            parameters.AddChildContent("content");
+        });
+
+        component.MarkupMatches(@"<span class=""bit-elm"" id:ignore>content</span>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Element, "input");
+            parameters.AddChildContent("content");
+        });
+
+        // The new tag holds no content, so the content the previous one wrapped goes with it rather than ending
+        // up beside the element the way a browser repairing the markup would leave it.
+        component.MarkupMatches(@"<input class=""bit-elm"" id:ignore />");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Element, "span");
+            parameters.AddChildContent("content");
+        });
+
+        component.MarkupMatches(@"<span class=""bit-elm"" id:ignore>content</span>");
+    }
+
+    [TestMethod]
+    public void BitElementShouldFallBackToDivWhenTheElementBecomesUnusableAfterRender()
+    {
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.Add(p => p.Element, "section");
+            parameters.AddChildContent("content");
+        });
+
+        component.MarkupMatches(@"<section class=""bit-elm"" id:ignore>content</section>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Element, "section onclick=alert(1)");
+            parameters.AddChildContent("content");
+        });
+
+        // The name is read on every render, so a value that stops being a name a tag can have takes the element
+        // back to the default rather than leaving the one the previous render built in place.
+        component.MarkupMatches(@"<div class=""bit-elm"" id:ignore>content</div>");
+    }
+
+    [TestMethod]
+    public void BitElementShouldDropEverythingThatDescribesTheElementWhileUnwrapped()
+    {
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.Add(p => p.NoWrapper, true);
+            parameters.Add(p => p.Element, "section");
+            parameters.Add(p => p.Class, "test-class");
+            parameters.Add(p => p.Style, "color: red;");
+            parameters.Add(p => p.Id, "test-id");
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.TabIndex, "3");
+            parameters.Add(p => p.AriaLabel, "test-label");
+            parameters.Add(p => p.StopPropagation, true);
+            parameters.AddChildContent("content");
+        });
+
+        // An unwrapped element is its content and nothing else: everything that would describe an element - the
+        // tag, the class, the style, the id, the direction, the tab stop, the label, the event modifiers - has
+        // nowhere to land, and no element is captured for the reference either.
+        Assert.AreEqual("content", component.Markup);
+        Assert.IsTrue(string.IsNullOrEmpty(component.Instance.RootElement.Id));
+    }
+
+    [TestMethod]
+    public void BitElementShouldNotRenderChildContentInsideAVoidElementWhileWrapped()
+    {
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.Add(p => p.Element, "input");
+            parameters.Add(p => p.NoWrapper, true);
+            parameters.AddChildContent("content");
+        });
+
+        // The tag decides nothing any more once there is no tag: what a void element could not have held is all
+        // that is rendered while the wrapper is gone.
+        Assert.AreEqual("content", component.Markup);
     }
 }

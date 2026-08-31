@@ -5,8 +5,9 @@
             Description="Renders any HTML tag - an anchor, a button, an input, an SVG shape or a custom element - with the styling, attribute, direction and state parameters of the bit BlazorUI." />
 
 <DemoPage Name="Element"
-          Description="BitElement renders whatever HTML tag the Element parameter names - a div by default, but just as easily an anchor, a button, an input, an SVG shape or a custom element - while still accepting the styling, direction and state parameters every other component of the library offers. Everything that is not a parameter is splatted onto that tag, so attributes and event handlers land on whichever element is rendered, and the class and style it builds are merged with the ones written as plain HTML attributes. The tag decides the rest: a void element such as img or input holds no content, a disabled element gets the disabled attribute only where HTML defines one and is taken out of the tab order everywhere else, and NoWrapper drops the tag altogether and leaves only the content behind. On top of that it reaches what Razor offers on a plain element and not on a component: the stopPropagation and preventDefault modifiers of the click and of any other event."
+          Description="BitElement renders whatever HTML tag the Element parameter names - a div by default, but just as easily an anchor, a button, an input, an SVG shape or a custom element - while still accepting the styling, direction and state parameters every other component of the library offers. Everything that is not a parameter is splatted onto that tag, so attributes and event handlers land on whichever element is rendered, and the class and style it builds are merged with the ones written as plain HTML attributes. The tag then decides the rest: a void element holds no content, a disabled element is disabled the way its own tag allows, and NoWrapper drops the tag altogether and leaves only the content behind. On top of that it reaches what Razor offers on a plain element and not on a component: the stopPropagation and preventDefault modifiers of the click and of any other event."
           Parameters="componentParameters"
+          PublicMembers="componentPublicMembers"
           GitHubUrl="Utilities/Element/BitElement.cs"
           GitHubDemoUrl="Utilities/Element/BitElementDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
@@ -22,18 +23,21 @@
     <DemoExample Title="Element" RazorCode="@example2RazorCode" Id="example2">
         <div class="example-desc">
             <b>Element</b> names the tag to render, and the value is used exactly as written, since SVG tag names such as
-            <code>linearGradient</code> are case sensitive. What is accepted is a name a tag can have: a value that is
-            empty, or that does not begin with a letter, or that carries whitespace or any of the characters that would
-            end the tag (<code>&lt;</code>, <code>&gt;</code>, <code>/</code>, <code>=</code>, a quote) falls back to the
-            default <code>div</code> rather than being written into the markup as it is. Changing the tag between renders
-            replaces the rendered element with a new one.
+            <code>linearGradient</code> are case sensitive. What is accepted is a name a tag can be made of: an ASCII
+            letter, followed by letters, digits and the <code>-</code>, <code>_</code>, <code>.</code> and <code>:</code>
+            that join them in every markup language that has tag names. Anything else falls back to the default
+            <code>div</code> rather than reaching the markup - a whitespace or a <code>&lt;</code> would end the tag and
+            write markup of its own, and the remaining symbols are names the browsers do not agree to build an element
+            of, so one of them would throw where the element is created. Changing the tag between renders replaces the
+            rendered element with a new one.
         </div>
         <div class="example-content">
             <BitElement Element="h4">A heading (h4)</BitElement>
             <BitElement Element="p">A paragraph (p) with a <BitElement Element="mark">highlighted (mark)</BitElement> word in it.</BitElement>
             <BitElement Element="blockquote">A quotation (blockquote)</BitElement>
             <BitElement Element="code">A code span (code)</BitElement>
-            <BitElement Element="not a tag name">An unusable tag name falls back to a div.</BitElement>
+            <BitElement Element="not a tag name">A tag name carrying whitespace falls back to a div.</BitElement>
+            <BitElement Element="h4!">And so does one carrying a symbol no tag name is made of.</BitElement>
         </div>
     </DemoExample>
     <DemoExample Title="SVG & custom elements" RazorCode="@example3RazorCode" Id="example3">
@@ -100,7 +104,8 @@
             <code>contextmenu</code> a custom menu replaces, the <code>dragover</code> of a drop target, the
             <code>submit</code> of a form, a <code>keydown</code> the page handles itself. A name in either list is a
             modifier of the element rather than a handler of the event, so it applies whether or not a handler of that
-            event is written beside it.
+            event is written beside it - and naming the <code>click</code> in a list is allowed too, where it has the
+            last word over the parameter of the same name beside it.
         </div>
         <div class="example-content">
             <div class="demo-card" @onclick="() => card++">
@@ -132,9 +137,9 @@
             <code>textarea</code>), and on every other tag a <code>tabindex</code> of -1 instead, so that a tag the browser
             will not disable of itself is at least out of the keyboard's reach as well as the pointer's.
             <code>aria-disabled</code> goes on all of them, so assistive technologies announce the element as disabled
-            rather than as missing. A disabled <code>a</code> also loses its <code>href</code>, since a link is focusable
-            and followed by the enter key whatever the tab order says. The state describes the element itself: content
-            inside it keeps its own tab stops.
+            rather than as missing. A disabled hyperlink - an <code>a</code> or an image map's <code>area</code> - also
+            loses its <code>href</code>, since a link is focusable and followed by the enter key whatever the tab order
+            says. The state describes the element itself: content inside it keeps its own tab stops.
         </div>
         <div class="example-content">
             <BitElement Element="button" IsEnabled="false" @onclick="() => counter++">A disabled button</BitElement>
@@ -189,13 +194,18 @@
     <DemoExample Title="Element reference" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div class="example-desc">
             An <code>@@ref</code> on the component reaches the rendered element: <b>FocusAsync</b> gives it the browser
-            focus, and <b>RootElement</b> is the <code>ElementReference</code> to hand to JavaScript interop. Both are
-            about an element that is there, so while <b>NoWrapper</b> is set, or before the first render, the focus call
-            does nothing rather than fail.
+            focus, and <b>RootElement</b> is the <code>ElementReference</code> to hand to JavaScript interop. The
+            element has to be one the browser can focus - a tag that is focusable of itself, or any other tag carrying a
+            <b>TabIndex</b>, which is what puts the <code>div</code> below into the tab order. The overload of
+            <b>FocusAsync</b> taking a <code>preventScroll</code> flag focuses without the browser scrolling the
+            document to bring the element into view. Both are about an element that is there, so while <b>NoWrapper</b>
+            is set, or before the first render, the call does nothing rather than fail.
         </div>
         <div class="example-content">
             <BitElement Element="input" @ref="inputElement" placeholder="Focused by the button" />
+            <BitElement Class="demo-boxed" TabIndex="0" @ref="boxElement">A div, focusable because it has a TabIndex.</BitElement>
             <BitButton OnClick="FocusTheInput">Focus the input</BitButton>
+            <BitButton OnClick="FocusTheBox">Focus the div without scrolling</BitButton>
         </div>
     </DemoExample>
     <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">

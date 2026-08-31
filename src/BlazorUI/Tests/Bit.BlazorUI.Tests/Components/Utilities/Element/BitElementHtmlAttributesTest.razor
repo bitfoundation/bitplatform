@@ -34,3 +34,9 @@
 <BitElement Element="a" href="https://bitplatform.dev/">I'm a link</BitElement>
 
 <BitElement Element="a" href="https://bitplatform.dev/" IsEnabled="false">I'm a disabled link</BitElement>
+
+@* An area is the other tag that is a hyperlink of its own, and the one with no box of its own for the pointer
+   events of the disabled class to turn off, so the href is all there is to take away from a disabled one. *@
+<BitElement Element="area" href="https://bitplatform.dev/" alt="I'm an image map link" />
+
+<BitElement Element="area" href="https://bitplatform.dev/" alt="I'm a disabled image map link" IsEnabled="false" />

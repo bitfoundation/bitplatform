@@ -16,7 +16,7 @@ public partial class BitElementDemo
             Name = "Element",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The custom html element used for the root node. Any tag name is accepted, including SVG and custom elements, and it is used exactly as written. A value that is not a name a tag can have falls back to the default, which is \"div\".",
+            Description = "The custom html element used for the root node. Any tag name is accepted, including SVG and custom elements, and it is used exactly as written. A value that is not a name a tag can be made of - a letter followed by letters, digits and the \"-\", \"_\", \".\" and \":\" that join them - falls back to the default, which is \"div\".",
         },
         new()
         {
@@ -37,7 +37,7 @@ public partial class BitElementDemo
             Name = "PreventDefaultEvents",
             Type = "IEnumerable<string>?",
             DefaultValue = "null",
-            Description = "The names of the events whose default browser action is prevented on the element, with or without the \"on\" prefix. This is PreventDefault for every event other than the click.",
+            Description = "The names of the events whose default browser action is prevented on the element, with or without the \"on\" prefix. This is PreventDefault for every event other than the click, and naming the click here has the last word over that parameter.",
         },
         new()
         {
@@ -51,7 +51,17 @@ public partial class BitElementDemo
             Name = "StopPropagationEvents",
             Type = "IEnumerable<string>?",
             DefaultValue = "null",
-            Description = "The names of the events that are stopped from bubbling up from the element to its ancestors, with or without the \"on\" prefix. This is StopPropagation for every event other than the click.",
+            Description = "The names of the events that are stopped from bubbling up from the element to its ancestors, with or without the \"on\" prefix. This is StopPropagation for every event other than the click, and naming the click here has the last word over that parameter.",
+        }
+    ];
+
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask",
+            Description = "Gives the browser focus to the rendered element, which has to be one the browser can focus: a tag that is focusable of itself, or any other tag carrying a TabIndex. The overload taking a preventScroll flag focuses it without the browser scrolling the document to bring it into view. Nothing is rendered while NoWrapper is set and nothing is captured before the first render, so there the call does nothing rather than fail.",
         }
     ];
 
@@ -66,12 +76,19 @@ public partial class BitElementDemo
     private bool wrapped = true;
     private bool isVisible = true;
 
+    private BitElement? boxElement;
     private BitElement? inputElement;
     private async Task FocusTheInput()
     {
         if (inputElement is null) return;
 
         await inputElement.FocusAsync();
+    }
+    private async Task FocusTheBox()
+    {
+        if (boxElement is null) return;
+
+        await boxElement.FocusAsync(preventScroll: true);
     }
 
     private string element = "div";
@@ -95,7 +112,8 @@ public partial class BitElementDemo
 <BitElement Element=""p"">A paragraph (p) with a <BitElement Element=""mark"">highlighted (mark)</BitElement> word in it.</BitElement>
 <BitElement Element=""blockquote"">A quotation (blockquote)</BitElement>
 <BitElement Element=""code"">A code span (code)</BitElement>
-<BitElement Element=""not a tag name"">An unusable tag name falls back to a div.</BitElement>";
+<BitElement Element=""not a tag name"">A tag name carrying whitespace falls back to a div.</BitElement>
+<BitElement Element=""h4!"">And so does one carrying a symbol no tag name is made of.</BitElement>";
 
     private string example3RazorCode = @"
 <BitElement Element=""svg"" width=""160"" height=""48"" viewBox=""0 0 160 48"" role=""img"" AriaLabel=""A gradient bar"">
@@ -196,9 +214,12 @@ private List<BitDropdownItem<string>> elementsList =
 
     private string example11RazorCode = @"
 <BitElement Element=""input"" @ref=""inputElement"" placeholder=""Focused by the button"" />
+<BitElement Class=""demo-boxed"" TabIndex=""0"" @ref=""boxElement"">A div, focusable because it has a TabIndex.</BitElement>
 
-<BitButton OnClick=""FocusTheInput"">Focus the input</BitButton>";
+<BitButton OnClick=""FocusTheInput"">Focus the input</BitButton>
+<BitButton OnClick=""FocusTheBox"">Focus the div without scrolling</BitButton>";
     private string example11CsharpCode = @"
+private BitElement? boxElement;
 private BitElement? inputElement;
 
 private async Task FocusTheInput()
@@ -206,6 +227,13 @@ private async Task FocusTheInput()
     if (inputElement is null) return;
 
     await inputElement.FocusAsync();
+}
+
+private async Task FocusTheBox()
+{
+    if (boxElement is null) return;
+
+    await boxElement.FocusAsync(preventScroll: true);
 }";
 
     private string example12RazorCode = @"

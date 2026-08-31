@@ -19,15 +19,16 @@ namespace Bit.BlazorUI;
 /// The tag decides the rest of the behavior: a void element such as "input" or "img" holds no content, so <see cref="ChildContent"/>
 /// is not rendered into it, and a disabled element gets the "disabled" attribute only where HTML defines one, plus "aria-disabled"
 /// and a tabindex of -1 everywhere else, so that a tag HTML cannot disable is at least taken out of the tab order. A disabled
-/// "a" also loses its "href", which is what keeps the link itself from being focused and followed.
+/// hyperlink ("a" or "area") also loses its "href", which is what keeps the link itself from being focused and followed.
 /// <see cref="NoWrapper"/> removes the tag altogether and leaves only the content behind, which is what turns the component into a
 /// conditional wrapper. <see cref="StopPropagation"/> and <see cref="PreventDefault"/>, and <see cref="StopPropagationEvents"/> and
 /// <see cref="PreventDefaultEvents"/> for the events other than the click, reach the event modifiers that Razor only offers on plain
 /// elements.
 /// <br />
-/// The tag name is used as written, but it is only used at all while it is a name a tag can have: a value carrying whitespace or
-/// any of the characters that end a tag falls back to the default one, since a tag name that reached the rendered markup as it is
-/// would be a way to write markup rather than to name an element. That is a last line of defense and not a license - a tag name
+/// The tag name is used as written, but it is only used at all while it is a name a tag can have - a letter followed by letters,
+/// digits and the "-", "_", "." and ":" that join them. Anything else falls back to the default tag, since a name carrying
+/// whitespace or a "&lt;" would be a way to write markup rather than to name an element, and one carrying any other symbol is a
+/// name the browsers do not agree to build an element of. That is a last line of defense and not a license - a tag name
 /// taken from untrusted input still decides what the browser runs, since "script" and "iframe" are names a tag can have, so the
 /// value belongs to the page rather than to its data.
 /// </remarks>
@@ -50,10 +51,12 @@ public partial class BitElement : BitComponentBase
         "button", "fieldset", "input", "optgroup", "option", "select", "textarea"
     };
 
-    // The characters that would end the tag or begin an attribute inside it if they reached the rendered markup as
-    // part of the tag name. Whitespace and the control characters are refused along with them, and the name has to
-    // begin with an ASCII letter, which is what the HTML parser requires before it reads a tag name at all.
-    private static readonly char[] _invalidElementChars = ['<', '>', '/', '=', '&', '"', '\'', '`'];
+    // The elements that are hyperlinks of their own. They are reachable and activatable through their href whatever
+    // the tab order says, so taking that href away is what disables the link itself; every other tag has none to lose.
+    private static readonly HashSet<string> _linkElements = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "a", "area"
+    };
 
 
 
@@ -86,8 +89,10 @@ public partial class BitElement : BitComponentBase
     /// <remarks>
     /// Any tag name is accepted, including SVG elements and custom elements, and the value is used as written, since
     /// SVG tag names ("linearGradient", "clipPath", ...) are case sensitive. An empty or whitespace value falls back
-    /// to the default tag, and so does a value that is not a name a tag can have: one that does not begin with a
-    /// letter, or that carries whitespace or any of the characters that would end the tag in the rendered markup.
+    /// to the default tag, and so does a value that is not a name a tag can have: one that does not begin with an
+    /// ASCII letter, or that carries anything but letters, digits and the "-", "_", "." and ":" that join them - a
+    /// whitespace or a "&lt;" would end the tag in the rendered markup, and the other symbols are refused because the
+    /// browsers disagree over which of them name an element, and one that is refused throws where the element is built.
     /// <br />
     /// The tag can be changed between renders, which replaces the rendered element with a new one of the new tag.
     /// </remarks>
@@ -133,6 +138,9 @@ public partial class BitElement : BitComponentBase
     /// The names are the DOM event names, with or without the "on" prefix ("contextmenu" and "oncontextmenu" name the same
     /// event), and a name is a modifier of the element rather than a handler of the event: the default action is prevented
     /// whether or not a handler of that event is written beside it.
+    /// <br />
+    /// The click may be named here as well, and naming it has the last word: the default action of the click is prevented
+    /// while "click" is in this list even where <see cref="PreventDefault"/> is left false.
     /// </remarks>
     [Parameter] public IEnumerable<string>? PreventDefaultEvents { get; set; }
 
@@ -158,6 +166,9 @@ public partial class BitElement : BitComponentBase
     /// The names are the DOM event names, with or without the "on" prefix ("dblclick" and "ondblclick" name the same event),
     /// and a name is a modifier of the element rather than a handler of the event: the bubbling stops at this element
     /// whether or not a handler of that event is written beside it.
+    /// <br />
+    /// The click may be named here as well, and naming it has the last word: the click stops at this element while "click"
+    /// is in this list even where <see cref="StopPropagation"/> is left false.
     /// </remarks>
     [Parameter] public IEnumerable<string>? StopPropagationEvents { get; set; }
 
@@ -176,6 +187,19 @@ public partial class BitElement : BitComponentBase
     public ValueTask FocusAsync()
     {
         return RootElement.Context is null ? ValueTask.CompletedTask : RootElement.FocusAsync();
+    }
+
+    /// <summary>
+    /// Gives the browser focus to the rendered element.
+    /// </summary>
+    /// <param name="preventScroll">A Boolean value indicating whether or not the browser should scroll
+    /// the document to bring the newly-focused element into view. A value of false for preventScroll (the default)
+    /// means that the browser will scroll the element into view after focusing it.
+    /// If preventScroll is set to true, no scrolling will occur.</param>
+    /// <inheritdoc cref="FocusAsync()" path="/remarks"/>
+    public ValueTask FocusAsync(bool preventScroll)
+    {
+        return RootElement.Context is null ? ValueTask.CompletedTask : RootElement.FocusAsync(preventScroll);
     }
 
 
@@ -219,10 +243,10 @@ public partial class BitElement : BitComponentBase
         // HTML only defines the disabled attribute on the form elements, so everywhere else the state has to be carried
         // by the aria attribute and by the tab order rather than by the browser's own handling of the attribute.
         var nativelyDisabled = disabled && _disableableElements.Contains(element!);
-        // An anchor is the one tag that is reachable and activatable through its own href whatever the tab order says:
-        // it stays focusable programmatically, and the enter key on a focused link follows the href without a click the
-        // pointer-events of the disabled class could stop. Dropping the href is what disables the link itself.
-        var disabledLink = disabled && string.Equals(element, "a", StringComparison.OrdinalIgnoreCase);
+        // A hyperlink is reachable and activatable through its own href whatever the tab order says: it stays focusable
+        // programmatically, and the enter key on a focused link follows the href without a click the pointer-events of
+        // the disabled class could stop. Dropping the href is what disables the link itself.
+        var disabledLink = disabled && _linkElements.Contains(element!);
 
         builder.OpenElement(0, element!);
         // The splatted attributes come first so everything the component builds itself is written over them. The values
@@ -232,7 +256,7 @@ public partial class BitElement : BitComponentBase
         builder.AddAttribute(2, "id", Id.HasValue() ? Id : (GetSplattedAttribute("id") ?? _Id));
         builder.AddAttribute(3, "style", JoinStyles(GetSplattedAttribute("style"), StyleBuilder.Value));
         builder.AddAttribute(4, "class", JoinClasses(ClassBuilder.Value, GetSplattedAttribute("class")));
-        builder.AddAttribute(5, "dir", Dir?.ToString().ToLower() ?? GetSplattedAttribute("dir"));
+        builder.AddAttribute(5, "dir", Dir?.ToString().ToLowerInvariant() ?? GetSplattedAttribute("dir"));
         // A tag HTML has no disabled attribute for keeps its keyboard tab stop while it is disabled, and the pointer
         // events the disabled class turns off are only one of the two ways to reach it, so the tab stop goes as well.
         builder.AddAttribute(6, "tabindex", disabled && nativelyDisabled is false
@@ -247,12 +271,14 @@ public partial class BitElement : BitComponentBase
         }
         // What keeps a disabled element announced as disabled rather than as missing, whichever tag it renders.
         builder.AddAttribute(9, "aria-disabled", disabled ? "true" : GetSplattedAttribute("aria-disabled"));
-        // Written over the splatted href of a disabled anchor, which is what takes the link out of the tab order the
+        // Written over the splatted href of a disabled hyperlink, which is what takes the link out of the tab order the
         // browser builds of itself and leaves nothing for the enter key to follow; every other tag has no href to lose.
         builder.AddAttribute(10, "href", disabledLink ? null : GetSplattedAttribute("href"));
-        // The event modifiers of a plain element, which the razor compiler refuses on a component. The two of the click
-        // are written unconditionally so that turning either of them off again is a value change the renderer can see
-        // and undo; the ones of the other events are only there while they are named.
+        // The event modifiers of a plain element, which the razor compiler refuses on a component. A modifier that is
+        // off writes no attribute at all, and the renderer takes the one a previous render wrote away again by not
+        // finding it here, so the two of the click are asked for on every render whichever way they stand and the ones
+        // of the other events only while they are named. A name in either list has the last word over the parameter of
+        // the click beside it, since it is written after it and the later of two attributes of a name is the one kept.
         builder.AddEventStopPropagationAttribute(11, "onclick", StopPropagation);
         builder.AddEventPreventDefaultAttribute(12, "onclick", PreventDefault);
         var seq = 13;
@@ -287,18 +313,31 @@ public partial class BitElement : BitComponentBase
 
 
 
-    // A tag name is only a tag name while the markup it is written into still reads it as one: the HTML parser only
-    // begins a tag at all when a letter follows the "<", and it ends the name at the first whitespace and the tag at
-    // the first ">", so a name carrying either of them would write markup of its own rather than name an element.
+    // A tag name is only a tag name while both the markup it is written into reads it as one and the browser builds
+    // an element of it. The HTML parser only begins a tag at all when a letter follows the "<", and it ends the name
+    // at the first whitespace and the tag at the first ">", so a name carrying either of them would write markup of
+    // its own rather than name an element. What the browser accepts is the narrower of the two and the engines do not
+    // agree on it: the DOM standard now takes any name that begins with a letter and carries no whitespace, "/" or
+    // ">", while the rule it replaced - which WebKit still enforces - is the XML name, and a name refused by
+    // document.createElement throws where the renderer builds the element, taking the whole render batch with it.
+    // So the name is read as what a name is made of rather than as what it must not contain: the ASCII letters and
+    // digits, the four characters that join them in every markup language that has tag names, and the letters and
+    // digits of the other alphabets, which is all a custom element may be named in.
     private static bool IsValidElement(string element)
     {
         if (char.IsAsciiLetter(element[0]) is false) return false;
 
         foreach (var @char in element)
         {
-            if (char.IsWhiteSpace(@char) || char.IsControl(@char)) return false;
+            if (char.IsAsciiLetterOrDigit(@char)) continue;
 
-            if (_invalidElementChars.Contains(@char)) return false;
+            if (@char is '-' or '_' or '.' or ':') continue;
+
+            // Everything outside ASCII that is a letter or a digit is a name of some alphabet; the rest of it - the
+            // separators, the punctuation, the C1 controls - is refused along with the ASCII symbols and whitespace.
+            if (char.IsAscii(@char) is false && char.IsLetterOrDigit(@char)) continue;
+
+            return false;
         }
 
         return true;
