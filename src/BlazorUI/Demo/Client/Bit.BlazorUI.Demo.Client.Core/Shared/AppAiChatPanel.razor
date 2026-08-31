@@ -19,7 +19,7 @@
 
     <BitPanel @bind-IsOpen="_isOpen"
               ShowCloseButton
-              Dimmed="_isSmallScreen is true"
+              ModeFull="_isSmallScreen is true"
               Modeless="_isSmallScreen is false"
               OnDismiss="WrapHandled(HandleOnDismissPanel)"
               Classes="@(new() { Container = $"panel-cnt{(_isMaximized ? " maximized" : null)}" })">

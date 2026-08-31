@@ -869,15 +869,15 @@ public class BitPanelTests : BunitTestContext
         DataRow(false),
         DataRow(true)
     ]
-    public void BitPanelDimmedShouldGiveTheOverlayABackgroundOfItsOwn(bool dimmed)
+    public void BitPanelModeFullShouldGiveTheOverlayABackgroundOfItsOwn(bool modeFull)
     {
         var com = RenderComponent<BitPanel>(parameters =>
         {
-            parameters.Add(p => p.Dimmed, dimmed);
+            parameters.Add(p => p.ModeFull, modeFull);
             parameters.Add(p => p.IsOpen, true);
         });
 
-        Assert.AreEqual(dimmed, com.Find(".bit-pnl-ovl").ClassList.Contains("bit-pnl-ovl-dim"));
+        Assert.AreEqual(modeFull, com.Find(".bit-pnl-ovl").ClassList.Contains("bit-pnl-ovl-mfl"));
     }
 
     // A panel that is not a dialog at all - one left beside the page rather than over it - is better

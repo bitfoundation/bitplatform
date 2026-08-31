@@ -50,9 +50,10 @@
     transition: opacity $mot-duration-short $mot-easing-accelerate, visibility 0s linear $mot-duration-short;
 }
 
-// The overlay is a transparent catcher of clicks unless it is asked to dim what it covers, so that a panel
-// shown beside the work rather than instead of it does not darken the page it is meant to be read against.
-.bit-pnl-ovl-dim {
+// ModeFull: the overlay dims what it covers instead of only catching the clicks meant for it. It is a
+// transparent catcher of clicks otherwise, so that a panel shown beside the work rather than instead of it
+// does not darken the page it is meant to be read against.
+.bit-pnl-ovl-mfl {
     background-color: $clr-bg-overlay;
 }
 

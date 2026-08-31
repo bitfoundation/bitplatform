@@ -73,13 +73,6 @@ public partial class BitPanelDemo
         },
         new()
         {
-            Name = "Dimmed",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Dims the page behind the panel, by giving the overlay that covers it a background of its own instead of leaving it the transparent catcher of clicks it is by default.",
-        },
-        new()
-        {
             Name = "Footer",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -133,6 +126,13 @@ public partial class BitPanelDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Keeps the content of the panel in the page once it has been opened, instead of taking it back out every time the panel closes. Nothing of it is rendered until the first opening either way.",
+        },
+        new()
+        {
+            Name = "ModeFull",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the overlay in full mode that gives it an opaque background. The overlay catches the clicks meant for the page behind it either way; this is what makes it dim that page as well.",
         },
         new()
         {
@@ -491,12 +491,11 @@ public partial class BitPanelDemo
 
     private bool isBasicPanelOpen;
     private BitPanel basicPanelRef = default!;
+    private bool isCloseButtonPanelOpen;
 
-    private string lastCloseReason = "-";
     private bool isHeaderPanelOpen;
     private bool isHeaderTextPanelOpen;
     private bool isFooterTextPanelOpen;
-    private bool isCloseButtonPanelOpen;
 
     private double customPanelSize = 300;
     private bool isOpenInPositionStart;
@@ -504,14 +503,13 @@ public partial class BitPanelDemo
     private bool isOpenInPositionTop;
     private bool isOpenInPositionBottom;
     private bool isFullSizePanelOpen;
-    private bool isCssSizePanelOpen;
 
     private int dismissCount;
     private int overlayClickCount;
     private int escapeKeyCount;
     private string lastDismissReason = "-";
     private bool isBlockingPanelOpen;
-    private bool isDimmedPanelOpen;
+    private bool isModeFullPanelOpen;
     private bool isModelessPanelOpen;
     private bool isNoEscapePanelOpen;
     private BitPanel modelessPanelRef = default!;
@@ -581,6 +579,7 @@ public partial class BitPanelDemo
     private readonly string example1RazorCode = @"
 <BitButton OnClick=""() => isBasicPanelOpen = true"">Open panel</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => basicPanelRef.Toggle()"">Toggle panel</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""() => isCloseButtonPanelOpen = true"">ShowCloseButton</BitButton>
 
 <BitPanel @bind-IsOpen=""isBasicPanelOpen"" @ref=""basicPanelRef"" AriaLabel=""A basic panel"">
     <div class=""panel-body"">
@@ -593,16 +592,26 @@ public partial class BitPanelDemo
         </div>
         <BitButton OnClick=""() => isBasicPanelOpen = false"">Close</BitButton>
     </div>
+</BitPanel>
+
+<BitPanel @bind-IsOpen=""isCloseButtonPanelOpen"" ShowCloseButton AriaLabel=""A panel with a close button"">
+    <div class=""panel-body"">
+        <h3>ShowCloseButton</h3>
+        <div>
+            The close button in the corner dismisses this panel the way a click on the page behind
+            it, the Escape key or a swipe towards the edge would.
+        </div>
+    </div>
 </BitPanel>";
     private readonly string example1CsharpCode = @"
 private bool isBasicPanelOpen;
-private BitPanel basicPanelRef = default!;";
+private BitPanel basicPanelRef = default!;
+private bool isCloseButtonPanelOpen;";
 
     private readonly string example2RazorCode = @"
 <BitButton OnClick=""() => isHeaderTextPanelOpen = true"">HeaderText</BitButton>
 <BitButton OnClick=""() => isHeaderPanelOpen = true"">Header & Footer</BitButton>
 <BitButton OnClick=""() => isFooterTextPanelOpen = true"">FooterText</BitButton>
-<BitButton Variant=""BitVariant.Outline"" OnClick=""() => isCloseButtonPanelOpen = true"">ShowCloseButton & Blocking</BitButton>
 
 <BitPanel @bind-IsOpen=""isHeaderTextPanelOpen"" Size=""320"" HeaderText=""A panel with a HeaderText"" ShowCloseButton>
     <div>
@@ -645,28 +654,11 @@ private BitPanel basicPanelRef = default!;";
         where creativity waits to awaken. These words are temporary, standing in place of ideas
         yet to come, a glimpse into the infinite possibilities that lie ahead.
     </div>
-</BitPanel>
-
-<BitPanel @bind-IsOpen=""isCloseButtonPanelOpen""
-          Blocking
-          Dimmed
-          Size=""320""
-          HeaderText=""Blocking""
-          ShowCloseButton
-          CloseButtonTitle=""Dismiss the panel""
-          OnDismissing=""args => lastCloseReason = args.Reason.ToString()"">
-    <div>
-        A click on the overlay does nothing here, so the close button is the only pointer left
-        that gets this panel closed.
-    </div>
-    <div>Last reason reported by OnDismissing: <b>@lastCloseReason</b></div>
 </BitPanel>";
     private readonly string example2CsharpCode = @"
-private string lastCloseReason = ""-"";
 private bool isHeaderPanelOpen;
 private bool isHeaderTextPanelOpen;
-private bool isFooterTextPanelOpen;
-private bool isCloseButtonPanelOpen;";
+private bool isFooterTextPanelOpen;";
 
     private readonly string example3RazorCode = @"
 <BitNumberField @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
@@ -676,7 +668,6 @@ private bool isCloseButtonPanelOpen;";
 <BitButton OnClick=""() => isOpenInPositionTop = true"">Top</BitButton>
 <BitButton OnClick=""() => isOpenInPositionBottom = true"">Bottom</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => isFullSizePanelOpen = true"">FullSize</BitButton>
-<BitButton Variant=""BitVariant.Outline"" OnClick=""() => isCssSizePanelOpen = true"">Styles.Container</BitButton>
 
 <BitPanel Size=""customPanelSize""
           @bind-IsOpen=""isOpenInPositionStart""
@@ -723,15 +714,6 @@ private bool isCloseButtonPanelOpen;";
         BitPanel with <b>FullSize</b>, which takes the whole of the screen.
         <BitButton OnClick=""() => isFullSizePanelOpen = false"">Close</BitButton>
     </div>
-</BitPanel>
-
-<BitPanel @bind-IsOpen=""isCssSizePanelOpen""
-          AriaLabel=""A panel sized in percent""
-          Styles=""@(new() { Container = ""width:50%"" })"">
-    <div class=""panel-body"">
-        BitPanel sized through <b>Styles.Container</b>, which takes any CSS value.
-        <BitButton OnClick=""() => isCssSizePanelOpen = false"">Close</BitButton>
-    </div>
 </BitPanel>";
     private readonly string example3CsharpCode = @"
 private double customPanelSize = 300;
@@ -739,12 +721,11 @@ private bool isOpenInPositionStart;
 private bool isOpenPositionEnd;
 private bool isOpenInPositionTop;
 private bool isOpenInPositionBottom;
-private bool isFullSizePanelOpen;
-private bool isCssSizePanelOpen;";
+private bool isFullSizePanelOpen;";
 
     private readonly string example4RazorCode = @"
 <BitButton OnClick=""() => isBlockingPanelOpen = true"">Blocking</BitButton>
-<BitButton OnClick=""() => isDimmedPanelOpen = true"">Dimmed</BitButton>
+<BitButton OnClick=""() => isModeFullPanelOpen = true"">ModeFull</BitButton>
 <BitButton OnClick=""() => isModelessPanelOpen = true"">Modeless</BitButton>
 <BitButton OnClick=""() => isNoEscapePanelOpen = true"">NoDismissOnEscape</BitButton>
 
@@ -764,15 +745,15 @@ private bool isCssSizePanelOpen;";
     </div>
 </BitPanel>
 
-<BitPanel @bind-IsOpen=""isDimmedPanelOpen""
-          Dimmed
+<BitPanel @bind-IsOpen=""isModeFullPanelOpen""
+          ModeFull
           AriaLabel=""A panel that dims the page""
           OnDismiss=""HandleOnDismiss""
           OnDismissing=""HandleOnDismissing"">
     <div class=""panel-body"">
-        <h3>Dimmed</h3>
+        <h3>ModeFull</h3>
         <div>The page behind this panel is dimmed by the overlay instead of only being covered by it.</div>
-        <BitButton OnClick=""() => isDimmedPanelOpen = false"">Close</BitButton>
+        <BitButton OnClick=""() => isModeFullPanelOpen = false"">Close</BitButton>
     </div>
 </BitPanel>
 
@@ -813,7 +794,7 @@ private int overlayClickCount;
 private int escapeKeyCount;
 private string lastDismissReason = ""-"";
 private bool isBlockingPanelOpen;
-private bool isDimmedPanelOpen;
+private bool isModeFullPanelOpen;
 private bool isModelessPanelOpen;
 private bool isNoEscapePanelOpen;
 private BitPanel modelessPanelRef = default!;
@@ -980,7 +961,7 @@ private bool isNoSwipePanelOpen;";
     private readonly string example9RazorCode = @"
 <BitButton OnClick=""() => isOuterPanelOpen = true"">Open outer panel</BitButton>
 
-<BitPanel @bind-IsOpen=""isOuterPanelOpen"" Size=""320"" Dimmed AriaLabel=""The outer panel"">
+<BitPanel @bind-IsOpen=""isOuterPanelOpen"" Size=""320"" ModeFull AriaLabel=""The outer panel"">
     <div class=""panel-body"">
         <h3>Outer</h3>
         <div>This panel sits at the layer every panel shares.</div>
@@ -989,7 +970,7 @@ private bool isNoSwipePanelOpen;";
 
         <BitPanel @bind-IsOpen=""isInnerPanelOpen""
                   Size=""240""
-                  Dimmed
+                  ModeFull
                   ZIndex=""1310""
                   AriaLabel=""The inner panel""
                   Position=""BitPanelPosition.Start"">

@@ -146,15 +146,6 @@ public partial class BitPanel : BitComponentBase
     [Parameter] public string? CloseIconName { get; set; }
 
     /// <summary>
-    /// Dims the page behind the panel, by giving the overlay that covers it a background of its own instead
-    /// of leaving it the transparent catcher of clicks it is by default.
-    /// </summary>
-    /// <remarks>
-    /// A <see cref="Modeless"/> panel renders no overlay at all, so there is nothing there to dim with.
-    /// </remarks>
-    [Parameter] public bool Dimmed { get; set; }
-
-    /// <summary>
     /// The footer of the panel, which stays put at the far edge of it while the content between it and the
     /// header scrolls.
     /// </summary>
@@ -218,6 +209,17 @@ public partial class BitPanel : BitComponentBase
     /// opened still costs nothing.
     /// </remarks>
     [Parameter] public bool KeepMounted { get; set; }
+
+    /// <summary>
+    /// Renders the overlay in full mode that gives it an opaque background.
+    /// </summary>
+    /// <remarks>
+    /// The overlay catches the clicks meant for the page behind it either way; this is what makes it dim the
+    /// page as well, for the panels that take the work over rather than sitting beside it. A
+    /// <see cref="Modeless"/> panel renders no overlay at all, so there is nothing there to give a background
+    /// to.
+    /// </remarks>
+    [Parameter] public bool ModeFull { get; set; }
 
     /// <summary>
     /// Leaves the page its own clicks while the panel is open, by not rendering the overlay that otherwise
@@ -928,9 +930,9 @@ public partial class BitPanel : BitComponentBase
     {
         List<string> classes = ["bit-pnl-ovl"];
 
-        if (Dimmed)
+        if (ModeFull)
         {
-            classes.Add("bit-pnl-ovl-dim");
+            classes.Add("bit-pnl-ovl-mfl");
         }
 
         if (IsOpen)

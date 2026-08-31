@@ -29,9 +29,17 @@
                 <b>Toggle</b> do what binding the flag would, from code that has no flag of its own.
             </div>
             <br />
+            <div>
+                <b>ShowCloseButton</b> puts a close button at the edge the panel slid in from, which is what a
+                panel whose ways out have been taken away - a <b>Blocking</b> or a <b>Modeless</b> one - needs
+                to be closable with the pointer at all. It names itself "Close" to a screen reader unless
+                <b>CloseButtonTitle</b> says otherwise, and <b>CloseIconName</b> replaces the glyph in it.
+            </div>
+            <br />
             <div class="btn-container">
                 <BitButton OnClick="() => isBasicPanelOpen = true">Open panel</BitButton>
                 <BitButton Variant="BitVariant.Outline" OnClick="() => basicPanelRef.Toggle()">Toggle panel</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => isCloseButtonPanelOpen = true">ShowCloseButton</BitButton>
             </div>
 
             <BitPanel @bind-IsOpen="isBasicPanelOpen" @ref="basicPanelRef" AriaLabel="A basic panel">
@@ -44,6 +52,16 @@
                         emerge.
                     </div>
                     <BitButton OnClick="() => isBasicPanelOpen = false">Close</BitButton>
+                </div>
+            </BitPanel>
+
+            <BitPanel @bind-IsOpen="isCloseButtonPanelOpen" ShowCloseButton AriaLabel="A panel with a close button">
+                <div class="panel-body">
+                    <h3>ShowCloseButton</h3>
+                    <div>
+                        The close button in the corner dismisses this panel the way a click on the page behind
+                        it, the Escape key or a swipe towards the edge would.
+                    </div>
                 </div>
             </BitPanel>
         </DemoExample>
@@ -66,19 +84,14 @@
             </div>
             <br />
             <div>
-                <b>ShowCloseButton</b> is what a panel that cannot be dismissed by a click on the page behind
-                it - a <b>Blocking</b> or a <b>Modeless</b> one - needs to be closable with the pointer at
-                all. It names itself "Close" to a screen reader unless <b>CloseButtonTitle</b> says
-                otherwise, and <b>CloseIconName</b> replaces the glyph in it. The header also names the panel:
-                a screen reader reads it out when the panel opens, without <b>TitleAriaId</b> having to point
-                anywhere.
+                The header also names the panel: a screen reader reads it out when the panel opens, without
+                <b>TitleAriaId</b> having to point anywhere.
             </div>
             <br />
             <div class="btn-container">
                 <BitButton OnClick="() => isHeaderTextPanelOpen = true">HeaderText</BitButton>
                 <BitButton OnClick="() => isHeaderPanelOpen = true">Header &amp; Footer</BitButton>
                 <BitButton OnClick="() => isFooterTextPanelOpen = true">FooterText</BitButton>
-                <BitButton Variant="BitVariant.Outline" OnClick="() => isCloseButtonPanelOpen = true">ShowCloseButton &amp; Blocking</BitButton>
             </div>
 
             <BitPanel @bind-IsOpen="isHeaderTextPanelOpen" Size="320" HeaderText="A panel with a HeaderText" ShowCloseButton>
@@ -123,22 +136,6 @@
                     yet to come, a glimpse into the infinite possibilities that lie ahead.
                 </div>
             </BitPanel>
-
-            <BitPanel @bind-IsOpen="isCloseButtonPanelOpen"
-                      Blocking
-                      Dimmed
-                      Size="320"
-                      HeaderText="Blocking"
-                      ShowCloseButton
-                      CloseButtonTitle="Dismiss the panel"
-                      OnDismissing="args => lastCloseReason = args.Reason.ToString()">
-                <div>
-                    A click on the overlay does nothing here, so the close button is the only pointer left
-                    that gets this panel closed.
-                </div>
-                <br />
-                <div>Last reason reported by OnDismissing: <b>@lastCloseReason</b></div>
-            </BitPanel>
         </DemoExample>
 
         <DemoExample Title="Position and size" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
@@ -153,8 +150,7 @@
                 panel at the start or the end, the height of one at the top or the bottom. Leaving it unset
                 sizes the panel to its own content, and either way a strip of the page stays visible beside it.
                 <b>FullSize</b> gives up that strip and takes the whole screen, which is what a panel holding a
-                page of its own needs on a small screen. A size that is not a pixel value - a percentage, a
-                rem - is given through the <b>Container</b> member of <b>Styles</b>.
+                page of its own needs on a small screen.
             </div>
             <br />
             <div class="position-btn">
@@ -169,7 +165,6 @@
                 </div>
                 <div>
                     <BitButton Variant="BitVariant.Outline" OnClick="() => isFullSizePanelOpen = true">FullSize</BitButton>
-                    <BitButton Variant="BitVariant.Outline" OnClick="() => isCssSizePanelOpen = true">Styles.Container</BitButton>
                 </div>
             </div>
 
@@ -219,15 +214,6 @@
                     <BitButton OnClick="() => isFullSizePanelOpen = false">Close</BitButton>
                 </div>
             </BitPanel>
-
-            <BitPanel @bind-IsOpen="isCssSizePanelOpen"
-                      AriaLabel="A panel sized in percent"
-                      Styles="@(new() { Container = "width:50%" })">
-                <div class="panel-body">
-                    BitPanel sized through <b>Styles.Container</b>, which takes any CSS value.
-                    <BitButton OnClick="() => isCssSizePanelOpen = false">Close</BitButton>
-                </div>
-            </BitPanel>
         </DemoExample>
 
         <DemoExample Title="Overlay and dismissal" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
@@ -241,7 +227,7 @@
             <br />
             <div>
                 That overlay is a transparent catcher of clicks by default, so the page behind it is still read
-                at full strength. <b>Dimmed</b> gives it a background of its own, which is what a panel that
+                at full strength. <b>ModeFull</b> gives it a background of its own, which is what a panel that
                 takes the work over rather than sitting beside it wants: the page underneath recedes and the
                 panel reads as the thing to deal with.
             </div>
@@ -259,7 +245,7 @@
             <br />
             <div class="btn-container">
                 <BitButton OnClick="() => isBlockingPanelOpen = true">Blocking</BitButton>
-                <BitButton OnClick="() => isDimmedPanelOpen = true">Dimmed</BitButton>
+                <BitButton OnClick="() => isModeFullPanelOpen = true">ModeFull</BitButton>
                 <BitButton OnClick="() => isModelessPanelOpen = true">Modeless</BitButton>
                 <BitButton OnClick="() => isNoEscapePanelOpen = true">NoDismissOnEscape</BitButton>
                 <div>Dismissed <b>@dismissCount</b> times, last reason reported by OnDismissing: <b>@lastDismissReason</b></div>
@@ -281,15 +267,15 @@
                 </div>
             </BitPanel>
 
-            <BitPanel @bind-IsOpen="isDimmedPanelOpen"
-                      Dimmed
+            <BitPanel @bind-IsOpen="isModeFullPanelOpen"
+                      ModeFull
                       AriaLabel="A panel that dims the page"
                       OnDismiss="HandleOnDismiss"
                       OnDismissing="HandleOnDismissing">
                 <div class="panel-body">
-                    <h3>Dimmed</h3>
+                    <h3>ModeFull</h3>
                     <div>The page behind this panel is dimmed by the overlay instead of only being covered by it.</div>
-                    <BitButton OnClick="() => isDimmedPanelOpen = false">Close</BitButton>
+                    <BitButton OnClick="() => isModeFullPanelOpen = false">Close</BitButton>
                 </div>
             </BitPanel>
 
@@ -576,7 +562,7 @@
                 <BitButton OnClick="() => isOuterPanelOpen = true">Open outer panel</BitButton>
             </div>
 
-            <BitPanel @bind-IsOpen="isOuterPanelOpen" Size="320" Dimmed AriaLabel="The outer panel">
+            <BitPanel @bind-IsOpen="isOuterPanelOpen" Size="320" ModeFull AriaLabel="The outer panel">
                 <div class="panel-body">
                     <h3>Outer</h3>
                     <div>This panel sits at the layer every panel shares.</div>
@@ -585,7 +571,7 @@
 
                     <BitPanel @bind-IsOpen="isInnerPanelOpen"
                               Size="240"
-                              Dimmed
+                              ModeFull
                               ZIndex="1310"
                               AriaLabel="The inner panel"
                               Position="BitPanelPosition.Start">
@@ -709,7 +695,9 @@
                 <b>Classes</b> reach every part it is made of - the <b>Root</b>, the <b>Overlay</b> that
                 covers the page, the <b>Container</b> that is the panel itself, and, on a panel that builds
                 the chrome, the <b>HeaderContainer</b>, the <b>Header</b>, the <b>CloseButton</b>, the
-                <b>CloseIcon</b>, the <b>Body</b> and the <b>Footer</b>.
+                <b>CloseIcon</b>, the <b>Body</b> and the <b>Footer</b>. The <b>Container</b> is also how a
+                panel is given a size that is not a pixel value - a percentage, a rem - which <b>Size</b>
+                does not take.
             </div>
             <br />
             <div>
