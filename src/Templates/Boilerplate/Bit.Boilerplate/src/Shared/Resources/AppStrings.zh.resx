@@ -1833,4 +1833,73 @@
     <value>此应用的推送通知已被阻止。请在浏览器或操作系统设置中允许通知，然后重试。</value>
   </data>
   <!--#endif-->
+    <data name="PrivacyTitle" xml:space="preserve">
+    <value>隐私</value>
+  </data>
+    <data name="PrivacySubtitle" xml:space="preserve">
+    <value>下载您的数据副本</value>
+  </data>
+    <data name="PrivacyChoicesTitle" xml:space="preserve">
+    <value>您的隐私选择</value>
+  </data>
+    <data name="PrivacyChoicesNote" xml:space="preserve">
+    <value>让您保持登录、记住您的语言以及报告错误不在此列表中：没有前两项应用无法运行，而错误报告不包含您设备的任何标识符。</value>
+  </data>
+    <data name="ConsentAnalytics" xml:space="preserve">
+    <value>使用情况分析</value>
+  </data>
+    <data name="ConsentAnalyticsDescription" xml:space="preserve">
+    <value>使我们能够在多次访问之间识别您的设备，以了解哪些页面被使用以及所需时间。关闭此项不会停止错误报告。</value>
+  </data>
+    <data name="ConsentAdvertising" xml:space="preserve">
+    <value>广告</value>
+  </data>
+    <data name="ConsentAdvertisingDescription" xml:space="preserve">
+    <value>加载广告脚本，该脚本会设置自己的标识符。在您开启之前不会加载任何内容。</value>
+  </data>
+    <data name="ConsentBannerTitle" xml:space="preserve">
+    <value>您的隐私</value>
+  </data>
+    <data name="ConsentBannerMessage" xml:space="preserve">
+    <value>我们希望在您的设备上存储一些本应用运行并不需要的信息。让您保持登录、记住您的语言以及报告错误无论如何都会进行。</value>
+  </data>
+    <data name="Accept" xml:space="preserve">
+    <value>接受</value>
+  </data>
+    <data name="Reject" xml:space="preserve">
+    <value>拒绝</value>
+  </data>
+    <data name="PrivacySettings" xml:space="preserve">
+    <value>隐私设置</value>
+  </data>
+    <data name="AccountSettingsLink" xml:space="preserve">
+    <value>账户设置</value>
+  </data>
+    <data name="ExportPersonalDataTitle" xml:space="preserve">
+    <value>下载您的数据</value>
+  </data>
+    <data name="ExportPersonalDataMessage" xml:space="preserve">
+    <value>获取本应用保存的与您有关的全部内容副本：您的账户、您已登录的设备、您的头像以及您创建的内容。它以包含 data.json 和您文件的 zip 压缩包形式提供。</value>
+  </data>
+    <data name="ExportPersonalDataMetadataNote" xml:space="preserve">
+    <value>文件的每个部分还会说明为何保留、保留多久、还有谁会收到，以及删除您的账户是否会将其移除。</value>
+  </data>
+    <data name="ExportPersonalDataButton" xml:space="preserve">
+    <value>下载我的数据</value>
+  </data>
+    <data name="ExportPersonalDataDeleteHint" xml:space="preserve">
+    <value>如果您希望删除数据，请从以下位置删除您的账户</value>
+  </data>
+    <data name="ExportUserData" xml:space="preserve">
+    <value>导出数据</value>
+  </data>
+    <data name="ExportUserDataTitle" xml:space="preserve">
+    <value>用于回应并非通过应用提交的数据请求。</value>
+  </data>
+    <data name="AdsConsentMessage" xml:space="preserve">
+    <value>观看广告会加载 Google 的广告脚本，该脚本会在您的设备上设置自己的标识符。在您同意之前不会加载任何内容。</value>
+  </data>
+    <data name="AdsConsentAgree" xml:space="preserve">
+    <value>同意并继续</value>
+  </data>
 </root>

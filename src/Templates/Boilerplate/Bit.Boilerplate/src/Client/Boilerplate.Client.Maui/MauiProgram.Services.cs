@@ -35,6 +35,10 @@ public static partial class MauiProgram
             services.AddScoped<IPermissionService, MauiPermissionService>();
             services.AddScoped<IBitDeviceCoordinator, MauiDeviceCoordinator>();
             services.AddScoped<IExternalNavigationService, MauiExternalNavigationService>();
+            if (AppPlatform.IsWindows is false)
+            {
+                services.AddScoped<FileSaveService, MauiFileSaveService>();
+            }
 
             services.AddScoped<HttpClient>(sp =>
             {

@@ -47,6 +47,12 @@ public interface IUserController : IAppController
     [HttpDelete]
     Task Delete(CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Articles 15 and 20 - downloads a zip, so it is called with the HttpClient directly rather than through the
+    /// generated proxy, which speaks json only. Requires <c>ELEVATED_ACCESS</c>, like <see cref="Delete"/>.
+    /// </summary>
+    public const string ExportPersonalDataUri = "api/v1/User/ExportPersonalData";
+
     [HttpPost]
     [Route("~/api/v1/[controller]/2fa")]
     Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto request, CancellationToken cancellationToken) => default!;

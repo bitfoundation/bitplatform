@@ -1833,4 +1833,73 @@
     <value>इस ऐप के लिए पुश सूचनाएँ अवरुद्ध हैं। अपने ब्राउज़र या ऑपरेटिंग सिस्टम की सेटिंग में सूचनाओं की अनुमति दें और फिर से प्रयास करें।</value>
   </data>
   <!--#endif-->
+    <data name="PrivacyTitle" xml:space="preserve">
+    <value>गोपनीयता</value>
+  </data>
+    <data name="PrivacySubtitle" xml:space="preserve">
+    <value>अपने डेटा की एक प्रति डाउनलोड करें</value>
+  </data>
+    <data name="PrivacyChoicesTitle" xml:space="preserve">
+    <value>आपके गोपनीयता विकल्प</value>
+  </data>
+    <data name="PrivacyChoicesNote" xml:space="preserve">
+    <value>आपको साइन इन रखना, आपकी भाषा याद रखना और त्रुटियों की रिपोर्ट करना इस सूची में नहीं हैं: पहले दो के बिना ऐप काम नहीं कर सकता, और त्रुटि रिपोर्ट में आपके डिवाइस का कोई पहचानकर्ता नहीं होता।</value>
+  </data>
+    <data name="ConsentAnalytics" xml:space="preserve">
+    <value>उपयोग विश्लेषण</value>
+  </data>
+    <data name="ConsentAnalyticsDescription" xml:space="preserve">
+    <value>इससे हम आपके डिवाइस को विज़िट के बीच पहचान पाते हैं ताकि देख सकें कि कौन से पेज उपयोग होते हैं और उनमें कितना समय लगता है। इसे बंद करने से त्रुटि रिपोर्ट बंद नहीं होतीं।</value>
+  </data>
+    <data name="ConsentAdvertising" xml:space="preserve">
+    <value>विज्ञापन</value>
+  </data>
+    <data name="ConsentAdvertisingDescription" xml:space="preserve">
+    <value>विज्ञापन स्क्रिप्ट लोड करता है, जो अपने पहचानकर्ता सेट करती है। जब तक आप इसे चालू नहीं करते, कुछ भी लोड नहीं होता।</value>
+  </data>
+    <data name="ConsentBannerTitle" xml:space="preserve">
+    <value>आपकी गोपनीयता</value>
+  </data>
+    <data name="ConsentBannerMessage" xml:space="preserve">
+    <value>हम आपके डिवाइस पर कुछ जानकारी संग्रहीत करना चाहते हैं जिसकी इस ऐप को काम करने के लिए आवश्यकता नहीं है। आपको साइन इन रखना, आपकी भाषा याद रखना और त्रुटियों की रिपोर्ट करना किसी भी स्थिति में होता है।</value>
+  </data>
+    <data name="Accept" xml:space="preserve">
+    <value>स्वीकार करें</value>
+  </data>
+    <data name="Reject" xml:space="preserve">
+    <value>अस्वीकार करें</value>
+  </data>
+    <data name="PrivacySettings" xml:space="preserve">
+    <value>गोपनीयता सेटिंग्स</value>
+  </data>
+    <data name="AccountSettingsLink" xml:space="preserve">
+    <value>खाता सेटिंग्स</value>
+  </data>
+    <data name="ExportPersonalDataTitle" xml:space="preserve">
+    <value>अपना डेटा डाउनलोड करें</value>
+  </data>
+    <data name="ExportPersonalDataMessage" xml:space="preserve">
+    <value>इस ऐप के पास आपके बारे में जो कुछ है उसकी एक प्रति प्राप्त करें: आपका खाता, वे डिवाइस जिन पर आप साइन इन हैं, आपकी प्रोफ़ाइल तस्वीर और आपके बनाए गए कंटेंट। यह data.json और आपकी फ़ाइलों वाली एक zip फ़ाइल के रूप में मिलती है।</value>
+  </data>
+    <data name="ExportPersonalDataMetadataNote" xml:space="preserve">
+    <value>फ़ाइल का हर हिस्सा यह भी बताता है कि उसे क्यों रखा जाता है, कितने समय तक, और कौन उसे प्राप्त करता है, तथा क्या आपका खाता हटाने पर वह हट जाता है।</value>
+  </data>
+    <data name="ExportPersonalDataButton" xml:space="preserve">
+    <value>मेरा डेटा डाउनलोड करें</value>
+  </data>
+    <data name="ExportPersonalDataDeleteHint" xml:space="preserve">
+    <value>इसके बजाय अपना डेटा हटवाना चाहते हैं, तो अपना खाता यहाँ से हटाएँ</value>
+  </data>
+    <data name="ExportUserData" xml:space="preserve">
+    <value>डेटा निर्यात करें</value>
+  </data>
+    <data name="ExportUserDataTitle" xml:space="preserve">
+    <value>ऐसे डेटा अनुरोध का उत्तर देता है जो ऐप के माध्यम से नहीं आया।</value>
+  </data>
+    <data name="AdsConsentMessage" xml:space="preserve">
+    <value>विज्ञापन देखने पर Google की विज्ञापन स्क्रिप्ट लोड होती है, जो आपके डिवाइस पर अपने पहचानकर्ता सेट करती है। जब तक आप सहमत नहीं होते, कुछ भी लोड नहीं होता।</value>
+  </data>
+    <data name="AdsConsentAgree" xml:space="preserve">
+    <value>सहमत हूँ और जारी रखें</value>
+  </data>
 </root>

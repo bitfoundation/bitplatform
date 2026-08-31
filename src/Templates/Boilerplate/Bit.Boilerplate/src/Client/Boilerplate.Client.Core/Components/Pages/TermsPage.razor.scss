@@ -1,2 +1,37 @@
 article {
+    /* A legal notice is read in long paragraphs, not scanned, so it gets more air than the rest of the app. The
+       rhythm lives here rather than in <br /> tags, which cannot be adjusted and double up around headings. */
+
+    ul {
+        margin: 0.25rem 0 0;
+        padding-inline-start: 1.5rem;
+    }
+
+    li {
+        margin-bottom: 1rem;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    ::deep {
+        .bit-txt {
+            line-height: 1.75;
+        }
+
+        h3.bit-txt {
+            margin-top: 2.5rem;
+        }
+
+        h5.bit-txt {
+            margin-top: 2rem;
+            margin-bottom: 0.25rem;
+        }
+
+        /* The first heading opens the page - the space above it belongs to the card, not to the heading. */
+        h3.bit-txt:first-of-type {
+            margin-top: 0;
+        }
+    }
 }

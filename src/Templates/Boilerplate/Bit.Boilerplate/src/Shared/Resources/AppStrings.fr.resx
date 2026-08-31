@@ -1833,4 +1833,73 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Les notifications push sont bloquées pour cette application. Autorisez les notifications dans les paramètres de votre navigateur ou de votre système d&apos;exploitation, puis réessayez.</value>
   </data>
   <!--#endif-->
+    <data name="PrivacyTitle" xml:space="preserve">
+    <value>Confidentialité</value>
+  </data>
+    <data name="PrivacySubtitle" xml:space="preserve">
+    <value>Téléchargez une copie de vos données</value>
+  </data>
+    <data name="PrivacyChoicesTitle" xml:space="preserve">
+    <value>Vos choix de confidentialité</value>
+  </data>
+    <data name="PrivacyChoicesNote" xml:space="preserve">
+    <value>Votre connexion, la mémorisation de votre langue et le signalement des erreurs ne figurent pas dans cette liste : l'application ne peut pas fonctionner sans les deux premiers, et les rapports d'erreur ne contiennent aucun identifiant de votre appareil.</value>
+  </data>
+    <data name="ConsentAnalytics" xml:space="preserve">
+    <value>Analyse d'utilisation</value>
+  </data>
+    <data name="ConsentAnalyticsDescription" xml:space="preserve">
+    <value>Nous permet de reconnaître votre appareil d'une visite à l'autre afin de voir quelles pages sont utilisées et combien de temps elles prennent. Le désactiver n'arrête pas les rapports d'erreur.</value>
+  </data>
+    <data name="ConsentAdvertising" xml:space="preserve">
+    <value>Publicité</value>
+  </data>
+    <data name="ConsentAdvertisingDescription" xml:space="preserve">
+    <value>Charge le script publicitaire, qui définit ses propres identifiants. Rien n'est chargé tant que vous ne l'activez pas.</value>
+  </data>
+    <data name="ConsentBannerTitle" xml:space="preserve">
+    <value>Votre vie privée</value>
+  </data>
+    <data name="ConsentBannerMessage" xml:space="preserve">
+    <value>Nous souhaitons stocker sur votre appareil des informations dont cette application n'a pas besoin pour fonctionner. Votre connexion, la mémorisation de votre langue et le signalement des erreurs ont lieu dans tous les cas.</value>
+  </data>
+    <data name="Accept" xml:space="preserve">
+    <value>Accepter</value>
+  </data>
+    <data name="Reject" xml:space="preserve">
+    <value>Refuser</value>
+  </data>
+    <data name="PrivacySettings" xml:space="preserve">
+    <value>Paramètres de confidentialité</value>
+  </data>
+    <data name="AccountSettingsLink" xml:space="preserve">
+    <value>Paramètres du compte</value>
+  </data>
+    <data name="ExportPersonalDataTitle" xml:space="preserve">
+    <value>Téléchargez vos données</value>
+  </data>
+    <data name="ExportPersonalDataMessage" xml:space="preserve">
+    <value>Obtenez une copie de tout ce que cette application conserve à votre sujet : votre compte, les appareils sur lesquels vous êtes connecté, votre photo de profil et le contenu que vous avez créé. Le tout arrive sous forme de fichier zip contenant data.json et vos fichiers.</value>
+  </data>
+    <data name="ExportPersonalDataMetadataNote" xml:space="preserve">
+    <value>Chaque partie du fichier indique aussi pourquoi elle est conservée, pendant combien de temps, qui d'autre la reçoit et si la suppression de votre compte l'efface.</value>
+  </data>
+    <data name="ExportPersonalDataButton" xml:space="preserve">
+    <value>Télécharger mes données</value>
+  </data>
+    <data name="ExportPersonalDataDeleteHint" xml:space="preserve">
+    <value>Pour faire supprimer vos données à la place, supprimez votre compte depuis</value>
+  </data>
+    <data name="ExportUserData" xml:space="preserve">
+    <value>Exporter les données</value>
+  </data>
+    <data name="ExportUserDataTitle" xml:space="preserve">
+    <value>Répond à une demande de données qui n'est pas arrivée via l'application.</value>
+  </data>
+    <data name="AdsConsentMessage" xml:space="preserve">
+    <value>Regarder une publicité charge le script publicitaire de Google, qui définit ses propres identifiants sur votre appareil. Rien n'est chargé tant que vous n'avez pas accepté.</value>
+  </data>
+    <data name="AdsConsentAgree" xml:space="preserve">
+    <value>Accepter et continuer</value>
+  </data>
 </root>

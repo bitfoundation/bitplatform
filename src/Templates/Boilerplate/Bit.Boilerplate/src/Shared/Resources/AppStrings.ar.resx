@@ -1833,4 +1833,73 @@
     <value>الإشعارات الفورية محظورة لهذا التطبيق. اسمح بالإشعارات في إعدادات المتصفح أو نظام التشغيل ثم حاول مرة أخرى.</value>
   </data>
   <!--#endif-->
+    <data name="PrivacyTitle" xml:space="preserve">
+    <value>الخصوصية</value>
+  </data>
+    <data name="PrivacySubtitle" xml:space="preserve">
+    <value>تنزيل نسخة من بياناتك</value>
+  </data>
+    <data name="PrivacyChoicesTitle" xml:space="preserve">
+    <value>خيارات الخصوصية الخاصة بك</value>
+  </data>
+    <data name="PrivacyChoicesNote" xml:space="preserve">
+    <value>تسجيل الدخول وتذكّر لغتك والإبلاغ عن الأخطاء ليست ضمن هذه القائمة: لا يمكن للتطبيق العمل بدون الأولين، وتقارير الأخطاء لا تحمل أي معرّف لجهازك.</value>
+  </data>
+    <data name="ConsentAnalytics" xml:space="preserve">
+    <value>تحليلات الاستخدام</value>
+  </data>
+    <data name="ConsentAnalyticsDescription" xml:space="preserve">
+    <value>تتيح لنا التعرّف على جهازك بين الزيارات لنرى الصفحات المستخدمة والوقت الذي تستغرقه. إيقاف هذا الخيار لا يوقف تقارير الأخطاء.</value>
+  </data>
+    <data name="ConsentAdvertising" xml:space="preserve">
+    <value>الإعلانات</value>
+  </data>
+    <data name="ConsentAdvertisingDescription" xml:space="preserve">
+    <value>يحمّل نص الإعلانات البرمجي الذي يضع معرّفات خاصة به. لا يتم تحميل أي شيء حتى تُفعّل هذا الخيار.</value>
+  </data>
+    <data name="ConsentBannerTitle" xml:space="preserve">
+    <value>خصوصيتك</value>
+  </data>
+    <data name="ConsentBannerMessage" xml:space="preserve">
+    <value>نودّ تخزين بعض المعلومات على جهازك لا يحتاجها التطبيق للعمل. أما تسجيل دخولك وتذكّر لغتك والإبلاغ عن الأخطاء فتحدث في كل الأحوال.</value>
+  </data>
+    <data name="Accept" xml:space="preserve">
+    <value>قبول</value>
+  </data>
+    <data name="Reject" xml:space="preserve">
+    <value>رفض</value>
+  </data>
+    <data name="PrivacySettings" xml:space="preserve">
+    <value>إعدادات الخصوصية</value>
+  </data>
+    <data name="AccountSettingsLink" xml:space="preserve">
+    <value>إعدادات الحساب</value>
+  </data>
+    <data name="ExportPersonalDataTitle" xml:space="preserve">
+    <value>تنزيل بياناتك</value>
+  </data>
+    <data name="ExportPersonalDataMessage" xml:space="preserve">
+    <value>احصل على نسخة من كل ما يحتفظ به هذا التطبيق عنك: حسابك، والأجهزة التي سجّلت الدخول منها، وصورة ملفك الشخصي، والمحتوى الذي أنشأته. تصل على هيئة ملف zip يحتوي على data.json وملفاتك.</value>
+  </data>
+    <data name="ExportPersonalDataMetadataNote" xml:space="preserve">
+    <value>يوضّح كل جزء من الملف أيضًا سبب الاحتفاظ به، ومدته، ومن يتلقاه غيرنا، وما إذا كان حذف حسابك يزيله.</value>
+  </data>
+    <data name="ExportPersonalDataButton" xml:space="preserve">
+    <value>تنزيل بياناتي</value>
+  </data>
+    <data name="ExportPersonalDataDeleteHint" xml:space="preserve">
+    <value>لحذف بياناتك بدلًا من ذلك، احذف حسابك من</value>
+  </data>
+    <data name="ExportUserData" xml:space="preserve">
+    <value>تصدير البيانات</value>
+  </data>
+    <data name="ExportUserDataTitle" xml:space="preserve">
+    <value>للردّ على طلب بيانات لم يصل عبر التطبيق.</value>
+  </data>
+    <data name="AdsConsentMessage" xml:space="preserve">
+    <value>مشاهدة إعلان تُحمّل نص إعلانات Google البرمجي الذي يضع معرّفات خاصة به على جهازك. لا يتم تحميل أي شيء حتى توافق.</value>
+  </data>
+    <data name="AdsConsentAgree" xml:space="preserve">
+    <value>أوافق وأتابع</value>
+  </data>
 </root>

@@ -1833,4 +1833,73 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <value>Las notificaciones push están bloqueadas para esta aplicación. Permite las notificaciones en la configuración de tu navegador o sistema operativo e inténtalo de nuevo.</value>
   </data>
   <!--#endif-->
+    <data name="PrivacyTitle" xml:space="preserve">
+    <value>Privacidad</value>
+  </data>
+    <data name="PrivacySubtitle" xml:space="preserve">
+    <value>Descargue una copia de sus datos</value>
+  </data>
+    <data name="PrivacyChoicesTitle" xml:space="preserve">
+    <value>Sus opciones de privacidad</value>
+  </data>
+    <data name="PrivacyChoicesNote" xml:space="preserve">
+    <value>Iniciar su sesión, recordar su idioma e informar de errores no están en esta lista: la aplicación no puede funcionar sin los dos primeros, y los informes de errores no llevan ningún identificador de su dispositivo.</value>
+  </data>
+    <data name="ConsentAnalytics" xml:space="preserve">
+    <value>Analítica de uso</value>
+  </data>
+    <data name="ConsentAnalyticsDescription" xml:space="preserve">
+    <value>Nos permite reconocer su dispositivo entre visitas para ver qué páginas se usan y cuánto tardan. Desactivarlo no detiene los informes de errores.</value>
+  </data>
+    <data name="ConsentAdvertising" xml:space="preserve">
+    <value>Publicidad</value>
+  </data>
+    <data name="ConsentAdvertisingDescription" xml:space="preserve">
+    <value>Carga el script de publicidad, que establece identificadores propios. No se carga nada hasta que lo active.</value>
+  </data>
+    <data name="ConsentBannerTitle" xml:space="preserve">
+    <value>Su privacidad</value>
+  </data>
+    <data name="ConsentBannerMessage" xml:space="preserve">
+    <value>Nos gustaría almacenar en su dispositivo cierta información que esta aplicación no necesita para funcionar. Iniciar su sesión, recordar su idioma e informar de errores ocurren de todos modos.</value>
+  </data>
+    <data name="Accept" xml:space="preserve">
+    <value>Aceptar</value>
+  </data>
+    <data name="Reject" xml:space="preserve">
+    <value>Rechazar</value>
+  </data>
+    <data name="PrivacySettings" xml:space="preserve">
+    <value>Configuración de privacidad</value>
+  </data>
+    <data name="AccountSettingsLink" xml:space="preserve">
+    <value>Configuración de la cuenta</value>
+  </data>
+    <data name="ExportPersonalDataTitle" xml:space="preserve">
+    <value>Descargue sus datos</value>
+  </data>
+    <data name="ExportPersonalDataMessage" xml:space="preserve">
+    <value>Obtenga una copia de todo lo que esta aplicación guarda sobre usted: su cuenta, los dispositivos en los que ha iniciado sesión, su foto de perfil y el contenido que ha creado. Llega como un archivo zip con data.json y sus archivos.</value>
+  </data>
+    <data name="ExportPersonalDataMetadataNote" xml:space="preserve">
+    <value>Cada parte del archivo indica además por qué se conserva, durante cuánto tiempo, quién más la recibe y si al eliminar su cuenta se elimina.</value>
+  </data>
+    <data name="ExportPersonalDataButton" xml:space="preserve">
+    <value>Descargar mis datos</value>
+  </data>
+    <data name="ExportPersonalDataDeleteHint" xml:space="preserve">
+    <value>Si en cambio desea que se eliminen sus datos, elimine su cuenta desde</value>
+  </data>
+    <data name="ExportUserData" xml:space="preserve">
+    <value>Exportar datos</value>
+  </data>
+    <data name="ExportUserDataTitle" xml:space="preserve">
+    <value>Responde a una solicitud de datos que no llegó a través de la aplicación.</value>
+  </data>
+    <data name="AdsConsentMessage" xml:space="preserve">
+    <value>Ver un anuncio carga el script de publicidad de Google, que establece identificadores propios en su dispositivo. No se carga nada hasta que acepte.</value>
+  </data>
+    <data name="AdsConsentAgree" xml:space="preserve">
+    <value>Aceptar y continuar</value>
+  </data>
 </root>

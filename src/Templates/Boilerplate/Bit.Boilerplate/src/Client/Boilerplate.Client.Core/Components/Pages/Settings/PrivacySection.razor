@@ -1,0 +1,57 @@
+@inherits AppComponentBase
+
+<section>
+    <BitStack Style="padding:1px" Gap="1rem">
+
+        @* Withdrawing has to be as easy as agreeing (Art. 7(3)), which a banner shown once cannot be. *@
+        @if (ConsentService.AskableCategories.Length > 0)
+        {
+            <BitText Typography="BitTypography.H6">@Localizer[nameof(AppStrings.PrivacyChoicesTitle)]</BitText>
+
+            <BitStack Gap="0.5rem">
+                @foreach (var category in ConsentService.AskableCategories)
+                {
+                    var isGranted = consents.GetValueOrDefault(category);
+                    <BitToggle Inline FullWidth
+                               Value="isGranted"
+                               Label="@CategoryLabel(category)"
+                               Description="@CategoryDescription(category)"
+                               OnChange="WrapHandled(async (bool granted) => await SetConsent(category, granted))" />
+                }
+            </BitStack>
+
+            <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+                @Localizer[nameof(AppStrings.PrivacyChoicesNote)]
+            </BitText>
+
+            <BitSeparator />
+        }
+
+        <BitText Typography="BitTypography.H6">@Localizer[nameof(AppStrings.ExportPersonalDataTitle)]</BitText>
+
+        <BitText Typography="BitTypography.Body1">
+            @Localizer[nameof(AppStrings.ExportPersonalDataMessage)]
+        </BitText>
+
+        <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+            @Localizer[nameof(AppStrings.ExportPersonalDataMetadataNote)]
+        </BitText>
+
+        <div>
+            <BitButton AutoLoading
+                       Variant="BitVariant.Fill"
+                       IconName="@BitIconName.Download"
+                       OnClick="WrapHandled(ExportPersonalData)">
+                @Localizer[nameof(AppStrings.ExportPersonalDataButton)]
+            </BitButton>
+        </div>
+
+        <BitSeparator />
+
+        <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+            @Localizer[nameof(AppStrings.ExportPersonalDataDeleteHint)]
+            <BitLink Href="@($"{PageUrls.Settings}/{PageUrls.SettingsSections.Account}")">@Localizer[nameof(AppStrings.AccountSettingsLink)]</BitLink>.
+        </BitText>
+
+    </BitStack>
+</section>

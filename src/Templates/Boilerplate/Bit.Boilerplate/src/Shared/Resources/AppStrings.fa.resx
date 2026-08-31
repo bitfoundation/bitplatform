@@ -1833,4 +1833,73 @@
     <value>اعلان‌های پوش برای این برنامه مسدود شده‌اند. در تنظیمات مرورگر یا سیستم‌عامل، اعلان‌ها را مجاز کنید و دوباره تلاش کنید.</value>
   </data>
   <!--#endif-->
+    <data name="PrivacyTitle" xml:space="preserve">
+    <value>حریم خصوصی</value>
+  </data>
+    <data name="PrivacySubtitle" xml:space="preserve">
+    <value>دریافت یک نسخه از اطلاعات شما</value>
+  </data>
+    <data name="PrivacyChoicesTitle" xml:space="preserve">
+    <value>انتخاب‌های حریم خصوصی شما</value>
+  </data>
+    <data name="PrivacyChoicesNote" xml:space="preserve">
+    <value>ورود به حساب، به خاطر سپردن زبان و گزارش خطاها در این فهرست نیستند: برنامه بدون دو مورد اول کار نمی‌کند و گزارش‌های خطا هیچ شناسه‌ای از دستگاه شما ندارند.</value>
+  </data>
+    <data name="ConsentAnalytics" xml:space="preserve">
+    <value>تحلیل استفاده</value>
+  </data>
+    <data name="ConsentAnalyticsDescription" xml:space="preserve">
+    <value>به ما اجازه می‌دهد دستگاه شما را بین بازدیدها بشناسیم تا ببینیم کدام صفحه‌ها استفاده می‌شوند و چقدر زمان می‌برند. خاموش کردن این گزینه جلوی گزارش خطاها را نمی‌گیرد.</value>
+  </data>
+    <data name="ConsentAdvertising" xml:space="preserve">
+    <value>تبلیغات</value>
+  </data>
+    <data name="ConsentAdvertisingDescription" xml:space="preserve">
+    <value>اسکریپت تبلیغات را بارگذاری می‌کند که شناسه‌های خودش را تنظیم می‌کند. تا وقتی این گزینه را روشن نکنید چیزی بارگذاری نمی‌شود.</value>
+  </data>
+    <data name="ConsentBannerTitle" xml:space="preserve">
+    <value>حریم خصوصی شما</value>
+  </data>
+    <data name="ConsentBannerMessage" xml:space="preserve">
+    <value>می‌خواهیم اطلاعاتی روی دستگاه شما ذخیره کنیم که برنامه برای کار کردن به آن نیازی ندارد. ورود به حساب، به خاطر سپردن زبان و گزارش خطاها در هر صورت انجام می‌شوند.</value>
+  </data>
+    <data name="Accept" xml:space="preserve">
+    <value>پذیرفتن</value>
+  </data>
+    <data name="Reject" xml:space="preserve">
+    <value>رد کردن</value>
+  </data>
+    <data name="PrivacySettings" xml:space="preserve">
+    <value>تنظیمات حریم خصوصی</value>
+  </data>
+    <data name="AccountSettingsLink" xml:space="preserve">
+    <value>تنظیمات حساب کاربری</value>
+  </data>
+    <data name="ExportPersonalDataTitle" xml:space="preserve">
+    <value>دریافت اطلاعات شما</value>
+  </data>
+    <data name="ExportPersonalDataMessage" xml:space="preserve">
+    <value>یک نسخه از هر چیزی که این برنامه دربارهٔ شما نگه می‌دارد بگیرید: حساب کاربری، دستگاه‌هایی که با آن‌ها وارد شده‌اید، تصویر پروفایل و محتوایی که ساخته‌اید. خروجی یک فایل zip شامل data.json و فایل‌های شماست.</value>
+  </data>
+    <data name="ExportPersonalDataMetadataNote" xml:space="preserve">
+    <value>هر بخش از این فایل می‌گوید چرا نگهداری می‌شود، تا چه مدت، چه کسان دیگری آن را دریافت می‌کنند و آیا حذف حساب کاربری آن را پاک می‌کند یا نه.</value>
+  </data>
+    <data name="ExportPersonalDataButton" xml:space="preserve">
+    <value>دریافت اطلاعات من</value>
+  </data>
+    <data name="ExportPersonalDataDeleteHint" xml:space="preserve">
+    <value>اگر می‌خواهید اطلاعاتتان حذف شود، حساب کاربری خود را از اینجا حذف کنید:</value>
+  </data>
+    <data name="ExportUserData" xml:space="preserve">
+    <value>خروجی اطلاعات</value>
+  </data>
+    <data name="ExportUserDataTitle" xml:space="preserve">
+    <value>پاسخ به درخواست اطلاعاتی که از داخل برنامه ارسال نشده است.</value>
+  </data>
+    <data name="AdsConsentMessage" xml:space="preserve">
+    <value>تماشای تبلیغ، اسکریپت تبلیغاتی گوگل را بارگذاری می‌کند که شناسه‌های خودش را روی دستگاه شما تنظیم می‌کند. تا وقتی موافقت نکنید چیزی بارگذاری نمی‌شود.</value>
+  </data>
+    <data name="AdsConsentAgree" xml:space="preserve">
+    <value>موافقم، ادامه بده</value>
+  </data>
 </root>

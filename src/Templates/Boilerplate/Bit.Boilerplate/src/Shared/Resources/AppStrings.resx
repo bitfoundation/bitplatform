@@ -1833,4 +1833,73 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Push notifications are blocked for this app. Allow notifications in your browser or OS settings and try again.</value>
   </data>
   <!--#endif-->
+    <data name="PrivacyTitle" xml:space="preserve">
+    <value>Privacy</value>
+  </data>
+    <data name="PrivacySubtitle" xml:space="preserve">
+    <value>Download a copy of your data</value>
+  </data>
+    <data name="PrivacyChoicesTitle" xml:space="preserve">
+    <value>Your privacy choices</value>
+  </data>
+    <data name="PrivacyChoicesNote" xml:space="preserve">
+    <value>Signing you in, remembering your language and reporting errors are not on this list: the app cannot work without the first two, and error reports carry no identifier of your device.</value>
+  </data>
+    <data name="ConsentAnalytics" xml:space="preserve">
+    <value>Usage analytics</value>
+  </data>
+    <data name="ConsentAnalyticsDescription" xml:space="preserve">
+    <value>Lets us recognise your device between visits so we can see which pages are used and how long they take. Turning this off does not stop error reports.</value>
+  </data>
+    <data name="ConsentAdvertising" xml:space="preserve">
+    <value>Advertising</value>
+  </data>
+    <data name="ConsentAdvertisingDescription" xml:space="preserve">
+    <value>Loads the advertising script, which sets identifiers of its own. Nothing is loaded until you turn this on.</value>
+  </data>
+    <data name="ConsentBannerTitle" xml:space="preserve">
+    <value>Your privacy</value>
+  </data>
+    <data name="ConsentBannerMessage" xml:space="preserve">
+    <value>We would like to store some information on your device that this app does not need in order to work. Signing you in, remembering your language and reporting errors happen either way.</value>
+  </data>
+    <data name="Accept" xml:space="preserve">
+    <value>Accept</value>
+  </data>
+    <data name="Reject" xml:space="preserve">
+    <value>Reject</value>
+  </data>
+    <data name="PrivacySettings" xml:space="preserve">
+    <value>Privacy settings</value>
+  </data>
+    <data name="AccountSettingsLink" xml:space="preserve">
+    <value>Account settings</value>
+  </data>
+    <data name="ExportPersonalDataTitle" xml:space="preserve">
+    <value>Download your data</value>
+  </data>
+    <data name="ExportPersonalDataMessage" xml:space="preserve">
+    <value>Get a copy of everything this app holds about you: your account, the devices you are signed in on, your profile picture and the content you created. It arrives as a zip file containing data.json and your files.</value>
+  </data>
+    <data name="ExportPersonalDataMetadataNote" xml:space="preserve">
+    <value>Each part of the file also says why it is kept, for how long, who else receives it, and whether deleting your account removes it.</value>
+  </data>
+    <data name="ExportPersonalDataButton" xml:space="preserve">
+    <value>Download my data</value>
+  </data>
+    <data name="ExportPersonalDataDeleteHint" xml:space="preserve">
+    <value>To have your data removed instead, delete your account from</value>
+  </data>
+    <data name="ExportUserData" xml:space="preserve">
+    <value>Export data</value>
+  </data>
+    <data name="ExportUserDataTitle" xml:space="preserve">
+    <value>Answers a data request that did not arrive through the app.</value>
+  </data>
+    <data name="AdsConsentMessage" xml:space="preserve">
+    <value>Watching an ad loads Google's advertising script, which sets identifiers of its own on your device. Nothing is loaded until you agree.</value>
+  </data>
+    <data name="AdsConsentAgree" xml:space="preserve">
+    <value>Agree and continue</value>
+  </data>
 </root>
