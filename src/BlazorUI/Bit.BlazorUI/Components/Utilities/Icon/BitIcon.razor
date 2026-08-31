@@ -16,6 +16,7 @@
     var splattedTabIndex = HtmlAttributes.TryGetValue("tabindex", out var sti) ? sti?.ToString() : null;
     var splattedHidden = HtmlAttributes.TryGetValue("aria-hidden", out var shd) ? shd?.ToString() : null;
     var splattedTranslate = HtmlAttributes.TryGetValue("translate", out var stn) ? stn?.ToString() : null;
+    var splattedDisabled = HtmlAttributes.TryGetValue("aria-disabled", out var sdd) ? sdd?.ToString() : null;
 
     var label = AriaLabel ?? splattedLabel;
     var title = Title ?? splattedTitle;
@@ -29,7 +30,6 @@
     var named = label.HasValue() || title.HasValue() || HtmlAttributes.ContainsKey("aria-labelledby");
     var hidden = interactive is false && named is false && HtmlAttributes.ContainsKey("aria-hidden") is false;
     var ariaHidden = hidden ? "true" : splattedHidden;
-    var role = splattedRole ?? (interactive ? "button" : (named ? "img" : null));
 
     @* A ligature set names its glyph with the element's own text, which a page translator reads as a
        word worth translating - and a translated ligature draws nothing, or draws the wrong glyph. This
@@ -40,9 +40,21 @@
     @* An icon given the button role and nothing else is a control a screen reader stops at and
        announces as "button", with nothing to say what it does. The name is the author's to write - an
        AriaLabel or a Title saying the action - and the icon's own name is what it falls back to when
-       they did not, since "delete, button" is worth more than "button" on its own. An icon drawn from
-       the child content alone has no name to fall back to, and naming it stays the author's. *@
-    var ariaLabel = label ?? (interactive && named is false ? icon?.Name : null);
+       they did not, since "delete, button" is worth more than "button" on its own. Only a name is
+       fallen back to and never the class list a set like FontAwesome carries instead of one, so an
+       icon with nothing worth reading out - one drawn from the child content alone among them - is
+       left unnamed, and naming it stays the author's. *@
+    var fallbackName = interactive && named is false ? FallbackName : null;
+    var ariaLabel = label ?? fallbackName;
+
+    @* The role and the name arrive together for an interactive icon too: "button" with nothing to read
+       out is the same dead stop as an img with no name, so the button role is written only once the
+       icon has a name to announce with it - one the author wrote, or the one it falls back to above. An
+       icon with a handler and neither is left with the role it already had, so a reader passes over it
+       rather than stopping at an unnamed control. *@
+    var role = splattedRole ?? (interactive
+        ? (named || fallbackName.HasValue() ? "button" : null)
+        : (named ? "img" : null));
 
     @* An icon with a handler is a tab stop; a disabled one leaves the tab order but stays in the
        document, so whatever pointed at it still has something to point at. Everywhere else the tab
@@ -55,6 +67,11 @@
     var onClick = interactive ? EventCallback.Factory.Create<MouseEventArgs>(this, HandleOnClick) : default;
     var onKeyDown = interactive ? EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleOnKeyDown) : default;
     var onKeyUp = interactive ? EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleOnKeyUp) : default;
+    var onBlur = interactive ? EventCallback.Factory.Create<FocusEventArgs>(this, HandleOnBlur) : default;
+
+    @* A disabled icon is announced as disabled, and an aria-disabled of the app's own is left exactly
+       as it was given - the same reading back the names and the roles above are written with. *@
+    var ariaDisabled = interactive && IsEnabled is false ? "true" : splattedDisabled;
 }
 
 <i @ref="RootElement" @attributes="HtmlAttributes"
@@ -65,10 +82,11 @@
    aria-label="@ariaLabel"
    aria-hidden="@ariaHidden"
    translate="@translate"
-   aria-disabled="@(interactive && IsEnabled is false ? "true" : null)"
+   aria-disabled="@ariaDisabled"
    style="@StyleBuilder.Value"
    class="@ClassBuilder.Value"
    dir="@Dir?.ToString().ToLower()"
    @onclick="onClick"
    @onkeydown="onKeyDown"
-   @onkeyup="onKeyUp">@icon?.Content@ChildContent</i>
+   @onkeyup="onKeyUp"
+   @onblur="onBlur">@icon?.Content@ChildContent</i>

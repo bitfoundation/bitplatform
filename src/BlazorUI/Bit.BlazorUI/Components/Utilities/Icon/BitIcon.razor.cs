@@ -199,8 +199,9 @@ public partial class BitIcon : BitComponentBase
     /// <see cref="BitButton"/> - there is no pressed state, no busy state and no label of its own - so
     /// give it an <see cref="BitComponentBase.AriaLabel"/> or a <see cref="Title"/> saying what it
     /// does, and reach for a button whenever the action deserves one. Given neither, it is announced by
-    /// the name of the glyph it draws rather than as an unnamed button - a fallback, not a name worth
-    /// shipping.
+    /// the name of the glyph it draws - a fallback, not a name worth shipping - and by nothing at all
+    /// when the set names its glyphs with a class list rather than with a name, since "fa-solid
+    /// fa-heart, button" reads worse than "button".
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public EventCallback<MouseEventArgs> OnClick { get; set; }
@@ -251,6 +252,20 @@ public partial class BitIcon : BitComponentBase
 
 
     protected override string RootElementClass => "bit-ico";
+
+    // The name an unnamed interactive icon falls back to is meant to be read out, so only a name a
+    // reader would recognize is used: the name the author wrote, the ligature a ligature-based set
+    // names its glyph with, or the icon's own name when its set writes the name and the classes apart.
+    // BitIconInfo.Css and BitIconInfo.Fa put the whole class list in Name - "fa-solid fa-heart" is a
+    // class list and not a name, and an icon left with only that is better left unnamed, which is what
+    // the OnClick docs say naming it stays the author's job.
+    private string? FallbackName => IconName.HasValue()
+        ? IconName
+        : _icon?.Content.HasValue() is true
+            ? _icon!.Content
+            : _icon?.Prefix.HasValue() is true || _icon?.BaseClass.HasValue() is true
+                ? _icon!.Name
+                : null;
 
     // The icon the markup draws and the icon the class builder names have to be the same one, so it is
     // resolved once per set of parameters rather than by each of them: resolving it twice a render
@@ -394,6 +409,14 @@ public partial class BitIcon : BitComponentBase
         // After the cascaded parameters, since the resolver is one of the things they carry.
         ResolveIcon();
 
+        // An icon that has stopped answering - disabled, or handed a handler no longer there - has
+        // nothing left to activate, so a Space it was already holding is forgotten rather than left
+        // latched for the release that comes after.
+        if (IsEnabled is false || OnClick.HasDelegate is false)
+        {
+            _spacePressed = false;
+        }
+
         base.OnParametersSet();
     }
 
@@ -410,11 +433,14 @@ public partial class BitIcon : BitComponentBase
 
         if (interactive == _preventKeysRegistered) return;
 
-        _preventKeysRegistered = interactive;
-
         try
         {
             await _js.BitUtilsRegisterPreventKeys(RootElement, interactive ? [" ", "Spacebar"] : []);
+
+            // Only a call that landed counts as registered: flagging it beforehand would leave a
+            // failed one believing the listener is installed, and the guard above would never let it
+            // be tried again.
+            _preventKeysRegistered = interactive;
         }
         catch (JSDisconnectedException) { } // the circuit is gone, nothing to register
         catch (JSException) { } // a JS-side failure here only costs the page-scroll prevention
@@ -492,6 +518,12 @@ public partial class BitIcon : BitComponentBase
 
         await OnClick.InvokeAsync(ToActivationArgs(e));
     }
+
+    // A Space pressed here and released elsewhere - the focus moved on while the key was still down -
+    // is not an activation of anything, so the press is forgotten as soon as the icon stops being the
+    // element being pressed. Left latched, it would activate the icon on the next Space released on it
+    // however that key arrived, which is the guard in HandleOnKeyDown read backwards.
+    private void HandleOnBlur() => _spacePressed = false;
 
     private static bool IsSpace(KeyboardEventArgs e) => e.Key is " " or "Spacebar" || e.Code is "Space";
 

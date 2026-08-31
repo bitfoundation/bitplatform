@@ -405,6 +405,16 @@ public class BitIconTests : BunitTestContext
         component.MarkupMatches(@$"<i aria-hidden=""false"" aria-label=""Attention"" role=""img"" class=""{CLASS}"" id:ignore />");
     }
 
+    [TestMethod]
+    public void BitIconShouldKeepASplattedAriaDisabled()
+    {
+        var component = RenderComponent<BitIconAriaDisabledTest>();
+
+        // An attribute the icon writes after the splat replaces the app's, and writing null there takes
+        // it off the element altogether - so the one the app gave is read back and written on.
+        component.MarkupMatches(@$"<i aria-disabled=""true"" aria-label=""Sync"" role=""img"" class=""{CLASS}"" id:ignore />");
+    }
+
     [TestMethod,
         DataRow(BitSize.Small),
         DataRow(BitSize.Medium),
@@ -935,10 +945,25 @@ public class BitIconTests : BunitTestContext
     {
         var component = RenderComponent<BitIcon>(parameters =>
         {
+            parameters.Add(p => p.AriaLabel, "Delete this row");
             parameters.Add(p => p.OnClick, () => { });
         });
 
-        component.MarkupMatches(@$"<i role=""button"" tabindex=""0"" class=""{CLASS} bit-ico-int"" id:ignore />");
+        component.MarkupMatches(@$"<i role=""button"" tabindex=""0"" aria-label=""Delete this row"" class=""{CLASS} bit-ico-int"" id:ignore />");
+    }
+
+    [TestMethod]
+    public void BitIconWithOnClickAndNothingToNameItShouldNotBecomeAButton()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        // The button role and the name arrive together: an icon with a handler, no name of its own and
+        // nothing to fall back to would be announced as "button" with nothing to read out, so it keeps
+        // the handler and the tab stop and is left without the role.
+        component.MarkupMatches(@$"<i tabindex=""0"" class=""{CLASS} bit-ico-int"" id:ignore />");
     }
 
     [TestMethod]
@@ -969,6 +994,50 @@ public class BitIconTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitIconWithOnClickShouldFallBackToTheNameTheResolverWasGiven()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "heart");
+            parameters.Add(p => p.IconResolver, name => BitIconInfo.Fa($"solid {name}"));
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        // The name is what the author wrote and what a reader would recognize; the classes it resolved
+        // to are not.
+        component.MarkupMatches(@$"<i role=""button"" tabindex=""0"" aria-label=""heart"" class=""{CLASS} fa-solid fa-heart bit-ico-int"" id:ignore />");
+    }
+
+    [TestMethod]
+    public void BitIconWithOnClickShouldNotFallBackToAClassList()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.Icon, BitIconInfo.Fa("solid heart"));
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        // A set like FontAwesome names its glyph with a class list rather than with a name, and
+        // "fa-solid fa-heart, button" reads worse than "button": naming it stays the author's, and with
+        // nothing to announce the button role is left off along with the name.
+        component.MarkupMatches(@$"<i tabindex=""0"" class=""{CLASS} fa-solid fa-heart bit-ico-int"" id:ignore />");
+    }
+
+    [TestMethod]
+    public void BitIconWithOnClickShouldFallBackToTheLigatureOfALigatureSet()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.Icon, BitIconInfo.Ms("home"));
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        // A ligature set writes the name of the glyph as the element's own text, and that name is a
+        // name.
+        component.MarkupMatches(@$"<i role=""button"" tabindex=""0"" aria-label=""home"" translate=""no"" class=""{CLASS} material-symbols-outlined bit-ico-int"" id:ignore>home</i>");
+    }
+
+    [TestMethod]
     public void BitIconWithoutOnClickShouldNotFallBackToTheIconName()
     {
         var component = RenderComponent<BitIcon>(parameters =>
@@ -985,11 +1054,12 @@ public class BitIconTests : BunitTestContext
     {
         var component = RenderComponent<BitIcon>(parameters =>
         {
+            parameters.Add(p => p.IconName, "Delete");
             parameters.Add(p => p.OnClick, () => { });
             parameters.Add(p => p.TabIndex, "2");
         });
 
-        component.MarkupMatches(@$"<i role=""button"" tabindex=""2"" class=""{CLASS} bit-ico-int"" id:ignore />");
+        component.MarkupMatches(@$"<i role=""button"" tabindex=""2"" aria-label=""Delete"" class=""{CLASS} bit-icon bit-icon--Delete bit-ico-int"" id:ignore />");
     }
 
     [TestMethod]
@@ -1014,11 +1084,12 @@ public class BitIconTests : BunitTestContext
 
         var component = RenderComponent<BitIcon>(parameters =>
         {
+            parameters.Add(p => p.IconName, "Delete");
             parameters.Add(p => p.OnClick, () => clicked++);
             parameters.Add(p => p.IsEnabled, false);
         });
 
-        component.MarkupMatches(@$"<i role=""button"" tabindex=""-1"" aria-disabled=""true"" class=""{CLASS} bit-ico-int bit-dis"" id:ignore />");
+        component.MarkupMatches(@$"<i role=""button"" tabindex=""-1"" aria-label=""Delete"" aria-disabled=""true"" class=""{CLASS} bit-icon bit-icon--Delete bit-ico-int bit-dis"" id:ignore />");
 
         component.Find("i").Click();
 
@@ -1093,6 +1164,46 @@ public class BitIconTests : BunitTestContext
         component.Find("i").KeyUp(new KeyboardEventArgs { Key = " ", Code = "Space" });
 
         Assert.AreEqual(1, clicked);
+    }
+
+    [TestMethod]
+    public void BitIconShouldForgetASpacePressTheFocusLeftBeforeReleasing()
+    {
+        var clicked = 0;
+
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.OnClick, () => clicked++);
+        });
+
+        component.Find("i").KeyDown(new KeyboardEventArgs { Key = " ", Code = "Space" });
+        component.Find("i").Blur();
+
+        // The press ended somewhere else, so the release that arrives here later - a Space held down
+        // while the focus came back, say - is not the end of it.
+        component.Find("i").KeyUp(new KeyboardEventArgs { Key = " ", Code = "Space" });
+
+        Assert.AreEqual(0, clicked);
+    }
+
+    [TestMethod]
+    public void BitIconShouldForgetASpacePressItWasDisabledDuring()
+    {
+        var clicked = 0;
+
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.OnClick, () => clicked++);
+        });
+
+        component.Find("i").KeyDown(new KeyboardEventArgs { Key = " ", Code = "Space" });
+
+        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
+
+        component.Find("i").KeyUp(new KeyboardEventArgs { Key = " ", Code = "Space" });
+
+        Assert.AreEqual(0, clicked);
     }
 
     [TestMethod]

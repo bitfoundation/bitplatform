@@ -19,7 +19,7 @@ public partial class BitIconDemo
             Name = "Animation",
             Type = "BitIconAnimation?",
             DefaultValue = "null",
-            Description = "Specifies a looping animation to play on the icon. An animation is drawn with a transform of its own, so it replaces Rotate and Flip; Fade, which only changes opacity, combines with both.",
+            Description = "Specifies a looping animation to play on the icon. The animation is drawn with a transform of its own while Rotate, RotateAngle and Flip are drawn with the individual rotate and scale properties beside it, so the two compose: a mirrored arrow still spins, and it spins around the angle it was turned to.",
             LinkType = LinkType.Link,
             Href = "#animation-enum",
         },

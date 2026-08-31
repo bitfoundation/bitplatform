@@ -206,13 +206,16 @@
 // of every other loader in the library; the rest multiply their own duration by the loop factor. Both
 // slow down rather than stop under reduced motion, and ForceAnimation restores them through the same
 // inheritance - so none of these needs a media query of its own.
-.bit-ico-spn,
-.bit-ico-spr,
-.bit-ico-pls,
-.bit-ico-bet,
-.bit-ico-btf,
-.bit-ico-bnc,
-.bit-ico-shk {
+// A circle is already a flex box that centers its glyph, and it is written above this - an
+// inline-block written here at the same specificity would win over it and leave an animated circle
+// with its glyph back in the corner.
+.bit-ico-spn:not(.bit-ico-cir),
+.bit-ico-spr:not(.bit-ico-cir),
+.bit-ico-pls:not(.bit-ico-cir),
+.bit-ico-bet:not(.bit-ico-cir),
+.bit-ico-btf:not(.bit-ico-cir),
+.bit-ico-bnc:not(.bit-ico-cir),
+.bit-ico-shk:not(.bit-ico-cir) {
     display: inline-block;
 }
 
@@ -346,6 +349,11 @@
         width: max(100%, 1.5rem);
         height: max(100%, 1.5rem);
         transform: translate(-50%, -50%);
+        // The box overhangs the icon's own, and a positioned element paints - and so hit-tests - above
+        // the plain content beside it, which would let the overhang take the presses meant for a
+        // tightly spaced neighbour. A negative index puts it back under that content while leaving it
+        // part of its host for hit testing, so it only grows the target where nothing else is.
+        z-index: -1;
     }
 
     // A control the pointer can press says so before it is pressed. The plain glyph deepens its own
