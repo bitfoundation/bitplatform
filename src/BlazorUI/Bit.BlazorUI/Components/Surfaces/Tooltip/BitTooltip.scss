@@ -11,12 +11,23 @@
     --bit-ttp-offset: #{spacing(1.25)};
     // The side of the square the arrow is rotated out of.
     --bit-ttp-arrow-size: #{spacing(1.5)};
-    // The nudge that keeps that rotated square centred on the edge it points at. It is a sixth of the
-    // arrow, so an arrow given a size of its own keeps the geometry it has at the default one.
+    // Half the diagonal of that square once it is rotated: how far the arrow reaches out of the edge of
+    // the surface it is centred on, and so the smallest gap that has the room to draw it in.
+    --bit-ttp-arrow-reach: calc(var(--bit-ttp-arrow-size) * 0.7071);
+    // The distance every placement below is actually written against. An arrow larger than the offset
+    // would otherwise reach past the room it is given and be drawn over the anchor it points at, so the
+    // tooltip is held off by whichever of the two is the greater: the offset is a floor, not a promise.
+    --bit-ttp-gap: max(var(--bit-ttp-offset), var(--bit-ttp-arrow-reach));
+    // How far a corner placement holds the arrow's centre in from the near edge of its surface: the
+    // reach, so that the rotated square is wholly inside the surface, and a hair more so that it is not
+    // left sitting in the rounded corner.
+    --bit-ttp-arrow-inset: calc(var(--bit-ttp-arrow-reach) + #{spacing(0.25)});
+    // The offset and the blur of the shadow the arrow casts on its anchor side. It is a sixth of the
+    // arrow, so an arrow given a size of its own keeps the weight it has at the default one.
     --bit-ttp-arrow-unit: calc(var(--bit-ttp-arrow-size) / 6);
     // How far an interactive tooltip's bridge reaches back toward its anchor: the gap, plus the pixel
     // or two that keeps it from landing a fraction short of it.
-    --bit-ttp-bridge: calc(-1 * (var(--bit-ttp-offset) + 2px));
+    --bit-ttp-bridge: calc(-1 * (var(--bit-ttp-gap) + 2px));
     --bit-ttp-arrow-shadow-color: #{translucent($clr-fg-pri, 10%)};
     // The width a text wraps at instead of the tooltip growing on across the screen.
     --bit-ttp-max-width: #{rem2(320px)};
@@ -77,11 +88,15 @@
     transition: opacity $mot-duration $mot-easing-decelerate, visibility $mot-duration $mot-easing-decelerate;
 }
 
+// The arrow is a square rotated about its own centre, and every placement below centres it ON the edge
+// of the surface it points from: half of it lies over the surface and half of it reaches out toward the
+// anchor, whatever size it is given. That inner half - and the inner half of the shadow it casts - is
+// covered by the surface, so the arrow is drawn one step below it rather than over the top of it.
 .bit-ttp-arw {
     position: absolute;
     width: var(--bit-ttp-arrow-size);
     height: var(--bit-ttp-arrow-size);
-    z-index: var(--bit-ttp-zindex, #{$zindex-callout});
+    z-index: calc(var(--bit-ttp-zindex, #{$zindex-callout}) - 1);
     color: var(--bit-ttp-clr-fg);
     background-color: var(--bit-ttp-clr-bg);
 }
@@ -145,13 +160,18 @@
     .bit-ttp-ctn {
         left: 50%;
         transform: translateX(-50%);
-        bottom: calc(100% + var(--bit-ttp-offset));
+        bottom: calc(100% + var(--bit-ttp-gap));
     }
 
+    // The arrow is placed by its centre rather than by a corner: the placement value is where the centre
+    // of the rotated square is to land, and the translate that follows takes the box back off the edge it
+    // was hung from. Written the other way round - hung off the anchor and nudged along its own diagonal
+    // - how deep it tucks under the surface would grow with the size it is given, until it is drawn over
+    // the text rather than under it.
     .bit-ttp-arw {
-        bottom: 100%;
-        left: calc(50% - var(--bit-ttp-arrow-unit));
-        transform: rotate(45deg) translateX(-50%);
+        left: 50%;
+        bottom: calc(100% + var(--bit-ttp-gap));
+        transform: translate(-50%, 50%) rotate(45deg);
         box-shadow: var(--bit-ttp-arrow-unit) var(--bit-ttp-arrow-unit) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
@@ -159,13 +179,13 @@
 .bit-ttp-tlf {
     .bit-ttp-ctn {
         right: calc(100% - var(--bit-ttp-offset));
-        bottom: calc(100% + var(--bit-ttp-offset));
+        bottom: calc(100% + var(--bit-ttp-gap));
     }
 
     .bit-ttp-arw {
-        bottom: 100%;
-        right: calc(100% - var(--bit-ttp-offset));
-        transform: rotate(45deg) translateX(-50%);
+        right: calc(100% - var(--bit-ttp-offset) + var(--bit-ttp-arrow-inset));
+        bottom: calc(100% + var(--bit-ttp-gap));
+        transform: translate(50%, 50%) rotate(45deg);
         box-shadow: var(--bit-ttp-arrow-unit) var(--bit-ttp-arrow-unit) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
@@ -173,27 +193,27 @@
 .bit-ttp-trg {
     .bit-ttp-ctn {
         left: calc(100% - var(--bit-ttp-offset));
-        bottom: calc(100% + var(--bit-ttp-offset));
+        bottom: calc(100% + var(--bit-ttp-gap));
     }
 
     .bit-ttp-arw {
-        left: 100%;
-        bottom: 100%;
-        transform: rotate(45deg) translateX(-50%);
+        left: calc(100% - var(--bit-ttp-offset) + var(--bit-ttp-arrow-inset));
+        bottom: calc(100% + var(--bit-ttp-gap));
+        transform: translate(-50%, 50%) rotate(45deg);
         box-shadow: var(--bit-ttp-arrow-unit) var(--bit-ttp-arrow-unit) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
 .bit-ttp-rtp {
     .bit-ttp-ctn {
-        left: calc(100% + var(--bit-ttp-offset));
+        left: calc(100% + var(--bit-ttp-gap));
         bottom: calc(100% - var(--bit-ttp-offset));
     }
 
     .bit-ttp-arw {
-        left: calc(100% + var(--bit-ttp-offset));
-        bottom: calc(100% - var(--bit-ttp-offset));
-        transform: rotate(-45deg) translateY(-50%);
+        left: calc(100% + var(--bit-ttp-gap));
+        bottom: calc(100% - var(--bit-ttp-offset) + var(--bit-ttp-arrow-inset));
+        transform: translate(-50%, 50%) rotate(-45deg);
         box-shadow: calc(-1 * var(--bit-ttp-arrow-unit)) calc(-1 * var(--bit-ttp-arrow-unit)) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
@@ -202,13 +222,13 @@
     .bit-ttp-ctn {
         bottom: 50%;
         transform: translateY(50%);
-        left: calc(100% + var(--bit-ttp-offset));
+        left: calc(100% + var(--bit-ttp-gap));
     }
 
     .bit-ttp-arw {
-        top: calc(50% - var(--bit-ttp-arrow-unit));
-        left: calc(100% + var(--bit-ttp-offset));
-        transform: rotate(-45deg) translateY(-50%);
+        top: 50%;
+        left: calc(100% + var(--bit-ttp-gap));
+        transform: translate(-50%, -50%) rotate(-45deg);
         box-shadow: calc(-1 * var(--bit-ttp-arrow-unit)) calc(-1 * var(--bit-ttp-arrow-unit)) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
@@ -216,27 +236,27 @@
 .bit-ttp-rbm {
     .bit-ttp-ctn {
         top: calc(100% - var(--bit-ttp-offset));
-        left: calc(100% + var(--bit-ttp-offset));
+        left: calc(100% + var(--bit-ttp-gap));
     }
 
     .bit-ttp-arw {
-        top: calc(100% - var(--bit-ttp-offset));
-        left: calc(100% + var(--bit-ttp-offset));
-        transform: rotate(-135deg) translateY(-50%);
+        top: calc(100% - var(--bit-ttp-offset) + var(--bit-ttp-arrow-inset));
+        left: calc(100% + var(--bit-ttp-gap));
+        transform: translate(-50%, -50%) rotate(-135deg);
         box-shadow: var(--bit-ttp-arrow-unit) calc(-1 * var(--bit-ttp-arrow-unit)) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
 .bit-ttp-brg {
     .bit-ttp-ctn {
-        top: calc(100% + var(--bit-ttp-offset));
+        top: calc(100% + var(--bit-ttp-gap));
         left: calc(100% - var(--bit-ttp-offset));
     }
 
     .bit-ttp-arw {
-        top: calc(100% + var(--bit-ttp-offset));
-        left: calc(100% - var(--bit-ttp-offset));
-        transform: rotate(135deg) translateX(-50%);
+        top: calc(100% + var(--bit-ttp-gap));
+        left: calc(100% - var(--bit-ttp-offset) + var(--bit-ttp-arrow-inset));
+        transform: translate(-50%, -50%) rotate(135deg);
         box-shadow: calc(-1 * var(--bit-ttp-arrow-unit)) var(--bit-ttp-arrow-unit) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
@@ -245,27 +265,27 @@
     .bit-ttp-ctn {
         left: 50%;
         transform: translateX(-50%);
-        top: calc(100% + var(--bit-ttp-offset));
+        top: calc(100% + var(--bit-ttp-gap));
     }
 
     .bit-ttp-arw {
-        top: calc(100% + var(--bit-ttp-offset));
-        left: calc(50% - var(--bit-ttp-arrow-unit));
-        transform: rotate(45deg) translateX(-50%);
+        top: calc(100% + var(--bit-ttp-gap));
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(45deg);
         box-shadow: calc(-1 * var(--bit-ttp-arrow-unit)) calc(-1 * var(--bit-ttp-arrow-unit)) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
 .bit-ttp-blf {
     .bit-ttp-ctn {
-        top: calc(100% + var(--bit-ttp-offset));
+        top: calc(100% + var(--bit-ttp-gap));
         right: calc(100% - var(--bit-ttp-offset));
     }
 
     .bit-ttp-arw {
-        top: calc(100% + var(--bit-ttp-offset));
-        right: calc(100% - var(--bit-ttp-offset));
-        transform: rotate(45deg) translateX(-50%);
+        top: calc(100% + var(--bit-ttp-gap));
+        right: calc(100% - var(--bit-ttp-offset) + var(--bit-ttp-arrow-inset));
+        transform: translate(50%, -50%) rotate(45deg);
         box-shadow: calc(-1 * var(--bit-ttp-arrow-unit)) calc(-1 * var(--bit-ttp-arrow-unit)) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
@@ -273,13 +293,13 @@
 .bit-ttp-lbm {
     .bit-ttp-ctn {
         top: calc(100% - var(--bit-ttp-offset));
-        right: calc(100% + var(--bit-ttp-offset));
+        right: calc(100% + var(--bit-ttp-gap));
     }
 
     .bit-ttp-arw {
-        top: calc(100% - var(--bit-ttp-offset));
-        right: calc(100% + var(--bit-ttp-offset));
-        transform: rotate(-135deg) translateX(-50%);
+        top: calc(100% - var(--bit-ttp-offset) + var(--bit-ttp-arrow-inset));
+        right: calc(100% + var(--bit-ttp-gap));
+        transform: translate(50%, -50%) rotate(-135deg);
         box-shadow: calc(-1 * var(--bit-ttp-arrow-unit)) var(--bit-ttp-arrow-unit) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
@@ -288,27 +308,27 @@
     .bit-ttp-ctn {
         bottom: 50%;
         transform: translateY(50%);
-        right: calc(100% + var(--bit-ttp-offset));
+        right: calc(100% + var(--bit-ttp-gap));
     }
 
     .bit-ttp-arw {
-        top: calc(50% - var(--bit-ttp-arrow-unit));
-        right: calc(100% + var(--bit-ttp-offset));
-        transform: rotate(135deg) translateX(-50%);
+        top: 50%;
+        right: calc(100% + var(--bit-ttp-gap));
+        transform: translate(50%, -50%) rotate(135deg);
         box-shadow: calc(-1 * var(--bit-ttp-arrow-unit)) calc(-1 * var(--bit-ttp-arrow-unit)) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
 .bit-ttp-ltp {
     .bit-ttp-ctn {
-        right: calc(100% + var(--bit-ttp-offset));
+        right: calc(100% + var(--bit-ttp-gap));
         bottom: calc(100% - var(--bit-ttp-offset));
     }
 
     .bit-ttp-arw {
-        right: calc(100% + var(--bit-ttp-offset));
-        bottom: calc(100% - var(--bit-ttp-offset));
-        transform: rotate(135deg) translateX(-50%);
+        right: calc(100% + var(--bit-ttp-gap));
+        bottom: calc(100% - var(--bit-ttp-offset) + var(--bit-ttp-arrow-inset));
+        transform: translate(50%, 50%) rotate(135deg);
         box-shadow: calc(-1 * var(--bit-ttp-arrow-unit)) calc(-1 * var(--bit-ttp-arrow-unit)) var(--bit-ttp-arrow-unit) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }

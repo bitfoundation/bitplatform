@@ -146,7 +146,7 @@ public partial class BitTooltipDemo
             Name = "Offset",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The distance in pixels between the anchor and the tooltip, which is also the room the arrow is drawn in. Leaving it unset keeps the distance the theme gives it."
+            Description = "The distance in pixels between the anchor and the tooltip, which is also the room the arrow is drawn in. An arrow that reaches further than this is given the room it needs anyway, so this is the smallest distance rather than the exact one. Leaving it unset keeps the distance the theme gives it."
         },
         new()
         {

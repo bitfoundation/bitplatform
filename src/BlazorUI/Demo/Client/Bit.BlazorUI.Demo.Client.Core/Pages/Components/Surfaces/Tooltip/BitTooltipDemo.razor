@@ -49,7 +49,7 @@
             twelve are shown open here at once; they are the same tooltip in every other respect.
         </div>
         <br />
-        <div class="position-grid">
+        <div class="position-grid" style="padding-inline:5rem">
             @foreach (var position in tooltipPositionList)
             {
                 <BitTooltip DefaultIsShown="true" Text="@position.Text" Position="position.Value">
@@ -78,7 +78,7 @@
             <b>NoTouch</b> leaves the touch to the anchor altogether.
         </div>
         <br />
-        <div class="tooltips-container row">
+        <div class="tooltips-container row" style="padding-inline:5rem">
             <BitTooltip Text="Shown by the pointer only" ShowOnFocus="false">
                 <BitButton Variant="BitVariant.Outline">Hover</BitButton>
             </BitTooltip>
@@ -138,7 +138,7 @@
         </div>
         <br />
         <BitTooltipGroup ShowDelay="700" HideDelay="100" SkipDelay="600">
-            <div class="tooltips-container row">
+            <div class="tooltips-container row" style="padding-inline:5rem">
                 <BitTooltip Text="Waited for, like the first of a row">
                     <BitButton Variant="BitVariant.Outline">Bold</BitButton>
                 </BitTooltip>
@@ -163,7 +163,8 @@
             The arrow points from the tooltip back at the anchor. <b>HideArrow</b> leaves it out,
             <b>ArrowSize</b> sets the length of the side of the square it is drawn from, and
             <b>Offset</b> is the distance in pixels the tooltip is held off the anchor, which is also the
-            room the arrow is drawn in. Leaving the last two unset keeps whatever the theme gives them.
+            room the arrow is drawn in - an arrow that reaches further than that is given the room it
+            needs anyway. Leaving the last two unset keeps whatever the theme gives them.
         </div>
         <br />
         <div class="tooltips-container row spaced">
@@ -196,7 +197,7 @@
             which a tooltip never does.
         </div>
         <br />
-        <div class="tooltips-container row">
+        <div class="tooltips-container row" style="padding:5rem">
             <BitTooltip Interactive HideDelay="200" Position="BitTooltipPosition.Bottom"
                         Text="Move onto me and I will stay. Select this text.">
                 <BitButton Variant="BitVariant.Outline">Interactive</BitButton>
@@ -239,7 +240,7 @@
             off for the tooltip that is meant to be a single line however long it is.
         </div>
         <br />
-        <div class="tooltips-container row spaced">
+        <div class="tooltips-container row spaced" style="padding-inline:5rem">
             <BitTooltip DefaultIsShown="true" Position="BitTooltipPosition.Bottom" MaxWidth="10rem"
                         Text="A narrow tooltip wraps its text sooner.">
                 <BitButton Variant="BitVariant.Outline">10rem</BitButton>
@@ -263,8 +264,8 @@
             click somewhere else on the page and a Tab away from the anchor both take the focus off it -
             a pointer still resting on the anchor keeps it, having asked for it in its own right.
         </div>
-        <br />
-        <div class="tooltips-container row">
+        <br /><br />
+        <div class="tooltips-container row" style="padding-inline:5rem">
             <BitTooltip Text="Press Escape to dismiss me">
                 <BitButton Variant="BitVariant.Outline">Dismissible</BitButton>
             </BitTooltip>
@@ -292,7 +293,7 @@
             land on, or where something other than the first control is what the tooltip belongs to.
         </div>
         <br />
-        <div class="tooltips-container row">
+        <div class="tooltips-container row" style="padding-inline:5rem">
             <BitTooltip Text="Save the current document" Relationship="BitTooltipRelationship.Label">
                 <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Save" />
             </BitTooltip>
@@ -316,7 +317,7 @@
             moment the page loaded.
         </div>
         <br />
-        <div class="tooltips-container row">
+        <div class="tooltips-container row" style="padding:5rem">
             <BitTooltip LazyRender Position="BitTooltipPosition.Bottom">
                 <Template>
                     <TooltipRenderStamp />
@@ -346,7 +347,7 @@
             left alone and only your code shows and hides the tooltip.
         </div>
         <br />
-        <div class="tooltips-container">
+        <div class="tooltips-container" style="padding:5rem">
             <BitToggle @bind-Value="isShown" Label="IsShown" />
             <div class="tooltips-container row">
                 <BitTooltip DefaultIsShown="true" Text="Shown to begin with" Position="BitTooltipPosition.Bottom">
@@ -374,9 +375,11 @@
                 <BitButton Variant="BitVariant.Outline" OnClick="@(() => tooltipRef?.Hide())">Hide</BitButton>
                 <BitButton Variant="BitVariant.Outline" OnClick="@(() => tooltipRef?.Toggle())">Toggle</BitButton>
             </div>
-            <BitTooltip @ref="tooltipRef" Text="Driven from the buttons above" Position="BitTooltipPosition.Bottom">
-                <BitButton Variant="BitVariant.Outline">Anchor</BitButton>
-            </BitTooltip>
+            <div class="tooltips-container row" style="padding:5rem">
+                <BitTooltip @ref="tooltipRef" Text="Driven from the buttons above" Position="BitTooltipPosition.Bottom">
+                    <BitButton Variant="BitVariant.Outline">Anchor</BitButton>
+                </BitTooltip>
+            </div>
         </div>
     </DemoExample>
 
@@ -387,7 +390,7 @@
             once the delays have run out and the state has actually changed, never for a trigger that was
             cancelled before it landed.
         </div>
-        <br />
+        <br /><br />
         <div class="tooltips-container">
             <BitTooltip Text="Watch the log below"
                         OnShow="@(() => events.Insert(0, $"OnShow at {DateTime.Now:HH:mm:ss}"))"
@@ -424,14 +427,14 @@
                             Position="tooltipPosition">
                     <BitButton Variant="BitVariant.Outline" Style="width: 8rem;">Anchor</BitButton>
                 </BitTooltip>
-                <br />
+                <br /><br />
                 <BitDropdown Label="Tooltip positions" Items="tooltipPositionList" @bind-Value="tooltipPosition" Style="width: 8rem;" />
                 <br />
                 <BitNumberField Label="Show delay" @bind-Value="showDelay" Mode="BitSpinButtonMode.Inline" Style="width: 8rem;" />
                 <br />
                 <BitNumberField Label="Hide delay" @bind-Value="hideDelay" Mode="BitSpinButtonMode.Inline" Style="width: 8rem;" />
             </div>
-
+<div>&nbsp;</div>
             <div class="tooltips-container">
                 <BitToggle @bind-Value="isShownAdvanced" Text="Toggle tooltip state" />
                 <br />
@@ -561,7 +564,7 @@
                 </Anchor>
             </BitTooltip>
         </div>
-        <div class="tooltips-container row spaced">
+        <div class="tooltips-container row spaced" style="padding-inline:7rem">
             <BitTooltip Dir="BitDir.Rtl" DefaultIsShown="true" Position="BitTooltipPosition.Left"
                         Text="سمت چپ لنگر">
                 <BitButton Variant="BitVariant.Outline">Left</BitButton>
