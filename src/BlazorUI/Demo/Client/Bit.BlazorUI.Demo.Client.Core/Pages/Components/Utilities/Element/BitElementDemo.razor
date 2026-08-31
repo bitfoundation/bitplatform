@@ -118,7 +118,7 @@
             </BitElement>
             <div class="demo-card" @ondblclick="() => doubled++">
                 The card was double-clicked @doubled times.
-                <BitElement Class="demo-boxed"
+                <BitElement class="demo-boxed"
                             StopPropagationEvents="@(new[] { "dblclick" })"
                             PreventDefaultEvents="@(new[] { "contextmenu" })"
                             @ondblclick="() => inner++"
@@ -128,7 +128,7 @@
             </div>
         </div>
     </DemoExample>
-    <DemoExample Title="Disabled" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Disabled" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div class="example-desc">
             <b>IsEnabled</b> set to false dims the element and takes it out of hit testing through the <code>bit-dis</code>
             class, so the state means the same thing whichever tag is rendered. On top of that it writes the
@@ -156,8 +156,8 @@
         </div>
         <div class="example-content">
             <BitToggle @bind-Value="isVisible" Text="Visible" />
-            <BitElement Class="demo-boxed" Visibility="@(isVisible ? BitVisibility.Visible : BitVisibility.Hidden)">Hidden keeps its space.</BitElement>
-            <BitElement Class="demo-boxed" Visibility="@(isVisible ? BitVisibility.Visible : BitVisibility.Collapsed)">Collapsed takes its space with it.</BitElement>
+            <BitElement class="demo-boxed" Visibility="@(isVisible ? BitVisibility.Visible : BitVisibility.Hidden)">Hidden keeps its space.</BitElement>
+            <BitElement class="demo-boxed" Visibility="@(isVisible ? BitVisibility.Visible : BitVisibility.Collapsed)">Collapsed takes its space with it.</BitElement>
             <BitElement NoWrapper Visibility="@(isVisible ? BitVisibility.Visible : BitVisibility.Collapsed)">Even unwrapped content is dropped while collapsed.</BitElement>
         </div>
     </DemoExample>
@@ -203,7 +203,7 @@
         </div>
         <div class="example-content">
             <BitElement Element="input" @ref="inputElement" placeholder="Focused by the button" />
-            <BitElement Class="demo-boxed" TabIndex="0" @ref="boxElement">A div, focusable because it has a TabIndex.</BitElement>
+            <BitElement class="demo-boxed" TabIndex="0" @ref="boxElement">A div, focusable because it has a TabIndex.</BitElement>
             <BitButton OnClick="FocusTheInput">Focus the input</BitButton>
             <BitButton OnClick="FocusTheBox">Focus the div without scrolling</BitButton>
         </div>

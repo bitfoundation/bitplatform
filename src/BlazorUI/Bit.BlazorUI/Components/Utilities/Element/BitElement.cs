@@ -361,14 +361,25 @@ public partial class BitElement : BitComponentBase
     {
         if (HtmlAttributes.Count == 0) return null;
 
-        if (HtmlAttributes.TryGetValue(name, out var value)) return value?.ToString();
+        if (HtmlAttributes.TryGetValue(name, out var value)) return StringifyAttributeValue(value);
 
         foreach (var attribute in HtmlAttributes)
         {
-            if (string.Equals(attribute.Key, name, StringComparison.OrdinalIgnoreCase)) return attribute.Value?.ToString();
+            if (string.Equals(attribute.Key, name, StringComparison.OrdinalIgnoreCase)) return StringifyAttributeValue(attribute.Value);
         }
 
         return null;
+    }
+
+    // A boolean is the one attribute value the renderer does not write as its text: an attribute is written with no
+    // value at all while it is true and left out altogether while it is false, which is what an attribute splatted
+    // onto a plain element does. So the two are resolved into the same thing here rather than into the "True" and
+    // "False" that ToString would give an attribute the component writes itself.
+    private static string? StringifyAttributeValue(object? value)
+    {
+        if (value is bool boolean) return boolean ? string.Empty : null;
+
+        return value?.ToString();
     }
 
     // Two class lists landing in the same class attribute are only two lists while a space stands between them.

@@ -40,3 +40,10 @@
 <BitElement Element="area" href="https://bitplatform.dev/" alt="I'm an image map link" />
 
 <BitElement Element="area" href="https://bitplatform.dev/" alt="I'm a disabled image map link" IsEnabled="false" />
+
+@* A boolean is the one attribute value that is not written as its text on a plain element: true writes the
+   attribute with no value at all and false writes none of it, which is how a boolean splatted onto one of the
+   names the component resolves itself has to come out too. *@
+<BitElement aria-disabled="@false" data-plain-attribute="@false">I'm an element with false attributes</BitElement>
+
+<BitElement aria-disabled="@true" data-plain-attribute="@true">I'm an element with true attributes</BitElement>

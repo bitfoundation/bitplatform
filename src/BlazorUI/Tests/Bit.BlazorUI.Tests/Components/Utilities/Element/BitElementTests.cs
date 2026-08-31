@@ -876,6 +876,30 @@ public class BitElementTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitElementShouldLeaveOutASplattedFalseAttribute()
+    {
+        var component = RenderComponent<BitElementHtmlAttributesTest>();
+
+        var element = component.FindAll(".bit-elm")[9];
+
+        // A false is not an attribute written as the text "False" on a plain element but one written nowhere at all,
+        // whether or not its name is one the component resolves against the splatted attributes itself.
+        Assert.IsFalse(element.HasAttribute("aria-disabled"));
+        Assert.IsFalse(element.HasAttribute("data-plain-attribute"));
+    }
+
+    [TestMethod]
+    public void BitElementShouldWriteASplattedTrueAttributeWithNoValue()
+    {
+        var component = RenderComponent<BitElementHtmlAttributesTest>();
+
+        var element = component.FindAll(".bit-elm")[10];
+
+        Assert.AreEqual(string.Empty, element.GetAttribute("aria-disabled"));
+        Assert.AreEqual(string.Empty, element.GetAttribute("data-plain-attribute"));
+    }
+
+    [TestMethod]
     public async Task BitElementFocusAsyncShouldDoNothingWhileUnwrapped()
     {
         var component = RenderComponent<BitElement>(parameters =>
