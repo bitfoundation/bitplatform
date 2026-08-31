@@ -27,7 +27,7 @@ namespace ButilTests.Manual;
 internal static class ScriptBundling
 {
     /// <summary>The script that evaluates an assembled bundle, copied next to the executable by the csproj.</summary>
-    private const string VerifierFileName = "verify-bundle.mjs";
+    internal const string VerifierFileName = "verify-bundle.mjs";
 
     /// <summary>
     /// An interop identifier naming a module Bit.Butil does not ship, present in this assembly for the
@@ -527,10 +527,10 @@ internal static class ScriptBundling
     }
 
     /// <summary>The <c>BitButil.&lt;key&gt;</c> namespaces a set of modules registers between them.</summary>
-    private static string Keys(IEnumerable<string> modules)
+    internal static string Keys(IEnumerable<string> modules)
         => string.Join(",", modules.Select(module => module == "butil" ? "version" : module));
 
-    private static void RunVerifier(Checks checks, string verifier, string expectedKeys, params string[] scripts)
+    internal static void RunVerifier(Checks checks, string verifier, string expectedKeys, params string[] scripts)
     {
         var what = string.Join(" + ", scripts.Select(Path.GetFileName));
         var process = new Process
@@ -620,6 +620,9 @@ internal static class ScriptBundling
         }
 
         var targets = File.ReadAllText(targetsPath);
+
+        CheckScriptAssetSelection(checks, targets);
+
         var packed = XDocument.Load(projectPath).Descendants()
             .Where(element => element.Name.LocalName is "TfmSpecificPackageFile" or "None")
             .Select(element => (Include: element.Attribute("Include")?.Value ?? string.Empty, PackagePath: element.Attribute("PackagePath")?.Value))
@@ -653,6 +656,68 @@ internal static class ScriptBundling
             "the targets are packed under both buildTransitive/ (what NuGet imports today) and build/ (older tooling)",
             $"packed to [{string.Join(", ", packedTargets.Select(entry => entry.PackagePath))}]");
     }
+
+    /// <summary>
+    /// The one piece of the consumer-side targets that exists twice: dropping the shape of the JavaScript an
+    /// app does not use, once for the build asset list and once for the publish one.
+    /// </summary>
+    /// <remarks>
+    /// The duplication is forced - a target runs at most once per project build, so a single target hooked
+    /// into both stages runs at the first and is skipped at the second - and it is the kind that rots: a fix
+    /// made to one body and not the other leaves a publish shipping 65 module files an app never requests,
+    /// or a bundle a lazy-scripts app never loads, and neither shows up in a build. So the two bodies are
+    /// compared here, and each is checked to be hooked into the stage it exists for.
+    /// </remarks>
+    private static void CheckScriptAssetSelection(Checks checks, string targets)
+    {
+        const string build = "BitButilSelectScriptAssets";
+        const string publish = "BitButilSelectPublishScriptAssets";
+
+        var buildBody = TargetBody(targets, build);
+        var publishBody = TargetBody(targets, publish);
+
+        if (checks.That(buildBody.Length > 0 && publishBody.Length > 0,
+                "the JavaScript shape an app does not use is dropped at both the build and the publish stage",
+                $"{(buildBody.Length == 0 ? build : publish)} is not a target in the consumer-side targets file") is false)
+        {
+            return;
+        }
+
+        checks.That(string.Equals(buildBody, publishBody, StringComparison.Ordinal),
+            "the build-stage and publish-stage selections still do the same thing",
+            $"{build} and {publish} have drifted apart - the publish output no longer matches the build's idea of which scripts the app uses");
+
+        // Hooked into the right stage, and in the publish list ahead of the trimming, which only narrows what
+        // the selection leaves behind.
+        var publishHook = HookList(targets, "ResolvePublishStaticWebAssetsDependsOn");
+        var buildHook = HookList(targets, "ResolveCoreStaticWebAssetsDependsOn");
+
+        checks.That(buildHook.Contains(build, StringComparison.Ordinal), $"{build} runs at the build stage", $"it is not in ResolveCoreStaticWebAssetsDependsOn: '{buildHook}'");
+        checks.That(publishHook.Contains(publish, StringComparison.Ordinal), $"{publish} runs at the publish stage", $"it is not in ResolvePublishStaticWebAssetsDependsOn: '{publishHook}'");
+        checks.That(publishHook.Contains(build, StringComparison.Ordinal) is false,
+            $"{build} is not also hooked into the publish stage",
+            "a target runs once per build, so hooking the same one into both stages leaves the second with nothing to do");
+
+        var selection = publishHook.IndexOf(publish, StringComparison.Ordinal);
+        var trimming = publishHook.IndexOf("BitButilTrimScript", StringComparison.Ordinal);
+        checks.That(selection >= 0 && trimming > selection,
+            "the publish-stage selection runs before the trimming it feeds",
+            $"the publish hook list orders them '{publishHook}'");
+    }
+
+    /// <summary>A target's body, comments and layout removed, so two of them can be compared for what they do.</summary>
+    private static string TargetBody(string targets, string name)
+    {
+        var match = Regex.Match(targets, $"<Target Name=\"{Regex.Escape(name)}\"[^>]*>(?<body>.*?)</Target>", RegexOptions.Singleline);
+        if (match.Success is false) return string.Empty;
+
+        var body = Regex.Replace(match.Groups["body"].Value, "<!--.*?-->", " ", RegexOptions.Singleline);
+        return Regex.Replace(body, @"\s+", " ").Trim();
+    }
+
+    /// <summary>The value this targets file appends to one of the SDK's DependsOn properties.</summary>
+    private static string HookList(string targets, string property)
+        => Regex.Match(targets, $"<{property}>(?<value>[^<]*)</{property}>").Groups["value"].Value;
 
     /// <summary>The folders one pack item's PackagePath names - it may name several, separated by semicolons.</summary>
     private static string[] PackageFolders(string? packagePath)
@@ -695,7 +760,7 @@ internal static class ScriptBundling
     /// Counts what held and records what did not, in the harness's own terms - every failure ends up in the
     /// list the report prints and the exit code is read from.
     /// </summary>
-    private sealed class Checks(List<string> failures)
+    internal sealed class Checks(List<string> failures, string subject = "script bundling")
     {
         public int Passed { get; private set; }
 
@@ -710,7 +775,7 @@ internal static class ScriptBundling
             }
 
             Failed++;
-            failures.Add($"script bundling: {what}{(detail is null ? string.Empty : $" - {detail}")}.");
+            failures.Add($"{subject}: {what}{(detail is null ? string.Empty : $" - {detail}")}.");
             return false;
         }
 

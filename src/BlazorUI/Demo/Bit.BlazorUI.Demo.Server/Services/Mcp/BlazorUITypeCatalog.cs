@@ -31,7 +31,7 @@ public static class BlazorUITypeCatalog
     /// </summary>
     private static readonly HashSet<string> _services = new(StringComparer.Ordinal)
     {
-        "BitModalService", "BitProModalService", "BitMessageBoxService", "BitAccentColorService",
+        "BitModalService", "BitMessageBoxService", "BitAccentColorService",
         "BitThemeManager", "BitThemeNotifications", "BitExternalThemeLoader", "BitPageVisibility", "BitExtraServices"
     };
 

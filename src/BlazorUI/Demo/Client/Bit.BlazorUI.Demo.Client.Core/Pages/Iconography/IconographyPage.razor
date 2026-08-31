@@ -557,12 +557,12 @@ BitIconInfo.Bit("Home")               // back to the built-in set</CodeBox>
    is worth pasting. Modeless, so the grid stays live behind it and the reader can keep browsing
    with it open - which is what makes the related-icons list at the bottom of it useful. *@
 <div class="icon-details-panel-scope" id="@PANEL_ELEMENT_ID">
-    <BitProPanel AutoToggleScroll Modeless ShowCloseButton
-                 @bind-IsOpen="_isPanelOpen"
-                 Size="PANEL_SIZE"
-                 Position="BitPanelPosition.End"
-                 HeaderText="@(_selected?.Name ?? "Icon")"
-                 OnDismiss="HandlePanelDismissed">
+    <BitPanel AutoToggleScroll Modeless ShowCloseButton
+              @bind-IsOpen="_isPanelOpen"
+              Size="PANEL_SIZE"
+              Position="BitPanelPosition.End"
+              HeaderText="@(_selected?.Name ?? "Icon")"
+              OnDismiss="HandlePanelDismissed">
         <Body>
             @if (_selected is not null)
             {
@@ -786,5 +786,5 @@ BitIconInfo.Bit("Home")               // back to the built-in set</CodeBox>
                 </BitStack>
             }
         </Body>
-    </BitProPanel>
+    </BitPanel>
 </div>

@@ -168,6 +168,27 @@ internal static class Program
         Console.WriteLine($"  {bundlingPassed} checks passed, {bundlingFailed} failed");
         Console.WriteLine();
 
+        // The other two signals a publish can trim on, which stand in for ILLink when it never runs: the
+        // class-to-module map, and the scan of a consumer's own assemblies that uses it. Checked against the
+        // very set trimming produces for the very same code, so the three cannot drift apart.
+        Console.WriteLine("--- script scanning ---");
+        var (scanningPassed, scanningFailed) = ScriptScanning.Run(string.IsNullOrEmpty(assembly.Location) ? null : assembly.Location, trimmed, failures);
+        Console.WriteLine(trimmed
+            ? "  not checked in a trimmed run - the map is a question about the untrimmed library"
+            : $"  {scanningPassed} checks passed, {scanningFailed} failed");
+        Console.WriteLine();
+
+        // And the same feature as MSBuild actually runs it: a real consumer app published with each
+        // combination of the switches, and the JavaScript that came out read back off disk. The only checks
+        // here that go through a publish rather than through a method call.
+        Console.WriteLine("--- script publishing ---");
+        var publishingStarted = DateTime.UtcNow;
+        var (publishingPassed, publishingFailed) = ScriptPublishing.Run(trimmed, failures);
+        Console.WriteLine(trimmed
+            ? "  not checked in a trimmed run - this process publishes the fixture itself, to the same answers either way"
+            : $"  {publishingPassed} checks passed, {publishingFailed} failed ({(DateTime.UtcNow - publishingStarted).TotalSeconds:N0}s)");
+        Console.WriteLine();
+
         Console.WriteLine("--- lazy scripts ---");
         var (lazyPassed, lazyFailed) = await LazyScripts.Run(failures);
         Console.WriteLine($"  {lazyPassed} checks passed, {lazyFailed} failed");

@@ -1,11 +1,14 @@
 ﻿# Bit.Butil.Tests.Manual
 
-A hand-run harness that answers three questions about a trimmed consumer of `Bit.Butil`:
+A hand-run harness that answers four questions about a consumer of `Bit.Butil`:
 
-1. Does it only pay for the Butil classes it actually uses?
+1. Does a trimmed consumer only pay for the Butil classes it actually uses?
 2. Do the pieces the library reaches **by name at runtime** survive that trimming?
 3. Does the JavaScript follow suit - is the bundle a trimmed publish would ship exactly the modules the
    trimmed assembly still calls, and does the lazy per-module loader behave?
+4. And for a consumer published **without** trimming, where there is no trimmed assembly to read: do the
+   signals that stand in for it - a scan of the app's own assemblies, and a module list in its csproj -
+   reach the same answer, and does a real `dotnet publish` carry that answer into its output?
 
 It is a console app rather than a test project on purpose. Trimming is a *publish* step, so the thing
 under test is the produced output, and the same executable is both the report and the check - it exits
@@ -123,6 +126,64 @@ and this repository never does, plus the artifacts the whole feature rests on:
 Node runs the last of those; it is already a build dependency of Bit.Butil (it compiles the TypeScript), so
 a checkout that can produce the artifacts under test can always run them.
 
+**Script scanning** ([`ScriptScanning.cs`](ScriptScanning.cs)). Everything above rests on ILLink having
+run. A consumer publishing untrimmed has no trimmed assembly, and an *untrimmed* `Bit.Butil.dll` names every
+module the library has - so the signal has to come from somewhere else: the Bit.Butil types the app's own
+assemblies reference (`BitButilScriptScan`), and the modules its csproj names outright
+(`BitButilScriptModule`). These check that the somewhere else arrives at the same place. Untrimmed runs only,
+since the map is a question about the library as shipped rather than about what one app's trimming left.
+
+- **the class-to-module map**, built from `Bit.Butil.dll` by walking each type's IL for interop literals and
+  closing over the types it can reach. Every module the library calls has to be reachable from some class -
+  one that is not is a module no scan could ever include - and the map, asked about the five classes
+  `ConsumerComponent` injects, has to answer **exactly `MustSurviveModules`**: the same set ILLink
+  independently arrives at for the same code. That equality is the point of the file. It is also a real test
+  of the closure rather than a restatement of it: `LocalStorage` carries no interop literals of its own (they
+  are on the `ButilStorage` base class) and `Window` reaches `events` only through an internal interop class
+  called from inside a compiler-generated async state machine, so anything less than the full reference
+  closure gets both wrong;
+- **the scan** over this harness's own assembly, which has to find that same set through `TypeReferences`;
+  `TypeNames` has to find no less (it matches bare names, so it over-includes on purpose - never the other
+  way); an assembly that does not reference Bit.Butil has to count for nothing rather than for "this app
+  calls no JavaScript", which acted on would trim every module away; and Bit.Butil's own assembly has to be
+  left out, since it names all of its types and would light up every module;
+- **the csproj list** (`ResolveNames`): a module name, a class name, a full type name, a class whose module
+  is named nothing like it (`LocalStorage` → `storage`), a class needing two modules (`Window`), the wrong
+  case, duplicates and whitespace - and a name that is neither *reported* rather than ignored, since MSBuild
+  accepts a misspelled item without a word;
+- **unreadable inputs**: the map refuses a text file, a truncated assembly and a missing one with the typed
+  exceptions the MSBuild task catches, while the scan passes over all three instead of failing the publish -
+  the list it is handed is whatever a consumer's references resolved to, native libraries and stale paths
+  included;
+- **running the result**: the bundle a scan-trimmed publish would serve, with a csproj-named module mixed in,
+  assembled and evaluated under Node the same way the bundling checks evaluate the ILLink-derived one. A
+  module set that is right on paper still ships broken JavaScript if the chunks behind it do not stand alone.
+
+**Script publishing** ([`ScriptPublishing.cs`](ScriptPublishing.cs),
+[`../Bit.Butil.Tests.PublishFixture`](../Bit.Butil.Tests.PublishFixture)). Everything above checks the
+*computation* by calling into `Bit.Butil.Build`. That is one step of the feature; the rest is MSBuild, and
+none of it is reachable from a method call - whether the trimming runs at all, which of the three signals it
+is allowed to use, that a csproj list is *added* to what the others found rather than replacing it, that
+assets removed from the build list are also removed from the publish list, and that a name meaning nothing
+fails the build. So these publish a real consumer app - a two-class web app next door, published in seconds
+rather than the minutes a WebAssembly one takes - and read the JavaScript back out of its publish output.
+Nine `dotnet publish` runs, about fifteen seconds in total, untrimmed runs only:
+
+- with **no signal at all** the full bundle is published - the case that has to keep working for every
+  consumer who never asked for any of this;
+- a **scan** trims the bundle to the modules the fixture's two classes need; `TypeNames` finds at least those;
+- a **csproj module list** trims it on its own, with no scan and no ILLink;
+- a csproj list **plus** a scan produces the union of the two, which is the whole meaning of "additive";
+- **lazy scripts** publish one file per reachable module and no bundle at all;
+- `BitButilTrimScripts=false` publishes the full bundle even when given a scan and a list to work from;
+- a **misspelled module name**, and a **scan mode that is not one of the three**, each fail the publish with
+  the error naming what was wrong.
+
+Every bundle assertion reads the published file and asks which chunk guards are in it - the same thing the
+browser would find - rather than comparing byte counts. Each scenario also asserts the per-module files:
+exactly the reachable ones under lazy scripts, and *none at all* in bundle mode, which is the half of the
+selection that only a publish exercises.
+
 **Lazy scripts** ([`LazyScripts.cs`](LazyScripts.cs)). Against a recording `IJSRuntime`, with
 `BitButil.UseLazyScripts()` on: the first call into an API must `import()` that API's module - and only
 that one - before invoking it; later calls, and other services on the same runtime, must not import again;
@@ -179,8 +240,14 @@ read only partly would report `PASS` having verified less of it than the output 
 | JavaScript modules called | 63 of 65 | 6 of 65 (clipboard, cookie, events, geolocation, storage, window) |
 | `bit-butil.js` a publish would ship | 112,422 bytes, all 65 modules | 9,134 bytes, 8 modules (3,046 gzip / 2,695 brotli) - 8.1% |
 | lazy scripts would download | 147,730 bytes over 63 files | 11,940 bytes over 6 files |
-| script-bundling checks | 76 / 76 | 76 / 76 |
+| script-bundling checks | 82 / 82 | 82 / 82 |
+| script-scanning checks | 37 / 37 | not run |
+| script-publishing checks | 26 / 26 (9 publishes, ~15s) | not run |
 | lazy-loader checks | 16 / 16 | 16 / 16 |
+
+The two new rows are untrimmed-only by design: the class-to-module map is a question about the library as
+shipped, and the publish fixture is published by this process, so a trimmed run would publish the same app
+to the same answers at twice the cost.
 
 The trimmed run keeps `DomEventsInterop` with all 11 `[JSInvokable]` methods and
 `GeolocationCoordinates` with all 7 properties - neither is named anywhere in this project's code.
@@ -240,5 +307,27 @@ assembly comes out at 30,720 bytes and 36 types.
   what a consumer would see as `BitButil.x is undefined`), and *packed into the folder the consumer-side
   targets read them from* (Bit.Butil.csproj and buildTransitive/Bit.Butil.targets disagree about where the
   chunks, the manifest or the task live, which breaks every consumer's publish and no build in this repo).
+- **`script scanning: the classes ConsumerComponent injects map to exactly the modules ILLink leaves ...`** -
+  the class-to-module map and the trimmer have stopped agreeing about the same five classes. A module the map
+  *misses* is the serious direction: an untrimmed consumer would publish a bundle without JavaScript their app
+  calls. Usually the reference closure stopped following something - a base class, an internal interop helper,
+  a generic call, or the compiler-generated type an `async` method's body actually lives in.
+- **`script scanning: TypeNames never finds less than TypeReferences`** - the coarse mode has become the less
+  safe one, which is the one thing it may never be. It matches bare names and is allowed to over-include;
+  finding *less* means a name is not being matched at all.
+- **`script scanning: an assembly that does not reference Bit.Butil counts for nothing`** - the filter that
+  decides which assemblies a scan reads has started letting framework assemblies through, or (the harmful
+  way round) Bit.Butil's own assembly, which names every one of its types and would defeat the whole scan.
+- **`script publishing: ...`** - the MSBuild half. The message names the claim; the ones worth knowing on
+  sight are *is added to what the scan found, not used instead of it* (the csproj list has stopped being
+  additive - a consumer naming one module would lose everything else), *publishes no per-module files* (the
+  publish asset list is no longer being narrowed, so a bundle-mode app ships all 65 module files - that is
+  `BitButilSelectPublishScriptAssets` not running, or running too late), *with no signal at all the full
+  bundle is published* (the feature has started trimming against nothing, which would strip JavaScript from
+  every consumer who never opted in), and *fails the publish* (a name that means nothing is being accepted in
+  silence, which surfaces in a browser rather than in a build).
+- **`script publishing: ... was not checked`** - a publish of the fixture failed for a reason the scenario
+  did not ask for. The message carries the first error line; usually the fixture cannot find Bit.Butil's
+  chunks or the MSBuild task, both of which it points at the source tree.
 - **`lazy scripts: ...`** - the lazy loader imported the wrong module, imported twice, did not retry a
   failed import, or imported with lazy scripts off. See `LazyScripts.cs` for the exact expectation.

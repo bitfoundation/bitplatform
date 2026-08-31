@@ -51,6 +51,16 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // Mirrors the relationship a tooltip declares onto the element the reader actually lands on: a tooltip
+    // renders the consumer's anchor inside a plain container of its own, and a relationship declared on a
+    // container that is neither focusable nor interactive is one no screen reader ever reads. An empty
+    // attribute takes the mirrored one away again.
+    internal static ValueTask BitUtilsSyncAriaDescription(this IJSRuntime jsRuntime, string rootId, string tooltipId, string attribute)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.syncAriaDescription", rootId, tooltipId, attribute);
+    }
+
+
     internal static ValueTask<bool> BitUtilsContainsActiveElement(this IJSRuntime jsRuntime, string elementId)
     {
         return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.containsActiveElement", elementId);
@@ -72,6 +82,41 @@ internal static class UtilsJsRuntimeExtensions
     internal static ValueTask BitUtilsDisposeFocusTrap(this IJSRuntime jsRuntime, string elementId)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeFocusTrap", elementId);
+    }
+
+
+    // Remembers the element the focus was on when a popup took it over, so the popup can hand the keyboard
+    // back to where it came from once it closes.
+    internal static ValueTask BitUtilsCaptureFocusOrigin(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.captureFocusOrigin", elementId);
+    }
+
+
+    internal static ValueTask BitUtilsRestoreFocusOrigin(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.restoreFocusOrigin", elementId);
+    }
+
+
+    internal static ValueTask BitUtilsDisposeFocusOrigin(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeFocusOrigin", elementId);
+    }
+
+
+    // Reports the end of the transform transition of an element back to .NET, which is when a surface that
+    // slides has actually finished sliding.
+    internal static ValueTask BitUtilsSetupTransitionEnd<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime, string elementId, DotNetObjectReference<T> dotnetObj) where T : class
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setupTransitionEnd", elementId, dotnetObj);
+    }
+
+
+    internal static ValueTask BitUtilsDisposeTransitionEnd(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeTransitionEnd", elementId);
     }
 
 

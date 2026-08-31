@@ -288,6 +288,43 @@ it - keeps the full bundle and every module, so what you debug is never the trim
 </PropertyGroup>
 ```
 
+**Publishing without trimming?** `BitButilTrimScripts` decides *whether* to trim the JavaScript; what it
+trims against is a separate question, and a publish with `PublishTrimmed` off has no trimmed assembly to
+read. `BitButilScriptScan` answers it from the app's own assemblies instead: an `@inject Clipboard` is a
+reference to `Bit.Butil.Clipboard`, and the package's build logic reads `Bit.Butil.dll` to know which
+JavaScript module answering that class takes - through base classes and internal interop helpers, so
+`LocalStorage` correctly pulls in `storage` and `Window` pulls in `events` as well as `window`. On this
+repository's own trimming harness it reaches exactly the module set ILLink does. It works in every hosting
+model - a WebAssembly app with `PublishTrimmed` off, Blazor Server, a server host that prerenders - and it
+costs the publish one pass over the app's assemblies, tens of milliseconds; a build is untouched either way.
+
+```xml
+<PropertyGroup>
+  <BitButilTrimScripts>true</BitButilTrimScripts>
+  <BitButilScriptScan>TypeReferences</BitButilScriptScan>
+</PropertyGroup>
+```
+
+`TypeNames` is the other mode: it matches the library's type names against the names in each assembly, with
+no metadata tables read at all. It is coarser - an app with a class of its own called `Window`, `Console` or
+`Storage` pulls in that module too - and it over-includes rather than missing anything, so prefer
+`TypeReferences` unless you have a reason not to. Either is ignored when `PublishTrimmed` is `true`: the
+trimmed assembly answers the same question more precisely.
+
+**Keeping a module none of that can see.** `BitButilScriptModule` names modules, or the Bit.Butil classes
+behind them, that must survive whatever the scan or the trimmer concluded - for an API reached by reflection,
+or from your own JavaScript. It is always *added* to what they found, never used instead of it, and a name
+that is neither a module nor a Bit.Butil class fails the build rather than being quietly ignored:
+
+```xml
+<ItemGroup>
+  <BitButilScriptModule Include="Clipboard;geolocation" />
+</ItemGroup>
+```
+
+With none of the three in play - no `PublishTrimmed`, no `BitButilScriptScan`, no `BitButilScriptModule` -
+there is nothing to trim against, and the full bundle is published.
+
 **Lazy scripts.** No script tag at all: the first call into an API `import()`s that API's module
 (`_content/Bit.Butil/modules/clipboard.js` for `Clipboard`), so only the JavaScript for the APIs the
 app actually calls is ever downloaded - in every hosting model, trimmed or not. Each module file is
