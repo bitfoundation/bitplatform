@@ -12,13 +12,6 @@ public partial class MauiFileSaveService : FileSaveService
 
     public override async Task Save(string fileName, string contentType, byte[] content)
     {
-        // WebView2 downloads the anchor itself, with a real save dialog - better than a share sheet.
-        if (AppPlatform.IsWindows)
-        {
-            await base.Save(fileName, contentType, content);
-            return;
-        }
-
         // App-private and cleared by the OS. The copy outlives the call: the app shared into may still be reading it -
         // which is also why each export gets its own folder, so a second one cannot overwrite it mid-read.
         var directory = Directory.CreateDirectory(Path.Combine(FileSystem.Current.CacheDirectory, Guid.NewGuid().ToString("N"))).FullName;

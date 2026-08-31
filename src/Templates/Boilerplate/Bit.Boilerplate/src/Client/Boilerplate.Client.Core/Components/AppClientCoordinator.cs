@@ -160,13 +160,6 @@ public partial class AppClientCoordinator : AppComponentBase
             AutoTrackPageVisitTime = granted,
             EnableAutoRouteTracking = granted
         }, mergeExisting: true);
-
-        if (granted is false)
-        {
-            // Withdrawal removes what the grant left behind: the ai_user cookie outlives its session, so stopping
-            // without clearing leaves the identifier the user just refused.
-            await appInsights.ClearAuthenticatedUserContext();
-        }
     }
     //#endif
 

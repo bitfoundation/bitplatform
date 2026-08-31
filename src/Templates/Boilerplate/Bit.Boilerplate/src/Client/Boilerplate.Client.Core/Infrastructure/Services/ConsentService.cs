@@ -14,7 +14,8 @@ public partial class ConsentService
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private PubSubService pubSubService = default!;
 
-    private const string StorageKey = "consent";
+    /// <summary>Public so a UI test can answer the banner before the app opens it - see <c>AppPageTest</c>.</summary>
+    public const string StorageKey = "consent";
 
     /// <summary>Cached: every gate calls this, and the store behind it is a JS interop call on the web.</summary>
     private Dictionary<ConsentCategory, bool>? decisions;
