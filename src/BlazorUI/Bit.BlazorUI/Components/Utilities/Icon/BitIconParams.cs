@@ -27,6 +27,21 @@ public class BitIconParams : BitComponentBaseParams, IBitComponentParams
     public BitIconAnimation? Animation { get; set; }
 
     /// <summary>
+    /// Overrides how long one cycle of the animation takes, as any CSS time.
+    /// </summary>
+    public string? AnimationDuration { get; set; }
+
+    /// <summary>
+    /// Waits this long before the animation starts, as any CSS time.
+    /// </summary>
+    public string? AnimationDelay { get; set; }
+
+    /// <summary>
+    /// Draws the icon in a circle rather than in the rounded box of the design system.
+    /// </summary>
+    public bool? Circular { get; set; }
+
+    /// <summary>
     /// Specifies the color theme of the icon.
     /// </summary>
     public BitColor? Color { get; set; }
@@ -52,9 +67,24 @@ public class BitIconParams : BitComponentBaseParams, IBitComponentParams
     public string? FontSize { get; set; }
 
     /// <summary>
+    /// Names the icon set that the IconName of every icon of the subtree is a name in.
+    /// </summary>
+    public Func<string, BitIconInfo?>? IconResolver { get; set; }
+
+    /// <summary>
+    /// Drops the icon slightly below the baseline so that it sits centered on the line of text it is written in.
+    /// </summary>
+    public bool? Inline { get; set; }
+
+    /// <summary>
     /// Turns the icon by a quarter, a half, or three quarters of a turn.
     /// </summary>
     public BitIconRotate? Rotate { get; set; }
+
+    /// <summary>
+    /// Turns the icon by an angle of your own, in degrees.
+    /// </summary>
+    public int? RotateAngle { get; set; }
 
     /// <summary>
     /// Specifies the size of the icon.
@@ -95,6 +125,29 @@ public class BitIconParams : BitComponentBaseParams, IBitComponentParams
             bitIcon.ClassBuilder.Reset();
         }
 
+        if (AnimationDuration.HasValue() && bitIcon.HasNotBeenSet(nameof(AnimationDuration)))
+        {
+            bitIcon.AnimationDuration = AnimationDuration;
+
+            bitIcon.ClassBuilder.Reset();
+            bitIcon.StyleBuilder.Reset();
+        }
+
+        if (AnimationDelay.HasValue() && bitIcon.HasNotBeenSet(nameof(AnimationDelay)))
+        {
+            bitIcon.AnimationDelay = AnimationDelay;
+
+            bitIcon.ClassBuilder.Reset();
+            bitIcon.StyleBuilder.Reset();
+        }
+
+        if (Circular.HasValue && bitIcon.HasNotBeenSet(nameof(Circular)))
+        {
+            bitIcon.Circular = Circular.Value;
+
+            bitIcon.ClassBuilder.Reset();
+        }
+
         if (Color.HasValue && bitIcon.HasNotBeenSet(nameof(Color)))
         {
             bitIcon.Color = Color.Value;
@@ -130,11 +183,33 @@ public class BitIconParams : BitComponentBaseParams, IBitComponentParams
             bitIcon.StyleBuilder.Reset();
         }
 
+        if (IconResolver is not null && bitIcon.HasNotBeenSet(nameof(IconResolver)))
+        {
+            bitIcon.IconResolver = IconResolver;
+
+            bitIcon.ClassBuilder.Reset();
+        }
+
+        if (Inline.HasValue && bitIcon.HasNotBeenSet(nameof(Inline)))
+        {
+            bitIcon.Inline = Inline.Value;
+
+            bitIcon.ClassBuilder.Reset();
+        }
+
         if (Rotate.HasValue && bitIcon.HasNotBeenSet(nameof(Rotate)))
         {
             bitIcon.Rotate = Rotate.Value;
 
             bitIcon.ClassBuilder.Reset();
+        }
+
+        if (RotateAngle.HasValue && bitIcon.HasNotBeenSet(nameof(RotateAngle)))
+        {
+            bitIcon.RotateAngle = RotateAngle.Value;
+
+            bitIcon.ClassBuilder.Reset();
+            bitIcon.StyleBuilder.Reset();
         }
 
         if (Size.HasValue && bitIcon.HasNotBeenSet(nameof(Size)))

@@ -2,11 +2,11 @@
 
 <PageOutlet Url="components/icon"
             Title="Icon"
-            Description="An icon draws one glyph - a concept shown rather than spelled out - from the 2,300 built-in Fabric MDL2 icons or from any other set you have linked. It takes the theme's colors and sizes, can be turned, mirrored, given a fixed width or set spinning, and becomes a keyboard-operable button when you give it a click handler." />
+            Description="An icon draws one glyph - a concept shown rather than spelled out - from the 2,300 built-in Fabric MDL2 icons or from any other set you have linked. It takes the theme's colors and sizes, can be turned to any angle, mirrored, drawn in a circle, given a fixed width or set animating at a speed of your own, and becomes a keyboard-operable button when you give it a click handler." />
 
 <DemoPage Name="Icon"
           SecondaryNames="@(["Glyph", "Symbol"])"
-          Description="An icon draws one glyph: a concept or a meaning shown rather than spelled out. It renders any of the 2,300 built-in Fabric MDL2 glyphs by name, or a glyph from any other icon set you have linked - FontAwesome, Bootstrap Icons, Material Icons and Material Symbols each have a factory of their own, and anything else is a matter of naming its CSS classes. It takes one of the theme's colors and one of its three sizes (or a font size of your own), is drawn plain, filled or outlined, can be turned, mirrored, mirrored only in right-to-left, given a fixed width so a column of icons lines up, and set spinning or beating while something is happening. It is hidden from screen readers until you name it, becomes a real keyboard-operable button when you give it a click handler, and can hold an inline SVG of your own instead of a glyph."
+          Description="An icon draws one glyph: a concept or a meaning shown rather than spelled out. It renders any of the 2,300 built-in Fabric MDL2 glyphs by name, or a glyph from any other icon set you have linked - FontAwesome, Bootstrap Icons, Material Icons and Material Symbols each have a factory of their own, and anything else is a matter of naming its CSS classes. It takes one of the theme's colors and one of its three sizes (or a font size of your own), is drawn plain, filled, outlined or in a circle, can be turned by a quarter or by any angle, mirrored, mirrored only in right-to-left, given a fixed width so a column of icons lines up, and set spinning, beating or bouncing at a speed of your own while something is happening. It is hidden from screen readers until you name it, becomes a real keyboard-operable button when you give it a click handler, and can hold an inline SVG of your own instead of a glyph."
           Notes="An icon is decorative by default and is hidden from assistive technology, because the overwhelming majority of icons sit beside a label that already says the same thing. Give it an AriaLabel or a Title the moment it is the only thing carrying the meaning."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
@@ -43,6 +43,8 @@
             no box around it and no padding, which is what an icon sitting inside a sentence or beside a label should be.
             <b>Outline</b> and <b>Fill</b> put the glyph in a box of its own - a rule around it, or the role's color behind
             it with the glyph reversed out - which is how an icon becomes a badge that stands on its own.
+            <b>Circular</b> rounds that box all the way and squares it off at the same time, so a narrow glyph and a wide
+            one are drawn in circles of the same size - the shape of a status dot or an avatar placeholder.
         </div>
         <br /><br />
         <div class="example-content">
@@ -58,13 +60,24 @@
             <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Outline" IsEnabled="false" />
             <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Text" IsEnabled="false" />
         </div>
+        <br /><br />
+        <div>Circular</div>
+        <br />
+        <div class="example-content">
+            <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Fill" Color="BitColor.Success" Circular />
+            <BitIcon IconName="@BitIconName.Cancel" Variant="BitVariant.Outline" Color="BitColor.Error" Circular />
+            <BitIcon IconName="@BitIconName.Info" Variant="BitVariant.Fill" Color="BitColor.Info" Size="BitSize.Large" Circular />
+        </div>
     </DemoExample>
 
     <DemoExample Title="Rotate & Flip" RazorCode="@example3RazorCode" Id="example3">
         <div>
-            <b>Rotate</b> turns the glyph by a quarter, a half or three quarters of a turn, and <b>Flip</b> mirrors it on
-            either axis or both. The two are drawn as a single transform, so they combine rather than cancel each other out -
-            which is what lets one arrow glyph stand in for all eight directions instead of eight glyphs.
+            <b>Rotate</b> turns the glyph by a quarter, a half or three quarters of a turn, <b>RotateAngle</b> turns it by
+            any angle in degrees (negative for counter-clockwise, and it replaces <b>Rotate</b> when both are given), and
+            <b>Flip</b> mirrors it on either axis or both. All three are drawn as one transform, so they combine rather than
+            cancel each other out - which is what lets one arrow glyph stand in for all eight directions instead of eight
+            glyphs - and they are written with the individual rotate and scale properties, so an <b>Animation</b> can play
+            on top of them.
             <b>FlipRtl</b> is the one to reach for in a bilingual app: it mirrors the icon only where the writing runs
             right-to-left, following the direction of the rendered document rather than a parameter, and it multiplies with
             an explicit <b>Flip</b> rather than replacing it. Give it to a glyph that points somewhere - an arrow, a chevron,
@@ -78,6 +91,15 @@
             <BitIcon IconName="@BitIconName.Up" Size="BitSize.Large" Rotate="BitIconRotate.Rotate90" />
             <BitIcon IconName="@BitIconName.Up" Size="BitSize.Large" Rotate="BitIconRotate.Rotate180" />
             <BitIcon IconName="@BitIconName.Up" Size="BitSize.Large" Rotate="BitIconRotate.Rotate270" />
+        </div>
+        <br /><br />
+        <div>RotateAngle</div>
+        <br />
+        <div class="example-content">
+            <BitIcon IconName="@BitIconName.Up" Size="BitSize.Large" RotateAngle="45" />
+            <BitIcon IconName="@BitIconName.Up" Size="BitSize.Large" RotateAngle="135" />
+            <BitIcon IconName="@BitIconName.Up" Size="BitSize.Large" RotateAngle="-30" />
+            <BitIcon IconName="@BitIconName.Up" Size="BitSize.Large" RotateAngle="200" Flip="BitIconFlip.Horizontal" />
         </div>
         <br /><br />
         <div>Flip</div>
@@ -108,12 +130,15 @@
         <div>
             <b>Animation</b> sets the icon looping. <b>Spin</b> and <b>SpinReverse</b> turn it at the speed of every other
             loader in the library, <b>Pulse</b> ticks it around in eight steps the way a segmented spinner does, and
-            <b>Beat</b>, <b>Fade</b> and <b>Shake</b> draw the eye to something that just changed or needs attention.
-            Each of them is a claim that something is still happening, so none of them belongs on an icon that is merely
-            decorative. They all slow down instead of stopping when the reader has asked for reduced motion, and
-            <b>ForceAnimation</b> restores their full speed for an icon whose motion carries the meaning. An animation is
-            drawn with a transform of its own, so it replaces <b>Rotate</b> and <b>Flip</b> - <b>Fade</b>, which only
-            changes opacity, is the one that combines with them.
+            <b>Beat</b>, <b>BeatFade</b>, <b>Fade</b>, <b>Shake</b> and <b>Bounce</b> draw the eye to something that just
+            changed or needs attention. Each of them is a claim that something is still happening, so none of them belongs
+            on an icon that is merely decorative. They all slow down instead of stopping when the reader has asked for
+            reduced motion, and <b>ForceAnimation</b> restores their full speed for an icon whose motion carries the
+            meaning. <b>AnimationDuration</b> replaces the length of one cycle with a CSS time of your own - the reduced
+            motion factor still multiplies it - <b>AnimationDelay</b> holds the icon still for a CSS time before the first
+            cycle, which is what turns a row of identical icons into a wave, and the turn a <b>Rotate</b>, a
+            <b>RotateAngle</b> or a <b>Flip</b> gives the icon is drawn beside the animation rather than under it, so a
+            mirrored arrow still spins.
         </div>
         <br /><br />
         <div class="example-content animation-row">
@@ -123,6 +148,25 @@
             <div><BitIcon IconName="@BitIconName.Heart" Size="BitSize.Large" Color="BitColor.Error" Animation="BitIconAnimation.Beat" /><span>Beat</span></div>
             <div><BitIcon IconName="@BitIconName.StatusCircleInner" Size="BitSize.Large" Color="BitColor.Success" Animation="BitIconAnimation.Fade" /><span>Fade</span></div>
             <div><BitIcon IconName="@BitIconName.Ringer" Size="BitSize.Large" Color="BitColor.Warning" Animation="BitIconAnimation.Shake" /><span>Shake</span></div>
+            <div><BitIcon IconName="@BitIconName.Up" Size="BitSize.Large" Color="BitColor.Info" Animation="BitIconAnimation.Bounce" /><span>Bounce</span></div>
+            <div><BitIcon IconName="@BitIconName.CircleFill" Size="BitSize.Large" Color="BitColor.Error" Animation="BitIconAnimation.BeatFade" /><span>BeatFade</span></div>
+        </div>
+        <br /><br />
+        <div>AnimationDuration, and a turn the animation plays on top of</div>
+        <br />
+        <div class="example-content animation-row">
+            <div><BitIcon IconName="@BitIconName.Sync" Size="BitSize.Large" Animation="BitIconAnimation.Spin" AnimationDuration="4s" /><span>Spin 4s</span></div>
+            <div><BitIcon IconName="@BitIconName.Sync" Size="BitSize.Large" Animation="BitIconAnimation.Spin" AnimationDuration="0.4s" /><span>Spin 0.4s</span></div>
+            <div><BitIcon IconName="@BitIconName.Ringer" Size="BitSize.Large" Color="BitColor.Warning" Animation="BitIconAnimation.Shake" AnimationDuration="2s" /><span>Shake 2s</span></div>
+            <div><BitIcon IconName="@BitIconName.Send" Size="BitSize.Large" Color="BitColor.Success" Animation="BitIconAnimation.Beat" RotateAngle="45" /><span>Beat, turned 45</span></div>
+        </div>
+        <br /><br />
+        <div>AnimationDelay: the same animation on three icons, each starting a little after the one before it</div>
+        <br />
+        <div class="example-content">
+            <BitIcon IconName="@BitIconName.CircleFill" Color="BitColor.Info" Animation="BitIconAnimation.Fade" AnimationDuration="1.2s" />
+            <BitIcon IconName="@BitIconName.CircleFill" Color="BitColor.Info" Animation="BitIconAnimation.Fade" AnimationDuration="1.2s" AnimationDelay="0.2s" />
+            <BitIcon IconName="@BitIconName.CircleFill" Color="BitColor.Info" Animation="BitIconAnimation.Fade" AnimationDuration="1.2s" AnimationDelay="0.4s" />
         </div>
     </DemoExample>
 
@@ -151,11 +195,14 @@
 
     <DemoExample Title="Clickable" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>
-            <b>OnClick</b> turns the icon into a real control: it joins the tab order, shows the focus ring, answers Enter
-            and Space as well as the pointer, and is announced as a button. Because it is announced as a button it needs a
-            name, so give it an <b>AriaLabel</b> or a <b>Title</b>; and because a disabled control still has to be found by
-            whatever pointed at it, an icon with <b>IsEnabled</b> false leaves the tab order and stops answering rather than
-            disappearing. It is still an icon and not a <BitLink Href="/components/button">BitButton</BitLink> - there is no
+            <b>OnClick</b> turns the icon into a real control: it joins the tab order, shows the focus ring, reacts to the
+            pointer on hover and while it is pressed, answers Enter and Space as well as the pointer without letting Space
+            scroll the page under it, and is announced as a button. A small glyph is also a small target, so the area that
+            answers the pointer is grown to the 24 by 24 pixels WCAG asks of one while the icon keeps the size it was given.
+            Because it is announced as a button it needs a name, so give it an <b>AriaLabel</b> or a <b>Title</b>; and
+            because a disabled control still has to be found by whatever pointed at it, an icon with <b>IsEnabled</b> false
+            leaves the tab order and refuses the click rather than disappearing - and keeps answering the pointer, so the
+            <b>Title</b> saying why the action is unavailable is still there to be read. It is still an icon and not a <BitLink Href="/components/button">BitButton</BitLink> - there is no
             label, no pressed state and no busy state - so reach for a button whenever the action deserves one.
         </div>
         <br /><br />
@@ -189,6 +236,9 @@
             class - an inline SVG, a sprite reference, a picture - still gets the icon's color, size and variant. An SVG
             drawn with <code>fill="currentColor"</code> follows the color role exactly as a glyph does, and
             <b>FontSize</b> or <b>Size</b> scales it as long as its own dimensions are given in <code>em</code>.
+            A glyph sits on the baseline the way a letter does, but an SVG or an image is aligned by the bottom edge of its
+            box and rides high next to the text around it; <b>Inline</b> is the quarter of an em that drops it back onto the
+            line.
         </div>
         <br /><br />
         <div class="example-content">
@@ -207,6 +257,21 @@
             <BitIcon Color="BitColor.Error" Variant="BitVariant.Fill" Size="BitSize.Large">
                 <svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 21.35 10.55 20C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z" />
+                </svg>
+            </BitIcon>
+        </div>
+        <br /><br />
+        <div style="font-size:1.25rem">
+            Aligned by its box
+            <BitIcon Color="BitColor.Info" FontSize="inherit">
+                <svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
+                </svg>
+            </BitIcon>
+            and dropped onto the line with Inline
+            <BitIcon Color="BitColor.Info" FontSize="inherit" Inline>
+                <svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
                 </svg>
             </BitIcon>
         </div>
@@ -413,7 +478,7 @@
         <BitIcon Color="BitColor.TertiaryBorder" IconName="@BitIconName.Pinned" />
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="External Icons" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
             <b>Icon</b> takes a <b>BitIconInfo</b>, which is how a glyph from any other icon set is named. A set that names
             its glyphs with CSS classes - FontAwesome, Bootstrap Icons, and almost everything else - is described by a base
@@ -421,9 +486,17 @@
             in the <code>fa-</code> prefixes you leave out), <b>Bi</b> for Bootstrap Icons, <b>Bit</b> for the built-in set,
             and <b>Css</b> for the classes of any set at all, spelled out. A set that names its glyphs with a ligature
             written as the element's text - Material Icons and Material Symbols - is covered by <b>Mi</b> and <b>Ms</b>,
-            which put the family on the class and the name inside the element. A plain string assigned to <b>Icon</b> is
-            taken as the complete class list, which is the shortest way to write one out. Linking the set's own stylesheet
-            is up to your app; the icon only names the glyph.
+            which put the family on the class and the name inside the element. A ligature is the icon's own text, which a page
+            translator would otherwise translate into a word that draws nothing, so an icon that renders one is marked as
+            text not to translate. A plain string assigned to <b>Icon</b> is taken as the complete class list, which is the
+            shortest way to write one out. Linking the set's own stylesheet is up to your app; the icon only names the
+            glyph.
+            <br /><br />
+            An app that draws all of its icons from one other set should not have to write that set out at every icon:
+            <b>IconResolver</b> takes an <b>IconName</b> and answers with the icon it stands for, so a plain name goes on
+            being a plain name. Give it to one icon, or cascade it to a whole subtree through <b>BitParams</b>. An
+            <b>Icon</b> still wins over it, and a resolver that answers with nothing leaves the name to the built-in set -
+            which is what lets one resolver cover the names it knows and fall through for the rest.
         </div>
 
         <br /><br />
@@ -463,6 +536,17 @@
             <BitIcon Icon="@BitIconInfo.Ms("favorite")" Color="BitColor.Error" />
             <BitIcon Icon="@BitIconInfo.Ms("settings")" Size="BitSize.Large" Animation="BitIconAnimation.Spin" />
             <BitIcon Icon="@BitIconInfo.Ms("rocket_launch")" Color="BitColor.Secondary" />
+        </div>
+
+        <br /><br />
+
+        <div>IconResolver (plain names, read as FontAwesome ones)</div>
+        <br />
+        <div class="example-content">
+            <BitIcon IconName="house" IconResolver="@faResolver" Size="BitSize.Large" />
+            <BitIcon IconName="heart" IconResolver="@faResolver" Color="BitColor.Error" />
+            <BitIcon IconName="rocket" IconResolver="@faResolver" Color="BitColor.Secondary" />
+            <BitIcon IconName="Accept" IconResolver="@faResolver" Color="BitColor.Success" />
         </div>
     </DemoExample>
 

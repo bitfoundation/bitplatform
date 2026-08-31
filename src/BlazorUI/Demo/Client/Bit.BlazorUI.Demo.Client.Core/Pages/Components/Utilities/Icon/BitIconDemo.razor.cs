@@ -5,6 +5,11 @@ public partial class BitIconDemo
     private bool isStarred = true;
     private int clickCount;
 
+    // Every name the FontAwesome example writes is a FontAwesome one - except the ones FontAwesome does
+    // not have, which are left to the built-in set by answering with nothing.
+    private readonly Func<string, BitIconInfo?> faResolver =
+        name => name is "house" or "heart" or "rocket" ? BitIconInfo.Fa($"solid {name}") : null;
+
 
 
     private readonly List<ComponentParameter> componentParameters =
@@ -20,10 +25,31 @@ public partial class BitIconDemo
         },
         new()
         {
+            Name = "AnimationDuration",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Overrides how long one cycle of the animation takes, as any CSS time. The reduced motion factor still multiplies it, so an animation asked to run fast still slows down for a reader who asked for less motion.",
+        },
+        new()
+        {
+            Name = "AnimationDelay",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Waits this long before the animation starts, as any CSS time - which is what turns a row of identical animated icons into a wave. The wait is not stretched under reduced motion the way the cycle is.",
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The content rendered inside the icon element, for an icon set that is neither a font nor a class - an inline svg, an image, a ligature of your own. The color, the size and the variant still apply around it.",
+        },
+        new()
+        {
+            Name = "Circular",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Draws the icon in a circle rather than in the rounded box of the design system, squaring the box off at the same time so a narrow glyph and a wide one are drawn in circles of the same size.",
         },
         new()
         {
@@ -84,6 +110,20 @@ public partial class BitIconDemo
         },
         new()
         {
+            Name = "IconResolver",
+            Type = "Func<string, BitIconInfo?>?",
+            DefaultValue = "null",
+            Description = "Names the icon set that IconName is a name in - name => BitIconInfo.Fa(name), BitIconInfo.Ms, or a lookup of your own. An Icon that names a glyph still wins over it, and a resolver that answers with null leaves the name to the built-in set. Cascades through BitParams to a whole subtree.",
+        },
+        new()
+        {
+            Name = "Inline",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Drops the icon a quarter of an em below the baseline so that an inline svg or an image given as ChildContent sits centered on the line of text it is written in. A glyph of an icon font needs none of it.",
+        },
+        new()
+        {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             DefaultValue = "",
@@ -97,6 +137,13 @@ public partial class BitIconDemo
             Description = "Turns the icon by a quarter, a half, or three quarters of a turn.",
             LinkType = LinkType.Link,
             Href = "#rotate-enum",
+        },
+        new()
+        {
+            Name = "RotateAngle",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Turns the icon by an angle of your own, in degrees, negative for counter-clockwise. It replaces Rotate when both are given, and composes with Flip and FlipRtl.",
         },
         new()
         {
@@ -133,6 +180,13 @@ public partial class BitIconDemo
             Type = "ValueTask",
             DefaultValue = "",
             Description = "Gives focus to the icon element. Only an icon the browser can focus takes it: one with an OnClick handler, or one given a TabIndex of its own.",
+        },
+        new()
+        {
+            Name = "FocusAsync(bool preventScroll)",
+            Type = "ValueTask",
+            DefaultValue = "",
+            Description = "Gives focus to the icon element, leaving the page scrolled where it is instead of bringing the icon into view.",
         },
     ];
 
@@ -409,7 +463,7 @@ public partial class BitIconDemo
         {
             Id = "animation-enum",
             Name = "BitIconAnimation",
-            Description = "The looping animations an icon can play. All of them slow down rather than stop under reduced motion, and ForceAnimation restores their full speed.",
+            Description = "The looping animations an icon can play. All of them slow down rather than stop under reduced motion, and ForceAnimation restores their full speed. AnimationDuration replaces the length of one cycle, and a Rotate, RotateAngle or Flip is drawn beside the animation rather than under it.",
             Items =
             [
                 new()
@@ -447,6 +501,18 @@ public partial class BitIconDemo
                     Name = "Shake",
                     Description = "Rocks back and forth, for something that needs attention now.",
                     Value = "5",
+                },
+                new()
+                {
+                    Name = "Bounce",
+                    Description = "Jumps up and lands again, squashing on the way out and on the way back - the heaviest of these.",
+                    Value = "6",
+                },
+                new()
+                {
+                    Name = "BeatFade",
+                    Description = "Scales up and fades in together, which reads as a slower, softer Beat.",
+                    Value = "7",
                 }
             ]
         }
@@ -470,13 +536,22 @@ public partial class BitIconDemo
 
 <BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
 <BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />
-<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />";
+<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />
+
+<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" Color=""BitColor.Success"" Circular />
+<BitIcon IconName=""@BitIconName.Cancel"" Variant=""BitVariant.Outline"" Color=""BitColor.Error"" Circular />
+<BitIcon IconName=""@BitIconName.Info"" Variant=""BitVariant.Fill"" Color=""BitColor.Info"" Size=""BitSize.Large"" Circular />";
 
     private readonly string example3RazorCode = @"
 <BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" />
 <BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" Rotate=""BitIconRotate.Rotate90"" />
 <BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" Rotate=""BitIconRotate.Rotate180"" />
 <BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" Rotate=""BitIconRotate.Rotate270"" />
+
+<BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" RotateAngle=""45"" />
+<BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" RotateAngle=""135"" />
+<BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" RotateAngle=""-30"" />
+<BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" RotateAngle=""200"" Flip=""BitIconFlip.Horizontal"" />
 
 <BitIcon IconName=""@BitIconName.ReplyAlt"" Size=""BitSize.Large"" />
 <BitIcon IconName=""@BitIconName.ReplyAlt"" Size=""BitSize.Large"" Flip=""BitIconFlip.Horizontal"" />
@@ -501,7 +576,18 @@ public partial class BitIconDemo
 <BitIcon IconName=""@BitIconName.ProgressRingDots"" Size=""BitSize.Large"" Animation=""BitIconAnimation.Pulse"" />
 <BitIcon IconName=""@BitIconName.Heart"" Size=""BitSize.Large"" Color=""BitColor.Error"" Animation=""BitIconAnimation.Beat"" />
 <BitIcon IconName=""@BitIconName.StatusCircleInner"" Size=""BitSize.Large"" Color=""BitColor.Success"" Animation=""BitIconAnimation.Fade"" />
-<BitIcon IconName=""@BitIconName.Ringer"" Size=""BitSize.Large"" Color=""BitColor.Warning"" Animation=""BitIconAnimation.Shake"" />";
+<BitIcon IconName=""@BitIconName.Ringer"" Size=""BitSize.Large"" Color=""BitColor.Warning"" Animation=""BitIconAnimation.Shake"" />
+<BitIcon IconName=""@BitIconName.Up"" Size=""BitSize.Large"" Color=""BitColor.Info"" Animation=""BitIconAnimation.Bounce"" />
+<BitIcon IconName=""@BitIconName.CircleFill"" Size=""BitSize.Large"" Color=""BitColor.Error"" Animation=""BitIconAnimation.BeatFade"" />
+
+<BitIcon IconName=""@BitIconName.Sync"" Size=""BitSize.Large"" Animation=""BitIconAnimation.Spin"" AnimationDuration=""4s"" />
+<BitIcon IconName=""@BitIconName.Sync"" Size=""BitSize.Large"" Animation=""BitIconAnimation.Spin"" AnimationDuration=""0.4s"" />
+<BitIcon IconName=""@BitIconName.Ringer"" Size=""BitSize.Large"" Color=""BitColor.Warning"" Animation=""BitIconAnimation.Shake"" AnimationDuration=""2s"" />
+<BitIcon IconName=""@BitIconName.Send"" Size=""BitSize.Large"" Color=""BitColor.Success"" Animation=""BitIconAnimation.Beat"" RotateAngle=""45"" />
+
+<BitIcon IconName=""@BitIconName.CircleFill"" Color=""BitColor.Info"" Animation=""BitIconAnimation.Fade"" AnimationDuration=""1.2s"" />
+<BitIcon IconName=""@BitIconName.CircleFill"" Color=""BitColor.Info"" Animation=""BitIconAnimation.Fade"" AnimationDuration=""1.2s"" AnimationDelay=""0.2s"" />
+<BitIcon IconName=""@BitIconName.CircleFill"" Color=""BitColor.Info"" Animation=""BitIconAnimation.Fade"" AnimationDuration=""1.2s"" AnimationDelay=""0.4s"" />";
 
     private readonly string example5RazorCode = @"
 <ul>
@@ -560,7 +646,22 @@ private int clickCount;";
     <svg width=""1em"" height=""1em"" viewBox=""0 0 24 24"" fill=""currentColor"">
         <path d=""M12 21.35 10.55 20C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"" />
     </svg>
-</BitIcon>";
+</BitIcon>
+
+<div style=""font-size:1.25rem"">
+    Aligned by its box
+    <BitIcon Color=""BitColor.Info"" FontSize=""inherit"">
+        <svg width=""1em"" height=""1em"" viewBox=""0 0 24 24"" fill=""currentColor"">
+            <path d=""M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"" />
+        </svg>
+    </BitIcon>
+    and dropped onto the line with Inline
+    <BitIcon Color=""BitColor.Info"" FontSize=""inherit"" Inline>
+        <svg width=""1em"" height=""1em"" viewBox=""0 0 24 24"" fill=""currentColor"">
+            <path d=""M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"" />
+        </svg>
+    </BitIcon>
+</div>";
 
     private readonly string example8RazorCode = @"
 <BitIcon IconName=""@BitIconName.CompletedSolid"" Color=""BitColor.Success"" AriaLabel=""Succeeded"" />
@@ -662,7 +763,21 @@ private int clickCount;";
 <BitIcon Icon=""@BitIconInfo.Ms(""home"")"" Size=""BitSize.Large"" />
 <BitIcon Icon=""@BitIconInfo.Ms(""favorite"")"" Color=""BitColor.Error"" />
 <BitIcon Icon=""@BitIconInfo.Ms(""settings"")"" Size=""BitSize.Large"" Animation=""BitIconAnimation.Spin"" />
-<BitIcon Icon=""@BitIconInfo.Ms(""rocket_launch"")"" Color=""BitColor.Secondary"" />";
+<BitIcon Icon=""@BitIconInfo.Ms(""rocket_launch"")"" Color=""BitColor.Secondary"" />
+
+
+<BitIcon IconName=""house"" IconResolver=""@faResolver"" Size=""BitSize.Large"" />
+<BitIcon IconName=""heart"" IconResolver=""@faResolver"" Color=""BitColor.Error"" />
+<BitIcon IconName=""rocket"" IconResolver=""@faResolver"" Color=""BitColor.Secondary"" />
+<BitIcon IconName=""Accept"" IconResolver=""@faResolver"" Color=""BitColor.Success"" />";
+    private readonly string example10CsharpCode = @"
+// Every name this app writes is a FontAwesome one - except the ones FontAwesome does not have,
+// which are left to the built-in set by answering with nothing.
+private readonly Func<string, BitIconInfo?> faResolver =
+    name => name is ""house"" or ""heart"" or ""rocket"" ? BitIconInfo.Fa($""solid {name}"") : null;
+
+// The same resolver given to every icon of a subtree at once:
+// <BitParams Parameters=""@([new BitIconParams { IconResolver = faResolver }])"">...</BitParams>";
 
     private readonly string example11RazorCode = @"
 <BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Accept"" />

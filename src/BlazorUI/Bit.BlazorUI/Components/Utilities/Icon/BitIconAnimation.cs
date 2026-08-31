@@ -38,5 +38,16 @@ public enum BitIconAnimation
     /// <summary>
     /// Rocks back and forth, for something that needs attention now.
     /// </summary>
-    Shake
+    Shake,
+
+    /// <summary>
+    /// Jumps up and lands again, squashing on the way out and on the way back - the heaviest of these,
+    /// for the one thing on the page that has to be looked at.
+    /// </summary>
+    Bounce,
+
+    /// <summary>
+    /// Scales up and fades in together, which reads as a slower, softer <see cref="Beat"/>.
+    /// </summary>
+    BeatFade
 }

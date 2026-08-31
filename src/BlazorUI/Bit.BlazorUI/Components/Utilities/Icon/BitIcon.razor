@@ -2,7 +2,7 @@
 @inherits BitComponentBase
 
 @{
-    var icon = BitIconInfo.From(Icon, IconName);
+    var icon = _icon;
 
     var interactive = OnClick.HasDelegate;
 
@@ -15,6 +15,7 @@
     var splattedRole = HtmlAttributes.TryGetValue("role", out var srl) ? srl?.ToString() : null;
     var splattedTabIndex = HtmlAttributes.TryGetValue("tabindex", out var sti) ? sti?.ToString() : null;
     var splattedHidden = HtmlAttributes.TryGetValue("aria-hidden", out var shd) ? shd?.ToString() : null;
+    var splattedTranslate = HtmlAttributes.TryGetValue("translate", out var stn) ? stn?.ToString() : null;
 
     var label = AriaLabel ?? splattedLabel;
     var title = Title ?? splattedTitle;
@@ -29,6 +30,19 @@
     var hidden = interactive is false && named is false && HtmlAttributes.ContainsKey("aria-hidden") is false;
     var ariaHidden = hidden ? "true" : splattedHidden;
     var role = splattedRole ?? (interactive ? "button" : (named ? "img" : null));
+
+    @* A ligature set names its glyph with the element's own text, which a page translator reads as a
+       word worth translating - and a translated ligature draws nothing, or draws the wrong glyph. This
+       is what keeps a Material Icons or Material Symbols page intact once it has been machine
+       translated; a class-based set writes no text and needs none of it. *@
+    var translate = splattedTranslate ?? (icon?.Content.HasValue() is true ? "no" : null);
+
+    @* An icon given the button role and nothing else is a control a screen reader stops at and
+       announces as "button", with nothing to say what it does. The name is the author's to write - an
+       AriaLabel or a Title saying the action - and the icon's own name is what it falls back to when
+       they did not, since "delete, button" is worth more than "button" on its own. An icon drawn from
+       the child content alone has no name to fall back to, and naming it stays the author's. *@
+    var ariaLabel = label ?? (interactive && named is false ? icon?.Name : null);
 
     @* An icon with a handler is a tab stop; a disabled one leaves the tab order but stays in the
        document, so whatever pointed at it still has something to point at. Everywhere else the tab
@@ -48,8 +62,9 @@
    role="@role"
    title="@title"
    tabindex="@rootTabIndex"
-   aria-label="@label"
+   aria-label="@ariaLabel"
    aria-hidden="@ariaHidden"
+   translate="@translate"
    aria-disabled="@(interactive && IsEnabled is false ? "true" : null)"
    style="@StyleBuilder.Value"
    class="@ClassBuilder.Value"
