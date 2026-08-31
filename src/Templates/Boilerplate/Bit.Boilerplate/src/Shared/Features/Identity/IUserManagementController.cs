@@ -22,4 +22,10 @@ public interface IUserManagementController : IAppController
 
     [HttpPost("{userId}")]
     Task RevokeAllUserSessions(Guid userId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// <inheritdoc cref="IUserController.ExportPersonalDataUri" path="/summary"/>
+    /// <para>The user id is appended as a route segment.</para>
+    /// </summary>
+    public const string ExportPersonalDataUri = "api/v1/UserManagement/ExportPersonalData";
 }

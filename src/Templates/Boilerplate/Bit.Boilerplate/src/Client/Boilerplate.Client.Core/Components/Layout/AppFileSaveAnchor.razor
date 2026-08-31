@@ -1,0 +1,5 @@
+@inherits AppComponentBase
+
+@* The anchor FileSaveService clicks: a download needs a real <a download> in the document, and a service cannot
+   render one. *@
+<a @ref="anchorRef" hidden aria-hidden="true" tabindex="-1"></a>

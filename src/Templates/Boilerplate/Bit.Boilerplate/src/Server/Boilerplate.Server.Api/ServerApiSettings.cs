@@ -108,6 +108,12 @@ public partial class ServerApiSettings : ServerSharedSettings
             validationResults.Add(new ValidationResult($"{nameof(AppIdentityOptions.UnconfirmedUsersRetention)} must be greater than zero.", [nameof(Identity)]));
         }
 
+        // Zero would expire every job the moment it finishes, taking the dashboard's history with it.
+        if (Hangfire is null || Hangfire.JobExpiration <= TimeSpan.Zero)
+        {
+            validationResults.Add(new ValidationResult($"{nameof(HangfireOptions.JobExpiration)} must be greater than zero.", [nameof(Hangfire)]));
+        }
+
         if (AppEnvironment.IsDevelopment() is false)
         {
             // Matched on the host, not on the shipped literal: editing the sample's user name or password still leaves
@@ -255,6 +261,13 @@ public class HangfireOptions
     /// Useful for testing or in production when managing multiple codebases with a single database.
     /// </summary>
     public bool UseIsolatedStorage { get; set; }
+
+    /// <summary>
+    /// How long a succeeded or deleted job is kept before Hangfire's expiration manager removes it, arguments and
+    /// all - a mail job's are the recipient's address and the rendered body. A Failed job never expires, which is why
+    /// the mail and SMS runners delete on exhausted retries.
+    /// </summary>
+    public TimeSpan JobExpiration { get; set; }
 }
 
 public class SupportedAppVersionsOptions

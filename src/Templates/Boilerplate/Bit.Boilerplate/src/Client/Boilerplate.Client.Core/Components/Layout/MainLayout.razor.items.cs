@@ -208,6 +208,7 @@ public partial class MainLayout
                     $"{PageUrls.Settings}/{PageUrls.SettingsSections.Account}",
                     $"{PageUrls.Settings}/{PageUrls.SettingsSections.Tfa}",
                     $"{PageUrls.Settings}/{PageUrls.SettingsSections.Sessions}",
+                    $"{PageUrls.Settings}/{PageUrls.SettingsSections.Privacy}",
                     $"{PageUrls.Settings}/{PageUrls.SettingsSections.UpgradeAccount}",
                 ]
             });

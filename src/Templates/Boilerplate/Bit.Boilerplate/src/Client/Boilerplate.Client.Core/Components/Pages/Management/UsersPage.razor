@@ -121,6 +121,14 @@
                                     <BitSpacer />
                                     <BitButton AutoLoading
                                                IsEnabled="isUserSelected"
+                                               Variant="BitVariant.Outline"
+                                               IconName="@BitIconName.Download"
+                                               OnClick="WrapHandled(ExportUserPersonalData)"
+                                               Title="@Localizer[nameof(AppStrings.ExportUserDataTitle)]">
+                                        @Localizer[nameof(AppStrings.ExportUserData)]
+                                    </BitButton>
+                                    <BitButton AutoLoading
+                                               IsEnabled="isUserSelected"
                                                Color="BitColor.Error"
                                                IconName="@BitIconName.Delete"
                                                OnClick="WrapHandled(() => { isDeleteUserDialogOpen = true; })">

@@ -17,7 +17,7 @@
 
     <audio @ref="readAloudAudioRef" class="read-aloud-audio" @onended="WrapHandled(ReadAloudEnded)"></audio>
 
-    <BitProPanel @bind-IsOpen="isOpen"
+    <BitPanel @bind-IsOpen="isOpen"
                  ShowCloseButton
                  ModeFull="isSmallScreen is true"
                  Modeless="isSmallScreen is false"
@@ -316,5 +316,5 @@
                 </BitFileUpload>
             </BitStack>
         </Body>
-    </BitProPanel>
+    </BitPanel>
 </section>

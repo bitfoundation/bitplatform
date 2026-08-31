@@ -26,6 +26,7 @@ public partial class AppClientCoordinator : AppComponentBase
     [AutoInject] private CultureService cultureService = default!;
     //#if (appInsights == true)
     [AutoInject] private IApplicationInsights appInsights = default!;
+    [AutoInject] private ConsentService consentService = default!;
     //#endif
     [AutoInject] private UserAgent userAgent = default!;
     [AutoInject] private IUserController userController = default!;
@@ -94,6 +95,14 @@ public partial class AppClientCoordinator : AppComponentBase
                     ["ai.device.locale"] = CultureInfo.CurrentUICulture.Name
                 }
             });
+
+            // Not awaited: a storage read and a JS round-trip that nothing downstream needs, and it can only widen
+            // what the SDK already collects on the safe baseline.
+            _ = ApplyConsent();
+
+            // Re-applied rather than read once: consent is withdrawable, and turning Analytics off must take effect
+            // without a reload.
+            unsubscribes.Add(PubSubService.Subscribe(ClientAppMessages.CONSENT_CHANGED, async _ => await ApplyConsent()));
             //#endif
 
             await accentColorService.InitializeAsync();
@@ -133,6 +142,33 @@ public partial class AppClientCoordinator : AppComponentBase
 
         return ($"{uriValue[..queryStartIndex]}{(string.IsNullOrWhiteSpace(remainingQuery) ? "" : $"?{remainingQuery}")}", replace, forceLoad);
     }
+
+    //#if (appInsights == true)
+    /// <summary>
+    /// Turns the half of Application Insights that writes to the device up or down, leaving error reporting alone.
+    /// The SDK starts on the safe baseline in <c>appsettings.json</c>; granting Analytics hands those four switches
+    /// back through <c>UpdateCfg</c>, which merges into the live config, so neither answer needs a reload.
+    /// </summary>
+    private async Task ApplyConsent()
+    {
+        var granted = await consentService.IsGranted(ConsentCategory.Analytics);
+
+        await appInsights.UpdateCfg(new()
+        {
+            DisableCookiesUsage = granted is false,
+            IsStorageUseDisabled = granted is false,
+            AutoTrackPageVisitTime = granted,
+            EnableAutoRouteTracking = granted
+        }, mergeExisting: true);
+
+        if (granted is false)
+        {
+            // Withdrawal removes what the grant left behind: the ai_user cookie outlives its session, so stopping
+            // without clearing leaves the identifier the user just refused.
+            await appInsights.ClearAuthenticatedUserContext();
+        }
+    }
+    //#endif
 
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
     {

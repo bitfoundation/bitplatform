@@ -1833,4 +1833,73 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <value>Pushnotiser är blockerade för den här appen. Tillåt notiser i webbläsarens eller operativsystemets inställningar och försök igen.</value>
   </data>
   <!--#endif-->
+    <data name="PrivacyTitle" xml:space="preserve">
+    <value>Integritet</value>
+  </data>
+    <data name="PrivacySubtitle" xml:space="preserve">
+    <value>Ladda ner en kopia av dina uppgifter</value>
+  </data>
+    <data name="PrivacyChoicesTitle" xml:space="preserve">
+    <value>Dina integritetsval</value>
+  </data>
+    <data name="PrivacyChoicesNote" xml:space="preserve">
+    <value>Att logga in dig, komma ihåg ditt språk och rapportera fel finns inte i den här listan: appen fungerar inte utan de två första, och felrapporter innehåller ingen identifierare för din enhet.</value>
+  </data>
+    <data name="ConsentAnalytics" xml:space="preserve">
+    <value>Användningsanalys</value>
+  </data>
+    <data name="ConsentAnalyticsDescription" xml:space="preserve">
+    <value>Låter oss känna igen din enhet mellan besök så att vi kan se vilka sidor som används och hur lång tid de tar. Att stänga av detta stoppar inte felrapporter.</value>
+  </data>
+    <data name="ConsentAdvertising" xml:space="preserve">
+    <value>Annonsering</value>
+  </data>
+    <data name="ConsentAdvertisingDescription" xml:space="preserve">
+    <value>Laddar annonsskriptet, som sätter egna identifierare. Ingenting laddas förrän du slår på detta.</value>
+  </data>
+    <data name="ConsentBannerTitle" xml:space="preserve">
+    <value>Din integritet</value>
+  </data>
+    <data name="ConsentBannerMessage" xml:space="preserve">
+    <value>Vi vill lagra viss information på din enhet som appen inte behöver för att fungera. Att logga in dig, komma ihåg ditt språk och rapportera fel sker ändå.</value>
+  </data>
+    <data name="Accept" xml:space="preserve">
+    <value>Acceptera</value>
+  </data>
+    <data name="Reject" xml:space="preserve">
+    <value>Avvisa</value>
+  </data>
+    <data name="PrivacySettings" xml:space="preserve">
+    <value>Integritetsinställningar</value>
+  </data>
+    <data name="AccountSettingsLink" xml:space="preserve">
+    <value>Kontoinställningar</value>
+  </data>
+    <data name="ExportPersonalDataTitle" xml:space="preserve">
+    <value>Ladda ner dina uppgifter</value>
+  </data>
+    <data name="ExportPersonalDataMessage" xml:space="preserve">
+    <value>Få en kopia av allt den här appen sparar om dig: ditt konto, enheterna du är inloggad på, din profilbild och innehållet du skapat. Du får en zip-fil med data.json och dina filer.</value>
+  </data>
+    <data name="ExportPersonalDataMetadataNote" xml:space="preserve">
+    <value>Varje del av filen anger också varför den sparas, hur länge, vem mer som tar emot den och om radering av ditt konto tar bort den.</value>
+  </data>
+    <data name="ExportPersonalDataButton" xml:space="preserve">
+    <value>Ladda ner mina uppgifter</value>
+  </data>
+    <data name="ExportPersonalDataDeleteHint" xml:space="preserve">
+    <value>Om du i stället vill få dina uppgifter raderade, radera ditt konto från</value>
+  </data>
+    <data name="ExportUserData" xml:space="preserve">
+    <value>Exportera data</value>
+  </data>
+    <data name="ExportUserDataTitle" xml:space="preserve">
+    <value>Besvarar en begäran om uppgifter som inte kom in via appen.</value>
+  </data>
+    <data name="AdsConsentMessage" xml:space="preserve">
+    <value>Att titta på en annons laddar Googles annonsskript, som sätter egna identifierare på din enhet. Ingenting laddas förrän du samtycker.</value>
+  </data>
+    <data name="AdsConsentAgree" xml:space="preserve">
+    <value>Godkänn och fortsätt</value>
+  </data>
 </root>
