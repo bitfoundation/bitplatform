@@ -1,0 +1,29 @@
+<div>
+    <div style="font-weight:bold;font-size:20px">
+        @(Title ?? "Child component with cascading parameters:")
+    </div>
+
+    <br />
+
+    <div>
+        <div>
+            <span style="font-weight:bold">Status: </span>
+            <span>@(Status?.Text ?? "null")</span>
+        </div>
+
+        <div>
+            <span style="font-weight:bold">Progress: </span>
+            <span>@(Progress?.ToString() ?? "null")</span>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? Title { get; set; }
+
+    [CascadingParameter]
+    public CascadingDemoStatus? Status { get; set; }
+
+    [CascadingParameter(Name = "Progress")]
+    public int? Progress { get; set; }
+}

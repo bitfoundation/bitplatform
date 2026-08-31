@@ -2,10 +2,11 @@
 
 <PageOutlet Url="components/cascadingvalueprovider"
             Title="CascadingValueProvider"
-            Description="BitCascadingValueProvider flattens a stack of nested CascadingValue components into a single list, cascading any number of typed or named values to every descendant component." />
+            Description="BitCascadingValueProvider replaces a stack of nested CascadingValue components with a single list, cascading any number of typed or named values to every descendant component." />
 
 <DemoPage Name="CascadingValueProvider"
-          Description="BitCascadingValueProvider flattens a stack of nested CascadingValue components into a single list, so a whole set of values is cascaded to the descendant components in one place. Each value carries its own cascaded type, an optional name, an IsFixed flag and an Enabled flag, values can be declared inline with the Values parameter or built up with the ValueList parameter, and later values shadow the earlier ones of the same type or name."
+          Description="BitCascadingValueProvider replaces a stack of nested CascadingValue components with a single list, so a whole set of values reaches the descendant components from one place. Each value carries its own cascaded type, an optional name, and the IsFixed and Enabled flags, the list can be written inline with the Values parameter or built up with the ValueList parameter, a later value shadows an earlier one of the same type or name, and changing a value refreshes the consumers on its own."
+          Notes="Every value here becomes a real CascadingValue component, so everything that holds for a hand-written one holds here too: consumers match by type and by name, a value that changes re-renders only the components that consume it, and an IsFixed value is never watched. Reach for a root-level cascading value (AddCascadingValue on the service collection) instead when the same value has to reach every component of the app rather than one subtree."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           GitHubUrl="../Utils/Params/BitCascadingValueProvider.cs"
@@ -13,16 +14,18 @@
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>
             The <b>Values</b> parameter accepts any collection of <b>BitCascadingValue</b> items, and every item becomes a
-            <b>CascadingValue</b> component wrapped around the child content. Thanks to the implicit conversions of
-            <b>BitCascadingValue</b>, a value can be written as the bare value itself (cascaded by its type) or as a
-            <b>(value, name)</b> tuple (cascaded by that name), so no nesting and no explicit type arguments are needed.
+            <b>CascadingValue</b> component wrapped around the child content, in the order they are listed. Thanks to the
+            implicit conversions of <b>BitCascadingValue</b>, a value can be written as the bare value itself (cascaded by
+            its type) or as a <b>(value, name)</b> tuple (cascaded by that name), so neither nesting nor explicit type
+            arguments are needed. The consumer below reads all five of them with plain
+            <b>[CascadingParameter]</b> properties.
         </div>
 
         <br /><br />
 
         <BitCascadingValueProvider
             Values="@([
-                        ("light", "Theme"),
+                        ("Light", "Theme"),
                         (true, "IsAuthenticated"),
                         ((2) as int?, "NotificationCount"),
                         new(new CascadingDemoUser("Saleh Xafan", "CTO"), "NamedUser"),
@@ -35,7 +38,8 @@
     <DemoExample Title="Values" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <div>
             Cascading values are live: rebuilding the <b>Values</b> collection from the current state on each render pushes the
-            new values down to every consumer automatically, exactly like a hand-written <b>CascadingValue</b> would.
+            new values down to every consumer automatically, exactly like a hand-written <b>CascadingValue</b> would. Only the
+            consumers of a value that actually changed are re-rendered, so a set of unrelated values can share one provider.
             Play with the controls below and watch the consumer update:
         </div>
 
@@ -60,9 +64,10 @@
         <div>
             The <b>ValueList</b> parameter takes a <b>BitCascadingValueList</b>, whose generic <b>Add&lt;T&gt;</b> method captures
             the <b>static</b> type of each value. That makes it the right choice for null values and nullable value types, which
-            carry no usable runtime type of their own, and it also provides <b>AddFixed&lt;T&gt;</b> and <b>AddIf&lt;T&gt;</b> for
-            fixed and conditional entries. Setting both parameters is allowed: the <b>ValueList</b> items are provided first and
-            the <b>Values</b> items after them, so <b>Values</b> wins on a conflict.
+            carry no usable runtime type of their own, and it also provides <b>AddFixed&lt;T&gt;</b>, <b>AddIf&lt;T&gt;</b> and
+            <b>AddLazy&lt;T&gt;</b> for fixed, conditional and deferred entries. Setting both parameters is allowed: the
+            <b>ValueList</b> items are provided first and the <b>Values</b> items after them, so <b>Values</b> wins on a conflict,
+            which is what makes the pair a natural defaults-plus-overrides split.
         </div>
 
         <br /><br />
@@ -85,7 +90,8 @@
             Providers nest and shadow like any other cascading value: an inner provider overrides only the types and names it
             redefines, and everything else keeps flowing down from the outer one. The same rule applies inside a single provider,
             where a later value shadows an earlier one of the same type or name, so a set of defaults can be spread first and
-            then selectively overridden.
+            then selectively overridden. A shadowed value is dropped from the rendered chain instead of being cascaded and then
+            hidden, so overriding costs nothing at render time.
         </div>
 
         <br /><br />
@@ -130,10 +136,12 @@
 
     <DemoExample Title="IsFixed" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>
-            <b>IsFixed</b> tells Blazor that a value never changes, so the consumers of it are not subscribed for change
+            <b>IsFixed</b> tells Blazor that a value never changes, so its consumers are not subscribed for change
             notifications. That removes the per-consumer subscription bookkeeping and is the recommended setting for services,
             state containers and other values that are created once and only mutated in place. Use the
             <b>BitCascadingValue.Fixed&lt;T&gt;</b> factory, or the <b>AddFixed&lt;T&gt;</b> method of the list, as its shorthand.
+            The flag can still be toggled later: the provider re-creates the underlying <b>CascadingValue</b> rather than letting
+            the framework reject the change.
         </div>
 
         <br /><br />
@@ -160,6 +168,49 @@
 
         <BitCascadingValueProvider Values="conditionalValues">
             <CascadingValueDemoConsumer Title="Conditional cascading values:" />
+        </BitCascadingValueProvider>
+    </DemoExample>
+
+    <DemoExample Title="Notifications" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>
+            A <b>BitCascadingValue</b> that is held onto is observable: assigning its <b>Value</b>, <b>Name</b>, <b>IsFixed</b> or
+            <b>Enabled</b> raises its <b>Changed</b> event, the provider re-renders itself in response, and the consumers see the
+            new value even though the component that owns the values never re-rendered. For an object that is cascaded once and
+            then mutated in place there is nothing to assign, so <b>NotifyChanged()</b> raises the same event on demand - the
+            counterpart of <b>CascadingValueSource.NotifyChangedAsync</b>. The button below starts a background job that does
+            both, off the UI thread and without a single call to <b>StateHasChanged</b> on this page:
+        </div>
+
+        <br /><br />
+
+        <BitButton OnClick="RunBackgroundJob">Run a background job</BitButton>
+
+        <br /><br />
+
+        <BitCascadingValueProvider Values="notifyingValues">
+            <CascadingValueDemoStatusConsumer Title="Self-refreshing cascading values:" />
+        </BitCascadingValueProvider>
+    </DemoExample>
+
+    <DemoExample Title="Lazy values" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>
+            <b>BitCascadingValue.Lazy&lt;T&gt;</b>, and the <b>AddLazy&lt;T&gt;</b> method of the list, take a factory instead of a
+            value and run it at most once, the first time the value is actually needed. A value that is disabled, that a later
+            value of the same type and name shadows, or that belongs to a provider which is never rendered therefore costs
+            nothing to build. The two values below share the same factory; the counter is read inside the provider, after the
+            factories of that render have run, and the second one only shows up once the toggle enables it:
+        </div>
+
+        <br /><br />
+
+        <BitToggle @bind-Value="provideLazyNamedUser" Text="Provide the named user as well" />
+
+        <br />
+
+        <BitCascadingValueProvider Values="lazyValues">
+            <CascadingValueDemoConsumer Title="Lazy cascading values:" />
+            <br />
+            <div>Factory invocations so far: <b>@lazyUserFactoryCalls</b></div>
         </BitCascadingValueProvider>
     </DemoExample>
 </DemoPage>

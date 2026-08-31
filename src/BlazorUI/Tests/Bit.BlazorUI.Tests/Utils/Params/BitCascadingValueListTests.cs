@@ -132,4 +132,70 @@ public class BitCascadingValueListTests
 
         Assert.ThrowsExactly<ArgumentException>(() => list.Add("not-a-service", typeof(ICascadingDemoService)));
     }
+
+    [TestMethod]
+    public void ShouldAddADisabledValueWithAnExplicitValueType()
+    {
+        var list = new BitCascadingValueList();
+        list.Add(new CascadingDemoServiceDecorator(), typeof(ICascadingDemoService), "Service", enabled: false);
+
+        Assert.IsFalse(list[0].Enabled);
+    }
+
+    [TestMethod]
+    public void ShouldAddAnAlreadyCreatedCascadingValueConditionally()
+    {
+        var kept = new BitCascadingValue("kept", "Greeting");
+        var dropped = new BitCascadingValue("dropped", "Greeting");
+
+        var list = new BitCascadingValueList();
+        list.AddIf(true, kept);
+        list.AddIf(false, dropped);
+        list.AddIf(true, (BitCascadingValue?)null);
+
+        Assert.AreEqual(1, list.Count);
+        Assert.AreSame(kept, list[0]);
+    }
+
+    [TestMethod]
+    public void ShouldAddAFixedValueWithAnExplicitValueType()
+    {
+        var list = new BitCascadingValueList();
+        list.AddFixed(new CascadingDemoServiceDecorator(), typeof(ICascadingDemoService), "Service");
+
+        Assert.AreEqual(typeof(ICascadingDemoService), list[0].ValueType);
+        Assert.AreEqual("Service", list[0].Name);
+        Assert.IsTrue(list[0].IsFixed);
+    }
+
+    [TestMethod]
+    public void ShouldAddALazyValueWhoseFactoryHasNotRunYet()
+    {
+        var calls = 0;
+
+        var list = new BitCascadingValueList();
+        list.AddLazy<int?>(() => { calls++; return 5; }, "Number", isFixed: true, enabled: false);
+
+        Assert.AreEqual(typeof(int?), list[0].ValueType);
+        Assert.AreEqual("Number", list[0].Name);
+        Assert.IsTrue(list[0].IsFixed);
+        Assert.IsFalse(list[0].Enabled);
+        Assert.IsFalse(list[0].IsValueCreated);
+        Assert.AreEqual(0, calls);
+
+        Assert.AreEqual(5, list[0].Value);
+        Assert.AreEqual(1, calls);
+    }
+
+    [TestMethod]
+    public void ShouldKeepALazyValueUnbuiltWhenItsConditionDoesNotHold()
+    {
+        var calls = 0;
+
+        var list = new BitCascadingValueList();
+        list.AddIf(false, BitCascadingValue.Lazy<int?>(() => { calls++; return 5; }));
+
+        Assert.AreEqual(0, list.Count);
+        Assert.AreEqual(0, calls);
+    }
 }

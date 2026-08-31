@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -208,5 +209,147 @@ public class BitCascadingValueTests
         Assert.AreEqual("Int32 = 5", new BitCascadingValue(5).ToString());
         Assert.AreEqual("Greeting: String = hi", new BitCascadingValue("hi", "Greeting").ToString());
         Assert.AreEqual("String = null", new BitCascadingValue(null, typeof(string)).ToString());
+    }
+
+    [TestMethod]
+    public void ShouldMarkTheFixedTheDisabledAndTheNotCreatedValuesInTheStringRepresentation()
+    {
+        Assert.AreEqual("Number: Int32 = 5 (fixed)", BitCascadingValue.Fixed(5, "Number").ToString());
+        Assert.AreEqual("Int32 = 5 (disabled)", BitCascadingValue.From(5, null, false, false).ToString());
+        Assert.AreEqual("Int32 = (not created yet)", BitCascadingValue.Lazy(() => 5).ToString());
+    }
+
+    [TestMethod]
+    public void ShouldCreateADisabledValueThroughEveryFactory()
+    {
+        Assert.IsFalse(new BitCascadingValue(5, "Number", false, null, false).Enabled);
+        Assert.IsFalse(BitCascadingValue.From(5, "Number", false, false).Enabled);
+        Assert.IsFalse(BitCascadingValue.Fixed(5, "Number", false).Enabled);
+        Assert.IsFalse(BitCascadingValue.Lazy(() => 5, "Number", false, false).Enabled);
+    }
+
+    [TestMethod]
+    public void ShouldRaiseChangedWhenAPropertyIsAssignedADifferentValue()
+    {
+        var cascadingValue = new BitCascadingValue(5, "Number");
+        var count = 0;
+
+        cascadingValue.Changed += _ => count++;
+
+        cascadingValue.Value = 6;
+        cascadingValue.Name = "Count";
+        cascadingValue.IsFixed = true;
+        cascadingValue.Enabled = false;
+
+        Assert.AreEqual(4, count);
+    }
+
+    [TestMethod]
+    public void ShouldNotRaiseChangedWhenAPropertyIsAssignedTheValueItAlreadyHas()
+    {
+        var cascadingValue = new BitCascadingValue(5, "Number");
+        var count = 0;
+
+        cascadingValue.Changed += _ => count++;
+
+        cascadingValue.Value = 5;
+        cascadingValue.Name = "Number";
+        cascadingValue.IsFixed = false;
+        cascadingValue.Enabled = true;
+
+        Assert.AreEqual(0, count);
+    }
+
+    [TestMethod]
+    public void ShouldNotRaiseChangedWhenTheAssignedValueIsRejected()
+    {
+        var cascadingValue = new BitCascadingValue(5);
+        var count = 0;
+
+        cascadingValue.Changed += _ => count++;
+
+        Assert.ThrowsExactly<ArgumentException>(() => cascadingValue.Value = "not-a-number");
+        Assert.AreEqual(0, count);
+        Assert.AreEqual(5, cascadingValue.Value);
+    }
+
+    [TestMethod]
+    public void ShouldRaiseChangedOnDemand()
+    {
+        var cascadingValue = BitCascadingValue.From(new CascadingDemoService());
+        BitCascadingValue? raisedFor = null;
+
+        cascadingValue.Changed += value => raisedFor = value;
+
+        cascadingValue.NotifyChanged();
+
+        Assert.AreSame(cascadingValue, raisedFor);
+    }
+
+    [TestMethod]
+    public void ShouldNotRunTheFactoryOfALazyValueUntilTheValueIsRead()
+    {
+        var calls = 0;
+        var cascadingValue = BitCascadingValue.Lazy<int?>(() => { calls++; return 5; }, "Number");
+
+        Assert.AreEqual(typeof(int?), cascadingValue.ValueType);
+        Assert.AreEqual("Number", cascadingValue.Name);
+        Assert.IsFalse(cascadingValue.IsValueCreated);
+        Assert.AreEqual(0, calls);
+
+        Assert.AreEqual(5, cascadingValue.Value);
+        Assert.AreEqual(5, cascadingValue.Value);
+
+        Assert.IsTrue(cascadingValue.IsValueCreated);
+        Assert.AreEqual(1, calls);
+    }
+
+    [TestMethod]
+    public void ShouldDropTheFactoryWhenTheValueIsAssignedBeforeItRuns()
+    {
+        var calls = 0;
+        var cascadingValue = BitCascadingValue.Lazy<int?>(() => { calls++; return 5; });
+
+        cascadingValue.Value = 7;
+
+        Assert.AreEqual(7, cascadingValue.Value);
+        Assert.IsTrue(cascadingValue.IsValueCreated);
+        Assert.AreEqual(0, calls);
+    }
+
+    [TestMethod]
+    public void ShouldCreateALazyValueWithAnExplicitValueType()
+    {
+        var cascadingValue = BitCascadingValue.Lazy(() => (object?)new CascadingDemoServiceDecorator(), typeof(ICascadingDemoService), "Service", true);
+
+        Assert.AreEqual(typeof(ICascadingDemoService), cascadingValue.ValueType);
+        Assert.AreEqual("Service", cascadingValue.Name);
+        Assert.IsTrue(cascadingValue.IsFixed);
+        Assert.IsFalse(cascadingValue.IsValueCreated);
+        Assert.IsInstanceOfType<CascadingDemoServiceDecorator>(cascadingValue.Value);
+    }
+
+    [TestMethod]
+    public void ShouldValidateTheValueTheFactoryProduces()
+    {
+        var cascadingValue = BitCascadingValue.Lazy(() => (object?)"not-a-number", typeof(int?));
+
+        Assert.ThrowsExactly<ArgumentException>(() => _ = cascadingValue.Value);
+    }
+
+    [TestMethod]
+    public void ShouldThrowWhenTheLazyFactoryIsNull()
+    {
+        Assert.ThrowsExactly<ArgumentNullException>(() => BitCascadingValue.Lazy<int>(null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => BitCascadingValue.Lazy(null!, typeof(int)));
+    }
+
+    [TestMethod]
+    public void ShouldRejectATypeThatCannotBeUsedAsACascadingValueType()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => new BitCascadingValue(null, typeof(List<>)));
+        Assert.ThrowsExactly<ArgumentException>(() => new BitCascadingValue(null, typeof(void)));
+        Assert.ThrowsExactly<ArgumentException>(() => new BitCascadingValue(null, typeof(Span<int>)));
+        Assert.ThrowsExactly<ArgumentException>(() => BitCascadingValue.Lazy(() => (object?)null, typeof(List<>)));
     }
 }

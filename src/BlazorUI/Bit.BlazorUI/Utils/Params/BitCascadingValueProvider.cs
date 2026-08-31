@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
@@ -7,18 +7,37 @@ namespace Bit.BlazorUI;
 /// A component that provides a list of cascading values to all descendant components.
 /// It renders one nested CascadingValue component per value, in the order the values are listed, so a value
 /// listed later shadows an earlier one of the same type or name, exactly like a nested CascadingValue would.
+/// A shadowed value is dropped from the rendered chain rather than being cascaded and then hidden, and the
+/// provider listens to every value it is given, so changing one of them refreshes the consumers on its own.
 /// </summary>
-public class BitCascadingValueProvider : ComponentBase
+public class BitCascadingValueProvider : ComponentBase, IDisposable
 {
     /// <summary>
     /// The number of render tree sequence slots reserved for each generated CascadingValue component.
+    /// Five of them are the frames of the component itself; the other five are the slots the same component
+    /// moves to when its value is fixed, so that toggling IsFixed re-creates the CascadingValue instead of
+    /// tripping the framework's "The value of IsFixed cannot be changed dynamically" guard.
     /// </summary>
-    private const int SequenceStep = 5;
+    private const int SequenceStep = 10;
+
+    private static readonly RenderFragment _emptyContent = _ => { };
 
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
     private static readonly Type _cascadingValueType = typeof(CascadingValue<>);
 
     private static readonly ConcurrentDictionary<Type, Type> _cascadingValueTypeCache = new();
+
+
+
+    private bool _disposed;
+
+    // The values of the two parameters flattened in order, the ones actually rendered (the enabled values
+    // that nothing later shadows), the keys used to find those, and the values this provider is currently
+    // subscribed to. All four are reused across renders so that a re-render allocates nothing of its own.
+    private readonly List<BitCascadingValue> _allValues = [];
+    private readonly List<BitCascadingValue> _renderedValues = [];
+    private readonly List<BitCascadingValue> _subscribedValues = [];
+    private readonly HashSet<(Type ValueType, string? Name)> _renderedKeys = new(ValueKeyComparer.Instance);
 
 
 
@@ -53,17 +72,18 @@ public class BitCascadingValueProvider : ComponentBase
             return;
         }
 
-        RenderFragment current = ChildContent ?? (_ => { });
+        RenderFragment current = ChildContent ?? _emptyContent;
 
         for (int i = list.Count - 1; i > 0; i--)
         {
             var item = list[i];
+            var seq = GetSequence(i, item);
             var prev = current;
 
-            current = b => CreateCascadingValue(b, i * SequenceStep, item, prev);
+            current = b => CreateCascadingValue(b, seq, item, prev);
         }
 
-        CreateCascadingValue(builder, 0, list[0], current);
+        CreateCascadingValue(builder, GetSequence(0, list[0]), list[0], current);
     }
 
 
@@ -99,23 +119,61 @@ public class BitCascadingValueProvider : ComponentBase
 
 
 
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+
+        if (disposing)
+        {
+            Unsubscribe();
+        }
+
+        _disposed = true;
+    }
+
+
+
     /// <summary>
-    /// Flattens the ValueList and the Values parameters into a single list, skipping the null and the disabled entries.
+    /// Flattens the ValueList and the Values parameters into the list of the values to render, skipping the
+    /// null and the disabled entries as well as every entry that a later one of the same type and name
+    /// shadows, and re-subscribes to whatever the two parameters currently hold.
     /// Returns null when there is nothing to cascade so that the child content can be rendered as is.
     /// </summary>
     private List<BitCascadingValue>? CollectValues()
     {
-        if (Values is null && ValueList is { Count: > 0 } valueList && IsUsable(valueList))
-        {
-            return valueList;
-        }
-
-        List<BitCascadingValue>? result = null;
+        _allValues.Clear();
 
         Collect(ValueList);
         Collect(Values);
 
-        return result;
+        UpdateSubscriptions();
+
+        _renderedValues.Clear();
+        _renderedKeys.Clear();
+
+        // Walked from the last value to the first one, so that of the values sharing a type and a name it is
+        // the last one - the one that shadows all the others - that makes it into the rendered chain.
+        for (int i = _allValues.Count - 1; i >= 0; i--)
+        {
+            var item = _allValues[i];
+
+            if (item.Enabled is false) continue;
+            if (_renderedKeys.Add((item.ValueType, item.Name)) is false) continue;
+
+            _renderedValues.Add(item);
+        }
+
+        if (_renderedValues.Count == 0) return null;
+
+        _renderedValues.Reverse();
+
+        return _renderedValues;
 
         void Collect(IEnumerable<BitCascadingValue>? source)
         {
@@ -123,24 +181,70 @@ public class BitCascadingValueProvider : ComponentBase
 
             foreach (var item in source)
             {
-                if (item is null || item.Enabled is false) continue;
+                if (item is null) continue;
 
-                (result ??= []).Add(item);
+                _allValues.Add(item);
             }
         }
     }
 
-    private static bool IsUsable(List<BitCascadingValue> values)
+    /// <summary>
+    /// Points the change subscriptions at whatever the parameters currently hold, so that mutating any of
+    /// those values re-renders this provider. Disabled values are subscribed too, because enabling one of
+    /// them is itself a change this provider has to react to.
+    /// </summary>
+    private void UpdateSubscriptions()
     {
+        if (IsSubscribedTo(_allValues)) return;
+
+        Unsubscribe();
+
+        _subscribedValues.AddRange(_allValues);
+
+        for (int i = 0; i < _subscribedValues.Count; i++)
+        {
+            _subscribedValues[i].Changed += HandleValueChanged;
+        }
+    }
+
+    private bool IsSubscribedTo(List<BitCascadingValue> values)
+    {
+        if (_subscribedValues.Count != values.Count) return false;
+
         for (int i = 0; i < values.Count; i++)
         {
-            var item = values[i];
-
-            if (item is null || item.Enabled is false) return false;
+            if (ReferenceEquals(_subscribedValues[i], values[i]) is false) return false;
         }
 
         return true;
     }
+
+    private void Unsubscribe()
+    {
+        for (int i = 0; i < _subscribedValues.Count; i++)
+        {
+            _subscribedValues[i].Changed -= HandleValueChanged;
+        }
+
+        _subscribedValues.Clear();
+    }
+
+    private void HandleValueChanged(BitCascadingValue value)
+    {
+        if (_disposed) return;
+
+        try
+        {
+            _ = InvokeAsync(StateHasChanged);
+        }
+        catch (ObjectDisposedException)
+        {
+            // The renderer is already gone - a value changed from a background thread while this
+            // provider was being torn down - so there is nothing left to refresh.
+        }
+    }
+
+    private static int GetSequence(int index, BitCascadingValue value) => index * SequenceStep + (value.IsFixed ? SequenceStep / 2 : 0);
 
     [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
     private static Type GetCascadingValueType(Type valueType)
@@ -153,5 +257,22 @@ public class BitCascadingValueProvider : ComponentBase
 #pragma warning restore IL3050, IL2055
         });
 #pragma warning restore IL2073
+    }
+
+
+
+    /// <summary>
+    /// Identifies a cascading value the way a consumer does: by the cascaded type and by the name, which the
+    /// CascadingValue component matches case-insensitively.
+    /// </summary>
+    private sealed class ValueKeyComparer : IEqualityComparer<(Type ValueType, string? Name)>
+    {
+        public static readonly ValueKeyComparer Instance = new();
+
+        public bool Equals((Type ValueType, string? Name) x, (Type ValueType, string? Name) y)
+            => x.ValueType == y.ValueType && string.Equals(x.Name, y.Name, StringComparison.OrdinalIgnoreCase);
+
+        public int GetHashCode((Type ValueType, string? Name) obj)
+            => HashCode.Combine(obj.ValueType, obj.Name is null ? 0 : StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Name));
     }
 }

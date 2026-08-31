@@ -9,6 +9,9 @@ public class BitCascadingValue
 {
     private object? _value;
     private string? _name;
+    private bool _isFixed;
+    private bool _enabled;
+    private Func<object?>? _valueFactory;
 
 
 
@@ -23,17 +26,19 @@ public class BitCascadingValue
     /// When not provided, the runtime type of the <paramref name="value"/> is used, so it must be
     /// provided whenever the value is null or its static type differs from its runtime type.
     /// </param>
-    public BitCascadingValue(object? value, string? name, bool isFixed, Type? valueType = null)
+    /// <param name="enabled">Determines that the value is provided at all.</param>
+    public BitCascadingValue(object? value, string? name, bool isFixed, Type? valueType = null, bool enabled = true)
     {
-        ValueType = valueType
+        ValueType = ValidateValueType(valueType
                  ?? value?.GetType()
-                 ?? throw new ArgumentNullException(nameof(valueType), "Either the value must be non-null or the valueType must be explicitly provided.");
+                 ?? throw new ArgumentNullException(nameof(valueType), "Either the value must be non-null or the valueType must be explicitly provided."));
 
         ValidateValue(value, ValueType);
 
         _value = value;
         _name = NormalizeName(name);
-        IsFixed = isFixed;
+        _isFixed = isFixed;
+        _enabled = enabled;
     }
 
     public BitCascadingValue(object? value, string? name = null) : this(value, name, false) { }
@@ -41,34 +46,115 @@ public class BitCascadingValue
     public BitCascadingValue(object? value, Type valueType) : this(value, null, false, valueType) { }
     public BitCascadingValue(object? value, string name, Type valueType) : this(value, name, false, valueType) { }
 
+    private BitCascadingValue(Func<object?> valueFactory, Type valueType, string? name, bool isFixed, bool enabled)
+    {
+        ArgumentNullException.ThrowIfNull(valueFactory);
+        ArgumentNullException.ThrowIfNull(valueType);
+
+        ValueType = ValidateValueType(valueType);
+
+        _valueFactory = valueFactory;
+        _name = NormalizeName(name);
+        _isFixed = isFixed;
+        _enabled = enabled;
+    }
+
 
 
     /// <summary>
-    /// The value to be provided.
+    /// Raised whenever this cascading value changes, which is what lets the hosting
+    /// <see cref="BitCascadingValueProvider"/> re-render itself and push the current values down to the
+    /// consumers without the component that owns the values having to re-render.
+    /// Assigning <see cref="Value"/>, <see cref="Name"/>, <see cref="IsFixed"/> or <see cref="Enabled"/>
+    /// raises it automatically; <see cref="NotifyChanged"/> raises it on demand.
+    /// </summary>
+    public event Action<BitCascadingValue>? Changed;
+
+
+
+    /// <summary>
+    /// The value to be provided. Assigning a value that is not assignable to the <see cref="ValueType"/>
+    /// throws an <see cref="ArgumentException"/>.
+    /// When the value comes from a factory, the factory runs the first time this property is read.
     /// </summary>
     public object? Value
     {
-        get => _value;
+        get
+        {
+            // Exchanged rather than read-then-cleared, so that the factory still runs exactly once
+            // when the value is first read from more than one thread.
+            var factory = Interlocked.Exchange(ref _valueFactory, null);
+
+            if (factory is not null)
+            {
+                var created = factory();
+
+                ValidateValue(created, ValueType);
+
+                _value = created;
+            }
+
+            return _value;
+        }
         set
         {
             ValidateValue(value, ValueType);
+
+            var changed = _valueFactory is not null || Equals(_value, value) is false;
+
+            _valueFactory = null;
             _value = value;
+
+            if (changed)
+            {
+                NotifyChanged();
+            }
         }
     }
 
     /// <summary>
     /// The optional name of the cascading value. An empty or white-space name is treated as no name at all.
+    /// The consumers match it case-insensitively, exactly like the Name of a CascadingValue component does.
     /// </summary>
+    /// <remarks>
+    /// The framework resolves which supplier feeds a cascading parameter once, when the consuming component is
+    /// created, so renaming a value that is already being consumed does not re-target the consumers that were
+    /// matched under the old name. Set the name before the value is first provided, or replace the whole
+    /// <see cref="BitCascadingValue"/> to change it afterwards.
+    /// </remarks>
     public string? Name
     {
         get => _name;
-        set => _name = NormalizeName(value);
+        set
+        {
+            var name = NormalizeName(value);
+
+            if (string.Equals(_name, name, StringComparison.Ordinal)) return;
+
+            _name = name;
+
+            NotifyChanged();
+        }
     }
 
     /// <summary>
-    /// If true, indicates that <see cref="Value"/> will not change.
+    /// If true, indicates that <see cref="Value"/> will not change, so the consumers are never subscribed
+    /// for change notifications, which is the cheapest way of cascading a value that is created once.
+    /// Toggling it re-creates the underlying CascadingValue component, because the framework does not let
+    /// the IsFixed of a live CascadingValue change.
     /// </summary>
-    public bool IsFixed { get; set; }
+    public bool IsFixed
+    {
+        get => _isFixed;
+        set
+        {
+            if (_isFixed == value) return;
+
+            _isFixed = value;
+
+            NotifyChanged();
+        }
+    }
 
     /// <summary>
     /// Determines whether this cascading value is provided to the children. A disabled value is skipped
@@ -77,12 +163,39 @@ public class BitCascadingValue
     /// Toggling it changes the shape of the rendered tree, so the child content is re-created just like
     /// it would be when a CascadingValue component is wrapped in a conditional block.
     /// </summary>
-    public bool Enabled { get; set; } = true;
+    public bool Enabled
+    {
+        get => _enabled;
+        set
+        {
+            if (_enabled == value) return;
+
+            _enabled = value;
+
+            NotifyChanged();
+        }
+    }
 
     /// <summary>
     /// The actual type of the value to be used as the TValue of the CascadingValue component.
     /// </summary>
     public Type ValueType { get; }
+
+    /// <summary>
+    /// Whether <see cref="Value"/> is already available. It is only false for a value created from a
+    /// factory that has not run yet, which is the case until the value is provided for the first time,
+    /// so a disabled or a shadowed value never gets there.
+    /// </summary>
+    public bool IsValueCreated => _valueFactory is null;
+
+
+
+    /// <summary>
+    /// Raises the <see cref="Changed"/> event so that the hosting <see cref="BitCascadingValueProvider"/>
+    /// re-renders and pushes this value down to the consumers again. Assigning any of the properties does
+    /// it already, so this is the escape hatch for a cascaded object that is mutated in place.
+    /// </summary>
+    public void NotifyChanged() => Changed?.Invoke(this);
 
 
 
@@ -108,19 +221,66 @@ public class BitCascadingValue
     public static BitCascadingValue From<T>(T value, bool isFixed) => new(value, null, isFixed, typeof(T));
 
     /// <summary>
+    /// Creates a cascading value whose ValueType is the static type of <typeparamref name="T"/>, with an
+    /// explicit enabled flag for the values that are provided conditionally.
+    /// </summary>
+    public static BitCascadingValue From<T>(T value, string? name, bool isFixed, bool enabled) => new(value, name, isFixed, typeof(T), enabled);
+
+    /// <summary>
     /// Creates a fixed (IsFixed) cascading value whose ValueType is the static type of <typeparamref name="T"/>.
     /// Fixed values never subscribe their consumers for change notifications, so they are the cheapest way
     /// of cascading a value that never changes.
     /// </summary>
-    public static BitCascadingValue Fixed<T>(T value, string? name = null) => new(value, name, true, typeof(T));
+    public static BitCascadingValue Fixed<T>(T value, string? name = null, bool enabled = true) => new(value, name, true, typeof(T), enabled);
+
+    /// <summary>
+    /// Creates a cascading value whose ValueType is the static type of <typeparamref name="T"/> and whose
+    /// value is produced by <paramref name="valueFactory"/> the first time it is actually needed, so an
+    /// expensive value is never built for a disabled entry, for an entry that a later one shadows, or for
+    /// a provider that is never rendered. The factory runs at most once.
+    /// </summary>
+    public static BitCascadingValue Lazy<T>(Func<T> valueFactory, string? name = null, bool isFixed = false, bool enabled = true)
+    {
+        ArgumentNullException.ThrowIfNull(valueFactory);
+
+        return new(() => valueFactory(), typeof(T), name, isFixed, enabled);
+    }
+
+    /// <summary>
+    /// Creates a lazily produced cascading value with an explicit ValueType, which is the way of deferring
+    /// the creation of a value whose cascaded type is only known at runtime. The factory runs at most once.
+    /// </summary>
+    public static BitCascadingValue Lazy(Func<object?> valueFactory, Type valueType, string? name = null, bool isFixed = false, bool enabled = true)
+        => new(valueFactory, valueType, name, isFixed, enabled);
 
 
 
-    public override string ToString() => $"{(Name is null ? string.Empty : $"{Name}: ")}{ValueType.Name} = {Value ?? "null"}";
+    public override string ToString()
+    {
+        var value = _valueFactory is null ? Value ?? "null" : "(not created yet)";
+        var flags = $"{(IsFixed ? " (fixed)" : string.Empty)}{(Enabled ? string.Empty : " (disabled)")}";
+
+        return $"{(Name is null ? string.Empty : $"{Name}: ")}{ValueType.Name} = {value}{flags}";
+    }
 
 
 
     private static string? NormalizeName(string? name) => string.IsNullOrWhiteSpace(name) ? null : name;
+
+    private static Type ValidateValueType(Type valueType)
+    {
+        if (valueType.ContainsGenericParameters)
+        {
+            throw new ArgumentException($"The open generic type '{valueType}' cannot be used as a cascading value type.", nameof(valueType));
+        }
+
+        if (valueType == typeof(void) || valueType.IsPointer || valueType.IsByRef || valueType.IsByRefLike)
+        {
+            throw new ArgumentException($"The type '{valueType}' cannot be used as a cascading value type.", nameof(valueType));
+        }
+
+        return valueType;
+    }
 
     private static void ValidateValue(object? value, Type valueType)
     {

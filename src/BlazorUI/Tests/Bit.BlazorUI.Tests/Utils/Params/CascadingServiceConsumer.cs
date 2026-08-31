@@ -17,6 +17,15 @@ public sealed class CascadingDemoServiceDecorator : CascadingDemoService
 {
 }
 
+/// <summary>
+/// A service that is cascaded once and then mutated in place, which is what BitCascadingValue.NotifyChanged
+/// is for: there is no assignment for the provider to notice.
+/// </summary>
+public sealed class MutableCascadingDemoService : ICascadingDemoService
+{
+    public string Name { get; set; } = "initial";
+}
+
 public sealed class CascadingServiceConsumer : ComponentBase
 {
     [CascadingParameter] public ICascadingDemoService? Service { get; set; }
