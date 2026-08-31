@@ -1,6 +1,57 @@
-﻿::deep .icon-class {
+﻿// The one rule that has to reach past the scope: the class is handed to a BitIcon, and the element it
+// lands on is rendered by that component rather than written here, so it never carries the scope
+// attribute. Everything else below is a plain element of this page and is scoped directly.
+::deep .icon-class {
     padding: 4px;
     font-size: 3rem;
     margin-left: 1rem;
     background-color: aquamarine;
+}
+
+.example-content {
+    gap: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+// The label under each animated glyph, so a reader can tell which animation they are looking at.
+.animation-row {
+    gap: 1.5rem;
+
+    > div {
+        gap: 0.5rem;
+        display: flex;
+        min-width: 5.5rem;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    span {
+        font-size: 0.75rem;
+        color: var(--bit-clr-fg-sec);
+    }
+}
+
+// Two copies of the same menu side by side: the point of the example is the ragged left edge of the
+// labels in the first list against the aligned one in the second.
+.fixed-width-lists {
+    gap: 3rem;
+    display: flex;
+    flex-wrap: wrap;
+
+    .icon-list {
+        gap: 0.5rem;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        list-style: none;
+        flex-direction: column;
+
+        li {
+            gap: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+    }
 }

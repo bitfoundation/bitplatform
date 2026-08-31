@@ -142,7 +142,7 @@ public partial class MainLayout
             [
                 new() { Text = "CascadingValueProvider", Url = "/components/cascadingvalueprovider" },
                 new() { Text = "Element", Url = "/components/element", Description = "DynamicElement, Slot", Data = "Tag, HtmlTag, Polymorphic, CustomElement, WebComponent, Wrapper" },
-                new() { Text = "Icon", Url = "/components/icon" },
+                new() { Text = "Icon", Url = "/components/icon", Description = "Glyph, Symbol" },
                 new() { Text = "Image", Url = "/components/image" },
                 new() { Text = "Label",  Url = "/components/label" },
                 new() { Text = "Link", Url = "/components/link", Description = "Anchor" },

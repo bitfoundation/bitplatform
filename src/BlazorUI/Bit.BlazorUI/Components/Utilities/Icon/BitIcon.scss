@@ -1,10 +1,23 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-ico {
+    // An icon font class brings its own inline-block, but an icon named by a bare CSS class, drawn as
+    // an inline svg, or written as a ligature brings nothing - and an inline box takes neither the
+    // padding nor the rule that the filled and outlined variants are drawn with.
+    display: inline-block;
     padding: spacing(0.5);
     border-radius: $shp-radius-control;
     border-style: $shp-border-style;
     border-width: $shp-border-width;
+    // A glyph is one line and nothing else: left to inherit, the line height of whatever paragraph or
+    // list the icon sits in would decide how tall its box is, so the same icon would be drawn in a
+    // taller badge on one row than on the next, and a fixed-width column would not line up.
+    line-height: 1;
+    // The character behind a glyph is a private-use codepoint, and the text of a ligature-based set is
+    // the name of the icon - neither is anything a reader means to select when they drag across a line
+    // of text, and neither is worth anything once pasted.
+    user-select: none;
+    -webkit-user-select: none;
 
     &.bit-dis {
         color: var(--bit-ico-clr-dis-text);
@@ -49,77 +62,20 @@
 }
 
 
-// Role classes are generated from the shared $bit-semantic-color-roles map (see color-role-maps.scss).
-@each $role, $tokens in $bit-semantic-color-roles {
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss), which
+// carries the nine surface families beside the eight accent ones and every slot each of them has - so
+// the hover, the active and the focus color an icon with a click handler is drawn in come from the
+// same place as its main color, for all seventeen roles.
+@each $role, $tokens in $bit-color-roles {
     .bit-ico-#{$role} {
         --bit-ico-clr: #{role($tokens, main)};
         --bit-ico-clr-txt: #{role($tokens, on)};
+        --bit-ico-clr-hover: #{role($tokens, hover)};
+        --bit-ico-clr-active: #{role($tokens, active)};
+        --bit-ico-clr-focus: #{role($tokens, focus)};
         --bit-ico-clr-dis: #{role($tokens, dis)};
         --bit-ico-clr-dis-text: #{role($tokens, dis-text)};
     }
-}
-
-.bit-ico-pbg {
-    --bit-ico-clr: #{$clr-bg-pri};
-    --bit-ico-clr-txt: #{$clr-fg-pri};
-    --bit-ico-clr-dis: #{$clr-bg-pri-dis};
-    --bit-ico-clr-dis-text: #{$clr-bg-pri-dis-text};
-}
-
-.bit-ico-sbg {
-    --bit-ico-clr: #{$clr-bg-sec};
-    --bit-ico-clr-txt: #{$clr-fg-sec};
-    --bit-ico-clr-dis: #{$clr-bg-sec-dis};
-    --bit-ico-clr-dis-text: #{$clr-bg-sec-dis-text};
-}
-
-.bit-ico-tbg {
-    --bit-ico-clr: #{$clr-bg-ter};
-    --bit-ico-clr-txt: #{$clr-fg-ter};
-    --bit-ico-clr-dis: #{$clr-bg-ter-dis};
-    --bit-ico-clr-dis-text: #{$clr-bg-ter-dis-text};
-}
-
-.bit-ico-pfg {
-    --bit-ico-clr: #{$clr-fg-pri};
-    --bit-ico-clr-txt: #{$clr-bg-pri};
-    --bit-ico-clr-dis: #{$clr-fg-pri-dis};
-    --bit-ico-clr-dis-text: #{$clr-fg-pri-dis-text};
-}
-
-.bit-ico-sfg {
-    --bit-ico-clr: #{$clr-fg-sec};
-    --bit-ico-clr-txt: #{$clr-bg-sec};
-    --bit-ico-clr-dis: #{$clr-fg-sec-dis};
-    --bit-ico-clr-dis-text: #{$clr-fg-sec-dis-text};
-}
-
-.bit-ico-tfg {
-    --bit-ico-clr: #{$clr-fg-ter};
-    --bit-ico-clr-txt: #{$clr-bg-ter};
-    --bit-ico-clr-dis: #{$clr-fg-ter-dis};
-    --bit-ico-clr-dis-text: #{$clr-fg-ter-dis-text};
-}
-
-.bit-ico-pbr {
-    --bit-ico-clr: #{$clr-brd-pri};
-    --bit-ico-clr-txt: #{$clr-fg-pri};
-    --bit-ico-clr-dis: #{$clr-brd-pri-dis};
-    --bit-ico-clr-dis-text: #{$clr-brd-pri-dis-text};
-}
-
-.bit-ico-sbr {
-    --bit-ico-clr: #{$clr-brd-sec};
-    --bit-ico-clr-txt: #{$clr-fg-sec};
-    --bit-ico-clr-dis: #{$clr-brd-sec-dis};
-    --bit-ico-clr-dis-text: #{$clr-brd-sec-dis-text};
-}
-
-.bit-ico-tbr {
-    --bit-ico-clr: #{$clr-brd-ter};
-    --bit-ico-clr-txt: #{$clr-fg-ter};
-    --bit-ico-clr-dis: #{$clr-brd-ter-dis};
-    --bit-ico-clr-dis-text: #{$clr-brd-ter-dis-text};
 }
 
 
@@ -133,4 +89,346 @@
 
 .bit-ico-lg {
     font-size: $siz-icon-lg;
+}
+
+
+// Rotation and mirroring compose into one transform through these three custom properties: two rules
+// each setting `transform` would leave only the later one standing, so the classes below set nothing
+// but the parts, and this one draws them. The transform also needs a box to act on - it does nothing
+// at all to an inline non-replaced element - which is why the display is set here rather than on the
+// base class, where it would change the flow of every icon in the library.
+.bit-ico-trn {
+    display: inline-block;
+    transform: rotate(var(--bit-ico-rotate, 0deg))
+               scaleX(calc(var(--bit-ico-scale-x, 1) * var(--bit-ico-rtl-scale-x, 1)))
+               scaleY(var(--bit-ico-scale-y, 1));
+}
+
+// The individual transform properties are applied on top of `transform` rather than instead of it, so
+// writing the static turn with them is what lets an animation keep the `transform` for itself: a
+// mirrored arrow can spin, and a glyph turned to an angle beats around that angle. The shorthand above
+// stays for a browser too old for them, where the animation wins over the turn as it always did.
+@supports (rotate: 90deg) {
+    .bit-ico-trn {
+        transform: none;
+        rotate: var(--bit-ico-rotate, 0deg);
+        scale: calc(var(--bit-ico-scale-x, 1) * var(--bit-ico-rtl-scale-x, 1)) var(--bit-ico-scale-y, 1);
+    }
+}
+
+.bit-ico-rt90 {
+    --bit-ico-rotate: 90deg;
+}
+
+.bit-ico-rt180 {
+    --bit-ico-rotate: 180deg;
+}
+
+.bit-ico-rt270 {
+    --bit-ico-rotate: 270deg;
+}
+
+.bit-ico-flh {
+    --bit-ico-scale-x: -1;
+}
+
+.bit-ico-flv {
+    --bit-ico-scale-y: -1;
+}
+
+.bit-ico-flb {
+    --bit-ico-scale-x: -1;
+    --bit-ico-scale-y: -1;
+}
+
+// The direction is read off the rendered document rather than off the component's own parameter, so
+// an icon inside an RTL subtree mirrors without having been told the direction itself. It multiplies
+// with an explicit Flip rather than replacing it - a glyph asked to mirror both ways ends up the way
+// it started, which is what a mirrored arrow in a mirrored layout should look like.
+[dir="rtl"] .bit-ico-frt,
+.bit-ico-frt.bit-rtl {
+    --bit-ico-rtl-scale-x: -1;
+}
+
+// An ancestor selector can only find the nearest dir attribute above the icon, which is the wrong
+// answer for the icon that sets a direction of its own inside a subtree of the other one - a left to
+// right block quoted in a right to left page, and the other way around. :dir() asks the browser for
+// the direction the icon actually renders in, so both halves are written here, each with the
+// specificity of the rule above so that whichever one matches wins over it.
+@supports selector(:dir(rtl)) {
+    [dir] .bit-ico-frt:dir(ltr),
+    .bit-ico-frt:dir(ltr) {
+        --bit-ico-rtl-scale-x: 1;
+    }
+
+    [dir] .bit-ico-frt:dir(rtl),
+    .bit-ico-frt:dir(rtl) {
+        --bit-ico-rtl-scale-x: -1;
+    }
+}
+
+
+// The glyphs of an icon font are not all the same width, which is what makes the labels of a menu or
+// a nav start at a different place on every row. 1.25em is the widest glyph of the Fabric MDL2 set
+// plus the room the design system leaves around it.
+.bit-ico-fxw {
+    width: 1.25em;
+    text-align: center;
+    display: inline-block;
+}
+
+
+// A round badge is a circle and not an ellipse, so the box is squared off as well as rounded: glyphs
+// are not all the same width, and a box that only took the corner radius would be drawn as an oval
+// around the narrow ones. The centering is what the square then needs, since the glyph no longer
+// fills the box it is drawn in.
+.bit-ico-cir {
+    aspect-ratio: 1;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $shp-radius-full;
+}
+
+
+// An inline svg or an image is aligned by the bottom edge of its box, which leaves it riding above the
+// baseline the text around it sits on. A glyph of an icon font needs none of this, and does not get it
+// unless it is asked for.
+.bit-ico-inl {
+    vertical-align: -0.125em;
+}
+
+
+// Every animation below loops for as long as the icon is on the page, so none of them may use the
+// one-shot duration tokens, which collapse to near zero under reduced motion and would render as a
+// flicker. The turning ones take the spinner tokens, so an icon spun as a loader turns at the speed
+// of every other loader in the library; the rest multiply their own duration by the loop factor. Both
+// slow down rather than stop under reduced motion, and ForceAnimation restores them through the same
+// inheritance - so none of these needs a media query of its own.
+// A circle is already a flex box that centers its glyph, and it is written above this - an
+// inline-block written here at the same specificity would win over it and leave an animated circle
+// with its glyph back in the corner.
+.bit-ico-spn:not(.bit-ico-cir),
+.bit-ico-spr:not(.bit-ico-cir),
+.bit-ico-pls:not(.bit-ico-cir),
+.bit-ico-bet:not(.bit-ico-cir),
+.bit-ico-btf:not(.bit-ico-cir),
+.bit-ico-bnc:not(.bit-ico-cir),
+.bit-ico-shk:not(.bit-ico-cir) {
+    display: inline-block;
+}
+
+.bit-ico-spn {
+    animation: bit-ico-spin-anm $mot-duration-spinner $mot-easing-spinner infinite;
+}
+
+.bit-ico-spr {
+    animation: bit-ico-spin-anm $mot-duration-spinner $mot-easing-spinner infinite reverse;
+}
+
+.bit-ico-pls {
+    animation: bit-ico-spin-anm calc(1s * #{$mot-loop-factor}) infinite steps(8);
+}
+
+.bit-ico-bet {
+    animation: bit-ico-beat-anm calc(1s * #{$mot-loop-factor}) $mot-easing infinite alternate;
+}
+
+// The only one that composes with Rotate and Flip, since opacity is not a transform.
+.bit-ico-fad {
+    animation: bit-ico-fade-anm calc(1s * #{$mot-loop-factor}) $mot-easing infinite alternate;
+}
+
+.bit-ico-shk {
+    animation: bit-ico-shake-anm calc(1s * #{$mot-loop-factor}) linear infinite;
+}
+
+.bit-ico-bnc {
+    animation: bit-ico-bounce-anm calc(1s * #{$mot-loop-factor}) $mot-easing infinite;
+}
+
+.bit-ico-btf {
+    animation: bit-ico-beat-fade-anm calc(1s * #{$mot-loop-factor}) $mot-easing infinite;
+}
+
+// A duration of the app's own, written as a longhand after every shorthand above so that it replaces
+// the default of whichever animation is playing. It is multiplied by the same loop factor as the
+// defaults are, so an animation asked to run fast still slows down under reduced motion.
+.bit-ico-anm {
+    animation-duration: calc(var(--bit-ico-anm-dur, 1s) * #{$mot-loop-factor});
+}
+
+// A wait before the first cycle, written as its own class so that asking for one does not also replace
+// the duration of whichever animation is playing. It is not multiplied by the loop factor: a delay is
+// a pause, and stretching it would only make the icon look broken under reduced motion.
+.bit-ico-dly {
+    animation-delay: var(--bit-ico-anm-dly, 0s);
+}
+
+@keyframes bit-ico-spin-anm {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes bit-ico-beat-anm {
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(1.25);
+    }
+}
+
+@keyframes bit-ico-fade-anm {
+    from {
+        opacity: 0.4;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes bit-ico-bounce-anm {
+    0%, 68%, 100% { transform: scale(1, 1) translateY(0); }
+    10% { transform: scale(1.1, 0.9) translateY(0); }
+    30% { transform: scale(0.9, 1.1) translateY(-0.5em); }
+    50% { transform: scale(1.05, 0.95) translateY(0); }
+    57% { transform: scale(1, 1) translateY(-0.125em); }
+}
+
+@keyframes bit-ico-beat-fade-anm {
+    0%, 100% {
+        opacity: 0.4;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.125);
+    }
+}
+
+@keyframes bit-ico-shake-anm {
+    0% { transform: rotate(-15deg); }
+    4% { transform: rotate(15deg); }
+    8%, 24% { transform: rotate(-18deg); }
+    12%, 28% { transform: rotate(18deg); }
+    16% { transform: rotate(-22deg); }
+    20% { transform: rotate(22deg); }
+    32% { transform: rotate(-12deg); }
+    36% { transform: rotate(12deg); }
+    40%, 100% { transform: rotate(0deg); }
+}
+
+
+// An icon given a click handler is announced and operated as a button, so it also has to look and
+// focus like one. It keeps the icon's own shape - the ring follows the border radius of the variant
+// it is drawn in - and a disabled one stops answering the pointer entirely.
+.bit-ico-int {
+    cursor: pointer;
+    position: relative;
+    transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing;
+
+    // A small size class puts the glyph well under the 24x24 CSS pixels WCAG 2.2 asks of a target, and
+    // the icon is now a target. This grows the area that answers the pointer without growing the icon:
+    // a pseudo-element is part of its host for hit testing, so a press anywhere in this box is a press
+    // on the icon, while the layout keeps the size the glyph was given.
+    &::after {
+        content: "";
+        top: 50%;
+        left: 50%;
+        position: absolute;
+        width: max(100%, 1.5rem);
+        height: max(100%, 1.5rem);
+        transform: translate(-50%, -50%);
+        // The box overhangs the icon's own, and a positioned element paints - and so hit-tests - above
+        // the plain content beside it, which would let the overhang take the presses meant for a
+        // tightly spaced neighbour. A negative index puts it back under that content while leaving it
+        // part of its host for hit testing, so it only grows the target where nothing else is.
+        z-index: -1;
+    }
+
+    // A control the pointer can press says so before it is pressed. The plain glyph deepens its own
+    // color, and the two variants that paint a box move that box through the role's hover and active
+    // shades, exactly as a button of the same role does. Guarded by the hover media query so a touch
+    // device is not left with the hover state stuck on after a tap.
+    @media (hover: hover) {
+        &:not(.bit-dis):hover {
+            color: var(--bit-ico-clr-hover);
+        }
+
+        &.bit-ico-fil:not(.bit-dis):hover {
+            color: var(--bit-ico-clr-txt);
+            border-color: var(--bit-ico-clr-hover);
+            background-color: var(--bit-ico-clr-hover);
+        }
+
+        &.bit-ico-out:not(.bit-dis):hover {
+            color: var(--bit-ico-clr-txt);
+            border-color: var(--bit-ico-clr-hover);
+            background-color: var(--bit-ico-clr-hover);
+        }
+    }
+
+    &:not(.bit-dis):active {
+        color: var(--bit-ico-clr-active);
+    }
+
+    &.bit-ico-fil:not(.bit-dis):active,
+    &.bit-ico-out:not(.bit-dis):active {
+        color: var(--bit-ico-clr-txt);
+        border-color: var(--bit-ico-clr-active);
+        background-color: var(--bit-ico-clr-active);
+    }
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-ico-clr-focus));
+    }
+
+    // A disabled icon keeps answering the pointer, and refuses the click in the handler instead. Turning
+    // the pointer off here would take the icon's own title tooltip with it - the one sentence saying why
+    // the thing cannot be done - which is the whole reason a disabled control is left on the page rather
+    // than removed from it. The keyboard is already covered: it leaves the tab order.
+    &.bit-dis {
+        cursor: default;
+    }
+}
+
+
+// A forced-colors mode throws away every color the icon paints, which would leave the filled and the
+// outlined variants indistinguishable from the plain glyph, and a disabled icon looking enabled. All
+// three are re-established here in the system colors, which are the only ones such a mode keeps.
+@media (forced-colors: active) {
+    .bit-ico-fil {
+        color: Canvas;
+        border-color: CanvasText;
+        background-color: CanvasText;
+    }
+
+    .bit-ico-out {
+        border-color: CanvasText;
+    }
+
+    .bit-ico.bit-dis {
+        color: GrayText;
+    }
+
+    .bit-ico-fil.bit-dis {
+        color: Canvas;
+        border-color: GrayText;
+        background-color: GrayText;
+    }
+
+    .bit-ico-out.bit-dis {
+        color: GrayText;
+        border-color: GrayText;
+    }
 }

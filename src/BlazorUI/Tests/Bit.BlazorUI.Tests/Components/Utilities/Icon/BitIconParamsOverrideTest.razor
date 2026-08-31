@@ -1,0 +1,21 @@
+﻿<BitParams Parameters="_params">
+    <BitIcon Color="BitColor.Success" />
+</BitParams>
+
+@code {
+    private readonly List<IBitComponentParams> _params =
+    [
+        new BitIconParams
+        {
+            Color = BitColor.Error,
+            Size = BitSize.Large,
+            Variant = BitVariant.Outline,
+            FixedWidth = true,
+            Circular = true,
+            Inline = true,
+            RotateAngle = 90,
+            Animation = BitIconAnimation.Spin,
+            AnimationDuration = "2s"
+        }
+    ];
+}
