@@ -1,0 +1,11 @@
+﻿<div>
+    <span style="font-weight:bold">@Title</span>
+    <span>@(Count?.ToString() ?? "null")</span>
+</div>
+
+@code {
+    [Parameter] public string? Title { get; set; }
+
+    [CascadingParameter]
+    public int? Count { get; set; }
+}

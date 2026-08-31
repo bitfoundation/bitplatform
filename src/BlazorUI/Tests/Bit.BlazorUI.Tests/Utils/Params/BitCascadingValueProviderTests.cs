@@ -241,6 +241,8 @@ public partial class BitCascadingValueProviderTests : BunitTestContext
     [TestMethod]
     public void ShouldHandleManyCascadingValues()
     {
+        // All of them share a type and carry no name, so the last one shadows every other and is the
+        // only one that reaches the render tree.
         var cascadingValues = Enumerable.Range(0, 50).Select(i => new BitCascadingValue(i)).ToList();
 
         var component = RenderComponent<BitCascadingValueProvider>(parameters =>
@@ -256,6 +258,54 @@ public partial class BitCascadingValueProviderTests : BunitTestContext
         var consumer = component.FindComponent<CascadingConsumer>().Instance;
 
         Assert.AreEqual(49, consumer.Number);
+        Assert.AreEqual(1, component.FindComponents<CascadingValue<int>>().Count);
+    }
+
+    [TestMethod]
+    public void ShouldBuildADeepChainOfDistinctCascadingValues()
+    {
+        var cascadingValues = Enumerable.Range(0, 49).Select(i => new BitCascadingValue(i, $"Number{i}")).ToList();
+        cascadingValues.Add(new BitCascadingValue(7));
+
+        var component = RenderComponent<BitCascadingValueProvider>(parameters =>
+        {
+            parameters.Add(p => p.Values, cascadingValues);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<CascadingConsumer>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        Assert.AreEqual(7, component.FindComponent<CascadingConsumer>().Instance.Number);
+        Assert.AreEqual(50, component.FindComponents<CascadingValue<int>>().Count);
+    }
+
+    [TestMethod]
+    public void ShouldReshapeTheChainWhenTheNumberOfValuesChanges()
+    {
+        var component = RenderComponent<BitCascadingValueProvider>(parameters =>
+        {
+            parameters.Add(p => p.Values, new List<BitCascadingValue> { new(1), new("a", "Greeting") });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<CascadingConsumer>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var consumer = component.FindComponent<CascadingConsumer>().Instance;
+
+        Assert.AreEqual(1, consumer.Number);
+        Assert.AreEqual("a", consumer.Greeting);
+
+        component.Render(parameters => parameters.Add(p => p.Values, new List<BitCascadingValue> { new(2) }));
+
+        consumer = component.FindComponent<CascadingConsumer>().Instance;
+
+        Assert.AreEqual(2, consumer.Number);
+        Assert.IsNull(consumer.Greeting);
+        Assert.AreEqual(0, component.FindComponents<CascadingValue<string>>().Count);
     }
 
     [TestMethod]
