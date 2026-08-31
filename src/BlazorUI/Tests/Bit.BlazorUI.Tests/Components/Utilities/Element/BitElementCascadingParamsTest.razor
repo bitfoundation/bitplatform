@@ -1,0 +1,20 @@
+﻿@* Covers BitElementParams: the cascaded values fill in the parameters the element did not set itself,
+   and never overwrite the ones it did. *@
+
+<BitParams Parameters="@(new BitElementParams[]
+                         {
+                             new()
+                             {
+                                 Element = "section",
+                                 Class = "cascaded",
+                                 StopPropagation = true,
+                                 PreventDefault = true,
+                             }
+                         })">
+    <BitElement>cascaded</BitElement>
+    <BitElement Element="article">own</BitElement>
+</BitParams>
+
+<BitParams Parameters="@(new BitElementParams[] { new() { NoWrapper = true } })">
+    <BitElement Element="section">unwrapped</BitElement>
+</BitParams>

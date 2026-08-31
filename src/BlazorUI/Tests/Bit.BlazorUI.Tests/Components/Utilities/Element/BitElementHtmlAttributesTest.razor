@@ -1,1 +1,26 @@
-﻿<BitElement data-val-test="bit">I'm a element</BitElement>
+﻿@* Covers the attribute splatting of the element: everything written as a plain HTML attribute lands on the
+   rendered tag, and the class and the style the component builds itself are merged with the ones splatted
+   through a dictionary rather than replacing them. *@
+
+<BitElement data-val-test="bit">I'm a element</BitElement>
+
+<BitElement Class="from-parameter" Style="color: red;"
+            @attributes="@(new Dictionary<string, object>
+                           {
+                               ["class"] = "from-attribute",
+                               ["style"] = "font-weight: bold;",
+                               ["dir"] = "rtl",
+                               ["id"] = "from-attribute",
+                               ["aria-label"] = "from attribute",
+                               ["tabindex"] = "3",
+                           })">
+    I'm a merged element
+</BitElement>
+
+<BitElement class="lowercase-class" style="color: blue;" id="lowercase-id" tabindex="4">
+    I'm a lowercase element
+</BitElement>
+
+@* An enabled element must keep a disabled attribute of its own: the component only writes that attribute
+   while it is disabled itself, since writing it as false would remove the splatted one instead. *@
+<BitElement Element="button" disabled="true">I'm a self-disabled element</BitElement>
