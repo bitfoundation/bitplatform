@@ -1,31 +1,97 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
+@*  The image itself. Everything it renders is merged into a single attribute dictionary rather than
+    written as attributes beside the splat: an attribute written after "@attributes" removes the
+    splatted one of the same name when its own value is null, so a "decoding" or a "srcset" put in
+    ImageAttributes would be taken away again by the parameter of the same name that is not set. See
+    GetImageAttributes.
+
+    It is a fragment rather than markup written in place because it is rendered either on its own or as
+    the last child of a picture, and the two have to be the same element - a second copy would be a
+    second img to keep in step with. *@
+@{
+    RenderFragment image =@<img @key="_reloadKey" @ref="_imageElement" @attributes="GetImageAttributes()"
+                                @onload="HandleOnLoad"
+                                @onerror="HandleOnError"
+                                @onclick="HandleOnClick"
+                                @onkeydown="HandleOnKeyDown"
+                                @onkeyup="HandleOnKeyUp" />;
+}
+
+@*  The frame. Everything else is positioned against it, so it is the element that carries the size,
+    the aspect ratio, the shape and the clipping - which is what lets a cover fit and a rounded corner
+    crop the image without the image itself knowing about either. *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()"
+     dir="@Dir?.ToString().ToLowerInvariant()"
      aria-label="@AriaLabel">
-    <img @attributes="ImageAttributes"
-         alt="@Alt"
-         src="@Src"
-         title="@Title"
-         style="@Styles?.Image"
-         class="@GetImageClasses()"
-         @onload="HandleOnLoad"
-         @onerror="HandleOnError"
-         @onclick="HandleOnClick"
-         @onloadstart="HandleOnLoadStart"
-         loading="@(Loading?.ToString().ToLower())" />
+
+    @*  The low quality placeholder, which stands in the frame while the real image is still on its
+        way. It is decorative by definition - the image it stands for carries the meaning - so it is
+        hidden from assistive technologies rather than given an alt of its own. *@
+    @if (_placeholderSrc.HasValue())
+    {
+        <img alt=""
+             aria-hidden="true"
+             src="@_placeholderSrc"
+             draggable="false"
+             style="@GetPlaceholderStyles()"
+             class="bit-img-plc@(Classes?.Placeholder.HasValue() is true ? $" {Classes!.Placeholder}" : null)" />
+    }
+
+    @if (_hasSources)
+    {
+        @*  The alternative sources, which the browser walks in order and takes the first of that it is
+            satisfied by. The picture is only a grouping element and lays nothing out itself - it is
+            given display:contents - so the frame keeps sizing the img exactly as it does without it. *@
+        <picture class="bit-img-pic">
+            @foreach (var source in Sources!)
+            {
+                if (source is null || source.Srcset.HasNoValue()) continue;
+
+                <source srcset="@source.Srcset"
+                        media="@source.Media"
+                        sizes="@source.Sizes"
+                        type="@source.Type"
+                        width="@source.Width"
+                        height="@source.Height" />
+            }
+            @image
+        </picture>
+    }
+    else
+    {
+        @image
+    }
 
     @if (_loadingState is BitImageState.Loading && StartVisible is false && LoadingTemplate is not null)
     {
-        @LoadingTemplate
+        <div style="@Styles?.LoadingTemplate"
+             class="bit-img-tpl@(Classes?.LoadingTemplate.HasValue() is true ? $" {Classes!.LoadingTemplate}" : null)">
+            @LoadingTemplate
+        </div>
     }
     else if (_loadingState is BitImageState.Error && ErrorTemplate is not null)
     {
-        @ErrorTemplate
+        <div style="@Styles?.ErrorTemplate"
+             class="bit-img-tpl@(Classes?.ErrorTemplate.HasValue() is true ? $" {Classes!.ErrorTemplate}" : null)">
+            @ErrorTemplate
+        </div>
+    }
+
+    @*  The content laid over the image - a caption, a badge, a gradient scrim. It is the last thing
+        in the frame so it stacks above the image without either of them needing a z-index, and it
+        lets the pointer through except where the content itself takes it, so an image that is also
+        a button stays clickable underneath its own caption. *@
+    @if (ChildContent is not null)
+    {
+        <div style="@Styles?.Content"
+             class="bit-img-ovl@(Classes?.Content.HasValue() is true ? $" {Classes!.Content}" : null)">
+            @ChildContent
+        </div>
     }
 
 </div>

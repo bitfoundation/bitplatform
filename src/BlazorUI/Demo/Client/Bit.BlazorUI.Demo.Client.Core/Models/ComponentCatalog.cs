@@ -455,7 +455,7 @@ public static class ComponentCatalog
         ["CascadingValueProvider"] = "Cascades several values to child components without nesting providers.",
         ["Element"] = "Renders any HTML tag with the library's own styling parameters.",
         ["Icon"] = "Renders a Fabric glyph, or an icon from any other set you point it at.",
-        ["Image"] = "An image with cover modes, loading states and a fallback.",
+        ["Image"] = "An image with fit, shape and responsive sources, loading states and a fallback.",
         ["Label"] = "Gives a name to a control or a group of controls.",
         ["Link"] = "Navigates elsewhere, inside the app or out of it.",
         ["MediaQuery"] = "Reports the library's breakpoints to your component as a parameter.",
