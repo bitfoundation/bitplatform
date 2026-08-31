@@ -13,10 +13,11 @@ namespace Bit.BlazorUI;
 public class BitCascadingValueProvider : ComponentBase, IDisposable
 {
     /// <summary>
-    /// The number of render tree sequence slots reserved for each generated CascadingValue component.
-    /// Five of them are the frames of the component itself; the other five are the slots the same component
-    /// moves to when its value is fixed, so that toggling IsFixed re-creates the CascadingValue instead of
-    /// tripping the framework's "The value of IsFixed cannot be changed dynamically" guard.
+    /// The number of render tree sequence slots reserved for each value that is given to this provider.
+    /// Five of them are the frames of one generated CascadingValue component; the other five are the slots
+    /// the same value moves to whenever the shape of what it cascades - its type, its name or its IsFixed
+    /// flag - changes, so that the CascadingValue is re-created instead of being reused with a different
+    /// shape, which would keep the already matched consumers bound to the old one.
     /// </summary>
     private const int SequenceStep = 10;
 
@@ -32,11 +33,15 @@ public class BitCascadingValueProvider : ComponentBase, IDisposable
     private bool _disposed;
 
     // The values of the two parameters flattened in order, the ones actually rendered (the enabled values
-    // that nothing later shadows), the keys used to find those, and the values this provider is currently
-    // subscribed to. All four are reused across renders so that a re-render allocates nothing of its own.
+    // that nothing later shadows) with the sequence number each of them renders at, the keys used to find
+    // those, the shape the values were last rendered with, and the values this provider is subscribed to.
+    // All of them are reused across renders so that a re-render allocates nothing of its own.
     private readonly List<BitCascadingValue> _allValues = [];
     private readonly List<BitCascadingValue> _renderedValues = [];
+    private readonly List<int> _renderedSequences = [];
+    private readonly List<ValueSlot> _slots = [];
     private readonly List<BitCascadingValue> _subscribedValues = [];
+    private readonly HashSet<BitCascadingValue> _distinctSubscribedValues = [];
     private readonly HashSet<(Type ValueType, string? Name)> _renderedKeys = new(ValueKeyComparer.Instance);
 
 
@@ -64,9 +69,7 @@ public class BitCascadingValueProvider : ComponentBase, IDisposable
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCascadingValueList))]
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        var list = CollectValues();
-
-        if (list is null)
+        if (CollectValues() is false)
         {
             ChildContent?.Invoke(builder);
             return;
@@ -74,16 +77,16 @@ public class BitCascadingValueProvider : ComponentBase, IDisposable
 
         RenderFragment current = ChildContent ?? _emptyContent;
 
-        for (int i = list.Count - 1; i > 0; i--)
+        for (int i = _renderedValues.Count - 1; i > 0; i--)
         {
-            var item = list[i];
-            var seq = GetSequence(i, item);
+            var item = _renderedValues[i];
+            var seq = _renderedSequences[i];
             var prev = current;
 
             current = b => CreateCascadingValue(b, seq, item, prev);
         }
 
-        CreateCascadingValue(builder, GetSequence(0, list[0]), list[0], current);
+        CreateCascadingValue(builder, _renderedSequences[0], _renderedValues[0], current);
     }
 
 
@@ -142,10 +145,11 @@ public class BitCascadingValueProvider : ComponentBase, IDisposable
     /// <summary>
     /// Flattens the ValueList and the Values parameters into the list of the values to render, skipping the
     /// null and the disabled entries as well as every entry that a later one of the same type and name
-    /// shadows, and re-subscribes to whatever the two parameters currently hold.
-    /// Returns null when there is nothing to cascade so that the child content can be rendered as is.
+    /// shadows, works out the sequence number each of them renders at, and re-subscribes to whatever the
+    /// two parameters currently hold.
+    /// Returns false when there is nothing to cascade so that the child content can be rendered as is.
     /// </summary>
-    private List<BitCascadingValue>? CollectValues()
+    private bool CollectValues()
     {
         _allValues.Clear();
 
@@ -153,8 +157,10 @@ public class BitCascadingValueProvider : ComponentBase, IDisposable
         Collect(Values);
 
         UpdateSubscriptions();
+        UpdateSlots();
 
         _renderedValues.Clear();
+        _renderedSequences.Clear();
         _renderedKeys.Clear();
 
         // Walked from the last value to the first one, so that of the values sharing a type and a name it is
@@ -167,13 +173,15 @@ public class BitCascadingValueProvider : ComponentBase, IDisposable
             if (_renderedKeys.Add((item.ValueType, item.Name)) is false) continue;
 
             _renderedValues.Add(item);
+            _renderedSequences.Add(i * SequenceStep + _slots[i].Parity * (SequenceStep / 2));
         }
 
-        if (_renderedValues.Count == 0) return null;
+        if (_renderedValues.Count == 0) return false;
 
         _renderedValues.Reverse();
+        _renderedSequences.Reverse();
 
-        return _renderedValues;
+        return true;
 
         void Collect(IEnumerable<BitCascadingValue>? source)
         {
@@ -189,9 +197,43 @@ public class BitCascadingValueProvider : ComponentBase, IDisposable
     }
 
     /// <summary>
+    /// Keeps one slot per value, remembering the shape it was last rendered with, and flips the parity of a
+    /// slot whose shape changed. The parity is what moves that value's CascadingValue to another range of
+    /// sequence numbers, which is how the framework is told to create a new component rather than to hand
+    /// the old one a shape it does not accept - a changed IsFixed is rejected outright, and a changed Name
+    /// would leave the consumers that were already matched under the old name bound to it.
+    /// </summary>
+    private void UpdateSlots()
+    {
+        if (_slots.Count > _allValues.Count)
+        {
+            _slots.RemoveRange(_allValues.Count, _slots.Count - _allValues.Count);
+        }
+
+        for (int i = 0; i < _allValues.Count; i++)
+        {
+            var item = _allValues[i];
+            var shape = new ValueShape(item.ValueType, item.Name, item.IsFixed);
+
+            if (i == _slots.Count)
+            {
+                _slots.Add(new ValueSlot(shape, 0));
+                continue;
+            }
+
+            var slot = _slots[i];
+
+            if (slot.Shape == shape) continue;
+
+            _slots[i] = new ValueSlot(shape, slot.Parity ^ 1);
+        }
+    }
+
+    /// <summary>
     /// Points the change subscriptions at whatever the parameters currently hold, so that mutating any of
     /// those values re-renders this provider. Disabled values are subscribed too, because enabling one of
-    /// them is itself a change this provider has to react to.
+    /// them is itself a change this provider has to react to, and a value listed more than once is
+    /// subscribed only once, so that it never triggers more than one re-render.
     /// </summary>
     private void UpdateSubscriptions()
     {
@@ -203,7 +245,11 @@ public class BitCascadingValueProvider : ComponentBase, IDisposable
 
         for (int i = 0; i < _subscribedValues.Count; i++)
         {
-            _subscribedValues[i].Changed += HandleValueChanged;
+            var item = _subscribedValues[i];
+
+            if (_distinctSubscribedValues.Add(item) is false) continue;
+
+            item.ChangedAsync += HandleValueChangedAsync;
         }
     }
 
@@ -221,30 +267,30 @@ public class BitCascadingValueProvider : ComponentBase, IDisposable
 
     private void Unsubscribe()
     {
-        for (int i = 0; i < _subscribedValues.Count; i++)
+        foreach (var item in _distinctSubscribedValues)
         {
-            _subscribedValues[i].Changed -= HandleValueChanged;
+            item.ChangedAsync -= HandleValueChangedAsync;
         }
 
+        _distinctSubscribedValues.Clear();
         _subscribedValues.Clear();
     }
 
-    private void HandleValueChanged(BitCascadingValue value)
+    private Task HandleValueChangedAsync(BitCascadingValue value)
     {
-        if (_disposed) return;
+        if (_disposed) return Task.CompletedTask;
 
         try
         {
-            _ = InvokeAsync(StateHasChanged);
+            return InvokeAsync(StateHasChanged);
         }
         catch (ObjectDisposedException)
         {
             // The renderer is already gone - a value changed from a background thread while this
             // provider was being torn down - so there is nothing left to refresh.
+            return Task.CompletedTask;
         }
     }
-
-    private static int GetSequence(int index, BitCascadingValue value) => index * SequenceStep + (value.IsFixed ? SequenceStep / 2 : 0);
 
     [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
     private static Type GetCascadingValueType(Type valueType)
@@ -260,6 +306,14 @@ public class BitCascadingValueProvider : ComponentBase, IDisposable
     }
 
 
+
+    /// <summary>
+    /// Everything about a value that the underlying CascadingValue component cannot be handed a new reading
+    /// of, so that a change of any of them is rendered as a new component rather than as a parameter update.
+    /// </summary>
+    private readonly record struct ValueShape(Type ValueType, string? Name, bool IsFixed);
+
+    private readonly record struct ValueSlot(ValueShape Shape, int Parity);
 
     /// <summary>
     /// Identifies a cascading value the way a consumer does: by the cascaded type and by the name, which the

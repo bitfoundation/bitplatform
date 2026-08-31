@@ -1,4 +1,6 @@
-﻿using System.Globalization;
+﻿using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -7,11 +9,19 @@ namespace Bit.BlazorUI;
 /// </summary>
 public class BitCascadingValue
 {
+    private readonly object _lock = new();
+
     private object? _value;
     private string? _name;
     private bool _isFixed;
     private bool _enabled;
+    private bool _autoNotify;
+    private object? _observedValue;
     private Func<object?>? _valueFactory;
+    private Func<object?>? _computedFactory;
+
+    private Action<BitCascadingValue>? _changed;
+    private Func<BitCascadingValue, Task>? _changedAsync;
 
 
 
@@ -46,14 +56,22 @@ public class BitCascadingValue
     public BitCascadingValue(object? value, Type valueType) : this(value, null, false, valueType) { }
     public BitCascadingValue(object? value, string name, Type valueType) : this(value, name, false, valueType) { }
 
-    private BitCascadingValue(Func<object?> valueFactory, Type valueType, string? name, bool isFixed, bool enabled)
+    private BitCascadingValue(Func<object?> valueFactory, bool isComputed, Type valueType, string? name, bool isFixed, bool enabled)
     {
         ArgumentNullException.ThrowIfNull(valueFactory);
         ArgumentNullException.ThrowIfNull(valueType);
 
         ValueType = ValidateValueType(valueType);
 
-        _valueFactory = valueFactory;
+        if (isComputed)
+        {
+            _computedFactory = valueFactory;
+        }
+        else
+        {
+            _valueFactory = valueFactory;
+        }
+
         _name = NormalizeName(name);
         _isFixed = isFixed;
         _enabled = enabled;
@@ -68,42 +86,117 @@ public class BitCascadingValue
     /// Assigning <see cref="Value"/>, <see cref="Name"/>, <see cref="IsFixed"/> or <see cref="Enabled"/>
     /// raises it automatically; <see cref="NotifyChanged"/> raises it on demand.
     /// </summary>
-    public event Action<BitCascadingValue>? Changed;
+    public event Action<BitCascadingValue>? Changed
+    {
+        add
+        {
+            lock (_lock)
+            {
+                _changed += value;
+            }
+
+            UpdateObservation();
+        }
+        remove
+        {
+            lock (_lock)
+            {
+                _changed -= value;
+            }
+
+            UpdateObservation();
+        }
+    }
+
+    /// <summary>
+    /// The awaitable counterpart of <see cref="Changed"/>, which is what makes
+    /// <see cref="NotifyChangedAsync"/> complete only once every listening
+    /// <see cref="BitCascadingValueProvider"/> has re-rendered and pushed the value down to the consumers.
+    /// </summary>
+    public event Func<BitCascadingValue, Task>? ChangedAsync
+    {
+        add
+        {
+            lock (_lock)
+            {
+                _changedAsync += value;
+            }
+
+            UpdateObservation();
+        }
+        remove
+        {
+            lock (_lock)
+            {
+                _changedAsync -= value;
+            }
+
+            UpdateObservation();
+        }
+    }
 
 
 
     /// <summary>
     /// The value to be provided. Assigning a value that is not assignable to the <see cref="ValueType"/>
     /// throws an <see cref="ArgumentException"/>.
-    /// When the value comes from a factory, the factory runs the first time this property is read.
+    /// When the value comes from a lazy factory, the factory runs the first time this property is read;
+    /// when it comes from a computed factory, the factory runs on every read.
     /// </summary>
     public object? Value
     {
         get
         {
-            // Exchanged rather than read-then-cleared, so that the factory still runs exactly once
-            // when the value is first read from more than one thread.
-            var factory = Interlocked.Exchange(ref _valueFactory, null);
+            object? created;
 
-            if (factory is not null)
+            // Created under the lock so that the lazy factory still runs exactly once and its value is
+            // published to every thread that reads it, which is what Lazy<T> does by default as well.
+            lock (_lock)
             {
-                var created = factory();
+                var computedFactory = _computedFactory;
+
+                if (computedFactory is null)
+                {
+                    var valueFactory = _valueFactory;
+
+                    if (valueFactory is null) return _value;
+
+                    // Dropped before it runs, so a factory that ends up reading this very value reads what
+                    // is stored rather than running itself again.
+                    _valueFactory = null;
+
+                    created = valueFactory();
+                }
+                else
+                {
+                    created = computedFactory();
+                }
 
                 ValidateValue(created, ValueType);
 
                 _value = created;
             }
 
-            return _value;
+            UpdateObservation();
+
+            return created;
         }
         set
         {
             ValidateValue(value, ValueType);
 
-            var changed = _valueFactory is not null || Equals(_value, value) is false;
+            bool changed;
 
-            _valueFactory = null;
-            _value = value;
+            lock (_lock)
+            {
+                changed = _valueFactory is not null || _computedFactory is not null || Equals(_value, value) is false;
+
+                _valueFactory = null;
+                _computedFactory = null;
+                _value = value;
+            }
+
+            UpdateObservation();
 
             if (changed)
             {
@@ -117,10 +210,10 @@ public class BitCascadingValue
     /// The consumers match it case-insensitively, exactly like the Name of a CascadingValue component does.
     /// </summary>
     /// <remarks>
-    /// The framework resolves which supplier feeds a cascading parameter once, when the consuming component is
-    /// created, so renaming a value that is already being consumed does not re-target the consumers that were
-    /// matched under the old name. Set the name before the value is first provided, or replace the whole
-    /// <see cref="BitCascadingValue"/> to change it afterwards.
+    /// The framework resolves which supplier feeds a cascading parameter once, when the consuming component
+    /// is created, so the <see cref="BitCascadingValueProvider"/> re-creates the underlying CascadingValue
+    /// component - and with it the content below it - whenever a name changes, which is what lets the
+    /// consumers be matched again under the new name.
     /// </remarks>
     public string? Name
     {
@@ -177,25 +270,101 @@ public class BitCascadingValue
     }
 
     /// <summary>
+    /// Watches the cascaded value itself and raises <see cref="Changed"/> whenever it reports that it was
+    /// mutated in place, which is the automatic counterpart of calling <see cref="NotifyChanged"/> by hand.
+    /// A value implementing <see cref="INotifyCollectionChanged"/> is watched for its collection changes,
+    /// one implementing only <see cref="INotifyPropertyChanged"/> for its property changes, and any other
+    /// value is left alone. The subscription is only held while at least one listener - a hosting
+    /// <see cref="BitCascadingValueProvider"/>, typically - is attached, so a value that outlives the
+    /// provider never keeps this cascading value alive.
+    /// </summary>
+    public bool AutoNotify
+    {
+        get => _autoNotify;
+        set
+        {
+            if (_autoNotify == value) return;
+
+            _autoNotify = value;
+
+            UpdateObservation();
+        }
+    }
+
+    /// <summary>
     /// The actual type of the value to be used as the TValue of the CascadingValue component.
     /// </summary>
     public Type ValueType { get; }
 
     /// <summary>
-    /// Whether <see cref="Value"/> is already available. It is only false for a value created from a
+    /// Whether <see cref="Value"/> is already available. It is only false for a value created from a lazy
     /// factory that has not run yet, which is the case until the value is provided for the first time,
-    /// so a disabled or a shadowed value never gets there.
+    /// so a disabled or a shadowed value never gets there. A computed value is produced on every read, so
+    /// it always reports true.
     /// </summary>
     public bool IsValueCreated => _valueFactory is null;
+
+    /// <summary>
+    /// Whether the value is produced by a factory that runs on every read rather than being stored once,
+    /// which is what the Computed factory methods create.
+    /// </summary>
+    public bool IsComputed => _computedFactory is not null;
 
 
 
     /// <summary>
-    /// Raises the <see cref="Changed"/> event so that the hosting <see cref="BitCascadingValueProvider"/>
-    /// re-renders and pushes this value down to the consumers again. Assigning any of the properties does
-    /// it already, so this is the escape hatch for a cascaded object that is mutated in place.
+    /// Raises the <see cref="Changed"/> and the <see cref="ChangedAsync"/> events so that the hosting
+    /// <see cref="BitCascadingValueProvider"/> re-renders and pushes this value down to the consumers again.
+    /// Assigning any of the properties does it already, so this is the escape hatch for a cascaded object
+    /// that is mutated in place. Use <see cref="NotifyChangedAsync"/> to await the resulting re-render.
     /// </summary>
-    public void NotifyChanged() => Changed?.Invoke(this);
+    public void NotifyChanged()
+    {
+        var task = NotifyChangedAsync();
+
+        if (task.IsCompletedSuccessfully) return;
+
+        // Observed so that a re-render that fails on a background thread does not surface as an unobserved
+        // task exception; the renderer already reports it to the component that threw.
+        _ = task.ContinueWith(static t => _ = t.Exception,
+                              CancellationToken.None,
+                              TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+                              TaskScheduler.Default);
+    }
+
+    /// <summary>
+    /// Raises the <see cref="Changed"/> and the <see cref="ChangedAsync"/> events and returns a task that
+    /// completes once every listening <see cref="BitCascadingValueProvider"/> has re-rendered, which is the
+    /// counterpart of the NotifyChangedAsync method of the framework's CascadingValueSource.
+    /// </summary>
+    public Task NotifyChangedAsync()
+    {
+        Action<BitCascadingValue>? changed;
+        Func<BitCascadingValue, Task>? changedAsync;
+
+        lock (_lock)
+        {
+            changed = _changed;
+            changedAsync = _changedAsync;
+        }
+
+        changed?.Invoke(this);
+
+        if (changedAsync is null) return Task.CompletedTask;
+
+        var handlers = changedAsync.GetInvocationList();
+
+        if (handlers.Length == 1) return ((Func<BitCascadingValue, Task>)handlers[0])(this) ?? Task.CompletedTask;
+
+        var tasks = new Task[handlers.Length];
+
+        for (int i = 0; i < handlers.Length; i++)
+        {
+            tasks[i] = ((Func<BitCascadingValue, Task>)handlers[i])(this) ?? Task.CompletedTask;
+        }
+
+        return Task.WhenAll(tasks);
+    }
 
 
 
@@ -203,35 +372,22 @@ public class BitCascadingValue
     /// Creates a cascading value whose ValueType is the static type of <typeparamref name="T"/>, which is
     /// the safe way of cascading null values, nullable value types, interfaces and base types.
     /// </summary>
-    public static BitCascadingValue From<T>(T value, string? name, bool isFixed) => new(value, name, isFixed, typeof(T));
+    public static BitCascadingValue From<T>(T value, string? name = null, bool isFixed = false, bool enabled = true)
+        => new(value, name, isFixed, typeof(T), enabled);
 
     /// <summary>
     /// Creates a cascading value whose ValueType is the static type of <typeparamref name="T"/>.
     /// </summary>
-    public static BitCascadingValue From<T>(T value) => new(value, null, false, typeof(T));
-
-    /// <summary>
-    /// Creates a named cascading value whose ValueType is the static type of <typeparamref name="T"/>.
-    /// </summary>
-    public static BitCascadingValue From<T>(T value, string? name) => new(value, name, false, typeof(T));
-
-    /// <summary>
-    /// Creates a cascading value whose ValueType is the static type of <typeparamref name="T"/>.
-    /// </summary>
-    public static BitCascadingValue From<T>(T value, bool isFixed) => new(value, null, isFixed, typeof(T));
-
-    /// <summary>
-    /// Creates a cascading value whose ValueType is the static type of <typeparamref name="T"/>, with an
-    /// explicit enabled flag for the values that are provided conditionally.
-    /// </summary>
-    public static BitCascadingValue From<T>(T value, string? name, bool isFixed, bool enabled) => new(value, name, isFixed, typeof(T), enabled);
+    public static BitCascadingValue From<T>(T value, bool isFixed, bool enabled = true)
+        => new(value, null, isFixed, typeof(T), enabled);
 
     /// <summary>
     /// Creates a fixed (IsFixed) cascading value whose ValueType is the static type of <typeparamref name="T"/>.
     /// Fixed values never subscribe their consumers for change notifications, so they are the cheapest way
     /// of cascading a value that never changes.
     /// </summary>
-    public static BitCascadingValue Fixed<T>(T value, string? name = null, bool enabled = true) => new(value, name, true, typeof(T), enabled);
+    public static BitCascadingValue Fixed<T>(T value, string? name = null, bool enabled = true)
+        => new(value, name, true, typeof(T), enabled);
 
     /// <summary>
     /// Creates a cascading value whose ValueType is the static type of <typeparamref name="T"/> and whose
@@ -243,7 +399,7 @@ public class BitCascadingValue
     {
         ArgumentNullException.ThrowIfNull(valueFactory);
 
-        return new(() => valueFactory(), typeof(T), name, isFixed, enabled);
+        return new(() => valueFactory(), false, typeof(T), name, isFixed, enabled);
     }
 
     /// <summary>
@@ -251,19 +407,96 @@ public class BitCascadingValue
     /// the creation of a value whose cascaded type is only known at runtime. The factory runs at most once.
     /// </summary>
     public static BitCascadingValue Lazy(Func<object?> valueFactory, Type valueType, string? name = null, bool isFixed = false, bool enabled = true)
-        => new(valueFactory, valueType, name, isFixed, enabled);
+        => new(valueFactory, false, valueType, name, isFixed, enabled);
+
+    /// <summary>
+    /// Creates a cascading value that is re-read from <paramref name="valueFactory"/> every time it is
+    /// provided, so one long lived BitCascadingValue keeps tracking the state it is derived from without
+    /// the collection of values having to be rebuilt on every render. The provider reads it once per
+    /// render, and <see cref="NotifyChanged"/> pushes a fresh reading down on demand.
+    /// </summary>
+    public static BitCascadingValue Computed<T>(Func<T> valueFactory, string? name = null, bool isFixed = false)
+    {
+        ArgumentNullException.ThrowIfNull(valueFactory);
+
+        return new(() => valueFactory(), true, typeof(T), name, isFixed, true);
+    }
+
+    /// <summary>
+    /// Creates a computed cascading value with an explicit ValueType, for when the cascaded type of a value
+    /// that is re-read on every render is only known at runtime.
+    /// </summary>
+    public static BitCascadingValue Computed(Func<object?> valueFactory, Type valueType, string? name = null, bool isFixed = false)
+        => new(valueFactory, true, valueType, name, isFixed, true);
+
+    /// <summary>
+    /// Creates a cascading value with <see cref="AutoNotify"/> turned on, so a value that reports its own
+    /// mutations through <see cref="INotifyCollectionChanged"/> or <see cref="INotifyPropertyChanged"/>
+    /// refreshes the consumers without a single call to <see cref="NotifyChanged"/>.
+    /// </summary>
+    public static BitCascadingValue Observed<T>(T value, string? name = null, bool enabled = true)
+        => new(value, name, false, typeof(T), enabled) { AutoNotify = true };
 
 
 
     public override string ToString()
     {
-        var value = _valueFactory is null ? Value ?? "null" : "(not created yet)";
-        var flags = $"{(IsFixed ? " (fixed)" : string.Empty)}{(Enabled ? string.Empty : " (disabled)")}";
+        var value = IsValueCreated ? Value ?? "null" : "(not created yet)";
+        var flags = $"{(IsComputed ? " (computed)" : string.Empty)}{(IsFixed ? " (fixed)" : string.Empty)}{(Enabled ? string.Empty : " (disabled)")}";
 
         return $"{(Name is null ? string.Empty : $"{Name}: ")}{ValueType.Name} = {value}{flags}";
     }
 
 
+
+    /// <summary>
+    /// Points the <see cref="AutoNotify"/> subscription at the value that is currently cascaded, and drops
+    /// it entirely whenever the feature is off, nothing is listening, or the value is not created yet, so
+    /// the cascaded object never holds on to a cascading value that no provider is using any more.
+    /// </summary>
+    private void UpdateObservation()
+    {
+        object? detach;
+        object? attach;
+
+        lock (_lock)
+        {
+            var hasListeners = _changed is not null || _changedAsync is not null;
+            var target = _autoNotify && hasListeners && _valueFactory is null && _computedFactory is null ? _value : null;
+
+            if (ReferenceEquals(_observedValue, target)) return;
+
+            detach = _observedValue;
+            attach = target;
+
+            _observedValue = target;
+        }
+
+        // A collection is watched through INotifyCollectionChanged alone, even when it also reports the
+        // property changes that come with it - an ObservableCollection<T> raises Count and Item[] beside
+        // every collection change - so that one mutation asks for one refresh rather than three.
+        if (detach is INotifyCollectionChanged detachedCollection)
+        {
+            detachedCollection.CollectionChanged -= HandleObservedCollectionChanged;
+        }
+        else if (detach is INotifyPropertyChanged detachedProperties)
+        {
+            detachedProperties.PropertyChanged -= HandleObservedPropertyChanged;
+        }
+
+        if (attach is INotifyCollectionChanged attachedCollection)
+        {
+            attachedCollection.CollectionChanged += HandleObservedCollectionChanged;
+        }
+        else if (attach is INotifyPropertyChanged attachedProperties)
+        {
+            attachedProperties.PropertyChanged += HandleObservedPropertyChanged;
+        }
+    }
+
+    private void HandleObservedPropertyChanged(object? sender, PropertyChangedEventArgs args) => NotifyChanged();
+
+    private void HandleObservedCollectionChanged(object? sender, NotifyCollectionChangedEventArgs args) => NotifyChanged();
 
     private static string? NormalizeName(string? name) => string.IsNullOrWhiteSpace(name) ? null : name;
 

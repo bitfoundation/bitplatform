@@ -47,11 +47,11 @@ public class BitCascadingValueList : List<BitCascadingValue>
     /// <summary>
     /// Adds a typed BitCascadingValue to the list only when the given condition is true.
     /// </summary>
-    public void AddIf<T>(bool condition, T value, string? name = null, bool isFixed = false)
+    public void AddIf<T>(bool condition, T value, string? name = null, bool isFixed = false, bool enabled = true)
     {
         if (condition is false) return;
 
-        base.Add(new BitCascadingValue(value, name, isFixed, typeof(T)));
+        base.Add(new BitCascadingValue(value, name, isFixed, typeof(T), enabled));
     }
 
     /// <summary>
@@ -85,4 +85,119 @@ public class BitCascadingValueList : List<BitCascadingValue>
     /// </summary>
     public void AddLazy<T>(Func<T> valueFactory, string? name = null, bool isFixed = false, bool enabled = true)
         => base.Add(BitCascadingValue.Lazy(valueFactory, name, isFixed, enabled));
+
+    /// <summary>
+    /// Adds a lazily produced BitCascadingValue with an explicit ValueType to the list, for when the
+    /// cascaded type of a deferred value is only known at runtime. The factory runs at most once.
+    /// </summary>
+    public void AddLazy(Func<object?> valueFactory, Type valueType, string? name = null, bool isFixed = false, bool enabled = true)
+        => base.Add(BitCascadingValue.Lazy(valueFactory, valueType, name, isFixed, enabled));
+
+    /// <summary>
+    /// Adds a typed BitCascadingValue that is re-read from <paramref name="valueFactory"/> on every render,
+    /// so one list built once keeps tracking the state its values are derived from.
+    /// </summary>
+    public void AddComputed<T>(Func<T> valueFactory, string? name = null, bool isFixed = false)
+        => base.Add(BitCascadingValue.Computed(valueFactory, name, isFixed));
+
+    /// <summary>
+    /// Adds a computed BitCascadingValue with an explicit ValueType to the list, for when the cascaded type
+    /// of a value that is re-read on every render is only known at runtime.
+    /// </summary>
+    public void AddComputed(Func<object?> valueFactory, Type valueType, string? name = null, bool isFixed = false)
+        => base.Add(BitCascadingValue.Computed(valueFactory, valueType, name, isFixed));
+
+    /// <summary>
+    /// Adds a typed BitCascadingValue that watches the value itself, so an object reporting its own changes
+    /// through INotifyPropertyChanged or INotifyCollectionChanged refreshes the consumers on its own.
+    /// </summary>
+    public void AddObserved<T>(T value, string? name = null, bool enabled = true)
+        => base.Add(BitCascadingValue.Observed(value, name, enabled));
+
+
+
+    /// <summary>
+    /// Finds the cascading value that the given type and name resolve to, which is the LAST entry matching
+    /// both, since that is the one shadowing all the others. The name is matched case-insensitively,
+    /// exactly like the consumers match it. Returns null when there is no such entry.
+    /// </summary>
+    public BitCascadingValue? Find(Type valueType, string? name = null)
+    {
+        ArgumentNullException.ThrowIfNull(valueType);
+
+        for (int i = Count - 1; i >= 0; i--)
+        {
+            var item = this[i];
+
+            if (item is null) continue;
+            if (item.ValueType != valueType) continue;
+            if (string.Equals(item.Name, NormalizeName(name), StringComparison.OrdinalIgnoreCase) is false) continue;
+
+            return item;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Finds the cascading value that the static type of <typeparamref name="T"/> and the given name
+    /// resolve to, which is the last entry matching both. Returns null when there is no such entry.
+    /// </summary>
+    public BitCascadingValue? Find<T>(string? name = null) => Find(typeof(T), name);
+
+    /// <summary>
+    /// Whether the list holds a cascading value of the static type of <typeparamref name="T"/> carrying the
+    /// given name, regardless of whether that entry is enabled.
+    /// </summary>
+    public bool Contains<T>(string? name = null) => Find(typeof(T), name) is not null;
+
+    /// <summary>
+    /// Removes every cascading value of the given type and name from the list, and reports whether anything
+    /// was removed. The name is matched case-insensitively, exactly like the consumers match it.
+    /// </summary>
+    public bool Remove(Type valueType, string? name = null)
+    {
+        ArgumentNullException.ThrowIfNull(valueType);
+
+        var normalized = NormalizeName(name);
+
+        return RemoveAll(item => item is not null
+                              && item.ValueType == valueType
+                              && string.Equals(item.Name, normalized, StringComparison.OrdinalIgnoreCase)) > 0;
+    }
+
+    /// <summary>
+    /// Removes every cascading value of the static type of <typeparamref name="T"/> carrying the given name
+    /// from the list, and reports whether anything was removed.
+    /// </summary>
+    public bool Remove<T>(string? name = null) => Remove(typeof(T), name);
+
+    /// <summary>
+    /// Replaces every cascading value of the static type of <typeparamref name="T"/> carrying the given name
+    /// with a new one holding <paramref name="value"/>, or appends it when the list has none, so a list that
+    /// is kept around ends up with exactly one entry per type and name. The replacement takes the place of
+    /// the first entry it replaces, which is what keeps the precedence of the list unchanged.
+    /// </summary>
+    public void Set<T>(T value, string? name = null, bool isFixed = false, bool enabled = true)
+    {
+        var created = new BitCascadingValue(value, name, isFixed, typeof(T), enabled);
+        var normalized = NormalizeName(name);
+        var index = FindIndex(item => item is not null
+                                   && item.ValueType == typeof(T)
+                                   && string.Equals(item.Name, normalized, StringComparison.OrdinalIgnoreCase));
+
+        if (index < 0)
+        {
+            base.Add(created);
+            return;
+        }
+
+        Remove(typeof(T), name);
+
+        Insert(index, created);
+    }
+
+
+
+    private static string? NormalizeName(string? name) => string.IsNullOrWhiteSpace(name) ? null : name;
 }
