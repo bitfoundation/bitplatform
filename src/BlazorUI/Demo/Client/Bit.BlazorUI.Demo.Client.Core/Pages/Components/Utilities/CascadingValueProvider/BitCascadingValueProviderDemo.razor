@@ -2,20 +2,25 @@
 
 <PageOutlet Url="components/cascadingvalueprovider"
             Title="CascadingValueProvider"
-            Description="BitCascadingValueProvider makes it easy to push multiple cascading values to child components without nesting several CascadingValue components manually." />
+            Description="BitCascadingValueProvider flattens a stack of nested CascadingValue components into a single list, cascading any number of typed or named values to every descendant component." />
 
 <DemoPage Name="CascadingValueProvider"
-          Description="BitCascadingValueProvider makes it easy to push multiple cascading values to child components without nesting several CascadingValue components manually."
+          Description="BitCascadingValueProvider flattens a stack of nested CascadingValue components into a single list, so a whole set of values is cascaded to the descendant components in one place. Each value carries its own cascaded type, an optional name, an IsFixed flag and an Enabled flag, values can be declared inline with the Values parameter or built up with the ValueList parameter, and later values shadow the earlier ones of the same type or name."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           GitHubUrl="../Utils/Params/BitCascadingValueProvider.cs"
           GitHubDemoUrl="Utilities/CascadingValueProvider/BitCascadingValueProviderDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <div>Checkout the basic usage of the BitCascadingValueProvider in action here.</div>
+        <div>
+            The <b>Values</b> parameter accepts any collection of <b>BitCascadingValue</b> items, and every item becomes a
+            <b>CascadingValue</b> component wrapped around the child content. Thanks to the implicit conversions of
+            <b>BitCascadingValue</b>, a value can be written as the bare value itself (cascaded by its type) or as a
+            <b>(value, name)</b> tuple (cascaded by that name), so no nesting and no explicit type arguments are needed.
+        </div>
 
         <br /><br />
 
-        <BitCascadingValueProvider 
+        <BitCascadingValueProvider
             Values="@([
                         ("light", "Theme"),
                         (true, "IsAuthenticated"),
@@ -28,7 +33,11 @@
     </DemoExample>
 
     <DemoExample Title="Values" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-        <div>Play with provided cascading values and see the effect:</div>
+        <div>
+            Cascading values are live: rebuilding the <b>Values</b> collection from the current state on each render pushes the
+            new values down to every consumer automatically, exactly like a hand-written <b>CascadingValue</b> would.
+            Play with the controls below and watch the consumer update:
+        </div>
 
         <br /><br />
 
@@ -48,11 +57,17 @@
     </DemoExample>
 
     <DemoExample Title="ValueList" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-        <div>Use <b>ValueList</b> parameter when you're not sure of nullability of values.</div>
+        <div>
+            The <b>ValueList</b> parameter takes a <b>BitCascadingValueList</b>, whose generic <b>Add&lt;T&gt;</b> method captures
+            the <b>static</b> type of each value. That makes it the right choice for null values and nullable value types, which
+            carry no usable runtime type of their own, and it also provides <b>AddFixed&lt;T&gt;</b> and <b>AddIf&lt;T&gt;</b> for
+            fixed and conditional entries. Setting both parameters is allowed: the <b>ValueList</b> items are provided first and
+            the <b>Values</b> items after them, so <b>Values</b> wins on a conflict.
+        </div>
 
         <br /><br />
 
-        <BitCascadingValueProvider 
+        <BitCascadingValueProvider
             ValueList="@(new()
                         {
                             { nullableTheme, "Theme" },
@@ -62,6 +77,89 @@
                             { nullableTypedUser }
                         })">
             <CascadingValueDemoConsumer Title="ValueList cascading values:" />
+        </BitCascadingValueProvider>
+    </DemoExample>
+
+    <DemoExample Title="Nesting" RazorCode="@example4RazorCode" Id="example4">
+        <div>
+            Providers nest and shadow like any other cascading value: an inner provider overrides only the types and names it
+            redefines, and everything else keeps flowing down from the outer one. The same rule applies inside a single provider,
+            where a later value shadows an earlier one of the same type or name, so a set of defaults can be spread first and
+            then selectively overridden.
+        </div>
+
+        <br /><br />
+
+        <BitCascadingValueProvider
+            Values="@([
+                        ("Light", "Theme"),
+                        ((7) as int?, "NotificationCount"),
+                        new(new CascadingDemoUser("Ava Smith", "Product manager"))
+                    ])">
+            <CascadingValueDemoConsumer Title="Outer provider:" />
+
+            <br />
+
+            <BitCascadingValueProvider Values="@([("Dark", "Theme")])">
+                <CascadingValueDemoConsumer Title="Inner provider (only Theme is overridden):" />
+            </BitCascadingValueProvider>
+        </BitCascadingValueProvider>
+    </DemoExample>
+
+    <DemoExample Title="ValueType" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <div>
+            Every value is cascaded as its <b>ValueType</b>, which is what decides the <b>TValue</b> of the generated
+            <b>CascadingValue</b> and therefore which cascading parameters it can reach. It defaults to the runtime type of the
+            value, so a null value has none of its own and the constructor throws unless a type is passed explicitly. Use
+            <b>new BitCascadingValue(value, typeof(T))</b>, or the <b>BitCascadingValue.From&lt;T&gt;</b> factory that reads the
+            static type of its argument, to cascade a value as a nullable type, a base type or an interface. Cascading a null
+            under the same <b>ValueType</b> is also how an outer value is deliberately cleared for a subtree, which is what the
+            inner provider below does to the <b>[CascadingParameter] int? Count</b> of the consumer:
+        </div>
+
+        <br /><br />
+
+        <BitCascadingValueProvider Values="@([new(5, typeof(int?))])">
+            <CascadingValueDemoTypeConsumer Title="Outer provider cascades 5 as int?: " />
+
+            <BitCascadingValueProvider Values="nullCountValues">
+                <CascadingValueDemoTypeConsumer Title="Inner provider cascades null as the same int?: " />
+            </BitCascadingValueProvider>
+        </BitCascadingValueProvider>
+    </DemoExample>
+
+    <DemoExample Title="IsFixed" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <div>
+            <b>IsFixed</b> tells Blazor that a value never changes, so the consumers of it are not subscribed for change
+            notifications. That removes the per-consumer subscription bookkeeping and is the recommended setting for services,
+            state containers and other values that are created once and only mutated in place. Use the
+            <b>BitCascadingValue.Fixed&lt;T&gt;</b> factory, or the <b>AddFixed&lt;T&gt;</b> method of the list, as its shorthand.
+        </div>
+
+        <br /><br />
+
+        <BitCascadingValueProvider Values="fixedValues">
+            <CascadingValueDemoConsumer Title="Fixed cascading values:" />
+        </BitCascadingValueProvider>
+    </DemoExample>
+
+    <DemoExample Title="Enabled" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <div>
+            Setting <b>Enabled</b> to false on a value drops it from the rendered chain as if it had never been added, which is
+            how a cascading value is provided conditionally without rebuilding the collection or wrapping the markup in an
+            <b>@@if</b> block. A disabled value also stops shadowing, so any outer provider or root level cascading value of the
+            same type or name shows through again. Toggle the switches and watch the consumer fall back to null:
+        </div>
+
+        <br /><br />
+
+        <BitToggle @bind-Value="provideTheme" Text="Provide the named Theme value" />
+        <BitToggle @bind-Value="provideUser" Text="Provide the typed user value" />
+
+        <br />
+
+        <BitCascadingValueProvider Values="conditionalValues">
+            <CascadingValueDemoConsumer Title="Conditional cascading values:" />
         </BitCascadingValueProvider>
     </DemoExample>
 </DemoPage>
