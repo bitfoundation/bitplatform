@@ -334,6 +334,284 @@ await box.Remove(); // detaches the element from the DOM
     <DemoConsole @ref="selectorOutput" Title="selector output" />
 </DemoSection>
 
+<DemoSection Title="Activation, focus and visibility"
+             Api="Click / Focus / CheckVisibility / Closest"
+             Description="Click sends a synthetic click - the element's own handlers run and default behavior happens, though it does not count as a user gesture. Focus is the overload Blazor's FocusAsync does not give you: preventScroll, for moving focus without yanking the page. CheckVisibility answers what an IntersectionObserver cannot - whether the element is transparent, collapsed, or inside a skipped content-visibility subtree. Closest reports whether the element sits inside anything matching a selector."
+             Code=@("""
+await button.Click();
+
+await input.Focus(new FocusOptions { PreventScroll = true });
+
+var visible = await box.CheckVisibility(new CheckVisibilityOptions
+{
+    OpacityProperty = true,
+    VisibilityProperty = true,
+    ContentVisibilityAuto = true,
+});
+
+var insideForm = await box.Closest("form");
+""")>
+    <div class="demo-box dashed">
+        <button @ref="clickTargetRef" @onclick="() => syntheticClicks++">
+            Synthetic click target (clicked @syntheticClicks time@(syntheticClicks == 1 ? "" : "s"))
+        </button>
+    </div>
+    <div class="field">
+        <span class="field-label">Focus target</span>
+        <input @ref="focusInputRef" placeholder="Focus(preventScroll) lands here..." style="max-width:20rem;" />
+    </div>
+    <div class="field">
+        <span class="field-label">Closest selector</span>
+        <input @bind-value="closestSelector" style="max-width:20rem;" />
+    </div>
+    <div class="controls">
+        <button @onclick="ClickTarget">Click</button>
+        <button @onclick="FocusInput">Focus (preventScroll)</button>
+        <button class="secondary" @onclick="CheckVisibility">CheckVisibility</button>
+        <button class="secondary" @onclick="Closest">Closest</button>
+    </div>
+    <DemoConsole @ref="activationOutput" Title="activation output" />
+</DemoSection>
+
+<DemoSection Title="Classes, data attributes and inline style"
+             Api="AddClass / RemoveClass / ToggleClass / ReplaceClass / ContainsClass / GetClassList / GetData / SetData / RemoveData / GetDataNames / GetStyleText / SetStyleText / GetStyleProperty / SetStyleProperty / RemoveStyleProperty"
+             Description="classList, dataset and style as individual operations rather than as one string you have to parse and rebuild. SetStyleProperty takes CSS property names, custom properties included, so a theme variable can be written from C#. Blazor owns the DOM it rendered and a re-render can undo all of this - use it on elements Blazor renders once, or on ones outside the component."
+             Code=@("""
+await box.AddClass("card", "highlighted");
+var toggled = await box.ToggleClass("selected");
+var swapped = await box.ReplaceClass("highlighted", "muted");
+var classes = await box.GetClassList();
+
+await box.SetData("userId", "42");        // writes data-user-id
+var id = await box.GetData("userId");
+var keys = await box.GetDataNames();
+
+await box.SetStyleProperty("--accent", "#7c3aed");
+await box.SetStyleProperty("outline", "2px solid var(--accent)", important: true);
+var css = await box.GetStyleText();
+""")>
+    <div @ref="styleBoxRef" class="demo-box">
+        Class, data and style target.
+    </div>
+    <div class="field-row">
+        <div class="field">
+            <span class="field-label">Class token</span>
+            <input @bind-value="classToken" />
+        </div>
+        <div class="field">
+            <span class="field-label">Dataset key</span>
+            <input @bind-value="dataKey" />
+        </div>
+        <div class="field">
+            <span class="field-label">Dataset value</span>
+            <input @bind-value="dataValue" />
+        </div>
+    </div>
+    <div class="controls">
+        <button @onclick="AddClass">AddClass</button>
+        <button @onclick="ToggleClass">ToggleClass</button>
+        <button class="secondary" @onclick="ContainsClass">ContainsClass</button>
+        <button class="secondary" @onclick="GetClassList">GetClassList</button>
+        <button class="danger" @onclick="RemoveClass">RemoveClass</button>
+    </div>
+    <div class="controls">
+        <button @onclick="SetData">SetData</button>
+        <button class="secondary" @onclick="GetData">GetData</button>
+        <button class="secondary" @onclick="GetDataNames">GetDataNames</button>
+        <button class="danger" @onclick="RemoveData">RemoveData</button>
+    </div>
+    <div class="controls">
+        <button @onclick="SetStyleProperty">SetStyleProperty</button>
+        <button class="secondary" @onclick="GetStyleText">GetStyleText</button>
+        <button class="danger" @onclick="RemoveStyleProperty">RemoveStyleProperty</button>
+    </div>
+    <DemoConsole @ref="styleOutput" Title="class, data and style output" />
+</DemoSection>
+
+<DemoSection Title="Content insertion and serialization"
+             Api="Append / Prepend / Before / After / ReplaceChildren / ReplaceWith / InsertAdjacentText / InsertAdjacentHtml / GetHtml / SetHtml / SetHtmlUnsafe"
+             Description="The DOM insertion methods take elements as well as strings, but only strings can cross the interop boundary - an ElementReference is minted by Blazor's renderer and cannot be handed back from JavaScript. So each string becomes a text node, and InsertAdjacentHtml is how markup gets in. SetHtml runs the browser's sanitizer over what you give it, which is the one to reach for when the markup came from a user; it throws rather than silently falling back where the browser has no sanitizer."
+             Code=@("""
+await box.Append("appended text");
+await box.Prepend("prepended text");
+await box.ReplaceChildren("everything else is gone");
+
+await box.InsertAdjacentText(InsertPosition.BeforeEnd, "<not markup>");
+await box.InsertAdjacentHtml(InsertPosition.AfterBegin, "<em>trusted markup</em>");
+
+await box.SetHtml(untrustedMarkup);   // sanitized; throws where unsupported
+var html = await box.GetHtml(new GetHtmlOptions { SerializableShadowRoots = true });
+""")>
+    <div @ref="contentBoxRef" class="demo-box dashed">
+        <span>Original content.</span>
+    </div>
+    <div class="field">
+        <span class="field-label">Text or markup to insert</span>
+        <input @bind-value="insertText" style="max-width:24rem;" />
+    </div>
+    <div class="controls">
+        <button @onclick="AppendText">Append</button>
+        <button @onclick="PrependText">Prepend</button>
+        <button class="secondary" @onclick="InsertAdjacentText">InsertAdjacentText</button>
+        <button class="secondary" @onclick="InsertAdjacentHtml">InsertAdjacentHtml</button>
+        <button class="secondary" @onclick="GetHtml">GetHtml</button>
+        <button class="secondary" @onclick="SetHtmlSanitized">SetHtml (sanitized)</button>
+        <button class="danger" @onclick="ReplaceChildren">ReplaceChildren</button>
+    </div>
+    <DemoConsole @ref="contentInsertOutput" Title="content insertion output" />
+</DemoSection>
+
+<DemoSection Title="ARIA and roles"
+             Api="GetAriaLabel / SetAriaLabel / SetAriaExpanded / SetAriaHidden / GetRole / SetRole / AriaNotify"
+             Description="Every aria-* attribute and role, reflected as a property. Prefer writing these as attributes in your markup - it costs no interop and a re-render cannot undo it; reach for these when the value depends on something outside the render tree, or when reading what a component library put on an element. Every value is a string, numeric and boolean ones included, because that is how ARIA itself is defined. AriaNotify announces a message without changing the page; it is Chromium-only and a no-op elsewhere, so keep the visible UI telling the same story."
+             Code=@("""
+await box.SetRole("button");
+await box.SetAriaLabel("Close the dialog");
+await box.SetAriaExpanded("true");
+await box.SetAriaHidden("false");
+
+var label = await box.GetAriaLabel();
+
+await box.AriaNotify("Upload finished",
+    new AriaNotifyOptions { Priority = AriaNotifyPriority.High });
+""")>
+    <div @ref="ariaBoxRef" class="demo-box">
+        ARIA target.
+    </div>
+    <div class="field-row">
+        <div class="field">
+            <span class="field-label">aria-label</span>
+            <input @bind-value="ariaLabel" />
+        </div>
+        <div class="field">
+            <span class="field-label">role</span>
+            <input @bind-value="ariaRole" />
+        </div>
+    </div>
+    <div class="controls">
+        <button @onclick="SetAria">SetRole + SetAriaLabel</button>
+        <button @onclick="ToggleAriaExpanded">Toggle aria-expanded</button>
+        <button class="secondary" @onclick="ReadAria">Read them back</button>
+        <button class="secondary" @onclick="AriaNotify">AriaNotify</button>
+    </div>
+    <DemoConsole @ref="ariaOutput" Title="ARIA output" />
+</DemoSection>
+
+<DemoSection Title="Popover"
+             Api="GetPopover / SetPopover / ShowPopover / HidePopover / TogglePopover"
+             Description="Turn any element into a popover and drive it from C#. An Auto popover is light-dismissed - Escape or a click outside closes it, and opening one closes the others; a Manual one closes only when the code says so. Show and Hide are no-ops where the browser has no popover support, so a page can call them without feature-detecting first."
+             Code=@("""
+await panel.SetPopover(ElementPopover.Auto);
+
+await panel.ShowPopover();
+var showing = await panel.TogglePopover();
+await panel.HidePopover();
+""")>
+    <div @ref="popoverRef" class="demo-box" style="position:fixed;inset:auto;margin:auto;">
+        I am a popover. Press Escape or click outside to dismiss me.
+    </div>
+    <div class="controls">
+        <button @onclick="MakePopover">SetPopover(Auto)</button>
+        <button @onclick="ShowPopover">ShowPopover</button>
+        <button class="secondary" @onclick="TogglePopover">TogglePopover</button>
+        <button class="danger" @onclick="HidePopover">HidePopover</button>
+    </div>
+    <DemoConsole @ref="popoverOutput" Title="popover output" />
+</DemoSection>
+
+<DemoSection Title="Namespaced attributes, queries and scroll offsets"
+             Api="GetAttributeNS / SetAttributeNS / HasAttributeNS / RemoveAttributeNS / QuerySelectorMatches / QuerySelectorAllCount / GetClientRects / ScrollTo / SetScrollTop / SetScrollLeft"
+             Description="The namespaced attribute methods are what SVG's xlink:href and XML's xml:lang need, and what GetAttribute cannot reach. The query helpers answer the existence and count questions - the elements themselves cannot cross the boundary, so capture the ones you need with @@ref. GetClientRects returns one rect per line box, which is more than one for an inline element that wraps. SetScrollTop and SetScrollLeft jump without animating, where ScrollTo can ease."
+             Code=@("""
+const string Xlink = "http://www.w3.org/1999/xlink";
+
+await icon.SetAttributeNS(Xlink, "xlink:href", "#star");
+var href = await icon.GetAttributeNS(Xlink, "href");
+
+var hasRows = await table.QuerySelectorMatches("tr");
+var rowCount = await table.QuerySelectorAllCount("tr");
+
+var rects = await paragraph.GetClientRects();   // one per line box
+
+await box.SetScrollTop(0);
+await box.ScrollTo(new ScrollOptions { Top = 240, Behavior = ScrollBehavior.Smooth });
+""")>
+    <div @ref="queryBoxRef" class="demo-box dashed" style="height:8rem;overflow:auto;">
+        <p>This paragraph is long enough to wrap over several line boxes, which is what makes GetClientRects report more than one rectangle for it - one per line the text occupies.</p>
+        <ul>
+            <li>first</li>
+            <li>second</li>
+            <li>third</li>
+        </ul>
+        <div style="height:20rem;">Scroll space.</div>
+    </div>
+    <div class="field">
+        <span class="field-label">Descendant selector</span>
+        <input @bind-value="descendantSelector" style="max-width:20rem;" />
+    </div>
+    <div class="controls">
+        <button @onclick="SetAttributeNS">SetAttributeNS</button>
+        <button class="secondary" @onclick="GetAttributeNS">GetAttributeNS + HasAttributeNS</button>
+        <button class="danger" @onclick="RemoveAttributeNS">RemoveAttributeNS</button>
+    </div>
+    <div class="controls">
+        <button @onclick="QuerySelectorMatches">QuerySelectorMatches</button>
+        <button class="secondary" @onclick="QuerySelectorAllCount">QuerySelectorAllCount</button>
+        <button class="secondary" @onclick="GetClientRects">GetClientRects</button>
+    </div>
+    <div class="controls">
+        <button @onclick="SetScrollTop">SetScrollTop(120)</button>
+        <button class="secondary" @onclick="ScrollToSmooth">ScrollTo(smooth)</button>
+        <button class="secondary" @onclick="ReadScrollMax">ScrollTopMax / ScrollLeftMax</button>
+    </div>
+    <DemoConsole @ref="queryOutput" Title="namespaced attribute and query output" />
+</DemoSection>
+
+<DemoSection Title="Identity, hints and tree facts"
+             Api="Title / Lang / Draggable / Spellcheck / Translate / Autofocus / Autocapitalize / Autocorrect / WritingSuggestions / VirtualKeyboardPolicy / Slot / Part / ElementTiming / LocalName / NamespaceUri / Prefix / ChildElementCount / CurrentCssZoom / AccessKeyLabel / OffsetParentTagName / AssignedSlotName / HasShadowRoot / OuterText"
+             Description="The rest of what an element carries: its tooltip and language, the hints it gives a virtual keyboard and a spell checker, its shadow-DOM wiring, and the facts about where it sits in the tree. Most of these are attributes you can simply render from Blazor at no interop cost - these are for elements that are not yours to re-render, and for reading what something else put there."
+             Code=@("""
+await box.SetTitle("Shown on hover");
+await box.SetLang("fa-IR");
+await box.SetDraggable(true);
+await box.SetSpellcheck(false);
+await box.SetTranslate(false);
+await box.SetAutocapitalize(Autocapitalize.Words);
+await box.SetWritingSuggestions(false);
+
+var localName = await box.GetLocalName();          // "div", where GetTagName gives "DIV"
+var children = await box.GetChildElementCount();
+var zoom = await box.GetCurrentCssZoom();
+var offsetParent = await box.GetOffsetParentTagName();
+""")>
+    <div class="field-row">
+        <div class="field">
+            <span class="field-label">Title</span>
+            <input @bind-value="titleValue" />
+        </div>
+        <div class="field">
+            <span class="field-label">Lang</span>
+            <input @bind-value="langValue" />
+        </div>
+        <div class="field">
+            <span class="field-label">Autocapitalize</span>
+            <select @bind="autocapitalize">
+                @foreach (Autocapitalize option in Enum.GetValues<Autocapitalize>())
+                {
+                    <option value="@option">@option</option>
+                }
+            </select>
+        </div>
+    </div>
+    <div class="controls">
+        <button @onclick="SetIdentityHints">Set title / lang / autocapitalize</button>
+        <button @onclick="ToggleDraggable">Toggle Draggable (now: @isDraggable)</button>
+        <button class="secondary" @onclick="ReadIdentityHints">Read hints back</button>
+        <button class="secondary" @onclick="ReadTreeFacts">Read tree facts</button>
+    </div>
+    <DemoConsole @ref="identityOutput" Title="identity and hints output" />
+</DemoSection>
+
 <DemoSection Title="Audio and video"
              Api="Play / Pause / GetMediaState / SetCurrentTime / SetVolume / SetMuted / SetPlaybackRate"
              Description="Blazor can render a media element and bind its events, but playback is imperative: there is no markup for 'play now' or 'seek to 30 seconds'. These extensions fill that gap on any ElementReference pointing at an <audio> or <video>. GetMediaState reads the whole transport state in one round trip rather than a property at a time - every read is an interop hop, and polling a dozen of them per frame to draw a scrubber is a dozen messages per frame."
@@ -454,6 +732,63 @@ await _video.Pause();
     <ApiMember Name="SetPlaybackRate" Signature="ValueTask<bool> SetPlaybackRate(double rate)" Description="1 is normal speed. False when the engine rejected the rate as outside what it can resample." />
     <ApiMember Name="SetMediaSource" Signature="ValueTask SetMediaSource(string src)" Description="Points the element at a new URL - including a blob: one from ObjectUrls or a finished recording. Follow with Load." />
     <ApiMember Name="CanPlayType" Signature="ValueTask<string> CanPlayType(string mimeType)" Description=@("""The browser's own three-valued answer: "probably", "maybe", or "" for no. Deliberately not a bool.""") />
+    <ApiMember Name="Click" Signature="ValueTask Click()" Description="Sends a synthetic click: handlers run, the event bubbles and default behavior happens. Not a user gesture, so gesture-gated APIs still refuse." />
+    <ApiMember Name="Focus" Signature="ValueTask Focus(FocusOptions? options = null)" Description="Focuses the element. PreventScroll keeps the page where it is; FocusVisible overrides the focus-ring heuristic (Firefox)." />
+    <ApiMember Name="CheckVisibility" Signature="ValueTask&lt;bool&gt; CheckVisibility(CheckVisibilityOptions? options = null)" Description="Whether the element is rendered - and optionally whether opacity, visibility and skipped content-visibility subtrees count against it." />
+    <ApiMember Name="Closest" Signature="ValueTask&lt;bool&gt; Closest(string selectors)" Description="Whether the element or any ancestor matches the selector. Returns the match itself rather than the ancestor, which cannot cross the boundary." />
+    <ApiMember Name="ScrollTo" Signature="ValueTask ScrollTo(ScrollOptions? options) · ValueTask ScrollTo(double? x, double? y)" Description="The same operation as Scroll, under the DOM's other name for it." />
+    <ApiMember Name="SetScrollTop / SetScrollLeft" Signature="ValueTask SetScrollTop(double value) · ValueTask SetScrollLeft(double value)" Description="Jumps the element's scroll offset, clamped by the browser to the scrollable range." />
+    <ApiMember Name="GetScrollTopMax / GetScrollLeftMax" Signature="ValueTask&lt;float&gt; GetScrollTopMax() · ValueTask&lt;float&gt; GetScrollLeftMax()" Description="The largest offset the setters will take. A Firefox property; computed from scroll and client sizes elsewhere." />
+    <ApiMember Name="GetAttributeNS / SetAttributeNS" Signature="ValueTask&lt;string&gt; GetAttributeNS(string namespaceUri, string localName) · ValueTask SetAttributeNS(string namespaceUri, string qualifiedName, string value)" Description="Namespaced attributes - xlink:href, xml:lang - which GetAttribute cannot reach." />
+    <ApiMember Name="HasAttributeNS / RemoveAttributeNS" Signature="ValueTask&lt;bool&gt; HasAttributeNS(string namespaceUri, string localName) · ValueTask RemoveAttributeNS(string namespaceUri, string localName)" Description="Presence and removal for a namespaced attribute." />
+    <ApiMember Name="GetClientRects" Signature="ValueTask&lt;Rect[]&gt; GetClientRects()" Description="Every border box the element occupies - more than one for an inline element that wraps across lines. Empty for display:none." />
+    <ApiMember Name="After / Before / Append / Prepend" Signature="ValueTask Append(params string[] nodes)" Description="Inserts text nodes around or inside the element. Strings only - an ElementReference cannot be handed back from JavaScript." />
+    <ApiMember Name="ReplaceChildren / ReplaceWith" Signature="ValueTask ReplaceChildren(params string[] nodes) · ValueTask ReplaceWith(params string[] nodes)" Description="Replaces the element's children, or the element itself. Passing nothing to ReplaceChildren empties it." />
+    <ApiMember Name="InsertAdjacentHtml" Signature="ValueTask InsertAdjacentHtml(InsertPosition position, string html)" Description="Parses markup and inserts it without reparsing existing children. Bypasses Blazor encoding - trusted input only." />
+    <ApiMember Name="InsertAdjacentText" Signature="ValueTask InsertAdjacentText(InsertPosition position, string text)" Description="Inserts a text node at the given position. Markup in the string stays text." />
+    <ApiMember Name="GetHtml" Signature="ValueTask&lt;string&gt; GetHtml(GetHtmlOptions? options = null)" Description="Serializes the contents, optionally including serializable shadow roots - which InnerHtml always leaves out." />
+    <ApiMember Name="SetHtml" Signature="ValueTask SetHtml(string html)" Description="Replaces the contents, sanitized by the browser. Throws where unsupported rather than falling back to a write that skips the sanitizer." />
+    <ApiMember Name="SetHtmlUnsafe" Signature="ValueTask SetHtmlUnsafe(string html)" Description="Replaces the contents without sanitizing, parsing declarative shadow roots. Trusted markup only." />
+    <ApiMember Name="AddClass / RemoveClass" Signature="ValueTask AddClass(params string[] tokens) · ValueTask RemoveClass(params string[] tokens)" Description="classList.add and .remove; tokens already present or already absent are ignored." />
+    <ApiMember Name="ToggleClass" Signature="ValueTask&lt;bool&gt; ToggleClass(string token, bool? force = null)" Description="Flips a class, or pins it with force. Returns whether it is on the element afterwards." />
+    <ApiMember Name="ReplaceClass" Signature="ValueTask&lt;bool&gt; ReplaceClass(string oldToken, string newToken)" Description="Swaps one class for another in place. False - and no change - when the old one was not there." />
+    <ApiMember Name="ContainsClass / GetClassList" Signature="ValueTask&lt;bool&gt; ContainsClass(string token) · ValueTask&lt;string[]&gt; GetClassList()" Description="Membership test, and the classes as tokens rather than as one string." />
+    <ApiMember Name="GetData / SetData / RemoveData" Signature="ValueTask&lt;string&gt; GetData(string key) · ValueTask SetData(string key, string value) · ValueTask RemoveData(string key)" Description="One data-* attribute by its dataset key - userId for data-user-id." />
+    <ApiMember Name="GetDataNames" Signature="ValueTask&lt;string[]&gt; GetDataNames()" Description="The dataset keys the element carries, not the attribute names." />
+    <ApiMember Name="GetStyleText / SetStyleText" Signature="ValueTask&lt;string&gt; GetStyleText() · ValueTask SetStyleText(string value)" Description="The whole inline style, as it would be written in a style attribute. Inline only - not what a stylesheet contributes." />
+    <ApiMember Name="GetStyleProperty / SetStyleProperty" Signature="ValueTask&lt;string&gt; GetStyleProperty(string name) · ValueTask SetStyleProperty(string name, string value, bool important = false)" Description="One inline declaration by CSS property name, custom properties (--accent) included." />
+    <ApiMember Name="RemoveStyleProperty" Signature="ValueTask&lt;string&gt; RemoveStyleProperty(string name)" Description="Removes one inline declaration and returns what it held." />
+    <ApiMember Name="ShowPopover / HidePopover" Signature="ValueTask ShowPopover() · ValueTask HidePopover()" Description="Shows or hides the element as a popover in the top layer. No-ops where the browser has no popover support." />
+    <ApiMember Name="TogglePopover" Signature="ValueTask&lt;bool&gt; TogglePopover(bool? force = null)" Description="Flips the popover, or pins it with force. Returns whether it is showing afterwards." />
+    <ApiMember Name="GetPopover / SetPopover" Signature="ValueTask&lt;ElementPopover&gt; GetPopover() · ValueTask SetPopover(ElementPopover value)" Description="What kind of popover the element is: NotSet, Auto, Manual or Hint." />
+    <ApiMember Name="QuerySelectorMatches" Signature="ValueTask&lt;bool&gt; QuerySelectorMatches(string selectors)" Description="Whether any descendant matches. The element itself cannot cross the boundary - capture what you need with @@ref." />
+    <ApiMember Name="QuerySelectorAllCount" Signature="ValueTask&lt;int&gt; QuerySelectorAllCount(string selectors)" Description="How many descendants match." />
+    <ApiMember Name="GetAria* / SetAria*" Signature="ValueTask&lt;string&gt; GetAriaLabel() · ValueTask SetAriaLabel(string value)" Description="Every aria-* attribute as a property pair - Atomic, Busy, Checked, Current, Description, Disabled, Expanded, HasPopup, Hidden, Invalid, Label, Level, Live, Modal, Pressed, ReadOnly, Required, Selected, Sort, Value*, the grid Col*/Row*/PosInSet/SetSize family and the braille pair. All strings, numeric and boolean ones included." />
+    <ApiMember Name="GetRole / SetRole" Signature="ValueTask&lt;string&gt; GetRole() · ValueTask SetRole(string value)" Description="The element's ARIA role, for when the tag alone does not say what it is." />
+    <ApiMember Name="AriaNotify" Signature="ValueTask AriaNotify(string message, AriaNotifyOptions? options = null)" Description="Announces a message to assistive technology without changing the page. Experimental and Chromium-only; a no-op elsewhere." />
+    <ApiMember Name="GetTitle / SetTitle" Signature="ValueTask&lt;string&gt; GetTitle() · ValueTask SetTitle(string value)" Description="The advisory text a browser shows as a tooltip." />
+    <ApiMember Name="GetLang / SetLang" Signature="ValueTask&lt;string&gt; GetLang() · ValueTask SetLang(string value)" Description="The element's language as a BCP 47 tag." />
+    <ApiMember Name="GetDraggable / SetDraggable" Signature="ValueTask&lt;bool&gt; GetDraggable() · ValueTask SetDraggable(bool value)" Description="Whether the element can be dragged." />
+    <ApiMember Name="GetSpellcheck / SetSpellcheck" Signature="ValueTask&lt;bool&gt; GetSpellcheck() · ValueTask SetSpellcheck(bool value)" Description="Whether the browser spell-checks what the user types." />
+    <ApiMember Name="GetTranslate / SetTranslate" Signature="ValueTask&lt;bool&gt; GetTranslate() · ValueTask SetTranslate(bool value)" Description="Whether the text should be translated when the page is. False for code and identifiers." />
+    <ApiMember Name="GetAutofocus / SetAutofocus" Signature="ValueTask&lt;bool&gt; GetAutofocus() · ValueTask SetAutofocus(bool value)" Description="Whether the element asks for focus on load. Setting it afterwards does nothing on its own - use Focus." />
+    <ApiMember Name="GetAutocapitalize / SetAutocapitalize" Signature="ValueTask&lt;Autocapitalize&gt; GetAutocapitalize() · ValueTask SetAutocapitalize(Autocapitalize value)" Description="How a virtual keyboard capitalizes typed text: None, Off, On, Sentences, Words or Characters." />
+    <ApiMember Name="GetAutocorrect / SetAutocorrect" Signature="ValueTask&lt;bool&gt; GetAutocorrect() · ValueTask SetAutocorrect(bool value)" Description="Whether the browser may autocorrect typed text. Safari and Chromium." />
+    <ApiMember Name="GetWritingSuggestions / SetWritingSuggestions" Signature="ValueTask&lt;bool&gt; GetWritingSuggestions() · ValueTask SetWritingSuggestions(bool value)" Description="Whether inline writing suggestions are offered. The DOM property is the string true or false; this is the boolean it stands for." />
+    <ApiMember Name="GetVirtualKeyboardPolicy / SetVirtualKeyboardPolicy" Signature="ValueTask&lt;VirtualKeyboardPolicy&gt; GetVirtualKeyboardPolicy() · ValueTask SetVirtualKeyboardPolicy(VirtualKeyboardPolicy value)" Description="Who shows the on-screen keyboard for a contenteditable element: Auto or Manual. Chromium only." />
+    <ApiMember Name="GetSlot / SetSlot" Signature="ValueTask&lt;string&gt; GetSlot() · ValueTask SetSlot(string value)" Description="The shadow-DOM slot the element asks to be placed in." />
+    <ApiMember Name="GetAssignedSlotName" Signature="ValueTask&lt;string&gt; GetAssignedSlotName()" Description="The slot it actually landed in, by name. Null when it is not slotted." />
+    <ApiMember Name="GetPart / SetPart" Signature="ValueTask&lt;string[]&gt; GetPart() · ValueTask SetPart(string value)" Description="The shadow parts the element exposes to ::part() selectors." />
+    <ApiMember Name="HasShadowRoot" Signature="ValueTask&lt;bool&gt; HasShadowRoot()" Description="Whether the element hosts an open shadow root. False for a closed one, which is the point of closing it." />
+    <ApiMember Name="GetElementTiming / SetElementTiming" Signature="ValueTask&lt;string&gt; GetElementTiming() · ValueTask SetElementTiming(string value)" Description="Marks the element for Element Timing under a name. Only works before it is first painted." />
+    <ApiMember Name="GetLocalName" Signature="ValueTask&lt;string&gt; GetLocalName()" Description="The tag name without a prefix, in the document's case - lowercase in HTML, where GetTagName reports uppercase." />
+    <ApiMember Name="GetNamespaceUri / GetPrefix" Signature="ValueTask&lt;string&gt; GetNamespaceUri() · ValueTask&lt;string&gt; GetPrefix()" Description="The namespace the element belongs to, and its prefix within it." />
+    <ApiMember Name="GetChildElementCount" Signature="ValueTask&lt;int&gt; GetChildElementCount()" Description="How many element children it has - text nodes and comments not counted." />
+    <ApiMember Name="GetCurrentCssZoom" Signature="ValueTask&lt;double&gt; GetCurrentCssZoom()" Description="The effective CSS zoom on the element - the factor between reported geometry and the layout's own units. 1 when nothing is zoomed." />
+    <ApiMember Name="GetAccessKeyLabel" Signature="ValueTask&lt;string&gt; GetAccessKeyLabel()" Description="How the element's access key would be shown to the user - Alt+S, or ⌃⌥S on a Mac. Empty where the engine computes none." />
+    <ApiMember Name="GetOffsetParentTagName" Signature="ValueTask&lt;string&gt; GetOffsetParentTagName()" Description="The tag name of the nearest positioned ancestor - what the offset metrics are measured against." />
+    <ApiMember Name="GetOuterText / SetOuterText" Signature="ValueTask&lt;string&gt; GetOuterText() · ValueTask SetOuterText(string value)" Description="Reads the rendered text; writing replaces the element itself, leaving the reference dangling. The DOM's own asymmetry." />
+    <ApiMember Name="GetNonce / SetNonce" Signature="ValueTask&lt;string&gt; GetNonce() · ValueTask SetNonce(string value)" Description="The element's CSP nonce. Browsers hide the attribute from scripts; the property is what remains." />
 </ApiTable>
 
 @code {
@@ -467,6 +802,41 @@ await _video.Pause();
     private DemoConsole eventsOutput = default!;
     private DemoConsole selectorOutput = default!;
     private DemoConsole mediaOutput = default!;
+
+    private DemoConsole activationOutput = default!;
+    private DemoConsole styleOutput = default!;
+    private DemoConsole contentInsertOutput = default!;
+    private DemoConsole ariaOutput = default!;
+    private DemoConsole popoverOutput = default!;
+    private DemoConsole queryOutput = default!;
+    private DemoConsole identityOutput = default!;
+
+    private ElementReference clickTargetRef;
+    private ElementReference focusInputRef;
+    private ElementReference styleBoxRef;
+    private ElementReference contentBoxRef;
+    private ElementReference ariaBoxRef;
+    private ElementReference popoverRef;
+    private ElementReference queryBoxRef;
+
+    private int syntheticClicks;
+    private bool ariaExpanded;
+    private bool isDraggable;
+
+    private string closestSelector = ".stack";
+    private string classToken = "highlighted";
+    private string dataKey = "userId";
+    private string dataValue = "42";
+    private string insertText = "<em>inserted</em>";
+    private string ariaLabel = "Close the dialog";
+    private string ariaRole = "button";
+    private string descendantSelector = "li";
+    private string titleValue = "Shown on hover";
+    private string langValue = "fa-IR";
+    private Autocapitalize autocapitalize = Autocapitalize.Words;
+
+    /// <summary>The namespace SVG's href attribute lives in - the classic reason to reach for the NS overloads.</summary>
+    private const string XlinkNamespace = "http://www.w3.org/1999/xlink";
 
     private ElementReference mediaElement;
     private MediaElementState? mediaState;
@@ -872,6 +1242,265 @@ await _video.Pause();
 
         return "data:audio/wav;base64," + Convert.ToBase64String(data);
     }
+
+    // ─── Activation, focus and visibility ─────────────────────────────────
+
+    private Task ClickTarget() => Run(activationOutput, async () =>
+    {
+        await clickTargetRef.Click();
+        await activationOutput.Success("Click() →", $"the button's own handler ran; count is now {syntheticClicks}");
+    });
+
+    private Task FocusInput() => Run(activationOutput, async () =>
+    {
+        await focusInputRef.Focus(new FocusOptions { PreventScroll = true });
+        await activationOutput.Success("Focus(preventScroll: true) →", "focused without scrolling the page");
+    });
+
+    private Task CheckVisibility() => Run(activationOutput, async () =>
+    {
+        var visible = await targetRef.CheckVisibility(new CheckVisibilityOptions
+        {
+            OpacityProperty = true,
+            VisibilityProperty = true,
+            ContentVisibilityAuto = true,
+        });
+        await activationOutput.Success("CheckVisibility() →", visible);
+    });
+
+    private Task Closest() => Run(activationOutput, async () =>
+        await activationOutput.Success($"Closest(\"{closestSelector}\") →", await targetRef.Closest(closestSelector)));
+
+    // ─── Classes, data attributes and inline style ────────────────────────
+
+    private Task AddClass() => Run(styleOutput, async () =>
+    {
+        await styleBoxRef.AddClass(classToken);
+        await styleOutput.Success($"AddClass(\"{classToken}\") →", string.Join(' ', await styleBoxRef.GetClassList()));
+    });
+
+    private Task RemoveClass() => Run(styleOutput, async () =>
+    {
+        await styleBoxRef.RemoveClass(classToken);
+        await styleOutput.Success($"RemoveClass(\"{classToken}\") →", string.Join(' ', await styleBoxRef.GetClassList()));
+    });
+
+    private Task ToggleClass() => Run(styleOutput, async () =>
+        await styleOutput.Success($"ToggleClass(\"{classToken}\") → on the element:", await styleBoxRef.ToggleClass(classToken)));
+
+    private Task ContainsClass() => Run(styleOutput, async () =>
+        await styleOutput.Success($"ContainsClass(\"{classToken}\") →", await styleBoxRef.ContainsClass(classToken)));
+
+    private Task GetClassList() => Run(styleOutput, async () =>
+        await styleOutput.Success("GetClassList() →", await styleBoxRef.GetClassList()));
+
+    private Task SetData() => Run(styleOutput, async () =>
+    {
+        await styleBoxRef.SetData(dataKey, dataValue);
+        await styleOutput.Success($"SetData(\"{dataKey}\", \"{dataValue}\") →", "written as a data-* attribute");
+    });
+
+    private Task GetData() => Run(styleOutput, async () =>
+        await styleOutput.Success($"GetData(\"{dataKey}\") →", await styleBoxRef.GetData(dataKey)));
+
+    private Task GetDataNames() => Run(styleOutput, async () =>
+        await styleOutput.Success("GetDataNames() →", await styleBoxRef.GetDataNames()));
+
+    private Task RemoveData() => Run(styleOutput, async () =>
+    {
+        await styleBoxRef.RemoveData(dataKey);
+        await styleOutput.Success($"RemoveData(\"{dataKey}\") →", "removed");
+    });
+
+    private Task SetStyleProperty() => Run(styleOutput, async () =>
+    {
+        await styleBoxRef.SetStyleProperty("--accent", "#7c3aed");
+        await styleBoxRef.SetStyleProperty("outline", "2px solid var(--accent)", important: true);
+        await styleOutput.Success("SetStyleProperty(...) →", await styleBoxRef.GetStyleProperty("outline"));
+    });
+
+    private Task GetStyleText() => Run(styleOutput, async () =>
+        await styleOutput.Success("GetStyleText() →", await styleBoxRef.GetStyleText()));
+
+    private Task RemoveStyleProperty() => Run(styleOutput, async () =>
+        await styleOutput.Success("RemoveStyleProperty(\"outline\") → was:", await styleBoxRef.RemoveStyleProperty("outline")));
+
+    // ─── Content insertion and serialization ──────────────────────────────
+
+    private Task AppendText() => Run(contentInsertOutput, async () =>
+    {
+        await contentBoxRef.Append(insertText);
+        await contentInsertOutput.Success("Append(...) →", "added as a text node - markup in the string stays text");
+    });
+
+    private Task PrependText() => Run(contentInsertOutput, async () =>
+    {
+        await contentBoxRef.Prepend(insertText);
+        await contentInsertOutput.Success("Prepend(...) →", "added as a text node at the start");
+    });
+
+    private Task InsertAdjacentText() => Run(contentInsertOutput, async () =>
+    {
+        await contentBoxRef.InsertAdjacentText(InsertPosition.BeforeEnd, insertText);
+        await contentInsertOutput.Success("InsertAdjacentText(BeforeEnd, ...) →", "inserted as text");
+    });
+
+    private Task InsertAdjacentHtml() => Run(contentInsertOutput, async () =>
+    {
+        await contentBoxRef.InsertAdjacentHtml(InsertPosition.AfterBegin, insertText);
+        await contentInsertOutput.Warn("InsertAdjacentHtml(AfterBegin, ...) →", "parsed as markup - trusted input only");
+    });
+
+    private Task GetHtml() => Run(contentInsertOutput, async () =>
+        await contentInsertOutput.Success("GetHtml() →", await contentBoxRef.GetHtml(new GetHtmlOptions { SerializableShadowRoots = true })));
+
+    private Task SetHtmlSanitized() => Run(contentInsertOutput, async () =>
+    {
+        // The sanitizer strips the onerror handler and leaves the rest; where the browser has none,
+        // SetHtml throws rather than quietly writing the markup through without sanitizing.
+        await contentBoxRef.SetHtml($"<span>{insertText}</span><img src=x onerror=\"alert(1)\">");
+        await contentInsertOutput.Success("SetHtml(...) →", await contentBoxRef.GetHtml());
+    });
+
+    private Task ReplaceChildren() => Run(contentInsertOutput, async () =>
+    {
+        await contentBoxRef.ReplaceChildren("everything else is gone");
+        await contentInsertOutput.Success("ReplaceChildren(...) →", "children replaced");
+    });
+
+    // ─── ARIA and roles ───────────────────────────────────────────────────
+
+    private Task SetAria() => Run(ariaOutput, async () =>
+    {
+        await ariaBoxRef.SetRole(ariaRole);
+        await ariaBoxRef.SetAriaLabel(ariaLabel);
+        await ariaOutput.Success("SetRole + SetAriaLabel →", $"role=\"{ariaRole}\" aria-label=\"{ariaLabel}\"");
+    });
+
+    private Task ToggleAriaExpanded() => Run(ariaOutput, async () =>
+    {
+        ariaExpanded = !ariaExpanded;
+        // A string, not a bool: ARIA defines these as enumerated attributes, and "false" and an
+        // absent attribute do not mean the same thing to a screen reader.
+        await ariaBoxRef.SetAriaExpanded(ariaExpanded ? "true" : "false");
+        await ariaOutput.Success("SetAriaExpanded →", ariaExpanded ? "true" : "false");
+    });
+
+    private Task ReadAria() => Run(ariaOutput, async () =>
+        await ariaOutput.Success("GetRole / GetAriaLabel / GetAriaExpanded →",
+            await ariaBoxRef.GetRole(), await ariaBoxRef.GetAriaLabel(), await ariaBoxRef.GetAriaExpanded()));
+
+    private Task AriaNotify() => Run(ariaOutput, async () =>
+    {
+        await ariaBoxRef.AriaNotify("Butil finished the demo step", new AriaNotifyOptions { Priority = AriaNotifyPriority.High });
+        await ariaOutput.Info("AriaNotify(...) →", "announced where supported; a no-op outside Chromium");
+    });
+
+    // ─── Popover ──────────────────────────────────────────────────────────
+
+    private Task MakePopover() => Run(popoverOutput, async () =>
+    {
+        await popoverRef.SetPopover(ElementPopover.Auto);
+        await popoverOutput.Success("SetPopover(Auto) →", await popoverRef.GetPopover());
+    });
+
+    private Task ShowPopover() => Run(popoverOutput, async () =>
+    {
+        await popoverRef.ShowPopover();
+        await popoverOutput.Success("ShowPopover() →", "showing in the top layer");
+    });
+
+    private Task TogglePopover() => Run(popoverOutput, async () =>
+        await popoverOutput.Success("TogglePopover() → showing:", await popoverRef.TogglePopover()));
+
+    private Task HidePopover() => Run(popoverOutput, async () =>
+    {
+        await popoverRef.HidePopover();
+        await popoverOutput.Success("HidePopover() →", "hidden");
+    });
+
+    // ─── Namespaced attributes, queries and scroll offsets ────────────────
+
+    private Task SetAttributeNS() => Run(queryOutput, async () =>
+    {
+        await queryBoxRef.SetAttributeNS(XlinkNamespace, "xlink:href", "#star");
+        await queryOutput.Success("SetAttributeNS(xlink, \"xlink:href\", \"#star\") →", "written");
+    });
+
+    private Task GetAttributeNS() => Run(queryOutput, async () =>
+        await queryOutput.Success("GetAttributeNS / HasAttributeNS →",
+            await queryBoxRef.GetAttributeNS(XlinkNamespace, "href"),
+            await queryBoxRef.HasAttributeNS(XlinkNamespace, "href")));
+
+    private Task RemoveAttributeNS() => Run(queryOutput, async () =>
+    {
+        await queryBoxRef.RemoveAttributeNS(XlinkNamespace, "href");
+        await queryOutput.Success("RemoveAttributeNS(...) →", "removed");
+    });
+
+    private Task QuerySelectorMatches() => Run(queryOutput, async () =>
+        await queryOutput.Success($"QuerySelectorMatches(\"{descendantSelector}\") →", await queryBoxRef.QuerySelectorMatches(descendantSelector)));
+
+    private Task QuerySelectorAllCount() => Run(queryOutput, async () =>
+        await queryOutput.Success($"QuerySelectorAllCount(\"{descendantSelector}\") →", await queryBoxRef.QuerySelectorAllCount(descendantSelector)));
+
+    private Task GetClientRects() => Run(queryOutput, async () =>
+    {
+        var rects = await queryBoxRef.GetClientRects();
+        await queryOutput.Success($"GetClientRects() → {rects.Length} rect(s), first:",
+            rects.Length == 0 ? "none - the element generates no boxes" : $"{rects[0].Width:0.#} × {rects[0].Height:0.#}");
+    });
+
+    private Task SetScrollTop() => Run(queryOutput, async () =>
+    {
+        await queryBoxRef.SetScrollTop(120);
+        await queryOutput.Success("SetScrollTop(120) → now:", await queryBoxRef.GetScrollTop());
+    });
+
+    private Task ScrollToSmooth() => Run(queryOutput, async () =>
+    {
+        await queryBoxRef.ScrollTo(new ScrollOptions { Top = 240, Behavior = ScrollBehavior.Smooth });
+        await queryOutput.Success("ScrollTo(top: 240, smooth) →", "easing to the new offset");
+    });
+
+    private Task ReadScrollMax() => Run(queryOutput, async () =>
+        await queryOutput.Success("GetScrollTopMax / GetScrollLeftMax →",
+            await queryBoxRef.GetScrollTopMax(), await queryBoxRef.GetScrollLeftMax()));
+
+    // ─── Identity, hints and tree facts ───────────────────────────────────
+
+    private Task SetIdentityHints() => Run(identityOutput, async () =>
+    {
+        await targetRef.SetTitle(titleValue);
+        await targetRef.SetLang(langValue);
+        await targetRef.SetAutocapitalize(autocapitalize);
+        await identityOutput.Success("SetTitle / SetLang / SetAutocapitalize →", titleValue, langValue, autocapitalize);
+    });
+
+    private Task ToggleDraggable() => Run(identityOutput, async () =>
+    {
+        isDraggable = !isDraggable;
+        await targetRef.SetDraggable(isDraggable);
+        await identityOutput.Success("SetDraggable →", await targetRef.GetDraggable());
+    });
+
+    private Task ReadIdentityHints() => Run(identityOutput, async () =>
+        await identityOutput.Success("Title / Lang / Spellcheck / Translate / WritingSuggestions / VirtualKeyboardPolicy →",
+            await targetRef.GetTitle(),
+            await targetRef.GetLang(),
+            await targetRef.GetSpellcheck(),
+            await targetRef.GetTranslate(),
+            await targetRef.GetWritingSuggestions(),
+            await targetRef.GetVirtualKeyboardPolicy()));
+
+    private Task ReadTreeFacts() => Run(identityOutput, async () =>
+        await identityOutput.Success("LocalName / NamespaceUri / ChildElementCount / CurrentCssZoom / OffsetParentTagName / HasShadowRoot →",
+            await targetRef.GetLocalName(),
+            await targetRef.GetNamespaceUri(),
+            await targetRef.GetChildElementCount(),
+            await targetRef.GetCurrentCssZoom(),
+            await targetRef.GetOffsetParentTagName(),
+            await targetRef.HasShadowRoot()));
 
     public async ValueTask DisposeAsync()
     {

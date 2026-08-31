@@ -114,8 +114,8 @@ public static class DocsNav
         ]),
         new("DOM & Interaction", "dom",
         [
-            new("Element", "element", "Attributes, scrolling, fullscreen, pointer capture and events on any ElementReference.", typeof(ElementPage), ApiSupport.Broad, ApiNeeds.None,
-                ["ElementReferenceExtensions", "ElementReferenceEventExtensions", "ElementReferenceMediaExtensions"]),
+            new("Element", "element", "Attributes, ARIA, classes, content, scrolling, fullscreen, pointer capture and events on any ElementReference.", typeof(ElementPage), ApiSupport.Broad, ApiNeeds.None,
+                ["ElementReferenceExtensions", "ElementReferenceDomExtensions", "ElementReferenceStateExtensions", "ElementReferenceAriaExtensions", "ElementReferenceEventExtensions", "ElementReferenceMediaExtensions"]),
             new("Animation", "animation", "Run and control Web Animations on any element, straight from C#.", typeof(AnimationPage), ApiSupport.Broad, ApiNeeds.None,
                 ["ElementReferenceAnimationExtensions", "AnimationHandle"]),
             new("PictureInPicture", "picture-in-picture", "Float a video in an always-on-top window outside the page.", typeof(PictureInPicturePage), ApiSupport.Broad, ApiNeeds.UserGesture),
