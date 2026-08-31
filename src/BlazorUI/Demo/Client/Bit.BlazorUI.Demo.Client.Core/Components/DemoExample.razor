@@ -11,6 +11,15 @@
 {(string.IsNullOrWhiteSpace(CsharpCode) ? "" : $@"```csharp
 {CsharpCode}
 ```")}"))
+
+        @foreach (var pane in McpCodeFiles())
+        {
+            @((MarkupString)($@"
+`{pane.Name}`:
+```{pane.File!.EffectiveLanguage}
+{pane.File.Code.Trim()}
+```"))
+        }
     }
 }
 else
@@ -28,7 +37,7 @@ else
                      Typography="BitTypography.H5"
                      Color="BitColor.PrimaryForeground"
                      Class="section-title" Id="@Id" example-section-title>@Title</BitText>
-            @if (RazorCode is not null || CsharpCode is not null)
+            @if (_codePanes.Length > 0)
             {
                 <BitStack Horizontal FitWidth AutoHeight
                           Gap="0.25rem"
@@ -58,7 +67,7 @@ else
 
         <div class="box-content">
 
-            @if (RazorCode is not null || CsharpCode is not null)
+            @if (_codePanes.Length > 0)
             {
                 @* BitCollapse animates both directions, which means the panel has to stay in the DOM
                    while it is closed. inert keeps that hidden copy out of the tab order and the
@@ -74,7 +83,7 @@ else
                     <BitCollapse Expanded="showCode">
                     @if (_isCodeMounted)
                     {
-                        <div class="code-holder" id="@_codeElementId">
+                        <div class="@($"code-holder{(_codePanes.Length > 1 ? " tabbed" : "")}")" id="@_codeElementId">
                             <BitActionButton Class="@($"copy-btn{(isCodeCopied ? " copied" : "")}")"
                                              Styles="@(new() { Content = (isCodeCopied ? "" : "display: none") })"
                                              IconName="@codeIcon"
@@ -86,6 +95,60 @@ else
                                 }
                             </BitActionButton>
 
+                            @* One tab per file, and none at all for the single sample nearly every
+                               example is - the strip would then be a control over nothing. Every pane
+                               is in the DOM from the moment the panel is mounted rather than only the
+                               selected one: it is what lets the one Prism pass this example ever runs
+                               tokenize all of them, and hidden keeps the rest out of the tab order,
+                               out of the accessibility tree and out of find-in-page. *@
+                            @if (_codePanes.Length > 1)
+                            {
+                                <div class="code-tabs" role="tablist" aria-label="@($"{Title} source files")">
+                                    @for (var i = 0; i < _codePanes.Length; i++)
+                                    {
+                                        var index = i;
+                                        var pane = _codePanes[index];
+                                        var selected = index == _selectedCodePane;
+
+                                        @* aria-selected is written out as a string on purpose: bound to
+                                           a bool, Blazor would drop the attribute entirely on the tabs
+                                           that are NOT selected, and a tab list where nothing says
+                                           false reads as one where nothing is selected. *@
+                                        <button type="button"
+                                                role="tab"
+                                                @ref="_codeTabs[index]"
+                                                class="@($"code-tab{(selected ? " selected" : "")}")"
+                                                id="@($"{_codeTabIdPrefix}-tab-{index}")"
+                                                aria-controls="@($"{_codeTabIdPrefix}-pane-{index}")"
+                                                aria-selected="@(selected ? "true" : "false")"
+                                                tabindex="@(selected ? 0 : -1)"
+                                                @onclick="_selectPaneHandlers[index]"
+                                                @onkeydown="_paneKeyDownHandlers[index]">@pane.Name</button>
+                                    }
+                                </div>
+                            }
+
+                            @for (var i = 0; i < _codePanes.Length; i++)
+                            {
+                                var index = i;
+                                var pane = _codePanes[index];
+
+                                <div class="code-pane"
+                                     id="@($"{_codeTabIdPrefix}-pane-{index}")"
+                                     role="@(_codePanes.Length > 1 ? "tabpanel" : null)"
+                                     aria-labelledby="@(_codePanes.Length > 1 ? $"{_codeTabIdPrefix}-tab-{index}" : null)"
+                                     hidden="@(index != _selectedCodePane)">
+                                    @if (pane.File is { } file)
+                                    {
+                                        <pre class="code"><code class="@file.HighlightClass">@file.Code.Trim()</code></pre>
+                                    }
+                                    else
+                                    {
+                                        @* Deliberately not re-indented. Blazor drops a whitespace-only
+                                           text node, so the lines that are markup may sit anywhere -
+                                           but the two that open and close the @code block are literal
+                                           text inside a <pre>, and their leading spaces would be the
+                                           reader's. *@
                             <pre class="code">
 
                 <code class="language-cshtml">
@@ -101,6 +164,9 @@ else
                     </code>
                 }
             </pre>
+                                    }
+                                </div>
+                            }
                         </div>
                     }
                     </BitCollapse>

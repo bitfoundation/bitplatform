@@ -51,6 +51,73 @@
     }
 }
 
+// One pane per file. All of them are in the DOM so that the single Prism pass this example runs
+// tokenizes all of them at once; hidden is what leaves only one on screen. Spelled out rather than
+// left to the UA sheet, where `pre { display: block }` and `[hidden]` are both author-less rules
+// and the outcome depends on which one the browser wrote first.
+.code-pane[hidden] {
+    display: none;
+}
+
+// The strip of file names over the source, drawn only when there is more than one file - a single
+// sample keeps the panel it has always had. It sits ON the code surface rather than above it, so
+// the panel stays one block, and it stops short of the copy button resting in the same corner.
+.code-tabs {
+    gap: rem2(2px);
+    display: flex;
+    overflow-x: auto;
+    align-items: stretch;
+    scrollbar-width: thin;
+    padding: rem2(6px) rem2(52px) 0 rem2(8px);
+    background-color: $bit-color-background-secondary;
+    border-bottom: rem2(1px) solid $bit-color-border-secondary;
+
+    &::-webkit-scrollbar {
+        height: rem2(6px);
+    }
+}
+
+// A file name, in the same monospace the code under it is set in - it is a file name, and reading
+// it as prose next to the source it names is a small stumble repeated on every example that has
+// one. The selected tab is marked by the color it is written in and by the rule under it, not by a
+// filled pill: the tab bar is chrome over the sample, and a second filled surface on the code
+// panel reads as another box.
+.code-tab {
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    white-space: nowrap;
+    background: none;
+    font-size: rem2(12px);
+    line-height: rem2(20px);
+    font-family: var(--demo-font-mono);
+    padding: rem2(5px) rem2(10px) rem2(4px);
+    border-radius: $bit-shape-radius-sm $bit-shape-radius-sm 0 0;
+    color: $bit-color-foreground-secondary;
+    border-bottom: rem2(2px) solid transparent;
+    transition: color $bit-motion-duration $bit-motion-easing,
+                border-color $bit-motion-duration $bit-motion-easing;
+
+    &:hover {
+        color: $bit-color-foreground-primary;
+        background-color: $bit-color-background-primary;
+    }
+
+    // The docs chrome draws its own ring; the UA default is invisible on the dark schemes. Inset,
+    // because the tab is flush against the rule under the strip and an outset ring would be clipped
+    // by the panel's own overflow.
+    &:focus-visible {
+        outline: rem2(2px) solid $bit-color-primary;
+        outline-offset: rem2(-3px);
+    }
+
+    &.selected {
+        color: $bit-color-foreground-primary;
+        border-bottom-color: $bit-color-primary;
+        font-weight: $bit-typography-fw-semibold;
+    }
+}
+
 // The stage the component is shown on: kept on the plain surface so a demo is never tinted by
 // the page behind it.
 .example-container {
