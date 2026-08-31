@@ -471,7 +471,10 @@ public partial class BitCascadingValueProviderFeaturesTests : BunitTestContext
     {
         var number = new BitCascadingValue(1);
 
-        RenderComponent<BitCascadingValueProvider>(parameters =>
+        var observerCalls = 0;
+        number.Changed += _ => observerCalls++;
+
+        var component = RenderComponent<BitCascadingValueProvider>(parameters =>
         {
             parameters.Add(p => p.Values, new List<BitCascadingValue> { number });
             parameters.AddChildContent(builder =>
@@ -481,12 +484,22 @@ public partial class BitCascadingValueProviderFeaturesTests : BunitTestContext
             });
         });
 
-        Context.DisposeComponentsAsync().GetAwaiter().GetResult();
+        var consumer = component.FindComponent<CascadingConsumer>().Instance;
 
         number.Value = 2;
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, consumer.Number));
+        Assert.AreEqual(1, observerCalls);
+
+        Context.DisposeComponentsAsync().GetAwaiter().GetResult();
+
+        number.Value = 3;
         number.NotifyChanged();
 
-        Assert.AreEqual(2, number.Value);
+        // The independent listener still runs, so the value itself is still raising its event,
+        // while the disposed provider no longer pushes it down to its consumer.
+        Assert.AreEqual(3, observerCalls);
+        Assert.AreEqual(2, consumer.Number);
     }
 
     private static RenderFragment BuildNestedProvider(BitCascadingValue innerValue)

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Utilities.CascadingValueProvider;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Utilities.CascadingValueProvider;
 
 public partial class BitCascadingValueProviderDemo
 {
@@ -358,22 +358,27 @@ public partial class BitCascadingValueProviderDemo
 
         _ = Task.Run(async () =>
         {
-            // The cascaded status object is mutated in place, so there is no assignment to notice.
-            jobStatus.Text = "Running";
-            await jobStatusValue.NotifyChangedAsync();
-
-            for (var i = 1; i <= 5; i++)
+            try
             {
-                await Task.Delay(500);
+                // The cascaded status object is mutated in place, so there is no assignment to notice.
+                jobStatus.Text = "Running";
+                await jobStatusValue.NotifyChangedAsync();
 
-                // Assigning the Value raises the Changed event on its own.
-                jobProgressValue.Value = i;
+                for (var i = 1; i <= 5; i++)
+                {
+                    await Task.Delay(500);
+
+                    // Assigning the Value raises the Changed event on its own.
+                    jobProgressValue.Value = i;
+                }
+
+                jobStatus.Text = "Done";
+                await jobStatusValue.NotifyChangedAsync();
             }
-
-            jobStatus.Text = "Done";
-            await jobStatusValue.NotifyChangedAsync();
-
-            jobIsRunning = false;
+            finally
+            {
+                jobIsRunning = false;
+            }
         });
     }
 
@@ -391,19 +396,24 @@ public partial class BitCascadingValueProviderDemo
 
         _ = Task.Run(async () =>
         {
-            // Nothing here notifies anything: the status object reports its own changes.
-            observableStatus.Text = "Running";
-
-            for (var i = 1; i <= 5; i++)
+            try
             {
-                await Task.Delay(500);
+                // Nothing here notifies anything: the status object reports its own changes.
+                observableStatus.Text = "Running";
 
-                observableStatus.Count = i;
+                for (var i = 1; i <= 5; i++)
+                {
+                    await Task.Delay(500);
+
+                    observableStatus.Count = i;
+                }
+
+                observableStatus.Text = "Done";
             }
-
-            observableStatus.Text = "Done";
-
-            observableJobIsRunning = false;
+            finally
+            {
+                observableJobIsRunning = false;
+            }
         });
     }
 
@@ -590,22 +600,27 @@ private void RunBackgroundJob()
 
     _ = Task.Run(async () =>
     {
-        // The cascaded status object is mutated in place, so there is no assignment to notice.
-        jobStatus.Text = ""Running"";
-        await jobStatusValue.NotifyChangedAsync();
-
-        for (var i = 1; i <= 5; i++)
+        try
         {
-            await Task.Delay(500);
+            // The cascaded status object is mutated in place, so there is no assignment to notice.
+            jobStatus.Text = ""Running"";
+            await jobStatusValue.NotifyChangedAsync();
 
-            // Assigning the Value raises the Changed event on its own.
-            jobProgressValue.Value = i;
+            for (var i = 1; i <= 5; i++)
+            {
+                await Task.Delay(500);
+
+                // Assigning the Value raises the Changed event on its own.
+                jobProgressValue.Value = i;
+            }
+
+            jobStatus.Text = ""Done"";
+            await jobStatusValue.NotifyChangedAsync();
         }
-
-        jobStatus.Text = ""Done"";
-        await jobStatusValue.NotifyChangedAsync();
-
-        jobIsRunning = false;
+        finally
+        {
+            jobIsRunning = false;
+        }
     });
 }";
 
@@ -635,19 +650,24 @@ private void RunObservableJob()
 
     _ = Task.Run(async () =>
     {
-        // Nothing here notifies anything: the status object reports its own changes.
-        observableStatus.Text = ""Running"";
-
-        for (var i = 1; i <= 5; i++)
+        try
         {
-            await Task.Delay(500);
+            // Nothing here notifies anything: the status object reports its own changes.
+            observableStatus.Text = ""Running"";
 
-            observableStatus.Count = i;
+            for (var i = 1; i <= 5; i++)
+            {
+                await Task.Delay(500);
+
+                observableStatus.Count = i;
+            }
+
+            observableStatus.Text = ""Done"";
         }
-
-        observableStatus.Text = ""Done"";
-
-        observableJobIsRunning = false;
+        finally
+        {
+            observableJobIsRunning = false;
+        }
     });
 }";
 
