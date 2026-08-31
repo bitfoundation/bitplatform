@@ -1,6 +1,7 @@
 ﻿using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
+using System.Runtime.ExceptionServices;
 
 namespace Bit.BlazorUI;
 
@@ -11,11 +12,17 @@ public class BitCascadingValue
 {
     private readonly object _lock = new();
 
+    // Held around the whole read-modify-apply of the AutoNotify subscription, so that two threads - a
+    // background mutation and the renderer thread subscribing - cannot interleave and leave the observed
+    // value pointing at an object no handler is attached to, or a handler attached to an untracked object.
+    private readonly object _observationLock = new();
+
     private object? _value;
     private string? _name;
     private bool _isFixed;
     private bool _enabled;
     private bool _autoNotify;
+    private bool _computedRead;
     private object? _observedValue;
     private Func<object?>? _valueFactory;
     private Func<object?>? _computedFactory;
@@ -162,17 +169,32 @@ public class BitCascadingValue
                     if (valueFactory is null) return _value;
 
                     // Dropped before it runs, so a factory that ends up reading this very value reads what
-                    // is stored rather than running itself again.
+                    // is stored rather than running itself again, and put back whenever it fails, so that a
+                    // factory that throws is retried on the next read rather than pinning the value at the
+                    // null a non-nullable value type could not even be cascaded as.
                     _valueFactory = null;
 
-                    created = valueFactory();
+                    try
+                    {
+                        created = valueFactory();
+
+                        ValidateValue(created, ValueType);
+                    }
+                    catch
+                    {
+                        _valueFactory = valueFactory;
+
+                        throw;
+                    }
                 }
                 else
                 {
                     created = computedFactory();
-                }
 
-                ValidateValue(created, ValueType);
+                    ValidateValue(created, ValueType);
+
+                    _computedRead = true;
+                }
 
                 _value = created;
             }
@@ -193,6 +215,7 @@ public class BitCascadingValue
 
                 _valueFactory = null;
                 _computedFactory = null;
+                _computedRead = false;
                 _value = value;
             }
 
@@ -298,9 +321,9 @@ public class BitCascadingValue
 
     /// <summary>
     /// Whether <see cref="Value"/> is already available. It is only false for a value created from a lazy
-    /// factory that has not run yet, which is the case until the value is provided for the first time,
-    /// so a disabled or a shadowed value never gets there. A computed value is produced on every read, so
-    /// it always reports true.
+    /// factory that has not run successfully yet, which is the case until the value is provided for the
+    /// first time, so a disabled or a shadowed value never gets there. A computed value is produced on
+    /// every read, so it always reports true.
     /// </summary>
     public bool IsValueCreated => _valueFactory is null;
 
@@ -336,6 +359,8 @@ public class BitCascadingValue
     /// Raises the <see cref="Changed"/> and the <see cref="ChangedAsync"/> events and returns a task that
     /// completes once every listening <see cref="BitCascadingValueProvider"/> has re-rendered, which is the
     /// counterpart of the NotifyChangedAsync method of the framework's CascadingValueSource.
+    /// Every handler is invoked even when another one fails, and the failures are reported through the
+    /// returned task - a single one as it was thrown, several as an <see cref="AggregateException"/>.
     /// </summary>
     public Task NotifyChangedAsync()
     {
@@ -348,22 +373,91 @@ public class BitCascadingValue
             changedAsync = _changedAsync;
         }
 
-        changed?.Invoke(this);
+        // Every handler is invoked even when an earlier one fails, so that a provider throwing while it
+        // re-renders cannot stop the other providers sharing this value from being refreshed. The failures
+        // are collected and surfaced through the returned task rather than out of the property assignment
+        // that raised the event.
+        List<Exception>? errors = null;
+        List<Task>? tasks = null;
 
-        if (changedAsync is null) return Task.CompletedTask;
-
-        var handlers = changedAsync.GetInvocationList();
-
-        if (handlers.Length == 1) return ((Func<BitCascadingValue, Task>)handlers[0])(this) ?? Task.CompletedTask;
-
-        var tasks = new Task[handlers.Length];
-
-        for (int i = 0; i < handlers.Length; i++)
+        if (changed is not null)
         {
-            tasks[i] = ((Func<BitCascadingValue, Task>)handlers[i])(this) ?? Task.CompletedTask;
+            var handlers = changed.GetInvocationList();
+
+            for (int i = 0; i < handlers.Length; i++)
+            {
+                try
+                {
+                    ((Action<BitCascadingValue>)handlers[i])(this);
+                }
+                catch (Exception ex)
+                {
+                    (errors ??= []).Add(ex);
+                }
+            }
         }
 
-        return Task.WhenAll(tasks);
+        if (changedAsync is not null)
+        {
+            var handlers = changedAsync.GetInvocationList();
+
+            for (int i = 0; i < handlers.Length; i++)
+            {
+                try
+                {
+                    var task = ((Func<BitCascadingValue, Task>)handlers[i])(this);
+
+                    if (task is not null && task.IsCompletedSuccessfully is false)
+                    {
+                        (tasks ??= []).Add(task);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    (errors ??= []).Add(ex);
+                }
+            }
+        }
+
+        if (errors is null)
+        {
+            if (tasks is null) return Task.CompletedTask;
+
+            return tasks.Count == 1 ? tasks[0] : Task.WhenAll(tasks);
+        }
+
+        if (tasks is null)
+        {
+            return Task.FromException(errors.Count == 1 ? errors[0] : new AggregateException(errors));
+        }
+
+        return AwaitHandlersAsync(tasks, errors);
+    }
+
+    /// <summary>
+    /// Awaits the handlers that did not complete synchronously and reports their failures together with the
+    /// ones that already threw, so that a single failing listener neither hides the others nor is dropped.
+    /// </summary>
+    private static async Task AwaitHandlersAsync(List<Task> tasks, List<Exception> errors)
+    {
+        foreach (var task in tasks)
+        {
+            try
+            {
+                await task;
+            }
+            catch (Exception ex)
+            {
+                errors.Add(ex);
+            }
+        }
+
+        if (errors.Count == 1)
+        {
+            ExceptionDispatchInfo.Capture(errors[0]).Throw();
+        }
+
+        throw new AggregateException(errors);
     }
 
 
@@ -393,7 +487,8 @@ public class BitCascadingValue
     /// Creates a cascading value whose ValueType is the static type of <typeparamref name="T"/> and whose
     /// value is produced by <paramref name="valueFactory"/> the first time it is actually needed, so an
     /// expensive value is never built for a disabled entry, for an entry that a later one shadows, or for
-    /// a provider that is never rendered. The factory runs at most once.
+    /// a provider that is never rendered. The factory runs at most once, unless it throws, in which case
+    /// the exception is surfaced to the reader and the factory is run again on the next read.
     /// </summary>
     public static BitCascadingValue Lazy<T>(Func<T> valueFactory, string? name = null, bool isFixed = false, bool enabled = true)
     {
@@ -404,7 +499,8 @@ public class BitCascadingValue
 
     /// <summary>
     /// Creates a lazily produced cascading value with an explicit ValueType, which is the way of deferring
-    /// the creation of a value whose cascaded type is only known at runtime. The factory runs at most once.
+    /// the creation of a value whose cascaded type is only known at runtime. The factory runs at most once,
+    /// unless it throws, in which case it is run again on the next read.
     /// </summary>
     public static BitCascadingValue Lazy(Func<object?> valueFactory, Type valueType, string? name = null, bool isFixed = false, bool enabled = true)
         => new(valueFactory, false, valueType, name, isFixed, enabled);
@@ -441,8 +537,25 @@ public class BitCascadingValue
 
     public override string ToString()
     {
-        var value = IsValueCreated ? Value ?? "null" : "(not created yet)";
-        var flags = $"{(IsComputed ? " (computed)" : string.Empty)}{(IsFixed ? " (fixed)" : string.Empty)}{(Enabled ? string.Empty : " (disabled)")}";
+        // The stored reading is what is described, never the Value property, so that formatting this value -
+        // a debugger evaluating it automatically, a log line interpolating it - never runs a user factory.
+        object? snapshot;
+        bool isCreated;
+        bool isComputed;
+        bool isComputedRead;
+
+        lock (_lock)
+        {
+            snapshot = _value;
+            isCreated = _valueFactory is null;
+            isComputed = _computedFactory is not null;
+            isComputedRead = _computedRead;
+        }
+
+        var value = isCreated is false ? "(not created yet)"
+                  : isComputed && isComputedRead is false ? "(not read yet)"
+                  : snapshot ?? "null";
+        var flags = $"{(isComputed ? " (computed)" : string.Empty)}{(IsFixed ? " (fixed)" : string.Empty)}{(Enabled ? string.Empty : " (disabled)")}";
 
         return $"{(Name is null ? string.Empty : $"{Name}: ")}{ValueType.Name} = {value}{flags}";
     }
@@ -456,41 +569,47 @@ public class BitCascadingValue
     /// </summary>
     private void UpdateObservation()
     {
-        object? detach;
-        object? attach;
-
-        lock (_lock)
+        // The whole read-modify-apply is serialized, so that whichever caller decides what to detach and to
+        // attach has applied it before the next one decides, which is what keeps a concurrent subscribe and
+        // a concurrent value change from cancelling each other's subscription out.
+        lock (_observationLock)
         {
-            var hasListeners = _changed is not null || _changedAsync is not null;
-            var target = _autoNotify && hasListeners && _valueFactory is null && _computedFactory is null ? _value : null;
+            object? detach;
+            object? attach;
 
-            if (ReferenceEquals(_observedValue, target)) return;
+            lock (_lock)
+            {
+                var hasListeners = _changed is not null || _changedAsync is not null;
+                var target = _autoNotify && hasListeners && _valueFactory is null && _computedFactory is null ? _value : null;
 
-            detach = _observedValue;
-            attach = target;
+                if (ReferenceEquals(_observedValue, target)) return;
 
-            _observedValue = target;
-        }
+                detach = _observedValue;
+                attach = target;
 
-        // A collection is watched through INotifyCollectionChanged alone, even when it also reports the
-        // property changes that come with it - an ObservableCollection<T> raises Count and Item[] beside
-        // every collection change - so that one mutation asks for one refresh rather than three.
-        if (detach is INotifyCollectionChanged detachedCollection)
-        {
-            detachedCollection.CollectionChanged -= HandleObservedCollectionChanged;
-        }
-        else if (detach is INotifyPropertyChanged detachedProperties)
-        {
-            detachedProperties.PropertyChanged -= HandleObservedPropertyChanged;
-        }
+                _observedValue = target;
+            }
 
-        if (attach is INotifyCollectionChanged attachedCollection)
-        {
-            attachedCollection.CollectionChanged += HandleObservedCollectionChanged;
-        }
-        else if (attach is INotifyPropertyChanged attachedProperties)
-        {
-            attachedProperties.PropertyChanged += HandleObservedPropertyChanged;
+            // A collection is watched through INotifyCollectionChanged alone, even when it also reports the
+            // property changes that come with it - an ObservableCollection<T> raises Count and Item[] beside
+            // every collection change - so that one mutation asks for one refresh rather than three.
+            if (detach is INotifyCollectionChanged detachedCollection)
+            {
+                detachedCollection.CollectionChanged -= HandleObservedCollectionChanged;
+            }
+            else if (detach is INotifyPropertyChanged detachedProperties)
+            {
+                detachedProperties.PropertyChanged -= HandleObservedPropertyChanged;
+            }
+
+            if (attach is INotifyCollectionChanged attachedCollection)
+            {
+                attachedCollection.CollectionChanged += HandleObservedCollectionChanged;
+            }
+            else if (attach is INotifyPropertyChanged attachedProperties)
+            {
+                attachedProperties.PropertyChanged += HandleObservedPropertyChanged;
+            }
         }
     }
 

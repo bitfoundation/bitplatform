@@ -77,9 +77,16 @@ public class BitCascadingValueAdvancedTests
     [TestMethod]
     public void ShouldMarkAComputedValueInTheStringRepresentation()
     {
-        var value = BitCascadingValue.Computed(() => 3, "Count");
+        var calls = 0;
+        var value = BitCascadingValue.Computed(() => ++calls + 2, "Count");
+
+        Assert.AreEqual("Count: Int32 = (not read yet) (computed)", value.ToString());
+        Assert.AreEqual(0, calls);
+
+        Assert.AreEqual(3, value.Value);
 
         Assert.AreEqual("Count: Int32 = 3 (computed)", value.ToString());
+        Assert.AreEqual(1, calls);
     }
 
     [TestMethod]
@@ -383,5 +390,151 @@ public class BitCascadingValueAdvancedTests
 
         Assert.IsTrue(value.IsFixed);
         Assert.IsFalse(value.Enabled);
+    }
+
+    [TestMethod]
+    public void ShouldRunTheLazyFactoryAgainWhenItThrows()
+    {
+        var calls = 0;
+        var value = BitCascadingValue.Lazy(() => ++calls == 1 ? throw new InvalidOperationException("boom") : 42);
+
+        Assert.ThrowsExactly<InvalidOperationException>(() => _ = value.Value);
+        Assert.IsFalse(value.IsValueCreated);
+        Assert.AreEqual("Int32 = (not created yet)", value.ToString());
+
+        Assert.AreEqual(42, value.Value);
+        Assert.IsTrue(value.IsValueCreated);
+        Assert.AreEqual(2, calls);
+    }
+
+    [TestMethod]
+    public void ShouldRunTheLazyFactoryAgainWhenTheValueItProducesIsInvalid()
+    {
+        var calls = 0;
+        var value = BitCascadingValue.Lazy(() => ++calls == 1 ? (object?)"not-a-number" : 42, typeof(int));
+
+        Assert.ThrowsExactly<ArgumentException>(() => _ = value.Value);
+        Assert.IsFalse(value.IsValueCreated);
+
+        Assert.AreEqual(42, value.Value);
+        Assert.IsTrue(value.IsValueCreated);
+    }
+
+    [TestMethod]
+    public void ShouldRaiseEveryChangedHandlerEvenWhenOneOfThemThrows()
+    {
+        var value = new BitCascadingValue(1);
+        var first = 0;
+        var second = 0;
+
+        value.Changed += _ => { first++; throw new InvalidOperationException("boom"); };
+        value.Changed += _ => second++;
+
+        var task = value.NotifyChangedAsync();
+
+        Assert.AreEqual(1, first);
+        Assert.AreEqual(1, second);
+
+        var exception = Assert.ThrowsExactly<InvalidOperationException>(() => task.GetAwaiter().GetResult());
+
+        Assert.AreEqual("boom", exception.Message);
+    }
+
+    [TestMethod]
+    public void ShouldRaiseEveryAsyncChangedHandlerEvenWhenOneOfThemThrows()
+    {
+        var value = new BitCascadingValue(1);
+        var second = 0;
+
+        value.ChangedAsync += _ => throw new InvalidOperationException("boom");
+        value.ChangedAsync += _ => { second++; return Task.CompletedTask; };
+
+        var task = value.NotifyChangedAsync();
+
+        Assert.AreEqual(1, second);
+        Assert.ThrowsExactly<InvalidOperationException>(() => task.GetAwaiter().GetResult());
+    }
+
+    [TestMethod]
+    public async Task ShouldReportEveryFailingHandlerTogether()
+    {
+        var value = new BitCascadingValue(1);
+        var raised = 0;
+
+        value.Changed += _ => throw new InvalidOperationException("first");
+        value.ChangedAsync += async _ => { await Task.Yield(); throw new InvalidOperationException("second"); };
+        value.ChangedAsync += _ => { raised++; return Task.CompletedTask; };
+
+        AggregateException? captured = null;
+
+        try
+        {
+            await value.NotifyChangedAsync();
+        }
+        catch (AggregateException exception)
+        {
+            captured = exception;
+        }
+
+        Assert.AreEqual(1, raised);
+        Assert.IsNotNull(captured);
+        Assert.AreEqual(2, captured.InnerExceptions.Count);
+    }
+
+    [TestMethod]
+    public void ShouldNotSurfaceAFailingHandlerOutOfAValueAssignment()
+    {
+        var value = new BitCascadingValue(1);
+        var raised = 0;
+
+        value.Changed += _ => throw new InvalidOperationException("boom");
+        value.Changed += _ => raised++;
+
+        value.Value = 2;
+
+        Assert.AreEqual(2, value.Value);
+        Assert.AreEqual(1, raised);
+    }
+
+    [TestMethod]
+    public void ShouldKeepTheObservationConsistentUnderConcurrentSubscriptionsAndValueChanges()
+    {
+        for (int attempt = 0; attempt < 20; attempt++)
+        {
+            var value = BitCascadingValue.Observed(new ObservableCollection<int>());
+            var raised = 0;
+
+            void Handler(BitCascadingValue _) => Interlocked.Increment(ref raised);
+
+            var subscriber = Task.Run(() =>
+            {
+                for (int i = 0; i < 200; i++)
+                {
+                    value.Changed += Handler;
+                    value.Changed -= Handler;
+                }
+            });
+
+            var mutator = Task.Run(() =>
+            {
+                for (int i = 0; i < 200; i++)
+                {
+                    value.Value = new ObservableCollection<int>();
+                }
+            });
+
+            Task.WaitAll(subscriber, mutator);
+
+            value.Changed += Handler;
+
+            var collection = (ObservableCollection<int>)value.Value!;
+            var before = Volatile.Read(ref raised);
+
+            collection.Add(1);
+
+            Assert.AreEqual(before + 1, Volatile.Read(ref raised));
+
+            value.Changed -= Handler;
+        }
     }
 }

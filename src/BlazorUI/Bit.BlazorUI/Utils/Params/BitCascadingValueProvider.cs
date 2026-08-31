@@ -282,13 +282,29 @@ public class BitCascadingValueProvider : ComponentBase, IDisposable
 
         try
         {
-            return InvokeAsync(StateHasChanged);
+            var task = InvokeAsync(StateHasChanged);
+
+            // The render itself runs inside the dispatched work item, so a renderer that is already gone
+            // faults the returned task rather than throwing here, which is why the task is awaited as well.
+            return task.IsCompletedSuccessfully ? task : AwaitRenderAsync(task);
         }
         catch (ObjectDisposedException)
         {
             // The renderer is already gone - a value changed from a background thread while this
             // provider was being torn down - so there is nothing left to refresh.
             return Task.CompletedTask;
+        }
+    }
+
+    private static async Task AwaitRenderAsync(Task task)
+    {
+        try
+        {
+            await task;
+        }
+        catch (ObjectDisposedException)
+        {
+            // The renderer was disposed while this refresh was queued, so there is nothing left to refresh.
         }
     }
 
