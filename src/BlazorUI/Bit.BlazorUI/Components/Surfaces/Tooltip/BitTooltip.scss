@@ -47,7 +47,9 @@
     visibility: hidden;
     position: absolute;
     pointer-events: none;
-    transition: opacity $mot-duration $mot-easing, visibility $mot-duration $mot-easing;
+    // The tooltip is a popup, so it leaves on the exit curve and arrives on the entry one below: a
+    // surface that is on its way out gathers speed, and one that is arriving settles.
+    transition: opacity $mot-duration $mot-easing-accelerate, visibility $mot-duration $mot-easing-accelerate;
 }
 
 .bit-ttp-ctn {
@@ -72,6 +74,7 @@
 .bit-ttp-vis {
     opacity: 1;
     visibility: visible;
+    transition: opacity $mot-duration $mot-easing-decelerate, visibility $mot-duration $mot-easing-decelerate;
 }
 
 .bit-ttp-arw {
@@ -337,5 +340,23 @@
         --bit-ttp-clr-bg: #{role($tokens, main)};
         --bit-ttp-clr-fg: #{role($tokens, on)};
         --bit-ttp-arrow-shadow-color: #{translucent(role($tokens, main), 20%)};
+    }
+}
+
+
+// forced-colors: Windows High Contrast repaints every surface out of the one system pair, so the fill that
+// tells the tooltip apart from the page it sits over is gone, and so is the shadow that would have stood in
+// for it - the text would be left sitting on the page's own background. A border in the system text color
+// is what keeps it a surface of its own. The arrow is dropped along with them: it is a rotated square whose
+// two outward edges cannot be drawn without the two inward ones crossing the surface it points from.
+@media (forced-colors: active) {
+    .bit-ttp-ctn {
+        border-width: $shp-border-width;
+        border-style: $shp-border-style;
+        border-color: CanvasText;
+    }
+
+    .bit-ttp-arw {
+        display: none;
     }
 }

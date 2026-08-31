@@ -76,7 +76,7 @@ public partial class BitTooltipDemo
             Name = "HideOnClick",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Hides the tooltip when the anchor is clicked, which is what a tooltip on a control that does something when pressed owes the reader. A tooltip the click is meant to open and close instead is ShowOnClick, which takes over the click when it is on."
+            Description = "Hides the tooltip when the anchor is pressed, which is what a tooltip on a control that does something when pressed owes the reader. It answers Enter and Space the way it answers the pointer. A tooltip the press is meant to open and close instead is ShowOnClick, which takes the press over when it is on."
         },
         new()
         {
@@ -183,7 +183,7 @@ public partial class BitTooltipDemo
             Name = "Relationship",
             Type = "BitTooltipRelationship",
             DefaultValue = "BitTooltipRelationship.Description",
-            Description = "What the tooltip is to the anchor it belongs to, which decides whether the anchor is given an aria-describedby, an aria-labelledby or neither.",
+            Description = "What the tooltip is to the anchor it belongs to, which decides whether the anchor is given an aria-describedby, an aria-labelledby or neither. The relationship is declared on the element the anchor is wrapped in and copied onto the first focusable control inside it, since a name or a description is computed on the element that has the focus.",
             LinkType = LinkType.Link,
             Href = "#tooltip-relationship-enum"
         },
@@ -199,7 +199,7 @@ public partial class BitTooltipDemo
             Name = "ShowOnClick",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines whether the tooltip is shown when the anchor is clicked."
+            Description = "Turns the anchor into a toggle for the tooltip, which is shown by a press of it and taken away by the next one. Enter and Space are a press of the anchor as much as the pointer is, and what dismisses it besides a second press is the Escape key and the focus leaving the anchor. It takes the press over from HideOnClick."
         },
         new()
         {
@@ -213,7 +213,7 @@ public partial class BitTooltipDemo
             Name = "ShowOnHover",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Determines shows tooltip on hover. The hover and the focus are kept apart, so a pointer leaving an anchor the keyboard is still on does not take the tooltip away with it."
+            Description = "Determines whether the tooltip is shown while the pointer is over the anchor. The hover and the focus are kept apart, so a pointer leaving an anchor the keyboard is still on does not take the tooltip away with it."
         },
         new()
         {
@@ -253,6 +253,13 @@ public partial class BitTooltipDemo
             Type = "int",
             DefaultValue = "1500",
             Description = "The time in milliseconds a tooltip shown by a touch stays before it hides itself. A touch leaves no pointer behind that can leave the anchor again. Zero leaves it shown until something else hides it."
+        },
+        new()
+        {
+            Name = "TouchShowDelay",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The time in milliseconds a touch has to rest on the anchor before the tooltip is shown, which turns a tap that only meant to press the anchor into a press that leaves the tooltip out of it. Zero shows the tooltip on the tap itself."
         },
         new()
         {
@@ -616,6 +623,10 @@ public partial class BitTooltipDemo
 
 <BitTooltip Text=""A click takes me away"" HideOnClick>
     <BitButton Variant=""BitVariant.Outline"">HideOnClick</BitButton>
+</BitTooltip>
+
+<BitTooltip Text=""Press and hold me on a touch screen"" TouchShowDelay=""700"">
+    <BitButton Variant=""BitVariant.Outline"">TouchShowDelay</BitButton>
 </BitTooltip>
 
 <BitTooltip Text=""A tap leaves me out of it"" NoTouch>

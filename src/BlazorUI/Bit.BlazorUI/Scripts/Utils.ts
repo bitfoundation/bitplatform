@@ -113,6 +113,44 @@
             } catch (e) { console.error("BitBlazorUI.Utils.syncAriaPopup:", e); }
         }
 
+        // Mirrors the relationship a tooltip declares onto the element the reader actually lands on. The
+        // tooltip renders the consumer's anchor inside a plain container of its own, and an aria-describedby
+        // or an aria-labelledby on a container that is neither focusable nor interactive is an attribute no
+        // screen reader ever reads: the control inside it is what the user reaches. The first focusable
+        // descendant that is not part of the tooltip surface itself is that control.
+        // An empty attribute takes the mirrored one away again - and only ever the one this code wrote, so
+        // an anchor that names a description of its own keeps it.
+        public static syncAriaDescription(rootId: string, tooltipId: string, attribute: string) {
+            try {
+                const root = document.getElementById(rootId);
+                if (!root) return;
+
+                // An interactive tooltip may hold something focusable of its own, which sits inside the same
+                // root and would otherwise be taken for the anchor whenever the anchor holds none itself.
+                const target = Array.from(root.querySelectorAll<HTMLElement>(Utils._focusables))
+                    .find(el => el.closest('.bit-ttp-wrp') === null);
+
+                // Nothing focusable to mirror onto: the markup has already declared the relationship on the
+                // root, which is where it stays.
+                if (!target) return;
+
+                const mirrored = target.getAttribute('data-bit-ttp-aria');
+
+                if (mirrored && mirrored !== attribute) {
+                    target.removeAttribute(mirrored);
+                    target.removeAttribute('data-bit-ttp-aria');
+                }
+
+                if (!attribute) return;
+
+                // The anchor names a description or a label of its own, which is the consumer's to decide.
+                if (mirrored !== attribute && target.hasAttribute(attribute)) return;
+
+                target.setAttribute(attribute, tooltipId);
+                target.setAttribute('data-bit-ttp-aria', attribute);
+            } catch (e) { console.error("BitBlazorUI.Utils.syncAriaDescription:", e); }
+        }
+
         // True when the focus currently sits inside the given container. The popup components ask before
         // they close, since handing the focus back to the element that opened them is only correct when
         // the focus was theirs to hand back - moving it out of wherever the user put it otherwise.

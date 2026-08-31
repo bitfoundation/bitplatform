@@ -6,8 +6,8 @@
 
 <DemoPage Name="Tooltip"
           SecondaryNames="@(["Tip", "Hint"])"
-          Description="Tooltip briefly describes an unlabeled control or adds a bit of information to a labeled one, in a small surface shown next to what it belongs to. It is shown on hover and on focus, or on a click, after delays of your choosing, on any of twelve positions around its anchor, with an arrow pointing back at it. It holds a text or any content you give it, can be made hoverable so the pointer may travel into it, is dismissed by the Escape key, names or describes its anchor to a screen reader, shares its delays with the tooltips around it, and can be driven from your own code through a two-way bound state or its Show, Hide and Toggle methods."
-          Notes="The tooltip is laid out entirely in CSS, next to its anchor and inside the flow of the page, which is what makes it free of any positioning pass and of any JavaScript. The two things that follow from it are worth knowing before you place one: it is clipped by an ancestor that hides its overflow, and it stays on the side you asked for rather than flipping to the one with room on it. A surface that has to escape an overflow, find its own room on the screen, or hold something to click or type in is a BitCallout rather than a tooltip."
+          Description="Tooltip briefly describes an unlabeled control or adds a bit of information to a labeled one, in a small surface shown next to what it belongs to. It is shown on hover and on focus, or on a press of the anchor with either the pointer or the keyboard, after delays of your choosing, on any of twelve positions around its anchor, with an arrow pointing back at it. It holds a text or any content you give it, can be made hoverable so the pointer may travel into it, answers a touch with a tap or a long press, is dismissed by the Escape key, names or describes its anchor to a screen reader, shares its delays with the tooltips around it, and can be driven from your own code through a two-way bound state or its Show, Hide and Toggle methods."
+          Notes="The tooltip is laid out entirely in CSS, next to its anchor and inside the flow of the page, which is what makes it free of any positioning pass and of all but one line of JavaScript - the one that copies the relationship onto the anchor. The two things that follow from it are worth knowing before you place one: it is clipped by an ancestor that hides its overflow, and it stays on the side you asked for rather than flipping to the one with room on it. A surface that has to escape an overflow, find its own room on the screen, or hold something to click or type in is a BitCallout rather than a tooltip."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubEnums="componentSubEnums"
@@ -67,12 +67,15 @@
             the keyboard is still on does not take the tooltip away with it, and a click that focuses the
             anchor is not mistaken for a tab that reached it. <b>ShowOnClick</b> turns the anchor into a
             toggle, and <b>HideOnClick</b> instead has an ordinary hover tooltip step aside the moment the
-            anchor is pressed, which is what a button that opens something else owes the reader. A tooltip
-            opened by a click stays until the anchor is clicked again or Escape is pressed on it - nothing
-            outside the component is listened to - so keep the click for the tooltip the reader is meant
-            to keep open. On a touch screen there is no pointer that hovers, so a tap shows the tooltip
-            and it hides itself again after <b>TouchHideDelay</b> milliseconds - unless <b>NoTouch</b>
-            leaves the tap to the anchor alone.
+            anchor is pressed, which is what a button that opens something else owes the reader. Both of
+            them answer the keyboard the way they answer the pointer: Enter and Space on the anchor are a
+            press of it, so a click-driven tooltip can be opened without a pointer at all. A tooltip opened
+            that way stays until the anchor is pressed again, Escape is pressed on it, or the focus leaves
+            it - which a click elsewhere on the page and a Tab away from it both come down to. On a touch
+            screen there is no pointer that hovers, so a tap shows the tooltip and it hides itself again
+            after <b>TouchHideDelay</b> milliseconds; <b>TouchShowDelay</b> makes the tooltip a long press
+            of its own, so that a tap that only meant to press the anchor leaves it out of it, and
+            <b>NoTouch</b> leaves the touch to the anchor altogether.
         </div>
         <br />
         <div class="tooltips-container row">
@@ -90,6 +93,10 @@
 
             <BitTooltip Text="A click takes me away" HideOnClick>
                 <BitButton Variant="BitVariant.Outline">HideOnClick</BitButton>
+            </BitTooltip>
+
+            <BitTooltip Text="Press and hold me on a touch screen" TouchShowDelay="700">
+                <BitButton Variant="BitVariant.Outline">TouchShowDelay</BitButton>
             </BitTooltip>
 
             <BitTooltip Text="A tap leaves me out of it" NoTouch>
@@ -252,6 +259,9 @@
             covers what is underneath it owes the reader. It stays dismissed until the anchor is left and
             reached again, rather than coming straight back. <b>NoDismissOnEscape</b> turns that off,
             which is only for a tooltip that obscures nothing. Tab to either of these and press Escape.
+            A tooltip a press of the anchor opened is dismissed by the focus leaving it as well, since a
+            click somewhere else on the page and a Tab away from the anchor both take the focus off it -
+            a pointer still resting on the anchor keeps it, having asked for it in its own right.
         </div>
         <br />
         <div class="tooltips-container row">
@@ -273,10 +283,13 @@
             button whose only name the tooltip is. <b>None</b> leaves it out of the accessibility tree,
             for the tooltip that only repeats what the anchor already says. The relationship is declared
             for as long as there is a tooltip to declare it with, not only while it is on the screen, so a
-            screen reader has the text the moment the anchor is reached. <b>TooltipId</b> is the id of the
-            element the text lands in: point the aria-describedby of an anchor of your own at it when the
-            anchor is a plain element rather than a component, since a description is computed on the
-            element that has the focus.
+            screen reader has the text the moment the anchor is reached. A description is computed on the
+            element that has the focus, and the element the tooltip declares the relationship on is the
+            container it wraps the anchor in, so the same relationship is copied onto the first focusable
+            control inside that container - the button the reader actually lands on. An anchor that names a
+            description or a label of its own keeps it. <b>TooltipId</b> is the id of the element the text
+            lands in: point an anchor of your own at it where there is nothing focusable for the copy to
+            land on, or where something other than the first control is what the tooltip belongs to.
         </div>
         <br />
         <div class="tooltips-container row">

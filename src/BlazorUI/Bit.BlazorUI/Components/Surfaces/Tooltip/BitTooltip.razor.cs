@@ -11,9 +11,9 @@
 /// shown on hover or focus. It names or describes its anchor according to its
 /// <see cref="Relationship"/>, and a row of them wrapped in a <see cref="BitTooltipGroup"/> shares its
 /// delays and shows one tooltip at a time. It is laid out purely in CSS, next to the anchor inside the
-/// flow of the page, so it needs no positioning pass and no JavaScript; a surface that has to escape an
-/// overflow, flip to the side with room, or hold interactive content of its own is what BitCallout is
-/// for.
+/// flow of the page, so it needs no positioning pass and nothing of JavaScript beyond copying the
+/// relationship onto the anchor; a surface that has to escape an overflow, flip to the side with room, or
+/// hold interactive content of its own is what BitCallout is for.
 /// </remarks>
 public partial class BitTooltip : BitComponentBase
 {
@@ -45,6 +45,16 @@ public partial class BitTooltip : BitComponentBase
     // that shows the tooltip would be taken for a click on it as well and undo itself.
     private bool _isShownByTouch;
 
+    // Whether the tooltip on the screen is one a click or a keyboard press of the anchor opened. Such a
+    // tooltip is not held by a pointer or a focus that can end, so what dismisses it is the next thing the
+    // user does somewhere else on the page - which the focus leaving the anchor is what both a click
+    // outside it and a Tab away from it come down to.
+    private bool _isShownByClick;
+
+    // The relationship last mirrored onto the anchor, so that the round trip to the DOM is made when what
+    // it would write has actually changed rather than once per render.
+    private string _syncedAria = string.Empty;
+
 
 
     private string _tooltipId => $"{_Id}-ttp";
@@ -63,6 +73,21 @@ public partial class BitTooltip : BitComponentBase
     // A tooltip whose shown state is handed to it and never handed back cannot be driven by anything
     // that happens on the page: the page owns it, and the triggers below leave it alone.
     private bool IsControlledExternally => IsShownHasBeenSet && IsShownChanged.HasDelegate is false;
+
+    // The one attribute the relationship comes down to, which the markup declares on the root element and
+    // the anchor inside it is given a copy of. An empty one is a tooltip that declares nothing.
+    private string AriaAttribute => HasAccessibleContent
+        ? Relationship switch
+        {
+            BitTooltipRelationship.Description => "aria-describedby",
+            BitTooltipRelationship.Label => "aria-labelledby",
+            _ => string.Empty
+        }
+        : string.Empty;
+
+
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
 
@@ -138,8 +163,9 @@ public partial class BitTooltip : BitComponentBase
     /// been read by then, and leaving it over whatever the click brought up only gets in the way.
     /// </summary>
     /// <remarks>
-    /// It is the plain hide of a tooltip shown by the hover or the focus. A tooltip the click is meant to
-    /// open and close instead is <see cref="ShowOnClick"/>, which takes over the click when it is on.
+    /// It is the plain hide of a tooltip shown by the hover or the focus, and it answers Enter and Space
+    /// on the anchor the way it answers the pointer. A tooltip the press is meant to open and close
+    /// instead is <see cref="ShowOnClick"/>, which takes the press over when it is on.
     /// </remarks>
     [Parameter] public bool HideOnClick { get; set; }
 
@@ -246,7 +272,10 @@ public partial class BitTooltip : BitComponentBase
     /// </summary>
     /// <remarks>
     /// It decides which of aria-describedby and aria-labelledby the anchor is given, and is declared for
-    /// as long as there is a tooltip to declare it with rather than only while it is on the screen.
+    /// as long as there is a tooltip to declare it with rather than only while it is on the screen. The
+    /// tooltip declares it on the element it wraps the anchor in and copies it onto the first focusable
+    /// control inside that element, since a name or a description is computed on the element that has the
+    /// focus; an anchor that names one of its own keeps it.
     /// </remarks>
     [Parameter] public BitTooltipRelationship Relationship { get; set; }
 
@@ -262,8 +291,15 @@ public partial class BitTooltip : BitComponentBase
     [Parameter] public int ShowDelay { get; set; } = 0;
 
     /// <summary>
-    /// Determines shows tooltip on click.
+    /// Turns the anchor into a toggle for the tooltip, which is shown by a press of it and taken away by
+    /// the next one.
     /// </summary>
+    /// <remarks>
+    /// Enter and Space are a press of the anchor as much as the pointer is, so a tooltip only the click
+    /// shows can still be opened from the keyboard. What dismisses it, besides a second press, is the
+    /// Escape key and the focus leaving the anchor - which a click elsewhere on the page and a Tab away
+    /// from it both come down to. It takes the press over from <see cref="HideOnClick"/>.
+    /// </remarks>
     [Parameter] public bool ShowOnClick { get; set; }
 
     /// <summary>
@@ -303,6 +339,18 @@ public partial class BitTooltip : BitComponentBase
     /// Zero leaves it shown until something else hides it.
     /// </summary>
     [Parameter] public int TouchHideDelay { get; set; } = 1500;
+
+    /// <summary>
+    /// The time in milliseconds a touch has to rest on the anchor before the tooltip is shown, which turns
+    /// a tap that only meant to press the anchor into a press that leaves the tooltip out of it. Zero shows
+    /// the tooltip on the tap itself.
+    /// </summary>
+    /// <remarks>
+    /// A tap both presses the anchor and asks for the tooltip, so a tooltip shown at once lands over
+    /// whatever the press brought up; a delay here is what makes the tooltip a long press of its own.
+    /// <see cref="NoTouch"/> is the way to leave the touch to the anchor altogether.
+    /// </remarks>
+    [Parameter] public int TouchShowDelay { get; set; }
 
     /// <summary>
     /// The stacking order of the tooltip surface and its arrow. Leaving it unset keeps the one the theme
@@ -443,6 +491,7 @@ public partial class BitTooltip : BitComponentBase
             _isPointerOver = false;
             _isFocusWithin = false;
             _isFocusFromPointer = false;
+            _isShownByClick = false;
 
             if (IsShown)
             {
@@ -461,6 +510,36 @@ public partial class BitTooltip : BitComponentBase
     }
 
 
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        await SyncAnchorAria();
+    }
+
+    // The root element carries the relationship the tooltip declares, but the element the reader actually
+    // lands on is the control the consumer put inside it, so the relationship is copied onto that one as
+    // well - a describedby or a labelledby on a container that is neither focusable nor interactive is one
+    // no screen reader ever reads. Only when what it would write has changed: the attribute is written from
+    // JavaScript, so a call per render would be a round trip per render for something that changes with the
+    // relationship alone.
+    private async Task SyncAnchorAria()
+    {
+        if (IsDisposed) return;
+
+        var attribute = AriaAttribute;
+
+        if (_syncedAria == attribute) return;
+
+        _syncedAria = attribute;
+
+        try
+        {
+            await _js.BitUtilsSyncAriaDescription(_Id, _tooltipId, attribute);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
 
     private async Task ShowAfterDelay(int delay)
     {
@@ -550,6 +629,8 @@ public partial class BitTooltip : BitComponentBase
         }
         else
         {
+            _isShownByClick = false;
+
             Group?.NotifyHidden();
 
             await OnHide.InvokeAsync();
@@ -579,12 +660,19 @@ public partial class BitTooltip : BitComponentBase
         if (ShowOnHover is false) return;
 
         // A touch has no pointer that hovers: the enter and the leave arrive back to back around the
-        // tap, so the tooltip is shown at once and then hides itself after a while instead.
+        // tap, so the tooltip is shown for as long as the press lasts - at once, or after the press has
+        // lasted long enough to be a request of its own - and then hides itself after a while instead.
         if (IsTouch(e))
         {
-            _isShownByTouch = true;
+            await ShowAfterDelay(TouchShowDelay);
 
-            await ShowAfterDelay(0);
+            // The press ended before the tooltip was due, so the leave that ended it took the waiting show
+            // with it: there is nothing on the screen to hide again, and the tap that ended it is a tap
+            // like any other - the up it ends with is not the one that has to be kept from undoing a
+            // tooltip nothing put on the screen.
+            if (IsShown is false) return;
+
+            _isShownByTouch = true;
 
             if (TouchHideDelay > 0)
             {
@@ -620,8 +708,14 @@ public partial class BitTooltip : BitComponentBase
         if (wasHeldByHover is false) return;
 
         // The leave that follows a tap would take the tooltip away the instant it was shown; the touch
-        // timer the enter above started is what hides that one.
-        if (IsTouch(e)) return;
+        // timer the enter above started is what hides that one. A press that ended before the tooltip was
+        // due is a tap that only meant to press the anchor, and the show still waiting on it goes with it.
+        if (IsTouch(e))
+        {
+            if (IsShown is false) CancelPendingDelays();
+
+            return;
+        }
 
         // The keyboard is still on the anchor, so the tooltip it asked for stays where it is.
         if (IsHeldByFocus) return;
@@ -647,9 +741,26 @@ public partial class BitTooltip : BitComponentBase
         if (IsControlledExternally) return;
 
         var wasHeldByFocus = IsHeldByFocus;
+        var wasShownByClick = _isShownByClick && IsShown;
 
         _isFocusWithin = false;
         _isFocusFromPointer = false;
+
+        // A tooltip a press of the anchor opened is held by nothing that can end on its own, so what
+        // dismisses it is the next thing the user does elsewhere: a click somewhere else on the page and a
+        // Tab away from the anchor both take the focus off it, which is the one signal both leave behind.
+        // A pointer still resting on the anchor is asking for the tooltip in its own right, so it stays.
+        if (wasShownByClick)
+        {
+            _isShownByClick = false;
+
+            if (IsHeldByHover is false)
+            {
+                await HideAfterDelay(0);
+
+                return;
+            }
+        }
 
         if (wasHeldByFocus is false) return;
 
@@ -695,6 +806,8 @@ public partial class BitTooltip : BitComponentBase
             }
             else
             {
+                _isShownByClick = true;
+
                 await ShowAfterDelay(0);
             }
 
@@ -714,12 +827,52 @@ public partial class BitTooltip : BitComponentBase
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
         if (IsControlledExternally) return;
-        if (NoDismissOnEscape) return;
-        if (IsShown is false) return;
-        if (e.Key is not "Escape") return;
 
-        // The dismissal has to outlive the pointer and the focus that are still on the anchor, or the
-        // tooltip would be back the moment anything asked the triggers again.
+        if (e.Key is "Escape")
+        {
+            if (NoDismissOnEscape) return;
+            if (IsShown is false) return;
+
+            // The dismissal has to outlive the pointer and the focus that are still on the anchor, or the
+            // tooltip would be back the moment anything asked the triggers again.
+            _isPointerOver = false;
+            _isFocusFromPointer = true;
+            _isShownByClick = false;
+
+            await HideAfterDelay(0);
+
+            return;
+        }
+
+        // Enter and Space are how a keyboard presses the anchor, so they are answered the way the pointer
+        // pressing it is: a click-driven tooltip is toggled, and one that steps aside for a click steps
+        // aside for these as well. Without it a tooltip that only the click shows would be one the keyboard
+        // could never open. The key is left to travel on to the anchor, which is what is being pressed.
+        if (e.Key is not ("Enter" or " ")) return;
+
+        if (ShowOnClick)
+        {
+            if (IsShown)
+            {
+                _isShownByClick = false;
+
+                await HideAfterDelay(0);
+            }
+            else
+            {
+                _isShownByClick = true;
+
+                await ShowAfterDelay(0);
+            }
+
+            return;
+        }
+
+        if (HideOnClick is false) return;
+        if (IsShown is false) return;
+
+        // As with the pointer, what showed the tooltip is given up along with it, so that nothing puts it
+        // back until the anchor is left and reached again.
         _isPointerOver = false;
         _isFocusFromPointer = true;
 
@@ -729,8 +882,8 @@ public partial class BitTooltip : BitComponentBase
     private static bool IsTouch(PointerEventArgs e) => e.PointerType is "touch" or "pen";
 
     // Nothing is done with the event: it is bound only so that its propagation can be stopped, which is
-    // what keeps a pointer released inside the tooltip from reaching the toggle on the root.
-    private static void SwallowPointerUp(PointerEventArgs e) { }
+    // what keeps a pointer pressed or released inside the tooltip from reaching the handlers on the root.
+    private static void SwallowPointerEvent(PointerEventArgs e) { }
 
     // The way the group takes a sibling off the screen. It leaves a tooltip the page itself is driving
     // alone, since a state that was handed over is not the group's to change, and it gives up the reasons
@@ -743,6 +896,7 @@ public partial class BitTooltip : BitComponentBase
         _isPointerOver = false;
         _isFocusWithin = false;
         _isFocusFromPointer = false;
+        _isShownByClick = false;
 
         await Hide();
     }

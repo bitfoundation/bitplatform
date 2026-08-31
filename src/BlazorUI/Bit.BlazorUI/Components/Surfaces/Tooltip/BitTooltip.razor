@@ -12,8 +12,8 @@
 <div @ref="RootElement"
      id="@_Id"
      aria-label="@AriaLabel"
-     aria-describedby="@(HasAccessibleContent && Relationship == BitTooltipRelationship.Description ? _tooltipId : null)"
-     aria-labelledby="@(HasAccessibleContent && Relationship == BitTooltipRelationship.Label ? _tooltipId : null)"
+     aria-describedby="@(AriaAttribute == "aria-describedby" ? _tooltipId : null)"
+     aria-labelledby="@(AriaAttribute == "aria-labelledby" ? _tooltipId : null)"
      @attributes="HtmlAttributes"
      @onkeydown="@HandleKeyDown"
      @onfocusin="@HandleFocusIn"
@@ -33,13 +33,16 @@
        altogether rather than shown as an empty box the moment something asks for them. *@
     @if (HasContent)
     {
-        @* A pointer released inside the tooltip is not a click on the anchor, so it is kept from reaching
-           the toggle on the root: an interactive tooltip would otherwise close itself the moment anything
-           inside it was clicked. *@
+        @* A pointer pressed or released inside the tooltip is not a press on the anchor, so neither of them
+           is let through to the root: an interactive tooltip would otherwise close itself the moment
+           anything inside it was clicked, and selecting the text of one would be taken for the press that
+           focuses the anchor. *@
         <div style="@Styles?.TooltipWrapper"
              class="bit-ttp-wrp @GetTooltipClasses() @Classes?.TooltipWrapper"
-             @onpointerup="@SwallowPointerUp"
-             @onpointerup:stopPropagation="true">
+             @onpointerup="@SwallowPointerEvent"
+             @onpointerup:stopPropagation="true"
+             @onpointerdown="@SwallowPointerEvent"
+             @onpointerdown:stopPropagation="true">
             <div role="tooltip"
                  id="@_tooltipId"
                  style="@Styles?.Tooltip"

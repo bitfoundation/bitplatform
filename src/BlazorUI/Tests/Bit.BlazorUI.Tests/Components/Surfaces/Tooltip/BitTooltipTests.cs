@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -1565,5 +1566,309 @@ public class BitTooltipTests : BunitTestContext
 
         Assert.IsTrue(component.Find("#first .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
         Assert.AreEqual(0, component.FindAll("#third").Count);
+    }
+
+    [TestMethod]
+    public void BitTooltipShowOnClickShouldBeToggledByTheKeyboardAsWell()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.ShowOnClick, true);
+            parameters.Add(p => p.ShowOnHover, false);
+            parameters.Add(p => p.ShowOnFocus, false);
+        });
+
+        // Enter and Space are how a keyboard presses the anchor, so a tooltip only the click shows is one
+        // the keyboard can open as well - without it there would be no way to reach it at all.
+        component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = " " });
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipHideOnClickShouldAnswerTheKeyboardPressToo()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.HideOnClick, true);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onfocusin", new FocusEventArgs());
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = " " });
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipShouldLeaveTheKeyboardPressAloneWithoutAClickTrigger()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onfocusin", new FocusEventArgs());
+        component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Enter" });
+
+        // Neither trigger asked for the press to mean anything, so the tooltip the focus is holding stays.
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipOpenedByAClickShouldBeDismissedByTheFocusLeavingTheAnchor()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.ShowOnClick, true);
+            parameters.Add(p => p.ShowOnHover, false);
+            parameters.Add(p => p.ShowOnFocus, false);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerup", Mouse());
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        // A click elsewhere on the page and a Tab away from the anchor both come down to the focus
+        // leaving it, which is what dismisses a tooltip nothing else is holding.
+        component.Find(".bit-ttp").TriggerEvent("onfocusout", new FocusEventArgs());
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipOpenedByAClickShouldStayWhileThePointerIsStillOnTheAnchor()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.ShowOnClick, true);
+            parameters.Add(p => p.ShowOnFocus, false);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+        component.Find(".bit-ttp").TriggerEvent("onfocusout", new FocusEventArgs());
+
+        // The pointer resting on the anchor is asking for the tooltip in its own right, so the focus
+        // leaving takes nothing away.
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipEscapeShouldNotBeUndoneByTheFocusLeavingAfterAClick()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.ShowOnClick, true);
+            parameters.Add(p => p.ShowOnHover, false);
+            parameters.Add(p => p.ShowOnFocus, false);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerup", Mouse());
+        component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+
+        component.Find(".bit-ttp").TriggerEvent("onfocusout", new FocusEventArgs());
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+
+
+    [TestMethod]
+    public void BitTooltipTouchShowDelayShouldLeaveAQuickTapAlone()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.TouchShowDelay, 5000);
+        });
+
+        // The enter, the up and the leave of one tap arrive one after another, all of them long before a
+        // press that lasts would have asked for the tooltip.
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Touch());
+        component.Find(".bit-ttp").TriggerEvent("onpointerup", Touch());
+        component.Find(".bit-ttp").TriggerEvent("onpointerleave", Touch());
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipTouchShowDelayShouldShowTheTooltipOnceThePressHasLasted()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.TouchShowDelay, 50);
+            parameters.Add(p => p.TouchHideDelay, 0);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Touch());
+
+        component.WaitForAssertion(() =>
+            Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis")));
+    }
+
+    [TestMethod]
+    public void BitTooltipTouchWithoutAShowDelayShouldStillShowOnTheTap()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.TouchHideDelay, 0);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Touch());
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+
+
+    [TestMethod]
+    public void BitTooltipShouldMirrorTheRelationshipOntoTheAnchor()
+    {
+        RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Id, "tip");
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.ChildContent, Markup("<button>Anchor</button>"));
+        });
+
+        // A describedby on the container the anchor is wrapped in is read by nothing, so the same one is
+        // written onto the control the reader actually lands on.
+        var invocation = Context.JSInterop.Invocations
+                                .Single(i => i.Identifier == "BitBlazorUI.Utils.syncAriaDescription");
+
+        Assert.AreEqual("tip", invocation.Arguments[0]);
+        Assert.AreEqual("tip-ttp", invocation.Arguments[1]);
+        Assert.AreEqual("aria-describedby", invocation.Arguments[2]);
+    }
+
+    [TestMethod]
+    public void BitTooltipRelationshipLabelShouldMirrorTheLabelledByInstead()
+    {
+        RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.Relationship, BitTooltipRelationship.Label);
+        });
+
+        var invocation = Context.JSInterop.Invocations
+                                .Single(i => i.Identifier == "BitBlazorUI.Utils.syncAriaDescription");
+
+        Assert.AreEqual("aria-labelledby", invocation.Arguments[2]);
+    }
+
+    [TestMethod]
+    public void BitTooltipRelationshipNoneShouldMirrorNothing()
+    {
+        RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.Relationship, BitTooltipRelationship.None);
+        });
+
+        // Nothing was ever written, so there is nothing to take away either: the round trip is not made.
+        Assert.IsFalse(Context.JSInterop.Invocations
+                              .Any(i => i.Identifier == "BitBlazorUI.Utils.syncAriaDescription"));
+    }
+
+    [TestMethod]
+    public void BitTooltipShouldTakeTheMirroredRelationshipAwayWhenItIsGivenUp()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.Relationship, BitTooltipRelationship.None);
+        });
+
+        var invocations = Context.JSInterop.Invocations
+                                 .Where(i => i.Identifier == "BitBlazorUI.Utils.syncAriaDescription")
+                                 .ToArray();
+
+        Assert.AreEqual(2, invocations.Length);
+        Assert.AreEqual("aria-describedby", invocations[0].Arguments[2]);
+        Assert.AreEqual(string.Empty, invocations[1].Arguments[2]);
+    }
+
+    [TestMethod]
+    public void BitTooltipShouldMirrorTheRelationshipOnlyWhenItChanges()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Text, "Another tip"));
+
+        // The attribute is written from JavaScript, so a call per render would be a round trip per render
+        // for something that changes with the relationship alone.
+        Assert.AreEqual(1, Context.JSInterop.Invocations
+                                 .Count(i => i.Identifier == "BitBlazorUI.Utils.syncAriaDescription"));
+    }
+
+    [TestMethod]
+    public void BitTooltipAPointerDownInsideTheTooltipShouldNotCountAsTheOneThatFocusesTheAnchor()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.Interactive, true);
+        });
+
+        // Selecting the text of an interactive tooltip is a press inside the tooltip, not the press that
+        // focuses the anchor, so the keyboard arriving afterwards is still answered as the keyboard.
+        component.Find(".bit-ttp-wrp").TriggerEvent("onpointerdown", Mouse());
+        component.Find(".bit-ttp").TriggerEvent("onfocusin", new FocusEventArgs());
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipBoundOneWayShouldLeaveTheKeyboardPressAlone()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.IsShown, false);
+            parameters.Add(p => p.ShowOnClick, true);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Enter" });
+
+        // The page owns the state, so nothing that happens on the anchor changes it.
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public void BitTooltipDisabledShouldRefuseTheKeyboardPress()
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.ShowOnClick, true);
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
     }
 }
