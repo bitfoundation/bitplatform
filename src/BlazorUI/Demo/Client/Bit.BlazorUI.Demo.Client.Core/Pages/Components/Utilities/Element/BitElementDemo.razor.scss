@@ -1,0 +1,47 @@
+﻿// The examples render loose elements of every kind next to each other, so they need a container that puts a
+// consistent gap between them and keeps the inline ones (an anchor, a mark) from stretching across the row.
+.example-content {
+    gap: 0.5rem;
+    display: flex;
+    flex-flow: column;
+    align-items: flex-start;
+
+    // A rule is a block element with no content of its own, so in a column that sizes its items to their
+    // content it would come out zero pixels wide and stay invisible.
+    > ::deep hr {
+        width: 100%;
+        margin: 0;
+    }
+
+    // An undefined custom element is an unknown inline box with no styling of its own, so it needs one to be
+    // recognizable as the element it is in the example.
+    > ::deep demo-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 1rem;
+        border: 1px solid gray;
+        display: inline-block;
+    }
+
+    // The classes below land on a BitElement, which is a component: the scope attribute of this stylesheet only
+    // lands on the plain elements written in the page, so they are reached through the container that carries it.
+    // The box is nested inside a card in one of the examples, so it is matched at any depth rather than as a
+    // direct child - which is safe here in a way a bare tag name would not be, since it is a class of the page.
+    ::deep .demo-boxed {
+        padding: 0.5rem;
+        border: 1px solid gray;
+    }
+}
+
+// The clickable ancestor of the event modifiers example, which the elements inside it either reach by
+// bubbling or do not.
+.demo-card {
+    gap: 0.5rem;
+    width: 100%;
+    display: flex;
+    cursor: pointer;
+    padding: 0.75rem;
+    align-items: center;
+    border-radius: 0.25rem;
+    box-sizing: border-box;
+    border: 1px solid gray;
+}

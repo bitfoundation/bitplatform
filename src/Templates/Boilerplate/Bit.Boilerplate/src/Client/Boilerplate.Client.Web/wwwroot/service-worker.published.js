@@ -2,7 +2,7 @@
 // [mirror] push notification and notificationclick handlers - keep in sync with:
 // - src/Client/Boilerplate.Client.Web/wwwroot/service-worker.js
 
-// bit version: 10.6.0-pre-03
+// bit version: 10.6.0-pre-04
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 //#if (notification == true)
