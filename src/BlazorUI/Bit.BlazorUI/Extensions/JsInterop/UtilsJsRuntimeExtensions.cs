@@ -75,6 +75,41 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // Remembers the element the focus was on when a popup took it over, so the popup can hand the keyboard
+    // back to where it came from once it closes.
+    internal static ValueTask BitUtilsCaptureFocusOrigin(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.captureFocusOrigin", elementId);
+    }
+
+
+    internal static ValueTask BitUtilsRestoreFocusOrigin(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.restoreFocusOrigin", elementId);
+    }
+
+
+    internal static ValueTask BitUtilsDisposeFocusOrigin(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeFocusOrigin", elementId);
+    }
+
+
+    // Reports the end of the transform transition of an element back to .NET, which is when a surface that
+    // slides has actually finished sliding.
+    internal static ValueTask BitUtilsSetupTransitionEnd<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime, string elementId, DotNetObjectReference<T> dotnetObj) where T : class
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setupTransitionEnd", elementId, dotnetObj);
+    }
+
+
+    internal static ValueTask BitUtilsDisposeTransitionEnd(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeTransitionEnd", elementId);
+    }
+
+
     // Records the element the focus is on right now under the given key, so that a popup which is about to
     // take the focus over can hand it back to whatever opened it once it closes.
     internal static ValueTask BitUtilsStoreFocus(this IJSRuntime jsRuntime, string key)
