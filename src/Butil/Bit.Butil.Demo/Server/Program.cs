@@ -217,6 +217,13 @@ _ = Task.Run(ButilSearchIndex.Warm).ContinueWith(
     task => app.Logger.LogError(task.Exception, "Building the Bit.Butil search index failed at startup. SearchButil will rebuild it on the next call."),
     TaskContinuationOptions.OnlyOnFaulted);
 
+// The site's own search corpus (Services/DocsContentIndex.cs), on the same terms: it parses every
+// page on the site, so the first visitor to open the search box should not be the one who pays for
+// that. Also lazy, so a failure here costs the search box its content index and nothing else.
+_ = Task.Run(DocsContentIndex.Warm).ContinueWith(
+    task => app.Logger.LogError(task.Exception, "Building the docs search index failed at startup. The site's search box will rebuild it on the next request."),
+    TaskContinuationOptions.OnlyOnFaulted);
+
 app.Run();
 
 // The absolute origin this request arrived on. Behind a reverse proxy the forwarded-headers

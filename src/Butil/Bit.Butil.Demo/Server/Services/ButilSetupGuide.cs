@@ -43,7 +43,10 @@ public static partial class ButilSetupGuide
 
                 This is also the one hosting model where the JavaScript tree-shaking of step 2 needs nothing said:
                 a WebAssembly publish trims `Bit.Butil.dll`, and it is the same assembly that calls the JavaScript
-                being served, so `bit-butil.js` is rebuilt from just the modules the app can still reach.
+                being served, so `bit-butil.js` is rebuilt from just the modules the app can still reach. Publish
+                this app with `<PublishTrimmed>false</PublishTrimmed>` and that signal is gone - add
+                `<BitButilScriptScan>TypeReferences</BitButilScriptScan>` to keep the tree-shaking, which then reads
+                the Bit.Butil classes the app's own assemblies reference instead.
 
                 Two things in the sample below are this repository's rather than yours, and both should be
                 dropped when you copy it: its `.csproj` imports Bit.Butil's consumer-side targets by hand and
@@ -80,9 +83,22 @@ public static partial class ButilSetupGuide
 
                 The same "both containers" rule governs the JavaScript tree-shaking of step 2:
                 `<BitButilLazyScripts>true</BitButilLazyScripts>` belongs in both `.csproj` files, because both of
-                them run components that call Butil. Publish-time bundle trimming is off in this shape and should
-                stay off - the host serves the JavaScript out of its own, untrimmed reference to the package, which
-                says nothing about what the WebAssembly client calls.
+                them run components that call Butil.
+
+                Bundle trimming in this shape wants `<BitButilScriptScan>TypeReferences</BitButilScriptScan>` in the
+                HOST `.csproj` - the host is the project that serves `bit-butil.js`, and the scan reads its own
+                assemblies and the client's alike, because the client is one of its references. What it must not do
+                is trim from `PublishTrimmed`: the host's trimmed assembly set is about the host's own code and says
+                nothing about what the WebAssembly client calls, which is why the trimmed signal is off in this
+                shape and should stay off.
+
+                ```xml
+                <!-- in the HOST .csproj -->
+                <PropertyGroup>
+                  <BitButilTrimScripts>true</BitButilTrimScripts>
+                  <BitButilScriptScan>TypeReferences</BitButilScriptScan>
+                </PropertyGroup>
+                ```
 
                 The files below are this documentation site itself, which is exactly that shape. Its full host
                 `Program.cs` is `GetButilSourceFile(path: "Demo/Server/Program.cs")` - it carries endpoints of its
@@ -178,6 +194,17 @@ public static partial class ButilSetupGuide
             The host page is `Components/App.razor` in a Blazor Web App, or `Pages/_Host.cshtml` in a classic
             (pre-.NET 8) Blazor Server app. If the app prerenders - the default - the same rule as everywhere else
             applies: touch the browser from `OnAfterRenderAsync`, not from `OnInitializedAsync`.
+
+            Nothing here is ever trimmed, so the JavaScript tree-shaking of step 2 has to be told what to work from:
+            `<BitButilScriptScan>TypeReferences</BitButilScriptScan>` reads the Bit.Butil classes this project's own
+            assemblies reference. Lazy scripts are the alternative, and cost one request per API instead of a bundle.
+
+            ```xml
+            <PropertyGroup>
+              <BitButilTrimScripts>true</BitButilTrimScripts>
+              <BitButilScriptScan>TypeReferences</BitButilScriptScan>
+            </PropertyGroup>
+            ```
             """).AppendLine();
         builder.AppendLine(Checklist).AppendLine();
         builder.AppendLine("""
@@ -248,13 +275,18 @@ public static partial class ButilSetupGuide
         1. `dotnet add package Bit.Butil`.
         2. Add `<script src="_content/Bit.Butil/bit-butil.js"></script>` to the host page, BEFORE the Blazor script.
            The app boots as soon as the Blazor script runs, so `window.BitButil` has to exist by then. It is a static
-           web asset of the package - there is nothing to copy into your own wwwroot. Two optional csproj switches
-           tree-shake that JavaScript, so a published app ships only the modules it can still reach: by default a
-           trimmed publish (standalone WebAssembly) rebuilds `bit-butil.js` from only the modules the trimmed
-           `Bit.Butil.dll` still calls, and publishes only those modules under `modules/` too - publish only,
-           never a build (`<BitButilTrimScripts>false</BitButilTrimScripts>` opts out,
-           `<BitButilIncludeScriptModules>true</BitButilIncludeScriptModules>` publishes every module);
-           `<BitButilLazyScripts>true</BitButilLazyScripts>` drops the script tag altogether and has each API
+           web asset of the package - there is nothing to copy into your own wwwroot. Four optional csproj switches
+           tree-shake that JavaScript, so a published app ships only the modules it can still reach.
+           `<BitButilTrimScripts>` rebuilds `bit-butil.js` from just those modules, and publishes only those under
+           `modules/` too - publish only, never a build. It is on by default in a standalone WebAssembly project,
+           where the trimmed `Bit.Butil.dll` says what the app can still call; `false` opts out, and
+           `<BitButilIncludeScriptModules>true</BitButilIncludeScriptModules>` publishes every module regardless.
+           Publishing WITHOUT trimming, there is no trimmed assembly to read, so
+           `<BitButilScriptScan>TypeReferences</BitButilScriptScan>` answers the same question from the app's own
+           assemblies - the Bit.Butil classes they reference - and works in every hosting model; it is ignored when
+           the publish IS trimmed. `<BitButilScriptModule Include="Clipboard;geolocation" />` (an ItemGroup) adds
+           modules or Bit.Butil class names on top of whatever either concluded, for an API reached by reflection.
+           `<BitButilLazyScripts>true</BitButilLazyScripts>` instead drops the script tag altogether and has each API
            `import()` its own module on first use, in every hosting model - set it in every project that uses Butil.
         3. Call `AddBitButilServices()` in EVERY DI container that renders your components. A Blazor Web App with an
            interactive WebAssembly client has two of them (the host prerenders, the browser hydrates), and a missing

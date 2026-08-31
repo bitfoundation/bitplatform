@@ -26,7 +26,7 @@ internal static class ScriptTrimming
     /// internal <c>DomEventsInterop</c>). Dependencies (<c>butil</c>, <c>utils</c>) are added by the manifest,
     /// not listed here, so this stays a statement about what the C# side calls.
     /// </summary>
-    private static readonly string[] MustSurviveModules = ["clipboard", "cookie", "events", "geolocation", "storage", "window"];
+    internal static readonly string[] MustSurviveModules = ["clipboard", "cookie", "events", "geolocation", "storage", "window"];
 
     /// <summary>
     /// Modules no C# code calls directly and that are legitimately only ever pulled in as a dependency of
