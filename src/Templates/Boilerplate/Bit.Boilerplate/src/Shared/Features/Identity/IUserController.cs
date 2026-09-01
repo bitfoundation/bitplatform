@@ -70,8 +70,13 @@ public interface IUserController : IAppController
     Task DeleteWebAuthnCredential(JsonElement clientResponse, CancellationToken cancellationToken) => default!;
 
     //#if (signalR == true || notification == true)
-    [HttpPost("{userSessionId}")]
-    Task<UserSessionNotificationStatus> ToggleNotification(Guid userSessionId, CancellationToken cancellationToken);
+    /// <summary>
+    /// Takes the state the caller wants rather than flipping whatever the server holds, so the two callers that
+    /// already know it - AppMenu's push notifications toggle and the sessions list in Settings - cannot land on the
+    /// opposite one by acting on a status that has since changed. Returns the resulting status.
+    /// </summary>
+    [HttpPost("{userSessionId}/{enabled}")]
+    Task<UserSessionNotificationStatus> SetNotificationEnabled(Guid userSessionId, bool enabled, CancellationToken cancellationToken);
     //#endif
 
     //#if (multitenant == true)

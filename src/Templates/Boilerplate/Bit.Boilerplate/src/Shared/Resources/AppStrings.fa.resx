@@ -1499,11 +1499,14 @@
     <data name="DisableNotifications" xml:space="preserve">
     <value>غیرفعال‌سازی اعلان‌ها</value>
   </data>
-    <data name="TestNotificationMessage1" xml:space="preserve">
-    <value>پیام تستی ۱</value>
+    <data name="TestPushNotificationTitle" xml:space="preserve">
+    <value>اعلان‌ها فعال شد</value>
   </data>
-    <data name="TestNotificationMessage2" xml:space="preserve">
-    <value>پیام تستی ۲</value>
+    <data name="TestPushNotificationMessage" xml:space="preserve">
+    <value>این اعلان را فرستادیم تا مطمئن شوید اعلان‌ها به این دستگاه می‌رسند. برای مطالعه سیاست حریم خصوصی، روی آن بزنید.</value>
+  </data>
+    <data name="TestRealtimeConnectionMessage" xml:space="preserve">
+    <value>اتصال زنده شما به سرور فعال است؛ این پیام هم از همان راه رسید و تغییرات بعدی هم به همین شکل در لحظه نمایش داده می‌شوند.</value>
   </data>
     <!--#endif -->
     <data name="UsersPageTitle" xml:space="preserve">

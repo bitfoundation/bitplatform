@@ -1499,11 +1499,14 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="DisableNotifications" xml:space="preserve">
     <value>Inaktivera notiser</value>
   </data>
-  <data name="TestNotificationMessage1" xml:space="preserve">
-    <value>Testnotis 1</value>
+  <data name="TestPushNotificationTitle" xml:space="preserve">
+    <value>Aviseringar är på</value>
   </data>
-  <data name="TestNotificationMessage2" xml:space="preserve">
-    <value>Testnotis 2</value>
+  <data name="TestPushNotificationMessage" xml:space="preserve">
+    <value>Vi skickade den här så att du kan se att aviseringar når den här enheten. Tryck på den för att läsa vår integritetspolicy.</value>
+  </data>
+  <data name="TestRealtimeConnectionMessage" xml:space="preserve">
+    <value>Din liveanslutning till servern är aktiv. Det här meddelandet kom via den, och kommande ändringar visas på samma sätt, i samma stund som de sker.</value>
   </data>
   <!--#endif -->
   <data name="UsersPageTitle" xml:space="preserve">

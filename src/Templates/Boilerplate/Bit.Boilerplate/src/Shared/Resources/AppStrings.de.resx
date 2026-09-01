@@ -1499,11 +1499,14 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="DisableNotifications" xml:space="preserve">
     <value>Benachrichtigungen deaktivieren</value>
   </data>
-  <data name="TestNotificationMessage1" xml:space="preserve">
-    <value>Test-Benachrichtigung 1</value>
+  <data name="TestPushNotificationTitle" xml:space="preserve">
+    <value>Benachrichtigungen sind aktiv</value>
   </data>
-  <data name="TestNotificationMessage2" xml:space="preserve">
-    <value>Test-Benachrichtigung 2</value>
+  <data name="TestPushNotificationMessage" xml:space="preserve">
+    <value>Diese haben wir gesendet, damit Sie sehen, dass Benachrichtigungen auf diesem Gerät ankommen. Tippen Sie darauf, um unsere Datenschutzerklärung zu lesen.</value>
+  </data>
+  <data name="TestRealtimeConnectionMessage" xml:space="preserve">
+    <value>Ihre Live-Verbindung zum Server steht. Diese Nachricht kam darüber an, und weitere Änderungen erscheinen genauso, sobald sie passieren.</value>
   </data>
   <!--#endif -->
   <data name="UsersPageTitle" xml:space="preserve">

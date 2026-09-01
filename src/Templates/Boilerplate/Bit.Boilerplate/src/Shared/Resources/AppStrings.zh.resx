@@ -1499,11 +1499,14 @@
   <data name="DisableNotifications" xml:space="preserve">
     <value>禁用通知</value>
   </data>
-  <data name="TestNotificationMessage1" xml:space="preserve">
-    <value>测试通知 1</value>
+  <data name="TestPushNotificationTitle" xml:space="preserve">
+    <value>推送通知已开启</value>
   </data>
-  <data name="TestNotificationMessage2" xml:space="preserve">
-    <value>测试通知 2</value>
+  <data name="TestPushNotificationMessage" xml:space="preserve">
+    <value>我们发送了这条通知，方便你确认通知能送达此设备。点按可查看我们的隐私政策。</value>
+  </data>
+  <data name="TestRealtimeConnectionMessage" xml:space="preserve">
+    <value>你与服务器的实时连接已建立。这条消息就是通过它送达的，之后的变化也会以同样的方式即时显示。</value>
   </data>
   <!--#endif -->
   <data name="UsersPageTitle" xml:space="preserve">

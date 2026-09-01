@@ -124,7 +124,9 @@ public partial class SessionsSection
     //#if (signalR == true || notification == true)
     private async Task ToggleNotification(UserSessionDto userSession)
     {
-        if (userSession.NotificationStatus is not UserSessionNotificationStatus.Allowed)
+        var enabled = userSession.NotificationStatus is not UserSessionNotificationStatus.Allowed;
+
+        if (enabled)
         {
             // User is going to allow notifications so it's an opportune time to request permission.
             // The permission might have already been requested (if userSession.NotificationStatus is UserSessionNotificationStatus.Muted), but there's no harm in asking for permission again.
@@ -143,7 +145,7 @@ public partial class SessionsSection
             //#endif
         }
 
-        userSession.NotificationStatus = await userController.ToggleNotification(userSession.Id, CurrentCancellationToken);
+        userSession.NotificationStatus = await userController.SetNotificationEnabled(userSession.Id, enabled, CurrentCancellationToken);
     }
     //#endif
 }

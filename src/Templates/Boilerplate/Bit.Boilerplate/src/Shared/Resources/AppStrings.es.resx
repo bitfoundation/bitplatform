@@ -1499,11 +1499,14 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="DisableNotifications" xml:space="preserve">
     <value>Deshabilitar notificaciones</value>
   </data>
-  <data name="TestNotificationMessage1" xml:space="preserve">
-    <value>Notificación de prueba 1</value>
+  <data name="TestPushNotificationTitle" xml:space="preserve">
+    <value>Las notificaciones están activadas</value>
   </data>
-  <data name="TestNotificationMessage2" xml:space="preserve">
-    <value>Notificación de prueba 2</value>
+  <data name="TestPushNotificationMessage" xml:space="preserve">
+    <value>Enviamos esta para que compruebes que las notificaciones llegan a este dispositivo. Tócala para leer nuestra política de privacidad.</value>
+  </data>
+  <data name="TestRealtimeConnectionMessage" xml:space="preserve">
+    <value>Tu conexión en vivo con el servidor está activa. Este mensaje llegó por ella, y los próximos cambios aparecerán igual, en el momento en que ocurran.</value>
   </data>
   <!--#endif -->
   <data name="UsersPageTitle" xml:space="preserve">

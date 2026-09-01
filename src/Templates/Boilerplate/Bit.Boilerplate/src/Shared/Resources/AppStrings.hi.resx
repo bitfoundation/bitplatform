@@ -1499,11 +1499,14 @@
   <data name="DisableNotifications" xml:space="preserve">
     <value>सूचनाएं अक्षम करें</value>
   </data>
-  <data name="TestNotificationMessage1" xml:space="preserve">
-    <value>टेस्ट सूचना 1</value>
+  <data name="TestPushNotificationTitle" xml:space="preserve">
+    <value>सूचनाएँ चालू हैं</value>
   </data>
-  <data name="TestNotificationMessage2" xml:space="preserve">
-    <value>टेस्ट सूचना 2</value>
+  <data name="TestPushNotificationMessage" xml:space="preserve">
+    <value>हमने यह भेजा ताकि आप देख सकें कि सूचनाएँ इस डिवाइस तक पहुँचती हैं। हमारी गोपनीयता नीति पढ़ने के लिए इस पर टैप करें।</value>
+  </data>
+  <data name="TestRealtimeConnectionMessage" xml:space="preserve">
+    <value>सर्वर से आपका लाइव कनेक्शन चालू है। यह संदेश उसी से आया है, और आगे के बदलाव भी इसी तरह उसी पल दिखेंगे।</value>
   </data>
   <!--#endif -->
   <data name="UsersPageTitle" xml:space="preserve">

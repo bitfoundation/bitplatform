@@ -1499,11 +1499,14 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="DisableNotifications" xml:space="preserve">
     <value>Disable notifications</value>
   </data>
-    <data name="TestNotificationMessage1" xml:space="preserve">
-    <value>Test notification 1</value>
+    <data name="TestPushNotificationTitle" xml:space="preserve">
+    <value>Push notifications are on</value>
   </data>
-    <data name="TestNotificationMessage2" xml:space="preserve">
-    <value>Test notification 2</value>
+    <data name="TestPushNotificationMessage" xml:space="preserve">
+    <value>We sent this one so you can check that notifications reach this device. Tap to read our privacy policy.</value>
+  </data>
+    <data name="TestRealtimeConnectionMessage" xml:space="preserve">
+    <value>Your live connection to the server is up. This message came through it, and changes from now on will appear the moment they happen.</value>
   </data>
     <!--#endif -->
     <data name="UsersPageTitle" xml:space="preserve">
