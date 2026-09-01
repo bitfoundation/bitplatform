@@ -10,8 +10,11 @@
 /// into the component - so overriding the theme breakpoints changes these queries too. The pixel
 /// values shown on each member below are the built-in <em>defaults</em> (used when the matching
 /// <c>--bit-bp-*</c> variable is unset). Range members are half-open: the upper bound is one CSS
-/// pixel below the next breakpoint. For a one-off breakpoint that isn't part of the theme scale,
-/// use <see cref="BitMediaQuery.Query"/> with an explicit query string instead.
+/// pixel below the next breakpoint. The <c>*To*</c> members span from the start of the first named
+/// breakpoint through the end of the second (both inclusive); a span starting at Xs or ending at
+/// Xxl is one of the <c>Lt*</c> / <c>Gt*</c> members instead. For a one-off breakpoint that isn't
+/// part of the theme scale, use <see cref="BitMediaQuery.Query"/> with an explicit query string
+/// instead.
 /// </remarks>
 public enum BitScreenQuery
 {
@@ -93,5 +96,35 @@ public enum BitScreenQuery
     /// <summary>
     /// Greater than extra large query: [@media screen and (min-width: 2560px)]
     /// </summary>
-    GtXl
+    GtXl,
+
+    /// <summary>
+    /// Small through medium query: [@media screen and (min-width: 600px) and (max-width: 1279px)]
+    /// </summary>
+    SmToMd,
+
+    /// <summary>
+    /// Small through large query: [@media screen and (min-width: 600px) and (max-width: 1919px)]
+    /// </summary>
+    SmToLg,
+
+    /// <summary>
+    /// Small through extra large query: [@media screen and (min-width: 600px) and (max-width: 2559px)]
+    /// </summary>
+    SmToXl,
+
+    /// <summary>
+    /// Medium through large query: [@media screen and (min-width: 960px) and (max-width: 1919px)]
+    /// </summary>
+    MdToLg,
+
+    /// <summary>
+    /// Medium through extra large query: [@media screen and (min-width: 960px) and (max-width: 2559px)]
+    /// </summary>
+    MdToXl,
+
+    /// <summary>
+    /// Large through extra large query: [@media screen and (min-width: 1280px) and (max-width: 2559px)]
+    /// </summary>
+    LgToXl
 }

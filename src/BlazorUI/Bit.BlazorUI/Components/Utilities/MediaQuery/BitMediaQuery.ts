@@ -45,6 +45,13 @@
 
             const queryList = window.matchMedia(resolvedQuery);
 
+            // matchMedia never throws; a query it cannot parse silently becomes "not all", which
+            // simply never matches. Surface that as a warning so a typo in a custom query is
+            // diagnosable instead of just rendering the NotMatched content forever.
+            if (queryList.media === 'not all' && resolvedQuery.trim() !== 'not all') {
+                console.warn(`BitMediaQuery: the provided query '${resolvedQuery}' is not a valid media query.`);
+            }
+
             queryList.addEventListener('change', async e => {
                 await handleMatchChange(e.matches);
             }, { signal: ac.signal });
@@ -52,7 +59,13 @@
             await handleMatchChange(queryList.matches);
 
             async function handleMatchChange(matches: boolean) {
-                await dotnetObj.invokeMethodAsync("OnMatchChange", matches);
+                try {
+                    await dotnetObj.invokeMethodAsync("OnMatchChange", matches);
+                } catch {
+                    // The .NET side is gone (the component or its circuit was disposed while the
+                    // notification was in flight); stop listening instead of failing on every change.
+                    MediaQuery.dispose(id);
+                }
             }
         }
 
@@ -69,34 +82,47 @@
 
         // Builds the media query for a predefined BitScreenQuery from the resolved theme breakpoints.
         // Range bounds are half-open (min inclusive, max exclusive), so the upper edge is one CSS
-        // pixel below the next breakpoint - matching the packaged media-queries.scss mixins.
+        // pixel below the next breakpoint - matching the packaged media-queries.scss mixins, whose
+        // "screen and" media-type prefix is kept too so the query does not also match print.
         private static buildScreenQuery(screenQuery: string, id: string): string {
             const bp = MediaQuery.resolveBreakpoints(id);
             const min = (v: string) => `(min-width: ${v})`;
             const max = (v: string) => `(max-width: ${MediaQuery.below(v)})`;
 
-            switch (screenQuery) {
-                case 'Xs': return `${min(bp.xs)} and ${max(bp.sm)}`;
-                case 'Sm': return `${min(bp.sm)} and ${max(bp.md)}`;
-                case 'Md': return `${min(bp.md)} and ${max(bp.lg)}`;
-                case 'Lg': return `${min(bp.lg)} and ${max(bp.xl)}`;
-                case 'Xl': return `${min(bp.xl)} and ${max(bp.xxl)}`;
-                case 'Xxl': return min(bp.xxl);
+            const build = () => {
+                switch (screenQuery) {
+                    case 'Xs': return `${min(bp.xs)} and ${max(bp.sm)}`;
+                    case 'Sm': return `${min(bp.sm)} and ${max(bp.md)}`;
+                    case 'Md': return `${min(bp.md)} and ${max(bp.lg)}`;
+                    case 'Lg': return `${min(bp.lg)} and ${max(bp.xl)}`;
+                    case 'Xl': return `${min(bp.xl)} and ${max(bp.xxl)}`;
+                    case 'Xxl': return min(bp.xxl);
 
-                case 'LtSm': return max(bp.sm);
-                case 'LtMd': return max(bp.md);
-                case 'LtLg': return max(bp.lg);
-                case 'LtXl': return max(bp.xl);
-                case 'LtXxl': return max(bp.xxl);
+                    case 'LtSm': return max(bp.sm);
+                    case 'LtMd': return max(bp.md);
+                    case 'LtLg': return max(bp.lg);
+                    case 'LtXl': return max(bp.xl);
+                    case 'LtXxl': return max(bp.xxl);
 
-                case 'GtXs': return min(bp.sm);
-                case 'GtSm': return min(bp.md);
-                case 'GtMd': return min(bp.lg);
-                case 'GtLg': return min(bp.xl);
-                case 'GtXl': return min(bp.xxl);
+                    case 'GtXs': return min(bp.sm);
+                    case 'GtSm': return min(bp.md);
+                    case 'GtMd': return min(bp.lg);
+                    case 'GtLg': return min(bp.xl);
+                    case 'GtXl': return min(bp.xxl);
 
-                default: return '';
-            }
+                    case 'SmToMd': return `${min(bp.sm)} and ${max(bp.lg)}`;
+                    case 'SmToLg': return `${min(bp.sm)} and ${max(bp.xl)}`;
+                    case 'SmToXl': return `${min(bp.sm)} and ${max(bp.xxl)}`;
+                    case 'MdToLg': return `${min(bp.md)} and ${max(bp.xl)}`;
+                    case 'MdToXl': return `${min(bp.md)} and ${max(bp.xxl)}`;
+                    case 'LgToXl': return `${min(bp.lg)} and ${max(bp.xxl)}`;
+
+                    default: return '';
+                }
+            };
+
+            const query = build();
+            return query ? `screen and ${query}` : '';
         }
 
         // Reads the --bit-bp-* breakpoint tokens from the queried element's themed scope, so the

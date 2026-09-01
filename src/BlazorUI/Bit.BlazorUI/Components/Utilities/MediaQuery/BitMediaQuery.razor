@@ -3,18 +3,34 @@
 
 @if ((Matched ?? ChildContent ?? NotMatched) is not null)
 {
-    <div @ref="RootElement" @attributes="HtmlAttributes"
-         id="@_Id"
-         style="@StyleBuilder.Value"
-         class="@ClassBuilder.Value"
-         dir="@Dir?.ToString().ToLower()">
-        @if (_isMatched)
+    if (NoWrapper)
+    {
+        @* No element is rendered any more, so the reference a previous render captured is stale. *@
+        RootElement = default;
+
+        @* A collapsed component is asked to be out of the DOM, which still means something without
+           an element of its own: the content it would have wrapped goes with it. *@
+        if (Visibility is not BitVisibility.Collapsed)
         {
-            @(Matched ?? ChildContent)
+            @(_isMatched ? (Matched ?? ChildContent) : NotMatched)
         }
-        else
-        {
-            @NotMatched
-        }
-    </div>
+    }
+    else
+    {
+        <div @ref="RootElement" @attributes="HtmlAttributes"
+             id="@_Id"
+             aria-label="@AriaLabel"
+             style="@StyleBuilder.Value"
+             class="@ClassBuilder.Value"
+             dir="@Dir?.ToString().ToLower()">
+            @if (_isMatched)
+            {
+                @(Matched ?? ChildContent)
+            }
+            else
+            {
+                @NotMatched
+            }
+        </div>
+    }
 }
