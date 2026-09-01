@@ -68,6 +68,19 @@ rest. Do not move all eleven at once.
 
 **Vitest is held at `^3`** in `src/Bmotion/Tests/bit-bmotion-js` and `src/Bswup/Tests/bit-bswup-js`.
 
+**`devops-actions/variable-substitution` is held at v1.2** (`ae7b1f36…`). v2.0.0 committed 31
+symlinks into its vendored `node_modules`; the runner cannot stage them and every job dies before
+the action runs with `Could not find file '.../helper-compilation-targets/node_modules/.bin/semver'`.
+v2.0.0 is the only v2 release and has been broken since 2026-05-23. Re-check with the tree API
+before ever moving this pin again:
+
+```bash
+gh api "repos/<owner>/<repo>/git/trees/<sha>?recursive=1" --jq '[.tree[]|select(.mode=="120000")]|length'
+```
+
+A non-zero count on a JavaScript action that vendors `node_modules` means it will not stage. This is
+worth checking for *any* action bump, not just this one — it is invisible in the release notes.
+
 When a held pin's rationale no longer holds — the oldest supported SDK moved, TS 7 was adopted
 repo-wide — say so in the report rather than acting on it.
 

@@ -44,7 +44,7 @@ jobs:
           bit-resx-translate
 
       - name: Update core appsettings.json
-        uses: devops-actions/variable-substitution@452ffbbfb1c26fd5d9aaf24faffb59c5084257e9 # v2.0.0
+        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
         with:
           files: 'src/**/appsettings*json'
         env:
@@ -121,7 +121,7 @@ jobs:
           global-json-file: global.json
 
       - name: Update core appsettings.json
-        uses: devops-actions/variable-substitution@452ffbbfb1c26fd5d9aaf24faffb59c5084257e9 # v2.0.0
+        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
         with:
           files: 'src/**/appsettings*json'
         env:
@@ -191,7 +191,7 @@ jobs:
           bit-resx-translate
 
       - name: Update core appsettings.json
-        uses: devops-actions/variable-substitution@452ffbbfb1c26fd5d9aaf24faffb59c5084257e9 # v2.0.0
+        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
         with:
           files: 'src\**\appsettings*json'
         env:
@@ -250,7 +250,7 @@ jobs:
           bit-resx-translate
 
       - name: Update core appsettings.json
-        uses: devops-actions/variable-substitution@452ffbbfb1c26fd5d9aaf24faffb59c5084257e9 # v2.0.0
+        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
         with:
           files: 'src/**/appsettings*json'
         env:
@@ -310,7 +310,7 @@ jobs:
           bit-resx-translate
 
       - name: Update core appsettings.json
-        uses: devops-actions/variable-substitution@452ffbbfb1c26fd5d9aaf24faffb59c5084257e9 # v2.0.0
+        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
         with:
           files: 'src/**/appsettings*json'
         env:
