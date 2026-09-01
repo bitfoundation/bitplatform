@@ -510,37 +510,47 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     //#if (signalR == true || notification == true)
-    [HttpPost("{userSessionId}")]
-    public async Task<UserSessionNotificationStatus> ToggleNotification(Guid userSessionId, CancellationToken cancellationToken)
+    [HttpPost("{userSessionId}/{enabled}")]
+    public async Task<UserSessionNotificationStatus> SetNotificationEnabled(Guid userSessionId, bool enabled, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
 
         var userSession = await DbContext.UserSessions
             .FirstOrDefaultAsync(us => us.Id == userSessionId && us.UserId == userId, cancellationToken) ?? throw new ResourceNotFoundException().WithData("Reason", "User session not found.");
 
-        userSession.NotificationStatus = userSession.NotificationStatus is UserSessionNotificationStatus.NotConfigured ? UserSessionNotificationStatus.Allowed :
-            userSession.NotificationStatus is UserSessionNotificationStatus.Allowed ? UserSessionNotificationStatus.Muted : UserSessionNotificationStatus.Allowed;
+        // NotConfigured is the server's own "never asked" state, so it is only ever left behind, never stored.
+        var status = enabled ? UserSessionNotificationStatus.Allowed : UserSessionNotificationStatus.Muted;
+
+        // The test notification below follows the change, not the call: AppMenu's toggle stores the state the switch
+        // ends up on, and re-storing Allowed is not worth another push.
+        if (userSession.NotificationStatus == status)
+            return status;
+
+        userSession.NotificationStatus = status;
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        if (userSession.NotificationStatus is UserSessionNotificationStatus.Allowed)
+        if (enabled)
         {
             //#if (notification == true)
+            // The same welcome push PushNotificationController.TestPushNotificationSetup sends to signed out visitors.
             await pushNotificationService.RequestPush(new()
             {
-                Message = Localizer[nameof(AppStrings.TestNotificationMessage1)],
+                Title = Localizer[nameof(AppStrings.TestPushNotificationTitle)],
+                Message = Localizer[nameof(AppStrings.TestPushNotificationMessage)],
+                PageUrl = PageUrls.PrivacyPolicy,
                 UserRelatedPush = true
             }, customSubscriptionFilter: us => us.UserSessionId == userSessionId, cancellationToken: cancellationToken);
             //#endif
             //#if (signalR == true)
             if (userSession.SignalRConnectionId != null)
             {
-                await appHubContext.Clients.Client(userSession.SignalRConnectionId).SendAsync(SharedAppMessages.SHOW_MESSAGE, (string)Localizer[nameof(AppStrings.TestNotificationMessage2)], null, cancellationToken);
+                await appHubContext.Clients.Client(userSession.SignalRConnectionId).SendAsync(SharedAppMessages.SHOW_MESSAGE, (string)Localizer[nameof(AppStrings.TestRealtimeConnectionMessage)], null, cancellationToken);
             }
             //#endif
         }
 
-        return userSession.NotificationStatus;
+        return status;
     }
     //#endif
 

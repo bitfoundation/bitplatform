@@ -29,13 +29,19 @@ public class AppInsightsJsSdkService : IApplicationInsights
     /// </summary>
     private readonly ConcurrentQueue<TelemetryItem> pendingTelemetryInitializers = new();
 
+    /// <summary>Serializes the consent read with the write it feeds, so a decision taken mid update cannot lose to an older snapshot.</summary>
+    private readonly SemaphoreSlim updateCfgLock = new(1, 1);
+
     private IJSRuntime jsRuntime = default!;
     private readonly TimeProvider timeProvider;
+    private readonly ConsentService consentService;
     private readonly ApplicationInsights applicationInsights = new();
 
-    public AppInsightsJsSdkService(IJSRuntime jsRuntime, TimeProvider timeProvider)
+    /// <summary><see cref="ConsentService"/> is scoped while this is a singleton on the browser: still one instance, because client side Blazor has no DI scopes.</summary>
+    public AppInsightsJsSdkService(IJSRuntime jsRuntime, TimeProvider timeProvider, ConsentService consentService)
     {
         this.timeProvider = timeProvider;
+        this.consentService = consentService;
         InitJSRuntime(jsRuntime);
     }
 
@@ -140,10 +146,33 @@ public class AppInsightsJsSdkService : IApplicationInsights
         await applicationInsights.TrackTrace(trace);
     }
 
+    /// <summary>
+    /// The single writer of the switches Analytics consent controls: stamped onto every update, so ApplicationInsightsInit's
+    /// <c>mergeExisting: false</c> replace cannot reset what consent granted. A caller's values for those four are overridden.
+    /// </summary>
     public async Task UpdateCfg(Config newConfig, bool mergeExisting = true)
     {
         await EnsureApplicationInsightsIsReady();
-        await applicationInsights.UpdateCfg(newConfig, mergeExisting);
+
+        // After readiness rather than around it, which would queue every caller behind that method's own 15 second poll.
+        await updateCfgLock.WaitAsync();
+
+        try
+        {
+            var granted = await consentService.IsGranted(ConsentCategory.Analytics);
+
+            // Mutating the caller's instance is safe: nothing else reads it and all four are always assigned.
+            newConfig.DisableCookiesUsage = granted is false;
+            newConfig.IsStorageUseDisabled = granted is false;
+            newConfig.AutoTrackPageVisitTime = granted;
+            newConfig.EnableAutoRouteTracking = granted;
+
+            await applicationInsights.UpdateCfg(newConfig, mergeExisting);
+        }
+        finally
+        {
+            updateCfgLock.Release();
+        }
     }
 
     public async Task AddTelemetryInitializer(TelemetryItem telemetryItem)

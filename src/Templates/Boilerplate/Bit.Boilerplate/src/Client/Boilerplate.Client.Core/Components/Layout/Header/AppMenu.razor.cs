@@ -1,4 +1,7 @@
 //+:cnd:noEmit
+//#if (notification == true)
+using Boilerplate.Shared.Features.PushNotification;
+//#endif
 
 namespace Boilerplate.Client.Core.Components.Layout.Header;
 
@@ -17,6 +20,7 @@ public partial class AppMenu
     [AutoInject] private SignInModalService signInModalService = default!;
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
+    [AutoInject] private IPushNotificationController pushNotificationController = default!;
     //#endif
 
 
@@ -143,7 +147,39 @@ public partial class AppMenu
         if (enable && pushNotificationsEnabled is false)
         {
             SnackBarService.Error(Localizer[nameof(AppStrings.PushNotificationsBlockedMessage)]);
+            return;
         }
+
+        await ConfirmPushNotifications(enable);
+    }
+
+    /// <summary>
+    /// Tells the server what the switch now says, and the server answers with the welcome push that proves the setup
+    /// works. Signed in this is not optional bookkeeping: a subscription attached to a user session is only pushed to
+    /// while that session is Allowed (See PushNotificationService.RequestPush), so without it someone who turned the
+    /// switch on here received nothing until the sessions list in Settings was used.
+    /// </summary>
+    private async Task ConfirmPushNotifications(bool enabled)
+    {
+        var user = (await AuthenticationStateTask).User;
+
+        if (user.IsAuthenticated())
+        {
+            await userController.SetNotificationEnabled(user.GetSessionId(), enabled, CurrentCancellationToken);
+            return;
+        }
+
+        // Signed out there is no session to store the preference on, and turning the switch off has just deleted the
+        // subscription, so only the enable path has anything left to say.
+        if (enabled is false)
+            return;
+
+        var subscription = await pushNotificationService.GetSubscription(CurrentCancellationToken);
+
+        if (subscription?.DeviceId is null)
+            return;
+
+        await pushNotificationController.TestPushNotificationSetup(subscription, CurrentCancellationToken);
     }
     //#endif
 

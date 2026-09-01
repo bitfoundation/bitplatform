@@ -1499,11 +1499,14 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="DisableNotifications" xml:space="preserve">
     <value>Désactiver les notifications</value>
   </data>
-  <data name="TestNotificationMessage1" xml:space="preserve">
-    <value>Notification de test 1</value>
+  <data name="TestPushNotificationTitle" xml:space="preserve">
+    <value>Les notifications sont activées</value>
   </data>
-  <data name="TestNotificationMessage2" xml:space="preserve">
-    <value>Notification de test 2</value>
+  <data name="TestPushNotificationMessage" xml:space="preserve">
+    <value>Nous l'avons envoyée pour que vous puissiez vérifier que les notifications arrivent sur cet appareil. Touchez-la pour lire notre politique de confidentialité.</value>
+  </data>
+  <data name="TestRealtimeConnectionMessage" xml:space="preserve">
+    <value>Votre connexion en direct au serveur est active. Ce message est arrivé par ce biais, et les prochains changements s'afficheront de la même façon, dès qu'ils se produisent.</value>
   </data>
   <!--#endif -->
   <data name="UsersPageTitle" xml:space="preserve">

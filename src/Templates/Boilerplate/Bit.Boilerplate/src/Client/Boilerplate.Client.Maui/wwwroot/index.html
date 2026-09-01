@@ -34,7 +34,12 @@
             crossOrigin: "anonymous",
             cfg: {
                 instrumentationKey: "00000000-0000-0000-0000-000000000000",
-                disableTelemetry: true
+                disableTelemetry: true,
+                autoTrackPageVisitTime: false,
+                enableAutoRouteTracking: false,
+                isStorageUseDisabled: true,
+                disableCookiesUsage: true,
+                disablePageUnloadEvents: ["unload"]
             }
         });
     </script>
