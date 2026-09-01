@@ -4,52 +4,215 @@
 
 @inherits AppComponentBase
 
+@* The WASM download indicator. It is deliberately NOT a splash: the app is prerendered and fully
+   usable while the payload streams in behind it, so anything that sits over the page - the centred
+   ring this used to be - lands on top of live chrome (it collided with the header's search box) and
+   claims more attention than a background download deserves.
+
+   So the indicator IS the header's bottom border: a hairline track the width of the window, laid
+   over the border while the download runs, filling from the inline-start edge in the site's accent.
+   Nothing overlaps, nothing needs to be dodged at any width, and the pattern is one every reader
+   already knows from the top-of-page loaders on GitHub and YouTube.
+
+   The same restraint decides the failure panel below it. *@
+
 <style>
+    /* Pinned to the viewport rather than parented to the header: this markup is rendered at the end
+       of the body by App.razor, outside the Blazor root, so it cannot be a child of the sticky header
+       it lines up with. The offset is derived from the same two variables the header's own height is
+       built from - the docs shell's header height and the safe-area inset BitAppShell pads the top
+       with - so the line tracks the header instead of guessing at it. Both carry a fallback: this
+       element paints during the very first load, when a stylesheet may not have arrived yet. */
     #bit-bswup {
-        top: 2px;
-        left: 50%;
+        left: 0;
+        right: 0;
         display: none;
         position: fixed;
+        pointer-events: none;
         z-index: 999999999;
-        text-align: center;
-        transform: translateX(-50%);
-        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        top: calc(var(--demo-header-height, 65px) + var(--bit-env-inset-top, 0px) - 3px);
     }
-        #bit-bswup .bswup-container {
-            width: 3rem;
-            height: 3rem;
-            display: block;
-            position: relative;
+
+        /* The track is the header's border-bottom color at the header's border thickness plus two
+           pixels, so it reads as that border thickening for the duration of the download rather
+           than as a new element arriving. */
+        #bit-bswup .bswup-track {
+            width: 100%;
+            height: 3px;
+            overflow: hidden;
+            background-color: var(--bit-clr-brd-sec, rgba(128, 128, 128, 0.3));
         }
-            #bit-bswup .bswup-container circle {
-                fill: none;
-                stroke: #e0e0e0;
-                stroke-width: 0.2rem;
-                transform-origin: 50% 50%;
-                transform: rotate(-90deg);
-            }
-                #bit-bswup .bswup-container circle:last-child {
-                    stroke: #1b6ec2;
-                    transition: stroke-dasharray 0.05s ease-in-out;
-                    stroke-dasharray: calc(3.141 * var(--bit-bswup-percent, 0%) * 0.8), 500%;
-                }
-        #bit-bswup .bswup-progress-text {
-            top: 50%;
-            left: 50%;
-            font-size: 12px;
-            position: absolute;
-            text-align: center;
-            font-weight: normal;
-            transform: translate(-50%, -50%);
+
+        /* Width and aria-valuenow are set by bit-bswup.progress.js, which addresses this element by
+           id - hence the id rather than the --bit-bswup-percent variable the ring read: the same
+           script keeps the ARIA value in step with the visual fill for free.
+
+           No inline-start radius (the fill grows out of the window edge) and no width at rest, so a
+           download that never starts shows nothing. The glow is what separates a 3px line from a
+           border at a glance; it is a static shadow rather than a pulse, so it needs no motion gate. */
+        #bit-bswup .bswup-bar {
+            width: 0;
+            height: 100%;
+            border-start-end-radius: 3px;
+            border-end-end-radius: 3px;
+            background-color: var(--bit-clr-pri, #1b6ec2);
+            box-shadow: 0 0 6px 0 var(--bit-clr-pri, #1b6ec2);
+            transition: width var(--bit-mot-duration, 200ms) var(--bit-mot-easing, cubic-bezier(0.33, 0, 0.67, 1));
         }
-            #bit-bswup .bswup-progress-text::after {
-                content: var(--bit-bswup-percent-text, "");
+
+
+    /* The failure panel.
+
+       Only a fatal FIRST install reaches this: an update that fails behind a running app is torn
+       down silently by the script, because the previous worker keeps serving and nothing the reader
+       can see is actually broken. So this speaks for the one case where the offline copy the site
+       promised will not exist - and even then it is news about a background job, not about the page,
+       which is loaded and working. Hence a small card in the corner under the header rather than
+       anything that occupies the column: the reader who does not care can ignore it without having
+       to dismiss it, and the one who does gets the reason and a retry without leaving the page.
+
+       Held to the library's own popup recipe - page background, popup radius, popup shadow - so it
+       reads as something the site rendered rather than as browser chrome, and so it follows every
+       preset and both schemes for free. The hairline is what keeps it from dissolving into the page
+       in the dark scheme, where the shadow alone carries almost nothing.
+
+       bit-bswup.progress.js reveals this by setting display:block inline, and an inline style wins
+       outright - so the row inside is what does the laying out, and this stays a plain block. */
+    #bit-bswup .bswup-error {
+        display: none;
+        pointer-events: auto;
+        width: fit-content;
+        padding: 10px 12px;
+        /* 3px puts the card back at the header's bottom edge - the container starts that far above
+           it, under the track - and the rest is air. */
+        margin-block-start: 11px;
+        margin-inline-start: auto;
+        margin-inline-end: 12px;
+        max-width: min(360px, calc(100% - 24px));
+        color: var(--bit-clr-fg-pri, #323130);
+        border-radius: var(--bit-shp-radius-popup, 4px);
+        background-color: var(--bit-clr-bg-pri, #fff);
+        border: 1px solid var(--bit-clr-brd-sec, rgba(128, 128, 128, 0.3));
+        box-shadow: var(--bit-shd-popup, 0 4px 12px rgba(0, 0, 0, 0.15));
+        animation: bswup-error-in var(--bit-mot-duration, 200ms) var(--bit-mot-easing-decelerate, cubic-bezier(0.1, 0.9, 0.2, 1));
+    }
+
+    @@keyframes bswup-error-in {
+        from {
+            opacity: 0;
+            transform: translateY(-4px);
+        }
+    }
+
+    #bit-bswup .bswup-error-row {
+        gap: 8px;
+        display: flex;
+        align-items: baseline;
+    }
+
+    /* The whole severity cue. A red panel for a background download that failed would outshout the
+       page it is sitting on; a 6px dot says the same thing at the size the news deserves. */
+    #bit-bswup .bswup-error-dot {
+        width: 6px;
+        height: 6px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        align-self: center;
+        background-color: var(--bit-clr-err, #d13438);
+    }
+
+    #bit-bswup .bswup-error-message {
+        flex: 1;
+        min-width: 0;
+        line-height: 1.4;
+        font-size: var(--bit-tpg-fs-xs, 12px);
+    }
+
+    /* A text button rather than a filled one: the panel is an aside, and a solid button in it would
+       read as the page's primary action. The script shows it only for failures a reload can
+       genuinely fix and leaves it hidden for the ones - a bad manifest, an integrity mismatch -
+       where retrying just re-fetches the same broken bytes, so it stays display:none here. */
+    #bit-bswup .bswup-error-retry {
+        border: 0;
+        padding: 0;
+        display: none;
+        flex-shrink: 0;
+        cursor: pointer;
+        background: none;
+        font-family: inherit;
+        text-underline-offset: 2px;
+        font-size: var(--bit-tpg-fs-xs, 12px);
+        font-weight: var(--bit-tpg-fw-semibold, 600);
+        color: var(--bit-clr-pri, #1b6ec2);
+    }
+
+        #bit-bswup .bswup-error-retry:hover {
+            text-decoration: underline;
+        }
+
+        #bit-bswup .bswup-error-retry:focus-visible {
+            outline: 2px solid var(--bit-clr-pri, #1b6ec2);
+            border-radius: var(--bit-shp-radius-button, 2px);
+            outline-offset: 2px;
+        }
+
+    /* The reason, the asset url and its hash: the only thing here a maintainer can act on, and the
+       only thing a reader has no use for. Folded away rather than dropped, and folded away here
+       rather than left to the console, which is where it would otherwise have to be looked for. */
+    #bit-bswup .bswup-error-more {
+        margin-block-start: 6px;
+        margin-inline-start: 14px;
+        font-size: var(--bit-tpg-fs-2xs, 10px);
+        color: var(--bit-clr-fg-sec, #605e5c);
+    }
+
+        /* Some failures carry no reason, url or hash at all, and the script writes the empty string
+           for those. An empty disclosure is worse than none, so the whole fold goes with it. */
+        #bit-bswup .bswup-error-more:has(> .bswup-error-details:empty) {
+            display: none;
+        }
+
+        #bit-bswup .bswup-error-more > summary {
+            cursor: pointer;
+            list-style: none;
+            width: fit-content;
+        }
+
+            #bit-bswup .bswup-error-more > summary::-webkit-details-marker {
+                display: none;
             }
-    /* If you want the update to be applied after the user approves the new Pwa version and not automatically,
-        set AutoReload parameter of BswupProgress to false and uncomment the commented codes in this file: */
+
+            #bit-bswup .bswup-error-more > summary::before {
+                content: "+ ";
+            }
+
+            #bit-bswup .bswup-error-more[open] > summary::before {
+                content: "- ";
+            }
+
+            #bit-bswup .bswup-error-more > summary:hover {
+                color: var(--bit-clr-fg-pri, #323130);
+            }
+
+    /* A div rather than the pre element this reads like, because app.scss dresses every pre on the site
+       as the one code surface it uses for the sample panels - a bordered 44px-tall box with 56px of
+       trailing padding, which is most of the width of this card. The content is a url and a hash, so
+       it is held to LTR whatever the page direction is. */
+    #bit-bswup .bswup-error-details {
+        margin: 4px 0 0;
+        overflow: auto;
+        direction: ltr;
+        max-height: 96px;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        font-family: var(--demo-font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+    }
+
+    /* If you want the update to be applied after the user approves the new Pwa version and not
+       automatically, set AutoReload parameter of BswupProgress to false and uncomment the commented
+       codes in this file: */
     /*
         #bit-bswup-reload {
-            top: 38px;
             left: 50%;
             display: none;
             cursor: pointer;
@@ -58,17 +221,36 @@
             z-index: 999999999;
             border-radius: 2px;
             transform: translateX(-50%);
+            top: calc(var(--demo-header-height, 65px) + var(--bit-env-inset-top, 0px) + 8px);
         }
     */
 </style>
 
 <div>
     <BswupProgress AppContainer="#app-container" HideApp="false" AutoReload="true" ShowLogs="false">
-        <div class="bswup-progress-text"></div>
-        <svg class="bswup-container">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
+        <div class="bswup-track">
+            <div id="bit-bswup-progress-bar"
+                 class="bswup-bar"
+                 role="progressbar"
+                 aria-valuemin="0"
+                 aria-valuemax="100"
+                 aria-valuenow="0"
+                 aria-label="Downloading the application"></div>
+        </div>
+        @* Every id here is one bit-bswup.progress.js looks up by name and fills in; the classes are
+           this page's own. role="alert" sits on the card rather than on the message so the whole
+           thing is announced when the script reveals it. *@
+        <div id="bit-bswup-error" class="bswup-error" role="alert">
+            <div class="bswup-error-row">
+                <span class="bswup-error-dot" aria-hidden="true"></span>
+                <span id="bit-bswup-error-message" class="bswup-error-message"></span>
+                <button id="bit-bswup-error-retry" class="bswup-error-retry" type="button">Retry</button>
+            </div>
+            <details class="bswup-error-more">
+                <summary>Details</summary>
+                <div id="bit-bswup-error-details" class="bswup-error-details"></div>
+            </details>
+        </div>
     </BswupProgress>
     @* <button id="bit-bswup-reload">@Localizer[nameof(AppStrings.Update)]</button> *@
 </div>
