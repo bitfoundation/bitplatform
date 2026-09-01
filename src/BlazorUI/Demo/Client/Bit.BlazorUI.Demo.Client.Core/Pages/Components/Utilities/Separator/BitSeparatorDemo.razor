@@ -1,17 +1,23 @@
-﻿@page "/components/separator"
+@page "/components/separator"
 
 <PageOutlet Url="components/separator"
             Title="Separator"
-            Description="A Separator is a component that visually separates content into groups." />
+            Description="A Separator is a component that visually separates content into groups, as a horizontal or vertical line that can carry a label and is restyled through the theme." />
 
 <div>
     <DemoPage Name="Separator"
-              Description="A Separator is a component that visually separates content into groups."
+              Description="BitSeparator visually separates content into groups. The line runs across its container unless Vertical stands it up, and any content given to it - a label, an icon - sits on the line where AlignContent puts it. The line itself is drawn by the theme and restyled through LineStyle, Thickness and Color, while Background and Border keep it on the neutral surface tiers. To assistive technologies it reports itself as a separator, named by its content, and a separator that is only visual sugar opts out of being announced through Decorative."
               Parameters="componentParameters"
+              SubClasses="componentSubClasses"
               SubEnums="componentSubEnums"
               GitHubUrl="Utilities/Separator/BitSeparator.razor"
               GitHubDemoUrl="Utilities/Separator/BitSeparatorDemo.razor">
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div class="example-desc">
+                On its own, a separator draws the theme's hairline across the full width of its container. Anything
+                given as its content - a run of text, an icon, any markup - sits on the line, masking the part of it
+                underneath, and also names the separator to assistive technologies.
+            </div>
             <div>
                 <div>Simple Separator</div>
                 <BitSeparator />
@@ -25,6 +31,10 @@
         </DemoExample>
 
         <DemoExample Title="Vertical" RazorCode="@example2RazorCode" Id="example2">
+            <div class="example-desc">
+                <b>Vertical</b> stands the line up between items laid out side by side. A vertical separator takes its
+                height from its container, so the container needs a height of its own - here a fixed-height flex row.
+            </div>
             <div class="custom-horizontal-layout">
                 <span>Item 1</span>
                 <BitSeparator Vertical />
@@ -39,6 +49,11 @@
         </DemoExample>
 
         <DemoExample Title="AlignContent" RazorCode="@example3RazorCode" Id="example3">
+            <div class="example-desc">
+                <b>AlignContent</b> puts the content at the start, the middle or the end of the line. The alignment is
+                direction-aware on a horizontal separator - start and end follow the reading direction - and on a
+                vertical one it means the top, the middle or the bottom.
+            </div>
             <div>Horizontal</div><br />
             <BitSeparator AlignContent="@BitSeparatorAlignContent.Center">Center</BitSeparator>
             <br /><br />
@@ -54,7 +69,32 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="FullWidth" RazorCode="@example4RazorCode" Id="example4">
+        <DemoExample Title="ContentOffset" RazorCode="@example4RazorCode" Id="example4">
+            <div class="example-desc">
+                <b>ContentOffset</b> pushes the content away from the edge of the line it is aligned to, as any CSS
+                length - on a horizontal separator a percentage measures against the length of the line. It only means
+                anything while <b>AlignContent</b> is Start or End, since centered content has no edge to be offset
+                from, and it is direction-aware: in RTL, a start-aligned offset pushes from the right.
+            </div>
+            <div>Horizontal</div><br />
+            <BitSeparator AlignContent="@BitSeparatorAlignContent.Start" ContentOffset="2rem">Start, 2rem</BitSeparator>
+            <br /><br />
+            <BitSeparator AlignContent="@BitSeparatorAlignContent.End" ContentOffset="10%">End, 10%</BitSeparator>
+            <br /><br /><br />
+            <div>Vertical</div><br />
+            <div style="height: 13rem">
+                <BitSeparator Vertical AlignContent="@BitSeparatorAlignContent.Start" ContentOffset="2rem">Start</BitSeparator>
+                <BitSeparator Vertical AlignContent="@BitSeparatorAlignContent.End" ContentOffset="2rem">End</BitSeparator>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="AutoSize" RazorCode="@example5RazorCode" Id="example5">
+            <div class="example-desc">
+                A horizontal separator is as wide as its container. Inside a flex container whose
+                <code>align-items</code> is not <code>stretch</code>, that width collapses to the content instead -
+                <b>AutoSize</b> embraces this and sizes the separator to its content (its height, for a vertical one),
+                where the default keeps forcing the full length.
+            </div>
             <div>While using inside a flex container with align-items css style:</div>
             <br /><br />
             <div style="display:flex;flex-direction:column;align-items:center">
@@ -64,15 +104,85 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Colors" RazorCode="@example5RazorCode" Id="example5">
-            <div>Background:</div><br />
-            <BitSeparator Background="BitColorKind.Primary">Primary</BitSeparator>
+        <DemoExample Title="LineStyle" RazorCode="@example6RazorCode" Id="example6">
+            <div class="example-desc">
+                <b>LineStyle</b> draws the line solid, dashed or dotted. The default is solid; a dashed or dotted rule
+                reads as a softer break than a solid one, and pairs well with <b>Thickness</b> when the dots of a
+                hairline are too small to see.
+            </div>
+            <div>
+                <BitSeparator>Solid</BitSeparator>
+                <br /><br />
+                <BitSeparator LineStyle="BitSeparatorLineStyle.Dashed">Dashed</BitSeparator>
+                <br /><br />
+                <BitSeparator LineStyle="BitSeparatorLineStyle.Dotted">Dotted</BitSeparator>
+                <br /><br />
+                <div class="custom-horizontal-layout">
+                    <span>Item 1</span>
+                    <BitSeparator Vertical LineStyle="BitSeparatorLineStyle.Dashed" />
+                    <span>Item 2</span>
+                    <BitSeparator Vertical LineStyle="BitSeparatorLineStyle.Dotted" />
+                    <span>Item 3</span>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Thickness" RazorCode="@example7RazorCode" Id="example7">
+            <div class="example-desc">
+                <b>Thickness</b> sets the weight of the line, as any CSS length. Leaving it unset keeps the hairline
+                the theme draws every divider at; a heavier rule marks a stronger break in the content.
+            </div>
+            <div>
+                <BitSeparator>Default</BitSeparator>
+                <br /><br />
+                <BitSeparator Thickness="3px">3px</BitSeparator>
+                <br /><br />
+                <BitSeparator Thickness="0.5rem">0.5rem</BitSeparator>
+                <br /><br />
+                <BitSeparator Thickness="3px" LineStyle="BitSeparatorLineStyle.Dotted">Dotted 3px</BitSeparator>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Decorative" RazorCode="@example8RazorCode" Id="example8">
+            <div class="example-desc">
+                A separator reports itself to assistive technologies with the <code>separator</code> role, so a screen
+                reader announces the boundary between groups. A page can also carry many rules that mean nothing -
+                each announced as "separator" is noise - and <b>Decorative</b> removes such a separator from the
+                accessibility tree while keeping its looks. The two below are visually identical; only what a screen
+                reader hears differs.
+            </div>
+            <div>
+                <div>Announced (role="separator")</div>
+                <BitSeparator />
+                <br /><br />
+                <div>Decorative (not announced)</div>
+                <BitSeparator Decorative />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Color" RazorCode="@example9RazorCode" Id="example9">
+            <div class="example-desc">
+                <b>Color</b> paints the line in one of the theme's roles rather than in a literal color, so every
+                preset and both schemes re-skin it. <b>Border</b> instead picks between the neutral border tiers of
+                the theme (and loses to <b>Color</b> where both are set), while <b>Background</b> colors the patch the
+                content sits on - it masks the line, so it should match the surface the separator is drawn on.
+            </div>
+            <div>Color:</div><br />
+            <BitSeparator Color="BitColor.Primary">Primary</BitSeparator>
             <br />
-            <BitSeparator Background="BitColorKind.Secondary">Secondary</BitSeparator>
+            <BitSeparator Color="BitColor.Secondary">Secondary</BitSeparator>
             <br />
-            <BitSeparator Background="BitColorKind.Tertiary">Tertiary</BitSeparator>
+            <BitSeparator Color="BitColor.Tertiary">Tertiary</BitSeparator>
             <br />
-            <BitSeparator Background="BitColorKind.Transparent">Transparent</BitSeparator>
+            <BitSeparator Color="BitColor.Info">Info</BitSeparator>
+            <br />
+            <BitSeparator Color="BitColor.Success">Success</BitSeparator>
+            <br />
+            <BitSeparator Color="BitColor.Warning">Warning</BitSeparator>
+            <br />
+            <BitSeparator Color="BitColor.SevereWarning">SevereWarning</BitSeparator>
+            <br />
+            <BitSeparator Color="BitColor.Error">Error</BitSeparator>
             <br /><br /><br />
             <div>Border:</div><br />
             <BitSeparator Border="BitColorKind.Primary">Primary</BitSeparator>
@@ -82,6 +192,53 @@
             <BitSeparator Border="BitColorKind.Tertiary">Tertiary</BitSeparator>
             <br />
             <BitSeparator Border="BitColorKind.Transparent">Transparent</BitSeparator>
+            <br /><br /><br />
+            <div>Background:</div><br />
+            <BitSeparator Background="BitColorKind.Primary">Primary</BitSeparator>
+            <br />
+            <BitSeparator Background="BitColorKind.Secondary">Secondary</BitSeparator>
+            <br />
+            <BitSeparator Background="BitColorKind.Tertiary">Tertiary</BitSeparator>
+            <br />
+            <BitSeparator Background="BitColorKind.Transparent">Transparent</BitSeparator>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" Id="example10">
+            <div class="example-desc">
+                <b>Style</b> and <b>Class</b> reach the root element - a <code>max-width</code> with an auto margin,
+                for one, shortens the line the way a length prop would - and <b>Styles</b> and <b>Classes</b> reach
+                each part of the component by name: the <b>Root</b> and the <b>Content</b> the label renders in. The
+                classed example below restyles the line itself into a gradient through the root class.
+            </div>
+            <div>
+                <div>Component's Style & Class:</div><br />
+                <BitSeparator Style="max-width: 20rem; margin: auto;">Styled</BitSeparator>
+                <br /><br />
+                <BitSeparator Class="custom-class">Classed</BitSeparator>
+                <br /><br /><br />
+                <div>Styles & Classes:</div><br />
+                <BitSeparator Styles="@(new() { Root = "text-transform: uppercase;",
+                                                Content = "color: dodgerblue; font-weight: 600;" })">
+                    Styles
+                </BitSeparator>
+                <br /><br />
+                <BitSeparator Classes="@(new() { Content = "custom-content" })">Classes</BitSeparator>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example11RazorCode" Id="example11">
+            <div class="example-desc">
+                <b>Dir</b> renders the separator in a right-to-left direction, and with it the meaning of start and
+                end flips: content aligned to the start of the line sits on the right. The direction is also cascaded,
+                so a separator inside an RTL container inherits it.
+            </div>
+            <div dir="rtl">
+                <BitSeparator Dir="BitDir.Rtl">جداکننده</BitSeparator>
+                <br /><br />
+                <BitSeparator Dir="BitDir.Rtl" AlignContent="@BitSeparatorAlignContent.Start">ابتدا</BitSeparator>
+                <br /><br />
+                <BitSeparator Dir="BitDir.Rtl" AlignContent="@BitSeparatorAlignContent.End">انتها</BitSeparator>
+            </div>
         </DemoExample>
     </DemoPage>
 </div>

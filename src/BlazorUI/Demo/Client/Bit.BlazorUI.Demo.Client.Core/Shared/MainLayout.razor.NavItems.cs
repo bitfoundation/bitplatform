@@ -150,7 +150,7 @@ public partial class MainLayout
                 new() { Text = "Overlay", Url = "/components/overlay" },
                 new() { Text = "Params", Url = "/components/params" },
                 new() { Text = "PullToRefresh", Url = "/components/pulltorefresh" },
-                new() { Text = "Separator", Url = "/components/separator" },
+                new() { Text = "Separator", Url = "/components/separator", Description = "Divider" },
                 new() { Text = "Sticky", Url = "/components/sticky" },
                 new() { Text = "SwipeTrap", Url = "/components/swipetrap" },
                 new() { Text = "Text", Url = "/components/text" },

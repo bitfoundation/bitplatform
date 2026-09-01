@@ -1,7 +1,24 @@
-﻿.custom-horizontal-layout {
+.custom-horizontal-layout {
     gap: 1rem;
     height: 3rem;
     display: flex;
     white-space: nowrap;
     align-items: center;
+}
+
+// The classes below are passed to the component as parameters and land on markup the component itself
+// writes, so they need ::deep to escape this stylesheet's scope.
+::deep {
+    .custom-class::before {
+        border: none;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, dodgerblue, transparent);
+    }
+
+    .custom-content {
+        color: white;
+        padding: 0.25rem 1rem;
+        border-radius: 1rem;
+        background: linear-gradient(90deg, mediumorchid, dodgerblue);
+    }
 }
