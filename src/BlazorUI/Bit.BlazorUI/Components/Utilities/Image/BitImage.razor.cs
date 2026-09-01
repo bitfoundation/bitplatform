@@ -66,6 +66,14 @@ public partial class BitImage : BitComponentBase
 
     private ElementReference _imageElement;
 
+    /// <summary>
+    /// Whether the img element currently on screen has the Space key suppressed on it, and which
+    /// <see cref="_reloadKey"/> that element belongs to - a reload replaces the element, and the
+    /// listener goes away with the one it was put on.
+    /// </summary>
+    private bool _preventKeysRegistered;
+    private int _preventKeysReloadKey;
+
     private bool _isClickable => IsEnabled && OnClick.HasDelegate;
 
     // The placeholder stands in for an image that is not on screen, which is as true of one that has
@@ -88,6 +96,8 @@ public partial class BitImage : BitComponentBase
             return false;
         }
     }
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
 
@@ -607,6 +617,43 @@ public partial class BitImage : BitComponentBase
         await base.OnParametersSetAsync();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        // Space scrolls the page by default, and an image that answers Space is a control the reader
+        // pressed it on rather than a place to scroll from. A Blazor keydown handler cannot decide that
+        // per key - @onkeydown:preventDefault is evaluated at render time, so a flag set from the
+        // handler lags a keystroke behind and would swallow the Tab that follows - so it is stopped on
+        // a listener of the browser's own, registered for an image that has a click handler and emptied
+        // again for one that has lost it, since the listener stays on the element and reads the key list
+        // on every event. It is the img rather than the frame that carries it: the img is what is
+        // focused, and it holds nothing that the suppression could be taken from.
+        var interactive = OnClick.HasDelegate;
+
+        // A reload replaces the img element rather than patching it, and the listener stays behind on
+        // the element that was taken away, so a new one starts as nothing registered.
+        if (_reloadKey != _preventKeysReloadKey)
+        {
+            _preventKeysReloadKey = _reloadKey;
+            _preventKeysRegistered = false;
+        }
+
+        if (interactive == _preventKeysRegistered) return;
+
+        try
+        {
+            await _js.BitUtilsRegisterPreventKeys(_imageElement, interactive ? [" ", "Spacebar"] : []);
+
+            // Only a call that landed counts as registered: flagging it beforehand would leave a failed
+            // one believing the listener is installed, and the guard above would never let it be tried
+            // again.
+            _preventKeysRegistered = interactive;
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, nothing to register
+        catch (JSException) { } // a JS-side failure here only costs the page-scroll prevention
+    }
+
 
 
     /// <summary>
@@ -845,7 +892,8 @@ public partial class BitImage : BitComponentBase
 
     // The Enter key of a button activates it on the way down, and the Space key on the way up. Nothing
     // is rendered as focusable at all unless there is a click handler to answer, so a page that never
-    // makes the image clickable pays for neither of these.
+    // makes the image clickable pays for neither of these. The Space that activates on the way up is
+    // kept from scrolling the page on the way down by the listener registered in OnAfterRenderAsync.
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
         if (_isClickable is false) return;

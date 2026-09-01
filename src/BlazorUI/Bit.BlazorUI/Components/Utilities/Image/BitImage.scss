@@ -25,7 +25,7 @@
     // an image made focusable by a TabIndex alone is reached by the same keyboard and needs the same
     // indicator.
     &:has(.bit-img-img:focus-visible) {
-        @include focus-ring();
+        @include focus-ring;
     }
 }
 

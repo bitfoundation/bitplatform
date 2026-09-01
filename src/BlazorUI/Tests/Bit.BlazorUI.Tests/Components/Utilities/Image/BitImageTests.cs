@@ -129,12 +129,11 @@ public class BitImageTests : BunitTestContext
             parameters.AddChildContent("overlay");
         });
 
-        var markup = component.Markup;
-
-        StringAssert.Contains(markup, @"opacity:0.5");
-        StringAssert.Contains(markup, @"padding:1rem");
-        StringAssert.Contains(markup, @"color:red");
-        StringAssert.Contains(markup, @"color:blue");
+        StringAssert.Contains(component.Find(".bit-img").GetAttribute("style"), "margin:1rem");
+        StringAssert.Contains(component.Find(".bit-img-plc").GetAttribute("style"), "opacity:0.5");
+        StringAssert.Contains(component.Find(".bit-img-img").GetAttribute("style"), "padding:1rem");
+        StringAssert.Contains(component.Find(".bit-img-tpl").GetAttribute("style"), "color:red");
+        StringAssert.Contains(component.Find(".bit-img-ovl").GetAttribute("style"), "color:blue");
     }
 
     [TestMethod]
@@ -1625,7 +1624,7 @@ public class BitImageTests : BunitTestContext
         });
 
         Assert.AreEqual(ariaLabel, component.Find(".bit-img-img").GetAttribute("aria-label"));
-        Assert.AreEqual(ariaLabel, component.Find(".bit-img").GetAttribute("aria-label"));
+        Assert.IsNull(component.Find(".bit-img").GetAttribute("aria-label"));
     }
 
     /// <summary>The placeholder is cropped by the same frame the image is, so it is positioned the same way.</summary>
@@ -1697,13 +1696,13 @@ public class BitImageTests : BunitTestContext
     [TestMethod]
     public async Task BitImageShouldNotThrowWhenFocusedWithoutARenderedElement()
     {
-        var component = RenderComponent<BitImage>(parameters =>
-        {
-            parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
-        });
+        // A component that has never been rendered is the only thing that has no img element to focus:
+        // every parameter that hides one - BitVisibility.Collapsed included - still renders it and so
+        // still takes the ordinary path.
+        var component = new BitImage();
 
-        await component.InvokeAsync(async () => await component.Instance.FocusAsync());
-        await component.InvokeAsync(async () => await component.Instance.FocusAsync(true));
+        await component.FocusAsync();
+        await component.FocusAsync(true);
     }
 
 
