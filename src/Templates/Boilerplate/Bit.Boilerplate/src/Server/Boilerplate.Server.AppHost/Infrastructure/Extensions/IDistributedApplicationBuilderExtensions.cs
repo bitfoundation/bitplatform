@@ -47,7 +47,7 @@ public static class IDistributedApplicationBuilderExtensions
                 {
                     redis.WithRedisInsight()
                         .WithRedisCommander()
-                        .WithImage("redis/redis-stack", "latest")
+                        .WithImage("redis", "8")
                         .WithArgs(
                          "--save", "",                        // Backend API has its own L1 in-memory cache, no need to have RDB snapshots for the L2 redis cache in case of failures.
                          "--appendonly", "no",                // Disables AOF persistence as well for the same reason.
@@ -80,7 +80,7 @@ public static class IDistributedApplicationBuilderExtensions
                 {
                     redis.WithRedisInsight()
                         .WithRedisCommander()
-                        .WithImage("redis/redis-stack", "latest")
+                        .WithImage("redis", "8")
                         .WithDataVolume()
                         .WithArgs(
                             "--dir", "/data",

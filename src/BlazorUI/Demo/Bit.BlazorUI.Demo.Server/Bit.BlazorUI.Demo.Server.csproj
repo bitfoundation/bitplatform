@@ -34,7 +34,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
+        <PackageReference Include="HtmlAgilityPack" Version="1.13.0" />
         <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.5.0" />
         <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.9.0" />
         <PackageReference Include="MimeTypeMapOfficial" Version="1.0.17" />

@@ -41,7 +41,7 @@
 
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.11" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.100" />
-        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4129.50" />
+        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4191.47" />
         <PackageReference Include="Velopack" Version="1.2.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
         <Content Include="..\Bit.BlazorUI.Demo.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">

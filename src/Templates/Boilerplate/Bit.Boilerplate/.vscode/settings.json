@@ -23,5 +23,6 @@
     },
     "workbench.editorAssociations": {
         "*.md": "vscode.markdown.preview.editor"
-    }
+    },
+    "aspire.dashboardBrowser": "notification"
 }

@@ -381,14 +381,14 @@ jobs:
         cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads --multitenant false --brouter false
   
     - name: Extract Android signing key from env
-      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
       with:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/'
           fileName: 'TodoSample.keystore'
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
 
     - name: Extract Android signing key from env
-      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
       with:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Platforms/Android'
           fileName: 'google-services.json'
@@ -420,7 +420,7 @@ jobs:
       run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/appicon.svg
 
     - name: Extract App Icon from env
-      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
       with:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/'
           fileName: 'appicon.svg'
@@ -430,7 +430,7 @@ jobs:
       run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/splash.svg
 
     - name: Extract App Splash Screen from env
-      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
       with:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/'
           fileName: 'splash.svg'
@@ -518,7 +518,7 @@ jobs:
       run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/appicon.svg
 
     - name: Extract App Icon from env
-      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
       with:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/'
           fileName: 'appicon.svg'
@@ -528,7 +528,7 @@ jobs:
       run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/splash.svg
 
     - name: Extract App Splash Screen from env
-      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
       with:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/'
           fileName: 'splash.svg'

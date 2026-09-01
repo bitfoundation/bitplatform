@@ -233,14 +233,14 @@ jobs:
         node-version: 24
   
     - name: Extract Android signing key from env
-      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
       with:
           fileDir: './AdminPanel/src/Client/AdminPanel.Client.Maui/'
           fileName: 'AdminPanel.keystore'
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
 
     - name: Extract Android signing key from env
-      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
       with:
           fileDir: './AdminPanel/src/Client/AdminPanel.Client.Maui/Platforms/Android'
           fileName: 'google-services.json'

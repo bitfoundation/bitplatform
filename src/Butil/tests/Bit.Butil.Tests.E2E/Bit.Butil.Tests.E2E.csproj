@@ -24,7 +24,7 @@
   <ItemGroup>
     <!-- Playwright itself, without a per-framework integration package: the suite drives the browser
          from ButilHarnessTestBase rather than from a PageTest base class - see the comment there. -->
-    <PackageReference Include="Microsoft.Playwright" Version="1.59.0" />
+    <PackageReference Include="Microsoft.Playwright" Version="1.62.0" />
     <PackageReference Include="MSTest" Version="4.3.3" />
   </ItemGroup>
 
