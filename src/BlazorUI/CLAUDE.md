@@ -131,10 +131,11 @@ the catalog, the search index and the completions.**
   answer NAMES the parameters it takes from each as that component closes it (BitTextField's is
   `BitInputBase<string>`) and points at the set for the prose. A multi-API component's tabs are the
   same sections in another API, so the examples tool answers with the first tab and says the others
-  exist. A section written over several files is fenced once per file, each fence named with the file
-  it came from - the name is what says where the code goes. Never left out is a NAME: every library
-  type a signature mentions is named back with its members and the call returning it, since a type
-  belonging to one component is kept out of the type listing.
+  exist. A section written over several files is fenced once per file: the markup and its `@code`
+  block keep the bare `razor` and `csharp` fences the client has always been sent, and every file
+  beyond them is named above its fence - the name is what says where the code goes. Never left out is
+  a NAME: every library type a signature mentions is named back with its members and the call
+  returning it, since a type belonging to one component is kept out of the type listing.
 - **The type has the last word on what exists, the demo page on how it is described.** The tables are
   the better prose and what the site renders, but a parameter added without updating the page is
   invisible in them, and one this server does not name is one an agent will not use. So each answer is
