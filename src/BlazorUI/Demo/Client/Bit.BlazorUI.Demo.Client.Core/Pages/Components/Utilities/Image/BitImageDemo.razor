@@ -28,6 +28,7 @@
             <BitImage Alt="The bit platform logo"
                       Title="The bit platform logo"
                       Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+            <br />
             <div>Disabled</div>
             <BitImage Alt="The bit platform logo" IsEnabled="false" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
         </div>
@@ -47,11 +48,13 @@
                       Alt="The bit platform logo"
                       Class="framed"
                       Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+            <br />
             <div>Height</div>
             <BitImage Height="5rem"
                       Alt="The bit platform logo"
                       Class="framed"
                       Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+            <br />
             <div>Width & Height</div>
             <BitImage Width="256px"
                       Height="128px"
@@ -118,42 +121,49 @@
                       ImageFit="BitImageFit.None"
                       Class="framed"
                       Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+            <br />
             <div>Center</div>
             <BitImage Height="96"
                       Alt="The bit platform logo"
                       ImageFit="BitImageFit.Center"
                       Class="framed"
                       Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+            <br />
             <div>Contain</div>
             <BitImage Height="96"
                       Alt="The bit platform logo"
                       ImageFit="BitImageFit.Contain"
                       Class="framed"
                       Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+            <br />
             <div>Cover</div>
             <BitImage Height="96"
                       Alt="The bit platform logo"
                       ImageFit="BitImageFit.Cover"
                       Class="framed"
                       Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+            <br />
             <div>Fill</div>
             <BitImage Height="96"
                       Alt="The bit platform logo"
                       ImageFit="BitImageFit.Fill"
                       Class="framed"
                       Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+            <br />
             <div>ScaleDown</div>
             <BitImage Height="96"
                       Alt="The bit platform logo"
                       ImageFit="BitImageFit.ScaleDown"
                       Class="framed"
                       Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+            <br />
             <div>CenterContain</div>
             <BitImage Height="96"
                       Alt="The bit platform logo"
                       ImageFit="BitImageFit.CenterContain"
                       Class="framed"
                       Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+            <br />
             <div>CenterCover</div>
             <BitImage Height="96"
                       Alt="The bit platform logo"
@@ -231,6 +241,7 @@
                       ImageFit="BitImageFit.CenterCover"
                       Cover="BitImageCover.Portrait"
                       Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+            <br />
             <div>ImageFit: CenterContain</div>
             <div>Landscape</div>
             <BitImage Height="96"
@@ -332,6 +343,7 @@
                 <BitButton Variant="BitVariant.Outline" OnClick="ReloadImages">Reload both</BitButton>
                 <div>State: <b>@loadingStateText</b></div>
             </BitStack>
+            <br />
             @if (loadLoading)
             {
                 <BitImage @ref="slowImage"
@@ -347,6 +359,7 @@
                     </LoadingTemplate>
                 </BitImage>
             }
+            <br />
             @if (loadError)
             {
                 <BitImage @ref="brokenImage"
@@ -376,6 +389,7 @@
                       Alt="The bit platform logo, shown in place of a missing image"
                       Src="_content/Bit.BlazorUI.Demo.Client.Core/images/no-such-image.png"
                       FallbackSrc="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+            <br />
             <div>No source at all, answered by the same fallback</div>
             <BitImage Width="9rem"
                       Alt="The bit platform logo, shown in place of a missing image"
@@ -418,14 +432,16 @@
         </div>
         <div class="example-content">
             <BitButton OnClick="() => fadeKey++">Load again</BitButton>
+            <br />
             <div>FadeIn</div>
-            <BitImage @key="fadeKey"
+            <BitImage @key="@($"fade-{fadeKey}")"
                       FadeIn
                       Width="200px"
                       Alt="An image served with a delay"
                       Src="@($"/api/Image/GetImage?v={fadeKey}")" />
+            <br />
             <div>StartVisible</div>
-            <BitImage @key="fadeKey"
+            <BitImage @key="@($"start-{fadeKey}")"
                       StartVisible
                       Width="200px"
                       Alt="An image served with a delay"
@@ -455,6 +471,7 @@
                       Decoding="BitImageDecoding.Async"
                       FetchPriority="BitImageFetchPriority.Low"
                       Src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+            <br />
             <BitImage Alt="A landscape photograph"
                       Width="12rem"
                       AspectRatio="16/9"
@@ -576,15 +593,19 @@
             <BitImage Alt="The bit platform logo"
                       Style="border: 2px solid goldenrod; border-radius: 5px; width: 258px;"
                       Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+            <br />
             <div>Classed</div>
             <BitImage Alt="The bit platform logo"
                       Class="custom-class"
                       Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+            <br />
+            <br />
             <div><b>Styles</b> & <b>Classes</b>:</div>
             <div>Styles</div>
             <BitImage Alt="The bit platform logo"
                       Styles="@(new() { Image = "filter: blur(5px)" })"
                       Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+            <br />
             <div>Classes</div>
             <BitImage Alt="The bit platform logo"
                       Classes="@(new() { Image = "custom-image" })"
@@ -599,7 +620,7 @@
             a caption laid over the image, a loading or error template, and the placement of the frame within whatever
             lays it out. The direction is also cascaded, so a <b>BitImage</b> inside an RTL container inherits it.
         </div>
-        <div class="example-content">
+        <div dir="rtl" class="example-content">
             <BitImage Rounded
                       Dir="BitDir.Rtl"
                       Width="20rem"

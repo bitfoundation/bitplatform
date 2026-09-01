@@ -202,53 +202,45 @@
         object-fit: scale-down;
     }
 
+    // The image keeps its natural size and is not scaled at all; it is the frame that centers it, and
+    // the overflow of the frame that crops it around its middle. Nothing shrinks it either: a centered
+    // fit that scaled the image to a narrow frame would be Contain rather than Center.
     &.bit-img-ctr {
-        top: 50%;
-        left: 50%;
         opacity: 1;
         width: auto;
         height: auto;
-        position: absolute;
-        transform: translate(-50%, -50%);
+        flex-shrink: 0;
     }
+}
+
+// The frame of a centered fit. The image stays in the normal flow - which is what leaves the frame a
+// size to take from it - and the centering and the cropping are the frame's own doing.
+.bit-img-cen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .bit-img-lan {
     &.bit-img-ccv {
-        top: 50%;
-        left: 50%;
         opacity: 1;
         max-height: 100%;
-        position: absolute;
-        transform: translate(-50%, -50%);
     }
 
     &.bit-img-cct {
-        top: 50%;
-        left: 50%;
         opacity: 1;
         max-width: 100%;
-        position: absolute;
-        transform: translate(-50%, -50%);
     }
 }
 
 .bit-img-por {
     &.bit-img-ccv {
-        top: 50%;
-        left: 50%;
         opacity: 1;
         max-width: 100%;
-        position: absolute;
-        transform: translate(-50%, -50%);
     }
 
     &.bit-img-cct {
-        top: 50%;
-        left: 50%;
         opacity: 1;
         max-height: 100%;
-        position: absolute;
-        transform: translate(-50%, -50%);
     }
 }

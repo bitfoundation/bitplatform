@@ -994,13 +994,13 @@ private async Task ReloadImages()
     private readonly string example12RazorCode = @"
 <BitButton OnClick=""() => fadeKey++"">Load again</BitButton>
 
-<BitImage @key=""fadeKey""
+<BitImage @key=""@($""fade-{fadeKey}"")""
           FadeIn
           Width=""200px""
           Alt=""An image served with a delay""
           Src=""@($""/api/Image/GetImage?v={fadeKey}"")"" />
 
-<BitImage @key=""fadeKey""
+<BitImage @key=""@($""start-{fadeKey}"")""
           StartVisible
           Width=""200px""
           Alt=""An image served with a delay""

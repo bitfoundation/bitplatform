@@ -561,6 +561,14 @@ public partial class BitImage : BitComponentBase
 
         ClassBuilder.Register(() => MaximizeFrame ? "bit-img-max" : string.Empty);
 
+        // The centered fits are placed by the frame rather than by the image: an image centered by
+        // taking it out of the flow would leave the frame with nothing to take a size from, and a frame
+        // that is sized by its content - a flex or grid item, an inline-block - would then collapse to
+        // nothing and clip the image away altogether.
+        ClassBuilder.Register(() => ImageFit is BitImageFit.Center or BitImageFit.CenterContain or BitImageFit.CenterCover
+                                    ? "bit-img-cen"
+                                    : string.Empty);
+
         ClassBuilder.Register(() => Circular ? "bit-img-cir" : (Rounded ? "bit-img-rnd" : string.Empty));
 
         ClassBuilder.Register(() => Bordered ? "bit-img-brd" : string.Empty);

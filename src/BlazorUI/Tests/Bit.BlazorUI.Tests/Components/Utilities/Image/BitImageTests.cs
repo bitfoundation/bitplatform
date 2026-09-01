@@ -655,7 +655,12 @@ public class BitImageTests : BunitTestContext
             _ => null
         };
 
-        component.MarkupMatches(@$"<div class=""bit-img"" id:ignore><img alt="""" class=""{cssClass} bit-img-img bit-img-por bit-img-hid"" /></div>");
+        // A centered fit is placed by the frame, so it is the frame that carries a class of its own.
+        var rootCssClass = imageFit is BitImageFit.Center or BitImageFit.CenterContain or BitImageFit.CenterCover
+                            ? "bit-img bit-img-cen"
+                            : "bit-img";
+
+        component.MarkupMatches(@$"<div class=""{rootCssClass}"" id:ignore><img alt="""" class=""{cssClass} bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
     [TestMethod,
@@ -705,13 +710,16 @@ public class BitImageTests : BunitTestContext
             }
         }
 
+        // The rows that pass a fit all pass the centered one, which is placed by the frame.
+        var rootCssClass = imageFit.HasValue ? "bit-img bit-img-cen" : "bit-img";
+
         if (style.Length > 0)
         {
-            component.MarkupMatches(@$"<div style=""{style}"" class=""bit-img"" id:ignore><img alt="""" class=""{cssClass} bit-img-img bit-img-por bit-img-hid"" /></div>");
+            component.MarkupMatches(@$"<div style=""{style}"" class=""{rootCssClass}"" id:ignore><img alt="""" class=""{cssClass} bit-img-img bit-img-por bit-img-hid"" /></div>");
         }
         else
         {
-            component.MarkupMatches(@$"<div class=""bit-img"" id:ignore><img alt="""" class=""{cssClass} bit-img-img bit-img-por bit-img-hid"" /></div>");
+            component.MarkupMatches(@$"<div class=""{rootCssClass}"" id:ignore><img alt="""" class=""{cssClass} bit-img-img bit-img-por bit-img-hid"" /></div>");
         }
     }
 
