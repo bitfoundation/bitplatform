@@ -180,9 +180,18 @@ consumer's machine. Do not "update" them.
 ### Container images
 
 In `Boilerplate.Server.AppHost/Infrastructure/Extensions/IDistributedApplicationBuilderExtensions.cs`.
-Pin a major (`pgvector/pgvector:pg18`, `mssql/server:2025-latest`), never `latest`. Where the image
-publishes no major-only tag — `redis/redis-stack`, whose tags are all `<version>-v<build>` — pin the
-full newest tag and note it.
+Pin a major (`pgvector/pgvector:pg18`, `mssql/server:2025-latest`, `redis:8`), never `latest`. Where
+an image publishes no major-only tag, pin the full newest tag and note it.
+
+Check the image is still *maintained*, not just that the tag is newest of its line. `redis/redis-stack`
+was pinned here until its upstream stopped publishing — Redis 8 folded the Stack modules into core, so
+Stack was abandoned at 7.4.x while `redis` kept shipping. A stale-but-valid tag looks identical to a
+current one; compare the registry's `last_updated` against the project's newest tag:
+
+```bash
+curl -s "https://hub.docker.com/v2/repositories/<repo>/tags?page_size=3&ordering=last_updated" \
+  | tr '{' '\n' | grep -oE '"name":"[^"]*"|"last_updated":"[^"]*"'
+```
 
 ## The report
 
