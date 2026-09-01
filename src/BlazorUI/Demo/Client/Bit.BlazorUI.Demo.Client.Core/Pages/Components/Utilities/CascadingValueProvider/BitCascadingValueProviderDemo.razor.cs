@@ -444,6 +444,216 @@ public partial class BitCascadingValueProviderDemo
 
 
 
+    // The source of every file the examples reach for, each of them a tab of its own beside the
+    // sample that uses it: the demo consumers, where the [CascadingParameter] properties a provider
+    // feeds are declared, and the types being cascaded. Verbatim copies of the files next to this
+    // one, which is what makes a section copyable rather than a link to go and read.
+    private const string consumerRazorCode = """
+        <div>
+            <div style="font-weight:bold;font-size:20px">
+                @(Title ?? "Child component with cascading parameters:")
+            </div>
+
+            <br />
+
+            <div>
+                <div>
+                    <span style="font-weight:bold">Theme: </span>
+                    <span>@(Theme ?? "null")</span>
+                </div>
+
+                <div>
+                    <span style="font-weight:bold">Notifications: </span>
+                    <span>@(NotificationCount?.ToString() ?? "null")</span>
+                </div>
+
+                <div>
+                    <span style="font-weight:bold">Authenticated: </span>
+                    <span>@(IsAuthenticated?.ToString() ?? "null")</span>
+                </div>
+
+                <div>
+                    <span style="font-weight:bold">User (named parameter): </span>
+                    <span>@(FormatUser(NamedUser) ?? "null")</span>
+                </div>
+
+                <div>
+                    <span style="font-weight:bold">User (typed parameter): </span>
+                    <span>@(FormatUser(TypedUser) ?? "null")</span>
+                </div>
+            </div>
+        </div>
+
+        @code {
+            [Parameter] public string? Title { get; set; }
+
+            [CascadingParameter(Name = "Theme")]
+            public string? Theme { get; set; }
+
+            [CascadingParameter(Name = "NotificationCount")]
+            public int? NotificationCount { get; set; }
+
+            [CascadingParameter(Name = "IsAuthenticated")]
+            public bool? IsAuthenticated { get; set; }
+
+            [CascadingParameter(Name = "NamedUser")]
+            public CascadingDemoUser? NamedUser { get; set; }
+
+            [CascadingParameter]
+            public CascadingDemoUser? TypedUser { get; set; }
+
+            private static string? FormatUser(CascadingDemoUser? user) => user is null ? null : $"{user.Name} [{user.Role}]";
+        }
+        """;
+
+    private const string typeConsumerRazorCode = """
+        <div>
+            <span style="font-weight:bold">@Title</span>
+            <span>@(Count?.ToString() ?? "null")</span>
+        </div>
+
+        @code {
+            [Parameter] public string? Title { get; set; }
+
+            [CascadingParameter]
+            public int? Count { get; set; }
+        }
+        """;
+
+    private const string statusConsumerRazorCode = """
+        <div>
+            <div style="font-weight:bold;font-size:20px">
+                @(Title ?? "Child component with cascading parameters:")
+            </div>
+
+            <br />
+
+            <div>
+                <div>
+                    <span style="font-weight:bold">Status: </span>
+                    <span>@(Status?.Text ?? "null")</span>
+                </div>
+
+                <div>
+                    <span style="font-weight:bold">Progress: </span>
+                    <span>@(Progress?.ToString() ?? "null")</span>
+                </div>
+            </div>
+        </div>
+
+        @code {
+            [Parameter] public string? Title { get; set; }
+
+            [CascadingParameter]
+            public CascadingDemoStatus? Status { get; set; }
+
+            [CascadingParameter(Name = "Progress")]
+            public int? Progress { get; set; }
+        }
+        """;
+
+    private const string observableConsumerRazorCode = """
+        <div>
+            <div style="font-weight:bold;font-size:20px">
+                @(Title ?? "Child component with cascading parameters:")
+            </div>
+
+            <br />
+
+            <div>
+                <div>
+                    <span style="font-weight:bold">Status: </span>
+                    <span>@(Status?.Text ?? "null")</span>
+                </div>
+
+                <div>
+                    <span style="font-weight:bold">Count: </span>
+                    <span>@(Status?.Count.ToString() ?? "null")</span>
+                </div>
+            </div>
+        </div>
+
+        @code {
+            [Parameter] public string? Title { get; set; }
+
+            [CascadingParameter]
+            public CascadingDemoObservableStatus? Status { get; set; }
+        }
+        """;
+
+    private const string userCsharpCode = """
+        public sealed record CascadingDemoUser(string Name, string Role);
+        """;
+
+    private const string statusCsharpCode = """
+        /// <summary>
+        /// A mutable state holder, cascaded as a single instance that is updated in place, which is the case
+        /// that BitCascadingValue.NotifyChanged exists for.
+        /// </summary>
+        public sealed class CascadingDemoStatus
+        {
+            public string Text { get; set; } = "Idle";
+        }
+        """;
+
+    private const string observableStatusCsharpCode = """
+        using System.ComponentModel;
+        using System.Runtime.CompilerServices;
+
+        /// <summary>
+        /// A state holder that reports its own mutations, which is what BitCascadingValue.Observed watches so that
+        /// the consumers refresh without a single call to NotifyChanged.
+        /// </summary>
+        public sealed class CascadingDemoObservableStatus : INotifyPropertyChanged
+        {
+            private int _count;
+            private string _text = "Idle";
+
+            public event PropertyChangedEventHandler? PropertyChanged;
+
+            public string Text
+            {
+                get => _text;
+                set
+                {
+                    if (_text == value) return;
+
+                    _text = value;
+
+                    OnPropertyChanged();
+                }
+            }
+
+            public int Count
+            {
+                get => _count;
+                set
+                {
+                    if (_count == value) return;
+
+                    _count = value;
+
+                    OnPropertyChanged();
+                }
+            }
+
+            private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+                => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+        """;
+
+    // One DemoCodeFile per file rather than one per example that shows it: the arrays below are then
+    // built out of the same references, which is all a tab needs and all the panel compares.
+    private static readonly DemoCodeFile consumerFile = new("CascadingValueDemoConsumer.razor", consumerRazorCode);
+    private static readonly DemoCodeFile typeConsumerFile = new("CascadingValueDemoTypeConsumer.razor", typeConsumerRazorCode);
+    private static readonly DemoCodeFile statusConsumerFile = new("CascadingValueDemoStatusConsumer.razor", statusConsumerRazorCode);
+    private static readonly DemoCodeFile observableConsumerFile = new("CascadingValueDemoObservableConsumer.razor", observableConsumerRazorCode);
+    private static readonly DemoCodeFile userFile = new("CascadingDemoUser.cs", userCsharpCode);
+    private static readonly DemoCodeFile statusFile = new("CascadingDemoStatus.cs", statusCsharpCode);
+    private static readonly DemoCodeFile observableStatusFile = new("CascadingDemoObservableStatus.cs", observableStatusCsharpCode);
+
+
+
     private readonly string example1RazorCode = @"
 <BitCascadingValueProvider
     Values=""@([
@@ -453,11 +663,10 @@ public partial class BitCascadingValueProviderDemo
                  new(new CascadingDemoUser(""Saleh Xafan"", ""CTO""), ""NamedUser""),
                  new(new CascadingDemoUser(""Yaser Moradi"", ""CEO""))
              ])"">
-    <!-- Place components with cascading parameters here.
-        The demo CascadingValueDemoConsumer's source code is located at https://github.com/bitfoundation/bitplatform/tree/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/Utilities/CascadingValueProvider/CascadingValueDemoConsumer.razor
-        CascadingDemoUser's source code can be found at https://github.com/bitfoundation/bitplatform/tree/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/Utilities/CascadingValueProvider/CascadingDemoUser.cs -->
     <CascadingValueDemoConsumer />
 </BitCascadingValueProvider>";
+
+    private readonly DemoCodeFile[] example1CodeFiles = [consumerFile, userFile];
 
     private readonly string example2RazorCode = @"
 <BitButton OnClick=""() => currentTheme = nextTheme"">Switch to @nextTheme theme</BitButton>
@@ -468,10 +677,7 @@ public partial class BitCascadingValueProviderDemo
 
 
 <BitCascadingValueProvider Values=""values"">
-    <!-- Place components with cascading parameters here.
-        The demo CascadingValueDemoConsumer's source code is located at https://github.com/bitfoundation/bitplatform/tree/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/Utilities/CascadingValueProvider/CascadingValueDemoConsumer.razor
-        CascadingDemoUser's source code can be found at https://github.com/bitfoundation/bitplatform/tree/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/Utilities/CascadingValueProvider/CascadingDemoUser.cs -->
-    <CascadingValueDemoConsumer />
+    <CascadingValueDemoConsumer Title=""Changing cascading values:"" />
 </BitCascadingValueProvider>";
     private readonly string example2CsharpCode = @"
 private bool isAuthenticated = true;
@@ -491,6 +697,8 @@ private IEnumerable<BitCascadingValue> values =>
     new (new CascadingDemoUser(userName, userRole))
 ];";
 
+    private readonly DemoCodeFile[] example2CodeFiles = [consumerFile, userFile];
+
     private readonly string example3RazorCode = @"
 <BitCascadingValueProvider
     ValueList=""@(new()
@@ -501,10 +709,7 @@ private IEnumerable<BitCascadingValue> values =>
                     { nullableNamedUser, ""UserInfo"" },
                     { nullableTypedUser }
                 })"">
-    <!-- Place components with cascading parameters here.
-        The demo CascadingValueDemoConsumer's source code is located at https://github.com/bitfoundation/bitplatform/tree/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/Utilities/CascadingValueProvider/CascadingValueDemoConsumer.razor
-        CascadingDemoUser's source code can be found at https://github.com/bitfoundation/bitplatform/tree/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/Utilities/CascadingValueProvider/CascadingDemoUser.cs -->
-    <CascadingValueDemoConsumer />
+    <CascadingValueDemoConsumer Title=""ValueList cascading values:"" />
 </BitCascadingValueProvider>";
     private readonly string example3CsharpCode = @"
 private readonly string? nullableTheme = null;
@@ -512,6 +717,8 @@ private readonly bool? nullableIsAuthenticated = null;
 private readonly int? nullableNotificationCount = null;
 private readonly CascadingDemoUser? nullableNamedUser = null;
 private readonly CascadingDemoUser? nullableTypedUser = null;";
+
+    private readonly DemoCodeFile[] example3CodeFiles = [consumerFile, userFile];
 
     private readonly string example4RazorCode = @"
 <BitCascadingValueProvider
@@ -529,9 +736,10 @@ private readonly CascadingDemoUser? nullableTypedUser = null;";
     </BitCascadingValueProvider>
 </BitCascadingValueProvider>";
 
+    private readonly DemoCodeFile[] example4CodeFiles = [consumerFile, userFile];
+
     private readonly string example5RazorCode = @"
 <BitCascadingValueProvider Values=""@([new(5, typeof(int?))])"">
-    <!-- The consumer declares [CascadingParameter] public int? Count { get; set; } -->
     <CascadingValueDemoTypeConsumer Title=""Outer provider cascades 5 as int?: "" />
 
     <BitCascadingValueProvider Values=""nullCountValues"">
@@ -540,6 +748,8 @@ private readonly CascadingDemoUser? nullableTypedUser = null;";
 </BitCascadingValueProvider>";
     private readonly string example5CsharpCode = @"
 private readonly IEnumerable<BitCascadingValue> nullCountValues = [BitCascadingValue.From<int?>(null)];";
+
+    private readonly DemoCodeFile[] example5CodeFiles = [typeConsumerFile];
 
     private readonly string example6RazorCode = @"
 <BitCascadingValueProvider Values=""fixedValues"">
@@ -552,6 +762,8 @@ private readonly IEnumerable<BitCascadingValue> fixedValues =
     BitCascadingValue.Fixed((3) as int?, ""NotificationCount""),
     BitCascadingValue.Fixed(new CascadingDemoUser(""Yaser Moradi"", ""CEO""))
 ];";
+
+    private readonly DemoCodeFile[] example6CodeFiles = [consumerFile, userFile];
 
     private readonly string example7RazorCode = @"
 <BitToggle @bind-Value=""provideTheme"" Text=""Provide the named Theme value"" />
@@ -570,12 +782,12 @@ private IEnumerable<BitCascadingValue> conditionalValues =>
     new(new CascadingDemoUser(""Ava Smith"", ""Product manager"")) { Enabled = provideUser }
 ];";
 
+    private readonly DemoCodeFile[] example7CodeFiles = [consumerFile, userFile];
+
     private readonly string example8RazorCode = @"
 <BitButton OnClick=""RunBackgroundJob"">Run a background job</BitButton>
 
 <BitCascadingValueProvider Values=""notifyingValues"">
-    <!-- The consumer declares [CascadingParameter] CascadingDemoStatus? Status
-         and [CascadingParameter(Name = ""Progress"")] int? Progress -->
     <CascadingValueDemoStatusConsumer Title=""Self-refreshing cascading values:"" />
 </BitCascadingValueProvider>";
     private readonly string example8CsharpCode = @"
@@ -624,12 +836,12 @@ private void RunBackgroundJob()
     });
 }";
 
+    private readonly DemoCodeFile[] example8CodeFiles = [statusConsumerFile, statusFile];
+
     private readonly string example9RazorCode = @"
 <BitButton OnClick=""RunObservableJob"">Run a background job</BitButton>
 
 <BitCascadingValueProvider Values=""observableValues"">
-    <!-- The consumer declares [CascadingParameter] CascadingDemoObservableStatus? Status,
-         and CascadingDemoObservableStatus implements INotifyPropertyChanged -->
     <CascadingValueDemoObservableConsumer Title=""Self-watching cascading values:"" />
 </BitCascadingValueProvider>";
     private readonly string example9CsharpCode = @"
@@ -671,6 +883,8 @@ private void RunObservableJob()
     });
 }";
 
+    private readonly DemoCodeFile[] example9CodeFiles = [observableConsumerFile, observableStatusFile];
+
     private readonly string example10RazorCode = @"
 <BitToggle @bind-Value=""provideLazyNamedUser"" Text=""Provide the named user as well"" />
 
@@ -704,6 +918,8 @@ private CascadingDemoUser CreateLazyUser(string name, string role)
     return new CascadingDemoUser(name, role);
 }";
 
+    private readonly DemoCodeFile[] example10CodeFiles = [consumerFile, userFile];
+
     private readonly string example11RazorCode = @"
 <BitButton OnClick=""() => computedClicks++"">Click me (@computedClicks)</BitButton>
 
@@ -722,4 +938,6 @@ public MyPage()
         BitCascadingValue.Computed<int?>(() => computedClicks, ""NotificationCount"")
     ];
 }";
+    private readonly DemoCodeFile[] example11CodeFiles = [consumerFile, userFile];
+
 }

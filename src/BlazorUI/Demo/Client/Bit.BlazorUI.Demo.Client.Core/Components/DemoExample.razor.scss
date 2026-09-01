@@ -199,7 +199,7 @@
     .copy-btn {
         z-index: 1;
         display: flex;
-        top: 0.5rem;
+        top: 0.1rem;
         right: 0.5rem;
         min-width: unset;
         width: rem2(34px);
@@ -218,5 +218,9 @@
             white-space: nowrap;
             pointer-events: none;
         }
+    }
+
+    .tabbed .copy-btn {
+        top: 2.8rem;
     }
 }

@@ -80,7 +80,7 @@ else
                    most expensive thing these pages do. Once mounted it stays mounted, so closing the
                    panel again still has something to animate shut. *@
                 <div class="code-panel" inert="@(showCode is false)">
-                    <BitCollapse Expanded="showCode">
+                    <BitCollapse Expanded="showCode" NoPadding>
                     @if (_isCodeMounted)
                     {
                         <div class="@($"code-holder{(_codePanes.Length > 1 ? " tabbed" : "")}")" id="@_codeElementId">
