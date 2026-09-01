@@ -491,22 +491,22 @@ The documentation includes:
 - Usage patterns
 - Styling guides
 
-### Automatic DeepWiki Integration
+### Automatic MCP Integration
 
-**You don't need to manually search the documentation!** 
+**You don't need to manually search the documentation!**
 
-When you ask questions in **GitHub Copilot Chat** or give commands related to UI components, the system **automatically queries the DeepWiki knowledge base** for `bitfoundation/bitplatform` to find relevant information.
+This project ships the **bitplatform MCP server** configuration for every supported AI coding tool, and `AGENTS.md` directs the agent to its tools (`SearchBitBlazorUI`, `GetBitBlazorUIComponent`, `GetBitBlazorUIComponentExamples`, `GetBitBlazorUIType`, `GetBitBlazorUIThemingGuide`, `FindBitBlazorUIIcons`). When you ask questions or give commands related to UI components, the agent **automatically queries these tools**, which answer from the shipped assemblies and documentation pages rather than from memory.
 
 **Example interactions:**
 
 - **You ask:** "How do I add a filter to BitDataGrid?"
-  - **Copilot:** Automatically searches DeepWiki and provides the answer with code examples
+  - **Agent:** Calls `SearchBitBlazorUI` / `GetBitBlazorUIComponentExamples` and provides the answer with real code examples
 
 - **You ask:** "How to customize BitButton colors?"
-  - **Copilot:** Retrieves information about `BitColor` enum and styling options
+  - **Agent:** Retrieves the `BitColor` enum and styling options via `GetBitBlazorUIType` and the theming guide
 
 - **You command:** "Add a BitDatePicker with validation"
-  - **Copilot:** Finds the correct implementation pattern and creates the code
+  - **Agent:** Finds the correct implementation pattern and creates the code
 
 **You can ask naturally:**
 - "How do I make a BitModal full screen?"
@@ -515,7 +515,7 @@ When you ask questions in **GitHub Copilot Chat** or give commands related to UI
 - "What properties does BitChart have?"
 - "How can I implement a Grid System and layout using BitGrid and BitStack components, especially if I'm familiar with the Bootstrap grid system?"
 
-The DeepWiki system handles the documentation lookup automatically!
+The MCP tools handle the documentation lookup automatically!
 
 ---
 
@@ -700,6 +700,6 @@ public partial class ProductsPage
 
 ### AI Wiki: Answered Questions
 
-Ask your own question [here](https://wiki.bitplatform.dev)
+Ask your own question [here](https://bitplatform.dev/ask)
 
 ---

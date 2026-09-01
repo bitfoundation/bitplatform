@@ -49,17 +49,15 @@ EndProject
 #endif
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{3E577755-186F-4E63-8153-B8DE890015C9}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "agents", "agents", "{4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C0D}"
-    ProjectSection(SolutionItems) = preProject
-		.github\agents\code-reviewer.agent.md = .github\agents\code-reviewer.agent.md
-        .github\agents\ai-dlc.agent.md = .github\agents\ai-dlc.agent.md
-    EndProjectSection
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".agents", ".agents", "{4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C0D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prompts", "prompts", "{4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C1D}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "skills", "skills", "{4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C1D}"
     ProjectSection(SolutionItems) = preProject
-        .github\prompts\bitify.prompt.md = .github\prompts\bitify.prompt.md
-        .github\prompts\resx.prompt.md = .github\prompts\resx.prompt.md
-        .github\prompts\scaffold.prompt.md = .github\prompts\scaffold.prompt.md
+        .agents\skills\ai-dlc\SKILL.md = .agents\skills\ai-dlc\SKILL.md
+        .agents\skills\bitify-ui\SKILL.md = .agents\skills\bitify-ui\SKILL.md
+        .agents\skills\code-reviewer\SKILL.md = .agents\skills\code-reviewer\SKILL.md
+        .agents\skills\localize-strings\SKILL.md = .agents\skills\localize-strings\SKILL.md
+        .agents\skills\scaffold-entity\SKILL.md = .agents\skills\scaffold-entity\SKILL.md
     EndProjectSection
 EndProject
 #if (pipeline == "GitHub")
@@ -104,7 +102,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".docs", ".docs", "{8A72BF22
         .docs\15- Logging, OpenTelemetry and Health Checks.md = .docs\15- Logging, OpenTelemetry and Health Checks.md
         .docs\16- CI-CD Pipeline and Environments.md = .docs\16- CI-CD Pipeline and Environments.md
         .docs\17- Automated Testing (Unitigration Tests).md = .docs\17- Automated Testing (Unitigration Tests).md
-        .docs\18- Other Available Prompt Templates.md = .docs\18- Other Available Prompt Templates.md
+        .docs\18- Available Agent Skills.md = .docs\18- Available Agent Skills.md
         .docs\19- Project Miscellaneous Files.md = .docs\19- Project Miscellaneous Files.md
         .docs\20- .NET Aspire.md = .docs\20- .NET Aspire.md
         .docs\21- .NET MAUI - Blazor Hybrid.md = .docs\21- .NET MAUI - Blazor Hybrid.md
@@ -189,8 +187,8 @@ Global
         {28C56D1E-528C-4C7F-8A14-A540B6FCB20F} = {AEE266C3-9E0B-4C41-A491-54D339708C06}
 #endif
         {3E577755-186F-4E63-8153-B8DE890015C9} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
-        {4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C0D} = {3E577755-186F-4E63-8153-B8DE890015C9}
-		{4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C1D} = {3E577755-186F-4E63-8153-B8DE890015C9}
+        {4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C0D} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
+        {4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C1D} = {4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C0D}
 #if (pipeline == "GitHub")
         {2347E3B2-FDDE-427E-A0AE-E4DCD47C2989} = {3E577755-186F-4E63-8153-B8DE890015C9}
 #endif

@@ -1,0 +1,11 @@
+# Command shim for Gemini CLI / Gemini Code Assist agent mode: guarantees /localize-strings works
+# even where Agent Skills discovery of .agents/skills/ is unavailable or not yet enabled.
+description = "Move hardcoded user-facing strings into AppStrings.resx and rewrite call sites to use IStringLocalizer with nameof(AppStrings.Key)."
+
+prompt = """
+Follow these instructions exactly:
+
+@{.agents/skills/localize-strings/SKILL.md}
+
+Files or code to localize: {{args}}
+"""

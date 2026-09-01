@@ -314,3 +314,9 @@ than Unhealthy: a storage or SMS-provider outage must not take an otherwise heal
 Anything you add that a request path genuinely depends on should report Unhealthy; anything external should not.
 
 ---
+
+### AI Wiki: Answered Questions
+
+Ask your own question [here](https://bitplatform.dev/ask)
+
+---

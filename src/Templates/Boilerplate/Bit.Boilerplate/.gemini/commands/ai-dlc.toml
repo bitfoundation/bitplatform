@@ -1,0 +1,11 @@
+# Command shim for Gemini CLI / Gemini Code Assist agent mode: guarantees /ai-dlc works
+# even where Agent Skills discovery of .agents/skills/ is unavailable or not yet enabled.
+description = "Drive a feature end-to-end with the AI-Driven Development Lifecycle: requirements, plan, design, implement, validate - with approval gates before any code is written."
+
+prompt = """
+Follow these instructions exactly:
+
+@{.agents/skills/ai-dlc/SKILL.md}
+
+Feature or task: {{args}}
+"""

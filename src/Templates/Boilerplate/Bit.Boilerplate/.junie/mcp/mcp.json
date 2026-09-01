@@ -1,0 +1,26 @@
+{
+    "mcpServers": {
+        "bitplatform": {
+            "type": "http",
+            "url": "https://bitplatform.dev/mcp"
+        },
+        "aspire": {
+            "command": "aspire",
+            "args": [
+                "agent",
+                "mcp"
+            ]
+        },
+        "playwright": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@playwright/mcp@latest",
+                "--output-dir",
+                ".playwright-mcp",
+                "--output-max-size",
+                "52428800"
+            ]
+        }
+    }
+}

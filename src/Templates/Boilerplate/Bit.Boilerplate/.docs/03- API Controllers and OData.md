@@ -895,3 +895,9 @@ While the architecture is simple, the backend still includes many advanced featu
 Feel free to restructure the backend however you see fit. The template provides a solid foundation and advanced features, but you're in control of the architecture.
 
 ---
+
+### AI Wiki: Answered Questions
+
+Ask your own question [here](https://bitplatform.dev/ask)
+
+---

@@ -132,3 +132,9 @@ The modal provides several powerful diagnostic and maintenance actions:
 - **Use Case**: Testing force update system or applying urgent fixes
 
 ---
+
+### AI Wiki: Answered Questions
+
+Ask your own question [here](https://bitplatform.dev/ask)
+
+---

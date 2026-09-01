@@ -10,12 +10,12 @@ This project includes **25 comprehensive documentation files** in the `.docs/` f
 
 If you have questions or need assistance:
 
-### 1. 🤖 **GitHub Copilot (Agent Mode)**
-   - Ask questions directly in your IDE using GitHub Copilot in Agent Mode
+### 1. 🤖 **Your AI Coding Agent**
+   - Ask questions directly in your IDE using GitHub Copilot (Agent Mode), Claude Code, Cursor, Gemini, Antigravity, Codex, Junie or Windsurf - this project ships shared instructions (`AGENTS.md`) and Agent Skills (`.agents/skills/`) that all of them understand
    - Get instant, context-aware answers about the project
 
-### 2. 🌐 **Interactive Wiki**
-   - Visit: **[https://wiki.bitplatform.dev](https://wiki.bitplatform.dev)**
+### 2. 🌐 **Ask AI on bitplatform.dev**
+   - Visit: **[https://bitplatform.dev/ask](https://bitplatform.dev/ask)**
    - Ask questions and get AI-powered answers
 
 ### 3. 🐛 **GitHub Issues**

@@ -1,0 +1,11 @@
+# Command shim for Gemini CLI / Gemini Code Assist agent mode: guarantees /scaffold-entity works
+# even where Agent Skills discovery of .agents/skills/ is unavailable or not yet enabled.
+description = "Scaffold a complete CRUD entity across every layer (entity, EF config + migration, DTO, Mapperly mapper, controller, IAppController, resx, Blazor pages, navigation)."
+
+prompt = """
+Follow these instructions exactly:
+
+@{.agents/skills/scaffold-entity/SKILL.md}
+
+Entity to scaffold: {{args}}
+"""

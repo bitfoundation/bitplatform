@@ -482,3 +482,9 @@ This allows you to:
 3. Give mobile users more time to update (app store approval delays)
 
 ---
+
+### AI Wiki: Answered Questions
+
+Ask your own question [here](https://bitplatform.dev/ask)
+
+---

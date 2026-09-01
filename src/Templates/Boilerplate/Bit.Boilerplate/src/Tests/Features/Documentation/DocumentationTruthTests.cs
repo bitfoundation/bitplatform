@@ -46,9 +46,8 @@ public class DocumentationTruthTests
         "GEMINI.md",
         ".grafana/README.md",
         ".github/copilot-instructions.md",
-        ".github/agents/*.md",
-        ".github/prompts/*.md",
-        ".junie/guidelines.md",
+        ".agents/skills/*/SKILL.md",
+        ".claude/skills/*/SKILL.md",
     ];
 
     /// <summary>
@@ -70,7 +69,8 @@ public class DocumentationTruthTests
 
     /// <summary>The top-level directories a repository-relative path can start with.</summary>
     private static readonly string[] repositoryRoots =
-        ["src/", ".docs/", ".github/", ".vscode/", ".grafana/", ".azure-devops/", ".template.config/"];
+        ["src/", ".docs/", ".github/", ".vscode/", ".grafana/", ".azure-devops/", ".template.config/",
+         ".agents/", ".claude/", ".gemini/", ".cursor/", ".junie/"];
 
     /// <summary>
     /// Paths that are correctly absent, each for a reason that is not "the documentation is stale". Keep this list
@@ -87,6 +87,10 @@ public class DocumentationTruthTests
 
         // The worked example in the DI guide walks the reader through creating this file.
         ["src/Client/Boilerplate.Client.Core/Infrastructure/Services/FeedbackService.cs"] = "the reader is told to create it; it is the guide's worked example",
+
+        // Created by the test runner on the first `dotnet test`; template.json excludes `**/[Tt]est[Rr]esults/**`.
+        ["src/Tests/TestResults"] = "created by the test runner; excluded by template.json",
+        ["src/Tests/TestResults/Videos"] = "created by the test runner; excluded by template.json",
     };
 
     /// <summary>
@@ -249,8 +253,8 @@ public class DocumentationTruthTests
         if (candidate.Contains("://", StringComparison.Ordinal))
             return false;
 
-        // `{FeatureName}`, `[Feature]` and `*.razor` are placeholders in the guides and scaffolding prompts.
-        if (candidate.Contains('{') || candidate.Contains('[') || candidate.Contains('*'))
+        // `{FeatureName}`, `[Feature]`, `<name>` and `*.razor` are placeholders in the guides and skills.
+        if (candidate.Contains('{') || candidate.Contains('[') || candidate.Contains('*') || candidate.Contains('<'))
             return false;
 
         // A link destination may carry an anchor or a title.
@@ -278,16 +282,38 @@ public class DocumentationTruthTests
         {
             var directory = Path.GetDirectoryName(glob.Replace('/', Path.DirectorySeparatorChar)) ?? string.Empty;
             var pattern = Path.GetFileName(glob);
-            var searchRoot = Path.Combine(templateRoot, directory);
 
-            if (Directory.Exists(searchRoot) is false)
-                continue;
+            // A `*` directory segment (`.agents/skills/*/SKILL.md`) fans out over the matching subdirectories,
+            // so a skill added tomorrow is held to this standard without anyone editing the glob list.
+            var searchRoots = directory.Contains('*')
+                ? ExpandWildcardDirectory(templateRoot, directory)
+                : [Path.Combine(templateRoot, directory)];
 
-            foreach (var file in Directory.EnumerateFiles(searchRoot, pattern, SearchOption.TopDirectoryOnly))
+            foreach (var searchRoot in searchRoots)
             {
-                yield return (file, Path.GetRelativePath(templateRoot, file).Replace(Path.DirectorySeparatorChar, '/'));
+                if (Directory.Exists(searchRoot) is false)
+                    continue;
+
+                foreach (var file in Directory.EnumerateFiles(searchRoot, pattern, SearchOption.TopDirectoryOnly))
+                {
+                    yield return (file, Path.GetRelativePath(templateRoot, file).Replace(Path.DirectorySeparatorChar, '/'));
+                }
             }
         }
+    }
+
+    private static IEnumerable<string> ExpandWildcardDirectory(string templateRoot, string directory)
+    {
+        IEnumerable<string> roots = [templateRoot];
+
+        foreach (var segment in directory.Split(Path.DirectorySeparatorChar))
+        {
+            roots = segment == "*"
+                ? roots.SelectMany(root => Directory.Exists(root) ? Directory.EnumerateDirectories(root) : [])
+                : roots.Select(root => Path.Combine(root, segment));
+        }
+
+        return roots;
     }
 
     /// <summary>

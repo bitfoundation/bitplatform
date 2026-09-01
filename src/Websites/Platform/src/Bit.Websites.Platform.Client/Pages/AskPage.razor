@@ -1,0 +1,18 @@
+@page "/ask"
+
+@inherits AppComponentBase
+
+<PageOutlet Url="ask"
+            Title="Ask AI"
+            Description="Ask the bitplatform AI assistant anything about bit BlazorUI, bit Boilerplate and the entire bitplatform ecosystem." />
+
+@code {
+    protected override async Task OnAfterFirstRenderAsync()
+    {
+        // The chat panel lives in MainLayout, so it stays open across this redirect.
+        PubSubService.Publish(PubSubMessages.OPEN_AI_CHAT_PANEL, null);
+        NavigationManager.NavigateTo(Urls.Home, replace: true);
+
+        await base.OnAfterFirstRenderAsync();
+    }
+}
