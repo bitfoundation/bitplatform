@@ -18,6 +18,7 @@
                 "GitHub.copilot",
                 "GitHub.copilot-chat",
                 "ms-dotnettools.csharp",
+                "Anthropic.claude-code",
                 "ms-dotnettools.csdevkit",
                 "ms-azuretools.vscode-docker",
                 "microsoft-aspire.aspire-vscode",
@@ -36,6 +37,7 @@
         5031
     ],
     "features": {
+        "ghcr.io/microsoft/aspire-devcontainer-feature/aspire:2": {},
         "ghcr.io/devcontainers/features/python:1": {},
         "ghcr.io/devcontainers/features/powershell:2": {},
         "ghcr.io/devcontainers/features/docker-in-docker:4": {},
