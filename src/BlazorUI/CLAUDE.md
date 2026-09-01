@@ -26,6 +26,25 @@ tabs (`_..ItemDemo`, `_..CustomDemo`, `_..OptionDemo`), each with its own `.razo
   (same labels, same number of button groups per section) - only the API differs.
 - **The samples match what is rendered.** `RazorCode` / `CsharpCode` are what a reader copies out, so
   they carry the markup that section actually renders, including any parameter added or renamed.
+- **A feature that is not one file gets one tab per file.** `RazorCode` + `CsharpCode` is one file -
+  the markup with its own `@code` block - and stays how nearly every section is written. A section
+  whose feature also needs an isolated stylesheet, or a code-behind worth reading beside the markup,
+  adds `CodeFiles="@exampleNCodeFiles"`, a `DemoCodeFile[]` field declared with the other `exampleN`
+  fields:
+
+  ```csharp
+  private readonly DemoCodeFile[] example3CodeFiles =
+  [
+      new("BitFooDemo.razor.scss", example3ScssCode),
+      new("BitFooDemo.razor.cs", example3CodeBehind),
+  ];
+  ```
+
+  The pair is then the first tab, named by `RazorCodeName` (`.razor` unless it is set), and each file
+  is one more. Name a file the way it would be named on disk: the name is both the tab and what says
+  which language it is in. A tab named after something other than a file (`"Program.cs additions"`)
+  passes its language as the third argument. One pane draws no tab strip, so an example that has only
+  `CodeFiles`, or only the pair, looks exactly as it always has.
 
 ## The two page shells
 
@@ -112,9 +131,11 @@ the catalog, the search index and the completions.**
   answer NAMES the parameters it takes from each as that component closes it (BitTextField's is
   `BitInputBase<string>`) and points at the set for the prose. A multi-API component's tabs are the
   same sections in another API, so the examples tool answers with the first tab and says the others
-  exist. Never left out is a NAME: every library type a signature mentions is named back with its
-  members and the call returning it, since a type belonging to one component is kept out of the type
-  listing.
+  exist. A section written over several files is fenced once per file: the markup and its `@code`
+  block keep the bare `razor` and `csharp` fences the client has always been sent, and every file
+  beyond them is named above its fence - the name is what says where the code goes. Never left out is
+  a NAME: every library type a signature mentions is named back with its members and the call
+  returning it, since a type belonging to one component is kept out of the type listing.
 - **The type has the last word on what exists, the demo page on how it is described.** The tables are
   the better prose and what the site renders, but a parameter added without updating the page is
   invisible in them, and one this server does not name is one an agent will not use. So each answer is

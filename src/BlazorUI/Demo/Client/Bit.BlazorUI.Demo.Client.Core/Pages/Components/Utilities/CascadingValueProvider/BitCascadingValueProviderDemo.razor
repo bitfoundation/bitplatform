@@ -11,7 +11,7 @@
           SubClasses="componentSubClasses"
           GitHubUrl="../Utils/Params/BitCascadingValueProvider.cs"
           GitHubDemoUrl="Utilities/CascadingValueProvider/BitCascadingValueProviderDemo.razor">
-    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" CodeFiles="@example1CodeFiles" Id="example1">
         <div>
             The <b>Values</b> parameter accepts any collection of <b>BitCascadingValue</b> items, and every item becomes a
             <b>CascadingValue</b> component wrapped around the child content, in the order they are listed. Thanks to the
@@ -35,7 +35,7 @@
         </BitCascadingValueProvider>
     </DemoExample>
 
-    <DemoExample Title="Values" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <DemoExample Title="Values" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" CodeFiles="@example2CodeFiles" Id="example2">
         <div>
             Cascading values are live: rebuilding the <b>Values</b> collection from the current state on each render pushes the
             new values down to every consumer automatically, exactly like a hand-written <b>CascadingValue</b> would. Only the
@@ -60,7 +60,7 @@
         </BitCascadingValueProvider>
     </DemoExample>
 
-    <DemoExample Title="ValueList" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <DemoExample Title="ValueList" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" CodeFiles="@example3CodeFiles" Id="example3">
         <div>
             The <b>ValueList</b> parameter takes a <b>BitCascadingValueList</b>, whose generic <b>Add&lt;T&gt;</b> method captures
             the <b>static</b> type of each value. That makes it the right choice for null values and nullable value types, which
@@ -87,7 +87,7 @@
         </BitCascadingValueProvider>
     </DemoExample>
 
-    <DemoExample Title="Nesting" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Nesting" RazorCode="@example4RazorCode" CodeFiles="@example4CodeFiles" Id="example4">
         <div>
             Providers nest and shadow like any other cascading value: an inner provider overrides only the types and names it
             redefines, and everything else keeps flowing down from the outer one. The same rule applies inside a single provider,
@@ -114,7 +114,7 @@
         </BitCascadingValueProvider>
     </DemoExample>
 
-    <DemoExample Title="ValueType" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="ValueType" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" CodeFiles="@example5CodeFiles" Id="example5">
         <div>
             Every value is cascaded as its <b>ValueType</b>, which is what decides the <b>TValue</b> of the generated
             <b>CascadingValue</b> and therefore which cascading parameters it can reach. It defaults to the runtime type of the
@@ -136,7 +136,7 @@
         </BitCascadingValueProvider>
     </DemoExample>
 
-    <DemoExample Title="IsFixed" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <DemoExample Title="IsFixed" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" CodeFiles="@example6CodeFiles" Id="example6">
         <div>
             <b>IsFixed</b> tells Blazor that a value never changes, so its consumers are not subscribed for change
             notifications. That removes the per-consumer subscription bookkeeping and is the recommended setting for services,
@@ -154,7 +154,7 @@
         </BitCascadingValueProvider>
     </DemoExample>
 
-    <DemoExample Title="Enabled" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <DemoExample Title="Enabled" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" CodeFiles="@example7CodeFiles" Id="example7">
         <div>
             Setting <b>Enabled</b> to false on a value drops it from the rendered chain as if it had never been added, which is
             how a cascading value is provided conditionally without rebuilding the collection or wrapping the markup in an
@@ -174,7 +174,7 @@
         </BitCascadingValueProvider>
     </DemoExample>
 
-    <DemoExample Title="Notifications" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoExample Title="Notifications" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" CodeFiles="@example8CodeFiles" Id="example8">
         <div>
             A <b>BitCascadingValue</b> that is held onto is observable: assigning its <b>Value</b>, <b>Name</b>, <b>IsFixed</b> or
             <b>Enabled</b> raises its <b>Changed</b> event, the provider re-renders itself in response, and the consumers see the
@@ -197,7 +197,7 @@
         </BitCascadingValueProvider>
     </DemoExample>
 
-    <DemoExample Title="Auto notifications" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoExample Title="Auto notifications" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" CodeFiles="@example9CodeFiles" Id="example9">
         <div>
             A value that already reports its own mutations does not need to be notified about by hand. Turning <b>AutoNotify</b>
             on, with the <b>BitCascadingValue.Observed&lt;T&gt;</b> factory or the <b>AddObserved&lt;T&gt;</b> method of the list,
@@ -219,7 +219,7 @@
         </BitCascadingValueProvider>
     </DemoExample>
 
-    <DemoExample Title="Lazy values" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoExample Title="Lazy values" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" CodeFiles="@example10CodeFiles" Id="example10">
         <div>
             <b>BitCascadingValue.Lazy&lt;T&gt;</b>, and the <b>AddLazy&lt;T&gt;</b> method of the list, take a factory instead of a
             value and run it at most once, the first time the value is actually needed. A value that is disabled, that a later
@@ -242,7 +242,7 @@
         </BitCascadingValueProvider>
     </DemoExample>
 
-    <DemoExample Title="Computed values" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Computed values" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" CodeFiles="@example11CodeFiles" Id="example11">
         <div>
             <b>BitCascadingValue.Computed&lt;T&gt;</b>, and the <b>AddComputed&lt;T&gt;</b> method of the list, also take a factory,
             but they run it every time the value is provided rather than once. That is what lets a single collection be built
