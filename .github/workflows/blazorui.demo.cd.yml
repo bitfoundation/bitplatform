@@ -29,7 +29,7 @@ jobs:
         global-json-file: src/global.json
        
     - name: Update appsettings.json api server address
-      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
+      uses: devops-actions/variable-substitution@452ffbbfb1c26fd5d9aaf24faffb59c5084257e9 # v2.0.0
       with:
         files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
       env:
@@ -79,7 +79,7 @@ jobs:
         node-version: 24
   
     - name: Update appsettings.json api server address
-      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
+      uses: devops-actions/variable-substitution@452ffbbfb1c26fd5d9aaf24faffb59c5084257e9 # v2.0.0
       with:
         files: 'src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Core\appsettings.json'
       env:
@@ -123,14 +123,14 @@ jobs:
         node-version: 24
   
     - name: Extract Android signing key from env
-      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
       with:
           fileDir: './src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/'
           fileName: 'BitBlazorUIDemo.keystore'
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
   
     - name: Update appsettings.json api server address
-      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
+      uses: devops-actions/variable-substitution@452ffbbfb1c26fd5d9aaf24faffb59c5084257e9 # v2.0.0
       with:
         files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
       env:
@@ -179,7 +179,7 @@ jobs:
         node-version: 24
   
     - name: Update appsettings.json api server address
-      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
+      uses: devops-actions/variable-substitution@452ffbbfb1c26fd5d9aaf24faffb59c5084257e9 # v2.0.0
       with:
         files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
       env:

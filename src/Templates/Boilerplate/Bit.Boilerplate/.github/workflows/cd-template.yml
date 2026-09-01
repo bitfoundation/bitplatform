@@ -44,7 +44,7 @@ jobs:
           bit-resx-translate
 
       - name: Update core appsettings.json
-        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
+        uses: devops-actions/variable-substitution@452ffbbfb1c26fd5d9aaf24faffb59c5084257e9 # v2.0.0
         with:
           files: 'src/**/appsettings*json'
         env:
@@ -88,7 +88,7 @@ jobs:
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
-        uses: azure/webapps-deploy@5cfb776471c748b351e1ebf5770e208a54ace016 # v2.2.19
+        uses: azure/webapps-deploy@02a81bead70021f5284939794bcec79c271ab383 # v3.0.8
         with:
           app-name: ${{ vars.APP_SERVICE_NAME }}
           slot-name: 'production'
@@ -121,7 +121,7 @@ jobs:
           global-json-file: global.json
 
       - name: Update core appsettings.json
-        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
+        uses: devops-actions/variable-substitution@452ffbbfb1c26fd5d9aaf24faffb59c5084257e9 # v2.0.0
         with:
           files: 'src/**/appsettings*json'
         env:
@@ -154,7 +154,7 @@ jobs:
 
       - name: Deploy to Azure Web App
         id: deploy-api-to-webapp
-        uses: azure/webapps-deploy@5cfb776471c748b351e1ebf5770e208a54ace016 # v2.2.19
+        uses: azure/webapps-deploy@02a81bead70021f5284939794bcec79c271ab383 # v3.0.8
         with:
           app-name: ${{ vars.API_APP_SERVICE_NAME }}
           slot-name: 'production'
@@ -191,7 +191,7 @@ jobs:
           bit-resx-translate
 
       - name: Update core appsettings.json
-        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
+        uses: devops-actions/variable-substitution@452ffbbfb1c26fd5d9aaf24faffb59c5084257e9 # v2.0.0
         with:
           files: 'src\**\appsettings*json'
         env:
@@ -235,7 +235,7 @@ jobs:
           node-version: 24
 
       - name: Extract Android signing key
-        uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2
+        uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
         with:
           fileDir: './src/Client/Boilerplate.Client.Maui/'
           fileName: 'Boilerplate.keystore'
@@ -250,7 +250,7 @@ jobs:
           bit-resx-translate
 
       - name: Update core appsettings.json
-        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
+        uses: devops-actions/variable-substitution@452ffbbfb1c26fd5d9aaf24faffb59c5084257e9 # v2.0.0
         with:
           files: 'src/**/appsettings*json'
         env:
@@ -310,7 +310,7 @@ jobs:
           bit-resx-translate
 
       - name: Update core appsettings.json
-        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
+        uses: devops-actions/variable-substitution@452ffbbfb1c26fd5d9aaf24faffb59c5084257e9 # v2.0.0
         with:
           files: 'src/**/appsettings*json'
         env:

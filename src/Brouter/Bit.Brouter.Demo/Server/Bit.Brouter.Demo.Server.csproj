@@ -10,11 +10,11 @@
 
     <ItemGroup>
         <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.11" />
         <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
         <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
         <!-- Flattens the rendered HTML of a docs page into the Markdown an MCP client reads. -->
-        <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
+        <PackageReference Include="HtmlAgilityPack" Version="1.13.0" />
     </ItemGroup>
 
     <ItemGroup>

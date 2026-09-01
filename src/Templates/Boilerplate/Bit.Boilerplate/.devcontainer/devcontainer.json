@@ -1,6 +1,6 @@
 {
     "name": "Boilerplate",
-    "image": "mcr.microsoft.com/dotnet/sdk:10.0.302",
+    "image": "mcr.microsoft.com/dotnet/sdk:10.0.400",
     "hostRequirements": {
         "cpus": 8
     },
@@ -36,14 +36,14 @@
         5031
     ],
     "features": {
-        "ghcr.io/devcontainers/features/python": {},
-        "ghcr.io/devcontainers/features/powershell:1": {},
-        "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-        "ghcr.io/devcontainers/features/node:1": { "version": "24" },
+        "ghcr.io/devcontainers/features/python:1": {},
+        "ghcr.io/devcontainers/features/powershell:2": {},
+        "ghcr.io/devcontainers/features/docker-in-docker:4": {},
+        "ghcr.io/devcontainers/features/node:2": { "version": "24" },
         "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
-            "version": "latest",
-            "helm": "latest",
-            "minikube": "latest"
+            "version": "1",
+            "helm": "3",
+            "minikube": "1"
         }
     },
     "remoteEnv": {
