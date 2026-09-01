@@ -1,4 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.AspNetCore.Components;
+using System.Threading.Tasks;
 using System.Linq;
 using System;
 using Bunit;
@@ -32,23 +34,20 @@ public class BitLinkTests : BunitTestContext
         if (href.HasNoValue())
         {
             component.MarkupMatches(@"<button class=""bit-lnk bit-lnk-pri"" type=""button"" id:ignore></button>");
-
-            //check clickable element
-            component.Find(".bit-lnk").Click();
         }
         else if (href.StartsWith('#'))
         {
-            component.MarkupMatches(@"<a class=""bit-lnk bit-lnk-pri"" id:ignore></a>");
-
-            //check clickable element
-            component.Find(".bit-lnk").Click();
+            // Hash links keep their href so the anchor stays focusable and keyboard-operable while the
+            // actual scrolling happens in the click handler with the default navigation prevented.
+            component.MarkupMatches(@$"<a href=""{href}"" class=""bit-lnk bit-lnk-pri"" id:ignore></a>");
         }
         else
         {
             component.MarkupMatches(@$"<a href=""{href}"" class=""bit-lnk bit-lnk-pri"" id:ignore></a>");
-
-            Assert.Throws<MissingEventHandlerException>(() => component.Find(".bit-lnk").Click());
         }
+
+        //check clickable element (every render mode wires the click handler)
+        component.Find(".bit-lnk").Click();
     }
 
     [TestMethod,
@@ -74,13 +73,15 @@ public class BitLinkTests : BunitTestContext
         {
             if (href.StartsWith('#'))
             {
-                component.MarkupMatches(@"<a class=""bit-lnk bit-lnk-pri"" id:ignore></a>");
+                component.MarkupMatches(@$"<a href=""{href}"" class=""bit-lnk bit-lnk-pri"" id:ignore></a>");
             }
             else
             {
                 if (target.HasValue())
                 {
-                    component.MarkupMatches(@$"<a target=""{target}"" href=""{href}"" class=""bit-lnk bit-lnk-pri"" id:ignore></a>");
+                    var relAttribute = target is "_blank" ? @"rel=""noopener""" : null;
+
+                    component.MarkupMatches(@$"<a target=""{target}"" {relAttribute} href=""{href}"" class=""bit-lnk bit-lnk-pri"" id:ignore></a>");
                 }
                 else
                 {
@@ -111,11 +112,13 @@ public class BitLinkTests : BunitTestContext
         // Since the enabled state is the default state and is checked in all tests, we focus on verifying the disabled behavior here.
         if (href.HasValue())
         {
-            component.MarkupMatches(@"<a class=""bit-lnk bit-lnk-pri bit-dis"" id:ignore></a>");
+            // A disabled anchor loses its href, so the role and aria-disabled attributes keep it perceivable
+            // as a (disabled) link for assistive technologies.
+            component.MarkupMatches(@"<a tabindex=""-1"" role=""link"" aria-disabled=""true"" class=""bit-lnk bit-lnk-pri bit-dis"" id:ignore></a>");
         }
         else
         {
-            component.MarkupMatches(@"<button class=""bit-lnk bit-lnk-pri bit-dis"" disabled aria-disabled type=""button"" id:ignore></button>");
+            component.MarkupMatches(@"<button tabindex=""-1"" class=""bit-lnk bit-lnk-pri bit-dis"" disabled aria-disabled=""true"" type=""button"" id:ignore></button>");
         }
     }
 
@@ -140,11 +143,11 @@ public class BitLinkTests : BunitTestContext
 
         if (href.HasValue())
         {
-            component.MarkupMatches(@"<a class=""bit-lnk bit-lnk-pri bit-dis"" id:ignore></a>");
+            component.MarkupMatches(@"<a tabindex=""-1"" role=""link"" aria-disabled=""true"" class=""bit-lnk bit-lnk-pri bit-dis"" id:ignore></a>");
         }
         else
         {
-            component.MarkupMatches(@"<button class=""bit-lnk bit-lnk-pri bit-dis"" disabled aria-disabled type=""button"" id:ignore></button>");
+            component.MarkupMatches(@"<button tabindex=""-1"" class=""bit-lnk bit-lnk-pri bit-dis"" disabled aria-disabled=""true"" type=""button"" id:ignore></button>");
         }
     }
 
@@ -613,7 +616,7 @@ public class BitLinkTests : BunitTestContext
         DataRow("#go-to-section", BitLinkRels.Bookmark),
         DataRow("#go-to-section", BitLinkRels.Bookmark | BitLinkRels.Alternate)
     ]
-    public void BitLinkShouldRespectTarget(string href, BitLinkRels? rel)
+    public void BitLinkShouldRespectRel(string href, BitLinkRels? rel)
     {
         var component = RenderComponent<BitLink>(parameters =>
         {
@@ -625,7 +628,8 @@ public class BitLinkTests : BunitTestContext
         {
             if (href.StartsWith('#'))
             {
-                component.MarkupMatches(@"<a class=""bit-lnk bit-lnk-pri"" id:ignore></a>");
+                // The rel attribute is meaningless on an in-page hash link, so it is never rendered there.
+                component.MarkupMatches(@$"<a href=""{href}"" class=""bit-lnk bit-lnk-pri"" id:ignore></a>");
             }
             else
             {
@@ -649,6 +653,294 @@ public class BitLinkTests : BunitTestContext
 
 
 
+    [TestMethod,
+        DataRow(null, "bit-lnk-pri"),
+        DataRow(BitColor.Primary, "bit-lnk-pri"),
+        DataRow(BitColor.Secondary, "bit-lnk-sec"),
+        DataRow(BitColor.Tertiary, "bit-lnk-ter"),
+        DataRow(BitColor.Info, "bit-lnk-inf"),
+        DataRow(BitColor.Success, "bit-lnk-suc"),
+        DataRow(BitColor.Warning, "bit-lnk-wrn"),
+        DataRow(BitColor.SevereWarning, "bit-lnk-swr"),
+        DataRow(BitColor.Error, "bit-lnk-err"),
+        DataRow(BitColor.PrimaryBackground, "bit-lnk-pbg"),
+        DataRow(BitColor.SecondaryBackground, "bit-lnk-sbg"),
+        DataRow(BitColor.TertiaryBackground, "bit-lnk-tbg"),
+        DataRow(BitColor.PrimaryForeground, "bit-lnk-pfg"),
+        DataRow(BitColor.SecondaryForeground, "bit-lnk-sfg"),
+        DataRow(BitColor.TertiaryForeground, "bit-lnk-tfg"),
+        DataRow(BitColor.PrimaryBorder, "bit-lnk-pbr"),
+        DataRow(BitColor.SecondaryBorder, "bit-lnk-sbr"),
+        DataRow(BitColor.TertiaryBorder, "bit-lnk-tbr")
+    ]
+    public void BitLinkShouldRespectColor(BitColor? color, string expectedClass)
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            if (color.HasValue)
+            {
+                parameters.Add(p => p.Color, color.Value);
+            }
+        });
+
+        component.MarkupMatches(@$"<a class=""bit-lnk {expectedClass}"" href=""https://bitplatform.dev"" id:ignore></a>");
+    }
+
+    [TestMethod,
+        DataRow(null, true),
+        DataRow(null, false),
+        DataRow("https://bitplatform.dev", true),
+        DataRow("https://bitplatform.dev", false),
+        DataRow("#go-to-section", true),
+        DataRow("#go-to-section", false)
+    ]
+    public void BitLinkShouldRespectNoUnderline(string href, bool noUnderline)
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.Add(p => p.NoUnderline, noUnderline);
+        });
+
+        var cssClass = noUnderline ? " bit-lnk-nun" : null;
+
+        if (href.HasValue())
+        {
+            component.MarkupMatches(@$"<a class=""bit-lnk bit-lnk-pri{cssClass}"" {GetHrefAttribute(href)} id:ignore></a>");
+        }
+        else
+        {
+            component.MarkupMatches(@$"<button class=""bit-lnk bit-lnk-pri{cssClass}"" type=""button"" id:ignore></button>");
+        }
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitLinkShouldRespectNoColor(bool noColor)
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.NoColor, noColor);
+        });
+
+        var cssClass = noColor ? " bit-lnk-ncl" : null;
+
+        component.MarkupMatches(@$"<a class=""bit-lnk bit-lnk-pri{cssClass}"" href=""https://bitplatform.dev"" id:ignore></a>");
+    }
+
+    [TestMethod,
+        DataRow(null),
+        DataRow("https://bitplatform.dev"),
+        DataRow("#go-to-section")
+    ]
+    public async Task BitLinkFocusAsyncShouldFocusTheRootElement(string href)
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+        });
+
+        await component.Instance.FocusAsync();
+
+        var invocation = Context.JSInterop.Invocations.Last(i => i.Identifier.EndsWith("focus", StringComparison.Ordinal));
+        var reference = (ElementReference)invocation.Arguments[0]!;
+
+        Assert.AreEqual(component.Find(".bit-lnk").GetAttribute("blazor:elementreference"), reference.Id);
+    }
+
+    [TestMethod,
+        DataRow(null, "1"),
+        DataRow(null, null),
+        DataRow("https://bitplatform.dev", "1"),
+        DataRow("https://bitplatform.dev", null),
+        DataRow("#go-to-section", "1"),
+        DataRow("#go-to-section", null)
+    ]
+    public void BitLinkShouldRespectTabIndex(string href, string tabIndex)
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.Add(p => p.TabIndex, tabIndex);
+        });
+
+        var tabIndexAttribute = tabIndex.HasValue() ? @$"tabindex=""{tabIndex}""" : null;
+
+        if (href.HasValue())
+        {
+            component.MarkupMatches(@$"<a {tabIndexAttribute} class=""bit-lnk bit-lnk-pri"" {GetHrefAttribute(href)} id:ignore></a>");
+        }
+        else
+        {
+            component.MarkupMatches(@$"<button {tabIndexAttribute} class=""bit-lnk bit-lnk-pri"" type=""button"" id:ignore></button>");
+        }
+    }
+
+    [TestMethod,
+        DataRow(null),
+        DataRow("https://bitplatform.dev"),
+        DataRow("#go-to-section")
+    ]
+    public void BitLinkShouldRespectAllowDisabledFocus(string href)
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.AllowDisabledFocus, true);
+        });
+
+        if (href.HasValue())
+        {
+            // The disabled anchor has no href to make it focusable, so an explicit zero tabindex keeps it in the tab order.
+            component.MarkupMatches(@"<a tabindex=""0"" role=""link"" aria-disabled=""true"" class=""bit-lnk bit-lnk-pri bit-dis"" id:ignore></a>");
+        }
+        else
+        {
+            // The button conveys its disabled state via aria-disabled alone, so it stays natively focusable.
+            component.MarkupMatches(@"<button aria-disabled=""true"" class=""bit-lnk bit-lnk-pri bit-dis"" type=""button"" id:ignore></button>");
+        }
+    }
+
+    [TestMethod,
+        DataRow("_blank", null, "noopener"),
+        DataRow("_blank", BitLinkRels.NoFollow, "nofollow noopener"),
+        DataRow("_blank", BitLinkRels.NoOpener, "noopener"),
+        DataRow("_blank", BitLinkRels.NoReferrer, "noreferrer"),
+        DataRow("_blank", BitLinkRels.NoOpener | BitLinkRels.NoReferrer, "noopener noreferrer"),
+        DataRow("_self", null, null),
+        DataRow(null, null, null)
+    ]
+    public void BitLinkShouldAddNoOpenerToBlankTargetLinks(string target, BitLinkRels? rel, string expectedRel)
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Rel, rel);
+            parameters.Add(p => p.Target, target);
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+        });
+
+        var anchor = component.Find(".bit-lnk");
+
+        // A _blank target without an explicit opener-related Rel gets an automatic noopener for security.
+        Assert.AreEqual(string.IsNullOrEmpty(expectedRel) is false, anchor.HasAttribute("rel"));
+
+        if (expectedRel is not null)
+        {
+            Assert.AreEqual(expectedRel, anchor.GetAttribute("rel"));
+        }
+    }
+
+    [TestMethod]
+    public void BitLinkRelShouldFollowTargetAndHrefChanges()
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Target, "_blank");
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+        });
+
+        Assert.AreEqual("noopener", component.Find(".bit-lnk").GetAttribute("rel"));
+
+        component.Render(parameters => parameters.Add(p => p.Target, "_self"));
+
+        Assert.IsFalse(component.Find(".bit-lnk").HasAttribute("rel"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Target, "_blank");
+            parameters.Add(p => p.Href, "#go-to-section");
+        });
+
+        Assert.IsFalse(component.Find(".bit-lnk").HasAttribute("rel"));
+    }
+
+    [TestMethod,
+        DataRow(null, "file.pdf"),
+        DataRow(null, null),
+        DataRow("https://bitplatform.dev/file.pdf", ""),
+        DataRow("https://bitplatform.dev/file.pdf", "file.pdf"),
+        DataRow("https://bitplatform.dev/file.pdf", null)
+    ]
+    public void BitLinkShouldRespectDownload(string href, string download)
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.Add(p => p.Download, download);
+        });
+
+        var root = component.Find(".bit-lnk");
+
+        if (href.HasValue() && download is not null)
+        {
+            Assert.IsTrue(root.HasAttribute("download"));
+            Assert.AreEqual(download, root.GetAttribute("download"));
+        }
+        else
+        {
+            // The download attribute only belongs on a rendered anchor.
+            Assert.IsFalse(root.HasAttribute("download"));
+        }
+
+        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+
+        // A disabled link cannot be navigated, so it must not offer a download either.
+        Assert.IsFalse(component.Find(".bit-lnk").HasAttribute("download"));
+    }
+
+    [TestMethod,
+        DataRow("https://bitplatform.dev", true),
+        DataRow("https://bitplatform.dev", false),
+        DataRow("#go-to-section", true),
+        DataRow("#go-to-section", false)
+    ]
+    public void BitLinkAnchorOnClickTest(string href, bool isEnabled)
+    {
+        var currentCount = 0;
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.OnClick, () => currentCount++);
+        });
+
+        component.Find(".bit-lnk").Click();
+
+        // OnClick fires in the anchor render modes too, alongside the navigation or the scroll.
+        Assert.AreEqual(isEnabled ? 1 : 0, currentCount);
+    }
+
+    [TestMethod,
+        DataRow(null, true),
+        DataRow(null, false),
+        DataRow("https://bitplatform.dev", true),
+        DataRow("https://bitplatform.dev", false),
+        DataRow("#go-to-section", true),
+        DataRow("#go-to-section", false)
+    ]
+    public void BitLinkShouldRespectStopPropagation(string href, bool stopPropagation)
+    {
+        var component = RenderComponent<BitLinkPropagationTest>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.Add(p => p.StopPropagation, stopPropagation);
+        });
+
+        component.Find(".bit-lnk").Click();
+
+        // the click a link answers is still a click on the page, so it reaches a clickable container around
+        // it unless the link is told to keep it to itself
+        Assert.AreEqual(1, component.Instance.LinkClickCount);
+        Assert.AreEqual(stopPropagation ? 0 : 1, component.Instance.ContainerClickCount);
+    }
+
+
+
     private void MatchSimpleMarkup(IRenderedComponent<BitLink> component, string href)
     {
         if (href.HasValue())
@@ -661,5 +953,5 @@ public class BitLinkTests : BunitTestContext
         }
     }
 
-    private string? GetHrefAttribute(string href) => (href?.StartsWith('#') ?? false) ? null : @$"href=""{href}""";
+    private string? GetHrefAttribute(string href) => @$"href=""{href}""";
 }

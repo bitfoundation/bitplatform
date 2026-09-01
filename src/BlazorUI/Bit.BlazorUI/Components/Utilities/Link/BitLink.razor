@@ -5,41 +5,50 @@
 {
     if (Href!.StartsWith('#'))
     {
-        <a @ref="RootElement" @attributes="HtmlAttributes" @onclick="ScrollIntoView" @onclick:preventDefault
+        <a @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleClick" @onclick:preventDefault @onclick:stopPropagation="StopPropagation"
            id="@_Id"
-           aria-label="@AriaLabel"
-           style="@StyleBuilder.Value"
-           class="@ClassBuilder.Value"
-           dir="@Dir?.ToString().ToLower()">
-            @ChildContent
-        </a>
-    }
-    else
-    {
-        <a @ref="RootElement" @attributes="HtmlAttributes"
-           id="@_Id"
-           rel="@_rel"
+           tabindex="@_tabIndex"
            aria-label="@AriaLabel"
            style="@StyleBuilder.Value"
            class="@ClassBuilder.Value"
            dir="@Dir?.ToString().ToLower()"
            href="@(IsEnabled ? Href : null)"
-           target="@(IsEnabled && Target.HasValue() ? Target : null)">
+           role="@(IsEnabled ? null : "link")"
+           aria-disabled="@(IsEnabled ? null : "true")">
+            @ChildContent
+        </a>
+    }
+    else
+    {
+        <a @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleClick" @onclick:stopPropagation="StopPropagation"
+           id="@_Id"
+           rel="@_rel"
+           tabindex="@_tabIndex"
+           aria-label="@AriaLabel"
+           style="@StyleBuilder.Value"
+           class="@ClassBuilder.Value"
+           dir="@Dir?.ToString().ToLower()"
+           href="@(IsEnabled ? Href : null)"
+           role="@(IsEnabled ? null : "link")"
+           download="@(IsEnabled ? Download : null)"
+           target="@(IsEnabled && Target.HasValue() ? Target : null)"
+           aria-disabled="@(IsEnabled ? null : "true")">
             @ChildContent
         </a>
     }
 }
 else
 {
-    <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleClick"
+    <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleClick" @onclick:stopPropagation="StopPropagation"
             id="@_Id"
+            type="button"
+            tabindex="@_tabIndex"
             aria-label="@AriaLabel"
             style="@StyleBuilder.Value"
             class="@ClassBuilder.Value"
             dir="@Dir?.ToString().ToLower()"
-            type="button"
-            disabled="@(IsEnabled is false)"
-            aria-disabled="@(IsEnabled is false)">
+            disabled="@(IsEnabled is false && AllowDisabledFocus is false)"
+            aria-disabled="@(IsEnabled ? null : "true")">
         @ChildContent
     </button>
 }

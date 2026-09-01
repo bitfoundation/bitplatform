@@ -9,6 +9,13 @@ public partial class BitLinkDemo
     [
         new()
         {
+            Name = "AllowDisabledFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the disabled link focusable and discoverable by assistive technologies, conveying the disabled state using the aria-disabled attribute.",
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -25,17 +32,24 @@ public partial class BitLinkDemo
         },
         new()
         {
+            Name = "Download",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The value of the download attribute of the link when the Href parameter is provided. Instructs the browser to download the linked resource instead of navigating to it, using the provided value (if any) as the suggested file name.",
+        },
+        new()
+        {
             Name = "Href",
             Type = "string?",
             DefaultValue = "null",
-            Description = "URL the link points to.",
+            Description = "URL the link points to. If provided, the component renders an anchor tag, otherwise a button. A value starting with the # character makes the link smooth-scroll the element with that id into view.",
         },
         new()
         {
             Name = "NoColor",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Removes the applying any foreground color to the link content.",
+            Description = "Removes applying any foreground color to the link content, letting it keep its own color.",
         },
         new()
         {
@@ -48,23 +62,30 @@ public partial class BitLinkDemo
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
-            Description = "Callback for when the link clicked.",
+            Description = "Callback for when the link is clicked. It is invoked in every render mode of the link: on anchor links it runs alongside the navigation, and on button links (no Href) it is the sole click action.",
         },
         new()
         {
             Name = "Rel",
             Type = "BitLinkRels?",
             DefaultValue = "null",
-            Description = "If Href provided, specifies the relationship between the current document and the linked document.",
+            Description = "If Href provided, specifies the relationship between the current document and the linked document. Ignored for empty or hash-only (#) hrefs. When Target is _blank and no opener-related rel is provided, noopener is added automatically.",
             LinkType = LinkType.Link,
             Href = "#link-rels",
+        },
+        new()
+        {
+            Name = "StopPropagation",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, stops the propagation of the click event to the parent elements. Useful when the link is placed inside clickable containers like rows or cards.",
         },
         new()
         {
             Name = "Target",
             Type = "string?",
             DefaultValue = "null",
-            Description = "If Href provided, specifies how to open the link.",
+            Description = "If Href provided, specifies how to open the link (e.g. _blank to open it in a new tab). When set to _blank and no opener-related Rel is provided, noopener is added to the rel attribute automatically.",
             LinkType = LinkType.Link,
             Href = "#link-target",
         },
@@ -74,6 +95,24 @@ public partial class BitLinkDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Styles the link with a fixed underline at all states.",
+        },
+    ];
+
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask",
+            DefaultValue = "",
+            Description = "Gives focus to the root element of the link. A disabled link is only focusable when AllowDisabledFocus keeps it in the tab order.",
+        },
+        new()
+        {
+            Name = "FocusAsync(bool preventScroll)",
+            Type = "ValueTask",
+            DefaultValue = "",
+            Description = "Gives focus to the root element of the link, leaving the page scrolled where it is instead of bringing the link into view.",
         },
     ];
 
@@ -322,6 +361,10 @@ public partial class BitLinkDemo
     ];
 
 
+
+    private int clickCount;
+    private int linkClickCount;
+    private int containerClickCount;
 
     private void HandleOnClick()
     {

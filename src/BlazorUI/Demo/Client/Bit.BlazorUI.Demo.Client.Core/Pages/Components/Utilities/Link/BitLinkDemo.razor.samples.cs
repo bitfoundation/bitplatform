@@ -20,16 +20,32 @@ public partial class BitLinkDemo
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_top"">Top target link</BitLink>";
 
     private readonly string example5RazorCode = @"
-<BitLink OnClick=""HandleOnClick"">Click to navigate to the bitplatform GitHub repo!</BitLink>";
-    private readonly string example5CsharpCode = @"
+<BitLink Href=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" Download="""">Download the bit logo</BitLink>
+<BitLink Href=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" Download=""bit-platform-logo.svg"">Download with a custom file name</BitLink>";
+
+    private readonly string example6RazorCode = @"
+<BitLink OnClick=""HandleOnClick"">Click to navigate to the bit platform GitHub repo!</BitLink>
+
+<BitLink OnClick=""() => clickCount++"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">Link with both Href and OnClick</BitLink>
+<div>OnClick count: @clickCount</div>
+
+<div class=""clickable-container"" @onclick=""() => containerClickCount++"">
+    A clickable container (clicked @containerClickCount times):
+    <BitLink StopPropagation OnClick=""() => linkClickCount++"">Link with StopPropagation (clicked @linkClickCount times)</BitLink>
+</div>";
+    private readonly string example6CsharpCode = @"
 [Inject] private NavigationManager Navigation { get; set; } = default!;
+
+private int clickCount;
+private int linkClickCount;
+private int containerClickCount;
 
 private void HandleOnClick()
 {
     Navigation.NavigateTo(""https://github.com/bitfoundation/bitplatform"");
 }";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitLink Style=""scroll-margin: 70px"" Id=""start-article"" Href=""#end-article"">Go To End of this Article</BitLink>
 <br />
 Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
@@ -57,26 +73,31 @@ opportunity to craft, inspire, and create. Whether it's a tale of adventure, a r
 idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
 begins here, in this quiet moment where everything is possible.
 <br />
-Imagine this space as a window into the future empty yet alive with the energy of endless possibilities. 
-These words stand as temporary guides, placeholders that whisper of what is to come. 
-They hold the promise of stories waiting to unfold, ideas eager to take shape, and 
-connections that will soon emerge to inspire and resonate. This is not an empty page; 
+Imagine this space as a window into the future empty yet alive with the energy of endless possibilities.
+These words stand as temporary guides, placeholders that whisper of what is to come.
+They hold the promise of stories waiting to unfold, ideas eager to take shape, and
+connections that will soon emerge to inspire and resonate. This is not an empty page;
 it is a canvas, rich with potential and ready to transform into something meaningful.
 <br />
-For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the symphony, 
-the foundation upon which your creativity will build. Soon, this space will hold your thoughts, your visions, 
-and your voice a reflection of who you are and what you wish to share with the world. Every sentence will carry 
-purpose, every word will invite others to connect, to think, to feel. So take a moment to dream, to imagine 
-what this blank slate can become. Whether it’s a story, an idea, or a message that matters, this is your 
+For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the symphony,
+the foundation upon which your creativity will build. Soon, this space will hold your thoughts, your visions,
+and your voice a reflection of who you are and what you wish to share with the world. Every sentence will carry
+purpose, every word will invite others to connect, to think, to feel. So take a moment to dream, to imagine
+what this blank slate can become. Whether it’s a story, an idea, or a message that matters, this is your
 starting point. The possibilities are endless, and the journey begins now.
 <br />
 <BitLink Style=""scroll-margin: 70px"" Id=""end-article"" Href=""#start-article"">Go To Start of this Article</BitLink>";
 
-    private readonly string example7RazorCode = @"
-<BitLink Rel=""BitLinkRels.NoFollow"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a rel attribute (nofollow)</BitLink>
-<BitLink Rel=""BitLinkRels.NoFollow | BitLinkRels.NoReferrer"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a rel attribute (nofollow & noreferrer)</BitLink>";
-
     private readonly string example8RazorCode = @"
+<BitLink Rel=""BitLinkRels.NoFollow"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a rel attribute (nofollow)</BitLink>
+<BitLink Rel=""BitLinkRels.NoFollow | BitLinkRels.NoReferrer"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a rel attribute (nofollow & noreferrer)</BitLink>
+<BitLink Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">Blank target link with an automatic noopener rel</BitLink>";
+
+    private readonly string example9RazorCode = @"
+<BitLink IsEnabled=""false"" Href=""https://github.com/bitfoundation/bitplatform"">Disabled link (skipped by Tab)</BitLink>
+<BitLink IsEnabled=""false"" AllowDisabledFocus Href=""https://github.com/bitfoundation/bitplatform"">Disabled link with AllowDisabledFocus (focusable)</BitLink>";
+
+    private readonly string example10RazorCode = @"
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"">
     <BitText Typography=""BitTypography.H4"">Link with default color!</BitText>
     <BitText Typography=""BitTypography.Subtitle1"">this text color is coming from the link itself.</BitText>
@@ -86,8 +107,8 @@ starting point. The possibilities are endless, and the journey begins now.
     <BitText>Link with NoColor!</BitText>
 </BitLink>";
 
-    private readonly string example9RazorCode = @"
- <BitLink Color=""BitColor.Primary"" Href=""https://github.com/bitfoundation/bitplatform"">Primary Color Link</BitLink>
+    private readonly string example11RazorCode = @"
+<BitLink Color=""BitColor.Primary"" Href=""https://github.com/bitfoundation/bitplatform"">Primary Color Link (default)</BitLink>
 <BitLink Color=""BitColor.Secondary"" Href=""https://github.com/bitfoundation/bitplatform"">Secondary Color Link</BitLink>
 <BitLink Color=""BitColor.Tertiary"" Href=""https://github.com/bitfoundation/bitplatform"">Tertiary Color Link</BitLink>
 <BitLink Color=""BitColor.Info"" Href=""https://github.com/bitfoundation/bitplatform"">Info Color Link</BitLink>
@@ -96,9 +117,11 @@ starting point. The possibilities are endless, and the journey begins now.
 <BitLink Color=""BitColor.SevereWarning"" Href=""https://github.com/bitfoundation/bitplatform"">SevereWarning Color Link</BitLink>
 <BitLink Color=""BitColor.Error"" Href=""https://github.com/bitfoundation/bitplatform"">Error Color Link</BitLink>
 
-<BitLink Color=""BitColor.PrimaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">PrimaryBackground Color Link</BitLink>
-<BitLink Color=""BitColor.SecondaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">SecondaryBackground Color Link</BitLink>
-<BitLink Color=""BitColor.TertiaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">TertiaryBackground Color Link</BitLink>
+<div style=""background:var(--bit-clr-fg-sec);padding:1rem"">
+    <BitLink Color=""BitColor.PrimaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">PrimaryBackground Color Link</BitLink>
+    <BitLink Color=""BitColor.SecondaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">SecondaryBackground Color Link</BitLink>
+    <BitLink Color=""BitColor.TertiaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">TertiaryBackground Color Link</BitLink>
+</div>
 
 <BitLink Color=""BitColor.PrimaryForeground"" Href=""https://github.com/bitfoundation/bitplatform"">PrimaryForeground Color Link</BitLink>
 <BitLink Color=""BitColor.SecondaryForeground"" Href=""https://github.com/bitfoundation/bitplatform"">SecondaryForeground Color Link</BitLink>
@@ -132,7 +155,7 @@ starting point. The possibilities are endless, and the journey begins now.
 <BitLink IsEnabled=""false"" Color=""BitColor.SecondaryBorder"" Href=""https://github.com/bitfoundation/bitplatform"">SecondaryBorder</BitLink>
 <BitLink IsEnabled=""false"" Color=""BitColor.TertiaryBorder"" Href=""https://github.com/bitfoundation/bitplatform"">TertiaryBorder</BitLink>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example12RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -144,6 +167,6 @@ starting point. The possibilities are endless, and the journey begins now.
 <BitLink Style=""color: goldenrod; font-weight:bold"" Href=""https://github.com/bitfoundation/bitplatform"">Link with style</BitLink>
 <BitLink Class=""custom-class"" Href=""https://github.com/bitfoundation/bitplatform"">Link with class</BitLink>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitLink Dir=""BitDir.Rtl"" Href=""https://github.com/bitfoundation/bitplatform"">پیوند راست به چپ</BitLink>";
 }

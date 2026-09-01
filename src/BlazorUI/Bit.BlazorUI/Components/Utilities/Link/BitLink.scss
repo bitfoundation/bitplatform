@@ -39,10 +39,10 @@
         }
 
         &:focus-visible {
-            // Cancel both layers of the focus-ring mixin applied above: the box-shadow ring and
-            // the forced-colors Highlight outline, so a disabled link never shows a focus indicator.
-            outline: none;
-            box-shadow: none;
+            // AllowDisabledFocus keeps a disabled link in the tab order, so the indicator has to stay
+            // visible - but drawn in the disabled color, since the vivid role ring of the enabled state
+            // contradicts the inert look and reads as actionable.
+            @include focus-ring(var(--bit-lnk-clr-dis));
         }
 
         &:hover,
