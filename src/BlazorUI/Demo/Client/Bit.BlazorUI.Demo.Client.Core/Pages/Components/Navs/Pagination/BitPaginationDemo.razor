@@ -163,7 +163,7 @@
         <div>
             <b>ShowPageSizeSelector</b> opens the pagination with a selector of how many items a page holds, picked out of <b>PageSizeOptions</b> (10, 25, 50 and 100 by default).
             Picking a size reports it through the two-way bound <b>PageSize</b> and through <b>OnPageSizeChange</b>. A size that is not one of the options is offered along with them, in its place among them,
-            so the selector never shows one size while the pagination runs on another — and a pick that is not taken (<b>PageSize</b> bound one way and left where it was) puts the selector back on the size in force.
+            so the selector never shows one size while the pagination runs on another - and a pick that is not taken (<b>PageSize</b> bound one way and left where it was) puts the selector back on the size in force.
         </div>
         <div>
             The example below is the form without <BitLink Href="#example11">TotalItems</BitLink>: the number of pages the new size adds up to is yours to recompute into <b>Count</b>,
@@ -305,8 +305,8 @@
             The four navigation controls ask for the address of the page they move to, so they turn into links along with the numeric ones.
         </div>
         <div>
-            A control with no page to reach — one at the end of the range it navigates, one the pagination is disabled for, or one <b>GetPageHref</b> returns nothing for — keeps its place while reporting <code>aria-disabled</code> and staying out of the tab order.
-            The click still reaches <b>OnChange</b> and <b>SelectedPage</b>, so a pagination of links reports the page that was asked for exactly like a pagination of buttons — except for a click carrying a modifier
+            A control with no page to reach - one at the end of the range it navigates, one the pagination is disabled for, or one <b>GetPageHref</b> returns nothing for - keeps its place while reporting <code>aria-disabled</code> and staying out of the tab order.
+            The click still reaches <b>OnChange</b> and <b>SelectedPage</b>, so a pagination of links reports the page that was asked for exactly like a pagination of buttons - except for a click carrying a modifier
             (Ctrl, Cmd, Shift or Alt), which opens the address somewhere else and leaves this pagination on the page it was on.
             The previous and next links also carry <code>rel="prev"</code> and <code>rel="next"</code>, which is what tells a crawler how the pages of the set follow one another.
         </div>

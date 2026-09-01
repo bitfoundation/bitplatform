@@ -3,6 +3,17 @@ using System.Net;
 using System.Net.Mail;
 using ImageMagick;
 using Boilerplate.Server.Api.Features.Identity;
+using Boilerplate.Server.Api.Features.Attachments;
+using Boilerplate.Server.Api.Features.PersonalData;
+//#if (notification == true)
+using Boilerplate.Server.Api.Features.PushNotification;
+//#endif
+//#if (multitenant == true)
+using Boilerplate.Server.Api.Features.Tenants;
+//#endif
+//#if (sample == true || offlineDb == true)
+using Boilerplate.Server.Api.Features.Todo;
+//#endif
 //#if (signalR == true)
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
@@ -83,6 +94,8 @@ public static partial class Program
         services.AddScoped<UserErasureService>();
         services.AddScoped<UserSessionsRetentionJobRunner>();
         services.AddScoped<UnconfirmedUsersRetentionJobRunner>();
+
+        services.AddPersonalDataServices();
         //#if (signalR == true)
         services.AddScoped<Features.Attachments.AiChatImagesRetentionJobRunner>();
         // Add MCP server with chatbot tools
@@ -605,10 +618,12 @@ public static partial class Program
         //#endif
         //#endif
 
+        var hangfireOptions = appSettings.Hangfire ?? throw new InvalidOperationException($"The {nameof(ServerApiSettings.Hangfire)} configuration section is required.");
+
         // Configure Hangfire to use Redis for persistent background job storage
         services.AddHangfire((sp, hangfireConfiguration) =>
         {
-            if (appSettings.Hangfire?.UseIsolatedStorage is not true)
+            if (hangfireOptions.UseIsolatedStorage is not true)
             {
                 //#if (redis == true)
                 //#if (IsInsideProjectTemplate == true)
@@ -618,7 +633,7 @@ public static partial class Program
                 {
                     Prefix = "Boilerplate:Hangfire:",
                     Db = 1, // Use a dedicated Redis database for Hangfire
-                });
+                }).WithJobExpirationTimeout(hangfireOptions.JobExpiration);
                 //#if (IsInsideProjectTemplate == true)
                 */
                 //#endif
@@ -627,7 +642,7 @@ public static partial class Program
                 {
                     Schema = "jobs",
                     QueuePollInterval = new TimeSpan(0, 0, 1)
-                });
+                }).WithJobExpirationTimeout(hangfireOptions.JobExpiration);
                 //#endif
             }
             else
@@ -643,7 +658,8 @@ public static partial class Program
                     Schema = "jobs",
                     QueuePollInterval = new TimeSpan(0, 0, 1)
                 })
-                .UseDatabaseCreator();
+                .UseDatabaseCreator()
+                .WithJobExpirationTimeout(hangfireOptions.JobExpiration);
             }
 
             hangfireConfiguration.UseRecommendedSerializerSettings();
@@ -867,6 +883,30 @@ public static partial class Program
                 return trimmedPart[prefix.Length..];
         }
         return defaultValue ?? throw new ArgumentException($"Invalid connection string: '{key}' not found.");
+    }
+
+    /// <summary>
+    /// A feature that holds personal data registers its source here: what is missing from this list is missing from
+    /// every export and every erasure. See <see cref="Features.PersonalData.IPersonalDataSource"/>.
+    /// </summary>
+    private static IServiceCollection AddPersonalDataServices(this IServiceCollection services)
+    {
+        services.AddScoped<PersonalDataExportService>();
+
+        services.AddScoped<IPersonalDataSource, IdentityPersonalDataSource>();
+        services.AddScoped<IPersonalDataSource, UserSessionsPersonalDataSource>();
+        services.AddScoped<IPersonalDataSource, AttachmentsPersonalDataSource>();
+        //#if (notification == true)
+        services.AddScoped<IPersonalDataSource, PushNotificationsPersonalDataSource>();
+        //#endif
+        //#if (multitenant == true)
+        services.AddScoped<IPersonalDataSource, TenantsPersonalDataSource>();
+        //#endif
+        //#if (sample == true || offlineDb == true)
+        services.AddScoped<IPersonalDataSource, TodoItemsPersonalDataSource>();
+        //#endif
+
+        return services;
     }
 
     private static WebApplicationBuilder AddServerApiHealthChecks(this WebApplicationBuilder builder)

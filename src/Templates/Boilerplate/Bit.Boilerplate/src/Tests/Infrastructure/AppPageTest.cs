@@ -15,6 +15,24 @@ public class AppPageTest : PageTest
     {
         Context.SetDefaultTimeout((float)defaultTimeout.TotalMilliseconds);
         Assertions.SetDefaultExpectTimeout((float)defaultTimeout.TotalMilliseconds);
+
+        await AnswerConsentBanner(Context);
+    }
+
+    /// <summary>
+    /// Answers the consent banner before the app gets to ask. It is a modeless panel over the bottom of the page, so
+    /// for as long as it is unanswered it takes the clicks meant for whatever is under it - the sign in button on a
+    /// short page, the chat launcher - and every test that goes near one fails on an element that is plainly visible.
+    /// <para>
+    /// Refused rather than granted: a test has no use for anything the banner asks about, and granting would let the
+    /// ad script load from the actual ad network.
+    /// </para>
+    /// </summary>
+    private static async Task AnswerConsentBanner(IBrowserContext context)
+    {
+        var refusals = string.Join(';', ConsentService.AskableCategories.Select(category => $"{category}=0"));
+
+        await context.AddInitScriptAsync($"localStorage.setItem('{ConsentService.StorageKey}', '{refusals}');");
     }
 
     /// <summary>
@@ -33,6 +51,8 @@ public class AppPageTest : PageTest
         context.SetDefaultTimeout((float)defaultTimeout.TotalMilliseconds);
 
         await SetBlazorWebAssemblyServerAddress(serverAddress, context);
+
+        await AnswerConsentBanner(context);
 
         return context;
     }

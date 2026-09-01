@@ -1,0 +1,38 @@
+@inherits AppComponentBase
+
+@* Nothing at all where nothing non-essential is wired up - not even a closed panel. *@
+@if (ConsentService.AskableCategories.Length > 0)
+{
+    @* Modeless: consent gates the scripts, not the app.
+       Styles rather than a scoped stylesheet - the panel renders outside this component's CSS scope, so ::deep
+       reaches none of it. pointer-events keeps the root from swallowing clicks meant for the page behind it, and
+       height:auto stops the default height cutting off the buttons. *@
+    <BitPanel @bind-IsOpen="isOpen"
+              Modeless
+              Position="BitPanelPosition.Bottom"
+              Styles="@(new()
+                        {
+                            Root = "pointer-events:none",
+                            Container = $"pointer-events:auto;height:auto;max-height:60vh;border-top:1px solid var({BitCss.Var.Color.Border.Secondary.Main})"
+                        })">
+        <BitStack Gap="0.5rem" Style="padding:1.25rem clamp(1rem, 4vw, 2rem);max-width:64rem;margin-inline:auto">
+
+            <BitText Typography="BitTypography.Subtitle1">@Localizer[nameof(AppStrings.ConsentBannerTitle)]</BitText>
+
+            <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+                @Localizer[nameof(AppStrings.ConsentBannerMessage)]
+            </BitText>
+
+            @* Both answers are one press and the same weight: a "reject" buried deeper than "accept" is what
+               supervisory authorities single out. *@
+            <BitStack Horizontal Gap="0.75rem" VerticalAlign="BitAlignment.Center" Wrap Style="margin-top:0.25rem">
+                <BitButton AutoLoading OnClick="WrapHandled(AcceptAll)">@Localizer[nameof(AppStrings.Accept)]</BitButton>
+                <BitButton AutoLoading Variant="BitVariant.Outline" OnClick="WrapHandled(RejectAll)">@Localizer[nameof(AppStrings.Reject)]</BitButton>
+                <BitLink Underlined Href="@($"{PageUrls.Settings}/{PageUrls.SettingsSections.Privacy}")">
+                    @Localizer[nameof(AppStrings.PrivacySettings)]
+                </BitLink>
+            </BitStack>
+
+        </BitStack>
+    </BitPanel>
+}

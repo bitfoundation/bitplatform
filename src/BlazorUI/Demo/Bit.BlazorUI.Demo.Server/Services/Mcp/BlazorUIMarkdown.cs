@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Bit.BlazorUI.Demo.Client.Core.Models;
 
 namespace Bit.BlazorUI.Demo.Server.Services.Mcp;
 
@@ -211,10 +212,11 @@ public static class BlazorUIMarkdown
 
             if (example.Prose is not null) section.AppendLine(example.Prose).AppendLine();
 
-            var owned = example.Owner is null ? [] : samples[example.Owner];
+            var owned = example.Owner is null ? DemoSamples.Empty : samples[example.Owner];
 
-            AppendFence(section, owned, example.RazorField, "razor");
-            AppendFence(section, owned, example.CsharpField, "csharp");
+            AppendFence(section, owned.Code, example.RazorField, "razor");
+            AppendFence(section, owned.Code, example.CsharpField, "csharp");
+            AppendCodeFiles(section, owned.Files, example.CodeFilesField);
 
             // Stopped at the cap rather than cut mid-sample: half a code block is not a smaller
             // answer, it is a wrong one. What is left is named with the call that returns it.
@@ -455,7 +457,7 @@ public static class BlazorUIMarkdown
         }
     }
 
-    private static void AppendFence(StringBuilder builder, Dictionary<string, string> samples, string? field, string language)
+    private static void AppendFence(StringBuilder builder, IReadOnlyDictionary<string, string> samples, string? field, string language)
     {
         if (field is null || samples.TryGetValue(field, out var code) is false) return;
 
@@ -464,6 +466,28 @@ public static class BlazorUIMarkdown
         if (code.Length == 0) return;
 
         builder.AppendLine($"```{language}").AppendLine(code).AppendLine("```").AppendLine();
+    }
+
+    /// <summary>
+    /// The rest of an example's source, for the few whose feature is not one file - the stylesheet
+    /// beside the markup, the code-behind beside both. Each fence is named with the file it came
+    /// from, because the name is what says where the code is meant to go, and it is the same name
+    /// the site prints on the tab over it.
+    /// </summary>
+    private static void AppendCodeFiles(StringBuilder builder, IReadOnlyDictionary<string, IReadOnlyList<DemoCodeFile>> files, string? field)
+    {
+        if (field is null || files.TryGetValue(field, out var sources) is false) return;
+
+        foreach (var file in sources)
+        {
+            var code = file.Code?.Trim();
+
+            if (string.IsNullOrEmpty(code)) continue;
+
+            if (string.IsNullOrWhiteSpace(file.Name) is false) builder.AppendLine($"`{file.Name}`:").AppendLine();
+
+            builder.AppendLine($"```{file.EffectiveLanguage}").AppendLine(code).AppendLine("```").AppendLine();
+        }
     }
 
     /// <summary>

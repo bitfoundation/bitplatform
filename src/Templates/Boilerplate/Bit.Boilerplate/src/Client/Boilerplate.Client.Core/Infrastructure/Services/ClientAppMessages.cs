@@ -121,4 +121,10 @@ public partial class ClientAppMessages
     /// When a user completes external sign-in in a separate window, this message is published to notify the app.
     /// </summary>
     public const string EXTERNAL_SIGN_IN_CALLBACK = nameof(EXTERNAL_SIGN_IN_CALLBACK);
+
+    /// <summary>
+    /// A publisher that publishes this message notifies that the user's consent decisions have changed, so whatever
+    /// acted on them has to act again.
+    /// </summary>
+    public const string CONSENT_CHANGED = nameof(CONSENT_CHANGED);
 }

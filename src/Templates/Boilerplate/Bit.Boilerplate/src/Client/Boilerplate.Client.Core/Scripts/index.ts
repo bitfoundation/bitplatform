@@ -18,3 +18,6 @@ import { Ads } from './Ads';
 
 // Temporary bridge until Bit.Butil ships Document.SetLang (See ButilDocumentExtensions.cs).
 (window as any).setDocumentLang = (lang: string) => document.documentElement.lang = lang;
+
+// Temporary bridge until Bit.Butil ships ElementReference.Click (See ButilElementReferenceExtensions.cs).
+(window as any).clickElement = (element: HTMLElement) => element.click();

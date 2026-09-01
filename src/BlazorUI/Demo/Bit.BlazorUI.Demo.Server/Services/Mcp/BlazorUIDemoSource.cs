@@ -12,8 +12,9 @@ namespace Bit.BlazorUI.Demo.Server.Services.Mcp;
 /// <param name="Prose">The paragraph above the live preview, when the section has one.</param>
 /// <param name="RazorField">The name of the page field holding the Razor sample, resolved by reflection.</param>
 /// <param name="CsharpField">The name of the page field holding the C# sample, when the section shows one.</param>
+/// <param name="CodeFilesField">The name of the page field holding the section's extra source files, when it shows any beside the pair.</param>
 /// <param name="Tab">The pivot tab the section sits under, for the multi-API components that have tabs.</param>
-public sealed record DemoExampleSource(string Title, string? Prose, string? RazorField, string? CsharpField, string? Tab)
+public sealed record DemoExampleSource(string Title, string? Prose, string? RazorField, string? CsharpField, string? CodeFilesField, string? Tab)
 {
     /// <summary>The type the sample fields live on - the tab's own component, not the page, when there are tabs.</summary>
     public Type? Owner { get; init; }
@@ -120,6 +121,7 @@ public static partial class BlazorUIDemoSource
                 Prose: Prose(node),
                 RazorField: Field(node, "RazorCode"),
                 CsharpField: Field(node, "CsharpCode"),
+                CodeFilesField: Field(node, "CodeFiles"),
                 Tab: tab)
             {
                 Owner = owner

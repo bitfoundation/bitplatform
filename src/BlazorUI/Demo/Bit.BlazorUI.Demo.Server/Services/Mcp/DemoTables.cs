@@ -3,6 +3,19 @@ using Bit.BlazorUI.Demo.Client.Core.Models;
 
 namespace Bit.BlazorUI.Demo.Server.Services.Mcp;
 
+/// <summary>The samples one demo page or tab holds, keyed by the field each is declared as.</summary>
+/// <param name="Code">The Razor and C# strings - <c>example1RazorCode</c> and its siblings.</param>
+/// <param name="Files">The multi-file examples' file lists - <c>example1CodeFiles</c> and its siblings.</param>
+public sealed record DemoSamples(
+    IReadOnlyDictionary<string, string> Code,
+    IReadOnlyDictionary<string, IReadOnlyList<DemoCodeFile>> Files)
+{
+    /// <summary>The answer for a page that could not be constructed, and for an example with no owner.</summary>
+    public static readonly DemoSamples Empty = new(
+        new Dictionary<string, string>(StringComparer.Ordinal),
+        new Dictionary<string, IReadOnlyList<DemoCodeFile>>(StringComparer.Ordinal));
+}
+
 /// <summary>The API tables a demo page renders, read off the page type rather than out of its markup.</summary>
 public sealed record DemoTables(
     IReadOnlyList<ComponentMember> Parameters,
@@ -72,21 +85,31 @@ public sealed record DemoTables(
     /// <summary>
     /// The sample fields of one demo page or tab - <c>example1RazorCode</c> and its siblings - read
     /// in a single pass, because they are instance fields and each pass costs an instance.
+    /// <para>
+    /// Two kinds of field, because an example shows two kinds of sample: the Razor and C# strings
+    /// nearly every one of them is written with, and - for the few whose source is spread over
+    /// more than one file - the list of files behind its <c>CodeFiles</c>. Both are read in the
+    /// same pass over the same instance.
+    /// </para>
     /// </summary>
-    public static Dictionary<string, string> Samples(Type owner)
+    public static DemoSamples Samples(Type owner)
     {
         var page = Construct(owner);
 
-        if (page is null) return [];
+        if (page is null) return DemoSamples.Empty;
 
-        var samples = new Dictionary<string, string>(StringComparer.Ordinal);
+        var code = new Dictionary<string, string>(StringComparer.Ordinal);
+        var files = new Dictionary<string, IReadOnlyList<DemoCodeFile>>(StringComparer.Ordinal);
 
         foreach (var field in owner.GetFields(Fields))
         {
-            if (field.FieldType == typeof(string) && field.GetValue(page) is string value) samples[field.Name] = value;
+            var value = field.GetValue(page);
+
+            if (field.FieldType == typeof(string) && value is string sample) code[field.Name] = sample;
+            else if (value is IEnumerable<DemoCodeFile> sources) files[field.Name] = [.. sources.Where(f => f is not null)];
         }
 
-        return samples;
+        return new DemoSamples(code, files);
     }
 
     private static ComponentMember[] Members(object page, Type type, string fieldName)
