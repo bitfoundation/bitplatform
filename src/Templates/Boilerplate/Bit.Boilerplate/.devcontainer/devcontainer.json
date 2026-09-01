@@ -2,7 +2,7 @@
     "name": "Boilerplate",
     "image": "mcr.microsoft.com/dotnet/sdk:10.0.400",
     "hostRequirements": {
-        "cpus": 8
+        "cpus": 4
     },
     "onCreateCommand": "dotnet workload install wasm-tools",
     "waitFor": "onCreateCommand",
