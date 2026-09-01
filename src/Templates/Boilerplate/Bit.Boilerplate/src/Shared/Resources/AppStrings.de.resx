@@ -1833,4 +1833,73 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Push-Benachrichtigungen sind für diese App blockiert. Erlauben Sie Benachrichtigungen in den Einstellungen Ihres Browsers oder Betriebssystems und versuchen Sie es erneut.</value>
   </data>
   <!--#endif-->
+    <data name="PrivacyTitle" xml:space="preserve">
+    <value>Datenschutz</value>
+  </data>
+    <data name="PrivacySubtitle" xml:space="preserve">
+    <value>Eine Kopie Ihrer Daten herunterladen</value>
+  </data>
+    <data name="PrivacyChoicesTitle" xml:space="preserve">
+    <value>Ihre Datenschutzeinstellungen</value>
+  </data>
+    <data name="PrivacyChoicesNote" xml:space="preserve">
+    <value>Ihre Anmeldung, das Merken Ihrer Sprache und das Melden von Fehlern stehen nicht auf dieser Liste: Ohne die ersten beiden funktioniert die App nicht, und Fehlerberichte enthalten keine Kennung Ihres Geräts.</value>
+  </data>
+    <data name="ConsentAnalytics" xml:space="preserve">
+    <value>Nutzungsanalyse</value>
+  </data>
+    <data name="ConsentAnalyticsDescription" xml:space="preserve">
+    <value>Erlaubt uns, Ihr Gerät zwischen Besuchen wiederzuerkennen, um zu sehen, welche Seiten genutzt werden und wie lange sie brauchen. Das Abschalten stoppt keine Fehlerberichte.</value>
+  </data>
+    <data name="ConsentAdvertising" xml:space="preserve">
+    <value>Werbung</value>
+  </data>
+    <data name="ConsentAdvertisingDescription" xml:space="preserve">
+    <value>Lädt das Werbeskript, das eigene Kennungen setzt. Es wird nichts geladen, bevor Sie dies einschalten.</value>
+  </data>
+    <data name="ConsentBannerTitle" xml:space="preserve">
+    <value>Ihre Privatsphäre</value>
+  </data>
+    <data name="ConsentBannerMessage" xml:space="preserve">
+    <value>Wir möchten einige Informationen auf Ihrem Gerät speichern, die diese App zum Funktionieren nicht benötigt. Ihre Anmeldung, das Merken Ihrer Sprache und das Melden von Fehlern geschehen in jedem Fall.</value>
+  </data>
+    <data name="Accept" xml:space="preserve">
+    <value>Annehmen</value>
+  </data>
+    <data name="Reject" xml:space="preserve">
+    <value>Ablehnen</value>
+  </data>
+    <data name="PrivacySettings" xml:space="preserve">
+    <value>Datenschutzeinstellungen</value>
+  </data>
+    <data name="AccountSettingsLink" xml:space="preserve">
+    <value>Kontoeinstellungen</value>
+  </data>
+    <data name="ExportPersonalDataTitle" xml:space="preserve">
+    <value>Ihre Daten herunterladen</value>
+  </data>
+    <data name="ExportPersonalDataMessage" xml:space="preserve">
+    <value>Erhalten Sie eine Kopie von allem, was diese App über Sie speichert: Ihr Konto, die Geräte, auf denen Sie angemeldet sind, Ihr Profilbild und die von Ihnen erstellten Inhalte. Sie kommt als ZIP-Datei mit data.json und Ihren Dateien.</value>
+  </data>
+    <data name="ExportPersonalDataMetadataNote" xml:space="preserve">
+    <value>Jeder Teil der Datei nennt außerdem, warum er gespeichert wird, wie lange, wer ihn sonst erhält und ob das Löschen Ihres Kontos ihn entfernt.</value>
+  </data>
+    <data name="ExportPersonalDataButton" xml:space="preserve">
+    <value>Meine Daten herunterladen</value>
+  </data>
+    <data name="ExportPersonalDataDeleteHint" xml:space="preserve">
+    <value>Wenn Sie Ihre Daten stattdessen löschen lassen möchten, löschen Sie Ihr Konto unter</value>
+  </data>
+    <data name="ExportUserData" xml:space="preserve">
+    <value>Daten exportieren</value>
+  </data>
+    <data name="ExportUserDataTitle" xml:space="preserve">
+    <value>Beantwortet eine Datenanfrage, die nicht über die App eingegangen ist.</value>
+  </data>
+    <data name="AdsConsentMessage" xml:space="preserve">
+    <value>Beim Ansehen einer Anzeige wird das Werbeskript von Google geladen, das eigene Kennungen auf Ihrem Gerät setzt. Es wird nichts geladen, bevor Sie zustimmen.</value>
+  </data>
+    <data name="AdsConsentAgree" xml:space="preserve">
+    <value>Zustimmen und fortfahren</value>
+  </data>
 </root>

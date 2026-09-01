@@ -19,6 +19,11 @@ public enum AdInitResult
     /// </summary>
     Ready,
     /// <summary>
+    /// The user has not agreed to <see cref="ConsentCategory.Advertising"/>, so nothing was loaded. Reported rather
+    /// than thrown like every other outcome here, so a caller can offer the choice instead of showing a failure.
+    /// </summary>
+    ConsentRequired,
+    /// <summary>
     /// The ad script could not be loaded: offline, an ad blocker, or a proxy blocking the ad server.
     /// </summary>
     ScriptFailed,

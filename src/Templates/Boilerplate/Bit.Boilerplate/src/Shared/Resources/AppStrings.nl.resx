@@ -1833,4 +1833,73 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <value>Pushmeldingen zijn geblokkeerd voor deze app. Sta meldingen toe in de instellingen van je browser of besturingssysteem en probeer het opnieuw.</value>
   </data>
   <!--#endif-->
+    <data name="PrivacyTitle" xml:space="preserve">
+    <value>Privacy</value>
+  </data>
+    <data name="PrivacySubtitle" xml:space="preserve">
+    <value>Download een kopie van uw gegevens</value>
+  </data>
+    <data name="PrivacyChoicesTitle" xml:space="preserve">
+    <value>Uw privacykeuzes</value>
+  </data>
+    <data name="PrivacyChoicesNote" xml:space="preserve">
+    <value>Uw aanmelding, het onthouden van uw taal en het melden van fouten staan niet op deze lijst: zonder de eerste twee kan de app niet werken, en foutrapporten bevatten geen enkele identificatie van uw apparaat.</value>
+  </data>
+    <data name="ConsentAnalytics" xml:space="preserve">
+    <value>Gebruiksanalyse</value>
+  </data>
+    <data name="ConsentAnalyticsDescription" xml:space="preserve">
+    <value>Hiermee kunnen we uw apparaat tussen bezoeken herkennen om te zien welke pagina's worden gebruikt en hoe lang ze duren. Dit uitschakelen stopt geen foutrapporten.</value>
+  </data>
+    <data name="ConsentAdvertising" xml:space="preserve">
+    <value>Advertenties</value>
+  </data>
+    <data name="ConsentAdvertisingDescription" xml:space="preserve">
+    <value>Laadt het advertentiescript, dat eigen identificatoren instelt. Er wordt niets geladen totdat u dit inschakelt.</value>
+  </data>
+    <data name="ConsentBannerTitle" xml:space="preserve">
+    <value>Uw privacy</value>
+  </data>
+    <data name="ConsentBannerMessage" xml:space="preserve">
+    <value>We willen graag wat informatie op uw apparaat opslaan die deze app niet nodig heeft om te werken. Uw aanmelding, het onthouden van uw taal en het melden van fouten gebeuren hoe dan ook.</value>
+  </data>
+    <data name="Accept" xml:space="preserve">
+    <value>Accepteren</value>
+  </data>
+    <data name="Reject" xml:space="preserve">
+    <value>Weigeren</value>
+  </data>
+    <data name="PrivacySettings" xml:space="preserve">
+    <value>Privacyinstellingen</value>
+  </data>
+    <data name="AccountSettingsLink" xml:space="preserve">
+    <value>Accountinstellingen</value>
+  </data>
+    <data name="ExportPersonalDataTitle" xml:space="preserve">
+    <value>Download uw gegevens</value>
+  </data>
+    <data name="ExportPersonalDataMessage" xml:space="preserve">
+    <value>Ontvang een kopie van alles wat deze app over u bewaart: uw account, de apparaten waarop u bent aangemeld, uw profielfoto en de inhoud die u hebt gemaakt. U krijgt een zip-bestand met data.json en uw bestanden.</value>
+  </data>
+    <data name="ExportPersonalDataMetadataNote" xml:space="preserve">
+    <value>Elk deel van het bestand vermeldt ook waarom het wordt bewaard, hoe lang, wie het verder ontvangt en of het verwijderen van uw account het wist.</value>
+  </data>
+    <data name="ExportPersonalDataButton" xml:space="preserve">
+    <value>Mijn gegevens downloaden</value>
+  </data>
+    <data name="ExportPersonalDataDeleteHint" xml:space="preserve">
+    <value>Wilt u uw gegevens juist laten verwijderen, verwijder dan uw account via</value>
+  </data>
+    <data name="ExportUserData" xml:space="preserve">
+    <value>Gegevens exporteren</value>
+  </data>
+    <data name="ExportUserDataTitle" xml:space="preserve">
+    <value>Beantwoordt een gegevensverzoek dat niet via de app is binnengekomen.</value>
+  </data>
+    <data name="AdsConsentMessage" xml:space="preserve">
+    <value>Een advertentie bekijken laadt het advertentiescript van Google, dat eigen identificatoren op uw apparaat instelt. Er wordt niets geladen totdat u akkoord gaat.</value>
+  </data>
+    <data name="AdsConsentAgree" xml:space="preserve">
+    <value>Akkoord en doorgaan</value>
+  </data>
 </root>

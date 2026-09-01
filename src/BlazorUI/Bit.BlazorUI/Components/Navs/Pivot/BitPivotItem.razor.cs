@@ -6,7 +6,7 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitPivotItem : BitComponentBase
 {
-    private (bool, BitVisibility, string?, string?, string?, string?, string?, int?, bool?, bool?) _lastHeaderState;
+    private (bool, BitVisibility, string?, string?, string?, string?, string?, string?, int?, bool?, bool?) _lastHeaderState;
 
 
 
@@ -157,7 +157,7 @@ public partial class BitPivotItem : BitComponentBase
         // The Icon is compared by the classes it renders rather than by the instance, so an item given
         // a freshly constructed BitIconInfo on every render of its parent does not report a change
         // that is not one, which would leave the two StateHasChanged calls feeding each other.
-        var state = (IsEnabled, Visibility, HeaderText, Title, Icon?.GetCssClasses(), IconName, Key, ItemCount, Dismissible, Reorderable);
+        var state = (IsEnabled, Visibility, HeaderText, Title, Icon?.GetCssClasses(), Icon?.Content, IconName, Key, ItemCount, Dismissible, Reorderable);
 
         if (state == _lastHeaderState) return;
 

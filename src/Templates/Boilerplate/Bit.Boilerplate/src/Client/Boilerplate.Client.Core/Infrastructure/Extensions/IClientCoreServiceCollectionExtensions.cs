@@ -31,6 +31,8 @@ public static partial class IClientCoreServiceCollectionExtensions
             services.AddScoped<SignInModalService>();
             services.AddScoped<IAuthTokenProvider, ClientSideAuthTokenProvider>();
             services.AddScoped<IExternalNavigationService, DefaultExternalNavigationService>();
+            services.AddScoped<FileSaveService>();
+            services.AddScoped<ConsentService>();
             //#if (ads == true)
             services.AddScoped<IAdsService, AdsService>();
             //#endif

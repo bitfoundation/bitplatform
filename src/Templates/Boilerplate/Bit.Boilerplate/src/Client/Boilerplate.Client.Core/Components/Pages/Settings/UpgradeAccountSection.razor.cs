@@ -4,6 +4,7 @@ namespace Boilerplate.Client.Core.Components.Pages.Settings;
 public partial class UpgradeAccountSection
 {
     [AutoInject] private IAdsService adsService { get; set; } = default!;
+    [AutoInject] private ConsentService consentService { get; set; } = default!;
     [AutoInject] private ClientCoreSettings clientCoreSettings { get; set; } = default!;
     [AutoInject] private ILogger<AdsService> logger { get; set; } = default!;
 
@@ -35,10 +36,23 @@ public partial class UpgradeAccountSection
         adInitResult = await adsService.Init(clientCoreSettings.AdUnitPath);
 
         //#if (signalR == true)
-        showTroubleButton = adInitResult is not AdInitResult.Ready;
+        // An unanswered consent question is not trouble with the ad; offering to troubleshoot sends the user
+        // looking for a fault that is not there.
+        showTroubleButton = adInitResult is not AdInitResult.Ready and not AdInitResult.ConsentRequired;
         //#endif
 
         StateHasChanged();
+    }
+
+    /// <summary>
+    /// The same decision the banner asks for, stored the same way, so the settings toggle reflects it rather than
+    /// this being a "just this once" the user cannot find again.
+    /// </summary>
+    private async Task GrantAdvertisingConsent()
+    {
+        await consentService.Set(ConsentCategory.Advertising, granted: true);
+
+        adInitResult = await adsService.Init(clientCoreSettings.AdUnitPath);
     }
 
 
