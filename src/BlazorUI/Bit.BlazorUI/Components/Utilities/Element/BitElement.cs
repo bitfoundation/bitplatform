@@ -34,16 +34,6 @@ namespace Bit.BlazorUI;
 /// </remarks>
 public partial class BitElement : BitComponentBase
 {
-    // The HTML void elements: they are defined to have no content at all, so a closing tag and any child content are
-    // invalid markup in them. The static HTML renderer writes them self-closed and silently drops whatever follows.
-    // The obsolete four (basefont, bgsound, frame and keygen) are in the list the HTML parser itself treats as void,
-    // so a browser drops their content just the same and they belong here with the rest.
-    private static readonly HashSet<string> _voidElements = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "area", "base", "basefont", "bgsound", "br", "col", "embed", "frame", "hr",
-        "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"
-    };
-
     // The elements HTML defines a "disabled" content attribute on. On anything else the attribute is meaningless
     // markup, so a disabled element of another tag is only reported to assistive technologies through aria-disabled.
     private static readonly HashSet<string> _disableableElements = new(StringComparer.OrdinalIgnoreCase)
@@ -302,7 +292,7 @@ public partial class BitElement : BitComponentBase
         builder.AddElementReferenceCapture(1000, v => RootElement = v);
         // A void element is defined to hold no content: the static renderer writes it self-closed, so anything put
         // inside it would either be dropped or end up as a sibling of the element in the rendered markup.
-        if (_voidElements.Contains(element!) is false)
+        if (IsVoidElement(element!) is false)
         {
             builder.AddContent(1001, ChildContent);
         }
@@ -312,36 +302,6 @@ public partial class BitElement : BitComponentBase
     }
 
 
-
-    // A tag name is only a tag name while both the markup it is written into reads it as one and the browser builds
-    // an element of it. The HTML parser only begins a tag at all when a letter follows the "<", and it ends the name
-    // at the first whitespace and the tag at the first ">", so a name carrying either of them would write markup of
-    // its own rather than name an element. What the browser accepts is the narrower of the two and the engines do not
-    // agree on it: the DOM standard now takes any name that begins with a letter and carries no whitespace, "/" or
-    // ">", while the rule it replaced - which WebKit still enforces - is the XML name, and a name refused by
-    // document.createElement throws where the renderer builds the element, taking the whole render batch with it.
-    // So the name is read as what a name is made of rather than as what it must not contain: the ASCII letters and
-    // digits, the four characters that join them in every markup language that has tag names, and the letters and
-    // digits of the other alphabets, which is all a custom element may be named in.
-    private static bool IsValidElement(string element)
-    {
-        if (char.IsAsciiLetter(element[0]) is false) return false;
-
-        foreach (var @char in element)
-        {
-            if (char.IsAsciiLetterOrDigit(@char)) continue;
-
-            if (@char is '-' or '_' or '.' or ':') continue;
-
-            // Everything outside ASCII that is a letter or a digit is a name of some alphabet; the rest of it - the
-            // separators, the punctuation, the C1 controls - is refused along with the ASCII symbols and whitespace.
-            if (char.IsAscii(@char) is false && char.IsLetterOrDigit(@char)) continue;
-
-            return false;
-        }
-
-        return true;
-    }
 
     // The event names the renderer matches a modifier against are the "on" prefixed ones, which is also how a handler
     // is written in a razor file, so a name given without the prefix is the same event written the other way.

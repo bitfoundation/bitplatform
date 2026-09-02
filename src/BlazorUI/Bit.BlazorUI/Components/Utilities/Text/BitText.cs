@@ -40,14 +40,6 @@ namespace Bit.BlazorUI;
 /// </remarks>
 public partial class BitText : BitComponentBase
 {
-    // The HTML void elements: they are defined to have no content at all, so a closing tag and any child content
-    // are invalid markup in them. The static HTML renderer writes them self-closed and drops whatever follows.
-    private static readonly HashSet<string> _voidElements = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "area", "base", "basefont", "bgsound", "br", "col", "embed", "frame", "hr",
-        "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"
-    };
-
     // The tags that are headings of their own. They carry a level the accessibility tree reads off the tag name, so
     // neither the heading role nor an aria-level has anything to add to them beyond overriding that level.
     private static readonly HashSet<string> _headingElements = new(StringComparer.OrdinalIgnoreCase)
@@ -635,7 +627,7 @@ public partial class BitText : BitComponentBase
         builder.AddElementReferenceCapture(11, v => RootElement = v);
         // A void element is defined to hold no content: the static renderer writes it self-closed, so anything put
         // inside it would either be dropped or end up as a sibling of the element in the rendered markup.
-        if (_voidElements.Contains(element!) is false)
+        if (IsVoidElement(element!) is false)
         {
             builder.AddContent(12, ChildContent);
         }
@@ -652,28 +644,6 @@ public partial class BitText : BitComponentBase
     private static string GetVariantElement(BitTypography typography)
     {
         return _VariantMapping.TryGetValue(typography, out var element) ? element : "h6";
-    }
-
-    // The same reading of a tag name as BitElement's: what a name is made of rather than what it must not contain,
-    // since the engines disagree over which symbols name an element and one they refuse throws where it is built.
-    private static bool IsValidElement(string element)
-    {
-        if (char.IsAsciiLetter(element[0]) is false) return false;
-
-        foreach (var @char in element)
-        {
-            if (char.IsAsciiLetterOrDigit(@char)) continue;
-
-            if (@char is '-' or '_' or '.' or ':') continue;
-
-            // Everything outside ASCII that is a letter or a digit is a name of some alphabet; the rest of it - the
-            // separators, the punctuation, the C1 controls - is refused along with the ASCII symbols and whitespace.
-            if (char.IsAscii(@char) is false && char.IsLetterOrDigit(@char)) continue;
-
-            return false;
-        }
-
-        return true;
     }
 
 

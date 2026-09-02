@@ -152,7 +152,9 @@
 
     @media (forced-colors: active) {
         color: CanvasText;
-        background-image: none;
+        // The gradient is the one declaration the component writes inline, and an inline declaration outranks every
+        // selector, so taking it away is the one place in this file that has to be marked important.
+        background-image: none !important;
         -webkit-text-fill-color: currentcolor;
     }
 }
@@ -169,7 +171,8 @@
 
     @media (forced-colors: active) {
         color: CanvasText;
-        background-image: none;
+        // Important for the same reason as above: the gradient it takes away is written inline by the component.
+        background-image: none !important;
         -webkit-text-fill-color: currentcolor;
     }
 }
@@ -357,9 +360,11 @@
     display: -webkit-box;
     -webkit-box-orient: vertical;
     // A clamp counts lines, so the text has to be allowed to break into them even inside a container that says
-    // otherwise; without this a nowrap inherited from an ancestor would leave the whole text on one line.
-    text-wrap: wrap;
-    white-space: normal;
+    // otherwise; without this a nowrap inherited from an ancestor would leave the whole text on one line. Only the
+    // mode of the wrapping is written here: the "text-wrap" and the "white-space" shorthands each carry a second
+    // property, and would take the break style Wrap asked for and the whitespace PreserveWhitespace kept back to
+    // their initial values along with it.
+    text-wrap-mode: wrap;
 }
 
 // Out of the page but still in the accessibility tree: a zero-sized box would be dropped from it by some screen

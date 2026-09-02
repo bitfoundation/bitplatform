@@ -632,7 +632,7 @@ public partial class BitTextDemo
     private string example14RazorCode = @"
 @* The params object carries a default down to every text under it, and never overwrites what one set itself. *@
 <BitParams Parameters=""@textParams"">
-    <BitText>Takes the variant, the color and the tracking from the cascade</BitText>
+    <BitText>Takes the variant, the color and the transform from the cascade</BitText>
     <BitText>So does this one, without repeating any of it</BitText>
     <BitText Color=""BitColor.Error"" Weight=""BitFontWeight.Bold"">Its own color and weight, the cascaded variant</BitText>
 </BitParams>
