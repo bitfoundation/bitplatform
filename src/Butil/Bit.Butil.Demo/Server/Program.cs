@@ -92,6 +92,10 @@ app.UseCors();
 
 app.UseAntiforgery();
 
+// For the WebSocket page's echo endpoint below. Off by default in ASP.NET Core, and the upgrade
+// handshake happens in middleware, so this has to be in the pipeline before the endpoint runs.
+app.UseWebSockets();
+
 app.MapStaticAssets();
 
 // The MCP server, and the same tools as plain HTTP GETs under /api/mcp/... so each of them is
@@ -202,6 +206,143 @@ app.MapGet("/sse/ticks", async (HttpContext context, CancellationToken cancellat
     catch (OperationCanceledException)
     {
         // The client closed the stream (or navigated away) - the normal way this ends.
+    }
+});
+
+// A real socket for the WebSocket page to talk to. It echoes text and binary frames back, offers a
+// sub-protocol so negotiation can be seen doing something, and understands two commands the page
+// uses to exercise the parts of the API a plain echo cannot reach: "close" makes the server start
+// the closing handshake with an application-defined code, and "burst" floods the connection so
+// bufferedAmount becomes a number worth reading.
+app.MapGet("/ws/echo", async (HttpContext context, CancellationToken cancellationToken) =>
+{
+    if (context.WebSockets.IsWebSocketRequest is false)
+    {
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        await context.Response.WriteAsync("This endpoint only answers WebSocket upgrade requests.", cancellationToken);
+        return;
+    }
+
+    // Accept the page's protocol only when it actually offered it; accepting one that was not
+    // offered fails the handshake in the browser rather than degrading to none.
+    var requested = context.WebSockets.WebSocketRequestedProtocols;
+    var protocol = requested.Contains("butil-echo") ? "butil-echo" : null;
+
+    using var socket = protocol is null
+        ? await context.WebSockets.AcceptWebSocketAsync()
+        : await context.WebSockets.AcceptWebSocketAsync(protocol);
+
+    var buffer = new byte[8 * 1024];
+
+    try
+    {
+        while (socket.State == System.Net.WebSockets.WebSocketState.Open && cancellationToken.IsCancellationRequested is false)
+        {
+            var result = await socket.ReceiveAsync(buffer, cancellationToken);
+
+            if (result.MessageType == System.Net.WebSockets.WebSocketMessageType.Close)
+            {
+                // Echo the peer's own code back. The browser's close event reports the code in the
+                // frame it receives, so answering everything with 1000 would make every
+                // client-initiated close look like a normal one whatever code it sent.
+                await socket.CloseAsync(result.CloseStatus ?? System.Net.WebSockets.WebSocketCloseStatus.NormalClosure,
+                    result.CloseStatusDescription ?? string.Empty, cancellationToken);
+                break;
+            }
+
+            if (result.MessageType == System.Net.WebSockets.WebSocketMessageType.Binary)
+            {
+                // Echo the bytes back with each one incremented, so the page can tell a real round
+                // trip apart from having simply kept its own array.
+                for (var i = 0; i < result.Count; i++) buffer[i] = unchecked((byte)(buffer[i] + 1));
+                await socket.SendAsync(buffer.AsMemory(0, result.Count), System.Net.WebSockets.WebSocketMessageType.Binary, true, cancellationToken);
+                continue;
+            }
+
+            var text = System.Text.Encoding.UTF8.GetString(buffer, 0, result.Count);
+
+            if (text == "close")
+            {
+                await socket.CloseAsync((System.Net.WebSockets.WebSocketCloseStatus)4001, "closed by the server", cancellationToken);
+                break;
+            }
+
+            if (text == "burst")
+            {
+                var chunk = System.Text.Encoding.UTF8.GetBytes(new string('x', 64 * 1024));
+                for (var i = 0; i < 32; i++)
+                    await socket.SendAsync(chunk, System.Net.WebSockets.WebSocketMessageType.Text, true, cancellationToken);
+                continue;
+            }
+
+            await socket.SendAsync(System.Text.Encoding.UTF8.GetBytes($"echo: {text}"),
+                System.Net.WebSockets.WebSocketMessageType.Text, true, cancellationToken);
+        }
+    }
+    catch (OperationCanceledException)
+    {
+        // The client went away, or the host is shutting down - the normal way this ends.
+    }
+    catch (System.Net.WebSockets.WebSocketException)
+    {
+        // The connection dropped without a closing handshake. Nothing to report to a peer that is
+        // already gone.
+    }
+});
+
+// Something worth streaming, for the Streams page: a body that arrives in visible instalments
+// rather than all at once, with a Content-Length so progress has a denominator. The pause between
+// chunks is what makes "read it as it arrives" observably different from "wait, then read it".
+app.MapGet("/api/stream", async (HttpContext context, CancellationToken cancellationToken, int chunks = 20, int chunkSize = 4096, int delayMs = 100) =>
+{
+    var count = Math.Clamp(chunks, 1, 200);
+    var size = Math.Clamp(chunkSize, 1, 64 * 1024);
+
+    context.Response.Headers.ContentType = "application/octet-stream";
+    context.Response.Headers.CacheControl = "no-store";
+    context.Response.Headers["X-Accel-Buffering"] = "no";
+    context.Response.ContentLength = (long)count * size;
+
+    // Repeating text rather than random bytes: it compresses, which is what makes the page's
+    // "pipe it through the browser's gzip codec" section show a number worth looking at.
+    var chunk = System.Text.Encoding.UTF8.GetBytes(new string('x', size));
+
+    try
+    {
+        for (var i = 0; i < count && cancellationToken.IsCancellationRequested is false; i++)
+        {
+            await context.Response.Body.WriteAsync(chunk, cancellationToken);
+            await context.Response.Body.FlushAsync(cancellationToken);
+            await Task.Delay(delayMs, cancellationToken);
+        }
+    }
+    catch (OperationCanceledException)
+    {
+        // The reader cancelled - which is one of the things the page demonstrates.
+    }
+});
+
+// A request that takes its time, so the AbortController page has something real to cancel. It
+// streams a byte a second rather than sleeping and then answering: a response that has not started
+// can be aborted by anything, while one already streaming proves the abort reaches the transfer.
+app.MapGet("/api/slow", async (HttpContext context, CancellationToken cancellationToken, int seconds = 10) =>
+{
+    context.Response.Headers.ContentType = "text/plain";
+    context.Response.Headers.CacheControl = "no-store";
+    context.Response.Headers["X-Accel-Buffering"] = "no";
+
+    try
+    {
+        for (var second = 0; second < Math.Clamp(seconds, 1, 60); second++)
+        {
+            await context.Response.WriteAsync($"{second}\n", cancellationToken);
+            await context.Response.Body.FlushAsync(cancellationToken);
+            await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+        }
+    }
+    catch (OperationCanceledException)
+    {
+        // The client aborted - which is what the page is demonstrating, not a failure.
     }
 });
 

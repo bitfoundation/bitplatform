@@ -1,0 +1,134 @@
+@page "/webrtc"
+@implements IAsyncDisposable
+@inject Bit.Butil.WebRtc webRtc
+
+<PageTitle>Butil - WebRtc Samples</PageTitle>
+
+<PageHeader Category="Utilities"
+            Title="WebRtc"
+            Lead="Media and data straight between two browsers. This sample plays both peers in one tab, which is exactly what a real signalling channel would do more slowly."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection" />
+
+<pre>
+@@inject Bit.Butil.WebRtc webRtc
+
+var a = await webRtc.CreatePeerConnection(onIceCandidate: json =&gt; SendToPeer(json));
+var channel = await a!.CreateDataChannel("chat");   // before the offer
+var offer = await a.CreateOffer();
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Two peers, one page" Api="CreatePeerConnection / CreateDataChannel / CreateOffer"
+              Description="WebRTC connects nobody by itself: an offer, an answer and a stream of ICE candidates have to be carried between the peers by something that already works. Here they are handed straight across.">
+        <div class="controls">
+            <button @onclick="Connect">Connect</button>
+            <button @onclick="Send" disabled="@(_channel is null)">Send a message</button>
+            <button @onclick="ReadStats" disabled="@(_a is null)">Stats</button>
+            <button class="danger" @onclick="Close" disabled="@(_a is null)">Close</button>
+        </div>
+        <div class="field" style="margin-top:.75rem">
+            <span class="field-label">State</span>
+            <span>@_state</span>
+        </div>
+        @if (_received.Count > 0)
+        {
+            <div class="field">
+                <span class="field-label">B received</span>
+                <span>@string.Join(" | ", _received)</span>
+            </div>
+        }
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="web rtc output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private PeerConnectionHandle? _a;
+    private PeerConnectionHandle? _b;
+    private RtcDataChannelHandle? _channel;
+    private readonly List<string> _received = [];
+    private string _state = "Not connected.";
+
+    private async Task Connect()
+    {
+        await Close();
+        _received.Clear();
+
+        _a = await webRtc.CreatePeerConnection(
+            onIceCandidate: json => InvokeAsync(async () => { if (_b is not null) await _b.AddIceCandidate(json); }),
+            onConnectionState: state => InvokeAsync(() => { _state = state; StateHasChanged(); }));
+
+        _b = await webRtc.CreatePeerConnection(
+            onIceCandidate: json => InvokeAsync(async () => { if (_a is not null) await _a.AddIceCandidate(json); }),
+            onRemoteChannel: channel => channel.Listen(onMessage: m => InvokeAsync(async () =>
+            {
+                _received.Add(m.Json ?? string.Empty);
+                await output.Success("B received →", _received[^1]);
+                StateHasChanged();
+            })));
+
+        if (_a is null || _b is null)
+        {
+            await output.Warn("CreatePeerConnection returned null - this runtime has no RTCPeerConnection.");
+            return;
+        }
+
+        // Everything the offer must describe has to exist before the offer is made.
+        _channel = await _a.CreateDataChannel("chat");
+        _channel?.Listen(onOpen: () => InvokeAsync(() => output.Success("The channel is open.")));
+
+        var offer = await _a.CreateOffer();
+        if (offer?.Sdp is null)
+        {
+            await output.Error("CreateOffer failed →", offer?.Error);
+            return;
+        }
+
+        await _a.SetLocalDescription(offer);
+        await _b.SetRemoteDescription(offer);
+
+        var answer = await _b.CreateAnswer();
+        if (answer?.Sdp is null)
+        {
+            await output.Error("CreateAnswer failed →", answer?.Error);
+            return;
+        }
+
+        await _b.SetLocalDescription(answer);
+        await _a.SetRemoteDescription(answer);
+
+        await output.Success("Handshake done.");
+    }
+
+    private async Task Send()
+    {
+        if (_channel is null) return;
+
+        var sent = await _channel.SendText($"hello at {DateTime.Now:HH:mm:ss}");
+        if (sent is false) await output.Warn("SendText returned false - the channel is not open yet.");
+    }
+
+    private async Task ReadStats()
+    {
+        if (_a is null) return;
+
+        var stats = await _a.GetStats();
+        await output.Success("GetStats →", $"{stats.Length} entries: {string.Join(", ", stats.Select(s => s.Type).Distinct())}");
+    }
+
+    private async Task Close()
+    {
+        if (_channel is not null) { await _channel.DisposeAsync(); _channel = null; }
+        if (_a is not null) { await _a.DisposeAsync(); _a = null; }
+        if (_b is not null) { await _b.DisposeAsync(); _b = null; }
+        _state = "Closed.";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try { await Close(); }
+        catch (Exception) { /* teardown - the circuit/runtime may already be gone */ }
+    }
+}

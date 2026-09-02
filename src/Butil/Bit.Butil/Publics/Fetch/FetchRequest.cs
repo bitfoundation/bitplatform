@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Bit.Butil;
 
@@ -35,4 +37,23 @@ public class FetchRequest
 
     /// <summary>One of <c>"follow"</c>, <c>"error"</c>, <c>"manual"</c>.</summary>
     public string Redirect { get; set; } = "follow";
+
+    /// <summary>
+    /// An optional shared <see cref="ButilAbortSignal"/> from <see cref="AbortController"/>. The
+    /// request aborts when this signal does - as does everything else holding the same signal, which
+    /// is what a per-request <see cref="AbortableFetch"/> handle cannot do.
+    /// </summary>
+    /// <remarks>
+    /// This composes with, rather than replaces, the request's own abort paths: the
+    /// <see cref="AbortableFetch"/> handle and the <c>CancellationToken</c> still abort this request
+    /// alone. A signal that has already aborted fails the request immediately.
+    /// </remarks>
+    [JsonIgnore]
+    public ButilAbortSignal? Signal { get; set; }
+
+    /// <summary>
+    /// The id of <see cref="Signal"/>, which is what actually crosses the interop boundary - the
+    /// signal itself lives in JavaScript. Set <see cref="Signal"/>; this is derived from it.
+    /// </summary>
+    public Guid? SignalId => Signal?.Id;
 }

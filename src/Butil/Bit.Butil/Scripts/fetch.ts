@@ -9,6 +9,22 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         abort
     };
 
+    // The request always has its own controller (that is what abort(id) reaches). A shared signal
+    // from butil.abortController has to be combined with it rather than replace it, so that either
+    // one can abort the request.
+    function signalFor(req: any, controller: AbortController): AbortSignal {
+        const shared = req.signalId ? butil.abortController.signalOf(req.signalId) : undefined;
+        if (!shared) return controller.signal;
+
+        const AS: any = (window as any).AbortSignal;
+        if (typeof AS?.any === 'function') return AS.any([controller.signal, shared]);
+
+        // Pre-Safari-17.4: forward the shared signal into this request's own controller.
+        if (shared.aborted) controller.abort((shared as any).reason);
+        else shared.addEventListener('abort', () => controller.abort((shared as any).reason), { once: true });
+        return controller.signal;
+    }
+
     function buildInit(req: any, controller: AbortController): RequestInit {
         const headers = new Headers();
         if (req.headers) {
@@ -21,7 +37,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             mode: req.mode || 'cors',
             cache: req.cache || 'default',
             redirect: req.redirect || 'follow',
-            signal: controller.signal
+            signal: signalFor(req, controller)
         };
         if (req.body && req.body.length > 0) {
             init.body = butil.utils.arrayToBuffer(req.body);

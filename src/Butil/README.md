@@ -103,6 +103,10 @@ registering everything.
 | `IntersectionObserver` | Element visibility inside the viewport or a scroll container |
 | `MutationObserver` | DOM tree, attribute and character-data mutations |
 | `ResizeObserver` | Element size changes with box-model detail |
+| `Css` | `getComputedStyle`, `CSS.supports`/`escape`/`registerProperty`, stylesheet rules, the CSS Custom Highlight API |
+| `Dom` | `querySelector`, `getElementById`, `createElement` and node traversal for elements Blazor did not render - with a bridge back to `ElementReference` |
+| `ShadowDom` | `attachShadow`, scoped styles, and querying into a third-party component's own markup |
+| `Canvas` | `drawImage` from a video/image/canvas, then `toDataURL`/`toBlob` - screenshots and thumbnails as `byte[]` |
 | `PictureInPicture` | Float a `<video>` in an always-on-top window |
 | `ViewTransition` | Animate between two states of the page, the browser doing the work |
 | Media element extensions | Play, pause, seek, volume and rate on any `<audio>`/`<video>` |
@@ -130,6 +134,7 @@ registering everything.
 | `Crypto` | SubtleCrypto: encryption, decryption, hashing, key generation, random values |
 | `Fetch` | The fetch API with full request/response control and progress |
 | `Compression` | Gzip and deflate through the browser's native codec |
+| `DataTransfer` | Drag-and-drop payloads: dropped files, `getData`/`setData` items, `dropEffect`, `setDragImage` |
 
 ### Network & workers
 
@@ -142,6 +147,19 @@ registering everything.
 | `BroadcastChannel` | Message other tabs and windows of the same origin |
 | `WebLocks` | Cross-tab cooperative resource locking |
 | `EventSource` | Server-sent events, with reconnection built into the browser |
+| `WebRtc` | `RTCPeerConnection`, `RTCDataChannel` and `getStats`: media and data straight between two browsers |
+| `WebSocket` | A two-way connection that stays open: binary frames, close codes, sub-protocol negotiation, `bufferedAmount` |
+| `Worker` | Dedicated and shared workers running a script you supply, with transferable binary payloads |
+| `MessageChannel` | `MessageChannel`/`MessagePort`: a private two-ended pipe, transferable to a worker or an iframe |
+| `WindowMessaging` | `window.postMessage`: cross-document messaging with an embedded iframe, the parent, the opener or a popup |
+
+### Async & scheduling
+
+| Service | What it wraps |
+| --- | --- |
+| `AbortController` | `AbortController`/`AbortSignal`: one signal shared by many operations, plus `AbortSignal.timeout` and `AbortSignal.any` |
+| `Scheduler` | `requestAnimationFrame` (single and looping), `requestIdleCallback`, `scheduler.postTask`/`yield`, `isInputPending` |
+| `Streams` | The Streams API: a fetch body read as it arrives, `tee`, `pipeThrough` the native codecs, and `pipeTo` a C# sink |
 
 ### Device & hardware
 

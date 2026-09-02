@@ -48,6 +48,18 @@
          one piece of this demo that is neither C# nor Razor and that those APIs cannot work without. -->
     <EmbeddedResource Include="wwwroot\sw.js" LogicalName="ButilSource/Demo/Server/wwwroot/sw.js" />
 
+    <!-- Same reasoning for the worker scripts: a worker runs a script you supply, so these are the
+         other half of the Worker page and reading the C# without them explains nothing. -->
+    <EmbeddedResource Include="wwwroot\workers\*.js">
+      <LogicalName>ButilSource/Demo/Server/wwwroot/workers/%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+
+    <!-- And the embedded document the WindowMessaging page talks to: cross-document messaging needs
+         a second document, so this is the other half of that page. -->
+    <EmbeddedResource Include="wwwroot\frames\*.html">
+      <LogicalName>ButilSource/Demo/Server/wwwroot/frames/%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+
     <!-- The minimal hosting samples - standalone WebAssembly and Hybrid (MAUI). Their pages are
          left out on purpose: they are a smaller copy of this demo's pages, and the demo itself is
          embedded above. The shared service registration is the exception - it is the piece the

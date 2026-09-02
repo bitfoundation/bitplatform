@@ -1,0 +1,176 @@
+@page "/abort"
+@implements IAsyncDisposable
+@inject Bit.Butil.AbortController abortController
+@inject Bit.Butil.Fetch fetch
+
+<PageTitle>Butil - AbortController Samples</PageTitle>
+
+<PageHeader Category="Utilities"
+            Title="AbortController"
+            Lead="One cancellation signal, shared by as many operations as you like - plus self-firing deadlines and composition."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/AbortController" />
+
+<pre>
+@@inject Bit.Butil.AbortController abortController
+
+var handle = await abortController.Create();
+await handle!.Signal.OnAbort(reason => { /* cancelled */ });
+await handle.Abort("the user changed their mind");
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Create and abort" Api="Create / Abort / OnAbort / GetReason"
+              Description="Keep the handle, hand out its signal. A signal aborts once and keeps the first reason it was given.">
+        <div class="field">
+            <span class="field-label">Reason</span>
+            <input @bind="_reason" placeholder="(optional)" />
+        </div>
+        <div class="controls">
+            <button @onclick="CreateController">Create</button>
+            <button class="danger" @onclick="AbortIt" disabled="@(_handle is null)">Abort</button>
+            <button @onclick="ReadState" disabled="@(_handle is null)">Read state</button>
+        </div>
+        <p style="margin-top:0.75rem"><span class="result-pill">@_state</span></p>
+    </DemoCard>
+
+    <DemoCard Title="A deadline that a button can also trip" Api="Timeout / Any"
+              Description="Timeout aborts itself after a delay and cannot be cancelled early; a controller's signal has no deadline. Any composes the two so one operation gets both.">
+        <div class="controls">
+            <button @onclick="StartComposite">Fetch with a 3s deadline</button>
+            <button class="danger" @onclick="CancelComposite" disabled="@(_compositeCancel is null)">Cancel now</button>
+        </div>
+        <p style="margin-top:0.75rem"><span class="result-pill">@_compositeState</span></p>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="abort controller output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private AbortControllerHandle? _handle;
+    private ButilSubscription? _subscription;
+    private string _reason = string.Empty;
+    private string _state = "No controller yet.";
+
+    private AbortControllerHandle? _compositeCancel;
+    private ButilAbortSignal? _compositeDeadline;
+    private ButilAbortSignal? _composite;
+    private string _compositeState = "Idle.";
+
+    private async Task CreateController()
+    {
+        await ReleaseController();
+
+        _handle = await abortController.Create();
+        if (_handle is null)
+        {
+            _state = "Unavailable - this runtime has no AbortController.";
+            await output.Warn(_state);
+            return;
+        }
+
+        _subscription = await _handle.Signal.OnAbort(reason => InvokeAsync(async () =>
+        {
+            _state = $"Aborted: {reason}";
+            await output.Warn("OnAbort →", reason);
+            StateHasChanged();
+        }));
+
+        _state = "Created.";
+        await output.Success("Create → signal", _handle.Signal.Id);
+    }
+
+    private async Task AbortIt()
+    {
+        if (_handle is null) return;
+        await _handle.Abort(string.IsNullOrWhiteSpace(_reason) ? null : _reason);
+    }
+
+    private async Task ReadState()
+    {
+        if (_handle is null) return;
+        await output.Success("GetAborted →", await _handle.Signal.GetAborted());
+        await output.Success("GetReason →", await _handle.Signal.GetReason());
+    }
+
+    private async Task StartComposite()
+    {
+        await DisposeComposite();
+
+        _compositeCancel = await abortController.Create();
+        _compositeDeadline = await abortController.Timeout(TimeSpan.FromSeconds(3));
+
+        if (_compositeCancel is null || _compositeDeadline is null)
+        {
+            _compositeState = "Unavailable - no AbortController or no AbortSignal.timeout.";
+            await output.Warn(_compositeState);
+            return;
+        }
+
+        _composite = await abortController.Any(_compositeCancel.Signal, _compositeDeadline);
+        if (_composite is null)
+        {
+            _compositeState = "Any returned null.";
+            await output.Warn(_compositeState);
+            return;
+        }
+
+        _compositeState = "In flight - cancel it, or wait 3s.";
+
+        try
+        {
+            var response = await fetch.Send(new FetchRequest
+            {
+                Url = "https://jsonplaceholder.typicode.com/photos",
+                Signal = _composite
+            });
+
+            _compositeState = response.Aborted
+                ? $"Aborted: {await _composite.GetReason()}"
+                : $"Finished first - status {response.Status}.";
+        }
+        catch (Exception ex)
+        {
+            _compositeState = "Failed.";
+            await output.Error(ex.Message);
+            return;
+        }
+
+        await output.Success("Outcome →", _compositeState);
+    }
+
+    private async Task CancelComposite()
+    {
+        if (_compositeCancel is null) return;
+        await _compositeCancel.Abort("cancelled by the user");
+    }
+
+    private async Task ReleaseController()
+    {
+        if (_subscription is not null) { await _subscription.DisposeAsync(); _subscription = null; }
+        if (_handle is not null) { await _handle.DisposeAsync(); _handle = null; }
+    }
+
+    private async Task DisposeComposite()
+    {
+        // The composite first - it watches the other two, and releasing a source out from under it
+        // would leave it watching a signal that can no longer fire.
+        if (_composite is not null) { await _composite.DisposeAsync(); _composite = null; }
+        if (_compositeDeadline is not null) { await _compositeDeadline.DisposeAsync(); _compositeDeadline = null; }
+        if (_compositeCancel is not null) { await _compositeCancel.DisposeAsync(); _compositeCancel = null; }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await ReleaseController();
+            await DisposeComposite();
+        }
+        catch (Exception)
+        {
+            // teardown - the circuit/runtime may already be gone
+        }
+    }
+}

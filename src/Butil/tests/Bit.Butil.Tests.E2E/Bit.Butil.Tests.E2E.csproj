@@ -22,6 +22,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- For WebSocketEchoFixture: the WebSocket tests need a real socket endpoint, and the sample
+         app under test is a standalone WebAssembly host with no server side to add one to. This is
+         the framework the repo already ships, not a new dependency to download. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Playwright itself, without a per-framework integration package: the suite drives the browser
          from ButilHarnessTestBase rather than from a PageTest base class - see the comment there. -->
     <PackageReference Include="Microsoft.Playwright" Version="1.62.0" />

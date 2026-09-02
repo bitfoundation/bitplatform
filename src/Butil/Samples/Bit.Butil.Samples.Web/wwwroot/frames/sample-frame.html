@@ -1,0 +1,27 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Butil sample frame</title>
+<style>
+    body { margin: 0; font: 13px/1.5 system-ui, sans-serif; padding: .6rem; background: #f1f5f9; color: #0f172a; }
+    ol { margin: .3rem 0 0; padding-left: 1.1rem; max-height: 6rem; overflow: auto; }
+</style>
+
+<b>An embedded document</b>
+<ol id="log"></ol>
+
+<script>
+    // The other half of the samples' WindowMessaging page: a real second document, so the messages
+    // crossing between it and the page are real cross-document messages.
+    const log = document.getElementById('log');
+
+    addEventListener('message', e => {
+        // A document that does not check the origin accepts messages from anyone who can reach it.
+        if (e.origin !== location.origin) return;
+
+        const item = document.createElement('li');
+        item.textContent = `Received: ${JSON.stringify(e.data)}`;
+        log.prepend(item);
+
+        e.source.postMessage({ op: 'echo', payload: e.data, from: 'the frame' }, e.origin);
+    });
+</script>

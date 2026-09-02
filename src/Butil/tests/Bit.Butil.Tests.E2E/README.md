@@ -69,7 +69,38 @@ dotnet test .\Bit.Butil.Tests.E2E.csproj
 
 Two deterministic pages live in `Bit.Butil.Samples.Core/Pages`:
 
-* `/e2e` - storage (round-trip, typed JSON, removeItem, length/key/containsKey, clear), cookie, crypto (UUID, random bytes, SHA-256, AES-GCM, AES-CBC, HMAC, ECDSA, PBKDF2), performance.now, window (base64, inner size, secure context, matchMedia), document (title, visibility/charset/url), location (href + protocol/pathname/origin), history (pushState, replaceState + state, scrollRestoration).
+* `/e2e` - storage (round-trip, typed JSON, removeItem, length/key/containsKey, clear), cookie, crypto (UUID, random bytes, SHA-256, AES-GCM, AES-CBC, HMAC, ECDSA, PBKDF2), performance.now, window (base64, inner size, secure context, matchMedia), document (title, visibility/charset/url), location (href + protocol/pathname/origin), history (pushState, replaceState + state, scrollRestoration),
+  AbortController (abort + reason, listeners including a late one, a shared signal, `Any`, `Timeout`, and
+  that disposing releases without aborting), WebSocket (sub-protocol negotiation, text and binary round
+  trips, state/url/buffered, closing from either end with an application code, and a refused scheme).
+  The WebSocket controls talk to the echo endpoint `Infrastructure/WebSocketEchoFixture.cs` hosts in the
+  test process - the sample under test is a standalone WebAssembly host with no server side to add one
+  to, and a public echo service would make the suite need the internet. Its URL reaches the page as
+  `/e2e?ws=...`. Worker (echo with a name, transferred bytes both ways, an uncaught throw that leaves the
+  worker running, a port handed over, a shared worker's connection count, and posting to a terminated one)
+  and MessageChannel (queue-then-start ordering, binary across a port, and a transferred port going dead on
+  the sending side). The worker scripts live in `Bit.Butil.Samples.Web/wwwroot/workers` - a worker runs a
+  script you supply, so the harness has to supply one. WindowMessaging (a round trip through an iframe,
+  bytes, a port transferred to the frame, a top-level page being its own parent, and a message from an
+  origin not on the allow-list never reaching the callback), against
+  `Bit.Butil.Samples.Web/wwwroot/frames/e2e-frame.html`. Streams (a response body read to its end,
+  reading locking the stream so `Tee` refuses, `Tee` giving both branches every chunk, a gzip/gunzip
+  round trip into a C# sink, writing by hand, and a 404 reporting its status), against
+  `Bit.Butil.Samples.Web/wwwroot/data/stream-sample.txt` - exactly 1024 bytes, so the assertions are
+  exact numbers. Scheduler (a single frame, a loop that stops when disposed, an idle callback reporting
+  slack on an idle page and `DidTimeout` on a busy one, a posted task, a task whose signal is already
+  aborted, and `Yield`/`IsInputPending`). Canvas (buffer sizing, draw-then-export, and capture with the
+  aspect ratio preserved) - measured by reading the dimensions back out of the exported PNG's own IHDR
+  header, so the assertion is the picture rather than "some bytes came back". Dom (query, create and
+  append, element-wise traversal, `SetText` not parsing markup, and - the canary for the one Blazor
+  internal Butil leans on - `AsElementReference` producing a reference the element extensions resolve)
+  and ShadowDom (querying inside an open root, the document not reaching in, and a closed root being
+  unreachable). Css (computed values, `Supports`/`Escape`, a stylesheet rule applying and being deleted,
+  and a custom highlight counting its occurrences). DataTransfer - the drop is dispatched as a synthetic
+  `DragEvent` carrying a real `DataTransfer`, since a headless browser has no mouse to drag with, and
+  everything after the event is the path a user's drop takes. WebRtc, where both peers live in the page
+  and hand each other their ICE candidates directly: a real loopback connection, a data channel round
+  trip, and `getStats`, with no network and nothing to prompt for.
 * `/e2e-observers` - PerformanceObserver, performance mark/measure/getEntries/clearMarks, StorageManager, NetworkInformation, IntersectionObserver, ResizeObserver, MutationObserver, BroadcastChannel, IndexedDB, CacheStorage, Web Locks, Object URLs, CookieStore, navigator/userAgent/screen platform getters.
 
 Both expose stable element ids and funnel results through a single `#status` element so test selectors stay simple.
