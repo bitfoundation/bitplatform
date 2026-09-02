@@ -79,8 +79,9 @@ registering everything.
 | `History` | Session history: back/forward, `pushState`/`replaceState`, `popstate` |
 | `Navigation` | The Navigation API: read the history entry list, traverse to a key, and know whether you can go back |
 | `Location` | Read and mutate the current URL, reload, navigate |
-| `Navigator` | Identity, languages, `share`, `vibrate`, badges, `sendBeacon`, device memory |
+| `Navigator` | Identity, languages, `share`, `vibrate`, badges, `sendBeacon`, device memory, protocol handlers, installed related apps |
 | `UserAgent` | Parsed user-agent brands, platform and mobile-ness (UA Client Hints) |
+| `TextFragment` | Scroll-to-text URLs (`#:~:text=`): deep-link to a phrase rather than an anchor |
 
 ### Screen & diagnostics
 
@@ -97,14 +98,23 @@ registering everything.
 
 | Service | What it wraps |
 | --- | --- |
-| `ElementReference` extensions | Attributes (namespaced too), ARIA and `role`, classes, `data-*`, inline style, content insertion, scrolling, layout metrics, fullscreen, popovers, pointer capture, per-element events |
-| Animation extensions | The Web Animations API on any element |
+| `ElementReference` extensions | Attributes (namespaced too), ARIA and `role`, classes, `data-*`, inline style, content insertion, `moveBefore`, scrolling, layout metrics, fullscreen, popovers, pointer capture, per-element events |
+| Animation extensions | The Web Animations API on any element, including scroll-driven timelines, `getAnimations`, `commitStyles` and `persist` |
 | `Keyboard` | App-wide keyboard shortcuts with modifier support |
+| `KeyboardLock` | Capture keys the browser would swallow, while fullscreen |
+| `KeyboardLayout` | What each physical key actually prints on the user's layout |
+| `VirtualKeyboard` | Show, hide and lay out around the on-screen keyboard |
 | `IntersectionObserver` | Element visibility inside the viewport or a scroll container |
 | `MutationObserver` | DOM tree, attribute and character-data mutations |
 | `ResizeObserver` | Element size changes with box-model detail |
 | `PictureInPicture` | Float a `<video>` in an always-on-top window |
-| `ViewTransition` | Animate between two states of the page, the browser doing the work |
+| `ViewTransition` | Animate between two states of the page - within a document, and across a navigation |
+| `CloseWatcher` | One event for Escape, the Android back gesture and every other close affordance |
+| `InvokerCommands` | The `command` / `commandfor` attributes and `CommandEvent` |
+| `TextEditContext` | The EditContext API: text input and IME composition decoupled from the surface |
+| `PointerTracker` | Coalesced and predicted pointer samples, for drawing and annotation |
+| `Css` + style-map extensions | Feature queries, the CSS Typed OM, animatable custom properties, Houdini worklets |
+| `CustomElements` | `ElementInternals` and `CustomStateSet`: component state exposed to CSS as `:state()` |
 | Media element extensions | Play, pause, seek, volume and rate on any `<audio>`/`<video>` |
 
 ### Storage
@@ -118,6 +128,7 @@ registering everything.
 | `CacheStorage` | The service-worker Cache API |
 | `StorageManager` | Quota, usage estimates and persistence |
 | `StorageAccess` | Ask for unpartitioned storage from inside a third-party iframe |
+| `SharedStorage` | Cross-site storage a page can write but never read (Privacy Sandbox) |
 
 ### Files & data
 
@@ -176,6 +187,37 @@ registering everything.
 | `WebAudio` | Play and control audio buffers |
 | `MediaRecorder` | Record a camera, microphone or screen share to a file |
 | `MediaSession` | Lock-screen metadata and hardware media-key handlers |
+| `AudioSession` | Declare playback intent so the OS ducks, mixes or interrupts correctly |
+
+### PWA & installation
+
+| Service | What it wraps |
+| --- | --- |
+| `InstallPrompt` | `beforeinstallprompt`, the deferred install dialog, and `appinstalled` |
+| `LaunchQueue` | The files and target URL an installed app was launched with |
+| `WindowControlsOverlay` | Title-bar geometry for a desktop PWA that draws its own |
+
+The rest of the family is declared in the manifest rather than called: `share_target` for receiving a
+share, `file_handlers` and `protocol_handlers` for what the OS routes to the app, and
+`launch_handler` for how a second launch is routed. `Navigator.RegisterProtocolHandler` and
+`Navigator.GetInstalledRelatedApps` are the two scripted pieces that go with them.
+
+### Built-in AI
+
+| Service | What it wraps |
+| --- | --- |
+| `LanguageModel` | The Prompt API: a general-purpose model running on the device |
+| `Summarizer` | Key points, a TL;DR, a teaser or a headline |
+| `Translator` | On-device translation, one session per language pair |
+| `LanguageDetector` | What language a piece of text is in |
+| `Writer` | New text from a short prompt |
+| `Rewriter` | Text you already have, moved shorter / longer / more formal |
+| `Proofreader` | Corrections, each positioned in the original text |
+| `WebNN` | The Web Neural Network API's entry point: contexts and operator support |
+
+All of these are Chromium-only, need a capable device, and download a model on first use. Each has
+the same shape: an `Availability()` probe, a `Create()` that takes a download-progress handler, and a
+session you must dispose.
 
 ---
 

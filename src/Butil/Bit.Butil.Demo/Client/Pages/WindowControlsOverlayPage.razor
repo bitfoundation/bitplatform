@@ -1,0 +1,189 @@
+@page "/window-controls-overlay"
+@implements IAsyncDisposable
+@inject Bit.Butil.WindowControlsOverlay overlay
+
+<PageTitle>WindowControlsOverlay - Bit.Butil</PageTitle>
+
+<PageHeader Category="PWA & Installation"
+            Title="WindowControlsOverlay"
+            Lead="A desktop PWA that draws its own title bar needs to know where the OS window controls are - this is the geometry, and the event that fires when it changes."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Window_Controls_Overlay_API"
+            InjectAs="WindowControlsOverlay overlay" />
+
+<Callout Type="warning" Title="Installed desktop apps only">
+    The overlay exists for an installed desktop app whose manifest sets
+    <code>"display_override": ["window-controls-overlay"]</code>, and the user can switch it off from
+    the app's own menu. In a browser tab <code>IsVisible</code> is false and the geometry is all
+    zeros - which is exactly what you should design for.
+</Callout>
+
+<Callout Type="info" Title="The CSS half">
+    The same rectangle is available to CSS as the <code>titlebar-area-x</code>,
+    <code>titlebar-area-y</code>, <code>titlebar-area-width</code> and
+    <code>titlebar-area-height</code> environment variables, and <code>app-region: drag</code> marks
+    the part of your header that moves the window. Use CSS for the layout and this service for the
+    logic that CSS cannot express.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support and visibility"
+                 Api="IsSupported / IsVisible"
+                 Description="Supported is not the same as visible: a supporting browser still reports an invisible overlay for a page running in a tab. During prerender/SSR both return false rather than throwing."
+                 Code=@("""
+@inject Bit.Butil.WindowControlsOverlay overlay
+
+if (await overlay.IsVisible())
+{
+    // we are drawing our own title bar
+}
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+            <button @onclick="CheckVisible">IsVisible</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Where your content may go"
+                 Api="GetTitlebarAreaRect"
+                 Description="The rectangle your own content may use. It starts after the window controls on the leading side and stops before them on the trailing side, which is why X is not always zero - a toolbar that ignores it ends up underneath the close button."
+                 Code=@("""
+var rect = await overlay.GetTitlebarAreaRect();
+
+// rect.X is the left edge you may draw from,
+// rect.Width how much room you have, rect.Height how tall the bar is.
+""")>
+        <div class="controls">
+            <button @onclick="ReadRect">GetTitlebarAreaRect</button>
+        </div>
+        @if (_geometry is not null)
+        {
+            <div class="field">
+                <span class="field-label">Titlebar area</span>
+                <span><code>x @_geometry.X · y @_geometry.Y · @_geometry.Width × @_geometry.Height · visible: @_geometry.Visible</code></span>
+            </div>
+        }
+        <DemoConsole @ref="rectOutput" Title="geometry output" />
+    </DemoSection>
+
+    <DemoSection Title="Follow the geometry"
+                 Api="OnGeometryChange"
+                 Description="Fires when the window is resized and when the user toggles the overlay, and once immediately with the current geometry so a subscriber can lay out before anything changes. Dispose the returned subscription."
+                 Code=@("""
+_sub = await overlay.OnGeometryChange(geometry =>
+{
+    _titlebarPadding = geometry.X;
+    InvokeAsync(StateHasChanged);
+});
+""")>
+        <div class="controls">
+            <button @onclick="Subscribe" disabled="@(_sub is not null)">Subscribe</button>
+            <button class="danger" @onclick="Unsubscribe" disabled="@(_sub is null)">Unsubscribe</button>
+        </div>
+        <DemoConsole @ref="eventOutput" Title="geometrychange output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes navigator.windowControlsOverlay (Chromium desktop)." />
+    <ApiMember Name="IsVisible"
+               Signature="ValueTask<bool> IsVisible()"
+               Description="True while the app is actually drawing its own title bar." />
+    <ApiMember Name="GetTitlebarAreaRect"
+               Signature="ValueTask<WindowControlsOverlayGeometry> GetTitlebarAreaRect()"
+               Description="The rectangle your content may draw in, in CSS pixels relative to the viewport." />
+    <ApiMember Name="OnGeometryChange"
+               Signature="Task<ButilSubscription> OnGeometryChange(Action<WindowControlsOverlayGeometry> handler)"
+               Description="Watches the overlay. Fires on resize and on toggle, plus once immediately with the current geometry." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Detaches every listener registered through this instance and releases its interop reference." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole rectOutput = default!;
+    private DemoConsole eventOutput = default!;
+
+    private ButilSubscription? _sub;
+    private WindowControlsOverlayGeometry? _geometry;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await overlay.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckVisible()
+    {
+        try
+        {
+            var visible = await overlay.IsVisible();
+            if (visible) await supportOutput.Success("IsVisible →", true);
+            else await supportOutput.Warn("IsVisible →", "false - this page isn't running as an installed app with the overlay on.");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsVisible failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadRect()
+    {
+        try
+        {
+            _geometry = await overlay.GetTitlebarAreaRect();
+            await rectOutput.Success("GetTitlebarAreaRect →", _geometry);
+        }
+        catch (Exception ex)
+        {
+            await rectOutput.Error("GetTitlebarAreaRect failed →", ex.Message);
+        }
+    }
+
+    private async Task Subscribe()
+    {
+        try
+        {
+            _sub = await overlay.OnGeometryChange(async geometry => await InvokeAsync(async () =>
+            {
+                _geometry = geometry;
+                StateHasChanged();
+                await eventOutput.Info("geometrychange →", geometry);
+            }));
+
+            await eventOutput.Success("Subscribed.");
+        }
+        catch (Exception ex)
+        {
+            await eventOutput.Error("Subscribe failed →", ex.Message);
+        }
+    }
+
+    private async Task Unsubscribe()
+    {
+        try
+        {
+            if (_sub is not null) await _sub.DisposeAsync();
+            _sub = null;
+            await eventOutput.Info("Unsubscribed.");
+        }
+        catch (Exception ex)
+        {
+            await eventOutput.Error("Unsubscribe failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_sub is not null) await _sub.DisposeAsync();
+    }
+}

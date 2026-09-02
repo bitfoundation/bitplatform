@@ -1,0 +1,244 @@
+@page "/summarizer"
+@implements IAsyncDisposable
+@inject Bit.Butil.Summarizer summarizer
+
+<PageTitle>Summarizer - Bit.Butil</PageTitle>
+
+<PageHeader Category="Built-in AI"
+            Title="Summarizer"
+            Lead="On-device summaries - key points, a TL;DR, a teaser or a headline - from a session you configure once and reuse across documents."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Summarizer"
+            InjectAs="Summarizer summarizer" />
+
+<Callout Type="warning" Title="Chromium only, model downloaded on first use">
+    Same shape as every built-in AI API: probe <code>Availability</code>, <code>Create</code> from a
+    user gesture (the first creation downloads the model), summarize, and <b>dispose the session</b>.
+    See <a href="/language-model">LanguageModel</a> for the whole story.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support and availability"
+                 Api="IsSupported / Availability"
+                 Description="Availability answers whether these particular options can be served - the summary type, format, length and languages you intend to ask for."
+                 Code=@("""
+@inject Bit.Butil.Summarizer summarizer
+
+var availability = await summarizer.Availability(
+    new SummarizerOptions { Type = "key-points", Length = "short" });
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+            <button @onclick="CheckAvailability">Availability</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="availability output" />
+    </DemoSection>
+
+    <DemoSection Title="Create a summarizer"
+                 Api="Create"
+                 Description="Type is what kind of summary (key-points, tldr, teaser, headline), Length how long (short, medium, long), Format markdown or plain-text, and SharedContext what every document in this session is - which is the option that most improves the result."
+                 Code=@("""
+_session = await summarizer.Create(new SummarizerOptions
+{
+    Type = "key-points",
+    Length = "short",
+    Format = "plain-text",
+    SharedContext = "Release notes for a .NET library, summarised for developers."
+});
+""")>
+        <div class="controls">
+            <label class="field">
+                <span class="field-label">Type</span>
+                <select @bind="_type">
+                    <option value="key-points">key-points</option>
+                    <option value="tldr">tldr</option>
+                    <option value="teaser">teaser</option>
+                    <option value="headline">headline</option>
+                </select>
+            </label>
+            <label class="field">
+                <span class="field-label">Length</span>
+                <select @bind="_length">
+                    <option value="short">short</option>
+                    <option value="medium">medium</option>
+                    <option value="long">long</option>
+                </select>
+            </label>
+        </div>
+        <div class="controls">
+            <button @onclick="CreateSession" disabled="@(_session is not null)">Create</button>
+            <button class="danger" @onclick="DestroySession" disabled="@(_session is null)">Dispose session</button>
+        </div>
+        @if (_progress > 0 && _progress < 1)
+        {
+            <div class="field">
+                <span class="field-label">Downloading model</span>
+                <span><code>@($"{_progress:P0}")</code></span>
+            </div>
+        }
+        <DemoConsole @ref="sessionOutput" Title="session output" />
+    </DemoSection>
+
+    <DemoSection Title="Summarize"
+                 Api="SummarizerSession.Summarize / SummarizeStreaming"
+                 Description="Summarize waits for the whole result; SummarizeStreaming reports it as it is produced, which is what a UI should use for anything longer than a paragraph. The per-call context argument describes this one document, on top of the session's shared context."
+                 Code=@("""
+var summary = await _session.Summarize(article, context: "A conference talk abstract.");
+
+// or, streaming:
+await _session.SummarizeStreaming(article, chunk => { _summary += chunk; InvokeAsync(StateHasChanged); });
+""")>
+        <div class="field">
+            <span class="field-label">Text to summarize</span>
+            <textarea rows="5" @bind="_input"></textarea>
+        </div>
+        <div class="controls">
+            <button @onclick="Summarize" disabled="@(_session is null)">Summarize</button>
+            <button @onclick="SummarizeStreaming" disabled="@(_session is null)">SummarizeStreaming</button>
+        </div>
+        @if (string.IsNullOrEmpty(_summary) is false)
+        {
+            <div class="field">
+                <span class="field-label">Summary</span>
+                <span>@_summary</span>
+            </div>
+        }
+        <DemoConsole @ref="runOutput" Title="summarize output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes the Summarizer API." />
+    <ApiMember Name="Availability"
+               Signature="ValueTask<AiAvailability> Availability() / Availability(SummarizerOptions options)"
+               Description="Whether a session can be created right now, and whether that means downloading the model first." />
+    <ApiMember Name="Create"
+               Signature="ValueTask<SummarizerSession?> Create(SummarizerOptions? options = null, Action<double>? onDownloadProgress = null)"
+               Description="Creates a summarizer. Call from a user gesture; the first creation downloads the model." />
+    <ApiMember Name="Session.Summarize"
+               Signature="ValueTask<string?> Summarize(string input, string? context = null)"
+               Description="Summarizes a piece of text and waits for the whole result." />
+    <ApiMember Name="Session.SummarizeStreaming"
+               Signature="Task<string> SummarizeStreaming(string input, Action<string>? onChunk = null, string? context = null)"
+               Description="Summarizes a piece of text, reporting the summary as it is generated." />
+    <ApiMember Name="Session.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Destroys the model instance and frees what it holds. Always dispose." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole sessionOutput = default!;
+    private DemoConsole runOutput = default!;
+
+    private SummarizerSession? _session;
+    private string _type = "key-points";
+    private string _length = "short";
+    private string _summary = "";
+    private double _progress;
+    private string _input =
+        "Bit.Butil wraps browser APIs as strongly typed C# services for Blazor. It works under WebAssembly, " +
+        "Server, Hybrid and prerendering, returns safe defaults when there is no JavaScript runtime, and ships " +
+        "its scripts as one bundle or as lazily imported per-API modules.";
+
+    private SummarizerOptions Options => new() { Type = _type, Length = _length, Format = "plain-text" };
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await summarizer.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckAvailability()
+    {
+        try
+        {
+            var availability = await summarizer.Availability(Options);
+            if (availability == AiAvailability.Unavailable)
+                await supportOutput.Warn("Availability →", "Unavailable - no API here, or these options can't be served.");
+            else
+                await supportOutput.Success("Availability →", availability);
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Availability failed →", ex.Message);
+        }
+    }
+
+    private async Task CreateSession()
+    {
+        try
+        {
+            _session = await summarizer.Create(Options, async fraction => await InvokeAsync(() =>
+            {
+                _progress = fraction;
+                StateHasChanged();
+            }));
+
+            if (_session is null) await sessionOutput.Warn("Create →", "null - the runtime refused, or the download was declined.");
+            else await sessionOutput.Success("Create →", $"session {_session.Id}");
+        }
+        catch (Exception ex)
+        {
+            await sessionOutput.Error("Create failed →", ex.Message);
+        }
+    }
+
+    private async Task DestroySession()
+    {
+        try
+        {
+            if (_session is not null) await _session.DisposeAsync();
+            _session = null;
+            await sessionOutput.Info("Session disposed.");
+        }
+        catch (Exception ex)
+        {
+            await sessionOutput.Error("Dispose failed →", ex.Message);
+        }
+    }
+
+    private async Task Summarize()
+    {
+        try
+        {
+            _summary = await _session!.Summarize(_input) ?? "";
+            await runOutput.Success("Summarize →", _summary.Length == 0 ? "(null - the session is gone)" : $"{_summary.Length} characters.");
+        }
+        catch (Exception ex)
+        {
+            await runOutput.Error("Summarize failed →", ex.Message);
+        }
+    }
+
+    private async Task SummarizeStreaming()
+    {
+        try
+        {
+            _summary = "";
+            var whole = await _session!.SummarizeStreaming(_input, async chunk => await InvokeAsync(() =>
+            {
+                _summary += chunk;
+                StateHasChanged();
+            }));
+
+            await runOutput.Success("SummarizeStreaming →", $"{whole.Length} characters.");
+        }
+        catch (Exception ex)
+        {
+            await runOutput.Error("SummarizeStreaming failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_session is not null) await _session.DisposeAsync();
+    }
+}

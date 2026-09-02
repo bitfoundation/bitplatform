@@ -1,0 +1,249 @@
+@page "/keyboard-lock"
+@inject Bit.Butil.KeyboardLock keyboardLock
+@inject Bit.Butil.KeyboardLayout keyboardLayout
+@inject Bit.Butil.Document document
+
+<PageTitle>Keyboard lock & layout - Bit.Butil</PageTitle>
+
+<PageHeader Category="DOM & Interaction"
+            Title="Keyboard lock & layout"
+            Lead="The Keyboard API proper: capture keys the browser would normally swallow while fullscreen, and find out what each physical key actually prints on the user's layout."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Keyboard"
+            InjectAs="KeyboardLock keyboardLock, KeyboardLayout keyboardLayout" />
+
+<Callout Type="info" Title="Not the same as the Keyboard service">
+    Butil's <a href="/keyboard">Keyboard</a> service registers app-level shortcuts on top of ordinary
+    key events. These two change which keys reach the page at all, and what to call them - which is
+    what a game, a remote-desktop client or a shortcut-hint UI needs.
+</Callout>
+
+<Callout Type="warning" Title="Lock needs fullscreen">
+    Keyboard lock requires a secure context, a top-level browsing context and <b>fullscreen</b>. The
+    lock is dropped the moment fullscreen ends, so a user can never be trapped: even with Escape
+    locked, holding it still exits. Chromium desktop only.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="KeyboardLock.IsSupported / KeyboardLayout.IsSupported"
+                 Description="The two halves are probed separately. During prerender/SSR both return false rather than throwing, so defer them to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.KeyboardLock keyboardLock
+@inject Bit.Butil.KeyboardLayout keyboardLayout
+
+var canLock = await keyboardLock.IsSupported();
+var canReadLayout = await keyboardLayout.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckLockSupported">KeyboardLock.IsSupported</button>
+            <button @onclick="CheckLayoutSupported">KeyboardLayout.IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Capture keys while fullscreen"
+                 Api="Lock / Unlock"
+                 Description="Enter fullscreen first, then lock. Passing no codes captures everything the platform allows; passing codes captures only those. Calling Lock again replaces the previous set rather than adding to it. Leaving fullscreen unlocks on its own, so Unlock is for the case where the page stays fullscreen and simply stops needing the keys."
+                 Code=@("""
+await _stage.RequestFullScreen(null);
+
+var locked = await keyboardLock.Lock("Escape", "KeyW", "F11");
+
+// later
+await keyboardLock.Unlock();
+""")>
+        <div @ref="_stage" style="padding:1rem;border:1px dashed var(--border,#ccc);border-radius:6px">
+            This box goes fullscreen. Lock only works while it is.
+        </div>
+        <div class="controls">
+            <button @onclick="GoFullscreen">Enter fullscreen</button>
+            <button @onclick="LockKeys">Lock("Escape", "KeyW")</button>
+            <button @onclick="LockAll">Lock(all)</button>
+            <button class="danger" @onclick="UnlockKeys">Unlock</button>
+            <button class="secondary" @onclick="ExitFullscreen">Exit fullscreen</button>
+        </div>
+        <DemoConsole @ref="lockOutput" Title="keyboard lock output" />
+    </DemoSection>
+
+    <DemoSection Title="Show the right key name"
+                 Api="GetLayoutMap / Get"
+                 Description="A shortcut is bound to a physical key (KeyboardEvent.code), but the hint shown to the user has to be the character that key produces. Hard-coding 'W' is wrong on AZERTY, where the same key prints 'Z'. Look the code up and show what comes back."
+                 Code=@("""
+var label = await keyboardLayout.Get("KeyW") ?? "W";
+_shortcutHint = $"Ctrl+{label.ToUpperInvariant()}";
+""")>
+        <div class="controls">
+            <label class="field">
+                <span class="field-label">Code</span>
+                <input @bind="_code" />
+            </label>
+        </div>
+        <div class="controls">
+            <button @onclick="LookupKey">Get</button>
+            <button @onclick="ReadLayout">GetLayoutMap</button>
+        </div>
+        @if (_layout.Length > 0)
+        {
+            <div class="field">
+                <span class="field-label">Layout (first 12)</span>
+                <span>
+                    @foreach (var entry in _layout.Take(12))
+                    {
+                        <code style="margin-right:0.5rem">@entry.Code → @entry.Key</code>
+                    }
+                </span>
+            </div>
+        }
+        <DemoConsole @ref="layoutOutput" Title="layout output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="KeyboardLock.IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes navigator.keyboard.lock." />
+    <ApiMember Name="KeyboardLock.Lock"
+               Signature="ValueTask<bool> Lock(params string[] codes)"
+               Description="Captures the given physical keys for the page. Pass none to capture everything the platform allows. False when the page isn't fullscreen or the platform refused." />
+    <ApiMember Name="KeyboardLock.Unlock"
+               Signature="ValueTask Unlock()"
+               Description="Releases every captured key. Safe to call when nothing is locked." />
+    <ApiMember Name="KeyboardLayout.IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes navigator.keyboard.getLayoutMap." />
+    <ApiMember Name="KeyboardLayout.GetLayoutMap"
+               Signature="ValueTask<KeyboardLayoutEntry[]> GetLayoutMap()"
+               Description="Every writing-system key the browser knows about, paired with the character it prints." />
+    <ApiMember Name="KeyboardLayout.Get"
+               Signature="ValueTask<string?> Get(string code)"
+               Description="What one physical key prints on this layout. Null when the runtime can't report a layout." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole lockOutput = default!;
+    private DemoConsole layoutOutput = default!;
+
+    private ElementReference _stage;
+    private string _code = "KeyW";
+    private KeyboardLayoutEntry[] _layout = [];
+
+    private async Task CheckLockSupported()
+    {
+        try
+        {
+            await supportOutput.Success("KeyboardLock.IsSupported →", await keyboardLock.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckLayoutSupported()
+    {
+        try
+        {
+            await supportOutput.Success("KeyboardLayout.IsSupported →", await keyboardLayout.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task GoFullscreen()
+    {
+        try
+        {
+            await _stage.RequestFullScreen(null);
+            await lockOutput.Info("Fullscreen requested. Lock will only work while it lasts.");
+        }
+        catch (Exception ex)
+        {
+            await lockOutput.Error("RequestFullScreen failed →", ex.Message);
+        }
+    }
+
+    private async Task ExitFullscreen()
+    {
+        try
+        {
+            await document.ExitFullscreen();
+            await lockOutput.Info("Left fullscreen - any lock is dropped with it.");
+        }
+        catch (Exception ex)
+        {
+            await lockOutput.Error("ExitFullscreen failed →", ex.Message);
+        }
+    }
+
+    private async Task LockKeys()
+    {
+        try
+        {
+            var locked = await keyboardLock.Lock("Escape", "KeyW");
+            if (locked) await lockOutput.Success("Lock →", "Escape and KeyW are now delivered to the page.");
+            else await lockOutput.Warn("Lock →", "false - not fullscreen, not top-level, or no keyboard lock here.");
+        }
+        catch (Exception ex)
+        {
+            await lockOutput.Error("Lock failed →", ex.Message);
+        }
+    }
+
+    private async Task LockAll()
+    {
+        try
+        {
+            var locked = await keyboardLock.Lock();
+            if (locked) await lockOutput.Success("Lock() →", "every key the platform allows is captured.");
+            else await lockOutput.Warn("Lock() →", "false - not fullscreen, or no keyboard lock here.");
+        }
+        catch (Exception ex)
+        {
+            await lockOutput.Error("Lock failed →", ex.Message);
+        }
+    }
+
+    private async Task UnlockKeys()
+    {
+        try
+        {
+            await keyboardLock.Unlock();
+            await lockOutput.Info("Unlock →", "keys released.");
+        }
+        catch (Exception ex)
+        {
+            await lockOutput.Error("Unlock failed →", ex.Message);
+        }
+    }
+
+    private async Task LookupKey()
+    {
+        try
+        {
+            var key = await keyboardLayout.Get(_code);
+            if (key is null) await layoutOutput.Warn("Get →", "null - no layout map here, or that key prints nothing.");
+            else await layoutOutput.Success($"Get(\"{_code}\") →", key);
+        }
+        catch (Exception ex)
+        {
+            await layoutOutput.Error("Get failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadLayout()
+    {
+        try
+        {
+            _layout = await keyboardLayout.GetLayoutMap();
+            if (_layout.Length == 0) await layoutOutput.Warn("GetLayoutMap →", "empty - this engine can't report a layout.");
+            else await layoutOutput.Success("GetLayoutMap →", $"{_layout.Length} keys.");
+        }
+        catch (Exception ex)
+        {
+            await layoutOutput.Error("GetLayoutMap failed →", ex.Message);
+        }
+    }
+}

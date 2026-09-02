@@ -44,6 +44,46 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 return false;
             }
         },
-        vibrate(pattern) { return window.navigator.vibrate(pattern) }
+        vibrate(pattern) { return window.navigator.vibrate(pattern) },
+        canRegisterProtocolHandler() { return typeof window.navigator.registerProtocolHandler === 'function' },
+        registerProtocolHandler(scheme: string, url: string) {
+            if (typeof window.navigator.registerProtocolHandler !== 'function') return false;
+            try {
+                window.navigator.registerProtocolHandler(scheme, url);
+                return true;
+            } catch {
+                // A disallowed scheme, a url outside the origin, or a url with no %s placeholder.
+                return false;
+            }
+        },
+        unregisterProtocolHandler(scheme: string, url: string) {
+            // Non-standard and Chromium-only; a browser without it simply leaves the handler in
+            // place, which the user can still remove from site settings.
+            const unregister = (window.navigator as any).unregisterProtocolHandler;
+            if (typeof unregister !== 'function') return false;
+            try {
+                unregister.call(window.navigator, scheme, url);
+                return true;
+            } catch {
+                return false;
+            }
+        },
+        canGetInstalledRelatedApps() { return typeof (window.navigator as any).getInstalledRelatedApps === 'function' },
+        async getInstalledRelatedApps() {
+            const get = (window.navigator as any).getInstalledRelatedApps;
+            if (typeof get !== 'function') return [];
+            try {
+                const apps = await get.call(window.navigator);
+                return (apps ?? []).map((a: any) => ({
+                    id: a.id ?? '',
+                    platform: a.platform ?? '',
+                    url: a.url ?? '',
+                    version: a.version ?? ''
+                }));
+            } catch {
+                // Not a secure context, or the manifest declares no related applications.
+                return [];
+            }
+        }
     };
 }(BitButil));

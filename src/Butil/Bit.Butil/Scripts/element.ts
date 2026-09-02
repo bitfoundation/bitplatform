@@ -37,6 +37,20 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         insertAdjacentHTML(element: HTMLElement, position: string, html: string) { element.insertAdjacentHTML(position as InsertPosition, html) },
         insertAdjacentText(element: HTMLElement, position: string, text: string) { element.insertAdjacentText(position as InsertPosition, text) },
         matches(element: HTMLElement, selectors: string) { return element.matches(selectors) },
+        isMoveBeforeSupported() { return typeof (Element.prototype as any).moveBefore === 'function' },
+        moveBefore(parent: HTMLElement, node: HTMLElement, reference: HTMLElement | null) {
+            const move = (parent as any)?.moveBefore;
+            if (typeof move !== 'function' || !node) return false;
+            try {
+                // Unlike insertBefore, this moves without disconnecting: an iframe keeps its document,
+                // a video keeps playing, an animation keeps running, and focus stays where it was.
+                move.call(parent, node, reference ?? null);
+                return true;
+            } catch {
+                // Throws when the move would be across documents, or into the node's own subtree.
+                return false;
+            }
+        },
         prepend(element: HTMLElement, nodes: string[]) { element.prepend(...nodes) },
         querySelectorAllCount(element: HTMLElement, selectors: string) { return element.querySelectorAll(selectors).length },
         querySelectorMatches(element: HTMLElement, selectors: string) { return !!element.querySelector(selectors) },

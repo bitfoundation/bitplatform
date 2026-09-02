@@ -1,0 +1,204 @@
+@page "/ai"
+@inject Bit.Butil.LanguageModel languageModel
+@inject Bit.Butil.Summarizer summarizer
+@inject Bit.Butil.Translator translator
+@inject Bit.Butil.LanguageDetector languageDetector
+@inject Bit.Butil.Writer writer
+@inject Bit.Butil.Rewriter rewriter
+@inject Bit.Butil.Proofreader proofreader
+
+<PageTitle>Butil - Built-in AI Samples</PageTitle>
+
+<PageHeader Category="Built-in AI"
+            Title="Built-in AI"
+            Lead="The on-device model APIs: prompt, summarize, translate, detect, write, rewrite and proofread - no server, no API key."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/LanguageModel" />
+
+<pre>
+@@inject Bit.Butil.LanguageModel languageModel
+
+var availability = await languageModel.Availability();
+await using var session = await languageModel.Create();
+var answer = await session!.Prompt("Name three uses for a paperclip.");
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Availability" Api="IsSupported / Availability"
+              Description="Every built-in AI API answers the same probe. Chromium only, and only on capable hardware.">
+        <div class="controls">
+            <button @onclick="CheckAll">Check all seven</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Prompt" Api="LanguageModel.Create / Prompt"
+              Description="Creates a session from this click - the first creation downloads the model - and asks it one question.">
+        <div class="field">
+            <span class="field-label">Prompt</span>
+            <input @bind="_prompt" />
+        </div>
+        <div class="controls">
+            <button @onclick="Prompt">Prompt</button>
+            <button @onclick="PromptStreaming">PromptStreaming</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Summarize" Api="Summarizer.Create / Summarize"
+              Description="Key points from the text below, as plain text.">
+        <div class="field">
+            <span class="field-label">Text</span>
+            <textarea rows="3" @bind="_text"></textarea>
+        </div>
+        <button @onclick="Summarize">Summarize</button>
+    </DemoCard>
+
+    <DemoCard Title="Detect & translate" Api="LanguageDetector.Detect / Translator.Translate"
+              Description="Detects the language of the text above, then translates it into the target language.">
+        <div class="field">
+            <span class="field-label">Target language</span>
+            <input @bind="_target" />
+        </div>
+        <div class="controls">
+            <button @onclick="Detect">Detect</button>
+            <button @onclick="Translate">Detect + Translate</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Write & rewrite" Api="Writer.Write / Rewriter.Rewrite"
+              Description="Writer produces new text from a prompt; Rewriter transforms the text above, more formally.">
+        <div class="controls">
+            <button @onclick="Write">Write</button>
+            <button @onclick="Rewrite">Rewrite (more formal)</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Proofread" Api="Proofreader.Proofread"
+              Description="Corrects the text above and reports each change positioned in the original.">
+        <button @onclick="Proofread">Proofread</button>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="built-in ai output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private string _prompt = "Name three uses for a paperclip.";
+    private string _target = "fr";
+    private string _text = "Bit.Butil wraps browser APIs as strongly typed C# services for Blazor, including the on-device AI models.";
+
+    private async Task CheckAll()
+    {
+        await output.Log("LanguageModel →", await languageModel.Availability());
+        await output.Log("Summarizer →", await summarizer.Availability());
+        await output.Log("LanguageDetector →", await languageDetector.Availability());
+        await output.Log("Writer →", await writer.Availability());
+        await output.Log("Rewriter →", await rewriter.Availability());
+        await output.Log("Proofreader →", await proofreader.Availability());
+        await output.Log("Translator (en→" + _target + ") →", await translator.Availability("en", _target));
+    }
+
+    private async Task Prompt()
+    {
+        await using var session = await languageModel.Create();
+        if (session is null)
+        {
+            await output.Warn("LanguageModel.Create → null. Not available on this device.");
+            return;
+        }
+
+        await output.Success("Prompt →", await session.Prompt(_prompt) ?? "(null)");
+    }
+
+    private async Task PromptStreaming()
+    {
+        await using var session = await languageModel.Create();
+        if (session is null)
+        {
+            await output.Warn("LanguageModel.Create → null. Not available on this device.");
+            return;
+        }
+
+        var whole = await session.PromptStreaming(_prompt, chunk => _ = output.Log("chunk →", chunk));
+        await output.Success("PromptStreaming →", $"{whole.Length} characters.");
+    }
+
+    private async Task Summarize()
+    {
+        await using var session = await summarizer.Create(new SummarizerOptions { Type = "key-points", Length = "short", Format = "plain-text" });
+        if (session is null)
+        {
+            await output.Warn("Summarizer.Create → null. Not available on this device.");
+            return;
+        }
+
+        await output.Success("Summarize →", await session.Summarize(_text) ?? "(null)");
+    }
+
+    private async Task Detect()
+    {
+        await using var detector = await languageDetector.Create();
+        if (detector is null)
+        {
+            await output.Warn("LanguageDetector.Create → null. Not available on this device.");
+            return;
+        }
+
+        await output.Success("Detect →", await detector.Detect(_text));
+    }
+
+    private async Task Translate()
+    {
+        await using var detector = await languageDetector.Create();
+        var detected = detector is null ? "en" : (await detector.Detect(_text)).FirstOrDefault()?.DetectedLanguage ?? "en";
+        if (detected is "und") detected = "en";
+
+        await using var session = await translator.Create(detected, _target);
+        if (session is null)
+        {
+            await output.Warn($"Translator.Create → null. '{detected} → {_target}' can't be served here.");
+            return;
+        }
+
+        await output.Success($"Translate ({detected} → {_target}) →", await session.Translate(_text) ?? "(null)");
+    }
+
+    private async Task Write()
+    {
+        await using var session = await writer.Create(new WriterOptions { Length = "short", Format = "plain-text" });
+        if (session is null)
+        {
+            await output.Warn("Writer.Create → null. Not available on this device.");
+            return;
+        }
+
+        await output.Success("Write →", await session.Write(_prompt) ?? "(null)");
+    }
+
+    private async Task Rewrite()
+    {
+        await using var session = await rewriter.Create(new RewriterOptions { Tone = "more-formal", Format = "plain-text" });
+        if (session is null)
+        {
+            await output.Warn("Rewriter.Create → null. Not available on this device.");
+            return;
+        }
+
+        await output.Success("Rewrite →", await session.Rewrite(_text) ?? "(null)");
+    }
+
+    private async Task Proofread()
+    {
+        await using var session = await proofreader.Create(new ProofreaderOptions { IncludeCorrectionTypes = true });
+        if (session is null)
+        {
+            await output.Warn("Proofreader.Create → null. Not available on this device.");
+            return;
+        }
+
+        var result = await session.Proofread(_text);
+        await output.Success("Proofread →", result);
+    }
+
+    // Every session above is scoped to its own call with `await using`, so the page owns nothing to
+    // tear down - the services themselves are disposed by DI.
+}

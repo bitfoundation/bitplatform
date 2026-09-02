@@ -1,0 +1,184 @@
+@page "/pointer-tracker"
+@implements IAsyncDisposable
+@inject Bit.Butil.PointerTracker pointerTracker
+
+<PageTitle>PointerTracker - Bit.Butil</PageTitle>
+
+<PageHeader Category="DOM & Interaction"
+            Title="PointerTracker"
+            Lead="getCoalescedEvents() and getPredictedEvents(): the input samples the browser merged away between two frames, and its guess at the next few - what a drawing or annotation surface needs to stop losing input."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/PointerEvent/getCoalescedEvents"
+            InjectAs="PointerTracker pointerTracker" />
+
+<Callout Type="info" Title="Why Blazor's own @@onpointermove isn't enough">
+    The browser fires at most one <code>pointermove</code> per animation frame, but a pen samples
+    several times faster than that. Blazor's <code>PointerEventArgs</code> has no way back to the DOM
+    event, so the coalesced list cannot be reached from it - this service attaches its own listener
+    instead.
+</Callout>
+
+<Callout Type="warning" Title="Chatty by design">
+    Every frame crosses interop, which under Blazor Server is a message per frame over the circuit.
+    Track the smallest element you can, and detach as soon as the gesture is over.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported / SupportsPrediction"
+                 Description="IsSupported reports getCoalescedEvents; where it is false tracking still works, each frame just carries a single sample - so it is a fidelity check, not a gate. Prediction is Chromium only."
+                 Code=@("""
+@inject Bit.Butil.PointerTracker pointerTracker
+
+var coalesced = await pointerTracker.IsSupported();
+var predicted = await pointerTracker.SupportsPrediction();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+            <button @onclick="CheckPrediction">SupportsPrediction</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Track a surface at full sample rate"
+                 Api="Track"
+                 Description="Drag across the pad below. 'Samples this frame' is how many positions the browser had merged into the one event it delivered - draw through all of them and a fast stroke stays a curve instead of becoming a polyline. Dispose the returned subscription when the gesture is over."
+                 Code=@("""
+_sub = await pointerTracker.Track(_surface, frame =>
+{
+    foreach (var sample in frame.Coalesced)
+    {
+        _path.Add((sample.X, sample.Y));
+    }
+    InvokeAsync(StateHasChanged);
+});
+""")>
+        <div class="controls">
+            <button @onclick="StartTracking" disabled="@(_sub is not null)">Track</button>
+            <button class="danger" @onclick="StopTracking" disabled="@(_sub is null)">Stop</button>
+            <label class="field">
+                <span class="field-label">Include predicted</span>
+                <input type="checkbox" @bind="_includePredicted" disabled="@(_sub is not null)" />
+            </label>
+        </div>
+        <div @ref="_surface"
+             style="height:9rem;border:1px dashed var(--border, #ccc);border-radius:6px;touch-action:none;display:flex;align-items:center;justify-content:center;opacity:0.85">
+            Drag here
+        </div>
+        <div class="field">
+            <span class="field-label">Last frame</span>
+            <span>
+                <code>@_lastType · @_coalescedCount coalesced · @_predictedCount predicted · pressure @_pressure.ToString("0.00")</code>
+            </span>
+        </div>
+        <div class="field">
+            <span class="field-label">Totals</span>
+            <span><code>@_frames frames · @_samples samples</code> - the gap between these two is what an ordinary pointermove handler throws away.</span>
+        </div>
+        <DemoConsole @ref="trackOutput" Title="tracking output" />
+    </DemoSection>
+
+    <DemoSection Title="Drawing ahead with predicted events"
+                 Api="PointerFrame.Predicted"
+                 Description="Predicted samples are guesses, and they are wrong often enough to matter. The usual use is a provisional 'ink ahead' segment that is thrown away and redrawn on the next real frame - it removes perceived latency without ever committing a predicted point to the document."
+                 Code=@("""
+// committed ink
+foreach (var sample in frame.Coalesced) CommitPoint(sample);
+
+// provisional ink, discarded next frame
+ClearProvisional();
+foreach (var sample in frame.Predicted) DrawProvisional(sample);
+""") />
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime implements getCoalescedEvents." />
+    <ApiMember Name="SupportsPrediction"
+               Signature="ValueTask<bool> SupportsPrediction()"
+               Description="True when the runtime implements getPredictedEvents - Chromium only." />
+    <ApiMember Name="Track"
+               Signature="Task<ButilSubscription> Track(ElementReference element, Action<PointerFrame> handler, bool includePredicted = false, params string[] events)"
+               Description="Watches an element's pointer input at full sample rate. Defaults to pointermove alone." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Detaches every tracker registered through this instance and releases its interop reference." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole trackOutput = default!;
+
+    private ElementReference _surface;
+    private ButilSubscription? _sub;
+    private bool _includePredicted;
+
+    private string _lastType = "-";
+    private int _coalescedCount;
+    private int _predictedCount;
+    private double _pressure;
+    private int _frames;
+    private int _samples;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await pointerTracker.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckPrediction()
+    {
+        try
+        {
+            await supportOutput.Success("SupportsPrediction →", await pointerTracker.SupportsPrediction());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("SupportsPrediction failed →", ex.Message);
+        }
+    }
+
+    private async Task StartTracking()
+    {
+        try
+        {
+            _frames = 0;
+            _samples = 0;
+
+            _sub = await pointerTracker.Track(_surface, async frame => await InvokeAsync(() =>
+            {
+                _lastType = frame.Type;
+                _coalescedCount = frame.Coalesced.Length;
+                _predictedCount = frame.Predicted.Length;
+                _pressure = frame.Current.Pressure;
+                _frames++;
+                _samples += frame.Coalesced.Length;
+                StateHasChanged();
+            }), _includePredicted, "pointermove", "pointerdown", "pointerup");
+
+            await trackOutput.Success("Track →", "tracking pointermove, pointerdown and pointerup. Drag on the pad.");
+        }
+        catch (Exception ex)
+        {
+            await trackOutput.Error("Track failed →", ex.Message);
+        }
+    }
+
+    private async Task StopTracking()
+    {
+        if (_sub is not null) await _sub.DisposeAsync();
+        _sub = null;
+        await trackOutput.Info("Stopped →", $"{_frames} frames carried {_samples} samples.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_sub is not null) await _sub.DisposeAsync();
+    }
+}

@@ -1,0 +1,240 @@
+@page "/close-watcher"
+@implements IAsyncDisposable
+@inject Bit.Butil.CloseWatcher closeWatcher
+
+<PageTitle>CloseWatcher - Bit.Butil</PageTitle>
+
+<PageHeader Category="DOM & Interaction"
+            Title="CloseWatcher"
+            Lead="One event for every way a user asks to close something - the Escape key, the Android back gesture, and whatever else the platform offers - so a custom dialog behaves like a native one."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/CloseWatcher"
+            InjectAs="CloseWatcher closeWatcher" />
+
+<Callout Type="info" Title="Why not a keydown handler">
+    A keydown listener knows about Escape and nothing else - not the Android back gesture, not the
+    platform's own close affordance. It also has no idea which of two nested dialogs should close.
+    The browser keeps a close stack: the innermost watcher closes first, and one gesture closes
+    exactly one thing.
+</Callout>
+
+<Callout Type="warning" Title="User activation, and Chromium only">
+    A page may keep one "free" watcher at a time; creating a second while the first is active spends
+    a user activation, and without one the browser groups them so a single Escape closes both. Create
+    watchers in response to the interaction that opened the thing. Where
+    <code>IsSupported</code> is false, <code>Create</code> returns null - keep your own key handler as
+    the fallback.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="True when the runtime exposes CloseWatcher. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.CloseWatcher closeWatcher
+
+var supported = await closeWatcher.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Close a panel the native way"
+                 Api="Create"
+                 Description="Open the panel below, then press Escape - or use the Android back gesture on a phone. The handler runs, the panel closes, and the gesture is consumed so nothing else reacts to it."
+                 Code=@("""
+_watcher = await closeWatcher.Create(onClose: () =>
+{
+    _open = false;
+    InvokeAsync(StateHasChanged);
+});
+
+// closing by any other route:
+await _watcher!.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="OpenPanel" disabled="@_open">Open panel</button>
+            <button class="secondary" @onclick="ClosePanel" disabled="@(_open is false)">Close from code</button>
+        </div>
+        @if (_open)
+        {
+            <div class="field">
+                <span class="field-label">Panel</span>
+                <span>Open. Press <span class="kbd">Esc</span> to close it through the watcher.</span>
+            </div>
+        }
+        <DemoConsole @ref="panelOutput" Title="panel output" />
+    </DemoSection>
+
+    <DemoSection Title="Ask before closing"
+                 Api="Create(onClose, onCancel)"
+                 Description="Passing an onCancel handler intercepts the close request first, so you can ask 'discard your changes?' and call Close() yourself if the answer is yes. The browser only offers the cancel step while there is a user activation to spend, so a close can still arrive without one - never rely on it firing."
+                 Code=@("""
+_watcher = await closeWatcher.Create(
+    onClose: () => { _open = false; InvokeAsync(StateHasChanged); },
+    onCancel: () => { _confirming = true; InvokeAsync(StateHasChanged); });
+
+// the user confirmed:
+await _watcher!.Close();
+""")>
+        <div class="controls">
+            <button @onclick="OpenGuarded" disabled="@_guardedOpen">Open guarded panel</button>
+            <button @onclick="ConfirmClose" disabled="@(_confirming is false)">Yes, discard</button>
+            <button class="secondary" @onclick="RequestClose" disabled="@(_guardedOpen is false)">RequestClose</button>
+        </div>
+        @if (_guardedOpen)
+        {
+            <div class="field">
+                <span class="field-label">Guarded panel</span>
+                <span>
+                    @if (_confirming)
+                    {
+                        <b>Discard your changes?</b>
+                    }
+                    else
+                    {
+                        <text>Open with unsaved changes. Press <span class="kbd">Esc</span>.</text>
+                    }
+                </span>
+            </div>
+        }
+        <DemoConsole @ref="guardOutput" Title="guarded panel output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes CloseWatcher." />
+    <ApiMember Name="Create"
+               Signature="ValueTask<CloseWatcherHandle?> Create(Action onClose, Action? onCancel = null)"
+               Description="Starts watching for a close request. Null when the runtime has no CloseWatcher or refused to create another one." />
+    <ApiMember Name="Handle.RequestClose"
+               Signature="ValueTask RequestClose()"
+               Description="Asks to close, exactly as an Escape press would - the cancel handler runs first and may keep it open." />
+    <ApiMember Name="Handle.Close"
+               Signature="ValueTask Close()"
+               Description="Closes without asking - skips the cancel handler and fires the close handler." />
+    <ApiMember Name="Handle.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Deactivates the watcher without firing the close handler. Always dispose - an active watcher eats the next Escape." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Destroys every watcher created through this instance and releases its interop reference." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole panelOutput = default!;
+    private DemoConsole guardOutput = default!;
+
+    private CloseWatcherHandle? _watcher;
+    private CloseWatcherHandle? _guardedWatcher;
+    private bool _open;
+    private bool _guardedOpen;
+    private bool _confirming;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            var supported = await closeWatcher.IsSupported();
+            if (supported) await supportOutput.Success("IsSupported →", true);
+            else await supportOutput.Warn("IsSupported →", "false - this engine has no CloseWatcher; Create() will return null.");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task OpenPanel()
+    {
+        try
+        {
+            _watcher = await closeWatcher.Create(async () => await InvokeAsync(async () =>
+            {
+                _open = false;
+                _watcher = null;
+                StateHasChanged();
+                await panelOutput.Success("onClose →", "the panel closed through the watcher.");
+            }));
+
+            if (_watcher is null)
+            {
+                await panelOutput.Warn("Create →", "null - no CloseWatcher here. Fall back to your own key handler.");
+                return;
+            }
+
+            _open = true;
+            await panelOutput.Info("Panel open. Press Esc.");
+        }
+        catch (Exception ex)
+        {
+            await panelOutput.Error("Create failed →", ex.Message);
+        }
+    }
+
+    private async Task ClosePanel()
+    {
+        // Closing by another route: dispose rather than close, so the watcher doesn't stay in the
+        // browser's close stack and swallow the next Escape.
+        if (_watcher is not null) await _watcher.DisposeAsync();
+        _watcher = null;
+        _open = false;
+        await panelOutput.Info("Closed from code; watcher disposed without firing onClose.");
+    }
+
+    private async Task OpenGuarded()
+    {
+        try
+        {
+            _guardedWatcher = await closeWatcher.Create(
+                onClose: async () => await InvokeAsync(async () =>
+                {
+                    _guardedOpen = false;
+                    _confirming = false;
+                    _guardedWatcher = null;
+                    StateHasChanged();
+                    await guardOutput.Success("onClose →", "closed.");
+                }),
+                onCancel: async () => await InvokeAsync(async () =>
+                {
+                    _confirming = true;
+                    StateHasChanged();
+                    await guardOutput.Warn("onCancel →", "close intercepted - asking the user first.");
+                }));
+
+            if (_guardedWatcher is null)
+            {
+                await guardOutput.Warn("Create →", "null - no CloseWatcher here.");
+                return;
+            }
+
+            _guardedOpen = true;
+            _confirming = false;
+            await guardOutput.Info("Guarded panel open. Press Esc.");
+        }
+        catch (Exception ex)
+        {
+            await guardOutput.Error("Create failed →", ex.Message);
+        }
+    }
+
+    private async Task RequestClose()
+    {
+        if (_guardedWatcher is not null) await _guardedWatcher.RequestClose();
+    }
+
+    private async Task ConfirmClose()
+    {
+        if (_guardedWatcher is not null) await _guardedWatcher.Close();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_watcher is not null) await _watcher.DisposeAsync();
+        if (_guardedWatcher is not null) await _guardedWatcher.DisposeAsync();
+    }
+}

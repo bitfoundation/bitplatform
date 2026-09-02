@@ -1,0 +1,340 @@
+@page "/css"
+@inject Bit.Butil.Css css
+
+<PageTitle>CSS Typed OM - Bit.Butil</PageTitle>
+
+<PageHeader Category="DOM & Interaction"
+            Title="CSS Typed OM"
+            Lead="The CSS namespace object and the typed style maps: feature queries, identifier escaping, animatable custom properties, Houdini worklets, and reading a computed length as a number instead of a string."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/CSS_Typed_OM_API"
+            InjectAs="Css css" />
+
+<Callout Type="info" Title="The point is types">
+    A computed length arrives as the number <code>16</code> with the unit <code>"px"</code> rather
+    than the string <code>"16px"</code>, and a width is written as a number and a unit rather than as
+    concatenated text. Fewer parse steps, and no chance of building a malformed declaration - an
+    invalid value is rejected rather than silently ignored.
+</Callout>
+
+<Callout Type="warning" Title="Chromium only">
+    Where <code>IsSupported</code> is false the style-map methods return null or false, so the
+    ordinary string-based style APIs remain the portable choice. <code>Supports</code> and
+    <code>Escape</code> work everywhere.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Feature queries and escaping"
+                 Api="Supports / Escape"
+                 Description="Supports is CSS.supports(): does this browser understand this declaration. Escape makes a string safe to use as an identifier in a selector - the fix for a generated id that starts with a digit or contains a colon."
+                 Code=@("""
+@inject Bit.Butil.Css css
+
+if (await css.Supports("display", "grid")) UseGridLayout();
+
+var selector = $"#{await css.Escape(generatedId)}";
+""")>
+        <div class="controls">
+            <label class="field">
+                <span class="field-label">Property</span>
+                <input @bind="_property" />
+            </label>
+            <label class="field">
+                <span class="field-label">Value</span>
+                <input @bind="_value" />
+            </label>
+        </div>
+        <div class="controls">
+            <button @onclick="CheckSupports">Supports</button>
+            <button @onclick="EscapeIdentifier">Escape</button>
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportsOutput" Title="feature query output" />
+    </DemoSection>
+
+    <DemoSection Title="Read computed values as numbers"
+                 Api="GetComputedValue / GetComputedProperties"
+                 Description="Computed, so this reflects the cascade and layout - a percentage width comes back resolved to pixels, as a Value and a Unit. Non-numeric values (a keyword, a colour) come back with IsNumeric false and only Text filled in."
+                 Code=@("""
+var width = await _box.GetComputedValue("width");
+// width.Value == 320, width.Unit == "px"
+""")>
+        <div @ref="_box" style="padding:1rem;border:1px solid var(--border,#ccc);border-radius:6px;width:60%">
+            A box to measure.
+        </div>
+        <div class="controls">
+            <button @onclick="ReadComputed">GetComputedValue("width")</button>
+            <button @onclick="CountComputed">GetComputedProperties</button>
+        </div>
+        <DemoConsole @ref="computedOutput" Title="computed style output" />
+    </DemoSection>
+
+    <DemoSection Title="Write inline styles without string building"
+                 Api="SetStyleValue / SetStyleText / GetStyleValue / DeleteStyleValue"
+                 Description="SetStyleValue takes a number and a unit factory name (px, percent, deg, rem, fr, s…); SetStyleText takes text, for values that aren't a number and a unit. Blazor owns the DOM it rendered and a diff can undo these on the next render - the same caveat as any inline-style write."
+                 Code=@("""
+await _box.SetStyleValue("width", 60, "percent");
+await _box.SetStyleText("border-color", "rebeccapurple");
+
+var set = await _box.GetStyleValue("width");
+await _box.DeleteStyleValue("width");
+""")>
+        <div class="controls">
+            <button @onclick="SetWidth">SetStyleValue(width, 40%)</button>
+            <button @onclick="SetBorder">SetStyleText(border-color)</button>
+            <button @onclick="ReadInline">GetStyleValue</button>
+            <button class="danger" @onclick="ClearInline">ClearStyleValues</button>
+        </div>
+        <DemoConsole @ref="inlineOutput" Title="inline style output" />
+    </DemoSection>
+
+    <DemoSection Title="Make a custom property animatable"
+                 Api="RegisterProperty"
+                 Description="An unregistered custom property is a token stream: the browser can't interpolate it, so a transition on it snaps rather than animates. Register it with a syntax and it becomes a real typed value the animation engine understands. A registration lasts for the document's lifetime and cannot be replaced, so calling this twice returns false rather than throwing."
+                 Code=@("""
+await css.RegisterProperty(new CssPropertyDefinition
+{
+    Name = "--brand-hue",
+    Syntax = "<number>",
+    InitialValue = "210",
+    Inherits = true
+});
+
+// now `transition: --brand-hue 300ms` actually animates
+""")>
+        <div class="controls">
+            <button @onclick="RegisterProperty">RegisterProperty(--butil-demo-hue)</button>
+        </div>
+        <DemoConsole @ref="propertyOutput" Title="registerProperty output" />
+    </DemoSection>
+
+    <DemoSection Title="Houdini worklets"
+                 Api="SupportsPaintWorklet / AddPaintWorklet / AddLayoutWorklet"
+                 Description="A paint worklet draws a custom paint() image the way a canvas does, but as a live CSS value. It runs in its own global scope with no DOM - it receives the size and the custom properties it declared an interest in, and draws. The module is fetched as a real file, so it cannot be bundled into the app's own JS. The layout worklet is behind a flag even in Chromium."
+                 Code=@("""
+if (await css.SupportsPaintWorklet())
+{
+    await css.AddPaintWorklet("/worklets/checkerboard.js");
+    // background-image: paint(checkerboard);
+}
+""")>
+        <div class="controls">
+            <button @onclick="CheckWorklets">SupportsPaintWorklet / SupportsLayoutWorklet</button>
+        </div>
+        <DemoConsole @ref="workletOutput" Title="worklet output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime implements the CSS Typed OM's unit factories (CSS.px and friends)." />
+    <ApiMember Name="SupportsPaintWorklet"
+               Signature="ValueTask<bool> SupportsPaintWorklet()"
+               Description="True when the runtime implements the Houdini paint worklet." />
+    <ApiMember Name="SupportsLayoutWorklet"
+               Signature="ValueTask<bool> SupportsLayoutWorklet()"
+               Description="True when the runtime implements the Houdini layout worklet." />
+    <ApiMember Name="Supports"
+               Signature="ValueTask<bool> Supports(string property, string value)"
+               Description="Whether the browser understands a declaration." />
+    <ApiMember Name="Escape"
+               Signature="ValueTask<string> Escape(string value)"
+               Description="Escapes a string so it is safe to use as an identifier in a selector." />
+    <ApiMember Name="RegisterProperty"
+               Signature="ValueTask<bool> RegisterProperty(CssPropertyDefinition definition)"
+               Description="Registers a custom property with a type, so the browser can interpolate it. False when already registered or the initial value doesn't parse." />
+    <ApiMember Name="AddPaintWorklet"
+               Signature="ValueTask<bool> AddPaintWorklet(string url)"
+               Description="Loads a paint worklet module." />
+    <ApiMember Name="AddLayoutWorklet"
+               Signature="ValueTask<bool> AddLayoutWorklet(string url)"
+               Description="Loads a layout worklet module." />
+    <ApiMember Name="ElementReference.GetComputedValue"
+               Signature="ValueTask<CssValue?> GetComputedValue(string property)"
+               Description="Reads a computed value as a number and a unit." />
+    <ApiMember Name="ElementReference.GetComputedProperties"
+               Signature="ValueTask<string[]> GetComputedProperties()"
+               Description="Every property name in the element's computed style map." />
+    <ApiMember Name="ElementReference.GetStyleValue"
+               Signature="ValueTask<CssValue?> GetStyleValue(string property)"
+               Description="Reads an inline style value as a number and a unit." />
+    <ApiMember Name="ElementReference.SetStyleValue"
+               Signature="ValueTask<bool> SetStyleValue(string property, double value, string unit = 'px')"
+               Description="Writes an inline style value as a typed number." />
+    <ApiMember Name="ElementReference.SetStyleText"
+               Signature="ValueTask<bool> SetStyleText(string property, string value)"
+               Description="Writes an inline style value from text, with validation." />
+    <ApiMember Name="ElementReference.DeleteStyleValue"
+               Signature="ValueTask<bool> DeleteStyleValue(string property)"
+               Description="Removes one inline style property." />
+    <ApiMember Name="ElementReference.ClearStyleValues"
+               Signature="ValueTask<bool> ClearStyleValues()"
+               Description="Removes every inline style property." />
+    <ApiMember Name="ElementReference.GetStyleProperties"
+               Signature="ValueTask<string[]> GetStyleProperties()"
+               Description="Every property name currently set inline." />
+    <ApiMember Name="ElementReference.IsStyleMapSupported"
+               Signature="ValueTask<bool> IsStyleMapSupported()"
+               Description="True when the runtime implements the CSS Typed OM." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportsOutput = default!;
+    private DemoConsole computedOutput = default!;
+    private DemoConsole inlineOutput = default!;
+    private DemoConsole propertyOutput = default!;
+    private DemoConsole workletOutput = default!;
+
+    private ElementReference _box;
+    private string _property = "display";
+    private string _value = "grid";
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportsOutput.Success("IsSupported →", await css.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportsOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckSupports()
+    {
+        try
+        {
+            await supportsOutput.Success($"Supports(\"{_property}\", \"{_value}\") →", await css.Supports(_property, _value));
+        }
+        catch (Exception ex)
+        {
+            await supportsOutput.Error("Supports failed →", ex.Message);
+        }
+    }
+
+    private async Task EscapeIdentifier()
+    {
+        try
+        {
+            await supportsOutput.Success("Escape(\"1st:item\") →", await css.Escape("1st:item"));
+        }
+        catch (Exception ex)
+        {
+            await supportsOutput.Error("Escape failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadComputed()
+    {
+        try
+        {
+            var width = await _box.GetComputedValue("width");
+            if (width is null) await computedOutput.Warn("GetComputedValue →", "null - no CSS Typed OM here.");
+            else await computedOutput.Success("GetComputedValue(\"width\") →", width);
+        }
+        catch (Exception ex)
+        {
+            await computedOutput.Error("GetComputedValue failed →", ex.Message);
+        }
+    }
+
+    private async Task CountComputed()
+    {
+        try
+        {
+            var properties = await _box.GetComputedProperties();
+            await computedOutput.Success("GetComputedProperties →", $"{properties.Length} properties.");
+        }
+        catch (Exception ex)
+        {
+            await computedOutput.Error("GetComputedProperties failed →", ex.Message);
+        }
+    }
+
+    private async Task SetWidth()
+    {
+        try
+        {
+            var set = await _box.SetStyleValue("width", 40, "percent");
+            if (set) await inlineOutput.Success("SetStyleValue →", "width: 40%");
+            else await inlineOutput.Warn("SetStyleValue →", "false - no CSS Typed OM here.");
+        }
+        catch (Exception ex)
+        {
+            await inlineOutput.Error("SetStyleValue failed →", ex.Message);
+        }
+    }
+
+    private async Task SetBorder()
+    {
+        try
+        {
+            var set = await _box.SetStyleText("border-color", "rebeccapurple");
+            await inlineOutput.Success("SetStyleText →", set);
+        }
+        catch (Exception ex)
+        {
+            await inlineOutput.Error("SetStyleText failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadInline()
+    {
+        try
+        {
+            await inlineOutput.Success("GetStyleValue(\"width\") →", await _box.GetStyleValue("width"));
+            await inlineOutput.Success("GetStyleProperties →", await _box.GetStyleProperties());
+        }
+        catch (Exception ex)
+        {
+            await inlineOutput.Error("Read failed →", ex.Message);
+        }
+    }
+
+    private async Task ClearInline()
+    {
+        try
+        {
+            await inlineOutput.Success("ClearStyleValues →", await _box.ClearStyleValues());
+        }
+        catch (Exception ex)
+        {
+            await inlineOutput.Error("ClearStyleValues failed →", ex.Message);
+        }
+    }
+
+    private async Task RegisterProperty()
+    {
+        try
+        {
+            var registered = await css.RegisterProperty(new CssPropertyDefinition
+            {
+                Name = "--butil-demo-hue",
+                Syntax = "<number>",
+                InitialValue = "210",
+                Inherits = true
+            });
+
+            if (registered) await propertyOutput.Success("RegisterProperty →", "registered; --butil-demo-hue is now animatable.");
+            else await propertyOutput.Warn("RegisterProperty →", "false - already registered, or no registerProperty here.");
+        }
+        catch (Exception ex)
+        {
+            await propertyOutput.Error("RegisterProperty failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckWorklets()
+    {
+        try
+        {
+            await workletOutput.Success("SupportsPaintWorklet →", await css.SupportsPaintWorklet());
+            await workletOutput.Success("SupportsLayoutWorklet →", await css.SupportsLayoutWorklet());
+        }
+        catch (Exception ex)
+        {
+            await workletOutput.Error("Worklet check failed →", ex.Message);
+        }
+    }
+}

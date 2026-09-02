@@ -1,0 +1,360 @@
+@page "/language-model"
+@implements IAsyncDisposable
+@inject Bit.Butil.LanguageModel languageModel
+
+<PageTitle>LanguageModel - Bit.Butil</PageTitle>
+
+<PageHeader Category="Built-in AI"
+            Title="LanguageModel"
+            Lead="The Prompt API: a general-purpose language model that runs on the device, with no server, no API key and no data leaving the machine."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/LanguageModel"
+            InjectAs="LanguageModel languageModel" />
+
+<Callout Type="warning" Title="Chromium only, and only on capable hardware">
+    Chromium is the only engine that ships this, and even there the device has to meet the model's
+    requirements. A supporting browser can still answer <code>Unavailable</code>. Build a
+    server-side or manual fallback and treat this as the fast path, not the only path.
+</Callout>
+
+<Callout Type="info" Title="Three steps, every time">
+    Ask <code>Availability</code> whether the options you want can be served, <code>Create</code> a
+    session <b>from a user gesture</b> (the first creation downloads the model - gigabytes, minutes),
+    then prompt it and <b>dispose it</b>. An undisposed session keeps hundreds of megabytes of model
+    state alive.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support and availability"
+                 Api="IsSupported / Availability"
+                 Description="IsSupported answers whether the API exists; Availability answers whether it can actually serve you - Available, Downloadable (a session will download the model first), Downloading, or Unavailable. Probe with the options you intend to create with, since an option set the model can't serve answers Unavailable."
+                 Code=@("""
+@inject Bit.Butil.LanguageModel languageModel
+
+var availability = await languageModel.Availability();
+
+if (availability == AiAvailability.Unavailable) UseServerFallback();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+            <button @onclick="CheckAvailability">Availability</button>
+            <button @onclick="ReadParams">GetParams</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="availability output" />
+    </DemoSection>
+
+    <DemoSection Title="Create a session"
+                 Api="Create"
+                 Description="Creates a conversation, optionally with a system prompt and sampling settings. Call it from a user gesture: the first creation on a device triggers the model download, which the browser will not start without one. The progress handler receives a 0-1 fraction while that happens."
+                 Code=@("""
+_session = await languageModel.Create(
+    new LanguageModelOptions
+    {
+        SystemPrompt = "You answer in one short sentence.",
+        Temperature = 0.7,
+    },
+    onDownloadProgress: fraction =>
+    {
+        _progress = fraction;
+        InvokeAsync(StateHasChanged);
+    });
+""")>
+        <div class="field">
+            <span class="field-label">System prompt</span>
+            <input @bind="_systemPrompt" />
+        </div>
+        <div class="controls">
+            <button @onclick="CreateSession" disabled="@(_session is not null)">Create</button>
+            <button class="danger" @onclick="DestroySession" disabled="@(_session is null)">Dispose session</button>
+        </div>
+        @if (_progress > 0 && _progress < 1)
+        {
+            <div class="field">
+                <span class="field-label">Downloading model</span>
+                <span><code>@($"{_progress:P0}")</code></span>
+            </div>
+        }
+        <DemoConsole @ref="sessionOutput" Title="session output" />
+    </DemoSection>
+
+    <DemoSection Title="Prompt and wait"
+                 Api="LanguageModelSession.Prompt"
+                 Description="Sends a turn and resolves with the whole answer. The session is stateful - every turn sees the ones before it - so this is a conversation, not a series of independent calls."
+                 Code=@("""
+var answer = await _session.Prompt("Name three uses for a paperclip.");
+""")>
+        <div class="field">
+            <span class="field-label">Prompt</span>
+            <input @bind="_prompt" />
+        </div>
+        <div class="controls">
+            <button @onclick="SendPrompt" disabled="@(_session is null)">Prompt</button>
+        </div>
+        <DemoConsole @ref="promptOutput" Title="prompt output" />
+    </DemoSection>
+
+    <DemoSection Title="Prompt and stream"
+                 Api="LanguageModelSession.PromptStreaming"
+                 Description="The same turn, reported as it is generated. Each chunk is the delta, not the text so far - append it. The handler runs on the interop dispatch, so a component has to call StateHasChanged itself."
+                 Code=@("""
+_answer = "";
+await _session.PromptStreaming(prompt, chunk =>
+{
+    _answer += chunk;
+    InvokeAsync(StateHasChanged);
+});
+""")>
+        <div class="controls">
+            <button @onclick="StreamPrompt" disabled="@(_session is null)">PromptStreaming</button>
+        </div>
+        @if (string.IsNullOrEmpty(_streamed) is false)
+        {
+            <div class="field">
+                <span class="field-label">Streaming answer</span>
+                <span>@_streamed</span>
+            </div>
+        }
+        <DemoConsole @ref="streamOutput" Title="streaming output" />
+    </DemoSection>
+
+    <DemoSection Title="Context, quota and forking"
+                 Api="Append / MeasureInputUsage / GetUsage / Clone"
+                 Description="Append adds turns the model should know about without asking for a reply. MeasureInputUsage says what a turn would cost before you spend it. GetUsage reports how much of the quota is gone - a session that runs out starts dropping the oldest turns. Clone forks the conversation, which is how 'regenerate this answer' keeps the original."
+                 Code=@("""
+var cost = await _session.MeasureInputUsage(draft);
+var usage = await _session.GetUsage();
+
+if (cost > usage?.Remaining) TrimTheConversation();
+
+var fork = await _session.Clone();
+""")>
+        <div class="controls">
+            <button @onclick="Measure" disabled="@(_session is null)">MeasureInputUsage</button>
+            <button @onclick="ReadUsage" disabled="@(_session is null)">GetUsage</button>
+            <button @onclick="AppendContext" disabled="@(_session is null)">Append</button>
+            <button @onclick="CloneSession" disabled="@(_session is null)">Clone</button>
+        </div>
+        <DemoConsole @ref="contextOutput" Title="context output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes the LanguageModel API." />
+    <ApiMember Name="Availability"
+               Signature="ValueTask<AiAvailability> Availability() / Availability(LanguageModelOptions options)"
+               Description="Whether a session can be created right now, and whether that means downloading the model first." />
+    <ApiMember Name="GetParams"
+               Signature="ValueTask<AiModelParams?> GetParams()"
+               Description="The model's sampling knobs and their ceilings. Null when the runtime has no such API." />
+    <ApiMember Name="Create"
+               Signature="ValueTask<LanguageModelSession?> Create(LanguageModelOptions? options = null, Action<double>? onDownloadProgress = null)"
+               Description="Creates a conversation. Call from a user gesture; the first creation downloads the model. Null when the runtime refused." />
+    <ApiMember Name="Session.Prompt"
+               Signature="ValueTask<string?> Prompt(string input)"
+               Description="Sends a turn and waits for the whole answer." />
+    <ApiMember Name="Session.PromptStreaming"
+               Signature="Task<string> PromptStreaming(string input, Action<string>? onChunk = null)"
+               Description="Sends a turn and reports the answer as it is generated. Returns the whole answer once the stream ends." />
+    <ApiMember Name="Session.Append"
+               Signature="ValueTask<bool> Append(params AiPrompt[] prompts)"
+               Description="Adds turns to the conversation without asking for a reply." />
+    <ApiMember Name="Session.MeasureInputUsage"
+               Signature="ValueTask<double> MeasureInputUsage(string input)"
+               Description="What a turn would cost, without sending it. -1 when the runtime can't measure." />
+    <ApiMember Name="Session.GetUsage"
+               Signature="ValueTask<AiUsage?> GetUsage()"
+               Description="How much of the session's input quota is spent, and what remains." />
+    <ApiMember Name="Session.Clone"
+               Signature="ValueTask<LanguageModelSession?> Clone()"
+               Description="Forks the conversation into a new session with the same history." />
+    <ApiMember Name="Session.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Destroys the model instance and frees what it holds. Always dispose." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole sessionOutput = default!;
+    private DemoConsole promptOutput = default!;
+    private DemoConsole streamOutput = default!;
+    private DemoConsole contextOutput = default!;
+
+    private LanguageModelSession? _session;
+    private string _systemPrompt = "You answer in one short sentence.";
+    private string _prompt = "Name three uses for a paperclip.";
+    private string _streamed = "";
+    private double _progress;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await languageModel.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckAvailability()
+    {
+        try
+        {
+            var availability = await languageModel.Availability();
+            if (availability == AiAvailability.Unavailable)
+                await supportOutput.Warn("Availability →", "Unavailable - no API here, or this device can't run the model.");
+            else
+                await supportOutput.Success("Availability →", availability);
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Availability failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadParams()
+    {
+        try
+        {
+            var modelParams = await languageModel.GetParams();
+            if (modelParams is null) await supportOutput.Warn("GetParams →", "null - no such API here.");
+            else await supportOutput.Success("GetParams →", modelParams);
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("GetParams failed →", ex.Message);
+        }
+    }
+
+    private async Task CreateSession()
+    {
+        try
+        {
+            _session = await languageModel.Create(
+                new LanguageModelOptions { SystemPrompt = _systemPrompt },
+                onDownloadProgress: async fraction => await InvokeAsync(() =>
+                {
+                    _progress = fraction;
+                    StateHasChanged();
+                }));
+
+            if (_session is null) await sessionOutput.Warn("Create →", "null - the runtime refused, or the download was declined.");
+            else await sessionOutput.Success("Create →", $"session {_session.Id}");
+        }
+        catch (Exception ex)
+        {
+            await sessionOutput.Error("Create failed →", ex.Message);
+        }
+    }
+
+    private async Task DestroySession()
+    {
+        try
+        {
+            if (_session is not null) await _session.DisposeAsync();
+            _session = null;
+            await sessionOutput.Info("Session disposed.");
+        }
+        catch (Exception ex)
+        {
+            await sessionOutput.Error("Dispose failed →", ex.Message);
+        }
+    }
+
+    private async Task SendPrompt()
+    {
+        try
+        {
+            var answer = await _session!.Prompt(_prompt);
+            await promptOutput.Success("Prompt →", answer ?? "(null - the session is gone)");
+        }
+        catch (Exception ex)
+        {
+            await promptOutput.Error("Prompt failed →", ex.Message);
+        }
+    }
+
+    private async Task StreamPrompt()
+    {
+        try
+        {
+            _streamed = "";
+            var whole = await _session!.PromptStreaming(_prompt, async chunk => await InvokeAsync(() =>
+            {
+                _streamed += chunk;
+                StateHasChanged();
+            }));
+
+            await streamOutput.Success("PromptStreaming →", $"{whole.Length} characters.");
+        }
+        catch (Exception ex)
+        {
+            await streamOutput.Error("PromptStreaming failed →", ex.Message);
+        }
+    }
+
+    private async Task Measure()
+    {
+        try
+        {
+            var cost = await _session!.MeasureInputUsage(_prompt);
+            await contextOutput.Success("MeasureInputUsage →", cost < 0 ? "-1 (not measurable here)" : cost);
+        }
+        catch (Exception ex)
+        {
+            await contextOutput.Error("MeasureInputUsage failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadUsage()
+    {
+        try
+        {
+            await contextOutput.Success("GetUsage →", await _session!.GetUsage());
+        }
+        catch (Exception ex)
+        {
+            await contextOutput.Error("GetUsage failed →", ex.Message);
+        }
+    }
+
+    private async Task AppendContext()
+    {
+        try
+        {
+            var appended = await _session!.Append(new AiPrompt { Role = "user", Content = "Remember that I prefer metric units." });
+            await contextOutput.Success("Append →", appended);
+        }
+        catch (Exception ex)
+        {
+            await contextOutput.Error("Append failed →", ex.Message);
+        }
+    }
+
+    private async Task CloneSession()
+    {
+        try
+        {
+            var fork = await _session!.Clone();
+            if (fork is null)
+            {
+                await contextOutput.Warn("Clone →", "null - this runtime doesn't implement clone.");
+                return;
+            }
+
+            await contextOutput.Success("Clone →", $"forked into session {fork.Id}");
+            await fork.DisposeAsync();
+        }
+        catch (Exception ex)
+        {
+            await contextOutput.Error("Clone failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_session is not null) await _session.DisposeAsync();
+    }
+}

@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace Bit.Butil;
@@ -520,6 +521,36 @@ public class Window(IJSRuntime js) : IAsyncDisposable
 
     /// <summary>Removes any current selection.</summary>
     public Task ClearSelection() => js.InvokeVoid("BitButil.window.clearSelection").AsTask();
+
+    /// <summary>
+    /// True when the runtime implements <c>Selection.getComposedRanges()</c>.
+    /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public async Task<bool> IsComposedRangesSupported()
+        => await js.Invoke<bool>("BitButil.window.isComposedRangesSupported");
+
+    /// <summary>
+    /// The selection's ranges as they really are, with boundary points inside shadow trees reported
+    /// rather than collapsed onto the host element.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Selection/getComposedRanges">https://developer.mozilla.org/en-US/docs/Web/API/Selection/getComposedRanges</see>
+    /// </summary>
+    /// <param name="shadowHosts">
+    /// The elements whose shadow roots you are allowed to see into. A root not named here still hides
+    /// its contents - that is the encapsulation this API deliberately keeps.
+    /// </param>
+    /// <returns>The ranges, or an empty array when the runtime doesn't implement this.</returns>
+    /// <remarks>
+    /// Only matters for a page that uses shadow DOM. Without it, a selection spanning a web
+    /// component's internals is indistinguishable from one that stops at its boundary.
+    /// </remarks>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ComposedRange))]
+    public async Task<ComposedRange[]> GetComposedRanges(params ElementReference[] shadowHosts)
+        => await js.Invoke<ComposedRange[]>("BitButil.window.getComposedRanges", (object)shadowHosts);
 
     /// <summary>
     /// Selects every text node inside <paramref name="element"/>. Works on form-control inputs

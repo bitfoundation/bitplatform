@@ -1,0 +1,244 @@
+@page "/text-fragment"
+@inject Bit.Butil.TextFragment textFragment
+
+<PageTitle>TextFragment - Bit.Butil</PageTitle>
+
+<PageHeader Category="Window & Browsing"
+            Title="TextFragment"
+            Lead="Scroll-to-text URLs: deep-link to a phrase rather than to an anchor, in a page whose markup you don't control."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/URI/Fragment/Text_fragments"
+            InjectAs="TextFragment textFragment" />
+
+<Callout Type="info" Title="Why it isn't just location.hash">
+    Everything after <code>:~:</code> is a <i>fragment directive</i>, which the browser strips out of
+    <code>location.hash</code> before page script ever sees it. That is why
+    <code>GetCurrent()</code> exists rather than parsing the hash yourself - and why the directive is
+    only acted on during a navigation, so <code>Navigate</code> is what makes the browser scroll.
+</Callout>
+
+<Callout Type="warning" Title="Chromium and Safari">
+    Firefox does not implement text fragments; there the link simply loads the page without
+    scrolling, which is a fine fallback. Style the highlight with the
+    <code>::target-text</code> pseudo-element.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="Reports document.fragmentDirective. A false doesn't make your links unusable - they just load the page without scrolling - so this is a 'will the highlight happen' check, not a gate on generating them."
+                 Code=@("""
+@inject Bit.Butil.TextFragment textFragment
+
+var supported = await textFragment.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Build a link to a phrase"
+                 Api="Build / BuildUrl"
+                 Description="Only Start is required. Start plus End matches a whole range - the way to link to a paragraph without putting it all in the URL. Prefix and Suffix disambiguate without being highlighted themselves: they say what must sit either side of the match. Matching ignores case, collapses whitespace and only ever matches visible text."
+                 Code=@("""
+var url = await textFragment.BuildUrl("/text-fragment",
+    new TextFragmentDirective { Start = "fragment directive" });
+
+// a range:
+new TextFragmentDirective { Start = "Only Start", End = "visible text." }
+""")>
+        <div class="controls">
+            <label class="field">
+                <span class="field-label">Start</span>
+                <input @bind="_start" />
+            </label>
+            <label class="field">
+                <span class="field-label">End (optional)</span>
+                <input @bind="_end" />
+            </label>
+        </div>
+        <div class="controls">
+            <button @onclick="BuildFragment">Build</button>
+            <button @onclick="BuildLink">BuildUrl</button>
+        </div>
+        @if (string.IsNullOrEmpty(_built) is false)
+        {
+            <div class="field">
+                <span class="field-label">URL</span>
+                <span><code>@_built</code></span>
+            </div>
+        }
+        <DemoConsole @ref="buildOutput" Title="build output" />
+    </DemoSection>
+
+    <DemoSection Title="Copy a link to what the user selected"
+                 Api="FromSelection"
+                 Description="Select some text on this page and press the button - this is the same feature as the browser's own 'Copy link to highlight'. A short selection becomes an exact match; a long one becomes a start/end range, so the URL stays a reasonable length without matching any less precisely."
+                 Code=@("""
+var directive = await textFragment.FromSelection();
+if (directive is null) return; // nothing selected
+
+var url = await textFragment.BuildUrl(currentUrl, directive);
+await clipboard.WriteText(url);
+""")>
+        <div class="controls">
+            <button @onclick="FromSelection">FromSelection</button>
+        </div>
+        <DemoConsole @ref="selectionOutput" Title="selection output" />
+    </DemoSection>
+
+    <DemoSection Title="Navigate to it"
+                 Api="Navigate"
+                 Description="A text directive is only acted on as part of a navigation - there is no scripted 'scroll to this text'. This is a real navigation, so in a Blazor app it means a full reload unless the URL is the current page with a different fragment."
+                 Code=@("""
+var url = await textFragment.BuildUrl("/text-fragment",
+    new TextFragmentDirective { Start = "Style the highlight" });
+
+await textFragment.Navigate(url);
+""")>
+        <div class="controls">
+            <button @onclick="NavigateToPhrase">Navigate to the built link</button>
+        </div>
+        <DemoConsole @ref="navigateOutput" Title="navigate output" />
+    </DemoSection>
+
+    <DemoSection Title="How did the visitor arrive?"
+                 Api="GetCurrent"
+                 Description="The directives the current page was opened with - how to tell that someone arrived through a highlight link, and what they were looking for. Useful for analytics, or for expanding a collapsed section that contains the phrase."
+                 Code=@("""
+var directives = await textFragment.GetCurrent();
+if (directives.Length > 0) ExpandSectionContaining(directives[0].Start);
+""")>
+        <div class="controls">
+            <button @onclick="ReadCurrent">GetCurrent</button>
+        </div>
+        <DemoConsole @ref="currentOutput" Title="current directives output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes document.fragmentDirective." />
+    <ApiMember Name="Build"
+               Signature="ValueTask<string> Build(params TextFragmentDirective[] directives)"
+               Description="Encodes directives into the fragment string, :~:text=…, with the escaping the spec requires." />
+    <ApiMember Name="BuildUrl"
+               Signature="ValueTask<string> BuildUrl(string url, params TextFragmentDirective[] directives)"
+               Description="Appends directives to a URL, replacing any it already carries and keeping an ordinary #anchor in front of them." />
+    <ApiMember Name="GetCurrent"
+               Signature="ValueTask<TextFragmentDirective[]> GetCurrent()"
+               Description="The directives the current page was opened with." />
+    <ApiMember Name="FromSelection"
+               Signature="ValueTask<TextFragmentDirective?> FromSelection()"
+               Description="Turns the user's current selection into a directive. Null when nothing is selected." />
+    <ApiMember Name="Navigate"
+               Signature="ValueTask Navigate(string url, bool replace = false)"
+               Description="Navigates to a URL so the browser acts on its text directive." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole buildOutput = default!;
+    private DemoConsole selectionOutput = default!;
+    private DemoConsole navigateOutput = default!;
+    private DemoConsole currentOutput = default!;
+
+    private string _start = "fragment directive";
+    private string _end = "";
+    private string _built = "";
+
+    private TextFragmentDirective Directive => new() { Start = _start, End = _end };
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            var supported = await textFragment.IsSupported();
+            if (supported) await supportOutput.Success("IsSupported →", true);
+            else await supportOutput.Warn("IsSupported →", "false - links still work, they just won't scroll or highlight.");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task BuildFragment()
+    {
+        try
+        {
+            var fragment = await textFragment.Build(Directive);
+            await buildOutput.Success("Build →", string.IsNullOrEmpty(fragment) ? "(empty - Start is required)" : fragment);
+        }
+        catch (Exception ex)
+        {
+            await buildOutput.Error("Build failed →", ex.Message);
+        }
+    }
+
+    private async Task BuildLink()
+    {
+        try
+        {
+            _built = await textFragment.BuildUrl("/text-fragment", Directive);
+            await buildOutput.Success("BuildUrl →", _built);
+        }
+        catch (Exception ex)
+        {
+            await buildOutput.Error("BuildUrl failed →", ex.Message);
+        }
+    }
+
+    private async Task FromSelection()
+    {
+        try
+        {
+            var directive = await textFragment.FromSelection();
+            if (directive is null)
+            {
+                await selectionOutput.Warn("FromSelection →", "null - select some text on this page first.");
+                return;
+            }
+
+            _start = directive.Start;
+            _end = directive.End;
+            _built = await textFragment.BuildUrl("/text-fragment", directive);
+
+            await selectionOutput.Success("FromSelection →", directive);
+            await selectionOutput.Info("URL →", _built);
+        }
+        catch (Exception ex)
+        {
+            await selectionOutput.Error("FromSelection failed →", ex.Message);
+        }
+    }
+
+    private async Task NavigateToPhrase()
+    {
+        try
+        {
+            var url = string.IsNullOrEmpty(_built) ? await textFragment.BuildUrl("/text-fragment", Directive) : _built;
+            await navigateOutput.Info("Navigate →", url);
+            await textFragment.Navigate(url);
+        }
+        catch (Exception ex)
+        {
+            await navigateOutput.Error("Navigate failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadCurrent()
+    {
+        try
+        {
+            var directives = await textFragment.GetCurrent();
+            if (directives.Length == 0) await currentOutput.Info("GetCurrent →", "none - this page wasn't opened through a text-fragment link.");
+            else await currentOutput.Success("GetCurrent →", directives);
+        }
+        catch (Exception ex)
+        {
+            await currentOutput.Error("GetCurrent failed →", ex.Message);
+        }
+    }
+}

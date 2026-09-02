@@ -2,9 +2,62 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
     const _transitions: { [id: string]: any } = {};
+    const _pageListeners: { [id: string]: { name: string, handler: any } } = {};
+
+    // The stylesheet that opts this document into cross-document transitions. Level 2 has no
+    // scripted switch - `@view-transition { navigation: auto }` is the whole opt-in - so enabling it
+    // from C# means injecting the rule and removing it again.
+    const OPT_IN_ID = 'bit-butil-view-transition-opt-in';
 
     butil.viewTransition = {
         isSupported() { return typeof (document as any).startViewTransition === 'function'; },
+        isCrossDocumentSupported() {
+            // Both halves have to be there: the opt-in rule the browser understands, and the events
+            // that let a page take part in the transition it triggers.
+            return 'CSSViewTransitionRule' in window && 'onpageswap' in window;
+        },
+        isCrossDocumentEnabled() { return !!document.getElementById(OPT_IN_ID); },
+        enableCrossDocument(types: string[] | null) {
+            let style = document.getElementById(OPT_IN_ID) as HTMLStyleElement | null;
+            if (!style) {
+                style = document.createElement('style');
+                style.id = OPT_IN_ID;
+                document.head.appendChild(style);
+            }
+            const typeRule = types?.length ? `\n  types: ${types.join(' ')};` : '';
+            style.textContent = `@view-transition {\n  navigation: auto;${typeRule}\n}`;
+            return true;
+        },
+        disableCrossDocument() {
+            document.getElementById(OPT_IN_ID)?.remove();
+        },
+        onPageEvent(dotNetRef: any, listenerId: string, method: string, name: string) {
+            // 'pageswap' fires on the old document just before it is snapshotted; 'pagereveal' on
+            // the new one just before it is painted. They are the two places a cross-document
+            // transition can be customized - or opted out of, by skipping it.
+            if (!(`on${name}` in window)) return false;
+
+            const handler = (e: any) => {
+                const activation = e?.activation;
+                butil.utils.dispatch(dotNetRef, method, listenerId, {
+                    name,
+                    hasTransition: !!e?.viewTransition,
+                    fromUrl: activation?.from?.url ?? '',
+                    toUrl: activation?.entry?.url ?? '',
+                    navigationType: activation?.navigationType ?? ''
+                });
+            };
+
+            window.addEventListener(name, handler);
+            _pageListeners[listenerId] = { name, handler };
+            return true;
+        },
+        offPageEvent(listenerId: string) {
+            const entry = _pageListeners[listenerId];
+            if (!entry) return;
+            delete _pageListeners[listenerId];
+            try { window.removeEventListener(entry.name, entry.handler); } catch { /* window gone */ }
+        },
         start(dotNetRef: any, id: string, types: string[] | null) {
             const start = (document as any).startViewTransition;
             if (typeof start !== 'function') return false;
@@ -60,6 +113,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 butil.viewTransition.skip(id);
                 delete _transitions[id];
             }
+            for (const id of Object.keys(_pageListeners)) butil.viewTransition.offPageEvent(id);
         }
     };
 }(BitButil));

@@ -1,0 +1,203 @@
+@page "/proofreader"
+@implements IAsyncDisposable
+@inject Bit.Butil.Proofreader proofreader
+
+<PageTitle>Proofreader - Bit.Butil</PageTitle>
+
+<PageHeader Category="Built-in AI"
+            Title="Proofreader"
+            Lead="On-device spelling, grammar and punctuation corrections - each one positioned in the original text, so a UI can show what was wrong instead of silently replacing it."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Proofreader"
+            InjectAs="Proofreader proofreader" />
+
+<Callout Type="warning" Title="Chromium only, model downloaded on first use">
+    Probe <code>Availability</code>, <code>Create</code> from a user gesture, and <b>dispose the
+    session</b>. See <a href="/language-model">LanguageModel</a> for the whole story.
+</Callout>
+
+<Callout Type="info" Title="Types and explanations cost extra">
+    <code>IncludeCorrectionTypes</code> and <code>IncludeCorrectionExplanations</code> are off by
+    default because labelling each change is extra work for the model. Turn them on when the UI
+    actually shows the reason.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support and availability"
+                 Api="IsSupported / Availability"
+                 Description="Availability answers whether a proofreader with these options can be created - Available, Downloadable, Downloading or Unavailable."
+                 Code=@("""
+@inject Bit.Butil.Proofreader proofreader
+
+var availability = await proofreader.Availability();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+            <button @onclick="CheckAvailability">Availability</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="availability output" />
+    </DemoSection>
+
+    <DemoSection Title="Create and proofread"
+                 Api="Create / ProofreaderSession.Proofread"
+                 Description="The result carries the whole corrected text plus each change located in the original by StartIndex and EndIndex - which is what lets you highlight the span rather than diffing two strings."
+                 Code=@("""
+await using var session = await proofreader.Create(new ProofreaderOptions
+{
+    IncludeCorrectionTypes = true,
+    IncludeCorrectionExplanations = true
+});
+
+var result = await session!.Proofread(text);
+
+foreach (var correction in result!.Corrections)
+{
+    Highlight(correction.StartIndex, correction.EndIndex, correction.Correction, correction.Type);
+}
+""")>
+        <div class="field">
+            <span class="field-label">Text to proofread</span>
+            <textarea rows="3" @bind="_input"></textarea>
+        </div>
+        <div class="controls">
+            <label class="field">
+                <span class="field-label">Include types</span>
+                <input type="checkbox" @bind="_includeTypes" />
+            </label>
+            <label class="field">
+                <span class="field-label">Include explanations</span>
+                <input type="checkbox" @bind="_includeExplanations" />
+            </label>
+        </div>
+        <div class="controls">
+            <button @onclick="CreateSession" disabled="@(_session is not null)">Create</button>
+            <button @onclick="Proofread" disabled="@(_session is null)">Proofread</button>
+            <button class="danger" @onclick="DestroySession" disabled="@(_session is null)">Dispose session</button>
+        </div>
+        @if (_result is not null)
+        {
+            <div class="field">
+                <span class="field-label">Corrected</span>
+                <span>@_result.CorrectedInput</span>
+            </div>
+            <div class="field">
+                <span class="field-label">Corrections</span>
+                <span>
+                    @foreach (var correction in _result.Corrections)
+                    {
+                        <div>
+                            <code>[@correction.StartIndex..@correction.EndIndex] → @correction.Correction</code>
+                            @if (string.IsNullOrEmpty(correction.Type) is false)
+                            {
+                                <span> · @correction.Type</span>
+                            }
+                            @if (string.IsNullOrEmpty(correction.Explanation) is false)
+                            {
+                                <span> · @correction.Explanation</span>
+                            }
+                        </div>
+                    }
+                </span>
+            </div>
+        }
+        <DemoConsole @ref="runOutput" Title="proofread output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes the Proofreader API." />
+    <ApiMember Name="Availability"
+               Signature="ValueTask<AiAvailability> Availability() / Availability(ProofreaderOptions options)"
+               Description="Whether a proofreader can be created right now, and whether that means a download first." />
+    <ApiMember Name="Create"
+               Signature="ValueTask<ProofreaderSession?> Create(ProofreaderOptions? options = null, Action<double>? onDownloadProgress = null)"
+               Description="Creates a proofreader. Call from a user gesture; the first creation downloads the model." />
+    <ApiMember Name="Session.Proofread"
+               Signature="ValueTask<ProofreadResult?> Proofread(string input)"
+               Description="Corrects a piece of text and reports each change positioned in the original." />
+    <ApiMember Name="Session.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Destroys the model instance and frees what it holds. Always dispose." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole runOutput = default!;
+
+    private ProofreaderSession? _session;
+    private ProofreadResult? _result;
+    private bool _includeTypes = true;
+    private bool _includeExplanations = true;
+    private string _input = "I has recieved you're message yesterday, and will responds tommorrow.";
+
+    private ProofreaderOptions Options => new()
+    {
+        IncludeCorrectionTypes = _includeTypes,
+        IncludeCorrectionExplanations = _includeExplanations
+    };
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await proofreader.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckAvailability()
+    {
+        try
+        {
+            await supportOutput.Success("Availability →", await proofreader.Availability(Options));
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Availability failed →", ex.Message);
+        }
+    }
+
+    private async Task CreateSession()
+    {
+        try
+        {
+            _session = await proofreader.Create(Options);
+            if (_session is null) await runOutput.Warn("Create →", "null - the runtime refused, or the download was declined.");
+            else await runOutput.Success("Create →", $"session {_session.Id}");
+        }
+        catch (Exception ex)
+        {
+            await runOutput.Error("Create failed →", ex.Message);
+        }
+    }
+
+    private async Task DestroySession()
+    {
+        if (_session is not null) await _session.DisposeAsync();
+        _session = null;
+        await runOutput.Info("Session disposed.");
+    }
+
+    private async Task Proofread()
+    {
+        try
+        {
+            _result = await _session!.Proofread(_input);
+            if (_result is null) await runOutput.Warn("Proofread →", "null - the session is gone.");
+            else await runOutput.Success("Proofread →", $"{_result.Corrections.Length} correction(s).");
+        }
+        catch (Exception ex)
+        {
+            await runOutput.Error("Proofread failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_session is not null) await _session.DisposeAsync();
+    }
+}

@@ -212,6 +212,69 @@ isVisible = false;
 }
 """)
                  Language="razor" />
+
+    <DemoSection Title="Scroll-driven animations"
+                 Api="AnimationOptions.Timeline"
+                 Description="Passing a Timeline replaces the clock with a scroll position: a ScrollTimeline follows a scroller, a ViewTimeline follows an element's passage through the scrollport. Duration, Delay and EndDelay stop meaning anything and are not sent - RangeStart and RangeEnd say which part of the scroll the animation occupies, in the CSS syntax of the animation-range property."
+                 Code=@("""
+// a reading-progress bar, driven by the page's own scroll
+await _bar.Animate(js,
+    [new() { ["transform"] = "scaleX(0)" }, new() { ["transform"] = "scaleX(1)" }],
+    new AnimationOptions
+    {
+        Fill = "forwards",
+        Timeline = new AnimationTimelineOptions { Type = "scroll", Axis = "block" }
+    });
+
+// fade an element in as it comes into view
+new AnimationTimelineOptions { Type = "view", RangeStart = "entry 0%", RangeEnd = "entry 100%" }
+""")>
+        <div class="controls">
+            <button @onclick="CheckTimeline">IsTimelineSupported</button>
+            <button @onclick="StartScrollTimeline">Animate on scroll</button>
+            <button class="danger" @onclick="StopScrollTimeline">Cancel</button>
+        </div>
+        <div style="height:0.5rem;background:rgba(128,128,128,0.2);border-radius:999px;overflow:hidden">
+            <div @ref="_timelineRef" style="height:100%;width:100%;transform:scaleX(0);transform-origin:left;background:currentColor"></div>
+        </div>
+        <DemoConsole @ref="timelineOutput" Title="scroll timeline output" />
+    </DemoSection>
+
+    <DemoSection Title="Keep the end state"
+                 Api="CommitStyles / Persist"
+                 Description="A filling animation keeps the element under the animation's control and beats every later style change; the browser also discards one once another supersedes it, taking its visual effect with it. CommitStyles writes the current computed values into the inline style so the state survives without the animation - the usual pairing is WhenFinished, CommitStyles, Cancel. Persist is the blunter alternative, and keeps the fight going."
+                 Code=@("""
+var handle = await _box.Animate(js, keyframes, new AnimationOptions { Fill = "forwards" });
+
+await handle.WhenFinished();
+await handle.CommitStyles();
+await handle.Cancel();
+""")>
+        <div class="controls">
+            <button @onclick="CommitDemo">Animate + CommitStyles</button>
+            <button @onclick="PersistDemo">Animate + Persist</button>
+        </div>
+        <div class="anim-stage">
+            <div class="anim-target" @ref="_commitRef">Commit</div>
+        </div>
+        <DemoConsole @ref="commitOutput" Title="commitStyles output" />
+    </DemoSection>
+
+    <DemoSection Title="Everything animating on an element"
+                 Api="GetAnimations / CancelAnimations"
+                 Description="Unlike an AnimationHandle, which only knows about animations Butil started, this reports CSS animations and transitions too - which is how to answer 'is anything still moving here' before measuring, snapshotting or tearing an element down. CancelAnimations is the blunt companion: a CSS animation has no handle to cancel it through."
+                 Code=@("""
+var running = await _box.GetAnimations(js, subtree: true);
+if (running.Any(a => a.PlayState == "running")) await WaitForIt();
+
+var cancelled = await _box.CancelAnimations(js, subtree: true);
+""")>
+        <div class="controls">
+            <button @onclick="ListAnimations">GetAnimations</button>
+            <button class="danger" @onclick="CancelAllAnimations">CancelAnimations</button>
+        </div>
+        <DemoConsole @ref="listOutput" Title="getAnimations output" />
+    </DemoSection>
 </div>
 
 <Callout Type="info" Title="The animation runs in the browser, not over interop">
@@ -230,8 +293,8 @@ isVisible = false;
 
 <ApiTable Title="API reference">
     <ApiMember Name="Animate"
-               Signature="Task<AnimationHandle> Animate(this ElementReference element, IJSRuntime js, AnimationKeyframes keyframes, AnimationOptions? options = null)"
-               Description="Starts a Web Animation on the element and returns a handle for controlling it. Options default to a 1000ms linear animation." />
+               Signature="Task<AnimationHandle> Animate(this ElementReference element, IJSRuntime js, AnimationKeyframes keyframes, AnimationOptions? options = null, ElementReference? timelineSource = null)"
+               Description="Starts a Web Animation on the element and returns a handle for controlling it. Options default to a 1000ms linear animation; timelineSource is only used with a scroll-driven timeline." />
     <ApiMember Name="AnimationKeyframes"
                Signature="class AnimationKeyframes : List<Dictionary<string, string>>"
                Description="The keyframes to interpolate between: one dictionary of CSS property to value per frame." />
@@ -249,7 +312,16 @@ isVisible = false;
     <ApiMember Name="AnimationHandle.Cancel" Signature="ValueTask Cancel()" Description="Cancels the animation and removes its effect from the element." />
     <ApiMember Name="AnimationHandle.Finish" Signature="ValueTask Finish()" Description="Jumps to the end of the animation, applying Fill. No-ops when the engine rejects it, as it does for an infinitely-iterating animation." />
     <ApiMember Name="AnimationHandle.WhenFinished" Signature="ValueTask WhenFinished()" Description="Awaits the animation's finished promise. Returns when it finishes or is cancelled; never returns for an infinite animation." />
+    <ApiMember Name="AnimationOptions.Timeline" Signature="AnimationTimelineOptions? Timeline = null" Description="Drives the animation from a scroll position rather than the clock. When set, Duration, Delay and EndDelay are not sent." />
+    <ApiMember Name="AnimationTimelineOptions.Type" Signature='string Type = "scroll"' Description="scroll to follow a scroller's position, or view to follow an element's passage through the scrollport." />
+    <ApiMember Name="AnimationTimelineOptions.Axis" Signature='string Axis = "block"' Description="Which axis drives it: block, inline, x or y." />
+    <ApiMember Name="AnimationTimelineOptions.RangeStart / RangeEnd" Signature="string RangeStart / RangeEnd" Description="Where in the scroll range the animation runs, in the CSS syntax of animation-range - 'entry 0%', 'cover 20%'." />
+    <ApiMember Name="IsTimelineSupported" Signature="ValueTask<bool> IsTimelineSupported(this ElementReference element, IJSRuntime js)" Description="True when the runtime implements ScrollTimeline / ViewTimeline. Where false, an animation asking for one runs on the ordinary clock instead." />
+    <ApiMember Name="GetAnimations" Signature="ValueTask<AnimationInfo[]> GetAnimations(this ElementReference element, IJSRuntime js, bool subtree = false)" Description="Every animation currently affecting the element, including CSS animations and transitions the page never scripted." />
+    <ApiMember Name="CancelAnimations" Signature="ValueTask<int> CancelAnimations(this ElementReference element, IJSRuntime js, bool subtree = false)" Description="Cancels every animation on the element, whoever started it. Returns how many." />
     <ApiMember Name="AnimationHandle.SetPlaybackRate" Signature="ValueTask SetPlaybackRate(double rate)" Description="Sets the playback rate: 1 is normal speed, 0.5 half speed, -1 reverse at normal speed." />
+    <ApiMember Name="AnimationHandle.CommitStyles" Signature="ValueTask<bool> CommitStyles()" Description="Writes the animation's current computed values into the element's inline style, so the end state outlives the animation." />
+    <ApiMember Name="AnimationHandle.Persist" Signature="ValueTask<bool> Persist()" Description="Opts the animation out of automatic removal. CommitStyles is usually the better answer." />
     <ApiMember Name="AnimationHandle.DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Cancels the animation and releases the JavaScript-side registry entry. Idempotent and safe during teardown." />
 </ApiTable>
 
@@ -259,6 +331,13 @@ isVisible = false;
     private DemoConsole optionsOutput = default!;
     private DemoConsole controlOutput = default!;
     private DemoConsole sequenceOutput = default!;
+    private DemoConsole timelineOutput = default!;
+    private DemoConsole commitOutput = default!;
+    private DemoConsole listOutput = default!;
+
+    private ElementReference _timelineRef;
+    private ElementReference _commitRef;
+    private AnimationHandle? _timelineHandle;
 
     private ElementReference _boxRef;
     private ElementReference _pulseRef;
@@ -514,8 +593,127 @@ isVisible = false;
         _sequenceHandles.Clear();
     }
 
+    private async Task CheckTimeline()
+    {
+        try
+        {
+            await timelineOutput.Success("IsTimelineSupported →", await _timelineRef.IsTimelineSupported(js));
+        }
+        catch (Exception ex)
+        {
+            await timelineOutput.Error("IsTimelineSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task StartScrollTimeline()
+    {
+        try
+        {
+            await StopScrollTimeline();
+
+            _timelineHandle = await _timelineRef.Animate(js,
+                [
+                    new() { ["transform"] = "scaleX(0)" },
+                    new() { ["transform"] = "scaleX(1)" },
+                ],
+                new AnimationOptions
+                {
+                    Fill = "forwards",
+                    Timeline = new AnimationTimelineOptions { Type = "scroll", Axis = "block" },
+                });
+
+            await timelineOutput.Success("Animate →", "the bar now follows the page's scroll position. Scroll to see it fill.");
+        }
+        catch (Exception ex)
+        {
+            await timelineOutput.Error("Animate failed →", ex.Message);
+        }
+    }
+
+    private async Task StopScrollTimeline()
+    {
+        if (_timelineHandle is null) return;
+        await _timelineHandle.DisposeAsync();
+        _timelineHandle = null;
+    }
+
+    private async Task CommitDemo()
+    {
+        try
+        {
+            await using var handle = await _commitRef.Animate(js,
+                [
+                    new() { ["transform"] = "translateX(0)" },
+                    new() { ["transform"] = "translateX(120px)" },
+                ],
+                new AnimationOptions { Duration = 600, Fill = "forwards" });
+
+            await handle.WhenFinished();
+            var committed = await handle.CommitStyles();
+            await handle.Cancel();
+
+            if (committed) await commitOutput.Success("CommitStyles →", "the end state is now an inline style; the animation is gone.");
+            else await commitOutput.Warn("CommitStyles →", "false - this runtime has no commitStyles, or the effect couldn't be committed.");
+        }
+        catch (Exception ex)
+        {
+            await commitOutput.Error("CommitStyles failed →", ex.Message);
+        }
+    }
+
+    private async Task PersistDemo()
+    {
+        try
+        {
+            var handle = await _commitRef.Animate(js,
+                [
+                    new() { ["transform"] = "translateX(120px)" },
+                    new() { ["transform"] = "translateX(0)" },
+                ],
+                new AnimationOptions { Duration = 600, Fill = "forwards" });
+
+            await handle.WhenFinished();
+            var persisted = await handle.Persist();
+
+            if (persisted) await commitOutput.Success("Persist →", "the animation is kept rather than discarded - and keeps fighting later ones.");
+            else await commitOutput.Warn("Persist →", "false - this runtime has no persist.");
+        }
+        catch (Exception ex)
+        {
+            await commitOutput.Error("Persist failed →", ex.Message);
+        }
+    }
+
+    private async Task ListAnimations()
+    {
+        try
+        {
+            var running = await _commitRef.GetAnimations(js, subtree: true);
+            if (running.Length == 0) await listOutput.Info("GetAnimations →", "nothing is animating on that element.");
+            else await listOutput.Success("GetAnimations →", running);
+        }
+        catch (Exception ex)
+        {
+            await listOutput.Error("GetAnimations failed →", ex.Message);
+        }
+    }
+
+    private async Task CancelAllAnimations()
+    {
+        try
+        {
+            await listOutput.Success("CancelAnimations →", $"{await _commitRef.CancelAnimations(js, subtree: true)} cancelled.");
+        }
+        catch (Exception ex)
+        {
+            await listOutput.Error("CancelAnimations failed →", ex.Message);
+        }
+    }
+
     public async ValueTask DisposeAsync()
     {
+        await StopScrollTimeline();
+
         if (_slideHandle is not null)
         {
             await _slideHandle.DisposeAsync();

@@ -52,8 +52,26 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                     if (options[key] !== null && options[key] !== undefined) constraints[key] = options[key];
                 }
             }
+
+            // A CaptureController is the only way to say whether the captured tab or window should be
+            // brought to the front when capture starts. The default is to focus it, which is wrong
+            // for anything where the user stays in this page - a recorder, a conferencing tool.
+            let controller: any = null;
+            if (options?.focusBehavior && typeof (window as any).CaptureController === 'function') {
+                controller = new (window as any).CaptureController();
+                constraints.controller = controller;
+            }
+
             try {
                 const stream = await md.getDisplayMedia(constraints);
+
+                // setFocusBehavior is only honoured up to the end of the task the promise settled in,
+                // so it has to happen here rather than on a later call from .NET.
+                if (controller) {
+                    try { controller.setFocusBehavior(options.focusBehavior); }
+                    catch { /* window/monitor capture, or the moment has passed */ }
+                }
+
                 // Same reasoning as getUserMedia: never orphan a previous stream under this id.
                 stopStream(_streams[id]);
                 _streams[id] = stream;

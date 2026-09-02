@@ -44,6 +44,8 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         find,
         focus() { window.focus() },
         getSelection,
+        isComposedRangesSupported() { return typeof (window.getSelection() as any)?.getComposedRanges === 'function' },
+        getComposedRanges,
         getSelectionText() { return window.getSelection()?.toString() ?? '' },
         clearSelection() { window.getSelection()?.removeAllRanges(); },
         selectElement(element: HTMLElement) {
@@ -133,6 +135,47 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             anchorOffset: sel.anchorOffset,
             focusOffset: sel.focusOffset
         };
+    }
+
+    // An ordinary Selection reports the shadow host as its boundary, so a selection that starts or
+    // ends inside a shadow tree cannot be described at all. getComposedRanges takes the roots it is
+    // allowed to see into and reports the real boundary points within them.
+    function getComposedRanges(hosts: HTMLElement[]) {
+        const sel: any = window.getSelection();
+        if (typeof sel?.getComposedRanges !== 'function') return [];
+
+        const roots = (hosts ?? []).map(host => (host as any)?.shadowRoot).filter(root => !!root);
+
+        let ranges: any[];
+        try {
+            ranges = sel.getComposedRanges({ shadowRoots: roots }) ?? [];
+        } catch {
+            // Older shape: the roots were passed as loose arguments rather than in an options bag.
+            try { ranges = sel.getComposedRanges(...roots) ?? []; } catch { return []; }
+        }
+
+        return ranges.map((range: any) => ({
+            startOffset: range.startOffset ?? 0,
+            endOffset: range.endOffset ?? 0,
+            collapsed: range.collapsed === true,
+            // The containers themselves can't cross interop; what identifies them can.
+            startContainerName: nodeName(range.startContainer),
+            endContainerName: nodeName(range.endContainer),
+            // True when a boundary sits inside one of the shadow roots we were given, i.e. when this
+            // range is telling you something an ordinary Selection could not.
+            crossesShadowBoundary: isInShadow(range.startContainer, roots) || isInShadow(range.endContainer, roots)
+        }));
+    }
+
+    function nodeName(node: any) {
+        if (!node) return '';
+        return node.nodeType === Node.TEXT_NODE ? '#text' : (node.nodeName ?? '').toLowerCase();
+    }
+
+    function isInShadow(node: any, roots: any[]) {
+        if (!node) return false;
+        const root = node.getRootNode?.();
+        return roots.some(candidate => candidate === root);
     }
 
     function matchMedia(query: string) {

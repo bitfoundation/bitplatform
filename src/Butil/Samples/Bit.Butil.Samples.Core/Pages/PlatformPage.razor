@@ -1,0 +1,189 @@
+@page "/platform"
+@implements IAsyncDisposable
+@inject Bit.Butil.Css css
+@inject Bit.Butil.CustomElements customElements
+@inject Bit.Butil.InvokerCommands invokerCommands
+@inject Bit.Butil.TextFragment textFragment
+@inject Bit.Butil.AudioSession audioSession
+@inject Bit.Butil.SharedStorage sharedStorage
+@inject Bit.Butil.WebNN webNN
+
+<PageTitle>Butil - Platform Samples</PageTitle>
+
+<PageHeader Category="Platform"
+            Title="Platform"
+            Lead="The CSS Typed OM, custom-element state, invoker commands, text fragments, audio session, shared storage and WebNN."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/CSS_Typed_OM_API" />
+
+<pre>
+@@inject Bit.Butil.Css css
+
+var width = await _box.GetComputedValue("width");
+await _box.SetStyleValue("width", 40, "percent");
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="CSS Typed OM" Api="Supports / GetComputedValue / SetStyleValue"
+              Description="Read a computed length as a number and a unit; write one back without string building.">
+        <div @ref="_box" class="field">
+            <span class="field-label">Measured box</span>
+            <span>Its width is read and written below.</span>
+        </div>
+        <div class="controls">
+            <button @onclick="Supports">Supports(display, grid)</button>
+            <button @onclick="ReadComputed">GetComputedValue</button>
+            <button @onclick="SetWidth">SetStyleValue(40%)</button>
+            <button class="danger" @onclick="ClearStyles">ClearStyleValues</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Custom element state" Api="Define / AddState"
+              Description="Defines <butil-sample> and toggles :state(ready) on it - a state page CSS cannot set by accident.">
+        <style>
+            butil-sample { display: block; padding: 0.75rem; border: 2px solid #999; border-radius: 6px; }
+            butil-sample:state(ready) { border-color: #2e9e4f; }
+        </style>
+        <butil-sample @ref="_custom">A custom element carrying its own state.</butil-sample>
+        <div class="controls">
+            <button @onclick="DefineElement">Define</button>
+            <button @onclick="AddReady">AddState(ready)</button>
+            <button class="secondary" @onclick="RemoveReady">DeleteState(ready)</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Invoker commands" Api="SetCommandFor / OnCommand"
+              Description="Wires a button to a dialog with the built-in show-modal command - no click handler at all.">
+        <button @ref="_invoker">Open dialog</button>
+        <dialog @ref="_dialog">
+            <p>Opened by the browser.</p>
+            <button @ref="_closer">Close</button>
+        </dialog>
+        <div class="controls">
+            <button class="secondary" @onclick="WireCommands">Wire</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Text fragments" Api="FromSelection / BuildUrl"
+              Description="Select some text on this page, then build a scroll-to-text link to it.">
+        <div class="controls">
+            <button @onclick="LinkToSelection">FromSelection + BuildUrl</button>
+            <button @onclick="CurrentDirectives">GetCurrent</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Audio session" Api="SetSessionType / OnStateChange"
+              Description="Declare playback intent so the OS ducks, mixes or interrupts correctly.">
+        <div class="controls">
+            <button @onclick="AmbientAudio">SetSessionType(Ambient)</button>
+            <button @onclick="PlaybackAudio">SetSessionType(Playback)</button>
+            <button @onclick="SubscribeAudio">Subscribe</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Shared storage & WebNN" Api="SharedStorage.Set / WebNN.CreateContext"
+              Description="Two early APIs: write-only cross-site storage, and the neural-network entry point.">
+        <div class="controls">
+            <button @onclick="SharedSet">SharedStorage.Set</button>
+            <button @onclick="CreateNeuralContext">WebNN.CreateContext</button>
+        </div>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="platform output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private ElementReference _box;
+    private ElementReference _custom;
+    private ElementReference _invoker;
+    private ElementReference _closer;
+    private ElementReference _dialog;
+
+    private ButilSubscription? _commandSub;
+    private ButilSubscription? _audioSub;
+
+    private async Task Supports()
+        => await output.Success("Supports(display, grid) →", await css.Supports("display", "grid"));
+
+    private async Task ReadComputed()
+    {
+        var width = await _box.GetComputedValue("width");
+        if (width is null) await output.Warn("GetComputedValue → null. No CSS Typed OM here.");
+        else await output.Success("GetComputedValue(width) →", width);
+    }
+
+    private async Task SetWidth()
+        => await output.Success("SetStyleValue(width, 40%) →", await _box.SetStyleValue("width", 40, "percent"));
+
+    private async Task ClearStyles()
+        => await output.Success("ClearStyleValues →", await _box.ClearStyleValues());
+
+    private async Task DefineElement()
+        => await output.Success("Define(butil-sample) →", await customElements.Define("butil-sample"));
+
+    private async Task AddReady()
+        => await output.Success("AddState(ready) →", await customElements.AddState(_custom, "ready"));
+
+    private async Task RemoveReady()
+        => await output.Success("DeleteState(ready) →", await customElements.DeleteState(_custom, "ready"));
+
+    private async Task WireCommands()
+    {
+        _commandSub ??= await invokerCommands.OnCommand(_dialog, args => _ = output.Log("command →", args.Command));
+
+        var opened = await invokerCommands.SetCommandFor(_invoker, _dialog, "show-modal");
+        await invokerCommands.SetCommandFor(_closer, _dialog, "close");
+
+        if (opened) await output.Success("SetCommandFor →", "wired. Click 'Open dialog'.");
+        else await output.Warn("SetCommandFor → false. No invoker commands here.");
+    }
+
+    private async Task LinkToSelection()
+    {
+        var directive = await textFragment.FromSelection();
+        if (directive is null)
+        {
+            await output.Warn("FromSelection → null. Select some text first.");
+            return;
+        }
+
+        await output.Success("BuildUrl →", await textFragment.BuildUrl("/platform", directive));
+    }
+
+    private async Task CurrentDirectives()
+        => await output.Success("GetCurrent →", await textFragment.GetCurrent());
+
+    private async Task AmbientAudio()
+        => await output.Success("SetSessionType(Ambient) →", await audioSession.SetSessionType(AudioSessionType.Ambient));
+
+    private async Task PlaybackAudio()
+        => await output.Success("SetSessionType(Playback) →", await audioSession.SetSessionType(AudioSessionType.Playback));
+
+    private async Task SubscribeAudio()
+    {
+        if (_audioSub is not null) await _audioSub.DisposeAsync();
+        _audioSub = await audioSession.OnStateChange(state => _ = output.Log("statechange →", state));
+        await output.Log("Subscribed to the audio session's state.");
+    }
+
+    private async Task SharedSet()
+    {
+        var ok = await sharedStorage.Set("butil-sample", "1");
+        if (ok) await output.Success("SharedStorage.Set →", "written - and unreadable from the page, by design.");
+        else await output.Warn("SharedStorage.Set → false. Not available here.");
+    }
+
+    private async Task CreateNeuralContext()
+    {
+        await using var context = await webNN.CreateContext();
+        if (context is null) await output.Warn("WebNN.CreateContext → null. Behind a flag in Chromium, absent elsewhere.");
+        else await output.Success("WebNN.CreateContext →", context.Info);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_commandSub is not null) await _commandSub.DisposeAsync();
+        if (_audioSub is not null) await _audioSub.DisposeAsync();
+    }
+}

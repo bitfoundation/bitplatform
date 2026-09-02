@@ -1,0 +1,255 @@
+@page "/custom-elements"
+@inject Bit.Butil.CustomElements customElements
+
+<PageTitle>CustomElements - Bit.Butil</PageTitle>
+
+<PageHeader Category="DOM & Interaction"
+            Title="CustomElements"
+            Lead="ElementInternals and CustomStateSet: a component's own state exposed to CSS as :state(name), plus the ARIA semantics it declares for itself."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/CustomStateSet"
+            InjectAs="CustomElements customElements" />
+
+<Callout Type="info" Title="Why a class isn't good enough">
+    <code>.is-loading</code> shares a namespace with every other class on the page and can be
+    overridden by accident. <code>:state(loading)</code> belongs to the element and cannot be set from
+    outside it - which is what a component library wants.
+</Callout>
+
+<Callout Type="warning" Title="Define the tag before rendering it">
+    Internals can only be attached from inside a custom element's constructor, so Butil defines a
+    minimal element for you - it does nothing but keep its internals. Call <code>Define</code> before
+    the element is rendered; an element already in the DOM is upgraded, but any state set before the
+    upgrade is lost. A definition lasts for the document's lifetime and can never be replaced.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported / IsDefined"
+                 Description="IsSupported reports ElementInternals.states. IsDefined answers whether a tag name has already been taken - by Butil or by anything else."
+                 Code=@("""
+@inject Bit.Butil.CustomElements customElements
+
+var supported = await customElements.IsSupported();
+var defined = await customElements.IsDefined("butil-panel");
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+            <button @onclick="CheckDefined">IsDefined</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Define the element and set its state"
+                 Api="Define / AddState / DeleteState / HasState"
+                 Description="Define the tag, render it, then toggle states on it. The CSS below is already on this page, so a state you add turns the panel's border - with no class involved and nothing a page stylesheet could set by accident."
+                 Code=@("""
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    if (firstRender) await customElements.Define("butil-panel");
+}
+
+await customElements.AddState(_panel, "loading");
+await customElements.DeleteState(_panel, "loading");
+""")>
+        <style>
+            butil-panel {
+                display: block;
+                padding: 1rem;
+                border: 2px solid var(--border, #ccc);
+                border-radius: 6px;
+            }
+
+            butil-panel:state(loading) { border-color: #c98a00; }
+            butil-panel:state(ready) { border-color: #2e9e4f; }
+        </style>
+
+        <butil-panel @ref="_panel">
+            A <code>&lt;butil-panel&gt;</code>. Its border colour comes from <code>:state(…)</code>.
+        </butil-panel>
+
+        <div class="controls">
+            <button @onclick="Define">Define</button>
+            <button @onclick='() => AddState("loading")'>AddState("loading")</button>
+            <button @onclick='() => AddState("ready")'>AddState("ready")</button>
+            <button class="secondary" @onclick='() => DeleteState("loading")'>DeleteState("loading")</button>
+            <button @onclick="ReadStates">GetStates / HasState</button>
+            <button class="danger" @onclick="ClearStates">ClearStates</button>
+        </div>
+        <DemoConsole @ref="stateOutput" Title="state output" />
+    </DemoSection>
+
+    <DemoSection Title="Declare ARIA from inside the component"
+                 Api="SetAria"
+                 Description="ARIA set through internals is a default: an author attribute on the element still wins, which is exactly what makes it safe for a reusable component to state its own semantics rather than forcing them on the consumer."
+                 Code=@("""
+await customElements.SetAria(_panel, "role", "region");
+await customElements.SetAria(_panel, "ariaLabel", "Results");
+await customElements.SetAria(_panel, "ariaBusy", "true");
+""")>
+        <div class="controls">
+            <button @onclick="SetAria">SetAria(role, ariaLabel)</button>
+            <button @onclick="CheckInternals">HasInternals</button>
+        </div>
+        <DemoConsole @ref="ariaOutput" Title="aria output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime implements ElementInternals.states." />
+    <ApiMember Name="IsDefined"
+               Signature="ValueTask<bool> IsDefined(string tagName)"
+               Description="Whether a tag name has already been defined - by Butil or by anything else." />
+    <ApiMember Name="Define"
+               Signature="ValueTask<bool> Define(string tagName)"
+               Description="Defines a minimal custom element that carries internals. True when the tag is defined, including when it already was." />
+    <ApiMember Name="HasInternals"
+               Signature="ValueTask<bool> HasInternals(ElementReference element)"
+               Description="Whether this element was upgraded by a Butil definition and therefore has internals." />
+    <ApiMember Name="AddState"
+               Signature="ValueTask<bool> AddState(ElementReference element, string state)"
+               Description="Adds a state, matched in CSS as :state(name)." />
+    <ApiMember Name="DeleteState"
+               Signature="ValueTask<bool> DeleteState(ElementReference element, string state)"
+               Description="Removes a state." />
+    <ApiMember Name="HasState"
+               Signature="ValueTask<bool> HasState(ElementReference element, string state)"
+               Description="Whether a state is set." />
+    <ApiMember Name="GetStates"
+               Signature="ValueTask<string[]> GetStates(ElementReference element)"
+               Description="Every state currently set on the element." />
+    <ApiMember Name="ClearStates"
+               Signature="ValueTask<bool> ClearStates(ElementReference element)"
+               Description="Removes every state." />
+    <ApiMember Name="SetAria"
+               Signature="ValueTask<bool> SetAria(ElementReference element, string property, string? value)"
+               Description="Sets an ARIA default through the element's internals. An author attribute still wins." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole stateOutput = default!;
+    private DemoConsole ariaOutput = default!;
+
+    private ElementReference _panel;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            var supported = await customElements.IsSupported();
+            if (supported) await supportOutput.Success("IsSupported →", true);
+            else await supportOutput.Warn("IsSupported →", "false - no ElementInternals.states here; every state call returns false.");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckDefined()
+    {
+        try
+        {
+            await supportOutput.Success("IsDefined(\"butil-panel\") →", await customElements.IsDefined("butil-panel"));
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsDefined failed →", ex.Message);
+        }
+    }
+
+    private async Task Define()
+    {
+        try
+        {
+            var defined = await customElements.Define("butil-panel");
+            if (defined) await stateOutput.Success("Define →", "butil-panel is defined and the element above has been upgraded.");
+            else await stateOutput.Warn("Define →", "false - no ElementInternals here, or the name is taken.");
+        }
+        catch (Exception ex)
+        {
+            await stateOutput.Error("Define failed →", ex.Message);
+        }
+    }
+
+    private async Task AddState(string state)
+    {
+        try
+        {
+            var added = await customElements.AddState(_panel, state);
+            if (added) await stateOutput.Success("AddState →", $":state({state}) is now set.");
+            else await stateOutput.Warn("AddState →", "false - the element has no internals. Call Define first.");
+        }
+        catch (Exception ex)
+        {
+            await stateOutput.Error("AddState failed →", ex.Message);
+        }
+    }
+
+    private async Task DeleteState(string state)
+    {
+        try
+        {
+            await stateOutput.Success("DeleteState →", await customElements.DeleteState(_panel, state));
+        }
+        catch (Exception ex)
+        {
+            await stateOutput.Error("DeleteState failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadStates()
+    {
+        try
+        {
+            await stateOutput.Success("GetStates →", await customElements.GetStates(_panel));
+            await stateOutput.Success("HasState(\"ready\") →", await customElements.HasState(_panel, "ready"));
+        }
+        catch (Exception ex)
+        {
+            await stateOutput.Error("Read failed →", ex.Message);
+        }
+    }
+
+    private async Task ClearStates()
+    {
+        try
+        {
+            await stateOutput.Success("ClearStates →", await customElements.ClearStates(_panel));
+        }
+        catch (Exception ex)
+        {
+            await stateOutput.Error("ClearStates failed →", ex.Message);
+        }
+    }
+
+    private async Task SetAria()
+    {
+        try
+        {
+            var role = await customElements.SetAria(_panel, "role", "region");
+            var label = await customElements.SetAria(_panel, "ariaLabel", "Butil demo panel");
+
+            if (role && label) await ariaOutput.Success("SetAria →", "role=region, ariaLabel=\"Butil demo panel\" - as defaults.");
+            else await ariaOutput.Warn("SetAria →", "false - the element has no internals. Call Define first.");
+        }
+        catch (Exception ex)
+        {
+            await ariaOutput.Error("SetAria failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckInternals()
+    {
+        try
+        {
+            await ariaOutput.Success("HasInternals →", await customElements.HasInternals(_panel));
+        }
+        catch (Exception ex)
+        {
+            await ariaOutput.Error("HasInternals failed →", ex.Message);
+        }
+    }
+}

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
@@ -27,9 +28,11 @@ public class ViewTransition(IJSRuntime js) : IAsyncDisposable
 {
     internal const string UpdateMethodName = nameof(InvokeViewTransitionUpdate);
     internal const string PhaseMethodName = nameof(InvokeViewTransitionPhase);
+    internal const string PageMethodName = nameof(InvokeCrossDocumentEvent);
 
     private readonly ConcurrentDictionary<Guid, Func<Task>> _updates = new();
     private readonly ConcurrentDictionary<Guid, ViewTransitionHandle> _handles = new();
+    private readonly ConcurrentDictionary<Guid, Action<CrossDocumentTransitionEvent>> _pageHandlers = new();
 
     // Per-instance callback reference (see Keyboard): transitions are isolated per circuit / WASM
     // app and released on disposal - no static state, no cross-circuit leak.
@@ -146,6 +149,96 @@ public class ViewTransition(IJSRuntime js) : IAsyncDisposable
     }
 
     /// <summary>
+    /// True when the runtime implements <b>cross-document</b> view transitions (View Transitions
+    /// level 2) - the <c>@view-transition</c> opt-in plus the <c>pageswap</c>/<c>pagereveal</c> events.
+    /// </summary>
+    /// <remarks>
+    /// Independent of <see cref="IsSupported"/>: an engine can animate within a document without
+    /// being able to animate across a navigation.
+    /// <br/>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public ValueTask<bool> IsCrossDocumentSupported() => js.Invoke<bool>("BitButil.viewTransition.isCrossDocumentSupported");
+
+    /// <summary>True when this document has been opted in through <see cref="EnableCrossDocument"/>.</summary>
+    public ValueTask<bool> IsCrossDocumentEnabled() => js.Invoke<bool>("BitButil.viewTransition.isCrossDocumentEnabled");
+
+    /// <summary>
+    /// Opts this document into animating across same-origin navigations, by installing the
+    /// <c>@view-transition { navigation: auto; }</c> rule.
+    /// </summary>
+    /// <param name="types">
+    /// Optional transition types the incoming document's CSS can select on - the level-2 way to
+    /// animate a "forward" navigation differently from a "back" one.
+    /// </param>
+    /// <remarks>
+    /// <b>Both documents have to opt in</b> - the one being left and the one being entered - and the
+    /// navigation has to be same-origin. There is no scripted switch for this in the spec: the
+    /// at-rule is the whole opt-in, so this installs it as a stylesheet rather than calling anything.
+    /// <br/>
+    /// In a Blazor app this only applies to navigations that actually leave the document. Blazor's
+    /// own router navigates without one, so an in-app route change is a job for
+    /// <see cref="Start(Func{Task}, string[])"/> instead.
+    /// </remarks>
+    public ValueTask<bool> EnableCrossDocument(string[]? types = null)
+        => js.Invoke<bool>("BitButil.viewTransition.enableCrossDocument", types);
+
+    /// <summary>Removes the opt-in, so navigations stop animating.</summary>
+    public ValueTask DisableCrossDocument() => js.InvokeVoid("BitButil.viewTransition.disableCrossDocument");
+
+    /// <summary>
+    /// Invoked from JS for a page swap or reveal. Public + <see cref="JSInvokableAttribute"/> so it
+    /// can be dispatched through the per-instance <see cref="DotNetObjectReference{T}"/>.
+    /// </summary>
+    [JSInvokable(PageMethodName)]
+    public void InvokeCrossDocumentEvent(Guid id, CrossDocumentTransitionEvent transitionEvent)
+    {
+        if (_pageHandlers.TryGetValue(id, out var handler)) handler.Invoke(transitionEvent ?? new CrossDocumentTransitionEvent());
+    }
+
+    /// <summary>
+    /// Fires on the <b>outgoing</b> document just before the browser snapshots it - the last chance
+    /// to set up what the transition animates away from.
+    /// </summary>
+    /// <returns>A subscription that detaches the listener on dispose.</returns>
+    /// <remarks>
+    /// The document is on its way out, so anything asynchronous started here is racing its own
+    /// teardown. Keep the handler synchronous.
+    /// </remarks>
+    [DynamicDependency(nameof(InvokeCrossDocumentEvent), typeof(ViewTransition))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CrossDocumentTransitionEvent))]
+    public Task<ButilSubscription> OnPageSwap(Action<CrossDocumentTransitionEvent> handler)
+        => SubscribePageEvent(handler, "pageswap");
+
+    /// <summary>
+    /// Fires on the <b>incoming</b> document just before its first paint - where the arriving page
+    /// decides how the transition should look, or skips it.
+    /// </summary>
+    /// <returns>A subscription that detaches the listener on dispose.</returns>
+    [DynamicDependency(nameof(InvokeCrossDocumentEvent), typeof(ViewTransition))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CrossDocumentTransitionEvent))]
+    public Task<ButilSubscription> OnPageReveal(Action<CrossDocumentTransitionEvent> handler)
+        => SubscribePageEvent(handler, "pagereveal");
+
+    private async Task<ButilSubscription> SubscribePageEvent(Action<CrossDocumentTransitionEvent> handler, string name)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+
+        var id = Guid.NewGuid();
+        _pageHandlers[id] = handler;
+
+        await js.Invoke<bool>("BitButil.viewTransition.onPageEvent", DotNetRef, id, PageMethodName, name);
+
+        return new ButilSubscription(id, async () =>
+        {
+            _pageHandlers.TryRemove(id, out _);
+            await js.InvokeVoid("BitButil.viewTransition.offPageEvent", id);
+        });
+    }
+
+    /// <summary>
     /// On scope/circuit teardown, skips any transition still running so a half-finished animation
     /// can't outlive the page that started it.
     /// </summary>
@@ -155,6 +248,7 @@ public class ViewTransition(IJSRuntime js) : IAsyncDisposable
         {
             _updates.Clear();
             _handles.Clear();
+            _pageHandlers.Clear();
             await js.InvokeVoid("BitButil.viewTransition.disposeAll");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
