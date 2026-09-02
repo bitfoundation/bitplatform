@@ -84,7 +84,7 @@ as plain GETs under `/api/mcp/...`). Every feature must be reachable through it,
   `Server/Services/ButilCapabilityCatalog.cs` - must be updated along with the feature.
 - **Do not add tools.** The surface is deliberately seven: a tool description is paid for in every request of
   every session. A listing is what a retrieval tool answers when called with no argument, not a tool of its own.
-  Adding one is a deliberate decision that also changes `tests/Bit.Butil.Tests.Mcp/Infrastructure/WireContracts.cs`.
+  Adding one is a deliberate decision that also changes `tests/Bit.Butil.Tests.Mcp/Infrastructure/ButilMcp.cs`.
 - Tool, resource and prompt names are identifiers clients store: renaming one is a breaking change.
 
 ## Tests

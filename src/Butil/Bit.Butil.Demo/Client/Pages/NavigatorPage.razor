@@ -63,9 +63,9 @@ if (await navigator.CanShare())
 {
     await navigator.Share(new ShareData
     {
-        title = "Bit.Butil",
+        Title = "Bit.Butil",
         Text = "Browser APIs for C# developers",
-        url = "https://bitplatform.dev",
+        Url = "https://bitplatform.dev",
     });
 }
 
@@ -244,9 +244,9 @@ bool accepted = await navigator.Vibrate([200, 100, 200]);
         {
             await navigator.Share(new ShareData
             {
-                title = "Bit.Butil",
+                Title = "Bit.Butil",
                 Text = "Browser APIs for C# developers",
-                url = "https://bitplatform.dev",
+                Url = "https://bitplatform.dev",
             });
             await shareOutput.Success("Share sheet completed.");
         }

@@ -1,4 +1,4 @@
-﻿namespace Bit.Butil;
+namespace Bit.Butil;
 
 /// <summary>
 /// What the native share sheet is handed. At least one of the three has to be set, and a URL that
@@ -13,15 +13,9 @@ public class ShareData
     /// <summary>The body text to share.</summary>
     public string? Text { get; set; }
 
-    /// <summary>
-    /// The title to share. Lower-cased because it is the JSON member name the browser reads;
-    /// renaming it would break callers.
-    /// </summary>
-    public string? title { get; set; }
+    /// <summary>The title to share.</summary>
+    public string? Title { get; set; }
 
-    /// <summary>
-    /// The URL to share, absolute. Lower-cased because it is the JSON member name the browser
-    /// reads; renaming it would break callers.
-    /// </summary>
-    public string? url { get; set; }
+    /// <summary>The URL to share, absolute.</summary>
+    public string? Url { get; set; }
 }
