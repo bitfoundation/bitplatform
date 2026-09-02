@@ -1,6 +1,6 @@
 ---
-mode: 'agent'
-description: Modernizes Blazor pages by replacing raw HTML elements and custom CSS with Bit.BlazorUI components and theme-aware styling. Uses MCP tools to discover components, inspect their exact APIs, and retrieve real code examples.
+name: bitify-ui
+description: Modernizes Blazor pages by replacing raw HTML elements and custom CSS with Bit.BlazorUI components and theme-aware styling, using the bit BlazorUI MCP tools to discover components and verify their exact APIs.
 ---
 
 # Bitify: Replace raw HTML/CSS with Bit.BlazorUI components

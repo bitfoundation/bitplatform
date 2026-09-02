@@ -1,6 +1,6 @@
 ---
-mode: 'agent'
-description: Scaffolds complete CRUD entity implementations including entity model, EF configuration, DTO, Mapperly mapper, API controller, IAppController interface, resource strings, Blazor pages, and AppFeatures registration.
+name: scaffold-entity
+description: Scaffolds a complete CRUD entity across every layer of the Boilerplate solution - entity model, EF Core configuration and migration, DTO, Mapperly mapper, API controller, IAppController interface, AppStrings resource entries, Blazor grid and add/edit pages, and navigation integration.
 ---
 
 # Scaffold Complete Entity with Full CRUD
@@ -84,7 +84,7 @@ Generate a complete CRUD implementation for an entity including:
     code-behind, controllers) follow `AGENTS.md` section 5 and write the English text through the
     `IStringLocalizer` indexer, e.g. `Localizer["Category saved."]`; editing `.resx` outside the DTO forces a full
     restart of a running hot-reload session. Moving those literals into `.resx` is a separate, explicitly-requested
-    pass - see `.github/prompts/resx.prompt.md`.
+    pass - see the **localize-strings** skill (`.github/agents/localize-strings.agent.md`).
   - Include `Id`, `Version` properties
   - Add calculated properties if needed (e.g., `ProductsCount`)
   - Add `[JsonSerializable(typeof({DtoName}))]` to `AppJsonContext.cs`

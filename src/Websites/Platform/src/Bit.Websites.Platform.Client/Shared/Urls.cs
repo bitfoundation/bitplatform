@@ -52,6 +52,7 @@ public static class Urls
 
     public const string BlazorUI = "https://blazorui.bitplatform.dev/";
 
+    public const string Ask = "/ask";
     public const string Demos = "/demos";
     public const string Pricing = "/pricing";
     public const string AboutUs = "/about-us";

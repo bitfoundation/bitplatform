@@ -438,3 +438,9 @@ services.AddScoped(sp =>
 - `MakeAssertionAsync()` - Validates assertion response
 
 ---
+
+### AI Wiki
+
+Ask your own question [here](https://bitplatform.dev/ask)
+
+---

@@ -1,6 +1,6 @@
 ---
-mode: 'agent'
-description: Moves hardcoded user-facing strings from code to .resx resource files for localization. Identifies strings, adds entries to AppStrings.resx, generates C# code, and updates code to use IStringLocalizer.
+name: localize-strings
+description: Moves hardcoded user-facing strings out of Razor/C# files into AppStrings.resx and rewrites the call sites to use IStringLocalizer with nameof(AppStrings.Key). Use only when explicitly asked to localize or apply translations.
 ---
 
 # Move Hardcoded Strings to Resource Files
