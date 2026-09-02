@@ -42,7 +42,8 @@ public partial class BitLink : BitComponentBase
 
     /// <summary>
     /// URL the link points to. If provided, the component renders an anchor tag, otherwise a button.
-    /// A value starting with the <c>#</c> character makes the link smooth-scroll the element with that id into view.
+    /// A value starting with the <c>#</c> character makes the link smooth-scroll the element with that id into view,
+    /// while a bare <c>#</c> renders an inert link that navigates nowhere.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetHrefRelAndTarget))]
@@ -71,7 +72,8 @@ public partial class BitLink : BitComponentBase
     /// If Href provided, specifies the relationship between the current document and the linked document.
     /// Ignored for empty or hash-only (#) hrefs.
     /// <br />
-    /// When <see cref="Target"/> is set to <c>_blank</c> and no opener-related rel is provided, <c>noopener</c> is added automatically.
+    /// When <see cref="Target"/> is set to <c>_blank</c> and no opener-related rel
+    /// (<c>NoOpener</c>, <c>NoReferrer</c> or <c>Opener</c>) is provided, <c>noopener</c> is added automatically.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetHrefRelAndTarget))]
@@ -177,7 +179,7 @@ public partial class BitLink : BitComponentBase
 
         await OnClick.InvokeAsync(e);
 
-        if (Href.HasValue() && Href!.StartsWith('#'))
+        if (Href.HasValue() && Href!.StartsWith('#') && Href!.Length > 1)
         {
             await _js.BitUtilsScrollElementIntoView(Href![1..]);
         }
@@ -193,7 +195,11 @@ public partial class BitLink : BitComponentBase
 
         var rel = Rel.HasValue ? BitLinkRelUtils.GetRels(Rel.Value) : null;
 
-        if (Target is "_blank" && (rel is null || (rel.Contains("noopener") is false && rel.Contains("noreferrer") is false)))
+        var hasOpenerRel = Rel.HasValue && (Rel.Value.HasFlag(BitLinkRels.NoOpener) ||
+                                            Rel.Value.HasFlag(BitLinkRels.NoReferrer) ||
+                                            Rel.Value.HasFlag(BitLinkRels.Opener));
+
+        if (Target is "_blank" && hasOpenerRel is false)
         {
             rel = rel.HasValue() ? $"{rel} noopener" : "noopener";
         }

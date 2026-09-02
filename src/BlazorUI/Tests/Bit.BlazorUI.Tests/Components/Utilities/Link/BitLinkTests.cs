@@ -583,6 +583,20 @@ public class BitLinkTests : BunitTestContext
         }
     }
 
+    [TestMethod]
+    public void BitLinkShouldNotScrollForBareHashHref()
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, "#");
+        });
+
+        component.Find(".bit-lnk").Click();
+
+        // A bare # href names no element, so clicking it must not fire the scroll-into-view interop with an empty id.
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.scrollElementIntoView");
+    }
+
     [TestMethod,
         DataRow("https://bitplatform.dev"),
         DataRow("#go-to-section"),
@@ -812,6 +826,8 @@ public class BitLinkTests : BunitTestContext
         DataRow("_blank", BitLinkRels.NoOpener, "noopener"),
         DataRow("_blank", BitLinkRels.NoReferrer, "noreferrer"),
         DataRow("_blank", BitLinkRels.NoOpener | BitLinkRels.NoReferrer, "noopener noreferrer"),
+        DataRow("_blank", BitLinkRels.Opener, "opener"),
+        DataRow("_blank", BitLinkRels.Sponsored, "sponsored noopener"),
         DataRow("_self", null, null),
         DataRow(null, null, null)
     ]
@@ -833,6 +849,27 @@ public class BitLinkTests : BunitTestContext
         {
             Assert.AreEqual(expectedRel, anchor.GetAttribute("rel"));
         }
+    }
+
+    [TestMethod,
+        DataRow(BitLinkRels.Me, "me"),
+        DataRow(BitLinkRels.Opener, "opener"),
+        DataRow(BitLinkRels.Ugc, "ugc"),
+        DataRow(BitLinkRels.PrivacyPolicy, "privacy-policy"),
+        DataRow(BitLinkRels.TermsOfService, "terms-of-service"),
+        DataRow(BitLinkRels.Sponsored | BitLinkRels.Ugc, "sponsored ugc"),
+        DataRow(BitLinkRels.NoFollow | BitLinkRels.PrivacyPolicy, "nofollow privacy-policy")
+    ]
+    public void BitLinkShouldRenderRelValuesWithTheirHtmlNames(BitLinkRels rel, string expectedRel)
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Rel, rel);
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+        });
+
+        // The multi-word rel values are hyphenated in HTML, so the enum member name alone cannot be the source of the attribute.
+        Assert.AreEqual(expectedRel, component.Find(".bit-lnk").GetAttribute("rel"));
     }
 
     [TestMethod]

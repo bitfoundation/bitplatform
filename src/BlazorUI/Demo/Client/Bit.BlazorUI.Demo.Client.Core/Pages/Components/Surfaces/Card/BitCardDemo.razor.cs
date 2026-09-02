@@ -840,6 +840,42 @@ public partial class BitCardDemo
                     Name = "Tag",
                     Value = "4096",
                     Description = "A tag (keyword) for the current document."
+                },
+                new()
+                {
+                    Name = "Me",
+                    Value = "8192",
+                    Description = "Indicates that the linked document represents the person who owns the current content. (used for identity verification)"
+                },
+                new()
+                {
+                    Name = "Opener",
+                    Value = "16384",
+                    Description = "Requires that any browsing context created by following the hyperlink keeps its opener browsing context. (reverses the implicit noopener modern browsers apply to _blank targets)"
+                },
+                new()
+                {
+                    Name = "PrivacyPolicy",
+                    Value = "32768",
+                    Description = "Links to the privacy policy that applies to the current document. (rendered as privacy-policy)"
+                },
+                new()
+                {
+                    Name = "Sponsored",
+                    Value = "65536",
+                    Description = "Marks the link as an advertisement or paid placement, so search engines do not count it as an organic endorsement."
+                },
+                new()
+                {
+                    Name = "TermsOfService",
+                    Value = "131072",
+                    Description = "Links to the terms of service that apply to the current document. (rendered as terms-of-service)"
+                },
+                new()
+                {
+                    Name = "Ugc",
+                    Value = "262144",
+                    Description = "Marks the link as user-generated content, like forum posts or comments, for search engines."
                 }
             ]
         },

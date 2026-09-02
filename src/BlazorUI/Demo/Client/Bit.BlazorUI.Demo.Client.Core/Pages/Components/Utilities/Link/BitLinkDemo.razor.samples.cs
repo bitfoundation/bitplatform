@@ -14,10 +14,10 @@ public partial class BitLinkDemo
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"" NoUnderline>NoUnderline link</BitLink>";
 
     private readonly string example4RazorCode = @"
-<BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"">Blank target link</BitLink>
-<BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_parent"">Parent target link</BitLink>
-<BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_self"">Self target link</BitLink>
-<BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_top"">Top target link</BitLink>";
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""@BitLinkTarget.Blank"">Blank target link</BitLink>
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""@BitLinkTarget.Parent"">Parent target link</BitLink>
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""@BitLinkTarget.Self"">Self target link</BitLink>
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""@BitLinkTarget.Top"">Top target link</BitLink>";
 
     private readonly string example5RazorCode = @"
 <BitLink Href=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" Download="""">Download the bit logo</BitLink>
@@ -91,6 +91,7 @@ starting point. The possibilities are endless, and the journey begins now.
     private readonly string example8RazorCode = @"
 <BitLink Rel=""BitLinkRels.NoFollow"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a rel attribute (nofollow)</BitLink>
 <BitLink Rel=""BitLinkRels.NoFollow | BitLinkRels.NoReferrer"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a rel attribute (nofollow & noreferrer)</BitLink>
+<BitLink Rel=""BitLinkRels.Sponsored | BitLinkRels.Ugc"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a rel attribute (sponsored & ugc)</BitLink>
 <BitLink Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">Blank target link with an automatic noopener rel</BitLink>";
 
     private readonly string example9RazorCode = @"
