@@ -63,6 +63,7 @@ public class WakeLock(IJSRuntime js) : IAsyncDisposable
         return new PersistentLockHandle(js, token);
     }
 
+    /// <summary>Releases the wake lock if one is held, letting the screen sleep again.</summary>
     public async ValueTask DisposeAsync()
     {
         try

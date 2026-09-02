@@ -168,6 +168,7 @@ public class ServiceWorker(IJSRuntime js) : IAsyncDisposable
         });
     }
 
+    /// <summary>Unsubscribes every message and controller-change handler this instance registered, and releases its interop reference.</summary>
     public async ValueTask DisposeAsync()
     {
         try

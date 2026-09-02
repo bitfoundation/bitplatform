@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace Bit.Butil;
 
@@ -14,30 +14,24 @@ public class ButilTouchEventArgs : EventArgs
         "altKey", "ctrlKey", "metaKey", "shiftKey",
         "touches", "targetTouches", "changedTouches"];
 
+    /// <summary>True when Alt was down as the event fired.</summary>
     public bool AltKey { get; set; }
+
+    /// <summary>True when Ctrl was down as the event fired.</summary>
     public bool CtrlKey { get; set; }
+
+    /// <summary>True when the Meta key (Command on macOS, the Windows key elsewhere) was down as the event fired.</summary>
     public bool MetaKey { get; set; }
+
+    /// <summary>True when Shift was down as the event fired.</summary>
     public bool ShiftKey { get; set; }
 
+    /// <summary>Every touch point currently on the surface, anywhere in the document.</summary>
     public ButilTouchPoint[] Touches { get; set; } = [];
-    public ButilTouchPoint[] TargetTouches { get; set; } = [];
-    public ButilTouchPoint[] ChangedTouches { get; set; } = [];
-}
 
-/// <summary>
-/// Individual touch point inside a <see cref="ButilTouchEventArgs"/>.
-/// </summary>
-public class ButilTouchPoint
-{
-    public int Identifier { get; set; }
-    public double ClientX { get; set; }
-    public double ClientY { get; set; }
-    public double PageX { get; set; }
-    public double PageY { get; set; }
-    public double ScreenX { get; set; }
-    public double ScreenY { get; set; }
-    public double RadiusX { get; set; }
-    public double RadiusY { get; set; }
-    public double RotationAngle { get; set; }
-    public double Force { get; set; }
+    /// <summary>The subset of <see cref="Touches"/> whose contact started on this element.</summary>
+    public ButilTouchPoint[] TargetTouches { get; set; } = [];
+
+    /// <summary>The touch points this event is about - the ones that went down, moved or came up.</summary>
+    public ButilTouchPoint[] ChangedTouches { get; set; } = [];
 }

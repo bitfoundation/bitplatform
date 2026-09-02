@@ -7,6 +7,7 @@
 /// </summary>
 public class RsaOaepCryptoAlgorithmParams : ICryptoAlgorithmParams
 {
+    /// <summary>The Web Crypto algorithm identifier - always <c>"RSA-OAEP"</c>.</summary>
     public string Name => "RSA-OAEP";
 
     /// <summary>

@@ -128,6 +128,7 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
         });
     }
 
+    /// <summary>Disconnects every PerformanceObserver started through this instance and releases its interop reference.</summary>
     public async ValueTask DisposeAsync()
     {
         try

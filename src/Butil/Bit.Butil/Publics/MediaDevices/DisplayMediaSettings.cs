@@ -12,8 +12,10 @@ public class DisplayMediaSettings
     /// <summary>What the user picked: <c>"monitor"</c>, <c>"window"</c> or <c>"browser"</c>. Empty when the runtime doesn't report it.</summary>
     public string DisplaySurface { get; set; } = string.Empty;
 
+    /// <summary>The negotiated frame width in pixels. 0 when unreported.</summary>
     public int Width { get; set; }
 
+    /// <summary>The negotiated frame height in pixels. 0 when unreported.</summary>
     public int Height { get; set; }
 
     /// <summary>The negotiated frame rate. May differ from a requested one, and is 0 when unreported.</summary>
