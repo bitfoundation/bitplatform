@@ -1,0 +1,209 @@
+@page "/text-detector"
+@implements IAsyncDisposable
+@inject Bit.Butil.TextDetector textDetector
+@inject Bit.Butil.MediaDevices mediaDevices
+
+<PageTitle>TextDetector - Bit.Butil</PageTitle>
+
+<PageHeader Category="Device &amp; Hardware"
+            Title="TextDetector"
+            Lead="Read printed text out of an image or a camera frame with the platform's own recognizer - a serial number, an invoice reference, a label, where typing it in is the alternative."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/TextDetector"
+            InjectAs="TextDetector textDetector" />
+
+<Callout Type="warning" Title="Chromium, and only where the platform ships a recognizer">
+    Which in practice means Android and ChromeOS more than desktop, and behind the Experimental Web
+    Platform features flag where it is present at all. <code>IsSupported</code> returning false is
+    the common case; <code>Detect</code> answers with an empty array rather than throwing.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes TextDetector. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.TextDetector textDetector
+
+if (await textDetector.IsSupported() is false)
+{
+    // keep the manual entry field
+}
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Read from the camera"
+                 Api="Detect"
+                 Description="Reads one frame of a video, image or canvas element. What counts as one block is the platform's decision - usually a line, sometimes a paragraph - and each block comes with the box it occupies, which is what you would draw a highlight over before asking the user to confirm."
+                 Code=@("""
+_stream = await mediaDevices.GetUserMedia(
+    audio: false,
+    video: true,
+    videoConstraints: new { facingMode = "environment" });   // rear camera on a phone
+
+await _stream!.AttachTo(_video);
+
+var blocks = await textDetector.Detect(_video);
+""")>
+        <video @ref="_video" autoplay playsinline muted
+               class="demo-video" style="min-height:160px"></video>
+        <div class="controls">
+            <button @onclick="StartCamera" disabled="@(_stream is not null)">Start camera</button>
+            <button class="secondary" @onclick="StopCamera" disabled="@(_stream is null)">Stop camera</button>
+            <button @onclick="DetectOnce" disabled="@(_stream is null)">Read this frame</button>
+        </div>
+        <DemoConsole @ref="cameraOutput" Title="camera output" />
+    </DemoSection>
+
+    <DemoSection Title="Read an image file"
+                 Api="DetectImage"
+                 Description="Takes an encoded image's bytes - a PNG or JPEG, not raw pixels. The decoded bitmap is released as soon as the scan finishes; it holds uncompressed pixels, which would be a real leak in a loop."
+                 Code=@("""
+var blocks = await textDetector.DetectImage(bytes, "image/jpeg");
+
+var everything = string.Join("\n", blocks.Select(b => b.RawValue));
+""")>
+        <div class="controls">
+            <label>
+                Pick an image
+                <InputFile OnChange="DetectFromFile" accept="image/*" />
+            </label>
+        </div>
+        <DemoConsole @ref="fileOutput" Title="file output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes TextDetector. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="Detect"
+               Signature="ValueTask<DetectedText[]> Detect(ElementReference element)"
+               Description="Reads one frame of a video, image or canvas element. Empty when there is nothing to read, or no frame yet." />
+    <ApiMember Name="DetectImage"
+               Signature="ValueTask<DetectedText[]> DetectImage(byte[] imageBytes, string mimeType = &quot;image/png&quot;)"
+               Description="Reads an encoded image's bytes. Empty when the image couldn't be decoded." />
+    <ApiMember Name="DetectedText"
+               Signature="RawValue | X | Y | Width | Height"
+               Description="One block of recognized text and the box it occupies, in source pixels." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole cameraOutput = default!;
+    private DemoConsole fileOutput = default!;
+
+    private ElementReference _video;
+    private MediaStreamHandle? _stream;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            var supported = await textDetector.IsSupported();
+
+            if (supported) await supportOutput.Success("IsSupported →", true);
+            else await supportOutput.Warn("IsSupported →", "false - try Chromium on Android, or desktop Chromium with the Experimental Web Platform features flag on.");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task StartCamera()
+    {
+        try
+        {
+            _stream = await mediaDevices.GetUserMedia(
+                audio: false,
+                video: true,
+                videoConstraints: new { facingMode = "environment" });
+
+            if (_stream is null)
+            {
+                await cameraOutput.Warn("GetUserMedia → null - permission denied, or no camera.");
+                return;
+            }
+
+            await _stream.AttachTo(_video);
+            await cameraOutput.Success("Camera started - point it at something printed.");
+        }
+        catch (Exception ex)
+        {
+            await cameraOutput.Error("GetUserMedia failed →", ex.Message);
+        }
+    }
+
+    private async Task StopCamera()
+    {
+        if (_stream is null) return;
+
+        await _stream.DisposeAsync();
+        _stream = null;
+        await cameraOutput.Log("Camera stopped.");
+    }
+
+    private async Task DetectOnce()
+    {
+        try
+        {
+            var blocks = await textDetector.Detect(_video);
+
+            if (blocks.Length == 0)
+            {
+                await cameraOutput.Warn("Detect → nothing readable in this frame. A browser without TextDetector answers the same way.");
+                return;
+            }
+
+            foreach (var block in blocks)
+            {
+                await cameraOutput.Success($"\"{block.RawValue}\" at ({block.X:0}, {block.Y:0}) {block.Width:0}×{block.Height:0}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await cameraOutput.Error("Detect failed →", ex.Message);
+        }
+    }
+
+    private async Task DetectFromFile(InputFileChangeEventArgs args)
+    {
+        try
+        {
+            var file = args.File;
+            if (file is null) return;
+
+            using var stream = file.OpenReadStream(10 * 1024 * 1024);
+            using var buffer = new MemoryStream();
+            await stream.CopyToAsync(buffer);
+
+            var blocks = await textDetector.DetectImage(buffer.ToArray(), file.ContentType);
+
+            if (blocks.Length == 0)
+            {
+                await fileOutput.Warn($"DetectImage({file.Name}) → nothing readable.");
+                return;
+            }
+
+            await fileOutput.Success($"DetectImage({file.Name}) → {blocks.Length} block(s).");
+
+            foreach (var block in blocks)
+            {
+                await fileOutput.Info($"  \"{block.RawValue}\"");
+            }
+        }
+        catch (Exception ex)
+        {
+            await fileOutput.Error("DetectImage failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_stream is not null) await _stream.DisposeAsync();
+    }
+}

@@ -1,0 +1,220 @@
+@page "/capture"
+@implements IAsyncDisposable
+@inject Bit.Butil.RegionCapture regionCapture
+@inject Bit.Butil.ElementCapture elementCapture
+@inject Bit.Butil.MediaDevices mediaDevices
+
+<PageTitle>Region &amp; Element Capture - Bit.Butil</PageTitle>
+
+<PageHeader Category="Media &amp; Speech"
+            Title="Region &amp; Element Capture"
+            Lead="Narrow a screen share of this tab down to one element: crop to the rectangle it occupies, or restrict the capture to its own content so your overlays stay private."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Screen_Capture_API/Region_Capture"
+            InjectAs="RegionCapture regionCapture" />
+
+<Callout Type="info" Title="The difference, in one sentence">
+    <b>Region Capture</b> crops by rectangle, so anything drawn on top of the element inside that
+    rectangle - a dropdown, a tooltip, a notification - is shared too. <b>Element Capture</b> shares
+    the element's own subtree and nothing else, so the overlay is invisible to the capture even while
+    it covers the element on screen. Element Capture asks more of the element in return: it has to
+    form its own stacking context.
+</Callout>
+
+<Callout Type="warning" Title="This tab only, and Chromium only">
+    Both apply to a capture of this very tab. A screen or window share refuses them and the call
+    returns false rather than throwing. Ask for the tab once with
+    <a href="/media-devices">MediaDevices</a>; there is no second picker.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="RegionCapture.IsSupported / ElementCapture.IsSupported"
+                 Description="Two separate features that shipped at different times: a browser can have Region Capture without Element Capture. During prerender/SSR both return false rather than throwing, so defer them to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.RegionCapture regionCapture
+@inject Bit.Butil.ElementCapture elementCapture
+
+var canCrop = await regionCapture.IsSupported();
+var canRestrict = await elementCapture.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">Check both</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Share this tab, then narrow it"
+                 Api="CropTo / RestrictTo / Clear"
+                 Description="Start the share and pick this tab. The preview below shows what the far end would receive: initially the whole tab, then - after CropTo or RestrictTo - only the highlighted box. Put the overlay up and compare: with a crop it is captured, with a restriction it is not."
+                 Code=@("""
+_stream = await mediaDevices.GetDisplayMedia(
+    options: new DisplayMediaOptions { PreferCurrentTab = true });
+
+await regionCapture.CropTo(_stream!, _target);      // by rectangle
+await elementCapture.RestrictTo(_stream!, _target); // by content
+
+await regionCapture.Clear(_stream!);                // back to the whole tab
+""")>
+        <div class="demo-box dashed" @ref="_target" style="position:relative;isolation:isolate;max-width:24rem">
+            <b>This box is the capture target.</b>
+            <p>Everything outside it disappears from the share once you crop or restrict.</p>
+            @if (_overlayVisible)
+            {
+                <div class="demo-marker" style="position:absolute;inset:auto 0 0 0">
+                    An overlay covering the box - shared under a crop, invisible under a restriction.
+                </div>
+            }
+        </div>
+
+        <div class="controls">
+            <button @onclick="StartShare" disabled="@(_stream is not null)">Share this tab</button>
+            <button class="secondary" @onclick="StopShare" disabled="@(_stream is null)">Stop sharing</button>
+            <button @onclick="Crop" disabled="@(_stream is null)">CropTo the box</button>
+            <button @onclick="Restrict" disabled="@(_stream is null)">RestrictTo the box</button>
+            <button class="secondary" @onclick="ClearBoth" disabled="@(_stream is null)">Clear</button>
+            <button class="secondary" @onclick="ToggleOverlay">@(_overlayVisible ? "Hide the overlay" : "Show an overlay")</button>
+        </div>
+
+        <video @ref="_preview" autoplay playsinline muted
+               class="demo-video" style="min-height:160px"></video>
+        <DemoConsole @ref="captureOutput" Title="capture output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="RegionCapture.IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes CropTarget.fromElement. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="RegionCapture.CropTo"
+               Signature="ValueTask<bool> CropTo(MediaStreamHandle stream, ElementReference element)"
+               Description="Crops a captured stream to the rectangle an element occupies, following it as it moves. False when the capture isn't of this tab." />
+    <ApiMember Name="RegionCapture.Clear"
+               Signature="ValueTask<bool> Clear(MediaStreamHandle stream)"
+               Description="Removes the crop: back to the whole captured surface." />
+    <ApiMember Name="ElementCapture.IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes RestrictionTarget.fromElement. Newer than Region Capture." />
+    <ApiMember Name="ElementCapture.RestrictTo"
+               Signature="ValueTask<bool> RestrictTo(MediaStreamHandle stream, ElementReference element)"
+               Description="Restricts a captured stream to one element's own content. False when the element doesn't form its own stacking context." />
+    <ApiMember Name="ElementCapture.Clear"
+               Signature="ValueTask<bool> Clear(MediaStreamHandle stream)"
+               Description="Removes the restriction: back to the whole captured surface." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole captureOutput = default!;
+
+    private ElementReference _target;
+    private ElementReference _preview;
+    private MediaStreamHandle? _stream;
+    private bool _overlayVisible;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("RegionCapture.IsSupported →", await regionCapture.IsSupported());
+            await supportOutput.Success("ElementCapture.IsSupported →", await elementCapture.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Support check failed →", ex.Message);
+        }
+    }
+
+    private async Task StartShare()
+    {
+        try
+        {
+            _stream = await mediaDevices.GetDisplayMedia(
+                options: new DisplayMediaOptions { PreferCurrentTab = true },
+                onEnded: () => InvokeAsync(async () =>
+                {
+                    _stream = null;
+                    await captureOutput.Log("You ended the share from the browser's own bar.");
+                    StateHasChanged();
+                }));
+
+            if (_stream is null)
+            {
+                await captureOutput.Warn("GetDisplayMedia → null - the picker was dismissed, or display capture is blocked here.");
+                return;
+            }
+
+            await _stream.AttachTo(_preview);
+            await captureOutput.Success("Sharing. The preview shows the whole tab until you crop or restrict.");
+        }
+        catch (Exception ex)
+        {
+            await captureOutput.Error("GetDisplayMedia failed →", ex.Message);
+        }
+    }
+
+    private async Task StopShare()
+    {
+        if (_stream is null) return;
+
+        await _stream.DisposeAsync();
+        _stream = null;
+        await captureOutput.Log("Sharing stopped.");
+    }
+
+    private async Task Crop()
+    {
+        if (_stream is null) return;
+
+        try
+        {
+            var ok = await regionCapture.CropTo(_stream, _target);
+
+            if (ok) await captureOutput.Success("CropTo → the share is now the box's rectangle. Show the overlay: it is captured too.");
+            else await captureOutput.Warn("CropTo → false. Region Capture is unavailable here, or you shared something other than this tab.");
+        }
+        catch (Exception ex)
+        {
+            await captureOutput.Error("CropTo failed →", ex.Message);
+        }
+    }
+
+    private async Task Restrict()
+    {
+        if (_stream is null) return;
+
+        try
+        {
+            var ok = await elementCapture.RestrictTo(_stream, _target);
+
+            if (ok) await captureOutput.Success("RestrictTo → the share is now the box's own content. Show the overlay: it stays out of the capture.");
+            else await captureOutput.Warn("RestrictTo → false. Element Capture is unavailable here, you shared something other than this tab, or the element doesn't form its own stacking context.");
+        }
+        catch (Exception ex)
+        {
+            await captureOutput.Error("RestrictTo failed →", ex.Message);
+        }
+    }
+
+    private async Task ClearBoth()
+    {
+        if (_stream is null) return;
+
+        try
+        {
+            await regionCapture.Clear(_stream);
+            await elementCapture.Clear(_stream);
+            await captureOutput.Info("Clear → back to the whole tab.");
+        }
+        catch (Exception ex)
+        {
+            await captureOutput.Error("Clear failed →", ex.Message);
+        }
+    }
+
+    private void ToggleOverlay() => _overlayVisible = !_overlayVisible;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_stream is not null) await _stream.DisposeAsync();
+    }
+}

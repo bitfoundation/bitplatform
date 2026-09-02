@@ -1,0 +1,220 @@
+@page "/text"
+@inject Bit.Butil.TextEncoding textEncoding
+@inject Bit.Butil.StructuredClone structuredClone
+@inject Bit.Butil.Url url
+
+<PageTitle>Butil - Text & URL Samples</PageTitle>
+
+<PageHeader Category="Utilities"
+            Title="Text, clone & URL"
+            Lead="Decode legacy code pages with the browser's own decoder, deep-copy a value through structuredClone, and parse or match URLs the way the browser does."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Encoding_API" />
+
+<pre>
+@@inject Bit.Butil.TextEncoding textEncoding
+
+var text = await textEncoding.Decode(bytes, "shift_jis");
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Decode a legacy code page" Api="TextEncoding.Decode"
+              Description="The same greeting in three encodings that .NET on WebAssembly cannot read without an extra package. Decoding them as UTF-8 gives the mojibake every legacy import starts with.">
+        <div class="controls">
+            <button @onclick="@(() => Decode("shift_jis"))">Shift_JIS</button>
+            <button @onclick="@(() => Decode("windows-1256"))">windows-1256</button>
+            <button @onclick="@(() => Decode("iso-8859-7"))">ISO-8859-7</button>
+            <button class="secondary" @onclick="DecodeWrongly">All three as UTF-8</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Encode and measure" Api="TextEncoding.Encode / GetUtf8ByteLength"
+              Description="TextEncoder only ever produces UTF-8. GetUtf8ByteLength answers the length question without moving the bytes across the boundary.">
+        <div class="field">
+            <span class="field-label">Text</span>
+            <input @bind="_text" placeholder="Something with an accent or an emoji" />
+        </div>
+        <button @onclick="Encode">Encode</button>
+    </DemoCard>
+
+    <DemoCard Title="Deep-copy a value" Api="StructuredClone.Clone / CanClone"
+              Description="A deep copy with no copy constructor to maintain - and the test that says whether postMessage, IndexedDB or pushState would accept the payload.">
+        <div class="controls">
+            <button @onclick="Clone">Clone and mutate the copy</button>
+            <button class="secondary" @onclick="CanClone">CanClone</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Parse, edit and match URLs" Api="Url.Parse / AppendQuery / MatchPattern"
+              Description="URLPattern is the part with no .NET equivalent: /books/:id against a URL, with the captures handed back.">
+        <div class="field">
+            <span class="field-label">URL</span>
+            <input @bind="_url" placeholder="https://example.com/books/42?tag=a" />
+        </div>
+        <div class="controls">
+            <button @onclick="ParseUrl">Parse</button>
+            <button class="secondary" @onclick="EditQuery">AppendQuery + SortQuery</button>
+            <button class="secondary" @onclick="MatchRoute">MatchPattern("/books/:id")</button>
+        </div>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="text output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private string _text = "héllo 👋";
+    private string _url = "https://example.com/books/42?tag=a&tag=b";
+
+    private static readonly Dictionary<string, byte[]> Samples = new()
+    {
+        ["shift_jis"] = [0x82, 0xB1, 0x82, 0xF1, 0x82, 0xC9, 0x82, 0xBF, 0x82, 0xCD],   // こんにちは
+        ["windows-1256"] = [0xE3, 0xD1, 0xCD, 0xC8, 0xC7],                               // مرحبا
+        ["iso-8859-7"] = [0xCA, 0xE1, 0xEB, 0xE7, 0xEC, 0xDD, 0xF1, 0xE1],               // Καλημέρα
+    };
+
+    public class Order
+    {
+        public string Reference { get; set; } = "";
+        public List<string> Lines { get; set; } = [];
+    }
+
+    private static Order SampleOrder() => new() { Reference = "ORD-1042", Lines = ["A-1", "B-7"] };
+
+    private async Task Decode(string label)
+    {
+        try
+        {
+            await output.Success($"Decode as {label} →", await textEncoding.Decode(Samples[label], label) ?? "(null)");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Decode failed →", ex.Message);
+        }
+    }
+
+    private async Task DecodeWrongly()
+    {
+        try
+        {
+            foreach (var (label, bytes) in Samples)
+            {
+                await output.Warn($"{label} bytes as UTF-8 →", await textEncoding.Decode(bytes) ?? "(null)");
+            }
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Decode failed →", ex.Message);
+        }
+    }
+
+    private async Task Encode()
+    {
+        try
+        {
+            var bytes = await textEncoding.Encode(_text);
+            var length = await textEncoding.GetUtf8ByteLength(_text);
+
+            await output.Success($"Encode → {bytes.Length} bytes:", Convert.ToHexString(bytes));
+            await output.Info($"GetUtf8ByteLength → {length} for {_text.Length} UTF-16 chars.");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Encode failed →", ex.Message);
+        }
+    }
+
+    private async Task Clone()
+    {
+        try
+        {
+            var original = SampleOrder();
+            var copy = await structuredClone.Clone(original);
+
+            if (copy is null)
+            {
+                await output.Warn("Clone → null - structuredClone is unavailable here.");
+                return;
+            }
+
+            copy.Lines[0] = "changed";
+            await output.Success("Clone →", $"copy[0] = {copy.Lines[0]}, original[0] = {original.Lines[0]}.");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Clone failed →", ex.Message);
+        }
+    }
+
+    private async Task CanClone()
+    {
+        try
+        {
+            await output.Info("CanClone(order) →", await structuredClone.CanClone(SampleOrder()));
+        }
+        catch (Exception ex)
+        {
+            await output.Error("CanClone failed →", ex.Message);
+        }
+    }
+
+    private async Task ParseUrl()
+    {
+        try
+        {
+            var parts = await url.Parse(_url);
+
+            if (parts is null)
+            {
+                await output.Warn("Parse → null - the browser can't parse that.");
+                return;
+            }
+
+            await output.Success("Parse →", $"{parts.Origin} | {parts.Pathname} | {parts.Search}");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Parse failed →", ex.Message);
+        }
+    }
+
+    private async Task EditQuery()
+    {
+        try
+        {
+            var appended = await url.AppendQuery(_url, [new UrlQueryParameter("page", "3")]);
+            await output.Info("AppendQuery →", appended ?? "(null)");
+            await output.Success("SortQuery →", await url.SortQuery(appended ?? _url) ?? "(null)");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Query edit failed →", ex.Message);
+        }
+    }
+
+    private async Task MatchRoute()
+    {
+        try
+        {
+            if (await url.IsPatternSupported() is false)
+            {
+                await output.Warn("URLPattern isn't supported in this browser.");
+                return;
+            }
+
+            var match = await url.MatchPattern("/books/:id", _url, "https://example.com");
+
+            if (match is null)
+            {
+                await output.Warn("MatchPattern → no match.");
+                return;
+            }
+
+            await output.Success("MatchPattern →", string.Join(", ", match.Groups.Select(g => $"{g.Key}={g.Value}")));
+        }
+        catch (Exception ex)
+        {
+            await output.Error("MatchPattern failed →", ex.Message);
+        }
+    }
+}

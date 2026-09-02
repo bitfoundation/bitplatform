@@ -77,6 +77,9 @@
             ["device"] = """<rect x="6.75" y="6.75" width="10.5" height="10.5" rx="2"/><rect x="10" y="10" width="4" height="4" rx="1"/><path d="M9.5 3.5v3.25M14.5 3.5v3.25M9.5 17.25v3.25M14.5 17.25v3.25M3.5 9.5h3.25M3.5 14.5h3.25M17.25 9.5h3.25M17.25 14.5h3.25"/>""",
             ["identity"] = """<path d="M12 3.5 19.25 6.4v5.1c0 4.34-2.9 7.86-7.25 9.4-4.35-1.54-7.25-5.06-7.25-9.4V6.4Z"/><path d="m9.25 11.9 1.9 1.9 3.85-4.05"/>""",
             ["media"] = """<path d="M4 10.5v3M8 7v10M12 4.25v15.5M16 7v10M20 10.5v3"/>""",
+            // A padlock rather than a second shield: "identity" already carries the shield, and two
+            // shields side by side in the sidebar would read as one area split in half.
+            ["security"] = """<rect x="4.75" y="10.25" width="14.5" height="9.5" rx="2.25"/><path d="M8.25 10.25V7.75a3.75 3.75 0 0 1 7.5 0v2.5"/>""",
 
             // -- Marks used by the home page and the header --------------------------------------
             ["package"] = """<path d="m12 3.25 8.25 4.5v8.5L12 20.75l-8.25-4.5v-8.5Z"/><path d="m3.75 7.75 8.25 4.5 8.25-4.5"/><path d="M12 12.25v8.5"/>""",

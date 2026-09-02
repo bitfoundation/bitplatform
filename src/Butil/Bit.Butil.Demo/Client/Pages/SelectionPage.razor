@@ -1,0 +1,490 @@
+@page "/selection"
+@implements IAsyncDisposable
+@inject Bit.Butil.Selection selection
+
+<PageTitle>Selection - Bit.Butil</PageTitle>
+
+<PageHeader Category="DOM &amp; Interaction"
+            Title="Selection"
+            Lead="What the user has selected, and the Range operations that change it: wrap a selection in a mark, replace it, measure where it is on screen, save and restore a caret across a re-render, and find the text position under a pointer."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Selection"
+            InjectAs="Selection selection" />
+
+<Callout Type="info" Title="Why there is no Range object here">
+    A <code>Range</code> holds live DOM node references, so it cannot cross the interop boundary.
+    This works the way the browser's own editing commands do instead: every call acts on the current
+    selection, or on a range expressed as character offsets inside one element you name. Those
+    offsets count text nodes only, so they survive markup changing around the text - which is what
+    makes them safe to save across a re-render.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Read the selection"
+                 Api="IsSupported / Get / GetText / GetHtml"
+                 Description="Get returns the selection's text, whether it is collapsed to a caret, and its offsets. GetHtml returns the selected markup instead of its text - what a 'quote this passage' feature needs. The markup is page content, so treat it as untrusted before storing it."
+                 Code=@("""
+@inject Bit.Butil.Selection selection
+
+var current = await selection.Get();       // WindowSelection?
+var text = await selection.GetText();
+var html = await selection.GetHtml();
+""")>
+        <p @ref="_sample" @onclick="OnSampleClick">
+            Select any part of <b>this paragraph</b> - including some of its <i>markup</i> - and then
+            press one of the buttons below. Everything on this page works on whatever is selected
+            right now.
+        </p>
+        <div class="controls">
+            <button @onclick="ReadSelection">Get / GetText</button>
+            <button class="secondary" @onclick="ReadHtml">GetHtml</button>
+        </div>
+        <DemoConsole @ref="readOutput" Title="read output" />
+    </DemoSection>
+
+    <DemoSection Title="Where it is on screen"
+                 Api="GetRects / GetBoundingRect / ContainsElement"
+                 Description="GetRects gives one rectangle per line box, because a selection spanning wrapped text is not a rectangle - that is what a highlight overlay draws. GetBoundingRect gives the single enclosing rectangle, which is where a floating toolbar goes."
+                 Code=@("""
+var rects = await selection.GetRects();            // one per line box
+var box = await selection.GetBoundingRect();       // where to anchor a toolbar
+var inside = await selection.ContainsElement(element, partly: true);
+""")>
+        <div class="controls">
+            <button @onclick="MeasureSelection">Measure the selection</button>
+        </div>
+        <DemoConsole @ref="measureOutput" Title="measure output" />
+    </DemoSection>
+
+    <DemoSection Title="Change the selection"
+                 Api="SelectElement / SelectElementContents / SelectRange / RemoveAll / Collapse"
+                 Description="Selecting an element's contents is the 'select all in this box' primitive. SelectRange takes character offsets within one element, which is how a caret is restored after re-rendering."
+                 Code=@("""
+await selection.SelectElementContents(element);
+await selection.SelectRange(element, 0, 12);
+await selection.Collapse(toStart: true);
+await selection.RemoveAll();
+""")>
+        <div class="controls">
+            <button @onclick="SelectContents">SelectElementContents</button>
+            <button @onclick="SelectFirstWords">SelectRange(0, 24)</button>
+            <button class="secondary" @onclick="@(() => Collapse(true))">Collapse to start</button>
+            <button class="secondary" @onclick="@(() => Collapse(false))">Collapse to end</button>
+            <button class="secondary" @onclick="ClearSelection">RemoveAll</button>
+        </div>
+        <DemoConsole @ref="changeOutput" Title="change output" />
+    </DemoSection>
+
+    <DemoSection Title="Save and restore a caret"
+                 Api="GetRangeIn / SelectRange"
+                 Description="Read the offsets before a re-render, hand them back afterwards. Try it on the editable box: select something, save, click away, then restore."
+                 Code=@("""
+var saved = await selection.GetRangeIn(editor);
+// ... re-render ...
+if (saved is not null) await selection.SelectRange(editor, saved.Start, saved.End);
+""")>
+        <div class="demo-box dashed" contenteditable="true" @ref="_editor">
+            This box is editable. Select part of it, save the offsets, click somewhere else, then restore.
+        </div>
+        <div class="controls">
+            <button @onclick="SaveRange">GetRangeIn</button>
+            <button @onclick="RestoreRange">SelectRange from what was saved</button>
+        </div>
+        @if (_saved is not null)
+        {
+            <div class="field">
+                <span class="field-label">Saved offsets</span>
+                <span><code>@_saved.Start</code> to <code>@_saved.End</code></span>
+            </div>
+        }
+        <DemoConsole @ref="restoreOutput" Title="restore output" />
+    </DemoSection>
+
+    <DemoSection Title="Edit through the selection"
+                 Api="Surround / ReplaceWithText / DeleteContents"
+                 Description="Surround wraps the selection in a new element - the highlighting primitive. It returns false when the selection's ends are in different elements, which is a normal thing for a user to have selected rather than an error: the browser refuses because no single element could contain it."
+                 Code=@("""
+var wrapped = await selection.Surround("mark");
+await selection.ReplaceWithText("[redacted]");
+await selection.DeleteContents();
+""")>
+        <div class="controls">
+            <button @onclick="Highlight">Surround in &lt;mark&gt;</button>
+            <button class="secondary" @onclick="Redact">ReplaceWithText</button>
+            <button class="secondary" @onclick="Delete">DeleteContents</button>
+        </div>
+        <DemoConsole @ref="editOutput" Title="edit output" />
+    </DemoSection>
+
+    <DemoSection Title="What is under the pointer"
+                 Api="IsCaretFromPointSupported / CaretFromPoint"
+                 Description="Resolves a viewport point to a text position - which character of which node the pointer is over. Click anywhere in the sample paragraph above and this reports what was under the click. The basis of drag-to-insert, hover dictionaries and click-to-annotate."
+                 Code=@("""
+private async Task OnClick(MouseEventArgs e)
+{
+    var caret = await selection.CaretFromPoint(e.ClientX, e.ClientY);
+    // caret.Offset within caret.Text, inside a <caret.ElementTag>
+}
+""")>
+        <div class="controls">
+            <button @onclick="CheckCaretSupport">IsCaretFromPointSupported</button>
+        </div>
+        <DemoConsole @ref="caretOutput" Title="caret output" Placeholder="Click inside the sample paragraph in the first section." />
+    </DemoSection>
+
+    <DemoSection Title="Follow the selection"
+                 Api="OnChange"
+                 Description="selectionchange fires on every caret move, so it is frequent: read the selection inside the handler rather than doing work per event, and debounce anything expensive. The subscription below is live while this page is open - select something and watch it count."
+                 Code=@("""
+_subscription = await selection.OnChange(async () =>
+{
+    var text = await selection.GetText();
+    // ... update a floating toolbar ...
+});
+
+await _subscription.DisposeAsync();   // stops listening
+""")>
+        <div class="controls">
+            <button @onclick="ToggleWatch">@(_subscription is null ? "Start watching" : "Stop watching")</button>
+        </div>
+        @if (_changeCount > 0)
+        {
+            <div class="field">
+                <span class="field-label">Changes seen</span>
+                <span>@_changeCount</span>
+            </div>
+        }
+        <DemoConsole @ref="watchOutput" Title="watch output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes window.getSelection. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="Get"
+               Signature="ValueTask<WindowSelection?> Get()"
+               Description="The current selection: text, collapsed state, range count, type and offsets." />
+    <ApiMember Name="GetText"
+               Signature="ValueTask<string> GetText()"
+               Description="The selected text, or an empty string." />
+    <ApiMember Name="GetHtml"
+               Signature="ValueTask<string> GetHtml()"
+               Description="The selected markup rather than its text. Page content - treat it as untrusted." />
+    <ApiMember Name="GetRects"
+               Signature="ValueTask<Rect[]> GetRects()"
+               Description="One rectangle per line box the selection covers, in viewport coordinates." />
+    <ApiMember Name="GetBoundingRect"
+               Signature="ValueTask<Rect?> GetBoundingRect()"
+               Description="The single rectangle enclosing the whole selection." />
+    <ApiMember Name="ContainsElement"
+               Signature="ValueTask<bool> ContainsElement(ElementReference element, bool partly = true)"
+               Description="Whether an element is inside the selection." />
+    <ApiMember Name="SelectElement"
+               Signature="ValueTask<bool> SelectElement(ElementReference element)"
+               Description="Selects an element and its contents." />
+    <ApiMember Name="SelectElementContents"
+               Signature="ValueTask<bool> SelectElementContents(ElementReference element)"
+               Description="Selects everything inside an element but not the element itself." />
+    <ApiMember Name="SelectRange"
+               Signature="ValueTask<bool> SelectRange(ElementReference element, int start, int end)"
+               Description="Selects a character range inside one element. False when the offsets fall outside its text." />
+    <ApiMember Name="GetRangeIn"
+               Signature="ValueTask<SelectionOffsets?> GetRangeIn(ElementReference element)"
+               Description="Where the selection sits inside one element, in characters. Null when there is no selection." />
+    <ApiMember Name="RemoveAll"
+               Signature="ValueTask RemoveAll()"
+               Description="Clears the selection." />
+    <ApiMember Name="Collapse"
+               Signature="ValueTask<bool> Collapse(bool toStart = false)"
+               Description="Collapses the selection to a caret at one of its ends." />
+    <ApiMember Name="Surround"
+               Signature="ValueTask<bool> Surround(string tagName, string? className = null, string? style = null)"
+               Description="Wraps the selection in a new element. False when its ends are in different elements." />
+    <ApiMember Name="ReplaceWithText"
+               Signature="ValueTask<bool> ReplaceWithText(string text)"
+               Description="Replaces the selection with plain text." />
+    <ApiMember Name="DeleteContents"
+               Signature="ValueTask<bool> DeleteContents()"
+               Description="Deletes the selected content, leaving a caret in its place." />
+    <ApiMember Name="IsCaretFromPointSupported"
+               Signature="ValueTask<bool> IsCaretFromPointSupported()"
+               Description="True when the runtime can resolve a point to a text position (either spelling of the API)." />
+    <ApiMember Name="CaretFromPoint"
+               Signature="ValueTask<CaretPosition?> CaretFromPoint(double x, double y)"
+               Description="The text position under a viewport point. Null when there is no text there." />
+    <ApiMember Name="OnChange"
+               Signature="ValueTask<ButilSubscription> OnChange(Action handler)"
+               Description="Calls the handler on every selectionchange. Dispose the subscription to stop." />
+</ApiTable>
+
+@code {
+    private DemoConsole readOutput = default!;
+    private DemoConsole measureOutput = default!;
+    private DemoConsole changeOutput = default!;
+    private DemoConsole restoreOutput = default!;
+    private DemoConsole editOutput = default!;
+    private DemoConsole caretOutput = default!;
+    private DemoConsole watchOutput = default!;
+
+    private ElementReference _sample;
+    private ElementReference _editor;
+    private SelectionOffsets? _saved;
+    private ButilSubscription? _subscription;
+    private int _changeCount;
+
+    private async Task ReadSelection()
+    {
+        try
+        {
+            var current = await selection.Get();
+
+            if (current is null || string.IsNullOrEmpty(current.Text))
+            {
+                await readOutput.Warn("Nothing is selected - select some of the paragraph first.");
+                return;
+            }
+
+            await readOutput.Success("GetText →", current.Text);
+            await readOutput.Info($"Collapsed: {current.IsCollapsed}, ranges: {current.RangeCount}, type: {current.Type}, offsets {current.AnchorOffset}-{current.FocusOffset}.");
+        }
+        catch (Exception ex)
+        {
+            await readOutput.Error("Get failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadHtml()
+    {
+        try
+        {
+            var html = await selection.GetHtml();
+            if (string.IsNullOrEmpty(html))
+            {
+                await readOutput.Warn("Nothing is selected.");
+                return;
+            }
+
+            await readOutput.Success("GetHtml →", html);
+        }
+        catch (Exception ex)
+        {
+            await readOutput.Error("GetHtml failed →", ex.Message);
+        }
+    }
+
+    private async Task MeasureSelection()
+    {
+        try
+        {
+            var rects = await selection.GetRects();
+            var box = await selection.GetBoundingRect();
+
+            if (box is null)
+            {
+                await measureOutput.Warn("Nothing is selected.");
+                return;
+            }
+
+            await measureOutput.Success($"GetRects → {rects.Length} line box(es).");
+            await measureOutput.Info($"GetBoundingRect → x {box.X:0}, y {box.Y:0}, {box.Width:0}×{box.Height:0}.");
+            await measureOutput.Info("ContainsElement(sample paragraph) →", await selection.ContainsElement(_sample));
+        }
+        catch (Exception ex)
+        {
+            await measureOutput.Error("Measure failed →", ex.Message);
+        }
+    }
+
+    private async Task SelectContents()
+    {
+        try
+        {
+            await changeOutput.Success("SelectElementContents →", await selection.SelectElementContents(_sample));
+        }
+        catch (Exception ex)
+        {
+            await changeOutput.Error("SelectElementContents failed →", ex.Message);
+        }
+    }
+
+    private async Task SelectFirstWords()
+    {
+        try
+        {
+            var ok = await selection.SelectRange(_sample, 0, 24);
+            if (ok) await changeOutput.Success("SelectRange(0, 24) →", await selection.GetText());
+            else await changeOutput.Warn("SelectRange →", "those offsets fall outside the element's text.");
+        }
+        catch (Exception ex)
+        {
+            await changeOutput.Error("SelectRange failed →", ex.Message);
+        }
+    }
+
+    private async Task Collapse(bool toStart)
+    {
+        try
+        {
+            await changeOutput.Info($"Collapse(toStart: {toStart}) →", await selection.Collapse(toStart));
+        }
+        catch (Exception ex)
+        {
+            await changeOutput.Error("Collapse failed →", ex.Message);
+        }
+    }
+
+    private async Task ClearSelection()
+    {
+        try
+        {
+            await selection.RemoveAll();
+            await changeOutput.Info("RemoveAll →", "the selection is gone.");
+        }
+        catch (Exception ex)
+        {
+            await changeOutput.Error("RemoveAll failed →", ex.Message);
+        }
+    }
+
+    private async Task SaveRange()
+    {
+        try
+        {
+            _saved = await selection.GetRangeIn(_editor);
+
+            if (_saved is null) await restoreOutput.Warn("GetRangeIn →", "nothing is selected.");
+            else await restoreOutput.Success("GetRangeIn →", $"{_saved.Start} to {_saved.End}.");
+        }
+        catch (Exception ex)
+        {
+            await restoreOutput.Error("GetRangeIn failed →", ex.Message);
+        }
+    }
+
+    private async Task RestoreRange()
+    {
+        if (_saved is null)
+        {
+            await restoreOutput.Warn("Save some offsets first.");
+            return;
+        }
+
+        try
+        {
+            var ok = await selection.SelectRange(_editor, _saved.Start, _saved.End);
+            if (ok) await restoreOutput.Success("SelectRange →", await selection.GetText());
+            else await restoreOutput.Warn("SelectRange →", "the text changed and those offsets no longer exist.");
+        }
+        catch (Exception ex)
+        {
+            await restoreOutput.Error("SelectRange failed →", ex.Message);
+        }
+    }
+
+    private async Task Highlight()
+    {
+        try
+        {
+            var wrapped = await selection.Surround("mark");
+
+            if (wrapped) await editOutput.Success("Surround(\"mark\") →", "wrapped.");
+            else await editOutput.Warn("Surround →", "refused: the selection's ends are in different elements, or nothing is selected.");
+        }
+        catch (Exception ex)
+        {
+            await editOutput.Error("Surround failed →", ex.Message);
+        }
+    }
+
+    private async Task Redact()
+    {
+        try
+        {
+            await editOutput.Info("ReplaceWithText →", await selection.ReplaceWithText("[redacted]"));
+        }
+        catch (Exception ex)
+        {
+            await editOutput.Error("ReplaceWithText failed →", ex.Message);
+        }
+    }
+
+    private async Task Delete()
+    {
+        try
+        {
+            await editOutput.Info("DeleteContents →", await selection.DeleteContents());
+        }
+        catch (Exception ex)
+        {
+            await editOutput.Error("DeleteContents failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckCaretSupport()
+    {
+        try
+        {
+            await caretOutput.Success("IsCaretFromPointSupported →", await selection.IsCaretFromPointSupported());
+        }
+        catch (Exception ex)
+        {
+            await caretOutput.Error("IsCaretFromPointSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task OnSampleClick(MouseEventArgs e)
+    {
+        try
+        {
+            var caret = await selection.CaretFromPoint(e.ClientX, e.ClientY);
+
+            if (caret is null)
+            {
+                await caretOutput.Warn("CaretFromPoint →", "no text position there.");
+                return;
+            }
+
+            var around = caret.Text.Length == 0
+                ? string.Empty
+                : $" near \"{caret.Text.Substring(Math.Max(0, caret.Offset - 8), Math.Min(16, caret.Text.Length - Math.Max(0, caret.Offset - 8)))}\"";
+
+            await caretOutput.Success($"CaretFromPoint → offset {caret.Offset} in {caret.NodeName} (<{caret.ElementTag}>){around}");
+        }
+        catch (Exception ex)
+        {
+            await caretOutput.Error("CaretFromPoint failed →", ex.Message);
+        }
+    }
+
+    private async Task ToggleWatch()
+    {
+        try
+        {
+            if (_subscription is not null)
+            {
+                await _subscription.DisposeAsync();
+                _subscription = null;
+                await watchOutput.Info("Stopped watching.");
+                return;
+            }
+
+            _changeCount = 0;
+            _subscription = await selection.OnChange(() =>
+            {
+                _changeCount++;
+                InvokeAsync(StateHasChanged);
+            });
+
+            await watchOutput.Success("Watching selectionchange - select something.");
+        }
+        catch (Exception ex)
+        {
+            await watchOutput.Error("OnChange failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_subscription is not null) await _subscription.DisposeAsync();
+    }
+}

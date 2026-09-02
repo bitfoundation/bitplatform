@@ -1,0 +1,231 @@
+@page "/handwriting-recognition"
+@inject Bit.Butil.HandwritingRecognition handwriting
+
+<PageTitle>HandwritingRecognition - Bit.Butil</PageTitle>
+
+<PageHeader Category="DOM &amp; Interaction"
+            Title="HandwritingRecognition"
+            Lead="Turn strokes drawn with a finger, a stylus or a mouse into text using a model already on the device - nothing downloaded, nothing sent anywhere."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Handwriting_Recognition_API"
+            InjectAs="HandwritingRecognition handwriting" />
+
+<Callout Type="warning" Title="Chromium, and only where the OS has a model">
+    Niche and Chromium-only, and even there it depends on the operating system shipping a model for
+    the language. <code>IsSupported</code> only says the API exists -
+    <code>QuerySupport</code> is the check that matters, because it asks about your language.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported / QuerySupport"
+                 Description="QuerySupport answers per feature rather than as one yes or no: a runtime that supports handwriting still says no to a language it has no model for, and no to hints it doesn't implement."
+                 Code=@("""
+@inject Bit.Butil.HandwritingRecognition handwriting
+
+var support = await handwriting.QuerySupport(["en"], alternatives: true, textContext: false);
+
+if (support?.Languages is true)
+{
+    // this device can recognize English
+}
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+            <label>Language
+                <input @bind="_language" placeholder="en" style="width:6rem" />
+            </label>
+            <button class="secondary" @onclick="QuerySupport">QuerySupport</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Draw, then recognize"
+                 Api="Recognize"
+                 Description="Collect the strokes yourself from pointer events - one stroke per pointer-down to pointer-up, because stroke boundaries carry meaning: a 't' is two strokes and an 'l' is one. Then hand the whole lot over. Passing each point's timestamp is optional but materially improves the result, since writing speed and pauses are part of how the recognizer separates characters."
+                 Code=@("""
+var strokes = new List<HandwritingStroke>();   // filled from pointer events
+// new HandwritingPoint(e.OffsetX, e.OffsetY, elapsedMilliseconds)
+
+var candidates = await handwriting.Recognize(
+    [.. strokes],
+    languages: ["en"],
+    recognitionType: "text",
+    inputType: "mouse",
+    alternatives: 3);
+
+var best = candidates.FirstOrDefault();
+""")>
+        <svg class="demo-box dashed" style="max-width:100%;width:100%;height:200px;touch-action:none"
+             @onpointerdown="StartStroke" @onpointermove="ExtendStroke"
+             @onpointerup="EndStroke" @onpointerleave="EndStroke">
+            @foreach (var stroke in AllStrokes())
+            {
+                <polyline points="@ToPoints(stroke)" fill="none" stroke="currentColor" stroke-width="2.5"
+                          stroke-linecap="round" stroke-linejoin="round" />
+            }
+        </svg>
+        <div class="controls">
+            <label>Kind
+                <select @bind="_recognitionType">
+                    <option value="text">text</option>
+                    <option value="email">email</option>
+                    <option value="number">number</option>
+                    <option value="per-character">per-character</option>
+                </select>
+            </label>
+            <button @onclick="Recognize" disabled="@(_strokes.Count == 0)">Recognize</button>
+            <button class="secondary" @onclick="ClearStrokes">Clear</button>
+        </div>
+        @if (_candidates.Length > 0)
+        {
+            <div class="field">
+                <span class="field-label">Best guess</span>
+                <span><code>@_candidates[0]</code></span>
+            </div>
+        }
+        <DemoConsole @ref="recognizeOutput" Title="recognition output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes navigator.createHandwritingRecognizer. Says nothing about whether a model for your language is installed." />
+    <ApiMember Name="QuerySupport"
+               Signature="ValueTask<HandwritingSupport?> QuerySupport(string[]? languages = null, bool alternatives = true, bool textContext = false)"
+               Description="Whether this device can recognize these languages, and whether it implements the optional hints. Null when there is no handwriting recognition at all." />
+    <ApiMember Name="Recognize"
+               Signature="ValueTask<string[]> Recognize(HandwritingStroke[] strokes, string[]? languages = null, string recognitionType = &quot;text&quot;, string inputType = &quot;mouse&quot;, string? textContext = null, int alternatives = 3)"
+               Description="Recognizes text from strokes, best candidate first. Empty when there is no model, the feature is off, or there is nothing readable." />
+    <ApiMember Name="HandwritingStroke"
+               Signature="Points"
+               Description="One stroke: the points sampled between a pointer going down and coming back up." />
+    <ApiMember Name="HandwritingPoint"
+               Signature="X | Y | T"
+               Description="One sampled point. T - milliseconds since the stroke began - is optional but improves the result." />
+    <ApiMember Name="HandwritingSupport"
+               Signature="Languages | Alternatives | TextContext"
+               Description="What the device's recognizer will actually do." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole recognizeOutput = default!;
+
+    private string _language = "en";
+    private string _recognitionType = "text";
+    private string[] _candidates = [];
+
+    private readonly List<HandwritingStroke> _strokes = [];
+    private List<HandwritingPoint>? _current;
+    private DateTime _strokeStarted;
+
+    private IEnumerable<HandwritingStroke> AllStrokes()
+    {
+        foreach (var stroke in _strokes) yield return stroke;
+        if (_current is { Count: > 1 }) yield return new HandwritingStroke { Points = [.. _current] };
+    }
+
+    private static string ToPoints(HandwritingStroke stroke)
+        => string.Join(' ', stroke.Points.Select(p => $"{p.X.ToString(System.Globalization.CultureInfo.InvariantCulture)},{p.Y.ToString(System.Globalization.CultureInfo.InvariantCulture)}"));
+
+    private void StartStroke(PointerEventArgs e)
+    {
+        _strokeStarted = DateTime.UtcNow;
+        _current = [new HandwritingPoint(e.OffsetX, e.OffsetY, 0)];
+    }
+
+    private void ExtendStroke(PointerEventArgs e)
+    {
+        if (_current is null) return;
+
+        _current.Add(new HandwritingPoint(e.OffsetX, e.OffsetY, (DateTime.UtcNow - _strokeStarted).TotalMilliseconds));
+    }
+
+    private void EndStroke(PointerEventArgs e)
+    {
+        if (_current is null) return;
+
+        // A tap with no movement is not a stroke - it would only add noise for the recognizer.
+        if (_current.Count > 1) _strokes.Add(new HandwritingStroke { Points = [.. _current] });
+        _current = null;
+    }
+
+    private void ClearStrokes()
+    {
+        _strokes.Clear();
+        _current = null;
+        _candidates = [];
+    }
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            var supported = await handwriting.IsSupported();
+
+            if (supported) await supportOutput.Success("IsSupported →", true);
+            else await supportOutput.Warn("IsSupported →", "false - try Chromium with the Experimental Web Platform features flag on.");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task QuerySupport()
+    {
+        try
+        {
+            var support = await handwriting.QuerySupport([_language], alternatives: true, textContext: true);
+
+            if (support is null)
+            {
+                await supportOutput.Warn("QuerySupport →", "null - no handwriting recognition here.");
+                return;
+            }
+
+            await supportOutput.Success($"QuerySupport(\"{_language}\") →",
+                $"languages: {support.Languages}, alternatives: {support.Alternatives}, textContext: {support.TextContext}.");
+
+            if (support.Languages is false)
+            {
+                await supportOutput.Log("The API is here, but this device has no model for that language.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("QuerySupport failed →", ex.Message);
+        }
+    }
+
+    private async Task Recognize()
+    {
+        try
+        {
+            _candidates = await handwriting.Recognize(
+                [.. _strokes],
+                languages: [_language],
+                recognitionType: _recognitionType,
+                inputType: "mouse",
+                alternatives: 3);
+
+            if (_candidates.Length == 0)
+            {
+                await recognizeOutput.Warn("Recognize → nothing. No model for this language, the feature is off, or the strokes weren't readable.");
+                return;
+            }
+
+            await recognizeOutput.Success($"Recognize → {_candidates.Length} candidate(s), best first:");
+
+            foreach (var candidate in _candidates)
+            {
+                await recognizeOutput.Info("  ", candidate);
+            }
+        }
+        catch (Exception ex)
+        {
+            await recognizeOutput.Error("Recognize failed →", ex.Message);
+        }
+    }
+}

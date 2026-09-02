@@ -1,0 +1,297 @@
+@page "/text-encoding"
+@inject Bit.Butil.TextEncoding textEncoding
+
+<PageTitle>TextEncoding - Bit.Butil</PageTitle>
+
+<PageHeader Category="Files &amp; Data"
+            Title="TextEncoding"
+            Lead="Decode bytes written in Shift_JIS, windows-1256, ISO-8859-7 or any other legacy character set using the browser's own decoder - the one part of the Encoding API that .NET on WebAssembly does not bring with it."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Encoding_API"
+            InjectAs="TextEncoding textEncoding" />
+
+<Callout Type="info" Title="Why this and not System.Text.Encoding">
+    .NET carries only the Unicode encodings by default. Everything else - the code pages a Japanese
+    ERP export or an old Windows share is written in - needs the
+    <code>System.Text.Encoding.CodePages</code> package plus a registration call, and its data is
+    dead weight in a published WebAssembly app. The browser already implements every label in the
+    encoding standard, so borrowing its decoder is usually the shorter path. Encoding is the other
+    way round: <code>TextEncoder</code> only ever produces UTF-8, which .NET does perfectly well on
+    its own.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported / IsEncodingSupported / GetCanonicalName"
+                 Description="IsSupported says the runtime has TextDecoder at all. IsEncodingSupported asks about one label - there is no list of encodings anywhere in the platform, so it is answered by constructing a decoder and seeing whether it throws. GetCanonicalName normalizes an alias: 'sjis' and 'shift-jis' both come back as 'shift_jis'."
+                 Code=@("""
+@inject Bit.Butil.TextEncoding textEncoding
+
+var supported = await textEncoding.IsSupported();
+var canDecode = await textEncoding.IsEncodingSupported("shift_jis");
+var name = await textEncoding.GetCanonicalName("sjis");   // "shift_jis"
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+            <label>Label
+                <input @bind="_label" placeholder="shift_jis" />
+            </label>
+            <button class="secondary" @onclick="CheckLabel">Check this label</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Decode legacy bytes"
+                 Api="Decode"
+                 Description="The whole point of the class. Each sample below is the same greeting written in a different code page - bytes that are meaningless as UTF-8. Decode them with the right label and they read correctly; decode them as UTF-8 and you get the mojibake every legacy import starts with."
+                 Code=@("""
+var text = await textEncoding.Decode(bytes, "shift_jis");
+
+// Guessing at the encoding? Turn on fatal and a wrong guess
+// comes back as null instead of as replacement characters:
+var strict = await textEncoding.Decode(bytes, "shift_jis", fatal: true);
+""")>
+        <div class="controls">
+            <button @onclick="@(() => DecodeSample("shift_jis"))">Shift_JIS</button>
+            <button @onclick="@(() => DecodeSample("windows-1256"))">windows-1256</button>
+            <button @onclick="@(() => DecodeSample("iso-8859-7"))">ISO-8859-7</button>
+            <button class="secondary" @onclick="DecodeWrongly">Decode all three as UTF-8</button>
+            <button class="secondary" @onclick="DecodeFatally">Decode all three as UTF-8, fatal</button>
+        </div>
+        <DemoConsole @ref="decodeOutput" Title="decode output" />
+    </DemoSection>
+
+    <DemoSection Title="Encode, and measure"
+                 Api="Encode / GetUtf8ByteLength"
+                 Description="TextEncoder produces UTF-8 and nothing else - there is no legacy encoder in the platform, by design. GetUtf8ByteLength answers the length question without moving the bytes across the interop boundary, which is what a check against a server-side limit actually needs."
+                 Code=@("""
+var bytes = await textEncoding.Encode("héllo");     // byte[]
+var length = await textEncoding.GetUtf8ByteLength("héllo");   // 6, not 5
+""")>
+        <div class="controls">
+            <input @bind="_text" placeholder="Type something with an accent or an emoji" style="min-width:20rem" />
+            <button @onclick="EncodeText">Encode and measure</button>
+        </div>
+        <DemoConsole @ref="encodeOutput" Title="encode output" />
+    </DemoSection>
+
+    <DemoSection Title="Decode a stream in chunks"
+                 Api="CreateDecoder / TextDecoderHandle"
+                 Description="Content that arrives a chunk at a time - a download, a fetch body, a file read piece by piece - can split a multi-byte character across two chunks. Decoding each chunk on its own turns that character into replacement characters; a streaming decoder holds the incomplete sequence until the next chunk completes it. The demo splits the Shift_JIS sample straight through the middle of a character to show the difference."
+                 Code=@("""
+await using var decoder = await textEncoding.CreateDecoder("shift_jis");
+
+foreach (var chunk in chunks)
+{
+    text += await decoder.Decode(chunk);   // more: true is the default
+}
+
+text += await decoder.Flush();             // emits anything still pending
+""")>
+        <div class="controls">
+            <button @onclick="DecodeStreaming">Decode split chunks</button>
+            <button class="secondary" @onclick="DecodeChunksNaively">Decode the same chunks separately</button>
+        </div>
+        <DemoConsole @ref="streamOutput" Title="streaming output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes TextDecoder. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="IsEncodingSupported"
+               Signature="ValueTask<bool> IsEncodingSupported(string label)"
+               Description="True when this runtime can decode that label - any name or alias from the encoding standard's table." />
+    <ApiMember Name="GetCanonicalName"
+               Signature="ValueTask<string?> GetCanonicalName(string label)"
+               Description="The canonical name of a label ('sjis' → 'shift_jis'), or null when the label is unknown." />
+    <ApiMember Name="Decode"
+               Signature="ValueTask<string?> Decode(byte[] bytes, string label = &quot;utf-8&quot;, bool fatal = false, bool ignoreBom = false)"
+               Description="Decodes bytes written in that encoding. Null when the label is unknown, or - with fatal - when the bytes don't fit the encoding." />
+    <ApiMember Name="Encode"
+               Signature="ValueTask<byte[]> Encode(string text)"
+               Description="Encodes text as UTF-8, the only encoding TextEncoder produces." />
+    <ApiMember Name="GetUtf8ByteLength"
+               Signature="ValueTask<int> GetUtf8ByteLength(string text)"
+               Description="How many bytes the text occupies as UTF-8, without moving the bytes across the boundary." />
+    <ApiMember Name="CreateDecoder"
+               Signature="ValueTask<TextDecoderHandle?> CreateDecoder(string label = &quot;utf-8&quot;, bool fatal = false, bool ignoreBom = false)"
+               Description="Opens a streaming decoder for chunked content. Null when the label is unknown. Dispose it when the stream ends." />
+    <ApiMember Name="TextDecoderHandle.Decode"
+               Signature="ValueTask<string?> Decode(byte[] bytes, bool more = true)"
+               Description="Decodes one chunk. Pass more: false for the last one so a trailing partial character is flushed." />
+    <ApiMember Name="TextDecoderHandle.Flush"
+               Signature="ValueTask<string?> Flush()"
+               Description="Ends the stream, emitting whatever partial character was pending." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole decodeOutput = default!;
+    private DemoConsole encodeOutput = default!;
+    private DemoConsole streamOutput = default!;
+
+    private string _label = "shift_jis";
+    private string _text = "héllo 👋";
+
+    // The same greeting in three code pages. As bytes rather than as strings, because that is what
+    // arrives from a legacy export - and because a string here would already have been decoded.
+    private static readonly Dictionary<string, byte[]> Samples = new()
+    {
+        ["shift_jis"] = [0x82, 0xB1, 0x82, 0xF1, 0x82, 0xC9, 0x82, 0xBF, 0x82, 0xCD],           // こんにちは
+        ["windows-1256"] = [0xE3, 0xD1, 0xCD, 0xC8, 0xC7],                                       // مرحبا
+        ["iso-8859-7"] = [0xCA, 0xE1, 0xEB, 0xE7, 0xEC, 0xDD, 0xF1, 0xE1],                       // Καλημέρα
+    };
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await textEncoding.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckLabel()
+    {
+        try
+        {
+            var supported = await textEncoding.IsEncodingSupported(_label);
+            var canonical = await textEncoding.GetCanonicalName(_label);
+
+            if (supported)
+            {
+                await supportOutput.Success($"'{_label}' →", $"supported, canonical name '{canonical}'.");
+            }
+            else
+            {
+                await supportOutput.Warn($"'{_label}' →", "not a label this runtime knows.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Label check failed →", ex.Message);
+        }
+    }
+
+    private async Task DecodeSample(string label)
+    {
+        try
+        {
+            var text = await textEncoding.Decode(Samples[label], label);
+            await decodeOutput.Success($"Decode as {label} →", text ?? "(null)");
+        }
+        catch (Exception ex)
+        {
+            await decodeOutput.Error("Decode failed →", ex.Message);
+        }
+    }
+
+    private async Task DecodeWrongly()
+    {
+        try
+        {
+            foreach (var (label, bytes) in Samples)
+            {
+                var text = await textEncoding.Decode(bytes);
+                await decodeOutput.Warn($"{label} bytes as UTF-8 →", text ?? "(null)");
+            }
+
+            await decodeOutput.Log("Replacement characters, which is what an import shows when nobody said what the file was written in.");
+        }
+        catch (Exception ex)
+        {
+            await decodeOutput.Error("Decode failed →", ex.Message);
+        }
+    }
+
+    private async Task DecodeFatally()
+    {
+        try
+        {
+            foreach (var (label, bytes) in Samples)
+            {
+                var text = await textEncoding.Decode(bytes, "utf-8", fatal: true);
+                await decodeOutput.Info($"{label} bytes as UTF-8, fatal →", text ?? "null - the bytes are not valid UTF-8");
+            }
+
+            await decodeOutput.Log("With fatal on, a wrong guess is an answer rather than a string full of U+FFFD.");
+        }
+        catch (Exception ex)
+        {
+            await decodeOutput.Error("Decode failed →", ex.Message);
+        }
+    }
+
+    private async Task EncodeText()
+    {
+        try
+        {
+            var bytes = await textEncoding.Encode(_text);
+            var length = await textEncoding.GetUtf8ByteLength(_text);
+
+            await encodeOutput.Success($"Encode → {bytes.Length} bytes:", Convert.ToHexString(bytes));
+            await encodeOutput.Info($"GetUtf8ByteLength → {length} bytes for {_text.Length} UTF-16 chars.");
+        }
+        catch (Exception ex)
+        {
+            await encodeOutput.Error("Encode failed →", ex.Message);
+        }
+    }
+
+    // Split through the middle of the third character, which is exactly the case a per-chunk decode
+    // gets wrong.
+    private static byte[][] SplitSample() =>
+    [
+        Samples["shift_jis"][..5],
+        Samples["shift_jis"][5..],
+    ];
+
+    private async Task DecodeStreaming()
+    {
+        try
+        {
+            await using var decoder = await textEncoding.CreateDecoder("shift_jis");
+            if (decoder is null)
+            {
+                await streamOutput.Warn("CreateDecoder returned null - the runtime doesn't know this label.");
+                return;
+            }
+
+            var text = string.Empty;
+            foreach (var chunk in SplitSample())
+            {
+                text += await decoder.Decode(chunk);
+            }
+            text += await decoder.Flush();
+
+            await streamOutput.Success("Streaming decode →", text);
+        }
+        catch (Exception ex)
+        {
+            await streamOutput.Error("Streaming decode failed →", ex.Message);
+        }
+    }
+
+    private async Task DecodeChunksNaively()
+    {
+        try
+        {
+            var text = string.Empty;
+            foreach (var chunk in SplitSample())
+            {
+                text += await textEncoding.Decode(chunk, "shift_jis");
+            }
+
+            await streamOutput.Warn("Per-chunk decode →", text);
+            await streamOutput.Log("The character straddling the split became replacement characters - the whole reason CreateDecoder exists.");
+        }
+        catch (Exception ex)
+        {
+            await streamOutput.Error("Per-chunk decode failed →", ex.Message);
+        }
+    }
+}

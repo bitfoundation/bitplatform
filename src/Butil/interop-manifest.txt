@@ -1,5 +1,5 @@
 # Bit.Butil interop contract captured from an untrimmed build. Regenerate with: dotnet run -c Release
-@services|BackgroundSync,BarcodeDetector,Battery,BroadcastChannel,CacheStorage,Clipboard,Compression,Console,ContactPicker,Cookie,CookieStore,Crypto,DeviceOrientation,Document,EventSource,EyeDropper,Fetch,FileReader,FileSystem,Gamepad,Geolocation,History,IdleDetector,IndexedDb,Keyboard,LocalStorage,Location,MediaDevices,MediaRecorder,MediaSession,Navigation,Navigator,NetworkInformation,Nfc,Notification,ObjectUrls,Performance,Permissions,PictureInPicture,Push,Reporting,Screen,ScreenOrientation,ServiceWorker,SessionStorage,SpeechRecognition,SpeechSynthesis,StorageAccess,StorageManager,UserAgent,ViewTransition,VisualViewport,WakeLock,WebAudio,WebAuthn,WebLocks,Window
+@services|BackgroundSync,BarcodeDetector,Battery,BroadcastChannel,CacheStorage,Clipboard,Compression,Console,ContactPicker,Cookie,CookieStore,Crypto,DeviceOrientation,Document,ElementCapture,EventSource,EyeDropper,FaceDetector,Fetch,FileReader,FileSystem,Gamepad,Geolocation,HandwritingRecognition,History,IdleDetector,IndexedDb,Ink,Keyboard,LocalStorage,Location,MediaDevices,MediaRecorder,MediaSession,Navigation,Navigator,NetworkInformation,Nfc,Notification,ObjectUrls,Performance,Permissions,PictureInPicture,PrivacySandbox,Push,RegionCapture,Reporting,Sanitizer,Screen,ScreenOrientation,Selection,ServiceWorker,SessionStorage,Speculation,SpeechRecognition,SpeechSynthesis,StorageAccess,StorageManager,StructuredClone,TextDetector,TextEncoding,TrustedTypes,Url,UserAgent,ViewTransition,VisualViewport,WakeLock,WebAudio,WebAuthn,WebLocks,Window
 Bit.Butil.BarProp|-|P|1||Visible
 Bit.Butil.BarcodeDetector|J|-|1|InvokeBarcodesDetected|
 Bit.Butil.Battery|J|-|1|InvokeBatteryChange|
@@ -37,10 +37,13 @@ Bit.Butil.Reporting|J|-|1|InvokeBrowserReport|
 Bit.Butil.ResizeObserverInterop|J|-|1|InvokeResize|
 Bit.Butil.Screen|J|-|1|InvokeScreenChange|
 Bit.Butil.ScreenOrientation|J|-|1|InvokeScreenOrientationChange|
+Bit.Butil.Selection|J|-|1|InvokeSelectionChange|
 Bit.Butil.ServiceWorker|J|-|1|InvokeServiceWorkerControllerChange,InvokeServiceWorkerMessage|
 Bit.Butil.SessionStorage|J|-|1|InvokeStorageEvent|
+Bit.Butil.Speculation|J|-|1|InvokePrerenderingChange|
 Bit.Butil.SpeechRecognition|J|-|1|InvokeSpeechRecognitionEnd,InvokeSpeechRecognitionError,InvokeSpeechRecognitionResult|
+Bit.Butil.TrustedTypes|J|-|1|InvokeTrustedTypeViolation|
 Bit.Butil.ViewTransition|J|-|1|InvokeViewTransitionPhase,InvokeViewTransitionUpdate|
 Bit.Butil.VisualViewport|J|-|1|InvokeVisualViewport|
 Bit.Butil.Window|J|-|1|InvokeMediaQueryChange|
-@count|43
+@count|46

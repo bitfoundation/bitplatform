@@ -81,6 +81,8 @@ registering everything.
 | `Location` | Read and mutate the current URL, reload, navigate |
 | `Navigator` | Identity, languages, `share`, `vibrate`, badges, `sendBeacon`, device memory |
 | `UserAgent` | Parsed user-agent brands, platform and mobile-ness (UA Client Hints) |
+| `Url` | `URL`, `URLSearchParams` and `URLPattern`: parse and edit URLs as the browser does, and match routes |
+| `Speculation` | Speculation rules (prefetch/prerender), `document.prerendering` and the activation event |
 
 ### Screen & diagnostics
 
@@ -106,6 +108,9 @@ registering everything.
 | `PictureInPicture` | Float a `<video>` in an always-on-top window |
 | `ViewTransition` | Animate between two states of the page, the browser doing the work |
 | Media element extensions | Play, pause, seek, volume and rate on any `<audio>`/`<video>` |
+| `Selection` | The user's selection and the `Range` operations on it: highlight, replace, measure, restore a caret |
+| `Ink` | Delegated ink trails - the compositor draws ahead of your rendering |
+| `HandwritingRecognition` | Strokes to text, using a model already on the device |
 
 ### Storage
 
@@ -130,6 +135,8 @@ registering everything.
 | `Crypto` | SubtleCrypto: encryption, decryption, hashing, key generation, random values |
 | `Fetch` | The fetch API with full request/response control and progress |
 | `Compression` | Gzip and deflate through the browser's native codec |
+| `TextEncoding` | `TextDecoder`/`TextEncoder`: the legacy code pages .NET on WebAssembly doesn't carry |
+| `StructuredClone` | Deep-copy a value, and test whether `postMessage`/IndexedDB/`pushState` will take it |
 
 ### Network & workers
 
@@ -158,6 +165,8 @@ registering everything.
 | `ContactPicker` | Let users pick contacts to share with your app |
 | `EyeDropper` | Sample any pixel colour on the screen |
 | `BarcodeDetector` | Find QR codes and barcodes in a camera frame or an image |
+| `FaceDetector` | Where faces are in an image or a frame - detection, never recognition |
+| `TextDetector` | Read printed text out of an image or a frame |
 
 ### Identity & permissions
 
@@ -166,6 +175,14 @@ registering everything.
 | `WebAuthn` | Passkeys: create credentials and verify assertions |
 | `Permissions` | Query the state of any browser permission |
 | `Notification` | Request permission and show system notifications |
+
+### Security & privacy
+
+| Service | What it wraps |
+| --- | --- |
+| `Sanitizer` | The HTML Sanitizer API standalone: sanitize to a string, or with a configuration you reuse |
+| `TrustedTypes` | Policies for the dangerous sinks, and the violations a report-only CSP surfaces |
+| `PrivacySandbox` | Topics, Attribution Reporting, Private State Tokens and fenced frames |
 
 ### Media & speech
 
@@ -176,6 +193,7 @@ registering everything.
 | `WebAudio` | Play and control audio buffers |
 | `MediaRecorder` | Record a camera, microphone or screen share to a file |
 | `MediaSession` | Lock-screen metadata and hardware media-key handlers |
+| `RegionCapture` / `ElementCapture` | Narrow a screen share of this tab to one element - by rectangle, or by its own content |
 
 ---
 

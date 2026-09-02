@@ -1,0 +1,208 @@
+@page "/ink"
+@implements IAsyncDisposable
+@inject Bit.Butil.Ink ink
+
+<PageTitle>Ink - Bit.Butil</PageTitle>
+
+<PageHeader Category="DOM &amp; Interaction"
+            Title="Ink"
+            Lead="Delegated ink trails: while the user draws, the compositor paints ahead of your rendering, so the line keeps up with the stylus instead of trailing a frame behind it."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Ink_API"
+            InjectAs="Ink ink" />
+
+<Callout Type="info" Title="What it actually does">
+    A drawing app renders a stroke when its input event reaches the app, which is at least a frame
+    behind the pointer - visible as a gap between the stylus tip and the ink. Delegated ink hands the
+    last known point to the compositor, which draws the missing segment itself, outside your frame
+    loop. You still draw the real stroke; this only covers the gap until you do, so match its colour
+    and width to your own or the seam shows.
+</Callout>
+
+<Callout Type="warning" Title="Chromium only, and an enhancement by nature">
+    When it is unavailable nothing is lost but the few milliseconds of latency it was hiding, so
+    there is no fallback to write - just draw as you would have anyway.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes navigator.ink.requestPresenter. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.Ink ink
+
+var supported = await ink.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Draw with a trail"
+                 Api="StartTrail / InkTrailHandle"
+                 Description="The trail is started on an element and clipped to it. The pointer listener lives in JavaScript, because the presenter has to be fed the browser's own PointerEvent - by the time .NET saw one it would be a copy, and an untrusted one at that. Draw in the box below with the trail on and off and compare how far the ink lags behind the cursor; the effect is most visible with fast strokes on a high-refresh display."
+                 Code=@("""
+_trail = await ink.StartTrail(_canvas, color: "#0f6cbd", diameter: 4);
+
+// ... the user draws; you keep rendering your own strokes ...
+
+await _trail!.DisposeAsync();   // stops the trail
+""")>
+        <svg class="demo-box dashed" style="max-width:100%;width:100%;height:220px;touch-action:none"
+             @ref="_surface" @onpointerdown="StartStroke" @onpointermove="ExtendStroke"
+             @onpointerup="EndStroke" @onpointerleave="EndStroke">
+            @foreach (var stroke in AllStrokes())
+            {
+                <polyline points="@stroke" fill="none" stroke="@_color" stroke-width="@_width"
+                          stroke-linecap="round" stroke-linejoin="round" />
+            }
+        </svg>
+        <div class="controls">
+            <button @onclick="StartTrail" disabled="@(_trail is not null)">StartTrail</button>
+            <button class="secondary" @onclick="StopTrail" disabled="@(_trail is null)">Stop the trail</button>
+            <button class="secondary" @onclick="ClearStrokes">Clear the drawing</button>
+        </div>
+        <DemoConsole @ref="trailOutput" Title="trail output" />
+    </DemoSection>
+
+    <DemoSection Title="Change the pen"
+                 Api="InkTrailHandle.SetStyle"
+                 Description="What a colour or brush-size picker calls: the trail changes from the next point onwards, without stopping and restarting it. Keep it in step with your own stroke style - the trail is the part of the line the user sees first."
+                 Code=@("""
+await _trail!.SetStyle("#c50f1f", diameter: 8);
+""")>
+        <div class="controls">
+            <label>Colour
+                <input type="color" @bind="_color" @bind:after="ApplyStyle" />
+            </label>
+            <label>Width
+                <input type="range" min="2" max="16" @bind="_width" @bind:after="ApplyStyle" />
+            </label>
+            <span><code>@_width</code> px</span>
+        </div>
+        <DemoConsole @ref="styleOutput" Title="style output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes navigator.ink.requestPresenter. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="StartTrail"
+               Signature="ValueTask<InkTrailHandle?> StartTrail(ElementReference presentationArea, string color = &quot;black&quot;, double diameter = 3)"
+               Description="Starts painting a trail over an element as the pointer moves across it. Null when the API is unavailable or the element can't present ink." />
+    <ApiMember Name="InkTrailHandle.SetStyle"
+               Signature="ValueTask<bool> SetStyle(string color, double diameter = 0)"
+               Description="Changes the trail's colour and width from the next point onwards. Pass 0 to keep the current width." />
+    <ApiMember Name="InkTrailHandle.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Stops the trail and detaches its pointer listener." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole trailOutput = default!;
+    private DemoConsole styleOutput = default!;
+
+    private ElementReference _surface;
+    private InkTrailHandle? _trail;
+
+    private string _color = "#0f6cbd";
+    private int _width = 4;
+
+    private readonly List<string> _strokes = [];
+    private List<(double X, double Y)>? _current;
+
+    private IEnumerable<string> AllStrokes()
+    {
+        foreach (var stroke in _strokes) yield return stroke;
+        if (_current is { Count: > 1 }) yield return ToPoints(_current);
+    }
+
+    private static string ToPoints(List<(double X, double Y)> points)
+        => string.Join(' ', points.Select(p => $"{p.X.ToString(System.Globalization.CultureInfo.InvariantCulture)},{p.Y.ToString(System.Globalization.CultureInfo.InvariantCulture)}"));
+
+    private void StartStroke(PointerEventArgs e) => _current = [(e.OffsetX, e.OffsetY)];
+
+    private void ExtendStroke(PointerEventArgs e)
+    {
+        if (_current is null) return;
+        _current.Add((e.OffsetX, e.OffsetY));
+    }
+
+    private void EndStroke(PointerEventArgs e)
+    {
+        if (_current is null) return;
+        if (_current.Count > 1) _strokes.Add(ToPoints(_current));
+        _current = null;
+    }
+
+    private void ClearStrokes()
+    {
+        _strokes.Clear();
+        _current = null;
+    }
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            var supported = await ink.IsSupported();
+
+            if (supported) await supportOutput.Success("IsSupported →", true);
+            else await supportOutput.Warn("IsSupported →", "false - the drawing box still works, just without the compositor's head start.");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task StartTrail()
+    {
+        try
+        {
+            _trail = await ink.StartTrail(_surface, _color, _width);
+
+            if (_trail is null)
+            {
+                await trailOutput.Warn("StartTrail → null - the API is unavailable, or this element can't present ink.");
+                return;
+            }
+
+            await trailOutput.Success("StartTrail → the trail is live. Draw quickly and watch the leading edge.");
+        }
+        catch (Exception ex)
+        {
+            await trailOutput.Error("StartTrail failed →", ex.Message);
+        }
+    }
+
+    private async Task StopTrail()
+    {
+        if (_trail is null) return;
+
+        await _trail.DisposeAsync();
+        _trail = null;
+        await trailOutput.Log("Trail stopped - the drawing itself is unaffected.");
+    }
+
+    private async Task ApplyStyle()
+    {
+        if (_trail is null) return;
+
+        try
+        {
+            await styleOutput.Info($"SetStyle({_color}, {_width}) →", await _trail.SetStyle(_color, _width));
+        }
+        catch (Exception ex)
+        {
+            await styleOutput.Error("SetStyle failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_trail is not null) await _trail.DisposeAsync();
+    }
+}
