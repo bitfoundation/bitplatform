@@ -1,0 +1,379 @@
+@page "/media-capabilities"
+@inject Bit.Butil.MediaCapabilities mediaCapabilities
+
+<PageTitle>MediaCapabilities - Bit.Butil</PageTitle>
+
+<PageHeader Category="Media &amp; Speech"
+            Title="MediaCapabilities"
+            Lead="Ask the engine whether a codec, resolution and bitrate will actually decode smoothly and on hardware - before committing to it. The question canPlayType() never answered."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/MediaCapabilities"
+            InjectAs="MediaCapabilities mediaCapabilities" />
+
+<div class="stack">
+    <DemoSection Title="Support"
+                 Api="IsSupported"
+                 Description="True when the runtime exposes navigator.mediaCapabilities.decodingInfo. Broadly available, but not on every engine, so keep a fallback path that simply tries to play."
+                 Code=@("""
+@inject Bit.Butil.MediaCapabilities mediaCapabilities
+
+var isSupported = await mediaCapabilities.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Will this stream play smoothly?"
+                 Api="DecodingInfo"
+                 Description="A full configuration in, three flags out: supported at all, smooth (no dropped frames), and power-efficient (hardware rather than CPU). Pick a rung of the ladder and see what the engine says about it - a null answer means the configuration itself was rejected as malformed."
+                 Code=@("""
+var info = await mediaCapabilities.DecodingInfo(new MediaDecodingConfiguration
+{
+    Type = MediaDecodingType.MediaSource,
+    Video = new VideoConfiguration
+    {
+        ContentType = "video/mp4;codecs=avc1.42E01E",
+        Width = 1920,
+        Height = 1080,
+        Bitrate = 5_000_000,
+        Framerate = 30
+    }
+});
+
+if (info is { Supported: true, Smooth: true, PowerEfficient: true })
+{
+    // safe to offer this rendition, even on battery
+}
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Codec</span>
+                <select @bind="codec">
+                    <option value="video/mp4;codecs=avc1.42E01E">H.264 (avc1.42E01E)</option>
+                    <option value="video/mp4;codecs=avc1.640028">H.264 High (avc1.640028)</option>
+                    <option value="video/webm;codecs=vp9">VP9 (webm)</option>
+                    <option value="video/webm;codecs=vp8">VP8 (webm)</option>
+                    <option value="video/mp4;codecs=hvc1.1.6.L93.B0">HEVC (hvc1)</option>
+                    <option value="video/mp4;codecs=av01.0.05M.08">AV1 (av01)</option>
+                </select>
+            </div>
+            <div class="field">
+                <span class="field-label">Resolution</span>
+                <select @bind="resolution">
+                    <option value="640x360">640 x 360</option>
+                    <option value="1280x720">1280 x 720</option>
+                    <option value="1920x1080">1920 x 1080</option>
+                    <option value="3840x2160">3840 x 2160</option>
+                </select>
+            </div>
+            <div class="field">
+                <span class="field-label">Framerate (@framerate fps)</span>
+                <input type="range" min="15" max="120" step="5" @bind="framerate" @bind:event="oninput" />
+            </div>
+            <div class="field">
+                <span class="field-label">How it arrives</span>
+                <select @bind="decodingType">
+                    <option value="File">File</option>
+                    <option value="MediaSource">MediaSource</option>
+                    <option value="WebRtc">WebRtc</option>
+                </select>
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="Probe">DecodingInfo</button>
+            <button class="secondary" @onclick="ProbeLadder">Probe a whole ladder</button>
+        </div>
+        <DemoConsole @ref="decodingOutput" Title="decoding output" />
+    </DemoSection>
+
+    <DemoSection Title="Encoding queries"
+                 Api="EncodingInfo"
+                 Description="The same three flags for encoding - what to consult before choosing a MediaRecorder container or a WebCodecs configuration. Support is thinner than for decoding: an engine that answers decoding questions may refuse this one entirely."
+                 Code=@("""
+var info = await mediaCapabilities.EncodingInfo(new MediaEncodingConfiguration
+{
+    Type = MediaEncodingType.Record,
+    Video = new VideoConfiguration
+    {
+        ContentType = "video/webm;codecs=vp9",
+        Width = 1280,
+        Height = 720,
+        Bitrate = 2_500_000,
+        Framerate = 30
+    }
+});
+""")>
+        <div class="controls">
+            <button @onclick="ProbeEncoding">EncodingInfo (record)</button>
+            <button class="secondary" @onclick="ProbeEncodingWebRtc">EncodingInfo (webrtc)</button>
+        </div>
+        <DemoConsole @ref="encodingOutput" Title="encoding output" />
+    </DemoSection>
+
+    <DemoSection Title="Audio, and protected playback"
+                 Api="DecodingInfo with Audio / KeySystemConfiguration"
+                 Description="A query needs at least one track, and audio alone is a valid question. Adding a key-system configuration asks something different again: whether the codec plays smoothly under DRM, which is not the same as whether it plays smoothly in the clear."
+                 Code=@("""
+var audio = await mediaCapabilities.DecodingInfo(new MediaDecodingConfiguration
+{
+    Type = MediaDecodingType.File,
+    Audio = new AudioConfiguration { ContentType = "audio/mp4;codecs=mp4a.40.2", Channels = "2", Samplerate = 48000 }
+});
+
+var drm = await mediaCapabilities.DecodingInfo(new MediaDecodingConfiguration
+{
+    Type = MediaDecodingType.MediaSource,
+    Video = new VideoConfiguration { ContentType = "video/mp4;codecs=avc1.640028", Width = 1920, Height = 1080, Bitrate = 6_000_000, Framerate = 30 },
+    KeySystemConfiguration = new MediaCapabilitiesKeySystemConfiguration
+    {
+        KeySystem = "com.widevine.alpha",
+        InitDataType = "cenc",
+        VideoRobustness = "HW_SECURE_ALL"
+    }
+});
+""")>
+        <div class="controls">
+            <button @onclick="ProbeAudio">Audio query</button>
+            <button class="secondary" @onclick="ProbeDrm">Widevine HW_SECURE_ALL query</button>
+        </div>
+        <DemoConsole @ref="extraOutput" Title="audio and DRM output" />
+    </DemoSection>
+</div>
+
+<Callout Type="info" Title="Three flags, three different decisions">
+    Supported says the stream can play. Smooth says it will keep up. PowerEfficient says the work lands on
+    dedicated hardware rather than the CPU - the difference between an hour of battery and three. A rung that
+    is supported but neither smooth nor power-efficient is exactly the one an adaptive player should skip.
+</Callout>
+
+<Callout Type="warning" Title="A malformed query is answered with null, not with false">
+    The specification rejects a configuration with no codecs in its content type, or with neither a video nor
+    an audio track, rather than reporting it as unsupported. Butil surfaces that as null - so null means "the
+    question was wrong", and Supported = false means "the browser said no".
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes navigator.mediaCapabilities.decodingInfo." />
+    <ApiMember Name="DecodingInfo" Signature="ValueTask<MediaCapabilitiesInfo?> DecodingInfo(MediaDecodingConfiguration configuration)" Description="Whether this exact stream can be played, played smoothly, and played on hardware. Null when the configuration was rejected." />
+    <ApiMember Name="EncodingInfo" Signature="ValueTask<MediaCapabilitiesInfo?> EncodingInfo(MediaEncodingConfiguration configuration)" Description="The same three flags for encoding - what to consult before choosing a recorder or codec configuration." />
+    <ApiMember Name="MediaDecodingConfiguration" Signature="Type, Video, Audio, KeySystemConfiguration" Description="The query: how the media arrives, which tracks to ask about, and optionally the DRM it is protected with." />
+    <ApiMember Name="MediaEncodingConfiguration" Signature="Type, Video, Audio" Description="The encoding query: record or webrtc, and the tracks being encoded." />
+    <ApiMember Name="VideoConfiguration" Signature="ContentType, Width, Height, Bitrate, Framerate, HasAlphaChannel, HdrMetadataType, ColorGamut, TransferFunction, ScalabilityMode, SpatialScalability" Description="The video track. The first five are required by the specification." />
+    <ApiMember Name="AudioConfiguration" Signature="ContentType, Channels, Bitrate, Samplerate, SpatialRendering" Description="The audio track. Only ContentType is required." />
+    <ApiMember Name="MediaCapabilitiesKeySystemConfiguration" Signature="KeySystem, InitDataType, DistinctiveIdentifier, PersistentState, SessionTypes, AudioRobustness, VideoRobustness" Description="Asks the smoothness question about protected playback rather than clear playback." />
+    <ApiMember Name="MediaCapabilitiesInfo" Signature="Supported, Smooth, PowerEfficient, KeySystemAccessible" Description="The answer. KeySystemAccessible is set when a key-system configuration was part of the query." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole decodingOutput = default!;
+    private DemoConsole encodingOutput = default!;
+    private DemoConsole extraOutput = default!;
+
+    private string codec = "video/mp4;codecs=avc1.42E01E";
+    private string resolution = "1920x1080";
+    private double framerate = 30;
+    private string decodingType = "MediaSource";
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await mediaCapabilities.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task Probe()
+    {
+        try
+        {
+            var info = await mediaCapabilities.DecodingInfo(BuildDecoding());
+            await Report(decodingOutput, $"{codec} @ {resolution}", info);
+        }
+        catch (Exception ex)
+        {
+            await decodingOutput.Error("DecodingInfo failed →", ex.Message);
+        }
+    }
+
+    private async Task ProbeLadder()
+    {
+        try
+        {
+            foreach (var (width, height, bitrate) in new[] { (640, 360, 800_000L), (1280, 720, 2_500_000L), (1920, 1080, 5_000_000L), (3840, 2160, 18_000_000L) })
+            {
+                var info = await mediaCapabilities.DecodingInfo(new MediaDecodingConfiguration
+                {
+                    Type = MediaDecodingType.MediaSource,
+                    Video = new VideoConfiguration
+                    {
+                        ContentType = codec,
+                        Width = width,
+                        Height = height,
+                        Bitrate = bitrate,
+                        Framerate = framerate
+                    }
+                });
+
+                await Report(decodingOutput, $"{width}x{height} @ {bitrate / 1000} kbps", info);
+            }
+        }
+        catch (Exception ex)
+        {
+            await decodingOutput.Error("DecodingInfo failed →", ex.Message);
+        }
+    }
+
+    private async Task ProbeEncoding()
+    {
+        try
+        {
+            var info = await mediaCapabilities.EncodingInfo(new MediaEncodingConfiguration
+            {
+                Type = MediaEncodingType.Record,
+                Video = new VideoConfiguration
+                {
+                    ContentType = "video/webm;codecs=vp9",
+                    Width = 1280,
+                    Height = 720,
+                    Bitrate = 2_500_000,
+                    Framerate = 30
+                }
+            });
+
+            await Report(encodingOutput, "record vp9 720p", info);
+        }
+        catch (Exception ex)
+        {
+            await encodingOutput.Error("EncodingInfo failed →", ex.Message);
+        }
+    }
+
+    private async Task ProbeEncodingWebRtc()
+    {
+        try
+        {
+            var info = await mediaCapabilities.EncodingInfo(new MediaEncodingConfiguration
+            {
+                Type = MediaEncodingType.WebRtc,
+                Video = new VideoConfiguration
+                {
+                    ContentType = "video/VP8",
+                    Width = 640,
+                    Height = 360,
+                    Bitrate = 800_000,
+                    Framerate = 30,
+                    ScalabilityMode = "L1T2"
+                }
+            });
+
+            await Report(encodingOutput, "webrtc VP8 360p L1T2", info);
+        }
+        catch (Exception ex)
+        {
+            await encodingOutput.Error("EncodingInfo failed →", ex.Message);
+        }
+    }
+
+    private async Task ProbeAudio()
+    {
+        try
+        {
+            var info = await mediaCapabilities.DecodingInfo(new MediaDecodingConfiguration
+            {
+                Type = MediaDecodingType.File,
+                Audio = new AudioConfiguration
+                {
+                    ContentType = "audio/mp4;codecs=mp4a.40.2",
+                    Channels = "2",
+                    Samplerate = 48000,
+                    Bitrate = 128_000
+                }
+            });
+
+            await Report(extraOutput, "AAC-LC stereo 48 kHz", info);
+        }
+        catch (Exception ex)
+        {
+            await extraOutput.Error("DecodingInfo failed →", ex.Message);
+        }
+    }
+
+    private async Task ProbeDrm()
+    {
+        try
+        {
+            var info = await mediaCapabilities.DecodingInfo(new MediaDecodingConfiguration
+            {
+                Type = MediaDecodingType.MediaSource,
+                Video = new VideoConfiguration
+                {
+                    ContentType = "video/mp4;codecs=avc1.640028",
+                    Width = 1920,
+                    Height = 1080,
+                    Bitrate = 6_000_000,
+                    Framerate = 30
+                },
+                KeySystemConfiguration = new MediaCapabilitiesKeySystemConfiguration
+                {
+                    KeySystem = "com.widevine.alpha",
+                    InitDataType = "cenc",
+                    VideoRobustness = "HW_SECURE_ALL"
+                }
+            });
+
+            if (info is null)
+            {
+                await extraOutput.Warn("Widevine HW_SECURE_ALL → null (query rejected, or no key system)");
+                return;
+            }
+
+            await extraOutput.Log($"Widevine HW_SECURE_ALL → supported={info.Supported}, smooth={info.Smooth}, " +
+                                  $"powerEfficient={info.PowerEfficient}, keySystemAccessible={info.KeySystemAccessible}");
+        }
+        catch (Exception ex)
+        {
+            await extraOutput.Error("DecodingInfo failed →", ex.Message);
+        }
+    }
+
+    private MediaDecodingConfiguration BuildDecoding()
+    {
+        var parts = resolution.Split('x');
+        var width = int.Parse(parts[0]);
+        var height = int.Parse(parts[1]);
+
+        return new MediaDecodingConfiguration
+        {
+            Type = Enum.Parse<MediaDecodingType>(decodingType),
+            Video = new VideoConfiguration
+            {
+                ContentType = codec,
+                Width = width,
+                Height = height,
+                // A bitrate in the region a real ladder would use for this size, so the answer means something.
+                Bitrate = (long)(width * height * framerate * 0.08),
+                Framerate = framerate
+            }
+        };
+    }
+
+    private static async Task Report(DemoConsole console, string label, MediaCapabilitiesInfo? info)
+    {
+        if (info is null)
+        {
+            await console.Warn($"{label} → null (the configuration was rejected, or the API is unavailable)");
+            return;
+        }
+
+        var message = $"{label} → supported={info.Supported}, smooth={info.Smooth}, powerEfficient={info.PowerEfficient}";
+        if (info is { Supported: true, Smooth: true }) await console.Success(message);
+        else if (info.Supported) await console.Warn(message);
+        else await console.Log(message);
+    }
+}

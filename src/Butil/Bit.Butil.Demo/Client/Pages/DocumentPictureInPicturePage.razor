@@ -1,0 +1,353 @@
+@page "/document-picture-in-picture"
+@implements IAsyncDisposable
+@inject Bit.Butil.DocumentPictureInPicture documentPictureInPicture
+
+<PageTitle>DocumentPictureInPicture - Bit.Butil</PageTitle>
+
+<PageHeader Category="Media &amp; Speech"
+            Title="DocumentPictureInPicture"
+            Lead="An always-on-top window you can put arbitrary DOM in - custom controls, a live chart, a timer, a call roster - not just a video. The elements are moved, so a Blazor component keeps its state and its handlers."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Document_Picture-in-Picture_API"
+            InjectAs="DocumentPictureInPicture documentPictureInPicture" />
+
+<div class="stack">
+    <DemoSection Title="Support"
+                 Api="IsSupported"
+                 Description="Chromium-only at the time of writing. Other engines have the video-element PictureInPicture, which floats a video and nothing else - a different API for a different job."
+                 Code=@("""
+@inject Bit.Butil.DocumentPictureInPicture documentPictureInPicture
+
+var isSupported = await documentPictureInPicture.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Open a window and move a component into it"
+                 Api="RequestWindow / MoveElement"
+                 Description="The window opens empty and needs a user gesture. MoveElement takes a live element out of the page and into it - the counter below keeps counting while it floats, because it is the same DOM node and the same component. Everything is put back when the window closes, however it closes."
+                 Code=@("""
+var window = await documentPictureInPicture.RequestWindow(
+    new DocumentPictureInPictureOptions { Width = 360, Height = 240 },
+    onClose: () => InvokeAsync(StateHasChanged));
+
+await window!.MoveElement(panelElement);   // <div @ref="panelElement"> ... </div>
+
+// later - or when the user closes the window
+await window.DisposeAsync();
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Width (@width px)</span>
+                <input type="range" min="240" max="640" step="20" @bind="width" @bind:event="oninput" />
+            </div>
+            <div class="field">
+                <span class="field-label">Height (@height px)</span>
+                <input type="range" min="160" max="480" step="20" @bind="height" @bind:event="oninput" />
+            </div>
+            <div class="field">
+                <span class="field-label">Copy the page's stylesheets</span>
+                <label><input type="checkbox" @bind="copyStyleSheets" /> CopyStyleSheets</label>
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="Open" disabled="@(pipWindow is not null)">RequestWindow</button>
+            <button class="secondary" @onclick="MovePanel" disabled="@(pipWindow is null || panelMoved)">MoveElement</button>
+            <button class="secondary" @onclick="Restore" disabled="@(pipWindow is null || panelMoved is false)">RestoreElements</button>
+            <button class="danger" @onclick="Close" disabled="@(pipWindow is null)">Dispose window</button>
+        </div>
+
+        <div @ref="panelElement" style="border:1px solid var(--divider, #ddd);border-radius:8px;padding:1rem;margin-top:1rem">
+            <strong>This panel is a Blazor component</strong>
+            <p style="margin:.5rem 0">Ticks while it floats: <span class="result-pill">@ticks</span></p>
+            <button @onclick="() => ticks = 0">Reset from inside the floating window</button>
+        </div>
+
+        <DemoConsole @ref="windowOutput" Title="window output" />
+    </DemoSection>
+
+    <DemoSection Title="Sizing and styling the window"
+                 Api="GetSize / AddStyleSheet / Focus / IsOpen"
+                 Description="The window is a separate document and inherits no CSS - which is the first surprise everyone hits. CopyStyleSheets brings the page's styles over when the window opens; AddStyleSheet adds the rules that only apply while floating. The user can resize the window, so read the size rather than assume it."
+                 Code=@("""
+await window.AddStyleSheet("body { margin: 0; font: 14px system-ui; background: #111; color: #eee }");
+
+var size = await window.GetSize();     // the user may have resized it
+var open = await window.IsOpen();
+await window.Focus();
+""")>
+        <div class="controls">
+            <button @onclick="ReadSize" disabled="@(pipWindow is null)">GetSize</button>
+            <button class="secondary" @onclick="AddStyles" disabled="@(pipWindow is null)">AddStyleSheet</button>
+            <button class="secondary" @onclick="FocusWindow" disabled="@(pipWindow is null)">Focus</button>
+            <button class="secondary" @onclick="CheckOpen" disabled="@(pipWindow is null)">IsOpen</button>
+        </div>
+        <DemoConsole @ref="styleOutput" Title="sizing output" />
+    </DemoSection>
+
+    <DemoSection Title="Knowing when a window opens"
+                 Api="SubscribeEnter"
+                 Description="Fires whenever a document picture-in-picture window opens, including one this component did not request. Since only one such window can exist at a time, this is how another part of the app learns that the one place for it is now taken."
+                 Code=@("""
+var subscription = await documentPictureInPicture.SubscribeEnter(size =>
+{
+    Console.WriteLine($"a floating window opened at {size.Width}x{size.Height}");
+});
+
+await subscription!.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="Watch" disabled="@(enterSubscription is not null)">SubscribeEnter</button>
+            <button class="danger" @onclick="Unwatch" disabled="@(enterSubscription is null)">Dispose subscription</button>
+        </div>
+        <DemoConsole @ref="enterOutput" Title="enter output" />
+    </DemoSection>
+</div>
+
+<Callout Type="info" Title="Moved, not copied">
+    The element leaves the page, so leave a placeholder if the layout would collapse without it. Blazor keeps
+    updating a moved element - the renderer holds the same node - but a re-render that replaces the element's
+    <em>parent</em> markup can strand it. Move a stable container rather than something a parent component
+    redraws around.
+</Callout>
+
+<Callout Type="warning" Title="One window, one gesture">
+    Opening requires a user gesture, and only one document picture-in-picture window can exist at a time. A
+    second request while one is open comes back null rather than replacing it.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes documentPictureInPicture.requestWindow." />
+    <ApiMember Name="RequestWindow" Signature="ValueTask<DocumentPictureInPictureWindowHandle?> RequestWindow(DocumentPictureInPictureOptions? options = null, Action? onClose = null)" Description="Opens the floating window. Needs a user gesture; null when refused." />
+    <ApiMember Name="SubscribeEnter" Signature="ValueTask<ButilSubscription?> SubscribeEnter(Action<DocumentPictureInPictureSize> handler)" Description="Watches for a floating window opening, including one this component did not request." />
+    <ApiMember Name="DocumentPictureInPictureOptions" Signature="Width, Height, DisallowReturnToOpener, PreferInitialWindowPlacement, CopyStyleSheets" Description="Size and behaviour. CopyStyleSheets is Butil's own convenience - the window inherits no CSS otherwise." />
+    <ApiMember Name="WindowHandle.InitialWidth / InitialHeight" Signature="int InitialWidth, int InitialHeight" Description="The window's inner size when it opened." />
+    <ApiMember Name="WindowHandle.MoveElement" Signature="ValueTask<bool> MoveElement(ElementReference element)" Description="Moves an element out of the page and into the window, remembering where it came from." />
+    <ApiMember Name="WindowHandle.RestoreElements" Signature="ValueTask RestoreElements()" Description="Puts everything moved back, without closing the window." />
+    <ApiMember Name="WindowHandle.AddStyleSheet" Signature="ValueTask<bool> AddStyleSheet(string css)" Description="Adds CSS to the floating window's document." />
+    <ApiMember Name="WindowHandle.GetSize" Signature="ValueTask<DocumentPictureInPictureSize?> GetSize()" Description="The window's current inner size - the user can resize it." />
+    <ApiMember Name="WindowHandle.IsOpen" Signature="ValueTask<bool> IsOpen()" Description="True while the window is still open." />
+    <ApiMember Name="WindowHandle.Focus" Signature="ValueTask<bool> Focus()" Description="Brings the floating window to the front." />
+    <ApiMember Name="WindowHandle.DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Restores everything moved and closes the window." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole windowOutput = default!;
+    private DemoConsole styleOutput = default!;
+    private DemoConsole enterOutput = default!;
+
+    private ElementReference panelElement;
+    private DocumentPictureInPictureWindowHandle? pipWindow;
+    private ButilSubscription? enterSubscription;
+    private bool panelMoved;
+
+    private double width = 360;
+    private double height = 240;
+    private bool copyStyleSheets = true;
+
+    private int ticks;
+    private System.Threading.Timer? timer;
+
+    protected override void OnInitialized()
+    {
+        // Proof that a moved component is still live: the counter keeps running while it floats.
+        timer = new System.Threading.Timer(_ => InvokeAsync(() =>
+        {
+            ticks++;
+            StateHasChanged();
+        }), null, 1000, 1000);
+    }
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await documentPictureInPicture.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task Open()
+    {
+        try
+        {
+            pipWindow = await documentPictureInPicture.RequestWindow(new DocumentPictureInPictureOptions
+            {
+                Width = (int)width,
+                Height = (int)height,
+                CopyStyleSheets = copyStyleSheets
+            },
+            onClose: async () =>
+            {
+                panelMoved = false;
+                pipWindow = null;
+                await windowOutput.Log("the window closed - everything moved has been put back");
+                await InvokeAsync(StateHasChanged);
+            });
+
+            if (pipWindow is null)
+            {
+                await windowOutput.Warn("RequestWindow → null (unsupported, no user gesture, or a window is already open)");
+                return;
+            }
+
+            await windowOutput.Success($"RequestWindow → {pipWindow.InitialWidth}x{pipWindow.InitialHeight}");
+        }
+        catch (Exception ex)
+        {
+            await windowOutput.Error("RequestWindow failed →", ex.Message);
+        }
+    }
+
+    private async Task MovePanel()
+    {
+        try
+        {
+            panelMoved = await pipWindow!.MoveElement(panelElement);
+            await windowOutput.Log("MoveElement →", panelMoved);
+        }
+        catch (Exception ex)
+        {
+            await windowOutput.Error("MoveElement failed →", ex.Message);
+        }
+    }
+
+    private async Task Restore()
+    {
+        try
+        {
+            await pipWindow!.RestoreElements();
+            panelMoved = false;
+            await windowOutput.Log("RestoreElements → the panel is back in the page");
+        }
+        catch (Exception ex)
+        {
+            await windowOutput.Error("RestoreElements failed →", ex.Message);
+        }
+    }
+
+    private async Task Close()
+    {
+        try
+        {
+            await pipWindow!.DisposeAsync();
+            pipWindow = null;
+            panelMoved = false;
+            await windowOutput.Log("DisposeAsync → window closed, panel restored");
+        }
+        catch (Exception ex)
+        {
+            await windowOutput.Error("DisposeAsync failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadSize()
+    {
+        try
+        {
+            var size = await pipWindow!.GetSize();
+            await styleOutput.Log("GetSize →", size is null ? "null (the window is gone)" : $"{size.Width}x{size.Height}");
+        }
+        catch (Exception ex)
+        {
+            await styleOutput.Error("GetSize failed →", ex.Message);
+        }
+    }
+
+    private async Task AddStyles()
+    {
+        try
+        {
+            var added = await pipWindow!.AddStyleSheet("body{margin:0;padding:12px;font:14px system-ui}" +
+                                                       ".result-pill{font-weight:600}");
+            await styleOutput.Log("AddStyleSheet →", added);
+        }
+        catch (Exception ex)
+        {
+            await styleOutput.Error("AddStyleSheet failed →", ex.Message);
+        }
+    }
+
+    private async Task FocusWindow()
+    {
+        try
+        {
+            await styleOutput.Log("Focus →", await pipWindow!.Focus());
+        }
+        catch (Exception ex)
+        {
+            await styleOutput.Error("Focus failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckOpen()
+    {
+        try
+        {
+            await styleOutput.Log("IsOpen →", await pipWindow!.IsOpen());
+        }
+        catch (Exception ex)
+        {
+            await styleOutput.Error("IsOpen failed →", ex.Message);
+        }
+    }
+
+    private async Task Watch()
+    {
+        try
+        {
+            enterSubscription = await documentPictureInPicture.SubscribeEnter(async size =>
+            {
+                await enterOutput.Info($"enter → a window opened at {size.Width}x{size.Height}");
+                await InvokeAsync(StateHasChanged);
+            });
+
+            if (enterSubscription is null)
+            {
+                await enterOutput.Warn("SubscribeEnter → null (the API is unavailable here)");
+                return;
+            }
+
+            await enterOutput.Success("SubscribeEnter → watching");
+        }
+        catch (Exception ex)
+        {
+            await enterOutput.Error("SubscribeEnter failed →", ex.Message);
+        }
+    }
+
+    private async Task Unwatch()
+    {
+        try
+        {
+            await enterSubscription!.DisposeAsync();
+            enterSubscription = null;
+            await enterOutput.Log("DisposeAsync → listener detached");
+        }
+        catch (Exception ex)
+        {
+            await enterOutput.Error("DisposeAsync failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            timer?.Dispose();
+            if (enterSubscription is not null) await enterSubscription.DisposeAsync();
+            // Closing also moves the panel back into the page before the document goes away.
+            if (pipWindow is not null) await pipWindow.DisposeAsync();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+}

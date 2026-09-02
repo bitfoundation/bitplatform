@@ -1,0 +1,266 @@
+@page "/audio-graph"
+@using System.IO
+@implements IAsyncDisposable
+@inject Bit.Butil.WebAudio webAudio
+
+<PageTitle>Butil - Audio Graph Samples</PageTitle>
+
+<PageHeader Category="Media"
+            Title="Audio Graph"
+            Lead="The Web Audio graph from C#: an oscillator through a filter, an analyser reading the signal, spatial panning, and a buffer decoded once and played many times."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API" />
+
+<pre>
+@@inject Bit.Butil.WebAudio webAudio
+
+var osc = await webAudio.CreateOscillator(AudioOscillatorType.Sawtooth, 110);
+var filter = await webAudio.CreateBiquadFilter(BiquadFilterType.Lowpass, 400, q: 8);
+await osc!.Connect(filter!);
+await filter.ConnectToDestination();
+await osc.Start();
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Oscillator into a filter" Api="CreateOscillator / CreateBiquadFilter / Connect"
+              Description="Nodes are wired up from C# and the sweep is scheduled on the audio thread, which is why it sounds smooth.">
+        <div class="controls">
+            <button @onclick="StartChain" disabled="@(oscillator is not null)">Build and start</button>
+            <button class="secondary" @onclick="Sweep" disabled="@(filter is null)">Sweep the cutoff</button>
+            <button class="danger" @onclick="StopChain" disabled="@(oscillator is null)">Fade out</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Read the signal" Api="CreateAnalyser"
+              Description="An analyser passes audio through unchanged and lets you read it - the basis of every meter and spectrum display.">
+        <div class="controls">
+            <button @onclick="ReadLevel" disabled="@(analyser is null)">Read the current peak</button>
+        </div>
+        @if (peak is not null)
+        {
+            <p><span class="result-pill">peak @peak of 255</span></p>
+        }
+    </DemoCard>
+
+    <DemoCard Title="Decode once, play many times" Api="DecodeAudioData / CreateBufferSource"
+              Description="Decoding is the expensive part; a source per playback over one decoded buffer is cheap.">
+        <div class="controls">
+            <button @onclick="PlayChime">Play the decoded chime</button>
+            <button class="secondary" @onclick="PlayPanned">Play it panned left to right</button>
+        </div>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="audio graph output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private AudioSourceNodeHandle? oscillator;
+    private AudioNodeHandle? filter;
+    private AudioNodeHandle? gain;
+    private AnalyserNodeHandle? analyser;
+    private AudioBufferHandle? chime;
+    private int? peak;
+
+    private async Task StartChain()
+    {
+        try
+        {
+            await webAudio.Resume();   // the click that got us here is the gesture the autoplay policy wants
+
+            oscillator = await webAudio.CreateOscillator(AudioOscillatorType.Sawtooth, 110);
+            filter = await webAudio.CreateBiquadFilter(BiquadFilterType.Lowpass, 400, q: 8);
+            gain = await webAudio.CreateGain(0.0001);
+            analyser = await webAudio.CreateAnalyser(fftSize: 512);
+
+            if (oscillator is null || filter is null || gain is null || analyser is null)
+            {
+                await output.Warn("the graph could not be built (no audio context?)");
+                return;
+            }
+
+            await oscillator.Connect(filter);
+            await filter.Connect(gain);
+            await gain.Connect(analyser);
+            await gain.ConnectToDestination();
+
+            await oscillator.Start();
+            await gain.RampParam("gain", 0.2, overSeconds: 0.05, exponential: true);
+            await output.Success("oscillator → low-pass → gain → destination, with an analyser hanging off the gain");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("building the graph failed →", ex.Message);
+        }
+    }
+
+    private async Task Sweep()
+    {
+        try
+        {
+            await output.Log("RampParam(frequency, 4000, 2s) →", await filter!.RampParam("frequency", 4000, 2));
+        }
+        catch (Exception ex)
+        {
+            await output.Error("the sweep failed →", ex.Message);
+        }
+    }
+
+    private async Task StopChain()
+    {
+        try
+        {
+            await gain!.RampParam("gain", 0.0001, overSeconds: 0.08, exponential: true);
+            await Task.Delay(120);
+            await Teardown();
+            await output.Log("faded out and disposed");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("stopping failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadLevel()
+    {
+        try
+        {
+            var data = await analyser!.GetByteTimeDomainData();
+            if (data is null || data.Length == 0)
+            {
+                await output.Warn("no data - is the graph running?");
+                return;
+            }
+
+            // A waveform sits around 128; the distance of the extremes from it is the amplitude.
+            peak = data.Max(b => Math.Abs(b - 128));
+            await output.Log($"peak amplitude → {peak} of 127");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("reading the analyser failed →", ex.Message);
+        }
+    }
+
+    private async Task PlayChime()
+    {
+        try
+        {
+            await webAudio.Resume();
+            chime ??= await webAudio.DecodeAudioData(GenerateChimeWav());
+            if (chime is null)
+            {
+                await output.Warn("DecodeAudioData → null");
+                return;
+            }
+
+            var source = await webAudio.CreateBufferSource(chime);
+            await source!.ConnectToDestination();
+            await source.Start();
+            await output.Success($"playing {chime.Duration:0.00}s at {chime.SampleRate} Hz");
+
+            await Task.Delay(1500);
+            await source.DisposeAsync();
+        }
+        catch (Exception ex)
+        {
+            await output.Error("playing the buffer failed →", ex.Message);
+        }
+    }
+
+    private async Task PlayPanned()
+    {
+        try
+        {
+            await webAudio.Resume();
+            chime ??= await webAudio.DecodeAudioData(GenerateChimeWav());
+            if (chime is null) return;
+
+            var source = await webAudio.CreateBufferSource(chime);
+            var panner = await webAudio.CreateStereoPanner(-1);
+            if (source is null || panner is null)
+            {
+                await output.Warn("the panner could not be built");
+                return;
+            }
+
+            await source.Connect(panner);
+            await panner.ConnectToDestination();
+            await source.Start();
+            await panner.RampParam("pan", 1, overSeconds: 1.2);
+            await output.Success("panning from left to right over 1.2 seconds");
+
+            await Task.Delay(1500);
+            await source.DisposeAsync();
+            await panner.DisposeAsync();
+        }
+        catch (Exception ex)
+        {
+            await output.Error("the panned playback failed →", ex.Message);
+        }
+    }
+
+    /// <summary>A short C-major chime as a 16-bit mono wav, so the sample needs no audio file.</summary>
+    private static byte[] GenerateChimeWav()
+    {
+        const int sampleRate = 44100;
+        const double seconds = 1.0;
+        var sampleCount = (int)(sampleRate * seconds);
+        var dataSize = sampleCount * 2;
+
+        using var stream = new MemoryStream(44 + dataSize);
+        using var writer = new BinaryWriter(stream);
+
+        writer.Write("RIFF"u8);
+        writer.Write(36 + dataSize);
+        writer.Write("WAVE"u8);
+        writer.Write("fmt "u8);
+        writer.Write(16);
+        writer.Write((short)1);
+        writer.Write((short)1);
+        writer.Write(sampleRate);
+        writer.Write(sampleRate * 2);
+        writer.Write((short)2);
+        writer.Write((short)16);
+        writer.Write("data"u8);
+        writer.Write(dataSize);
+
+        double[] chord = [261.63, 329.63, 392.00];
+        for (var i = 0; i < sampleCount; i++)
+        {
+            var t = (double)i / sampleRate;
+            var envelope = Math.Exp(-3 * t);
+            var sample = chord.Sum(f => Math.Sin(2 * Math.PI * f * t)) / chord.Length;
+            writer.Write((short)(sample * envelope * short.MaxValue * 0.8));
+        }
+
+        writer.Flush();
+        return stream.ToArray();
+    }
+
+    private async Task Teardown()
+    {
+        if (oscillator is not null) await oscillator.DisposeAsync();
+        if (filter is not null) await filter.DisposeAsync();
+        if (gain is not null) await gain.DisposeAsync();
+        if (analyser is not null) await analyser.DisposeAsync();
+        oscillator = null;
+        filter = null;
+        gain = null;
+        analyser = null;
+        peak = null;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await Teardown();
+            if (chime is not null) await chime.DisposeAsync();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+}

@@ -1,0 +1,462 @@
+@page "/web-codecs"
+@implements IAsyncDisposable
+@inject Bit.Butil.WebCodecs webCodecs
+
+<PageTitle>WebCodecs - Bit.Butil</PageTitle>
+
+<PageHeader Category="Media &amp; Speech"
+            Title="WebCodecs"
+            Lead="The browser's own video and audio codecs, addressed frame by frame - no media element, no container. Encode what you draw, decode into pixels you own, and decide yourself what happens in between."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/WebCodecs_API"
+            InjectAs="WebCodecs webCodecs" />
+
+<div class="stack">
+    <DemoSection Title="Support, and whether a configuration is real"
+                 Api="IsSupported / IsConfigSupported"
+                 Description="Support depends on the whole configuration - the codec string with its profile and level, the resolution, and whether a hardware encoder exists when one was asked for. Probe before building, because an unsupported configuration comes back as a null handle rather than an exception."
+                 Code=@("""
+@inject Bit.Butil.WebCodecs webCodecs
+
+var isSupported = await webCodecs.IsSupported();
+
+var ok = await webCodecs.IsConfigSupported(new VideoEncoderConfig
+{
+    Codec = "vp8",
+    Width = 640,
+    Height = 480,
+    Bitrate = 1_000_000,
+    Framerate = 30,
+    LatencyMode = "realtime"
+});
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+            <button class="secondary" @onclick="ProbeEncoders">Probe video encoders</button>
+            <button class="secondary" @onclick="ProbeAudio">Probe audio codecs</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Frames in, chunks out"
+                 Api="CreateFrame / CreateVideoEncoder / Encode / Flush"
+                 Description="A frame is built here from pixels generated in C#, handed to an encoder, and comes back as compressed chunks on the output callback - the first of which carries the decoder description a matching decoder will need. Nothing writes a container: what you do with the chunks is the point of the API."
+                 Code=@("""
+var encoder = await webCodecs.CreateVideoEncoder(
+    new VideoEncoderConfig { Codec = "vp8", Width = 320, Height = 240, Bitrate = 500_000, Framerate = 10 },
+    onChunk: chunk =>
+    {
+        // mux it, send it, store it - the chunk is yours
+        Console.WriteLine($"{chunk.Type} {chunk.Data.Length} bytes at {chunk.Timestamp}us");
+    },
+    onError: message => Console.WriteLine(message));
+
+await using var frame = await webCodecs.CreateFrame(rgbaBytes, "RGBA", 320, 240, timestamp: 0);
+await encoder!.Encode(frame!, keyFrame: true);
+
+await encoder.Flush();   // an encoder holds frames back; this is what makes it hand them over
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Codec</span>
+                <select @bind="encodeCodec">
+                    <option value="vp8">vp8</option>
+                    <option value="vp09.00.10.08">vp9</option>
+                    <option value="avc1.42001E">avc1.42001E (H.264)</option>
+                    <option value="av01.0.04M.08">av01 (AV1)</option>
+                </select>
+            </div>
+            <div class="field">
+                <span class="field-label">Frames to encode (@frameCount)</span>
+                <input type="range" min="1" max="30" step="1" @bind="frameCount" @bind:event="oninput" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="EncodeFrames">Encode generated frames</button>
+        </div>
+        <DemoConsole @ref="encodeOutput" Title="encoder output" />
+    </DemoSection>
+
+    <DemoSection Title="Chunks in, frames out"
+                 Api="CreateVideoDecoder / Decode / VideoFrameHandle"
+                 Description="The chunks produced above are decoded straight back, and each frame is drawn to a canvas and disposed. Disposal is not optional here: a frame holds real memory - often a GPU surface - and a decoder whose frames pile up undisposed stalls."
+                 Code=@("""
+var decoder = await webCodecs.CreateVideoDecoder(
+    new VideoDecoderConfig { Codec = "vp8", Description = firstChunk.DecoderDescription },
+    onFrame: async frame =>
+    {
+        await frame.DrawTo(canvasElement);
+        await frame.DisposeAsync();   // required - the decoder stalls without it
+    });
+
+foreach (var chunk in chunks) await decoder!.Decode(chunk);
+await decoder!.Flush();
+""")>
+        <canvas @ref="canvasElement" width="320" height="240" style="width:100%;max-width:320px;background:#111;border-radius:8px"></canvas>
+        <div class="controls">
+            <button @onclick="DecodeFrames" disabled="@(encodedChunks.Count == 0)">Decode what was encoded</button>
+        </div>
+        <DemoConsole @ref="decodeOutput" Title="decoder output" />
+    </DemoSection>
+
+    <DemoSection Title="Capturing a frame from an element"
+                 Api="CaptureFrame"
+                 Description="A frame can also be grabbed from a video, canvas or image element - which is how a camera stream reaches an encoder without a recorder in between. The timestamp is yours to choose: it is the app's timeline, and an encoder paces its output from it."
+                 Code=@("""
+// a <video> playing a camera stream, a <canvas> you draw into, an <img> that has loaded
+await using var frame = await webCodecs.CaptureFrame(canvasElement, timestamp: frameIndex * 33_333);
+
+await encoder.Encode(frame!);
+""")>
+        <div class="controls">
+            <button @onclick="CaptureFromCanvas">CaptureFrame from the canvas</button>
+        </div>
+        <DemoConsole @ref="captureOutput" Title="capture output" />
+    </DemoSection>
+
+    <DemoSection Title="Audio"
+                 Api="CreateAudioData / CreateAudioEncoder / CreateAudioDecoder"
+                 Description="The same shape, one dimension down: build AudioData from PCM samples, encode it to Opus or AAC, and decode it back. Sample rate and channel count have to match the configuration - an encoder does not resample."
+                 Code=@("""
+var encoder = await webCodecs.CreateAudioEncoder(
+    new AudioEncoderConfig { Codec = "opus", SampleRate = 48000, NumberOfChannels = 1, Bitrate = 64_000 },
+    onChunk: chunk => Console.WriteLine($"{chunk.Data.Length} bytes at {chunk.Timestamp}us"));
+
+await using var data = await webCodecs.CreateAudioData(pcmFloatBytes, "f32", 48000,
+                                                       numberOfFrames: 480, numberOfChannels: 1, timestamp: 0);
+await encoder!.Encode(data!);
+await encoder.Flush();
+""")>
+        <div class="controls">
+            <button @onclick="EncodeAudio">Encode a second of Opus</button>
+        </div>
+        <DemoConsole @ref="audioOutput" Title="audio output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="Dispose every frame and every AudioData">
+    They hold memory the garbage collector cannot reclaim. A decoder that runs out of frames stops producing
+    them, and a capture loop that leaks them will exhaust the tab within seconds. Dispose as soon as the frame
+    has been drawn, copied or encoded - <code>await using</code> is the shape that gets this right.
+</Callout>
+
+<Callout Type="info" Title="Backpressure is the caller's job">
+    Codecs queue work and answer on a callback. Watch <code>GetQueueSize</code> and stop feeding when it climbs:
+    every queued frame holds its pixels, so a producer that ignores it turns a smooth encode into an
+    out-of-memory crash.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes the WebCodecs constructors." />
+    <ApiMember Name="IsConfigSupported" Signature="ValueTask<bool> IsConfigSupported(VideoEncoderConfig | VideoDecoderConfig | AudioEncoderConfig | AudioDecoderConfig config)" Description="Whether this engine can encode or decode with this exact configuration." />
+    <ApiMember Name="CreateVideoEncoder" Signature="ValueTask<VideoEncoderHandle?> CreateVideoEncoder(VideoEncoderConfig config, Action<EncodedVideoChunk> onChunk, Action<string>? onError = null)" Description="Creates and configures a VideoEncoder; frames in, chunks out on the callback." />
+    <ApiMember Name="CreateVideoDecoder" Signature="ValueTask<VideoDecoderHandle?> CreateVideoDecoder(VideoDecoderConfig config, Action<VideoFrameHandle> onFrame, Action<string>? onError = null)" Description="Creates and configures a VideoDecoder; chunks in, frames out on the callback." />
+    <ApiMember Name="CreateAudioEncoder" Signature="ValueTask<AudioEncoderHandle?> CreateAudioEncoder(AudioEncoderConfig config, Action<EncodedAudioChunk> onChunk, Action<string>? onError = null)" Description="Creates and configures an AudioEncoder." />
+    <ApiMember Name="CreateAudioDecoder" Signature="ValueTask<AudioDecoderHandle?> CreateAudioDecoder(AudioDecoderConfig config, Action<AudioDataHandle> onData, Action<string>? onError = null)" Description="Creates and configures an AudioDecoder." />
+    <ApiMember Name="CaptureFrame" Signature="ValueTask<VideoFrameHandle?> CaptureFrame(ElementReference source, long timestamp, long? duration = null)" Description="Grabs the current frame of a video, canvas or image element." />
+    <ApiMember Name="CreateFrame" Signature="ValueTask<VideoFrameHandle?> CreateFrame(byte[] data, string format, int width, int height, long timestamp, long? duration = null)" Description="Builds a frame from raw pixels the app produced." />
+    <ApiMember Name="CreateAudioData" Signature="ValueTask<AudioDataHandle?> CreateAudioData(byte[] data, string format, int sampleRate, int numberOfFrames, int numberOfChannels, long timestamp)" Description="Builds an AudioData from PCM samples." />
+    <ApiMember Name="WebCodecsHandle.GetState" Signature="ValueTask<CodecState> GetState()" Description="Unconfigured, Configured or Closed." />
+    <ApiMember Name="WebCodecsHandle.GetQueueSize" Signature="ValueTask<int> GetQueueSize()" Description="How much work is still queued - the backpressure signal." />
+    <ApiMember Name="WebCodecsHandle.Flush" Signature="ValueTask<bool> Flush()" Description="Completes once everything queued has been emitted on the output callback." />
+    <ApiMember Name="WebCodecsHandle.Reset" Signature="ValueTask Reset()" Description="Throws away the queue and the configuration - what a seek calls." />
+    <ApiMember Name="WebCodecsHandle.DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Closes the codec and releases its resources, a hardware encoder among them." />
+    <ApiMember Name="VideoEncoderHandle.Encode" Signature="ValueTask<bool> Encode(VideoFrameHandle frame, bool keyFrame = false)" Description="Queues one frame; the chunk arrives on the output callback." />
+    <ApiMember Name="VideoDecoderHandle.Decode" Signature="ValueTask<bool> Decode(EncodedVideoChunk chunk)" Description="Queues one compressed frame; the first after configuring has to be a key frame." />
+    <ApiMember Name="AudioEncoderHandle.Encode" Signature="ValueTask<bool> Encode(AudioDataHandle data)" Description="Queues one block of samples." />
+    <ApiMember Name="AudioDecoderHandle.Decode" Signature="ValueTask<bool> Decode(EncodedAudioChunk chunk)" Description="Queues one compressed packet." />
+    <ApiMember Name="VideoFrameHandle.DrawTo" Signature="ValueTask<bool> DrawTo(ElementReference canvas)" Description="Draws the frame into a canvas, resizing it to the frame first." />
+    <ApiMember Name="VideoFrameHandle.CopyToBytes" Signature="ValueTask<byte[]?> CopyToBytes()" Description="The raw pixels, in the frame's own format." />
+    <ApiMember Name="AudioDataHandle.CopyToBytes" Signature="ValueTask<byte[]?> CopyToBytes(int planeIndex = 0)" Description="The raw samples of one plane." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole encodeOutput = default!;
+    private DemoConsole decodeOutput = default!;
+    private DemoConsole captureOutput = default!;
+    private DemoConsole audioOutput = default!;
+
+    private ElementReference canvasElement;
+
+    private string encodeCodec = "vp8";
+    private double frameCount = 10;
+
+    private readonly List<EncodedVideoChunk> encodedChunks = [];
+    private VideoEncoderHandle? encoder;
+    private VideoDecoderHandle? decoder;
+
+    private const int Width = 320;
+    private const int Height = 240;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await webCodecs.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task ProbeEncoders()
+    {
+        foreach (var codec in new[] { "vp8", "vp09.00.10.08", "avc1.42001E", "av01.0.04M.08", "hvc1.1.6.L93.B0" })
+        {
+            try
+            {
+                var supported = await webCodecs.IsConfigSupported(new VideoEncoderConfig
+                {
+                    Codec = codec,
+                    Width = Width,
+                    Height = Height,
+                    Bitrate = 500_000,
+                    Framerate = 30
+                });
+
+                await supportOutput.Log($"encoder {codec} →", supported);
+            }
+            catch (Exception ex)
+            {
+                await supportOutput.Error($"{codec} failed →", ex.Message);
+            }
+        }
+    }
+
+    private async Task ProbeAudio()
+    {
+        foreach (var codec in new[] { "opus", "mp4a.40.2", "flac", "ulaw" })
+        {
+            try
+            {
+                var encode = await webCodecs.IsConfigSupported(new AudioEncoderConfig { Codec = codec, SampleRate = 48000, NumberOfChannels = 1, Bitrate = 64_000 });
+                var decode = await webCodecs.IsConfigSupported(new AudioDecoderConfig { Codec = codec, SampleRate = 48000, NumberOfChannels = 1 });
+                await supportOutput.Log($"{codec} → encode {encode}, decode {decode}");
+            }
+            catch (Exception ex)
+            {
+                await supportOutput.Error($"{codec} failed →", ex.Message);
+            }
+        }
+    }
+
+    private async Task EncodeFrames()
+    {
+        try
+        {
+            await TeardownCodecs();
+            encodedChunks.Clear();
+
+            var config = new VideoEncoderConfig
+            {
+                Codec = encodeCodec,
+                Width = Width,
+                Height = Height,
+                Bitrate = 800_000,
+                Framerate = 10,
+                LatencyMode = "realtime"
+            };
+
+            if (await webCodecs.IsConfigSupported(config) is false)
+            {
+                await encodeOutput.Warn($"{encodeCodec} → not supported for encoding on this engine");
+                return;
+            }
+
+            encoder = await webCodecs.CreateVideoEncoder(config,
+                onChunk: chunk =>
+                {
+                    encodedChunks.Add(chunk);
+                    _ = encodeOutput.Log($"chunk → {chunk.Type}, {chunk.Data.Length:N0} bytes at {chunk.Timestamp}us" +
+                                         (chunk.DecoderDescription is null ? "" : $", decoder description {chunk.DecoderDescription.Length} bytes"));
+                },
+                onError: message => _ = encodeOutput.Error("encoder error →", message));
+
+            if (encoder is null)
+            {
+                await encodeOutput.Warn("CreateVideoEncoder → null (the configuration was rejected)");
+                return;
+            }
+
+            var count = (int)frameCount;
+            for (var i = 0; i < count; i++)
+            {
+                await using var frame = await webCodecs.CreateFrame(GenerateFrame(i), "RGBA", Width, Height, i * 100_000L, 100_000L);
+                if (frame is null)
+                {
+                    await encodeOutput.Error("CreateFrame → null (the buffer does not match the format)");
+                    return;
+                }
+
+                await encoder.Encode(frame, keyFrame: i == 0);
+            }
+
+            await encoder.Flush();
+            await encodeOutput.Success($"Encode + Flush → {encodedChunks.Count} chunks, " +
+                                       $"{encodedChunks.Sum(c => c.Data.Length):N0} bytes total; queue now {await encoder.GetQueueSize()}");
+        }
+        catch (Exception ex)
+        {
+            await encodeOutput.Error("encoding failed →", ex.Message);
+        }
+    }
+
+    private async Task DecodeFrames()
+    {
+        try
+        {
+            if (decoder is not null)
+            {
+                await decoder.DisposeAsync();
+                decoder = null;
+            }
+
+            var drawn = 0;
+            decoder = await webCodecs.CreateVideoDecoder(
+                new VideoDecoderConfig { Codec = encodeCodec, Description = encodedChunks[0].DecoderDescription, CodedWidth = Width, CodedHeight = Height },
+                onFrame: async frame =>
+                {
+                    drawn++;
+                    await frame.DrawTo(canvasElement);
+                    await frame.DisposeAsync();
+                },
+                onError: message => _ = decodeOutput.Error("decoder error →", message));
+
+            if (decoder is null)
+            {
+                await decodeOutput.Warn("CreateVideoDecoder → null (the configuration was rejected)");
+                return;
+            }
+
+            foreach (var chunk in encodedChunks) await decoder.Decode(chunk);
+            await decoder.Flush();
+
+            await decodeOutput.Success($"Decode + Flush → {drawn} frames decoded and drawn, then disposed");
+        }
+        catch (Exception ex)
+        {
+            await decodeOutput.Error("decoding failed →", ex.Message);
+        }
+    }
+
+    private async Task CaptureFromCanvas()
+    {
+        try
+        {
+            await using var frame = await webCodecs.CaptureFrame(canvasElement, timestamp: 0);
+            if (frame is null)
+            {
+                await captureOutput.Warn("CaptureFrame → null (nothing to capture yet - decode something into the canvas first)");
+                return;
+            }
+
+            var pixels = await frame.CopyToBytes();
+            await captureOutput.Success($"CaptureFrame → {frame.Width}x{frame.Height} '{frame.Format}', " +
+                                        $"CopyToBytes {(pixels is null ? "unavailable" : $"{pixels.Length:N0} bytes")}");
+        }
+        catch (Exception ex)
+        {
+            await captureOutput.Error("CaptureFrame failed →", ex.Message);
+        }
+    }
+
+    private async Task EncodeAudio()
+    {
+        AudioEncoderHandle? audioEncoder = null;
+        try
+        {
+            var chunks = 0;
+            var bytes = 0;
+            audioEncoder = await webCodecs.CreateAudioEncoder(
+                new AudioEncoderConfig { Codec = "opus", SampleRate = 48000, NumberOfChannels = 1, Bitrate = 64_000 },
+                onChunk: chunk => { chunks++; bytes += chunk.Data.Length; },
+                onError: message => _ = audioOutput.Error("encoder error →", message));
+
+            if (audioEncoder is null)
+            {
+                await audioOutput.Warn("CreateAudioEncoder → null (no Opus encoder on this engine)");
+                return;
+            }
+
+            // A second of a 440 Hz sine, in 20 ms blocks - the frame size Opus works in.
+            const int sampleRate = 48000;
+            const int blockFrames = 960;
+            for (var block = 0; block < 50; block++)
+            {
+                var samples = new byte[blockFrames * sizeof(float)];
+                for (var i = 0; i < blockFrames; i++)
+                {
+                    var t = (block * blockFrames + i) / (double)sampleRate;
+                    var value = (float)(Math.Sin(2 * Math.PI * 440 * t) * 0.4);
+                    BitConverter.GetBytes(value).CopyTo(samples, i * sizeof(float));
+                }
+
+                await using var data = await webCodecs.CreateAudioData(samples, "f32", sampleRate, blockFrames, 1, block * 20_000L);
+                if (data is null)
+                {
+                    await audioOutput.Error("CreateAudioData → null (the buffer does not match the format)");
+                    return;
+                }
+
+                await audioEncoder.Encode(data);
+            }
+
+            await audioEncoder.Flush();
+            await audioOutput.Success($"Encode + Flush → {chunks} Opus packets, {bytes:N0} bytes for one second of 440 Hz");
+        }
+        catch (Exception ex)
+        {
+            await audioOutput.Error("audio encoding failed →", ex.Message);
+        }
+        finally
+        {
+            if (audioEncoder is not null) await audioEncoder.DisposeAsync();
+        }
+    }
+
+    /// <summary>A moving colour gradient, so the encoded frames actually differ from one another.</summary>
+    private static byte[] GenerateFrame(int index)
+    {
+        var pixels = new byte[Width * Height * 4];
+        for (var y = 0; y < Height; y++)
+        {
+            for (var x = 0; x < Width; x++)
+            {
+                var offset = (y * Width + x) * 4;
+                pixels[offset] = (byte)((x + index * 8) % 256);
+                pixels[offset + 1] = (byte)((y + index * 4) % 256);
+                pixels[offset + 2] = (byte)(index * 16 % 256);
+                pixels[offset + 3] = 255;
+            }
+        }
+
+        return pixels;
+    }
+
+    private async Task TeardownCodecs()
+    {
+        if (encoder is not null)
+        {
+            await encoder.DisposeAsync();
+            encoder = null;
+        }
+        if (decoder is not null)
+        {
+            await decoder.DisposeAsync();
+            decoder = null;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await TeardownCodecs();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+}

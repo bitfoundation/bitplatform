@@ -1,0 +1,324 @@
+@page "/web-xr"
+@implements IAsyncDisposable
+@inject Bit.Butil.WebXr webXr
+
+<PageTitle>WebXr - Bit.Butil</PageTitle>
+
+<PageHeader Category="Media &amp; Speech"
+            Title="WebXr"
+            Lead="VR and AR sessions from C#: ask whether a headset is there, start a session, read where the user's head and controllers are, and hear about every trigger pull - while the rendering stays in WebGL where it belongs."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API"
+            InjectAs="WebXr webXr" />
+
+<div class="stack">
+    <DemoSection Title="Is there a device?"
+                 Api="IsSupported / IsSessionSupported"
+                 Description="IsSupported only says the API exists. IsSessionSupported is the question worth asking before showing an 'enter VR' button - and it needs no user gesture, so it is safe on page load. Inline sessions work without any headset at all, which makes them the sensible fallback."
+                 Code=@("""
+@inject Bit.Butil.WebXr webXr
+
+var isSupported = await webXr.IsSupported();
+
+var canVr = await webXr.IsSessionSupported(XrSessionMode.ImmersiveVr);
+var canAr = await webXr.IsSessionSupported(XrSessionMode.ImmersiveAr);
+var canInline = await webXr.IsSessionSupported(XrSessionMode.Inline);
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+            <button class="secondary" @onclick="CheckModes">IsSessionSupported (all three)</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Start a session"
+                 Api="RequestSession / AttachCanvas"
+                 Description="An immersive session needs a user gesture and refuses outright when a required feature is missing; an inline one needs neither. The handle comes back with the reference space the runtime actually granted, which may be a fallback from the one that was asked for - poses mean different things in different spaces, so it is worth checking."
+                 Code=@("""
+var session = await webXr.RequestSession(XrSessionMode.ImmersiveVr,
+    new XrSessionOptions
+    {
+        RequiredFeatures = ["local-floor"],
+        OptionalFeatures = ["hand-tracking"],
+        ReferenceSpaceType = XrReferenceSpaceType.LocalFloor,
+        PoseIntervalMs = 250          // 0 (the default) pushes nothing; poll GetViewerPose instead
+    },
+    onEnd: () => InvokeAsync(StateHasChanged),
+    onInput: e => Console.WriteLine($"{e.Type} from the {e.Handedness} hand"),
+    onPose: pose => Console.WriteLine($"head at {pose.Transform.Y:0.00}m"));
+
+await session!.AttachCanvas(canvasElement);   // an immersive session with no layer shows black
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Mode</span>
+                <select @bind="mode">
+                    <option value="Inline">Inline</option>
+                    <option value="ImmersiveVr">ImmersiveVr</option>
+                    <option value="ImmersiveAr">ImmersiveAr</option>
+                </select>
+            </div>
+            <div class="field">
+                <span class="field-label">Reference space</span>
+                <select @bind="referenceSpace">
+                    <option value="Viewer">Viewer</option>
+                    <option value="Local">Local</option>
+                    <option value="LocalFloor">LocalFloor</option>
+                    <option value="BoundedFloor">BoundedFloor</option>
+                    <option value="Unbounded">Unbounded</option>
+                </select>
+            </div>
+            <div class="field">
+                <span class="field-label">Pose interval (@poseInterval ms, 0 = poll only)</span>
+                <input type="range" min="0" max="1000" step="50" @bind="poseInterval" @bind:event="oninput" />
+            </div>
+        </div>
+        <canvas @ref="canvasElement" width="320" height="200" style="width:100%;max-width:320px;background:#111;border-radius:8px"></canvas>
+        <div class="controls">
+            <button @onclick="StartSession" disabled="@(session is not null)">RequestSession</button>
+            <button class="secondary" @onclick="Attach" disabled="@(session is null)">AttachCanvas</button>
+            <button class="danger" @onclick="EndSession" disabled="@(session is null)">End session</button>
+        </div>
+        <DemoConsole @ref="sessionOutput" Title="session output" />
+    </DemoSection>
+
+    <DemoSection Title="Where is the user looking?"
+                 Api="GetViewerPose"
+                 Description="Butil runs the session's frame loop, so a pose is always available to read - a pose otherwise exists only inside an XR frame callback. This is a snapshot for logic that runs at UI speed; drawing at headset frame rates is not what an interop boundary is for."
+                 Code=@("""
+var pose = await session.GetViewerPose();
+if (pose is not null)
+{
+    var head = pose.Transform;                 // metres, and a quaternion
+    var eyes = pose.Views.Length;              // 2 on a headset, 1 inline
+    var projection = pose.Views[0].ProjectionMatrix;   // 16 numbers, column-major
+}
+""")>
+        <div class="controls">
+            <button @onclick="ReadPose" disabled="@(session is null)">GetViewerPose</button>
+        </div>
+        @if (lastPose is not null)
+        {
+            <p>
+                <span class="result-pill">
+                    head @lastPose.Transform.X.ToString("0.00"), @lastPose.Transform.Y.ToString("0.00"), @lastPose.Transform.Z.ToString("0.00") m
+                    - @lastPose.Views.Length view(s)@(lastPose.EmulatedPosition ? ", position emulated" : "")
+                </span>
+            </p>
+        }
+        <DemoConsole @ref="poseOutput" Title="pose output" />
+    </DemoSection>
+
+    <DemoSection Title="Controllers, hands and gaze"
+                 Api="GetInputSources / onInput"
+                 Description="The input list changes as the user picks controllers up and puts them down, so read it when it matters rather than caching it. Select is 'the main button' and every device has one; squeeze is grabbing, and many devices never report it."
+                 Code=@("""
+foreach (var source in await session.GetInputSources())
+{
+    // "left"/"right"/"none", "gaze"/"tracked-pointer"/"screen", and the profile names
+    // a renderer looks up to draw the right controller model
+    Console.WriteLine($"{source.Handedness} {source.TargetRayMode} {string.Join(",", source.Profiles)}");
+}
+""")>
+        <div class="controls">
+            <button @onclick="ReadInputs" disabled="@(session is null)">GetInputSources</button>
+        </div>
+        <DemoConsole @ref="inputOutput" Title="input output" />
+    </DemoSection>
+</div>
+
+<Callout Type="info" Title="Butil stops at the rendering">
+    Session lifecycle, poses and input cross into .NET; drawing does not. A headset runs at 90 Hz or more, and
+    marshalling every frame would cost more than the frames are worth. AttachCanvas gives the session an
+    XRWebGLLayer to present, and what is drawn into it is WebGL code of your own.
+</Callout>
+
+<Callout Type="warning" Title="An immersive session needs a gesture, a device and a secure context">
+    RequestSession returns null when any of those is missing, or when a required feature is unavailable. On a
+    machine with no headset, use Inline: it renders into a canvas in the page using the device's own sensors,
+    and needs none of the above.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes navigator.xr." />
+    <ApiMember Name="IsSessionSupported" Signature="ValueTask<bool> IsSessionSupported(XrSessionMode mode)" Description="Whether a session of this mode could start on this device right now. No gesture needed." />
+    <ApiMember Name="RequestSession" Signature="ValueTask<XrSessionHandle?> RequestSession(XrSessionMode mode, XrSessionOptions? options = null, Action? onEnd = null, Action<XrInputEvent>? onInput = null, Action<XrPose>? onPose = null)" Description="Starts a session and its reference space, and begins the frame loop that keeps poses current." />
+    <ApiMember Name="XrSessionOptions" Signature="RequiredFeatures, OptionalFeatures, ReferenceSpaceType, PoseIntervalMs" Description="What the session needs, what it would like, and how often to push poses back to .NET." />
+    <ApiMember Name="XrSessionHandle.ReferenceSpaceType" Signature="XrReferenceSpaceType ReferenceSpaceType" Description="The reference space the runtime actually granted, which may be a fallback." />
+    <ApiMember Name="XrSessionHandle.AttachCanvas" Signature="ValueTask<bool> AttachCanvas(ElementReference canvas)" Description="Builds an XRWebGLLayer over a fresh canvas so the session has something to present." />
+    <ApiMember Name="XrSessionHandle.GetViewerPose" Signature="ValueTask<XrPose?> GetViewerPose()" Description="Where the user's head is, and what each eye sees. Null when tracking is lost." />
+    <ApiMember Name="XrSessionHandle.GetInputSources" Signature="ValueTask<XrInputSource[]> GetInputSources()" Description="The controllers, hands and gaze sources the session knows about." />
+    <ApiMember Name="XrSessionHandle.DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Ends the session and gives the display back." />
+    <ApiMember Name="XrPose" Signature="Transform, EmulatedPosition, Views" Description="The viewer's transform, whether its position is inferred, and one view per eye." />
+    <ApiMember Name="XrView" Signature="Eye, Transform, ProjectionMatrix" Description="One eye's position and its 4x4 projection matrix, column-major." />
+    <ApiMember Name="XrInputSource" Signature="Handedness, TargetRayMode, Profiles, HasGamepad, HasGripSpace" Description="One controller, hand or gaze source." />
+    <ApiMember Name="XrInputEvent" Signature="Type, Handedness, TargetRayMode" Description="A select or squeeze, and which source it came from." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole sessionOutput = default!;
+    private DemoConsole poseOutput = default!;
+    private DemoConsole inputOutput = default!;
+
+    private ElementReference canvasElement;
+    private XrSessionHandle? session;
+    private XrPose? lastPose;
+
+    private string mode = "Inline";
+    private string referenceSpace = "LocalFloor";
+    private double poseInterval = 250;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await webXr.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckModes()
+    {
+        foreach (var candidate in Enum.GetValues<XrSessionMode>())
+        {
+            try
+            {
+                await supportOutput.Log($"IsSessionSupported({candidate}) →", await webXr.IsSessionSupported(candidate));
+            }
+            catch (Exception ex)
+            {
+                await supportOutput.Error($"IsSessionSupported({candidate}) failed →", ex.Message);
+            }
+        }
+    }
+
+    private async Task StartSession()
+    {
+        try
+        {
+            session = await webXr.RequestSession(
+                Enum.Parse<XrSessionMode>(mode),
+                new XrSessionOptions
+                {
+                    ReferenceSpaceType = Enum.Parse<XrReferenceSpaceType>(referenceSpace),
+                    PoseIntervalMs = (int)poseInterval
+                },
+                onEnd: async () =>
+                {
+                    session = null;
+                    lastPose = null;
+                    await sessionOutput.Log("the session ended (the user took the headset off, or the runtime closed it)");
+                    await InvokeAsync(StateHasChanged);
+                },
+                onInput: async e =>
+                {
+                    await inputOutput.Info($"{e.Type} → {e.Handedness} hand, {e.TargetRayMode}");
+                    await InvokeAsync(StateHasChanged);
+                },
+                onPose: async pose =>
+                {
+                    lastPose = pose;
+                    await InvokeAsync(StateHasChanged);
+                });
+
+            if (session is null)
+            {
+                await sessionOutput.Warn("RequestSession → null (no device, no gesture, or no usable reference space)");
+                return;
+            }
+
+            await sessionOutput.Success($"RequestSession → session {session.Id} in {session.ReferenceSpaceType} space");
+        }
+        catch (Exception ex)
+        {
+            await sessionOutput.Error("RequestSession failed →", ex.Message);
+        }
+    }
+
+    private async Task Attach()
+    {
+        try
+        {
+            await sessionOutput.Log("AttachCanvas →", await session!.AttachCanvas(canvasElement));
+        }
+        catch (Exception ex)
+        {
+            await sessionOutput.Error("AttachCanvas failed →", ex.Message);
+        }
+    }
+
+    private async Task EndSession()
+    {
+        try
+        {
+            await session!.DisposeAsync();
+            session = null;
+            lastPose = null;
+            await sessionOutput.Log("DisposeAsync → session ended");
+        }
+        catch (Exception ex)
+        {
+            await sessionOutput.Error("DisposeAsync failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadPose()
+    {
+        try
+        {
+            lastPose = await session!.GetViewerPose();
+            if (lastPose is null)
+            {
+                await poseOutput.Warn("GetViewerPose → null (tracking lost, or no frame has run yet)");
+                return;
+            }
+
+            var t = lastPose.Transform;
+            await poseOutput.Success($"GetViewerPose → position ({t.X:0.000}, {t.Y:0.000}, {t.Z:0.000}), " +
+                                     $"orientation ({t.OrientationX:0.00}, {t.OrientationY:0.00}, {t.OrientationZ:0.00}, {t.OrientationW:0.00}), " +
+                                     $"{lastPose.Views.Length} view(s), emulated position {lastPose.EmulatedPosition}");
+        }
+        catch (Exception ex)
+        {
+            await poseOutput.Error("GetViewerPose failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadInputs()
+    {
+        try
+        {
+            var sources = await session!.GetInputSources();
+            if (sources.Length == 0)
+            {
+                await inputOutput.Log("GetInputSources → none right now");
+                return;
+            }
+
+            foreach (var source in sources)
+            {
+                await inputOutput.Log($"{source.Handedness} / {source.TargetRayMode} → " +
+                                      $"profiles [{string.Join(", ", source.Profiles)}], gamepad {source.HasGamepad}, grip {source.HasGripSpace}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await inputOutput.Error("GetInputSources failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (session is not null) await session.DisposeAsync();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+}

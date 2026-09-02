@@ -1,0 +1,326 @@
+@page "/second-screen"
+@implements IAsyncDisposable
+@inject Bit.Butil.RemotePlayback remotePlayback
+@inject Bit.Butil.Presentation presentation
+@inject Bit.Butil.DocumentPictureInPicture documentPictureInPicture
+@inject Bit.Butil.WebXr webXr
+@inject NavigationManager navManager
+
+<PageTitle>Butil - Second Screen Samples</PageTitle>
+
+<PageHeader Category="Media"
+            Title="Second Screen &amp; XR"
+            Lead="Everything that puts your app somewhere other than this window: casting a media element, presenting a page on another display, floating arbitrary DOM above everything, and entering VR or AR."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Presentation_API" />
+
+<pre>
+@@inject Bit.Butil.RemotePlayback remotePlayback
+@@inject Bit.Butil.DocumentPictureInPicture documentPictureInPicture
+
+await remotePlayback.Prompt(mediaElement);                  // the browser's own device picker
+var window = await documentPictureInPicture.RequestWindow(); // then MoveElement into it
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Cast a media element" Api="RemotePlayback"
+              Description="WatchAvailability says whether there is anywhere to cast to; Prompt opens the picker and needs a user gesture.">
+        <audio @ref="mediaElement" src="@ToneDataUrl" loop controls style="width:100%;max-width:360px"></audio>
+        <div class="controls">
+            <button @onclick="WatchAvailability" disabled="@(availability is not null)">WatchAvailability</button>
+            <button @onclick="Cast">Prompt</button>
+            <button class="danger" @onclick="StopWatching" disabled="@(availability is null)">Stop watching</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Present a page on another display" Api="Presentation.Start"
+              Description="Opens one of your own URLs on the display the user chooses, and keeps a two-way message channel to it.">
+        <div class="controls">
+            <button @onclick="StartPresentation" disabled="@(connection is not null)">Start</button>
+            <button class="secondary" @onclick="SendToPresentation" disabled="@(connection is null)">Send a message</button>
+            <button class="danger" @onclick="TerminatePresentation" disabled="@(connection is null)">Terminate</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Float a panel above everything" Api="DocumentPictureInPicture.RequestWindow"
+              Description="The panel below is moved out of the page and into an always-on-top window - same DOM node, same component, still counting.">
+        <div @ref="panelElement" style="border:1px solid #8884;border-radius:8px;padding:1rem">
+            <strong>Still alive while it floats</strong>
+            <p style="margin:.5rem 0">ticks: @ticks</p>
+        </div>
+        <div class="controls">
+            <button @onclick="OpenFloatingWindow" disabled="@(pipWindow is not null)">RequestWindow + MoveElement</button>
+            <button class="danger" @onclick="CloseFloatingWindow" disabled="@(pipWindow is null)">Close</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Enter VR or AR" Api="WebXr"
+              Description="IsSessionSupported needs no gesture, so it is safe on load; an immersive session needs one, and inline needs neither.">
+        <div class="controls">
+            <button @onclick="CheckXrModes">IsSessionSupported</button>
+            <button @onclick="StartInlineSession" disabled="@(session is not null)">Start an inline session</button>
+            <button class="danger" @onclick="EndSession" disabled="@(session is null)">End session</button>
+        </div>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="second screen output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private ElementReference mediaElement;
+    private ElementReference panelElement;
+
+    private ButilSubscription? availability;
+    private PresentationConnectionHandle? connection;
+    private DocumentPictureInPictureWindowHandle? pipWindow;
+    private XrSessionHandle? session;
+
+    private int ticks;
+    private System.Threading.Timer? timer;
+
+    protected override void OnInitialized()
+    {
+        timer = new System.Threading.Timer(_ => InvokeAsync(() =>
+        {
+            ticks++;
+            StateHasChanged();
+        }), null, 1000, 1000);
+    }
+
+    private async Task WatchAvailability()
+    {
+        try
+        {
+            availability = await remotePlayback.WatchAvailability(mediaElement, async isAvailable =>
+                await output.Log("remote playback availability →", isAvailable));
+
+            if (availability is null) await output.Warn("WatchAvailability → null (unavailable here)");
+            else await output.Success("watching for remote playback devices");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("WatchAvailability failed →", ex.Message);
+        }
+    }
+
+    private async Task StopWatching()
+    {
+        try
+        {
+            await availability!.DisposeAsync();
+            availability = null;
+            await output.Log("stopped watching");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("dispose failed →", ex.Message);
+        }
+    }
+
+    private async Task Cast()
+    {
+        try
+        {
+            await output.Log("Prompt →", await remotePlayback.Prompt(mediaElement));
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Prompt failed →", ex.Message);
+        }
+    }
+
+    private async Task StartPresentation()
+    {
+        try
+        {
+            var url = navManager.Uri.Split('?', '#')[0];
+            connection = await presentation.Start([url], message => _ = output.Info("from the presentation →", message.Text));
+
+            if (connection is null) await output.Warn("Start → null (dismissed, or no display accepted the URL)");
+            else await output.Success($"presenting on connection {connection.ConnectionId}");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Start failed →", ex.Message);
+        }
+    }
+
+    private async Task SendToPresentation()
+    {
+        try
+        {
+            await output.Log("Send →", await connection!.Send("hello from the controller"));
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Send failed →", ex.Message);
+        }
+    }
+
+    private async Task TerminatePresentation()
+    {
+        try
+        {
+            await output.Log("Terminate →", await connection!.Terminate());
+            connection = null;
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Terminate failed →", ex.Message);
+        }
+    }
+
+    private async Task OpenFloatingWindow()
+    {
+        try
+        {
+            pipWindow = await documentPictureInPicture.RequestWindow(
+                new DocumentPictureInPictureOptions { Width = 320, Height = 180 },
+                onClose: async () =>
+                {
+                    pipWindow = null;
+                    await output.Log("the floating window closed - the panel is back in the page");
+                    await InvokeAsync(StateHasChanged);
+                });
+
+            if (pipWindow is null)
+            {
+                await output.Warn("RequestWindow → null (unsupported, or no user gesture)");
+                return;
+            }
+
+            await output.Success($"MoveElement → {await pipWindow.MoveElement(panelElement)}");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("RequestWindow failed →", ex.Message);
+        }
+    }
+
+    private async Task CloseFloatingWindow()
+    {
+        try
+        {
+            await pipWindow!.DisposeAsync();
+            pipWindow = null;
+            await output.Log("window closed, panel restored");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("close failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckXrModes()
+    {
+        foreach (var mode in Enum.GetValues<XrSessionMode>())
+        {
+            try
+            {
+                await output.Log($"IsSessionSupported({mode}) →", await webXr.IsSessionSupported(mode));
+            }
+            catch (Exception ex)
+            {
+                await output.Error($"IsSessionSupported({mode}) failed →", ex.Message);
+            }
+        }
+    }
+
+    private async Task StartInlineSession()
+    {
+        try
+        {
+            session = await webXr.RequestSession(XrSessionMode.Inline,
+                new XrSessionOptions { ReferenceSpaceType = XrReferenceSpaceType.Viewer },
+                onEnd: async () =>
+                {
+                    session = null;
+                    await output.Log("the XR session ended");
+                    await InvokeAsync(StateHasChanged);
+                });
+
+            if (session is null)
+            {
+                await output.Warn("RequestSession → null (no WebXR here)");
+                return;
+            }
+
+            await output.Success($"inline session in {session.ReferenceSpaceType} space; pose → " +
+                                 $"{(await session.GetViewerPose() is { } pose ? $"y {pose.Transform.Y:0.00}m, {pose.Views.Length} view(s)" : "not available yet")}");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("RequestSession failed →", ex.Message);
+        }
+    }
+
+    private async Task EndSession()
+    {
+        try
+        {
+            await session!.DisposeAsync();
+            session = null;
+            await output.Log("session ended");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("ending the session failed →", ex.Message);
+        }
+    }
+
+    // A one-second 440 Hz tone, so the sample needs no media file.
+    private static readonly string ToneDataUrl = BuildTone();
+
+    private static string BuildTone()
+    {
+        const int sampleRate = 8000;
+        const int samples = sampleRate;
+        var data = new byte[44 + samples];
+
+        void WriteAscii(int offset, string text)
+        {
+            for (var i = 0; i < text.Length; i++) data[offset + i] = (byte)text[i];
+        }
+
+        void WriteInt32(int offset, int value) => BitConverter.GetBytes(value).CopyTo(data, offset);
+        void WriteInt16(int offset, short value) => BitConverter.GetBytes(value).CopyTo(data, offset);
+
+        WriteAscii(0, "RIFF");
+        WriteInt32(4, 36 + samples);
+        WriteAscii(8, "WAVEfmt ");
+        WriteInt32(16, 16);
+        WriteInt16(20, 1);
+        WriteInt16(22, 1);
+        WriteInt32(24, sampleRate);
+        WriteInt32(28, sampleRate);
+        WriteInt16(32, 1);
+        WriteInt16(34, 8);
+        WriteAscii(36, "data");
+        WriteInt32(40, samples);
+
+        for (var i = 0; i < samples; i++)
+        {
+            var value = Math.Sin(2 * Math.PI * 440 * i / sampleRate);
+            data[44 + i] = (byte)(128 + value * 40);
+        }
+
+        return "data:audio/wav;base64," + Convert.ToBase64String(data);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            timer?.Dispose();
+            if (availability is not null) await availability.DisposeAsync();
+            if (connection is not null) await connection.DisposeAsync();
+            if (pipWindow is not null) await pipWindow.DisposeAsync();
+            if (session is not null) await session.DisposeAsync();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+}

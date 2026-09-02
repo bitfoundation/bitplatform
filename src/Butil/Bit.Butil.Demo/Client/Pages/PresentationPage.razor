@@ -1,0 +1,437 @@
+@page "/presentation"
+@implements IAsyncDisposable
+@inject Bit.Butil.Presentation presentation
+@inject NavigationManager navManager
+
+<PageTitle>Presentation - Bit.Butil</PageTitle>
+
+<PageHeader Category="Media &amp; Speech"
+            Title="Presentation"
+            Lead="Open one of your own pages on a second display - a projector, a TV, a cast receiver - and keep a two-way message channel to it. The second screen shows something other than a copy of the first."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Presentation_API"
+            InjectAs="Presentation presentation" />
+
+<div class="stack">
+    <DemoSection Title="Support, and which half of the conversation this page is"
+                 Api="IsSupported / IsReceiver"
+                 Description="Both halves live in the same service. A controlling page starts a presentation; the page that ends up on the second screen finds its controllers instead. IsReceiver is the branch a page that plays both roles takes at startup."
+                 Code=@("""
+@inject Bit.Butil.Presentation presentation
+
+var isSupported = await presentation.IsSupported();
+
+if (await presentation.IsReceiver())
+{
+    // this page IS the presentation - listen for the controllers that opened it
+    await presentation.WatchReceiverConnections(connection => { /* ... */ });
+}
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+            <button class="secondary" @onclick="CheckReceiver">IsReceiver</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Is there a display to present on?"
+                 Api="WatchAvailability"
+                 Description="Reports whether any display could show these URLs, immediately and on every change - so a 'present' button can stay hidden when there is nowhere to present. Some engines refuse to monitor availability continuously; a null subscription means exactly that, and the documented answer is to offer the button anyway and let Start report the truth."
+                 Code=@("""
+var subscription = await presentation.WatchAvailability(
+    ["/present"],
+    available => { canPresent = available; StateHasChanged(); });
+
+await subscription!.DisposeAsync();   // monitoring costs battery
+""")>
+        <div class="controls">
+            <button @onclick="Watch" disabled="@(availabilitySubscription is not null)">WatchAvailability</button>
+            <button class="danger" @onclick="Unwatch" disabled="@(availabilitySubscription is null)">Dispose subscription</button>
+        </div>
+        @if (available is not null)
+        {
+            <p><span class="result-pill">@(available.Value ? "a display is available" : "no display right now")</span></p>
+        }
+        <DemoConsole @ref="availabilityOutput" Title="availability output" />
+    </DemoSection>
+
+    <DemoSection Title="Start a presentation and talk to it"
+                 Api="Start / Send / GetState"
+                 Description="Start opens the browser's device picker and loads the URL on the display the user chooses - it needs a user gesture. From then on the connection is an ordinary two-way channel: text or bytes in either direction. Keep the connection id, because it is the only way back in after the page navigates away."
+                 Code=@("""
+var connection = await presentation.Start(["/present"],
+    onMessage: message => Console.WriteLine(message.Text),
+    onStateChange: state => Console.WriteLine(state));
+
+await connection!.Send("{\"slide\":3}");
+
+var savedId = connection.ConnectionId;   // what Reconnect needs later
+""")>
+        <div class="field">
+            <span class="field-label">Presentation URL</span>
+            <input @bind="presentationUrl" />
+        </div>
+        <div class="controls">
+            <button @onclick="Start" disabled="@(connection is not null)">Start</button>
+            <button class="secondary" @onclick="ReadState" disabled="@(connection is null)">GetState</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Message</span>
+            <input @bind="message" />
+        </div>
+        <div class="controls">
+            <button @onclick="SendMessage" disabled="@(connection is null)">Send text</button>
+            <button class="secondary" @onclick="SendBytes" disabled="@(connection is null)">Send bytes</button>
+        </div>
+        <DemoConsole @ref="connectionOutput" Title="connection output" />
+    </DemoSection>
+
+    <DemoSection Title="Letting go, coming back, and ending it"
+                 Api="Reconnect / Close / Terminate"
+                 Description="Closing lets go of the connection while the presentation keeps running on the other screen, which is what makes Reconnect possible - no picker, no gesture, so it works on page load. Terminate is the one that actually closes the page on the second screen."
+                 Code=@("""
+await connection.Close();       // the second screen keeps running
+
+var again = await presentation.Reconnect(["/present"], savedId,
+    onMessage: message => { /* ... */ });
+
+await again!.Terminate();       // now the presentation is over
+""")>
+        <div class="field">
+            <span class="field-label">Connection id to reconnect to</span>
+            <input @bind="savedConnectionId" />
+        </div>
+        <div class="controls">
+            <button @onclick="Close" disabled="@(connection is null)">Close</button>
+            <button class="secondary" @onclick="Reconnect" disabled="@(connection is not null || string.IsNullOrWhiteSpace(savedConnectionId))">Reconnect</button>
+            <button class="danger" @onclick="Terminate" disabled="@(connection is null)">Terminate</button>
+        </div>
+        <DemoConsole @ref="lifecycleOutput" Title="lifecycle output" />
+    </DemoSection>
+
+    <DemoSection Title="The receiving half"
+                 Api="WatchReceiverConnections / SetDefaultRequest"
+                 Description="A page opened on the second screen does not create connections - it finds the controllers that opened it, and can talk back over the same handles. SetDefaultRequest is what makes the browser's own 'cast this page' menu item do something for your app."
+                 Code=@("""
+// on the page that runs on the second screen:
+await presentation.WatchReceiverConnections(
+    onConnection: connection => Console.WriteLine($"controller {connection.ConnectionId} attached"),
+    onMessage: message => ApplyCommand(message.Text));
+
+// on the controlling page, so the browser's own casting menu starts this:
+await presentation.SetDefaultRequest(["/present"]);
+""")>
+        <div class="controls">
+            <button @onclick="WatchReceiver">WatchReceiverConnections</button>
+            <button class="secondary" @onclick="SetDefault">SetDefaultRequest</button>
+            <button class="secondary" @onclick="ClearDefault">Clear default request</button>
+        </div>
+        <DemoConsole @ref="receiverOutput" Title="receiver output" />
+    </DemoSection>
+</div>
+
+<Callout Type="info" Title="A presentation outlives its connection">
+    Closing a connection is not ending the presentation. That distinction is what lets a controller navigate
+    away, reload, or hand control to another tab and then reconnect by id - and it is why a page that goes away
+    should close rather than terminate, unless the user asked for it to stop.
+</Callout>
+
+<Callout Type="warning" Title="Availability monitoring is optional for the browser">
+    An engine is allowed to refuse continuous monitoring - it answers with a null subscription rather than an
+    error. Design for that: show the button, and let Start tell the user when there is nothing to present on.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes PresentationRequest." />
+    <ApiMember Name="IsReceiver" Signature="ValueTask<bool> IsReceiver()" Description="True when this page is itself the presentation, opened by a controlling page." />
+    <ApiMember Name="Start" Signature="ValueTask<PresentationConnectionHandle?> Start(string[] urls, Action<PresentationMessage>? onMessage = null, Action<PresentationConnectionState>? onStateChange = null)" Description="Opens the device picker and loads the URL on the chosen display. Needs a user gesture." />
+    <ApiMember Name="Reconnect" Signature="ValueTask<PresentationConnectionHandle?> Reconnect(string[] urls, string presentationId, Action<PresentationMessage>? onMessage = null, Action<PresentationConnectionState>? onStateChange = null)" Description="Rejoins a presentation that is still running. No picker, no gesture." />
+    <ApiMember Name="SetDefaultRequest" Signature="ValueTask<bool> SetDefaultRequest(string[] urls)" Description="The request the browser's own 'cast this page' menu item starts." />
+    <ApiMember Name="WatchAvailability" Signature="ValueTask<ButilSubscription?> WatchAvailability(string[] urls, Action<bool> handler)" Description="Whether any display could present these URLs, now and on every change." />
+    <ApiMember Name="WatchReceiverConnections" Signature="ValueTask<bool> WatchReceiverConnections(Action<PresentationConnectionHandle> onConnection, Action<PresentationMessage>? onMessage = null, Action<PresentationConnectionState>? onStateChange = null)" Description="The receiving half: the controllers connected to this page, including those already there." />
+    <ApiMember Name="PresentationConnectionHandle.ConnectionId" Signature="string ConnectionId" Description="The presentation's own id - what Reconnect needs. Worth persisting." />
+    <ApiMember Name="PresentationConnectionHandle.Url" Signature="string Url" Description="The URL the receiver accepted and is showing." />
+    <ApiMember Name="PresentationConnectionHandle.Send" Signature="ValueTask<bool> Send(string message)" Description="Sends text over the connection." />
+    <ApiMember Name="PresentationConnectionHandle.Send" Signature="ValueTask<bool> Send(byte[] data)" Description="Sends binary data over the connection." />
+    <ApiMember Name="PresentationConnectionHandle.GetState" Signature="ValueTask<PresentationConnectionState> GetState()" Description="Connecting, Connected, Closed or Terminated." />
+    <ApiMember Name="PresentationConnectionHandle.Close" Signature="ValueTask Close()" Description="Lets go of the connection, leaving the presentation running." />
+    <ApiMember Name="PresentationConnectionHandle.Terminate" Signature="ValueTask<bool> Terminate()" Description="Ends the presentation, closing the page on the second screen." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole availabilityOutput = default!;
+    private DemoConsole connectionOutput = default!;
+    private DemoConsole lifecycleOutput = default!;
+    private DemoConsole receiverOutput = default!;
+
+    private PresentationConnectionHandle? connection;
+    private ButilSubscription? availabilitySubscription;
+    private bool? available;
+
+    private string presentationUrl = "";
+    private string savedConnectionId = "";
+    private string message = "{\"slide\":3}";
+
+    protected override void OnInitialized()
+    {
+        // A presentation URL has to be absolute and same-origin; this page's own address is the one
+        // thing guaranteed to be both, so it stands in for a real receiver page here.
+        presentationUrl = navManager.Uri.Split('?', '#')[0];
+    }
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await presentation.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckReceiver()
+    {
+        try
+        {
+            await supportOutput.Log("IsReceiver →", await presentation.IsReceiver());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsReceiver failed →", ex.Message);
+        }
+    }
+
+    private async Task Watch()
+    {
+        try
+        {
+            availabilitySubscription = await presentation.WatchAvailability([presentationUrl], async isAvailable =>
+            {
+                available = isAvailable;
+                await availabilityOutput.Log("availability →", isAvailable);
+                await InvokeAsync(StateHasChanged);
+            });
+
+            if (availabilitySubscription is null)
+            {
+                await availabilityOutput.Warn("WatchAvailability → null (this engine will not monitor continuously; offer the button anyway)");
+                return;
+            }
+
+            await availabilityOutput.Success("WatchAvailability → watching");
+        }
+        catch (Exception ex)
+        {
+            await availabilityOutput.Error("WatchAvailability failed →", ex.Message);
+        }
+    }
+
+    private async Task Unwatch()
+    {
+        try
+        {
+            await availabilitySubscription!.DisposeAsync();
+            availabilitySubscription = null;
+            available = null;
+            await availabilityOutput.Log("DisposeAsync → the browser stops scanning");
+        }
+        catch (Exception ex)
+        {
+            await availabilityOutput.Error("DisposeAsync failed →", ex.Message);
+        }
+    }
+
+    private async Task Start()
+    {
+        try
+        {
+            connection = await presentation.Start([presentationUrl], OnMessage, OnStateChange);
+            if (connection is null)
+            {
+                await connectionOutput.Warn("Start → null (the picker was dismissed, or no display accepted the URL)");
+                return;
+            }
+
+            savedConnectionId = connection.ConnectionId;
+            await connectionOutput.Success($"Start → connection {connection.ConnectionId} showing {connection.Url}");
+        }
+        catch (Exception ex)
+        {
+            await connectionOutput.Error("Start failed →", ex.Message);
+        }
+    }
+
+    private async void OnMessage(PresentationMessage received)
+    {
+        try
+        {
+            await connectionOutput.Info("message →", received.Text ?? $"{received.Data?.Length ?? 0} bytes");
+        }
+        catch (Exception ex)
+        {
+            await connectionOutput.Error("handling the message failed →", ex.Message);
+        }
+    }
+
+    private async void OnStateChange(PresentationConnectionState state)
+    {
+        try
+        {
+            await connectionOutput.Log("state →", state);
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            await connectionOutput.Error("handling the state change failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadState()
+    {
+        try
+        {
+            await connectionOutput.Log("GetState →", await connection!.GetState());
+        }
+        catch (Exception ex)
+        {
+            await connectionOutput.Error("GetState failed →", ex.Message);
+        }
+    }
+
+    private async Task SendMessage()
+    {
+        try
+        {
+            await connectionOutput.Log($"Send(\"{message}\") →", await connection!.Send(message));
+        }
+        catch (Exception ex)
+        {
+            await connectionOutput.Error("Send failed →", ex.Message);
+        }
+    }
+
+    private async Task SendBytes()
+    {
+        try
+        {
+            await connectionOutput.Log("Send(bytes) →", await connection!.Send(Encoding.UTF8.GetBytes(message)));
+        }
+        catch (Exception ex)
+        {
+            await connectionOutput.Error("Send failed →", ex.Message);
+        }
+    }
+
+    private async Task Close()
+    {
+        try
+        {
+            await connection!.Close();
+            connection = null;
+            await lifecycleOutput.Log($"Close → let go; the presentation keeps running. Reconnect with id '{savedConnectionId}'.");
+        }
+        catch (Exception ex)
+        {
+            await lifecycleOutput.Error("Close failed →", ex.Message);
+        }
+    }
+
+    private async Task Reconnect()
+    {
+        try
+        {
+            connection = await presentation.Reconnect([presentationUrl], savedConnectionId, OnMessage, OnStateChange);
+            if (connection is null)
+            {
+                await lifecycleOutput.Warn("Reconnect → null (no presentation with that id is still running)");
+                return;
+            }
+
+            await lifecycleOutput.Success($"Reconnect → back on connection {connection.ConnectionId}");
+        }
+        catch (Exception ex)
+        {
+            await lifecycleOutput.Error("Reconnect failed →", ex.Message);
+        }
+    }
+
+    private async Task Terminate()
+    {
+        try
+        {
+            var terminated = await connection!.Terminate();
+            connection = null;
+            await lifecycleOutput.Log("Terminate →", terminated);
+        }
+        catch (Exception ex)
+        {
+            await lifecycleOutput.Error("Terminate failed →", ex.Message);
+        }
+    }
+
+    private async Task WatchReceiver()
+    {
+        try
+        {
+            var watching = await presentation.WatchReceiverConnections(
+                onConnection: async handle =>
+                {
+                    await receiverOutput.Success($"controller attached → {handle.ConnectionId} ({handle.Url})");
+                    await InvokeAsync(StateHasChanged);
+                },
+                onMessage: async received => await receiverOutput.Info("from controller →", received.Text ?? $"{received.Data?.Length ?? 0} bytes"));
+
+            if (watching is false)
+            {
+                await receiverOutput.Log("WatchReceiverConnections → false (this page is not a presentation receiver)");
+                return;
+            }
+
+            await receiverOutput.Success("WatchReceiverConnections → watching for controllers");
+        }
+        catch (Exception ex)
+        {
+            await receiverOutput.Error("WatchReceiverConnections failed →", ex.Message);
+        }
+    }
+
+    private async Task SetDefault()
+    {
+        try
+        {
+            await receiverOutput.Log("SetDefaultRequest →", await presentation.SetDefaultRequest([presentationUrl]));
+        }
+        catch (Exception ex)
+        {
+            await receiverOutput.Error("SetDefaultRequest failed →", ex.Message);
+        }
+    }
+
+    private async Task ClearDefault()
+    {
+        try
+        {
+            await receiverOutput.Log("SetDefaultRequest([]) →", await presentation.SetDefaultRequest([]));
+        }
+        catch (Exception ex)
+        {
+            await receiverOutput.Error("SetDefaultRequest failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (availabilitySubscription is not null) await availabilitySubscription.DisposeAsync();
+            // Close rather than terminate: a page going away should not take the second screen with it.
+            if (connection is not null) await connection.DisposeAsync();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+}

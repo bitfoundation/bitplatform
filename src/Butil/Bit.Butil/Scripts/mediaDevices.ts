@@ -8,6 +8,13 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // Cross-module accessor: mediaRecorder.ts records a stream this module owns, and the
         // handle .NET passes around is only ever the id. Not called from .NET.
         getStream(id: string) { return _streams[id]; },
+        // The other direction: webAudio.ts produces a stream of its own (a MediaStreamAudioDestination)
+        // and parks it here so that .NET can treat it like any other stream - attach it to an element,
+        // or hand it to MediaRecorder. Not called from .NET.
+        registerStream(id: string, stream: MediaStream) {
+            stopStream(_streams[id]);
+            _streams[id] = stream;
+        },
         async enumerate() {
             const md = (window.navigator as any).mediaDevices;
             if (!md?.enumerateDevices) return [];

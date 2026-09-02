@@ -6,7 +6,7 @@
 
 <PageHeader Category="Media & Speech"
             Title="WebAudio"
-            Lead="Play sound from C# with the Web Audio API: decode and play audio buffers, generate oscillator tones, and control per-playback and master gain - all through one shared AudioContext."
+            Lead="Sound from C# with the Web Audio API: the one-line ways to make a noise, and the node graph everything interesting is built from - filters, analysers, reverb, spatial panning, live streams and your own DSP in an audio worklet."
             MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API"
             InjectAs="WebAudio webAudio" />
 
@@ -113,6 +113,230 @@ await webAudio.SetMasterGain(0);   // mute
         </div>
         <DemoConsole @ref="masterGainOutput" Title="master gain output" />
     </DemoSection>
+
+    <DemoSection Title="The context's clock"
+                 Api="GetState / GetCurrentTime / GetSampleRate / IsWorkletSupported"
+                 Description="currentTime is the clock every scheduled start, stop and ramp is measured against - it moves only while the context runs, and it is what makes a sequence stay in time in a way a .NET timer cannot. The sample rate is the device's, and everything decoded is resampled to it."
+                 Code=@("""
+var state = await webAudio.GetState();          // Suspended until a gesture resumes it
+var now = await webAudio.GetCurrentTime();      // seconds, on the audio clock
+var rate = await webAudio.GetSampleRate();      // 48000 on most devices
+""")>
+        <div class="controls">
+            <button @onclick="ReadContext">Read state, clock and rate</button>
+        </div>
+        <DemoConsole @ref="clockOutput" Title="clock output" />
+    </DemoSection>
+
+    <DemoSection Title="Decode once, play many times"
+                 Api="DecodeAudioData / CreateBufferSource / Start / Stop"
+                 Description="Decoding is the expensive step and the samples are large, so decode once and build a cheap source per playback - that is how a game plays the same effect fifty times without fifty decodes. A source is single-use: once started and stopped it cannot be restarted, which is why they are made per playback rather than kept."
+                 Code=@("""
+var buffer = await webAudio.DecodeAudioData(bytes);
+// buffer.Duration, buffer.SampleRate, buffer.NumberOfChannels
+
+var source = await webAudio.CreateBufferSource(buffer!, loop: false, playbackRate: 1);
+await source!.ConnectToDestination();
+await source.Start();
+
+await source.SetParam("playbackRate", 1.5);   // faster, and higher in pitch
+await source.Stop(whenSeconds: 2);            // scheduled on the audio thread
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Playback rate (@playbackRate.ToString("0.00")x)</span>
+                <input type="range" min="0.25" max="2" step="0.05" @bind="playbackRate" @bind:event="oninput" />
+            </div>
+            <div class="field">
+                <span class="field-label">Loop</span>
+                <label><input type="checkbox" @bind="loopSource" /> loop the buffer</label>
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="DecodeChime">DecodeAudioData</button>
+            <button class="secondary" @onclick="PlayFromBuffer" disabled="@(decodedBuffer is null)">CreateBufferSource + Start</button>
+            <button class="danger" @onclick="StopBufferSource" disabled="@(bufferSource is null)">Stop</button>
+        </div>
+        <DemoConsole @ref="graphOutput" Title="graph output" />
+    </DemoSection>
+
+    <DemoSection Title="A filter chain"
+                 Api="CreateOscillator / CreateBiquadFilter / CreateGain / Connect / RampParam"
+                 Description="This is the whole idea of Web Audio in one sample: an oscillator into a filter into a gain into the output, wired up from C#. The sweep ramps the filter's cutoff on the audio thread, which is why it sounds smooth - a ramp is scheduled once and runs at sample rate, where a timer in .NET would step audibly."
+                 Code=@("""
+var osc = await webAudio.CreateOscillator(AudioOscillatorType.Sawtooth, 110);
+var filter = await webAudio.CreateBiquadFilter(BiquadFilterType.Lowpass, frequency: 300, q: 12);
+var gain = await webAudio.CreateGain(0.0001);
+
+await osc!.Connect(filter!);
+await filter.Connect(gain!);
+await gain.ConnectToDestination();
+
+await osc.Start();
+await gain.RampParam("gain", 0.3, overSeconds: 0.05, exponential: true);   // no click
+await filter.RampParam("frequency", 4000, overSeconds: 2);                 // the sweep
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Filter type</span>
+                <select @bind="filterType">
+                    <option value="Lowpass">Lowpass</option>
+                    <option value="Highpass">Highpass</option>
+                    <option value="Bandpass">Bandpass</option>
+                    <option value="Notch">Notch</option>
+                    <option value="Peaking">Peaking</option>
+                </select>
+            </div>
+            <div class="field">
+                <span class="field-label">Resonance / Q (@filterQ.ToString("0"))</span>
+                <input type="range" min="0.5" max="24" step="0.5" @bind="filterQ" @bind:event="oninput" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="StartChain" disabled="@(chainOscillator is not null)">Build and start the chain</button>
+            <button class="secondary" @onclick="SweepFilter" disabled="@(chainFilter is null)">Sweep the cutoff</button>
+            <button class="danger" @onclick="StopChain" disabled="@(chainOscillator is null)">Fade out and stop</button>
+        </div>
+        <DemoConsole @ref="chainOutput" Title="filter chain output" />
+    </DemoSection>
+
+    <DemoSection Title="See the signal"
+                 Api="CreateAnalyser / GetByteFrequencyData / GetByteTimeDomainData"
+                 Description="An analyser passes audio through unchanged and lets you read it - which is what every level meter, spectrum display and oscilloscope is made of. Connect it as a second connection that goes nowhere else and it measures without being in the way. Each read crosses the interop boundary, so poll at the rate the UI updates, not faster."
+                 Code=@("""
+var analyser = await webAudio.CreateAnalyser(fftSize: 1024, smoothingTimeConstant: 0.8);
+await source.Connect(analyser!);      // in addition to whatever else source feeds
+
+var spectrum = await analyser!.GetByteFrequencyData();   // fftSize / 2 bins, 0-255
+var wave = await analyser.GetByteTimeDomainData();       // fftSize samples around 128
+""")>
+        <div class="controls">
+            <button @onclick="StartMeter" disabled="@(meterTimer is not null)">Analyse the running graph</button>
+            <button class="danger" @onclick="StopMeter" disabled="@(meterTimer is null)">Stop analysing</button>
+        </div>
+        @if (spectrum is not null)
+        {
+            <div style="display:flex;align-items:flex-end;gap:2px;height:80px;margin-top:1rem">
+                @foreach (var value in spectrum)
+                {
+                    <div style="flex:1;background:currentColor;opacity:.7;height:@(Math.Max(2, value * 80 / 255))px"></div>
+                }
+            </div>
+            <p><span class="result-pill">peak @peak of 255</span></p>
+        }
+        <DemoConsole @ref="analyserOutput" Title="analyser output" />
+    </DemoSection>
+
+    <DemoSection Title="Space"
+                 Api="CreatePanner / CreateStereoPanner / SetListener"
+                 Description="A stereo panner is a mixer's pan knob: left to right, and cheap. A full panner places a sound at a point relative to the listener, and with the HRTF model it can be above, behind or beside them - convincing on headphones, and noticeably more expensive. Only the relationship between listener and source matters, so either can move."
+                 Code=@("""
+var panner = await webAudio.CreatePanner(new AudioPannerOptions
+{
+    PanningModel = AudioPanningModel.Hrtf,
+    DistanceModel = AudioDistanceModel.Inverse,
+    PositionX = 2, PositionZ = -3,
+    RefDistance = 1, RolloffFactor = 1
+});
+
+await source.Connect(panner!);
+await panner!.ConnectToDestination();
+
+await panner.SetParam("positionX", -2);                       // jump
+await panner.RampParam("positionX", 2, overSeconds: 4);       // or glide across
+await webAudio.SetListener(0, 0, 0);                          // where the ears are
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Stereo pan (@stereoPan.ToString("0.0"))</span>
+                <input type="range" min="-1" max="1" step="0.1" @bind="stereoPan" @bind:event="oninput" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="PlayStereoPanned">Play through a stereo panner</button>
+            <button class="secondary" @onclick="PlaySpatial">Play an HRTF fly-past</button>
+        </div>
+        <DemoConsole @ref="spaceOutput" Title="spatial output" />
+    </DemoSection>
+
+    <DemoSection Title="Delay, compression and distortion"
+                 Api="CreateDelay / CreateDynamicsCompressor / CreateWaveShaper / CreateConvolver"
+                 Description="An echo is a delay fed back into itself through a gain of less than one - the one place a Web Audio graph is allowed to contain a cycle. A compressor pulls loud passages down, which is also the standard guard against clipping when sources are mixed. A wave shaper maps every sample through a curve, and a convolver makes the signal sound as though it were played in whatever space its impulse response was recorded in."
+                 Code=@("""
+var delay = await webAudio.CreateDelay(maxDelaySeconds: 1, delaySeconds: 0.25);
+var feedback = await webAudio.CreateGain(0.4);
+await delay!.Connect(feedback!);
+await feedback.Connect(delay);          // the cycle that makes it an echo
+await delay.ConnectToDestination();
+
+var compressor = await webAudio.CreateDynamicsCompressor(threshold: -30, ratio: 12);
+var shaper = await webAudio.CreateWaveShaper(curve, oversample: "4x");
+var reverb = await webAudio.CreateConvolver(impulseResponseBuffer!);
+""")>
+        <div class="controls">
+            <button @onclick="PlayEcho">Echo a chime</button>
+            <button class="secondary" @onclick="PlayDistorted">Play it distorted and compressed</button>
+            <button class="secondary" @onclick="PlayReverb">Play it in a synthesized room</button>
+        </div>
+        <DemoConsole @ref="effectOutput" Title="effects output" />
+    </DemoSection>
+
+    <DemoSection Title="Live sources, and audio that leaves the graph"
+                 Api="CreateMediaElementSource / CreateMediaStreamSource / CreateMediaStreamDestination"
+                 Description="A media element's audio can be routed through the graph and filtered - but note that it then reaches the speakers only through that graph, so a chain that is not connected to the destination silences it, and an element can be the source of exactly one node ever. A stream destination is the way out: the processed audio becomes an ordinary MediaStream, ready for MediaRecorder."
+                 Code=@("""
+var elementSource = await webAudio.CreateMediaElementSource(audioElement);
+var filter = await webAudio.CreateBiquadFilter(BiquadFilterType.Lowpass, 800);
+await elementSource!.Connect(filter!);
+await filter.ConnectToDestination();     // without this, the element is now silent
+
+var mic = await mediaDevices.GetUserMedia(audio: true, video: false);
+var micSource = await webAudio.CreateMediaStreamSource(mic!);   // do not connect this to the speakers
+
+var destination = await webAudio.CreateMediaStreamDestination();
+await filter.Connect(destination!);
+await mediaRecorder.Start(destination!.GetStream());            // records the processed signal
+""")>
+        <audio @ref="audioElement" src="@ChimeDataUrl" controls loop style="width:100%;max-width:420px"></audio>
+        <div class="controls">
+            <button @onclick="RouteElement" disabled="@(elementSource is not null)">Route the element through a filter</button>
+            <button class="secondary" @onclick="CaptureGraph">CreateMediaStreamDestination</button>
+        </div>
+        <DemoConsole @ref="routingOutput" Title="routing output" />
+    </DemoSection>
+
+    <DemoSection Title="Your own DSP"
+                 Api="AddWorkletModule / CreateWorkletNode / PostMessage"
+                 Description="An audio worklet is the only place custom per-sample processing can live. The processor is JavaScript by necessity - it runs on the audio thread, which cannot call into .NET and must never block - and .NET drives it two ways: declared AudioParams, which are sample-accurate, and messages, which arrive whenever the thread gets to them. This one applies a gain and reports its peak level back."
+                 Code=@("""
+await webAudio.AddWorkletModule("js/butil-gain-processor.js");
+
+var node = await webAudio.CreateWorkletNode("butil-gain-processor",
+    new AudioWorkletNodeOptions { ProcessorOptions = "{\"reportIntervalSeconds\":0.1}" },
+    onMessage: json => peak = JsonSerializer.Deserialize<Report>(json)!.Peak);
+
+await source.Connect(node!);
+await node!.ConnectToDestination();
+
+await node.SetParam("gain", 0.5);      // the declared AudioParam - sample-accurate
+await node.PostMessage("mute");        // a command - whenever the thread gets to it
+""")>
+        <div class="field">
+            <span class="field-label">Worklet gain (@workletGain.ToString("0.00"))</span>
+            <input type="range" min="0" max="2" step="0.05" @bind="workletGain" @bind:event="oninput" />
+        </div>
+        <div class="controls">
+            <button @onclick="StartWorklet" disabled="@(workletNode is not null)">Load the module and play through it</button>
+            <button class="secondary" @onclick="ApplyWorkletGain" disabled="@(workletNode is null)">SetParam("gain")</button>
+            <button class="secondary" @onclick="ToggleWorkletMute" disabled="@(workletNode is null)">PostMessage(@(workletMuted ? "\"unmute\"" : "\"mute\""))</button>
+            <button class="danger" @onclick="StopWorklet" disabled="@(workletNode is null)">Stop and dispose</button>
+        </div>
+        @if (workletPeak is not null)
+        {
+            <p><span class="result-pill">peak from the audio thread: @workletPeak.Value.ToString("0.000")</span></p>
+        }
+        <DemoConsole @ref="workletOutput" Title="worklet output" />
+    </DemoSection>
 </div>
 
 <Callout Type="warning" Title="Autoplay policies block un-gestured audio">
@@ -121,10 +345,16 @@ await webAudio.SetMasterGain(0);   // mute
     will stay silent on mobile Safari and produce a console warning on Chromium.
 </Callout>
 
-<Callout Type="info" Title="A deliberately small surface">
-    The wrapper exposes the high-traffic operations: play a buffer, play a tone and gain control. For custom
-    node graphs - filters, analysers, spatial panners - build the graph in JavaScript and call into it via
-    interop; Butil's shared context does not get in the way.
+<Callout Type="info" Title="Two levels, one context">
+    PlayTone and PlayBuffer are the shortcuts - a beep, a sound effect, no graph to wire up. Everything else
+    builds a graph out of node handles, and both routes end at the same master gain, so SetMasterGain still
+    ducks the lot. Nodes hold browser resources: dispose them when they leave the graph for good.
+</Callout>
+
+<Callout Type="info" Title="Ramp, do not set">
+    Setting a gain on a running signal is audible as a click. RampParam schedules the change on the audio
+    thread instead - exponentially for anything the ear judges (loudness, pitch), because a linear fade to
+    silence sounds like it stops abruptly at the end.
 </Callout>
 
 <ApiTable Title="API reference">
@@ -139,6 +369,46 @@ await webAudio.SetMasterGain(0);   // mute
     <ApiMember Name="AudioPlaybackHandle.Stop" Signature="ValueTask Stop()" Description="Stops playback immediately." />
     <ApiMember Name="AudioPlaybackHandle.SetGain" Signature="ValueTask SetGain(double value)" Description="Sets per-source gain in [0, 1]." />
     <ApiMember Name="AudioPlaybackHandle.DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Stops the playback if it is still running." />
+    <ApiMember Name="IsWorkletSupported" Signature="ValueTask<bool> IsWorkletSupported()" Description="True when the runtime exposes AudioWorkletNode. Worklets also need a secure context." />
+    <ApiMember Name="GetState" Signature="ValueTask<AudioContextState> GetState()" Description="Suspended, Running or Closed." />
+    <ApiMember Name="GetCurrentTime" Signature="ValueTask<double> GetCurrentTime()" Description="The audio clock in seconds - what every scheduled start, stop and ramp is measured against." />
+    <ApiMember Name="GetSampleRate" Signature="ValueTask<double> GetSampleRate()" Description="The device's sample rate; everything decoded is resampled to it." />
+    <ApiMember Name="GetMasterGain" Signature="ValueTask<double> GetMasterGain()" Description="The current master gain." />
+    <ApiMember Name="DecodeAudioData" Signature="ValueTask<AudioBufferHandle?> DecodeAudioData(byte[] data)" Description="Decodes any container the browser understands into samples that can be played over and over." />
+    <ApiMember Name="CreateGain" Signature="ValueTask<AudioNodeHandle?> CreateGain(double gain = 1)" Description="A volume control - the node to reach for whenever something needs to fade." />
+    <ApiMember Name="CreateBiquadFilter" Signature="ValueTask<AudioNodeHandle?> CreateBiquadFilter(BiquadFilterType type, double frequency, double q = 1, double gain = 0, double detune = 0)" Description="One band of equalisation: a low-pass, a shelf, a notch." />
+    <ApiMember Name="CreateAnalyser" Signature="ValueTask<AnalyserNodeHandle?> CreateAnalyser(int fftSize = 2048, double smoothingTimeConstant = 0.8, double minDecibels = -100, double maxDecibels = -30)" Description="Reads the signal without changing it - the basis of every meter and spectrum." />
+    <ApiMember Name="CreateConvolver" Signature="ValueTask<AudioNodeHandle?> CreateConvolver(AudioBufferHandle impulseResponse, bool normalize = true)" Description="Convolution reverb: makes the signal sound as though played in the space the impulse was recorded in." />
+    <ApiMember Name="CreatePanner" Signature="ValueTask<AudioNodeHandle?> CreatePanner(AudioPannerOptions options)" Description="Places a sound at a point in space relative to the listener." />
+    <ApiMember Name="CreateStereoPanner" Signature="ValueTask<AudioNodeHandle?> CreateStereoPanner(double pan = 0)" Description="Simple left/right placement, at a fraction of a full panner's cost." />
+    <ApiMember Name="CreateDelay" Signature="ValueTask<AudioNodeHandle?> CreateDelay(double maxDelaySeconds = 1, double delaySeconds = 0)" Description="Holds the signal back by a set time; fed back into itself, it is an echo." />
+    <ApiMember Name="CreateDynamicsCompressor" Signature="ValueTask<AudioNodeHandle?> CreateDynamicsCompressor(double threshold = -24, double knee = 30, double ratio = 12, double attack = 0.003, double release = 0.25)" Description="Pulls loud passages down - also the standard guard against clipping a mix." />
+    <ApiMember Name="CreateWaveShaper" Signature="ValueTask<AudioNodeHandle?> CreateWaveShaper(double[] curve, string oversample = &quot;none&quot;)" Description="Maps every sample through a curve: distortion, saturation, bit-crushing." />
+    <ApiMember Name="CreateOscillator" Signature="ValueTask<AudioSourceNodeHandle?> CreateOscillator(AudioOscillatorType type, double frequency, double detune = 0)" Description="A tone generator. Connect it, then Start it." />
+    <ApiMember Name="CreateBufferSource" Signature="ValueTask<AudioSourceNodeHandle?> CreateBufferSource(AudioBufferHandle buffer, bool loop = false, double loopStartSeconds = 0, double loopEndSeconds = 0, double playbackRate = 1, double detune = 0)" Description="Plays a decoded buffer. Single-use: one source per playback." />
+    <ApiMember Name="CreateConstantSource" Signature="ValueTask<AudioSourceNodeHandle?> CreateConstantSource(double offset = 1)" Description="Emits a steady value - for driving several AudioParams from one ramp." />
+    <ApiMember Name="CreateMediaElementSource" Signature="ValueTask<AudioNodeHandle?> CreateMediaElementSource(ElementReference mediaElement)" Description="Routes an audio or video element's sound through the graph. One node per element, ever." />
+    <ApiMember Name="CreateMediaStreamSource" Signature="ValueTask<AudioNodeHandle?> CreateMediaStreamSource(MediaStreamHandle stream)" Description="Feeds a microphone or a screen share's audio into the graph." />
+    <ApiMember Name="CreateMediaStreamDestination" Signature="ValueTask<MediaStreamAudioDestinationHandle?> CreateMediaStreamDestination()" Description="Ends a graph in a MediaStream instead of the speakers - ready for MediaRecorder." />
+    <ApiMember Name="AddWorkletModule" Signature="ValueTask<bool> AddWorkletModule(string moduleUrl)" Description="Loads a JavaScript module that registers audio worklet processors. Needs a secure context." />
+    <ApiMember Name="CreateWorkletNode" Signature="ValueTask<AudioWorkletNodeHandle?> CreateWorkletNode(string processorName, AudioWorkletNodeOptions? options = null, Action<string>? onMessage = null)" Description="Puts your own DSP code, running on the audio thread, into the graph." />
+    <ApiMember Name="SetListener" Signature="ValueTask<bool> SetListener(double x, double y, double z, double forwardX = 0, double forwardY = 0, double forwardZ = -1, double upX = 0, double upY = 1, double upZ = 0)" Description="Where the ears are and which way they face - what every panner is measured against." />
+    <ApiMember Name="AudioNodeHandle.Connect" Signature="ValueTask<bool> Connect(AudioNodeHandle destination)" Description="Routes this node's output into another. Connecting to several destinations splits the signal." />
+    <ApiMember Name="AudioNodeHandle.ConnectToDestination" Signature="ValueTask<bool> ConnectToDestination()" Description="Connects to the output, through Butil's shared master gain." />
+    <ApiMember Name="AudioNodeHandle.Disconnect" Signature="ValueTask<bool> Disconnect()" Description="Detaches every connection this node's output makes." />
+    <ApiMember Name="AudioNodeHandle.SetParam" Signature="ValueTask<bool> SetParam(string name, double value, double afterSeconds = 0)" Description="Sets an AudioParam by name, now or at a scheduled moment." />
+    <ApiMember Name="AudioNodeHandle.RampParam" Signature="ValueTask<bool> RampParam(string name, double value, double overSeconds, bool exponential = false)" Description="Moves an AudioParam smoothly, on the audio thread. What to use for anything the user hears." />
+    <ApiMember Name="AudioNodeHandle.CancelScheduledParam" Signature="ValueTask<bool> CancelScheduledParam(string name)" Description="Drops everything scheduled on a parameter from now on." />
+    <ApiMember Name="AudioNodeHandle.SetProperty" Signature="ValueTask<bool> SetProperty(string name, string | double | bool value)" Description="Sets a plain property - a filter's type, an analyser's fftSize, a buffer source's loop." />
+    <ApiMember Name="AudioSourceNodeHandle.Start" Signature="ValueTask<bool> Start(double whenSeconds = 0, double offsetSeconds = 0, double durationSeconds = 0)" Description="Begins playback, optionally scheduled and offset into the buffer." />
+    <ApiMember Name="AudioSourceNodeHandle.Stop" Signature="ValueTask<bool> Stop(double whenSeconds = 0)" Description="Ends playback, optionally at a scheduled moment." />
+    <ApiMember Name="AnalyserNodeHandle.GetByteFrequencyData" Signature="ValueTask<byte[]?> GetByteFrequencyData()" Description="The current spectrum, one byte per bin - what a bar chart is drawn from." />
+    <ApiMember Name="AnalyserNodeHandle.GetByteTimeDomainData" Signature="ValueTask<byte[]?> GetByteTimeDomainData()" Description="The current waveform, one byte per sample - what an oscilloscope draws." />
+    <ApiMember Name="AnalyserNodeHandle.GetFloatFrequencyData" Signature="ValueTask<double[]?> GetFloatFrequencyData()" Description="The spectrum in decibels, unscaled - for measurement rather than for drawing." />
+    <ApiMember Name="AnalyserNodeHandle.SetFftSize" Signature="ValueTask<bool> SetFftSize(int fftSize)" Description="Samples per analysis: resolution against latency." />
+    <ApiMember Name="AudioWorkletNodeHandle.PostMessage" Signature="ValueTask<bool> PostMessage(string message)" Description="Sends a message to the processor. For continuous values, prefer a declared AudioParam." />
+    <ApiMember Name="MediaStreamAudioDestinationHandle.GetStream" Signature="MediaStreamHandle GetStream()" Description="The node's output as an ordinary Butil media stream." />
+    <ApiMember Name="AudioBufferHandle" Signature="Id, Duration, SampleRate, NumberOfChannels, Length" Description="A decoded buffer. Dispose it when no new source will be built over it." />
 </ApiTable>
 
 @code {
@@ -155,6 +425,52 @@ await webAudio.SetMasterGain(0);   // mute
     private AudioPlaybackHandle? toneHandle;
     private AudioPlaybackHandle? bufferHandle;
     private byte[]? chimeWav;
+
+    private DemoConsole clockOutput = default!;
+    private DemoConsole graphOutput = default!;
+    private DemoConsole chainOutput = default!;
+    private DemoConsole analyserOutput = default!;
+    private DemoConsole spaceOutput = default!;
+    private DemoConsole effectOutput = default!;
+    private DemoConsole routingOutput = default!;
+    private DemoConsole workletOutput = default!;
+
+    private ElementReference audioElement;
+
+    private AudioBufferHandle? decodedBuffer;
+    private AudioBufferHandle? impulseBuffer;
+    private AudioSourceNodeHandle? bufferSource;
+    private double playbackRate = 1;
+    private bool loopSource;
+
+    private string filterType = "Lowpass";
+    private double filterQ = 8;
+    private AudioSourceNodeHandle? chainOscillator;
+    private AudioNodeHandle? chainFilter;
+    private AudioNodeHandle? chainGain;
+
+    private AnalyserNodeHandle? analyser;
+    private AudioSourceNodeHandle? analyserSource;
+    private System.Threading.Timer? meterTimer;
+    private int[]? spectrum;
+    private int peak;
+
+    private double stereoPan;
+
+    private AudioNodeHandle? elementSource;
+    private MediaStreamAudioDestinationHandle? streamDestination;
+
+    private AudioWorkletNodeHandle? workletNode;
+    private AudioSourceNodeHandle? workletSource;
+    private double workletGain = 1;
+    private bool workletMuted;
+    private double? workletPeak;
+
+    // The same synthesized chime the shortcut sample plays, as a data URL for the routed element.
+    private static readonly string ChimeDataUrl = "data:audio/wav;base64," + Convert.ToBase64String(GenerateChimeWav());
+
+    // Nodes built by the one-shot samples below, disposed when their sound has finished.
+    private readonly List<AudioNodeHandle> transientNodes = [];
 
     private async Task CheckSupported()
     {
@@ -348,12 +664,677 @@ await webAudio.SetMasterGain(0);   // mute
         return stream.ToArray();
     }
 
+    private async Task ReadContext()
+    {
+        try
+        {
+            var state = await webAudio.GetState();
+            var now = await webAudio.GetCurrentTime();
+            var rate = await webAudio.GetSampleRate();
+            var worklets = await webAudio.IsWorkletSupported();
+            await clockOutput.Success($"state={state}, currentTime={now:0.000}s, sampleRate={rate:0} Hz, worklets={worklets}");
+        }
+        catch (Exception ex)
+        {
+            await clockOutput.Error("reading the context failed →", ex.Message);
+        }
+    }
+
+    private async Task DecodeChime()
+    {
+        try
+        {
+            chimeWav ??= GenerateChimeWav();
+            if (decodedBuffer is not null) await decodedBuffer.DisposeAsync();
+
+            decodedBuffer = await webAudio.DecodeAudioData(chimeWav);
+            if (decodedBuffer is null)
+            {
+                await graphOutput.Warn("DecodeAudioData → null (the bytes could not be decoded)");
+                return;
+            }
+
+            await graphOutput.Success($"DecodeAudioData → {decodedBuffer.Duration:0.00}s, {decodedBuffer.SampleRate} Hz, " +
+                                      $"{decodedBuffer.NumberOfChannels} channel(s), {decodedBuffer.Length:N0} samples");
+        }
+        catch (Exception ex)
+        {
+            await graphOutput.Error("DecodeAudioData failed →", ex.Message);
+        }
+    }
+
+    private async Task PlayFromBuffer()
+    {
+        try
+        {
+            await webAudio.Resume();
+            await StopBufferSourceInternal();
+
+            bufferSource = await webAudio.CreateBufferSource(decodedBuffer!, loop: loopSource, playbackRate: playbackRate);
+            if (bufferSource is null)
+            {
+                await graphOutput.Warn("CreateBufferSource → null (no audio context, or the buffer is gone)");
+                return;
+            }
+
+            await bufferSource.ConnectToDestination();
+            await bufferSource.Start();
+            await graphOutput.Success($"CreateBufferSource + Start → playing at {playbackRate:0.00}x, loop={loopSource}");
+        }
+        catch (Exception ex)
+        {
+            await graphOutput.Error("playing the buffer failed →", ex.Message);
+        }
+    }
+
+    private async Task StopBufferSource()
+    {
+        try
+        {
+            await StopBufferSourceInternal();
+            await graphOutput.Log("Stop → source stopped and disposed");
+        }
+        catch (Exception ex)
+        {
+            await graphOutput.Error("Stop failed →", ex.Message);
+        }
+    }
+
+    private async Task StartChain()
+    {
+        try
+        {
+            await webAudio.Resume();
+            await StopChainInternal();
+
+            chainOscillator = await webAudio.CreateOscillator(AudioOscillatorType.Sawtooth, 110);
+            chainFilter = await webAudio.CreateBiquadFilter(Enum.Parse<BiquadFilterType>(filterType), 300, filterQ);
+            // Starting near silence and ramping up is what keeps the first moment from clicking.
+            chainGain = await webAudio.CreateGain(0.0001);
+
+            if (chainOscillator is null || chainFilter is null || chainGain is null)
+            {
+                await chainOutput.Warn("the chain could not be built (no audio context?)");
+                await StopChainInternal();
+                return;
+            }
+
+            await chainOscillator.Connect(chainFilter);
+            await chainFilter.Connect(chainGain);
+            await chainGain.ConnectToDestination();
+
+            await chainOscillator.Start();
+            await chainGain.RampParam("gain", 0.25, overSeconds: 0.05, exponential: true);
+
+            await chainOutput.Success($"oscillator → {filterType} filter (Q {filterQ:0}) → gain → destination");
+        }
+        catch (Exception ex)
+        {
+            await chainOutput.Error("building the chain failed →", ex.Message);
+        }
+    }
+
+    private async Task SweepFilter()
+    {
+        try
+        {
+            await chainFilter!.RampParam("frequency", 4000, overSeconds: 2);
+            await chainOutput.Log("RampParam(frequency, 4000, 2s) → sweeping on the audio thread");
+        }
+        catch (Exception ex)
+        {
+            await chainOutput.Error("the sweep failed →", ex.Message);
+        }
+    }
+
+    private async Task StopChain()
+    {
+        try
+        {
+            // Ramp down first, then stop: stopping a source at full volume clicks.
+            if (chainGain is not null) await chainGain.RampParam("gain", 0.0001, overSeconds: 0.08, exponential: true);
+            await Task.Delay(120);
+            await StopChainInternal();
+            await chainOutput.Log("faded out, stopped and disposed");
+        }
+        catch (Exception ex)
+        {
+            await chainOutput.Error("stopping the chain failed →", ex.Message);
+        }
+    }
+
+    private async Task StartMeter()
+    {
+        try
+        {
+            await webAudio.Resume();
+            await StopMeterInternal();
+
+            chimeWav ??= GenerateChimeWav();
+            decodedBuffer ??= await webAudio.DecodeAudioData(chimeWav);
+            if (decodedBuffer is null)
+            {
+                await analyserOutput.Warn("nothing to analyse - the buffer could not be decoded");
+                return;
+            }
+
+            analyserSource = await webAudio.CreateBufferSource(decodedBuffer, loop: true);
+            analyser = await webAudio.CreateAnalyser(fftSize: 1024, smoothingTimeConstant: 0.8);
+            if (analyserSource is null || analyser is null)
+            {
+                await analyserOutput.Warn("the analyser could not be built (no audio context?)");
+                await StopMeterInternal();
+                return;
+            }
+
+            await analyserSource.Connect(analyser);
+            await analyser.ConnectToDestination();
+            await analyserSource.Start();
+
+            meterTimer = new System.Threading.Timer(async _ => await SampleSpectrum(), null, 0, 100);
+            await analyserOutput.Success("analysing a looping buffer at 10 Hz - fast enough for a meter, slow enough for interop");
+        }
+        catch (Exception ex)
+        {
+            await analyserOutput.Error("starting the analyser failed →", ex.Message);
+        }
+    }
+
+    private async Task SampleSpectrum()
+    {
+        try
+        {
+            var current = analyser;
+            if (current is null) return;
+
+            var data = await current.GetByteFrequencyData();
+            if (data is null) return;
+
+            // 512 bins is far more than a bar chart needs; averaging into 32 buckets is both cheaper
+            // to render and easier to read.
+            const int buckets = 32;
+            var bars = new int[buckets];
+            var perBucket = data.Length / buckets;
+            for (var b = 0; b < buckets; b++)
+            {
+                var sum = 0;
+                for (var i = 0; i < perBucket; i++) sum += data[b * perBucket + i];
+                bars[b] = sum / perBucket;
+            }
+
+            spectrum = bars;
+            peak = data.Max();
+            await InvokeAsync(StateHasChanged);
+        }
+        catch
+        {
+            // the graph was torn down between the timer firing and the read
+        }
+    }
+
+    private async Task StopMeter()
+    {
+        try
+        {
+            await StopMeterInternal();
+            await analyserOutput.Log("analyser and source disposed");
+        }
+        catch (Exception ex)
+        {
+            await analyserOutput.Error("stopping the analyser failed →", ex.Message);
+        }
+    }
+
+    private async Task PlayStereoPanned()
+    {
+        try
+        {
+            await webAudio.Resume();
+            var buffer = await EnsureChimeBuffer();
+            if (buffer is null) return;
+
+            var source = await webAudio.CreateBufferSource(buffer);
+            var panner = await webAudio.CreateStereoPanner(stereoPan);
+            if (source is null || panner is null)
+            {
+                await spaceOutput.Warn("CreateStereoPanner → null (this engine does not implement it)");
+                return;
+            }
+
+            await source.Connect(panner);
+            await panner.ConnectToDestination();
+            await source.Start();
+            await spaceOutput.Success($"playing through a stereo panner at pan {stereoPan:0.0}");
+
+            await DisposeAfter(2000, source, panner);
+        }
+        catch (Exception ex)
+        {
+            await spaceOutput.Error("the stereo panner sample failed →", ex.Message);
+        }
+    }
+
+    private async Task PlaySpatial()
+    {
+        try
+        {
+            await webAudio.Resume();
+            var buffer = await EnsureChimeBuffer();
+            if (buffer is null) return;
+
+            var source = await webAudio.CreateBufferSource(buffer, loop: true);
+            var panner = await webAudio.CreatePanner(new AudioPannerOptions
+            {
+                PanningModel = AudioPanningModel.Hrtf,
+                DistanceModel = AudioDistanceModel.Inverse,
+                PositionX = -3,
+                PositionZ = -1,
+                RefDistance = 1,
+                RolloffFactor = 1
+            });
+
+            if (source is null || panner is null)
+            {
+                await spaceOutput.Warn("the spatial graph could not be built (no audio context?)");
+                return;
+            }
+
+            await webAudio.SetListener(0, 0, 0);
+            await source.Connect(panner);
+            await panner.ConnectToDestination();
+            await source.Start();
+
+            // Four seconds from the left ear to the right, scheduled on the audio thread.
+            await panner.RampParam("positionX", 3, overSeconds: 4);
+            await spaceOutput.Success("HRTF panner: flying from left to right over four seconds (best on headphones)");
+
+            await DisposeAfter(4200, source, panner);
+        }
+        catch (Exception ex)
+        {
+            await spaceOutput.Error("the spatial sample failed →", ex.Message);
+        }
+    }
+
+    private async Task PlayEcho()
+    {
+        try
+        {
+            await webAudio.Resume();
+            var buffer = await EnsureChimeBuffer();
+            if (buffer is null) return;
+
+            var source = await webAudio.CreateBufferSource(buffer);
+            var delay = await webAudio.CreateDelay(1, 0.25);
+            var feedback = await webAudio.CreateGain(0.45);
+            if (source is null || delay is null || feedback is null)
+            {
+                await effectOutput.Warn("the echo graph could not be built (no audio context?)");
+                return;
+            }
+
+            await source.ConnectToDestination();     // the dry signal
+            await source.Connect(delay);
+            await delay.Connect(feedback);
+            await feedback.Connect(delay);           // the cycle that makes it repeat
+            await delay.ConnectToDestination();
+            await source.Start();
+
+            await effectOutput.Success("delay 250 ms with 0.45 feedback - the one legal cycle in a Web Audio graph");
+            await DisposeAfter(5000, source, delay, feedback);
+        }
+        catch (Exception ex)
+        {
+            await effectOutput.Error("the echo sample failed →", ex.Message);
+        }
+    }
+
+    private async Task PlayDistorted()
+    {
+        try
+        {
+            await webAudio.Resume();
+            var buffer = await EnsureChimeBuffer();
+            if (buffer is null) return;
+
+            var source = await webAudio.CreateBufferSource(buffer);
+            var shaper = await webAudio.CreateWaveShaper(BuildDistortionCurve(60), "4x");
+            var compressor = await webAudio.CreateDynamicsCompressor(threshold: -30, ratio: 12);
+            if (source is null || shaper is null || compressor is null)
+            {
+                await effectOutput.Warn("the distortion graph could not be built (no audio context?)");
+                return;
+            }
+
+            await source.Connect(shaper);
+            await shaper.Connect(compressor);
+            await compressor.ConnectToDestination();
+            await source.Start();
+
+            await effectOutput.Success("wave shaper (4x oversampled) into a compressor at -30 dB, ratio 12");
+            await DisposeAfter(2500, source, shaper, compressor);
+        }
+        catch (Exception ex)
+        {
+            await effectOutput.Error("the distortion sample failed →", ex.Message);
+        }
+    }
+
+    private async Task PlayReverb()
+    {
+        try
+        {
+            await webAudio.Resume();
+            var buffer = await EnsureChimeBuffer();
+            if (buffer is null) return;
+
+            // A decaying burst of noise is a serviceable impulse response, and it means the sample
+            // needs no audio file of its own.
+            impulseBuffer ??= await webAudio.DecodeAudioData(GenerateImpulseWav());
+            if (impulseBuffer is null)
+            {
+                await effectOutput.Warn("the impulse response could not be decoded");
+                return;
+            }
+
+            var source = await webAudio.CreateBufferSource(buffer);
+            var reverb = await webAudio.CreateConvolver(impulseBuffer);
+            var wet = await webAudio.CreateGain(0.8);
+            if (source is null || reverb is null || wet is null)
+            {
+                await effectOutput.Warn("the reverb graph could not be built (no audio context?)");
+                return;
+            }
+
+            await source.ConnectToDestination();
+            await source.Connect(reverb);
+            await reverb.Connect(wet);
+            await wet.ConnectToDestination();
+            await source.Start();
+
+            await effectOutput.Success($"convolver over a {impulseBuffer.Duration:0.0}s impulse response");
+            await DisposeAfter(4000, source, reverb, wet);
+        }
+        catch (Exception ex)
+        {
+            await effectOutput.Error("the reverb sample failed →", ex.Message);
+        }
+    }
+
+    private async Task RouteElement()
+    {
+        try
+        {
+            await webAudio.Resume();
+
+            elementSource = await webAudio.CreateMediaElementSource(audioElement);
+            if (elementSource is null)
+            {
+                await routingOutput.Warn("CreateMediaElementSource → null (this element already has a source node, or there is no context)");
+                return;
+            }
+
+            var filter = await webAudio.CreateBiquadFilter(BiquadFilterType.Lowpass, 800, 1);
+            await elementSource.Connect(filter!);
+            await filter!.ConnectToDestination();
+            transientNodes.Add(filter);
+
+            await routingOutput.Success("the element now plays through a 800 Hz low-pass - press play and hear it muffled");
+        }
+        catch (Exception ex)
+        {
+            await routingOutput.Error("routing the element failed →", ex.Message);
+        }
+    }
+
+    private async Task CaptureGraph()
+    {
+        try
+        {
+            await webAudio.Resume();
+            if (streamDestination is not null) await streamDestination.DisposeAsync();
+
+            streamDestination = await webAudio.CreateMediaStreamDestination();
+            if (streamDestination is null)
+            {
+                await routingOutput.Warn("CreateMediaStreamDestination → null (no audio context)");
+                return;
+            }
+
+            if (elementSource is not null) await elementSource.Connect(streamDestination);
+
+            var stream = streamDestination.GetStream();
+            await routingOutput.Success($"CreateMediaStreamDestination → stream {stream.Id} - hand it to MediaRecorder to record the processed signal");
+        }
+        catch (Exception ex)
+        {
+            await routingOutput.Error("CreateMediaStreamDestination failed →", ex.Message);
+        }
+    }
+
+    private async Task StartWorklet()
+    {
+        try
+        {
+            await webAudio.Resume();
+            await StopWorkletInternal();
+
+            if (await webAudio.IsWorkletSupported() is false)
+            {
+                await workletOutput.Warn("IsWorkletSupported → false (audio worklets need a secure context)");
+                return;
+            }
+
+            if (await webAudio.AddWorkletModule("js/butil-gain-processor.js") is false)
+            {
+                await workletOutput.Error("AddWorkletModule → false (the module could not be loaded)");
+                return;
+            }
+
+            var buffer = await EnsureChimeBuffer();
+            if (buffer is null) return;
+
+            workletNode = await webAudio.CreateWorkletNode("butil-gain-processor",
+                new AudioWorkletNodeOptions { ProcessorOptions = """{"reportIntervalSeconds":0.1}""" },
+                onMessage: async json =>
+                {
+                    using var report = JsonDocument.Parse(json);
+                    workletPeak = report.RootElement.GetProperty("peak").GetDouble();
+                    await InvokeAsync(StateHasChanged);
+                });
+
+            if (workletNode is null)
+            {
+                await workletOutput.Warn("CreateWorkletNode → null (no processor registered under that name)");
+                return;
+            }
+
+            workletSource = await webAudio.CreateBufferSource(buffer, loop: true);
+            await workletSource!.Connect(workletNode);
+            await workletNode.ConnectToDestination();
+            await workletNode.SetParam("gain", workletGain);
+            await workletSource.Start();
+
+            await workletOutput.Success("playing through the worklet - the peak below comes from the audio thread");
+        }
+        catch (Exception ex)
+        {
+            await workletOutput.Error("starting the worklet failed →", ex.Message);
+        }
+    }
+
+    private async Task ApplyWorkletGain()
+    {
+        try
+        {
+            await workletOutput.Log($"SetParam(gain, {workletGain:0.00}) →", await workletNode!.SetParam("gain", workletGain));
+        }
+        catch (Exception ex)
+        {
+            await workletOutput.Error("SetParam failed →", ex.Message);
+        }
+    }
+
+    private async Task ToggleWorkletMute()
+    {
+        try
+        {
+            workletMuted = !workletMuted;
+            await workletOutput.Log($"PostMessage(\"{(workletMuted ? "mute" : "unmute")}\") →",
+                                    await workletNode!.PostMessage(workletMuted ? "mute" : "unmute"));
+        }
+        catch (Exception ex)
+        {
+            await workletOutput.Error("PostMessage failed →", ex.Message);
+        }
+    }
+
+    private async Task StopWorklet()
+    {
+        try
+        {
+            await StopWorkletInternal();
+            await workletOutput.Log("worklet node and source disposed");
+        }
+        catch (Exception ex)
+        {
+            await workletOutput.Error("stopping the worklet failed →", ex.Message);
+        }
+    }
+
+    private async Task<AudioBufferHandle?> EnsureChimeBuffer()
+    {
+        chimeWav ??= GenerateChimeWav();
+        decodedBuffer ??= await webAudio.DecodeAudioData(chimeWav);
+
+        return decodedBuffer;
+    }
+
+    /// <summary>Plays for a while, then releases the nodes - a one-shot graph has no other owner.</summary>
+    private async Task DisposeAfter(int milliseconds, params AudioNodeHandle[] nodes)
+    {
+        transientNodes.AddRange(nodes);
+        await Task.Delay(milliseconds);
+
+        foreach (var node in nodes)
+        {
+            transientNodes.Remove(node);
+            await node.DisposeAsync();
+        }
+    }
+
+    private async Task StopBufferSourceInternal()
+    {
+        if (bufferSource is null) return;
+
+        await bufferSource.DisposeAsync();
+        bufferSource = null;
+    }
+
+    private async Task StopChainInternal()
+    {
+        if (chainOscillator is not null) await chainOscillator.DisposeAsync();
+        if (chainFilter is not null) await chainFilter.DisposeAsync();
+        if (chainGain is not null) await chainGain.DisposeAsync();
+        chainOscillator = null;
+        chainFilter = null;
+        chainGain = null;
+    }
+
+    private async Task StopMeterInternal()
+    {
+        if (meterTimer is not null)
+        {
+            await meterTimer.DisposeAsync();
+            meterTimer = null;
+        }
+        if (analyserSource is not null) await analyserSource.DisposeAsync();
+        if (analyser is not null) await analyser.DisposeAsync();
+        analyserSource = null;
+        analyser = null;
+        spectrum = null;
+    }
+
+    private async Task StopWorkletInternal()
+    {
+        if (workletSource is not null) await workletSource.DisposeAsync();
+        if (workletNode is not null) await workletNode.DisposeAsync();
+        workletSource = null;
+        workletNode = null;
+        workletPeak = null;
+        workletMuted = false;
+    }
+
+    /// <summary>A hyperbolic-tangent transfer curve - the usual shape for a musical distortion.</summary>
+    private static double[] BuildDistortionCurve(double amount)
+    {
+        const int samples = 1024;
+        var curve = new double[samples];
+        for (var i = 0; i < samples; i++)
+        {
+            var x = i * 2.0 / (samples - 1) - 1;
+            curve[i] = Math.Tanh(x * amount) / Math.Tanh(amount);
+        }
+
+        return curve;
+    }
+
+    /// <summary>Exponentially decaying noise as a wav - a serviceable impulse response for a convolver.</summary>
+    private static byte[] GenerateImpulseWav()
+    {
+        const int sampleRate = 44100;
+        const double seconds = 1.5;
+        var sampleCount = (int)(sampleRate * seconds);
+        var dataSize = sampleCount * 2;
+        var random = new Random(1);   // fixed seed: the same room every time
+
+        using var stream = new MemoryStream(44 + dataSize);
+        using var writer = new BinaryWriter(stream);
+
+        writer.Write("RIFF"u8);
+        writer.Write(36 + dataSize);
+        writer.Write("WAVE"u8);
+        writer.Write("fmt "u8);
+        writer.Write(16);
+        writer.Write((short)1);
+        writer.Write((short)1);
+        writer.Write(sampleRate);
+        writer.Write(sampleRate * 2);
+        writer.Write((short)2);
+        writer.Write((short)16);
+        writer.Write("data"u8);
+        writer.Write(dataSize);
+
+        for (var i = 0; i < sampleCount; i++)
+        {
+            var t = (double)i / sampleRate;
+            var envelope = Math.Pow(1 - t / seconds, 3);
+            var sample = (random.NextDouble() * 2 - 1) * envelope;
+            writer.Write((short)(sample * short.MaxValue * 0.6));
+        }
+
+        writer.Flush();
+        return stream.ToArray();
+    }
+
     public async ValueTask DisposeAsync()
     {
         try
         {
             await StopToneInternal();
             await StopBufferInternal();
+            await StopBufferSourceInternal();
+            await StopChainInternal();
+            await StopMeterInternal();
+            await StopWorkletInternal();
+
+            foreach (var node in transientNodes) await node.DisposeAsync();
+            transientNodes.Clear();
+
+            if (elementSource is not null) await elementSource.DisposeAsync();
+            if (streamDestination is not null) await streamDestination.DisposeAsync();
+            if (decodedBuffer is not null) await decodedBuffer.DisposeAsync();
+            if (impulseBuffer is not null) await impulseBuffer.DisposeAsync();
         }
         catch
         {
