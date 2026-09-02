@@ -89,7 +89,9 @@
         <div>
             <b>AutoToggleScroll</b> takes the scrollbar off the scroller behind the Overlay while it is open and
             hands it back once it closes, so the page does not carry on scrolling behind a layer that covers it.
-            The scroller is the page itself unless a <BitLink Href="#example6">selector</BitLink> names another one.
+            The scroller is the one named by <b>ScrollerElement</b>, then the one a
+            <BitLink Href="#example6">selector</BitLink> names; with neither set it is the scroller of the
+            <b>BitAppShell</b> the Overlay is inside of, and the page (body) only when it is inside none.
         </div>
         <br />
         <div>

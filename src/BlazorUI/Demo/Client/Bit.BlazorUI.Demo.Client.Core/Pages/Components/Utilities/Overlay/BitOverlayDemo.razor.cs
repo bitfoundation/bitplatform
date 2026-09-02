@@ -18,7 +18,7 @@ public partial class BitOverlayDemo
             Name = "AutoToggleScroll",
             Type = "bool",
             DefaultValue = "false",
-            Description = "When true, the scroll behavior of the scroller element behind the overlay will be disabled while the Overlay is open and handed back once it closes. The scroller is named by ScrollerElement or ScrollerSelector, and is the page (body) when neither is set.",
+            Description = "When true, the scroll behavior of the scroller element behind the overlay will be disabled while the Overlay is open and handed back once it closes. The scroller is named by ScrollerElement, then by ScrollerSelector; when neither is set it is the scroller of the BitAppShell the Overlay is inside of, and the page (body) when it is inside none.",
         },
         new()
         {
@@ -80,7 +80,7 @@ public partial class BitOverlayDemo
             Name = "ScrollerSelector",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The CSS selector of the scroller element whose scrolling is taken away while the Overlay is open, for AutoToggleScroll. The page (body) is what is held when this is not set.",
+            Description = "The CSS selector of the scroller element whose scrolling is taken away while the Overlay is open, for AutoToggleScroll. An Overlay inside a BitAppShell holds the shell's scroller without being told to, since the shell cascades it; the page (body) is what is held when there is no shell and this is not set.",
         },
         new()
         {
