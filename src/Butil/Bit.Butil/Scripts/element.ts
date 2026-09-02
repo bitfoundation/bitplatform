@@ -70,7 +70,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         assignedSlotName(element: HTMLElement) { return element.assignedSlot?.name ?? null },
         getAutocapitalize(element: HTMLElement) { return element.autocapitalize },
         setAutocapitalize(element: HTMLElement, value: string) { element.autocapitalize = value },
-        getAutocorrect(element: HTMLElement) { return (element as any).autocorrect },
+        // Undefined where the feature does not exist, and an undefined result comes back as a JSON
+        // null that has no bool to deserialize into - so answer false, which is how those engines behave.
+        getAutocorrect(element: HTMLElement) { return (element as any).autocorrect ?? false },
         setAutocorrect(element: HTMLElement, value: boolean) { (element as any).autocorrect = value },
         getAutofocus(element: HTMLElement) { return element.autofocus },
         setAutofocus(element: HTMLElement, value: boolean) { element.autofocus = value },

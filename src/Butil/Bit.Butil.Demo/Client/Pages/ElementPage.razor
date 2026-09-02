@@ -578,6 +578,9 @@ await box.SetSpellcheck(false);
 await box.SetTranslate(false);
 await box.SetAutocapitalize(Autocapitalize.Words);
 await box.SetWritingSuggestions(false);
+await box.SetSlot("content");                      // which shadow slot it asks to land in
+await box.SetPart("surface highlight");            // what ::part() outside the shadow tree can style
+await box.SetElementTiming("hero-image");          // the name Element Timing reports it under
 
 var localName = await box.GetLocalName();          // "div", where GetTagName gives "DIV"
 var children = await box.GetChildElementCount();
@@ -606,8 +609,10 @@ var offsetParent = await box.GetOffsetParentTagName();
     <div class="controls">
         <button @onclick="SetIdentityHints">Set title / lang / autocapitalize</button>
         <button @onclick="ToggleDraggable">Toggle Draggable (now: @isDraggable)</button>
+        <button @onclick="SetShadowAndTimingHints">Set slot / part / elementtiming</button>
         <button class="secondary" @onclick="ReadIdentityHints">Read hints back</button>
         <button class="secondary" @onclick="ReadTreeFacts">Read tree facts</button>
+        <button class="secondary" @onclick="ReadShadowAndTimingHints">Read shadow and timing hints</button>
     </div>
     <DemoConsole @ref="identityOutput" Title="identity and hints output" />
 </DemoSection>
@@ -763,7 +768,7 @@ await _video.Pause();
     <ApiMember Name="GetPopover / SetPopover" Signature="ValueTask&lt;ElementPopover&gt; GetPopover() · ValueTask SetPopover(ElementPopover value)" Description="What kind of popover the element is: NotSet, Auto, Manual or Hint." />
     <ApiMember Name="QuerySelectorMatches" Signature="ValueTask&lt;bool&gt; QuerySelectorMatches(string selectors)" Description="Whether any descendant matches. The element itself cannot cross the boundary - capture what you need with @@ref." />
     <ApiMember Name="QuerySelectorAllCount" Signature="ValueTask&lt;int&gt; QuerySelectorAllCount(string selectors)" Description="How many descendants match." />
-    <ApiMember Name="GetAria* / SetAria*" Signature="ValueTask&lt;string&gt; GetAriaLabel() · ValueTask SetAriaLabel(string value)" Description="Every aria-* attribute as a property pair - Atomic, Busy, Checked, Current, Description, Disabled, Expanded, HasPopup, Hidden, Invalid, Label, Level, Live, Modal, Pressed, ReadOnly, Required, Selected, Sort, Value*, the grid Col*/Row*/PosInSet/SetSize family and the braille pair. All strings, numeric and boolean ones included." />
+    <ApiMember Name="GetAria* / SetAria*" Signature="ValueTask&lt;string&gt; GetAriaLabel() · ValueTask SetAriaLabel(string value)" Description="Every aria-* attribute as a property pair - Atomic, AutoComplete, Busy, Checked, Current, Description, Disabled, Expanded, HasPopup, Hidden, Invalid, KeyShortcuts, Label, Level, Live, Modal, Multiline, MultiSelectable, Orientation, Placeholder, Pressed, ReadOnly, Relevant, Required, RoleDescription, Selected, Sort, Value*, the grid Col*/Row*/PosInSet/SetSize family and the braille pair. All strings, numeric and boolean ones included." />
     <ApiMember Name="GetRole / SetRole" Signature="ValueTask&lt;string&gt; GetRole() · ValueTask SetRole(string value)" Description="The element's ARIA role, for when the tag alone does not say what it is." />
     <ApiMember Name="AriaNotify" Signature="ValueTask AriaNotify(string message, AriaNotifyOptions? options = null)" Description="Announces a message to assistive technology without changing the page. Experimental and Chromium-only; a no-op elsewhere." />
     <ApiMember Name="GetTitle / SetTitle" Signature="ValueTask&lt;string&gt; GetTitle() · ValueTask SetTitle(string value)" Description="The advisory text a browser shows as a tooltip." />
@@ -1499,13 +1504,38 @@ await _video.Pause();
             await targetRef.GetVirtualKeyboardPolicy()));
 
     private Task ReadTreeFacts() => Run(identityOutput, async () =>
-        await identityOutput.Success("LocalName / NamespaceUri / ChildElementCount / CurrentCssZoom / OffsetParentTagName / HasShadowRoot →",
+        await identityOutput.Success("LocalName / NamespaceUri / Prefix / ChildElementCount / CurrentCssZoom / OffsetParentTagName / HasShadowRoot →",
             await targetRef.GetLocalName(),
             await targetRef.GetNamespaceUri(),
+            await targetRef.GetPrefix(),
             await targetRef.GetChildElementCount(),
             await targetRef.GetCurrentCssZoom(),
             await targetRef.GetOffsetParentTagName(),
             await targetRef.HasShadowRoot()));
+
+    private Task SetShadowAndTimingHints() => Run(identityOutput, async () =>
+    {
+        // Slot and part only mean something inside a shadow tree, and elementtiming only to a
+        // PerformanceObserver - writing them on a plain demo box is still the round trip that shows
+        // what each wrapper does with its value.
+        await targetRef.SetSlot("content");
+        await targetRef.SetPart("surface highlight");
+        await targetRef.SetElementTiming("butil-demo-box");
+        await identityOutput.Success("SetSlot / SetPart / SetElementTiming →", "content", "surface highlight", "butil-demo-box");
+    });
+
+    private Task ReadShadowAndTimingHints() => Run(identityOutput, async () =>
+        await identityOutput.Success("Slot / Part / ElementTiming / AssignedSlotName / AccessKeyLabel / Autofocus / Autocorrect / OuterText →",
+            await targetRef.GetSlot(),
+            string.Join(' ', await targetRef.GetPart()),
+            await targetRef.GetElementTiming(),
+            // Null outside a shadow tree, which is what this box is - the wrapper reports that
+            // rather than inventing a slot name.
+            await targetRef.GetAssignedSlotName() ?? "(unassigned)",
+            await targetRef.GetAccessKeyLabel(),
+            await targetRef.GetAutofocus(),
+            await targetRef.GetAutocorrect(),
+            await targetRef.GetOuterText()));
 
     public async ValueTask DisposeAsync()
     {
