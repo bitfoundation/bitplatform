@@ -121,6 +121,11 @@
     text-transform: $tg-overline-text-transform;
 }
 
+// The inherit variant takes its declarations from the element around it, so the text-transform the theme declares
+// for it belongs here as well - without it a run of text inside an uppercased block would lose that block's case.
+// The display token the theme declares beside it is deliberately not read: a display taken from the parent turns
+// the text into a flex or a grid container wherever its parent is one, and what the box of a run of text is
+// belongs to the layout around it rather than to a step of the typography ramp.
 .bit-txt-inherit {
     margin: $tg-inherit-margin;
     font-size: $tg-inherit-font-size;
@@ -128,6 +133,7 @@
     font-weight: $tg-inherit-font-weight;
     line-height: $tg-inherit-line-height;
     letter-spacing: $tg-inherit-letter-spacing;
+    text-transform: $tg-inherit-text-transform;
 }
 
 
@@ -138,11 +144,135 @@
     }
 }
 
+// The transparent foreground is the gradient text technique: the box paints a background and the glyphs are
+// punched out of it. A forced-colors palette removes every gradient it would have shown through, so the fill
+// is given back to the system color there - otherwise the text is painted with nothing behind it.
 .bit-txt-rfg {
     color: transparent;
+
+    @media (forced-colors: active) {
+        color: CanvasText;
+        background-image: none;
+        -webkit-text-fill-color: currentColor;
+    }
 }
 
 
+// The weight scale, for the runs of text whose weight is not the one their variant carries.
+.bit-txt-fwl {
+    font-weight: $tg-fw-light;
+}
+
+.bit-txt-fwr {
+    font-weight: $tg-fw-regular;
+}
+
+.bit-txt-fwm {
+    font-weight: $tg-fw-medium;
+}
+
+.bit-txt-fws {
+    font-weight: $tg-fw-semibold;
+}
+
+.bit-txt-fwb {
+    font-weight: $tg-fw-bold;
+}
+
+
+.bit-txt-trn {
+    text-transform: none;
+}
+
+.bit-txt-tru {
+    text-transform: uppercase;
+}
+
+.bit-txt-trl {
+    text-transform: lowercase;
+}
+
+.bit-txt-trc {
+    text-transform: capitalize;
+}
+
+
+.bit-txt-itl {
+    font-style: italic;
+}
+
+.bit-txt-und {
+    text-decoration-line: underline;
+}
+
+.bit-txt-stk {
+    text-decoration-line: line-through;
+}
+
+// A text-decoration-line is one declaration and not two, so the two classes above would otherwise overwrite each
+// other and only the later of them would be drawn. Asked for together they are one value naming both lines.
+.bit-txt-und.bit-txt-stk {
+    text-decoration-line: underline line-through;
+}
+
+// Tabular figures share one advance width so that a column of numbers lines up and a number changing in place
+// stops shifting; lining figures put them all on the baseline. A font carrying neither is left as it is.
+.bit-txt-num {
+    font-variant-numeric: tabular-nums lining-nums;
+}
+
+.bit-txt-nsl {
+    user-select: none;
+    -webkit-user-select: none; // Safari still needs the prefixed property.
+}
+
+
+// The wrapping styles. Balance and pretty only ask for a better set of break points, so an engine that has not
+// implemented one lays the text out the way it would have anyway.
+.bit-txt-wrp {
+    text-wrap: wrap;
+}
+
+.bit-txt-wnw {
+    text-wrap: nowrap;
+}
+
+.bit-txt-wbl {
+    text-wrap: balance;
+}
+
+.bit-txt-wpr {
+    text-wrap: pretty;
+}
+
+.bit-txt-wst {
+    text-wrap: stable;
+}
+
+
+// What may be broken in the middle of a word. The gentle one only breaks where the line has no other break point
+// left, and counts that break when the box is measured, which is what lets a flex or a grid item shrink past the
+// width of its longest word. The forced one breaks wherever the line runs out.
+.bit-txt-brw {
+    overflow-wrap: anywhere;
+}
+
+.bit-txt-fbr {
+    word-break: break-all;
+    white-space: break-spaces;
+}
+
+// Hyphenation needs a language before a browser has a dictionary to hyphenate by; the lang parameter, or a lang
+// on an ancestor, is what supplies it. The limits keep a two letter fragment from being left on a line of its own.
+.bit-txt-hyp {
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    hyphenate-limit-chars: 6 3 3;
+}
+
+
+// Written after the wrapping styles above so that a truncation has the last word over them: a text asked to be
+// cut off at the end of its line is not one that wraps, whichever wrapping style is set beside it.
 .bit-txt-nowrap {
     overflow: hidden;
     white-space: nowrap;
@@ -153,7 +283,43 @@
     margin-bottom: $tg-gutter-size;
 }
 
-.bit-txt-fbr {
-    word-break: break-all;
-    white-space: break-spaces;
+// The inline variants - the button, the captions, the overline - take only the width of their content, and text
+// can only overflow a box that has a width. This is what gives them one.
+.bit-txt-blk {
+    display: block;
+}
+
+// The clamp is a layout of its own, so it is declared after the display above and before the visually hidden
+// below. The number of lines is written inline by the component; everything else about it is here. The legacy
+// box is what every engine implements today - the standard property is written beside it and takes over where
+// it is supported, at which point the display below stops being read.
+.bit-txt-clp {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    // A clamp counts lines, so the text has to be allowed to break into them even inside a container that says
+    // otherwise; without this a nowrap inherited from an ancestor would leave the whole text on one line.
+    text-wrap: wrap;
+    white-space: normal;
+}
+
+// Out of the page but still in the accessibility tree: a zero-sized box would be dropped from it by some screen
+// readers, so the text keeps a pixel of its own and is clipped away from it. Declared last so that it wins over
+// the display of the block and of the clamp above.
+.bit-txt-vhd {
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+    clip: rect(0 0 0 0);
+}
+
+// A disabled run of text is dimmed rather than recolored, so that it keeps whichever of the color roles it was
+// given and only reads as unavailable. It is not interactive to begin with, so there is nothing else to turn off.
+.bit-txt.bit-dis {
+    opacity: $opa-dis;
 }

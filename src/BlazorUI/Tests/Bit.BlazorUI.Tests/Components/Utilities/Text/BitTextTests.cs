@@ -385,4 +385,707 @@ public class BitTextTests : BunitTestContext
 
         component.MarkupMatches(@"<h6 data-val-test=""bit"" class=""bit-txt bit-txt-subtitle1"" id:ignore>I'm a text</h6>");
     }
+
+
+
+    [TestMethod,
+        DataRow(BitFontWeight.Light, "bit-txt-fwl"),
+        DataRow(BitFontWeight.Regular, "bit-txt-fwr"),
+        DataRow(BitFontWeight.Medium, "bit-txt-fwm"),
+        DataRow(BitFontWeight.Semibold, "bit-txt-fws"),
+        DataRow(BitFontWeight.Bold, "bit-txt-fwb"),
+        DataRow(null, null)
+    ]
+    public void BitTextShouldRespectWeight(BitFontWeight? weight, string cssClass)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Weight, weight);
+        });
+
+        var expected = cssClass is null ? null : $" {cssClass}";
+
+        component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1{expected}"" id:ignore></h6>");
+    }
+
+    [TestMethod]
+    public void BitTextShouldRespectWeightChangingAfterRender()
+    {
+        var component = RenderComponent<BitText>();
+
+        component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Weight, BitFontWeight.Bold);
+        });
+
+        component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1 bit-txt-fwb"" id:ignore></h6>");
+    }
+
+    [TestMethod,
+        DataRow(BitTextTransform.None, "bit-txt-trn"),
+        DataRow(BitTextTransform.Uppercase, "bit-txt-tru"),
+        DataRow(BitTextTransform.Lowercase, "bit-txt-trl"),
+        DataRow(BitTextTransform.Capitalize, "bit-txt-trc"),
+        DataRow(null, null)
+    ]
+    public void BitTextShouldRespectTransform(BitTextTransform? transform, string cssClass)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Transform, transform);
+        });
+
+        var expected = cssClass is null ? null : $" {cssClass}";
+
+        component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1{expected}"" id:ignore></h6>");
+    }
+
+    [TestMethod,
+        DataRow(BitTextWrap.Wrap, "bit-txt-wrp"),
+        DataRow(BitTextWrap.NoWrap, "bit-txt-wnw"),
+        DataRow(BitTextWrap.Balance, "bit-txt-wbl"),
+        DataRow(BitTextWrap.Pretty, "bit-txt-wpr"),
+        DataRow(BitTextWrap.Stable, "bit-txt-wst"),
+        DataRow(null, null)
+    ]
+    public void BitTextShouldRespectWrap(BitTextWrap? wrap, string cssClass)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Wrap, wrap);
+        });
+
+        var expected = cssClass is null ? null : $" {cssClass}";
+
+        component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1{expected}"" id:ignore></h6>");
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitTextShouldRespectItalic(bool italic)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Italic, italic);
+        });
+
+        var cssClass = italic ? " bit-txt-itl" : null;
+
+        component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></h6>");
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitTextShouldRespectUnderline(bool underline)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Underline, underline);
+        });
+
+        var cssClass = underline ? " bit-txt-und" : null;
+
+        component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></h6>");
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitTextShouldRespectStrikethrough(bool strikethrough)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Strikethrough, strikethrough);
+        });
+
+        var cssClass = strikethrough ? " bit-txt-stk" : null;
+
+        component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></h6>");
+    }
+
+    [TestMethod]
+    public void BitTextShouldRenderBothDecorationsTogether()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Underline, true);
+            parameters.Add(p => p.Strikethrough, true);
+        });
+
+        component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1 bit-txt-und bit-txt-stk"" id:ignore></h6>");
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitTextShouldRespectNumeric(bool numeric)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Numeric, numeric);
+        });
+
+        var cssClass = numeric ? " bit-txt-num" : null;
+
+        component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></h6>");
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitTextShouldRespectNoSelect(bool noSelect)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.NoSelect, noSelect);
+        });
+
+        var cssClass = noSelect ? " bit-txt-nsl" : null;
+
+        component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></h6>");
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitTextShouldRespectBlock(bool block)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Block, block);
+        });
+
+        var cssClass = block ? " bit-txt-blk" : null;
+
+        component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></h6>");
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitTextShouldRespectBreakWord(bool breakWord)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.BreakWord, breakWord);
+        });
+
+        var cssClass = breakWord ? " bit-txt-brw" : null;
+
+        component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></h6>");
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitTextShouldRespectForceBreak(bool forceBreak)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.ForceBreak, forceBreak);
+        });
+
+        var cssClass = forceBreak ? " bit-txt-fbr" : null;
+
+        component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></h6>");
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitTextShouldRespectHyphenate(bool hyphenate)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Hyphenate, hyphenate);
+        });
+
+        var cssClass = hyphenate ? " bit-txt-hyp" : null;
+
+        component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></h6>");
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitTextShouldRespectVisuallyHidden(bool visuallyHidden)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.VisuallyHidden, visuallyHidden);
+        });
+
+        var cssClass = visuallyHidden ? " bit-txt-vhd" : null;
+
+        component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></h6>");
+    }
+
+    [TestMethod]
+    public void BitTextShouldRespectVisuallyHiddenChangingAfterRender()
+    {
+        var component = RenderComponent<BitText>();
+
+        component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.VisuallyHidden, true);
+        });
+
+        component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1 bit-txt-vhd"" id:ignore></h6>");
+    }
+
+
+
+    [TestMethod,
+        DataRow(1),
+        DataRow(2),
+        DataRow(5)
+    ]
+    public void BitTextShouldRespectLineClamp(int lineClamp)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.LineClamp, lineClamp);
+        });
+
+        var element = component.Find("h6");
+
+        StringAssert.Contains(element.GetAttribute("class"), "bit-txt-clp");
+        Assert.AreEqual($"-webkit-line-clamp:{lineClamp};line-clamp:{lineClamp}", element.GetAttribute("style"));
+    }
+
+    // Only whole lines can be clamped, so a value that names none of them is a value the component leaves the text
+    // alone for rather than one it writes an unusable declaration of.
+    [TestMethod,
+        DataRow(0),
+        DataRow(-1),
+        DataRow(null)
+    ]
+    public void BitTextShouldIgnoreALineClampBelowOne(int? lineClamp)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.LineClamp, lineClamp);
+        });
+
+        component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
+    }
+
+    [TestMethod]
+    public void BitTextShouldRespectLineClampChangingAfterRender()
+    {
+        var component = RenderComponent<BitText>();
+
+        component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.LineClamp, 3);
+        });
+
+        var element = component.Find("h6");
+
+        StringAssert.Contains(element.GetAttribute("class"), "bit-txt-clp");
+        Assert.AreEqual("-webkit-line-clamp:3;line-clamp:3", element.GetAttribute("style"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.LineClamp, null);
+        });
+
+        component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
+    }
+
+    // The two truncations are separate parameters and neither turns the other off, so both land on the element and
+    // the stylesheet decides between them - the clamp is declared last and is the one that stands.
+    [TestMethod]
+    public void BitTextShouldRenderBothTruncationsAskedForTogether()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.NoWrap, true);
+            parameters.Add(p => p.LineClamp, 2);
+        });
+
+        var element = component.Find("h6");
+
+        Assert.IsTrue(element.ClassList.Contains("bit-txt-nowrap"));
+        Assert.IsTrue(element.ClassList.Contains("bit-txt-clp"));
+    }
+
+    // Every one of these is a property of a run of text rather than of a step of the ramp, so they compose with
+    // any variant and with each other rather than replacing one another.
+    [TestMethod]
+    public void BitTextShouldComposeEveryTextParameterWithTheVariant()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Typography, BitTypography.Overline);
+            parameters.Add(p => p.Weight, BitFontWeight.Bold);
+            parameters.Add(p => p.Transform, BitTextTransform.None);
+            parameters.Add(p => p.Wrap, BitTextWrap.Pretty);
+            parameters.Add(p => p.Italic, true);
+            parameters.Add(p => p.Numeric, true);
+            parameters.Add(p => p.Block, true);
+            parameters.Add(p => p.BreakWord, true);
+            parameters.Add(p => p.NoSelect, true);
+            parameters.Add(p => p.Hyphenate, true);
+            parameters.Add(p => p.Gutter, true);
+        });
+
+        var classList = component.Find("span").ClassList;
+
+        foreach (var expected in new[]
+        {
+            "bit-txt", "bit-txt-overline", "bit-txt-fwb", "bit-txt-trn", "bit-txt-wpr",
+            "bit-txt-itl", "bit-txt-num", "bit-txt-blk", "bit-txt-brw", "bit-txt-nsl",
+            "bit-txt-hyp", "bit-txt-gutter"
+        })
+        {
+            Assert.IsTrue(classList.Contains(expected), $"the {expected} class is missing");
+        }
+    }
+
+    // The style of the page is registered after the one the component builds, so a declaration written by the page
+    // is the one that stands where the two name the same property.
+    [TestMethod]
+    public void BitTextShouldKeepTheStyleParameterAfterTheOneItBuilds()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.LineClamp, 2);
+            parameters.Add(p => p.Style, "color:red");
+        });
+
+        Assert.AreEqual("-webkit-line-clamp:2;line-clamp:2;color:red", component.Find("h6").GetAttribute("style"));
+    }
+
+
+
+    [TestMethod,
+        DataRow(BitTextAlign.Start, "start"),
+        DataRow(BitTextAlign.End, "end"),
+        DataRow(BitTextAlign.Left, "left"),
+        DataRow(BitTextAlign.Right, "right"),
+        DataRow(BitTextAlign.Center, "center"),
+        DataRow(BitTextAlign.Justify, "justify"),
+        DataRow(BitTextAlign.JustifyAll, "justify-all"),
+        DataRow(BitTextAlign.MatchParent, "match-parent"),
+        DataRow(BitTextAlign.Inherit, "inherit"),
+        DataRow(BitTextAlign.Initial, "initial"),
+        DataRow(BitTextAlign.Revert, "revert"),
+        DataRow(BitTextAlign.RevertLayer, "revert-layer"),
+        DataRow(BitTextAlign.Unset, "unset")
+    ]
+    public void BitTextShouldRespectAlign(BitTextAlign align, string expected)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Align, align);
+        });
+
+        Assert.AreEqual($"text-align:{expected}", component.Find("h6").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitTextShouldRespectAlignChangingAfterRender()
+    {
+        var component = RenderComponent<BitText>();
+
+        component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Align, BitTextAlign.Center);
+        });
+
+        Assert.AreEqual("text-align:center", component.Find("h6").GetAttribute("style"));
+    }
+
+
+
+    [TestMethod]
+    public void BitTextShouldRespectLang()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Lang, "fa");
+        });
+
+        component.MarkupMatches(@"<h6 lang=""fa"" class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
+    }
+
+    [TestMethod]
+    public void BitTextShouldNotRenderALangItWasNotGiven()
+    {
+        var component = RenderComponent<BitText>();
+
+        Assert.IsFalse(component.Find("h6").HasAttribute("lang"));
+    }
+
+    [TestMethod,
+        DataRow("0"),
+        DataRow("-1"),
+        DataRow(null)
+    ]
+    public void BitTextShouldRespectTabIndex(string tabIndex)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.TabIndex, tabIndex);
+        });
+
+        if (tabIndex is null)
+        {
+            Assert.IsFalse(component.Find("h6").HasAttribute("tabindex"));
+        }
+        else
+        {
+            component.MarkupMatches(@$"<h6 tabindex=""{tabIndex}"" class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
+        }
+    }
+
+    // A level on a tag that is not a heading names nothing on its own, so the role is what makes it one.
+    [TestMethod]
+    public void BitTextShouldRenderTheHeadingRoleBesideAnAriaLevelOnANonHeadingElement()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Element, "div");
+            parameters.Add(p => p.AriaLevel, 3);
+        });
+
+        component.MarkupMatches(@"<div role=""heading"" aria-level=""3"" class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
+    }
+
+    // A heading tag carries a level of its own, so only the override is written on one.
+    [TestMethod]
+    public void BitTextShouldNotRenderTheHeadingRoleBesideAnAriaLevelOnAHeadingElement()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Typography, BitTypography.H2);
+            parameters.Add(p => p.AriaLevel, 4);
+        });
+
+        component.MarkupMatches(@"<h2 aria-level=""4"" class=""bit-txt bit-txt-h2"" id:ignore></h2>");
+    }
+
+    // Heading levels count from one, so a value below that names no level and is left out along with the role it
+    // would otherwise have written beside it.
+    [TestMethod,
+        DataRow(0),
+        DataRow(-1)
+    ]
+    public void BitTextShouldIgnoreAnAriaLevelBelowOne(int ariaLevel)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Element, "div");
+            parameters.Add(p => p.AriaLevel, ariaLevel);
+        });
+
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitTextShouldNotRenderAnAriaLevelItWasNotGiven()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Element, "div");
+        });
+
+        var element = component.Find("div");
+
+        Assert.IsFalse(element.HasAttribute("role"));
+        Assert.IsFalse(element.HasAttribute("aria-level"));
+    }
+
+
+
+    [TestMethod,
+        DataRow("  h1  ", "h1"),
+        DataRow("my-element", "my-element"),
+        DataRow("linearGradient", "linearGradient")
+    ]
+    public void BitTextShouldTrimAndKeepAUsableElementName(string element, string expected)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+        });
+
+        component.MarkupMatches(@$"<{expected} class=""bit-txt bit-txt-subtitle1"" id:ignore></{expected}>");
+    }
+
+    // A name that would end the tag, or that an engine refuses to build an element of, falls back to the tag of the
+    // variant rather than reaching the markup.
+    [TestMethod,
+        DataRow("not a tag name"),
+        DataRow("h4!"),
+        DataRow("<script>"),
+        DataRow("1h"),
+        DataRow("   ")
+    ]
+    public void BitTextShouldFallBackToTheVariantElementForAnUnusableElementName(string element)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+        });
+
+        component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
+    }
+
+    [TestMethod]
+    public void BitTextShouldFallBackToTheElementOfTheVariantItWasGiven()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Typography, BitTypography.Body1);
+            parameters.Add(p => p.Element, "not a tag name");
+        });
+
+        component.MarkupMatches(@"<p class=""bit-txt bit-txt-body1"" id:ignore></p>");
+    }
+
+    [TestMethod]
+    public void BitTextShouldRespectElementChangingAfterRender()
+    {
+        var component = RenderComponent<BitText>();
+
+        component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Element, "span");
+        });
+
+        component.MarkupMatches(@"<span class=""bit-txt bit-txt-subtitle1"" id:ignore></span>");
+    }
+
+    // A void element is defined to hold no content, so what is put inside one would either be dropped by the static
+    // renderer or end up as a sibling of the element in the rendered markup.
+    [TestMethod,
+        DataRow("br"),
+        DataRow("hr"),
+        DataRow("img"),
+        DataRow("input"),
+        DataRow("wbr")
+    ]
+    public void BitTextShouldNotRenderChildContentInsideAVoidElement(string element)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+            parameters.AddChildContent("this content has nowhere to go");
+        });
+
+        Assert.IsFalse(component.Markup.Contains("this content has nowhere to go"));
+    }
+
+    [TestMethod]
+    public void BitTextShouldRenderChildContentInsideANonVoidElement()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Element, "section");
+            parameters.AddChildContent("kept");
+        });
+
+        component.MarkupMatches(@"<section class=""bit-txt bit-txt-subtitle1"" id:ignore>kept</section>");
+    }
+
+
+
+    [TestMethod]
+    public void BitTextShouldMergeTheSplattedClassAndStyleWithItsOwn()
+    {
+        var component = RenderComponent<BitTextSplattedAttributesTest>();
+
+        var element = component.Find("p");
+
+        Assert.IsTrue(element.ClassList.Contains("bit-txt"));
+        Assert.IsTrue(element.ClassList.Contains("bit-txt-subtitle1"));
+        Assert.IsTrue(element.ClassList.Contains("splatted-class"));
+
+        Assert.AreEqual("font-weight:bold;text-align:center", element.GetAttribute("style"));
+    }
+
+    // A value the component would otherwise write as null does not leave a splatted attribute of the same name
+    // alone - it removes it - so each one is resolved against what the page splatted instead.
+    [TestMethod]
+    public void BitTextShouldKeepTheSplattedAttributesItWouldOtherwiseWriteItself()
+    {
+        var component = RenderComponent<BitTextSplattedAttributesTest>();
+
+        var element = component.Find("section");
+
+        Assert.AreEqual("splatted-id", element.GetAttribute("id"));
+        Assert.AreEqual("rtl", element.GetAttribute("dir"));
+        Assert.AreEqual("de", element.GetAttribute("lang"));
+        Assert.AreEqual("splatted label", element.GetAttribute("aria-label"));
+        Assert.AreEqual("-1", element.GetAttribute("tabindex"));
+        Assert.AreEqual("2", element.GetAttribute("aria-level"));
+        Assert.AreEqual("note", element.GetAttribute("role"));
+    }
+
+    // What the component is given itself is written over the splatted spelling of the same attribute.
+    [TestMethod]
+    public void BitTextShouldWriteItsOwnParametersOverTheSplattedAttributes()
+    {
+        var component = RenderComponent<BitTextSplattedAttributesTest>();
+
+        var element = component.Find("article");
+
+        Assert.AreEqual("own-id", element.GetAttribute("id"));
+        Assert.AreEqual("ltr", element.GetAttribute("dir"));
+        Assert.AreEqual("fa", element.GetAttribute("lang"));
+        Assert.AreEqual("own label", element.GetAttribute("aria-label"));
+        Assert.AreEqual("0", element.GetAttribute("tabindex"));
+        Assert.AreEqual("5", element.GetAttribute("aria-level"));
+        // The level is the component's own, so the role that makes it a heading is written over the splatted one.
+        Assert.AreEqual("heading", element.GetAttribute("role"));
+    }
+
+
+
+    [TestMethod]
+    public void BitTextShouldRespectCascadingParams()
+    {
+        var component = RenderComponent<BitTextCascadingParamsTest>();
+
+        var cascaded = component.Find("section");
+        var cssClass = cascaded.GetAttribute("class");
+        StringAssert.Contains(cssClass, "bit-txt-body2");
+        StringAssert.Contains(cssClass, "bit-txt-fwb");
+        StringAssert.Contains(cssClass, "bit-txt-itl");
+        StringAssert.Contains(cssClass, "bit-txt-clp");
+        StringAssert.Contains(cssClass, "cascaded");
+        Assert.AreEqual("fr", cascaded.GetAttribute("lang"));
+
+        // Everything the text set for itself is kept, and only what it left unset is filled in from the cascade.
+        var own = component.Find("article");
+        var ownClass = own.GetAttribute("class");
+        StringAssert.Contains(ownClass, "bit-txt-h3");
+        StringAssert.Contains(ownClass, "bit-txt-fwl");
+        StringAssert.Contains(ownClass, "bit-txt-itl");
+        Assert.AreEqual("de", own.GetAttribute("lang"));
+    }
 }

@@ -378,6 +378,55 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
         return style!.TrimEnd().EndsWith(';') ? $"{style} {extraStyle}" : $"{style};{extraStyle}";
     }
 
+    /// <summary>
+    /// Splices two class lists into the single list a class attribute holds.
+    /// </summary>
+    /// <remarks>
+    /// Two lists landing in the same class attribute are only two lists while a space stands between them.
+    /// </remarks>
+    private protected static string? JoinClasses(string? @class, string? extraClass)
+    {
+        if (@class.HasNoValue()) return extraClass;
+
+        if (extraClass.HasNoValue()) return @class;
+
+        return $"{@class} {extraClass}";
+    }
+
+    /// <summary>
+    /// The value of an attribute the page wrote as a plain HTML attribute rather than as a parameter of the component.
+    /// </summary>
+    /// <remarks>
+    /// HTML attribute names are case insensitive, and so is the deduplication the render tree does between a splatted
+    /// attribute and one the component writes itself, so a differently cased spelling has to be found here too. This is
+    /// what lets a component resolve its own value against the splatted one instead of writing a null over it - a null
+    /// written over a splatted attribute does not leave that attribute alone, it removes it.
+    /// </remarks>
+    private protected string? GetSplattedAttribute(string name)
+    {
+        if (HtmlAttributes.Count == 0) return null;
+
+        if (HtmlAttributes.TryGetValue(name, out var value)) return StringifyAttributeValue(value);
+
+        foreach (var attribute in HtmlAttributes)
+        {
+            if (string.Equals(attribute.Key, name, StringComparison.OrdinalIgnoreCase)) return StringifyAttributeValue(attribute.Value);
+        }
+
+        return null;
+    }
+
+    // A boolean is the one attribute value the renderer does not write as its text: an attribute is written with no
+    // value at all while it is true and left out altogether while it is false, which is what an attribute splatted
+    // onto a plain element does. So the two are resolved into the same thing here rather than into the "True" and
+    // "False" that ToString would give an attribute the component writes itself.
+    private static string? StringifyAttributeValue(object? value)
+    {
+        if (value is bool boolean) return boolean ? string.Empty : null;
+
+        return value?.ToString();
+    }
+
 
 
     /// <summary>

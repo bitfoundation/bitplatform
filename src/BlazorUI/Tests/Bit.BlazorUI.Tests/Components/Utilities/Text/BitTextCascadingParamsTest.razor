@@ -1,0 +1,19 @@
+﻿@* Covers BitTextParams: the cascaded values fill in the parameters the text did not set itself, and never
+   overwrite the ones it did. *@
+
+<BitParams Parameters="@(new BitTextParams[]
+                         {
+                             new()
+                             {
+                                 Element = "section",
+                                 Class = "cascaded",
+                                 Typography = BitTypography.Body2,
+                                 Weight = BitFontWeight.Bold,
+                                 Italic = true,
+                                 LineClamp = 2,
+                                 Lang = "fr",
+                             }
+                         })">
+    <BitText>cascaded</BitText>
+    <BitText Element="article" Typography="BitTypography.H3" Weight="BitFontWeight.Light" Lang="de">own</BitText>
+</BitParams>

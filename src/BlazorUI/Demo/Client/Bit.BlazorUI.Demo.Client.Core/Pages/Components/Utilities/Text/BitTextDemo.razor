@@ -3,112 +3,323 @@
 
 <PageOutlet Url="components/text"
             Title="Text"
-            Description="Use text to present your design and content as clearly and efficiently as possible." />
+            Description="Applies the theme's typography ramp to a run of text, keeping the tag it is rendered in a separate decision from the size it is drawn at, and covering the weight, the case, the emphasis, the alignment, the wrapping and the truncation." />
 
 <DemoPage Name="Text"
-          Description="Use text to present your design and content as clearly and efficiently as possible."
+          Description="BitText draws a run of text at one of the theme's named typography steps, so its size, weight, line height and tracking all come from the theme and every preset re-skins them at once. The look and the semantics stay separate decisions: the variant chooses how the text is drawn, Element the tag it is drawn in, and AriaLevel the heading level it is announced at. Everything else composes with any variant - the weight, the case, the italic, the underline and the strikethrough, the tabular figures, the alignment, the colors, and the whole of the wrapping, from a single truncated line to a clamp of a given number of lines."
           Parameters="componentParameters"
           SubEnums="componentSubEnums"
           GitHubUrl="Utilities/Text/BitText.cs"
           GitHubDemoUrl="Utilities/Text/BitTextDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <BitText>This is default (Subtitle1)</BitText>
-        <br /><br />
-        <BitText Typography="BitTypography.H1">H1. Heading</BitText>
-        <br />
-        <BitText Typography="BitTypography.H2">H2. Heading</BitText>
-        <br />
-        <BitText Typography="BitTypography.H3">H3. Heading</BitText>
-        <br />
-        <BitText Typography="BitTypography.H4">H4. Heading</BitText>
-        <br />
-        <BitText Typography="BitTypography.H5">H5. Heading</BitText>
-        <br />
-        <BitText Typography="BitTypography.H6">H6. Heading</BitText>
-        <br /><br />
-        <BitText Typography="BitTypography.Subtitle1">Subtitle1. Once upon a time</BitText>
-        <br />
-        <BitText Typography="BitTypography.Subtitle2">Subtitle2. Once upon a time</BitText>
-        <br /><br />
-        <BitText Typography="BitTypography.Body1">Body1. Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
-        <br />
-        <BitText Typography="BitTypography.Body2">Body2. Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
-        <br /><br />
-        <BitText Typography="BitTypography.Button">Button. Click Me</BitText>
-        <br />
-        <BitText Typography="BitTypography.Caption1">Caption1. Hello World!</BitText>
-        <br />
-        <BitText Typography="BitTypography.Caption2">Caption2. Hello World!</BitText>
-        <br />
-        <BitText Typography="BitTypography.Overline">Overline. this is overline text.</BitText>
-    </DemoExample>
-
-    <DemoExample Title="Wrapping" RazorCode="@example2RazorCode" Id="example2">
-        <b>Normal wrap (default):</b><br />
-        <BitText Style="width:250px">Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
-        <br /><br /><br />
-        <b>NoWrap:</b><br />
-        <BitText Style="width:250px" NoWrap>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
-        <br /><br /><br />
-        <b>ForceBreak:</b><br />
-        <BitText Style="width:250px" ForceBreak>1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890</BitText>
-    </DemoExample>
-
-    <DemoExample Title="Align" RazorCode="@example3RazorCode" Id="example3">
-        <BitText Align="BitTextAlign.Start">Start</BitText>
-        <br />
-        <BitText Align="BitTextAlign.Center">Center</BitText>
-        <br />
-        <BitText Align="BitTextAlign.End">End</BitText>
-    </DemoExample>
-
-    <DemoExample Title="Foreground" RazorCode="@example4RazorCode" Id="example4">
-        <BitText Foreground="BitColorKind.Primary">Primary foreground</BitText>
-        <br />
-        <BitText Foreground="BitColorKind.Secondary">Secondary foreground</BitText>
-        <br />
-        <BitText Foreground="BitColorKind.Tertiary">Tertiary foreground</BitText>
-        <br />
-        <div style="background:linear-gradient(blue, pink);background-clip:text;">
-            <BitText Foreground="BitColorKind.Transparent">Transparent foreground</BitText>
+        <div class="example-desc">
+            <b>Typography</b> picks the step of the theme's ramp the text is drawn at, and every one of them carries its
+            own size, weight, line height and tracking. It also decides the tag the text is rendered in unless
+            <b>Element</b> overrides it: the six heading variants render their own heading tag, the two subtitles an
+            <code>h6</code>, the two body variants a <code>p</code>, and the button, the two captions and the overline a
+            <code>span</code>. Left unset the variant is <code>Subtitle1</code>.
+        </div>
+        <div class="example-content">
+            <BitText>This is default (Subtitle1)</BitText>
+            <BitText Typography="BitTypography.H1">H1. Heading</BitText>
+            <BitText Typography="BitTypography.H2">H2. Heading</BitText>
+            <BitText Typography="BitTypography.H3">H3. Heading</BitText>
+            <BitText Typography="BitTypography.H4">H4. Heading</BitText>
+            <BitText Typography="BitTypography.H5">H5. Heading</BitText>
+            <BitText Typography="BitTypography.H6">H6. Heading</BitText>
+            <BitText Typography="BitTypography.Subtitle1">Subtitle1. Once upon a time</BitText>
+            <BitText Typography="BitTypography.Subtitle2">Subtitle2. Once upon a time</BitText>
+            <BitText Typography="BitTypography.Body1">Body1. Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
+            <BitText Typography="BitTypography.Body2">Body2. Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
+            <BitText Typography="BitTypography.Button">Button. Click Me</BitText>
+            <BitText Typography="BitTypography.Caption1">Caption1. Hello World!</BitText>
+            <BitText Typography="BitTypography.Caption2">Caption2. Hello World!</BitText>
+            <BitText Typography="BitTypography.Overline">Overline. this is overline text.</BitText>
+            <div style="font-style:italic;font-size:1.25rem;color:tomato">
+                <BitText Typography="BitTypography.Inherit">Inherit. Takes the size, the weight and the family of the element around it.</BitText>
+            </div>
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example5RazorCode" Id="example5">
-        <BitText Color="BitColor.Primary">Primary color</BitText>
-        <br />
-        <BitText Color="BitColor.Secondary">Secondary color</BitText>
-        <br />
-        <BitText Color="BitColor.Tertiary">Tertiary color</BitText>
-        <br />
-        <BitText Color="BitColor.Info">Info color</BitText>
-        <br />
-        <BitText Color="BitColor.Success">Success color</BitText>
-        <br />
-        <BitText Color="BitColor.Warning">Warning color</BitText>
-        <br />
-        <BitText Color="BitColor.SevereWarning">SevereWarning color</BitText>
-        <br />
-        <BitText Color="BitColor.Error">Error color</BitText>
-        <br />
-        <div style="background:var(--bit-clr-fg-sec);padding:1rem">
-            <BitText Color="BitColor.PrimaryBackground">PrimaryBackground color</BitText>
-            <br />
-            <BitText Color="BitColor.SecondaryBackground">SecondaryBackground color</BitText>
-            <br />
-            <BitText Color="BitColor.TertiaryBackground">TertiaryBackground color</BitText>
+    <DemoExample Title="Element" RazorCode="@example2RazorCode" Id="example2">
+        <div class="example-desc">
+            <b>Element</b> names the tag to render, which is what keeps the semantics of the text apart from its looks:
+            an <code>h2</code> drawn at the size of an <code>h4</code> keeps the outline a screen reader navigates
+            intact, while picking the smaller heading for its size alone would break it. It is also how the text reaches
+            the tags that mean something of their own and that no variant maps to - a <code>strong</code>, an
+            <code>em</code>, a <code>blockquote</code>, a <code>label</code>, a <code>code</code>. A value that is not a
+            name a tag can have falls back to the tag of the variant rather than reaching the markup, and a void element
+            such as <code>hr</code> is rendered without the content it cannot hold.
         </div>
-        <br />
-        <BitText Color="BitColor.PrimaryForeground">PrimaryForeground color</BitText>
-        <br />
-        <BitText Color="BitColor.SecondaryForeground">SecondaryForeground color</BitText>
-        <br />
-        <BitText Color="BitColor.TertiaryForeground">TertiaryForeground color</BitText>
-        <br />
-        <BitText Color="BitColor.PrimaryBorder">PrimaryBorder color</BitText>
-        <br />
-        <BitText Color="BitColor.SecondaryBorder">SecondaryBorder color</BitText>
-        <br />
-        <BitText Color="BitColor.TertiaryBorder">TertiaryBorder color</BitText>
+        <div class="example-content">
+            <BitText Element="h2" Typography="BitTypography.H4">An h2 drawn at the size of an h4</BitText>
+            <BitText Element="span" Typography="BitTypography.H4">An h4 look with no heading semantics at all (span)</BitText>
+            <BitText Element="strong" Typography="BitTypography.Body1">Strongly emphasized body text</BitText>
+            <BitText Element="blockquote" Typography="BitTypography.Body1">A quotation, in a blockquote</BitText>
+            <BitText Element="code" Typography="BitTypography.Body2">var text = new BitText();</BitText>
+            <BitText Element="not a tag name" Typography="BitTypography.Body2">A tag name carrying whitespace falls back to the tag of the variant (p).</BitText>
+            <BitText Element="hr">A void element holds no content, so this text is not rendered.</BitText>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Weight & emphasis" RazorCode="@example3RazorCode" Id="example3">
+        <div class="example-desc">
+            <b>Weight</b> moves the text along the theme's weight scale, so a preset that draws its semibold somewhere
+            else moves with it; left unset the weight is the one the variant carries. <b>Italic</b>, <b>Underline</b> and
+            <b>Strikethrough</b> are decorations that compose with any variant and with each other - asked for together
+            the last two draw a single underlined and struck through line. <b>Transform</b> changes the case the text is
+            drawn in without touching the characters in the document, so a copy and a screen reader both still get the
+            original text.
+        </div>
+        <div class="example-content">
+            <BitText Weight="BitFontWeight.Light">Light weight</BitText>
+            <BitText Weight="BitFontWeight.Regular">Regular weight</BitText>
+            <BitText Weight="BitFontWeight.Medium">Medium weight</BitText>
+            <BitText Weight="BitFontWeight.Semibold">Semibold weight</BitText>
+            <BitText Weight="BitFontWeight.Bold">Bold weight</BitText>
+            <BitText Italic>Italic text</BitText>
+            <BitText Underline>Underlined text</BitText>
+            <BitText Strikethrough>Struck through text</BitText>
+            <BitText Underline Strikethrough>Both underlined and struck through</BitText>
+            <BitText Transform="BitTextTransform.Uppercase">Uppercase transform</BitText>
+            <BitText Transform="BitTextTransform.Lowercase">Lowercase Transform</BitText>
+            <BitText Transform="BitTextTransform.Capitalize">capitalize transform</BitText>
+            <BitText Typography="BitTypography.Overline" Transform="BitTextTransform.None">None, undoing the uppercase of the overline variant</BitText>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Numbers" RazorCode="@example4RazorCode" Id="example4">
+        <div class="example-desc">
+            In an ordinary font a <code>1</code> is narrower than an <code>8</code>, so a column of figures comes out
+            ragged and a number that counts up visibly shifts under the eye. <b>Numeric</b> asks the font for its tabular
+            figures, which all share one width, and its lining figures, which all sit on the baseline; the letters beside
+            them stay proportional. A font that carries neither is left as it is.
+        </div>
+        <div class="example-content">
+            <div class="demo-row">
+                <div class="demo-figures">
+                    <BitText Typography="BitTypography.Caption1">Proportional (default)</BitText>
+                    <BitText Typography="BitTypography.Body1">1,111.11</BitText>
+                    <BitText Typography="BitTypography.Body1">8,888.88</BitText>
+                    <BitText Typography="BitTypography.Body1">1,234.56</BitText>
+                </div>
+                <div class="demo-figures">
+                    <BitText Typography="BitTypography.Caption1">Numeric</BitText>
+                    <BitText Typography="BitTypography.Body1" Numeric>1,111.11</BitText>
+                    <BitText Typography="BitTypography.Body1" Numeric>8,888.88</BitText>
+                    <BitText Typography="BitTypography.Body1" Numeric>1,234.56</BitText>
+                </div>
+            </div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Wrapping" RazorCode="@example5RazorCode" Id="example5">
+        <div class="example-desc">
+            <b>NoWrap</b> keeps the text on a single line and cuts what does not fit with an ellipsis; it needs a box
+            with a width of its own to overflow, which is what <b>Block</b> gives to a variant that is left inline, such as a
+            caption. <b>BreakWord</b> breaks only a word that has no other way to fit - a URL, a hash, a path - and leaves
+            ordinary prose breaking between its words, while <b>ForceBreak</b> breaks wherever the line runs out.
+            <b>Wrap</b> chooses how the remaining lines are broken: <code>Balance</code> evens out the lines of a short
+            heading, <code>Pretty</code> avoids leaving a short last line under body copy, and <code>Stable</code> keeps
+            the lines already laid out from re-flowing while the text is edited. <b>Hyphenate</b> hyphenates the words
+            broken across two lines, which needs a <b>Lang</b> the browser has a dictionary for.<br />
+            Inside a flex or a grid item, a truncation appears to do nothing: such an item is never allowed to become
+            narrower than its longest word, so the text never overflows in the first place. <b>BreakWord</b> on the text
+            or a <code>min-width: 0</code> on the item is what lets it shrink and the ellipsis appear.
+        </div>
+        <div class="example-content">
+            <div class="demo-group">
+                <BitText Typography="BitTypography.Caption1">Normal wrap (default)</BitText>
+                <BitText Style="width:250px">Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
+            </div>
+            <div class="demo-group">
+                <BitText Typography="BitTypography.Caption1">NoWrap</BitText>
+                <BitText Style="width:250px" NoWrap>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
+            </div>
+            <div class="demo-group">
+                <BitText Typography="BitTypography.Caption1">NoWrap on a caption, which is inline and needs Block for a width to overflow</BitText>
+                <BitText Style="width:250px" Typography="BitTypography.Caption2" NoWrap Block>Once upon a time, stories wove connections between people, a symphony of voices.</BitText>
+            </div>
+            <div class="demo-group">
+                <BitText Typography="BitTypography.Caption1">BreakWord</BitText>
+                <BitText Style="width:250px" BreakWord>A path: /a/very/long/path/segment/that/never/breaks/on/its/own/anywhere.txt</BitText>
+            </div>
+            <div class="demo-group">
+                <BitText Typography="BitTypography.Caption1">ForceBreak</BitText>
+                <BitText Style="width:250px" ForceBreak>1234567890123456789012345678901234567890123456789012345678901234567890</BitText>
+            </div>
+            <div class="demo-group">
+                <BitText Typography="BitTypography.Caption1">Wrap: Balance</BitText>
+                <BitText Style="width:250px" Typography="BitTypography.H5" Wrap="BitTextWrap.Balance">A heading whose lines are balanced against each other</BitText>
+            </div>
+            <div class="demo-group">
+                <BitText Typography="BitTypography.Caption1">Wrap: Pretty</BitText>
+                <BitText Style="width:250px" Wrap="BitTextWrap.Pretty">Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
+            </div>
+            <div class="demo-group">
+                <BitText Typography="BitTypography.Caption1">Hyphenate, with a Lang the browser has a dictionary for</BitText>
+                <BitText Style="width:250px" Lang="en" Hyphenate>An incomprehensibly complicated internationalization responsibility.</BitText>
+            </div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Line clamp" RazorCode="@example6RazorCode" Id="example6">
+        <div class="example-desc">
+            <b>LineClamp</b> is the multi-line truncation: the text wraps normally up to the given line and everything
+            after it is clipped away, with the last visible line ending in an ellipsis. Nothing is taken out of the
+            document, so the whole text is still copied, found by a find-in-page and read out by a screen reader. A
+            bottom padding on a clamped element would show slivers of the lines underneath it, so that padding belongs on
+            a wrapper around the text, and a word wider than the box still overflows sideways unless <b>BreakWord</b> is
+            set beside it. A value below one leaves the text alone.
+        </div>
+        <div class="example-content">
+            <div class="demo-group">
+                <BitText Typography="BitTypography.Caption1">LineClamp="1"</BitText>
+                <BitText Style="width:250px" LineClamp="1">Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams that outlasted every one of the nights they were told in.</BitText>
+            </div>
+            <div class="demo-group">
+                <BitText Typography="BitTypography.Caption1">LineClamp="2"</BitText>
+                <BitText Style="width:250px" LineClamp="2">Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams that outlasted every one of the nights they were told in.</BitText>
+            </div>
+            <div class="demo-group">
+                <BitText Typography="BitTypography.Caption1">LineClamp="3"</BitText>
+                <BitText Style="width:250px" LineClamp="3">Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams that outlasted every one of the nights they were told in.</BitText>
+            </div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Align" RazorCode="@example7RazorCode" Id="example7">
+        <div class="example-desc">
+            <b>Align</b> sets the horizontal alignment of the lines inside the box the text occupies.
+            <code>Start</code> and <code>End</code> are the logical values and follow the direction of the text, so the
+            same markup reads from the leading edge of a left-to-right and of a right-to-left page alike, which
+            <code>Left</code> and <code>Right</code> deliberately do not. <code>Justify</code> spaces the words of every
+            line but the last so both edges line up - WCAG advises against it for a block of text, since the uneven word
+            spacing is harder to read for people with dyslexia and other cognitive concerns.
+        </div>
+        <div class="example-content">
+            <div class="demo-group">
+                <BitText Style="width:250px" Align="BitTextAlign.Start">Start</BitText>
+                <BitText Style="width:250px" Align="BitTextAlign.Center">Center</BitText>
+                <BitText Style="width:250px" Align="BitTextAlign.End">End</BitText>
+                <BitText Style="width:250px" Align="BitTextAlign.Justify">Justify. Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
+            </div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Gutter" RazorCode="@example8RazorCode" Id="example8">
+        <div class="example-desc">
+            <b>Gutter</b> puts a bottom margin under the text. It is set in <code>em</code>, so it follows the size of
+            the variant: the gap under a heading comes out larger than the one under a caption without either of them
+            naming a length.
+        </div>
+        <div class="example-content">
+            <div class="demo-boxed">
+                <BitText Typography="BitTypography.H5" Gutter>A heading with a gutter</BitText>
+                <BitText Typography="BitTypography.Body1" Gutter>A paragraph with a gutter, whose margin is smaller because the variant is.</BitText>
+                <BitText Typography="BitTypography.Body1">A paragraph with none.</BitText>
+            </div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Accessibility" RazorCode="@example9RazorCode" Id="example9">
+        <div class="example-desc">
+            <b>AriaLevel</b> is the third axis beside the look and the tag: it sets the heading level the text is
+            announced at without moving either of them, for a component reused at several depths or a caption that has to
+            stay a <code>div</code>. On a tag that is not already a heading it writes a heading role beside the level,
+            since a level on its own names nothing. <b>VisuallyHidden</b> takes the text off the page while leaving it in
+            the accessibility tree, which neither a hidden nor a collapsed <b>Visibility</b> does, and <b>NoSelect</b>
+            keeps a run of chrome text from being selected by a stray double click - content itself stays selectable, so
+            that a reader can still copy it into a translator or a note.
+        </div>
+        <div class="example-content">
+            <BitText Element="div" Typography="BitTypography.H5" AriaLevel="3">A div announced as a level 3 heading</BitText>
+            <BitText Element="h2" Typography="BitTypography.H5" AriaLevel="4">An h2 announced as a level 4 heading</BitText>
+            <BitText VisuallyHidden>Read out by a screen reader, and drawn nowhere.</BitText>
+            <BitText NoSelect>Try to select this text - it will not be selected.</BitText>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Foreground" RazorCode="@example10RazorCode" Id="example10">
+        <div class="example-desc">
+            <b>Foreground</b> paints the text with one of the theme's three neutral foreground colors - the primary one
+            for body copy, the secondary and the tertiary for the text that should recede beside it. <code>Transparent</code>
+            leaves the glyphs unpainted so that whatever the element behind them paints shows through, which is what a
+            gradient headline is made of; in a forced-colors palette, where the gradient is removed, the text is given
+            the system color back so that it never comes out invisible.
+        </div>
+        <div class="example-content">
+            <BitText Foreground="BitColorKind.Primary">Primary foreground</BitText>
+            <BitText Foreground="BitColorKind.Secondary">Secondary foreground</BitText>
+            <BitText Foreground="BitColorKind.Tertiary">Tertiary foreground</BitText>
+            <div style="background:linear-gradient(blue, pink);background-clip:text;">
+                <BitText Foreground="BitColorKind.Transparent">Transparent foreground</BitText>
+            </div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example11RazorCode" Id="example11">
+        <div class="example-desc">
+            <b>Color</b> paints the text with one of the general color roles of the library: the three accents, the four
+            states, and the neutral background, foreground and border families for the text that has to sit against one
+            of those surfaces. Color alone is never the only thing that carries a meaning, so a success or an error is
+            worth pairing with a word or an icon that says the same thing.
+        </div>
+        <div class="example-content">
+            <BitText Color="BitColor.Primary">Primary color</BitText>
+            <BitText Color="BitColor.Secondary">Secondary color</BitText>
+            <BitText Color="BitColor.Tertiary">Tertiary color</BitText>
+            <BitText Color="BitColor.Info">Info color</BitText>
+            <BitText Color="BitColor.Success">Success color</BitText>
+            <BitText Color="BitColor.Warning">Warning color</BitText>
+            <BitText Color="BitColor.SevereWarning">SevereWarning color</BitText>
+            <BitText Color="BitColor.Error">Error color</BitText>
+            <div style="background:var(--bit-clr-fg-sec);padding:1rem">
+                <BitText Color="BitColor.PrimaryBackground">PrimaryBackground color</BitText>
+                <BitText Color="BitColor.SecondaryBackground">SecondaryBackground color</BitText>
+                <BitText Color="BitColor.TertiaryBackground">TertiaryBackground color</BitText>
+            </div>
+            <BitText Color="BitColor.PrimaryForeground">PrimaryForeground color</BitText>
+            <BitText Color="BitColor.SecondaryForeground">SecondaryForeground color</BitText>
+            <BitText Color="BitColor.TertiaryForeground">TertiaryForeground color</BitText>
+            <BitText Color="BitColor.PrimaryBorder">PrimaryBorder color</BitText>
+            <BitText Color="BitColor.SecondaryBorder">SecondaryBorder color</BitText>
+            <BitText Color="BitColor.TertiaryBorder">TertiaryBorder color</BitText>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
+        <div class="example-desc">
+            <b>Style</b> and <b>Class</b> apply to the rendered element like they do on every other component of the
+            library, and they are added to the class list and the style the component builds of its own rather than
+            replacing them. The same holds of a <code>class</code> or a <code>style</code> arriving through
+            <code>@@attributes</code>: it is merged with what the component builds, so the variant, the colors and the
+            alignment all survive an attribute of the same name. Written as a plain lowercase attribute instead, a
+            <code>class</code> or a <code>style</code> is matched to the parameter of that name by the razor compiler
+            and never arrives as a splatted attribute at all.
+        </div>
+        <div class="example-content">
+            <BitText Style="color: tomato; font-weight: bold;">Styled through the Style parameter</BitText>
+            <BitText Class="demo-boxed">Classed through the Class parameter</BitText>
+            <BitText Align="BitTextAlign.Center"
+                     Style="width:250px"
+                     @attributes="@(new Dictionary<string, object> { ["class"] = "demo-boxed" })">
+                A splatted class, kept beside the class and the alignment the component builds
+            </BitText>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+        <div class="example-desc">
+            <b>Dir</b> sets the direction of the text, writing the <code>dir</code> attribute and, for right-to-left, the
+            <code>bit-rtl</code> class the rest of the library reads. The logical <b>Align</b> values follow it, so the
+            same <code>Start</code> that aligns to the left in a left-to-right page aligns to the right here without the
+            markup changing.
+        </div>
+        <div dir="rtl" class="example-content">
+            <BitText Dir="BitDir.Rtl" Typography="BitTypography.H5">این یک عنوان راست‌چین است</BitText>
+            <BitText Dir="BitDir.Rtl" Align="BitTextAlign.Start">این متن از لبه‌ی آغازین چیده شده است.</BitText>
+            <BitText Dir="BitDir.Rtl" Align="BitTextAlign.End">این متن از لبه‌ی پایانی چیده شده است.</BitText>
+        </div>
     </DemoExample>
 </DemoPage>
