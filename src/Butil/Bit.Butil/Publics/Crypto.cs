@@ -111,15 +111,7 @@ public class Crypto(IJSRuntime js)
         return js.Invoke<bool>("BitButil.crypto.verifyHmac", algo, key, signature, data);
     }
 
-    private static string HashAlgorithmName(CryptoKeyHash algorithm) => algorithm switch
-    {
-        CryptoKeyHash.Sha256 => "SHA-256",
-        CryptoKeyHash.Sha384 => "SHA-384",
-        CryptoKeyHash.Sha512 => "SHA-512",
-        // An out-of-range value (only reachable by casting an invalid int to the enum) is a caller
-        // bug. For crypto, fail loudly rather than silently substituting SHA-256.
-        _ => throw new ArgumentOutOfRangeException(nameof(algorithm), algorithm, "Unsupported hash algorithm."),
-    };
+    private static string HashAlgorithmName(CryptoKeyHash algorithm) => CryptoHashName.Resolve(algorithm);
 
     // ─── Key generation / import / export ──────────────────────────────────────
 
@@ -205,6 +197,276 @@ public class Crypto(IJSRuntime js)
     public ValueTask<bool> VerifyEcdsa(byte[] publicKey, byte[] signature, byte[] data, string curve = "P-256",
                                        CryptoKeyHash algorithm = CryptoKeyHash.Sha256)
         => js.Invoke<bool>("BitButil.crypto.verifyEcdsa", publicKey, signature, data, curve, HashAlgorithmName(algorithm));
+
+    // ─── Key import / export ───────────────────────────────────────────────────
+
+    /// <summary>
+    /// Re-expresses key material in another format: reads <paramref name="key"/> as
+    /// <paramref name="sourceFormat"/> and writes it back out as <paramref name="targetFormat"/>.
+    /// This is how a key that came from somewhere else - a server, a file, another library - is
+    /// turned into the bytes the rest of this type takes.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/exportKey">https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/exportKey</see>
+    /// </summary>
+    /// <param name="key">The key material, in <paramref name="sourceFormat"/>.</param>
+    /// <param name="sourceFormat">How <paramref name="key"/> is encoded. Not <see cref="CryptoKeyFormat.Jwk"/> - use <see cref="ImportJsonWebKey"/>.</param>
+    /// <param name="targetFormat">How to encode the result. Not <see cref="CryptoKeyFormat.Jwk"/> - use <see cref="ExportJsonWebKey"/>.</param>
+    /// <param name="algorithm">The algorithm the key belongs to. The browser rejects a key imported under the wrong one.</param>
+    /// <exception cref="ArgumentException">Either format is <see cref="CryptoKeyFormat.Jwk"/>, which is an object rather than bytes.</exception>
+    /// <remarks>
+    /// Both directions require the key to be extractable, so this cannot be used with the PBKDF2 and
+    /// HKDF derivation keys, which the specification forbids from ever being exported. The exported
+    /// bytes cross the interop boundary - see the security note on <see cref="Crypto"/>.
+    /// </remarks>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CryptoKeyAlgorithmJsOptions))]
+    public ValueTask<byte[]> ExportKey(byte[] key, CryptoKeyFormat sourceFormat, CryptoKeyFormat targetFormat, CryptoKeyAlgorithm algorithm)
+    {
+        ArgumentNullException.ThrowIfNull(algorithm);
+        RequireByteFormat(sourceFormat, nameof(sourceFormat));
+        RequireByteFormat(targetFormat, nameof(targetFormat));
+
+        return js.Invoke<byte[]>("BitButil.crypto.exportKey",
+            CryptoFormatName.Resolve(sourceFormat), key, CryptoFormatName.Resolve(targetFormat), new CryptoKeyAlgorithmJsOptions(algorithm));
+    }
+
+    /// <summary>
+    /// Exports key material as a JSON Web Key - the format a server usually publishes and consumes.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/exportKey">https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/exportKey</see>
+    /// </summary>
+    /// <param name="key">The key material, in <paramref name="sourceFormat"/>.</param>
+    /// <param name="sourceFormat">How <paramref name="key"/> is encoded - raw, pkcs8 or spki.</param>
+    /// <param name="algorithm">The algorithm the key belongs to.</param>
+    /// <exception cref="ArgumentException"><paramref name="sourceFormat"/> is <see cref="CryptoKeyFormat.Jwk"/>.</exception>
+    /// <remarks>A JWK exported from a private key contains the private half in the clear - see the security note on <see cref="Crypto"/>.</remarks>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CryptoKeyAlgorithmJsOptions))]
+    public ValueTask<CryptoJsonWebKey> ExportJsonWebKey(byte[] key, CryptoKeyFormat sourceFormat, CryptoKeyAlgorithm algorithm)
+    {
+        ArgumentNullException.ThrowIfNull(algorithm);
+        RequireByteFormat(sourceFormat, nameof(sourceFormat));
+
+        return js.Invoke<CryptoJsonWebKey>("BitButil.crypto.exportJwk",
+            CryptoFormatName.Resolve(sourceFormat), key, new CryptoKeyAlgorithmJsOptions(algorithm));
+    }
+
+    /// <summary>
+    /// Imports a JSON Web Key and hands back its bytes in <paramref name="targetFormat"/>, ready for
+    /// the encrypt, sign and derive methods on this type.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey">https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey</see>
+    /// </summary>
+    /// <param name="jwk">The key, as published.</param>
+    /// <param name="algorithm">The algorithm to import it under. A JWK's own <c>alg</c> member is a hint, not a substitute - the browser reads this one.</param>
+    /// <param name="targetFormat">How to encode the result: raw for a symmetric key, spki for a public key, pkcs8 for a private one.</param>
+    /// <exception cref="ArgumentException"><paramref name="targetFormat"/> is <see cref="CryptoKeyFormat.Jwk"/>, which would be a no-op.</exception>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CryptoKeyAlgorithmJsOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CryptoJsonWebKey))]
+    public ValueTask<byte[]> ImportJsonWebKey(CryptoJsonWebKey jwk, CryptoKeyAlgorithm algorithm, CryptoKeyFormat targetFormat = CryptoKeyFormat.Raw)
+    {
+        ArgumentNullException.ThrowIfNull(jwk);
+        ArgumentNullException.ThrowIfNull(algorithm);
+        RequireByteFormat(targetFormat, nameof(targetFormat));
+
+        return js.Invoke<byte[]>("BitButil.crypto.importJwk",
+            jwk, new CryptoKeyAlgorithmJsOptions(algorithm), CryptoFormatName.Resolve(targetFormat));
+    }
+
+    /// <summary>
+    /// JWK is a JSON object, not a byte string, so the methods that move bytes take the other three
+    /// formats and leave it to <see cref="ExportJsonWebKey"/> / <see cref="ImportJsonWebKey"/>.
+    /// Refusing it here names the parameter instead of failing inside the browser.
+    /// </summary>
+    private static void RequireByteFormat(CryptoKeyFormat format, string parameterName)
+    {
+        if (format is CryptoKeyFormat.Jwk)
+            throw new ArgumentException("JWK is an object rather than bytes; use ExportJsonWebKey / ImportJsonWebKey.", parameterName);
+    }
+
+    // ─── Key agreement and derivation ──────────────────────────────────────────
+
+    /// <summary>
+    /// Generates an ECDH key pair on the named curve, for deriving a shared secret with someone
+    /// else's public key.
+    /// </summary>
+    /// <param name="curve">One of <c>"P-256"</c>, <c>"P-384"</c>, <c>"P-521"</c>.</param>
+    /// <remarks>The private key is returned as extractable pkcs8 bytes - see the security note on <see cref="Crypto"/>.</remarks>
+    public ValueTask<EcKeyPair> GenerateEcdhKeyPair(string curve = "P-256")
+        => js.Invoke<EcKeyPair>("BitButil.crypto.generateEcdhKeyPair", curve);
+
+    /// <summary>
+    /// Derives raw shared-secret bits from your ECDH private key and the other party's public key.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/deriveBits">https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/deriveBits</see>
+    /// </summary>
+    /// <param name="privateKey">Your private key, as PKCS#8 DER bytes.</param>
+    /// <param name="publicKey">Their public key, as SPKI DER bytes.</param>
+    /// <param name="outputLengthBits">How many bits to derive. Both sides must ask for the same number.</param>
+    /// <param name="curve">The curve both keys are on.</param>
+    /// <remarks>
+    /// The raw output of ECDH is the x coordinate of a point, not a uniformly random key: run it
+    /// through <see cref="DeriveHkdfBits"/> (or use <see cref="DeriveEcdhKey"/>, which derives a
+    /// usable key directly) rather than encrypting with it as it stands.
+    /// </remarks>
+    public ValueTask<byte[]> DeriveEcdhBits(byte[] privateKey, byte[] publicKey, int outputLengthBits, string curve = "P-256")
+        => js.Invoke<byte[]>("BitButil.crypto.deriveEcdhBits", privateKey, publicKey, curve, outputLengthBits);
+
+    /// <summary>
+    /// Derives a usable key from an ECDH agreement, in one step.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/deriveKey">https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/deriveKey</see>
+    /// </summary>
+    /// <param name="privateKey">Your private key, as PKCS#8 DER bytes.</param>
+    /// <param name="publicKey">Their public key, as SPKI DER bytes.</param>
+    /// <param name="derivedKeyAlgorithm">What the derived key is - e.g. <c>CryptoKeyAlgorithm.AesGcm(256)</c>.</param>
+    /// <param name="curve">The curve both keys are on.</param>
+    /// <remarks>The derived key is returned as extractable raw bytes - see the security note on <see cref="Crypto"/>.</remarks>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CryptoKeyAlgorithmJsOptions))]
+    public ValueTask<byte[]> DeriveEcdhKey(byte[] privateKey, byte[] publicKey, CryptoKeyAlgorithm derivedKeyAlgorithm, string curve = "P-256")
+    {
+        ArgumentNullException.ThrowIfNull(derivedKeyAlgorithm);
+
+        return js.Invoke<byte[]>("BitButil.crypto.deriveEcdhKey",
+            privateKey, publicKey, curve, new CryptoKeyAlgorithmJsOptions(derivedKeyAlgorithm));
+    }
+
+    /// <summary>
+    /// Derives raw bytes from existing high-entropy key material using HKDF.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/deriveBits">https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/deriveBits</see>
+    /// </summary>
+    /// <param name="keyMaterial">The input keying material - a shared secret, not a password.</param>
+    /// <param name="salt">Optional salt. Non-secret, and may be empty.</param>
+    /// <param name="info">Optional context string binding the output to a purpose ("encryption", "signing", a session id).</param>
+    /// <param name="outputLengthBits">How many bits to derive.</param>
+    /// <param name="algorithm">The digest to extract and expand with.</param>
+    /// <remarks>
+    /// HKDF is not a password hash: it does no stretching at all, so a low-entropy input stays as
+    /// weak as it started. Use <see cref="DerivePbkdf2"/> for passwords.
+    /// </remarks>
+    public ValueTask<byte[]> DeriveHkdfBits(byte[] keyMaterial, byte[]? salt, byte[]? info, int outputLengthBits,
+                                            CryptoKeyHash algorithm = CryptoKeyHash.Sha256)
+        => js.Invoke<byte[]>("BitButil.crypto.deriveHkdfBits", keyMaterial, salt, info, outputLengthBits, HashAlgorithmName(algorithm));
+
+    /// <summary>
+    /// Derives a usable key from existing high-entropy key material using HKDF.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/deriveKey">https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/deriveKey</see>
+    /// </summary>
+    /// <param name="keyMaterial">The input keying material - a shared secret, not a password.</param>
+    /// <param name="salt">Optional salt. Non-secret, and may be empty.</param>
+    /// <param name="info">Optional context string binding the output to a purpose.</param>
+    /// <param name="derivedKeyAlgorithm">What the derived key is - e.g. <c>CryptoKeyAlgorithm.AesGcm(256)</c>.</param>
+    /// <param name="algorithm">The digest to extract and expand with.</param>
+    /// <remarks>The derived key is returned as extractable raw bytes - see the security note on <see cref="Crypto"/>.</remarks>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CryptoKeyAlgorithmJsOptions))]
+    public ValueTask<byte[]> DeriveHkdfKey(byte[] keyMaterial, byte[]? salt, byte[]? info, CryptoKeyAlgorithm derivedKeyAlgorithm,
+                                           CryptoKeyHash algorithm = CryptoKeyHash.Sha256)
+    {
+        ArgumentNullException.ThrowIfNull(derivedKeyAlgorithm);
+
+        return js.Invoke<byte[]>("BitButil.crypto.deriveHkdfKey",
+            keyMaterial, salt, info, HashAlgorithmName(algorithm), new CryptoKeyAlgorithmJsOptions(derivedKeyAlgorithm));
+    }
+
+    /// <summary>
+    /// Stretches a password into a usable key with PBKDF2 - <see cref="DerivePbkdf2"/>'s output as a
+    /// key of a stated algorithm rather than as loose bits.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/deriveKey">https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/deriveKey</see>
+    /// </summary>
+    /// <param name="password">The password bytes.</param>
+    /// <param name="salt">A random per-user salt.</param>
+    /// <param name="iterations">The iteration count. Six figures, not four.</param>
+    /// <param name="derivedKeyAlgorithm">What the derived key is - e.g. <c>CryptoKeyAlgorithm.AesGcm(256)</c>. Its length decides the output size.</param>
+    /// <param name="algorithm">The digest to stretch with.</param>
+    /// <remarks>The derived key is returned as extractable raw bytes - see the security note on <see cref="Crypto"/>.</remarks>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CryptoKeyAlgorithmJsOptions))]
+    public ValueTask<byte[]> DerivePbkdf2Key(byte[] password, byte[] salt, int iterations, CryptoKeyAlgorithm derivedKeyAlgorithm,
+                                             CryptoKeyHash algorithm = CryptoKeyHash.Sha256)
+    {
+        ArgumentNullException.ThrowIfNull(derivedKeyAlgorithm);
+
+        return js.Invoke<byte[]>("BitButil.crypto.derivePbkdf2Key",
+            password, salt, iterations, HashAlgorithmName(algorithm), new CryptoKeyAlgorithmJsOptions(derivedKeyAlgorithm));
+    }
+
+    // ─── Key wrapping ──────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Generates an AES-KW key - the algorithm whose only job is encrypting other keys.
+    /// </summary>
+    /// <param name="bits">Key length in bits - 128, 192, or 256.</param>
+    /// <remarks>The key is returned as extractable raw bytes - see the security note on <see cref="Crypto"/>.</remarks>
+    public ValueTask<byte[]> GenerateAesKwKey(int bits = 256)
+        => js.Invoke<byte[]>("BitButil.crypto.generateAesKwKey", bits);
+
+    /// <summary>
+    /// Encrypts key material with another key, so it can be stored or sent without ever appearing in
+    /// the clear.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/wrapKey">https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/wrapKey</see>
+    /// </summary>
+    /// <param name="key">The key material to wrap, in <paramref name="format"/>.</param>
+    /// <param name="format">How <paramref name="key"/> is encoded, and how it will be encoded again when unwrapped. Not <see cref="CryptoKeyFormat.Jwk"/>.</param>
+    /// <param name="keyAlgorithm">The algorithm the wrapped key belongs to.</param>
+    /// <param name="wrappingKey">The key doing the wrapping: raw bytes for the AES algorithms, SPKI bytes for RSA-OAEP.</param>
+    /// <param name="wrapAlgorithm">How to wrap - <see cref="AesKwCryptoAlgorithmParams"/>, <see cref="AesGcmCryptoAlgorithmParams"/>, <see cref="AesCbcCryptoAlgorithmParams"/>, <see cref="AesCtrCryptoAlgorithmParams"/> or <see cref="RsaOaepCryptoAlgorithmParams"/>.</param>
+    /// <param name="wrappingKeyHash">The digest the RSA-OAEP wrapping key was created with. Ignored by the AES algorithms.</param>
+    /// <exception cref="ArgumentException"><paramref name="format"/> is <see cref="CryptoKeyFormat.Jwk"/>.</exception>
+    /// <remarks>
+    /// Unlike everything else on this type, the result is <i>not</i> sensitive: that is the point of
+    /// wrapping. The key going in still is.
+    /// </remarks>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CryptoKeyAlgorithmJsOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AesKwCryptoAlgorithmParams))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AesCtrCryptoAlgorithmParams))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AesCbcCryptoAlgorithmParams))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AesGcmCryptoAlgorithmParams))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(RsaOaepCryptoAlgorithmParams))]
+    public ValueTask<byte[]> WrapKey<T>(byte[] key, CryptoKeyFormat format, CryptoKeyAlgorithm keyAlgorithm,
+                                        byte[] wrappingKey, T wrapAlgorithm, CryptoKeyHash? wrappingKeyHash = null)
+        where T : ICryptoAlgorithmParams
+    {
+        ArgumentNullException.ThrowIfNull(keyAlgorithm);
+        ArgumentNullException.ThrowIfNull(wrapAlgorithm);
+        RequireByteFormat(format, nameof(format));
+
+        return js.Invoke<byte[]>("BitButil.crypto.wrapKey",
+            CryptoFormatName.Resolve(format), key, new CryptoKeyAlgorithmJsOptions(keyAlgorithm),
+            wrappingKey, wrapAlgorithm, wrappingKeyHash is null ? null : HashAlgorithmName(wrappingKeyHash.Value));
+    }
+
+    /// <summary>
+    /// Reverses <see cref="WrapKey{T}"/>: decrypts wrapped key material and hands back its bytes.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/unwrapKey">https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/unwrapKey</see>
+    /// </summary>
+    /// <param name="wrappedKey">The wrapped bytes.</param>
+    /// <param name="format">The format the key was wrapped in, and the format it comes back in. Not <see cref="CryptoKeyFormat.Jwk"/>.</param>
+    /// <param name="unwrappedKeyAlgorithm">The algorithm the wrapped key belongs to. The wrapping carries no record of it, so this has to match what <see cref="WrapKey{T}"/> was told.</param>
+    /// <param name="unwrappingKey">The key doing the unwrapping: raw bytes for the AES algorithms, PKCS#8 bytes for RSA-OAEP.</param>
+    /// <param name="unwrapAlgorithm">How it was wrapped. Must match the wrap, including the IV where one was used.</param>
+    /// <param name="unwrappingKeyHash">The digest the RSA-OAEP unwrapping key was created with. Ignored by the AES algorithms.</param>
+    /// <exception cref="ArgumentException"><paramref name="format"/> is <see cref="CryptoKeyFormat.Jwk"/>.</exception>
+    /// <remarks>The unwrapped key is returned as extractable bytes - see the security note on <see cref="Crypto"/>.</remarks>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CryptoKeyAlgorithmJsOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AesKwCryptoAlgorithmParams))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AesCtrCryptoAlgorithmParams))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AesCbcCryptoAlgorithmParams))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AesGcmCryptoAlgorithmParams))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(RsaOaepCryptoAlgorithmParams))]
+    public ValueTask<byte[]> UnwrapKey<T>(byte[] wrappedKey, CryptoKeyFormat format, CryptoKeyAlgorithm unwrappedKeyAlgorithm,
+                                          byte[] unwrappingKey, T unwrapAlgorithm, CryptoKeyHash? unwrappingKeyHash = null)
+        where T : ICryptoAlgorithmParams
+    {
+        ArgumentNullException.ThrowIfNull(unwrappedKeyAlgorithm);
+        ArgumentNullException.ThrowIfNull(unwrapAlgorithm);
+        RequireByteFormat(format, nameof(format));
+
+        return js.Invoke<byte[]>("BitButil.crypto.unwrapKey",
+            CryptoFormatName.Resolve(format), wrappedKey, new CryptoKeyAlgorithmJsOptions(unwrappedKeyAlgorithm),
+            unwrappingKey, unwrapAlgorithm, unwrappingKeyHash is null ? null : HashAlgorithmName(unwrappingKeyHash.Value));
+    }
 
     /// <summary>
     /// The Encrypt method of the Crypto interface that encrypts data.

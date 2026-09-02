@@ -55,6 +55,31 @@ bool online = await navigator.IsOnLine();
         <DemoConsole @ref="onlineOutput" Title="online status output" />
     </DemoSection>
 
+    <DemoSection Title="Pending input"
+                 Api="IsInputPending"
+                 Description="Asks whether the browser has user input waiting that this task is holding up - the check that turns a long loop into one that yields only when yielding would help. The demo runs a 600 ms busy loop that polls between chunks and stops the moment input is pending; click somewhere while it runs. Chromium-only: elsewhere it answers false, which keeps a loop written around it running rather than yielding forever."
+                 Code=@("""
+while (thereIsMoreWork)
+{
+    DoAChunkOfWork();
+
+    if (await navigator.IsInputPending())
+    {
+        await Task.Yield();   // let the browser answer the user first
+    }
+}
+
+// includeContinuous also counts mousemove, pointermove, wheel and drag -
+// which fire constantly, so leave it false unless the work is truly interruptible
+bool anyPointerMovement = await navigator.IsInputPending(includeContinuous: true);
+""")>
+        <div class="controls">
+            <button @onclick="CheckInputPending">IsInputPending</button>
+            <button @onclick="RunYieldingLoop">Run a 600 ms loop that yields to input</button>
+        </div>
+        <DemoConsole @ref="inputPendingOutput" Title="pending input output" />
+    </DemoSection>
+
     <DemoSection Title="Web Share"
                  Api="CanShare / Share / ShareFiles"
                  Description="Invokes the platform's native share sheet with a title, text and URL. Check CanShare first, and use ShareFiles to attach one or more files on browsers that support Web Share Level 2."
@@ -150,6 +175,9 @@ bool accepted = await navigator.Vibrate([200, 100, 200]);
     <ApiMember Name="GetUserActivation"
                Signature="Task<UserActivationState?> GetUserActivation()"
                Description="Whether the user has interacted with the page and whether that interaction is still spendable. Null on browsers without navigator.userActivation." />
+    <ApiMember Name="IsInputPending"
+               Signature="Task<bool> IsInputPending(bool includeContinuous = false)"
+               Description="Whether the browser has user input waiting that this task is holding up. Poll it between chunks of a long loop and yield when it says yes. False on browsers without navigator.scheduling, which keeps such a loop running rather than yielding forever." />
     <ApiMember Name="UserActivationState"
                Signature="class UserActivationState { bool HasBeenActive; bool IsActive; }"
                Description="Sticky activation (has ever interacted) and transient activation (recent enough for a gesture-gated API). Check IsActive before calling one, to fail fast with your own message instead of an opaque browser rejection." />
@@ -159,6 +187,52 @@ bool accepted = await navigator.Vibrate([200, 100, 200]);
     private DemoConsole hardwareOutput = default!;
     private DemoConsole traitsOutput = default!;
     private DemoConsole onlineOutput = default!;
+    private DemoConsole inputPendingOutput = default!;
+
+    private async Task CheckInputPending()
+    {
+        try
+        {
+            var pending = await navigator.IsInputPending();
+            var continuous = await navigator.IsInputPending(includeContinuous: true);
+            await inputPendingOutput.Success($"IsInputPending → {pending} · including continuous events → {continuous}");
+        }
+        catch (Exception ex)
+        {
+            await inputPendingOutput.Error("IsInputPending failed:", ex.Message);
+        }
+    }
+
+    private async Task RunYieldingLoop()
+    {
+        try
+        {
+            await inputPendingOutput.Info("Running for up to 600 ms - click anywhere to interrupt it.");
+
+            var deadline = DateTime.UtcNow.AddMilliseconds(600);
+            var chunks = 0;
+
+            while (DateTime.UtcNow < deadline)
+            {
+                // A chunk of work: short enough that the poll between chunks is meaningful.
+                var chunkEnd = DateTime.UtcNow.AddMilliseconds(20);
+                while (DateTime.UtcNow < chunkEnd) { }
+                chunks++;
+
+                if (await navigator.IsInputPending())
+                {
+                    await inputPendingOutput.Success($"Input pending after {chunks} chunk(s) - yielding so the browser can answer it.");
+                    return;
+                }
+            }
+
+            await inputPendingOutput.Log($"Ran {chunks} chunk(s) with no input pending. On a non-Chromium browser this is the only outcome.");
+        }
+        catch (Exception ex)
+        {
+            await inputPendingOutput.Error("Loop failed:", ex.Message);
+        }
+    }
     private DemoConsole shareOutput = default!;
     private DemoConsole badgeOutput = default!;
     private DemoConsole beaconOutput = default!;

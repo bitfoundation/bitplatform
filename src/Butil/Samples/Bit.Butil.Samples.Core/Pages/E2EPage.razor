@@ -52,6 +52,11 @@
     <button id="crypto-hmac" @onclick="CryptoHmac">HMAC sign + verify</button>
     <button id="crypto-ecdsa" @onclick="CryptoEcdsa">ECDSA sign + verify</button>
     <button id="crypto-pbkdf2" @onclick="CryptoPbkdf2">PBKDF2 derive</button>
+    <button id="crypto-jwk" @onclick="CryptoJwkRoundTrip">JWK export + import</button>
+    <button id="crypto-export" @onclick="CryptoExportKey">export pkcs8 → spki</button>
+    <button id="crypto-ecdh" @onclick="CryptoEcdh">ECDH agreement</button>
+    <button id="crypto-hkdf" @onclick="CryptoHkdf">HKDF derive</button>
+    <button id="crypto-wrap" @onclick="CryptoWrapUnwrap">AES-KW wrap + unwrap</button>
 </section>
 
 <section>
@@ -263,6 +268,71 @@
         var salt = await crypto.GetRandomValues(16);
         var bits = await crypto.DerivePbkdf2(password, salt, 100_000, 256);
         Set($"crypto:pbkdf2:{bits.Length}");
+    }
+
+    private async Task CryptoJwkRoundTrip()
+    {
+        var algorithm = CryptoKeyAlgorithm.AesGcm(256);
+        var key = await crypto.GenerateAesKey(256);
+
+        var jwk = await crypto.ExportJsonWebKey(key, CryptoKeyFormat.Raw, algorithm);
+        var roundTripped = await crypto.ImportJsonWebKey(jwk, algorithm, CryptoKeyFormat.Raw);
+
+        // kty proves the JWK deserialized as more than an empty object; the byte comparison proves
+        // the export and the import agree on what the key was.
+        Set($"crypto:jwk:{jwk.Kty}/{roundTripped.SequenceEqual(key)}");
+    }
+
+    private async Task CryptoExportKey()
+    {
+        // ECDSA rather than RSA: the same code path, generated in milliseconds rather than seconds.
+        var pair = await crypto.GenerateEcdsaKeyPair("P-256");
+        var algorithm = CryptoKeyAlgorithm.Ecdsa("P-256");
+
+        var spki = await crypto.ExportKey(pair.PublicKey, CryptoKeyFormat.Spki, CryptoKeyFormat.Spki, algorithm);
+        var pkcs8 = await crypto.ExportKey(pair.PrivateKey, CryptoKeyFormat.Pkcs8, CryptoKeyFormat.Pkcs8, algorithm);
+
+        Set($"crypto:export:{spki.SequenceEqual(pair.PublicKey)}/{pkcs8.SequenceEqual(pair.PrivateKey)}");
+    }
+
+    private async Task CryptoEcdh()
+    {
+        var alice = await crypto.GenerateEcdhKeyPair("P-256");
+        var bob = await crypto.GenerateEcdhKeyPair("P-256");
+
+        var aliceKey = await crypto.DeriveEcdhKey(alice.PrivateKey, bob.PublicKey, CryptoKeyAlgorithm.AesGcm(256));
+        var bobKey = await crypto.DeriveEcdhKey(bob.PrivateKey, alice.PublicKey, CryptoKeyAlgorithm.AesGcm(256));
+
+        Set($"crypto:ecdh:{aliceKey.SequenceEqual(bobKey)}");
+    }
+
+    private async Task CryptoHkdf()
+    {
+        var secret = await crypto.GetRandomValues(32);
+        var salt = await crypto.GetRandomValues(16);
+        var encryption = System.Text.Encoding.UTF8.GetBytes("encryption");
+        var signing = System.Text.Encoding.UTF8.GetBytes("signing");
+
+        var bits = await crypto.DeriveHkdfBits(secret, salt, encryption, 256);
+        var key = await crypto.DeriveHkdfKey(secret, salt, encryption, CryptoKeyAlgorithm.AesGcm(256));
+        var other = await crypto.DeriveHkdfKey(secret, salt, signing, CryptoKeyAlgorithm.AesGcm(256));
+
+        // Same inputs derive the same key, and a different info string derives a different one -
+        // which is the whole point of the info parameter.
+        Set($"crypto:hkdf:{bits.SequenceEqual(key)}/{!key.SequenceEqual(other)}");
+    }
+
+    private async Task CryptoWrapUnwrap()
+    {
+        var algorithm = CryptoKeyAlgorithm.AesGcm(256);
+        var keyToProtect = await crypto.GenerateAesKey(256);
+        var wrappingKey = await crypto.GenerateAesKwKey(256);
+
+        var wrapped = await crypto.WrapKey(keyToProtect, CryptoKeyFormat.Raw, algorithm, wrappingKey, new AesKwCryptoAlgorithmParams());
+        var recovered = await crypto.UnwrapKey(wrapped, CryptoKeyFormat.Raw, algorithm, wrappingKey, new AesKwCryptoAlgorithmParams());
+
+        // AES-KW adds an 8-byte integrity check, so the wrapped form is never the key itself.
+        Set($"crypto:wrap:{wrapped.Length}/{recovered.SequenceEqual(keyToProtect)}");
     }
 
     // ─── Misc ──────────────────────────────────────────────────────────────────

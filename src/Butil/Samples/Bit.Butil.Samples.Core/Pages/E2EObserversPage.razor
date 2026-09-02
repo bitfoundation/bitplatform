@@ -36,6 +36,10 @@
     <h3>Performance</h3>
     <button id="perf-mark-measure" @onclick="PerfMarkMeasure">mark + measure</button>
     <button id="perf-observer" @onclick="PerfObserver">PerformanceObserver(mark)</button>
+    <button id="perf-typed-observer" @onclick="PerfTypedObserver">typed observer(measure)</button>
+    <button id="perf-navigation" @onclick="PerfNavigation">navigation timing</button>
+    <button id="perf-resources" @onclick="PerfResources">resource timing</button>
+    <button id="perf-vitals" @onclick="PerfWebVitals">web vitals</button>
 </section>
 
 <section>
@@ -100,6 +104,7 @@
 <section>
     <h3>Platform</h3>
     <button id="nav-info" @onclick="NavInfo">navigator info</button>
+    <button id="nav-input-pending" @onclick="NavInputPending">isInputPending</button>
     <button id="ua-extract" @onclick="UaExtract">userAgent.extract</button>
     <button id="screen-metrics" @onclick="ScreenMetrics">screen metrics</button>
     <button id="platform-extras" @onclick="PlatformExtras">platform extras</button>
@@ -113,6 +118,7 @@
     private ButilSubscription? _resizeSub;
     private ButilSubscription? _mutationSub;
     private ButilSubscription? _perfObserverSub;
+    private ButilSubscription? _typedObserverSub;
     private ButilSubscription? _broadcastSub;
 
     private int _resizeWidth = 120;
@@ -141,6 +147,57 @@
 
         var fired = await WaitFor(tcs, 5000);
         Set($"perf:observer:{fired}");
+    }
+
+    private async Task PerfTypedObserver()
+    {
+        // Measures are deterministic - unlike long tasks or layout shifts, one can be produced on
+        // demand - so this proves the typed relay without depending on the browser being slow.
+        var tcs = new TaskCompletionSource<bool>();
+
+        _typedObserverSub = await performance.SubscribeObserver<PerformanceEntry>(
+            [PerformanceEntryTypes.Measure],
+            entries =>
+            {
+                var typed = entries.FirstOrDefault(e => e.Name == "butil-e2e-typed-measure");
+                if (typed is not null) tcs.TrySetResult(typed.EntryType == "measure");
+            },
+            buffered: false);
+
+        await performance.Mark("butil-e2e-typed-a");
+        await performance.Mark("butil-e2e-typed-b");
+        await performance.Measure("butil-e2e-typed-measure", "butil-e2e-typed-a", "butil-e2e-typed-b");
+
+        var deserialized = await WaitFor(tcs, 5000);
+        Set($"perf:typed-observer:{deserialized}");
+    }
+
+    private async Task PerfNavigation()
+    {
+        var entries = await performance.GetNavigationEntries();
+        var page = entries.FirstOrDefault();
+        // A navigation entry always exists once the document has loaded, and its response has to
+        // have started - the fields being non-default is what proves the typed deserialization.
+        var ok = page is not null && page.EntryType == "navigation" && page.ResponseStart > 0 && page.Type?.Length > 0;
+        Set($"perf:navigation:{ok}");
+    }
+
+    private async Task PerfResources()
+    {
+        var resources = await performance.GetResourceEntries();
+        // The harness page itself loads scripts, so the buffer is never empty here; every entry has
+        // to be a resource with a name and a start time.
+        var ok = resources.Length > 0 && resources.All(r => r.EntryType == "resource" && r.Name.Length > 0);
+        Set($"perf:resources:{ok}");
+    }
+
+    private async Task PerfWebVitals()
+    {
+        var vitals = await performance.GetWebVitals();
+        // TTFB comes from the navigation entry, so it is the one metric present on every engine
+        // and without any user interaction.
+        var ok = vitals is not null && vitals.Ttfb is >= 0;
+        Set($"perf:vitals:{ok}");
     }
 
     // ─── Storage Manager + Network ───────────────────────────────────────────────
@@ -583,6 +640,16 @@
         Set($"nav:info:{language.Length > 0 && cores > 0 && online}");
     }
 
+    private async Task NavInputPending()
+    {
+        // Whether input is pending depends on what the user is doing, so the assertion is that both
+        // forms answer at all - a browser without navigator.scheduling has to report false rather
+        // than throw, and that is the half of this a headless run actually exercises.
+        var pending = await navigator.IsInputPending();
+        var continuous = await navigator.IsInputPending(includeContinuous: true);
+        Set($"nav:input-pending:ok:{pending is true or false}/{continuous is true or false}");
+    }
+
     private async Task UaExtract()
     {
         var props = await userAgent.Extract();
@@ -629,6 +696,7 @@
         if (_resizeSub is not null) await _resizeSub.DisposeAsync();
         if (_mutationSub is not null) await _mutationSub.DisposeAsync();
         if (_perfObserverSub is not null) await _perfObserverSub.DisposeAsync();
+        if (_typedObserverSub is not null) await _typedObserverSub.DisposeAsync();
         if (_broadcastSub is not null) await _broadcastSub.DisposeAsync();
     }
 }

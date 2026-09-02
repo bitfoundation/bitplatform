@@ -58,6 +58,15 @@ await using var db  = await indexedDb.Open("my-db", stores: [ … ]);
         </div>
     </DemoCard>
 
+    <DemoCard Title="Typed timing entries" Api="GetNavigationEntries / GetResourceEntries / GetWebVitals"
+              Description="The timeline read as typed shapes instead of raw JSON, plus the Core Web Vitals already reduced from the entries they are computed over.">
+        <div class="controls">
+            <button @onclick="PerfNavigation">Navigation + resources</button>
+            <button @onclick="PerfWebVitals">Web Vitals</button>
+            <button @onclick="PerfLongTasks">Watch long tasks</button>
+        </div>
+    </DemoCard>
+
     <DemoCard Title="Storage & network" Api="StorageManager / NetworkInformation"
               Description="Estimate quota usage and read connection metadata.">
         <div class="controls">
@@ -192,6 +201,58 @@ await using var db  = await indexedDb.Open("my-db", stores: [ … ]);
         if (_perfObserverSub is null) return;
         await _perfObserverSub.DisposeAsync();
         _perfObserverSub = null;
+    }
+
+    private async Task PerfNavigation()
+    {
+        var navigation = await performance.GetNavigationEntries();
+        if (navigation.Length > 0)
+        {
+            var page = navigation[0];
+            await output.Success("Navigation →",
+                $"{page.Type} over {page.NextHopProtocol}, TTFB {page.ResponseStart - page.RequestStart:F0} ms, load {page.LoadEventEnd:F0} ms");
+        }
+        else
+        {
+            await output.Warn("No navigation entry - the document is prerendering.");
+        }
+
+        var resources = await performance.GetResourceEntries();
+        var slowest = resources.OrderByDescending(r => r.Duration).FirstOrDefault();
+        await output.Success("Resources →",
+            slowest is null
+                ? "(the resource-timing buffer is empty)"
+                : $"{resources.Length} fetched, slowest {slowest.Duration:F0} ms ({slowest.InitiatorType}, {slowest.TransferSize:N0} bytes)");
+    }
+
+    private async Task PerfWebVitals()
+    {
+        // The first call is what starts CLS and INP accumulating; reading it again later is how the
+        // numbers become meaningful.
+        var vitals = await performance.GetWebVitals();
+        await output.Success("Web Vitals →",
+            $"LCP {vitals.Lcp?.ToString("F0") ?? "n/a"} ms · CLS {vitals.Cls?.ToString("F3") ?? "n/a"} · INP {vitals.Inp?.ToString("F0") ?? "n/a"} ms");
+    }
+
+    private async Task PerfLongTasks()
+    {
+        await StopPerfObserver();
+
+        _perfObserverSub = await performance.SubscribeObserver<PerformanceLongTaskTiming>(
+            [PerformanceEntryTypes.LongTask],
+            tasks =>
+            {
+                foreach (var task in tasks)
+                {
+                    _ = output.Log($"Long task → {task.Duration:F0} ms in {task.Name}");
+                }
+            });
+
+        // Long tasks are only reported for work that genuinely blocked the thread, so produce one.
+        var until = DateTime.UtcNow.AddMilliseconds(120);
+        while (DateTime.UtcNow < until) { }
+
+        await output.Log("Blocked the main thread for 120 ms - the observer should have reported it.");
     }
 
     private async Task StorageEstimate()

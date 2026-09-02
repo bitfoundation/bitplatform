@@ -1,8 +1,15 @@
-using System.Collections.Generic;
-
 namespace Bit.Butil;
 
-/// <summary>Response payload from <see cref="Fetch.Send"/>.</summary>
+/// <summary>
+/// The <c>Response</c> half of the fetch object model, as <see cref="Fetch.Send"/> returns it.
+/// <br />
+/// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Response">https://developer.mozilla.org/en-US/docs/Web/API/Response</see>
+/// </summary>
+/// <remarks>
+/// A network or CORS failure is not an exception here: it comes back as an ordinary response with
+/// <see cref="Ok"/> false, <see cref="Status"/> 0 and <see cref="Error"/> set - the same way
+/// <c>fetch()</c> distinguishes "the server said no" from "there was no answer".
+/// </remarks>
 public class FetchResponse
 {
     /// <summary>True when the response status is in [200, 300).</summary>
@@ -17,11 +24,24 @@ public class FetchResponse
     /// <summary>Final URL after redirects.</summary>
     public string Url { get; set; } = string.Empty;
 
-    /// <summary>Response headers.</summary>
-    public Dictionary<string, string> Headers { get; set; } = new();
+    /// <summary>
+    /// Response headers, repeats included - which is what makes <c>Set-Cookie</c> readable here at
+    /// all, on the browsers that expose it.
+    /// </summary>
+    public FetchHeaders Headers { get; set; } = new();
 
     /// <summary>Body bytes. May be empty for 204/304 or aborted responses.</summary>
     public byte[] Body { get; set; } = [];
+
+    /// <summary>Whether the request went through at least one redirect to get here.</summary>
+    public bool Redirected { get; set; }
+
+    /// <summary>
+    /// The response type: <c>"basic"</c>, <c>"cors"</c>, <c>"opaque"</c>, <c>"opaqueredirect"</c> or
+    /// <c>"error"</c>. An <c>"opaque"</c> response is a <c>no-cors</c> one - its status reads 0 and
+    /// its body is unreadable by design.
+    /// </summary>
+    public string Type { get; set; } = string.Empty;
 
     /// <summary>True when the request was aborted (via <see cref="AbortableFetch"/> or cancellation).</summary>
     public bool Aborted { get; set; }

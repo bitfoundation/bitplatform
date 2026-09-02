@@ -162,6 +162,34 @@ public class Navigator(IJSRuntime js)
         => await js.Invoke<UserActivationState?>("BitButil.navigator.userActivation");
 
     /// <summary>
+    /// Whether the browser has user input waiting that this task is holding up - the check that
+    /// turns a long loop into one that yields only when yielding would actually help.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Scheduling/isInputPending">https://developer.mozilla.org/en-US/docs/Web/API/Scheduling/isInputPending</see>
+    /// </summary>
+    /// <param name="includeContinuous">
+    /// Also count the continuous events - <c>mousemove</c>, <c>pointermove</c>, <c>wheel</c>,
+    /// <c>drag</c>. They fire constantly while a pointer is moving, so including them makes this
+    /// answer true far more often; leave it false unless the work is genuinely interruptible.
+    /// </param>
+    /// <returns>
+    /// False on a browser without <c>navigator.scheduling</c> (everything but Chromium at the time
+    /// of writing), which is also the answer that lets a loop written around this keep running
+    /// rather than yielding forever.
+    /// </returns>
+    /// <remarks>
+    /// This is a hint about the browser's input queue, not about your own handlers: it goes true
+    /// while a click is queued and behind schedule, and back to false the moment the browser gets to
+    /// dispatch it. Poll it between chunks of work, and yield when it says yes.
+    /// <br/>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public async Task<bool> IsInputPending(bool includeContinuous = false)
+        => await js.Invoke<bool>("BitButil.navigator.isInputPending", includeContinuous);
+
+    /// <summary>
     /// Returns true if a call to Navigator.share() would succeed.
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/canShare">https://developer.mozilla.org/en-US/docs/Web/API/Navigator/canShare</see>
