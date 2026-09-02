@@ -1,0 +1,180 @@
+@page "/local-fonts"
+@inject Bit.Butil.LocalFonts localFonts
+
+<PageTitle>LocalFonts - Bit.Butil</PageTitle>
+
+<PageHeader Category="Files & Data"
+            Title="LocalFonts"
+            Lead="List the fonts installed on the user's machine, and read the raw font file behind one of them - a design tool's font picker, matching the desktop app's."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Local_Font_Access_API"
+            InjectAs="LocalFonts localFonts" />
+
+<Callout Type="warning" Title="Chromium only, over HTTPS">
+    The Local Font Access API ships in Chromium-based browsers on desktop. The first query prompts
+    for the <code>local-fonts</code> permission and so must run inside a user gesture.
+</Callout>
+
+<Callout Type="info" Title="A dismissed prompt looks like no fonts">
+    A refusal and an unsupported browser both come back as an empty list, on purpose - so a page
+    cannot detect that the user said no. Check <code>IsSupported</code> first if you need to tell
+    the two apart.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="True when the runtime exposes window.queryLocalFonts. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.LocalFonts localFonts
+
+var supported = await localFonts.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="List installed fonts"
+                 Api="Query"
+                 Description="Returns every installed face - which on a designer's machine can be thousands - or just the ones named by PostScript name. Group by Family to build a picker that reads like the desktop's."
+                 Code=@("""
+var fonts = await localFonts.Query();
+foreach (var group in fonts.GroupBy(f => f.Family))
+{
+    // group.Key is the family; each font has PostscriptName, FullName, Style
+}
+
+// or a specific face:
+var one = await localFonts.Query("Arial-BoldMT");
+""")>
+        <div class="field">
+            <span class="field-label">PostScript names (comma separated, blank for all)</span>
+            <input type="text" @bind="_names" placeholder="Arial-BoldMT, Georgia" />
+        </div>
+        <div class="controls">
+            <button @onclick="Query">Query</button>
+        </div>
+        @if (_fonts.Length > 0)
+        {
+            <div class="field">
+                <span class="field-label">Font (@_fonts.Length face(s) in @_fonts.Select(f => f.Family).Distinct().Count() families)</span>
+                <select @bind="_selected">
+                    @foreach (var font in _fonts.Take(500))
+                    {
+                        <option value="@font.PostscriptName">@font.FullName</option>
+                    }
+                </select>
+            </div>
+            <div style="margin-top:0.8rem;font-size:1.4rem;font-family:'@SelectedFamily'">
+                The quick brown fox jumps over the lazy dog
+            </div>
+        }
+        <DemoConsole @ref="queryOutput" Title="query output" />
+    </DemoSection>
+
+    <DemoSection Title="Read a font file"
+                 Api="GetData"
+                 Description="The raw SFNT bytes of one face - what an exporter needs in order to embed the font the user picked. A font file is routinely several megabytes, so fetch one only for a face that was actually chosen."
+                 Code=@("""
+var bytes = await localFonts.GetData("Arial-BoldMT");
+// bytes is the SFNT blob, ready to embed
+""")>
+        <div class="controls">
+            <button @onclick="GetData">GetData for the selected face</button>
+        </div>
+        <DemoConsole @ref="dataOutput" Title="font data output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes window.queryLocalFonts. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="Query"
+               Signature="ValueTask<LocalFont[]> Query(params string[] postscriptNames)"
+               Description="The installed fonts, or the named subset. Empty when unsupported or when the prompt was dismissed. Needs a user gesture the first time." />
+    <ApiMember Name="GetData"
+               Signature="ValueTask<byte[]?> GetData(string postscriptName)"
+               Description="The raw SFNT bytes of one face, or null when it is not installed or permission was refused." />
+    <ApiMember Name="LocalFont"
+               Signature="class LocalFont { string PostscriptName; string FullName; string Family; string Style; }"
+               Description="One installed face: its unique name, its display name, its family and its style." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole queryOutput = default!;
+    private DemoConsole dataOutput = default!;
+
+    private LocalFont[] _fonts = [];
+    private string _names = "";
+    private string? _selected;
+
+    private string SelectedFamily =>
+        _fonts.FirstOrDefault(f => f.PostscriptName == _selected)?.Family ?? "inherit";
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await localFonts.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task Query()
+    {
+        try
+        {
+            if (!await localFonts.IsSupported())
+            {
+                await queryOutput.Warn("The Local Font Access API is not supported in this browser.");
+                return;
+            }
+
+            var names = _names.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            _fonts = await localFonts.Query(names);
+            _selected = _fonts.FirstOrDefault()?.PostscriptName;
+
+            await queryOutput.Success("Query →",
+                _fonts.Length == 0
+                    ? "no fonts - the prompt was dismissed, or nothing matched."
+                    : $"{_fonts.Length} face(s) in {_fonts.Select(f => f.Family).Distinct().Count()} families.");
+
+            foreach (var font in _fonts.Take(10))
+            {
+                await queryOutput.Log($"  {font.FullName}", $"{font.Family} / {font.Style} ({font.PostscriptName})");
+            }
+
+            if (_fonts.Length > 10) await queryOutput.Log($"  ... and {_fonts.Length - 10} more.");
+        }
+        catch (Exception ex)
+        {
+            await queryOutput.Error("Query failed →", ex.Message);
+        }
+    }
+
+    private async Task GetData()
+    {
+        if (string.IsNullOrEmpty(_selected))
+        {
+            await dataOutput.Warn("Query the installed fonts first, then pick a face.");
+            return;
+        }
+
+        try
+        {
+            var bytes = await localFonts.GetData(_selected);
+            await dataOutput.Success("GetData →",
+                bytes is null ? "(not available)" : $"{bytes.Length:N0} bytes for {_selected}");
+        }
+        catch (Exception ex)
+        {
+            await dataOutput.Error("GetData failed →", ex.Message);
+        }
+    }
+}

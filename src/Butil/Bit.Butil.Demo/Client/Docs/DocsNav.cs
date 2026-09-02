@@ -32,6 +32,7 @@ public static class DocsNav
         new("Screen & Diagnostics", "diagnostics",
         [
             new("Screen", "screen", "Physical screen metrics, color depth and availability.", typeof(ScreenPage), ApiSupport.Partial),
+            new("WindowManagement", "window-management", "Every attached screen, and placing windows or fullscreen content on a chosen one.", typeof(WindowManagementPage), ApiSupport.ChromiumDesktop, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture),
             new("ScreenOrientation", "screen-orientation", "Read, lock and observe the screen orientation.", typeof(ScreenOrientationPage), ApiSupport.Partial),
             new("VisualViewport", "visual-viewport", "The visual viewport: scale, offsets and resize events.", typeof(VisualViewportPage)),
             new("Performance", "performance", "High-resolution timing, marks, measures and entries.", typeof(PerformancePage), ApiSupport.Partial),
@@ -74,6 +75,7 @@ public static class DocsNav
             new("Fetch", "fetch", "The browser fetch API with full request/response control.", typeof(FetchPage)),
             new("FileSystem", "file-system", "Pick real files and folders, then read and write them back.", typeof(FileSystemPage), ApiSupport.Chromium, ApiNeeds.UserGesture),
             new("Compression", "compression", "Gzip and deflate through the browser's native codec.", typeof(CompressionPage), ApiSupport.Broad),
+            new("LocalFonts", "local-fonts", "List the fonts installed on the machine, and read one's raw font file.", typeof(LocalFontsPage), ApiSupport.ChromiumDesktop, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture),
         ]),
         new("Network & Workers", "network",
         [
@@ -93,6 +95,18 @@ public static class DocsNav
             new("Gamepad", "gamepad", "Read game controllers - buttons, sticks and rumble.", typeof(GamepadPage), ApiSupport.Broad),
             new("DeviceOrientation", "device-orientation", "Tilt, acceleration and rotation from the device's own sensors.", typeof(DeviceOrientationPage), ApiSupport.Partial, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture),
             new("Nfc", "nfc", "Read and write NDEF messages on NFC tags.", typeof(NfcPage), ApiSupport.ChromiumMobile, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture | ApiNeeds.Experimental),
+            new("Sensors", "sensors", "The Generic Sensor API: accelerometer, gyroscope, magnetometer, orientation, gravity, linear acceleration and ambient light.", typeof(SensorsPage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.Permission),
+            new("Bluetooth", "bluetooth", "Pick a Bluetooth LE device and read, write or subscribe to its GATT characteristics.", typeof(BluetoothPage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture,
+                ["Bluetooth", "BluetoothDevice"]),
+            new("Usb", "usb", "Pick a USB device, claim an interface and run control, bulk or interrupt transfers.", typeof(UsbPage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture,
+                ["Usb", "UsbDevice"]),
+            new("Serial", "serial", "Open a serial port with the device's line settings, then read and write bytes.", typeof(SerialPage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture,
+                ["Serial", "SerialPort"]),
+            new("Hid", "hid", "Exchange input, output and feature reports with a human-interface device.", typeof(HidPage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture,
+                ["Hid", "HidDevice"]),
+            new("Midi", "midi", "MIDI inputs and outputs: listen to a controller, send notes to a synth.", typeof(MidiPage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.Permission),
+            new("ComputePressure", "compute-pressure", "Shed work before the machine stutters, by watching CPU and thermal pressure.", typeof(ComputePressurePage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.Experimental),
+            new("DevicePosture", "device-posture", "Whether a foldable device is currently flat or folded across its hinge.", typeof(DevicePosturePage), ApiSupport.Chromium, ApiNeeds.Experimental),
             new("WakeLock", "wake-lock", "Keep the screen awake while your app needs it.", typeof(WakeLockPage), ApiSupport.Partial, ApiNeeds.SecureContext),
             new("IdleDetector", "idle-detector", "Detect user and screen idle state changes.", typeof(IdleDetectorPage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture | ApiNeeds.Experimental),
             new("ContactPicker", "contact-picker", "Let users pick contacts to share with your app.", typeof(ContactPickerPage), ApiSupport.ChromiumMobile, ApiNeeds.SecureContext | ApiNeeds.UserGesture | ApiNeeds.Experimental),
@@ -112,6 +126,7 @@ public static class DocsNav
             new("WebAudio", "web-audio", "Play and control audio buffers with the Web Audio API.", typeof(WebAudioPage), ApiSupport.Broad, ApiNeeds.UserGesture),
             new("MediaRecorder", "media-recorder", "Record a camera, microphone or screen share to a file.", typeof(MediaRecorderPage), ApiSupport.Broad, ApiNeeds.SecureContext | ApiNeeds.Permission),
             new("MediaSession", "media-session", "Lock-screen metadata and hardware media-key handlers.", typeof(MediaSessionPage), ApiSupport.Partial),
+            new("AudioOutput", "audio-output", "Route a media element's sound to a chosen speaker or headset.", typeof(AudioOutputPage), ApiSupport.Partial, ApiNeeds.SecureContext | ApiNeeds.UserGesture),
         ]),
     ];
 
