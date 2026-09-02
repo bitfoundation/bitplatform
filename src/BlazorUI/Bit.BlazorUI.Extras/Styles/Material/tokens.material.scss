@@ -119,6 +119,8 @@
     // Roboto is only installed on Android / ChromeOS; the Bit.BlazorUI.Assets stylesheet ships a
     // Roboto @font-face (Latin subset, local() first), so link it to get this ramp on every device.
     --bit-tpg-font-family: Roboto, "Helvetica Neue", Arial, -apple-system, BlinkMacSystemFont, sans-serif;
+    // Roboto Mono is the monospaced face of the Roboto family, and the one M3's own docs set code in.
+    --bit-tpg-font-family-mono: "Roboto Mono", "DejaVu Sans Mono", "Liberation Mono", Consolas, "Courier New", monospace;
     // Roboto ships 400/500/700; M3 uses medium (500) where Fluent used semibold.
     --bit-tpg-fw-semibold: 500;
     // Control labels: M3 label-large tracks at 0.1px; no uppercase in M3.

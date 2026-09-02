@@ -3,6 +3,13 @@
 public class BitThemeTypography
 {
     public string? FontFamily { get; set; }
+
+    /// <summary>
+    /// The family the text whose characters have to line up in a column is set in
+    /// (<c>--bit-tpg-font-family-mono</c>) - a fragment of code, an identifier, a hash, a stack trace.
+    /// </summary>
+    public string? MonoFontFamily { get; set; }
+
     public string? FontWeight { get; set; }
     public string? LineHeight { get; set; }
     public string? GutterSize { get; set; }

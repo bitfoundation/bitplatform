@@ -12,8 +12,24 @@
                                  Italic = true,
                                  LineClamp = 2,
                                  Lang = "fr",
+                                 Trim = BitTextTrim.Both,
+                                 PreserveWhitespace = true,
+                                 Monospace = true,
+                                 Color = BitColor.Success,
+                                 Foreground = BitColorKind.Secondary,
+                                 Align = BitTextAlign.Center,
+                                 Gradient = "linear-gradient(red, blue)",
+                                 AriaLevel = 4,
                              }
                          })">
     <BitText>cascaded</BitText>
-    <BitText Element="article" Typography="BitTypography.H3" Weight="BitFontWeight.Light" Lang="de">own</BitText>
+    <BitText Element="article"
+             Typography="BitTypography.H3"
+             Weight="BitFontWeight.Light"
+             Lang="de"
+             Trim="BitTextTrim.Start"
+             Color="BitColor.Error"
+             Align="BitTextAlign.End"
+             Gradient="linear-gradient(green, yellow)"
+             AriaLevel="2">own</BitText>
 </BitParams>

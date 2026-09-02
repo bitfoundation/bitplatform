@@ -62,6 +62,11 @@ public class BitTextParams : BitComponentBaseParams, IBitComponentParams
     public BitColorKind? Foreground { get; set; }
 
     /// <summary>
+    /// Paints the glyphs of the text with a CSS gradient instead of with a flat color.
+    /// </summary>
+    public string? Gradient { get; set; }
+
+    /// <summary>
     /// If true, the text will have a bottom margin.
     /// </summary>
     public bool? Gutter { get; set; }
@@ -87,6 +92,11 @@ public class BitTextParams : BitComponentBaseParams, IBitComponentParams
     public int? LineClamp { get; set; }
 
     /// <summary>
+    /// Renders the text in the theme's monospaced family.
+    /// </summary>
+    public bool? Monospace { get; set; }
+
+    /// <summary>
     /// Prevents the text from being selected.
     /// </summary>
     public bool? NoSelect { get; set; }
@@ -103,6 +113,11 @@ public class BitTextParams : BitComponentBaseParams, IBitComponentParams
     public bool? Numeric { get; set; }
 
     /// <summary>
+    /// Renders the line breaks and the runs of spaces of the content as they were written.
+    /// </summary>
+    public bool? PreserveWhitespace { get; set; }
+
+    /// <summary>
     /// Draws a line through the text.
     /// </summary>
     public bool? Strikethrough { get; set; }
@@ -111,6 +126,11 @@ public class BitTextParams : BitComponentBaseParams, IBitComponentParams
     /// The capitalization of the text.
     /// </summary>
     public BitTextTransform? Transform { get; set; }
+
+    /// <summary>
+    /// Trims the half-leading off the top, the bottom or both edges of the box the text draws in.
+    /// </summary>
+    public BitTextTrim? Trim { get; set; }
 
     /// <summary>
     /// The typography of the text.
@@ -208,6 +228,14 @@ public class BitTextParams : BitComponentBaseParams, IBitComponentParams
             bitText.ClassBuilder.Reset();
         }
 
+        if (Gradient.HasValue() && bitText.HasNotBeenSet(nameof(Gradient)))
+        {
+            bitText.Gradient = Gradient;
+
+            bitText.ClassBuilder.Reset();
+            bitText.StyleBuilder.Reset();
+        }
+
         if (Gutter.HasValue && bitText.HasNotBeenSet(nameof(Gutter)))
         {
             bitText.Gutter = Gutter.Value;
@@ -242,6 +270,13 @@ public class BitTextParams : BitComponentBaseParams, IBitComponentParams
             bitText.StyleBuilder.Reset();
         }
 
+        if (Monospace.HasValue && bitText.HasNotBeenSet(nameof(Monospace)))
+        {
+            bitText.Monospace = Monospace.Value;
+
+            bitText.ClassBuilder.Reset();
+        }
+
         if (NoSelect.HasValue && bitText.HasNotBeenSet(nameof(NoSelect)))
         {
             bitText.NoSelect = NoSelect.Value;
@@ -263,6 +298,13 @@ public class BitTextParams : BitComponentBaseParams, IBitComponentParams
             bitText.ClassBuilder.Reset();
         }
 
+        if (PreserveWhitespace.HasValue && bitText.HasNotBeenSet(nameof(PreserveWhitespace)))
+        {
+            bitText.PreserveWhitespace = PreserveWhitespace.Value;
+
+            bitText.ClassBuilder.Reset();
+        }
+
         if (Strikethrough.HasValue && bitText.HasNotBeenSet(nameof(Strikethrough)))
         {
             bitText.Strikethrough = Strikethrough.Value;
@@ -273,6 +315,13 @@ public class BitTextParams : BitComponentBaseParams, IBitComponentParams
         if (Transform.HasValue && bitText.HasNotBeenSet(nameof(Transform)))
         {
             bitText.Transform = Transform.Value;
+
+            bitText.ClassBuilder.Reset();
+        }
+
+        if (Trim.HasValue && bitText.HasNotBeenSet(nameof(Trim)))
+        {
+            bitText.Trim = Trim.Value;
 
             bitText.ClassBuilder.Reset();
         }

@@ -542,6 +542,54 @@ public class BitTextTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
+    public void BitTextShouldRespectMonospace(bool monospace)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Monospace, monospace);
+        });
+
+        var cssClass = monospace ? " bit-txt-mno" : null;
+
+        component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></h6>");
+    }
+
+    [TestMethod]
+    public void BitTextShouldRespectMonospaceChangingAfterRender()
+    {
+        var component = RenderComponent<BitText>();
+
+        component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Monospace, true);
+        });
+
+        component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1 bit-txt-mno"" id:ignore></h6>");
+    }
+
+    // The family and the figures are two decisions: the monospaced family draws every character at one width, and
+    // the tabular figures only the digits, so a text asking for both is written with both classes.
+    [TestMethod]
+    public void BitTextShouldRenderTheMonospaceAndTheNumericAskedForTogether()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Monospace, true);
+            parameters.Add(p => p.Numeric, true);
+        });
+
+        var classList = component.Find("h6").ClassList;
+
+        Assert.IsTrue(classList.Contains("bit-txt-mno"));
+        Assert.IsTrue(classList.Contains("bit-txt-num"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
     public void BitTextShouldRespectNoSelect(bool noSelect)
     {
         var component = RenderComponent<BitText>(parameters =>
@@ -616,6 +664,93 @@ public class BitTextTests : BunitTestContext
         var cssClass = hyphenate ? " bit-txt-hyp" : null;
 
         component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></h6>");
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitTextShouldRespectPreserveWhitespace(bool preserveWhitespace)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.PreserveWhitespace, preserveWhitespace);
+        });
+
+        var cssClass = preserveWhitespace ? " bit-txt-pws" : null;
+
+        component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></h6>");
+    }
+
+    [TestMethod]
+    public void BitTextShouldRespectPreserveWhitespaceChangingAfterRender()
+    {
+        var component = RenderComponent<BitText>();
+
+        component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.PreserveWhitespace, true);
+        });
+
+        component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1 bit-txt-pws"" id:ignore></h6>");
+    }
+
+    // The whitespace and what may be broken in the middle of a word are two decisions, so asking for one of them
+    // never answers the other: a forced break no longer preserves the runs of spaces around what it breaks.
+    [TestMethod]
+    public void BitTextShouldComposePreserveWhitespaceWithTheBreakingParameters()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.PreserveWhitespace, true);
+            parameters.Add(p => p.ForceBreak, true);
+            parameters.Add(p => p.BreakWord, true);
+        });
+
+        var classList = component.Find("h6").ClassList;
+
+        Assert.IsTrue(classList.Contains("bit-txt-pws"));
+        Assert.IsTrue(classList.Contains("bit-txt-fbr"));
+        Assert.IsTrue(classList.Contains("bit-txt-brw"));
+    }
+
+    [TestMethod,
+        DataRow(null, null),
+        DataRow(BitTextTrim.None, "bit-txt-tmn"),
+        DataRow(BitTextTrim.Start, "bit-txt-tms"),
+        DataRow(BitTextTrim.End, "bit-txt-tme"),
+        DataRow(BitTextTrim.Both, "bit-txt-tmb")
+    ]
+    public void BitTextShouldRespectTrim(BitTextTrim? trim, string cssClass)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Trim, trim);
+        });
+
+        var @class = cssClass is null ? null : $" {cssClass}";
+
+        component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1{@class}"" id:ignore></h6>");
+    }
+
+    [TestMethod]
+    public void BitTextShouldRespectTrimChangingAfterRender()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Trim, BitTextTrim.Start);
+        });
+
+        component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1 bit-txt-tms"" id:ignore></h6>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Trim, BitTextTrim.Both);
+        });
+
+        component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1 bit-txt-tmb"" id:ignore></h6>");
     }
 
     [TestMethod,
@@ -713,6 +848,179 @@ public class BitTextTests : BunitTestContext
 
     // The two truncations are separate parameters and neither turns the other off, so both land on the element and
     // the stylesheet decides between them - the clamp is declared last and is the one that stands.
+    [TestMethod,
+        DataRow(null, null),
+        DataRow(BitColor.Primary, "bit-txt-pri"),
+        DataRow(BitColor.Secondary, "bit-txt-sec"),
+        DataRow(BitColor.Tertiary, "bit-txt-ter"),
+        DataRow(BitColor.Info, "bit-txt-inf"),
+        DataRow(BitColor.Success, "bit-txt-suc"),
+        DataRow(BitColor.Warning, "bit-txt-wrn"),
+        DataRow(BitColor.SevereWarning, "bit-txt-swr"),
+        DataRow(BitColor.Error, "bit-txt-err"),
+        DataRow(BitColor.PrimaryBackground, "bit-txt-pbg"),
+        DataRow(BitColor.SecondaryBackground, "bit-txt-sbg"),
+        DataRow(BitColor.TertiaryBackground, "bit-txt-tbg"),
+        DataRow(BitColor.PrimaryForeground, "bit-txt-pfg"),
+        DataRow(BitColor.SecondaryForeground, "bit-txt-sfg"),
+        DataRow(BitColor.TertiaryForeground, "bit-txt-tfg"),
+        DataRow(BitColor.PrimaryBorder, "bit-txt-pbr"),
+        DataRow(BitColor.SecondaryBorder, "bit-txt-sbr"),
+        DataRow(BitColor.TertiaryBorder, "bit-txt-tbr")
+    ]
+    public void BitTextShouldRespectColor(BitColor? color, string cssClass)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Color, color);
+        });
+
+        var @class = cssClass is null ? null : $" {cssClass}";
+
+        component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1{@class}"" id:ignore></h6>");
+    }
+
+    [TestMethod]
+    public void BitTextShouldRespectColorChangingAfterRender()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Color, BitColor.Info);
+        });
+
+        component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1 bit-txt-inf"" id:ignore></h6>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Color, BitColor.Error);
+        });
+
+        component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1 bit-txt-err"" id:ignore></h6>");
+    }
+
+    [TestMethod,
+        DataRow(null, null),
+        DataRow(BitColorKind.Primary, "bit-txt-pfg"),
+        DataRow(BitColorKind.Secondary, "bit-txt-sfg"),
+        DataRow(BitColorKind.Tertiary, "bit-txt-tfg"),
+        DataRow(BitColorKind.Transparent, "bit-txt-rfg")
+    ]
+    public void BitTextShouldRespectForeground(BitColorKind? foreground, string cssClass)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Foreground, foreground);
+        });
+
+        var @class = cssClass is null ? null : $" {cssClass}";
+
+        component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1{@class}"" id:ignore></h6>");
+    }
+
+    [TestMethod]
+    public void BitTextShouldRespectForegroundChangingAfterRender()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Foreground, BitColorKind.Secondary);
+        });
+
+        component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1 bit-txt-sfg"" id:ignore></h6>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Foreground, BitColorKind.Transparent);
+        });
+
+        component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1 bit-txt-rfg"" id:ignore></h6>");
+    }
+
+    // A color role and a foreground kind are two registrations of their own, so the two are written side by side
+    // rather than one of them replacing the other; which of them paints the text is left to the stylesheet.
+    [TestMethod]
+    public void BitTextShouldRenderTheColorAndTheForegroundAskedForTogether()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Color, BitColor.Success);
+            parameters.Add(p => p.Foreground, BitColorKind.Tertiary);
+        });
+
+        var classList = component.Find("h6").ClassList;
+
+        Assert.IsTrue(classList.Contains("bit-txt-suc"));
+        Assert.IsTrue(classList.Contains("bit-txt-tfg"));
+    }
+
+
+
+    [TestMethod]
+    public void BitTextShouldRespectGradient()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Gradient, "linear-gradient(90deg, red, blue)");
+        });
+
+        var element = component.Find("h6");
+
+        Assert.IsTrue(element.ClassList.Contains("bit-txt-grd"));
+        Assert.AreEqual("background-image:linear-gradient(90deg, red, blue)", element.GetAttribute("style"));
+    }
+
+    // The gradient is the whole of what the parameter writes, so a value naming none of it is a value the component
+    // leaves the text alone for rather than one it writes an empty declaration of.
+    [TestMethod,
+        DataRow(null),
+        DataRow(""),
+        DataRow("   ")
+    ]
+    public void BitTextShouldIgnoreAGradientWithNoValue(string gradient)
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Gradient, gradient);
+        });
+
+        component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
+    }
+
+    [TestMethod]
+    public void BitTextShouldRespectGradientChangingAfterRender()
+    {
+        var component = RenderComponent<BitText>();
+
+        component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Gradient, "linear-gradient(red, blue)");
+        });
+
+        var element = component.Find("h6");
+
+        Assert.IsTrue(element.ClassList.Contains("bit-txt-grd"));
+        Assert.AreEqual("background-image:linear-gradient(red, blue)", element.GetAttribute("style"));
+    }
+
+    // The clip is what the class carries and the number of lines is what the clamp writes inline, so the two
+    // truncations and the gradient are three declarations that stand beside each other rather than replacing one.
+    [TestMethod]
+    public void BitTextShouldWriteTheGradientBesideTheOtherStylesItBuilds()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Align, BitTextAlign.Center);
+            parameters.Add(p => p.Gradient, "linear-gradient(red, blue)");
+            parameters.Add(p => p.LineClamp, 2);
+        });
+
+        Assert.AreEqual("text-align:center;background-image:linear-gradient(red, blue);-webkit-line-clamp:2;line-clamp:2",
+                        component.Find("h6").GetAttribute("style"));
+    }
+
+
+
     [TestMethod]
     public void BitTextShouldRenderBothTruncationsAskedForTogether()
     {
@@ -746,6 +1054,11 @@ public class BitTextTests : BunitTestContext
             parameters.Add(p => p.NoSelect, true);
             parameters.Add(p => p.Hyphenate, true);
             parameters.Add(p => p.Gutter, true);
+            parameters.Add(p => p.PreserveWhitespace, true);
+            parameters.Add(p => p.Monospace, true);
+            parameters.Add(p => p.Trim, BitTextTrim.Both);
+            parameters.Add(p => p.Color, BitColor.Warning);
+            parameters.Add(p => p.Gradient, "linear-gradient(red, blue)");
         });
 
         var classList = component.Find("span").ClassList;
@@ -754,7 +1067,8 @@ public class BitTextTests : BunitTestContext
         {
             "bit-txt", "bit-txt-overline", "bit-txt-fwb", "bit-txt-trn", "bit-txt-wpr",
             "bit-txt-itl", "bit-txt-num", "bit-txt-blk", "bit-txt-brw", "bit-txt-nsl",
-            "bit-txt-hyp", "bit-txt-gutter"
+            "bit-txt-hyp", "bit-txt-gutter", "bit-txt-pws", "bit-txt-tmb", "bit-txt-wrn",
+            "bit-txt-grd", "bit-txt-mno"
         })
         {
             Assert.IsTrue(classList.Contains(expected), $"the {expected} class is missing");
@@ -1077,8 +1391,21 @@ public class BitTextTests : BunitTestContext
         StringAssert.Contains(cssClass, "bit-txt-fwb");
         StringAssert.Contains(cssClass, "bit-txt-itl");
         StringAssert.Contains(cssClass, "bit-txt-clp");
+        StringAssert.Contains(cssClass, "bit-txt-pws");
+        StringAssert.Contains(cssClass, "bit-txt-mno");
+        StringAssert.Contains(cssClass, "bit-txt-tmb");
+        StringAssert.Contains(cssClass, "bit-txt-suc");
+        StringAssert.Contains(cssClass, "bit-txt-sfg");
+        StringAssert.Contains(cssClass, "bit-txt-grd");
         StringAssert.Contains(cssClass, "cascaded");
         Assert.AreEqual("fr", cascaded.GetAttribute("lang"));
+        Assert.AreEqual("4", cascaded.GetAttribute("aria-level"));
+        Assert.AreEqual("heading", cascaded.GetAttribute("role"));
+        // The style the cascade fills in is built the same way the component's own is, in the order it registers it.
+        var cascadedStyle = cascaded.GetAttribute("style");
+        StringAssert.Contains(cascadedStyle, "text-align:center");
+        StringAssert.Contains(cascadedStyle, "background-image:linear-gradient(red, blue)");
+        StringAssert.Contains(cascadedStyle, "line-clamp:2");
 
         // Everything the text set for itself is kept, and only what it left unset is filled in from the cascade.
         var own = component.Find("article");
@@ -1086,6 +1413,14 @@ public class BitTextTests : BunitTestContext
         StringAssert.Contains(ownClass, "bit-txt-h3");
         StringAssert.Contains(ownClass, "bit-txt-fwl");
         StringAssert.Contains(ownClass, "bit-txt-itl");
+        StringAssert.Contains(ownClass, "bit-txt-tms");
+        StringAssert.Contains(ownClass, "bit-txt-err");
+        StringAssert.Contains(ownClass, "bit-txt-pws");
         Assert.AreEqual("de", own.GetAttribute("lang"));
+        Assert.AreEqual("2", own.GetAttribute("aria-level"));
+
+        var ownStyle = own.GetAttribute("style");
+        StringAssert.Contains(ownStyle, "text-align:end");
+        StringAssert.Contains(ownStyle, "background-image:linear-gradient(green, yellow)");
     }
 }

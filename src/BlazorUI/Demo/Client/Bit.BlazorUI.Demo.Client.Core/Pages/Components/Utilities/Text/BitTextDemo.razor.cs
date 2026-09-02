@@ -76,6 +76,13 @@ public partial class BitTextDemo
         },
         new()
         {
+            Name = "Gradient",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Paints the glyphs of the text with a CSS gradient instead of with a flat color. The value is written as the background-image of the element and clipped to the text, and the fill is taken away by itself.",
+        },
+        new()
+        {
             Name = "Gutter",
             Type = "bool",
             DefaultValue = "false",
@@ -111,6 +118,13 @@ public partial class BitTextDemo
         },
         new()
         {
+            Name = "Monospace",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the text in the theme's monospaced family, so that every character is drawn at the same width and a column of them lines up.",
+        },
+        new()
+        {
             Name = "NoSelect",
             Type = "bool",
             DefaultValue = "false",
@@ -132,6 +146,13 @@ public partial class BitTextDemo
         },
         new()
         {
+            Name = "PreserveWhitespace",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the line breaks and the runs of spaces of the content as they were written, while the lines still too wide for the box go on wrapping. NoWrap has the last word over it.",
+        },
+        new()
+        {
             Name = "Strikethrough",
             Type = "bool",
             DefaultValue = "false",
@@ -145,6 +166,15 @@ public partial class BitTextDemo
             Description = "The capitalization of the text. The transform is visual only, so the characters in the document are the ones that were written.",
             LinkType = LinkType.Link,
             Href = "#text-transform-enum"
+        },
+        new()
+        {
+            Name = "Trim",
+            Type = "BitTextTrim?",
+            DefaultValue = "null",
+            Description = "Trims the half-leading off the top, the bottom or both edges of the box the text draws in, so that the gap around it is the one that was written.",
+            LinkType = LinkType.Link,
+            Href = "#text-trim-enum"
         },
         new()
         {
@@ -386,6 +416,19 @@ public partial class BitTextDemo
         },
         new()
         {
+            Id = "text-trim-enum",
+            Name = "BitTextTrim",
+            Description = "Defines which of the two half-leadings of a run of text is trimmed away in the bit BlazorUI.",
+            Items =
+            [
+                new() { Name = "None", Description = "Neither half-leading is trimmed, which is what a line box does of its own.", Value = "0" },
+                new() { Name = "Start", Description = "The half-leading above the first line is trimmed, so that the top of the box is the cap height of the text.", Value = "1" },
+                new() { Name = "End", Description = "The half-leading below the last line is trimmed, so that the bottom of the box is the alphabetic baseline.", Value = "2" },
+                new() { Name = "Both", Description = "Both half-leadings are trimmed, so that the box is exactly as tall as the glyphs it draws.", Value = "3" },
+            ]
+        },
+        new()
+        {
             Id = "text-wrap-enum",
             Name = "BitTextWrap",
             Description = "Defines how the lines of a run of text are broken in the bit BlazorUI.",
@@ -484,7 +527,14 @@ public partial class BitTextDemo
 
 <BitText Typography=""BitTypography.Body1"" Numeric>1,111.11</BitText>
 <BitText Typography=""BitTypography.Body1"" Numeric>8,888.88</BitText>
-<BitText Typography=""BitTypography.Body1"" Numeric>1,234.56</BitText>";
+<BitText Typography=""BitTypography.Body1"" Numeric>1,234.56</BitText>
+
+<BitText Typography=""BitTypography.Body1"" Monospace>1,111.11</BitText>
+<BitText Typography=""BitTypography.Body1"" Monospace>8,888.88</BitText>
+<BitText Typography=""BitTypography.Body1"" Monospace>1,234.56</BitText>
+
+<BitText Element=""code"" Typography=""BitTypography.Body2"" Monospace>var text = new BitText { Monospace = true };</BitText>
+<BitText Element=""samp"" Typography=""BitTypography.Body2"" Monospace>sha256:3f7a91c0b2ed48d5</BitText>";
 
     private string example5RazorCode = @"
 <BitText Style=""width:250px"">Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
@@ -501,7 +551,12 @@ public partial class BitTextDemo
 
 <BitText Style=""width:250px"" Wrap=""BitTextWrap.Pretty"">Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
 
-<BitText Style=""width:250px"" Lang=""en"" Hyphenate>An incomprehensibly complicated internationalization responsibility.</BitText>";
+<BitText Style=""width:250px"" Lang=""en"" Hyphenate>An incomprehensibly complicated internationalization responsibility.</BitText>
+
+<BitText Style=""width:250px"" PreserveWhitespace>@(@""Dear reader,
+
+    Two blank lines and an indent survive,
+    and a line this long is still wrapped."")</BitText>";
 
     private string example6RazorCode = @"
 <BitText Style=""width:250px"" LineClamp=""1"">Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams that outlasted every one of the nights they were told in.</BitText>
@@ -522,6 +577,15 @@ public partial class BitTextDemo
 <BitText Typography=""BitTypography.Body1"">A paragraph with none.</BitText>";
 
     private string example9RazorCode = @"
+<div class=""demo-boxed""><BitText Typography=""BitTypography.H4"">Handgloves</BitText></div>
+
+<div class=""demo-boxed""><BitText Typography=""BitTypography.H4"" Trim=""BitTextTrim.Start"">Handgloves</BitText></div>
+
+<div class=""demo-boxed""><BitText Typography=""BitTypography.H4"" Trim=""BitTextTrim.End"">Handgloves</BitText></div>
+
+<div class=""demo-boxed""><BitText Typography=""BitTypography.H4"" Trim=""BitTextTrim.Both"">Handgloves</BitText></div>";
+
+    private string example10RazorCode = @"
 <BitText Element=""div"" Typography=""BitTypography.H5"" AriaLevel=""3"">A div announced as a level 3 heading</BitText>
 <BitText Element=""h2"" Typography=""BitTypography.H5"" AriaLevel=""4"">An h2 announced as a level 4 heading</BitText>
 
@@ -529,7 +593,15 @@ public partial class BitTextDemo
 
 <BitText NoSelect>Try to select this text - it will not be selected.</BitText>";
 
-    private string example10RazorCode = @"
+    private string example11RazorCode = @"
+<BitText Visibility=""BitVisibility.Visible"">Visible text</BitText>
+<BitText Visibility=""BitVisibility.Hidden"">Hidden text</BitText>
+<BitText Visibility=""BitVisibility.Collapsed"">Collapsed text</BitText>
+
+<BitText IsEnabled=""false"">A disabled run of text</BitText>
+<BitText IsEnabled=""false"" Color=""BitColor.Error"">A disabled run of text, keeping its error color</BitText>";
+
+    private string example12RazorCode = @"
 <BitText Foreground=""BitColorKind.Primary"">Primary foreground</BitText>
 <BitText Foreground=""BitColorKind.Secondary"">Secondary foreground</BitText>
 <BitText Foreground=""BitColorKind.Tertiary"">Tertiary foreground</BitText>
@@ -538,7 +610,48 @@ public partial class BitTextDemo
     <BitText Foreground=""BitColorKind.Transparent"">Transparent foreground</BitText>
 </div>";
 
-    private string example11RazorCode = @"
+    private string example13RazorCode = @"
+<BitText Typography=""BitTypography.H3"" Gradient=""linear-gradient(90deg, #7c3aed, #06b6d4)"">A gradient headline</BitText>
+
+<BitText Typography=""BitTypography.H4"" Gradient=""linear-gradient(45deg, #f43f5e, #f59e0b 50%, #22c55e)"">Three stops, on a diagonal</BitText>
+
+<BitText Typography=""BitTypography.H4"" Weight=""BitFontWeight.Bold"" Gradient=""radial-gradient(circle at 30% 50%, #06b6d4, #7c3aed)"">A radial gradient, and a weight of its own</BitText>
+
+<BitText Gradient=""linear-gradient(90deg, var(--bit-clr-fg-pri), transparent)"">A run of body text fading out into nothing</BitText>";
+
+    private readonly BitTextParams[] textParams =
+    [
+        new()
+        {
+            Typography = BitTypography.Body1,
+            Color = BitColor.Info,
+            Transform = BitTextTransform.Uppercase,
+        }
+    ];
+
+    private string example14RazorCode = @"
+@* The params object carries a default down to every text under it, and never overwrites what one set itself. *@
+<BitParams Parameters=""@textParams"">
+    <BitText>Takes the variant, the color and the tracking from the cascade</BitText>
+    <BitText>So does this one, without repeating any of it</BitText>
+    <BitText Color=""BitColor.Error"" Weight=""BitFontWeight.Bold"">Its own color and weight, the cascaded variant</BitText>
+</BitParams>
+
+<BitText>Outside the cascade, and back to the defaults</BitText>
+
+@code {
+    private readonly BitTextParams[] textParams =
+    [
+        new()
+        {
+            Typography = BitTypography.Body1,
+            Color = BitColor.Info,
+            Transform = BitTextTransform.Uppercase,
+        }
+    ];
+}";
+
+    private string example15RazorCode = @"
 <BitText Color=""BitColor.Primary"">Primary color</BitText>
 <BitText Color=""BitColor.Secondary"">Secondary color</BitText>
 <BitText Color=""BitColor.Tertiary"">Tertiary color</BitText>
@@ -561,7 +674,7 @@ public partial class BitTextDemo
 <BitText Color=""BitColor.SecondaryBorder"">SecondaryBorder color</BitText>
 <BitText Color=""BitColor.TertiaryBorder"">TertiaryBorder color</BitText>";
 
-    private string example12RazorCode = @"
+    private string example16RazorCode = @"
 <BitText Style=""color: tomato; font-weight: bold;"">Styled through the Style parameter</BitText>
 <BitText Class=""demo-boxed"">Classed through the Class parameter</BitText>
 
@@ -571,7 +684,7 @@ public partial class BitTextDemo
     A splatted class, kept beside the class and the alignment the component builds
 </BitText>";
 
-    private string example13RazorCode = @"
+    private string example17RazorCode = @"
 <BitText Dir=""BitDir.Rtl"" Typography=""BitTypography.H5"">این یک عنوان راست‌چین است</BitText>
 <BitText Dir=""BitDir.Rtl"" Align=""BitTextAlign.Start"">این متن از لبه‌ی آغازین چیده شده است.</BitText>
 <BitText Dir=""BitDir.Rtl"" Align=""BitTextAlign.End"">این متن از لبه‌ی پایانی چیده شده است.</BitText>";

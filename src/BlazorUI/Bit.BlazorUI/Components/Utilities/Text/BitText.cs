@@ -23,8 +23,14 @@ namespace Bit.BlazorUI;
 /// is a parameter of its own that composes with any variant: the weight, the case, the emphasis of the
 /// <see cref="Italic"/>, <see cref="Underline"/> and <see cref="Strikethrough"/>, the figure spacing of
 /// <see cref="Numeric"/>, and the whole of the wrapping - <see cref="NoWrap"/> and <see cref="LineClamp"/> for the two
-/// truncations, <see cref="Wrap"/> for how the remaining lines are broken, and <see cref="BreakWord"/>,
-/// <see cref="ForceBreak"/> and <see cref="Hyphenate"/> for what may be broken in the middle of itself.
+/// truncations, <see cref="Wrap"/> for how the remaining lines are broken, <see cref="BreakWord"/>,
+/// <see cref="ForceBreak"/> and <see cref="Hyphenate"/> for what may be broken in the middle of itself, and
+/// <see cref="PreserveWhitespace"/> for the text whose own line breaks and runs of spaces are part of it.
+/// <br />
+/// The last two are about the box the text draws rather than about the glyphs in it: <see cref="Trim"/> takes the
+/// half-leading off the top and the bottom of that box, so that a heading is spaced from what surrounds it by the
+/// gap a design asked for rather than by that gap plus whatever the line height added, and <see cref="Gradient"/>
+/// paints the glyphs themselves with a gradient instead of with a flat color.
 /// <br />
 /// Anything that is not a parameter is splatted onto the rendered tag, and the attributes the component builds itself
 /// are merged with the splatted ones rather than replacing them: a "class" or a "style" arriving through the
@@ -178,6 +184,26 @@ public partial class BitText : BitComponentBase
     public BitColorKind? Foreground { get; set; }
 
     /// <summary>
+    /// Paints the glyphs of the text with a CSS gradient instead of with a flat color.
+    /// </summary>
+    /// <remarks>
+    /// The value is written as the "background-image" of the element and the box it paints is then clipped to the
+    /// glyphs, so anything a "background-image" accepts is accepted here - a "linear-gradient", a "radial-gradient",
+    /// a "conic-gradient", or several of them layered over each other.
+    /// <br />
+    /// The glyphs have to be left unpainted for the box behind them to show through, so setting this also makes the
+    /// text transparent and there is no need to reach for <see cref="BitColorKind.Transparent"/> beside it. A
+    /// forced-colors palette removes every gradient it would have shown through, so the fill is given back to the
+    /// system color there rather than leaving the text painted with nothing behind it.
+    /// <br />
+    /// The clip is a paint time effect: the characters are still in the document, so a copy, a find-in-page and a
+    /// screen reader all get the text whatever is painted into it. A gradient is not a contrast ratio either, so a
+    /// run of text that has to be readable is worth checking against its background at both ends of the gradient.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? Gradient { get; set; }
+
+    /// <summary>
     /// If true, the text will have a bottom margin.
     /// </summary>
     /// <remarks>
@@ -243,6 +269,25 @@ public partial class BitText : BitComponentBase
     public int? LineClamp { get; set; }
 
     /// <summary>
+    /// Renders the text in the theme's monospaced family.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// Every character is drawn at the same width, so a column of them lines up down the page and none of them is
+    /// mistaken for another - which is what a fragment of code, an identifier, a hash, a key or a stack trace needs
+    /// and what prose does not. The family comes from the theme like every other typographic decision, so a preset
+    /// that sets another one moves this with it.
+    /// <br />
+    /// The family is a look and not a meaning: where the text is code, an "abbreviation" or a key the reader is
+    /// meant to press, a "code", an "abbr", a "samp" or a "kbd" through <see cref="Element"/> is what says so to a
+    /// screen reader. <see cref="Numeric"/> is the narrower answer where only the digits have to line up, since it
+    /// leaves the letters beside them proportional and the family alone.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Monospace { get; set; }
+
+    /// <summary>
     /// Prevents the text from being selected.
     /// <br />
     /// The default value is <strong>false</strong>.
@@ -285,6 +330,25 @@ public partial class BitText : BitComponentBase
     public bool Numeric { get; set; }
 
     /// <summary>
+    /// Renders the line breaks and the runs of spaces of the content as they were written.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// HTML collapses every run of whitespace into a single space and treats a line break in the source as one of
+    /// them, which is what a paragraph of markup wants and what a run of text carrying its own layout - a message a
+    /// person typed, an address, a stack trace, a line of verse - does not. This keeps both, while the lines that
+    /// are still too long for the box go on wrapping the usual way.
+    /// <br />
+    /// It composes with the rest of the wrapping: <see cref="BreakWord"/> and <see cref="ForceBreak"/> still break
+    /// the words that do not fit, and <see cref="LineClamp"/> still counts the lines, the written ones among them.
+    /// <see cref="NoWrap"/> is the one thing it does not compose with, since a text kept on a single line has no
+    /// line breaks left to preserve.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool PreserveWhitespace { get; set; }
+
+    /// <summary>
     /// Draws a line through the text.
     /// <br />
     /// The default value is <strong>false</strong>.
@@ -310,6 +374,23 @@ public partial class BitText : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitTextTransform? Transform { get; set; }
+
+    /// <summary>
+    /// Trims the half-leading off the top, the bottom or both edges of the box the text draws in.
+    /// </summary>
+    /// <remarks>
+    /// A line box is taller than the glyphs in it: whatever the line height adds over the font's own metrics is
+    /// split into a half-leading above the ascenders and one below the descenders. Neither is part of anything a
+    /// design measures from, so a heading given a margin of its own is spaced by that margin plus two leadings
+    /// nobody asked for, and the larger the variant the more of it there is. Trimming them is what lets the gap
+    /// above and below a run of text be the gap that was written.
+    /// <br />
+    /// The edges are read off the font - the cap height above and the alphabetic baseline below - so the result
+    /// follows whichever family the theme is set in. An engine that has not implemented the property lays the text
+    /// out with both leadings intact, exactly as it would have without this, so nothing is broken by asking for it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitTextTrim? Trim { get; set; }
 
     /// <summary>
     /// The typography of the text.
@@ -420,6 +501,10 @@ public partial class BitText : BitComponentBase
             _ => string.Empty
         });
 
+        // The gradient is painted into the glyphs, which only works while they are left unpainted, so the class is
+        // registered after the two color ones above and takes the fill away from whichever of them was asked for.
+        ClassBuilder.Register(() => Gradient.HasValue() ? "bit-txt-grd" : string.Empty);
+
         ClassBuilder.Register(() => ForceBreak ? "bit-txt-fbr" : string.Empty);
 
         ClassBuilder.Register(() => Weight switch
@@ -451,12 +536,23 @@ public partial class BitText : BitComponentBase
             _ => string.Empty
         });
 
+        ClassBuilder.Register(() => Trim switch
+        {
+            BitTextTrim.None => "bit-txt-tmn",
+            BitTextTrim.Start => "bit-txt-tms",
+            BitTextTrim.End => "bit-txt-tme",
+            BitTextTrim.Both => "bit-txt-tmb",
+            _ => string.Empty
+        });
+
         ClassBuilder.Register(() => Italic ? "bit-txt-itl" : string.Empty)
                     .Register(() => Underline ? "bit-txt-und" : string.Empty)
                     .Register(() => Strikethrough ? "bit-txt-stk" : string.Empty)
                     .Register(() => Numeric ? "bit-txt-num" : string.Empty)
+                    .Register(() => Monospace ? "bit-txt-mno" : string.Empty)
                     .Register(() => Hyphenate ? "bit-txt-hyp" : string.Empty)
                     .Register(() => BreakWord ? "bit-txt-brw" : string.Empty)
+                    .Register(() => PreserveWhitespace ? "bit-txt-pws" : string.Empty)
                     .Register(() => NoSelect ? "bit-txt-nsl" : string.Empty)
                     .Register(() => Block ? "bit-txt-blk" : string.Empty)
                     .Register(() => LineClamp > 0 ? "bit-txt-clp" : string.Empty)
@@ -483,6 +579,10 @@ public partial class BitText : BitComponentBase
                 BitTextAlign.Unset => "unset",
                 _ => "start"
             }}");
+
+        // The gradient itself is the one thing about it a stylesheet cannot know, so it is written inline while the
+        // class carries the clip and the transparent fill that make it show through the glyphs.
+        StyleBuilder.Register(() => Gradient.HasValue() ? $"background-image:{Gradient}" : null);
 
         // The number of lines is the one thing about a clamp that is not a fixed declaration, so it is the one thing
         // written inline while the class carries the rest of it. Both the prefixed property every engine ships today
