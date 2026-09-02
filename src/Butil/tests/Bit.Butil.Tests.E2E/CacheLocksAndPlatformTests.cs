@@ -57,4 +57,35 @@ public class CacheLocksAndPlatformTests : ButilObserversPageTest
     {
         await ClickAndExpectAsync("screen-metrics", "screen:metrics:True");
     }
+
+    [TestMethod]
+    public async Task Identity_Support_Checks_All_Resolve()
+    {
+        // What is asserted is that every identity identifier resolves and answers with a bool -
+        // not which of them this engine implements, which would make the suite fail the day one
+        // more of them ships.
+        await ClickAndExpectAsync("identity-support", "identity:support:ok");
+    }
+
+    [TestMethod]
+    public async Task Identity_Silent_Get_And_Aborts_Are_Quiet()
+    {
+        // Nothing stored, so a silent get answers with no credential and shows no UI; and with no
+        // wait pending, both aborts report that there was nothing to abort.
+        await ClickAndExpectAsync("identity-quiet", "identity:quiet:none/False/False");
+    }
+
+    [TestMethod]
+    public async Task Commerce_Support_Checks_All_Resolve()
+    {
+        await ClickAndExpectAsync("commerce-support", "commerce:support:ok");
+    }
+
+    [TestMethod]
+    public async Task Commerce_Abort_And_Store_Queries_Answer_With_Nothing()
+    {
+        // No sheet was opened and a test browser is not an app installed from a store, so: nothing
+        // to abort, nothing consumed, no purchases.
+        await ClickAndExpectAsync("commerce-quiet", "commerce:quiet:False/False/0");
+    }
 }

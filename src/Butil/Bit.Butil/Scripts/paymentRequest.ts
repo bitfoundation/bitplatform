@@ -1,0 +1,125 @@
+var BitButil = (window as any).BitButil = (window as any).BitButil || {};
+
+(function (butil: any) {
+    // The sheet outlives the call that opened it: show() resolves while the browser is still
+    // showing "processing", and only complete() dismisses it. So both sides are held here - the
+    // request until it resolves (that is what abort() reaches), and the response until the .NET
+    // side completes it.
+    const _requests: { [id: string]: any } = {};
+    const _responses: { [id: string]: any } = {};
+
+    butil.paymentRequest = {
+        isSupported() { return 'PaymentRequest' in window; },
+        canMakePayment,
+        show,
+        complete,
+        abort
+    };
+
+    // The .NET DTOs serialize every unset member as null, and the payment dictionaries reject a
+    // null where they would accept an absent key ("null is not a valid enum value" for
+    // shippingType, a null displayItems that is not iterable). Dropping them is what makes an
+    // optional property optional again.
+    function prune(value: any): any {
+        if (Array.isArray(value)) return value.map(prune);
+        if (value === null || typeof value !== 'object') return value;
+
+        const out: any = {};
+        for (const key of Object.keys(value)) {
+            if (value[key] === null || value[key] === undefined) continue;
+            out[key] = prune(value[key]);
+        }
+        return out;
+    }
+
+    function build(methods: any[], details: any, options: any) {
+        const PR = (window as any).PaymentRequest;
+        return options
+            ? new PR(prune(methods), prune(details), prune(options))
+            : new PR(prune(methods), prune(details));
+    }
+
+    function newId() {
+        const c: any = window.crypto;
+        return c?.randomUUID ? c.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    }
+
+    function toAddress(address: any) {
+        if (!address) return null;
+        // ContactAddress exposes its fields as accessors on the prototype, so a spread copies
+        // nothing - each one is read by name.
+        return {
+            addressLine: address.addressLine ?? [],
+            country: address.country ?? null,
+            city: address.city ?? null,
+            region: address.region ?? null,
+            postalCode: address.postalCode ?? null,
+            dependentLocality: address.dependentLocality ?? null,
+            sortingCode: address.sortingCode ?? null,
+            organization: address.organization ?? null,
+            recipient: address.recipient ?? null,
+            phone: address.phone ?? null
+        };
+    }
+
+    async function canMakePayment(methods: any[], details: any) {
+        if (!('PaymentRequest' in window)) return false;
+        try {
+            const request = build(methods, details, null);
+            return !!(await request.canMakePayment());
+        } catch {
+            // Malformed method data, an unsupported currency, or the browser's rate limit.
+            return false;
+        }
+    }
+
+    async function show(id: string, methods: any[], details: any, options: any) {
+        if (!('PaymentRequest' in window)) return null;
+
+        let request: any;
+        try { request = build(methods, details, options); }
+        catch { return null; }
+
+        _requests[id] = request;
+        try {
+            const response = await request.show();
+            const responseId = newId();
+            _responses[responseId] = response;
+
+            return {
+                id: responseId,
+                requestId: response.requestId ?? '',
+                methodName: response.methodName ?? '',
+                details: response.details ?? null,
+                payerName: response.payerName ?? null,
+                payerEmail: response.payerEmail ?? null,
+                payerPhone: response.payerPhone ?? null,
+                shippingOption: response.shippingOption ?? null,
+                shippingAddress: toAddress(response.shippingAddress)
+            };
+        } catch {
+            // AbortError when the user dismissed the sheet or abort() closed it, NotAllowedError
+            // without a gesture - all of them "no payment", which is what null says.
+            return null;
+        } finally {
+            delete _requests[id];
+        }
+    }
+
+    async function complete(responseId: string, result: string) {
+        const response = _responses[responseId];
+        if (!response) return;
+
+        delete _responses[responseId];
+        try { await response.complete(result); }
+        catch { /* the sheet was already dismissed */ }
+    }
+
+    async function abort(id: string) {
+        const request = _requests[id];
+        if (!request) return false;
+
+        try { await request.abort(); return true; }
+        catch { return false; }   // the user was already authorizing; the sheet stays up
+    }
+}(BitButil));

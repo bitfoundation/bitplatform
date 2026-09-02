@@ -164,8 +164,20 @@ registering everything.
 | Service | What it wraps |
 | --- | --- |
 | `WebAuthn` | Passkeys: create credentials and verify assertions |
+| `Credentials` | The password and federated credential store behind `navigator.credentials` |
+| `FedCm` | Federated sign-in the browser mediates, without third-party cookies |
+| `WebOtp` | Autofill the one-time code out of an incoming SMS |
+| `DigitalCredentials` | Present a verifiable credential from the user's wallet |
 | `Permissions` | Query the state of any browser permission |
 | `Notification` | Request permission and show system notifications |
+
+### Commerce
+
+| Service | What it wraps |
+| --- | --- |
+| `PaymentRequest` | The browser's own payment sheet: show it, complete it, abort it |
+| `PaymentHandler` | Registering an installed app as a payment method other sites can pay through |
+| `DigitalGoods` | An app store's catalogue, purchases and entitlements inside an installed PWA |
 
 ### Media & speech
 
