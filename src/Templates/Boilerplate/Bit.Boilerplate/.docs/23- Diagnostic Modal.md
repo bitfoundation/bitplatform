@@ -133,7 +133,7 @@ The modal provides several powerful diagnostic and maintenance actions:
 
 ---
 
-### AI Wiki: Answered Questions
+### AI Wiki
 
 Ask your own question [here](https://bitplatform.dev/ask)
 

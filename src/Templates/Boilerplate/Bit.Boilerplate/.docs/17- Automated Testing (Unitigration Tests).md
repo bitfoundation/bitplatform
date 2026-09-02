@@ -351,7 +351,7 @@ The project includes GitHub Actions workflows that run tests automatically:
 
 ---
 
-### AI Wiki: Answered Questions
+### AI Wiki
 
 Ask your own question [here](https://bitplatform.dev/ask)
 

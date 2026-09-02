@@ -30,11 +30,15 @@ public partial class AppAiChatPanel
 
     protected override async Task OnInitAsync()
     {
-        unsubscribeOpenPanel = PubSubService.Subscribe(PubSubMessages.OPEN_AI_CHAT_PANEL, async _ =>
+        unsubscribeOpenPanel = PubSubService.Subscribe(PubSubMessages.OPEN_AI_CHAT_PANEL, async payload =>
         {
             await InvokeAsync(() =>
             {
                 isOpen = true;
+                if (payload is string question && string.IsNullOrWhiteSpace(question) is false)
+                {
+                    userInput = question;
+                }
                 StateHasChanged();
             });
         });

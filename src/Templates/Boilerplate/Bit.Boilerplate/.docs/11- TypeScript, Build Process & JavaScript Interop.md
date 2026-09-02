@@ -360,7 +360,7 @@ The build process will:
 
 ---
 
-### AI Wiki: Answered Questions
+### AI Wiki
 
 Ask your own question [here](https://bitplatform.dev/ask)
 

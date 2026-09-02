@@ -147,8 +147,6 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
     //#endif
 }
 
-builder.AddDockerComposeEnvironment("env"); // The other options for deployments are k8s, AWS and Azure.
-
 await builder
     .Build()
     .RunAsync();

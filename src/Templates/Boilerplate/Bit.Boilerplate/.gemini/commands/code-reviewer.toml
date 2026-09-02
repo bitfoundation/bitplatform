@@ -1,5 +1,3 @@
-# Command shim for Gemini CLI / Gemini Code Assist agent mode: guarantees /code-reviewer works
-# even where Agent Skills discovery of .agents/skills/ is unavailable or not yet enabled.
 description = "Review changes against the project's conventions (Bit.BlazorUI, theming, lifecycle, Mapperly, OData, logging, security). Reports findings only - never modifies code."
 
 prompt = """

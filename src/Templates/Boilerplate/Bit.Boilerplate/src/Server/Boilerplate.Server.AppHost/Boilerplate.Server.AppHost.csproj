@@ -9,7 +9,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Aspire.Hosting.Docker" />
         <PackageReference Condition="'$(cloudflare)' == 'true' OR '$(cloudflare)' == ''" Include="Shirubasoft.Aspire.CloudflareTunnels" />
         <PackageReference Include="Aspire.Hosting.Keycloak" />
         <PackageReference Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Aspire.Hosting.MySql" />

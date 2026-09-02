@@ -315,7 +315,7 @@ Anything you add that a request path genuinely depends on should report Unhealth
 
 ---
 
-### AI Wiki: Answered Questions
+### AI Wiki
 
 Ask your own question [here](https://bitplatform.dev/ask)
 

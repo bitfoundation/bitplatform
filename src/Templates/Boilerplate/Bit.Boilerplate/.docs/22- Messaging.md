@@ -598,7 +598,7 @@ When testing push notifications, it's critical to understand that there are **fo
 
 ---
 
-### AI Wiki: Answered Questions
+### AI Wiki
 
 Ask your own question [here](https://bitplatform.dev/ask)
 

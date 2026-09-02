@@ -1,5 +1,3 @@
-# Command shim for Gemini CLI / Gemini Code Assist agent mode: guarantees /bitify-ui works
-# even where Agent Skills discovery of .agents/skills/ is unavailable or not yet enabled.
 description = "Replace raw HTML elements and hardcoded CSS in a Blazor page with Bit.BlazorUI components and theme-aware SCSS variables."
 
 prompt = """

@@ -476,7 +476,7 @@ For comprehensive information about the client-side offline database, including:
 
 ---
 
-### AI Wiki: Answered Questions
+### AI Wiki
 
 Ask your own question [here](https://bitplatform.dev/ask)
 

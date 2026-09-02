@@ -697,7 +697,7 @@ from the URL first, then the stored preference, then the OS/browser settings (se
 
 ---
 
-### AI Wiki: Answered Questions
+### AI Wiki
 
 Ask your own question [here](https://bitplatform.dev/ask)
 

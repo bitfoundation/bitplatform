@@ -896,7 +896,7 @@ Feel free to restructure the backend however you see fit. The template provides 
 
 ---
 
-### AI Wiki: Answered Questions
+### AI Wiki
 
 Ask your own question [here](https://bitplatform.dev/ask)
 

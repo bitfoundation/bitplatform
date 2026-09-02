@@ -149,7 +149,7 @@ It carries `context: fork` in its frontmatter, so tools that support forked skil
 
 ---
 
-### AI Wiki: Answered Questions
+### AI Wiki
 
 Ask your own question [here](https://bitplatform.dev/ask)
 
