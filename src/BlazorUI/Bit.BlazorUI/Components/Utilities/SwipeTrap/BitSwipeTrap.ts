@@ -131,6 +131,11 @@ namespace BitBlazorUI {
                         orientation = BitSwipeOrientation.Horizontal;
                     } else if (!thresX && thresY) {
                         orientation = BitSwipeOrientation.Vertical;
+                    } else if (thresX && thresY) {
+                        // A diagonal move crosses both axes at once (with the default threshold of 0, most
+                        // do), and an axis left unpicked here is never picked for the rest of the gesture:
+                        // the one moved furthest along wins, and a dead heat goes to the horizontal one.
+                        orientation = absX >= absY ? BitSwipeOrientation.Horizontal : BitSwipeOrientation.Vertical;
                     }
                 }
 
@@ -238,7 +243,9 @@ namespace BitBlazorUI {
             const onCancel = async (e: TouchEvent | PointerEvent): Promise<void> => {
                 if (startX == -1 || startY == -1) return;
                 if (isTouchEvent(e) !== activeTouch) return; // the other input's echo of the tracked gesture
-                if (!isTouchEvent(e) && (e as PointerEvent).pointerId !== pointerId) return;
+                if (isTouchEvent(e)) {
+                    if (!getTouch(e)) return; // another finger was canceled, not the tracked one
+                } else if ((e as PointerEvent).pointerId !== pointerId) return;
                 const sX = startX;
                 const sY = startY;
                 const dX = diffX;

@@ -154,14 +154,6 @@ public partial class BitSwipeTrap : BitComponentBase
             _appliedTouchOnly != touchOnly ||
             _appliedSkipSelector != skipSelector)
         {
-            _appliedTrigger = trigger;
-            _appliedTriggerVelocity = triggerVelocity;
-            _appliedThreshold = threshold;
-            _appliedThrottle = throttle;
-            _appliedOrientationLock = orientationLock;
-            _appliedTouchOnly = touchOnly;
-            _appliedSkipSelector = skipSelector;
-
             try
             {
                 if (firstRender is false)
@@ -171,18 +163,37 @@ public partial class BitSwipeTrap : BitComponentBase
 
                 // The JS side disposes the .NET reference it is handed when the trap is disposed or
                 // re-setup, so each setup gets a fresh one instead of a field kept for the component's life.
+                // Until the setup call has actually handed it over, disposing it is still this side's job.
                 var dotnetObj = DotNetObjectReference.Create(this);
-                await _js.BitSwipeTrapSetup(
-                    UniqueId,
-                    RootElement,
-                    trigger,
-                    triggerVelocity,
-                    threshold,
-                    throttle,
-                    orientationLock,
-                    touchOnly,
-                    skipSelector,
-                    dotnetObj);
+                try
+                {
+                    await _js.BitSwipeTrapSetup(
+                        UniqueId,
+                        RootElement,
+                        trigger,
+                        triggerVelocity,
+                        threshold,
+                        throttle,
+                        orientationLock,
+                        touchOnly,
+                        skipSelector,
+                        dotnetObj);
+                }
+                catch
+                {
+                    dotnetObj.Dispose();
+                    throw;
+                }
+
+                // What is remembered is what the trap was actually set up with, so a setup that failed
+                // leaves the previous values in place and the next render tries again.
+                _appliedTrigger = trigger;
+                _appliedTriggerVelocity = triggerVelocity;
+                _appliedThreshold = threshold;
+                _appliedThrottle = throttle;
+                _appliedOrientationLock = orientationLock;
+                _appliedTouchOnly = touchOnly;
+                _appliedSkipSelector = skipSelector;
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
