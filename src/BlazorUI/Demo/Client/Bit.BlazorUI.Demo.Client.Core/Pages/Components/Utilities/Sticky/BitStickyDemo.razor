@@ -2,16 +2,24 @@
 
 <PageOutlet Url="components/sticky"
             Title="Sticky"
-            Description="A Sticky is a component that enables elements to stick during scrolling." />
+            Description="A wrapper over the browser's own position:sticky that pins its content to any edge of its scrolling container, with offsets, RTL-aware horizontal sticking, and a derived stuck-state event." />
 
 <div>
     <DemoPage Name="Sticky"
-              Description="A Sticky is a component that enables elements to stick during scrolling."
+              Description="BitSticky is a thin wrapper over the browser's own position:sticky: the content stays in the normal flow - keeping the room it occupies, so nothing jumps when it pins - until the scroll carries it to an edge of its nearest scrolling container, where it stays while the rest of the content passes. Which edge is either a Position (Top, Bottom, or the direction-aware Start and End for horizontal scrolling) or an exact offset from any of the four sides. CSS has no event for the moment an element actually pins, so the component derives one: OnStuckChanged reports the flips, IsStuck holds the state, and StuckClass / StuckStyle restyle the element only while it is stuck."
               Parameters="componentParameters"
+              PublicMembers="componentPublicMembers"
               SubEnums="componentSubEnums"
               GitHubUrl="Utilities/Sticky/BitSticky.razor"
               GitHubDemoUrl="Utilities/Sticky/BitStickyDemo.razor">
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div class="example-desc">
+                With nothing set, a <b>BitSticky</b> sticks to the top of its nearest scrolling container: it
+                scrolls with the content until it reaches the top edge, and stays pinned there while the rest
+                passes underneath. The container is whatever ancestor scrolls - a pane with its own overflow
+                here, or the page itself - and the element only travels within its own parent, so a parent no
+                taller than the element gives it no room to stick in.
+            </div>
             <div class="vertical-container">
                 <BitSticky Class="sticky">Basic Sticky</BitSticky>
                 <div>
@@ -44,6 +52,13 @@
         </DemoExample>
 
         <DemoExample Title="Vertical" RazorCode="@example2RazorCode" Id="example2">
+            <div class="example-desc">
+                <b>Position</b> names the edge the element pins to while its container scrolls vertically.
+                <b>Top</b> pins it at the top once the scroll reaches it, <b>Bottom</b> keeps it pinned at the
+                bottom while its place in the content is still below the fold, and <b>TopAndBottom</b> does
+                whichever the scroll calls for - pinned at the bottom on the way down to it, at the top once
+                scrolled past it.
+            </div>
             <div>Try scrolling the containers to see the sticky components in action:</div>
             <br /><br /><br />
             <div><b>Top</b>:</div>
@@ -174,6 +189,12 @@
         </DemoExample>
 
         <DemoExample Title="Horizontal" RazorCode="@example3RazorCode" Id="example3">
+            <div class="example-desc">
+                The other three members of <b>Position</b> pin the element while its container scrolls
+                horizontally, and they follow the reading direction rather than naming a physical side:
+                <b>Start</b> is the left edge in LTR and the right one in RTL, <b>End</b> the opposite, and
+                <b>StartAndEnd</b> pins to whichever of the two the scroll calls for.
+            </div>
             <div>Try scrolling the containers to see the sticky components in action:</div>
             <br /><br /><br />
             <div><b>Start</b>:</div>
@@ -205,12 +226,19 @@
                 </p>
                 <BitSticky Class="sticky" Position="@BitStickyPosition.StartAndEnd">Stick to Start and End</BitSticky>
                 <p>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.B
+                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
                 </p>
             </div>
         </DemoExample>
 
         <DemoExample Title="Vertical spacings" RazorCode="@example4RazorCode" Id="example4">
+            <div class="example-desc">
+                <b>Top</b> and <b>Bottom</b> pin the element at an exact distance from an edge instead of
+                right on it. A bare number is read as a pixel count, and any CSS length is accepted as
+                written. Setting any offset replaces the default stick-to-top behavior with exactly the
+                edges the offsets name, and both can be set at once for a TopAndBottom that keeps a margin
+                on each side.
+            </div>
             <div>Try scrolling the containers to see the sticky components in action:</div>
             <br /><br /><br />
             <div><b>Top=20px</b>:</div>
@@ -344,6 +372,12 @@
         </DemoExample>
 
         <DemoExample Title="Horizontal spacings" RazorCode="@example5RazorCode" Id="example5">
+            <div class="example-desc">
+                <b>Left</b> and <b>Right</b> are the horizontal counterparts of the two offsets above, for a
+                container that scrolls horizontally. Unlike the Start and End positions they name physical
+                sides, so they read the same in LTR and RTL - reach for the positions where the side should
+                follow the reading direction.
+            </div>
             <div>Try scrolling the containers to see the sticky components in action:</div>
             <br /><br /><br />
             <div><b>Left=20px</b>:</div>
@@ -376,6 +410,237 @@
                 <BitSticky Class="sticky" Left="2rem" Right="20px">Left and Right customized</BitSticky>
                 <p>
                     Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+                </p>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Stuck state" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div class="example-desc">
+                CSS has no event for the moment a sticky element actually pins, so BitSticky derives one:
+                <b>OnStuckChanged</b> reports every flip of the state, the <b>IsStuck</b> property holds the
+                current value, and <b>StuckClass</b> / <b>StuckStyle</b> are applied to the root element only
+                while it is stuck (alongside the <code>bit-stk-stc</code> class) - which is what a bar that
+                casts a shadow only once content passes underneath it needs. The detection is attached only
+                when one of these three is used, so a sticky that does not ask for it stays pure CSS.
+            </div>
+            <div>Currently stuck: <b>@isStuck</b></div>
+            <br />
+            <div><b>StuckClass</b> (a shadow only while stuck):</div>
+            <div class="vertical-container">
+                <p>
+                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
+                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+                    spark emotion, and resonate with those who encounter them.
+                </p>
+                <BitSticky Class="sticky" StuckClass="stuck-shadow" OnStuckChanged="v => isStuck = v">
+                    @(isStuck ? "Stuck!" : "Not stuck yet")
+                </BitSticky>
+                <p>
+                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+                    <br />
+                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+                    shaped into meaning, and the emotions ready to resonate with every reader.
+                </p>
+            </div>
+            <br />
+            <div><b>StuckStyle</b> (a tint only while stuck):</div>
+            <div class="vertical-container">
+                <p>
+                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
+                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+                    spark emotion, and resonate with those who encounter them.
+                </p>
+                <BitSticky Class="sticky" StuckStyle="background-color: tomato; color: white">
+                    Tinted only while stuck
+                </BitSticky>
+                <p>
+                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+                    <br />
+                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+                    shaped into meaning, and the emotions ready to resonate with every reader.
+                </p>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="ZIndex" RazorCode="@example7RazorCode" Id="example7">
+            <div class="example-desc">
+                A sticky element keeps a z-index of 1, enough to pass over the plain flowing content it
+                sticks above without covering the popups and overlays of the rest of the page. Where
+                positioned content in the same container carries a higher stacking order, <b>ZIndex</b>
+                raises the sticky element above it - in the first container below the sticky passes under
+                the positioned box, in the second one its <b>ZIndex</b> lifts it over.
+            </div>
+            <div>Try scrolling the containers to see the sticky components in action:</div>
+            <br /><br /><br />
+            <div><b>Default z-index</b> (passes under the positioned box):</div>
+            <div class="vertical-container">
+                <BitSticky Class="sticky">Default z-index</BitSticky>
+                <p>
+                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
+                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                    inspirations will be built.
+                </p>
+                <div class="positioned-box">A positioned box with z-index: 2</div>
+                <p>
+                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+                    <br />
+                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                    possibilities that lie ahead.
+                </p>
+            </div>
+            <br /><br /><br />
+            <div><b>ZIndex="3"</b> (passes over the positioned box):</div>
+            <div class="vertical-container">
+                <BitSticky Class="sticky" ZIndex="3">ZIndex of 3</BitSticky>
+                <p>
+                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
+                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                    inspirations will be built.
+                </p>
+                <div class="positioned-box">A positioned box with z-index: 2</div>
+                <p>
+                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+                    <br />
+                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                    possibilities that lie ahead.
+                </p>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div class="example-desc">
+                <b>IsEnabled</b> is the switch that turns the stickiness itself off: a disabled sticky steps
+                back into the normal flow and scrolls away with its content like any other element, and its
+                stuck detection (when it has any) is detached. It is what disabling stickiness conditionally
+                - below a breakpoint, behind a user preference - looks like without changing the markup.
+            </div>
+            <BitToggle @bind-Value="isStickyEnabled" Text="Sticky enabled" />
+            <br />
+            <div class="vertical-container">
+                <BitSticky Class="sticky" IsEnabled="isStickyEnabled">
+                    @(isStickyEnabled ? "Sticking to the top" : "Scrolling away with the content")
+                </BitSticky>
+                <p>
+                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+                    <br />
+                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
+                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+                    spark emotion, and resonate with those who encounter them.
+                    <br />
+                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+                    shaped into meaning, and the emotions ready to resonate with every reader.
+                </p>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" Id="example9">
+            <div class="example-desc">
+                <b>Style</b> and <b>Class</b> reach the root element, which is both the box that sticks and
+                the box the content sits in - so a background, a border or a shadow given here travels and
+                pins with it. For a look that only appears while the element is pinned, use <b>StuckClass</b>
+                and <b>StuckStyle</b> instead.
+            </div>
+            <div>Try scrolling the containers to see the sticky components in action:</div>
+            <br /><br /><br />
+            <div><b>Style</b>:</div>
+            <div class="vertical-container">
+                <BitSticky Style="color: darkred; padding: 0.5rem; background-color: goldenrod; border-radius: 0.5rem;">
+                    Styled Sticky
+                </BitSticky>
+                <p>
+                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+                    <br />
+                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+                    shaped into meaning, and the emotions ready to resonate with every reader.
+                </p>
+            </div>
+            <br /><br /><br />
+            <div><b>Class</b>:</div>
+            <div class="vertical-container">
+                <BitSticky Class="custom-class">Classed Sticky</BitSticky>
+                <p>
+                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+                    <br />
+                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+                    shaped into meaning, and the emotions ready to resonate with every reader.
+                </p>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example10RazorCode" Id="example10">
+            <div class="example-desc">
+                The Start and End positions follow the reading direction: in a right-to-left container,
+                Start is the right edge and End is the left one, with nothing about the markup changing.
+                <b>Dir</b> sets the direction of the component's own content and is also cascaded, so a
+                BitSticky inside an RTL container inherits it.
+            </div>
+            <div>Try scrolling the container to see the sticky component in action:</div>
+            <br /><br /><br />
+            <div><b>Start</b> (the right edge in RTL):</div>
+            <div dir="rtl" class="horizontal-container">
+                <p>
+                    روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
+                </p>
+                <BitSticky Dir="BitDir.Rtl" Class="sticky" Position="@BitStickyPosition.Start">چسبیده به آغاز</BitSticky>
+                <p>
+                    روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
+                </p>
+            </div>
+            <br /><br /><br />
+            <div><b>End</b> (the left edge in RTL):</div>
+            <div dir="rtl" class="horizontal-container">
+                <p>
+                    روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
+                </p>
+                <BitSticky Dir="BitDir.Rtl" Class="sticky" Position="@BitStickyPosition.End">چسبیده به پایان</BitSticky>
+                <p>
+                    روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
                 </p>
             </div>
         </DemoExample>

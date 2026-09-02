@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
 namespace Bit.BlazorUI.Tests.Components.Utilities.Sticky;
@@ -245,7 +247,7 @@ public class BitStickyTests : BunitTestContext
             parameters.AddChildContent(childContent);
         });
 
-        component.MarkupMatches(@$"<div class=""bit-stk bit-stk-top"" id:ignore>{childContent}</label>");
+        component.MarkupMatches(@$"<div class=""bit-stk bit-stk-top"" id:ignore>{childContent}</div>");
     }
 
     [TestMethod]
@@ -430,14 +432,22 @@ public class BitStickyTests : BunitTestContext
             parameters.Add(p => p.Right, right);
         });
 
-        if (right.HasValue())
+        component.MarkupMatches(@$"<div style=""top: {top};bottom: {bottom};left: {left};right: {right};"" class=""bit-stk"" id:ignore></div>");
+    }
+
+    [TestMethod,
+       DataRow("20", "20px"),
+       DataRow("1.5", "1.5px"),
+       DataRow("0", "0px")
+    ]
+    public void BitStickyShouldReadBareNumberOffsetsAsPixels(string offset, string expected)
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
         {
-            component.MarkupMatches(@$"<div style=""top: {top};bottom: {bottom};left: {left};right: {right};"" class=""bit-stk"" id:ignore></div>");
-        }
-        else
-        {
-            component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
-        }
+            parameters.Add(p => p.Top, offset);
+        });
+
+        component.MarkupMatches(@$"<div style=""top: {expected};"" class=""bit-stk"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -483,5 +493,174 @@ public class BitStickyTests : BunitTestContext
         });
 
         component.MarkupMatches(@"<div class=""bit-stk bit-stk-srt"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStickyShouldRespectPositionAlongsideOffsets()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.Position, BitStickyPosition.Top);
+            parameters.Add(p => p.Top, "10px");
+        });
+
+        component.MarkupMatches(@"<div style=""top: 10px;"" class=""bit-stk bit-stk-top"" id:ignore></div>");
+    }
+
+    [TestMethod,
+       DataRow(3),
+       DataRow(0),
+       DataRow(-1),
+       DataRow(null)
+    ]
+    public void BitStickyShouldRespectZIndex(int? zIndex)
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.ZIndex, zIndex);
+        });
+
+        if (zIndex.HasValue)
+        {
+            component.MarkupMatches(@$"<div style=""z-index: {zIndex};"" class=""bit-stk bit-stk-top"" id:ignore></div>");
+        }
+        else
+        {
+            component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
+        }
+    }
+
+    [TestMethod]
+    public void BitStickyShouldRespectZIndexChangingAfterRender()
+    {
+        var component = RenderComponent<BitSticky>();
+
+        component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ZIndex, 5);
+        });
+
+        component.MarkupMatches(@"<div style=""z-index: 5;"" class=""bit-stk bit-stk-top"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStickyShouldNotApplyStuckClassAndStyleWhileNotStuck()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.StuckClass, "my-stuck");
+            parameters.Add(p => p.StuckStyle, "color: red");
+        });
+
+        Assert.IsFalse(component.Instance.IsStuck);
+
+        component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldApplyStuckClassAndStyleWhileStuck()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.StuckClass, "my-stuck");
+            parameters.Add(p => p.StuckStyle, "color: red");
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange(true));
+
+        Assert.IsTrue(component.Instance.IsStuck);
+
+        component.MarkupMatches(@"<div style=""color: red;"" class=""bit-stk bit-stk-top bit-stk-stc my-stuck"" id:ignore></div>");
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange(false));
+
+        Assert.IsFalse(component.Instance.IsStuck);
+
+        component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldAppendStuckStyleAfterStyle()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.Style, "color: blue");
+            parameters.Add(p => p.StuckStyle, "color: red");
+        });
+
+        Assert.AreEqual("color: blue", component.Find("div").GetAttribute("style"));
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange(true));
+
+        // The stuck style has to land after the resting one, since the later declaration of the same
+        // property is the one an inline style resolves to.
+        Assert.AreEqual("color: blue;color: red", component.Find("div").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldRespectOnStuckChanged()
+    {
+        var stuckStates = new List<bool>();
+
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.OnStuckChanged, (bool stuck) => stuckStates.Add(stuck));
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange(true));
+
+        CollectionAssert.AreEqual(new List<bool> { true }, stuckStates);
+        Assert.IsTrue(component.Instance.IsStuck);
+
+        // A repeated report of the same state must not raise the callback again.
+        await component.InvokeAsync(() => component.Instance._OnStuckChange(true));
+
+        CollectionAssert.AreEqual(new List<bool> { true }, stuckStates);
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange(false));
+
+        CollectionAssert.AreEqual(new List<bool> { true, false }, stuckStates);
+        Assert.IsFalse(component.Instance.IsStuck);
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldIgnoreStuckReportsWhileDisabled()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.StuckClass, "my-stuck");
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange(true));
+
+        Assert.IsFalse(component.Instance.IsStuck);
+
+        component.MarkupMatches(@"<div class=""bit-stk bit-stk-top bit-dis"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldResetStuckStateWhenDisabled()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.StuckClass, "my-stuck");
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange(true));
+
+        component.MarkupMatches(@"<div class=""bit-stk bit-stk-top bit-stk-stc my-stuck"" id:ignore></div>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.StuckClass, "my-stuck");
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        Assert.IsFalse(component.Instance.IsStuck);
+
+        component.MarkupMatches(@"<div class=""bit-stk bit-stk-top bit-dis"" id:ignore></div>");
     }
 }

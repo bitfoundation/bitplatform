@@ -1,12 +1,12 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
      id="@_Id"
      aria-label="@AriaLabel"
-     style="@StyleBuilder.Value"
+     style="@(_stuck ? JoinStyles(StyleBuilder.Value, StuckStyle) : StyleBuilder.Value)"
      class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()">
+     dir="@Dir?.ToString().ToLowerInvariant()">
     @ChildContent
 </div>

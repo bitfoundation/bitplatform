@@ -3,6 +3,13 @@
 .bit-stk {
     z-index: 1;
     position: sticky;
+
+    // A disabled sticky steps back into the normal flow: a static position ignores every inset, so
+    // the element scrolls away with its content like any other box - which is what makes IsEnabled
+    // the switch that turns the stickiness itself off.
+    &.bit-dis {
+        position: static;
+    }
 }
 
 .bit-stk-top {
