@@ -214,8 +214,8 @@ public static class ElementReferenceDomExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset</see>
     /// </summary>
-    public static ValueTask<string> GetData(this ElementReference element, string key)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.element.getData", element, key);
+    public static ValueTask<string?> GetData(this ElementReference element, string key)
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<string?>("BitButil.element.getData", element, key);
 
     /// <summary>
     /// Writes one <c>data-*</c> attribute by its dataset key, creating it when absent.

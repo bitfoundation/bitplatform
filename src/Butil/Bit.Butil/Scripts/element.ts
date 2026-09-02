@@ -74,8 +74,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         setAutocorrect(element: HTMLElement, value: boolean) { (element as any).autocorrect = value },
         getAutofocus(element: HTMLElement) { return element.autofocus },
         setAutofocus(element: HTMLElement, value: boolean) { element.autofocus = value },
-        getClassName(element: HTMLElement) { return element.className },
-        setClassName(element: HTMLElement, className: string) { element.className = className },
+        // The class attribute, not the className property - which on an SVG element is an
+        // SVGAnimatedString, so neither readable nor writable as a string there.
+        getClassName(element: HTMLElement) { return element.getAttribute('class') ?? '' },
+        setClassName(element: HTMLElement, className: string) { element.setAttribute('class', className) },
         childElementCount(element: HTMLElement) { return element.childElementCount },
         clientHeight(element: HTMLElement) { return element.clientHeight },
         clientLeft(element: HTMLElement) { return element.clientLeft },
@@ -186,14 +188,17 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         element.scrollIntoView(alignToTop ?? options);
     }
 
-    // checkVisibility shipped later than the rest of this module. Where it is missing, the two
-    // conditions it started life as - a laid-out box, and no visibility:hidden above it - are what
-    // a caller is asking about, so answer those rather than reporting a visible element invisible.
+    // checkVisibility shipped later than the rest of this module. Where it is missing, a laid-out
+    // box is the whole answer, as it is natively: a visibility:hidden element still generates one,
+    // and only counts as invisible when the caller opted into the visibility property.
     function checkVisibility(element: HTMLElement, options?: any) {
         const check = (element as any).checkVisibility;
         if (typeof check === 'function') return options ? check.call(element, options) : check.call(element);
 
-        return element.getClientRects().length > 0 && getComputedStyle(element).visibility !== 'hidden';
+        if (element.getClientRects().length === 0) return false;
+
+        const checksVisibilityCss = options?.visibilityProperty === true || options?.checkVisibilityCSS === true;
+        return checksVisibilityCss === false || getComputedStyle(element).visibility !== 'hidden';
     }
 
     function getHTML(element: HTMLElement, options?: any) {

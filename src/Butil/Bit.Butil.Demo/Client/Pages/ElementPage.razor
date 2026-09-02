@@ -512,9 +512,9 @@ await panel.HidePopover();
     </div>
     <div class="controls">
         <button @onclick="MakePopover">SetPopover(Auto)</button>
-        <button @onclick="ShowPopover">ShowPopover</button>
-        <button class="secondary" @onclick="TogglePopover">TogglePopover</button>
-        <button class="danger" @onclick="HidePopover">HidePopover</button>
+        <button @onclick="ShowPopover" disabled="@(isPopover is false)">ShowPopover</button>
+        <button class="secondary" @onclick="TogglePopover" disabled="@(isPopover is false)">TogglePopover</button>
+        <button class="danger" @onclick="HidePopover" disabled="@(isPopover is false)">HidePopover</button>
     </div>
     <DemoConsole @ref="popoverOutput" Title="popover output" />
 </DemoSection>
@@ -531,13 +531,13 @@ var href = await icon.GetAttributeNS(Xlink, "href");
 var hasRows = await table.QuerySelectorMatches("tr");
 var rowCount = await table.QuerySelectorAllCount("tr");
 
-var rects = await paragraph.GetClientRects();   // one per line box
+var rects = await inlineText.GetClientRects();  // one per line box
 
 await box.SetScrollTop(0);
 await box.ScrollTo(new ScrollOptions { Top = 240, Behavior = ScrollBehavior.Smooth });
 """)>
     <div @ref="queryBoxRef" class="demo-box dashed" style="height:8rem;overflow:auto;">
-        <p>This paragraph is long enough to wrap over several line boxes, which is what makes GetClientRects report more than one rectangle for it - one per line the text occupies.</p>
+        <p><span @ref="wrappingTextRef">This inline span is long enough to wrap over several line boxes, which is what makes GetClientRects report more than one rectangle for it - one per line the text occupies.</span></p>
         <ul>
             <li>first</li>
             <li>second</li>
@@ -735,7 +735,7 @@ await _video.Pause();
     <ApiMember Name="Click" Signature="ValueTask Click()" Description="Sends a synthetic click: handlers run, the event bubbles and default behavior happens. Not a user gesture, so gesture-gated APIs still refuse." />
     <ApiMember Name="Focus" Signature="ValueTask Focus(FocusOptions? options = null)" Description="Focuses the element. PreventScroll keeps the page where it is; FocusVisible overrides the focus-ring heuristic (Firefox)." />
     <ApiMember Name="CheckVisibility" Signature="ValueTask&lt;bool&gt; CheckVisibility(CheckVisibilityOptions? options = null)" Description="Whether the element is rendered - and optionally whether opacity, visibility and skipped content-visibility subtrees count against it." />
-    <ApiMember Name="Closest" Signature="ValueTask&lt;bool&gt; Closest(string selectors)" Description="Whether the element or any ancestor matches the selector. Returns the match itself rather than the ancestor, which cannot cross the boundary." />
+    <ApiMember Name="Closest" Signature="ValueTask&lt;bool&gt; Closest(string selectors)" Description="Whether the element or any ancestor matches the selector. The DOM method hands back the matching ancestor, which cannot cross the boundary - so this answers whether one was found." />
     <ApiMember Name="ScrollTo" Signature="ValueTask ScrollTo(ScrollOptions? options) · ValueTask ScrollTo(double? x, double? y)" Description="The same operation as Scroll, under the DOM's other name for it." />
     <ApiMember Name="SetScrollTop / SetScrollLeft" Signature="ValueTask SetScrollTop(double value) · ValueTask SetScrollLeft(double value)" Description="Jumps the element's scroll offset, clamped by the browser to the scrollable range." />
     <ApiMember Name="GetScrollTopMax / GetScrollLeftMax" Signature="ValueTask&lt;float&gt; GetScrollTopMax() · ValueTask&lt;float&gt; GetScrollLeftMax()" Description="The largest offset the setters will take. A Firefox property; computed from scroll and client sizes elsewhere." />
@@ -753,7 +753,7 @@ await _video.Pause();
     <ApiMember Name="ToggleClass" Signature="ValueTask&lt;bool&gt; ToggleClass(string token, bool? force = null)" Description="Flips a class, or pins it with force. Returns whether it is on the element afterwards." />
     <ApiMember Name="ReplaceClass" Signature="ValueTask&lt;bool&gt; ReplaceClass(string oldToken, string newToken)" Description="Swaps one class for another in place. False - and no change - when the old one was not there." />
     <ApiMember Name="ContainsClass / GetClassList" Signature="ValueTask&lt;bool&gt; ContainsClass(string token) · ValueTask&lt;string[]&gt; GetClassList()" Description="Membership test, and the classes as tokens rather than as one string." />
-    <ApiMember Name="GetData / SetData / RemoveData" Signature="ValueTask&lt;string&gt; GetData(string key) · ValueTask SetData(string key, string value) · ValueTask RemoveData(string key)" Description="One data-* attribute by its dataset key - userId for data-user-id." />
+    <ApiMember Name="GetData / SetData / RemoveData" Signature="ValueTask&lt;string?&gt; GetData(string key) · ValueTask SetData(string key, string value) · ValueTask RemoveData(string key)" Description="One data-* attribute by its dataset key - userId for data-user-id. Null when the attribute is absent." />
     <ApiMember Name="GetDataNames" Signature="ValueTask&lt;string[]&gt; GetDataNames()" Description="The dataset keys the element carries, not the attribute names." />
     <ApiMember Name="GetStyleText / SetStyleText" Signature="ValueTask&lt;string&gt; GetStyleText() · ValueTask SetStyleText(string value)" Description="The whole inline style, as it would be written in a style attribute. Inline only - not what a stylesheet contributes." />
     <ApiMember Name="GetStyleProperty / SetStyleProperty" Signature="ValueTask&lt;string&gt; GetStyleProperty(string name) · ValueTask SetStyleProperty(string name, string value, bool important = false)" Description="One inline declaration by CSS property name, custom properties (--accent) included." />
@@ -818,6 +818,7 @@ await _video.Pause();
     private ElementReference ariaBoxRef;
     private ElementReference popoverRef;
     private ElementReference queryBoxRef;
+    private ElementReference wrappingTextRef;
 
     private int syntheticClicks;
     private bool ariaExpanded;
@@ -834,6 +835,9 @@ await _video.Pause();
     private string titleValue = "Shown on hover";
     private string langValue = "fa-IR";
     private Autocapitalize autocapitalize = Autocapitalize.Words;
+
+    /// <summary>Show, Toggle and Hide only have something to act on once SetPopover has run.</summary>
+    private bool isPopover;
 
     /// <summary>The namespace SVG's href attribute lives in - the classic reason to reach for the NS overloads.</summary>
     private const string XlinkNamespace = "http://www.w3.org/1999/xlink";
@@ -1401,6 +1405,7 @@ await _video.Pause();
     private Task MakePopover() => Run(popoverOutput, async () =>
     {
         await popoverRef.SetPopover(ElementPopover.Auto);
+        isPopover = true;
         await popoverOutput.Success("SetPopover(Auto) →", await popoverRef.GetPopover());
     });
 
@@ -1446,7 +1451,7 @@ await _video.Pause();
 
     private Task GetClientRects() => Run(queryOutput, async () =>
     {
-        var rects = await queryBoxRef.GetClientRects();
+        var rects = await wrappingTextRef.GetClientRects();
         await queryOutput.Success($"GetClientRects() → {rects.Length} rect(s), first:",
             rects.Length == 0 ? "none - the element generates no boxes" : $"{rects[0].Width:0.#} × {rects[0].Height:0.#}");
     });

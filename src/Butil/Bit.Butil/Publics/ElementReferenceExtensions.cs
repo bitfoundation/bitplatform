@@ -86,7 +86,7 @@ public static class ElementReferenceExtensions
     /// <remarks>
     /// The DOM method hands back the matching ancestor itself. An <see cref="ElementReference"/> can
     /// only be minted by Blazor's renderer for an element it rendered, so there is nothing to hand
-    /// back across the boundary and the answer is the match itself.
+    /// back across the boundary and the answer is whether a match was found.
     /// <br/>
     /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
     /// rather than throwing, so the result can't be distinguished from a genuine value. If you
