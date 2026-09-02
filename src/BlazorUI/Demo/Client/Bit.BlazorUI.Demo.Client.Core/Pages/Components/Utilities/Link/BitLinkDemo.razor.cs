@@ -112,7 +112,7 @@ public partial class BitLinkDemo
             Name = "FocusAsync(bool preventScroll)",
             Type = "ValueTask",
             DefaultValue = "",
-            Description = "Gives focus to the root element of the link, leaving the page scrolled where it is instead of bringing the link into view.",
+            Description = "Gives focus to the root element of the link. Passing true keeps the page scrolled where it is; passing false lets the browser scroll the link into view.",
         },
     ];
 

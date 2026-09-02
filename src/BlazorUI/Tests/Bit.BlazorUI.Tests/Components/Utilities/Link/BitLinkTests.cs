@@ -114,7 +114,7 @@ public class BitLinkTests : BunitTestContext
         {
             // A disabled anchor loses its href, so the role and aria-disabled attributes keep it perceivable
             // as a (disabled) link for assistive technologies.
-            component.MarkupMatches(@"<a tabindex=""-1"" role=""link"" aria-disabled=""true"" class=""bit-lnk bit-lnk-pri bit-dis"" id:ignore></a>");
+            component.MarkupMatches(@"<a role=""link"" aria-disabled=""true"" class=""bit-lnk bit-lnk-pri bit-dis"" id:ignore></a>");
         }
         else
         {
@@ -143,7 +143,7 @@ public class BitLinkTests : BunitTestContext
 
         if (href.HasValue())
         {
-            component.MarkupMatches(@"<a tabindex=""-1"" role=""link"" aria-disabled=""true"" class=""bit-lnk bit-lnk-pri bit-dis"" id:ignore></a>");
+            component.MarkupMatches(@"<a role=""link"" aria-disabled=""true"" class=""bit-lnk bit-lnk-pri bit-dis"" id:ignore></a>");
         }
         else
         {

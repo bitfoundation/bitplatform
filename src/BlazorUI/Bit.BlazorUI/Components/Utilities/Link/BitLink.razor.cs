@@ -166,7 +166,7 @@ public partial class BitLink : BitComponentBase
             ? TabIndex
             : AllowDisabledFocus
                 ? (TabIndex ?? (Href.HasValue() ? "0" : null))
-                : "-1";
+                : Href.HasValue() ? null : "-1";
 
         base.OnParametersSet();
     }
