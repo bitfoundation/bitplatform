@@ -1,4 +1,4 @@
-﻿@import '../../../../Styles/abstracts/_functions.scss';
+@import '../../../../Styles/abstracts/_functions.scss';
 @import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
 .content {
@@ -42,11 +42,9 @@
 }
 
 ::deep {
-    .overlay {
-        z-index: 10;
-        align-items: center;
-        justify-content: center;
-        background-color: $bit-color-background-overlay;
+    .custom-overlay {
+        backdrop-filter: blur(10px);
+        background-color: rgba(0, 0, 0, 0.2);
     }
 
     .close-button {
