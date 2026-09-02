@@ -11,6 +11,7 @@ public class FetchResponse
     /// <summary>HTTP status (or 0 when the request was aborted/failed before headers).</summary>
     public int Status { get; set; }
 
+    /// <summary>The status text that went with <see cref="Status"/>. Often empty over HTTP/2, which does not carry one.</summary>
     public string StatusText { get; set; } = string.Empty;
 
     /// <summary>Final URL after redirects.</summary>

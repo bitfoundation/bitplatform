@@ -98,6 +98,7 @@ public class Fetch(IJSRuntime js) : IAsyncDisposable
         return new AbortableFetch(js, id);
     }
 
+    /// <summary>Releases the interop reference used for progress callbacks. Requests still in flight are not aborted - use their own <see cref="AbortableFetch"/> for that.</summary>
     public ValueTask DisposeAsync()
     {
         _dotNetRef?.Dispose();

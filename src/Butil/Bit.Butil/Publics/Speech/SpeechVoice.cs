@@ -5,6 +5,7 @@ namespace Bit.Butil;
 /// </summary>
 public class SpeechVoice
 {
+    /// <summary>The voice's name, as the platform reports it.</summary>
     public string Name { get; set; } = string.Empty;
 
     /// <summary>BCP-47 language tag - e.g. <c>"en-US"</c>.</summary>

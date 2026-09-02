@@ -11,8 +11,13 @@ namespace Bit.Butil;
 /// </remarks>
 public enum MediaSessionAction
 {
+    /// <summary>Resume playback.</summary>
     Play,
+
+    /// <summary>Pause playback, keeping the position.</summary>
     Pause,
+
+    /// <summary>Stop playback and give up the session.</summary>
     Stop,
 
     /// <summary>Jump back by the details' seek offset, or a sensible default when none is given.</summary>
@@ -24,7 +29,10 @@ public enum MediaSessionAction
     /// <summary>Jump to an absolute position - the details carry the target time.</summary>
     SeekTo,
 
+    /// <summary>Go to the previous track.</summary>
     PreviousTrack,
+    
+    /// <summary>Go to the next track.</summary>
     NextTrack,
 
     /// <summary>Skip an advertisement.</summary>

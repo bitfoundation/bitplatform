@@ -1,5 +1,10 @@
 ﻿namespace Bit.Butil;
 
+/// <summary>
+/// What the virtual keyboard's action key should say. A hint only: the browser still decides.
+/// <br/>
+/// <see href="https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/enterkeyhint">enterkeyhint</see>
+/// </summary>
 public enum EnterKeyHint
 {
     /// <summary>

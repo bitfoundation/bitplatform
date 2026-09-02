@@ -6,6 +6,7 @@ namespace Bit.Butil;
 /// </summary>
 public class MediaElementState
 {
+    /// <summary>True while playback is paused - which it also is before it has ever started.</summary>
     public bool Paused { get; set; }
 
     /// <summary>True once playback has run past the end (and looping is off).</summary>
@@ -14,10 +15,13 @@ public class MediaElementState
     /// <summary>True while a seek is in flight.</summary>
     public bool Seeking { get; set; }
 
+    /// <summary>True while the element is muted, independent of <see cref="Volume"/>.</summary>
     public bool Muted { get; set; }
 
+    /// <summary>True when playback restarts from the beginning on reaching the end.</summary>
     public bool Loop { get; set; }
 
+    /// <summary>True when the element asked to start on its own. Browsers still refuse unmuted autoplay without a user gesture.</summary>
     public bool Autoplay { get; set; }
 
     /// <summary>0 to 1. Always 1 on iOS, where volume is a hardware control.</summary>

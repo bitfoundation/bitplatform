@@ -1,8 +1,12 @@
 ﻿namespace Bit.Butil;
 
+/// <summary>
+/// Whether an element's content can be edited in place.
+/// <br/>
+/// <see href="https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/contenteditable">contenteditable</see>
+/// </summary>
 public enum ContentEditable
 {
-
     /// <summary>
     /// Indicates that the element inherits its parent's editable status.
     /// </summary>

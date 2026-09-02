@@ -5,27 +5,6 @@ using System.Text;
 
 namespace Bit.Butil.Build;
 
-/// <summary>How an untrimmed publish works out which Bit.Butil types the app it is publishing uses.</summary>
-public enum ButilScanMode
-{
-    /// <summary>Do not scan. The default: without ILLink there is then no signal but an explicit list.</summary>
-    None,
-
-    /// <summary>
-    /// Match Bit.Butil type names against the names in each assembly's <c>#Strings</c> heap. Needs no table
-    /// parsing at all, and over-includes whenever an app has a type of its own by the same name - which,
-    /// with names like <c>Window</c>, <c>Console</c> and <c>Storage</c> in the library, is often.
-    /// </summary>
-    TypeNames,
-
-    /// <summary>
-    /// Match each assembly's <c>TypeRef</c> rows, which name the namespace as well, so only real references
-    /// to <c>Bit.Butil</c> types count. Costs no more at publish than <see cref="TypeNames"/> and is the mode
-    /// to use.
-    /// </summary>
-    TypeReferences,
-}
-
 /// <summary>
 /// Reads a publish's own assemblies to find the Bit.Butil types the app references, and turns those into the
 /// set of JavaScript modules it can reach.

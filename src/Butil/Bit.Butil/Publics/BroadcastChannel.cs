@@ -97,6 +97,7 @@ public class BroadcastChannel(IJSRuntime js) : IAsyncDisposable
         });
     }
 
+    /// <summary>Closes every channel opened through this instance and releases its interop reference.</summary>
     public async ValueTask DisposeAsync()
     {
         try

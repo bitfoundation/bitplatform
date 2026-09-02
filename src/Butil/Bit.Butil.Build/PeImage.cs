@@ -217,13 +217,3 @@ public sealed class PeImage
     public BadImageFormatException Invalid(string reason)
         => new($"'{Path}' could not be read as a managed assembly: {reason}.");
 }
-
-/// <summary>The file offset and size of one metadata stream. A stream the image does not have is empty.</summary>
-public readonly struct MetadataHeap(int offset, int size)
-{
-    public int Offset { get; } = offset;
-
-    public int Size { get; } = size;
-
-    public bool IsEmpty => Size == 0;
-}

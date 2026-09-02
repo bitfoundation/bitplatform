@@ -12,7 +12,7 @@
 @@inject Bit.Butil.Navigator navigator
 
 var userAgent = await navigator.GetUserAgent();
-await navigator.Share(new ShareData { title = "Bit.Butil", url = "https://bitplatform.dev" });
+await navigator.Share(new ShareData { Title = "Bit.Butil", Url = "https://bitplatform.dev" });
 </pre>
 
 <div class="stack" style="margin-top:1.5rem">
@@ -137,8 +137,8 @@ await navigator.Share(new ShareData { title = "Bit.Butil", url = "https://bitpla
         var shareData = new ShareData()
         {
             Text = textValue,
-            title = titleValue,
-            url = urlValue
+            Title = titleValue,
+            Url = urlValue
         };
 
         await navigator.Share(shareData);

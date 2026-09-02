@@ -1,8 +1,5 @@
 namespace Bit.Butil.Demo.Client.Services;
 
-/// <summary>An entry in the "On this page" rail: one <see cref="Shared.DemoSection"/>.</summary>
-public record PageOutlineItem(string Title, string Slug);
-
 /// <summary>
 /// Backs the side rail. Sections are the pages' own content, so they cannot be enumerated up
 /// front: every <see cref="Shared.DemoSection"/> registers itself here as it initializes, and

@@ -19,16 +19,3 @@ public enum GeolocationErrorCode
     /// <summary>The error is not one of the above.</summary>
     Unknown = 0
 }
-
-/// <summary>
-/// Wraps a <c>GeolocationPositionError</c> raised by the browser.
-/// </summary>
-public class GeolocationException : Exception
-{
-    public GeolocationErrorCode Code { get; }
-
-    public GeolocationException(GeolocationErrorCode code, string message) : base(message)
-    {
-        Code = code;
-    }
-}

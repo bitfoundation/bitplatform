@@ -50,6 +50,16 @@ public class Window(IJSRuntime js) : IAsyncDisposable
         if (_matchMediaHandlers.TryGetValue(id, out var handler)) handler.Invoke(state);
     }
 
+    /// <summary>
+    /// Adds a listener for one window-level event. <typeparamref name="T"/> is the event-args type
+    /// the event maps to - <see cref="ButilMouseEventArgs"/>, <see cref="ButilKeyboardEventArgs"/>
+    /// and friends - and the payload is projected to that shape on the JavaScript side.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener">EventTarget.addEventListener()</see>
+    /// </summary>
+    /// <param name="domEvent">The event name, e.g. a <see cref="ButilEvents"/> constant.</param>
+    /// <param name="listener">Called when the event fires. Removing it later matches on this delegate's identity.</param>
+    /// <param name="useCapture">Listen during the capture phase rather than the bubble phase.</param>
     public async Task AddEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false)
     {
         var id = await _events.AddEventListener(js, ElementName, domEvent, listener, useCapture);
@@ -685,6 +695,7 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     public async Task Stop()
         => await js.InvokeVoid("BitButil.window.stop");
 
+    /// <summary>Removes every listener this instance registered on the window and releases its interop reference.</summary>
     public async ValueTask DisposeAsync()
     {
         await DisposeAsync(true);
@@ -692,6 +703,10 @@ public class Window(IJSRuntime js) : IAsyncDisposable
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// The disposal body. <paramref name="disposing"/> is false only on a finalizer path, where
+    /// reaching back into JavaScript is not safe, so nothing is torn down then.
+    /// </summary>
     protected virtual async ValueTask DisposeAsync(bool disposing)
     {
         if (disposing is false) return;
