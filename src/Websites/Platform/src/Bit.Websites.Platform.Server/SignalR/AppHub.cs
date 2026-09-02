@@ -19,6 +19,8 @@ public partial class AppHub : Hub
     [AutoInject] private IConfiguration configuration = default!;
 
     [AutoInject] private ILoggerFactory loggerFactory = default!;
+    [AutoInject] private IWebHostEnvironment webHostEnvironment = default!;
+    [AutoInject] private McpProxyService mcpProxyService = default!;
 
 
     public async IAsyncEnumerable<string> Chatbot(
@@ -37,13 +39,25 @@ public partial class AppHub : Hub
         // Hint: There are much more effective ways to implement this in the bit Boilerplate project template's AutoRag feature.
         // It supports both SQL Server 2025 and PostgreSQL with pgvector extension.
 
+        // In Development the chatbot talks to this very server's /mcp endpoint (the host the SignalR client
+        // already connected to), so uncommitted changes to the proxy take part in its answers; the deployed
+        // proxy only serves what is already released.
+        var httpRequest = Context.GetHttpContext()!.Request;
+        Uri mcpEndpoint = webHostEnvironment.IsDevelopment()
+            ? new($"{httpRequest.Scheme}://{httpRequest.Host}/mcp")
+            : new("https://bitplatform.dev/mcp");
+
         await using var bitplatformMcp = await McpClient.CreateAsync(new HttpClientTransport(new()
         {
             Name = "bitplatform",
-            Endpoint = new("https://bitplatform.dev/mcp"),
+            Endpoint = mcpEndpoint,
             TransportMode = HttpTransportMode.StreamableHttp
         }), new() { }, loggerFactory, cancellationToken); // provides the per product tools (bit BlazorUI, Bmotion, Brouter, Butil, Bswup, ...) plus the general ask_question tool
         var bitplatformMcpTools = await bitplatformMcp.ListToolsAsync(cancellationToken: cancellationToken);
+
+        // The source index is deliberately not on that endpoint - its tool names are the ones a developer's
+        // own codebase-memory server already provides - so this page's chatbot takes it in process instead.
+        var codebaseMemoryTools = await mcpProxyService.ListInternalFunctions(cancellationToken);
 
 
         async Task ReadIncomingMessages()
@@ -80,6 +94,7 @@ public partial class AppHub : Hub
                     ChatOptions chatOptions = new()
                     {
                         Tools = [..bitplatformMcpTools,
+                                ..codebaseMemoryTools,
                                 AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
                                 {
                                     if (messageSpecificCancellationToken.IsCancellationRequested)
