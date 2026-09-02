@@ -43,7 +43,7 @@ public partial class BitSwipeTrapDemo
             Name = "OnTrigger",
             Type = "EventCallback<BitSwipeTrapTriggerArgs>",
             DefaultValue = "",
-            Description = "The event callback for when the swipe action triggers based on the Trigger constraint.",
+            Description = "The event callback for when the swipe action triggers based on the Trigger or TriggerVelocity constraints.",
             LinkType = LinkType.Link,
             Href = "#swipetrap-trigger-args",
         },
@@ -52,30 +52,51 @@ public partial class BitSwipeTrapDemo
             Name = "OrientationLock",
             Type = "BitSwipeOrientation?",
             DefaultValue = "null",
-            Description = "Specifies the orientation lock in which the swipe trap allows to trap the swipe actions.",
+            Description = "Specifies the orientation lock in which the swipe trap allows to trap the swipe actions. The locked axis is trapped and the other axis keeps its default browser behavior (via a matching touch-action).",
             LinkType = LinkType.Link,
             Href = "#swipe-orientation",
+        },
+        new()
+        {
+            Name = "SkipSelector",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A CSS selector of descendant elements on which starting a swipe is ignored (e.g. inputs or nested interactive elements)."
         },
         new()
         {
             Name = "Threshold",
             Type = "decimal?",
             DefaultValue = "null",
-            Description = "The threshold in pixel for swiping distance that starts the swipe process process which stops the default behavior."
+            Description = "The threshold in pixels of the swiping distance that starts the swipe process which stops the default behavior."
         },
         new()
         {
             Name = "Throttle",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The throttle time in milliseconds to apply a delay between periodic calls to raise the events (default is 10)."
+            Description = "The throttle time in milliseconds to apply a delay between periodic calls to raise the OnMove event (default is 0, meaning no throttling)."
+        },
+        new()
+        {
+            Name = "TouchOnly",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Ignores mouse swipes, trapping only touch (and pen) gestures."
         },
         new()
         {
             Name = "Trigger",
             Type = "decimal?",
             DefaultValue = "null",
-            Description = "The swiping point (fraction of element's width or an absolute value) to trigger and call the OnTrigger event (default is 0.25m)."
+            Description = "The swiping point to trigger and call the OnTrigger event: either a fraction of the element's width/height (values less than 1) or an absolute value in pixels (default is 0.25m)."
+        },
+        new()
+        {
+            Name = "TriggerVelocity",
+            Type = "decimal?",
+            DefaultValue = "null",
+            Description = "The swiping velocity in pixels per millisecond that triggers and calls the OnTrigger event on release (a flick), even if the swiping distance has not reached the Trigger point (default is 0, meaning disabled)."
         },
     ];
 
@@ -93,14 +114,14 @@ public partial class BitSwipeTrapDemo
                     Name = "StartX",
                     Type = "decimal",
                     DefaultValue = "0",
-                    Description = "The horizontal start point of the swipe action in pixels."
+                    Description = "The horizontal start point of the swipe action in pixels, relative to the viewport."
                 },
                 new()
                 {
                     Name = "StartY",
                     Type = "decimal",
                     DefaultValue = "0",
-                    Description = "The vertical start point of the swipe action in pixels."
+                    Description = "The vertical start point of the swipe action in pixels, relative to the viewport."
                 },
                 new()
                 {
@@ -115,6 +136,34 @@ public partial class BitSwipeTrapDemo
                     Type = "decimal",
                     DefaultValue = "0",
                     Description = "The vertical difference of swipe action in pixels."
+                },
+                new()
+                {
+                    Name = "VelocityX",
+                    Type = "decimal",
+                    DefaultValue = "0",
+                    Description = "The horizontal velocity of the swipe action in pixels per millisecond."
+                },
+                new()
+                {
+                    Name = "VelocityY",
+                    Type = "decimal",
+                    DefaultValue = "0",
+                    Description = "The vertical velocity of the swipe action in pixels per millisecond."
+                },
+                new()
+                {
+                    Name = "PointerType",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The type of the pointer that performed the swipe action: \"mouse\", \"touch\" or \"pen\"."
+                },
+                new()
+                {
+                    Name = "IsCanceled",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Whether the swipe action ended by being canceled (e.g. the browser took the gesture over) instead of a normal release. Only meaningful in the OnEnd event."
                 },
             ]
         },
@@ -149,6 +198,27 @@ public partial class BitSwipeTrapDemo
                     DefaultValue = "0",
                     Description = "The vertical difference of swipe action in pixels."
                 },
+                new()
+                {
+                    Name = "VelocityX",
+                    Type = "decimal",
+                    DefaultValue = "0",
+                    Description = "The horizontal velocity of the swipe action in pixels per millisecond."
+                },
+                new()
+                {
+                    Name = "VelocityY",
+                    Type = "decimal",
+                    DefaultValue = "0",
+                    Description = "The vertical velocity of the swipe action in pixels per millisecond."
+                },
+                new()
+                {
+                    Name = "PointerType",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The type of the pointer that performed the swipe action: \"mouse\", \"touch\" or \"pen\"."
+                },
             ]
         }
     ];
@@ -166,7 +236,7 @@ public partial class BitSwipeTrapDemo
                 {
                     Name = "None",
                     Value = "0",
-                    Description = "Not orientation lock for swipe trap."
+                    Description = "No orientation lock for the swipe trap."
                 },
                 new()
                 {
@@ -179,6 +249,12 @@ public partial class BitSwipeTrapDemo
                     Name = "Vertical",
                     Value = "2",
                     Description = "Vertical orientation lock of trapping the swipe action."
+                },
+                new()
+                {
+                    Name = "Auto",
+                    Value = "3",
+                    Description = "Locks the trap to the first orientation the gesture moves along, trapping that axis and zeroing the other."
                 },
             ]
         },
@@ -238,13 +314,51 @@ public partial class BitSwipeTrapDemo
     {
         isTriggeredBasic = true;
         swipeTrapTriggerArgsBasic = args;
-        _ = Task.Delay(3000).ContinueWith(_ =>
+        _ = Task.Delay(3000).ContinueWith(async _ =>
         {
             isTriggeredBasic = false;
             swipeTrapEventArgsBasic = null;
             swipeTrapTriggerArgsBasic = null;
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         });
+    }
+
+
+    private decimal diffXHorizontalLock;
+    private decimal diffYHorizontalLock;
+    private decimal diffXVerticalLock;
+    private decimal diffYVerticalLock;
+    private void HandleOnMoveHorizontalLock(BitSwipeTrapEventArgs args)
+    {
+        diffXHorizontalLock = args.DiffX;
+        diffYHorizontalLock = args.DiffY;
+    }
+    private void HandleOnEndHorizontalLock(BitSwipeTrapEventArgs args)
+    {
+        diffXHorizontalLock = 0;
+        diffYHorizontalLock = 0;
+    }
+    private void HandleOnMoveVerticalLock(BitSwipeTrapEventArgs args)
+    {
+        diffXVerticalLock = args.DiffX;
+        diffYVerticalLock = args.DiffY;
+    }
+    private void HandleOnEndVerticalLock(BitSwipeTrapEventArgs args)
+    {
+        diffXVerticalLock = 0;
+        diffYVerticalLock = 0;
+    }
+    private decimal diffXAutoLock;
+    private decimal diffYAutoLock;
+    private void HandleOnMoveAutoLock(BitSwipeTrapEventArgs args)
+    {
+        diffXAutoLock = args.DiffX;
+        diffYAutoLock = args.DiffY;
+    }
+    private void HandleOnEndAutoLock(BitSwipeTrapEventArgs args)
+    {
+        diffXAutoLock = 0;
+        diffYAutoLock = 0;
     }
 
 
@@ -329,6 +443,47 @@ public partial class BitSwipeTrapDemo
     private void ResetList()
     {
         itemsList = Enumerable.Range(0, 10).ToList();
+    }
+
+
+    private bool isFlicked;
+    private BitSwipeTrapTriggerArgs? swipeTrapTriggerArgsFlick;
+    private void HandleOnTriggerFlick(BitSwipeTrapTriggerArgs args)
+    {
+        isFlicked = true;
+        swipeTrapTriggerArgsFlick = args;
+        _ = Task.Delay(3000).ContinueWith(async _ =>
+        {
+            isFlicked = false;
+            swipeTrapTriggerArgsFlick = null;
+            await InvokeAsync(StateHasChanged);
+        });
+    }
+
+
+    private decimal diffXTouchOnly;
+    private decimal diffYTouchOnly;
+    private decimal diffXSkip;
+    private decimal diffYSkip;
+    private void HandleOnMoveTouchOnly(BitSwipeTrapEventArgs args)
+    {
+        diffXTouchOnly = args.DiffX;
+        diffYTouchOnly = args.DiffY;
+    }
+    private void HandleOnEndTouchOnly(BitSwipeTrapEventArgs args)
+    {
+        diffXTouchOnly = 0;
+        diffYTouchOnly = 0;
+    }
+    private void HandleOnMoveSkip(BitSwipeTrapEventArgs args)
+    {
+        diffXSkip = args.DiffX;
+        diffYSkip = args.DiffY;
+    }
+    private void HandleOnEndSkip(BitSwipeTrapEventArgs args)
+    {
+        diffXSkip = 0;
+        diffYSkip = 0;
     }
 
 
@@ -438,4 +593,3 @@ public partial class BitSwipeTrapDemo
         return string.Empty;
     }
 }
-

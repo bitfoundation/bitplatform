@@ -2,18 +2,24 @@
 
 <PageOutlet Url="components/swipetrap"
             Title="SwipeTrap"
-            Description="A SwipeTrap is a component that traps swipe actions and triggers corresponding events." />
+            Description="A SwipeTrap traps swipe gestures (touch, mouse or pen) on its container and raises start, move, end and trigger events with distance, direction and velocity data." />
 
 <div>
     <DemoPage Name="SwipeTrap"
-              Description="A SwipeTrap is a component that traps swipe actions and triggers corresponding events."
+              Description="A SwipeTrap traps swipe gestures (touch, mouse or pen) on its container and raises start, move, end and trigger events carrying the swipe distance, direction, velocity and pointer type. It supports axis locking (fixed or auto-detected), distance-based and velocity-based (flick) triggering, and input filtering, making it the building block for swipeable panels, dismissible list items and other gesture-driven UIs."
               Parameters="componentParameters"
               SubClasses="componentSubClasses"
               SubEnums="componentSubEnums"
               GitHubUrl="Utilities/SwipeTrap/BitSwipeTrap.razor"
               GitHubDemoUrl="Utilities/SwipeTrap/BitSwipeTrapDemo.razor">
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-            <div>Try swipe or drag on the container:</div><br />
+            <div>
+                Swipe or drag inside the container to see the live gesture data: the start point, the distance moved on each axis (DiffX/DiffY),
+                the velocity in pixels per millisecond, and the type of the pointer performing the swipe (mouse, touch or pen).
+                When the swipe passes the trigger point (a quarter of the container size by default),
+                releasing it raises the OnTrigger event with the dominant swipe direction. A gesture the browser takes over
+                ends with IsCanceled set on the OnEnd event.
+            </div><br />
             <BitSwipeTrap Style="width:100%"
                           OnStart="HandleOnStartBasic"
                           OnMove="HandleOnMoveBasic"
@@ -24,6 +30,10 @@
                     <div>StartY: @swipeTrapEventArgsBasic?.StartY</div>
                     <div>DiffX: @swipeTrapEventArgsBasic?.DiffX</div>
                     <div>DiffY: @swipeTrapEventArgsBasic?.DiffY</div>
+                    <div>VelocityX: @swipeTrapEventArgsBasic?.VelocityX.ToString("0.00")</div>
+                    <div>VelocityY: @swipeTrapEventArgsBasic?.VelocityY.ToString("0.00")</div>
+                    <div>PointerType: @swipeTrapEventArgsBasic?.PointerType</div>
+                    <div>IsCanceled: @swipeTrapEventArgsBasic?.IsCanceled</div>
                     <div>---</div>
                     <div>Triggered? @isTriggeredBasic</div>
                     <div>Trigger direction: <b>@swipeTrapTriggerArgsBasic?.Direction</b></div>
@@ -33,8 +43,49 @@
             </BitSwipeTrap>
         </DemoExample>
 
-        <DemoExample Title="Panel" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-            <div>Open the panel and try to close it by swiping it to the left:</div><br />
+        <DemoExample Title="OrientationLock" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                OrientationLock restricts the trap to one axis. The locked axis is trapped (its default browser behavior, like scrolling,
+                is prevented via a matching touch-action and the other axis reports zero), while gestures along the free axis keep their
+                default behavior and never trigger the trap. The Auto lock instead locks to whichever axis the gesture moves along first.
+                Try swiping horizontally and vertically on each container:
+            </div><br />
+            <div class="lock-boxes">
+                <BitSwipeTrap OrientationLock="BitSwipeOrientation.Horizontal"
+                              OnMove="HandleOnMoveHorizontalLock"
+                              OnEnd="HandleOnEndHorizontalLock">
+                    <div class="lock-container">
+                        <div><b>Horizontal lock</b></div>
+                        <div>DiffX: @diffXHorizontalLock</div>
+                        <div>DiffY: @diffYHorizontalLock</div>
+                    </div>
+                </BitSwipeTrap>
+                <BitSwipeTrap OrientationLock="BitSwipeOrientation.Vertical"
+                              OnMove="HandleOnMoveVerticalLock"
+                              OnEnd="HandleOnEndVerticalLock">
+                    <div class="lock-container">
+                        <div><b>Vertical lock</b></div>
+                        <div>DiffX: @diffXVerticalLock</div>
+                        <div>DiffY: @diffYVerticalLock</div>
+                    </div>
+                </BitSwipeTrap>
+                <BitSwipeTrap OrientationLock="BitSwipeOrientation.Auto"
+                              OnMove="HandleOnMoveAutoLock"
+                              OnEnd="HandleOnEndAutoLock">
+                    <div class="lock-container">
+                        <div><b>Auto lock</b></div>
+                        <div>DiffX: @diffXAutoLock</div>
+                        <div>DiffY: @diffYAutoLock</div>
+                    </div>
+                </BitSwipeTrap>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Panel" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                A swipe-to-close panel: the OnMove event drags the panel with the finger (or mouse) and the OnTrigger event closes it
+                once the swipe passes the trigger point. Open the panel and try to close it by swiping it to the left:
+            </div><br />
             <div class="panel-container">
                 <button @onclick="OpenPanel">
                     Open
@@ -58,8 +109,12 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="List" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-            <div>Swipe each row to the right to trigger the delete action:</div><br />
+        <DemoExample Title="List" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                Swipe-to-delete list rows using an absolute Trigger value (60px) and a Threshold (10px), with a horizontal OrientationLock
+                that keeps the list scrolling vertically while trapping only intentional horizontal swipes.
+                Swipe each row to the right to trigger the delete action:
+            </div><br />
             <div class="list-container">
                 @foreach (int idx in itemsList)
                 {
@@ -69,6 +124,7 @@
                         <BitSwipeTrap Style="width:100%;height:100%"
                                       Trigger="60m"
                                       Threshold="10"
+                                      OrientationLock="BitSwipeOrientation.Horizontal"
                                       OnMove="args => HandleOnMoveList(args, i)"
                                       OnEnd="args => HandleOnEndList(args, i)"
                                       OnTrigger="args => HandleOnTriggerList(args, i)">
@@ -88,8 +144,30 @@
                        OnCancel="HandleOnCancelList" />
         </DemoExample>
 
-        <DemoExample Title="Advanced" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-            <div>An illustrative example of integrating this component into a straightforward mobile application.</div>
+        <DemoExample Title="Flick" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                TriggerVelocity recognizes flicks: a fast swipe (here faster than 0.5 pixels per millisecond) triggers on release even when
+                its distance stays below the Trigger point. A slow drag over the same distance does nothing. Try a quick flick versus a slow drag:
+            </div><br />
+            <BitSwipeTrap Style="width:100%"
+                          Trigger="0.9m"
+                          TriggerVelocity="0.5m"
+                          OnTrigger="HandleOnTriggerFlick">
+                <div class="basic-container">
+                    <div>Flicked? @isFlicked</div>
+                    <div>Flick direction: <b>@swipeTrapTriggerArgsFlick?.Direction</b></div>
+                    <div>Flick velocityX: @swipeTrapTriggerArgsFlick?.VelocityX.ToString("0.00")</div>
+                    <div>Flick velocityY: @swipeTrapTriggerArgsFlick?.VelocityY.ToString("0.00")</div>
+                </div>
+            </BitSwipeTrap>
+        </DemoExample>
+
+        <DemoExample Title="Advanced" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                An illustrative example of integrating this component into a straightforward mobile application:
+                one trap drives two edge panels, using the move data for follow-the-finger dragging and the trigger direction
+                for opening and closing each panel.
+            </div>
             <br />
             <div class="mobile-frame">
                 <div class="screen">
@@ -133,6 +211,36 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Filtering" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                Control which gestures the trap responds to. TouchOnly ignores mouse drags, trapping only touch and pen swipes
+                (handy when mouse users get buttons instead of gestures). SkipSelector ignores gestures that start on matching
+                descendants, keeping nested interactive elements like inputs and sliders usable inside the trap:
+            </div><br />
+            <div class="lock-boxes">
+                <BitSwipeTrap TouchOnly
+                              OnMove="HandleOnMoveTouchOnly"
+                              OnEnd="HandleOnEndTouchOnly">
+                    <div class="lock-container">
+                        <div><b>TouchOnly</b></div>
+                        <div>(mouse drags are ignored)</div>
+                        <div>DiffX: @diffXTouchOnly</div>
+                        <div>DiffY: @diffYTouchOnly</div>
+                    </div>
+                </BitSwipeTrap>
+                <BitSwipeTrap SkipSelector=".no-swipe"
+                              OnMove="HandleOnMoveSkip"
+                              OnEnd="HandleOnEndSkip">
+                    <div class="lock-container">
+                        <div><b>SkipSelector</b></div>
+                        <div>DiffX: @diffXSkip</div>
+                        <div>DiffY: @diffYSkip</div>
+                        <input class="no-swipe" placeholder="No swipe starts here" />
+                    </div>
+                </BitSwipeTrap>
             </div>
         </DemoExample>
     </DemoPage>

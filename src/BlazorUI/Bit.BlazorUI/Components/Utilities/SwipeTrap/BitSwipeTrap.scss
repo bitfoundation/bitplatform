@@ -1,3 +1,26 @@
 ﻿.bit-stp {
     width: fit-content;
+
+    // The locked axis is the trap's, the free axis stays the browser's: declaring it as a
+    // touch-action keeps a native scroll from starting on the locked axis, where it would win
+    // the race against the trap's preventDefault.
+    &.bit-stp-hrz {
+        touch-action: pan-y pinch-zoom;
+    }
+
+    &.bit-stp-vrt {
+        touch-action: pan-x pinch-zoom;
+    }
+
+    // The Auto lock takes whichever axis the gesture picks first, so neither may be left to the browser.
+    &.bit-stp-lck {
+        touch-action: none;
+    }
+
+    // While a swipe is trapped: a mouse swipe would otherwise paint a text selection along the way.
+    // Also serves as a styling hook for the actively-swiping state.
+    &.bit-stp-swp {
+        user-select: none;
+        -webkit-user-select: none;
+    }
 }
