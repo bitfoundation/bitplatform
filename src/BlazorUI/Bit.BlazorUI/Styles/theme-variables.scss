@@ -509,6 +509,7 @@ $mot-loop-factor: var(--bit-mot-loop-factor, 1);
 
 /*---- Typography ----*/
 $tg-font-family: var(--bit-tpg-font-family);
+
 // The family for the text whose characters have to line up in a column - a fragment of code, an
 // identifier, a hash, a stack trace - rather than read as prose.
 $tg-font-family-mono: var(--bit-tpg-font-family-mono);

@@ -5,8 +5,8 @@ public class BitThemeTypography
     public string? FontFamily { get; set; }
 
     /// <summary>
-    /// The family the text whose characters have to line up in a column is set in
-    /// (<c>--bit-tpg-font-family-mono</c>) - a fragment of code, an identifier, a hash, a stack trace.
+    /// The font family used for text whose characters have to line up in a column - a fragment of code,
+    /// an identifier, a hash, a stack trace - rather than read as prose (<c>--bit-tpg-font-family-mono</c>).
     /// </summary>
     public string? MonoFontFamily { get; set; }
 
