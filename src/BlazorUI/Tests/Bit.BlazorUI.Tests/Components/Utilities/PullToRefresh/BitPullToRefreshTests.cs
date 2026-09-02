@@ -42,6 +42,7 @@ public class BitPullToRefreshTests : BunitTestContext
         });
 
         var root = component.Find(".bit-ptr");
+        Assert.AreEqual("group", root.GetAttribute("role"));
         Assert.AreEqual("pull down to refresh", root.GetAttribute("aria-label"));
     }
 

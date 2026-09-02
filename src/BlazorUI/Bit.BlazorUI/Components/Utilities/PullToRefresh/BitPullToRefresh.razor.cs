@@ -222,6 +222,13 @@ public partial class BitPullToRefresh : BitComponentBase
 
         if (_lastTrigger != Trigger || _lastFactor != Factor || _lastMargin != Margin || _lastThreshold != Threshold || _lastIsEnabled != IsEnabled)
         {
+            // js drops the pull height of an idle component when it gets disabled, so the managed
+            // side does the same, otherwise the indicator keeps rendering at the height it had.
+            if (IsEnabled is false && _refreshing is false && _completed is false)
+            {
+                _diff = 0;
+            }
+
             CacheJsParameters();
             await _js.BitPullToRefreshUpdate(UniqueId, Trigger, Factor, Margin, Threshold, IsEnabled);
         }

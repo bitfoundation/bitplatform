@@ -56,7 +56,16 @@
                     return;
                 }
 
-                if (diff <= options.threshold) return;
+                if (diff <= options.threshold) {
+                    // Back inside the dead zone: drop the pull height so a release from here cannot
+                    // trigger a refresh with the distance the pull had before it came back.
+                    if (state.diff !== 0) {
+                        state.diff = 0;
+                        loadingEl.style.minHeight = '0';
+                        await dotnetObj.invokeMethodAsync('OnMove', 0);
+                    }
+                    return;
+                }
 
                 if (e.cancelable) {
                     e.preventDefault();
