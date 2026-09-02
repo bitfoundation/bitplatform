@@ -17,13 +17,17 @@
     justify-content: center;
 }
 
+.bit-ptr-rtn {
+    transition: min-height $mot-duration-short $mot-easing;
+}
+
 .bit-ptr-spw {
     display: flex;
     border-radius: 50%;
     align-items: center;
     justify-content: center;
     background-color: $clr-bg-pri;
-    box-shadow: $box-shadow-callout2;
+    box-shadow: $box-shadow-popup;
 }
 
 .bit-ptr-swr {
@@ -40,4 +44,23 @@
 
 .bit-ptr-spin {
     animation: bit-spin $mot-duration-spinner $mot-easing-spinner infinite;
+}
+
+.bit-ptr-cmp {
+    background-color: $clr-bg-ter;
+}
+
+// What the refresh says to a screen reader: read by assistive technologies, taken out of the layout for
+// everyone else. It stays in the render tree rather than being display:none, which would take it out of the
+// accessibility tree along with the layout and leave the live region with nothing to announce.
+.bit-ptr-vhd {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
 }

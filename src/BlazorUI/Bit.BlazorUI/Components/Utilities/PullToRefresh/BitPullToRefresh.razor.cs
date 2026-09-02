@@ -8,7 +8,13 @@ namespace Bit.BlazorUI;
 public partial class BitPullToRefresh : BitComponentBase
 {
     private decimal _diff;
+    private bool _completed;
     private bool _refreshing;
+    private int _lastTrigger;
+    private int _lastMargin;
+    private int _lastThreshold;
+    private decimal _lastFactor;
+    private bool _lastIsEnabled;
     private ElementReference _loadingRef = default!;
 
 
@@ -29,7 +35,22 @@ public partial class BitPullToRefresh : BitComponentBase
     [Parameter] public BitPullToRefreshClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The factor to balance the pull height out.
+    /// The custom template to replace the default checkmark svg shown while the complete state is visible.
+    /// </summary>
+    [Parameter] public RenderFragment? Complete { get; set; }
+
+    /// <summary>
+    /// The duration in milliseconds to keep the complete indicator visible after a successful refresh before snapping back (0 disables the complete state).
+    /// </summary>
+    [Parameter] public int CompleteDelay { get; set; }
+
+    /// <summary>
+    /// The text that gets announced to screen readers while the complete state is visible after a successful refresh.
+    /// </summary>
+    [Parameter] public string CompleteLabel { get; set; } = "Refresh complete";
+
+    /// <summary>
+    /// The factor to balance the pull height out. The pull-down distance gets divided by it, so higher values make the pull feel heavier.
     /// </summary>
     [Parameter] public decimal Factor { get; set; } = 1.5m;
 
@@ -64,6 +85,16 @@ public partial class BitPullToRefresh : BitComponentBase
     [Parameter] public EventCallback<decimal> OnPullEnd { get; set; }
 
     /// <summary>
+    /// The callback for when the pull-down gets canceled before release, providing the last pull height.
+    /// </summary>
+    [Parameter] public EventCallback<decimal> OnPullCancel { get; set; }
+
+    /// <summary>
+    /// The text that gets announced to screen readers while the refresh is in progress.
+    /// </summary>
+    [Parameter] public string RefreshingLabel { get; set; } = "Refreshing";
+
+    /// <summary>
     /// The element that is the scroller in the anchor to control the behavior of the pull to refresh.
     /// </summary>
     [Parameter] public ElementReference? ScrollerElement { get; set; }
@@ -79,7 +110,7 @@ public partial class BitPullToRefresh : BitComponentBase
     [Parameter] public BitPullToRefreshClassStyles? Styles { get; set; }
 
     /// <summary>
-    /// The threshold in pixel for pulling height that starts the pull to refresh process.
+    /// The dead-zone distance in pixel that the pull-down must travel before the pull to refresh process starts and the indicator appears.
     /// </summary>
     [Parameter] public int Threshold { get; set; } = 0;
 
@@ -94,15 +125,44 @@ public partial class BitPullToRefresh : BitComponentBase
 
 
 
+    /// <summary>
+    /// Starts the refresh process programmatically, showing the loading indicator and invoking the OnRefresh callback.
+    /// It has no effect while the component is disabled, a refresh is already in progress or the complete state is visible.
+    /// </summary>
+    public async Task RefreshAsync()
+    {
+        if (_refreshing || _completed || IsEnabled is false || IsRendered is false || IsDisposed) return;
+
+        await _js.BitPullToRefreshRefresh(UniqueId);
+    }
+
+
+
     [JSInvokable("Refresh")]
     public async Task _Refresh()
     {
+        _diff = Trigger;
         _refreshing = true;
         await InvokeAsync(StateHasChanged);
-        await OnRefresh.InvokeAsync();
-        _diff = 0;
-        _refreshing = false;
-        await InvokeAsync(StateHasChanged);
+        try
+        {
+            await OnRefresh.InvokeAsync();
+
+            if (CompleteDelay > 0)
+            {
+                _completed = true;
+                _refreshing = false;
+                await InvokeAsync(StateHasChanged);
+                await Task.Delay(CompleteDelay);
+            }
+        }
+        finally
+        {
+            _diff = 0;
+            _completed = false;
+            _refreshing = false;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     [JSInvokable("OnStart")]
@@ -123,7 +183,21 @@ public partial class BitPullToRefresh : BitComponentBase
     [JSInvokable("OnEnd")]
     public async Task _OnEnd(decimal diff)
     {
+        if (diff < Trigger)
+        {
+            _diff = 0;
+            await InvokeAsync(StateHasChanged);
+        }
+
         await OnPullEnd.InvokeAsync(diff);
+    }
+
+    [JSInvokable("OnCancel")]
+    public async Task _OnCancel(decimal diff)
+    {
+        _diff = 0;
+        await InvokeAsync(StateHasChanged);
+        await OnPullCancel.InvokeAsync(diff);
     }
 
 
@@ -140,20 +214,55 @@ public partial class BitPullToRefresh : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        if (IsRendered is false) return;
+
+        if (_lastTrigger != Trigger || _lastFactor != Factor || _lastMargin != Margin || _lastThreshold != Threshold || _lastIsEnabled != IsEnabled)
+        {
+            CacheJsParameters();
+            await _js.BitPullToRefreshUpdate(UniqueId, Trigger, Factor, Margin, Threshold, IsEnabled);
+        }
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+            CacheJsParameters();
             var dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitPullToRefreshSetup(UniqueId, RootElement, _loadingRef, ScrollerElement, ScrollerSelector, Trigger, Factor, Margin, Threshold, dotnetObj);
+            await _js.BitPullToRefreshSetup(UniqueId, RootElement, _loadingRef, ScrollerElement, ScrollerSelector, Trigger, Factor, Margin, Threshold, IsEnabled, dotnetObj);
         }
 
         await base.OnAfterRenderAsync(firstRender);
     }
 
+    private void CacheJsParameters()
+    {
+        _lastTrigger = Trigger;
+        _lastFactor = Factor;
+        _lastMargin = Margin;
+        _lastThreshold = Threshold;
+        _lastIsEnabled = IsEnabled;
+    }
+
+    private bool CanRelease => _refreshing is false && _completed is false && _diff > 0 && _diff >= Trigger;
+
     private string? GetSpinnerWrapperCssClasses()
     {
         List<string> classes = ["bit-ptr-spw"];
+
+        if (CanRelease)
+        {
+            classes.Add("bit-ptr-crl");
+
+            if (Classes?.SpinnerWrapperCanRelease?.HasValue() ?? false)
+            {
+                classes.Add(Classes.SpinnerWrapperCanRelease.Trim());
+            }
+        }
 
         if (_refreshing)
         {
@@ -162,6 +271,16 @@ public partial class BitPullToRefresh : BitComponentBase
             if (Classes?.SpinnerWrapperRefreshing?.HasValue() ?? false)
             {
                 classes.Add(Classes.SpinnerWrapperRefreshing.Trim());
+            }
+        }
+
+        if (_completed)
+        {
+            classes.Add("bit-ptr-cmp");
+
+            if (Classes?.SpinnerWrapperComplete?.HasValue() ?? false)
+            {
+                classes.Add(Classes.SpinnerWrapperComplete.Trim());
             }
         }
 
@@ -176,18 +295,29 @@ public partial class BitPullToRefresh : BitComponentBase
     private string? GetSpinnerWrapperCssStyles()
     {
         List<string> styles = [];
-        decimal size = 35 * _diff / Trigger;
+        var trigger = Trigger < 1 ? 1 : Trigger;
+        decimal size = 35 * _diff / trigger;
 
-        styles.Add(FormattableString.Invariant($"margin-top:{(_refreshing ? 0 : _diff / 2)}px;width:{size}px;height:{size}px"));
+        styles.Add(FormattableString.Invariant($"margin-top:{(_refreshing || _completed ? 0 : _diff / 2)}px;width:{size}px;height:{size}px"));
 
         if (Styles?.SpinnerWrapper?.HasValue() ?? false)
         {
             styles.Add(Styles.SpinnerWrapper.Trim(';'));
         }
 
+        if (CanRelease && (Styles?.SpinnerWrapperCanRelease?.HasValue() ?? false))
+        {
+            styles.Add(Styles.SpinnerWrapperCanRelease.Trim(';'));
+        }
+
         if (_refreshing && (Styles?.SpinnerWrapperRefreshing?.HasValue() ?? false))
         {
             styles.Add(Styles.SpinnerWrapperRefreshing.Trim(';'));
+        }
+
+        if (_completed && (Styles?.SpinnerWrapperComplete?.HasValue() ?? false))
+        {
+            styles.Add(Styles.SpinnerWrapperComplete.Trim(';'));
         }
 
         return string.Join(';', styles);
@@ -202,6 +332,11 @@ public partial class BitPullToRefresh : BitComponentBase
             classes.Add(Classes.Spinner.Trim());
         }
 
+        if (CanRelease && (Classes?.SpinnerCanRelease?.HasValue() ?? false))
+        {
+            classes.Add(Classes.SpinnerCanRelease.Trim());
+        }
+
         if (_refreshing)
         {
             classes.Add("bit-ptr-spin");
@@ -212,24 +347,40 @@ public partial class BitPullToRefresh : BitComponentBase
             }
         }
 
+        if (_completed && (Classes?.SpinnerComplete?.HasValue() ?? false))
+        {
+            classes.Add(Classes.SpinnerComplete.Trim());
+        }
+
         return string.Join(' ', classes).Trim();
     }
 
     private string? GetSpinnerCssStyles()
     {
         List<string> styles = [];
-        decimal size = 24 * _diff / Trigger;
+        var trigger = Trigger < 1 ? 1 : Trigger;
+        decimal size = 24 * _diff / trigger;
 
-        styles.Add(FormattableString.Invariant($"transform:rotate({(_diff - Trigger) * 2}deg);width:{size}px;height:{size}px"));
+        styles.Add(FormattableString.Invariant($"transform:rotate({(_diff - trigger) * 2}deg);width:{size}px;height:{size}px"));
 
         if (Styles?.Spinner?.HasValue() ?? false)
         {
             styles.Add(Styles.Spinner.Trim(';'));
         }
 
+        if (CanRelease && (Styles?.SpinnerCanRelease?.HasValue() ?? false))
+        {
+            styles.Add(Styles.SpinnerCanRelease.Trim(';'));
+        }
+
         if (_refreshing && (Styles?.SpinnerRefreshing?.HasValue() ?? false))
         {
             styles.Add(Styles.SpinnerRefreshing.Trim(';'));
+        }
+
+        if (_completed && (Styles?.SpinnerComplete?.HasValue() ?? false))
+        {
+            styles.Add(Styles.SpinnerComplete.Trim(';'));
         }
 
         return string.Join(';', styles);

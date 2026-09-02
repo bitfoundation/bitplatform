@@ -5,18 +5,37 @@
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()">
+     dir="@Dir?.ToString().ToLower()"
+     aria-label="@AriaLabel">
 
     @(Anchor ?? ChildContent)
 
     <div @ref="_loadingRef"
+         role="status"
          style="@Styles?.Loading"
          class="bit-ptr-lod @Classes?.Loading">
+        @* The one thing on the component a screen reader reads. It is on the page from the first render rather
+           than being inserted with its text already in it - a live region only announces what changes inside
+           it - so the swap to the refreshing text is what gets announced. *@
+        <span class="bit-ptr-vhd">@(_refreshing ? RefreshingLabel : _completed ? CompleteLabel : string.Empty)</span>
         <div style="@GetSpinnerWrapperCssStyles()"
              class="@GetSpinnerWrapperCssClasses()">
             <div style="@GetSpinnerCssStyles()"
                  class="@GetSpinnerCssClasses()">
-                @if (Loading is not null)
+                @if (_completed)
+                {
+                    if (Complete is not null)
+                    {
+                        @Complete
+                    }
+                    else
+                    {
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%">
+                            <path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                        </svg>
+                    }
+                }
+                else if (Loading is not null)
                 {
                     @Loading
                 }
