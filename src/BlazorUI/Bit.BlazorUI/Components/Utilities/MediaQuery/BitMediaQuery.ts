@@ -25,11 +25,14 @@
          * @param screenQuery  One of the predefined BitScreenQuery names (e.g. "Md", "LtLg", "GtSm").
          *                     When set (and no custom query), the query is built from the live
          *                     --bit-bp-* theme breakpoints so a customized theme is honored.
+         * @param noWrapper    Whether the component renders no element of its own, in which case
+         *                     `id` is only a listener key and the breakpoints are read from the
+         *                     document root rather than from an element carrying that id.
          */
-        public static async setup(id: string, query: string | null, screenQuery: string | null, dotnetObj: DotNetObject) {
+        public static async setup(id: string, query: string | null, screenQuery: string | null, noWrapper: boolean, dotnetObj: DotNetObject) {
             if (!dotnetObj) return;
 
-            const resolvedQuery = query || (screenQuery ? MediaQuery.buildScreenQuery(screenQuery, id) : '');
+            const resolvedQuery = query || (screenQuery ? MediaQuery.buildScreenQuery(screenQuery, id, noWrapper) : '');
             if (!resolvedQuery) return;
 
             // The C# side re-invokes setup for screen queries on every render (the expression
@@ -84,8 +87,8 @@
         // Range bounds are half-open (min inclusive, max exclusive), so the upper edge is one CSS
         // pixel below the next breakpoint - matching the packaged media-queries.scss mixins, whose
         // "screen and" media-type prefix is kept too so the query does not also match print.
-        private static buildScreenQuery(screenQuery: string, id: string): string {
-            const bp = MediaQuery.resolveBreakpoints(id);
+        private static buildScreenQuery(screenQuery: string, id: string, noWrapper: boolean): string {
+            const bp = MediaQuery.resolveBreakpoints(id, noWrapper);
             const min = (v: string) => `(min-width: ${v})`;
             const max = (v: string) => `(max-width: ${MediaQuery.below(v)})`;
 
@@ -127,11 +130,14 @@
 
         // Reads the --bit-bp-* breakpoint tokens from the queried element's themed scope, so the
         // breakpoints of an enclosing BitThemeProvider are honored. Custom properties inherit, so a
-        // document-root definition still resolves through the element; the root itself is only read
-        // directly when the element is not rendered (e.g. an OnChange-only usage with no content).
-        // Built-in defaults fill in for any token that is unset everywhere.
-        private static resolveBreakpoints(id: string): Record<BreakpointKey, string> {
-            const element = document.getElementById(id) ?? document.documentElement;
+        // document-root definition still resolves through the element. In no-wrapper mode there is
+        // no element of the component's own, so the root is read directly: `id` is then only the
+        // listener key, and any other element that happens to carry it - the rendered content
+        // itself, when it is given the same id - is not the component's themed scope. The root is
+        // also what is read when nothing is rendered at all (e.g. an OnChange-only usage with no
+        // content). Built-in defaults fill in for any token that is unset everywhere.
+        private static resolveBreakpoints(id: string, noWrapper: boolean): Record<BreakpointKey, string> {
+            const element = (noWrapper ? null : document.getElementById(id)) ?? document.documentElement;
             const styles = typeof getComputedStyle === 'function'
                 ? getComputedStyle(element)
                 : null;

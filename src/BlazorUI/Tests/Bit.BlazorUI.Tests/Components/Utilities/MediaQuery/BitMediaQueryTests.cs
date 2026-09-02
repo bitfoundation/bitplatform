@@ -485,6 +485,71 @@ public class BitMediaQueryTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitMediaQueryShouldPassNoWrapperFlagToJsSetup(bool noWrapper)
+    {
+        var component = RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.ScreenQuery, BitScreenQuery.Md);
+            parameters.Add(p => p.NoWrapper, noWrapper);
+            parameters.AddChildContent("<span>content</span>");
+        });
+
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.MediaQuery.setup");
+        Assert.AreEqual(noWrapper, invocation.Arguments[3]);
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldPassNoWrapperFlagWhenTheContentCarriesTheSameId()
+    {
+        var component = RenderComponent<BitMediaQuery>(parameters =>
+        {
+            // A themed ScreenQuery is the case that reads the --bit-bp-* breakpoints off an
+            // element, and NoWrapper renders the content directly, so nothing but the content
+            // itself can carry the id the listener is keyed by.
+            parameters.Add(p => p.ScreenQuery, BitScreenQuery.Md);
+            parameters.Add(p => p.NoWrapper, true);
+            parameters.Add(p => p.Id, "mdq-id");
+            parameters.Add(p => p.DefaultMatched, true);
+            parameters.AddChildContent("<div id=\"mdq-id\" class=\"child\">Child</div>");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-mdq").Count);
+        Assert.AreEqual("mdq-id", component.Find(".child").Id);
+
+        // The id is only the listener key here: the flag tells the JS side to resolve the
+        // breakpoints from the document root rather than from the content that carries it.
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.MediaQuery.setup");
+        Assert.AreEqual("mdq-id", invocation.Arguments[0]);
+        Assert.AreEqual("Md", invocation.Arguments[2]);
+        Assert.AreEqual(true, invocation.Arguments[3]);
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldPassTheUpdatedNoWrapperFlagWhenItToggles()
+    {
+        var component = RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.ScreenQuery, BitScreenQuery.Md);
+            parameters.Add(p => p.Id, "mdq-id");
+            parameters.AddChildContent("<span>content</span>");
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.NoWrapper, true);
+        });
+
+        // A ScreenQuery re-invokes setup on every render, so the scope the breakpoints are read
+        // from follows the toggle instead of staying at what the first setup was told.
+        var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.MediaQuery.setup").ToList();
+        Assert.AreEqual(2, setups.Count);
+        Assert.AreEqual(false, setups[0].Arguments[3]);
+        Assert.AreEqual(true, setups[1].Arguments[3]);
+    }
+
+    [TestMethod]
     public void BitMediaQueryShouldRenderNothingWithNoWrapperWhenCollapsed()
     {
         var component = RenderComponent<BitMediaQuery>(parameters =>

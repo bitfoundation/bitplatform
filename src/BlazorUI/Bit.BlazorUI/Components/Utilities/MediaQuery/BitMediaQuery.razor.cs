@@ -152,7 +152,11 @@ public partial class BitMediaQuery : BitComponentBase
                     _query = effectiveKey;
                     _setupId = _Id;
 
-                    await _js.BitMediaQuerySetup(_Id, customQuery, screenQuery, _dotnetObj);
+                    // In NoWrapper mode no element of this component's own is rendered, so the id
+                    // is only the JS listener key: the flag tells the JS side to read the theme
+                    // breakpoints off the document root instead of off whatever element happens to
+                    // carry that id (the rendered content itself, when it is given the same id).
+                    await _js.BitMediaQuerySetup(_Id, customQuery, screenQuery, NoWrapper, _dotnetObj);
                 }
                 catch (JSDisconnectedException) { } // circuit gone; nothing to set up
             }

@@ -6,9 +6,10 @@ internal static class BitMediaQueryJsRuntimeExtensions
                                                       string id,
                                                       string? query,
                                                       string? screenQuery,
+                                                      bool noWrapper,
                                                       DotNetObjectReference<BitMediaQuery>? dotnetObj)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.MediaQuery.setup", id, query, screenQuery, dotnetObj);
+        return jsRuntime.InvokeVoid("BitBlazorUI.MediaQuery.setup", id, query, screenQuery, noWrapper, dotnetObj);
     }
 
     internal static ValueTask BitMediaQueryDispose(this IJSRuntime jsRuntime, string id)
