@@ -663,4 +663,29 @@ public class BitStickyTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-stk bit-stk-top bit-dis"" id:ignore></div>");
     }
+
+    [TestMethod]
+    public async Task BitStickyShouldReportUnstuckWhenDetectionIsDetached()
+    {
+        var stuckStates = new List<bool>();
+
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.OnStuckChanged, (bool stuck) => stuckStates.Add(stuck));
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange(true));
+
+        CollectionAssert.AreEqual(new[] { true }, stuckStates);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.OnStuckChanged, (bool stuck) => stuckStates.Add(stuck));
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        Assert.IsFalse(component.Instance.IsStuck);
+
+        CollectionAssert.AreEqual(new[] { true, false }, stuckStates);
+    }
 }

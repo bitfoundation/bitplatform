@@ -311,6 +311,11 @@ public partial class BitSticky : BitComponentBase
 
             ClassBuilder.Reset();
 
+            // The state flipped, so whoever is watching it hears about it the same way they hear
+            // about a flip the script reported - the detachment is not a reason to leave an observer
+            // holding a stuck state the component does not have anymore.
+            await OnStuckChanged.InvokeAsync(false);
+
             StateHasChanged();
         }
     }

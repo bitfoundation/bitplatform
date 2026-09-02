@@ -7,6 +7,9 @@
             // The scroller is held in a box, since it is re-resolved whenever the layout changes and
             // dispose has to take the scroll listener off the target it is bound to at that moment.
             target: { current: HTMLElement | Window },
+            // The box the element is pinned within, held in a box of its own for the same reason: it
+            // is not always the one the scroll events come from, and it is re-resolved just as often.
+            scope: { current: HTMLElement | Window },
             observer?: ResizeObserver,
             // The pending frame is held in a box rather than in a plain field so the handler can keep
             // writing to the same object that dispose reads from.
@@ -26,7 +29,12 @@
 
             // The scroller is not always the window: any pane with its own overflow scrolls its own
             // box, and a scroll event on an element does not bubble to the window.
-            const target = { current: Stickies.scrollParent(element) };
+            const target = { current: Stickies.scrollSource(element) };
+
+            // Which box the element is pinned within is a separate question from which box the scroll
+            // events come from: a pane that clips its overflow without having anything to scroll is
+            // still the scrollport the element is pinned in, but it never fires a scroll event.
+            const scope = { current: Stickies.stickyParent(element) };
 
             // Starts undefined so the very first evaluation always reports, settling the state of an
             // element that is already pinned when it arrives (a restored scroll position, a deep link).
@@ -38,7 +46,7 @@
             const evaluate = () => {
                 frame.handle = 0;
 
-                const next = Stickies.isStuck(element, target.current);
+                const next = Stickies.isStuck(element, scope.current);
 
                 if (next === stuck) return;
 
@@ -60,16 +68,22 @@
             // Which box scrolls the element is not settled once and for all: a pane that had nothing
             // to scroll at setup time (so the walk landed on the window) becomes the scroller as soon
             // as its content outgrows it, and the other way round. The scroller is re-resolved
-            // whenever the layout moves, and the scroll listener follows it.
+            // whenever the layout moves, and the scroll listener follows it. The scrollport is
+            // re-resolved with it, since a stylesheet can give an ancestor an overflow it did not have.
             const layoutHandler = () => {
-                const next = Stickies.scrollParent(element);
+                const next = Stickies.scrollSource(element);
+                const nextScope = Stickies.stickyParent(element);
 
-                if (next !== target.current) {
-                    target.current.removeEventListener('scroll', scrollHandler);
+                if (next !== target.current || nextScope !== scope.current) {
+                    if (next !== target.current) {
+                        target.current.removeEventListener('scroll', scrollHandler);
 
-                    target.current = next;
+                        target.current = next;
 
-                    next.addEventListener('scroll', scrollHandler, { passive: true });
+                        next.addEventListener('scroll', scrollHandler, { passive: true });
+                    }
+
+                    scope.current = nextScope;
 
                     observe();
                 }
@@ -85,22 +99,31 @@
             const observe = () => {
                 if (!observer) return;
 
-                observer.disconnect();
-                observer.observe(document.documentElement);
-                observer.observe(element);
+                const watch = observer;
 
-                if (target.current !== window) {
-                    const box = target.current as HTMLElement;
+                const observeBox = (box: HTMLElement | Window) => {
+                    if (box === window) return;
 
-                    observer.observe(box);
+                    const pane = box as HTMLElement;
+
+                    watch.observe(pane);
 
                     // A pane of a fixed height keeps the same border box however much content is put
                     // into it, so watching the box alone never reports the growth that turns it into
                     // the scroller. Its content wrapper is the box that actually grows with the content.
-                    if (box.firstElementChild) {
-                        observer.observe(box.firstElementChild);
+                    if (pane.firstElementChild) {
+                        watch.observe(pane.firstElementChild);
                     }
-                }
+                };
+
+                watch.disconnect();
+                watch.observe(document.documentElement);
+                watch.observe(element);
+
+                // The two are the same box whenever the scrollport has something to scroll, and
+                // observing one twice is what the second call already means to the observer.
+                observeBox(target.current);
+                observeBox(scope.current);
             };
 
             // Content that grows or shrinks on its own (a list that loads more rows, an expanding
@@ -111,7 +134,7 @@
                 observe();
             }
 
-            Stickies._entries.set(id, { element, scrollHandler, layoutHandler, target, observer, frame });
+            Stickies._entries.set(id, { element, scrollHandler, layoutHandler, target, scope, observer, frame });
 
             // The scroller can already be scrolled when the element arrives, so the state is settled
             // once up front instead of waiting for a scroll that may never come.
@@ -144,7 +167,7 @@
         // boundary of the scrollport that inset measures from. The insets are read off the computed
         // style, so the class-based positions and the inline offsets are seen the same way, already
         // resolved to physical sides and to pixels.
-        private static isStuck(element: HTMLElement, target: HTMLElement | Window): boolean {
+        private static isStuck(element: HTMLElement, scope: HTMLElement | Window): boolean {
             const style = getComputedStyle(element);
 
             if (style.position !== 'sticky' && style.position !== '-webkit-sticky') return false;
@@ -162,8 +185,8 @@
             let width = document.documentElement.clientWidth;
             let height = document.documentElement.clientHeight;
 
-            if (target !== window) {
-                const box = target as HTMLElement;
+            if (scope !== window) {
+                const box = scope as HTMLElement;
                 const boxRect = box.getBoundingClientRect();
                 const boxStyle = getComputedStyle(box);
 
@@ -196,10 +219,32 @@
             return false;
         }
 
-        // The nearest ancestor that actually scrolls, on either axis: the box the element is pinned
-        // within is its nearest scroll container, and one whose scrollable overflow has nothing to
-        // scroll never fires a scroll event, so the walk goes past it to the box that really scrolls.
-        private static scrollParent(element: HTMLElement): HTMLElement | Window {
+        // The scrollport the element is pinned within: its nearest ancestor that is a scroll
+        // container, whether or not there is anything to scroll in it right now. Every overflow but
+        // visible and clip makes one, so a pane that clips its content is a box the element can only
+        // ever be pinned inside of - measured against the viewport behind such a pane instead, an
+        // element that merely scrolls out of sight with the page reads as pinned to an edge of it.
+        private static stickyParent(element: HTMLElement): HTMLElement | Window {
+            const scrolls = (overflow: string) => overflow !== 'visible' && overflow !== 'clip';
+
+            let node = element.parentElement;
+
+            while (node && node !== document.body && node !== document.documentElement) {
+                const style = getComputedStyle(node);
+
+                if (scrolls(style.overflowY) || scrolls(style.overflowX)) return node;
+
+                node = node.parentElement;
+            }
+
+            return window;
+        }
+
+        // Where the scroll events come from, which is the nearest ancestor that actually scrolls on
+        // either axis: a scrollport whose scrollable overflow has nothing to scroll never fires a
+        // scroll event, so a listener on it would be a listener for nothing. Such a box moves with
+        // whatever scrolls it instead, which is the box this walk goes on to.
+        private static scrollSource(element: HTMLElement): HTMLElement | Window {
             const scrolls = (overflow: string) => overflow === 'auto' || overflow === 'scroll' || overflow === 'overlay' || overflow === 'hidden';
 
             let node = element.parentElement;
